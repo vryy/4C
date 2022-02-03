@@ -21,6 +21,7 @@
  | headers                                         brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
 #include "matpar_parameter.H"
+#include "membrane_material_interfaces.H"
 #include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 /*----------------------------------------------------------------------*
@@ -100,7 +101,7 @@ namespace MAT
   // forward declaration
   class Material;
 
-  class Membrane_ActiveStrain : public So3Material
+  class Membrane_ActiveStrain : public So3Material, public MAT::MembraneMaterialLocalCoordinates
   {
    public:
     /// construct empty material object
@@ -182,18 +183,16 @@ namespace MAT
       dserror("This a membrane material. Calling So3 evaluate does not make sense.");
     };
 
-    /// hyperelastic stress response plus elasticity tensor for membranes assuming incompressibility
-    /// and plane stress
-    virtual void Evaluate(LINALG::Matrix<3, 3>& cauchygreen,  ///< right Cauchy-Green tensor
-        Teuchos::ParameterList& params,  ///< Container for additional information
-        LINALG::Matrix<3, 3>&
-            Q_trafo,  ///< Trafo from local membrane orthonormal coordinates to global coordinates
-        LINALG::Matrix<3, 1>*
-            stress,                  ///< 2nd Piola-Kirchhoff stresses in stress-like voigt notation
-        LINALG::Matrix<3, 3>* cmat,  ///< Constitutive matrix
-        int gp,                      ///< Gauss point
-        int eleGID                   ///< Element GID
-    );
+    void UpdateMembrane(const LINALG::Matrix<3, 3>& defgrd, Teuchos::ParameterList& params,
+        const LINALG::Matrix<3, 3>& Q_trafo, int gp, int eleGID) override
+    {
+      // nothing to do
+    }
+
+    void EvaluateMembrane(const LINALG::Matrix<3, 3>& defgrd,
+        const LINALG::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
+        const LINALG::Matrix<3, 3>& Q_trafo, LINALG::Matrix<3, 1>& stress,
+        LINALG::Matrix<3, 3>& cmat, int gp, int eleGID) override;
 
     /// Update internal variables
     virtual void Update();
@@ -243,7 +242,7 @@ namespace MAT
     // pullback of the tangent from intermediate to reference configuration
     void Pullback4thTensorVoigt(const LINALG::Matrix<2, 2>& defgrd_active_inv_red,
         const LINALG::Matrix<3, 3>& cmat_passive_intermediate,
-        LINALG::Matrix<3, 3>* cmat_reference);
+        LINALG::Matrix<3, 3>& cmat_reference);
 
     // transform voigt to tensor notation
     void Tensor2x2Indices(int p, int* i, int* j);

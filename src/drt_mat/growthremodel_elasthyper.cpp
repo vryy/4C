@@ -14,6 +14,7 @@ GROWTHTYPE 1 LOCTIMEINT 1 MEMBRANE 0
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "growthremodel_elasthyper.H"
+#include <cmath>
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_matelast/elast_summand.H"
 #include "../drt_matelast/elast_remodelfiber.H"
@@ -1630,13 +1631,56 @@ void MAT::GrowthRemodel_ElastHyper::SetupGR2D(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::GrowthRemodel_ElastHyper::EvaluateMembrane(LINALG::Matrix<3, 3> const& defgrd_glob,
-    double& rcg33, Teuchos::ParameterList& params, LINALG::Matrix<3, 3>& pk2M_glob,
+    Teuchos::ParameterList& params, LINALG::Matrix<3, 3>& pk2M_glob,
     LINALG::Matrix<6, 6>& cmat_glob, const int gp, const int eleGID)
 {
+  // time step size
+  double dt = params.get<double>("delta time");
+
   // blank resulting quantities
   pk2M_glob.Clear();
   cmat_glob.Clear();
 
+  // Evaluate growth deformation gradient
+  LINALG::Matrix<3, 3> FgM(true);
+  LINALG::Matrix<3, 3> iFgM(true);
+  LINALG::Matrix<3, 3> dFgdrhoM(true);
+  LINALG::Matrix<3, 3> diFgdrhoM(true);
+  EvaluateGrowthDefGrad(FgM, iFgM, dFgdrhoM, diFgdrhoM, gp);
+
+  // Elastic deformation gradient
+  LINALG::Matrix<3, 3> CM(true);
+  CM.MultiplyTN(1.0, defgrd_glob, defgrd_glob, 0.0);
+
+  // Evaluate anisotropic remodel fibers
+  static LINALG::Matrix<6, 1> pk2v_glob(true);
+  pk2v_glob.Clear();
+  static LINALG::Matrix<NUM_STRESS_3D, 1> stressaniso(true);
+  static LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmataniso(true);
+  for (unsigned p = 0; p < potsumrf_.size(); ++p)
+  {
+    potsumrf_[p]->EvaluateAnisotropicStressCmat(CM, iFgM, cmataniso, stressaniso, gp, dt, eleGID);
+    pk2v_glob.Update(1.0, stressaniso, 1.0);
+    cmat_glob.Update(1.0, cmataniso, 1.0);
+  }
+
+  // Build stress response and elasticity tensor of membrane material
+  static LINALG::Matrix<NUM_STRESS_3D, 1> stressmem(true);
+  static LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatmem(true);
+  static LINALG::Matrix<6, 9> dummy(true);
+  EvaluateStressCmatMembrane(CM, iFgM, stressmem, cmatmem, dummy, gp, eleGID);
+  pk2v_glob.Update(1.0, stressmem, 1.0);
+  cmat_glob.Update(1.0, cmatmem, 1.0);
+  UTILS::VOIGT::Stresses::VectorToMatrix(pk2v_glob, pk2M_glob);
+
+  return;
+}
+
+
+double MAT::GrowthRemodel_ElastHyper::EvaluateMembraneThicknessStretch(
+    LINALG::Matrix<3, 3> const& defgrd_glob, Teuchos::ParameterList& params, const int gp,
+    const int eleGID)
+{
   // save current simulation time (used for the evaluation of elastin degradation)
   t_tot_ = params.get<double>("total time");
 
@@ -1675,38 +1719,10 @@ void MAT::GrowthRemodel_ElastHyper::EvaluateMembrane(LINALG::Matrix<3, 3> const&
   AplCeAplAradM.Update(1.0, AradM_, 1.0);
   tmp.MultiplyNT(1.0, iFinM, iFinM, 0.0);
   CinM.Invert(tmp);
-  rcg33 = CinM.Dot(AradM_) / AplCeAplAradM.Determinant();
+  double rcg33 = CinM.Dot(AradM_) / AplCeAplAradM.Determinant();
 
-  // Update right Cauchy Green tensor
-  double rcg33_old = CM.Dot(AradM_);
-  CM.Update(-rcg33_old, AradM_, 1.0);
-  CM.Update(rcg33, AradM_, 1.0);
-
-
-  // Evaluate anisotropic remodel fibers
-  static LINALG::Matrix<6, 1> pk2v_glob(true);
-  pk2v_glob.Clear();
-  static LINALG::Matrix<NUM_STRESS_3D, 1> stressaniso(true);
-  static LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmataniso(true);
-  for (unsigned p = 0; p < potsumrf_.size(); ++p)
-  {
-    potsumrf_[p]->EvaluateAnisotropicStressCmat(CM, iFgM, cmataniso, stressaniso, gp, dt, eleGID);
-    pk2v_glob.Update(1.0, stressaniso, 1.0);
-    cmat_glob.Update(1.0, cmataniso, 1.0);
-  }
-
-  // Build stress response and elasticity tensor of membrane material
-  static LINALG::Matrix<NUM_STRESS_3D, 1> stressmem(true);
-  static LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatmem(true);
-  static LINALG::Matrix<6, 9> dummy(true);
-  EvaluateStressCmatMembrane(CM, iFgM, stressmem, cmatmem, dummy, gp, eleGID);
-  pk2v_glob.Update(1.0, stressmem, 1.0);
-  cmat_glob.Update(1.0, cmatmem, 1.0);
-  UTILS::VOIGT::Stresses::VectorToMatrix(pk2v_glob, pk2M_glob);
-
-  return;
+  return std::sqrt(rcg33);
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

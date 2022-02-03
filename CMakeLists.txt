@@ -476,6 +476,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/fourieriso.cpp
   src/drt_mat/fouriervar.cpp
   src/drt_mat/membrane_elasthyper.cpp
+  src/drt_mat/membrane_elasthyper_service.cpp
   src/drt_mat/membrane_active_strain.cpp
   src/drt_mat/growthremodel_elasthyper.cpp
   src/drt_mat/growth.cpp

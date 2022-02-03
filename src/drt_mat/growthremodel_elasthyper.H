@@ -12,6 +12,7 @@
 
 #include "../headers/FADmatrix_utils.H"
 #include "matpar_parameter.H"
+#include "membrane_material_interfaces.H"
 #include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "anisotropy.H"
@@ -135,7 +136,9 @@ namespace MAT
   /*----------------------------------------------------------------------*/
   class Material;
 
-  class GrowthRemodel_ElastHyper : public So3Material
+  class GrowthRemodel_ElastHyper : public So3Material,
+                                   public MembraneMaterialGlobalCoordinates,
+                                   public MembraneMaterialInelasticThickness
   {
    public:
     /// construct empty material object
@@ -241,12 +244,19 @@ namespace MAT
     /// formulation)
     void EvaluateMembrane(
         LINALG::Matrix<3, 3> const& defgrd_glob,  ///< Deformation gradient in global coordinates
-        double& rcg33,                            ///< Adapted stretch in thickness direction
         Teuchos::ParameterList& params,           ///< Container for additional information
         LINALG::Matrix<3, 3>& pk2M_glob,          ///< 2nd Piola-Kirchhoff stress global coordinates
         LINALG::Matrix<6, 6>& cmat_glob,          ///< Elasticity tensor in global coordinates
         int gp,                                   ///< Gauss point
-        int eleGID);                              ///< Element ID
+        int eleGID) override;
+
+    /// hyperelastic stress response plus elasticity tensor for membrane element (membrane
+    /// formulation)
+    double EvaluateMembraneThicknessStretch(
+        LINALG::Matrix<3, 3> const& defgrd_glob,  ///< Deformation gradient in global coordinates
+        Teuchos::ParameterList& params,           ///< Container for additional information
+        int gp,                                   ///< Gauss point
+        int eleGID) override;                     ///< Element ID
 
     /// Return names of visualization data
     virtual void VisNames(std::map<std::string, int>& names);

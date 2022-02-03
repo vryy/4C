@@ -239,20 +239,14 @@ void MAT::Membrane_ActiveStrain::Setup(int numgp, DRT::INPUT::LineDefinition* li
  | active strain and hyperelastic stress response plus elasticity tensor|
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void MAT::Membrane_ActiveStrain::Evaluate(
-    LINALG::Matrix<3, 3>& cauchygreen,  ///< right Cauchy-Green tensor
-    Teuchos::ParameterList& params,     ///< Container for additional information
-    LINALG::Matrix<3, 3>&
-        Q_trafo,  ///< Trafo from local membrane orthonormal coordinates to global coordinates
-    LINALG::Matrix<3, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses in stress-like voigt notation
-    LINALG::Matrix<3, 3>* cmat,    ///< Constitutive matrix
-    const int gp,
-    const int eleGID  ///< Element GID
-)
+void MAT::Membrane_ActiveStrain::EvaluateMembrane(const LINALG::Matrix<3, 3>& defgrd,
+    const LINALG::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
+    const LINALG::Matrix<3, 3>& Q_trafo, LINALG::Matrix<3, 1>& stress, LINALG::Matrix<3, 3>& cmat,
+    const int gp, const int eleGID)
 {
   // blank resulting quantities
-  stress->Clear();
-  cmat->Clear();
+  stress.Clear();
+  cmat.Clear();
 
   // get pointer to vector containing the scalar states at the gauss points
   Teuchos::RCP<std::vector<std::vector<double>>> gpscalar =
@@ -320,16 +314,16 @@ void MAT::Membrane_ActiveStrain::Evaluate(
   // PASSIVE cauchy green in local coordinates
   //******************
   LINALG::Matrix<3, 3> cauchygreen_passive_local(true);
-  LINALG::Matrix<3, 3> temp(true);
-  temp.MultiplyTN(1.0, defgrd_active_inv_loc, cauchygreen, 0.0);
-  cauchygreen_passive_local.MultiplyNN(1.0, temp, defgrd_active_inv_loc, 0.0);
+  LINALG::Matrix<3, 3> defgrd_passive_local(true);
+  defgrd_passive_local.MultiplyNN(1.0, defgrd, defgrd_active_inv_loc, 0.0);
+  cauchygreen_passive_local.MultiplyTN(1.0, defgrd_passive_local, defgrd_passive_local, 0.0);
 
   // compute passive green lagrange strain
   LINALG::Matrix<3, 3> cmatpassive_loc(true);
   LINALG::Matrix<3, 1> S_passive_loc_voigt(true);
   Teuchos::rcp_dynamic_cast<MAT::Membrane_ElastHyper>(matpassive_, true)
-      ->Evaluate(cauchygreen_passive_local, params, Q_trafo, &S_passive_loc_voigt, &cmatpassive_loc,
-          gp, eleGID);
+      ->EvaluateMembrane(defgrd_passive_local, cauchygreen_passive_local, params, Q_trafo,
+          S_passive_loc_voigt, cmatpassive_loc, gp, eleGID);
 
   //******************
   // FULL PART
@@ -351,9 +345,9 @@ void MAT::Membrane_ActiveStrain::Evaluate(
   temp2.MultiplyNT(1.0, S_passive_loc, defgrd_active_inv_loc_red, 0.0);
   S_tot.MultiplyNN(1.0, defgrd_active_inv_loc_red, temp2, 0.0);
 
-  (*stress)(0) = S_tot(0, 0);
-  (*stress)(1) = S_tot(1, 1);
-  (*stress)(2) = 0.5 * (S_tot(1, 0) + S_tot(0, 1));
+  stress(0) = S_tot(0, 0);
+  stress(1) = S_tot(1, 1);
+  stress(2) = 0.5 * (S_tot(1, 0) + S_tot(0, 1));
 
   // pullback of the linearization
   Pullback4thTensorVoigt(defgrd_active_inv_loc_red, cmatpassive_loc, cmat);
@@ -543,7 +537,7 @@ void MAT::Membrane_ActiveStrain::SetupNormalDirection()
  *---------------------------------------------------------------------*/
 void MAT::Membrane_ActiveStrain::Pullback4thTensorVoigt(
     const LINALG::Matrix<2, 2>& defgrd_active_inv_red,
-    const LINALG::Matrix<3, 3>& cmat_passive_intermediate, LINALG::Matrix<3, 3>* cmat_reference)
+    const LINALG::Matrix<3, 3>& cmat_passive_intermediate, LINALG::Matrix<3, 3>& cmat_reference)
 {
   int i;
   int j;
@@ -569,9 +563,9 @@ void MAT::Membrane_ActiveStrain::Pullback4thTensorVoigt(
               Voigt3Index(A, B, &M);
               Voigt3Index(C, D, &N);
 
-              (*cmat_reference)(p, q) += defgrd_active_inv_red(i, A) * defgrd_active_inv_red(j, B) *
-                                         defgrd_active_inv_red(k, C) * defgrd_active_inv_red(l, D) *
-                                         cmat_passive_intermediate(M, N);
+              cmat_reference(p, q) += defgrd_active_inv_red(i, A) * defgrd_active_inv_red(j, B) *
+                                      defgrd_active_inv_red(k, C) * defgrd_active_inv_red(l, D) *
+                                      cmat_passive_intermediate(M, N);
             }
           }
         }

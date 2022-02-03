@@ -492,24 +492,6 @@ namespace DRT
           const LINALG::Matrix<noddof_, noddof_>& defgrd,
           LINALG::Matrix<3, 3>& euler_almansi) const;
 
-      // transforms local membrane surface tensor to tensor in global coordinates
-      void mem_localtoglobal(const LINALG::Matrix<noddof_, noddof_>& Q_trafo,
-          const LINALG::Matrix<noddof_, noddof_>& local,
-          LINALG::Matrix<noddof_, noddof_>& global) const;
-
-      // transforms tensor in global coords to local membrane surface tensor
-      void mem_globaltolocal(const LINALG::Matrix<noddof_, noddof_>& Q_trafo,
-          const LINALG::Matrix<noddof_, noddof_>& global,
-          LINALG::Matrix<noddof_, noddof_>& local) const;
-
-      // transformation matrix for material tangent tensor
-      void mem_cmat_trafo(
-          const LINALG::Matrix<noddof_, noddof_>& Q_trafo, LINALG::Matrix<6, 6>& cmat_trafo) const;
-
-      // transforms material tangent tensor from global coordinates to local membrane surface
-      void mem_cmat_globaltolocal(const LINALG::Matrix<6, 6>& cmat_trafo,
-          const LINALG::Matrix<6, 6>& cmat_global, LINALG::Matrix<6, 6>& cmat_local) const;
-
       // determine deformation gradient in global frame on membrane surface
       void mem_defgrd_global(const LINALG::Matrix<noddof_, 1>& dXds1,
           const LINALG::Matrix<noddof_, 1>& dXds2, const LINALG::Matrix<noddof_, 1>& dxds1,

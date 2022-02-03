@@ -8,12 +8,14 @@
 \brief Nonlinear Membrane Finite Element evaluation
 
 *----------------------------------------------------------------------*/
+#include <Teuchos_RCP.hpp>
 #include "membrane.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_utils_densematrix_eigen.H"
+#include "../drt_lib/tensor_transformation.H"
 
 #include "../drt_mat/material.H"
 #include "../drt_mat/membrane_elasthyper.H"
@@ -22,6 +24,9 @@
 
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_immersed_problem/immersed_base.H"
+
+#include "../drt_mat/membrane_material_interfaces.H"
+#include "membrane_service.H"
 
 
 /*----------------------------------------------------------------------*
@@ -309,10 +314,10 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
         LINALG::Matrix<noddof_, 1> dXds2(true);
         LINALG::Matrix<noddof_, 1> dxds1(true);
         LINALG::Matrix<noddof_, 1> dxds2(true);
-        LINALG::Matrix<noddof_, noddof_> Q_trafo(true);
+        LINALG::Matrix<noddof_, noddof_> Q_localToGlobal(true);
 
-        mem_orthonormalbase(
-            xrefe, xcurr, derivs, derivs_ortho, G1G2_cn, dXds1, dXds2, dxds1, dxds2, Q_trafo);
+        mem_orthonormalbase(xrefe, xcurr, derivs, derivs_ortho, G1G2_cn, dXds1, dXds2, dxds1, dxds2,
+            Q_localToGlobal);
 
         /*===============================================================================*
          | surface deformation gradient                                                  |
@@ -342,7 +347,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
         mem_defgrd_global(dXds1, dXds2, dxds1, dxds2, lambda3, defgrd_glob);
 
         // surface deformation gradient in 3 dimensions in local coordinates
-        mem_globaltolocal(Q_trafo, defgrd_glob, defgrd_loc);
+        ::UTILS::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
 
         /*===============================================================================*
          | right cauchygreen tensor in local coordinates                                 |
@@ -622,10 +627,10 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
     LINALG::Matrix<noddof_, 1> dXds2(true);
     LINALG::Matrix<noddof_, 1> dxds1(true);
     LINALG::Matrix<noddof_, 1> dxds2(true);
-    LINALG::Matrix<noddof_, noddof_> Q_trafo(true);
+    LINALG::Matrix<noddof_, noddof_> Q_localToGlobal(true);
 
     mem_orthonormalbase(
-        xrefe, xcurr, derivs, derivs_ortho, G1G2_cn, dXds1, dXds2, dxds1, dxds2, Q_trafo);
+        xrefe, xcurr, derivs, derivs_ortho, G1G2_cn, dXds1, dXds2, dxds1, dxds2, Q_localToGlobal);
 
     // determine cross product x,1 x x,2
     LINALG::Matrix<noddof_, 1> xcurr_cross(true);
@@ -700,6 +705,13 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
   LINALG::Matrix<numnod_, noddof_> xrefe(true);
   LINALG::Matrix<numnod_, noddof_> xcurr(true);
 
+  auto material_local_coordinates =
+      Teuchos::rcp_dynamic_cast<MAT::MembraneMaterialLocalCoordinates>(DRT::Element::Material());
+  auto material_global_coordinates =
+      Teuchos::rcp_dynamic_cast<MAT::MembraneMaterialGlobalCoordinates>(DRT::Element::Material());
+  auto material_inelastic_thickness =
+      Teuchos::rcp_dynamic_cast<MAT::MembraneMaterialInelasticThickness>(DRT::Element::Material());
+
   mem_configuration(disp, xrefe, xcurr);
 
   /*===============================================================================*
@@ -733,10 +745,10 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
     LINALG::Matrix<noddof_, 1> dXds2(true);
     LINALG::Matrix<noddof_, 1> dxds1(true);
     LINALG::Matrix<noddof_, 1> dxds2(true);
-    LINALG::Matrix<noddof_, noddof_> Q_trafo(true);
+    LINALG::Matrix<noddof_, noddof_> Q_localToGlobal(true);
 
     mem_orthonormalbase(
-        xrefe, xcurr, derivs, derivs_ortho, G1G2_cn, dXds1, dXds2, dxds1, dxds2, Q_trafo);
+        xrefe, xcurr, derivs, derivs_ortho, G1G2_cn, dXds1, dXds2, dxds1, dxds2, Q_localToGlobal);
 
     /*===============================================================================*
      | surface deformation gradient                                                  |
@@ -751,33 +763,27 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
     // principle stretch in thickness direction
     double lambda3 = 1.0;
 
-    // standard evaluation (incompressible, plane stress)
-    if (Material()->MaterialType() == INPAR::MAT::m_membrane_elasthyper or
-        Material()->MaterialType() == INPAR::MAT::m_membrane_activestrain)
+    if (material_inelastic_thickness != Teuchos::null)
     {
-      // Remark:
+      // incompressibility is just valid for the elastic quantities, therefore
+      // use thickness from previous iteration step to get principle stretch in thickness
+      // direction.
+      // Stretch in thickness direction is evaluated later by the material
+      lambda3 = cur_thickness_[gp] / thickness_;
+    }
+    else
+    {
+      // standard evaluation (incompressible, plane stress)
       // incompressibility condition to get principle stretch in thickness direction
       lambda3 =
           std::sqrt(1.0 / (dxds1.Dot(dxds1) * dxds2.Dot(dxds2) - std::pow(dxds1.Dot(dxds2), 2.0)));
     }
-    // growth remodel elasthyper evaluation
-    else if (Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
-    {
-      // Remark:
-      // incompressibility is just valid for the elastic quantities, therefore
-      // use thickness from previous iteration step to get principle stretch in thickness direction
-      // to account for growth in thickness direction the EvaluateMembrane() function updates the
-      // entry of cauchygreen_local(2,2)
-      lambda3 = cur_thickness_[gp] / thickness_;
-    }
-    else
-      dserror("Type of material not implemented for membranes!");
 
     // surface deformation gradient in 3 dimensions in global coordinates
     mem_defgrd_global(dXds1, dXds2, dxds1, dxds2, lambda3, defgrd_glob);
 
     // surface deformation gradient in 3 dimensions in local coordinates
-    mem_globaltolocal(Q_trafo, defgrd_glob, defgrd_loc);
+    ::UTILS::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
 
     /*===============================================================================*
      | right cauchygreen tensor in local coordinates                                 |
@@ -797,20 +803,8 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
     // material tangent matrix for plane stress
     LINALG::Matrix<3, 3> cmatred_loc(true);
 
-    // standard evaluation (incompressible, plane stress)
-    if (Material()->MaterialType() == INPAR::MAT::m_membrane_elasthyper)
-    {
-      Teuchos::rcp_dynamic_cast<MAT::Membrane_ElastHyper>(DRT::Element::Material(), true)
-          ->Evaluate(cauchygreen_loc, params, Q_trafo, &pk2red_loc, &cmatred_loc, gp, Id());
-    }
-    // active strain with passive elasthyper component (incompressible, plane stress)
-    else if (Material()->MaterialType() == INPAR::MAT::m_membrane_activestrain)
-    {
-      Teuchos::rcp_dynamic_cast<MAT::Membrane_ActiveStrain>(DRT::Element::Material(), true)
-          ->Evaluate(cauchygreen_loc, params, Q_trafo, &pk2red_loc, &cmatred_loc, gp, Id());
-    }
-    // growth remodel elasthyper evaluation
-    else if (Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
+    // The growth remodel elast hyper material needs some special quantities for its evaluation
+    if (Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
     {
       // Gauß-point coordinates in reference configuration
       LINALG::Matrix<1, noddof_> gprefecoord(true);
@@ -823,47 +817,52 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
       LINALG::Matrix<1, noddof_> midpoint;
       midpoint.MultiplyTN(funct_center, xrefe);
       params.set("elecenter", midpoint);
+    }
 
-      LINALG::Matrix<3, 3> pk2M_glob(true);
-      LINALG::Matrix<6, 6> cmat_glob(true);
-      double rcg33 = 0.0;
-      Teuchos::rcp_dynamic_cast<MAT::GrowthRemodel_ElastHyper>(Material(), true)
-          ->EvaluateMembrane(defgrd_glob, rcg33, params, pk2M_glob, cmat_glob, gp, Id());
-
-      LINALG::Matrix<3, 3> pk2M_loc(true);
-      mem_globaltolocal(Q_trafo, pk2M_glob, pk2M_loc);
-      pk2red_loc(0) = pk2M_loc(0, 0);
-      pk2red_loc(1) = pk2M_loc(1, 1);
-      pk2red_loc(2) = 0.5 * (pk2M_loc(0, 1) + pk2M_loc(1, 0));
-
-      LINALG::Matrix<6, 6> cmat_loc(true);
-      LINALG::Matrix<6, 6> cmat_trafo(true);
-      mem_cmat_trafo(Q_trafo, cmat_trafo);
-      mem_cmat_globaltolocal(cmat_trafo, cmat_glob, cmat_loc);
-      cmatred_loc(0, 0) = cmat_loc(0, 0);
-      cmatred_loc(0, 1) = cmat_loc(0, 1);
-      cmatred_loc(0, 2) = cmat_loc(0, 3);
-      cmatred_loc(1, 0) = cmat_loc(1, 0);
-      cmatred_loc(1, 1) = cmat_loc(1, 1);
-      cmatred_loc(1, 2) = cmat_loc(1, 3);
-      cmatred_loc(2, 0) = cmat_loc(3, 0);
-      cmatred_loc(2, 1) = cmat_loc(3, 1);
-      cmatred_loc(2, 2) = cmat_loc(3, 3);
-
-      // update principle stretch in thickness direction
-      lambda3 = std::sqrt(rcg33);
+    if (material_inelastic_thickness != Teuchos::null)
+    {
+      // Let material decide the total stretch in thickness direction
+      lambda3 = material_inelastic_thickness->EvaluateMembraneThicknessStretch(
+          defgrd_glob, params, gp, Id());
 
       // update surface deformation gradient in 3 dimensions in global coordinates
       mem_defgrd_global(dXds1, dXds2, dxds1, dxds2, lambda3, defgrd_glob);
 
       // update surface deformation gradient in 3 dimensions in local coordinates
-      mem_globaltolocal(Q_trafo, defgrd_glob, defgrd_loc);
+      ::UTILS::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
 
       // update three dimensional right cauchy-green strain tensor in orthonormal base
       cauchygreen_loc.MultiplyTN(1.0, defgrd_loc, defgrd_loc, 0.0);
     }
+
+    // standard evaluation (incompressible, plane stress)
+    if (material_local_coordinates != Teuchos::null)
+    {
+      material_local_coordinates->EvaluateMembrane(
+          defgrd_loc, cauchygreen_loc, params, Q_localToGlobal, pk2red_loc, cmatred_loc, gp, Id());
+    }
+    else if (material_global_coordinates != Teuchos::null)
+    {
+      LINALG::Matrix<3, 3> pk2M_glob(true);
+      LINALG::Matrix<6, 6> cmat_glob(true);
+
+      // Evaluate material with quantities in the global coordinate system
+      material_global_coordinates->EvaluateMembrane(
+          defgrd_glob, params, pk2M_glob, cmat_glob, gp, Id());
+
+      // Transform stress and elasticity into the local membrane coordinate system
+      LINALG::Matrix<3, 3> pk2M_loc(true);
+      ::UTILS::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, pk2M_glob, pk2M_loc);
+      MEMBRANE::LocalPlaneStressToStressLikeVoigt(pk2M_loc, pk2red_loc);
+
+      LINALG::Matrix<6, 6> cmat_loc(true);
+      ::UTILS::TENSOR::InverseFourthTensorRotation(Q_localToGlobal, cmat_glob, cmat_loc);
+      MEMBRANE::LocalFourthTensorPlaneStressToStressLikeVoigt(cmat_loc, cmatred_loc);
+    }
     else
-      dserror("Type of material not implemented for membranes!");
+    {
+      dserror("The material does not support the evaluation of membranes");
+    }
 
     /*===============================================================================*
      | update current thickness at gp                                                |
@@ -999,7 +998,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 
         // transform local cauchygreen to global coordinates
         LINALG::Matrix<noddof_, noddof_> cauchygreen_glob(true);
-        mem_localtoglobal(Q_trafo, cauchygreen_loc, cauchygreen_glob);
+        ::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
 
         // green-lagrange strain tensor in global coordinates
         LINALG::Matrix<noddof_, noddof_> glstrain_glob(true);
@@ -1028,7 +1027,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 
         // transform local cauchygreen to global coordinates
         LINALG::Matrix<noddof_, noddof_> cauchygreen_glob(true);
-        mem_localtoglobal(Q_trafo, cauchygreen_loc, cauchygreen_glob);
+        ::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
 
         // green-lagrange strain tensor in global coordinates
         LINALG::Matrix<noddof_, noddof_> glstrain_glob(true);
@@ -1068,7 +1067,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 
         // transform local cauchygreen to global coordinates
         LINALG::Matrix<noddof_, noddof_> cauchygreen_glob(true);
-        mem_localtoglobal(Q_trafo, cauchygreen_loc, cauchygreen_glob);
+        ::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
 
         // eigenvalue decomposition (from elasthyper.cpp)
         LINALG::Matrix<noddof_, noddof_> prstr2(true);  // squared principal stretches
@@ -1180,7 +1179,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 
         // determine 2nd Piola-Kirchhoff stresses in global coordinates
         LINALG::Matrix<noddof_, noddof_> pkstress_glob(true);
-        mem_localtoglobal(Q_trafo, pkstressM_local, pkstress_glob);
+        ::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, pkstressM_local, pkstress_glob);
 
         (*elestress)(gp, 0) = pkstress_glob(0, 0);
         (*elestress)(gp, 1) = pkstress_glob(1, 1);
@@ -1205,7 +1204,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 
         // determine 2nd Piola-Kirchhoff stresses in global coordinates
         LINALG::Matrix<noddof_, noddof_> pkstress_glob(true);
-        mem_localtoglobal(Q_trafo, pkstressM_loc, pkstress_glob);
+        ::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, pkstressM_loc, pkstress_glob);
 
         LINALG::Matrix<noddof_, noddof_> cauchy_glob(true);
         mem_PK2toCauchy(pkstress_glob, defgrd_glob, cauchy_glob);
@@ -1309,7 +1308,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_orthonormalbase(
     const LINALG::Matrix<numdim_, numnod_>& derivs, LINALG::Matrix<numdim_, numnod_>& derivs_ortho,
     double& G1G2_cn, LINALG::Matrix<noddof_, 1>& dXds1, LINALG::Matrix<noddof_, 1>& dXds2,
     LINALG::Matrix<noddof_, 1>& dxds1, LINALG::Matrix<noddof_, 1>& dxds2,
-    LINALG::Matrix<noddof_, noddof_>& Q_trafo) const
+    LINALG::Matrix<noddof_, noddof_>& Q_localToGlobal) const
 {
   /*===============================================================================*
    | introduce an orthonormal base in the undeformed configuration as proposed in: |
@@ -1402,15 +1401,15 @@ void DRT::ELEMENTS::Membrane<distype>::mem_orthonormalbase(
   dxds2(2) = dxds(2, 1);
 
   // determine Trafo from local membrane orthonormal coordinates to global coordinates
-  Q_trafo(0, 0) = t1(0);
-  Q_trafo(1, 0) = t1(1);
-  Q_trafo(2, 0) = t1(2);
-  Q_trafo(0, 1) = t2(0);
-  Q_trafo(1, 1) = t2(1);
-  Q_trafo(2, 1) = t2(2);
-  Q_trafo(0, 2) = tn(0);
-  Q_trafo(1, 2) = tn(1);
-  Q_trafo(2, 2) = tn(2);
+  Q_localToGlobal(0, 0) = t1(0);
+  Q_localToGlobal(1, 0) = t1(1);
+  Q_localToGlobal(2, 0) = t1(2);
+  Q_localToGlobal(0, 1) = t2(0);
+  Q_localToGlobal(1, 1) = t2(1);
+  Q_localToGlobal(2, 1) = t2(2);
+  Q_localToGlobal(0, 2) = tn(0);
+  Q_localToGlobal(1, 2) = tn(1);
+  Q_localToGlobal(2, 2) = tn(2);
 
   return;
 
@@ -1465,108 +1464,6 @@ void DRT::ELEMENTS::Membrane<distype>::mem_GLtoEA(
   return;
 
 }  // DRT::ELEMENTS::Membrane::mem_GLtoEA
-
-/*-------------------------------------------------------------------------------------------------*
- |  transforms local membrane surface tensor to tensor in global coords               fbraeu 06/16 |
- *-------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Membrane<distype>::mem_localtoglobal(
-    const LINALG::Matrix<noddof_, noddof_>& Q_trafo, const LINALG::Matrix<noddof_, noddof_>& loc,
-    LINALG::Matrix<noddof_, noddof_>& glob) const
-{
-  LINALG::Matrix<noddof_, noddof_> temp(true);
-  temp.MultiplyNN(1.0, Q_trafo, loc, 0.0);
-  glob.MultiplyNT(1.0, temp, Q_trafo, 0.0);
-
-  return;
-
-}  // DRT::ELEMENTS::Membrane::mem_localtoglobal
-
-/*-------------------------------------------------------------------------------------------------*
- |  transforms tensor in global coords to local membrane surface tensor               fbraeu 06/16 |
- *-------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Membrane<distype>::mem_globaltolocal(
-    const LINALG::Matrix<noddof_, noddof_>& Q_trafo, const LINALG::Matrix<noddof_, noddof_>& glob,
-    LINALG::Matrix<noddof_, noddof_>& loc) const
-{
-  LINALG::Matrix<noddof_, noddof_> temp(true);
-  temp.MultiplyTN(1.0, Q_trafo, glob, 0.0);
-  loc.MultiplyNN(1.0, temp, Q_trafo, 0.0);
-
-  return;
-
-}  // DRT::ELEMENTS::Membrane::mem_globaltolocal
-
-/*-------------------------------------------------------------------------------------------------*
- |  transformation matrix for material tangent tensor                                 fbraeu 06/16 |
- *-------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Membrane<distype>::mem_cmat_trafo(
-    const LINALG::Matrix<noddof_, noddof_>& Q_trafo, LINALG::Matrix<6, 6>& cmat_trafo) const
-{
-  // transformation matrix for the material elasticity matrix (strain like in first two indices)
-  cmat_trafo(0, 0) = Q_trafo(0, 0) * Q_trafo(0, 0);
-  cmat_trafo(0, 1) = Q_trafo(0, 1) * Q_trafo(0, 1);
-  cmat_trafo(0, 2) = Q_trafo(0, 2) * Q_trafo(0, 2);
-  cmat_trafo(0, 3) = Q_trafo(0, 0) * Q_trafo(0, 1);
-  cmat_trafo(0, 4) = Q_trafo(0, 1) * Q_trafo(0, 2);
-  cmat_trafo(0, 5) = Q_trafo(0, 0) * Q_trafo(0, 2);
-
-  cmat_trafo(1, 0) = Q_trafo(1, 0) * Q_trafo(1, 0);
-  cmat_trafo(1, 1) = Q_trafo(1, 1) * Q_trafo(1, 1);
-  cmat_trafo(1, 2) = Q_trafo(1, 2) * Q_trafo(1, 2);
-  cmat_trafo(1, 3) = Q_trafo(1, 0) * Q_trafo(1, 1);
-  cmat_trafo(1, 4) = Q_trafo(1, 1) * Q_trafo(1, 2);
-  cmat_trafo(1, 5) = Q_trafo(1, 0) * Q_trafo(1, 2);
-
-  cmat_trafo(2, 0) = Q_trafo(2, 0) * Q_trafo(2, 0);
-  cmat_trafo(2, 1) = Q_trafo(2, 1) * Q_trafo(2, 1);
-  cmat_trafo(2, 2) = Q_trafo(2, 2) * Q_trafo(2, 2);
-  cmat_trafo(2, 3) = Q_trafo(2, 0) * Q_trafo(2, 1);
-  cmat_trafo(2, 4) = Q_trafo(2, 1) * Q_trafo(2, 2);
-  cmat_trafo(2, 5) = Q_trafo(2, 0) * Q_trafo(2, 2);
-
-  cmat_trafo(3, 0) = 2.0 * Q_trafo(0, 0) * Q_trafo(1, 0);
-  cmat_trafo(3, 1) = 2.0 * Q_trafo(0, 1) * Q_trafo(1, 1);
-  cmat_trafo(3, 2) = 2.0 * Q_trafo(0, 2) * Q_trafo(1, 2);
-  cmat_trafo(3, 3) = Q_trafo(0, 0) * Q_trafo(1, 1) + Q_trafo(1, 0) * Q_trafo(0, 1);
-  cmat_trafo(3, 4) = Q_trafo(0, 1) * Q_trafo(1, 2) + Q_trafo(1, 1) * Q_trafo(0, 2);
-  cmat_trafo(3, 5) = Q_trafo(0, 0) * Q_trafo(1, 2) + Q_trafo(1, 0) * Q_trafo(0, 2);
-
-  cmat_trafo(4, 0) = 2.0 * Q_trafo(1, 0) * Q_trafo(2, 0);
-  cmat_trafo(4, 1) = 2.0 * Q_trafo(1, 1) * Q_trafo(2, 1);
-  cmat_trafo(4, 2) = 2.0 * Q_trafo(1, 2) * Q_trafo(2, 2);
-  cmat_trafo(4, 3) = Q_trafo(1, 0) * Q_trafo(2, 1) + Q_trafo(2, 0) * Q_trafo(1, 1);
-  cmat_trafo(4, 4) = Q_trafo(1, 1) * Q_trafo(2, 2) + Q_trafo(2, 1) * Q_trafo(1, 2);
-  cmat_trafo(4, 5) = Q_trafo(1, 0) * Q_trafo(2, 2) + Q_trafo(2, 0) * Q_trafo(1, 2);
-
-  cmat_trafo(5, 0) = 2.0 * Q_trafo(0, 0) * Q_trafo(2, 0);
-  cmat_trafo(5, 1) = 2.0 * Q_trafo(0, 1) * Q_trafo(2, 1);
-  cmat_trafo(5, 2) = 2.0 * Q_trafo(0, 2) * Q_trafo(2, 2);
-  cmat_trafo(5, 3) = Q_trafo(0, 0) * Q_trafo(2, 1) + Q_trafo(2, 0) * Q_trafo(0, 1);
-  cmat_trafo(5, 4) = Q_trafo(0, 1) * Q_trafo(2, 2) + Q_trafo(2, 1) * Q_trafo(0, 2);
-  cmat_trafo(5, 5) = Q_trafo(0, 0) * Q_trafo(2, 2) + Q_trafo(2, 0) * Q_trafo(0, 2);
-
-  return;
-
-}  // DRT::ELEMENTS::Membrane::mem_cmat_trafo
-
-/*-------------------------------------------------------------------------------------------------*
- |  transforms material tangent tensor from global coords to local membrane surface   fbraeu 06/16 |
- *-------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Membrane<distype>::mem_cmat_globaltolocal(
-    const LINALG::Matrix<6, 6>& cmat_trafo, const LINALG::Matrix<6, 6>& cmat_glob,
-    LINALG::Matrix<6, 6>& cmat_loc) const
-{
-  LINALG::Matrix<6, 6> temp(true);
-  temp.MultiplyTN(1.0, cmat_trafo, cmat_glob, 0.0);
-  cmat_loc.MultiplyNN(1.0, temp, cmat_trafo, 0.0);
-
-  return;
-
-}  // DRT::ELEMENTS::Membrane::mem_cmat_globaltolocal
 
 /*-------------------------------------------------------------------------------------------------*
  |  determine deformation gradient in global coordinates                              fbraeu 06/16 |
@@ -1691,10 +1588,10 @@ void DRT::ELEMENTS::Membrane<distype>::Update_element(
       LINALG::Matrix<noddof_, 1> dXds2(true);
       LINALG::Matrix<noddof_, 1> dxds1(true);
       LINALG::Matrix<noddof_, 1> dxds2(true);
-      LINALG::Matrix<noddof_, noddof_> Q_trafo(true);
+      LINALG::Matrix<noddof_, noddof_> Q_localToGlobal(true);
 
       mem_orthonormalbase(
-          xrefe, xcurr, derivs, derivs_ortho, G1G2_cn, dXds1, dXds2, dxds1, dxds2, Q_trafo);
+          xrefe, xcurr, derivs, derivs_ortho, G1G2_cn, dXds1, dXds2, dxds1, dxds2, Q_localToGlobal);
 
       /*===============================================================================*
        | surface deformation gradient                                                  |
@@ -1702,6 +1599,7 @@ void DRT::ELEMENTS::Membrane<distype>::Update_element(
 
       // surface deformation gradient in 3 dimensions in global coordinates
       LINALG::Matrix<noddof_, noddof_> defgrd_glob(true);
+      LINALG::Matrix<noddof_, noddof_> defgrd_loc(true);
 
       // principle stretch in thickness direction
       double lambda3 = cur_thickness_[gp] / thickness_;
@@ -1709,9 +1607,22 @@ void DRT::ELEMENTS::Membrane<distype>::Update_element(
       // surface deformation gradient in 3 dimensions in global coordinates
       mem_defgrd_global(dXds1, dXds2, dxds1, dxds2, lambda3, defgrd_glob);
 
-      // call material update of m_growthremodel_elasthyper (calculate and update inelastic
-      // deformation gradient)
-      SolidMaterial()->Update(defgrd_glob, gp, params, Id());
+      ::UTILS::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
+
+      auto material_local_coordinates =
+          Teuchos::rcp_dynamic_cast<MAT::MembraneMaterialLocalCoordinates>(
+              DRT::Element::Material());
+      auto material_global_coordinates =
+          Teuchos::rcp_dynamic_cast<MAT::MembraneMaterialGlobalCoordinates>(
+              DRT::Element::Material());
+      if (material_local_coordinates != Teuchos::null)
+      {
+        material_local_coordinates->UpdateMembrane(defgrd_loc, params, Q_localToGlobal, gp, Id());
+      }
+      else if (material_global_coordinates != Teuchos::null)
+      {
+        SolidMaterial()->Update(defgrd_glob, gp, params, Id());
+      }
     }
   }
 
