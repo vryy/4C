@@ -106,7 +106,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::BeamElastHyperMaterialParameterGeneric::Cr
    * formulated for cross-section resultants which are implemented in BeamElastHyperMaterial */
   Teuchos::RCP<MAT::Material> matobject;
 
-  if (Use_FAD())
+  if (Uses_FAD())
   {
     matobject = Teuchos::rcp(new MAT::BeamElastHyperMaterial<Sacado::Fad::DFad<double>>(this));
   }

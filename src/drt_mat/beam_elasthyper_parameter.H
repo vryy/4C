@@ -99,16 +99,13 @@ namespace MAT
 
       virtual bool GetTorsionPlasticity() const { return false; };
 
-      bool Use_FAD()
-      {
-        std::cout << "fad= " << use_fad_ << std::endl;
-        return use_fad_;
-      };
+      bool Uses_FAD() { return use_fad_; };
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
      private:
+      /// Flag to store if the material is used with a beam material and automatic differentiation
       bool use_fad_;
     };
 
