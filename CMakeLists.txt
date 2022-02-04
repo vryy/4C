@@ -424,6 +424,7 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_utils_discret_dbc.cpp
   src/drt_lib/drt_utils_discret_evaluate.cpp
   src/drt_lib/connectivity.cpp
+  src/drt_lib/tensor_transformation.cpp
 )
 set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_aniso_structuraltensor_strategy.cpp
