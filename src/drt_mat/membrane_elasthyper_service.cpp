@@ -31,9 +31,9 @@ namespace MAT
     if (properties.isoprinc)
     {
       // loop map of associated potential summands
-      for (unsigned int p = 0; p < potsum.size(); ++p)
+      for (const auto& p : potsum)
       {
-        potsum[p]->AddDerivativesPrincipal(dPI_full, ddPII_full, prinv, gp, eleGID);
+        p->AddDerivativesPrincipal(dPI_full, ddPII_full, prinv, gp, eleGID);
       }
     }
 
@@ -41,9 +41,9 @@ namespace MAT
     if (properties.isomod)
     {
       // loop map of associated potential summands
-      for (unsigned int p = 0; p < potsum.size(); ++p)
+      for (const auto& p : potsum)
       {
-        potsum[p]->AddDerivativesModified(dPI_full, ddPII_full, prinv, gp, eleGID);
+        p->AddDerivativesModified(dPI_full, ddPII_full, prinv, gp, eleGID);
       }
     }
 
