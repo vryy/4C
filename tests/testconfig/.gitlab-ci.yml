@@ -38,7 +38,7 @@ variables:
 
     # Flags for entering interactive mode on specific machines # (0: off, 1: on)
     GITLAB_INTERACTIVE_MODE: "0"
-    # Flag for the machine to start interactive session (none, lnm_workstation, lnm_workstation_ubuntu, lnm_bruteforce_icc, lnm_bruteforce_gcc, lnm_deep, lnm_schmarrn, imcs_ubuntu20)
+    # Flag for the machine to start interactive session (none, lnm_workstation, lnm_workstation_ubuntu, lnm_bruteforce, lnm_deep, lnm_schmarrn, imcs_ubuntu20)
     GITLAB_INTERACTIVE_MACHINE: "none"
     # Flags for doing a clean build in interactive mode # (0: off, 1: on)
     GITLAB_INTERACTIVE_CLEAN: "0"
@@ -608,15 +608,17 @@ lnm-buildtest_daily:
         - lnm-release-nightly-full
     needs: ["checkcode"]
 
-lnm-buildtest_daily_bruteforce_icc:
+lnm-buildtest_daily_bruteforce:
     <<: *buildtest_daily
     variables:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-BruteForce-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "bruteforce_Q12015_icc.config"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-BruteForce-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_bruteforce.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
+    before_script:
+        - module load comp/gcc/5.3.0 mpi/openmpi/gcc/1.10.1
     tags:
         - lnm-release-nightly-build-bruteforce
     only:
@@ -624,56 +626,22 @@ lnm-buildtest_daily_bruteforce_icc:
             - $GITLAB_SCHEDULER_LNM_BRUTEFORCE == "1"
     needs: ["checkcode"]
 
-lnm-buildtest_daily_bruteforce_gcc:
-    <<: *buildtest_daily
-    variables:
-        TEST_TAG: ""
-        CTEST_FAIL_ON_WARNING: "0"
-        CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-BruteForce-GCC-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "lnm_bruteforce_gcc.config"
-        CTEST_DROP_SITE_CDASH_GITLAB: "1"
-    before_script:
-        - module load comp/gcc/5.3.0
-    tags:
-        - lnm-release-nightly-build-bruteforce
-    only:
-        variables:
-            - $GITLAB_SCHEDULER_LNM_BRUTEFORCE == "1"
-    needs: ["checkcode"]
-
-lnm-buildtest-bruteforce-icc_interactive:
+lnm-buildtest-bruteforce_interactive:
     <<: *buildtest_interactive
     variables:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-interactive-baci-Q1-2015-BruteForce-icc-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "bruteforce_Q12015_icc.config"
-        CTEST_DROP_SITE_CDASH_GITLAB: "1"
-        GIT_STRATEGY: fetch
-    tags:
-        - lnm-bruteforce-icc-interactive
-    rules:
-        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "lnm_bruteforce_icc"'
-          when: always
-
-lnm-buildtest-bruteforce-gcc_interactive:
-    <<: *buildtest_interactive
-    variables:
-        TEST_TAG: ""
-        CTEST_FAIL_ON_WARNING: "0"
-        CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-interactive-baci-BruteForce-gcc-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "lnm_bruteforce_gcc.config"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-interactive-baci-BruteForce-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_bruteforce.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
         GIT_STRATEGY: fetch
     before_script:
-        - module load comp/gcc/5.3.0
+        - module load comp/gcc/5.3.0 mpi/openmpi/gcc/1.10.1
     tags:
-        - lnm-bruteforce-gcc-interactive
+        - lnm-bruteforce-interactive
     rules:
-        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "lnm_bruteforce_gcc"'
+        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "lnm_bruteforce"'
           when: always
 
 lnm-buildtest_daily_deep:
