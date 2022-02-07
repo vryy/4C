@@ -152,10 +152,10 @@ namespace MAT
      *
      *\param[in] CM constitutive matrix
      *
-     *\param[in] K curvature
+     *\param[in] Cur curvature
      */
     void EvaluateMomentContributionsToStress(LINALG::Matrix<3, 1, T>& stressM,
-        const LINALG::Matrix<3, 3, T>& CM, const LINALG::Matrix<3, 1, T>& K) const override;
+        const LINALG::Matrix<3, 3, T>& CM, const LINALG::Matrix<3, 1, T>& Cur) override;
 
     /*
      * \brief Compute axial stress contributions
@@ -168,13 +168,13 @@ namespace MAT
      */
 
     void EvaluateForceContributionsToStress(LINALG::Matrix<3, 1, T>& stressN,
-        const LINALG::Matrix<3, 3, T>& CN, const LINALG::Matrix<3, 1, T>& Gamma) const override;
+        const LINALG::Matrix<3, 3, T>& CN, const LINALG::Matrix<3, 1, T>& Gamma) override;
 
     /*
      * \brief Update material-dependent variables
      */
     void ComputeConstitutiveParameter(
-        LINALG::Matrix<3, 3, T>& C_N, LINALG::Matrix<3, 3, T>& C_M) const override;
+        LINALG::Matrix<3, 3, T>& C_N, LINALG::Matrix<3, 3, T>& C_M) override;
 
     /** \brief get constitutive matrix relating stress force resultants and translational strain
      *         measures, expressed w.r.t. material frame
@@ -211,15 +211,21 @@ namespace MAT
      */
     double GetInteractionRadius() const;
 
-    void GetStiffnessMatrixOfMoments(LINALG::Matrix<3, 3, T>& stiffness_matrix,
-        const LINALG::Matrix<3, 3, T>& C_M) const override;
+    void GetStiffnessMatrixOfMoments(
+        LINALG::Matrix<3, 3, T>& stiffness_matrix, const LINALG::Matrix<3, 3, T>& C_M) override;
 
-    void GetStiffnessMatrixOfForces(LINALG::Matrix<3, 3, T>& stiffness_matrix,
-        const LINALG::Matrix<3, 3, T>& C_N) const override;
+    void GetStiffnessMatrixOfForces(
+        LINALG::Matrix<3, 3, T>& stiffness_matrix, const LINALG::Matrix<3, 3, T>& C_N) override;
 
-    void Update() const override{};
+    void Update() override{};
 
-    void Reset() const override{};
+    void Reset() override{};
+
+   protected:
+    void SetParameter(MAT::PAR::BeamElastHyperMaterialParameterGeneric* parameter)
+    {
+      params_ = parameter;
+    }
 
    private:
     /// my material parameters

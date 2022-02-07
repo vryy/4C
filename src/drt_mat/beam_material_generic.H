@@ -66,12 +66,12 @@ namespace MAT
     /** \brief Update all material related variables at the end of a time step
      *
      */
-    virtual void Update() const = 0;
+    virtual void Update() = 0;
 
     /** \brief Resets all material related variables i.e. in case of adaptive time stepping
      *
      */
-    virtual void Reset() const = 0;
+    virtual void Reset() = 0;
   };
 }  // namespace MAT
 

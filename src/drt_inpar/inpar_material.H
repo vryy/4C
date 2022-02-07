@@ -48,6 +48,7 @@ namespace INPAR
       m_beam_reissner_elast_hyper_bymodes,   ///< material parameters for a Simo-Reissner beam:
                                              ///< hyperelastic stored energy function, specified for
                                              ///< indivual deformation modes
+      m_beam_reissner_elast_plastic,         ///< material for a Simo-Reissner beam: elasto-plastic
       m_beam_kirchhoff_elast_hyper,          ///< material parameters for a Kirchhoff-Love beam:
                                              ///< hyperelastic stored energy function
       m_beam_kirchhoff_elast_hyper_bymodes,  ///< material parameters for a Kirchhoff-Love beam:

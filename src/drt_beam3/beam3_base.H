@@ -463,15 +463,14 @@ namespace DRT
 
       /** \brief get applied beam material law object
        */
-      const MAT::BeamMaterial& GetBeamMaterial() const;
+      MAT::BeamMaterial& GetBeamMaterial() const;
 
 
       /** \brief get elasto(plastic) beam material law object
        *
        */
       template <typename T>
-      const MAT::BeamMaterialTemplated<T>& GetTemplatedBeamMaterial() const;
-
+      MAT::BeamMaterialTemplated<T>& GetTemplatedBeamMaterial() const;
 
       /** \brief setup constitutive matrices from material law
        *

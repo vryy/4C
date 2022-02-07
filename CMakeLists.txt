@@ -407,6 +407,7 @@ set(OBJS_DRT_MAT_LIB
     src/drt_mat/arrhenius_temp.cpp
     src/drt_mat/beam_elasthyper.cpp
     src/drt_mat/beam_elasthyper_parameter.cpp
+    src/drt_mat/beam3r_plasticity.cpp
     src/drt_mat/carreauyasuda.cpp
     src/drt_mat/cnst_1d_art.cpp
     src/drt_mat/compogden.cpp

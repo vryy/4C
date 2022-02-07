@@ -857,7 +857,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
   LINALG::Matrix<3, 3, T> Lambda;
 
   // 3D vector related to spin matrix \hat{\kappa} from (2.1), Jelenic 1999
-  LINALG::Matrix<3, 1, T> K;
+  LINALG::Matrix<3, 1, T> Cur;
   // 3D vector of material axial and shear strains from (2.1), Jelenic 1999
   LINALG::Matrix<3, 1, T> Gamma;
 
@@ -964,7 +964,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     // compute spin matrix related to vector rprime for later use
     LARGEROTATIONS::computespin<T>(r_s_hat, r_s);
 
-    // compute material strains Gamma and K
+    // compute material strains Gamma and Cur
     computeGamma<T>(r_s, Lambda, GammarefGP_[numgp], Gamma);
 
     GetTemplatedBeamMaterial<T>().EvaluateForceContributionsToStress(stressN, CN, Gamma);
@@ -1080,15 +1080,15 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
 
     triad_interpolation_scheme_ptr->GetInterpolatedTriad(Lambda, Psi_l);
 
-    // compute material curvature K
-    computeK<T>(Psi_l, Psi_l_s, KrefGP_[numgp], K);
+    // compute material curvature Cur
+    computeK<T>(Psi_l, Psi_l_s, KrefGP_[numgp], Cur);
 
     // determine norm of maximal bending curvature at this GP and store in class variable if needed
-    double Kmax = std::sqrt(FADUTILS::CastToDouble(K(1)) * FADUTILS::CastToDouble(K(1)) +
-                            FADUTILS::CastToDouble(K(2)) * FADUTILS::CastToDouble(K(2)));
+    double Kmax = std::sqrt(FADUTILS::CastToDouble(Cur(1)) * FADUTILS::CastToDouble(Cur(1)) +
+                            FADUTILS::CastToDouble(Cur(2)) * FADUTILS::CastToDouble(Cur(2)));
     if (Kmax > Kmax_) Kmax_ = Kmax;
 
-    GetTemplatedBeamMaterial<T>().EvaluateMomentContributionsToStress(stressM, CM, K);
+    GetTemplatedBeamMaterial<T>().EvaluateMomentContributionsToStress(stressM, CM, Cur);
     GetTemplatedBeamMaterial<T>().GetStiffnessMatrixOfMoments(stiffness_contribution, CM);
 
     pushforward<T>(Lambda, stressM, stiffness_contribution, stressm, cm);
@@ -1122,14 +1122,14 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     // add elastic energy from moments at this GP
     for (unsigned int dim = 0; dim < 3; dim++)
     {
-      Eint_ += 0.5 * FADUTILS::CastToDouble(K(dim)) * FADUTILS::CastToDouble(stressM(dim)) *
+      Eint_ += 0.5 * FADUTILS::CastToDouble(Cur(dim)) * FADUTILS::CastToDouble(stressM(dim)) *
                jacobiGPelastm_[numgp] * wgt;
     }
 
     // store material strain and stress values in class variables
-    twist_GP_elastm_[numgp] = FADUTILS::CastToDouble(K(0));
-    curvature_2_GP_elastm_[numgp] = FADUTILS::CastToDouble(K(1));
-    curvature_3_GP_elastm_[numgp] = FADUTILS::CastToDouble(K(2));
+    twist_GP_elastm_[numgp] = FADUTILS::CastToDouble(Cur(0));
+    curvature_2_GP_elastm_[numgp] = FADUTILS::CastToDouble(Cur(1));
+    curvature_3_GP_elastm_[numgp] = FADUTILS::CastToDouble(Cur(2));
 
     material_torque_GP_elastm_[numgp] = FADUTILS::CastToDouble(stressM(0));
     material_bending_moment_2_GP_elastm_[numgp] = FADUTILS::CastToDouble(stressM(1));

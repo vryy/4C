@@ -38,10 +38,10 @@ namespace MAT
      *
      *\param[in] CM constitutive matrix
      *
-     *\param[in] K curvature
+     *\param[in] Cur curvature
      */
     virtual void EvaluateMomentContributionsToStress(LINALG::Matrix<3, 1, T>& stressM,
-        const LINALG::Matrix<3, 3, T>& CM, const LINALG::Matrix<3, 1, T>& K) const = 0;
+        const LINALG::Matrix<3, 3, T>& CM, const LINALG::Matrix<3, 1, T>& Cur) = 0;
 
     /*
      * \brief Compute axial stress contributions
@@ -54,13 +54,13 @@ namespace MAT
      */
 
     virtual void EvaluateForceContributionsToStress(LINALG::Matrix<3, 1, T>& stressN,
-        const LINALG::Matrix<3, 3, T>& CN, const LINALG::Matrix<3, 1, T>& Gamma) const = 0;
+        const LINALG::Matrix<3, 3, T>& CN, const LINALG::Matrix<3, 1, T>& Gamma) = 0;
 
     /*
      * \brief Update material-dependent variables
      */
     virtual void ComputeConstitutiveParameter(
-        LINALG::Matrix<3, 3, T>& C_N, LINALG::Matrix<3, 3, T>& C_M) const = 0;
+        LINALG::Matrix<3, 3, T>& C_N, LINALG::Matrix<3, 3, T>& C_M) = 0;
 
     /** \brief get constitutive matrix relating stress force resultants and translational strain
      *         measures, expressed w.r.t. material frame
@@ -82,7 +82,7 @@ namespace MAT
      *\param[out] stiffness_matrix
      */
     virtual void GetStiffnessMatrixOfMoments(
-        LINALG::Matrix<3, 3, T>& stiffness_matrix, const LINALG::Matrix<3, 3, T>& C_M) const = 0;
+        LINALG::Matrix<3, 3, T>& stiffness_matrix, const LINALG::Matrix<3, 3, T>& C_M) = 0;
 
     /** \brief get linearization of the constitutive law relating stress force resultants and
      * translational strain measures, expressed w.r.t. material frame
@@ -91,7 +91,7 @@ namespace MAT
      *\param[out] stiffness_matrix
      */
     virtual void GetStiffnessMatrixOfForces(
-        LINALG::Matrix<3, 3, T>& stiffness_matrix, const LINALG::Matrix<3, 3, T>& C_N) const = 0;
+        LINALG::Matrix<3, 3, T>& stiffness_matrix, const LINALG::Matrix<3, 3, T>& C_N) = 0;
   };
 }  // namespace MAT
 
