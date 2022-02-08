@@ -75,9 +75,21 @@ namespace MAT
     virtual void GetConstitutiveMatrixOfMomentsMaterialFrame(
         LINALG::Matrix<3, 3, T>& C_M) const = 0;
 
+    /** \brief get linearization of the constitutive law relating stress moment resultants and
+     * rotational strain measures, expressed w.r.t. material frame
+     *
+     *\param[in] C_M constitutive matrix
+     *\param[out] stiffness_matrix
+     */
     virtual void GetStiffnessMatrixOfMoments(
         LINALG::Matrix<3, 3, T>& stiffness_matrix, const LINALG::Matrix<3, 3, T>& C_M) const = 0;
 
+    /** \brief get linearization of the constitutive law relating stress force resultants and
+     * translational strain measures, expressed w.r.t. material frame
+     *
+     *\param[in] C_N constitutive matrix
+     *\param[out] stiffness_matrix
+     */
     virtual void GetStiffnessMatrixOfForces(
         LINALG::Matrix<3, 3, T>& stiffness_matrix, const LINALG::Matrix<3, 3, T>& C_N) const = 0;
   };

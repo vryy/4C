@@ -136,8 +136,14 @@ namespace MAT
     virtual void GetMassMomentOfInertiaTensorMaterialFrame(
         LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& J) const = 0;
 
+    /** \brief Update all material related variables at the end of a time step
+     *
+     */
     virtual void Update() const = 0;
 
+    /** \brief Resets all material related variables i.e. in case of adaptive time stepping
+     *
+     */
     virtual void Reset() const = 0;
   };
 }  // namespace MAT
