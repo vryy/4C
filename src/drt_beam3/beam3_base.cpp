@@ -191,30 +191,27 @@ const MAT::BeamMaterial& DRT::ELEMENTS::Beam3Base::GetBeamMaterial() const
   // Todo @grill think about storing the casted pointer as class variable or other solution to
   //      avoid cast in every element evaluation
 
-  MAT::BeamMaterial* beam_material_ptr = NULL;
+  const MAT::BeamMaterial* beam_material_ptr = NULL;
 
   // get the material law
   Teuchos::RCP<MAT::Material> material_ptr = Material();
 
-  switch (material_ptr->MaterialType())
-  {
-    case INPAR::MAT::m_beam_elast_hyper_generic:
-    {
-      beam_material_ptr = dynamic_cast<MAT::BeamMaterial*>(material_ptr.get());
+  if (material_ptr->MaterialType() != INPAR::MAT::m_beam_elast_hyper_generic)
+    dserror("unknown or improper type of material law! expected beam material law!");
 
-      if (beam_material_ptr == NULL) dserror("cast to beam material class failed!");
-
-      break;
-    }
-    default:
-    {
-      dserror("unknown or improper type of material law! expected beam material law!");
-      break;
-    }
-  }
+  beam_material_ptr = static_cast<MAT::BeamMaterial*>(material_ptr.get());
 
   return *beam_material_ptr;
 }
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+
+template <typename T>
+const MAT::BeamMaterialTemplated<T>& DRT::ELEMENTS::Beam3Base::GetTemplatedBeamMaterial() const
+{
+  return *Teuchos::rcp_dynamic_cast<MAT::BeamMaterialTemplated<T>>(Material(), true);
+};
 
 
 /*-----------------------------------------------------------------------------------------------*

@@ -470,10 +470,7 @@ namespace DRT
        *
        */
       template <typename T>
-      const MAT::BeamMaterialTemplated<T>& GetTemplatedBeamMaterial() const
-      {
-        return *Teuchos::rcp_dynamic_cast<MAT::BeamMaterialTemplated<T>>(Material(), true);
-      };
+      const MAT::BeamMaterialTemplated<T>& GetTemplatedBeamMaterial() const;
 
 
       /** \brief setup constitutive matrices from material law
