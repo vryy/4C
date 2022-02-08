@@ -188,20 +188,13 @@ void DRT::ELEMENTS::Beam3Base::GetRefPosAtXi(LINALG::Matrix<3, 1>& refpos, const
  *-----------------------------------------------------------------------------------------------*/
 const MAT::BeamMaterial& DRT::ELEMENTS::Beam3Base::GetBeamMaterial() const
 {
-  // Todo @grill think about storing the casted pointer as class variable or other solution to
-  //      avoid cast in every element evaluation
-
-  const MAT::BeamMaterial* beam_material_ptr = NULL;
-
   // get the material law
   Teuchos::RCP<MAT::Material> material_ptr = Material();
 
   if (material_ptr->MaterialType() != INPAR::MAT::m_beam_elast_hyper_generic)
     dserror("unknown or improper type of material law! expected beam material law!");
 
-  beam_material_ptr = static_cast<MAT::BeamMaterial*>(material_ptr.get());
-
-  return *beam_material_ptr;
+  return *static_cast<MAT::BeamMaterial*>(material_ptr.get());
 }
 
 /*-----------------------------------------------------------------------------------------------*
