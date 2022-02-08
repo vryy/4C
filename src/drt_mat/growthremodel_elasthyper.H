@@ -12,6 +12,7 @@
 
 #include "../headers/FADmatrix_utils.H"
 #include "matpar_parameter.H"
+#include "membrane_material_interfaces.H"
 #include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "anisotropy.H"
@@ -40,9 +41,6 @@ namespace MAT
       /// This constructor recursively calls the constructors of the
       /// parameter sets of the hyperelastic summands.
       GrowthRemodel_ElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      /// destructor
-      virtual ~GrowthRemodel_ElastHyper() { ; }
 
       /// @name material parameters
       //@{
@@ -112,7 +110,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class GrowthRemodel_ElastHyper
 
@@ -121,11 +119,11 @@ namespace MAT
   class GrowthRemodel_ElastHyperType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "GrowthRemodel_ElastHyperType"; }
+    std::string Name() const override { return "GrowthRemodel_ElastHyperType"; }
 
     static GrowthRemodel_ElastHyperType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static GrowthRemodel_ElastHyperType instance_;
@@ -135,7 +133,9 @@ namespace MAT
   /*----------------------------------------------------------------------*/
   class Material;
 
-  class GrowthRemodel_ElastHyper : public So3Material
+  class GrowthRemodel_ElastHyper : public So3Material,
+                                   public MembraneMaterialGlobalCoordinates,
+                                   public MembraneMaterialInelasticThickness
   {
    public:
     /// construct empty material object
@@ -151,7 +151,7 @@ namespace MAT
     ///
     /// every class implementing ParObject needs a unique id defined at the
     /// top of drt_parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return GrowthRemodel_ElastHyperType::Instance().UniqueParObjectId();
     }
@@ -164,7 +164,7 @@ namespace MAT
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out): char vector to store class information
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /// \brief Unpack data from a char vector into this class
     ///
@@ -176,46 +176,46 @@ namespace MAT
     ///
     /// \param data (in) : vector storing all data to be unpacked into this
     ///                    instance.
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
         dserror("element and material kinematics are not compatible");
     }
 
     /// material type
-    virtual INPAR::MAT::  /// axial direction of the cylinder (cylidner axis)
+    INPAR::MAT::  /// axial direction of the cylinder (cylidner axis)
         MaterialType
-        MaterialType() const
+        MaterialType() const override
     {
       return INPAR::MAT::m_growthremodel_elasthyper;
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new GrowthRemodel_ElastHyper(*this));
     }
 
     /// material mass density
-    virtual double Density() const { return params_->density_; }
+    double Density() const override { return params_->density_; }
 
     /// hyperelastic stress response plus elasticity tensor
-    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
-        const LINALG::Matrix<6, 1>* glstrain,                  ///< Green-Lagrange strain
-        Teuchos::ParameterList& params,  ///< Container for additional information
-        LINALG::Matrix<6, 1>* stress,    ///< 2nd Piola-Kirchhoff stresses
-        LINALG::Matrix<6, 6>* cmat,      ///< Constitutive matrix
-        int gp,                          ///< Gauss point
-        int eleGID);                     ///< Element ID
+    void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+        const LINALG::Matrix<6, 1>* glstrain,          ///< Green-Lagrange strain
+        Teuchos::ParameterList& params,                ///< Container for additional information
+        LINALG::Matrix<6, 1>* stress,                  ///< 2nd Piola-Kirchhoff stresses
+        LINALG::Matrix<6, 6>* cmat,                    ///< Constitutive matrix
+        int gp,                                        ///< Gauss point
+        int eleGID) override;                          ///< Element ID
 
 
     /// setup
-    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
     /*!
      * \brief Post setup routine called before the first Evaluate call
@@ -226,7 +226,7 @@ namespace MAT
     void PostSetup(Teuchos::ParameterList& params, int eleGID) override;
 
     /// This material uses the extended update call
-    virtual bool UsesExtendedUpdate() { return true; }
+    bool UsesExtendedUpdate() override { return true; }
 
     /// update
     void Update(LINALG::Matrix<3, 3> const& defgrd,  ///< Deformation gradient
@@ -235,24 +235,31 @@ namespace MAT
         int const eleGID) override;                  ///< Element ID
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// hyperelastic stress response plus elasticity tensor for membrane element (membrane
     /// formulation)
     void EvaluateMembrane(
         LINALG::Matrix<3, 3> const& defgrd_glob,  ///< Deformation gradient in global coordinates
-        double& rcg33,                            ///< Adapted stretch in thickness direction
         Teuchos::ParameterList& params,           ///< Container for additional information
         LINALG::Matrix<3, 3>& pk2M_glob,          ///< 2nd Piola-Kirchhoff stress global coordinates
         LINALG::Matrix<6, 6>& cmat_glob,          ///< Elasticity tensor in global coordinates
         int gp,                                   ///< Gauss point
-        int eleGID);                              ///< Element ID
+        int eleGID) override;
+
+    /// hyperelastic stress response plus elasticity tensor for membrane element (membrane
+    /// formulation)
+    double EvaluateMembraneThicknessStretch(
+        LINALG::Matrix<3, 3> const& defgrd_glob,  ///< Deformation gradient in global coordinates
+        Teuchos::ParameterList& params,           ///< Container for additional information
+        int gp,                                   ///< Gauss point
+        int eleGID) override;                     ///< Element ID
 
     /// Return names of visualization data
-    virtual void VisNames(std::map<std::string, int>& names);
+    void VisNames(std::map<std::string, int>& names) override;
 
     /// Return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
    private:
     /// Setup circumferential, radial and axial structural tensor
@@ -280,8 +287,8 @@ namespace MAT
     void SetupAnisoGrowthTensors();
 
     /// Read AXI CIR RAD direction
-    void ReadDir(
-        DRT::INPUT::LineDefinition* linedef, std::string specifier, LINALG::Matrix<3, 1>& dir);
+    void ReadDir(DRT::INPUT::LineDefinition* linedef, const std::string& specifier,
+        LINALG::Matrix<3, 1>& dir);
 
     /// Evaluate Prestretches
     void EvaluatePrestretch(

@@ -20,6 +20,7 @@ MAT 0 MAT_Membrane_ElastHyper NUMMAT 2 MATIDS 1 2 DENS 0
  | headers                                               sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
 #include "elasthyper.H"
+#include "membrane_material_interfaces.H"
 
 /*----------------------------------------------------------------------*
  | hyperelastic material for membranes                   sfuchs 08/2017 |
@@ -98,7 +99,7 @@ namespace MAT
   // forward declaration
   class Material;
 
-  class Membrane_ElastHyper : public ElastHyper
+  class Membrane_ElastHyper : public ElastHyper, public MAT::MembraneMaterialLocalCoordinates
   {
    public:
     /// construct empty material object
@@ -158,18 +159,16 @@ namespace MAT
     /// setup
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
-    /// hyperelastic stress response plus elasticity tensor for membranes assuming incompressibility
-    /// and plane stress
-    virtual void Evaluate(LINALG::Matrix<3, 3>& cauchygreen,  ///< right Cauchy-Green tensor
-        Teuchos::ParameterList& params,  ///< Container for additional information
-        LINALG::Matrix<3, 3>&
-            Q_trafo,  ///< Trafo from local membrane orthonormal coordinates to global coordinates
-        LINALG::Matrix<3, 1>*
-            stress,                  ///< 2nd Piola-Kirchhoff stresses in stress-like voigt notation
-        LINALG::Matrix<3, 3>* cmat,  ///< Constitutive matrix
-        int gp,                      ///< Gauss point
-        int eleGID                   ///< Element GID
-    );
+    void UpdateMembrane(const LINALG::Matrix<3, 3>& defgrd, Teuchos::ParameterList& params,
+        const LINALG::Matrix<3, 3>& Q_trafo, int gp, int eleGID) override
+    {
+      // nothing to do
+    }
+
+    void EvaluateMembrane(const LINALG::Matrix<3, 3>& defgrd,
+        const LINALG::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
+        const LINALG::Matrix<3, 3>& Q_trafo, LINALG::Matrix<3, 1>& stress,
+        LINALG::Matrix<3, 3>& cmat, int gp, int eleGID) override;
 
     /// evaluate strain energy function
     virtual void StrainEnergy(LINALG::Matrix<3, 3>& cauchygreen,  ///< right Cauchy-Green tensor
@@ -179,41 +178,9 @@ namespace MAT
     );
 
    protected:
-    /// calculates the kinematic quantities and tensors used afterwards
-    virtual void EvaluateKinQuant(
-        const LINALG::Matrix<3, 3>& cauchygreen,  ///< right Cauchy-Green tensor
-        LINALG::Matrix<3, 1>& id2,                ///< cartesian identity 2-tensor I_{AB}
-        LINALG::Matrix<3, 3>& id4sharp,           ///< cartesian identity 4-tensor
-        LINALG::Matrix<3, 1>& rcg,  ///< right Cauchy-Green in stress-like 3-Voigt notation
-        double& rcg33,              ///< principal stretch in thickness direction
-        LINALG::Matrix<3, 1>& icg   ///< inverse right Cauchy-Green in stress-like 3-Voigt notation
-    );
-
-    /// calculates the isotropic stress and elasticity tensor
-    virtual void EvaluateIsotropicStressCmat(LINALG::Matrix<3, 1>& stress_iso,
-        LINALG::Matrix<3, 3>& cmat_iso, const LINALG::Matrix<3, 1>& id2,
-        const LINALG::Matrix<3, 3>& id4sharp, const LINALG::Matrix<3, 1>& rcg, const double& rcg33,
-        const LINALG::Matrix<3, 1>& icg, int gp, int eleGID);
-
-    /// calculate principal invariants
-    virtual void InvariantsPrincipal(LINALG::Matrix<3, 1>& prinv,  ///< principal invariants
-        const LINALG::Matrix<3, 1>& rcg,  ///< right cauchy-green in stress-like 3-Voigt notation
-        const double& rcg33               ///< principal stretch in thickness direction
-    );
-
-    /// calculates the derivatives of the hyperelastic laws with respect to the (modified)
-    /// invariants
-    virtual void EvaluateInvariantDerivatives(const LINALG::Matrix<3, 1>& prinv,
-        LINALG::Matrix<2, 1>& dPI, LINALG::Matrix<3, 1>& ddPII, int gp, int eleGID);
-
-    /// calculate stress and constitutive tensor factors
-    virtual void CalculateGammaDelta(LINALG::Matrix<3, 1>& gamma, LINALG::Matrix<8, 1>& delta,
-        const LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<2, 1>& dPI,
-        const LINALG::Matrix<3, 1>& ddPII, const double rcg33);
-
     /// calculate anisotropic stress and elasticity tensor
     virtual void EvaluateAnisotropicStressCmat(LINALG::Matrix<3, 1>& stress_aniso,
-        LINALG::Matrix<3, 3>& cmat_aniso, LINALG::Matrix<3, 3>& Q_trafo,
+        LINALG::Matrix<3, 3>& cmat_aniso, const LINALG::Matrix<3, 3>& Q_trafo,
         const LINALG::Matrix<3, 1>& rcg, const double& rcg33, Teuchos::ParameterList& params,
         int gp, int eleGID);
 

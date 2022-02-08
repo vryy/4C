@@ -1955,6 +1955,14 @@ namespace UTILS
   {
   }  // namespace PRESTRESS
 
+  /*!
+   * @brief Utilities for tensor transformations and operations
+   *
+   */
+  namespace TENSOR
+  {
+  }
+
   /*! \brief Utilities for the Voigt notation
    *
    * All functionality concerning manipulation of tensors in Voigt notation should be gathered here.
