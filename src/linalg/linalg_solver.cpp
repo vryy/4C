@@ -412,7 +412,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
       break;
     case INPAR::SOLVER::azprec_MueLuAMG_fluid:  // MueLu operator (fluid)
     case INPAR::SOLVER::azprec_MueLuAMG_tsi:    // MueLu operator (tsi)
-    case INPAR::SOLVER::azprec_MueLuAMG_sym:    // MueLu operator (smoothed aggregation)
+    case INPAR::SOLVER::azprec_MueLuAMG:        // MueLu operator
     {
       std::string xmlfile = inparams.get<std::string>("MUELU_XML_FILE");
       if (xmlfile != "none") mllist.set("MUELU_XML_FILE", xmlfile);
@@ -445,20 +445,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
       mllist.set("muelu repartition: max min ratio",
           inparams.get<double>("MueLu_REBALANCE_NONZEROIMBALANCE"));
       mllist.set("muelu repartition: min per proc", inparams.get<int>("MueLu_REBALANCE_MINROWS"));
-    }
-    break;
-    case INPAR::SOLVER::azprec_MueLuAMG_nonsym:  // MueLu operator (Petrov-Galerkin)
-    {
-      std::string xmlfile = inparams.get<std::string>("MUELU_XML_FILE");
-      if (xmlfile != "none") mllist.set("MUELU_XML_FILE", xmlfile);
-
-      mllist.set<bool>(
-          "MUELU_XML_ENFORCE", DRT::INPUT::IntegralValue<bool>(inparams, "MUELU_XML_ENFORCE"));
-      mllist.set<bool>("LINALG::MueLu_Preconditioner", true);
-      mllist.set("energy minimization: enable", true);
-      mllist.set("energy minimization: type",
-          3);  // TODO: different energy minimization modes not available for MueLu, yet
-      mllist.set("aggregation: block scaling", false);
     }
     break;
     case INPAR::SOLVER::azprec_MLfluid:  // unsymmetric, unsmoothed restriction
@@ -497,10 +483,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
         mllist.set("repartition: enable", 0);
     }
     break;
-    case INPAR::SOLVER::azprec_MueLuAMG_fluid:   // MueLu operator (fluid)
-    case INPAR::SOLVER::azprec_MueLuAMG_tsi:     // MueLu operator (tsi)
-    case INPAR::SOLVER::azprec_MueLuAMG_sym:     // MueLu operator (smoothed aggregation)
-    case INPAR::SOLVER::azprec_MueLuAMG_nonsym:  // MueLu operator (Petrov-Galerkin)
+    case INPAR::SOLVER::azprec_MueLuAMG_fluid:  // MueLu operator (fluid)
+    case INPAR::SOLVER::azprec_MueLuAMG_tsi:    // MueLu operator (tsi)
+    case INPAR::SOLVER::azprec_MueLuAMG:        // MueLu operator
     {
       int doRepart = DRT::INPUT::IntegralValue<int>(inparams, "MueLu_REBALANCE");
       if (doRepart > 2)
@@ -945,8 +930,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
     case INPAR::SOLVER::azprec_ML:
     case INPAR::SOLVER::azprec_MLfluid:
     case INPAR::SOLVER::azprec_MLfluid2:
-    case INPAR::SOLVER::azprec_MueLuAMG_sym:
-    case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
+    case INPAR::SOLVER::azprec_MueLuAMG:
       beloslist.set("Preconditioner Type", "ML");
       break;
     case INPAR::SOLVER::azprec_BGS2x2:
@@ -1031,8 +1015,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
     Teuchos::ParameterList& mllist = outparams.sublist("ML Parameters");
     mllist = LINALG::Solver::TranslateBACIToML(inparams, &beloslist);
   }  // if ml preconditioner
-  if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_sym ||
-      azprectyp == INPAR::SOLVER::azprec_MueLuAMG_nonsym)
+  if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
     muelulist = LINALG::Solver::TranslateBACIToML(
@@ -1240,8 +1223,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(
         case INPAR::SOLVER::azprec_MLfluid:
         case INPAR::SOLVER::azprec_MLfluid2:
         case INPAR::SOLVER::azprec_BGS2x2:
-        case INPAR::SOLVER::azprec_MueLuAMG_sym:
-        case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
+        case INPAR::SOLVER::azprec_MueLuAMG:
         case INPAR::SOLVER::azprec_AMGnxn:
           azlist.set("AZ_precond", AZ_user_precond);
           break;
@@ -1337,8 +1319,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(
         Teuchos::ParameterList& mllist = outparams.sublist("ML Parameters");
         mllist = LINALG::Solver::TranslateBACIToML(inparams, &azlist);
       }  // if ml preconditioner
-      if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_sym ||
-          azprectyp == INPAR::SOLVER::azprec_MueLuAMG_nonsym)
+      if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG)
       {
         Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
         muelulist = LINALG::Solver::TranslateBACIToML(
