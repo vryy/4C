@@ -209,7 +209,7 @@ void EHL::Monolithic::CreateLinearSolver()
   {
     case INPAR::SOLVER::azprec_BGS2x2:
       break;
-    case INPAR::SOLVER::azprec_MueLuAMG_sym:
+    case INPAR::SOLVER::azprec_MueLuAMG:
     case INPAR::SOLVER::azprec_AMGnxn:
     case INPAR::SOLVER::azprec_CheapSIMPLE:
     {
@@ -261,7 +261,7 @@ void EHL::Monolithic::CreateLinearSolver()
 
       break;
     }
-    case INPAR::SOLVER::azprec_MueLuAMG_sym:
+    case INPAR::SOLVER::azprec_MueLuAMG:
     {
       solver_ = Teuchos::rcp(new LINALG::Solver(ehlsolverparams,
           // ggfs. explizit Comm von STR wie lungscatra
