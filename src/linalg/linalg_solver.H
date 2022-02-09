@@ -254,6 +254,9 @@ namespace LINALG
     static const Teuchos::ParameterList TranslateBACIToBelos(
         const Teuchos::ParameterList& inparams);
 
+    static const Teuchos::ParameterList TranslateBACIToAztec(
+        const Teuchos::ParameterList& inparams);
+
     /*!
     \brief Add a validated input parameter list as sublist to internal
            parameters
