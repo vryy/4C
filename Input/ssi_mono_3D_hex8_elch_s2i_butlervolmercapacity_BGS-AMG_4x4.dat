@@ -70,7 +70,7 @@ AMGNXN_XML_FILE                 ssi_mono_3D_hex8_elch_s2i_butlervolmercapacity_B
 AZOUTPUT                        10
 --------------------------------------------------------------------SOLVER 3
 SOLVER                          Aztec_MSR
-AZPREC                          MueLu_sym
+AZPREC                          MueLu
 MUELU_XML_FILE                  ssi_mono_3D_hex8_elch_s2i_butlervolmercapacity_BGS-AMG_4x4_structure.xml
 AZOUTPUT                        10
 -------------------------------------------------------------------MATERIALS

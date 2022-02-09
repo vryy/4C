@@ -166,7 +166,7 @@ AMGNXN_XML_FILE                fpsi_bending_struct_BGSAMG.xml
 -----------------------------------------------------------SOLVER 2
 SOLVER                         Aztec_MSR // UMFPACK Aztec_MSR
 AZSOLVE                        GMRES
-AZPREC                         MueLu_sym
+AZPREC                         MueLu
 MUELU_XML_ENFORCE              No
 NAME                           Struct_Solver
 ML_SMOOTHERFINE                 GS
@@ -175,7 +175,7 @@ ML_SMOOTHERCOARSE               GS
 -----------------------------------------------------------SOLVER 3
 SOLVER                         Aztec_MSR // UMFPACK Aztec_MSR
 AZSOLVE                        GMRES
-AZPREC                         MueLu_sym
+AZPREC                         MueLu
 MUELU_XML_ENFORCE              No
 NAME                           Fluid_Solver
 ML_SMOOTHERFINE                 GS
@@ -184,7 +184,7 @@ ML_SMOOTHERCOARSE               GS
 -----------------------------------------------------------SOLVER 4
 SOLVER                         Aztec_MSR // UMFPACK Aztec_MSR
 AZSOLVE                        GMRES
-AZPREC                         MueLu_sym
+AZPREC                         MueLu
 MUELU_XML_ENFORCE              No
 NAME                           ALE_Solver
 ML_SMOOTHERFINE                 GS

@@ -36,7 +36,7 @@ SOLVER                                Aztec_MSR
 AZOUTPUT                              10
 AZTOL                                 1.0e-2
 AZCONV                                AZ_r0
-AZPREC                                MueLu_sym
+AZPREC                                MueLu
 MUELU_XML_FILE                        beam3eb_amg_muelu.xml
 -----------------------------------------------------------IO/RUNTIME VTK OUTPUT
 OUTPUT_DATA_FORMAT                    binary

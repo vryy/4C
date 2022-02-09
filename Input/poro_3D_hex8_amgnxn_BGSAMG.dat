@@ -85,7 +85,7 @@ AMGNXN_XML_FILE                poro_3D_hex8_amgnxn_BGSAMG.xml
 -----------------------------------------------------------SOLVER 2
 SOLVER                         Aztec_MSR // UMFPACK Aztec_MSR
 AZSOLVE                        GMRES
-AZPREC                         MueLu_sym
+AZPREC                         MueLu
 MUELU_XML_ENFORCE              No
 NAME                           solidsolver
 ML_SMOOTHERFINE                 GS
@@ -94,7 +94,7 @@ ML_SMOOTHERCOARSE               GS
 -----------------------------------------------------------SOLVER 3
 SOLVER                         Aztec_MSR // UMFPACK Aztec_MSR
 AZSOLVE                        GMRES
-AZPREC                         MueLu_sym
+AZPREC                         MueLu
 MUELU_XML_ENFORCE              No
 NAME                           fluidsolver
 ML_SMOOTHERFINE                 GS

@@ -132,7 +132,7 @@ NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR //Aztec_MSR //Aztec_MSR    // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        50           // output every so often, 0 no output
 AZSOLVE                         GMRES        // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU //MueLu_nonsym //MLFLUID2     // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+AZPREC                          ILU          //MLFLUID2     // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         1            // how often to recompute some preconditioners
 IFPACKGFILL                     3            // (3 for edgebased stabilization pattern) graph fill for ILU
 AZTOL                           1.0E-8      // tolerance in unscaled residual

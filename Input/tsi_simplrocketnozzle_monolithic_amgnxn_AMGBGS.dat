@@ -120,12 +120,12 @@ NORM_RESF                       Rel   // Abs,Rel,Mix
 TOLINC                          1e-06
 --------------------------------------------------------------------SOLVER 1
 NAME                            Thermal_Solver
-AZPREC                          MueLu_sym
+AZPREC                          MueLu
 MUELU_XML_ENFORCE               No
 SOLVER                          Aztec_MSR
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
-AZPREC                          MueLu_sym
+AZPREC                          MueLu
 MUELU_XML_ENFORCE               No
 SOLVER                          Aztec_MSR
 --------------------------------------------------------------------SOLVER 3
