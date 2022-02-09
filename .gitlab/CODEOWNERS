@@ -150,6 +150,7 @@ src/drt_geometry_pair/             @baci/team_discretization
 src/drt_immersed_problem/          @baci/team_fsi
 
 src/drt_inpar/                     @baci/team_input
+src/drt_inpar/drt_validmaterials   @baci/team_material
 src/drt_inpar/inpar_beam*          @baci/team_input @baci/team_structure
 src/drt_inpar/inpar_bio*           @baci/team_reduced_fluid_models
 src/drt_inpar/inpar_contact*       @baci/team_contact
@@ -169,6 +170,8 @@ src/drt_io/                        @baci/team_input @baci/team_output
 src/drt_levelset/                  @baci/team_fluid
 
 src/drt_lib/                       @baci/team_discretization
+src/drt_lib/drt_material*          @baci/team_material
+src/drt_lib/drt_parobject*         @baci/team_infrastructure
 src/drt_lib/drt_particlereader*    @baci/team_particle
 
 src/drt_loma/                      @baci/team_fluid
