@@ -76,14 +76,10 @@ namespace INPAR
       azprec_BGS2x2,               ///< Block Gauss-Seidel for 2x2 system
       azprec_CheapSIMPLE,          ///< CheapSIMPLE
                                    ///< (BACI implementation for contact/meshtying/constraints)
-      azprec_MueLuAMG_sym,         ///< MueLu AMG preconditioner
-                                   ///< (Smoothed aggregation for symmetric problems)
-      azprec_MueLuAMG_nonsym,      ///< MueLu AMG preconditioner
-                                   ///<(PG-AMG for nonsymmetric problems ~ MLFLUID2)
+      azprec_MueLuAMG,             ///< MueLu AMG preconditioner
       azprec_MueLuAMG_fluid,       ///< MueLu AMG preconditioner for blocked fluid problems
       azprec_MueLuAMG_tsi,         ///< MueLu AMG preconditioner for blocked tsi problems
-      azprec_MueLuAMG_contactSP,   ///< MueLu AMG preconditioner for mortar problems in saddlepoint
-                                   ///< formulation
+      azprec_MueLuAMG_contactSP,   ///< MueLu AMG preconditioner for blocked contact problems
       azprec_AMGnxn,               ///< AMG preconditioner for a nxn block matrix
       azprec_Chebyshev             ///< Chebyshev polynomials for preconditioning
     };
