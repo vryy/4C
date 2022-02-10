@@ -37,7 +37,6 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 02/07|
  *----------------------------------------------------------------------*/
 LINALG::Solver::Solver(
     Teuchos::RCP<Teuchos::ParameterList> params, const Epetra_Comm& comm, FILE* outfile)
@@ -48,58 +47,40 @@ LINALG::Solver::Solver(
 }
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 03/08|
  *----------------------------------------------------------------------*/
 LINALG::Solver::Solver(const Epetra_Comm& comm, FILE* outfile)
     : comm_(comm), params_(Teuchos::rcp(new Teuchos::ParameterList())), outfile_(outfile)
 {
-  // set the default solver
   Params().set("solver", "klu");
   Params().set("symmetric", false);
-
-  // set-up
   Setup();
-
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                                  11/08|
  *----------------------------------------------------------------------*/
 LINALG::Solver::Solver(
     const Teuchos::ParameterList& inparams, const Epetra_Comm& comm, FILE* outfile)
     : comm_(comm), params_(Teuchos::rcp(new Teuchos::ParameterList())), outfile_(outfile)
 {
-  // set solver parameters
   *params_ = TranslateSolverParameters(inparams);
-
-  // set-up
   Setup();
-
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  set-up of stuff common to all constructors                     11/08|
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Setup() { solver_ = Teuchos::null; }
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 02/07|
  *----------------------------------------------------------------------*/
-LINALG::Solver::~Solver()
-{
-  // destroy in the right order
-  Reset();
-}
+LINALG::Solver::~Solver() { Reset(); }
 
 /*----------------------------------------------------------------------*
- |  reset solver (public)                                    mwgee 02/07|
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Reset() { solver_ = Teuchos::null; }
 
 /*----------------------------------------------------------------------*
- |  << operator                                              mwgee 02/07|
  *----------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& os, const LINALG::Solver& solver)
 {
@@ -108,7 +89,6 @@ std::ostream& operator<<(std::ostream& os, const LINALG::Solver& solver)
 }
 
 /*----------------------------------------------------------------------*
- |  print solver (public)                                    mwgee 02/07|
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Print(std::ostream& os) const
 {
@@ -121,15 +101,11 @@ void LINALG::Solver::Print(std::ostream& os) const
   return;
 }
 
-
 /*----------------------------------------------------------------------*
- | return number of iterations performed by solver           fang 02/17 |
  *----------------------------------------------------------------------*/
 int LINALG::Solver::getNumIters() const { return solver_->getNumIters(); }
 
-
 /*----------------------------------------------------------------------*
- |  adapt tolerance (public)                                 mwgee 02/08|
  *----------------------------------------------------------------------*/
 void LINALG::Solver::AdaptTolerance(
     const double desirednlnres, const double currentnlnres, const double better)
@@ -176,7 +152,6 @@ void LINALG::Solver::AdaptTolerance(
 }
 
 /*----------------------------------------------------------------------*
- |  adapt tolerance (public)                                 mwgee 02/08|
  *----------------------------------------------------------------------*/
 void LINALG::Solver::ResetTolerance()
 {
@@ -231,7 +206,6 @@ void LINALG::Solver::Setup(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Ep
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-// void LINALG::Solver::Solve()
 int LINALG::Solver::Solve()
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::Solver:  2)   Solve");
@@ -247,7 +221,6 @@ int LINALG::Solver::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-// void LINALG::Solver::Solve(
 int LINALG::Solver::Solve(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
     Teuchos::RCP<Epetra_MultiVector> b, bool refactor, bool reset,
     Teuchos::RCP<LINALG::KrylovProjector> projector)
@@ -255,7 +228,6 @@ int LINALG::Solver::Solve(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epe
   Setup(matrix, x, b, refactor, reset, projector);
   return Solve();
 }
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -269,9 +241,7 @@ int LINALG::Solver::NoxSolve(Epetra_LinearProblem& linProblem, bool refactor, bo
   return this->Solve(matrix, x, b, refactor, reset, projector);
 }
 
-
 /*----------------------------------------------------------------------*
- |  fix an ML nullspace to match a new map  (public)          mwgee 5/11|
  *----------------------------------------------------------------------*/
 void LINALG::Solver::FixMLNullspace(std::string field, const Epetra_Map& oldmap,
     const Epetra_Map& newmap, Teuchos::ParameterList& solveparams)
@@ -334,8 +304,7 @@ void LINALG::Solver::FixMLNullspace(std::string field, const Epetra_Map& oldmap,
 }
 
 /*------------------------------------------------------------------------------------------------*
-|  Translate IFPACK part of BACI dat solver block to IFPACK parameter list (public)               |
-*------------------------------------------------------------------------------------------------*/
+ *------------------------------------------------------------------------------------------------*/
 const Teuchos::ParameterList LINALG::Solver::TranslateBACIToIfpack(
     const Teuchos::ParameterList& inparams)
 {
@@ -396,7 +365,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToIfpack(
 }
 
 /*------------------------------------------------------------------------------------------------*
- |  Translate ML part of BACI dat solver block to ML parameter list (public)                      |
  *------------------------------------------------------------------------------------------------*/
 const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
     const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist)
@@ -410,45 +378,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
   {
     case INPAR::SOLVER::azprec_ML:  // do nothing, this is standard
       break;
-    case INPAR::SOLVER::azprec_MueLuAMG_fluid:  // MueLu operator (fluid)
-    case INPAR::SOLVER::azprec_MueLuAMG_tsi:    // MueLu operator (tsi)
-    case INPAR::SOLVER::azprec_MueLuAMG:        // MueLu operator
-    {
-      std::string xmlfile = inparams.get<std::string>("MUELU_XML_FILE");
-      if (xmlfile != "none") mllist.set("MUELU_XML_FILE", xmlfile);
-
-      mllist.set<bool>(
-          "MUELU_XML_ENFORCE", DRT::INPUT::IntegralValue<bool>(inparams, "MUELU_XML_ENFORCE"));
-      mllist.set<bool>("LINALG::MueLu_Preconditioner", true);
-    }
-    break;
-    case INPAR::SOLVER::azprec_MueLuAMG_contactSP:  // MueLu operator (contact)
-    {
-      std::string xmlfile = inparams.get<std::string>("MUELU_XML_FILE");
-      if (xmlfile != "none") mllist.set("MUELU_XML_FILE", xmlfile);
-
-      mllist.set<bool>(
-          "MUELU_XML_ENFORCE", DRT::INPUT::IntegralValue<bool>(inparams, "MUELU_XML_ENFORCE"));
-      mllist.set<bool>("LINALG::MueLu_Preconditioner", true);
-
-
-      mllist.set("aggregation: threshold", inparams.get<double>("ML_PROLONG_THRES"));
-
-      int doRepart = DRT::INPUT::IntegralValue<int>(inparams, "MueLu_REBALANCE");
-      if (doRepart > 2)
-      {
-        mllist.set("muelu repartition: enable", 1);
-      }
-      else
-      {
-        mllist.set("muelu repartition: enable", 0);
-      }
-      // mllist.set("repartition: partitioner","ParMETIS");
-      mllist.set("muelu repartition: max min ratio",
-          inparams.get<double>("MueLu_REBALANCE_NONZEROIMBALANCE"));
-      mllist.set("muelu repartition: min per proc", inparams.get<int>("MueLu_REBALANCE_MINROWS"));
-    }
-    break;
     case INPAR::SOLVER::azprec_MLfluid:  // unsymmetric, unsmoothed restriction
       mllist.set("aggregation: use tentative restriction", true);
       break;
@@ -483,44 +412,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
       }
       else
         mllist.set("repartition: enable", 0);
-    }
-    break;
-    case INPAR::SOLVER::azprec_MueLuAMG_fluid:  // MueLu operator (fluid)
-    case INPAR::SOLVER::azprec_MueLuAMG_tsi:    // MueLu operator (tsi)
-    case INPAR::SOLVER::azprec_MueLuAMG:        // MueLu operator
-    {
-      int doRepart = DRT::INPUT::IntegralValue<int>(inparams, "MueLu_REBALANCE");
-      if (doRepart > 2)
-      {
-        mllist.set("repartition: enable", 1);
-      }
-      else
-      {
-        mllist.set("repartition: enable", 0);
-      }
-      mllist.set("repartition: partitioner", "ParMETIS");
-      mllist.set(
-          "repartition: max min ratio", inparams.get<double>("MueLu_REBALANCE_NONZEROIMBALANCE"));
-      mllist.set("repartition: min per proc", inparams.get<int>("MueLu_REBALANCE_MINROWS"));
-    }
-    break;
-    case INPAR::SOLVER::azprec_MueLuAMG_contactSP:  // MueLu operator (contact)
-    {
-      int doRepart = DRT::INPUT::IntegralValue<int>(inparams, "MueLu_REBALANCE");
-      if (doRepart > 2)
-      {
-        mllist.set("muelu repartition: enable", 1);
-      }
-      else
-      {
-        mllist.set("muelu repartition: enable", 0);
-      }
-      // mllist.set("repartition: partitioner","ParMETIS");
-      mllist.set("muelu repartition: max min ratio",
-          inparams.get<double>("MueLu_REBALANCE_NONZEROIMBALANCE"));
-      mllist.set("muelu repartition: min per proc", inparams.get<int>("MueLu_REBALANCE_MINROWS"));
-
-      mllist.set("aggregation: min nodes per aggregate", inparams.get<int>("MueLu_MIN_AGG_SIZE"));
     }
     break;
     default:
@@ -867,7 +758,112 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
 }
 
 /*------------------------------------------------------------------------------------------------*
- |  Translate Belos part of BACI dat solver block to Belos parameter list (public)                |
+ *------------------------------------------------------------------------------------------------*/
+const Teuchos::ParameterList LINALG::Solver::TranslateBACIToMuelu(
+    const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist)
+{
+  Teuchos::ParameterList muelulist;
+
+  const int prectyp = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(inparams, "AZPREC");
+  switch (prectyp)
+  {
+    case INPAR::SOLVER::azprec_MueLuAMG_fluid:  // MueLu operator (fluid)
+    case INPAR::SOLVER::azprec_MueLuAMG_tsi:    // MueLu operator (tsi)
+    case INPAR::SOLVER::azprec_MueLuAMG:        // MueLu operator
+    {
+      std::string xmlfile = inparams.get<std::string>("MUELU_XML_FILE");
+      if (xmlfile != "none") muelulist.set("MUELU_XML_FILE", xmlfile);
+
+      muelulist.set<bool>(
+          "MUELU_XML_ENFORCE", DRT::INPUT::IntegralValue<bool>(inparams, "MUELU_XML_ENFORCE"));
+      muelulist.set<bool>("LINALG::MueLu_Preconditioner", true);
+    }
+    break;
+    case INPAR::SOLVER::azprec_MueLuAMG_contactSP:  // MueLu operator (contact)
+    {
+      std::string xmlfile = inparams.get<std::string>("MUELU_XML_FILE");
+      if (xmlfile != "none") muelulist.set("MUELU_XML_FILE", xmlfile);
+
+      muelulist.set<bool>(
+          "MUELU_XML_ENFORCE", DRT::INPUT::IntegralValue<bool>(inparams, "MUELU_XML_ENFORCE"));
+      muelulist.set<bool>("LINALG::MueLu_Preconditioner", true);
+
+      muelulist.set("aggregation: threshold", inparams.get<double>("ML_PROLONG_THRES"));
+
+      int doRepart = DRT::INPUT::IntegralValue<int>(inparams, "MueLu_REBALANCE");
+      if (doRepart > 2)
+      {
+        muelulist.set("muelu repartition: enable", 1);
+      }
+      else
+      {
+        muelulist.set("muelu repartition: enable", 0);
+      }
+      // mllist.set("repartition: partitioner","ParMETIS");
+      muelulist.set("muelu repartition: max min ratio",
+          inparams.get<double>("MueLu_REBALANCE_NONZEROIMBALANCE"));
+      muelulist.set(
+          "muelu repartition: min per proc", inparams.get<int>("MueLu_REBALANCE_MINROWS"));
+    }
+    break;
+    default:
+      dserror("Unknown type of muelu preconditioner");
+      break;
+  }
+
+  // set repartitioning parameters
+  // TODO remove switch clause
+  switch (prectyp)
+  {
+    case INPAR::SOLVER::azprec_MueLuAMG_fluid:  // MueLu operator (fluid)
+    case INPAR::SOLVER::azprec_MueLuAMG_tsi:    // MueLu operator (tsi)
+    case INPAR::SOLVER::azprec_MueLuAMG:        // MueLu operator
+    {
+      int doRepart = DRT::INPUT::IntegralValue<int>(inparams, "MueLu_REBALANCE");
+      if (doRepart > 2)
+      {
+        muelulist.set("repartition: enable", 1);
+      }
+      else
+      {
+        muelulist.set("repartition: enable", 0);
+      }
+      muelulist.set("repartition: partitioner", "ParMETIS");
+      muelulist.set(
+          "repartition: max min ratio", inparams.get<double>("MueLu_REBALANCE_NONZEROIMBALANCE"));
+      muelulist.set("repartition: min per proc", inparams.get<int>("MueLu_REBALANCE_MINROWS"));
+    }
+    break;
+    case INPAR::SOLVER::azprec_MueLuAMG_contactSP:  // MueLu operator (contact)
+    {
+      int doRepart = DRT::INPUT::IntegralValue<int>(inparams, "MueLu_REBALANCE");
+      if (doRepart > 2)
+      {
+        muelulist.set("muelu repartition: enable", 1);
+      }
+      else
+      {
+        muelulist.set("muelu repartition: enable", 0);
+      }
+      // muelulist.set("repartition: partitioner","ParMETIS");
+      muelulist.set("muelu repartition: max min ratio",
+          inparams.get<double>("MueLu_REBALANCE_NONZEROIMBALANCE"));
+      muelulist.set(
+          "muelu repartition: min per proc", inparams.get<int>("MueLu_REBALANCE_MINROWS"));
+
+      muelulist.set(
+          "aggregation: min nodes per aggregate", inparams.get<int>("MueLu_MIN_AGG_SIZE"));
+    }
+    break;
+    default:
+      dserror("Unknown type of muelu preconditioner");
+      break;
+  }
+
+  return muelulist;
+}
+
+/*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
 const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
     const Teuchos::ParameterList& inparams)
@@ -949,6 +945,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
       dserror("Unknown preconditioner for Belos");
       break;
   }
+
   //------------------------------------- set other belos parameters
   beloslist.set("Num Blocks", inparams.get<int>("AZSUB"));
   // beloslist.set("Block Size", 1); // TODO blocksize
@@ -989,6 +986,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
   beloslist.set("diagonal dominance ratio", nonDiagDominance);
   beloslist.set("Output Style", Belos::Brief);
   beloslist.set("Convergence Tolerance", inparams.get<double>("AZTOL"));
+
   //-------------------------------- set parameters for Ifpack if used
   if (azprectyp == INPAR::SOLVER::azprec_ILU || azprectyp == INPAR::SOLVER::azprec_ILUT ||
       azprectyp == INPAR::SOLVER::azprec_ICC || azprectyp == INPAR::SOLVER::azprec_LU ||
@@ -1000,6 +998,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
     Teuchos::ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
     ifpacklist = LINALG::Solver::TranslateBACIToIfpack(inparams);
   }
+
   //------------------------------------- set parameters for CheapSIMPLE if used
   if (azprectyp == INPAR::SOLVER::azprec_CheapSIMPLE)
   {
@@ -1013,6 +1012,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
     schurList = TranslateSolverParameters(
         DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
   }
+
   //------------------------------------- set parameters for ML if used
   if (azprectyp == INPAR::SOLVER::azprec_ML || azprectyp == INPAR::SOLVER::azprec_MLfluid ||
       azprectyp == INPAR::SOLVER::azprec_MLfluid2)
@@ -1054,7 +1054,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
 }
 
 /*------------------------------------------------------------------------------------------------*
- |  Translate Aztec part of BACI dat solver block to Aztec parameter list (public)                |
  *------------------------------------------------------------------------------------------------*/
 const Teuchos::ParameterList LINALG::Solver::TranslateBACIToAztec(
     const Teuchos::ParameterList& inparams)
@@ -1063,6 +1062,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToAztec(
   outparams.set("solver", "aztec");
   outparams.set("symmetric", false);
   Teuchos::ParameterList& azlist = outparams.sublist("Aztec Parameters");
+
   //--------------------------------- set scaling of linear problem
   const int azscal = DRT::INPUT::IntegralValue<int>(inparams, "AZSCAL");
   if (azscal == 1)
@@ -1071,6 +1071,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToAztec(
     azlist.set("scaling", "infnorm");
   else
     azlist.set("scaling", "none");
+
   //--------------------------------------------- set type of solver
   switch (DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams, "AZSOLVE"))
   {
@@ -1107,6 +1108,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToAztec(
       break;
     }
   }
+
   //------------------------------------- set type of preconditioner
   const int azprectyp = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(inparams, "AZPREC");
   switch (azprectyp)
@@ -1179,8 +1181,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToAztec(
     case INPAR::SOLVER::azprec_MLfluid:
     case INPAR::SOLVER::azprec_MLfluid2:
     case INPAR::SOLVER::azprec_BGS2x2:
-    case INPAR::SOLVER::azprec_MueLuAMG_sym:
-    case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
+    case INPAR::SOLVER::azprec_MueLuAMG:
     case INPAR::SOLVER::azprec_AMGnxn:
       azlist.set("AZ_precond", AZ_user_precond);
       break;
@@ -1204,6 +1205,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToAztec(
       dserror("Unknown preconditioner for AztecOO");
       break;
   }
+
   //------------------------------------- set other aztec parameters
   azlist.set("AZ_kspace", inparams.get<int>("AZSUB"));
   azlist.set("AZ_max_iter", inparams.get<int>("AZITER"));
@@ -1245,6 +1247,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToAztec(
   double nonDiagDominance = inparams.get<double>("NON_DIAGDOMINANCE_RATIO");
   azlist.set("diagonal dominance ratio", nonDiagDominance);
   azlist.set("verbosity", inparams.get<int>("VERBOSITY"));  // this is not an official Aztec flag
+
   //-------------------------------- set parameters for Ifpack if used
   if (azprectyp == INPAR::SOLVER::azprec_ILU || azprectyp == INPAR::SOLVER::azprec_ILUT ||
       azprectyp == INPAR::SOLVER::azprec_ICC || azprectyp == INPAR::SOLVER::azprec_LU ||
@@ -1256,6 +1259,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToAztec(
     Teuchos::ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
     ifpacklist = LINALG::Solver::TranslateBACIToIfpack(inparams);
   }
+
   //------------------------------------- set parameters for CheapSIMPLE if used
   if (azprectyp == INPAR::SOLVER::azprec_CheapSIMPLE)
   {
@@ -1268,6 +1272,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToAztec(
     schurList = TranslateSolverParameters(
         DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
   }
+
   //------------------------------------- set parameters for ML if used
   if (azprectyp == INPAR::SOLVER::azprec_ML || azprectyp == INPAR::SOLVER::azprec_MLfluid ||
       azprectyp == INPAR::SOLVER::azprec_MLfluid2)
@@ -1275,26 +1280,25 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToAztec(
     Teuchos::ParameterList& mllist = outparams.sublist("ML Parameters");
     mllist = LINALG::Solver::TranslateBACIToML(inparams, &azlist);
   }
-  if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_sym ||
-      azprectyp == INPAR::SOLVER::azprec_MueLuAMG_nonsym)
+  if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
-    muelulist = LINALG::Solver::TranslateBACIToML(inparams, &azlist);
+    muelulist = LINALG::Solver::TranslateBACIToMuelu(inparams, &azlist);
   }
   if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_fluid)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Fluid) Parameters");
-    muelulist = LINALG::Solver::TranslateBACIToML(inparams, &azlist);
+    muelulist = LINALG::Solver::TranslateBACIToMuelu(inparams, &azlist);
   }
   if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_tsi)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (TSI) Parameters");
-    muelulist = LINALG::Solver::TranslateBACIToML(inparams, &azlist);
+    muelulist = LINALG::Solver::TranslateBACIToMuelu(inparams, &azlist);
   }
   if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contactSP)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
-    muelulist = LINALG::Solver::TranslateBACIToML(inparams, &azlist);
+    muelulist = LINALG::Solver::TranslateBACIToMuelu(inparams, &azlist);
   }
   if (azprectyp == INPAR::SOLVER::azprec_BGS2x2)
   {
@@ -1333,7 +1337,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToAztec(
 
 
 /*----------------------------------------------------------------------*
- |  translate solver parameters (public)                                |
  *----------------------------------------------------------------------*/
 const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(
     const Teuchos::ParameterList& inparams)

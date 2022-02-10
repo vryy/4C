@@ -248,6 +248,9 @@ namespace LINALG
     static const Teuchos::ParameterList TranslateBACIToML(
         const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist = NULL);
 
+    static const Teuchos::ParameterList TranslateBACIToMuelu(
+        const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist = NULL);
+
     static const Teuchos::ParameterList TranslateBACIToIfpack(
         const Teuchos::ParameterList& inparams);
 
