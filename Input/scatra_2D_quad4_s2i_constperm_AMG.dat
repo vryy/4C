@@ -33,7 +33,7 @@ ABSTOLRES                       1e-15
 COUPLINGTYPE                    MatchingNodes
 -----------------------------------------------------------SOLVER 1
 SOLVER                          Aztec_MSR
-AZPREC                          MueLu_nonsym
+AZPREC                          MueLu
 MUELU_XML_FILE                  scatra_2D_quad4_s2i_constperm_AMG.xml
 ----------------------------------------------------------MATERIALS
 MAT 1   MAT_scatra   DIFFUSIVITY 0.1

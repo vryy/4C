@@ -752,8 +752,7 @@ void FLD::XWall::SetupL2Projection()
         case INPAR::SOLVER::azprec_ML:
         case INPAR::SOLVER::azprec_MLfluid:
         case INPAR::SOLVER::azprec_MLfluid2:
-        case INPAR::SOLVER::azprec_MueLuAMG_sym:
-        case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
+        case INPAR::SOLVER::azprec_MueLuAMG:
         {
           if (proj_)
           {  // has 3 dofs, velocity dofs

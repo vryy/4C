@@ -2115,7 +2115,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
   {
     case INPAR::SOLVER::azprec_BGS2x2:
       break;
-    case INPAR::SOLVER::azprec_MueLuAMG_sym:
+    case INPAR::SOLVER::azprec_MueLuAMG:
     case INPAR::SOLVER::azprec_AMGnxn:
     case INPAR::SOLVER::azprec_CheapSIMPLE:
     {
@@ -2191,7 +2191,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
 
       break;
     }
-    case INPAR::SOLVER::azprec_MueLuAMG_sym:
+    case INPAR::SOLVER::azprec_MueLuAMG:
     {
       solver_ = Teuchos::rcp(new LINALG::Solver(xfsisolverparams,
           // ggfs. explizit Comm von STR wie lungscatra

@@ -114,7 +114,7 @@ AZITER                          500
 AZOMEGA                         0
 AZOUTPUT                        10
 AZPOLY                          3
-AZPREC                          MueLu_sym
+AZPREC                          MueLu
 AZREUSE                         10
 AZSCAL                          none
 AZSOLVE                         GMRES

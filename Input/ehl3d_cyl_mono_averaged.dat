@@ -163,7 +163,7 @@ AZITER                          300
 AZOMEGA                         0
 AZOUTPUT                        0
 AZPOLY                          3
-AZPREC                          ML //MueLu_sym //ILU //MueLu_contact2 //ILU
+AZPREC                          ML
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
