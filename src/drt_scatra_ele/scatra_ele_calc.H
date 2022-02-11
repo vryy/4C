@@ -208,11 +208,11 @@ namespace DRT
           const int iquad  //!< id of current Gauss point
       );
 
-      //! evaluate determinante of deformation gradient from displacements at integration point
+      //! evaluate determinant of deformation gradient from displacements at integration point
       //! \param ele         current element
       //! \param intpoints   integration points
       //! \param iquad       ID of current integration point
-      //! \return  determinante of deformation gradient at integration point
+      //! \return  determinant of deformation gradient at integration point
       virtual double EvalDetFAtIntPoint(const DRT::Element* const& ele,
           const DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad);
 
@@ -374,13 +374,16 @@ namespace DRT
           const int iquad = -1  //!< id of current gauss point (default = -1)
       );
 
-      //! evaluate multi-scale scalar transport material
-      virtual void MatScaTraMultiScale(const Teuchos::RCP<const MAT::Material>
-                                           material,  //!< multi-scale scalar transport material
-          double& densn,                              //!< density at time t_(n)
-          double& densnp,                             //!< density at time t_(n+1) or t_(n+alpha_f)
-          double& densam                              //!< density at time t_(n+alpha_m)
-          ) const;
+      /*!
+       * @brief evaluate multi-scale scalar transport material
+       *
+       * @param material multi-scale scalar transport material
+       * @param densn    density at time t_(n)
+       * @param densnp   density at time t_(n+1) or t_(n+alpha_f)
+       * @param densam   density at time t_(n+alpha_m)
+       */
+      virtual void MatScaTraMultiScale(const Teuchos::RCP<const MAT::Material> material,
+          double& densn, double& densnp, double& densam) const;
 
       //! evaluate electrode material
       void MatElectrode(const Teuchos::RCP<const MAT::Material> material  //!< electrode material
@@ -746,14 +749,19 @@ namespace DRT
           const double& densam                                  //!< density at time_(n+am)
       );
 
-      //! calculation of mass element matrix (dual shape functions)
-      void CalcMatMass(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int& k,                                 //!< index of current scalar
-          const double& fac,                            //!< domain-integration factor
-          const double& densam,                         //!< density at time_(n+am)
-          const LINALG::Matrix<nen_, 1>& sfunct,        //!< solution function values
-          const LINALG::Matrix<nen_, 1>& tfunct         //!< test function values
-          ) const;
+      /*!
+       * @brief calculation of mass element matrix (dual shape functions)
+       *
+       * @param emat    element matrix to be filled
+       * @param k       index of current scalar
+       * @param fac     domain-integration factor
+       * @param densam  density at time_(n+am)
+       * @param sfunct  solution function values
+       * @param tfunct  test function values
+       */
+      void CalcMatMass(Epetra_SerialDenseMatrix& emat, const int& k, const double& fac,
+          const double& densam, const LINALG::Matrix<nen_, 1>& sfunct,
+          const LINALG::Matrix<nen_, 1>& tfunct) const;
 
       //! calculation of stabilization mass element matrix
       void CalcMatMassStab(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
@@ -968,15 +976,19 @@ namespace DRT
           const double densnp, const double J, const LINALG::Matrix<nsd_, 1>& gradphi,
           const LINALG::Matrix<nsd_, 1>& convelint);
 
-      //! standard Galerkin convective term in conservative form (off-diagonal)
-      void CalcConvConsODMesh(Epetra_SerialDenseMatrix& emat,  //!< element matrix
-          const int k,                                         //!< species index
-          const double fac,                                    //!< domain-integration factor
-          const double timefacfac,  //!< time-integration factor times domain-integration factor
-          const double densnp,      //!< density
-          const double
-              J  //!< Jacobian determinant of mapping between spatial and parameter coordinates
-          ) const;
+      /*!
+       * @brief standard Galerkin convective term in conservative form (off-diagonal)
+       *
+       * @param emat        element matrix
+       * @param k           species index
+       * @param fac         domain-integration factor
+       * @param timefacfac  time-integration factor times domain-integration factor
+       * @param densnp      density
+       * @param J           Jacobian determinant of mapping between spatial and parameter
+       *                    coordinates
+       */
+      void CalcConvConsODMesh(Epetra_SerialDenseMatrix& emat, const int k, const double fac,
+          const double timefacfac, const double densnp, const double J) const;
 
       //! standard Galerkin diffusive term (off diagonal/shapederivative term mesh)
       virtual void CalcDiffODMesh(Epetra_SerialDenseMatrix& emat,  //!< element current to be filled
