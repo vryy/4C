@@ -750,52 +750,14 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToMuelu(
 {
   Teuchos::ParameterList muelulist;
 
-  const int prectyp = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(inparams, "AZPREC");
-  switch (prectyp)
-  {
-    case INPAR::SOLVER::azprec_MueLuAMG_fluid:  // MueLu operator (fluid)
-    case INPAR::SOLVER::azprec_MueLuAMG_tsi:    // MueLu operator (tsi)
-    case INPAR::SOLVER::azprec_MueLuAMG:        // MueLu operator
-    {
-      std::string xmlfile = inparams.get<std::string>("MUELU_XML_FILE");
-      if (xmlfile != "none") muelulist.set("MUELU_XML_FILE", xmlfile);
+  std::string xmlfile = inparams.get<std::string>("MUELU_XML_FILE");
+  if (xmlfile != "none") muelulist.set("MUELU_XML_FILE", xmlfile);
 
-      muelulist.set<bool>(
-          "MUELU_XML_ENFORCE", DRT::INPUT::IntegralValue<bool>(inparams, "MUELU_XML_ENFORCE"));
-      muelulist.set<bool>("LINALG::MueLu_Preconditioner", true);
-    }
-    break;
-    case INPAR::SOLVER::azprec_MueLuAMG_contactSP:  // MueLu operator (contact)
-    {
-      std::string xmlfile = inparams.get<std::string>("MUELU_XML_FILE");
-      if (xmlfile != "none") muelulist.set("MUELU_XML_FILE", xmlfile);
+  muelulist.set<bool>(
+      "MUELU_XML_ENFORCE", DRT::INPUT::IntegralValue<bool>(inparams, "MUELU_XML_ENFORCE"));
+  muelulist.set<bool>("LINALG::MueLu_Preconditioner", true);
 
-      muelulist.set<bool>(
-          "MUELU_XML_ENFORCE", DRT::INPUT::IntegralValue<bool>(inparams, "MUELU_XML_ENFORCE"));
-      muelulist.set<bool>("LINALG::MueLu_Preconditioner", true);
-
-      muelulist.set("aggregation: threshold", inparams.get<double>("ML_PROLONG_THRES"));
-
-      int doRepart = DRT::INPUT::IntegralValue<int>(inparams, "MueLu_REBALANCE");
-      if (doRepart > 2)
-      {
-        muelulist.set("muelu repartition: enable", 1);
-      }
-      else
-      {
-        muelulist.set("muelu repartition: enable", 0);
-      }
-      // mllist.set("repartition: partitioner","ParMETIS");
-      muelulist.set("muelu repartition: max min ratio",
-          inparams.get<double>("MueLu_REBALANCE_NONZEROIMBALANCE"));
-      muelulist.set(
-          "muelu repartition: min per proc", inparams.get<int>("MueLu_REBALANCE_MINROWS"));
-    }
-    break;
-    default:
-      dserror("Unknown type of muelu preconditioner");
-      break;
-  }
+  muelulist.set("aggregation: threshold", inparams.get<double>("ML_PROLONG_THRES"));
 
   int doRepart = DRT::INPUT::IntegralValue<int>(inparams, "MueLu_REBALANCE");
   if (doRepart > 2)
@@ -840,10 +802,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
       break;
     default:
     {
-      std::cout << "flag "
-                << DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams, "AZSOLVE")
-                << std::endl;
-      dserror("Unknown solver for Belos");
+      dserror("Flag '%s'! \nUnknown solver for Belos.",
+          DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams, "AZSOLVE"));
       break;
     }
   }
@@ -1053,10 +1013,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToAztec(
       break;
     default:
     {
-      std::cout << "flag "
-                << DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams, "AZSOLVE")
-                << std::endl;
-      dserror("Unknown solver for AztecOO");
+      dserror("Flag '%s'! Unknown solver for AztecOO",
+          DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams, "AZSOLVE"));
       break;
     }
   }
