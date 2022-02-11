@@ -33,6 +33,7 @@
 #include "BelosEpetraAdapter.hpp"
 #include "BelosBlockCGSolMgr.hpp"
 #include "BelosBlockGmresSolMgr.hpp"
+#include "BelosBiCGStabSolMgr.hpp"
 
 // BACI headers
 #include "solver_belossolver.H"
@@ -209,6 +210,9 @@ int LINALG::SOLVER::BelosSolver::Solve()
   else if (solverType == "CG")
     newSolver = Teuchos::rcp(
         new Belos::BlockCGSolMgr<double, MV, OP>(problem, Teuchos::rcp(&belist, false)));
+  else if (solverType == "BiCGSTAB")
+    newSolver = Teuchos::rcp(
+        new Belos::BiCGStabSolMgr<double, MV, OP>(problem, Teuchos::rcp(&belist, false)));
   else
     dserror("unknown solver type for Belos");
 
