@@ -52,12 +52,6 @@
   else                                                                                           \
     outParamList.set<varType>(outParamStr, defaultValue);
 
-void LINALG::Solver::BuildBelosSolver(
-    const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile)
-{
-  solver_ = Teuchos::rcp(new LINALG::SOLVER::BelosSolver(comm, params, outfile));
-}
-
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 LINALG::SOLVER::BelosSolver::BelosSolver(

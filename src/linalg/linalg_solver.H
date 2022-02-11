@@ -327,17 +327,6 @@ namespace LINALG
     int getNumIters() const;
 
    private:
-    //! @name BuildSolver methods
-
-    /*!
-    \brief helper function for generating BELOS solver
-
-    creates an internal BelosSolver object and stores it in solver_
-    */
-    void BuildBelosSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile);
-
-    //@}
-
     //! a communicator
     const Epetra_Comm& comm_;
     //! (internal) parameter list

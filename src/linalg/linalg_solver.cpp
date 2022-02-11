@@ -12,29 +12,27 @@
 #include "Teuchos_Time.hpp"
 #endif
 
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include "Epetra_MpiComm.h"
+#include <Epetra_MpiComm.h>
 #include <Epetra_LinearProblem.h>
 
 #include "../drt_inpar/inpar_solver.H"
+#include "../drt_lib/drt_globalproblem.H"  // access global problem. can we avoid this?
 #include "linalg_solver.H"
 #include "linalg_sparsematrix.H"
 
 // some more Trilinos headers
-#include "BelosTypes.hpp"                 // for Belos verbosity codes
+#include <BelosTypes.hpp>                 // for Belos verbosity codes
 #include <ml_MultiLevelPreconditioner.h>  // includes for ML parameter list validation
 #include <az_aztec_defs.h>                // for translation of parameters
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include "../drt_lib/drt_globalproblem.H"  // access global problem. can we avoid this?
-
-#include "../solver/solver_directsolver.H"
-#include "../solver/solver_aztecsolver.H"
-#include "../solver/solver_solvertype.H"
-#include "../solver/solver_preconditionertype.H"
-
-#include <Teuchos_TimeMonitor.hpp>
+// solver interfaces
+#include "../solver/solver_directsolver.H"  // Amesos
+#include "../solver/solver_aztecsolver.H"   // AztecOO
+#include "../solver/solver_belossolver.H"   // Belos
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -189,8 +187,7 @@ void LINALG::Solver::Setup(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Ep
     }
     else if ("belos" == solvertype)
     {
-      // solver_ = Teuchos::rcp( new LINALG::SOLVER::BelosSolver( comm_, Params(), outfile_));
-      BuildBelosSolver(comm_, Params(), outfile_);
+      solver_ = Teuchos::rcp(new LINALG::SOLVER::BelosSolver(comm_, Params(), outfile_));
     }
     else if ("klu" == solvertype or "umfpack" == solvertype or "superlu" == solvertype or
              "lapack" == solvertype)
@@ -389,35 +386,24 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
     default:
       dserror("Unknown type of ml preconditioner");
       break;
-  }  // end switch prec typ
+  }
 
   // set repartitioning parameters
-  // TODO remove switch clause
-  switch (prectyp)
+  // En-/Disable ML repartitioning. Note: ML requires parameter to be set as integer.
+  bool doRepart = DRT::INPUT::IntegralValue<bool>(inparams, "ML_REBALANCE");
+  if (doRepart)
   {
-    case INPAR::SOLVER::azprec_ML:        // do nothing, this is standard
-    case INPAR::SOLVER::azprec_MLfluid:   // unsymmetric, unsmoothed restriction
-    case INPAR::SOLVER::azprec_MLfluid2:  // full Pretrov-Galerkin unsymmetric smoothed
-    {
-      // En-/Disable ML repartitioning. Note: ML requires parameter to be set as integer.
-      bool doRepart = DRT::INPUT::IntegralValue<bool>(inparams, "ML_REBALANCE");
-      if (doRepart)
-      {
-        mllist.set("repartition: enable", 1);
+    mllist.set("repartition: enable", 1);
 
-        // these are the hard-coded ML repartitioning settings
-        mllist.set("repartition: partitioner", "ParMETIS");
-        mllist.set("repartition: max min ratio", 1.3);
-        mllist.set("repartition: min per proc", 3000);
-      }
-      else
-        mllist.set("repartition: enable", 0);
-    }
-    break;
-    default:
-      dserror("Unknown type of ml preconditioner");
-      break;
-  }  // end switch prec typ
+    // these are the hard-coded ML repartitioning settings
+    mllist.set("repartition: partitioner", "ParMETIS");
+    mllist.set("repartition: max min ratio", 1.3);
+    mllist.set("repartition: min per proc", 3000);
+  }
+  else
+  {
+    mllist.set("repartition: enable", 0);
+  }
 
   mllist.set("ML output", inparams.get<int>("ML_PRINT"));
   if (inparams.get<int>("ML_PRINT") == 10)
@@ -811,54 +797,20 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToMuelu(
       break;
   }
 
-  // set repartitioning parameters
-  // TODO remove switch clause
-  switch (prectyp)
+  int doRepart = DRT::INPUT::IntegralValue<int>(inparams, "MueLu_REBALANCE");
+  if (doRepart > 2)
   {
-    case INPAR::SOLVER::azprec_MueLuAMG_fluid:  // MueLu operator (fluid)
-    case INPAR::SOLVER::azprec_MueLuAMG_tsi:    // MueLu operator (tsi)
-    case INPAR::SOLVER::azprec_MueLuAMG:        // MueLu operator
-    {
-      int doRepart = DRT::INPUT::IntegralValue<int>(inparams, "MueLu_REBALANCE");
-      if (doRepart > 2)
-      {
-        muelulist.set("repartition: enable", 1);
-      }
-      else
-      {
-        muelulist.set("repartition: enable", 0);
-      }
-      muelulist.set("repartition: partitioner", "ParMETIS");
-      muelulist.set(
-          "repartition: max min ratio", inparams.get<double>("MueLu_REBALANCE_NONZEROIMBALANCE"));
-      muelulist.set("repartition: min per proc", inparams.get<int>("MueLu_REBALANCE_MINROWS"));
-    }
-    break;
-    case INPAR::SOLVER::azprec_MueLuAMG_contactSP:  // MueLu operator (contact)
-    {
-      int doRepart = DRT::INPUT::IntegralValue<int>(inparams, "MueLu_REBALANCE");
-      if (doRepart > 2)
-      {
-        muelulist.set("muelu repartition: enable", 1);
-      }
-      else
-      {
-        muelulist.set("muelu repartition: enable", 0);
-      }
-      // muelulist.set("repartition: partitioner","ParMETIS");
-      muelulist.set("muelu repartition: max min ratio",
-          inparams.get<double>("MueLu_REBALANCE_NONZEROIMBALANCE"));
-      muelulist.set(
-          "muelu repartition: min per proc", inparams.get<int>("MueLu_REBALANCE_MINROWS"));
-
-      muelulist.set(
-          "aggregation: min nodes per aggregate", inparams.get<int>("MueLu_MIN_AGG_SIZE"));
-    }
-    break;
-    default:
-      dserror("Unknown type of muelu preconditioner");
-      break;
+    muelulist.set("repartition: enable", 1);
   }
+  else
+  {
+    muelulist.set("repartition: enable", 0);
+  }
+  muelulist.set("repartition: partitioner", "ParMETIS");
+  muelulist.set(
+      "repartition: max min ratio", inparams.get<double>("MueLu_REBALANCE_NONZEROIMBALANCE"));
+  muelulist.set("repartition: min per proc", inparams.get<int>("MueLu_REBALANCE_MINROWS"));
+  muelulist.set("aggregation: min nodes per aggregate", inparams.get<int>("MueLu_MIN_AGG_SIZE"));
 
   return muelulist;
 }
@@ -1334,7 +1286,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToAztec(
 
   return outparams;
 }
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
