@@ -845,9 +845,8 @@ bool LINALG::SOLVER::KrylovSolver::DecideAboutPermutation(const Teuchos::RCP<Epe
   // feed preconditioner with more information about linear system using
   // the "Linear System properties" sublist in the preconditioner's
   // paramter list
-  if (Preconditioner() != NULL)
   {
-    const std::string precondParamListName = Preconditioner()->getParameterListName();
+    const std::string precondParamListName = Preconditioner().getParameterListName();
     if (Params().isSublist(precondParamListName))
     {
       Teuchos::ParameterList& precondParams = Params().sublist(precondParamListName);

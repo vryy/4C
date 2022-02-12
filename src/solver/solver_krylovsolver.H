@@ -11,6 +11,8 @@
 #ifndef SOLVER_KRYLOVSOLVER_H_
 #define SOLVER_KRYLOVSOLVER_H_
 
+#include "../drt_lib/drt_dserror.H"
+
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 
@@ -60,19 +62,20 @@ namespace LINALG
 
       int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y);
 
-      /*! \brief Get plain pointer to underlying preconditioner object of type PreconditionerType
-       *
-       * \warning Using this function outside the solver object is dangerous, since there's no
-       * guarantee, that the preconditioner object still exists (but usually it should exist
-       * as long it's needed/used within the solver object)
-       */
-      virtual PreconditionerType* Preconditioner() { return preconditioner_.get(); }
-
       int Ncall() { return ncall_; }
 
       Teuchos::ParameterList& Params() const { return params_; }
 
      protected:
+      //! Get underlying preconditioner object of type PreconditionerType
+      const PreconditionerType& Preconditioner()
+      {
+        if (preconditioner_ == Teuchos::null)
+          dserror("Preconditioner has to be given for iterative methods!");
+        return *preconditioner_;
+      }
+
+
       /*! \brief Check whether preconditioner will be reused
        *
        * The user can control reuse/recomputation of the preconditioner by setting appropriate input

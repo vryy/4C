@@ -100,9 +100,8 @@ void LINALG::SOLVER::AztecSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
   // feed preconditioner with more information about linear system using
   // the "Linear System properties" sublist in the preconditioner's
   // paramter list
-  if (Preconditioner() != NULL)
   {
-    const std::string precondParamListName = Preconditioner()->getParameterListName();
+    const std::string precondParamListName = Preconditioner().getParameterListName();
     if (Params().isSublist(precondParamListName))
     {
       Teuchos::ParameterList& precondParams = Params().sublist(precondParamListName);

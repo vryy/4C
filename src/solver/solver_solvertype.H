@@ -17,8 +17,6 @@ namespace LINALG
   class KrylovProjector;
   namespace SOLVER
   {
-    class PreconditionerType;
-
     /// linear solver type base class
     class SolverType
     {
@@ -42,9 +40,6 @@ namespace LINALG
       virtual int Solve() = 0;
 
       virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) = 0;
-
-      /// preconditioner used within this solver
-      virtual PreconditionerType* Preconditioner() = 0;
 
       /// return number of iterations performed by solver
       virtual int getNumIters() const
