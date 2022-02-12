@@ -248,10 +248,16 @@ namespace LINALG
     static const Teuchos::ParameterList TranslateBACIToML(
         const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist = NULL);
 
+    static const Teuchos::ParameterList TranslateBACIToMuelu(
+        const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist = NULL);
+
     static const Teuchos::ParameterList TranslateBACIToIfpack(
         const Teuchos::ParameterList& inparams);
 
     static const Teuchos::ParameterList TranslateBACIToBelos(
+        const Teuchos::ParameterList& inparams);
+
+    static const Teuchos::ParameterList TranslateBACIToAztec(
         const Teuchos::ParameterList& inparams);
 
     /*!
@@ -321,17 +327,6 @@ namespace LINALG
     int getNumIters() const;
 
    private:
-    //! @name BuildSolver methods
-
-    /*!
-    \brief helper function for generating BELOS solver
-
-    creates an internal BelosSolver object and stores it in solver_
-    */
-    void BuildBelosSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile);
-
-    //@}
-
     //! a communicator
     const Epetra_Comm& comm_;
     //! (internal) parameter list
