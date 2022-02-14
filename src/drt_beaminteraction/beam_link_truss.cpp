@@ -327,15 +327,15 @@ double BEAMINTERACTION::BeamLinkTruss::GetCurrentLinkerLength() const
 
   FillStateVariablesForElementEvaluation(xcurr);
 
-  LINALG::Matrix<6, 1> truss_disp;
-  truss_disp(0) = xcurr(0) - xcurr(3);
-  truss_disp(1) = xcurr(1) - xcurr(4);
-  truss_disp(2) = xcurr(2) - xcurr(5);
-  truss_disp(3) = truss_disp(0);
-  truss_disp(4) = truss_disp(1);
-  truss_disp(5) = truss_disp(2);
+  LINALG::Matrix<6, 1> curr_nodal_coords;
+  curr_nodal_coords(0) = xcurr(0) - xcurr(3);
+  curr_nodal_coords(1) = xcurr(1) - xcurr(4);
+  curr_nodal_coords(2) = xcurr(2) - xcurr(5);
+  curr_nodal_coords(3) = curr_nodal_coords(0);
+  curr_nodal_coords(4) = curr_nodal_coords(1);
+  curr_nodal_coords(5) = curr_nodal_coords(2);
 
-  return linkele_->Disp(truss_disp);
+  return linkele_->CurrLength(curr_nodal_coords);
 }
 
 /*----------------------------------------------------------------------------*

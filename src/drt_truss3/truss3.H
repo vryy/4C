@@ -86,13 +86,13 @@ namespace DRT
       DRT::Element* Clone() const override;
 
       //! prepare elemental specific geometric values
-      //! \param[in] ele_state         elemental states (depending on the instantiated element)
-      //! \param[out] truss_disp       nodal displacement
-      //! \param[out] dtruss_disp_du   derivative of truss displacement w.r.t. global displacement
-      //! \param[out] dN_dx            derivative of shape functions
+      //! \param[in] ele_state              elemental states (depending on the instantiated element)
+      //! \param[out] curr_nodal_coords     nodal coordinates
+      //! \param[out] dcurr_nodal_coords_du deriv. of nodal coordinates w.r.t. global displacement
+      //! \param[out] dN_dx                 derivative of shape functions
       void PrepCalcInternalForceStiffTotLag(
           const std::map<std::string, std::vector<double>>& ele_state,
-          LINALG::Matrix<6, 1>& truss_disp, LINALG::Matrix<6, 6>& dtruss_disp_du,
+          LINALG::Matrix<6, 1>& curr_nodal_coords, LINALG::Matrix<6, 6>& dcurr_nodal_coords_du,
           LINALG::Matrix<6, 1>& dN_dx);
 
       //! \brief calculate internal force vector and stiffness matrix based on absolute nodal
@@ -127,23 +127,23 @@ namespace DRT
 
       inline bool IsParamsInterface() const override { return (not interface_ptr_.is_null()); }
 
-      //! Return the magnitude of the components of the truss displacement @p truss_disp
-      double Disp(const LINALG::Matrix<6, 1>& truss_disp) const
+      //! Return the current length of the truss from @p curr_nodal_coords
+      double CurrLength(const LINALG::Matrix<6, 1>& curr_nodal_coords) const
       {
-        return truss_disp.Norm2() * M_SQRT1_2;
+        return curr_nodal_coords.Norm2() * M_SQRT1_2;
       }
 
-      //! derivative of magnitude of the components of the truss displacement @p truss_disp w.r.t.
-      //! entry of the truss displacement at index @p col
-      double dDispdu(const LINALG::Matrix<6, 1>& truss_disp, const int col) const
+      //! Return the squared value of the current length of the truss from @p curr_nodal_coords
+      double CurrLength2(const LINALG::Matrix<6, 1>& curr_nodal_coords) const
       {
-        return truss_disp(col) / truss_disp.Norm2() * M_SQRT1_2;
+        return CurrLength(curr_nodal_coords) * CurrLength(curr_nodal_coords);
       }
 
-      //! Return the squared value of the components of the truss displacement @p truss_disp
-      double Disp2(const LINALG::Matrix<6, 1>& truss_disp) const
+      //! derivative of current length w.r.t. nodal coordinate (entry @p col) from @p
+      //! curr_nodal_coords
+      double dCurrLengthdu(const LINALG::Matrix<6, 1>& curr_nodal_coords, const int col) const
       {
-        return Disp(truss_disp) * Disp(truss_disp);
+        return curr_nodal_coords(col) / curr_nodal_coords.Norm2() * M_SQRT1_2;
       }
 
       std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
