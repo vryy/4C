@@ -215,6 +215,9 @@ namespace MAT
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
         const int gp, const int eleGID) final;
 
+    /// \brief Return material mass density given by mixture rule
+    double Density() const { return mixture_rule_->ReturnMassDensity(); };
+
     void RegisterVtkOutputDataNames(
         std::unordered_map<std::string, int>& names_and_size) const override;
 

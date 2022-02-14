@@ -188,7 +188,6 @@ namespace MIXTURE
       // Nothing needs to be updated in this simple mixture rule
     }
 
-
     /*!
      * \brief Update of prestretch during the internal prestretching mechanism
      *
@@ -204,7 +203,6 @@ namespace MIXTURE
     {
       // Do nothing in the default case
     }
-
 
     /*!
      *
@@ -234,6 +232,17 @@ namespace MIXTURE
     virtual void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
         int gp, int eleGID) = 0;
+
+    /*!
+     * @brief Returns the material mass density
+     *
+     * @return material mass density
+     */
+    virtual double ReturnMassDensity() const
+    {
+      dserror("Rule does not provide the evaluation of a material mass density.");
+      return 0;
+    }
 
     /*!
      * \brief Register names of the internal data that should be saved during runtime vtk output

@@ -73,6 +73,8 @@ namespace MIXTURE
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
         int gp, int eleGID) override;
 
+    double ReturnMassDensity() const override { return params_->initial_reference_density_; };
+
    private:
     ///! Rule parameters as defined in the input file
     PAR::SimpleMixtureRule* params_{};
