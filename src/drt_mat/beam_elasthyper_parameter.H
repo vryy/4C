@@ -82,8 +82,31 @@ namespace MAT
 
       virtual double GetInteractionRadius() const = 0;
 
+
+      virtual double GetYieldStressN() const { return -1.0; };
+
+      virtual double GetYieldStressM() const { return -1.0; };
+
+
+      virtual double GetHardeningAxialRigidity() const { return -1.0; };
+
+      virtual double GetHardeningShearRigidity2() const { return -1.0; };
+
+      virtual double GetHardeningShearRigidity3() const { return -1.0; };
+
+
+      virtual double GetHardeningMomentalRigidity() const { return -1.0; };
+
+      virtual bool GetTorsionPlasticity() const { return false; };
+
+      bool Uses_FAD() { return use_fad_; };
+
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+     private:
+      /// Flag to store if the material is used with a beam material and automatic differentiation
+      bool use_fad_;
     };
 
     /*-------------------------------------------------------------------------------------------*/
@@ -154,6 +177,14 @@ namespace MAT
         return radius_interaction_;
       }
       //@}
+     protected:
+      double GetCrossSectionArea() const { return cross_section_area_; }
+      double GetShearCorrectionFactor() const { return shear_correction_factor_; }
+      double GetShearModulus() const { return shear_modulus_; }
+      double GetMomentInertia2() const { return area_moment_inertia_2_; }
+      double GetMomentInertia3() const { return area_moment_inertia_3_; }
+      double GetMomentInertiaPolar() const { return area_moment_inertia_polar_; }
+      double GetYoungsModulus() const { return youngs_modulus_; }
 
      private:
       /// @name constitutive parameters

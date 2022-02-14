@@ -3129,6 +3129,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(matdef, "MOMIN3",
         "area moment of inertia w.r.t. second principal "
         "axis of inertia (i.e. third base vector)");
+    AddNamedBool(matdef, "FAD", "Does automatic differentiation have to be used", false, true);
 
 
     /* The following is optional because it is only required if we evaluate interactions
@@ -3179,6 +3180,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(matdef, "MASSMOMIN3",
         "mass moment of inertia w.r.t. second principal "
         "axis of inertia");
+    AddNamedBool(matdef, "FAD", "Does automatic differentiation have to be used", false, true);
 
 
     /* The following is optional because it is only required if we evaluate interactions
@@ -3223,6 +3225,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(matdef, "MOMIN3",
         "area moment of inertia w.r.t. second principal "
         "axis of inertia (i.e. third base vector)");
+    AddNamedBool(matdef, "FAD", "Does automatic differentiation have to be used", false, true);
 
 
     /* The following is optional because it is only required if we evaluate interactions
@@ -3271,6 +3274,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(matdef, "MASSMOMIN3",
         "mass moment of inertia w.r.t. second principal "
         "axis of inertia");
+    AddNamedBool(matdef, "FAD", "Does automatic differentiation have to be used", false, true);
 
 
     /* The following is optional because it is only required if we evaluate interactions
@@ -3304,6 +3308,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(matdef, "CROSSAREA", "cross-section area");
 
     AddNamedReal(matdef, "MOMIN", "area moment of inertia");
+    AddNamedBool(matdef, "FAD", "Does automatic differentiation have to be used", false, true);
 
 
     /* The following is optional because it is only required if we evaluate interactions
@@ -3339,7 +3344,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
 
     AddNamedReal(matdef, "RhoA", "translational inertia: mass density * cross-section area");
-
+    AddNamedBool(matdef, "FAD", "Does automatic differentiation have to be used", false, true);
 
     /* The following is optional because it is only required if we evaluate interactions
      * between beams such as contact, potential-based and whatever more to come.

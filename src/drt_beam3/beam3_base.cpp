@@ -10,7 +10,7 @@
 
 #include "beam3_base.H"
 
-#include "../drt_mat/beam_elasthyper.H"
+#include "../drt_mat/beam_templated_material_generic.H"
 
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 
@@ -22,6 +22,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../headers/FAD_utils.H"
 #include <Sacado.hpp>
 
 /*----------------------------------------------------------------------*
@@ -185,35 +186,26 @@ void DRT::ELEMENTS::Beam3Base::GetRefPosAtXi(LINALG::Matrix<3, 1>& refpos, const
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-const MAT::BeamElastHyperMaterial& DRT::ELEMENTS::Beam3Base::GetBeamMaterial() const
+const MAT::BeamMaterial& DRT::ELEMENTS::Beam3Base::GetBeamMaterial() const
 {
-  // Todo @grill think about storing the casted pointer as class variable or other solution to
-  //      avoid cast in every element evaluation
-
-  const MAT::BeamElastHyperMaterial* beam_material_ptr = NULL;
-
   // get the material law
-  Teuchos::RCP<const MAT::Material> material_ptr = Material();
+  Teuchos::RCP<MAT::Material> material_ptr = Material();
 
-  switch (material_ptr->MaterialType())
-  {
-    case INPAR::MAT::m_beam_elast_hyper_generic:
-    {
-      beam_material_ptr = static_cast<const MAT::BeamElastHyperMaterial*>(material_ptr.get());
+  if (material_ptr->MaterialType() != INPAR::MAT::m_beam_elast_hyper_generic)
+    dserror("unknown or improper type of material law! expected beam material law!");
 
-      if (beam_material_ptr == NULL) dserror("cast to beam material class failed!");
-
-      break;
-    }
-    default:
-    {
-      dserror("unknown or improper type of material law! expected beam material law!");
-      break;
-    }
-  }
-
-  return *beam_material_ptr;
+  return *static_cast<MAT::BeamMaterial*>(material_ptr.get());
 }
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+
+template <typename T>
+const MAT::BeamMaterialTemplated<T>& DRT::ELEMENTS::Beam3Base::GetTemplatedBeamMaterial() const
+{
+  return *Teuchos::rcp_dynamic_cast<MAT::BeamMaterialTemplated<T>>(Material(), true);
+};
+
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -221,8 +213,8 @@ template <typename T>
 void DRT::ELEMENTS::Beam3Base::GetConstitutiveMatrices(
     LINALG::Matrix<3, 3, T>& CN, LINALG::Matrix<3, 3, T>& CM) const
 {
-  GetBeamMaterial().GetConstitutiveMatrixOfForcesMaterialFrame(CN);
-  GetBeamMaterial().GetConstitutiveMatrixOfMomentsMaterialFrame(CM);
+  GetTemplatedBeamMaterial<T>().GetConstitutiveMatrixOfForcesMaterialFrame(CN);
+  GetTemplatedBeamMaterial<T>().GetConstitutiveMatrixOfMomentsMaterialFrame(CM);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -310,47 +302,9 @@ void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity(
    * in z and equals zero for z = 0.
    * In 2D the velocity increases linearly in y and equals zero for y = 0. */
 
-  // velocity at upper boundary of domain
-  //  double uppervel = 0.0;
-
   // default values for background velocity and its gradient
   velbackground.PutScalar(0.0);
   velbackgroundgrad.PutScalar(0.0);
-
-  // fixme @grill: this needs to go somewhere else, outside element level
-  // note: from now on displacement state that is handed to element level in
-  // brownian dynamic model evaluator is from now on in unshifted configuration,
-  // velocity obviously needs be calculated in shifted configuration
-  //  double time = -1.0;
-  //
-  //  double shearamplitude = BrownianDynParamsInterface().GetShearAmplitude();
-  //  int curvenumber = BrownianDynParamsInterface().GetCurveNumber() - 1;
-  //  int dbcdispdir = BrownianDynParamsInterface().GetDbcDispDir() - 1;
-  //
-  //  Teuchos::RCP<std::vector<double> > periodlength =
-  //  BrownianDynParamsInterface().GetPeriodLength(); INPAR::STATMECH::DBCType dbctype =
-  //  BrownianDynParamsInterface().GetDbcType(); bool shearflow = false;
-  //  if(dbctype==INPAR::STATMECH::dbctype_shearfixed ||
-  //     dbctype==INPAR::STATMECH::dbctype_shearfixeddel ||
-  //     dbctype==INPAR::STATMECH::dbctype_sheartrans ||
-  //     dbctype==INPAR::STATMECH::dbctype_affineshear||
-  //     dbctype==INPAR::STATMECH::dbctype_affinesheardel)
-  //    shearflow = true;
-  //
-  //  //oscillations start only at params.get<double>("STARTTIMEACT",0.0)
-  //  if(periodlength->at(0) > 0.0)
-  //    if(shearflow &&  curvenumber >=  0 && dbcdispdir >= 0 )
-  //    {
-  //      uppervel = shearamplitude *
-  //      (DRT::Problem::Instance()->Funct(curvenumber).EvaluateTimeDerivative(time,1))[1];
-  //
-  //      //compute background velocity
-  //      velbackground(dbcdispdir) = (evaluationpoint(ndim-1) / periodlength->at(ndim-1)) *
-  //      uppervel;
-  //
-  //      //compute gradient of background velocity
-  //      velbackgroundgrad(dbcdispdir,ndim-1) = uppervel / periodlength->at(ndim-1);
-  //    }
 }
 
 /*-----------------------------------------------------------------------------*
@@ -484,3 +438,8 @@ template void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity<3, Sacado::Fad::DF
     Teuchos::ParameterList&, const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
     LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
     LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
+
+template const MAT::BeamMaterialTemplated<double>&
+DRT::ELEMENTS::Beam3Base::GetTemplatedBeamMaterial<double>() const;
+template const MAT::BeamMaterialTemplated<Sacado::Fad::DFad<double>>&
+DRT::ELEMENTS::Beam3Base::GetTemplatedBeamMaterial<Sacado::Fad::DFad<double>>() const;

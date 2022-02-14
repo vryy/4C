@@ -55,8 +55,10 @@ namespace BROWNIANDYN
 
 namespace MAT
 {
-  class BeamElastHyperMaterial;
-}
+  class BeamMaterial;
+  template <typename T>
+  class BeamMaterialTemplated;
+}  // namespace MAT
 
 namespace DRT
 {
@@ -460,10 +462,16 @@ namespace DRT
       }
 
       /** \brief get applied beam material law object
+       */
+      const MAT::BeamMaterial& GetBeamMaterial() const;
+
+
+      /** \brief get elasto(plastic) beam material law object
        *
-       *  \author grill
-       *  \date 02/17 */
-      const MAT::BeamElastHyperMaterial& GetBeamMaterial() const;
+       */
+      template <typename T>
+      const MAT::BeamMaterialTemplated<T>& GetTemplatedBeamMaterial() const;
+
 
       /** \brief setup constitutive matrices from material law
        *
@@ -598,7 +606,6 @@ namespace DRT
 
       //! @}
 
-     private:
       /** \brief interface ptr
        *
        *  data exchange between the element and the time integrator. */

@@ -460,31 +460,6 @@ namespace DRT
       \brief Get initial nodal rotation vectors
       */
       const std::vector<LINALG::Matrix<3, 1>>& InitialNodalRotVecs() const { return theta0node_; }
-      //
-      //  /*!
-      //  \brief Set moment of inertia of area Iyy_ of this element
-      //  */
-      //  void SetIyy(const double& Iyy);
-      //
-      //  /*!
-      //  \brief Set moment of inertia of area Iyy_ of this element
-      //  */
-      //  void SetIzz(const double& Izz);
-      //
-      //  /*!
-      //  \brief Set moment of inertia of area Iyy_ of this element
-      //  */
-      //  void SetIrr(const double& Irr);
-      //
-      //  /*!
-      //  \brief Set cross section area of this element
-      //  */
-      //  void SetCrossSec(const double& crosssec);
-      //
-      //  /*!
-      //  \brief Set cross section scaled with shear correction factor of this element
-      //  */
-      //  void SetCrossSecShear(const double& crosssecshear);
 
       /*!
       \brief Set bool indicating Hermite centerline interpolation
@@ -737,15 +712,6 @@ namespace DRT
           const LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& disp_totlag_centerline,
           const std::vector<LINALG::Matrix<4, 1, T>>& Qnode, Epetra_SerialDenseMatrix* stiffmatrix,
           LINALG::Matrix<3 * vpernode * nnodecl + 3 * nnodetriad, 1, T>& internal_force);
-
-      //  /** \brief compute spatial (elastic) force at xi
-      //   *
-      //   *  \author grill
-      //   *  \date 06/18 */
-      //  template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-      //  void CalcSpatialForceAtXi(
-      //      std::vector<double> & disp,
-      //      GEO::MESHFREE::BoundingBox const & pbb);
 
       /** \brief calculate inertia force and mass matrix
        *

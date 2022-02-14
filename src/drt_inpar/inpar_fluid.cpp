@@ -1503,7 +1503,7 @@ void INPAR::FLUID::SetValidConditions(
   condlist.push_back(surfconsistentoutflowconsistency);
 
   /*--------------------------------------------------------------------*/
-  // Neumann inflow for FLUID
+  // Neumann condition for fluid that can handle inflow/backflow
 
   Teuchos::RCP<ConditionDefinition> linefluidneumanninflow = Teuchos::rcp(new ConditionDefinition(
       "FLUID NEUMANN INFLOW LINE CONDITIONS", "FluidNeumannInflow", "Line Fluid Neumann Inflow",

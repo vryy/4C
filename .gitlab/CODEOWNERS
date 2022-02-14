@@ -182,7 +182,7 @@ src/drt_lubrication_ele/           @baci/team_scatra
 
 src/drt_mat/                       @baci/team_material
 src/drt_mat/anisotropy*            @baci/team_structure @baci/team_material
-src/drt_mat/beam_elasthyper*       @baci/team_structure @baci/team_material
+src/drt_mat/beam*                  @baci/team_structure @baci/team_material
 src/drt_mat/cnst_1d_art*           @baci/team_reduced_fluid_models
 src/drt_mat/fluidporo*             @baci/team_poro
 src/drt_mat/membrane_elasthyper*   @baci/team_structure @baci/team_material

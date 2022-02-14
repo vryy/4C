@@ -65,7 +65,7 @@ Linear Solver Details               = Yes
 Test Details                        = Yes
 Debug                               = No
 ----------------------------------------------------------STRUCT NOX/Status Test
-XML File                            = solid_runtime_stress_strain_output.xml
+XML File                            = solid_beam_runtime_stress_strain_output.xml
 -----------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 10.0 NUE 0.0 DENS 0.0
 MAT 2 MAT_BeamReissnerElastHyper YOUNG 10.0 POISSONRATIO 0.0 DENS 0.0 CROSSAREA 0.0915291232863769 SHEARCORR 1 MOMINPOL 0.0013333333333333335 MOMIN2 0.0006666666666666668 MOMIN3 0.0006666666666666668

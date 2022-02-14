@@ -358,7 +358,8 @@ std::string DRT::ParObjectList()
     << MAT::ViscoAnisotropicType::Instance().Name() << " "
     << MAT::ViscoNeoHookeType::Instance().Name() << " " << MAT::YoghurtType::Instance().Name()
     << " " << MAT::SpringType::Instance().Name() << " "
-    << MAT::BeamElastHyperMaterialType::Instance().Name() << " "
+    << MAT::BeamElastHyperMaterialType<double>::Instance().Name() << " "
+    << MAT::BeamElastHyperMaterialType<Sacado::Fad::DFad<double>>::Instance().Name() << " "
     << MAT::PlasticLinElastType::Instance().Name() << " " << MAT::RobinsonType::Instance().Name()
     << " " << MAT::DamageType::Instance().Name() << " " << MAT::TopOptDensType::Instance().Name()
     << MAT::ElectromagneticMatType::Instance().Name() << " "

@@ -13,13 +13,13 @@
 #include "triad_interpolation_local_rotation_vectors.H"
 #include "beam_spatial_discretization_utils.H"
 
-// Todo @grill: check for obsolete header inclusions
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_mat/beam_elasthyper.H"
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -384,13 +384,14 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
       rtconvGPmass_ = rtnewGPmass_;
       rconvGPmass_ = rnewGPmass_;
       QconvGPdampstoch_ = QnewGPdampstoch_;
+      GetBeamMaterial().Update();
       break;
     }
 
     case ELEMENTS::struct_calc_reset_istep:
     {
       /* the action calc_struct_reset_istep is called by the adaptive time step controller; carries
-       * out one test step whose purpose is only figuring out a suitabel timestep; thus this step
+       * out one test step whose purpose is only figuring out a suitable time step; thus this step
        * may be a very bad one in order to iterated towards the new dynamic equilibrium and the
        * thereby gained new geometric configuration should not be applied as starting point for any
        * further iteration step; as a consequence the thereby generated change of the geometric
@@ -406,6 +407,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
       rtnewGPmass_ = rtconvGPmass_;
       rnewGPmass_ = rconvGPmass_;
       QnewGPdampstoch_ = QconvGPdampstoch_;
+      GetBeamMaterial().Reset();
       break;
     }
 
@@ -513,162 +515,11 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
     // write stress and strain output
     case ELEMENTS::struct_calc_stress:
     {
-      //      // nothing to do for ghost elements
-      //      if ( discretization.Comm().MyPID() == Owner() )
-      //      {
-      //        // need current displacement
-      //        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      //        if ( disp == Teuchos::null ) dserror("Cannot get state vectors 'displacement'");
-      //        std::vector<double> mydisp( lm.size() );
-      //        DRT::UTILS::ExtractMyValues( *disp, mydisp, lm );
-      //
-      //        Teuchos::RCP<std::vector<char> > stressdata = Teuchos::null;
-      //        Teuchos::RCP<std::vector<char> > straindata = Teuchos::null;
-      //
-      //        INPAR::STR::StressType iostress = INPAR::STR::stress_none;
-      //        INPAR::STR::StrainType iostrain = INPAR::STR::strain_none;
-      //
-      //        if ( IsParamsInterface() )
-      //        {
-      //          stressdata   = ParamsInterface().MutableStressDataPtr();
-      //          straindata   = ParamsInterface().MutableStrainDataPtr();
-      //
-      //          iostress   = ParamsInterface().GetStressOutputType();
-      //          iostrain   = ParamsInterface().GetStrainOutputType();
-      //        }
-      //        else
-      //        {
-      //          stressdata = params.get<Teuchos::RCP<std::vector<char> >
-      //          >("stress",Teuchos::null); straindata = params.get<Teuchos::RCP<std::vector<char>
-      //          > >("strain",Teuchos::null); iostress =
-      //          DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress",
-      //          INPAR::STR::stress_none); iostrain =
-      //          DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain",
-      //          INPAR::STR::strain_none);
-      //        }
-      //
-      //        if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
-      //        if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
-      //
-      //        // todo: check if stress/strain types are the ones for beams
-      //
-      //        LINALG::Matrix< BEAMSVTUVISUALSUBSEGMENTS, 6 > stress;
-      //        LINALG::Matrix< BEAMSVTUVISUALSUBSEGMENTS, 6 > strain;
-      //
-      //        // determine strains and/or stresses
-      ////        CalcStressesAndStrainsAtVisPoints();
-      //
-      //        // add data to pack
-      //        {
-      //          DRT::PackBuffer data;
-      //          AddtoPack( data, stress );
-      //          data.StartPacking();
-      //          AddtoPack( data, stress );
-      //          std::copy( data().begin(), data().end(), std::back_inserter(*stressdata) );
-      //        }
-      //
-      //        {
-      //          DRT::PackBuffer data;
-      //          AddtoPack( data, strain );
-      //          data.StartPacking();
-      //          AddtoPack( data, strain );
-      //          std::copy( data().begin(), data().end(), std::back_inserter(*straindata) );
-      //        }
-      //      }
       break;
     }
     // post process stress and strain
     case ELEMENTS::struct_postprocess_stress:
     {
-      //      // stresses/strains were already interpolated to vis points during runtime, no need
-      //      for any
-      //      // extrapolation stuff during postprocessing anymore
-      //      const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > >
-      //      vispointstressmap=
-      //        params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > >
-      //        >("gpstressmap",Teuchos::null);
-      //      if ( vispointstressmap == Teuchos::null )
-      //        dserror("no gp stress/strain map available for postprocessing");
-      //
-      //      std::string stresstype = params.get<std::string>("stresstype","ndxyz");
-      //
-      //      int gid = Id();
-      //      LINALG::Matrix< BEAMSVTUVISUALSUBSEGMENTS, 6 > vispointstresses( (
-      //      (*vispointstressmap)[gid])->A(), true );
-      //
-      //      Teuchos::RCP<Epetra_MultiVector> poststress =
-      //      params.get<Teuchos::RCP<Epetra_MultiVector> >("poststress",Teuchos::null); if (
-      //      poststress == Teuchos::null )
-      //        dserror("No element stress/strain vector available");
-      //
-      //      if ( stresstype == "ndxyz")
-      //      {
-      //        // extrapolation matrix, static because equal for all elements of the same
-      //        discretizations type static LINALG::Matrix<numnod_,numgpt_post_> extrapol;
-      //
-      //        // fill extrapolation matrix just once, equal for all elements
-      //        static bool isfilled;
-      //
-      //        if (isfilled==false)
-      //        {
-      //          // check for correct gaussrule
-      //          if (intpoints_.nquad!=numgpt_post_)
-      //            dserror("number of gauss points of gaussrule_ does not match numgpt_post_ used
-      //            for postprocessing");
-      //
-      //          // allocate vector for shape functions and matrix for derivatives at gp
-      //          LINALG::Matrix<numnod_,1> shapefcts(true);
-      //
-      //          // loop over the nodes and gauss points
-      //          // interpolation matrix, inverted later to be the extrapolation matrix
-      //          for (int nd=0;nd<numnod_;++nd)
-      //          {
-      //            // gaussian coordinates
-      //            const double e1 = intpoints_.qxg[nd][0];
-      //            const double e2 = intpoints_.qxg[nd][1];
-      //
-      //            // shape functions for the extrapolated coordinates
-      //            LINALG::Matrix<numgpt_post_,1> funct;
-      //            DRT::UTILS::shape_function_2D(funct,e1,e2,Shape());
-      //
-      //            for (int i=0;i<numgpt_post_;++i)
-      //              extrapol(nd,i) = funct(i);
-      //          }
-      //
-      //          // fixedsizesolver for inverting extrapol
-      //          LINALG::FixedSizeSerialDenseSolver<numnod_,numgpt_post_,1> solver;
-      //          solver.SetMatrix(extrapol);
-      //          int err = solver.Invert();
-      //          if (err != 0.)
-      //          dserror("Matrix extrapol is not invertible");
-      //
-      //          // matrix is filled
-      //          isfilled = true;
-      //        }
-      //
-      //        // extrapolate the nodal stresses for current element
-      //        LINALG::Matrix<numnod_,6> nodalstresses;
-      //        nodalstresses.Multiply(1.0,extrapol,gpstress,0.0);
-      //
-      //        // "assembly" of extrapolated nodal stresses
-      //        for (int i=0;i<numnod_;++i)
-      //        {
-      //          int gid = NodeIds()[i];
-      //          if (poststress->Map().MyGID(NodeIds()[i])) // rownode
-      //          {
-      //            int lid = poststress->Map().LID(gid);
-      //            int myadjele = Nodes()[i]->NumElement();
-      //            for (int j=0;j<6;j++)
-      //              (*((*poststress)(j)))[lid] += nodalstresses(i,j)/myadjele;
-      //          }
-      //        }
-      //
-      //      }
-      //      else
-      //      {
-      //        dserror("unknown type of stress/strain output on element level");
-      //      }
-
       break;
     }
 
@@ -855,8 +706,6 @@ inline void DRT::ELEMENTS::Beam3r::pushforward(const LINALG::Matrix<3, 3, T>& La
   // page 148
   temp.Multiply(Lambda, C_mat);
   c_spatial.MultiplyNT(temp, Lambda);
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -886,148 +735,6 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
   CalcInternalAndInertiaForcesAndStiff<nnodetriad, nnodecl, vpernode>(
       disp_totlag_centerline, Qnode, stiffmatrix, massmatrix, force, inertia_force);
 }
-
-///*----------------------------------------------------------------------------*
-// *----------------------------------------------------------------------------*/
-// template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-// void DRT::ELEMENTS::Beam3r::CalcSpatialForceAtXi(
-//    std::vector<double> & disp,
-//    GEO::MESHFREE::BoundingBox const & pbb )
-//{
-//  // nnodetriad: number of nodes used for interpolation of triad field
-//  // nnodecl: number of nodes used for interpolation of centerline
-//  // assumptions: nnodecl<=nnodetriad; centerline nodes have local ID 0...nnodecl-1
-//  // vpernode: number of interpolated values per centerline node (1: value (i.e. Lagrange), 2:
-//  value + derivative of value (i.e. Hermite))
-//
-//  //************ periodic boundary conditions **********************
-//  /* unshift node positions, i.e. manipulate element displacement vector
-//   * as if there where no periodic boundary conditions */
-//  UnShiftNodePosition( disp, pbb );
-//
-//  /* current nodal DOFs relevant for centerline interpolation in total Lagrangian
-//   * style, i.e. initial values + displacements */
-//  LINALG::Matrix<3*vpernode*nnodecl,1,double> disp_totlag_centerline(true);
-//
-//  // quaternions of all nodal triads
-//  std::vector<LINALG::Matrix<4,1,double> > Qnode(nnodetriad);
-//
-//  UpdateDispTotLagAndNodalTriads<nnodetriad,nnodecl,vpernode,double>(
-//      disp,
-//      disp_totlag_centerline,
-//      Qnode);
-//
-//  /********************************** Initialize/resize variables
-//  **************************************
-//   *****************************************************************************************************/
-//
-//  //********************************** quantities valid for entire element
-//  ***************************** const unsigned int dofperclnode = 3*vpernode; const unsigned int
-//  dofpertriadnode = 3; const unsigned int dofpercombinode = dofperclnode+dofpertriadnode;
-//
-//
-//  //*************************** physical quantities evaluated at a certain GP
-//  ***************************
-//
-//  // derivation of beam centerline with respect to arc-length parameter: r'(x) from (2.12),
-//  Jelenic 1999 LINALG::Matrix<3,1,T> r_s;
-//  // spin matrix related to vector r_s
-//  LINALG::Matrix<3,3,T> r_s_hat;
-//  // interpolated local relative rotation \Psi^l at a certain Gauss point according to (3.11),
-//  Jelenic 1999 LINALG::Matrix<3,1,T> Psi_l;
-//  /* derivative of interpolated local relative rotation \Psi^l with respect to arc-length
-//  parameter
-//   * at a certain Gauss point according to (3.11), Jelenic 1999*/
-//  LINALG::Matrix<3,1,T> Psi_l_s;
-//  // triad at GP
-//  LINALG::Matrix<3,3,T> Lambda;
-//
-//  // 3D vector related to spin matrix \hat{\kappa} from (2.1), Jelenic 1999
-//  LINALG::Matrix<3,1,T> K;
-//  // 3D vector of material axial and shear strains from (2.1), Jelenic 1999
-//  LINALG::Matrix<3,1,T> Gamma;
-//
-//  // convected stresses N and M and constitutive matrices C_N and C_M according to section 2.4,
-//  Jelenic 1999 LINALG::Matrix<3,1,T> stressN; LINALG::Matrix<3,1,T> stressM;
-//  LINALG::Matrix<3,3,T> CN;
-//  LINALG::Matrix<3,3,T> CM;
-//
-//  // spatial stresses n and m according to (3.10), Romero 2004 and spatial constitutive matrices
-//  c_n and c_m according to page 148, Jelenic 1999 LINALG::Matrix<3,1,T> stressn;
-//  LINALG::Matrix<3,1,T> stressm;
-//  LINALG::Matrix<3,3,T> cn;
-//  LINALG::Matrix<3,3,T> cm;
-//
-//  //********************************** (generalized) shape functions
-//  ************************************
-//  /* Note: index i refers to the i-th shape function (i = 0 ... nnode*vpernode-1)
-//   * the vectors store individual shape functions, NOT an assembled matrix of shape functions)*/
-//
-//  /* vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial shape
-//  functions evaluated at the numgp-th Gauss point
-//   * these shape functions are used for the interpolation of the triad field*/
-//  LINALG::Matrix<1,nnodetriad,double> I_i;
-//  // same for the derivatives
-//  LINALG::Matrix<1,nnodetriad,double> I_i_xi;
-//
-//  /* vector whose numgp-th element is a 1x(vpernode*nnode)-matrix with all (Lagrange/Hermite)
-//  shape functions evaluated at the numgp-th GP
-//   * these shape functions are used for the interpolation of the beam centerline*/
-//  std::vector<LINALG::Matrix<1,vpernode*nnodecl,double> > H_i;
-//  // same for the derivatives
-//  std::vector<LINALG::Matrix<1,vpernode*nnodecl,double> > H_i_xi;
-//
-//
-//  /*************************** update/compute quantities valid for entire element
-//  **********************
-//   *****************************************************************************************************/
-//
-//  // setup constitutive matrices
-//  GetConstitutiveMatrices<T>(CN,CM);
-//
-//  // create object of triad interpolation scheme
-//  Teuchos::RCP<LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, T> >
-//      triad_interpolation_scheme_ptr =
-//      Teuchos::rcp(new LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, T>() );
-//
-//  // reset triad interpolation scheme based on nodal quaternions
-//  triad_interpolation_scheme_ptr->Reset(Qnode);
-//
-//
-//  /******************************* elasticity: compute fint and stiffmatrix
-//  ****************************
-//   *****************************************************************************************************/
-//
-//  //************************* residual and stiffmatrix contributions from forces
-//  ***********************
-//  // for these contributions, reduced integration is applied to avoid locking
-//
-//  EvaluateShapeFunctionsAtXi< nnodetriad, 1 >(xi, I_i, this->Shape(), -1.0 );
-//
-//  EvaluateShapeFunctionDerivsAtXi< nnodecl, vpernode >(xi, H_i_xi, this->Shape(),
-//      this->RefLength());
-//
-//
-//  Calc_r_s<nnodecl,vpernode,T>(disp_totlag_centerline, H_i_x, jacobiGPelastf_[numgp], r_s);
-//
-//  triad_interpolation_scheme_ptr->GetInterpolatedTriadAtXi(
-//      Lambda,
-//      gausspoints_elast_force.qxg[numgp][0] );
-//
-//  // compute spin matrix related to vector rprime for later use
-//  LARGEROTATIONS::computespin<T>(r_s_hat,r_s);
-//
-//  // compute material strains Gamma and K
-//  computeGamma<T>(r_s,Lambda,GammarefGP_[numgp],Gamma);
-//
-//  // compute material stresses by multiplying strains with constitutive matrix
-//  stressN.Multiply(CN,Gamma);
-//
-//  /* compute spatial stresses and constitutive matrices from convected ones according to Jelenic
-//  1999, page 148, paragraph
-//   * between (2.22) and (2.23) and Romero 2004, (3.10)*/
-//  pushforward<T>(Lambda,stressN,CN,stressn,cn);
-//}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -1193,7 +900,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
    *****************************************************************************************************/
 
   // setup constitutive matrices
-  GetConstitutiveMatrices<T>(CN, CM);
+  GetTemplatedBeamMaterial<T>().ComputeConstitutiveParameter(CN, CM);
 
   // create object of triad interpolation scheme
   Teuchos::RCP<LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, T>>
@@ -1203,6 +910,8 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
   // reset triad interpolation scheme based on nodal quaternions
   triad_interpolation_scheme_ptr->Reset(Qnode);
 
+  // matrix containing contributions to the jacobian depending on the material model
+  LINALG::Matrix<3, 3, T> stiffness_contribution(true);
 
   /******************************* elasticity: compute fint and stiffmatrix
    *****************************
@@ -1258,12 +967,10 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     // compute material strains Gamma and K
     computeGamma<T>(r_s, Lambda, GammarefGP_[numgp], Gamma);
 
-    // compute material stresses by multiplying strains with constitutive matrix
-    stressN.Multiply(CN, Gamma);
+    GetTemplatedBeamMaterial<T>().EvaluateForceContributionsToStress(stressN, CN, Gamma);
+    GetTemplatedBeamMaterial<T>().GetStiffnessMatrixOfForces(stiffness_contribution, CN);
 
-    /* compute spatial stresses and constitutive matrices from convected ones according to Jelenic
-     * 1999, page 148, paragraph between (2.22) and (2.23) and Romero 2004, (3.10)*/
-    pushforward<T>(Lambda, stressN, CN, stressn, cn);
+    pushforward<T>(Lambda, stressN, stiffness_contribution, stressn, cn);
 
     /* computation of internal forces according to Jelenic 1999, eq. (4.3); computation split up
      * with respect to single blocks of matrix in eq. (4.3)*/
@@ -1381,12 +1088,11 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
                             FADUTILS::CastToDouble(K(2)) * FADUTILS::CastToDouble(K(2)));
     if (Kmax > Kmax_) Kmax_ = Kmax;
 
-    // compute material stresses by multiplying curvature with constitutive matrix
-    stressM.Multiply(CM, K);
+    GetTemplatedBeamMaterial<T>().EvaluateMomentContributionsToStress(stressM, CM, K);
+    GetTemplatedBeamMaterial<T>().GetStiffnessMatrixOfMoments(stiffness_contribution, CM);
 
-    /* compute spatial stresses and constitutive matrix from material ones according to Jelenic
-     * 1999, page 148, paragraph between (2.22) and (2.23) and Romero 2004, (3.10)*/
-    pushforward<T>(Lambda, stressM, CM, stressm, cm);
+    pushforward<T>(Lambda, stressM, stiffness_contribution, stressm, cm);
+
 
     /* computation of internal forces according to Jelenic 1999, eq. (4.3); computation split up
      * with respect to single blocks of matrix in eq. (4.3)*/
@@ -1433,8 +1139,6 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     spatial_y_moment_2_GP_elastm_[numgp] = FADUTILS::CastToDouble(stressm(1));
     spatial_z_moment_3_GP_elastm_[numgp] = FADUTILS::CastToDouble(stressm(2));
   }
-
-  return;
 }
 
 template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
