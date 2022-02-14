@@ -269,45 +269,44 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
 
       Epetra_SerialDenseMatrix stress(intpoints.nquad, 1);
 
-      switch (iostress)
+      LINALG::Matrix<6, 1> truss_disp;
+      LINALG::Matrix<6, 6> dtruss_disp_du;
+      LINALG::Matrix<6, 1> dN_dx;
+      LINALG::Matrix<2, 1> nodal_concentration;
+
+      PrepCalcInternalForceStiffTotLagScaTra(
+          truss_disp, dtruss_disp_du, dN_dx, nodal_concentration, ele_state);
+
+      // get data from input
+      const auto* growth_mat = static_cast<const MAT::LinElast1DGrowth*>(Material().get());
+
+      const double def_grad = Disp(truss_disp) / lrefe_;
+      for (int gp = 0; gp < intpoints.nquad; ++gp)
       {
-        case INPAR::STR::stress_2pk:
+        // get concentration at Gauss point
+        const double c_GP = ProjectScalarToGaussPoint(intpoints.qxg[gp][0], nodal_concentration);
+
+        const double PK2 = growth_mat->EvaluatePK2(def_grad, c_GP);
+
+        switch (iostress)
         {
-          LINALG::Matrix<6, 1> truss_disp;
-          LINALG::Matrix<6, 6> dtruss_disp_du;
-          LINALG::Matrix<6, 1> dN_dx;
-          LINALG::Matrix<2, 1> nodal_concentration;
-
-          PrepCalcInternalForceStiffTotLagScaTra(
-              truss_disp, dtruss_disp_du, dN_dx, nodal_concentration, ele_state);
-
-          // get data from input
-          const auto* growth_mat = static_cast<const MAT::LinElast1DGrowth*>(Material().get());
-
-          for (int gp = 0; gp < intpoints.nquad; ++gp)
+          case INPAR::STR::stress_2pk:
           {
-            // get concentration at Gauss point
-            const double c_GP =
-                ProjectScalarToGaussPoint(intpoints.qxg[gp][0], nodal_concentration);
-
-            stress(gp, 0) = growth_mat->EvaluatePK2(Disp(truss_disp) / lrefe_, c_GP);
+            stress(gp, 0) = PK2;
+            break;
           }
-
-          break;
+          case INPAR::STR::stress_cauchy:
+          {
+            stress(gp, 0) = PK2 * def_grad;
+            break;
+          }
+          case INPAR::STR::stress_none:
+            break;
+          default:
+            dserror("Requested stress type not available");
+            break;
         }
-        case INPAR::STR::stress_cauchy:
-        {
-          dserror("Cauchy stress not supported for truss 3");
-          break;
-        }
-
-        case INPAR::STR::stress_none:
-          break;
-        default:
-          dserror("Requested stress type not available");
-          break;
       }
-
       {
         DRT::PackBuffer data;
         AddtoPack(data, stress);

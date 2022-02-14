@@ -567,37 +567,41 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
 
   Epetra_SerialDenseMatrix stress(intpoints.nquad, 1);
 
-  switch (iostress)
+  static LINALG::Matrix<6, 1> truss_disp;
+  static LINALG::Matrix<6, 6> dtruss_disp_du;
+  static LINALG::Matrix<6, 1> dN_dx;
+
+  PrepCalcInternalForceStiffTotLag(ele_state, truss_disp, dtruss_disp_du, dN_dx);
+
+  // Green-Lagrange strain ( 1D truss: epsilon = 0.5 (l^2 - L^2)/L^2)
+  const double epsilon_GL = 0.5 * (Disp2(truss_disp) - lrefe_ * lrefe_) / (lrefe_ * lrefe_);
+
+  // 2nd Piola-Kirchhoff stress
+  const auto* mat = static_cast<const MAT::LinElast1D*>(Material().get());
+  const double PK2 = mat->EvaluatePK2(epsilon_GL);
+
+  for (int gp = 0; gp < intpoints.nquad; ++gp)
   {
-    case INPAR::STR::stress_2pk:
+    switch (iostress)
     {
-      static LINALG::Matrix<6, 1> truss_disp;
-      static LINALG::Matrix<6, 6> dtruss_disp_du;
-      static LINALG::Matrix<6, 1> dN_dx;
+      case INPAR::STR::stress_2pk:
+      {
+        stress(gp, 0) = PK2;
+        break;
+      }
+      case INPAR::STR::stress_cauchy:
+      {
+        const double def_grad = Disp2(truss_disp) / lrefe_;
+        stress(gp, 0) = PK2 * def_grad;
+        break;
+      }
 
-      PrepCalcInternalForceStiffTotLag(ele_state, truss_disp, dtruss_disp_du, dN_dx);
-
-      // Green-Lagrange strain ( 1D truss: epsilon = 0.5 (l^2 - L^2)/L^2)
-      const double epsilon_GL = 0.5 * (Disp2(truss_disp) - lrefe_ * lrefe_) / (lrefe_ * lrefe_);
-
-      // 2nd Piola-Kirchhoff stress
-      const auto* mat = static_cast<const MAT::LinElast1D*>(Material().get());
-      const double PK2 = mat->EvaluatePK2(epsilon_GL);
-
-      for (int gp = 0; gp < intpoints.nquad; ++gp) stress(gp, 0) = PK2;
-      break;
+      case INPAR::STR::stress_none:
+        break;
+      default:
+        dserror("Requested stress type not available");
+        break;
     }
-    case INPAR::STR::stress_cauchy:
-    {
-      dserror("Cauchy stress not supported for truss 3");
-      break;
-    }
-
-    case INPAR::STR::stress_none:
-      break;
-    default:
-      dserror("Requested stress type not available");
-      break;
   }
 
   {
