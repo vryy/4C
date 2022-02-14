@@ -544,7 +544,7 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::operator=(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::INPUT::LineDefinition> DRT::INPUT::LineDefinition::Clone()
+Teuchos::RCP<DRT::INPUT::LineDefinition> DRT::INPUT::LineDefinition::Clone() const
 {
   return Teuchos::rcp(new LineDefinition(*this));
 }
@@ -793,7 +793,7 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedPairOfSt
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::LineDefinition::Print(std::ostream& stream)
+void DRT::INPUT::LineDefinition::Print(std::ostream& stream) const
 {
   for (auto& component : components_)
   {
@@ -868,7 +868,7 @@ bool DRT::INPUT::LineDefinition::Read(std::istream& stream, const std::string* s
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::INPUT::LineDefinition::HaveNamed(std::string name)
+bool DRT::INPUT::LineDefinition::HaveNamed(std::string name) const
 {
   return FindNamed(std::move(name)) != nullptr;
 }
@@ -876,7 +876,7 @@ bool DRT::INPUT::LineDefinition::HaveNamed(std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::LineDefinition::ExtractString(const std::string& name, std::string& value)
+void DRT::INPUT::LineDefinition::ExtractString(const std::string& name, std::string& value) const
 {
   auto* c = dynamic_cast<NamedComponent<std::string>*>(FindNamed(name));
   if (c != nullptr)
@@ -891,7 +891,7 @@ void DRT::INPUT::LineDefinition::ExtractString(const std::string& name, std::str
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::INPUT::LineDefinition::FindString(std::string name)
+bool DRT::INPUT::LineDefinition::FindString(std::string name) const
 {
   auto* c = dynamic_cast<NamedComponent<std::string>*>(FindNamed(std::move(name)));
   if (c != nullptr)
@@ -908,7 +908,7 @@ bool DRT::INPUT::LineDefinition::FindString(std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::LineDefinition::ExtractInt(const std::string& name, int& value)
+void DRT::INPUT::LineDefinition::ExtractInt(const std::string& name, int& value) const
 {
   auto* c = dynamic_cast<NamedComponent<int>*>(FindNamed(name));
   if (c != nullptr) value = c->Value();
@@ -921,7 +921,8 @@ void DRT::INPUT::LineDefinition::ExtractInt(const std::string& name, int& value)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::LineDefinition::ExtractIntVector(const std::string& name, std::vector<int>& v)
+void DRT::INPUT::LineDefinition::ExtractIntVector(
+    const std::string& name, std::vector<int>& v) const
 {
   auto* c = dynamic_cast<NamedVectorComponent<int>*>(FindNamed(name));
   if (c != nullptr)
@@ -935,7 +936,7 @@ void DRT::INPUT::LineDefinition::ExtractIntVector(const std::string& name, std::
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::LineDefinition::ExtractDouble(const std::string& name, double& value)
+void DRT::INPUT::LineDefinition::ExtractDouble(const std::string& name, double& value) const
 {
   auto* c = dynamic_cast<NamedComponent<double>*>(FindNamed(name));
   if (c != nullptr)
@@ -950,7 +951,7 @@ void DRT::INPUT::LineDefinition::ExtractDouble(const std::string& name, double& 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::LineDefinition::ExtractDoubleVector(
-    const std::string& name, std::vector<double>& v)
+    const std::string& name, std::vector<double>& v) const
 {
   auto* c = dynamic_cast<NamedVectorComponent<double>*>(FindNamed(name));
   if (c != nullptr)
@@ -965,7 +966,7 @@ void DRT::INPUT::LineDefinition::ExtractDoubleVector(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::LineDefinition::ExtractStringVector(
-    const std::string& name, std::vector<std::string>& v)
+    const std::string& name, std::vector<std::string>& v) const
 {
   auto* c = dynamic_cast<NamedVectorComponent<std::string>*>(FindNamed(name));
   if (c != nullptr)
@@ -989,7 +990,7 @@ void DRT::INPUT::LineDefinition::ExtractStringVector(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::LineDefinition::ExtractPairOfStringAndDoubleVector(
-    const std::string& name, std::vector<std::pair<std::string, double>>& v)
+    const std::string& name, std::vector<std::pair<std::string, double>>& v) const
 {
   auto* c = dynamic_cast<NamedVectorComponent<std::pair<std::string, double>>*>(FindNamed(name));
   if (c != nullptr)
@@ -1003,7 +1004,7 @@ void DRT::INPUT::LineDefinition::ExtractPairOfStringAndDoubleVector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::INPUT::LineComponent* DRT::INPUT::LineDefinition::FindNamed(const std::string& name)
+DRT::INPUT::LineComponent* DRT::INPUT::LineDefinition::FindNamed(const std::string& name) const
 {
   if (readtailcomponents_.find(name) != readtailcomponents_.end())
   {
