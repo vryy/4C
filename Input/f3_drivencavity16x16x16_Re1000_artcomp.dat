@@ -51,7 +51,7 @@ CROSS-STRESS                    no_cross
 TDS                             quasistatic
 -------------------------------------------------------SOLVER 1
 NAME              Fluid_Solver
-SOLVER            Aztec_MSR // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER            Belos // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT          0        // output every so often, 0 no output
 AZSOLVE           GMRES     // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC            MLFLUID2  // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann

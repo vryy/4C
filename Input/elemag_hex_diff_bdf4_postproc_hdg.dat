@@ -30,7 +30,7 @@ CALCERR                         yes
 ERRORFUNCNO                     1
 POSTPROCESS                     yes
 -----------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZSOLVE                         GMRES
 AZREUSE                         1000
 ----------------------------------------------------------MATERIALS
