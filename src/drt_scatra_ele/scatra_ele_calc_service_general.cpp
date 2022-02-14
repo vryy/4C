@@ -2324,18 +2324,14 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalDetFAtIntPoint(
     const DRT::Element* const& ele, const DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints,
     const int iquad)
 {
-  // coordinates of the current integration point
-  const double* gpcoord = (intpoints.IP().qxg)[iquad];
-  for (unsigned idim = 0; idim < nsd_ele_; idim++) xsi_(idim) = gpcoord[idim];
+  // get determinant of derivative of spatial coordinate w.r.t. parameter coordinates
+  const double det_dxds = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
 
-  // const double det = EvalShapeFuncAndDerivsInParameterSpace();
-  static LINALG::Matrix<nsd_ele_, nen_> deriv_red;
+  // get derivatives of element shape function w.r.t. parameter coordinates
+  LINALG::Matrix<nsd_ele_, nen_> deriv_ele;
+  DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_ele);
 
-  // shape functions and their first derivatives
-  DRT::UTILS::shape_function<distype>(xsi_, funct_);
-  DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_red);
-
-  // reference coordinates of elemental nodes
+  // reference coordinates of element nodes
   LINALG::Matrix<nsd_, nen_> XYZ;
   GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, XYZ);
 
@@ -2344,32 +2340,11 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalDetFAtIntPoint(
   for (int i = 0; i < static_cast<int>(nsd_ele_); ++i)
     for (int j = 0; j < static_cast<int>(nen_); ++j) XYZe(i, j) = XYZ(i, j);
 
-  // compute global spatial derivatives
+  // compute derivative of parameter coordinates w.r.t. reference coordinates
   LINALG::Matrix<nsd_ele_, nsd_ele_> dXds;
-  dXds.MultiplyNT(deriv_red, XYZe);
-  LINALG::Matrix<nsd_ele_, nsd_ele_> dsdX;
-  dsdX.Invert(dXds);
-  LINALG::Matrix<nsd_ele_, nen_> derXYZ;
-  derXYZ.Multiply(dsdX, deriv_red);
+  dXds.MultiplyNT(deriv_ele, XYZe);
 
-  // compute deformation gradient
-  LINALG::Matrix<nsd_ele_, nsd_ele_> F;
-
-  LINALG::Matrix<nsd_ele_, nen_> edispnp;
-
-  for (int i = 0; i < static_cast<int>(nsd_ele_); ++i)
-    for (int j = 0; j < static_cast<int>(nsd_ele_); ++j) edispnp(i, j) = edispnp_(i, j);
-
-  F.MultiplyNT(derXYZ, edispnp);
-
-  LINALG::Matrix<nsd_ele_, nsd_ele_> one;
-  for (int i = 0; i < static_cast<int>(nsd_ele_); ++i) one(i, i) = 1.0;
-
-  F.Update(1.0, one, 1.0);
-
-  const double fac = F.Determinant();
-
-  return fac;
+  return det_dxds / dXds.Determinant();
 }
 
 
