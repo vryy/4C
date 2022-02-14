@@ -93,10 +93,8 @@ Teuchos::RCP<DRT::UTILS::Function> STR::StructureTryCreateFunction(
 /*----------------------------------------------------------------------*/
 STR::WeaklyCompressibleEtienneFSIStructureFunction::WeaklyCompressibleEtienneFSIStructureFunction(
     const MAT::PAR::StVenantKirchhoff& fparams)
-    : Function(), poissonratio_(0.0)
+    : Function(), poissonratio_(fparams.poissonratio_)
 {
-  // get data
-  poissonratio_ = fparams.poissonratio_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -183,12 +181,11 @@ std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureFunction::Evaluate
 /*----------------------------------------------------------------------*/
 STR::WeaklyCompressibleEtienneFSIStructureForceFunction::
     WeaklyCompressibleEtienneFSIStructureForceFunction(const MAT::PAR::StVenantKirchhoff& fparams)
-    : Function(), youngmodulus_(0.0), poissonratio_(0.0), strucdensity_(0.0)
+    : Function(),
+      youngmodulus_(fparams.youngs_),
+      poissonratio_(fparams.poissonratio_),
+      strucdensity_(fparams.density_)
 {
-  // get data
-  youngmodulus_ = fparams.youngs_;
-  poissonratio_ = fparams.poissonratio_;
-  strucdensity_ = fparams.density_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
