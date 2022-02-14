@@ -10,6 +10,8 @@
 #include "poromultiphase_scatra_function.H"
 #include "poromultiphase_scatra_utils.H"
 #include "../headers/FAD_utils.H"
+#include "Teuchos_RCP.hpp"
+#include "../drt_lib/drt_linedefinition.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -18,6 +20,64 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction::PoroMultiPhaseScaTraFunction
 {
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+{
+  DRT::INPUT::LineDefinition poromultiphasescatra_funct;
+  poromultiphasescatra_funct.AddNamedString("POROMULTIPHASESCATRA_FUNCTION")
+      .AddOptionalNamedInt("NUMPARAMS")
+      .AddOptionalNamedPairOfStringAndDoubleVector("PARAMS", "NUMPARAMS");
+
+  lines->Add(poromultiphasescatra_funct);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction>
+POROMULTIPHASESCATRA::PoroTryCreateFunction(
+    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def)
+{
+  if (function_lin_def->HaveNamed("POROMULTIPHASESCATRA_FUNCTION"))
+  {
+    std::string type;
+    function_lin_def->ExtractString("POROMULTIPHASESCATRA_FUNCTION", type);
+
+    std::vector<std::pair<std::string, double>> params;
+    if (function_lin_def->HaveNamed("PARAMS"))
+      function_lin_def->ExtractPairOfStringAndDoubleVector("PARAMS", params);
+
+    Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction> vecfunc = Teuchos::null;
+    if (type == "TUMOR_GROWTH_LAW_HEAVISIDE")
+      vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeaviside(params));
+    else if (type == "NECROSIS_LAW_HEAVISIDE")
+      vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::NecrosisLawHeaviside(params));
+    else if (type == "OXYGEN_CONSUMPTION_LAW_HEAVISIDE")
+      vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside(params));
+    else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_OXY")
+      vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy(params));
+    else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_NECRO")
+      vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro(params));
+    else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT")
+    {
+      vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont(params));
+    }
+    else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC")
+    {
+      vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc(params));
+    }
+    else
+    {
+      dserror("Wrong type of POROMULTIPHASESCATRA_FUNCTION");
+    }
+
+    return vecfunc;
+  }
+  else
+  {
+    return Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction>(NULL);
+  }
+}
 
 // standard growth law for tumor cells <--> IF (with lysis) and pressure dependency:
 // +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+

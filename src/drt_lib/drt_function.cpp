@@ -134,12 +134,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
       .AddOptionalNamedInt("NUMCONSTANTS")
       .AddOptionalNamedPairOfStringAndDoubleVector("CONSTANTS", "NUMCONSTANTS");
 
-
-  DRT::INPUT::LineDefinition poromultiphasescatra_funct;
-  poromultiphasescatra_funct.AddNamedString("POROMULTIPHASESCATRA_FUNCTION")
-      .AddOptionalNamedInt("NUMPARAMS")
-      .AddOptionalNamedPairOfStringAndDoubleVector("PARAMS", "NUMPARAMS");
-
   DRT::INPUT::LineDefinition fastpolynomial_funct;
   fastpolynomial_funct.AddTag("FASTPOLYNOMIAL")
       .AddNamedInt("NUMCOEFF")
@@ -150,13 +144,13 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
 
   lines->Add(translatedfunction_funct);
   lines->Add(varfunct);
-  lines->Add(poromultiphasescatra_funct);
   lines->Add(fastpolynomial_funct);
 
   STR::StructureValidFunctionLines(lines);
   FLD::FluidValidFunctionLines(lines);
   DRT::UTILS::CombustValidFunctionLines(lines);
   DRT::UTILS::XfluidValidFunctionLines(lines);
+  POROMULTIPHASESCATRA::PoroValidFunctionLines(lines);
 
   return lines;
 }
@@ -229,42 +223,10 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         vecfunc->AddExpr(component, constants);
         functions_.emplace_back(vecfunc);
       }
-      else if (function_lin_def->HaveNamed("POROMULTIPHASESCATRA_FUNCTION"))
+      else if (POROMULTIPHASESCATRA::PoroTryCreateFunction(function_lin_def) != Teuchos::null)
       {
-        std::string type;
-        function_lin_def->ExtractString("POROMULTIPHASESCATRA_FUNCTION", type);
-
-        std::vector<std::pair<std::string, double>> params;
-        if (function_lin_def->HaveNamed("PARAMS"))
-          function_lin_def->ExtractPairOfStringAndDoubleVector("PARAMS", params);
-
-        Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction> vecfunc = Teuchos::null;
-        if (type == "TUMOR_GROWTH_LAW_HEAVISIDE")
-          vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeaviside(params));
-        else if (type == "NECROSIS_LAW_HEAVISIDE")
-          vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::NecrosisLawHeaviside(params));
-        else if (type == "OXYGEN_CONSUMPTION_LAW_HEAVISIDE")
-          vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside(params));
-        else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_OXY")
-          vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy(params));
-        else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_NECRO")
-          vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro(params));
-        else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT")
-        {
-          vecfunc =
-              Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont(params));
-        }
-        else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC")
-        {
-          vecfunc =
-              Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc(params));
-        }
-        else
-        {
-          dserror("Wrong type of POROMULTIPHASESCATRA_FUNCTION");
-        }
-
-        functions_.emplace_back(vecfunc);
+        auto newfunct = POROMULTIPHASESCATRA::PoroTryCreateFunction(function_lin_def);
+        functions_.emplace_back(newfunct);
       }
       else if (STR::StructureTryCreateFunction(function_lin_def) != Teuchos::null)
       {

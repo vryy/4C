@@ -214,6 +214,13 @@ namespace POROMULTIPHASESCATRA
   // w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9                  |
   // +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
+  /// Valid fluid function lines
+  void PoroValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+
+  /// Return PoroMultiPhaseScaTraFunction function for given line definition
+  Teuchos::RCP<PoroMultiPhaseScaTraFunction> PoroTryCreateFunction(
+      Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def);
+
   class TumorGrowthLawHeaviside : public PoroMultiPhaseScaTraFunction
   {
    public:
