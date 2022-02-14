@@ -1124,7 +1124,6 @@ NODE 306 COORD -7.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+0
 199 WALL QUAD4 171 139 138 170 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 200 WALL QUAD4 173 140 139 171 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 -------------------------------------------------------------------MATERIALS
-//                              MAT_Struct_NeoHooke
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 1.0e-6
 MAT 2 ELAST_CoupNeoHooke YOUNG 689.56 NUE 0.32
 ----------------------------------------------------------------------FUNCT1

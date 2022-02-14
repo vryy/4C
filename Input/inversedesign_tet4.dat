@@ -4189,7 +4189,6 @@ NODE 762 COORD 0.000000000000000 0.000000000000000 10.000000000000000
 1908 SOLIDT4 TET4 506 505 493 485 MAT 1 KINEM nonlinear
 1909 SOLIDT4 TET4 493 492 505 512 MAT 1 KINEM nonlinear
 -------------------------------------------------------------------MATERIALS
-//                              MAT_Struct_NeoHooke
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.001
 MAT 2 ELAST_CoupNeoHooke YOUNG 1000000.0 NUE 0.45
 ----------------------------------------------------------------------FUNCT1

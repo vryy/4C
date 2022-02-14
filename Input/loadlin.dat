@@ -2839,7 +2839,6 @@ NODE 808 COORD 1.000000000000000e+02 1.000000000000000e+00 1.000000000000000e+01
 299 SOLIDH8 HEX8 62 64 63 60 30 35 33 29 MAT 1 KINEM nonlinear EAS full
 300 SOLIDH8 HEX8 59 62 60 57 28 30 29 27 MAT 1 KINEM nonlinear EAS full
 -------------------------------------------------------------------MATERIALS
-//                              MAT_Struct_NeoHooke
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.001
 MAT 2 ELAST_CoupNeoHooke YOUNG 1000000.0 NUE 0.45
 ----------------------------------------------------------RESULT DESCRIPTION

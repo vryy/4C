@@ -69,8 +69,6 @@ UZAWAPARAM                      1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-//MAT 1 MAT_Struct_NeoHooke YOUNG 240.5653612 NUE 0.4999 DENS 0.001
-//MAT 1 MAT_Struct_NeoHooke YOUNG 240.5653612 NUE 0.4999 DENS 0.001
 //MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 240.5653612 NUE 0.4999 DENS 0.001
 //MAT 1 MAT_Struct_AAANeoHooke YOUNG 240.5653612 BETA -80.1884537 NUE 0.5 DENS 1.0
 //MAT 1 MAT_VISCOANISO KAPPA 0.0 MUE 80.0 DENS 1.0 K1 0.0 K2 0.0 GAMMA 0.0 BETA_ISO 0.0 BETA_ANISO 0.0 RELAX_ISO 1.0 RELAX_ANISO 1.0 MINSTRETCH 0 ELETHICKDIR 1
