@@ -12,6 +12,7 @@
 #ifndef XFLUID_FUNCTIONS_COMBUST_H
 #define XFLUID_FUNCTIONS_COMBUST_H
 
+
 namespace DRT
 {
   class DiscretizationInterface;
@@ -23,11 +24,14 @@ namespace DRT
 
   namespace UTILS
   {
+    /// add valid combustion-specific function lines
     void CombustValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+
+    /// try to create combustion-specific functions from a given line definition
     Teuchos::RCP<DRT::UTILS::Function> CombustTryCreateFunction(
         Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def);
 
-    /// special implementation for a level set test function
+    /// special implementation for a level set test function "Zalesak's disk"
     class ZalesaksDiskFunction : public DRT::UTILS::Function
     {
      public:

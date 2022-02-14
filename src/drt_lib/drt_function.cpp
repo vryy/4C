@@ -155,7 +155,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   return lines;
 }
 
-
 void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 {
   functions_.clear();
@@ -426,7 +425,6 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
   }
 }
 
-
 DRT::UTILS::Function& DRT::UTILS::FunctionManager::Funct(int num)
 {
   // ensure that desired function is available (prevents segmentation fault)
@@ -435,8 +433,8 @@ DRT::UTILS::Function& DRT::UTILS::FunctionManager::Funct(int num)
 
   return *(functions_[num]);
 }
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+
+
 DRT::UTILS::ExprFunction::ExprFunction()
 {
   dim_ = DRT::Problem::Instance()->NDim();
@@ -445,7 +443,6 @@ DRT::UTILS::ExprFunction::ExprFunction()
   variables_.clear();
   isparsed_ = false;
 }
-
 
 void DRT::UTILS::ExprFunction::AddExpr(const std::string& buf,
     const std::vector<std::vector<Teuchos::RCP<FunctionVariable>>>& variables)
@@ -479,7 +476,6 @@ void DRT::UTILS::ExprFunction::AddExpr(const std::string& buf,
 
   isparsed_ = false;
 }
-
 
 double DRT::UTILS::ExprFunction::Evaluate(const int index, const double* x, double t)
 {
@@ -529,7 +525,6 @@ double DRT::UTILS::ExprFunction::Evaluate(const int index, const double* x, doub
   // evaluation of F = F ( x, y, z, t, v1, ..., vn )
   return expr_[index_mod]->Evaluate();
 }
-
 
 std::vector<double> DRT::UTILS::ExprFunction::EvaluateSpatialDerivative(
     const int index, const double* x, const double t)
@@ -640,7 +635,6 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateSpatialDerivative(
   // return derivatives
   return res;
 }
-
 
 std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
     const int index, const double* x, const double t, const unsigned deg)
@@ -846,7 +840,6 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
   return res;
 }
 
-
 bool DRT::UTILS::ExprFunction::IsVariable(const int index, const std::string& varname) const
 {
   if (index > (int)expr_.size() - 1 || index < 0)
@@ -854,7 +847,6 @@ bool DRT::UTILS::ExprFunction::IsVariable(const int index, const std::string& va
 
   return expr_[index]->IsVariable(varname);
 }
-
 
 void DRT::UTILS::ExprFunction::AddVariable(
     const int index, const std::string& varname, double varvalue)
@@ -866,7 +858,6 @@ void DRT::UTILS::ExprFunction::AddVariable(
   expr_[index]->AddVariable(varname, varvalue);
   exprdd_[index]->AddVariable(varname, varvalue);
 }
-
 
 void DRT::UTILS::ExprFunction::ParseExpressions()
 {
@@ -909,7 +900,6 @@ void DRT::UTILS::VariableExprFunction::AddExpr(
   isparsed_ = false;
 }
 
-
 bool DRT::UTILS::VariableExprFunction::IsVariable(int index, const std::string& varname) const
 {
   if (index > (int)expr_.size() - 1 || index < 0)
@@ -917,7 +907,6 @@ bool DRT::UTILS::VariableExprFunction::IsVariable(int index, const std::string& 
 
   return expr_[index]->IsVariable(varname);
 }
-
 
 void DRT::UTILS::VariableExprFunction::AddVariable(
     int index, const std::string& varname, double varvalue)
@@ -929,7 +918,6 @@ void DRT::UTILS::VariableExprFunction::AddVariable(
   expr_[index]->AddVariable(varname, varvalue);
   exprd_[index]->AddVariable(varname, varvalue);
 }
-
 
 void DRT::UTILS::VariableExprFunction::ParseExpressions()
 {
@@ -945,7 +933,6 @@ void DRT::UTILS::VariableExprFunction::ParseExpressions()
   isparsed_ = true;
 }
 
-
 double DRT::UTILS::VariableExprFunction::Evaluate(
     const int index, const std::vector<std::pair<std::string, double>>& variables)
 {
@@ -958,7 +945,6 @@ double DRT::UTILS::VariableExprFunction::Evaluate(
   // evaluate the function and return the result
   return expr_[index]->Evaluate();
 }
-
 
 double DRT::UTILS::VariableExprFunction::Evaluate(const int index,
     const std::vector<std::pair<std::string, double>>& variables,
@@ -978,7 +964,6 @@ double DRT::UTILS::VariableExprFunction::Evaluate(const int index,
   // evaluate the function and return the result
   return expr_[index]->Evaluate();
 }
-
 
 std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(
     const int index, const std::vector<std::pair<std::string, double>>& variables)
@@ -1017,7 +1002,6 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(
 
   return res;
 }
-
 
 std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(int index,
     const std::vector<std::pair<std::string, double>>& variables,
@@ -1066,7 +1050,6 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(int ind
   return res;
 }
 
-
 double DRT::UTILS::VariableExprFunction::Evaluate(const int index, const double* x, const double t)
 {
   std::vector<std::pair<std::string, double>> variables;
@@ -1095,7 +1078,6 @@ double DRT::UTILS::VariableExprFunction::Evaluate(const int index, const double*
 
   return Evaluate(index, variables);
 }
-
 
 std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateSpatialDerivative(
     int index, const double* x, const double t)

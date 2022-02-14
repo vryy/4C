@@ -9,7 +9,6 @@
 /*----------------------------------------------------------------------*/
 
 #include "../drt_lib/drt_function.H"
-//#include "../drt_lib/drt_linedefinition.H"
 
 #ifndef XFLUID_FUNCTION_H
 #define XFLUID_FUNCTION_H
@@ -25,7 +24,10 @@ namespace DRT
 
   namespace UTILS
   {
+    /// add valid xfluid-specific function lines
     void XfluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+
+    /// try to create xfluid-specific functions from a given line definition
     Teuchos::RCP<DRT::UTILS::Function> XfluidTryCreateFunction(
         Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def);
 
@@ -40,14 +42,15 @@ namespace DRT
       double Evaluate(int index, const double* x, double t) override;
     };
 
-
-    /* Moves a 2D cylinder back and forth along a predetermined direction in a sinus like fashion,
-
-       x_pos = midpoint_trajectory_ + direction_*(L/2)*sin(sin_coeff*t-PI*0.5)
-
-       The cylinder reaches its turning point distance at the time t_dist = n*PI/2   n=0,1,2,3,...
-                                           and maximum velocity at t_max  = n*PI/4   n=1,2,3,4,...
-    */
+    /*!
+     * @brief Moves a 2D cylinder back and forth along a predetermined direction in a sinus like
+     * fashion
+     *
+     * x_pos = midpoint_trajectory_ + direction_*(L/2)*sin(sin_coeff*t-PI*0.5)
+     * The cylinder reaches its turning point distance
+     *   at the time t_dist = n*PI/2   n=0,1,2,3,...
+     *   and maximum velocity at t_max  = n*PI/4   n=1,2,3,4,...
+     */
     class MovingLevelSetCylinder : public Function
     {
      public:
@@ -59,81 +62,59 @@ namespace DRT
       double Evaluate(int index, const double* x, double t) override;
 
      private:
-      // Origin of the geometry
+      /// Origin of the geometry
       std::vector<double> origin_;
 
-      // Radius
+      /// Radius
       double radius_;
 
-      // Orientation of the geometry (symmetry axis)
+      /// Orientation of the geometry (symmetry axis)
       std::vector<double> direction_;
 
-      // Midpoint of trajectory
+      /// Midpoint of trajectory
       std::vector<double> midpoint_trajectory_;
 
-      // Distance traveled
+      /// Distance traveled
       double distance_;
 
-      // Maximum speed
+      /// Maximum speed
       double maxspeed_;
     };
 
-    /* Moves a 3D torus back and forth along a predetermined direction in a sine like fashion with
-      constant rotation,
-
-       +++ LEVEL SET VALUE +++
-
-       TORUS
-       The torus is oriented in the orientationvec_torus direction and its midpoint is at origin
-      (for t=0). The radius of the torus is radius, where as the radius for the tube is radius_tube.
-
-       TRANSLATION
-       x_pos = midpoint_trajectory_ + direction_*(L/2)*sin(sin_coeff*t-PI*0.5)
-
-       The cylinder reaches its turning point distance at the time t_dist = n*PI/2   n=0,1,2,3,...
-                                           and maximum velocity at t_max  = n*PI/4   n=1,2,3,4,...
-
-       ROTATION
-       The torus rotates around a given rotation vector rotvector, at the constant rotation speed
-      rotspeed.
-
-          R(theta) = cos(theta) I + sin(theta) * [w]_x +(1-cos(theta))*w(x)w
-          theta = rotspeed*t
-
-          x_rot_pos = R(j,i)*( x(j) - x_pos(j) )   (MAYBE TRANSPOSE R(j,i)!!!!)
-
-       LEVEL SET
-
-          x_orto = R(i,j) * ( x(j) - x_pos(j) ) * orientationvec_torus(i)
-
-          x_base = x_rot_pos(i) - x_orto * orientationvec_torus(i)
-
-          phi(theta,t) = sqrt( ( radius - sqrt( x_base*x_base ) )^2 + x_orto*x_orto ) - radius_tube
-
-       #########################################################
-
-       +++ VELOCITY +++
-
-       TRANSLATION
-
-          v_trans(i) = direction_(i)*sin_coeff(L/2)*cos(sin_coeff*t-PI*0.5)
-
-       ROTATION
-
-          v_rot(i) = rotspeed * [w]_x (i,j) * (x(j) - x_pos(j))   %(or should it be x_rot_pos?
-
-       TOTAL
-
-          v_tot = v_trans + v_rot
-
-       #########################################################
-
-      +++ SLIPLENGTH +++
-
-      0)
-      1) Increasing sliplength in shape of sphere.
-
-    */
+    /*!
+     * @brief Moves a 3D torus back and forth along a predetermined direction in a sine like fashion
+     * with constant rotation
+     *
+     * TORUS: The torus is oriented in the orientationvec_torus direction and its midpoint is at
+     * origin (for t=0). The radius of the torus is radius, where as the radius for the tube is
+     * radius_tube. TRANSLATION: x_pos = midpoint_trajectory_ +
+     * direction_*(L/2)*sin(sin_coeff*t-PI*0.5)
+     *
+     * The cylinder reaches its turning point distance
+     *   at the time t_dist = n*PI/2   n=0,1,2,3,...
+     *   and maximum velocity at t_max  = n*PI/4   n=1,2,3,4,...
+     *
+     * ROTATION: The torus rotates around a given rotation vector rotvector, at the constant
+     * rotation speed rotspeed
+     *
+     * R(theta) = cos(theta) I + sin(theta) * [w]_x +(1-cos(theta))*w(x)w
+     * theta = rotspeed*t
+     * x_rot_pos = R(j,i)*( x(j) - x_pos(j) )   (MAYBE TRANSPOSE R(j,i)!!!!)
+     *
+     * LEVEL SET:
+     *   x_orto = R(i,j) * ( x(j) - x_pos(j) ) * orientationvec_torus(i)
+     *   x_base = x_rot_pos(i) - x_orto * orientationvec_torus(i)
+     *   phi(theta,t) = sqrt( ( radius - sqrt( x_base*x_base ) )^2 + x_orto*x_orto ) - radius_tube
+     *
+     * VELOCITY:
+     *   TRANSLATION: v_trans(i) = direction_(i)*sin_coeff(L/2)*cos(sin_coeff*t-PI*0.5)
+     *   ROTATION: v_rot(i) = rotspeed * [w]_x (i,j) * (x(j) - x_pos(j))   %(or should it be
+     * x_rot_pos? TOTAL: v_tot = v_trans + v_rot
+     *
+     * SLIPLENGTH:
+     *   0)
+     *   1) Increasing sliplength in shape of sphere.
+     */
     class MovingLSTorus : public Function
     {
      public:
@@ -143,45 +124,48 @@ namespace DRT
           double maxspeed, std::vector<double>* rotvector, double rotspeed, double rotramptime);
 
      protected:
-      // Origin of the geometry
+      /// Origin of the geometry
       std::vector<double> origin_;
 
-      // Orientation vector
+      /// Orientation vector
       std::vector<double> orientationvec_torus_;
 
-      // Radius
+      /// Radius
       double radius_;
 
-      // Radius of torus tube
+      /// Radius of torus tube
       double radius_tube_;
 
-      // Orientation of the geometry (symmetry axis)
+      /// Orientation of the geometry (symmetry axis)
       std::vector<double> direction_;
 
-      // Midpoint of trajectory
+      /// Midpoint of trajectory
       std::vector<double> midpoint_trajectory_;
 
-      // Distance traveled
+      /// Distance traveled
       double distance_;
 
-      // Maximum speed
+      /// Maximum speed
       double maxspeed_;
 
-      // Rotation vector
+      /// Rotation vector
       std::vector<double> rotvector_;
 
-      // Rotation speed (revolutions per second)
+      /// Rotation speed (revolutions per second)
       double rotspeed_;
 
-      // Ramp time for the rotation ( ramping done as: 0.5*cos(PI*t/T_ramp) )
+      /// Ramp time for the rotation ( ramping done as: 0.5*cos(PI*t/T_ramp) )
       double ramptime_;
 
-      // MATRICES!!
+      /// MATRICES!!
       std::vector<std::vector<double>> eye_;
       std::vector<std::vector<double>> rot_joint_;
       std::vector<std::vector<double>> rot_cross_;
     };
 
+    /*!
+     * @brief Moving and rotating 3D Torus, returns level set value
+     */
     class MovingLevelSetTorus : public MovingLSTorus
     {
      public:
@@ -206,13 +190,12 @@ namespace DRT
       /// evaluate function at given position in space
       double Evaluate(int index, const double* x, double t) override;
 
-      /*
-      \brief Return the number of components of this spatial function
-      (This is a vector-valued function)
-
-      \return number of components (u,v,w)
-
-      */
+      /*!
+       * @brief Return the number of components of this spatial function (This is a vector-valued
+       * function)
+       *
+       * \return number of components (u,v,w)
+       */
       std::size_t NumberComponents() override { return (3); };
     };
 
@@ -232,9 +215,10 @@ namespace DRT
       int slipfunct_;
     };
 
-    /* Stationary Taylor-Couette flow with Navier-Slip type boundary condition at inner cylinder.
-
-    */
+    /*!
+     * @brief Stationary Taylor-Couette flow with Navier-Slip type boundary condition at inner
+     * cylinder.
+     */
     class TaylorCouetteFlow : public Function
     {
      public:
@@ -243,31 +227,27 @@ namespace DRT
           double vel_theta_outer, double epsilon_inner, double epsilon_outer,
           double traction_theta_inner, double traction_theta_outer, double viscosity);
 
-      /// evaluate function at given position in space
+      /// evaluate function at given position in space,
+      /// here: evaluation of Taylor-Couette analytical solution
       double Evaluate(int index, const double* x, double t) override;
 
       std::vector<double> EvaluateSpatialDerivative(
           int index, const double* x, const double t) override;
 
      private:
-      // Origin of the geometry
-      //      std::vector<double> origin_; // Assume (0,0,0)
-
-      // Radius
+      /// Radi
       double radius_inner_;
       double radius_outer_;
-
-      // std::vector<double> prescribed_zero_pressure_point;
-
-      // Traction prescribed (might be added at some point)
 
       double c1_;
       double c2_;
       double c3_;
     };
 
-    /* Urquiza-box flow
-     * Oseen test case (can be solved with Nav-Stokes as well as the advective velocity
+    /*!
+     * @brief Urquiza-box flow
+     *
+     * Oseen test case (can be solved with Nav-Stokes as well as the advective velocity.
      * is chosen as the analytic solution to the Nav-Stokes equations).
      */
     class UrquizaBoxFlow : public Function
@@ -280,26 +260,26 @@ namespace DRT
       /// evaluate function at given position in space
       double Evaluate(int index, const double* x, double t) override;
 
-      // Derivative
+      /// Derivative
       std::vector<double> EvaluateSpatialDerivative(
           int index, const double* x, const double t) override;
 
      protected:
-      double lengthx_;   // Length lx -> [-lx,lx]
-      double lengthy_;   // Length ly ->[-ly,ly]
-      double rotation_;  // rot    [0,2*pi]
+      double lengthx_;   /// Length lx -> [-lx,lx]
+      double lengthy_;   /// Length ly ->[-ly,ly]
+      double rotation_;  /// rot    [0,2*pi]
       std::vector<std::vector<double>> rotvector_;
-      double kinvisc_;  // kinvisc = visc/rho
-      int functno_;     // function number
+      double kinvisc_;  /// kinvisc = visc/rho
+      int functno_;     /// function number
 
       double c1_;
       double c2_;
     };
 
-
-    /* Urquiza-box test case
+    /*!
+     * @brief Urquiza-box test case
      */
-    class UrquizaBoxFlowForce : public UrquizaBoxFlow  // public Function
+    class UrquizaBoxFlowForce : public UrquizaBoxFlow
     {
      public:
       /// ctor
@@ -317,9 +297,10 @@ namespace DRT
       }
     };
 
-    /* UrquizaBoxFlowTraction.
+    /*!
+     * @brief UrquizaBoxFlowTraction
      */
-    class UrquizaBoxFlowTraction : public UrquizaBoxFlow  // public Function
+    class UrquizaBoxFlowTraction : public UrquizaBoxFlow
     {
      public:
       /// ctor

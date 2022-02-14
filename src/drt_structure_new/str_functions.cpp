@@ -17,6 +17,7 @@
 
 namespace
 {
+  /// returns St. Venant Kirchhof quick access parameters from given material id
   const MAT::PAR::StVenantKirchhoff& GetSVKMatPars(int mat_id)
   {
     Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
@@ -29,6 +30,8 @@ namespace
   }
 }  // namespace
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void STR::StructureValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 {
   DRT::INPUT::LineDefinition weaklycompressibleetiennefsistructure;
@@ -44,6 +47,8 @@ void STR::StructureValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
   lines->Add(weaklycompressibleetiennefsistructureforce);
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::UTILS::Function> STR::StructureTryCreateFunction(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def)
 {
@@ -88,7 +93,6 @@ Teuchos::RCP<DRT::UTILS::Function> STR::StructureTryCreateFunction(
 }
 
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 STR::WeaklyCompressibleEtienneFSIStructureFunction::WeaklyCompressibleEtienneFSIStructureFunction(
@@ -96,6 +100,7 @@ STR::WeaklyCompressibleEtienneFSIStructureFunction::WeaklyCompressibleEtienneFSI
     : Function(), poissonratio_(fparams.poissonratio_)
 {
 }
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double STR::WeaklyCompressibleEtienneFSIStructureFunction::Evaluate(
@@ -123,6 +128,7 @@ double STR::WeaklyCompressibleEtienneFSIStructureFunction::Evaluate(
       return 1.0;
   }
 }
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureFunction::EvaluateTimeDerivative(
@@ -177,6 +183,8 @@ std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureFunction::Evaluate
 
   return res;
 }
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 STR::WeaklyCompressibleEtienneFSIStructureForceFunction::
@@ -187,6 +195,7 @@ STR::WeaklyCompressibleEtienneFSIStructureForceFunction::
       strucdensity_(fparams.density_)
 {
 }
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double STR::WeaklyCompressibleEtienneFSIStructureForceFunction::Evaluate(
@@ -231,6 +240,7 @@ double STR::WeaklyCompressibleEtienneFSIStructureForceFunction::Evaluate(
       return 1.0;
   }
 }
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureForceFunction::EvaluateTimeDerivative(

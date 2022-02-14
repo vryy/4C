@@ -23,6 +23,7 @@
 
 namespace
 {
+  /// returns Weakly Compressible Fluid quick access parameters from given material id
   const MAT::PAR::WeaklyCompressibleFluid& GetWeaklyCompressibleFluidMatPars(int mat_id)
   {
     Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
@@ -34,6 +35,7 @@ namespace
     return *fparams;
   }
 
+  /// returns Newton Fluid quick access parameters from given material id
   const MAT::PAR::NewtonianFluid& GetNewtonianFluidMatPars(int mat_id)
   {
     Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
@@ -459,7 +461,6 @@ Teuchos::RCP<DRT::UTILS::Function> FLD::FluidTryCreateFunction(
     return Teuchos::RCP<DRT::UTILS::Function>(NULL);
   }
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
