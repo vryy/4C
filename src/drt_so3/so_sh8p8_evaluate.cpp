@@ -26,7 +26,6 @@
 #include "Teuchos_TimeMonitor.hpp"
 #include "../drt_mat/material_service.H"
 #include "../drt_mat/stvenantkirchhoff.H"
-#include "../drt_mat/neohooke.H"
 #include "../drt_mat/aaaneohooke.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_mat/visconeohooke.H"
@@ -2353,12 +2352,6 @@ double DRT::ELEMENTS::So_sh8p8::ShearMod() const
     {
       auto* stvk = dynamic_cast<MAT::StVenantKirchhoff*>(mat.get());
       return stvk->ShearMod();
-      break;
-    }
-    case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
-    {
-      auto* neo = dynamic_cast<MAT::NeoHooke*>(mat.get());
-      return neo->ShearMod();
       break;
     }
     case INPAR::MAT::m_aaaneohooke: /*-----------AAA NeoHookean Material */

@@ -88,7 +88,6 @@
 #include "../drt_mat/thermomech_threephase.H"
 #include "../drt_mat/thermoplasticlinelast.H"
 #include "../drt_mat/micromaterial.H"
-#include "../drt_mat/neohooke.H"
 #include "../drt_mat/aaaneohooke.H"
 #include "../drt_mat/aaaneohooke_stopro.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
@@ -339,7 +338,6 @@ std::string DRT::ParObjectList()
     << " " << MAT::MicroMaterialType::Instance().Name() << " "
     << MAT::MixFracType::Instance().Name() << " " << MAT::ModPowerLawType::Instance().Name() << " "
     << MAT::MurnaghanTaitFluidType::Instance().Name() << " " << MAT::MyocardType::Instance().Name()
-    << " " << MAT::NeoHookeType::Instance().Name() << " "
     << MAT::NewtonianFluidType::Instance().Name() << " " << MAT::StructPoroType::Instance().Name()
     << " " << MAT::StructPoroReactionType::Instance().Name() << " "
     << MAT::StructPoroReactionECMType::Instance().Name() << " "

@@ -506,7 +506,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/myocard_san_garny.cpp
   src/drt_mat/myocard_tentusscher.cpp
   src/drt_mat/myocard_tools.cpp
-  src/drt_mat/neohooke.cpp
   src/drt_mat/newman.cpp
   src/drt_mat/newman_multiscale.cpp
   src/drt_mat/newtonianfluid.cpp
