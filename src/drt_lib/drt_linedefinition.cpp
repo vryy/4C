@@ -891,7 +891,7 @@ void DRT::INPUT::LineDefinition::ExtractString(const std::string& name, std::str
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::INPUT::LineDefinition::FindString(std::string name) const
+bool DRT::INPUT::LineDefinition::HasString(const std::string& name) const
 {
   auto* c = dynamic_cast<NamedComponent<std::string>*>(FindNamed(std::move(name)));
   if (c != nullptr)

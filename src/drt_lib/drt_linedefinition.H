@@ -203,7 +203,7 @@ namespace DRT
       /// There has to be a named component of the given type
 
       void ExtractString(const std::string& name, std::string& value) const;
-      bool FindString(std::string name) const;
+      bool HasString(const std::string& name) const;
       void ExtractInt(const std::string& name, int& value) const;
       void ExtractIntVector(const std::string& name, std::vector<int>& v) const;
       void ExtractDouble(const std::string& name, double& value) const;
