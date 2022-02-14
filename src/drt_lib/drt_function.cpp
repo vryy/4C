@@ -89,6 +89,93 @@ void PrintFunctionDatHeader()
 
 Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines()
 {
+  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("FUNCT"));
+
+  DRT::UTILS::FunctValidFunctionLines(lines);
+  DRT::UTILS::LibFunctValidFunctionLines(lines);
+  STR::StructureValidFunctionLines(lines);
+  FLD::FluidValidFunctionLines(lines);
+  DRT::UTILS::CombustValidFunctionLines(lines);
+  DRT::UTILS::XfluidValidFunctionLines(lines);
+  POROMULTIPHASESCATRA::PoroValidFunctionLines(lines);
+
+  return lines;
+}
+
+void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
+{
+  functions_.clear();
+
+  Teuchos::RCP<DRT::INPUT::Lines> lines = ValidFunctionLines();
+
+  // test for as many functions as there are
+  for (int i = 1;; ++i)
+  {
+    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs =
+        lines->Read(reader, i);
+
+    if (functions_lin_defs.empty())
+    {
+      break;
+    }
+    else
+    {
+      Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def = functions_lin_defs[0];
+
+      bool found_function = false;
+
+      std::vector<std::function<Teuchos::RCP<Function>(Teuchos::RCP<DRT::INPUT::LineDefinition>)>>
+          try_create_function_vector{DRT::UTILS::FunctTryCreateFunction,
+              POROMULTIPHASESCATRA::PoroTryCreateFunction, STR::StructureTryCreateFunction,
+              FLD::FluidTryCreateFunction, DRT::UTILS::CombustTryCreateFunction,
+              DRT::UTILS::XfluidTryCreateFunction};
+
+      for (const auto& try_create_function : try_create_function_vector)
+      {
+        auto special_funct = try_create_function(function_lin_def);
+        if (special_funct != Teuchos::null)
+        {
+          functions_.emplace_back(special_funct);
+          found_function = true;
+          break;  // jumps out of for statement
+        }
+      }
+
+      if (!found_function)
+      {
+        auto special_funct_from_lin_def_and_other_functs =
+            DRT::UTILS::LibFunctTryCreateFunction(function_lin_def, *this, i);
+        if (special_funct_from_lin_def_and_other_functs != Teuchos::null)
+        {
+          functions_.emplace_back(special_funct_from_lin_def_and_other_functs);
+          found_function = true;
+        }
+      }
+
+      if (!found_function)
+      {
+        auto basic_funct = DRT::UTILS::BasicFunctionTryCreateFunction(functions_lin_defs);
+        if (basic_funct != Teuchos::null)
+        {
+          functions_.emplace_back(basic_funct);
+        }
+      }
+    }  // end else
+  }    // end for
+}
+
+DRT::UTILS::Function& DRT::UTILS::FunctionManager::Funct(int num)
+{
+  // ensure that desired function is available (prevents segmentation fault)
+  if (functions_.size() < (unsigned int)(num + 1) || num < 0)
+    dserror("function %d not available", num + 1);
+
+  return *(functions_[num]);
+}
+
+
+void DRT::UTILS::FunctValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+{
   DRT::INPUT::LineDefinition onecomponentexpr;
   onecomponentexpr.AddNamedString("FUNCTION");
 
@@ -123,7 +210,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
       .AddOptionalNamedDouble("T1")
       .AddOptionalNamedDouble("T2");
 
-  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("FUNCT"));
   lines->Add(onecomponentexpr);
   lines->Add(componentexpr);
   lines->Add(variableexpr);
@@ -134,304 +220,207 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
       .AddOptionalNamedInt("NUMCONSTANTS")
       .AddOptionalNamedPairOfStringAndDoubleVector("CONSTANTS", "NUMCONSTANTS");
 
-  DRT::INPUT::LineDefinition fastpolynomial_funct;
-  fastpolynomial_funct.AddTag("FASTPOLYNOMIAL")
-      .AddNamedInt("NUMCOEFF")
-      .AddNamedDoubleVector("COEFF", "NUMCOEFF");
-
-  DRT::INPUT::LineDefinition translatedfunction_funct;
-  translatedfunction_funct.AddTag("TRANSLATEDFUNCTION").AddNamedInt("ORIGIN").AddNamedInt("LOCAL");
-
-  lines->Add(translatedfunction_funct);
   lines->Add(varfunct);
-  lines->Add(fastpolynomial_funct);
-
-  STR::StructureValidFunctionLines(lines);
-  FLD::FluidValidFunctionLines(lines);
-  DRT::UTILS::CombustValidFunctionLines(lines);
-  DRT::UTILS::XfluidValidFunctionLines(lines);
-  POROMULTIPHASESCATRA::PoroValidFunctionLines(lines);
-
-  return lines;
 }
 
-void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
+Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::FunctTryCreateFunction(
+    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def)
 {
-  functions_.clear();
-
-  Teuchos::RCP<DRT::INPUT::Lines> lines = ValidFunctionLines();
-
-  // test for as many functions as there are
-  for (int i = 1;; ++i)
+  if (function_lin_def->HaveNamed("VARFUNCTION"))
   {
-    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs =
-        lines->Read(reader, i);
+    Teuchos::RCP<DRT::UTILS::VariableExprFunction> vecfunc =
+        Teuchos::rcp(new DRT::UTILS::VariableExprFunction());
 
-    if (functions_lin_defs.empty())
+    std::string component;
+    function_lin_def->ExtractString("VARFUNCTION", component);
+
+    std::vector<std::pair<std::string, double>> constants;
+    if (function_lin_def->HaveNamed("CONSTANTS"))
     {
-      break;
+      function_lin_def->ExtractPairOfStringAndDoubleVector("CONSTANTS", constants);
     }
-    else
-    {
-      Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def = functions_lin_defs[0];
 
-      if (function_lin_def->HaveNamed("FASTPOLYNOMIAL"))
-      {
-        std::vector<double> coefficients;
-        function_lin_def->ExtractDoubleVector("COEFF", coefficients);
-
-        functions_.emplace_back(Teuchos::rcp(new FastPolynomialFunction(&coefficients)));
-      }
-      else if (function_lin_def->HaveNamed("TRANSLATEDFUNCTION"))
-      {
-        int origin, local;
-        function_lin_def->ExtractInt("ORIGIN", origin);
-        function_lin_def->ExtractInt("LOCAL", local);
-
-        if (origin <= 0 or origin >= i)
-        {
-          dserror(
-              "ORIGIN function ID (currently %d) must be positive and smaller than "
-              "TRANSLATEDFUNCTION (currently %d).",
-              origin, i);
-        }
-        if (local <= 0 or local >= i)
-        {
-          dserror(
-              "LOCAL function ID (currently %d) must be positive and smaller than "
-              "TRANSLATEDFUNCTION (currently %d).",
-              local, i);
-        }
-
-        Teuchos::RCP<Function> origin_funct = Teuchos::rcpFromRef(Funct(origin - 1));
-        Teuchos::RCP<Function> local_funct = Teuchos::rcpFromRef(Funct(local - 1));
-
-        functions_.emplace_back(Teuchos::rcp(new TranslatedFunction(origin_funct, local_funct)));
-      }
-      else if (function_lin_def->HaveNamed("VARFUNCTION"))
-      {
-        Teuchos::RCP<VariableExprFunction> vecfunc = Teuchos::rcp(new VariableExprFunction());
-
-        std::string component;
-        function_lin_def->ExtractString("VARFUNCTION", component);
-
-        std::vector<std::pair<std::string, double>> constants;
-        if (function_lin_def->HaveNamed("CONSTANTS"))
-          function_lin_def->ExtractPairOfStringAndDoubleVector("CONSTANTS", constants);
-
-        vecfunc->AddExpr(component, constants);
-        functions_.emplace_back(vecfunc);
-      }
-      else if (POROMULTIPHASESCATRA::PoroTryCreateFunction(function_lin_def) != Teuchos::null)
-      {
-        auto newfunct = POROMULTIPHASESCATRA::PoroTryCreateFunction(function_lin_def);
-        functions_.emplace_back(newfunct);
-      }
-      else if (STR::StructureTryCreateFunction(function_lin_def) != Teuchos::null)
-      {
-        auto newfunct = STR::StructureTryCreateFunction(function_lin_def);
-        functions_.emplace_back(newfunct);
-      }
-      else if (FLD::FluidTryCreateFunction(function_lin_def) != Teuchos::null)
-      {
-        auto newfunct = FLD::FluidTryCreateFunction(function_lin_def);
-        functions_.emplace_back(newfunct);
-      }
-      else if (DRT::UTILS::CombustTryCreateFunction(function_lin_def) != Teuchos::null)
-      {
-        auto newfunct = DRT::UTILS::CombustTryCreateFunction(function_lin_def);
-        functions_.emplace_back(newfunct);
-      }
-      else if (DRT::UTILS::XfluidTryCreateFunction(function_lin_def) != Teuchos::null)
-      {
-        auto newfunct = DRT::UTILS::XfluidTryCreateFunction(function_lin_def);
-        functions_.emplace_back(newfunct);
-      }
-      else
-      {
-        // define a new vector of functions
-        Teuchos::RCP<ExprFunction> vecfunc = Teuchos::rcp(new ExprFunction());
-
-        // evaluate the maximum component and the number of variables
-        int maxcomp = 0;
-        int maxvar = -1;
-        for (const auto& ith_function_lin_def : functions_lin_defs)
-        {
-          ith_function_lin_def->ExtractInt("COMPONENT", maxcomp);
-          ith_function_lin_def->ExtractInt("VARIABLE", maxvar);
-        }
-
-        // evaluate the number of rows used for the definition of the variables
-        std::size_t numrowsvar = functions_lin_defs.size() - maxcomp - 1;
-
-        // define a vector of strings
-        std::vector<std::string> functstring(maxcomp + 1);
-
-        // read each row where the components of the i-th function are defined
-        for (int n = 0; n <= maxcomp; ++n)
-        {
-          // update the current row
-          Teuchos::RCP<DRT::INPUT::LineDefinition> functcomp = functions_lin_defs[n];
-
-          // check the validity of the n-th component
-          int compid = 0;
-          functcomp->ExtractInt("COMPONENT", compid);
-          if (compid != n) dserror("expected COMPONENT %d but got COMPONENT %d", n, compid);
-
-
-          // read the expression of the n-th component of the i-th function
-          functcomp->ExtractString("FUNCTION", functstring[n]);
-        }
-
-        // define the structure functvarvector
-        std::vector<std::vector<Teuchos::RCP<FunctionVariable>>> functvarvector;
-
-        // define the structure functvar
-        std::vector<Teuchos::RCP<FunctionVariable>> functvar;
-
-        // define the structure vardef
-        Teuchos::RCP<FunctionVariable> vardef;
-
-        int vardefinition = 1;
-        int varidold = -1;
-
-        // read each row where the variables of the i-th function are defined
-        for (std::size_t j = 1; j <= numrowsvar; ++j)
-        {
-          // update the current row
-          Teuchos::RCP<DRT::INPUT::LineDefinition> timevar = functions_lin_defs[maxcomp + j];
-
-          // read the number of the variable
-          int varid;
-          timevar->ExtractInt("VARIABLE", varid);
-
-          // evaluate the number of the definition for the variable
-          if (varid == varidold)
-          {
-            ++vardefinition;
-          }
-          else
-          {
-            vardefinition = 1;
-          }
-
-          // update the old varid
-          varidold = varid;
-
-          // read the name of the variable
-          std::string varname;
-          timevar->ExtractString("NAME", varname);
-
-          // read the type of the variable
-          std::string vartype;
-          timevar->ExtractString("TYPE", vartype);
-
-          // read periodicity data
-          struct periodicstruct periodicdata
-          {
-          };
-          periodicdata.periodic = timevar->HasString("PERIODIC");
-          if (periodicdata.periodic)
-          {
-            timevar->ExtractDouble("T1", periodicdata.t1);
-            timevar->ExtractDouble("T2", periodicdata.t2);
-          }
-          else
-          {
-            periodicdata.t1 = 0;
-            periodicdata.t2 = 0;
-          }
-
-          // distinguish the type of the variable
-          if (vartype == "expression")
-          {
-            std::string description;
-            timevar->ExtractString("DESCRIPTION", description);
-            vardef = Teuchos::rcp(new ParsedFunctionVariable(varname, description));
-          }
-          else if (vartype == "linearinterpolation")
-          {
-            // read times
-            std::vector<double> times = returnTimeVector(timevar);
-
-            // read values
-            std::vector<double> values;
-            timevar->ExtractDoubleVector("VALUES", values);
-
-            vardef =
-                Teuchos::rcp(new LinearInterpolationVariable(varname, times, values, periodicdata));
-          }
-          else if (vartype == "multifunction")
-          {
-            // read times
-            std::vector<double> times = returnTimeVector(timevar);
-
-            // read descriptions (strings separated with spaces)
-            std::vector<std::string> description_vec;
-            timevar->ExtractStringVector("DESCRIPTION", description_vec);
-
-            // check if the number of times = number of descriptions + 1
-            std::size_t numtimes = times.size();
-            std::size_t numdescriptions = description_vec.size();
-            if (numtimes != numdescriptions + 1)
-              dserror("the number of TIMES and the number of DESCRIPTIONs must be consistent");
-
-            vardef = Teuchos::rcp(
-                new MultiFunctionVariable(varname, times, description_vec, periodicdata));
-          }
-          else if (vartype == "fourierinterpolation")
-          {
-            // read times
-            std::vector<double> times = returnTimeVector(timevar);
-
-            // read values
-            std::vector<double> values;
-            timevar->ExtractDoubleVector("VALUES", values);
-
-            vardef = Teuchos::rcp(
-                new FourierInterpolationVariable(varname, times, values, periodicdata));
-          }
-          else
-          {
-            dserror("unknown variable type");
-          }
-
-          // insert the variable in the vector of the variables of the function
-          if (vardefinition == 1)
-          {
-            if (varid != 0)
-            {
-              functvarvector.push_back(functvar);
-              functvar.clear();
-            }
-          }
-          functvar.push_back(vardef);
-
-          if (j == numrowsvar)
-          {
-            functvarvector.push_back(functvar);
-          }
-        }
-
-        // add the expressions to the function vector
-        for (int n = 0; n <= maxcomp; ++n)
-        {
-          vecfunc->AddExpr(functstring[n], functvarvector);
-        }
-
-        functions_.emplace_back(vecfunc);
-      }
-    }
+    vecfunc->AddExpr(component, constants);
+    return vecfunc;
+  }
+  else
+  {
+    return Teuchos::RCP<DRT::UTILS::VariableExprFunction>(NULL);
   }
 }
 
-DRT::UTILS::Function& DRT::UTILS::FunctionManager::Funct(int num)
+Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::BasicFunctionTryCreateFunction(
+    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs)
 {
-  // ensure that desired function is available (prevents segmentation fault)
-  if (functions_.size() < (unsigned int)(num + 1) || num < 0)
-    dserror("function %d not available", num + 1);
+  // define a new vector of functions
+  Teuchos::RCP<ExprFunction> vecfunc = Teuchos::rcp(new ExprFunction());
 
-  return *(functions_[num]);
+  // evaluate the maximum component and the number of variables
+  int maxcomp = 0;
+  int maxvar = -1;
+  for (const auto& ith_function_lin_def : functions_lin_defs)
+  {
+    ith_function_lin_def->ExtractInt("COMPONENT", maxcomp);
+    ith_function_lin_def->ExtractInt("VARIABLE", maxvar);
+  }
+
+  // evaluate the number of rows used for the definition of the variables
+  std::size_t numrowsvar = functions_lin_defs.size() - maxcomp - 1;
+
+  // define a vector of strings
+  std::vector<std::string> functstring(maxcomp + 1);
+
+  // read each row where the components of the i-th function are defined
+  for (int n = 0; n <= maxcomp; ++n)
+  {
+    // update the current row
+    Teuchos::RCP<DRT::INPUT::LineDefinition> functcomp = functions_lin_defs[n];
+
+    // check the validity of the n-th component
+    int compid = 0;
+    functcomp->ExtractInt("COMPONENT", compid);
+    if (compid != n) dserror("expected COMPONENT %d but got COMPONENT %d", n, compid);
+
+
+    // read the expression of the n-th component of the i-th function
+    functcomp->ExtractString("FUNCTION", functstring[n]);
+  }
+
+  // define the structure functvarvector
+  std::vector<std::vector<Teuchos::RCP<FunctionVariable>>> functvarvector;
+
+  // define the structure functvar
+  std::vector<Teuchos::RCP<FunctionVariable>> functvar;
+
+  // define the structure vardef
+  Teuchos::RCP<FunctionVariable> vardef;
+
+  int vardefinition = 1;
+  int varidold = -1;
+
+  // read each row where the variables of the i-th function are defined
+  for (std::size_t j = 1; j <= numrowsvar; ++j)
+  {
+    // update the current row
+    Teuchos::RCP<DRT::INPUT::LineDefinition> timevar = functions_lin_defs[maxcomp + j];
+
+    // read the number of the variable
+    int varid;
+    timevar->ExtractInt("VARIABLE", varid);
+
+    // evaluate the number of the definition for the variable
+    if (varid == varidold)
+    {
+      ++vardefinition;
+    }
+    else
+    {
+      vardefinition = 1;
+    }
+
+    // update the old varid
+    varidold = varid;
+
+    // read the name of the variable
+    std::string varname;
+    timevar->ExtractString("NAME", varname);
+
+    // read the type of the variable
+    std::string vartype;
+    timevar->ExtractString("TYPE", vartype);
+
+    // read periodicity data
+    struct periodicstruct periodicdata
+    {
+    };
+    periodicdata.periodic = timevar->HasString("PERIODIC");
+    if (periodicdata.periodic)
+    {
+      timevar->ExtractDouble("T1", periodicdata.t1);
+      timevar->ExtractDouble("T2", periodicdata.t2);
+    }
+    else
+    {
+      periodicdata.t1 = 0;
+      periodicdata.t2 = 0;
+    }
+
+    // distinguish the type of the variable
+    if (vartype == "expression")
+    {
+      std::string description;
+      timevar->ExtractString("DESCRIPTION", description);
+      vardef = Teuchos::rcp(new ParsedFunctionVariable(varname, description));
+    }
+    else if (vartype == "linearinterpolation")
+    {
+      // read times
+      std::vector<double> times = returnTimeVector(timevar);
+
+      // read values
+      std::vector<double> values;
+      timevar->ExtractDoubleVector("VALUES", values);
+
+      vardef = Teuchos::rcp(new LinearInterpolationVariable(varname, times, values, periodicdata));
+    }
+    else if (vartype == "multifunction")
+    {
+      // read times
+      std::vector<double> times = returnTimeVector(timevar);
+
+      // read descriptions (strings separated with spaces)
+      std::vector<std::string> description_vec;
+      timevar->ExtractStringVector("DESCRIPTION", description_vec);
+
+      // check if the number of times = number of descriptions + 1
+      std::size_t numtimes = times.size();
+      std::size_t numdescriptions = description_vec.size();
+      if (numtimes != numdescriptions + 1)
+        dserror("the number of TIMES and the number of DESCRIPTIONs must be consistent");
+
+      vardef =
+          Teuchos::rcp(new MultiFunctionVariable(varname, times, description_vec, periodicdata));
+    }
+    else if (vartype == "fourierinterpolation")
+    {
+      // read times
+      std::vector<double> times = returnTimeVector(timevar);
+
+      // read values
+      std::vector<double> values;
+      timevar->ExtractDoubleVector("VALUES", values);
+
+      vardef = Teuchos::rcp(new FourierInterpolationVariable(varname, times, values, periodicdata));
+    }
+    else
+    {
+      dserror("unknown variable type");
+    }
+
+    // insert the variable in the vector of the variables of the function
+    if (vardefinition == 1)
+    {
+      if (varid != 0)
+      {
+        functvarvector.push_back(functvar);
+        functvar.clear();
+      }
+    }
+    functvar.push_back(vardef);
+
+    if (j == numrowsvar)
+    {
+      functvarvector.push_back(functvar);
+    }
+  }
+
+  // add the expressions to the function vector
+  for (int n = 0; n <= maxcomp; ++n)
+  {
+    vecfunc->AddExpr(functstring[n], functvarvector);
+  }
+
+  return vecfunc;
 }
 
 
