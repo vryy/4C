@@ -24,8 +24,8 @@ namespace DRT
   namespace UTILS
   {
     void CombustValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
-    bool CombustFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> functionnamed,
-        std::vector<Teuchos::RCP<DRT::UTILS::Function>>* function_);
+    Teuchos::RCP<DRT::UTILS::Function> CombustTryCreateFunction(
+        Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def);
 
     /// special implementation for a level set test function
     class ZalesaksDiskFunction : public DRT::UTILS::Function

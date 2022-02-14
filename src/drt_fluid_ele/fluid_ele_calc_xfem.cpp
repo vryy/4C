@@ -407,12 +407,13 @@ namespace DRT
           // get material
           MAT::PAR::Parameter* params = mat->Parameter();
           auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
+
           if (!fparams) dserror("Material does not cast to Newtonian fluid");
 
           // evaluate velocity and pressure
           // evaluate the velocity gradient
-          function = Teuchos::rcp(new FLD::BeltramiUP(fparams));
-          function_grad = Teuchos::rcp(new FLD::BeltramiGradU(fparams));
+          function = Teuchos::rcp(new FLD::BeltramiUP(*fparams));
+          function_grad = Teuchos::rcp(new FLD::BeltramiGradU(*fparams));
 
           if (my::nsd_ == 3)
           {
@@ -550,8 +551,8 @@ namespace DRT
           auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
           if (!fparams) dserror("Material does not cast to Newtonian fluid");
 
-          function = Teuchos::rcp(new FLD::KimMoinUP(fparams, is_stationary));
-          function_grad = Teuchos::rcp(new FLD::KimMoinGradU(fparams, is_stationary));
+          function = Teuchos::rcp(new FLD::KimMoinUP(*fparams, is_stationary));
+          function_grad = Teuchos::rcp(new FLD::KimMoinGradU(*fparams, is_stationary));
 
           if (my::nsd_ == 3)
           {

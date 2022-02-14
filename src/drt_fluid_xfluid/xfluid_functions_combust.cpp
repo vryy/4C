@@ -154,23 +154,19 @@ void DRT::UTILS::CombustValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines
   lines->Add(collapsingwatercolumn);
 }
 
-bool DRT::UTILS::CombustFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> function,
-    std::vector<Teuchos::RCP<DRT::UTILS::Function>>* functions_)
+Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::CombustTryCreateFunction(
+    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def)
 {
-  bool found_combust_name = true;
-
-  if (function->HaveNamed("ZALESAKSDISK"))
+  if (function_lin_def->HaveNamed("ZALESAKSDISK"))
   {
-    functions_->push_back(Teuchos::rcp(new ZalesaksDiskFunction()));
+    return Teuchos::rcp(new ZalesaksDiskFunction());
   }
-  else if (function->HaveNamed("COLLAPSINGWATERCOLUMN"))
+  else if (function_lin_def->HaveNamed("COLLAPSINGWATERCOLUMN"))
   {
-    functions_->push_back(Teuchos::rcp(new CollapsingWaterColumnFunction()));
+    return Teuchos::rcp(new CollapsingWaterColumnFunction());
   }
   else
   {
-    found_combust_name = false;
+    return Teuchos::RCP<DRT::UTILS::Function>(NULL);
   }
-
-  return found_combust_name;
 }

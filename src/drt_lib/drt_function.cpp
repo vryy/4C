@@ -171,28 +171,29 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
   // test for as many functions as there are
   for (int i = 1;; ++i)
   {
-    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions = lines->Read(reader, i);
+    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs =
+        lines->Read(reader, i);
 
-    if (functions.empty())
+    if (functions_lin_defs.empty())
     {
       break;
     }
     else
     {
-      Teuchos::RCP<DRT::INPUT::LineDefinition> function = functions[0];
+      Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def = functions_lin_defs[0];
 
-      if (function->HaveNamed("FASTPOLYNOMIAL"))
+      if (function_lin_def->HaveNamed("FASTPOLYNOMIAL"))
       {
         std::vector<double> coefficients;
-        function->ExtractDoubleVector("COEFF", coefficients);
+        function_lin_def->ExtractDoubleVector("COEFF", coefficients);
 
         functions_.emplace_back(Teuchos::rcp(new FastPolynomialFunction(&coefficients)));
       }
-      else if (function->HaveNamed("TRANSLATEDFUNCTION"))
+      else if (function_lin_def->HaveNamed("TRANSLATEDFUNCTION"))
       {
         int origin, local;
-        function->ExtractInt("ORIGIN", origin);
-        function->ExtractInt("LOCAL", local);
+        function_lin_def->ExtractInt("ORIGIN", origin);
+        function_lin_def->ExtractInt("LOCAL", local);
 
         if (origin <= 0 or origin >= i)
         {
@@ -214,28 +215,28 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
         functions_.emplace_back(Teuchos::rcp(new TranslatedFunction(origin_funct, local_funct)));
       }
-      else if (function->HaveNamed("VARFUNCTION"))
+      else if (function_lin_def->HaveNamed("VARFUNCTION"))
       {
         Teuchos::RCP<VariableExprFunction> vecfunc = Teuchos::rcp(new VariableExprFunction());
 
         std::string component;
-        function->ExtractString("VARFUNCTION", component);
+        function_lin_def->ExtractString("VARFUNCTION", component);
 
         std::vector<std::pair<std::string, double>> constants;
-        if (function->HaveNamed("CONSTANTS"))
-          function->ExtractPairOfStringAndDoubleVector("CONSTANTS", constants);
+        if (function_lin_def->HaveNamed("CONSTANTS"))
+          function_lin_def->ExtractPairOfStringAndDoubleVector("CONSTANTS", constants);
 
         vecfunc->AddExpr(component, constants);
         functions_.emplace_back(vecfunc);
       }
-      else if (function->HaveNamed("POROMULTIPHASESCATRA_FUNCTION"))
+      else if (function_lin_def->HaveNamed("POROMULTIPHASESCATRA_FUNCTION"))
       {
         std::string type;
-        function->ExtractString("POROMULTIPHASESCATRA_FUNCTION", type);
+        function_lin_def->ExtractString("POROMULTIPHASESCATRA_FUNCTION", type);
 
         std::vector<std::pair<std::string, double>> params;
-        if (function->HaveNamed("PARAMS"))
-          function->ExtractPairOfStringAndDoubleVector("PARAMS", params);
+        if (function_lin_def->HaveNamed("PARAMS"))
+          function_lin_def->ExtractPairOfStringAndDoubleVector("PARAMS", params);
 
         Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction> vecfunc = Teuchos::null;
         if (type == "TUMOR_GROWTH_LAW_HEAVISIDE")
@@ -265,17 +266,25 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
         functions_.emplace_back(vecfunc);
       }
-      else if (STR::StructureFunctionHaveNamed(function, &functions_))
+      else if (STR::StructureTryCreateFunction(function_lin_def) != Teuchos::null)
       {
+        auto newfunct = STR::StructureTryCreateFunction(function_lin_def);
+        functions_.emplace_back(newfunct);
       }
-      else if (FLD::FluidFunctionHaveNamed(function, &functions_))
+      else if (FLD::FluidTryCreateFunction(function_lin_def) != Teuchos::null)
       {
+        auto newfunct = FLD::FluidTryCreateFunction(function_lin_def);
+        functions_.emplace_back(newfunct);
       }
-      else if (DRT::UTILS::CombustFunctionHaveNamed(function, &functions_))
+      else if (DRT::UTILS::CombustTryCreateFunction(function_lin_def) != Teuchos::null)
       {
+        auto newfunct = DRT::UTILS::CombustTryCreateFunction(function_lin_def);
+        functions_.emplace_back(newfunct);
       }
-      else if (DRT::UTILS::XfluidFunctionHaveNamed(function, &functions_))
+      else if (DRT::UTILS::XfluidTryCreateFunction(function_lin_def) != Teuchos::null)
       {
+        auto newfunct = DRT::UTILS::XfluidTryCreateFunction(function_lin_def);
+        functions_.emplace_back(newfunct);
       }
       else
       {
@@ -285,14 +294,14 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         // evaluate the maximum component and the number of variables
         int maxcomp = 0;
         int maxvar = -1;
-        for (const auto& ith_function : functions)
+        for (const auto& ith_function_lin_def : functions_lin_defs)
         {
-          ith_function->ExtractInt("COMPONENT", maxcomp);
-          ith_function->ExtractInt("VARIABLE", maxvar);
+          ith_function_lin_def->ExtractInt("COMPONENT", maxcomp);
+          ith_function_lin_def->ExtractInt("VARIABLE", maxvar);
         }
 
         // evaluate the number of rows used for the definition of the variables
-        std::size_t numrowsvar = functions.size() - maxcomp - 1;
+        std::size_t numrowsvar = functions_lin_defs.size() - maxcomp - 1;
 
         // define a vector of strings
         std::vector<std::string> functstring(maxcomp + 1);
@@ -301,7 +310,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         for (int n = 0; n <= maxcomp; ++n)
         {
           // update the current row
-          Teuchos::RCP<DRT::INPUT::LineDefinition> functcomp = functions[n];
+          Teuchos::RCP<DRT::INPUT::LineDefinition> functcomp = functions_lin_defs[n];
 
           // check the validity of the n-th component
           int compid = 0;
@@ -329,7 +338,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         for (std::size_t j = 1; j <= numrowsvar; ++j)
         {
           // update the current row
-          Teuchos::RCP<DRT::INPUT::LineDefinition> timevar = functions[maxcomp + j];
+          Teuchos::RCP<DRT::INPUT::LineDefinition> timevar = functions_lin_defs[maxcomp + j];
 
           // read the number of the variable
           int varid;

@@ -21,29 +21,29 @@
 #include "../drt_structure_new/str_functions.cpp"
 #include "Teuchos_RCP.hpp"
 
-
-static MAT::PAR::WeaklyCompressibleFluid GetWeaklyCompressibleFluidMatPars(int mat_id)
+namespace
 {
-  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
-  if (mat->Type() != INPAR::MAT::m_fluid_weakly_compressible)
-    dserror("Material %d is not a weakly compressible fluid", mat_id);
-  MAT::PAR::Parameter* params = mat->Parameter();
-  auto* fparams = dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
-  if (!fparams) dserror("Material does not cast to Weakly compressible fluid");
-  return *fparams;
-}
+  const MAT::PAR::WeaklyCompressibleFluid& GetWeaklyCompressibleFluidMatPars(int mat_id)
+  {
+    Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
+    if (mat->Type() != INPAR::MAT::m_fluid_weakly_compressible)
+      dserror("Material %d is not a weakly compressible fluid", mat_id);
+    MAT::PAR::Parameter* params = mat->Parameter();
+    auto* fparams = dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
+    if (!fparams) dserror("Material does not cast to Weakly compressible fluid");
+    return *fparams;
+  }
 
-
-static MAT::PAR::NewtonianFluid GetNewtonianFluidMatPars(int mat_id)
-{
-  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
-  if (mat->Type() != INPAR::MAT::m_fluid) dserror("Material %d is not a fluid", mat_id);
-  MAT::PAR::Parameter* params = mat->Parameter();
-  auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
-  if (!fparams) dserror("Material does not cast to Newtonian fluid");
-  return *fparams;
-}
-
+  const MAT::PAR::NewtonianFluid& GetNewtonianFluidMatPars(int mat_id)
+  {
+    Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
+    if (mat->Type() != INPAR::MAT::m_fluid) dserror("Material %d is not a fluid", mat_id);
+    MAT::PAR::Parameter* params = mat->Parameter();
+    auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
+    if (!fparams) dserror("Material does not cast to Newtonian fluid");
+    return *fparams;
+  }
+}  // namespace
 
 void FLD::FluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 {
@@ -154,28 +154,25 @@ void FLD::FluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
   lines->Add(kimmoinstress);
 }
 
-bool FLD::FluidFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> function,
-    std::vector<Teuchos::RCP<DRT::UTILS::Function>>* functions_)
+Teuchos::RCP<DRT::UTILS::Function> FLD::FluidTryCreateFunction(
+    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def)
 {
-  bool found_fluid_name = true;
-
-  if (function->HaveNamed("BELTRAMI"))
+  if (function_lin_def->HaveNamed("BELTRAMI"))
   {
     double c1;
-    function->ExtractDouble("c1", c1);
+    function_lin_def->ExtractDouble("c1", c1);
 
-    functions_->emplace_back(Teuchos::rcp(new FLD::BeltramiFunction(c1)));
+    return Teuchos::rcp(new FLD::BeltramiFunction(c1));
   }
-  else if (function->HaveNamed("CHANNELWEAKLYCOMPRESSIBLE"))
+  else if (function_lin_def->HaveNamed("CHANNELWEAKLYCOMPRESSIBLE"))
   {
-    functions_->emplace_back(Teuchos::rcp(new FLD::ChannelWeaklyCompressibleFunction()));
+    return Teuchos::rcp(new FLD::ChannelWeaklyCompressibleFunction());
   }
-  else if (function->HaveNamed("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE"))
+  else if (function_lin_def->HaveNamed("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE"))
   {
-    functions_->emplace_back(
-        Teuchos::rcp(new FLD::CorrectionTermChannelWeaklyCompressibleFunction()));
+    return Teuchos::rcp(new FLD::CorrectionTermChannelWeaklyCompressibleFunction());
   }
-  else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_POISEUILLE"))
+  else if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_POISEUILLE"))
   {
     // read data
     int mat_id = -1;
@@ -183,10 +180,10 @@ bool FLD::FluidFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> functi
     double R = 0.0;
     double U = 0.0;
 
-    function->ExtractInt("MAT", mat_id);
-    function->ExtractDouble("L", L);
-    function->ExtractDouble("R", R);
-    function->ExtractDouble("U", U);
+    function_lin_def->ExtractInt("MAT", mat_id);
+    function_lin_def->ExtractDouble("L", L);
+    function_lin_def->ExtractDouble("R", R);
+    function_lin_def->ExtractDouble("U", U);
 
     if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE");
     if (L <= 0) dserror("Please give a (reasonable) 'L' in WEAKLYCOMPRESSIBLE_POISEUILLE");
@@ -196,10 +193,9 @@ bool FLD::FluidFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> functi
     // get materials
     auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
 
-    functions_->emplace_back(
-        Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleFunction(&fparams, L, R, U)));
+    return Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleFunction(fparams, L, R, U));
   }
-  else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE"))
+  else if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE"))
   {
     // read data
     int mat_id = -1;
@@ -207,10 +203,10 @@ bool FLD::FluidFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> functi
     double R = 0.0;
     double U = 0.0;
 
-    function->ExtractInt("MAT", mat_id);
-    function->ExtractDouble("L", L);
-    function->ExtractDouble("R", R);
-    function->ExtractDouble("U", U);
+    function_lin_def->ExtractInt("MAT", mat_id);
+    function_lin_def->ExtractDouble("L", L);
+    function_lin_def->ExtractDouble("R", R);
+    function_lin_def->ExtractDouble("U", U);
 
     if (mat_id <= 0)
       dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
@@ -221,15 +217,14 @@ bool FLD::FluidFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> functi
     // get materials
     auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
 
-    functions_->emplace_back(
-        Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleForceFunction(&fparams, L, R, U)));
+    return Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleForceFunction(fparams, L, R, U));
   }
-  else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW"))
+  else if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW"))
   {
     // read data
     int mat_id = -1;
 
-    function->ExtractInt("MAT", mat_id);
+    function_lin_def->ExtractInt("MAT", mat_id);
 
     if (mat_id <= 0)
       dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW");
@@ -237,15 +232,14 @@ bool FLD::FluidFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> functi
     // get materials
     auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
 
-    functions_->emplace_back(
-        Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowFunction(&fparams)));
+    return Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowFunction(fparams));
   }
-  else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE"))
+  else if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE"))
   {
     // read data
     int mat_id = -1;
 
-    function->ExtractInt("MAT", mat_id);
+    function_lin_def->ExtractInt("MAT", mat_id);
 
     if (mat_id <= 0)
       dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE");
@@ -253,29 +247,28 @@ bool FLD::FluidFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> functi
     // get materials
     auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
 
-    functions_->emplace_back(
-        Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowForceFunction(&fparams)));
+    return Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowForceFunction(fparams));
   }
-  else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD"))
+  else if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD"))
   {
     // read data
     int mat_id = -1;
 
-    function->ExtractInt("MAT", mat_id);
+    function_lin_def->ExtractInt("MAT", mat_id);
 
     if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD");
 
     // get materials
     auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
 
-    functions_->emplace_back(Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDFunction(&fparams)));
+    return Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDFunction(fparams));
   }
-  else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE"))
+  else if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE"))
   {
     // read data
     int mat_id = -1;
 
-    function->ExtractInt("MAT", mat_id);
+    function_lin_def->ExtractInt("MAT", mat_id);
 
     if (mat_id <= 0)
       dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE");
@@ -283,15 +276,14 @@ bool FLD::FluidFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> functi
     // get materials
     auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
 
-    functions_->emplace_back(
-        Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDForceFunction(&fparams)));
+    return Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDForceFunction(fparams));
   }
-  else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY"))
+  else if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY"))
   {
     // read data
     int mat_id = -1;
 
-    function->ExtractInt("MAT", mat_id);
+    function_lin_def->ExtractInt("MAT", mat_id);
 
     if (mat_id <= 0)
       dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY");
@@ -299,17 +291,16 @@ bool FLD::FluidFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> functi
     // get materials
     auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
 
-    functions_->emplace_back(
-        Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDViscosityFunction(&fparams)));
+    return Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDViscosityFunction(fparams));
   }
-  else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID"))
+  else if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID"))
   {
     // read data
     int mat_id_fluid = -1;
     int mat_id_struc = -1;
 
-    function->ExtractInt("MAT_FLUID", mat_id_fluid);
-    function->ExtractInt("MAT_STRUC", mat_id_struc);
+    function_lin_def->ExtractInt("MAT_FLUID", mat_id_fluid);
+    function_lin_def->ExtractInt("MAT_STRUC", mat_id_struc);
 
     if (mat_id_fluid <= 0)
       dserror("Please give a (reasonable) 'MAT_FLUID' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID");
@@ -320,17 +311,17 @@ bool FLD::FluidFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> functi
     auto fparams_fluid = GetWeaklyCompressibleFluidMatPars(mat_id_fluid);
     auto fparams_struc = GetSVKMatPars(mat_id_struc);
 
-    functions_->emplace_back(Teuchos::rcp(
-        new FLD::WeaklyCompressibleEtienneFSIFluidFunction(&fparams_fluid, &fparams_struc)));
+    return Teuchos::rcp(
+        new FLD::WeaklyCompressibleEtienneFSIFluidFunction(fparams_fluid, fparams_struc));
   }
-  else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE"))
+  else if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE"))
   {
     // read data
     int mat_id_fluid = -1;
     int mat_id_struc = -1;
 
-    function->ExtractInt("MAT_FLUID", mat_id_fluid);
-    function->ExtractInt("MAT_STRUC", mat_id_struc);
+    function_lin_def->ExtractInt("MAT_FLUID", mat_id_fluid);
+    function_lin_def->ExtractInt("MAT_STRUC", mat_id_struc);
 
     if (mat_id_fluid <= 0)
     {
@@ -349,17 +340,17 @@ bool FLD::FluidFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> functi
     auto fparams_fluid = GetWeaklyCompressibleFluidMatPars(mat_id_fluid);
     auto fparams_struc = GetSVKMatPars(mat_id_struc);
 
-    functions_->emplace_back(Teuchos::rcp(
-        new FLD::WeaklyCompressibleEtienneFSIFluidForceFunction(&fparams_fluid, &fparams_struc)));
+    return Teuchos::rcp(
+        new FLD::WeaklyCompressibleEtienneFSIFluidForceFunction(fparams_fluid, fparams_struc));
   }
-  else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY"))
+  else if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY"))
   {
     // read data
     int mat_id_fluid = -1;
     int mat_id_struc = -1;
 
-    function->ExtractInt("MAT_FLUID", mat_id_fluid);
-    function->ExtractInt("MAT_STRUC", mat_id_struc);
+    function_lin_def->ExtractInt("MAT_FLUID", mat_id_fluid);
+    function_lin_def->ExtractInt("MAT_STRUC", mat_id_struc);
 
     if (mat_id_fluid <= 0)
     {
@@ -378,100 +369,95 @@ bool FLD::FluidFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> functi
     auto fparams_fluid = GetWeaklyCompressibleFluidMatPars(mat_id_fluid);
     auto fparams_struc = GetSVKMatPars(mat_id_struc);
 
-    functions_->emplace_back(
-        Teuchos::rcp(new FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction(
-            &fparams_fluid, &fparams_struc)));
+    return Teuchos::rcp(
+        new FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction(fparams_fluid, fparams_struc));
   }
-  else if (function->HaveNamed("BELTRAMI-UP"))
+  else if (function_lin_def->HaveNamed("BELTRAMI-UP"))
   {
     // read material
     int mat_id = -1;
 
-    function->ExtractInt("MAT", mat_id);
+    function_lin_def->ExtractInt("MAT", mat_id);
 
     if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-UP");
 
     // get material
     auto fparams = GetNewtonianFluidMatPars(mat_id);
 
-    functions_->emplace_back(Teuchos::rcp(new FLD::BeltramiUP(&fparams)));
+    return Teuchos::rcp(new FLD::BeltramiUP(fparams));
   }
-  else if (function->HaveNamed("BELTRAMI-RHS"))
+  else if (function_lin_def->HaveNamed("BELTRAMI-RHS"))
   {
     // read material
     int mat_id = -1;
     int is_stokes = 0;
 
-    function->ExtractInt("MAT", mat_id);
-    function->ExtractInt("ISSTOKES", is_stokes);
+    function_lin_def->ExtractInt("MAT", mat_id);
+    function_lin_def->ExtractInt("ISSTOKES", is_stokes);
 
     if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-RHS");
 
     // get material
     auto fparams = GetNewtonianFluidMatPars(mat_id);
 
-    functions_->emplace_back(Teuchos::rcp(new FLD::BeltramiRHS(&fparams, (bool)is_stokes)));
+    return Teuchos::rcp(new FLD::BeltramiRHS(fparams, (bool)is_stokes));
   }
-  else if (function->HaveNamed("KIMMOIN-UP"))
+  else if (function_lin_def->HaveNamed("KIMMOIN-UP"))
   {
     // read material
     int mat_id = -1;
     int is_stationary = 0;
 
-    function->ExtractInt("MAT", mat_id);
-    function->ExtractInt("ISSTAT", is_stationary);
+    function_lin_def->ExtractInt("MAT", mat_id);
+    function_lin_def->ExtractInt("ISSTAT", is_stationary);
 
     if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-UP");
 
     // get material
     auto fparams = GetNewtonianFluidMatPars(mat_id);
 
-    functions_->emplace_back(Teuchos::rcp(new FLD::KimMoinUP(&fparams, (bool)is_stationary)));
+    return Teuchos::rcp(new FLD::KimMoinUP(fparams, (bool)is_stationary));
   }
-  else if (function->HaveNamed("KIMMOIN-RHS"))
+  else if (function_lin_def->HaveNamed("KIMMOIN-RHS"))
   {
     // read material
     int mat_id = -1;
     int is_stationary = 0;
     int is_stokes = 0;
 
-    function->ExtractInt("MAT", mat_id);
-    function->ExtractInt("ISSTAT", is_stationary);
-    function->ExtractInt("ISSTOKES", is_stokes);
+    function_lin_def->ExtractInt("MAT", mat_id);
+    function_lin_def->ExtractInt("ISSTAT", is_stationary);
+    function_lin_def->ExtractInt("ISSTOKES", is_stokes);
 
     if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-RHS");
 
     // get material
     auto fparams = GetNewtonianFluidMatPars(mat_id);
 
-    functions_->emplace_back(
-        Teuchos::rcp(new FLD::KimMoinRHS(&fparams, (bool)is_stationary, (bool)is_stokes)));
+    return Teuchos::rcp(new FLD::KimMoinRHS(fparams, (bool)is_stationary, (bool)is_stokes));
   }
-  else if (function->HaveNamed("KIMMOIN-STRESS"))
+  else if (function_lin_def->HaveNamed("KIMMOIN-STRESS"))
   {
     // read material
     int mat_id = -1;
     int is_stationary = 0;
     double amplitude = 1.0;
 
-    function->ExtractInt("MAT", mat_id);
-    function->ExtractInt("ISSTAT", is_stationary);
-    function->ExtractDouble("AMPLITUDE", amplitude);
+    function_lin_def->ExtractInt("MAT", mat_id);
+    function_lin_def->ExtractInt("ISSTAT", is_stationary);
+    function_lin_def->ExtractDouble("AMPLITUDE", amplitude);
 
     if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-STRESS");
 
     // get material
     auto fparams = GetNewtonianFluidMatPars(mat_id);
 
-    functions_->emplace_back(
-        Teuchos::rcp(new FLD::KimMoinStress(&fparams, (bool)is_stationary, amplitude)));
+    return Teuchos::rcp(new FLD::KimMoinStress(fparams, (bool)is_stationary, amplitude));
   }
   else
   {
-    found_fluid_name = false;
+    return Teuchos::RCP<DRT::UTILS::Function>(NULL);
   }
-
-  return found_fluid_name;
 }
 
 
@@ -1026,7 +1012,7 @@ std::vector<double> FLD::CorrectionTermChannelWeaklyCompressibleFunction::Evalua
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressiblePoiseuilleFunction::WeaklyCompressiblePoiseuilleFunction(
-    MAT::PAR::WeaklyCompressibleFluid* fparams, double L, double R, double U)
+    const MAT::PAR::WeaklyCompressibleFluid& fparams, double L, double R, double U)
     : Function(),
       length_(0.0),
       halfheight_(0.0),
@@ -1041,10 +1027,10 @@ FLD::WeaklyCompressiblePoiseuilleFunction::WeaklyCompressiblePoiseuilleFunction(
   halfheight_ = R;
   meanvelocityexit_ = U;
 
-  viscosity_ = fparams->viscosity_;
-  refdensity_ = fparams->refdensity_;
-  refpressure_ = fparams->refpressure_;
-  comprcoeff_ = fparams->comprcoeff_;
+  viscosity_ = fparams.viscosity_;
+  refdensity_ = fparams.refdensity_;
+  refpressure_ = fparams.refpressure_;
+  comprcoeff_ = fparams.comprcoeff_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1142,7 +1128,7 @@ std::vector<double> FLD::WeaklyCompressiblePoiseuilleFunction::EvaluateTimeDeriv
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressiblePoiseuilleForceFunction::WeaklyCompressiblePoiseuilleForceFunction(
-    MAT::PAR::WeaklyCompressibleFluid* fparams, double L, double R, double U)
+    const MAT::PAR::WeaklyCompressibleFluid& fparams, double L, double R, double U)
     : Function(),
       length_(0.0),
       halfheight_(0.0),
@@ -1157,10 +1143,10 @@ FLD::WeaklyCompressiblePoiseuilleForceFunction::WeaklyCompressiblePoiseuilleForc
   halfheight_ = R;
   meanvelocityexit_ = U;
 
-  viscosity_ = fparams->viscosity_;
-  refdensity_ = fparams->refdensity_;
-  refpressure_ = fparams->refpressure_;
-  comprcoeff_ = fparams->comprcoeff_;
+  viscosity_ = fparams.viscosity_;
+  refdensity_ = fparams.refdensity_;
+  refpressure_ = fparams.refpressure_;
+  comprcoeff_ = fparams.comprcoeff_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1243,14 +1229,14 @@ std::vector<double> FLD::WeaklyCompressiblePoiseuilleForceFunction::EvaluateTime
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleManufacturedFlowFunction::WeaklyCompressibleManufacturedFlowFunction(
-    MAT::PAR::WeaklyCompressibleFluid* fparams)
+    const MAT::PAR::WeaklyCompressibleFluid& fparams)
     : Function(), viscosity_(0.0), refdensity_(0.0), refpressure_(0.0), comprcoeff_(0.0)
 {
   // get data
-  viscosity_ = fparams->viscosity_;
-  refdensity_ = fparams->refdensity_;
-  refpressure_ = fparams->refpressure_;
-  comprcoeff_ = fparams->comprcoeff_;
+  viscosity_ = fparams.viscosity_;
+  refdensity_ = fparams.refdensity_;
+  refpressure_ = fparams.refpressure_;
+  comprcoeff_ = fparams.comprcoeff_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1388,14 +1374,15 @@ std::vector<double> FLD::WeaklyCompressibleManufacturedFlowFunction::EvaluateTim
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleManufacturedFlowForceFunction::
-    WeaklyCompressibleManufacturedFlowForceFunction(MAT::PAR::WeaklyCompressibleFluid* fparams)
+    WeaklyCompressibleManufacturedFlowForceFunction(
+        const MAT::PAR::WeaklyCompressibleFluid& fparams)
     : Function(), viscosity_(0.0), refdensity_(0.0), refpressure_(0.0), comprcoeff_(0.0)
 {
   // get data
-  viscosity_ = fparams->viscosity_;
-  refdensity_ = fparams->refdensity_;
-  refpressure_ = fparams->refpressure_;
-  comprcoeff_ = fparams->comprcoeff_;
+  viscosity_ = fparams.viscosity_;
+  refdensity_ = fparams.refdensity_;
+  refpressure_ = fparams.refpressure_;
+  comprcoeff_ = fparams.comprcoeff_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1654,13 +1641,13 @@ std::vector<double> FLD::WeaklyCompressibleManufacturedFlowForceFunction::Evalua
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneCFDFunction::WeaklyCompressibleEtienneCFDFunction(
-    MAT::PAR::WeaklyCompressibleFluid* fparams)
+    const MAT::PAR::WeaklyCompressibleFluid& fparams)
     : Function(), refdensity_(0.0), refpressure_(0.0), comprcoeff_(0.0)
 {
   // get data
-  refdensity_ = fparams->refdensity_;
-  refpressure_ = fparams->refpressure_;
-  comprcoeff_ = fparams->comprcoeff_;
+  refdensity_ = fparams.refdensity_;
+  refpressure_ = fparams.refpressure_;
+  comprcoeff_ = fparams.comprcoeff_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1809,13 +1796,13 @@ std::vector<double> FLD::WeaklyCompressibleEtienneCFDFunction::EvaluateTimeDeriv
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneCFDForceFunction::WeaklyCompressibleEtienneCFDForceFunction(
-    MAT::PAR::WeaklyCompressibleFluid* fparams)
+    const MAT::PAR::WeaklyCompressibleFluid& fparams)
     : Function(), refdensity_(0.0), refpressure_(0.0), comprcoeff_(0.0)
 {
   // get data
-  refdensity_ = fparams->refdensity_;
-  refpressure_ = fparams->refpressure_;
-  comprcoeff_ = fparams->comprcoeff_;
+  refdensity_ = fparams.refdensity_;
+  refpressure_ = fparams.refpressure_;
+  comprcoeff_ = fparams.comprcoeff_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -2229,13 +2216,13 @@ std::vector<double> FLD::WeaklyCompressibleEtienneCFDForceFunction::EvaluateTime
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneCFDViscosityFunction::WeaklyCompressibleEtienneCFDViscosityFunction(
-    MAT::PAR::WeaklyCompressibleFluid* fparams)
+    const MAT::PAR::WeaklyCompressibleFluid& fparams)
     : Function(), refdensity_(0.0), refpressure_(0.0), comprcoeff_(0.0)
 {
   // get data
-  refdensity_ = fparams->refdensity_;
-  refpressure_ = fparams->refpressure_;
-  comprcoeff_ = fparams->comprcoeff_;
+  refdensity_ = fparams.refdensity_;
+  refpressure_ = fparams.refpressure_;
+  comprcoeff_ = fparams.comprcoeff_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -2296,7 +2283,8 @@ std::vector<double> FLD::WeaklyCompressibleEtienneCFDViscosityFunction::Evaluate
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneFSIFluidFunction::WeaklyCompressibleEtienneFSIFluidFunction(
-    MAT::PAR::WeaklyCompressibleFluid* fparams_fluid, MAT::PAR::StVenantKirchhoff* fparams_struc)
+    const MAT::PAR::WeaklyCompressibleFluid& fparams_fluid,
+    const MAT::PAR::StVenantKirchhoff& fparams_struc)
     : Function(),
       refdensity_(0.0),
       refpressure_(0.0),
@@ -2306,13 +2294,13 @@ FLD::WeaklyCompressibleEtienneFSIFluidFunction::WeaklyCompressibleEtienneFSIFlui
       strucdensity_(0.0)
 {
   // get data
-  refdensity_ = fparams_fluid->refdensity_;
-  refpressure_ = fparams_fluid->refpressure_;
-  comprcoeff_ = fparams_fluid->comprcoeff_;
+  refdensity_ = fparams_fluid.refdensity_;
+  refpressure_ = fparams_fluid.refpressure_;
+  comprcoeff_ = fparams_fluid.comprcoeff_;
 
-  youngmodulus_ = fparams_struc->youngs_;
-  poissonratio_ = fparams_struc->poissonratio_;
-  strucdensity_ = fparams_struc->density_;
+  youngmodulus_ = fparams_struc.youngs_;
+  poissonratio_ = fparams_struc.poissonratio_;
+  strucdensity_ = fparams_struc.density_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -2623,7 +2611,8 @@ std::vector<double> FLD::WeaklyCompressibleEtienneFSIFluidFunction::EvaluateTime
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::WeaklyCompressibleEtienneFSIFluidForceFunction(
-    MAT::PAR::WeaklyCompressibleFluid* fparams_fluid, MAT::PAR::StVenantKirchhoff* fparams_struc)
+    const MAT::PAR::WeaklyCompressibleFluid& fparams_fluid,
+    const MAT::PAR::StVenantKirchhoff& fparams_struc)
     : Function(),
       refdensity_(0.0),
       refpressure_(0.0),
@@ -2633,13 +2622,13 @@ FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::WeaklyCompressibleEtienneFS
       strucdensity_(0.0)
 {
   // get data
-  refdensity_ = fparams_fluid->refdensity_;
-  refpressure_ = fparams_fluid->refpressure_;
-  comprcoeff_ = fparams_fluid->comprcoeff_;
+  refdensity_ = fparams_fluid.refdensity_;
+  refpressure_ = fparams_fluid.refpressure_;
+  comprcoeff_ = fparams_fluid.comprcoeff_;
 
-  youngmodulus_ = fparams_struc->youngs_;
-  poissonratio_ = fparams_struc->poissonratio_;
-  strucdensity_ = fparams_struc->density_;
+  youngmodulus_ = fparams_struc.youngs_;
+  poissonratio_ = fparams_struc.poissonratio_;
+  strucdensity_ = fparams_struc.density_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -6189,8 +6178,8 @@ std::vector<double> FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::Evaluat
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::
     WeaklyCompressibleEtienneFSIFluidViscosityFunction(
-        MAT::PAR::WeaklyCompressibleFluid* fparams_fluid,
-        MAT::PAR::StVenantKirchhoff* fparams_struc)
+        const MAT::PAR::WeaklyCompressibleFluid& fparams_fluid,
+        const MAT::PAR::StVenantKirchhoff& fparams_struc)
     : Function(),
       refdensity_(0.0),
       refpressure_(0.0),
@@ -6200,13 +6189,13 @@ FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::
       strucdensity_(0.0)
 {
   // get data
-  refdensity_ = fparams_fluid->refdensity_;
-  refpressure_ = fparams_fluid->refpressure_;
-  comprcoeff_ = fparams_fluid->comprcoeff_;
+  refdensity_ = fparams_fluid.refdensity_;
+  refpressure_ = fparams_fluid.refpressure_;
+  comprcoeff_ = fparams_fluid.comprcoeff_;
 
-  youngmodulus_ = fparams_struc->youngs_;
-  poissonratio_ = fparams_struc->poissonratio_;
-  strucdensity_ = fparams_struc->density_;
+  youngmodulus_ = fparams_struc.youngs_;
+  poissonratio_ = fparams_struc.poissonratio_;
+  strucdensity_ = fparams_struc.density_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -6379,14 +6368,14 @@ std::vector<double> FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::Eva
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::BeltramiUP::BeltramiUP(MAT::PAR::NewtonianFluid* fparams)
+FLD::BeltramiUP::BeltramiUP(const MAT::PAR::NewtonianFluid& fparams)
     : Function(), density_(-999.0e99), kinviscosity_(-999.0e99)
 {
   // get density
-  density_ = fparams->density_;
+  density_ = fparams.density_;
 
   // get kinematic viscosity
-  kinviscosity_ = fparams->viscosity_ / density_;
+  kinviscosity_ = fparams.viscosity_ / density_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -6482,11 +6471,11 @@ std::vector<double> FLD::BeltramiUP::EvaluateTimeDerivative(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::BeltramiGradU::BeltramiGradU(MAT::PAR::NewtonianFluid* fparams)
+FLD::BeltramiGradU::BeltramiGradU(const MAT::PAR::NewtonianFluid& fparams)
     : Function(), kinviscosity_(-999.0e99)
 {
   // get kinematic viscosity
-  kinviscosity_ = fparams->viscosity_ / fparams->density_;
+  kinviscosity_ = fparams.viscosity_ / fparams.density_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -6611,11 +6600,11 @@ std::vector<double> FLD::BeltramiGradU::EvaluateTimeDerivative(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::BeltramiRHS::BeltramiRHS(MAT::PAR::NewtonianFluid* fparams, bool is_stokes)
+FLD::BeltramiRHS::BeltramiRHS(const MAT::PAR::NewtonianFluid& fparams, bool is_stokes)
     : Function(), kinviscosity_(-999.0e99), is_stokes_(is_stokes)
 {
   // get kinematic viscosity
-  kinviscosity_ = fparams->viscosity_ / fparams->density_;
+  kinviscosity_ = fparams.viscosity_ / fparams.density_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -6724,14 +6713,14 @@ std::vector<double> FLD::BeltramiRHS::EvaluateTimeDerivative(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::KimMoinUP::KimMoinUP(MAT::PAR::NewtonianFluid* fparams, bool is_stationary)
+FLD::KimMoinUP::KimMoinUP(const MAT::PAR::NewtonianFluid& fparams, bool is_stationary)
     : Function(), density_(-999.0e99), kinviscosity_(-999.0e99), is_stationary_(is_stationary)
 {
   // get density
-  density_ = fparams->density_;
+  density_ = fparams.density_;
 
   // get kinematic viscosity
-  kinviscosity_ = fparams->viscosity_ / density_;
+  kinviscosity_ = fparams.viscosity_ / density_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -6866,11 +6855,11 @@ std::vector<double> FLD::KimMoinUP::EvaluateTimeDerivative(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::KimMoinGradU::KimMoinGradU(MAT::PAR::NewtonianFluid* fparams, bool is_stationary)
+FLD::KimMoinGradU::KimMoinGradU(const MAT::PAR::NewtonianFluid& fparams, bool is_stationary)
     : Function(), kinviscosity_(-999.0e99), is_stationary_(is_stationary)
 {
   // get kinematic viscosity
-  kinviscosity_ = fparams->viscosity_ / fparams->density_;
+  kinviscosity_ = fparams.viscosity_ / fparams.density_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -7032,11 +7021,12 @@ std::vector<double> FLD::KimMoinGradU::EvaluateTimeDerivative(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::KimMoinRHS::KimMoinRHS(MAT::PAR::NewtonianFluid* fparams, bool is_stationary, bool is_stokes)
+FLD::KimMoinRHS::KimMoinRHS(
+    const MAT::PAR::NewtonianFluid& fparams, bool is_stationary, bool is_stokes)
     : Function(), kinviscosity_(-999.0e99), is_stationary_(is_stationary), is_stokes_(is_stokes)
 {
   // get kinematic viscosity
-  kinviscosity_ = fparams->viscosity_ / fparams->density_;
+  kinviscosity_ = fparams.viscosity_ / fparams.density_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -7217,7 +7207,7 @@ std::vector<double> FLD::KimMoinRHS::EvaluateTimeDerivative(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::KimMoinStress::KimMoinStress(
-    MAT::PAR::NewtonianFluid* fparams, bool is_stationary, double amplitude)
+    const MAT::PAR::NewtonianFluid& fparams, bool is_stationary, double amplitude)
     : Function(), kinviscosity_(-999.0e99), is_stationary_(is_stationary), amplitude_(amplitude)
 {
   if (amplitude_ != 1.0)
@@ -7226,10 +7216,10 @@ FLD::KimMoinStress::KimMoinStress(
         "functionality!");
 
   // get density
-  density_ = fparams->density_;
+  density_ = fparams.density_;
 
   // get kinematic viscosity
-  kinviscosity_ = fparams->viscosity_ / density_;
+  kinviscosity_ = fparams.viscosity_ / density_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

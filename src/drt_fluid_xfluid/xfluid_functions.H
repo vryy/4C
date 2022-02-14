@@ -26,8 +26,8 @@ namespace DRT
   namespace UTILS
   {
     void XfluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
-    bool XfluidFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> functionnamed,
-        std::vector<Teuchos::RCP<Function>>* function_);
+    Teuchos::RCP<DRT::UTILS::Function> XfluidTryCreateFunction(
+        Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def);
 
     /// special implementation level set cut utilizing xfluid
     class GerstenbergerForwardfacingStep : public Function

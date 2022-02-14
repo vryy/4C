@@ -1555,205 +1555,203 @@ void DRT::UTILS::XfluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
   lines->Add(urquizaboxflowtraction);
 }
 
-bool DRT::UTILS::XfluidFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> function,
-    std::vector<Teuchos::RCP<Function>>* functions_)
+Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::XfluidTryCreateFunction(
+    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def)
 {
-  bool found_xfluid_name = true;
-
-  if (function->HaveNamed("FORWARDFACINGSTEP"))
+  if (function_lin_def->HaveNamed("FORWARDFACINGSTEP"))
   {
-    functions_->push_back(Teuchos::rcp(new GerstenbergerForwardfacingStep()));
+    return Teuchos::rcp(new GerstenbergerForwardfacingStep());
   }
-  else if (function->HaveNamed("MOVINGLEVELSETCYLINDER"))
+  else if (function_lin_def->HaveNamed("MOVINGLEVELSETCYLINDER"))
   {
     std::vector<double> origin;
-    function->ExtractDoubleVector("ORIGIN", origin);
+    function_lin_def->ExtractDoubleVector("ORIGIN", origin);
 
     double radius;
-    function->ExtractDouble("RADIUS", radius);
+    function_lin_def->ExtractDouble("RADIUS", radius);
 
     std::vector<double> direction;
-    function->ExtractDoubleVector("DIRECTION", direction);
+    function_lin_def->ExtractDoubleVector("DIRECTION", direction);
 
     double distance;
-    function->ExtractDouble("DISTANCE", distance);
+    function_lin_def->ExtractDouble("DISTANCE", distance);
 
     double maxspeed;
-    function->ExtractDouble("MAXSPEED", maxspeed);
+    function_lin_def->ExtractDouble("MAXSPEED", maxspeed);
 
-    functions_->push_back(
-        Teuchos::rcp(new MovingLevelSetCylinder(&origin, radius, &direction, distance, maxspeed)));
+    return Teuchos::rcp(
+        new MovingLevelSetCylinder(&origin, radius, &direction, distance, maxspeed));
   }
-  else if (function->HaveNamed("MOVINGLEVELSETTORUS") or
-           function->HaveNamed("MOVINGLEVELSETTORUSVELOCITY") or
-           function->HaveNamed("MOVINGLEVELSETTORUSSLIPLENGTH"))
+  else if (function_lin_def->HaveNamed("MOVINGLEVELSETTORUS") or
+           function_lin_def->HaveNamed("MOVINGLEVELSETTORUSVELOCITY") or
+           function_lin_def->HaveNamed("MOVINGLEVELSETTORUSSLIPLENGTH"))
   {
     std::vector<double> origin;
-    function->ExtractDoubleVector("ORIGIN", origin);
+    function_lin_def->ExtractDoubleVector("ORIGIN", origin);
 
     std::vector<double> orient_vec_torus;
-    function->ExtractDoubleVector("ORIENTVEC_TORUS", orient_vec_torus);
+    function_lin_def->ExtractDoubleVector("ORIENTVEC_TORUS", orient_vec_torus);
 
     double radius;
-    function->ExtractDouble("RADIUS", radius);
+    function_lin_def->ExtractDouble("RADIUS", radius);
 
     double radius_tube;
-    function->ExtractDouble("RADIUS_TUBE", radius_tube);
+    function_lin_def->ExtractDouble("RADIUS_TUBE", radius_tube);
 
     std::vector<double> direction;
-    function->ExtractDoubleVector("DIRECTION", direction);
+    function_lin_def->ExtractDoubleVector("DIRECTION", direction);
 
     double distance;
-    function->ExtractDouble("DISTANCE", distance);
+    function_lin_def->ExtractDouble("DISTANCE", distance);
 
     double maxspeed;
-    function->ExtractDouble("MAXSPEED", maxspeed);
+    function_lin_def->ExtractDouble("MAXSPEED", maxspeed);
 
     std::vector<double> rot_vec_torus;
-    function->ExtractDoubleVector("ROTATION_VEC", rot_vec_torus);
+    function_lin_def->ExtractDoubleVector("ROTATION_VEC", rot_vec_torus);
 
     double rotspeed;
-    function->ExtractDouble("ROTATION_SPEED", rotspeed);  // revolutions per second
+    function_lin_def->ExtractDouble("ROTATION_SPEED", rotspeed);  // revolutions per second
 
     double rotramptime;
-    function->ExtractDouble("ROTATION_RAMPTIME", rotramptime);  // revolutions per second
+    function_lin_def->ExtractDouble("ROTATION_RAMPTIME", rotramptime);  // revolutions per second
 
-    if (function->HaveNamed("MOVINGLEVELSETTORUS"))
-      functions_->push_back(Teuchos::rcp(new MovingLevelSetTorus(&origin, &orient_vec_torus, radius,
-          radius_tube, &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime)));
-    else if (function->HaveNamed("MOVINGLEVELSETTORUSVELOCITY"))
-      functions_->push_back(
-          Teuchos::rcp(new MovingLevelSetTorusVelocity(&origin, &orient_vec_torus, radius,
-              radius_tube, &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime)));
-    else if (function->HaveNamed("MOVINGLEVELSETTORUSSLIPLENGTH"))
+    if (function_lin_def->HaveNamed("MOVINGLEVELSETTORUS"))
+      return Teuchos::rcp(new MovingLevelSetTorus(&origin, &orient_vec_torus, radius, radius_tube,
+          &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime));
+    else if (function_lin_def->HaveNamed("MOVINGLEVELSETTORUSVELOCITY"))
+      return Teuchos::rcp(new MovingLevelSetTorusVelocity(&origin, &orient_vec_torus, radius,
+          radius_tube, &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime));
+    else if (function_lin_def->HaveNamed("MOVINGLEVELSETTORUSSLIPLENGTH"))
     {
       int slipfunct;
-      function->ExtractInt("SLIP_FUNCT", slipfunct);
-      functions_->push_back(Teuchos::rcp(
+      function_lin_def->ExtractInt("SLIP_FUNCT", slipfunct);
+      return Teuchos::rcp(
           new MovingLevelSetTorusSliplength(&origin, &orient_vec_torus, radius, radius_tube,
-              &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime, slipfunct)));
+              &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime, slipfunct));
     }
     else
+    {
       dserror("How did you end up here :)?");
+      return Teuchos::RCP<DRT::UTILS::Function>(NULL);
+    }
   }
-  else if (function->HaveNamed("TAYLORCOUETTEFLOW"))
+  else if (function_lin_def->HaveNamed("TAYLORCOUETTEFLOW"))
   {
     double radius_i;
-    function->ExtractDouble("RADIUS_I", radius_i);
+    function_lin_def->ExtractDouble("RADIUS_I", radius_i);
     double radius_o;
-    function->ExtractDouble("RADIUS_O", radius_o);
+    function_lin_def->ExtractDouble("RADIUS_O", radius_o);
 
     double vel_theta_i;
-    function->ExtractDouble("VEL_THETA_I", vel_theta_i);
+    function_lin_def->ExtractDouble("VEL_THETA_I", vel_theta_i);
     double vel_theta_o;
-    function->ExtractDouble("VEL_THETA_O", vel_theta_o);
+    function_lin_def->ExtractDouble("VEL_THETA_O", vel_theta_o);
 
     double sliplength_i;
-    function->ExtractDouble("SLIPLENGTH_I", sliplength_i);
+    function_lin_def->ExtractDouble("SLIPLENGTH_I", sliplength_i);
     double sliplength_o;
-    function->ExtractDouble("SLIPLENGTH_O", sliplength_o);
+    function_lin_def->ExtractDouble("SLIPLENGTH_O", sliplength_o);
 
     double traction_theta_i;
-    function->ExtractDouble("TRACTION_THETA_I", traction_theta_i);
+    function_lin_def->ExtractDouble("TRACTION_THETA_I", traction_theta_i);
     double traction_theta_o;
-    function->ExtractDouble("TRACTION_THETA_O", traction_theta_o);
+    function_lin_def->ExtractDouble("TRACTION_THETA_O", traction_theta_o);
 
     double viscosity;
-    function->ExtractDouble("VISCOSITY", viscosity);
+    function_lin_def->ExtractDouble("VISCOSITY", viscosity);
 
-    functions_->push_back(Teuchos::rcp(new TaylorCouetteFlow(radius_i, radius_o, vel_theta_i,
-        vel_theta_o, sliplength_i, sliplength_o, traction_theta_i, traction_theta_o, viscosity)));
+    return Teuchos::rcp(new TaylorCouetteFlow(radius_i, radius_o, vel_theta_i, vel_theta_o,
+        sliplength_i, sliplength_o, traction_theta_i, traction_theta_o, viscosity));
   }
-  else if (function->HaveNamed("URQUIZABOXFLOW"))
+  else if (function_lin_def->HaveNamed("URQUIZABOXFLOW"))
   {
     double lengthx;
-    function->ExtractDouble("LENGTHX", lengthx);
+    function_lin_def->ExtractDouble("LENGTHX", lengthx);
     double lengthy;
-    function->ExtractDouble("LENGTHY", lengthy);
+    function_lin_def->ExtractDouble("LENGTHY", lengthy);
 
     double rotation;
-    function->ExtractDouble("ROTATION", rotation);
+    function_lin_def->ExtractDouble("ROTATION", rotation);
     double viscosity;
-    function->ExtractDouble("VISCOSITY", viscosity);
+    function_lin_def->ExtractDouble("VISCOSITY", viscosity);
     double density;
-    function->ExtractDouble("DENSITY", density);
+    function_lin_def->ExtractDouble("DENSITY", density);
 
     int functno;
-    function->ExtractInt("CASE", functno);
+    function_lin_def->ExtractInt("CASE", functno);
 
     std::vector<double> lin_comb(2, 0.0);
-    if (function->HaveNamed("COMBINATION"))
+    if (function_lin_def->HaveNamed("COMBINATION"))
     {
-      function->ExtractDoubleVector("COMBINATION", lin_comb);
+      function_lin_def->ExtractDoubleVector("COMBINATION", lin_comb);
     }
     else if (functno == 3)
       dserror(
           "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "
           "DEFINE: COMBINATION C1 C2");
 
-    functions_->push_back(Teuchos::rcp(
-        new UrquizaBoxFlow(lengthx, lengthy, rotation, viscosity, density, functno, lin_comb)));
+    return Teuchos::rcp(
+        new UrquizaBoxFlow(lengthx, lengthy, rotation, viscosity, density, functno, lin_comb));
   }
-  else if (function->HaveNamed("URQUIZABOXFLOW_FORCE"))
+  else if (function_lin_def->HaveNamed("URQUIZABOXFLOW_FORCE"))
   {
     double lengthx;
-    function->ExtractDouble("LENGTHX", lengthx);
+    function_lin_def->ExtractDouble("LENGTHX", lengthx);
     double lengthy;
-    function->ExtractDouble("LENGTHY", lengthy);
+    function_lin_def->ExtractDouble("LENGTHY", lengthy);
 
     double rotation;
-    function->ExtractDouble("ROTATION", rotation);
+    function_lin_def->ExtractDouble("ROTATION", rotation);
     double viscosity;
-    function->ExtractDouble("VISCOSITY", viscosity);
+    function_lin_def->ExtractDouble("VISCOSITY", viscosity);
     double density;
-    function->ExtractDouble("DENSITY", density);
+    function_lin_def->ExtractDouble("DENSITY", density);
 
     int functno;
-    function->ExtractInt("CASE", functno);
+    function_lin_def->ExtractInt("CASE", functno);
 
     std::vector<double> lin_comb(2, 0.0);
-    if (function->HaveNamed("COMBINATION"))
-      function->ExtractDoubleVector("COMBINATION", lin_comb);
+    if (function_lin_def->HaveNamed("COMBINATION"))
+      function_lin_def->ExtractDoubleVector("COMBINATION", lin_comb);
     else if (functno == 3)
       dserror(
           "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "
           "DEFINE: COMBINATION C1 C2");
 
-    functions_->push_back(Teuchos::rcp(new UrquizaBoxFlowForce(
-        lengthx, lengthy, rotation, viscosity, density, functno, lin_comb)));
+    return Teuchos::rcp(
+        new UrquizaBoxFlowForce(lengthx, lengthy, rotation, viscosity, density, functno, lin_comb));
   }
-  else if (function->HaveNamed("URQUIZABOXFLOW_TRACTION"))
+  else if (function_lin_def->HaveNamed("URQUIZABOXFLOW_TRACTION"))
   {
     double lengthx;
-    function->ExtractDouble("LENGTHX", lengthx);
+    function_lin_def->ExtractDouble("LENGTHX", lengthx);
     double lengthy;
-    function->ExtractDouble("LENGTHY", lengthy);
+    function_lin_def->ExtractDouble("LENGTHY", lengthy);
 
     double rotation;
-    function->ExtractDouble("ROTATION", rotation);
+    function_lin_def->ExtractDouble("ROTATION", rotation);
     double viscosity;
-    function->ExtractDouble("VISCOSITY", viscosity);
+    function_lin_def->ExtractDouble("VISCOSITY", viscosity);
     double density;
-    function->ExtractDouble("DENSITY", density);
+    function_lin_def->ExtractDouble("DENSITY", density);
 
     int functno;
-    function->ExtractInt("CASE", functno);
+    function_lin_def->ExtractInt("CASE", functno);
 
     std::vector<double> lin_comb(2, 0.0);
-    if (function->HaveNamed("COMBINATION"))
-      function->ExtractDoubleVector("COMBINATION", lin_comb);
+    if (function_lin_def->HaveNamed("COMBINATION"))
+      function_lin_def->ExtractDoubleVector("COMBINATION", lin_comb);
     else if (functno == 3)
       dserror(
           "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "
           "DEFINE: COMBINATION C1 C2");
 
-    functions_->push_back(Teuchos::rcp(new UrquizaBoxFlowTraction(
-        lengthx, lengthy, rotation, viscosity, density, functno, lin_comb)));
+    return Teuchos::rcp(new UrquizaBoxFlowTraction(
+        lengthx, lengthy, rotation, viscosity, density, functno, lin_comb));
   }
   else
   {
-    found_xfluid_name = false;
+    return Teuchos::RCP<DRT::UTILS::Function>(NULL);
   }
-
-  return found_xfluid_name;
 }

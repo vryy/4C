@@ -33,15 +33,15 @@ namespace STR
 
 
   /// Return structure function for given line definition
-  bool StructureFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> functionnamed,
-      std::vector<Teuchos::RCP<DRT::UTILS::Function>>* function_);
+  Teuchos::RCP<DRT::UTILS::Function> StructureTryCreateFunction(
+      Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def);
 
 
   /// special implementation for weakly compressible flow - Etienne FSI problem
   class WeaklyCompressibleEtienneFSIStructureFunction : public DRT::UTILS::Function
   {
    public:
-    WeaklyCompressibleEtienneFSIStructureFunction(MAT::PAR::StVenantKirchhoff* fparams);
+    WeaklyCompressibleEtienneFSIStructureFunction(const MAT::PAR::StVenantKirchhoff& fparams);
     /*!
 
     \brief evaluate function at given position in space
@@ -89,7 +89,7 @@ namespace STR
   class WeaklyCompressibleEtienneFSIStructureForceFunction : public DRT::UTILS::Function
   {
    public:
-    WeaklyCompressibleEtienneFSIStructureForceFunction(MAT::PAR::StVenantKirchhoff* fparams);
+    WeaklyCompressibleEtienneFSIStructureForceFunction(const MAT::PAR::StVenantKirchhoff& fparams);
     /*!
 
     \brief evaluate function at given position in space
