@@ -68,9 +68,6 @@ namespace MIXTURE
       {
       }
 
-      /// default destructor
-      ~PrestressStrategy() override = default;
-
       /// Override this method and throw error, as only the CreateRule() should be used.
       Teuchos::RCP<MAT::Material> CreateMaterial() final
       {
