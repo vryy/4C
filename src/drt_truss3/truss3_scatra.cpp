@@ -175,14 +175,14 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
     }
     case INPAR::MAT::m_linelast1D_growth:
     {
-      LINALG::Matrix<6, 1> truss_disp;
+      LINALG::Matrix<6, 1> curr_nodal_coords;
       LINALG::Matrix<6, 6> dtruss_disp_du;
       LINALG::Matrix<6, 1> dN_dx;
       LINALG::Matrix<2, 1> nodal_concentration;
       const int ndof = 6;
 
       PrepCalcInternalForceStiffTotLagScaTra(
-          truss_disp, dtruss_disp_du, dN_dx, nodal_concentration, ele_state);
+          ele_state, curr_nodal_coords, dtruss_disp_du, dN_dx, nodal_concentration);
 
       // get data from input
       const auto* growth_mat = static_cast<const MAT::LinElast1DGrowth*>(Material().get());
@@ -202,20 +202,22 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
         const double c_GP = ProjectScalarToGaussPoint(intpoints.qxg[gp][0], nodal_concentration);
 
         // calculate stress
-        const double PK2_1D = growth_mat->EvaluatePK2(Disp(truss_disp) / lrefe_, c_GP);
-        const double stiffness = growth_mat->EvaluateStiffness(Disp(truss_disp) / lrefe_, c_GP);
+        const double PK2_1D = growth_mat->EvaluatePK2(CurrLength(curr_nodal_coords) / lrefe_, c_GP);
+        const double stiffness =
+            growth_mat->EvaluateStiffness(CurrLength(curr_nodal_coords) / lrefe_, c_GP);
 
         // calculate residual (force.vec) and linearisation (stiffmat)
         for (int row = 0; row < ndof; ++row)
         {
-          const double def_grad = truss_disp(row) / lrefe_;
+          const double def_grad = curr_nodal_coords(row) / lrefe_;
           const double scalar_R = int_fac * def_grad * PK2_1D;
           forcevec(row) += dN_dx(row) * scalar_R;
           for (int col = 0; col < ndof; ++col)
           {
             const double ddef_grad_du = dtruss_disp_du(row, col) / lrefe_;
             const double sign = (col < 3 ? 1.0 : -1.0);
-            const double dPK2_1D_du = 2.0 * stiffness * dDispdu(truss_disp, col) / lrefe_ * sign;
+            const double dPK2_1D_du =
+                2.0 * stiffness * dCurrLengthdu(curr_nodal_coords, col) / lrefe_ * sign;
             const double first_part = dN_dx(row) * ddef_grad_du * PK2_1D;
             const double second_part = dN_dx(row) * def_grad * dPK2_1D_du;
             stiffmat(row, col) += (first_part + second_part) * int_fac;
@@ -269,45 +271,44 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
 
       Epetra_SerialDenseMatrix stress(intpoints.nquad, 1);
 
-      switch (iostress)
+      LINALG::Matrix<6, 1> curr_nodal_coords;
+      LINALG::Matrix<6, 6> dtruss_disp_du;
+      LINALG::Matrix<6, 1> dN_dx;
+      LINALG::Matrix<2, 1> nodal_concentration;
+
+      PrepCalcInternalForceStiffTotLagScaTra(
+          ele_state, curr_nodal_coords, dtruss_disp_du, dN_dx, nodal_concentration);
+
+      // get data from input
+      const auto* growth_mat = static_cast<const MAT::LinElast1DGrowth*>(Material().get());
+
+      const double def_grad = CurrLength(curr_nodal_coords) / lrefe_;
+      for (int gp = 0; gp < intpoints.nquad; ++gp)
       {
-        case INPAR::STR::stress_2pk:
+        // get concentration at Gauss point
+        const double c_GP = ProjectScalarToGaussPoint(intpoints.qxg[gp][0], nodal_concentration);
+
+        const double PK2 = growth_mat->EvaluatePK2(def_grad, c_GP);
+
+        switch (iostress)
         {
-          LINALG::Matrix<6, 1> truss_disp;
-          LINALG::Matrix<6, 6> dtruss_disp_du;
-          LINALG::Matrix<6, 1> dN_dx;
-          LINALG::Matrix<2, 1> nodal_concentration;
-
-          PrepCalcInternalForceStiffTotLagScaTra(
-              truss_disp, dtruss_disp_du, dN_dx, nodal_concentration, ele_state);
-
-          // get data from input
-          const auto* growth_mat = static_cast<const MAT::LinElast1DGrowth*>(Material().get());
-
-          for (int gp = 0; gp < intpoints.nquad; ++gp)
+          case INPAR::STR::stress_2pk:
           {
-            // get concentration at Gauss point
-            const double c_GP =
-                ProjectScalarToGaussPoint(intpoints.qxg[gp][0], nodal_concentration);
-
-            stress(gp, 0) = growth_mat->EvaluatePK2(Disp(truss_disp) / lrefe_, c_GP);
+            stress(gp, 0) = PK2;
+            break;
           }
-
-          break;
+          case INPAR::STR::stress_cauchy:
+          {
+            stress(gp, 0) = PK2 * def_grad;
+            break;
+          }
+          case INPAR::STR::stress_none:
+            break;
+          default:
+            dserror("Requested stress type not available");
+            break;
         }
-        case INPAR::STR::stress_cauchy:
-        {
-          dserror("Cauchy stress not supported for truss 3");
-          break;
-        }
-
-        case INPAR::STR::stress_none:
-          break;
-        default:
-          dserror("Requested stress type not available");
-          break;
       }
-
       {
         DRT::PackBuffer data;
         AddtoPack(data, stress);
@@ -374,11 +375,11 @@ void DRT::ELEMENTS::Truss3Scatra::ExtractElementalVariables(LocationArray& la,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3Scatra::PrepCalcInternalForceStiffTotLagScaTra(
-    LINALG::Matrix<6, 1>& truss_disp, LINALG::Matrix<6, 6>& dtruss_disp_du,
-    LINALG::Matrix<6, 1>& dN_dx, LINALG::Matrix<2, 1>& nodal_concentration,
-    const std::map<std::string, std::vector<double>>& ele_state)
+    const std::map<std::string, std::vector<double>>& ele_state,
+    LINALG::Matrix<6, 1>& curr_nodal_coords, LINALG::Matrix<6, 6>& dcurr_nodal_coords_du,
+    LINALG::Matrix<6, 1>& dN_dx, LINALG::Matrix<2, 1>& nodal_concentration)
 {
-  PrepCalcInternalForceStiffTotLag(ele_state, truss_disp, dtruss_disp_du, dN_dx);
+  PrepCalcInternalForceStiffTotLag(ele_state, curr_nodal_coords, dcurr_nodal_coords_du, dN_dx);
 
   const std::vector<double>& phi_ele = ele_state.at("phi");
 
@@ -420,13 +421,13 @@ void DRT::ELEMENTS::Truss3Scatra::Energy(
     }
     case INPAR::MAT::m_linelast1D_growth:
     {
-      LINALG::Matrix<6, 1> truss_disp;
+      LINALG::Matrix<6, 1> curr_nodal_coords;
       LINALG::Matrix<6, 6> dtruss_disp_du;
       LINALG::Matrix<6, 1> dN_dx;
       LINALG::Matrix<2, 1> nodal_concentration;
 
       PrepCalcInternalForceStiffTotLagScaTra(
-          truss_disp, dtruss_disp_du, dN_dx, nodal_concentration, ele_state);
+          ele_state, curr_nodal_coords, dtruss_disp_du, dN_dx, nodal_concentration);
 
       // get data from input
       const auto* growth_mat = static_cast<const MAT::LinElast1DGrowth*>(Material().get());
@@ -442,7 +443,8 @@ void DRT::ELEMENTS::Truss3Scatra::Energy(
 
         const double c_GP = ProjectScalarToGaussPoint(gauss_points.qxg[j][0], nodal_concentration);
 
-        eint_ = growth_mat->EvaluateElasticEnergy(Disp(truss_disp) / lrefe_, c_GP) * int_fac;
+        eint_ = growth_mat->EvaluateElasticEnergy(CurrLength(curr_nodal_coords) / lrefe_, c_GP) *
+                int_fac;
       }
       break;
     }

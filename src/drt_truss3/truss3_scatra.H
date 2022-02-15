@@ -94,14 +94,16 @@ namespace DRT
 
       //! evaluate elemental specific values
       //!
-      //! \param[out] truss_disp       nodal displacement
-      //! \param[out] dtruss_disp_du   derivative of truss displacement w.r.t. global displacement
-      //! \param[out] dN_dx            derivative of shape functions
-      //! \param[out] nodal_concentration  nodal concentrations
-      void PrepCalcInternalForceStiffTotLagScaTra(LINALG::Matrix<6, 1>& truss_disp,
-          LINALG::Matrix<6, 6>& dtruss_disp_du, LINALG::Matrix<6, 1>& dN_dx,
-          LINALG::Matrix<2, 1>& nodal_concentration,
-          const std::map<std::string, std::vector<double>>& ele_state);
+      //! @param[in] ele_state              elemental states (depending on the instantiated element)
+      //! @param[out] curr_nodal_coords     nodal displacement
+      //! @param[out] dcurr_nodal_coords_du derivative of truss displacement w.r.t. global
+      //! displacement
+      //! @param[out] dN_dx               derivative of shape functions
+      //! @param[out] nodal_concentration nodal concentrations
+      void PrepCalcInternalForceStiffTotLagScaTra(
+          const std::map<std::string, std::vector<double>>& ele_state,
+          LINALG::Matrix<6, 1>& curr_nodal_coords, LINALG::Matrix<6, 6>& dcurr_nodal_coords_du,
+          LINALG::Matrix<6, 1>& dN_dx, LINALG::Matrix<2, 1>& nodal_concentration);
 
       //! calculation of concentration at Gauss Points, given concentration at nodes
       double ProjectScalarToGaussPoint(double xi, const LINALG::Matrix<2, 1>& c) const;

@@ -451,8 +451,9 @@ void DRT::ELEMENTS::Truss3::NlnStiffMassEngStr(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3::PrepCalcInternalForceStiffTotLag(
-    const std::map<std::string, std::vector<double>>& ele_state, LINALG::Matrix<6, 1>& truss_disp,
-    LINALG::Matrix<6, 6>& dtruss_disp_du, LINALG::Matrix<6, 1>& dN_dx)
+    const std::map<std::string, std::vector<double>>& ele_state,
+    LINALG::Matrix<6, 1>& curr_nodal_coords, LINALG::Matrix<6, 6>& dcurr_nodal_coords_du,
+    LINALG::Matrix<6, 1>& dN_dx)
 {
   const std::vector<double>& disp_ele = ele_state.at("disp");
 
@@ -469,20 +470,21 @@ void DRT::ELEMENTS::Truss3::PrepCalcInternalForceStiffTotLag(
    * simulation (usually this
    * is only important if an element changes its reference position during simulation)*/
 
-  // effective displacement for strain of truss element (node1 - node2)
-  truss_disp(0) = xcurr(0) - xcurr(3);
-  truss_disp(1) = xcurr(1) - xcurr(4);
-  truss_disp(2) = xcurr(2) - xcurr(5);
-  truss_disp(3) = truss_disp(0);
-  truss_disp(4) = truss_disp(1);
-  truss_disp(5) = truss_disp(2);
+  // current length of truss element (node1 - node2)
+  curr_nodal_coords(0) = xcurr(0) - xcurr(3);
+  curr_nodal_coords(1) = xcurr(1) - xcurr(4);
+  curr_nodal_coords(2) = xcurr(2) - xcurr(5);
+  curr_nodal_coords(3) = curr_nodal_coords(0);
+  curr_nodal_coords(4) = curr_nodal_coords(1);
+  curr_nodal_coords(5) = curr_nodal_coords(2);
 
-  // derivative of effective displacement w.r.t. nodal displacements
-  dtruss_disp_du.PutScalar(0.0);
-  dtruss_disp_du(0, 0) = dtruss_disp_du(1, 1) = dtruss_disp_du(2, 2) = dtruss_disp_du(3, 0) =
-      dtruss_disp_du(4, 1) = dtruss_disp_du(5, 2) = 1.0;
-  dtruss_disp_du(0, 3) = dtruss_disp_du(1, 4) = dtruss_disp_du(2, 5) = dtruss_disp_du(3, 3) =
-      dtruss_disp_du(4, 4) = dtruss_disp_du(5, 5) = -1.0;
+  // derivative of current length w.r.t. nodal displacements
+  dcurr_nodal_coords_du.PutScalar(0.0);
+  dcurr_nodal_coords_du(0, 0) = dcurr_nodal_coords_du(1, 1) = dcurr_nodal_coords_du(2, 2) =
+      dcurr_nodal_coords_du(3, 0) = dcurr_nodal_coords_du(4, 1) = dcurr_nodal_coords_du(5, 2) = 1.0;
+  dcurr_nodal_coords_du(0, 3) = dcurr_nodal_coords_du(1, 4) = dcurr_nodal_coords_du(2, 5) =
+      dcurr_nodal_coords_du(3, 3) = dcurr_nodal_coords_du(4, 4) = dcurr_nodal_coords_du(5, 5) =
+          -1.0;
 
   // spatial derivative of shape functions
   dN_dx(0) = dN_dx(1) = dN_dx(2) = 1.0 / lrefe_;
@@ -507,7 +509,7 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
   const int ndof = 6;
 
   // Green-Lagrange strain ( 1D truss: epsilon = 0.5 (l^2 - L^2)/L^2)
-  const double epsilon_GL = 0.5 * (Disp2(truss_disp) - lrefe_ * lrefe_) / (lrefe_ * lrefe_);
+  const double epsilon_GL = 0.5 * (CurrLength2(truss_disp) - lrefe_ * lrefe_) / (lrefe_ * lrefe_);
 
   // 2nd Piola-Kirchhoff stress
 
@@ -567,37 +569,42 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
 
   Epetra_SerialDenseMatrix stress(intpoints.nquad, 1);
 
-  switch (iostress)
+  static LINALG::Matrix<6, 1> curr_nodal_coords;
+  static LINALG::Matrix<6, 6> dtruss_disp_du;
+  static LINALG::Matrix<6, 1> dN_dx;
+
+  PrepCalcInternalForceStiffTotLag(ele_state, curr_nodal_coords, dtruss_disp_du, dN_dx);
+
+  // Green-Lagrange strain ( 1D truss: epsilon = 0.5 (l^2 - L^2)/L^2)
+  const double epsilon_GL =
+      0.5 * (CurrLength2(curr_nodal_coords) - lrefe_ * lrefe_) / (lrefe_ * lrefe_);
+
+  // 2nd Piola-Kirchhoff stress
+  const auto* mat = static_cast<const MAT::LinElast1D*>(Material().get());
+  const double PK2 = mat->EvaluatePK2(epsilon_GL);
+
+  for (int gp = 0; gp < intpoints.nquad; ++gp)
   {
-    case INPAR::STR::stress_2pk:
+    switch (iostress)
     {
-      static LINALG::Matrix<6, 1> truss_disp;
-      static LINALG::Matrix<6, 6> dtruss_disp_du;
-      static LINALG::Matrix<6, 1> dN_dx;
+      case INPAR::STR::stress_2pk:
+      {
+        stress(gp, 0) = PK2;
+        break;
+      }
+      case INPAR::STR::stress_cauchy:
+      {
+        const double def_grad = CurrLength(curr_nodal_coords) / lrefe_;
+        stress(gp, 0) = PK2 * def_grad;
+        break;
+      }
 
-      PrepCalcInternalForceStiffTotLag(ele_state, truss_disp, dtruss_disp_du, dN_dx);
-
-      // Green-Lagrange strain ( 1D truss: epsilon = 0.5 (l^2 - L^2)/L^2)
-      const double epsilon_GL = 0.5 * (Disp2(truss_disp) - lrefe_ * lrefe_) / (lrefe_ * lrefe_);
-
-      // 2nd Piola-Kirchhoff stress
-      const auto* mat = static_cast<const MAT::LinElast1D*>(Material().get());
-      const double PK2 = mat->EvaluatePK2(epsilon_GL);
-
-      for (int gp = 0; gp < intpoints.nquad; ++gp) stress(gp, 0) = PK2;
-      break;
+      case INPAR::STR::stress_none:
+        break;
+      default:
+        dserror("Requested stress type not available");
+        break;
     }
-    case INPAR::STR::stress_cauchy:
-    {
-      dserror("Cauchy stress not supported for truss 3");
-      break;
-    }
-
-    case INPAR::STR::stress_none:
-      break;
-    default:
-      dserror("Requested stress type not available");
-      break;
   }
 
   {
