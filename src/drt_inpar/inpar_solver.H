@@ -19,9 +19,7 @@ namespace INPAR
   namespace SOLVER
   {
     /// Available solvers (a few of these are likely out-dated)
-    ///
-    /// \author m.gee
-    /// \date 7/01,11/08
+    // TODO: think about which of these are really needed
     enum SolverType
     {
       aztec_msr,          ///< solver package aztec 2.1, matrix in dmsr format
@@ -35,27 +33,17 @@ namespace INPAR
       undefined           ///< undefined solver
     };
 
-    /// Different solvers within the Aztec2.1 library
-    ///
-    /// \author m.gee
-    /// \date 9/01,11/08
+    /// Different solvers within the Aztec2.1 and Belos library
     enum AzSolverType
     {
       azsolv_CG,             ///< cg-solver
       azsolv_GMRES,          ///< gmres-solver
       azsolv_GMRES_CONDEST,  ///< gmres-solver with condition number estimate
-      azsolv_GMRESR,         ///< restarted gmres-solver
-      azsolv_CGS,            ///< cg-squared-solver (can handle unsymmetric problems)
-      azsolv_BiCGSTAB,       ///< bicgstab-solver
-      azsolv_LU,             ///< LU-solver (I think this doesn't work for some reasons)
-      azsolv_TFQMR,          ///< quasi-minimum residual-solver (never used it)
-      belos_FGMRES           ///< flexible GMRES in Belos
+      azsolv_BiCGSTAB        ///< bicgstab-solver
     };
 
     /// Different preconditioners within the Aztec package
-    ///
-    /// \author m.gee
-    /// \date 9/01,11/08
+    // TODO: think about which of these are really needed
     enum AzPrecType
     {
       azprec_none,                 ///< no preconditioning
@@ -85,9 +73,6 @@ namespace INPAR
     };
 
     /// permutation strategies for linear solvers
-    ///
-    /// \author tw
-    /// \date 02/13
     enum PermutationStrategy
     {
       Permutation_none,       /// < no permutation, use original linear system
@@ -95,28 +80,11 @@ namespace INPAR
       Permutation_local       /// < use local permutations
     };
 
-    /// reuse strategies for MueLu Contact preconditioner
-    ///
-    /// up to now these parameters are only used by the MueLu_ContactPreconditioner2
-    ///
-    /// \author tw
-    /// \date 10/13
-    enum ReuseStrategy
-    {
-      Reuse_nothing,  /// < do not reuse multigrid preconditioner (even if AZREUSE is > 1)
-      Reuse_Ptent,  /// < try to reuse non-smoothed tentative prolongator (prerequisite AZREUSE > 1
-                    /// appropriately set)
-      Reuse_full    /// < try to reuse full multigrid hierarchy (this is exactly the behaviour as we
-                    /// expect it from AZREUSE)
-    };
-
     /// set the parameters for the linear solver
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
   }  // namespace SOLVER
-
 }  // namespace INPAR
-
 
 /*----------------------------------------------------------------------*/
 

@@ -129,7 +129,7 @@ VSTAB                                 vstab_gls
 ------------------------------------------------------------------------SOLVER 1
 SOLVER                                Superlu
 ------------------------------------------------------------------------SOLVER 2
-SOLVER                                Aztec_MSR
+SOLVER                                Belos
 AZTOL                                 1e-05
 AZPREC                                MLFLUID2
 AZREUSE                               5

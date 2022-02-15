@@ -796,9 +796,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
     case INPAR::SOLVER::azsolv_GMRES:
       beloslist.set("Solver Type", "GMRES");
       break;
-    case INPAR::SOLVER::belos_FGMRES:
-      beloslist.set("Solver Type", "GMRES");
-      beloslist.set("Flexible Gmres", true);
+    case INPAR::SOLVER::azsolv_BiCGSTAB:
+      beloslist.set("Solver Type", "BiCGSTAB");
       break;
     default:
     {
@@ -845,6 +844,15 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
     case INPAR::SOLVER::azprec_MLfluid2:
     case INPAR::SOLVER::azprec_MueLuAMG:
       beloslist.set("Preconditioner Type", "ML");
+      break;
+    case INPAR::SOLVER::azprec_MueLuAMG_fluid:
+      beloslist.set("Preconditioner Type", "Fluid");
+      break;
+    case INPAR::SOLVER::azprec_MueLuAMG_tsi:
+      beloslist.set("Preconditioner Type", "TSI");
+      break;
+    case INPAR::SOLVER::azprec_MueLuAMG_contactSP:
+      beloslist.set("Preconditioner Type", "ContactSP");
       break;
     case INPAR::SOLVER::azprec_BGS2x2:
       beloslist.set("Preconditioner Type", "ML");
@@ -931,12 +939,26 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
   {
     Teuchos::ParameterList& mllist = outparams.sublist("ML Parameters");
     mllist = LINALG::Solver::TranslateBACIToML(inparams, &beloslist);
-  }  // if ml preconditioner
+  }
   if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
-    muelulist = LINALG::Solver::TranslateBACIToML(
-        inparams, &beloslist);  // MueLu reuses the ML parameter list
+    muelulist = LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
+  }
+  if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_fluid)
+  {
+    Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Fluid) Parameters");
+    muelulist = LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
+  }
+  if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_tsi)
+  {
+    Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (TSI) Parameters");
+    muelulist = LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
+  }
+  if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contactSP)
+  {
+    Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
+    muelulist = LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
   }
   if (azprectyp == INPAR::SOLVER::azprec_BGS2x2)
   {
@@ -996,20 +1018,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToAztec(
     case INPAR::SOLVER::azsolv_GMRES_CONDEST:
       azlist.set("AZ_solver", AZ_gmres_condnum);
       break;
-    case INPAR::SOLVER::azsolv_GMRESR:
-      azlist.set("AZ_solver", AZ_GMRESR);
-      break;
-    case INPAR::SOLVER::azsolv_CGS:
-      azlist.set("AZ_solver", AZ_cgs);
-      break;
     case INPAR::SOLVER::azsolv_BiCGSTAB:
       azlist.set("AZ_solver", AZ_bicgstab);
-      break;
-    case INPAR::SOLVER::azsolv_LU:
-      azlist.set("AZ_solver", AZ_lu);
-      break;
-    case INPAR::SOLVER::azsolv_TFQMR:
-      azlist.set("AZ_solver", AZ_tfqmr);
       break;
     default:
     {

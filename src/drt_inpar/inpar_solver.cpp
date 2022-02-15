@@ -55,11 +55,8 @@ namespace INPAR
 
         setStringToIntegralParameter<int>("AZSOLVE", "GMRES",
             "Type of linear solver algorithm to use.",
-            tuple<std::string>("CG", "GMRES", "GMRES_CONDEST", "GMRESR", "CGS", "TFQMR", "BiCGSTAB",
-                "LU", "FGMRES"),
-            tuple<int>(azsolv_CG, azsolv_GMRES, azsolv_GMRES_CONDEST, azsolv_GMRESR, azsolv_CGS,
-                azsolv_TFQMR, azsolv_BiCGSTAB, azsolv_LU, belos_FGMRES),
-            &list);
+            tuple<std::string>("CG", "GMRES", "GMRES_CONDEST", "BiCGSTAB"),
+            tuple<int>(azsolv_CG, azsolv_GMRES, azsolv_GMRES_CONDEST, azsolv_BiCGSTAB), &list);
       }
 
       // Preconditioner options
