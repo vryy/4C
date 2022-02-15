@@ -25,7 +25,6 @@
 #include "../drt_mat/material_service.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/stvenantkirchhoff.H"
-#include "../drt_mat/neohooke.H"
 #include "../drt_mat/aaaneohooke.H"
 #include "../drt_mat/elasthyper.H"
 
@@ -752,13 +751,6 @@ void DRT::ELEMENTS::NStet5Type::SelectMaterial(const Teuchos::RCP<MAT::Material>
       LINALG::Matrix<3, 3> defgrd(true);
       stvk->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
       density = stvk->Density();
-    }
-    break;
-    case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
-    {
-      auto* neo = dynamic_cast<MAT::NeoHooke*>(mat.get());
-      neo->Evaluate(glstrain, cmat, stress);
-      density = neo->Density();
     }
     break;
     case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see

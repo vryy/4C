@@ -25,7 +25,6 @@
 #include "robinson.H"
 #include "damage.H"
 #include "micromaterial.H"
-#include "neohooke.H"
 #include "aaaneohooke.H"
 #include "aaaneohooke_stopro.H"
 #include "aaagasser.H"
@@ -254,12 +253,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ViscoAnisotropic(curmat));
       auto* params = static_cast<MAT::PAR::ViscoAnisotropic*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_neohooke:
-    {
-      if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::NeoHooke(curmat));
-      auto* params = static_cast<MAT::PAR::NeoHooke*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_aaaneohooke:

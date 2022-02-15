@@ -152,7 +152,6 @@ namespace INPAR
                                                   ///< multiplicatively in elastic and inelastic
                                                   ///< parts
       m_myocard,                ///< anisotropic electrophysical model of heart tissue
-      m_neohooke,               ///< Neo-Hooke material
       m_newman,                 ///< properties of an ion species in an electrolyte solution
       m_newman_multiscale,      ///< properties of an ion species in an electrolyte solution for
                                 ///< multi-scale approach
