@@ -13,7 +13,9 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_utils_nullspace.H"
+
+#include "../linalg/linalg_utils_nullspace.H"
+
 #include <sstream>
 
 
@@ -78,7 +80,7 @@ void DRT::ELEMENTS::Bele3Type::NodalBlockInformation(
 void DRT::ELEMENTS::Bele3Type::ComputeNullSpace(
     DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
-  DRT::UTILS::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
+  LINALG::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
 }
 
 void DRT::ELEMENTS::Bele3Type::SetupElementDefinition(

@@ -10,9 +10,9 @@
 
 #include "truss3.H"
 #include "../drt_beam3/beam3eb.H"
-#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "../linalg/linalg_utils_nullspace.H"
 
 DRT::ELEMENTS::Truss3Type DRT::ELEMENTS::Truss3Type::instance_;
 
@@ -56,7 +56,7 @@ void DRT::ELEMENTS::Truss3Type::NodalBlockInformation(
 void DRT::ELEMENTS::Truss3Type::ComputeNullSpace(
     DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
-  DRT::UTILS::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
+  LINALG::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
 }
 
 void DRT::ELEMENTS::Truss3Type::SetupElementDefinition(

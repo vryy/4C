@@ -16,13 +16,13 @@
 #include "so_line.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/prestress_service.H"
 #include "../drt_mat/so3_material.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../linalg/linalg_utils_nullspace.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -84,7 +84,7 @@ void DRT::ELEMENTS::So_hex8Type::NodalBlockInformation(
 void DRT::ELEMENTS::So_hex8Type::ComputeNullSpace(
     DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
-  DRT::UTILS::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
+  LINALG::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
 }
 
 void DRT::ELEMENTS::So_hex8Type::SetupElementDefinition(

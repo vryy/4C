@@ -9,14 +9,16 @@
 #include "so_hex18.H"
 #include "so_surface.H"
 #include "so_line.H"
+#include "so_utils.H"
+
 #include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_mat/so3_material.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "so_utils.H"
+
+#include "../linalg/linalg_utils_nullspace.H"
 
 DRT::ELEMENTS::So_hex18Type DRT::ELEMENTS::So_hex18Type::instance_;
 
@@ -57,7 +59,7 @@ void DRT::ELEMENTS::So_hex18Type::NodalBlockInformation(
 void DRT::ELEMENTS::So_hex18Type::ComputeNullSpace(
     DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
-  DRT::UTILS::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
+  LINALG::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
 }
 
 void DRT::ELEMENTS::So_hex18Type::SetupElementDefinition(

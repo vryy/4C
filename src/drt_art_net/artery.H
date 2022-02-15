@@ -19,7 +19,7 @@
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_inpar/inpar_bio.H"
-#include "../drt_lib/drt_utils_nullspace.H"
+#include "../linalg/linalg_utils_nullspace.H"
 
 // forward declarations
 struct _MATERIAL;
@@ -58,7 +58,7 @@ namespace DRT
       virtual void ComputeNullSpace(
           DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
       {
-        DRT::UTILS::ComputeFluidDNullSpace(dis, ns, x0, numdf, dimns);
+        LINALG::ComputeFluidDNullSpace(dis, ns, x0, numdf, dimns);
       }
 
       virtual void SetupElementDefinition(

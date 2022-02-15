@@ -11,11 +11,12 @@
 
 #include "../drt_lubrication_ele/lubrication_ele.H"
 
-#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_utils_factory.H"
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+
+#include "../linalg/linalg_utils_nullspace.H"
 
 DRT::ELEMENTS::LubricationType DRT::ELEMENTS::LubricationType::instance_;
 
@@ -59,7 +60,7 @@ void DRT::ELEMENTS::LubricationType::NodalBlockInformation(
 void DRT::ELEMENTS::LubricationType::ComputeNullSpace(
     DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
-  DRT::UTILS::ComputeFluidDNullSpace(dis, ns, x0, numdf, dimns);
+  LINALG::ComputeFluidDNullSpace(dis, ns, x0, numdf, dimns);
 }
 
 void DRT::ELEMENTS::LubricationType::SetupElementDefinition(

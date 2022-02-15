@@ -11,11 +11,11 @@
 
 #include "truss3cl.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_utils_nullspace.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
@@ -61,7 +61,7 @@ void DRT::ELEMENTS::Truss3CLType::NodalBlockInformation(
 void DRT::ELEMENTS::Truss3CLType::ComputeNullSpace(
     DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
-  DRT::UTILS::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
+  LINALG::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
 }
 
 void DRT::ELEMENTS::Truss3CLType::SetupElementDefinition(

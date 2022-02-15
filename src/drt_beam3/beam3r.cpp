@@ -15,10 +15,10 @@
 
 // Todo @grill: check for obsolete header inclusions
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
+#include "../linalg/linalg_utils_nullspace.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_fem_general/largerotations.H"

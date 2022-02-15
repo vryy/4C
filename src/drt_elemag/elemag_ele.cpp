@@ -15,9 +15,10 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_discret_faces.H"
 #include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
+
+#include "../linalg/linalg_utils_nullspace.H"
 
 
 DRT::ELEMENTS::ElemagType DRT::ELEMENTS::ElemagType::instance_;

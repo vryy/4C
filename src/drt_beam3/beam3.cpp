@@ -11,7 +11,6 @@
 #include "beam3.H"
 #include "beam3r.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_element.H"
@@ -20,6 +19,8 @@
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_beaminteraction/periodic_boundingbox.H"
+
+#include "../linalg/linalg_utils_nullspace.H"
 
 DRT::ELEMENTS::Beam3Type DRT::ELEMENTS::Beam3Type::instance_;
 
@@ -63,7 +64,7 @@ void DRT::ELEMENTS::Beam3Type::NodalBlockInformation(
 void DRT::ELEMENTS::Beam3Type::ComputeNullSpace(
     DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
-  DRT::UTILS::ComputeBeam3DNullSpace(dis, ns, x0, numdf, dimns);
+  dserror("method ComputeNullSpace not implemented for element type beam3r!");
 }
 
 void DRT::ELEMENTS::Beam3Type::SetupElementDefinition(

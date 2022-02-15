@@ -416,7 +416,6 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_utils_materials.cpp
   src/drt_lib/drt_utils_factory.cpp
   src/drt_lib/drt_utils_gid_vector.cpp
-  src/drt_lib/drt_utils_nullspace.cpp
   src/drt_lib/drt_utils_discret.cpp
   src/drt_lib/drt_utils_discret_dbc.cpp
   src/drt_lib/drt_utils_discret_evaluate.cpp
@@ -1925,6 +1924,7 @@ set(OBJS_LINALG
   src/linalg/linalg_sparsematrix.cpp
   src/linalg/linalg_sparsematrixbase.cpp
   src/linalg/linalg_gauss.cpp
+  src/linalg/linalg_utils_nullspace.cpp
   src/linalg/linalg_utils_densematrix_communication.cpp
   src/linalg/linalg_utils_densematrix_determinant.cpp
   src/linalg/linalg_utils_densematrix_eigen.cpp

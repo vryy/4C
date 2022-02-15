@@ -10,10 +10,10 @@
 #include "shell8.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 
+#include "../linalg/linalg_utils_nullspace.H"
 
 DRT::ELEMENTS::Shell8Type DRT::ELEMENTS::Shell8Type::instance_;
 
@@ -59,7 +59,7 @@ void DRT::ELEMENTS::Shell8Type::NodalBlockInformation(
 void DRT::ELEMENTS::Shell8Type::ComputeNullSpace(
     DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
-  DRT::UTILS::ComputeShell3DNullSpace(dis, ns, x0, numdf, dimns);
+  LINALG::ComputeShell3DNullSpace(dis, ns, x0, numdf, dimns);
 }
 
 void DRT::ELEMENTS::Shell8Type::SetupElementDefinition(

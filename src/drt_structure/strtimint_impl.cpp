@@ -39,6 +39,7 @@
 #include "../drt_lib/drt_locsys.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../linalg/linalg_nullspace.H"
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_krylov_projector.H"
@@ -814,7 +815,7 @@ void STR::TimIntImpl::UpdateKrylovSpaceProjection()
 
   // Teuchos::RCP on vector of size 0 holding the nullspace data - resized within ComputeNullspace
   Teuchos::RCP<std::vector<double>> nullspace = Teuchos::rcp(new std::vector<double>(0));
-  discret_->ComputeNullSpace(nullspace);
+  LINALG::Nullspace::ComputeNullSpace(*discret_, nullspace);
 
   // check if everything went fine
   if (nullspace->size() == 0) dserror("nullspace not successfully computed");

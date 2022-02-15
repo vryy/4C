@@ -9,13 +9,12 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "drt_utils_nullspace.H"
-#include "drt_discret.H"
+#include "linalg_utils_nullspace.H"
 #include "../drt_s8/shell8.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::ComputeStructure3DNullSpace(
+void LINALG::ComputeStructure3DNullSpace(
     DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
   /* the rigid body modes for structures are:
@@ -89,7 +88,7 @@ void DRT::UTILS::ComputeStructure3DNullSpace(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::ComputeStructure2DNullSpace(
+void LINALG::ComputeStructure2DNullSpace(
     DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
   /* the rigid body modes for structures are:
@@ -148,121 +147,7 @@ void DRT::UTILS::ComputeStructure2DNullSpace(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::ComputeBeam3DNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
-{
-  /* for beam3 elements the relation between rigid body modes and
-   * increments on the degrees of freedom is non-trivial since
-   * rotational increments in 3D are non-additive in general. In
-   * general this relation may require calling all the elements.
-   * However, in opposition to the SHELL8 element it is not
-   * sufficient to just call a director saved in the element.
-   * Rather to calculate proper increments for the rotational
-   * degrees of freedom due to a rigid body rotation of the
-   * complete structure, the triad at each node is required in
-   * order to transform non-additive increments into additive ones.
-   * However, the beam3 element currently does not save the nodal
-   * triads as a class variable, but only the triads at each Gauss
-   * point. In the following a wrong (!!!) dummy version is implemneted
-   * but commented out. In this dummy version the rotational degrees of
-   * freedom are treated identically to the additive translational
-   * degrees of freedom. Activating and using this part of the code
-   * quickly reveals the problems of such a naive implemnetation.
-   * Usually the equation solver simply does not work with this
-   * dummy code, i.e. the iterative solution process does not converge.
-   * If Algebraic Multigrid methods should be really used for beam3
-   * elements, one first has to develop efficient special methods for
-   * these elements. Currently trying to use Algebraic multigrid methods
-   * for beam3 elements just amounts to an error as no properly working
-   * implementation has been available so far
-   *
-   *  valid element types: beam3, beam3r
-   *
-   */
-
-  const Epetra_Map* rowmap = dis.DofRowMap();
-  const int lrows = rowmap->NumMyElements();
-  double* mode[6];
-  for (int i = 0; i < dimns; ++i) mode[i] = &(ns[i * lrows]);
-
-  for (int i = 0; i < dis.NumMyRowNodes(); ++i)
-  {
-    DRT::Node* actnode = dis.lRowNode(i);
-    const double* x = actnode->X();
-    std::vector<int> dofs = dis.Dof(actnode);
-
-    if (dofs.size() != 6)
-      dserror(
-          "The computation of the beam nullspace in three dimensions requires six DOFs"
-          "per solid node, however the current node carries %d DOFs.",
-          dofs.size());
-
-    for (unsigned j = 0; j < dofs.size(); ++j)
-    {
-      const int dof = dofs[j];
-      const int lid = rowmap->LID(dof);
-      if (lid < 0) dserror("Cannot find dof");
-      switch (j)
-      {
-        case 0:
-          mode[0][lid] = 1.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = 0.0;
-          mode[4][lid] = x[2] - x0[2];
-          mode[5][lid] = -x[1] + x0[1];
-          break;
-        case 1:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 1.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = -x[2] + x0[2];
-          mode[4][lid] = 0.0;
-          mode[5][lid] = x[0] - x0[0];
-          break;
-        case 2:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 1.0;
-          mode[3][lid] = x[1] - x0[1];
-          mode[4][lid] = -x[0] + x0[0];
-          mode[5][lid] = 0.0;
-          break;
-        case 3:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = 1.0;
-          mode[4][lid] = 0.0;
-          mode[5][lid] = 0.0;
-          break;
-        case 4:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = 0.0;
-          mode[4][lid] = 1.0;
-          mode[5][lid] = 0.0;
-          break;
-        case 5:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = 0.0;
-          mode[4][lid] = 0.0;
-          mode[5][lid] = 1.0;
-          break;
-        default:
-          dserror("Only dofs 0 - 5 supported");
-          break;
-      }  // switch (j)
-    }    // for (int j=0; j<actnode->Dof().NumDof(); ++j)
-  }      // for (int i=0; i<NumMyRowNodes(); ++i)
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void DRT::UTILS::ComputeShell3DNullSpace(
+void LINALG::ComputeShell3DNullSpace(
     DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
   /* the rigid body modes for structures are:
@@ -382,7 +267,7 @@ void DRT::UTILS::ComputeShell3DNullSpace(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::ComputeXFluidDNullSpace(
+void LINALG::ComputeXFluidDNullSpace(
     DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
   /* the rigid body modes for fluids are:
@@ -473,7 +358,7 @@ void DRT::UTILS::ComputeXFluidDNullSpace(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::ComputeFluidDNullSpace(
+void LINALG::ComputeFluidDNullSpace(
     DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
   const Epetra_Map* rowmap = dis.DofRowMap();

@@ -10,7 +10,7 @@
 
 #include "wall1_nurbs.H"
 #include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_utils_nullspace.H"
+#include "../linalg/linalg_utils_nullspace.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 DRT::ELEMENTS::NURBS::Wall1NurbsType DRT::ELEMENTS::NURBS::Wall1NurbsType::instance_;
@@ -59,7 +59,7 @@ void DRT::ELEMENTS::NURBS::Wall1NurbsType::NodalBlockInformation(
 void DRT::ELEMENTS::NURBS::Wall1NurbsType::ComputeNullSpace(
     DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
-  DRT::UTILS::ComputeStructure2DNullSpace(dis, ns, x0, numdf, dimns);
+  LINALG::ComputeStructure2DNullSpace(dis, ns, x0, numdf, dimns);
 }
 
 void DRT::ELEMENTS::NURBS::Wall1NurbsType::SetupElementDefinition(

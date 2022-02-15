@@ -9,10 +9,11 @@
 #include "discsh3.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
+
+#include "../linalg/linalg_utils_nullspace.H"
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 
@@ -59,7 +60,7 @@ void DRT::ELEMENTS::DiscSh3Type::NodalBlockInformation(
 void DRT::ELEMENTS::DiscSh3Type::ComputeNullSpace(
     DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
-  DRT::UTILS::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
+  LINALG::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
 }
 
 void DRT::ELEMENTS::DiscSh3Type::SetupElementDefinition(
