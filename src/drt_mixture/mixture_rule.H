@@ -97,9 +97,8 @@ namespace MIXTURE
    * response using the mass density of each constituent.
    *
    * Example input lines:
-   * MAT 1 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 11 12 MASSFRAC 0.4 0.6 MATIDMIXTURERULE 10
-   *  DENS 0.1
-   * MAT 10 MIX_Rule_Simple
+   * MAT 1 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 11 12 MATIDMIXTURERULE 10
+   * MAT 10 MIX_Rule_Simple DENS 0.1 NUMCONST 2 MASSFRAC 0.4 0.6
    * MAT 11 MIX_Constituent_ElastHyper NUMMAT 1 MATIDS 101 MAT 12
    * MIX_Constituent_ElastHyper NUMMAT 1 MATIDS 102
    * MAT 101 ELAST_CoupLogNeoHooke MODE YN C1 2.5e4 C2 0.27
@@ -188,7 +187,6 @@ namespace MIXTURE
       // Nothing needs to be updated in this simple mixture rule
     }
 
-
     /*!
      * \brief Update of prestretch during the internal prestretching mechanism
      *
@@ -204,7 +202,6 @@ namespace MIXTURE
     {
       // Do nothing in the default case
     }
-
 
     /*!
      *
@@ -234,6 +231,17 @@ namespace MIXTURE
     virtual void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
         int gp, int eleGID) = 0;
+
+    /*!
+     * @brief Returns the material mass density
+     *
+     * @return material mass density
+     */
+    virtual double ReturnMassDensity() const
+    {
+      dserror("Rule does not provide the evaluation of a material mass density.");
+      return 0;
+    }
 
     /*!
      * \brief Register names of the internal data that should be saved during runtime vtk output

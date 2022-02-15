@@ -58,9 +58,6 @@ namespace MIXTURE
       /// constructor
       explicit GrowthRemodelMixtureRule(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-      /// default destructor
-      ~GrowthRemodelMixtureRule() override = default;
-
       /// Create mixturerule instance
       std::unique_ptr<MIXTURE::MixtureRule> CreateRule() override;
 

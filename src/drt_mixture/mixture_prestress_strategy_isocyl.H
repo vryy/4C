@@ -32,9 +32,6 @@ namespace MIXTURE
       /// constructor
       explicit IsotropicCylinderPrestressStrategy(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-      /// default destructor
-      ~IsotropicCylinderPrestressStrategy() override = default;
-
       /// create prestress strategy instance of matching type with my parameters
       std::unique_ptr<MIXTURE::PrestressStrategy> CreatePrestressStrategy() override;
 
