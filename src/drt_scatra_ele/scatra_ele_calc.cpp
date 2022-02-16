@@ -1037,8 +1037,9 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsInP
 
     // the metric tensor and the area of an infinitesimal surface/line element
     // optional: get unit normal at integration point as well
+    const bool throw_error_if_negative_determinant(true);
     DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, nsd_>(
-        xyze_, deriv_red, metrictensor, det, &normalvec);
+        xyze_, deriv_red, metrictensor, det, throw_error_if_negative_determinant, &normalvec);
 
     if (det < 1E-16)
       dserror("GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", eid_, det);
