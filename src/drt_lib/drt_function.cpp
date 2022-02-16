@@ -826,7 +826,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
           struct periodicstruct periodicdata
           {
           };
-          periodicdata.periodic = timevar->FindString("PERIODIC");
+          periodicdata.periodic = timevar->HasString("PERIODIC");
           if (periodicdata.periodic)
           {
             timevar->ExtractDouble("T1", periodicdata.t1);
@@ -853,7 +853,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
             // read times
             std::vector<double> times;
-            bool bynum = timevar->FindString("BYNUM");
+            bool bynum = timevar->HasString("BYNUM");
 
             if (bynum)  // times defined by number of points
             {
@@ -908,7 +908,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
             // read times
             std::vector<double> times;
-            bool bynum = timevar->FindString("BYNUM");
+            bool bynum = timevar->HasString("BYNUM");
 
             if (bynum)  // times defined by number of points
             {
@@ -969,7 +969,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
             // read times
             std::vector<double> times;
-            bool bynum = timevar->FindString("BYNUM");
+            bool bynum = timevar->HasString("BYNUM");
 
             if (bynum)  // times defined by number of points
             {

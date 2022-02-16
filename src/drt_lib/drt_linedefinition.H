@@ -84,7 +84,7 @@ namespace DRT
       LineDefinition& operator=(const LineDefinition& other);
 
       /// create an exact copy of this LineDefinition
-      Teuchos::RCP<DRT::INPUT::LineDefinition> Clone();
+      Teuchos::RCP<DRT::INPUT::LineDefinition> Clone() const;
 
       /// @name Add new line components
 
@@ -176,7 +176,7 @@ namespace DRT
       //@}
 
       /// print to dat file comment
-      void Print(std::ostream& stream);
+      void Print(std::ostream& stream) const;
 
       /// try to read this line from the stream
       /*!
@@ -197,26 +197,26 @@ namespace DRT
       bool Read(std::istream& stream, const std::string* name);
 
       /// tell if there is a named component with the given name
-      bool HaveNamed(std::string name);
+      bool HaveNamed(std::string name) const;
 
       /// @name Extract values from read LineDefinition
       /// There has to be a named component of the given type
 
-      void ExtractString(const std::string& name, std::string& value);
-      bool FindString(std::string name);
-      void ExtractInt(const std::string& name, int& value);
-      void ExtractIntVector(const std::string& name, std::vector<int>& v);
-      void ExtractDouble(const std::string& name, double& value);
-      void ExtractDoubleVector(const std::string& name, std::vector<double>& v);
-      void ExtractStringVector(const std::string& name, std::vector<std::string>& v);
+      void ExtractString(const std::string& name, std::string& value) const;
+      bool HasString(const std::string& name) const;
+      void ExtractInt(const std::string& name, int& value) const;
+      void ExtractIntVector(const std::string& name, std::vector<int>& v) const;
+      void ExtractDouble(const std::string& name, double& value) const;
+      void ExtractDoubleVector(const std::string& name, std::vector<double>& v) const;
+      void ExtractStringVector(const std::string& name, std::vector<std::string>& v) const;
       void ExtractPairOfStringAndDoubleVector(
-          const std::string& name, std::vector<std::pair<std::string, double>>& v);
+          const std::string& name, std::vector<std::pair<std::string, double>>& v) const;
 
       //@}
 
      private:
       /// find named component with given name
-      LineComponent* FindNamed(const std::string& name);
+      LineComponent* FindNamed(const std::string& name) const;
 
       /// remove all components
       void Clear();
