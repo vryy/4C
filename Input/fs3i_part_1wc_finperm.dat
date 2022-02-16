@@ -273,7 +273,6 @@ AZGRAPH                         1
 AZPOLY                          1
 IFPACKOVERLAP                   0
 AZSCAL                          none
-DWINDTAU                        2.5
 ML_PRINT                        0
 ML_MAXCOARSESIZE                5000
 ML_MAXLEVEL                     5
@@ -307,7 +306,6 @@ AZGRAPH                         1
 AZPOLY                          1
 IFPACKOVERLAP                   0
 AZSCAL                          none
-DWINDTAU                        2.5
 ML_PRINT                        0
 ML_MAXCOARSESIZE                5000
 ML_MAXLEVEL                     5

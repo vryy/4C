@@ -91,7 +91,6 @@ AZOMEGA                         1.0                             // damping facto
 AZGRAPH                         1                               // unused
 AZPOLY                          1                               // polynomial order for Neumann
 AZSCAL                          none                            // none sym infnorm scaling of the system
-DWINDTAU                        2.5                             // (for DownwindGaussSeidel and DGS, choose between 1.5 - 4.0) Considers only values in matrix that are tau times larger than the average in the frobenius norm
 ML_PRINT                        0                               // ML print-out level (0-10)
 ML_MAXCOARSESIZE                125                             // ML stop coarsening when coarse ndof smaller then this
 ML_MAXLEVEL                     3                               // ML max number of levels

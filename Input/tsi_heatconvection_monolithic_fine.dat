@@ -131,7 +131,6 @@ AZSCAL                          none  // none,sym,infnorm
 AZSOLVE                         GMRES  // CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU
 AZSUB                           300
 AZTOL                           1e-08
-DWINDTAU                        1.5
 IFPACKCOMBINE                   Add
 IFPACKFILL                      1
 IFPACKGFILL                     0
@@ -167,7 +166,6 @@ AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
-DWINDTAU                        1.5
 IFPACKCOMBINE                   Add
 IFPACKFILL                      1
 IFPACKGFILL                     0
@@ -203,7 +201,6 @@ AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
-DWINDTAU                        1.5
 IFPACKCOMBINE                   Add
 IFPACKFILL                      1
 IFPACKGFILL                     0

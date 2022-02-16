@@ -95,7 +95,6 @@ AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
-DWINDTAU                        1.5
 IFPACKFILL                      1.0
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0

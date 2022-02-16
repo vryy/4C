@@ -85,7 +85,6 @@ AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
-DWINDTAU                        1.5
 ML_AGG_SIZE                     27
 ML_COARSEN                      UC
 ML_DAMPCOARSE                   1

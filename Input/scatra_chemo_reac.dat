@@ -110,7 +110,6 @@ AZGRAPH                         0
 AZBDIAG                         0
 AZTOL                           1e-12
 AZOMEGA                         0
-DWINDTAU                        1.5
 AZSCAL                          none
 ML_PRINT                        0
 ML_MAXCOARSESIZE                5000
@@ -160,7 +159,6 @@ AZGRAPH                         0
 AZBDIAG                         0
 AZTOL                           1e-08
 AZOMEGA                         0
-DWINDTAU                        1.5
 AZSCAL                          none
 ML_PRINT                        0
 ML_MAXCOARSESIZE                5000

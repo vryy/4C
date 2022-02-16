@@ -73,7 +73,6 @@ AZGRAPH                         0
 AZBDIAG                         0
 AZTOL                           2e-05
 AZOMEGA                         0
-DWINDTAU                        1.5
 AZSCAL                          none
 ----------------------------------------------------------MATERIALS
 MAT 1   MAT_fluid   DYNVISCOSITY 1 DENSITY 0.5 GAMMA 1

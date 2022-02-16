@@ -83,7 +83,6 @@ AZGRAPH                         1
 AZPOLY                          1
 IFPACKOVERLAP                   0
 AZSCAL                          none
-DWINDTAU                        2.5
 --------------------------------------------------------------------SOLVER 2
 NAME                            Ale_Solver
 SOLVER                          Aztec_MSR

@@ -112,7 +112,6 @@ AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
-DWINDTAU                        1.5
 BGS2X2_FLIPORDER                block1_block0_order
 IFPACKCOMBINE                   Add
 IFPACKFILL                      1
@@ -149,7 +148,6 @@ AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
-DWINDTAU                        1.5
 IFPACKCOMBINE                   Add
 IFPACKFILL                      1
 IFPACKGFILL                     0
@@ -185,7 +183,6 @@ AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
-DWINDTAU                        1.5
 IFPACKCOMBINE                   Add
 IFPACKFILL                      1
 IFPACKGFILL                     0

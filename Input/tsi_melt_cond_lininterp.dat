@@ -110,7 +110,6 @@ AZSOLVE                         GMRES
 AZSUB                           50
 AZTOL                           1e-08
 BGS2X2_FLIPORDER                block0_block1_order
-DWINDTAU                        1.5
 IFPACKCOMBINE                   Add
 IFPACKFILL                      1
 IFPACKGFILL                     0

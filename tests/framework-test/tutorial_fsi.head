@@ -823,9 +823,6 @@ BGS2X2_FLIPORDER                block0_block1_order
 // damping parameter for BGS2X2 preconditioner
 BGS2X2_GLOBAL_DAMPING           1
 //
-// threshold tau for downwinding
-DWINDTAU                        1.5
-//
 // Combine mode for Ifpack Additive Schwarz
 //                              Add,Insert,Zero
 IFPACKCOMBINE                   Add
@@ -1059,9 +1056,6 @@ BGS2X2_FLIPORDER                block0_block1_order
 // damping parameter for BGS2X2 preconditioner
 BGS2X2_GLOBAL_DAMPING           1
 //
-// threshold tau for downwinding
-DWINDTAU                        1.5
-//
 // Combine mode for Ifpack Additive Schwarz
 //                              Add,Insert,Zero
 IFPACKCOMBINE                   Add
@@ -1294,9 +1288,6 @@ BGS2X2_FLIPORDER                block0_block1_order
 //
 // damping parameter for BGS2X2 preconditioner
 BGS2X2_GLOBAL_DAMPING           1
-//
-// threshold tau for downwinding
-DWINDTAU                        1.5
 //
 // Combine mode for Ifpack Additive Schwarz
 //                              Add,Insert,Zero
