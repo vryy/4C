@@ -762,11 +762,6 @@ void FLD::XWall::SetupL2Projection()
             solver_->Params().sublist("NodalBlockInformation").set("number of constraint dofs", 0);
             solver_->Params().sublist("NodalBlockInformation").set("number of dofs per node", 3);
             solver_->Params().sublist("NodalBlockInformation").set("nullspace dimension", 3);
-            // get the belos list and see whether we use downwinding
-            Teuchos::ParameterList& beloslist = solver_->Params().sublist("Belos Parameters");
-
-            beloslist.set<int>("downwinding nv", 3);
-            beloslist.set<int>("downwinding np", 0);
 
             Teuchos::ParameterList* mllist_ptr = NULL;
             mllist_ptr = &((solver_->Params()).sublist("ML Parameters"));

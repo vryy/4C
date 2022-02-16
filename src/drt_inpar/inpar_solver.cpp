@@ -63,6 +63,7 @@ namespace INPAR
       {
         // this one is longer than 15 and the tuple<> function does not support this,
         // so build the Tuple class directly (which can be any size)
+
         Teuchos::Tuple<std::string, 24> name;
         Teuchos::Tuple<int, 24> number;
 
@@ -144,7 +145,7 @@ namespace INPAR
             tuple<int>(0, 1, 2), &list);
       }
 
-      // Aztecoo options
+      // Aztecoo / Belos options
       {
         DoubleParameter("AZDROP", 0.0,
             "The tolerance below which an entry from the factors of an internal \"ilut\"\n"
@@ -178,7 +179,6 @@ namespace INPAR
 
         DoubleParameter("AZTOL", 1e-8, "tolerance in (un)scaled residual", &list);
         DoubleParameter("AZOMEGA", 0.0, "damping for GaussSeidel and jacobi type methods", &list);
-        DoubleParameter("DWINDTAU", 1.5, "threshold tau for downwinding", &list);
 
         setStringToIntegralParameter<int>("AZSCAL", "none", "scaling of the system",
             tuple<std::string>("none", "sym", "infnorm"), tuple<int>(0, 1, 2), &list);
