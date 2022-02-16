@@ -127,7 +127,7 @@ namespace DRT
           DRT::Discretization& discretization);
 
       //! extract element based or nodal values
-      //  return extracted values of phinp
+      //!  return extracted values of phinp
       virtual void ExtractElementAndNodeValues(DRT::FaceElement* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
           DRT::Element::LocationArray& la);
@@ -216,12 +216,38 @@ namespace DRT
           LINALG::Matrix<nsd_ + 1, nen_>& shapederivatives  //!< shape derivatives to be computed
       );
 
-      //! evaluate shape functions and derivatives at int. point
-      double EvalShapeFuncAndIntFac(
-          const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-          const int iquad,                                         ///< id of current Gauss point
-          LINALG::Matrix<1 + nsd_, 1>* normalvec = NULL  ///< normal vector at Gauss point(optional)
-      );
+      /*!
+       * @brief evaluate shape functions, derivatives and domain integration factor at integration
+       * point
+       *
+       * @param[in] intpoints   integration points
+       * @param[in] iquad       id of current Gauss point
+       * @param[out] normalvec  normal vector at Gauss point(optional)
+       * @return domain integration factor
+       */
+      double EvalShapeFuncAndIntFac(const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,
+          const int iquad, LINALG::Matrix<1 + nsd_, 1>* normalvec = nullptr);
+
+      /*!
+       * @brief evaluate shape functions and derivatives at integration point
+       *
+       * @param[in] intpoints  integration points
+       * @param[in] iquad      id of current Gauss point
+       */
+      void EvaluateShapeFuncAndDerivativeAtIntPoint(
+          const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, const int iquad);
+
+      /*!
+       * @brief Evaluate the square root of the metric tensor determinant
+       *
+       * @param[in] intpoints  integration points
+       * @param[in] iquad      id of current Gauss point
+       * @param[in] XYZe       nodal positions of element in material configuration
+       * @return square root of the metric tensor determinant
+       */
+      double EvaluateSquareRootOfDeterminantOfMetricTensorAtIntPoint(
+          const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, const int iquad,
+          const LINALG::Matrix<nsd_ + 1, nen_>& XYZe);
 
       //! evaluate scatra-scatra interface coupling condition
       virtual void EvaluateS2ICoupling(const DRT::FaceElement* ele,  ///< current boundary element

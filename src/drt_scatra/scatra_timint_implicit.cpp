@@ -3329,11 +3329,15 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
                   fac;
               if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
 
+              // no deformation available
+              const double dummy_detF(1.0);
+
               // equilibrium electric potential difference and its derivative w.r.t. concentration
               // at electrode surface
-              const double epd = matelectrode->ComputeOpenCircuitPotential(conc_ed, faraday, frt);
-              const double epdderiv =
-                  matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(conc_ed, faraday, frt);
+              const double epd =
+                  matelectrode->ComputeOpenCircuitPotential(conc_ed, faraday, frt, dummy_detF);
+              const double epdderiv = matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(
+                  conc_ed, faraday, frt, dummy_detF);
 
               const double eta = phinp_macro_[2] - phinp_macro_[1] - epd;
 

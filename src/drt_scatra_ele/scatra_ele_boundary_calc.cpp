@@ -838,6 +838,30 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(
     const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, const int iquad,
     LINALG::Matrix<1 + nsd_, 1>* normalvec)
 {
+  EvaluateShapeFuncAndDerivativeAtIntPoint(intpoints, iquad);
+
+  // the metric tensor and the area of an infinitesimal surface/line element
+  // optional: get normal at integration point as well
+  double drs(0.0);
+  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(
+      xyze_, deriv_, metrictensor_, drs, normalvec);
+
+  // for nurbs elements the normal vector must be scaled with a special orientation factor!!
+  if (DRT::NURBS::IsNurbs(distype))
+  {
+    if (normalvec != nullptr) normal_.Scale(normalfac_);
+  }
+
+  // return the integration factor
+  return intpoints.IP().qwgt[iquad] * drs;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateShapeFuncAndDerivativeAtIntPoint(
+    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, const int iquad)
+{
   // coordinates of the current integration point
   const double* gpcoord = (intpoints.IP().qxg)[iquad];
   for (int idim = 0; idim < nsd_; idim++)
@@ -855,21 +879,23 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(
   {
     DRT::NURBS::UTILS::nurbs_get_funct_deriv(funct_, deriv_, xsi_, myknots_, weights_, distype);
   }
+}
 
-  // the metric tensor and the area of an infinitesimal surface/line element
-  // optional: get normal at integration point as well
-  double drs(0.0);
-  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(
-      xyze_, deriv_, metrictensor_, drs, normalvec);
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::
+    EvaluateSquareRootOfDeterminantOfMetricTensorAtIntPoint(
+        const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, const int iquad,
+        const LINALG::Matrix<nsd_ + 1, nen_>& XYZe)
+{
+  EvaluateShapeFuncAndDerivativeAtIntPoint(intpoints, iquad);
 
-  // for nurbs elements the normal vector must be scaled with a special orientation factor!!
-  if (DRT::NURBS::IsNurbs(distype))
-  {
-    if (normalvec != nullptr) normal_.Scale(normalfac_);
-  }
+  double detg(0.0);
+  LINALG::Matrix<nsd_, nsd_> metrictensor;
+  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(XYZe, deriv_, metrictensor, detg);
 
-  // return the integration factor
-  return intpoints.IP().qwgt[iquad] * drs;
+  return intpoints.IP().qwgt[iquad] * detg;
 }
 
 /*----------------------------------------------------------------------*

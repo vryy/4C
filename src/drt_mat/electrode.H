@@ -200,10 +200,11 @@ namespace MAT
      * @param[in] concentration  concentration
      * @param[in] faraday        Faraday constant
      * @param[in] frt            factor F/RT
+     * @param[in] detF           determinant of Jacobian from deformation at Gauss point
      * @return derivative of open circuit potential w.r.t. concentration
      */
     double ComputeFirstDerivOpenCircuitPotentialConc(
-        double concentration, double faraday, double frt) const;
+        double concentration, double faraday, double frt, double detF) const;
 
     /*!
      * @brief compute first derivative of half cell open circuit potential w.r.t. temperature
@@ -222,9 +223,11 @@ namespace MAT
      * @param[in] concentration  concentration
      * @param[in] faraday        Faraday constant
      * @param[in] frt            factor F/RT
+     * @param[in] detF           determinant of jacobian at gauss point
      * @return open circuit potential
      */
-    double ComputeOpenCircuitPotential(double concentration, double faraday, double frt) const;
+    double ComputeOpenCircuitPotential(
+        double concentration, double faraday, double frt, double detF) const;
 
     /*!
      * @brief compute second derivative of half cell open circuit potential w.r.t. concentration
@@ -232,10 +235,11 @@ namespace MAT
      * @param[in] concentration  concentration
      * @param[in] faraday        Faraday constant
      * @param[in] frt            factor F/RT
+     * @param[in] detF           determinant of jacobian at gauss point
      * @return 2nd derivative of open circuit potential w.r.t. concentration
      */
     double ComputeSecondDerivOpenCircuitPotentialConc(
-        double concentration, double faraday, double frt) const;
+        double concentration, double faraday, double frt, double detF) const;
 
    protected:
     //! return material parameters

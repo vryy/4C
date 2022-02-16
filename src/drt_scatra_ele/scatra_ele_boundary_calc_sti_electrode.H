@@ -70,6 +70,7 @@ namespace DRT
        * @param[in] timefacfac     time-integration factor times domain-integration factor
        * @param[in] timefacrhsfac  time-integration factor for right-hand side times
        *                           domain-integration factor
+       * @param[in] detF           determinant of jacobian at current integration point
        * @param[out] k_ss          linearizations of slave-side residuals w.r.t. slave-side dofs
        * @param[out] k_sm          linearizations of slave-side residuals w.r.t. master-side dofs
        * @param[out] r_s           slave-side residual vector
@@ -93,8 +94,9 @@ namespace DRT
               funct_master,
           const int kineticmodel, const double kr, const double alphaa, const double alphac,
           const double peltier, const double thermoperm, const double molar_heat_capacity,
-          const double timefacfac, const double timefacrhsfac, Epetra_SerialDenseMatrix& k_ss,
-          Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseVector& r_s);
+          const double timefacfac, const double timefacrhsfac, const double detF,
+          Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm,
+          Epetra_SerialDenseVector& r_s);
 
       /*!
        * \brief evaluate off-diagonal system matrix contributions associated with scatra-scatra
@@ -139,7 +141,7 @@ namespace DRT
               funct_master,
           int kineticmodel, double kr, double alphaa, double alphac, double peltier,
           const double thermoperm, const double molar_heat_capacity, const double timefacfac,
-          const double timefacwgt, int differentiationtype,
+          const double timefacwgt, double detF, int differentiationtype,
           const LINALG::Matrix<my::nsd_ + 1, my::nen_>& shapederivatives,
           Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm);
 
