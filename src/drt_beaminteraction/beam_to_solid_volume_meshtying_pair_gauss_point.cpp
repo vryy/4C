@@ -357,7 +357,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
       LARGEROTATIONS::angletoquaternion(psi_solid_val, quaternion_solid);
 
       // Calculate the relative rotation vector.
-      LARGEROTATIONS::quaternionproduct(quaternion_solid, quaternion_beam_inv, quaternion_rel);
+      LARGEROTATIONS::quaternionproduct(quaternion_beam_inv, quaternion_solid, quaternion_rel);
       LARGEROTATIONS::quaterniontoangle(quaternion_rel, psi_rel);
 
       // Calculate the transformation matrices.

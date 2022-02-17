@@ -599,7 +599,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         LARGEROTATIONS::angletoquaternion(psi_surface_val, quaternion_surface);
 
         // Calculate the relative rotation vector.
-        LARGEROTATIONS::quaternionproduct(quaternion_surface, quaternion_beam_inv, quaternion_rel);
+        LARGEROTATIONS::quaternionproduct(quaternion_beam_inv, quaternion_surface, quaternion_rel);
         LARGEROTATIONS::quaterniontoangle(quaternion_rel, psi_rel);
 
         // Calculate the transformation matrices.
@@ -837,7 +837,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         LARGEROTATIONS::angletoquaternion(psi_surface, quaternion_surface);
 
         // Calculate the relative rotation vector.
-        LARGEROTATIONS::quaternionproduct(quaternion_surface, quaternion_beam_inv, quaternion_rel);
+        LARGEROTATIONS::quaternionproduct(quaternion_beam_inv, quaternion_surface, quaternion_rel);
         LARGEROTATIONS::quaterniontoangle(quaternion_rel, psi_rel);
 
         // Calculate the transformation matrices.
