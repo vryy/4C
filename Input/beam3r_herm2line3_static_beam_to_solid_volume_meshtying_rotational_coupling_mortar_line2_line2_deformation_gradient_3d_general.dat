@@ -98,9 +98,9 @@ ROTATION_COUPLING                     deformation_gradient_3d_general
 ROTATION_COUPLING_PENALTY_PARAMETER   1.0
 ROTATION_COUPLING_MORTAR_SHAPE_FUNCTION        line2
 --------------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 97 QUANTITY dispx VALUE 1.08872364255973159e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 97 QUANTITY dispy VALUE 1.18422678267114861e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 97 QUANTITY dispz VALUE -1.94895030005899500e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 97 QUANTITY dispx VALUE 1.08878390212988091e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 97 QUANTITY dispy VALUE 1.18490054411718795e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 97 QUANTITY dispz VALUE -1.94850488864565102e-01 TOLERANCE 1e-10
 ----------------------------------------------------------STRUCT NOX/Status Test
 XML File                            = beam3r_herm2line3_static_beam_to_solid_volume_meshtying_rotational_coupling.xml
 -----------------------------------------------------------------------MATERIALS

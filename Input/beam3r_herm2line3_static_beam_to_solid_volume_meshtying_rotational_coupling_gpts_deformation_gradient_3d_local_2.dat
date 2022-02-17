@@ -97,9 +97,9 @@ INTEGRATION_POINTS_CIRCUMFERENCE      128
 ROTATION_COUPLING                     deformation_gradient_3d_local_2
 ROTATION_COUPLING_PENALTY_PARAMETER   0.1
 --------------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 97 QUANTITY dispx VALUE 0.116922875336094 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 97 QUANTITY dispy VALUE 0.1357274847875997 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 97 QUANTITY dispz VALUE -0.20913351257180482 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 97 QUANTITY dispx VALUE 1.16924675595284314e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 97 QUANTITY dispy VALUE 1.35792709728286332e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 97 QUANTITY dispz VALUE -2.09144742529611405e-01 TOLERANCE 1e-10
 ----------------------------------------------------------STRUCT NOX/Status Test
 XML File                            = beam3r_herm2line3_static_beam_to_solid_volume_meshtying_rotational_coupling.xml
 -----------------------------------------------------------------------MATERIALS
