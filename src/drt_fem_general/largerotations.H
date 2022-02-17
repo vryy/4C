@@ -231,12 +231,17 @@ namespace LARGEROTATIONS
   void directionstotriad(
       const LINALG::Matrix<3, 1>& d1, const LINALG::Matrix<3, 1>& d2, LINALG::Matrix<3, 3>& R);
 
-  //! quaternion product q12 = q2*q1, Crisfield, Vol. 2, equation (16.71)
-  //  void quaternionproduct(const LINALG::Matrix<4,1>& q1,const LINALG::Matrix<4,1>&
-  //  q2,LINALG::Matrix<4,1>& q12);
-
-  //! this is a templated version of the method declared above in order to also handle
-  //! the datatype FAD which is needed for automatic differentiation
+  /**
+   * \brief Quaternion product q12 = q2*q1, Crisfield, Vol. 2, equation (16.71)
+   *
+   * If q1 and q2 correspond to the rotation matrices R1 and R2, respectively, the compound rotation
+   * R12 = R2*R1 corresponds to the compound quaternion q12 = q2*q1.
+   *
+   * @tparam T1, T2, T3 Template parameter of the individual quaternions.
+   * @param q1 (in) The first quaternion to apply.
+   * @param q2 (in) The second quaternion to apply.
+   * @param q12 (out) The compound quaternion.
+   */
   template <class T1, class T2, class T3>
   void quaternionproduct(const T1& q1, const T2& q2, T3& q12)
   {
