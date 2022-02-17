@@ -42,7 +42,7 @@ namespace LINALG
         int nv = 0;
         int np = 0;
 
-        // set nodal block information for solver
+        // set parameter information for solver
         {
           if (nullspaceMap == Teuchos::null)
           {
@@ -78,6 +78,7 @@ namespace LINALG
           nv = gdata[2];
           np = gdata[3];
 
+          // store nullspace information in solver list
           solverlist.set("PDE equations", numdf);
           solverlist.set("null space: dimension", dimns);
           solverlist.set("null space: type", "pre-computed");

@@ -63,9 +63,8 @@ namespace INPAR
       {
         // this one is longer than 15 and the tuple<> function does not support this,
         // so build the Tuple class directly (which can be any size)
-
-        Teuchos::Tuple<std::string, 24> name;
-        Teuchos::Tuple<int, 24> number;
+        Teuchos::Tuple<std::string, 23> name;
+        Teuchos::Tuple<int, 23> number;
 
         name[0] = "none";
         number[0] = azprec_none;
@@ -95,26 +94,24 @@ namespace INPAR
         number[12] = azprec_MLfluid2;
         name[13] = "GaussSeidel";
         number[13] = azprec_GaussSeidel;
-        name[14] = "DownwindGaussSeidel";
-        number[14] = azprec_DownwindGaussSeidel;
-        name[15] = "BGS2x2";
-        number[15] = azprec_BGS2x2;
-        name[16] = "CheapSIMPLE";
-        number[16] = azprec_CheapSIMPLE;
-        name[17] = "MueLu";
-        number[17] = azprec_MueLuAMG;
-        name[18] = "MueLu_fluid";
-        number[18] = azprec_MueLuAMG_fluid;
-        name[19] = "MueLu_tsi";
-        number[19] = azprec_MueLuAMG_tsi;
-        name[20] = "MueLu_contactSP";
-        number[20] = azprec_MueLuAMG_contactSP;
-        name[21] = "MueLu_BeamSolid";
-        number[21] = azprec_MueLuAMG_BeamSolid;
-        name[22] = "AMGnxn";
-        number[22] = azprec_AMGnxn;
-        name[23] = "Chebyshev";
-        number[23] = azprec_Chebyshev;
+        name[14] = "BGS2x2";
+        number[14] = azprec_BGS2x2;
+        name[15] = "CheapSIMPLE";
+        number[15] = azprec_CheapSIMPLE;
+        name[16] = "MueLu";
+        number[16] = azprec_MueLuAMG;
+        name[17] = "MueLu_fluid";
+        number[17] = azprec_MueLuAMG_fluid;
+        name[18] = "MueLu_tsi";
+        number[18] = azprec_MueLuAMG_tsi;
+        name[19] = "MueLu_contactSP";
+        number[19] = azprec_MueLuAMG_contactSP;
+        name[20] = "MueLu_BeamSolid";
+        number[20] = azprec_MueLuAMG_BeamSolid;
+        name[21] = "AMGnxn";
+        number[21] = azprec_AMGnxn;
+        name[22] = "Chebyshev";
+        number[22] = azprec_Chebyshev;
 
         setStringToIntegralParameter<int>("AZPREC", "ILU",
             "Type of internal preconditioner to use.\n"
