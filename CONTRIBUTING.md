@@ -58,8 +58,8 @@ such that the issue can be understood and tackled as soon as it is practicable.
 
 Make sure to assign appropriate team::<teamname> label(s) according to the issue type and @mention the respective teams in order to facilitate your fellow developers to keep track of the issues that are related to their field.
 
-Issues begin their life in the **Backlog** of our [Kanban board](https://gitlab.lrz.de/baci/baci/boards)
-and then move through the board from left to right.
+Issues begin their life in the **Open** column of our [issue board](https://gitlab.lrz.de/baci/baci/-/boards)
+and then move through the board from left to right. Each column represents the current state of the issue as indicated by the status label.
 If at any point in an issue's life it becomes blocked by something (either another BACI issue, or perhaps something external),
 move the issue card into the **Blocked** column to indicate that work can't proceed until something else is dealt with.
 Add a comment to the blocked issue to explain why it is blocked and what needs to happen to resolve the **Blocked** status.
@@ -68,7 +68,7 @@ Add a comment to the blocked issue to explain why it is blocked and what needs t
 
 ### Work an Issue
 
-When work commences on an issue, move the issue card to the **In Progress** column of our [Kanban board](https://gitlab.lrz.de/baci/baci/boards).
+When work commences on an issue, move the issue card to the **In Progress** column of our [issue board](https://gitlab.lrz.de/baci/baci/-/boards).
 Then the workflow to use is the following:
 
 #### Create a Feature Branch
@@ -183,7 +183,7 @@ git push --set-upstream origin <branchName>
 
 When your changes are ready to be integrated into BACI's `master` branch,
 move the issue card from **In Progress** to **Under Review** on our
-[Kanban board](https://gitlab.lrz.de/baci/baci/boards) and then:
+[issue board](https://gitlab.lrz.de/baci/baci/-/boards) and then:
 
 *  Navigate to the BACI project on GitLab and [create a new merge request](https://gitlab.lrz.de/baci/baci/merge_requests/new):
    * Be sure you choose:
@@ -265,7 +265,7 @@ since he/she is in the best position to decide, whether he/she wants to merge ri
 
 > Yet, basically every @baci/baci_developers can press the "Merge" button.
 
-If your merge request *Description* has some form of "closes #\<issueNumber\>" in it somewhere, merging the merge request will automatically close the associated issue, which will move the issue card from **Under Review** to **Done** on the [Kanban board](https://gitlab.lrz.de/baci/baci/boards). If not, you'll need to make this move manually and adapt each issues' labels manually.
+If your merge request *Description* has some form of "closes #\<issueNumber\>" in it somewhere, merging the merge request will automatically close the associated issue, which will move the issue card from **Under Review** to **Done** on the [issue board](https://gitlab.lrz.de/baci/baci/-/boards). If not, you'll need to make this move manually and adapt each issues' labels manually.
 
 [↑ Contents](#contents)
 
