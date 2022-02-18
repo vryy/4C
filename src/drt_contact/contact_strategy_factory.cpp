@@ -29,8 +29,6 @@
 
 #include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
 
-#include "../drt_structure_xstructure/xstr_multi_discretization_wrapper.H"
-
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 #include <Teuchos_ParameterList.hpp>
@@ -54,9 +52,6 @@
 #include "../drt_contact_aug/contact_aug_lagrange_interface.H"
 #include "../drt_contact_aug/contact_aug_combo_strategy.H"
 #include "../drt_contact_constitutivelaw/contact_constitutivelaw_interface.H"
-// --xcontact strategies and interfaces
-#include "../drt_contact_xcontact/xcontact_interface.H"
-#include "../drt_contact_xcontact/xcontact_strategy.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -735,13 +730,6 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     // In case of MultiScale contact this is the id of the interface's constitutive contact law
     int contactconstitutivelawid = currentgroup[0]->GetInt("ConstitutiveLawID");
 
-    /* get the parent discretization of the contact interface discretization
-     * which shares the same contact condition group */
-    Teuchos::RCP<XSTR::MultiDiscretizationWrapper::cXDisPair> parent_dis_pair =
-        Teuchos::rcp(new XSTR::MultiDiscretizationWrapper::cXDisPair());
-    ExtractParentDiscretization(Discret(), currentgroup, *parent_dis_pair);
-    const DRT::DiscretizationInterface& parent_discret = *((*parent_dis_pair).second);
-
     // find out which sides are Master and Slave
     std::vector<bool> isslave(0);
     std::vector<bool> isself(0);
@@ -841,8 +829,10 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     // ------------------------------------------------------------------------
     // create the desired interface object
     // ------------------------------------------------------------------------
+    const auto& discret = Teuchos::rcp<const DRT::DiscretizationInterface>(&Discret(), false);
+
     Teuchos::RCP<CONTACT::CoInterface> newinterface = CreateInterface(groupid1, Comm(), Dim(),
-        icparams, isself[0], parent_dis_pair, Teuchos::null, contactconstitutivelawid);
+        icparams, isself[0], discret, Teuchos::null, contactconstitutivelawid);
     interfaces.push_back(newinterface);
 
     // get it again
@@ -866,8 +856,8 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
       for (int gid : *nodeids)
       {
         // do only nodes that I have in my discretization
-        if (!parent_discret.HaveGlobalNode(gid)) continue;
-        DRT::Node* node = parent_discret.gNode(gid);
+        if (!Discret().HaveGlobalNode(gid)) continue;
+        DRT::Node* node = Discret().gNode(gid);
         if (!node) dserror("Cannot find node with gid %", gid);
 
         if (node->NumElement() == 0)
@@ -918,9 +908,9 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
          * and found for the second, third, ... time! */
         if (ftype != INPAR::CONTACT::friction_none)
         {
-          Teuchos::RCP<CONTACT::FriNode> cnode = Teuchos::rcp(new CONTACT::FriNode(node->Id(),
-              node->X(), node->Owner(), parent_discret.NumDof(0, node), parent_discret.Dof(0, node),
-              isslave[j], isactive[j] + foundinitialactive, friplus));
+          Teuchos::RCP<CONTACT::FriNode> cnode = Teuchos::rcp(
+              new CONTACT::FriNode(node->Id(), node->X(), node->Owner(), Discret().NumDof(0, node),
+                  Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive, friplus));
           //-------------------
           // get nurbs weight!
           if (nurbs)
@@ -930,7 +920,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
 
           // get edge and corner information:
           std::vector<DRT::Condition*> contactCornerConditions(0);
-          parent_discret.GetCondition("mrtrcorner", contactCornerConditions);
+          Discret().GetCondition("mrtrcorner", contactCornerConditions);
           for (auto& condition : contactCornerConditions)
           {
             if (condition->ContainsNode(node->Id()))
@@ -939,7 +929,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
             }
           }
           std::vector<DRT::Condition*> contactEdgeConditions(0);
-          parent_discret.GetCondition("mrtredge", contactEdgeConditions);
+          Discret().GetCondition("mrtredge", contactEdgeConditions);
           for (auto& condition : contactEdgeConditions)
           {
             if (condition->ContainsNode(node->Id()))
@@ -950,7 +940,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
           std::vector<DRT::Condition*> contactSymConditions(0);
-          parent_discret.GetCondition("mrtrsym", contactSymConditions);
+          Discret().GetCondition("mrtrsym", contactSymConditions);
 
           for (auto& condition : contactSymConditions)
           {
@@ -979,9 +969,9 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
         }
         else
         {
-          Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(new CONTACT::CoNode(node->Id(),
-              node->X(), node->Owner(), parent_discret.NumDof(0, node), parent_discret.Dof(0, node),
-              isslave[j], isactive[j] + foundinitialactive));
+          Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(
+              new CONTACT::CoNode(node->Id(), node->X(), node->Owner(), Discret().NumDof(0, node),
+                  Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive));
           //-------------------
           // get nurbs weight!
           if (nurbs)
@@ -991,7 +981,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
 
           // get edge and corner information:
           std::vector<DRT::Condition*> contactCornerConditions(0);
-          parent_discret.GetCondition("mrtrcorner", contactCornerConditions);
+          Discret().GetCondition("mrtrcorner", contactCornerConditions);
           for (auto& condition : contactCornerConditions)
           {
             if (condition->ContainsNode(node->Id()))
@@ -1000,7 +990,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
             }
           }
           std::vector<DRT::Condition*> contactEdgeConditions(0);
-          parent_discret.GetCondition("mrtredge", contactEdgeConditions);
+          Discret().GetCondition("mrtredge", contactEdgeConditions);
           for (auto& condition : contactEdgeConditions)
           {
             if (condition->ContainsNode(node->Id()))
@@ -1011,7 +1001,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
           std::vector<DRT::Condition*> contactSymConditions(0);
-          parent_discret.GetCondition("mrtrsym", contactSymConditions);
+          Discret().GetCondition("mrtrsym", contactSymConditions);
 
           for (auto& condition : contactSymConditions)
           {
@@ -1096,7 +1086,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
             Teuchos::rcp(new CONTACT::CoElement(ele->Id() + ggsize, ele->Owner(), ele->Shape(),
                 ele->NumNode(), ele->NodeIds(), isslave[j], nurbs));
 
-        if (isporo) SetPoroParentElement(slavetype, mastertype, cele, ele, parent_discret);
+        if (isporo) SetPoroParentElement(slavetype, mastertype, cele, ele, Discret());
 
         if (algo == INPAR::MORTAR::algorithm_gpts)
         {
@@ -1115,7 +1105,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs)
         {
-          PrepareNURBSElement(parent_discret, ele, cele);
+          PrepareNURBSElement(Discret(), ele, cele);
         }
 
         interface->AddCoElement(cele);
@@ -1266,16 +1256,14 @@ int CONTACT::STRATEGY::Factory::IdentifyFullSubset(
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface(const int id,
     const Epetra_Comm& comm, const int dim, Teuchos::ParameterList& icparams,
-    const bool selfcontact,
-    const Teuchos::RCP<std::pair<enum XFEM::FieldName,
-        Teuchos::RCP<const DRT::DiscretizationInterface>>>& parent_dis_pair,
+    const bool selfcontact, const Teuchos::RCP<const DRT::DiscretizationInterface>& parent_dis,
     Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr,
     const int contactconstitutivelawid)
 {
   auto stype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(icparams, "STRATEGY");
 
-  return CreateInterface(stype, id, comm, dim, icparams, selfcontact, parent_dis_pair,
-      interfaceData_ptr, contactconstitutivelawid);
+  return CreateInterface(stype, id, comm, dim, icparams, selfcontact, parent_dis, interfaceData_ptr,
+      contactconstitutivelawid);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1283,8 +1271,7 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
 Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface(
     const enum INPAR::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
     const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
-    const Teuchos::RCP<std::pair<enum XFEM::FieldName,
-        Teuchos::RCP<const DRT::DiscretizationInterface>>>& parent_dis_pair,
+    const Teuchos::RCP<const DRT::DiscretizationInterface>& parent_dis,
     Teuchos::RCP<CONTACT::InterfaceDataContainer> idata_ptr, const int contactconstitutivelawid)
 {
   Teuchos::RCP<CONTACT::CoInterface> newinterface = Teuchos::null;
@@ -1375,20 +1362,6 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
             Teuchos::rcp_dynamic_cast<CONTACT::AUG::InterfaceDataContainer>(idata_ptr, true);
         newinterface = Teuchos::rcp(new CONTACT::AUG::LAGRANGE::Interface(iaugdata_ptr));
       }
-
-      break;
-    }
-    // ------------------------------------------------------------------------
-    // Create an extended finite element contact interface (XCONTACT)
-    // ------------------------------------------------------------------------
-    case INPAR::CONTACT::solution_xcontact:
-    {
-      idata_ptr = Teuchos::rcp(new CONTACT::InterfaceDataContainer());
-
-      icparams.set<Teuchos::RCP<XSTR::MultiDiscretizationWrapper::cXDisPair>>(
-          "ParentDiscretPair", parent_dis_pair);
-      newinterface =
-          Teuchos::rcp(new XCONTACT::Interface(idata_ptr, id, comm, dim, icparams, selfcontact));
 
       break;
     }
@@ -1744,12 +1717,6 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
     strategy_ptr = Teuchos::rcp(new AUG::LAGRANGE::Strategy(
         data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dof_offset));
   }
-  else if (stype == INPAR::CONTACT::solution_xcontact)
-  {
-    data_ptr = Teuchos::rcp(new XCONTACT::DataContainer());
-    strategy_ptr = Teuchos::rcp(new XCONTACT::Strategy(
-        data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dof_offset));
-  }
   else if (algo == INPAR::MORTAR::algorithm_gpts &&
            (stype == INPAR::CONTACT::solution_nitsche || stype == INPAR::CONTACT::solution_penalty))
   {
@@ -1840,74 +1807,6 @@ void CONTACT::STRATEGY::Factory::Print(
   }
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void CONTACT::STRATEGY::Factory::ExtractParentDiscretization(
-    const DRT::DiscretizationInterface& full_discret,
-    const std::vector<DRT::Condition*>& given_ccgroup,
-    XSTR::MultiDiscretizationWrapper::cXDisPair& parent_dis_pair) const
-{
-  const auto* dis_wrapper = dynamic_cast<const XSTR::MultiDiscretizationWrapper*>(&full_discret);
-
-  // default case: do nothing and just return the input object
-  if (dis_wrapper == nullptr)
-  {
-    parent_dis_pair = std::make_pair(
-        XFEM::structure, Teuchos::rcp<const DRT::DiscretizationInterface>(&full_discret, false));
-    return;
-  }
-
-  bool coincide = false;
-  std::vector<std::vector<DRT::Condition*>> curr_ccgroup;
-  XSTR::MultiDiscretizationWrapper::XDisMap::const_iterator cit;
-  for (cit = dis_wrapper->DiscretMap().begin(); cit != dis_wrapper->DiscretMap().end(); ++cit)
-  {
-    // continue if no contact conditions could be found in the current discretization
-    if (CONTACT::UTILS::GetContactConditionGroups(curr_ccgroup, *(cit->second), false)) continue;
-    /* loop over the condition grps of the current discretization and try
-     * to find the one with same interface ID's */
-    std::vector<std::vector<DRT::Condition*>>::const_iterator vv_cit;
-    for (vv_cit = curr_ccgroup.begin(); vv_cit != curr_ccgroup.end(); ++vv_cit)
-    {
-      // continue if the sizes do not fit of the contact condition groups
-      if (vv_cit->size() != given_ccgroup.size()) continue;
-      // loop over the entries of the contact condition groups
-      for (unsigned j = 0; j < given_ccgroup.size(); ++j)
-      {
-        const auto* ggroupv = given_ccgroup[j]->Get<std::vector<int>>("Interface ID");
-        if (ggroupv == nullptr)
-          dserror("Given Contact Conditions do not have value 'Interface ID'");
-        const auto* cgroupv = (*vv_cit)[j]->Get<std::vector<int>>("Interface ID");
-        if (cgroupv == nullptr or cgroupv->size() != ggroupv->size())
-        {
-          coincide = false;
-          break;
-        }
-        // compare the Interface ID's of the contact condition grp's
-        if ((*cgroupv)[0] != (*ggroupv)[0])
-        {
-          coincide = false;
-          break;
-        }
-        // has to be true for all of them
-        coincide = true;
-      }
-      if (coincide) break;
-    }
-    // if the search was successful, return the desired pair
-    if (coincide)
-    {
-      parent_dis_pair = std::make_pair(cit->first, cit->second.getConst());
-      return;
-    }
-  }
-  // if the search failed, throw an error
-  IO::cout << "\n:::: Given Contact Condition Group ::::\n";
-  for (auto* current_ccgroup : given_ccgroup) IO::cout << *current_ccgroup << "\n";
-  dserror(
-      "There is no wrapped discretization which belongs to the given "
-      "contact condition group!");
-}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -2037,14 +1936,6 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
         {
           IO::cout << "================================================================\n";
           IO::cout << "===== Steepest Ascent strategy =================================\n";
-          IO::cout << "===== (Saddle point formulation) ===============================\n";
-          IO::cout << "================================================================\n\n";
-        }
-        else if (soltype == INPAR::CONTACT::solution_xcontact &&
-                 shapefcn == INPAR::MORTAR::shape_standard)
-        {
-          IO::cout << "================================================================\n";
-          IO::cout << "===== Extended contact strategy ================================\n";
           IO::cout << "===== (Saddle point formulation) ===============================\n";
           IO::cout << "================================================================\n\n";
         }

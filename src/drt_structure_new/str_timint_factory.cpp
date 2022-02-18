@@ -199,26 +199,7 @@ Teuchos::RCP<STR::TIMINT::BaseDataSDyn> STR::TIMINT::Factory::BuildDataSDyn(
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> STR::TIMINT::Factory::BuildDataGlobalState() const
 {
-  Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr = Teuchos::null;
-
-  // what's the current problem type?
-  ProblemType prbtype = DRT::Problem::Instance()->GetProblemType();
-
-  switch (prbtype)
-  {
-    case prb_xcontact:
-    {
-      gstate_ptr = Teuchos::rcp(new XSTR::XStructureStructureState());
-      break;
-    }
-    default:
-    {
-      gstate_ptr = Teuchos::rcp(new STR::TIMINT::BaseDataGlobalState());
-      break;
-    }
-  }
-
-  return gstate_ptr;
+  return Teuchos::rcp(new STR::TIMINT::BaseDataGlobalState());
 }
 
 

@@ -109,8 +109,6 @@ drt_contact_aug/               @baci/team_contact
 
 drt_contact_constitutivelaw/   @baci/team_contact
 
-drt_contact_xcontact/          @baci/team_contact
-
 drt_cut/                       @baci/team_fluid
 
 drt_discsh3/                   @baci/team_structure

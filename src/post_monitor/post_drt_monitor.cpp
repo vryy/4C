@@ -1828,14 +1828,6 @@ int main(int argc, char** argv)
       break;
     }
     case prb_structure:
-    case prb_xcontact:
-    {
-      StructMonWriter mymonwriter(problem, infieldtype, node);
-      mymonwriter.WriteMonFile(problem, infieldtype, node);
-      mymonwriter.WriteMonStressFile(problem, infieldtype, problem.stresstype(), node);
-      mymonwriter.WriteMonStrainFile(problem, infieldtype, problem.straintype(), node);
-      break;
-    }
     case prb_loma:
     case prb_two_phase_flow:
     case prb_fluid_xfem_ls:

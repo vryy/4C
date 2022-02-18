@@ -1060,13 +1060,6 @@ namespace INPAR
   {
   }  // namespace WEAR
 
-  /*! \brief Input parameters for CutFEM-based contact
-   *
-   */
-  namespace XCONTACT
-  {
-  }  // namespace XCONTACT
-
   /*! \brief Input parameters for CutFEM
    *
    */
@@ -1998,46 +1991,6 @@ namespace WEAR
   {
   }  // namespace UTILS
 }  // namespace WEAR
-
-/*! \brief
- *
- */
-namespace XCONTACT
-{
-  /*! \brief
-   *
-   */
-  namespace ALGORITHM
-  {
-  }  // namespace ALGORITHM
-
-  /*! \brief
-   *
-   */
-  namespace DEBUG
-  {
-  }  // namespace DEBUG
-
-  /*! \brief
-   *
-   */
-  namespace LEVELSET
-  {
-    /*! \brief
-     *
-     */
-    namespace REINIT
-    {
-    }  // namespace REINIT
-
-    /*! \brief
-     *
-     */
-    namespace TIMINT
-    {
-    }  // namespace TIMINT
-  }    // namespace LEVELSET
-}  // namespace XCONTACT
 
 /*! \brief
  *

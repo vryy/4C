@@ -45,9 +45,6 @@
 #include "../drt_levelset/levelset_timint_ost.H"
 #include "../drt_levelset/levelset_timint_stat.H"
 
-// xcontact level set specific files
-#include "../drt_contact_xcontact/xcontact_levelset_timint_ost.H"
-
 // cardiac monodomain specific files
 #include "../drt_scatra/scatra_timint_cardiac_monodomain_scheme.H"
 
@@ -300,7 +297,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
 
   // levelset and two phase flow
   else if (probtype == prb_level_set or probtype == prb_two_phase_flow or
-           probtype == prb_fluid_xfem_ls or probtype == prb_xcontact)
+           probtype == prb_fluid_xfem_ls)
   {
     Teuchos::RCP<Teuchos::ParameterList> lsparams = Teuchos::null;
     switch (probtype)
@@ -343,21 +340,9 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
     {
       case INPAR::SCATRA::timeint_one_step_theta:
       {
-        switch (probtype)
-        {
-          case prb_xcontact:
-            // create instance of time integration class (call the constructor)
-            scatra_ = Teuchos::rcp(new XCONTACT::LEVELSET::TIMINT::OneStepTheta(
-                discret, solver, lsparams, scatratimeparams, extraparams, output));
-            break;
-          default:
-          {
-            // create instance of time integration class (call the constructor)
-            scatra_ = Teuchos::rcp(new SCATRA::LevelSetTimIntOneStepTheta(
-                discret, solver, lsparams, scatratimeparams, extraparams, output));
-            break;
-          }
-        }
+        // create instance of time integration class (call the constructor)
+        scatra_ = Teuchos::rcp(new SCATRA::LevelSetTimIntOneStepTheta(
+            discret, solver, lsparams, scatratimeparams, extraparams, output));
         break;
       }
       case INPAR::SCATRA::timeint_stationary:
@@ -365,7 +350,6 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
         // create instance of time integration class (call the constructor)
         switch (probtype)
         {
-          case prb_xcontact:
           case prb_level_set:
           {
             dserror(

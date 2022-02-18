@@ -24,7 +24,6 @@
 #include "str_model_evaluator_contact.H"
 #include "str_model_evaluator_meshtying.H"
 #include "str_model_evaluator_lagpenconstraint.H"
-#include "../drt_contact_xcontact/str_model_evaluator_xcontact.H"
 #include "../drt_struct_ale/struct_ale_str_model_evaluator.H"
 
 // problem types
@@ -110,22 +109,7 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::BuildModelE
 Teuchos::RCP<STR::MODELEVALUATOR::Generic>
 STR::MODELEVALUATOR::Factory::BuildContactModelEvaluator() const
 {
-  Teuchos::RCP<STR::MODELEVALUATOR::Generic> contact_model_ptr = Teuchos::null;
-  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
-  switch (probtype)
-  {
-    case prb_xcontact:
-    {
-      contact_model_ptr = Teuchos::rcp(new STR::MODELEVALUATOR::XContact());
-      break;
-    }
-    default:
-    {
-      contact_model_ptr = Teuchos::rcp(new STR::MODELEVALUATOR::Contact());
-      break;
-    }
-  }
-  return contact_model_ptr;
+  return Teuchos::rcp(new STR::MODELEVALUATOR::Contact());
 }
 
 /*----------------------------------------------------------------------------*

@@ -117,28 +117,6 @@ namespace CONTACT
     */
     virtual double* Getjumpltl() { return jumpltl_; }
 
-
-    //! @name Extended contact
-    //! @{
-
-    //! Return the constraint residuum of this node
-    virtual double& GetWcLm() { return Wc_lm_; }
-
-    //! Return linearization of this node (slave part)
-    virtual GEN::pairedvector<int, double>& GetWcSuLm() { return Wc_su_lm_; }
-
-    //! Return linearization of this node (master part)
-    virtual std::map<int, double>& GetWcMuLm() { return Wc_mu_lm_; }
-
-    //! Return linearization of this node (slave part)
-    virtual std::map<int, std::map<int, double>>& GetWcSuU() { return Wc_su_u_; }
-
-    //! Return linearization of this node (master part)
-    virtual std::map<int, std::map<int, double>>& GetWcMuU() { return Wc_mu_u_; }
-
-
-    //! @}
-
     /*!
     \brief Return contact status of last converged state n (active=true)
 
@@ -402,30 +380,6 @@ namespace CONTACT
 
     //! direction derivative of nodal z-matrix value
     std::vector<std::map<int, double>> derivz_;
-
-
-    //! @name Extended contact formulation
-    //! @{
-
-    // TODO: Create own data container (or avoid storing in nodes) for XContact formulation
-
-    //! Contact potential varied after Lagrange multiplier (constraint residuum vector)
-    double Wc_lm_;
-
-    //! Contact potential varied after slave displacements and linearized after Lagrange multipliers
-    GEN::pairedvector<int, double> Wc_su_lm_;
-
-    //! Contact potential varied after master displacements and linearized after Lagrange
-    //! multipliers
-    std::map<int, double> Wc_mu_lm_;
-
-    //! Contact potential varied after slave displacements and linearized after all displacements
-    std::map<int, std::map<int, double>> Wc_su_u_;
-
-    //! Contact potential varied after master displacements and linearized after all displacements
-    std::map<int, std::map<int, double>> Wc_mu_u_;
-
-    //! @}
 
     double n_old_[3];  // normal of previous time step
 
@@ -1218,21 +1172,6 @@ namespace CONTACT
     \param val : value to be added
     */
     void AddKappaValue(double& val);
-
-    /*!
-    \brief TODO
-    */
-    void AddWcLm(double val);
-
-    /*!
-    \brief TODO
-    */
-    void AddWcSuLm(int col, double val);
-
-    /*!
-    \brief TODO
-    */
-    void AddWcMuLm(int col, double val);
 
     /*!
     \brief Add a value to the map of LM derivatives of this node

@@ -28,7 +28,6 @@ namespace MORTAR
                                 STR::ModelEvaluator::EvaluteForce/Stiff/ForceStiff */
     eval_run_post_evaluate,  /*!< Run in the end of a call to
                                 STR::ModelEvaluator::EvaluteForce/Stiff/ForceStiff */
-    eval_weighted_gap,       /*!< Evaluate the weighted gap only. */
     eval_run_post_compute_x, /*!< recover internal quantities, e.g. Lagrange multipliers */
     eval_reset, /*!< reset internal quantities, e.g. displacement state and/or Lagrange multipliers
                  */
@@ -66,8 +65,6 @@ namespace MORTAR
         return "eval_run_pre_evaluate";
       case eval_run_post_evaluate:
         return "eval_run_post_evaluate";
-      case eval_weighted_gap:
-        return "eval_weighted_gap";
       case MORTAR::eval_reset:
         return "eval_reset";
       case MORTAR::eval_run_post_compute_x:
