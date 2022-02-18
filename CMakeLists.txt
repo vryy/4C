@@ -1916,6 +1916,7 @@ set(OBJS_LINALG
   src/linalg/linalg_mapextractor.cpp
   src/linalg/linalg_matrixtransform.cpp
   src/linalg/linalg_mlapi_operator.cpp
+  src/linalg/linalg_nullspace.cpp
   src/linalg/linalg_precond.cpp
   src/linalg/linalg_projected_operator.cpp
   src/linalg/linalg_projected_precond.cpp

@@ -112,8 +112,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   // see whether we have previously computed the nullspace
   // and recomputation is enforced
   Teuchos::ParameterList& mllist = *mllist_ptr;
-  Teuchos::RCP<std::vector<double>> ns =
-      mllist.get<Teuchos::RCP<std::vector<double>>>("nullspace", Teuchos::null);
+  Teuchos::RCP<Epetra_MultiVector> ns =
+      mllist.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
   if (ns != Teuchos::null && !recompute) return;
 
   // no, we have not previously computed the nullspace

@@ -23,6 +23,7 @@
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp>  // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "solver_blockpreconditioners.H"
 
 // include header files for concrete implementation
@@ -75,7 +76,7 @@ void LINALG::SOLVER::SimplePreconditioner::Setup(
       //      {
       //        const Epetra_Map& oldmap = A->FullRowMap();
       //        const Epetra_Map& newmap = A->Matrix(0,0).EpetraMatrix()->RowMap();
-      //        LINALG::Solver::FixMLNullspace("Inverse1",oldmap, newmap,
+      //        LINALG::Nullspace::FixNullSpace("Inverse1",oldmap, newmap,
       //        params_.sublist("CheapSIMPLE Parameters").sublist("Inverse1"));
       //      }
 
@@ -171,10 +172,15 @@ void LINALG::SOLVER::SimplePreconditioner::Setup(
           (*vnewns)[vlength + i * nv + 1] = 1.0;
           if (nv > 2) (*vnewns)[2 * vlength + i * nv + 2] = 1.0;
         }
-        inv1.sublist("ML Parameters").set("null space: vectors", &((*vnewns)[0]));
+
+        Teuchos::RCP<Epetra_MultiVector> nullspace =
+            Teuchos::rcp(new Epetra_MultiVector(A->Matrix(0, 0).RowMap(), nv, true));
+        LINALG::StdVectorToEpetraMultiVector(vnewns, nullspace, nv);
+
+        inv1.sublist("ML Parameters").set("null space: vectors", nullspace->Values());
         inv1.sublist("ML Parameters").remove("nullspace", false);  // necessary??
         inv1.sublist("Michael's secret vault")
-            .set<Teuchos::RCP<std::vector<double>>>("velocity nullspace", vnewns);
+            .set<Teuchos::RCP<Epetra_MultiVector>>("velocity nullspace", nullspace);
       }
 
       // Teuchos::ParameterList& inv2 = params_.sublist("Inverse2");
@@ -183,13 +189,15 @@ void LINALG::SOLVER::SimplePreconditioner::Setup(
       {
         inv2.sublist("ML Parameters").set("PDE equations", 1);
         inv2.sublist("ML Parameters").set("null space: dimension", 1);
-        const int plength = A->Matrix(1, 1).RowMap().NumMyElements();
-        Teuchos::RCP<std::vector<double>> pnewns =
-            Teuchos::rcp(new std::vector<double>(plength, 1.0));
-        inv2.sublist("ML Parameters").set("null space: vectors", &((*pnewns)[0]));
+
+        Teuchos::RCP<Epetra_MultiVector> nullspace =
+            Teuchos::rcp(new Epetra_MultiVector(A->Matrix(1, 1).RowMap(), 1, true));
+        nullspace->PutScalar(1.0);
+
+        inv2.sublist("ML Parameters").set("null space: vectors", nullspace->Values());
         inv2.sublist("ML Parameters").remove("nullspace", false);  // necessary?
         inv2.sublist("Michael's secret vault")
-            .set<Teuchos::RCP<std::vector<double>>>("pressure nullspace", pnewns);
+            .set<Teuchos::RCP<Epetra_MultiVector>>("pressure nullspace", nullspace);
       }
 
       P_ = Teuchos::rcp(new LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner(A,

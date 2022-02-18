@@ -17,6 +17,7 @@
 #include "../drt_io/io_control.H"
 #include "../drt_inpar/inpar_solver.H"
 #include "../linalg/linalg_equilibrate.H"
+#include "../linalg/linalg_nullspace.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
@@ -1452,7 +1453,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::BuildArteryBl
   // build null space of complete discretization
   FluidField()->ArtNetTimInt()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams3);
   // fix the null space if some DOFs are condensed out
-  LINALG::Solver::FixMLNullspace("Artery",
+  LINALG::Nullspace::FixNullSpace("Artery",
       *(FluidField()->ArtNetTimInt()->Discretization()->DofRowMap(0)),
       *(FluidField()->ArteryDofRowMap()), blocksmootherparams3);
 

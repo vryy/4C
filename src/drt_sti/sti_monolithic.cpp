@@ -26,6 +26,7 @@
 #include "../linalg/linalg_equilibrate.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_multiply.H"
+#include "../linalg/linalg_nullspace.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
@@ -1190,7 +1191,7 @@ void STI::Monolithic::BuildNullSpaces() const
   // reduce full null space to match degrees of freedom associated with thermo matrix block if
   // necessary
   if (condensationthermo_)
-    LINALG::Solver::FixMLNullspace("Block " + iblockstr.str(),
+    LINALG::Nullspace::FixNullSpace("Block " + iblockstr.str(),
         *ThermoField()->Discretization()->DofRowMap(), *maps_->Map(1), blocksmootherparams);
 }  // STI::Monolithic::BuildBlockNullSpaces
 
@@ -1241,9 +1242,14 @@ void STI::Monolithic::ComputeNullSpaceIfNecessary(Teuchos::ParameterList& solver
     mllist.set("null space: dimension", dimns);
     mllist.set("null space: type", "pre-computed");
     mllist.set("null space: add default vectors", false);
-    mllist.set<Teuchos::RCP<std::vector<double>>>("nullspace", ns);
-    mllist.set("null space: vectors", &((*ns)[0]));
-    mllist.set<bool>("ML validate parameter list", false);
+
+    Teuchos::RCP<Epetra_MultiVector> nullspace =
+        Teuchos::rcp(new Epetra_MultiVector(DofRowMap().operator*(), dimns, true));
+    LINALG::StdVectorToEpetraMultiVector(ns, nullspace, dimns);
+
+    mllist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
+    mllist.set("null space: vectors", nullspace->Values());
+    mllist.set("ML validate parameter list", false);
   }
 
   // compute point-based null space information for MueLu preconditioner
@@ -1255,11 +1261,14 @@ void STI::Monolithic::ComputeNullSpaceIfNecessary(Teuchos::ParameterList& solver
     mllist.set("null space: dimension", 1);
     mllist.set("null space: type", "pre-computed");
     mllist.set("null space: add default vectors", false);
-    const Teuchos::RCP<std::vector<double>> ns =
-        Teuchos::rcp(new std::vector<double>(DofRowMap()->NumMyElements(), 1.));
-    mllist.set<Teuchos::RCP<std::vector<double>>>("nullspace", ns);
-    mllist.set("null space: vectors", &((*ns)[0]));
-    mllist.set<bool>("ML validate parameter list", false);
+
+    Teuchos::RCP<Epetra_MultiVector> nullspace =
+        Teuchos::rcp(new Epetra_MultiVector(DofRowMap().operator*(), 1, true));
+    nullspace->PutScalar(1.0);
+
+    mllist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
+    mllist.set("null space: vectors", nullspace->Values());
+    mllist.set("ML validate parameter list", false);
   }
 }  // STI::Monolithic::ComputeNullSpaceIfNecessary
 

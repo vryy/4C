@@ -238,67 +238,6 @@ int LINALG::Solver::NoxSolve(Epetra_LinearProblem& linProblem, bool refactor, bo
   return this->Solve(matrix, x, b, refactor, reset, projector);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void LINALG::Solver::FixMLNullspace(std::string field, const Epetra_Map& oldmap,
-    const Epetra_Map& newmap, Teuchos::ParameterList& solveparams)
-{
-  // there is no ML list, do nothing
-  if (!solveparams.isSublist("ML Parameters") && !solveparams.isSublist("MueLu Parameters")) return;
-
-  // find the ML or MueLu list
-  Teuchos::RCP<Teuchos::ParameterList> params_ptr = Teuchos::null;
-  if (solveparams.isSublist("ML Parameters"))
-    params_ptr = Teuchos::rcp(&(solveparams.sublist("ML Parameters")), false);
-  else if (solveparams.isSublist("MueLu Parameters"))
-    params_ptr = Teuchos::rcp(&(solveparams.sublist("MueLu Parameters")), false);
-  else
-    return;
-  Teuchos::ParameterList& params = *params_ptr;
-
-  const int ndim = params.get("null space: dimension", -1);
-  if (ndim == -1) dserror("List does not contain nullspace dimension");
-
-  Teuchos::RCP<std::vector<double>> ns =
-      params.get<Teuchos::RCP<std::vector<double>>>("nullspace", Teuchos::null);
-  if (ns == Teuchos::null) dserror("List does not contain nullspace");
-  double* ons = &((*ns)[0]);
-
-  const int olength = (int)ns->size() / ndim;
-
-  const int nlength = newmap.NumMyElements();
-
-  if (olength == nlength) return;  // everything should be ok, do nothing
-
-  if (olength != oldmap.NumMyElements())
-    dserror("Nullspace does not match old map length, %d %d", olength, oldmap.NumMyElements());
-
-  if (nlength > olength)
-    dserror("New problem size larger than old - full rebuild of nullspace neccessary");
-
-  // Allocate a new nullspace and fill it
-  Teuchos::RCP<std::vector<double>> nsnew =
-      Teuchos::rcp(new std::vector<double>(nlength * ndim, 0.0));
-  double* nns = &((*nsnew)[0]);
-
-  for (int i = 0; i < nlength; ++i)
-  {
-    int gid = newmap.GID(i);
-    int olid = oldmap.LID(gid);
-    if (olid == -1) continue;
-
-    // transfer entries for this dof to new nullspace vector
-    for (int j = 0; j < ndim; ++j) nns[j * nlength + i] = ons[j * olength + olid];
-  }
-
-  // put new nullspace in parameter list
-  // this print message can go away at some point
-  if (!oldmap.Comm().MyPID()) printf("Fixing %s ML Nullspace\n", field.c_str());
-  params.set<Teuchos::RCP<std::vector<double>>>("nullspace", nsnew);
-  params.set<double*>("null space: vectors", nns);
-
-  return;
-}
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/

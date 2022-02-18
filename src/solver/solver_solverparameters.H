@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Declaration of nullspace for multigrid solvers
+\brief Computation of specific solver parameters
 
 \level 1
 
@@ -12,7 +12,9 @@
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
+
 #include "../linalg/linalg_nullspace.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 namespace LINALG
 {
@@ -26,28 +28,29 @@ namespace LINALG
       {
         // set nodal block information for solver
         {
-
-        }
-
-        // set specific information for the multigrid preconditioner ML / MueLu
-        {
           solverlist.set("PDE equations", numdf);
           solverlist.set("null space: dimension", dimns);
           solverlist.set("null space: type", "pre-computed");
           solverlist.set("null space: add default vectors", false);
+        }
 
+        // set specific information for the multigrid preconditioner ML / MueLu
+        {
           // allocate dimns times the local length of the rowmap
           const int lrows = dis.DofRowMap(0)->NumMyElements();
           Teuchos::RCP<std::vector<double>> ns =
               Teuchos::rcp(new std::vector<double>(dimns * lrows));
-          double* nullsp = &((*ns)[0]);
-
-          solverlist.set<Teuchos::RCP<std::vector<double>>>("nullspace", ns);
-          solverlist.set("null space: vectors", nullsp);
-          solverlist.set<bool>("ML validate parameter list", false);  // TODO: What does this?
 
           // compute null space directly. that will call eletypes.
           LINALG::Nullspace::ComputeNullSpace(dis, ns, numdf, dimns);
+
+          Teuchos::RCP<Epetra_MultiVector> nullspace =
+              Teuchos::rcp(new Epetra_MultiVector(*dis.DofRowMap(), dimns, true));
+          LINALG::StdVectorToEpetraMultiVector(ns, nullspace, dimns);
+
+          solverlist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
+          solverlist.set("null space: vectors", nullspace->Values());
+          solverlist.set<bool>("ML validate parameter list", false);
         }
       }
     };

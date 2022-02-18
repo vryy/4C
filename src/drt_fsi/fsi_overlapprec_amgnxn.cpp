@@ -16,6 +16,7 @@
 #include "fsi_overlapprec_amgnxn.H"
 #include "../solver/solver_amgnxn_preconditioner.H"
 #include "../linalg/linalg_precond.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -136,8 +137,16 @@ void FSI::AMGnxnInterfaceFSI::Setup()
     int block = 0;
     num_pdes_[block] = mllist.get<int>("PDE equations", -1);
     null_spaces_dim_[block] = mllist.get<int>("null space: dimension", -1);
-    null_spaces_data_[block] =
-        mllist.get<Teuchos::RCP<std::vector<double>>>("nullspace", Teuchos::null);
+
+    Teuchos::RCP<Epetra_MultiVector> nullspace =
+        mllist.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
+    if (nullspace == Teuchos::null) dserror("Nullspace vector is null!");
+
+    Teuchos::RCP<std::vector<double>> ns =
+        Teuchos::rcp(new std::vector<double>(nullspace->MyLength() * nullspace->NumVectors()));
+
+    LINALG::EpetraMultiVectorToStdVector(nullspace, ns, null_spaces_dim_[block]);
+    null_spaces_data_[block] = ns;
   }
 
   // Fluid
@@ -156,8 +165,16 @@ void FSI::AMGnxnInterfaceFSI::Setup()
     int block = 1;
     num_pdes_[block] = mllist.get<int>("PDE equations", -1);
     null_spaces_dim_[block] = mllist.get<int>("null space: dimension", -1);
-    null_spaces_data_[block] =
-        mllist.get<Teuchos::RCP<std::vector<double>>>("nullspace", Teuchos::null);
+
+    Teuchos::RCP<Epetra_MultiVector> nullspace =
+        mllist.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
+    if (nullspace == Teuchos::null) dserror("Nullspace vector is null!");
+
+    Teuchos::RCP<std::vector<double>> ns =
+        Teuchos::rcp(new std::vector<double>(nullspace->MyLength() * nullspace->NumVectors()));
+
+    LINALG::EpetraMultiVectorToStdVector(nullspace, ns, null_spaces_dim_[block]);
+    null_spaces_data_[block] = ns;
   }
 
   // Ale
@@ -172,8 +189,16 @@ void FSI::AMGnxnInterfaceFSI::Setup()
     int block = 2;
     num_pdes_[block] = mllist.get<int>("PDE equations", -1);
     null_spaces_dim_[block] = mllist.get<int>("null space: dimension", -1);
-    null_spaces_data_[block] =
-        mllist.get<Teuchos::RCP<std::vector<double>>>("nullspace", Teuchos::null);
+
+    Teuchos::RCP<Epetra_MultiVector> nullspace =
+        mllist.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
+    if (nullspace == Teuchos::null) dserror("Nullspace vector is null!");
+
+    Teuchos::RCP<std::vector<double>> ns =
+        Teuchos::rcp(new std::vector<double>(nullspace->MyLength() * nullspace->NumVectors()));
+
+    LINALG::EpetraMultiVectorToStdVector(nullspace, ns, null_spaces_dim_[block]);
+    null_spaces_data_[block] = ns;
   }
 
 

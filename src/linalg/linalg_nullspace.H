@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Calcultion of nullspace
+\brief Declaration of calculation routines related to Nullspaces
 
 \level 0
 
@@ -16,77 +16,36 @@
 
 namespace LINALG
 {
-  class Nullspace
+  namespace Nullspace
   {
-   public:
-    static void ComputeNullSpace(DRT::Discretization& dis,
-        Teuchos::RCP<std::vector<double>> nullspace, int numdf = 0, int dimns = 0)
-    {
-      // get number of dofs to check or allocate nullspace storage
-      const int lrows = dis.DofRowMap(0)->NumMyElements();
+    /*!
+       \brief Calculate the nullspace based on a given discretization
 
-      // if nullspace is null then do everything from scratch
-      if (nullspace->size() == 0)
-      {
-        int nv, np = 0;  // dummy - not needed here
+       The nullspace is build by looping over all nodes of a discretization and stored
+       in the respective variable.
 
-        // downwinding needs nodal block information, compute it
-        if (dis.NumMyRowElements())
-        {
-          // We assume that all elements are of equal type
-          DRT::Element* dwele = dis.lRowElement(0);
-          dwele->ElementType().NodalBlockInformation(dwele, numdf, dimns, nv, np);
-        }
+       \param dis (in): discretization
+       \param nullspace (in): nullspace
+       \param numdf (in): number of degrees of freedom
+       \param dimns (in): nullspace dimension
+     */
+    void ComputeNullSpace(DRT::Discretization& dis, Teuchos::RCP<std::vector<double>> nullspace,
+        int numdf = 0, int dimns = 0);
 
-        // communicate data to procs without row element
-        int ldata[2] = {numdf, dimns};
-        int gdata[2] = {0, 0};
-        dis.Comm().MaxAll(&ldata[0], &gdata[0], 2);
-        numdf = gdata[0];
-        dimns = gdata[1];
+    /*!
+       \brief Fix the nullspace to match a new given map
 
-        // allocate storage for vector holding the nullspace data
-        nullspace->resize(dimns * lrows, 0.0);
-      }
-      // check if nullspace has correct size
-      else if (((ssize_t)(nullspace->size()) != (dimns * lrows) or numdf == 0))
-      {
-        dserror("nullspace does not have correct size or numdf or dimns are zero");
-      }
+       The nullspace is looked for in the parameter list. If found, it is assumed that
+       it matches the oldmap. Then it is fixed to match the new map.
 
-      // check whether numdf and dimns are consistent among all procs
-      const int numproc = dis.Comm().NumProc();
-      int sumnumdf;
-      dis.Comm().SumAll(&numdf, &sumnumdf, 1);
-      if (sumnumdf != numdf * numproc) dserror("numdf not consistent among procs");
-      int sumdimns;
-      dis.Comm().SumAll(&dimns, &sumdimns, 1);
-      if (sumdimns != dimns * numproc) dserror("dimns not consistent among procs");
-
-      // check if dimns is possible
-      if (dimns > 10) dserror("Nullspace size only upto 10 supported");
-
-      // compute nullspace for simple case: vector of ones
-      if (dimns == 1 && numdf == 1)
-      {
-        for (int i = 0; i < lrows; ++i) (*nullspace)[i] = 1.0;
-        return;
-      }
-
-      // for rigid body rotations
-      // compute nodal center of the discretization
-      double x0send[3] = {0.0, 0.0, 0.0};
-      for (int i = 0; i < dis.NumMyRowNodes(); ++i)
-        for (int j = 0; j < 3; ++j) x0send[j] += dis.lRowNode(i)->X()[j];
-      double x0[3];
-      dis.Comm().SumAll(x0send, x0, 3);
-      for (int i = 0; i < 3; ++i) x0[i] /= dis.NumGlobalNodes();
-
-      // let the elementtype compute the nullspace
-      DRT::Element* dwele = dis.lRowElement(0);
-      dwele->ElementType().ComputeNullSpace(dis, *nullspace, x0, numdf, dimns);
-    }
-  };
+       \param field (in): field name (just used for output)
+       \param oldmap (in): row map of nullspace
+       \param newmap (in): row map of nullspace upon exit
+       \param solveparams (in): parameterlist including nullspace vector
+     */
+    void FixNullSpace(std::string field, const Epetra_Map& oldmap, const Epetra_Map& newmap,
+        Teuchos::ParameterList& solveparams);
+  }  // namespace Nullspace
 }  // namespace LINALG
 
 #endif

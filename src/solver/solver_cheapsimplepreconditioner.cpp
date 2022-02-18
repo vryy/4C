@@ -235,24 +235,17 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
         // Exctract info from list
         int numdf = MueLuList.get<int>("PDE equations", -1);
         int dimns = MueLuList.get<int>("null space: dimension", -1);
-        Teuchos::RCP<std::vector<double>> nsdata =
-            MueLuList.get<Teuchos::RCP<std::vector<double>>>("nullspace", Teuchos::null);
+
+        Teuchos::RCP<Epetra_MultiVector> nsdata =
+            MueLuList.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
         if (numdf < 1 or dimns < 1) dserror("Error: PDE equations or null space dimension wrong.");
         if (nsdata == Teuchos::null) dserror("Error: null space data is empty");
-        // Convert null space to muelu format
-        Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> rowMap = mueluA->getRowMap();
+
         Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nspVector =
-            Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(
-                rowMap, dimns, true);
-        for (size_t i = 0; i < Teuchos::as<size_t>(dimns); i++)
-        {
-          Teuchos::ArrayRCP<Scalar> nspVectori = nspVector->getDataNonConst(i);
-          const size_t myLength = nspVector->getLocalLength();
-          for (size_t j = 0; j < myLength; j++)
-          {
-            nspVectori[j] = (*nsdata)[i * myLength + j];
-          }
-        }
+            Teuchos::rcp(new Xpetra::EpetraMultiVectorT<GO, NO>(nsdata));
+        Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> rowMap = mueluA->getRowMap();
+        nspVector->replaceMap(rowMap);
+
         // Create Hierarchy
         mueluOp->SetFixedBlockSize(numdf);
         MueLu::ParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(
@@ -318,24 +311,17 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
         // Exctract info from list
         int numdf = MueLuList.get<int>("PDE equations", -1);
         int dimns = MueLuList.get<int>("null space: dimension", -1);
-        Teuchos::RCP<std::vector<double>> nsdata =
-            MueLuList.get<Teuchos::RCP<std::vector<double>>>("nullspace", Teuchos::null);
+
+        Teuchos::RCP<Epetra_MultiVector> nsdata =
+            MueLuList.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
         if (numdf < 1 or dimns < 1) dserror("Error: PDE equations or null space dimension wrong.");
         if (nsdata == Teuchos::null) dserror("Error: null space data is empty");
-        // Convert null space to muelu format
-        Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> rowMap = mueluA->getRowMap();
+
         Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nspVector =
-            Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(
-                rowMap, dimns, true);
-        for (size_t i = 0; i < Teuchos::as<size_t>(dimns); i++)
-        {
-          Teuchos::ArrayRCP<Scalar> nspVectori = nspVector->getDataNonConst(i);
-          const size_t myLength = nspVector->getLocalLength();
-          for (size_t j = 0; j < myLength; j++)
-          {
-            nspVectori[j] = (*nsdata)[i * myLength + j];
-          }
-        }
+            Teuchos::rcp(new Xpetra::EpetraMultiVectorT<GO, NO>(nsdata));
+        Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> rowMap = mueluA->getRowMap();
+        nspVector->replaceMap(rowMap);
+
         // Create Hierarchy
         mueluOp->SetFixedBlockSize(numdf);
         MueLu::ParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(
