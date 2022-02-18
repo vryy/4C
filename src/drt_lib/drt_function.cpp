@@ -22,9 +22,62 @@
 #include "../drt_io/io.H"
 #include "drt_function_library.H"
 
-/*----------------------------------------------------------------------*/
-//! Print function
-/*----------------------------------------------------------------------*/
+namespace
+{
+  /// returns a vector of times either from NUMPOINTS and TIMERANGE or from TIMES of a line
+  /// definition
+  std::vector<double> returnTimeVector(const Teuchos::RCP<DRT::INPUT::LineDefinition> timevar)
+  {
+    // read the number of points
+    int numpoints;
+    timevar->ExtractInt("NUMPOINTS", numpoints);
+
+    // read times
+    std::vector<double> times;
+    bool bynum = timevar->HasString("BYNUM");
+
+    if (bynum)  // times defined by number of points
+    {
+      // read the time range
+      std::vector<double> timerange;
+      timevar->ExtractDoubleVector("TIMERANGE", timerange);
+
+      // get initial and final time
+      double t_initial = timerange[0];
+      double t_final = timerange[1];
+
+      // build the vector of times
+      times.push_back(t_initial);
+      int n = 0;
+      double dt = (t_final - t_initial) / (numpoints - 1);
+      while (times[n] + dt <= t_final + 1.0e-14)
+      {
+        if (times[n] + 2 * dt <= t_final + 1.0e-14)
+        {
+          times.push_back(times[n] + dt);
+        }
+        else
+        {
+          times.push_back(t_final);
+        }
+        ++n;
+      }
+    }
+    else  // times defined by vector
+    {
+      timevar->ExtractDoubleVector("TIMES", times);
+    }
+
+    // check if the times are in ascending order
+    if (!std::is_sorted(times.begin(), times.end()))
+      dserror("the TIMES must be in ascending order");
+
+    return times;
+  }
+}  // namespace
+
+
+/// Print Function
 void PrintFunctionDatHeader()
 {
   DRT::UTILS::FunctionManager functionmanager;
@@ -189,7 +242,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   translatedfunction_funct.AddTag("TRANSLATEDFUNCTION").AddNamedInt("ORIGIN").AddNamedInt("LOCAL");
 
   lines->Add(translatedfunction_funct);
-
   lines->Add(varfunct);
   lines->Add(beltrami);
   lines->Add(channelweaklycompressible);
@@ -630,8 +682,6 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       }
       else
       {
-        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
         // define a new vector of functions
         Teuchos::RCP<ExprFunction> vecfunc = Teuchos::rcp(new ExprFunction());
 
@@ -734,51 +784,8 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
           }
           else if (vartype == "linearinterpolation")
           {
-            // read the number of points
-            int numpoints;
-            timevar->ExtractInt("NUMPOINTS", numpoints);
-
             // read times
-            std::vector<double> times;
-            bool bynum = timevar->HasString("BYNUM");
-
-            if (bynum)  // times defined by number of points
-            {
-              // read the time range
-              std::vector<double> timerange;
-              timevar->ExtractDoubleVector("TIMERANGE", timerange);
-
-              // get initial and final time
-              double t_initial = timerange[0];
-              double t_final = timerange[1];
-
-              // build the vector of times
-              times.push_back(t_initial);
-              int n = 0;
-              double dt = (t_final - t_initial) / (numpoints - 1);
-              while (times[n] + dt <= t_final + 1.0e-14)
-              {
-                if (times[n] + 2 * dt <= t_final + 1.0e-14)
-                {
-                  times.push_back(times[n] + dt);
-                }
-                else
-                {
-                  times.push_back(t_final);
-                }
-                ++n;
-              }
-            }
-            else  // times defined by vector
-            {
-              timevar->ExtractDoubleVector("TIMES", times);
-            }
-
-            // check if the times are in ascending order
-            for (unsigned int k = 1; k < times.size(); ++k)
-            {
-              if (times[k] <= times[k - 1]) dserror("the TIMES must be in ascending order");
-            }
+            std::vector<double> times = returnTimeVector(timevar);
 
             // read values
             std::vector<double> values;
@@ -789,51 +796,8 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
           }
           else if (vartype == "multifunction")
           {
-            // read the number of points
-            int numpoints;
-            timevar->ExtractInt("NUMPOINTS", numpoints);
-
             // read times
-            std::vector<double> times;
-            bool bynum = timevar->HasString("BYNUM");
-
-            if (bynum)  // times defined by number of points
-            {
-              // read the time range
-              std::vector<double> timerange;
-              timevar->ExtractDoubleVector("TIMERANGE", timerange);
-
-              // get initial and final time
-              double t_initial = timerange[0];
-              double t_final = timerange[1];
-
-              // build the vector of times
-              times.push_back(t_initial);
-              int n = 0;
-              double dt = (t_final - t_initial) / (numpoints - 1);
-              while (times[n] + dt <= t_final + 1.0e-14)
-              {
-                if (times[n] + 2 * dt <= t_final + 1.0e-14)
-                {
-                  times.push_back(times[n] + dt);
-                }
-                else
-                {
-                  times.push_back(t_final);
-                }
-                ++n;
-              }
-            }
-            else  // times defined by vector
-            {
-              timevar->ExtractDoubleVector("TIMES", times);
-            }
-
-            // check if the times are in ascending order
-            for (unsigned int k = 1; k < times.size(); ++k)
-            {
-              if (times[k] <= times[k - 1]) dserror("the TIMES must be in ascending order");
-            }
+            std::vector<double> times = returnTimeVector(timevar);
 
             // read descriptions (strings separated with spaces)
             std::vector<std::string> description_vec;
@@ -850,51 +814,8 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
           }
           else if (vartype == "fourierinterpolation")
           {
-            // read the number of points
-            int numpoints;
-            timevar->ExtractInt("NUMPOINTS", numpoints);
-
             // read times
-            std::vector<double> times;
-            bool bynum = timevar->HasString("BYNUM");
-
-            if (bynum)  // times defined by number of points
-            {
-              // read the time range
-              std::vector<double> timerange;
-              timevar->ExtractDoubleVector("TIMERANGE", timerange);
-
-              // get initial and final time
-              double t_initial = timerange[0];
-              double t_final = timerange[1];
-
-              // build the vector of times
-              times.push_back(t_initial);
-              int n = 0;
-              double dt = (t_final - t_initial) / (numpoints - 1);
-              while (times[n] + dt <= t_final + 1.0e-14)
-              {
-                if (times[n] + 2 * dt <= t_final + 1.0e-14)
-                {
-                  times.push_back(times[n] + dt);
-                }
-                else
-                {
-                  times.push_back(t_final);
-                }
-                ++n;
-              }
-            }
-            else  // times defined by vector
-            {
-              timevar->ExtractDoubleVector("TIMES", times);
-            }
-
-            // check if the times are in ascending order
-            for (unsigned int k = 1; k < times.size(); ++k)
-            {
-              if (times[k] <= times[k - 1]) dserror("the TIMES must be in ascending order");
-            }
+            std::vector<double> times = returnTimeVector(timevar);
 
             // read values
             std::vector<double> values;
