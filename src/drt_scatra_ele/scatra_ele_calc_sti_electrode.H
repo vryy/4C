@@ -205,12 +205,14 @@ namespace DRT
             Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->Material(1));
         if (matelectrode == Teuchos::null) dserror("Invalid electrode material!");
 
+        // no deformation available in this code part
+        const double dummy_detF(1.0);
         // evaluate material
-        ocp_ = matelectrode->ComputeOpenCircuitPotential(concentration, faraday, frt);
-        ocpderiv_ =
-            matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(concentration, faraday, frt);
-        ocpderiv2_ =
-            matelectrode->ComputeSecondDerivOpenCircuitPotentialConc(concentration, faraday, frt);
+        ocp_ = matelectrode->ComputeOpenCircuitPotential(concentration, faraday, frt, dummy_detF);
+        ocpderiv_ = matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(
+            concentration, faraday, frt, dummy_detF);
+        ocpderiv2_ = matelectrode->ComputeSecondDerivOpenCircuitPotentialConc(
+            concentration, faraday, frt, dummy_detF);
       };
 
       //! return half cell open circuit potential

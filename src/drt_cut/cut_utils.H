@@ -207,7 +207,7 @@ namespace GEO
         /* optional-2 : the throw_error flag is off, if the the normal is not going
          *              to be normalized. */
         DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, probdim>(
-            xyze, deriv1_red, metrictensor, det, normalvec1, unit_normal, unit_normal);
+            xyze, deriv1_red, metrictensor, det, unit_normal, normalvec1, unit_normal);
 
         /* transform the derivatives and Jacobians to the higher dimensional
          * coordinates (problem dimension) */

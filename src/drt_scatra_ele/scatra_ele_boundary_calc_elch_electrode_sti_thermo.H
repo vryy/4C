@@ -65,6 +65,7 @@ namespace DRT
        * @param[in] alphac           symmetry coefficient of cathodic intercalation reaction
        * @param[in] timefacfac       time-integration factor times domain-integration factor
        * @param[in] timefacwgt       time-integration factor times Gauß point weight
+       * @param[in] detF             determinant of jacobian at current integration point
        * @param[in] differentiationtype
        *                             type of variable for linearization
        * @param[out] k_ss            linearizations of slave-side residuals w.r.t. slave-side dofs
@@ -93,7 +94,7 @@ namespace DRT
               test_master,
           LINALG::Matrix<my::nsd_ + 1, my::nen_> shapederivatives, int kineticmodel,
           int numelectrons, double kr, double alphaa, double alphac, double timefacfac,
-          double timefacwgt, int differentiationtype, Epetra_SerialDenseMatrix& k_ss,
+          double timefacwgt, double detF, int differentiationtype, Epetra_SerialDenseMatrix& k_ss,
           Epetra_SerialDenseMatrix& k_ms);
 
      private:

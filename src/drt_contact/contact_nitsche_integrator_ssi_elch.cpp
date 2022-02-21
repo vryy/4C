@@ -238,10 +238,12 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
 
       // equilibrium electric potential difference and derivative w.r.t. concentration at electrode
       // surface
+      // TODO try to replace this
+      const double dummy_detF(1.0);
       const double epd =
-          electrode_material->ComputeOpenCircuitPotential(electrode_conc, faraday, frt);
+          electrode_material->ComputeOpenCircuitPotential(electrode_conc, faraday, frt, dummy_detF);
       const double d_epd_dc = electrode_material->ComputeFirstDerivOpenCircuitPotentialConc(
-          electrode_conc, faraday, frt);
+          electrode_conc, faraday, frt, dummy_detF);
 
       // Butler-Volmer exchange mass flux density
       const double j0(kinetic_model == INPAR::S2I::kinetics_butlervolmerreduced

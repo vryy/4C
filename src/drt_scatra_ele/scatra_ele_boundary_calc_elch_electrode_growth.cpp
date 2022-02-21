@@ -16,7 +16,7 @@ growth, e.g., lithium plating
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_boundary.H"
 
-#include "../drt_lib/drt_discret.H"
+#include "../drt_fem_general/drt_utils_boundary_integration.H"
 
 #include "../drt_mat/electrode.H"
 
@@ -212,11 +212,19 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
   const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
+  // get the node coordinates in material configuration (we have a nsd_+1 dimensional domain!)
+  LINALG::Matrix<my::nsd_ + 1, my::nen_> XYZe;
+  GEO::fillInitialPositionArray<distype, my::nsd_ + 1, LINALG::Matrix<my::nsd_ + 1, my::nen_>>(
+      ele, XYZe);
+
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = my::EvalShapeFuncAndIntFac(intpoints, gpid);
+    const double detg =
+        my::EvaluateSquareRootOfDeterminantOfMetricTensorAtIntPoint(intpoints, gpid, XYZe);
+    const double detF = fac / detg;
 
     // evaluate overall integration factors
     const double timefacfac = my::scatraparamstimint_->TimeFac() * fac;
@@ -239,11 +247,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
 
     // equilibrium electric potential difference and its derivative w.r.t. concentration at
     // electrode surface
-    const double epd = s2iconditiontype == DRT::Condition::S2IKinetics
-                           ? matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt)
-                           : 0.0;
+    const double epd =
+        s2iconditiontype == DRT::Condition::S2IKinetics
+            ? matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt, detF)
+            : 0.0;
     const double epdderiv =
-        matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(eslavephiint, faraday, frt);
+        matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(eslavephiint, faraday, frt, detF);
 
     // compute exchange current density
     double i0 = kr * faraday * pow(emasterphiint, alphaa);
@@ -429,11 +438,19 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
   const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
+  // get the node coordinates in material configuration (we have a nsd_+1 dimensional domain!)
+  LINALG::Matrix<my::nsd_ + 1, my::nen_> XYZe;
+  GEO::fillInitialPositionArray<distype, my::nsd_ + 1, LINALG::Matrix<my::nsd_ + 1, my::nen_>>(
+      ele, XYZe);
+
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = my::EvalShapeFuncAndIntFac(intpoints, gpid);
+    const double detg =
+        my::EvaluateSquareRootOfDeterminantOfMetricTensorAtIntPoint(intpoints, gpid, XYZe);
+    const double detF = fac / detg;
 
     // evaluate overall integration factors
     const double timefacfac = my::scatraparamstimint_->TimeFac() * fac;
@@ -455,9 +472,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
     const double eslaveresistanceint = eslavegrowthint * resistivity;
 
     // equilibrium electric potential difference at electrode surface
-    const double epd = s2iconditiontype == DRT::Condition::S2IKinetics
-                           ? matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt)
-                           : 0.0;
+    const double epd =
+        s2iconditiontype == DRT::Condition::S2IKinetics
+            ? matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt, detF)
+            : 0.0;
 
     // compute exchange current density
     double i0 = kr * faraday * pow(emasterphiint, alphaa);

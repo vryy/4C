@@ -469,8 +469,6 @@ namespace DRT
             "only quad4/hex8, quad9/hex27, tri3/tet4 and nurbs9/nurbs27 mappings of surface "
             "gausspoint to parent element implemented up to now\n");
       }
-
-      return;
     }
 
     /*-----------------------------------------------------------------
@@ -598,13 +596,13 @@ namespace DRT
 
     /*----------------------------------------------------------------------------------------*/
 
-    //! compute kovariant metric tensor for surface element
+    //! compute covariant metric tensor for surface element
     void ComputeMetricTensorForSurface(const Epetra_SerialDenseMatrix& xyze,
         const Epetra_SerialDenseMatrix& deriv, Epetra_SerialDenseMatrix& metrictensor,
         double* sqrtdetg);
 
     //! compute covariant metric tensor for surface/line element and optionally, the normalized
-    //! normal vector at the Gausspoint (template)
+    //! normal vector at the Gauss-point (template)
     template <DRT::Element::DiscretizationType DISTYPE, int probdim, typename valueType = double>
     void ComputeMetricTensorForBoundaryEle(
         const LINALG::Matrix<probdim,
@@ -613,8 +611,8 @@ namespace DRT
             DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement, valueType>& deriv,
         LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
             DRT::UTILS::DisTypeToDim<DISTYPE>::dim, valueType>& metrictensor,
-        valueType& sqrtdetg, LINALG::Matrix<probdim, 1, valueType>* normalvec = NULL,
-        const bool& unit_normal = true, const bool& throw_error = true)
+        valueType& sqrtdetg, const bool throw_error,
+        LINALG::Matrix<probdim, 1, valueType>* normalvec = nullptr, const bool unit_normal = true)
     {
       /* 2D boundary Element
       |                                              0 1 2
@@ -684,15 +682,13 @@ namespace DRT
         sqrtdetg = std::sqrt(sqrtdetg);
       else if (throw_error)
       {
-        std::ostringstream err_msg;
-        err_msg << "--- ERROR DETECTED ---\n";
-        err_msg << "xyze = \n" << xyze;
-        err_msg << "The determinant of the metric-tensor is equal zero or negative! ( det( g ) = "
-                << sqrtdetg << " )";
-        dserror(err_msg.str().c_str());
+        dserror(
+            "--- ERROR DETECTED ---\n The determinant of the matrix is equal zero or negative!"
+            "(det( matrix ) = %lf)",
+            sqrtdetg);
       }
 
-      // Calculate outward pointing unit normal vector
+      // Calculate outward pointing normal vector
       if (normalvec)
       {
         if (probdim == 3 and DRT::UTILS::DisTypeToDim<DISTYPE>::dim == 2)
@@ -700,45 +696,18 @@ namespace DRT
           (*normalvec)(0) = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(1, 1) * dxyzdrs(0, 2);
           (*normalvec)(1) = dxyzdrs(0, 2) * dxyzdrs(1, 0) - dxyzdrs(1, 2) * dxyzdrs(0, 0);
           (*normalvec)(2) = dxyzdrs(0, 0) * dxyzdrs(1, 1) - dxyzdrs(1, 0) * dxyzdrs(0, 1);
-          // compute unit normal (outward pointing)
-          if (unit_normal)
-          {
-            const valueType norm2 = normalvec->Norm2();
-            if (norm2 < 0.0)
-              dserror(
-                  "The l2-norm of the normal vector is smaller than 0.0!"
-                  " ( norm2 = %e )",
-                  (const double)norm2);
-            normalvec->Scale(1.0 / norm2);
-          }
         }
         else if (probdim == 2 and DRT::UTILS::DisTypeToDim<DISTYPE>::dim == 1)
         {
           (*normalvec)(0) = dxyzdrs(0, 1);
           (*normalvec)(1) = -dxyzdrs(0, 0);
-          // compute unit normal (outward pointing)
-          if (unit_normal)
-          {
-            const valueType norm2 = normalvec->Norm2();
-            if (norm2 < 0.0)
-              dserror(
-                  "The l2-norm of the normal vector is smaller than 0.0!"
-                  " ( norm2 = %e )",
-                  (const double)norm2);
-            normalvec->Scale(1.0 / norm2);
-          }
         }
         else if (probdim == 3 and DRT::UTILS::DisTypeToDim<DISTYPE>::dim == 1)
         {
-          if (std::abs(dxyzdrs(0, 0)) > 1.0e-6 or std::abs(dxyzdrs(0, 1)) > 1.0e-6)
-          {
-            (*normalvec)(0) = dxyzdrs(0, 1);
-            (*normalvec)(1) = -dxyzdrs(0, 0);
-            (*normalvec)(2) = 0.0;
-          }
-          // to handle small normal vectors with dxyzdrs(0,0) < 1e-6
-          // and other componets  = 0.0
-          else if (dxyzdrs(0, 2) != 0.0 or dxyzdrs(0, 1) != 0.0)
+          // handle small normal vectors with dxyzdrs(0,0), dxyzdrs(0,1) < 1e-6
+          // and other components = 0.0
+          if (std::abs(dxyzdrs(0, 0)) < 1.0e-6 and std::abs(dxyzdrs(0, 1)) < 1.0e-6 and
+              (dxyzdrs(0, 2) != 0.0 or dxyzdrs(0, 1) != 0.0))
           {
             (*normalvec)(0) = 0.0;
             (*normalvec)(1) = -dxyzdrs(0, 2);
@@ -750,24 +719,22 @@ namespace DRT
             (*normalvec)(1) = -dxyzdrs(0, 0);
             (*normalvec)(2) = 0.0;
           }
-
-          // compute unit normal (outward pointing)
-          if (unit_normal)
-          {
-            const valueType norm2 = normalvec->Norm2();
-            if (norm2 < 0.0)
-              dserror(
-                  "The l2-norm of the normal vector is smaller than 0.0!"
-                  " ( norm2 = %e )",
-                  (const double)norm2);
-            normalvec->Scale(1.0 / norm2);
-          }
         }
         else
           dserror("There are only 2D and 1D boundary elements");
-      }
 
-      return;
+        // compute unit normal (outward pointing)
+        if (unit_normal)
+        {
+          const valueType norm2 = normalvec->Norm2();
+          if (norm2 < 0.0)
+          {
+            dserror("The L2-norm of the normal vector is smaller than 0.0! ( norm2 = %e )",
+                static_cast<double>(norm2));
+          }
+          normalvec->Scale(1.0 / norm2);
+        }
+      }
     }
 
     //! compute kovariant metric tensor for surface/line element and optionally, the normalized
@@ -781,10 +748,11 @@ namespace DRT
         LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
             DRT::UTILS::DisTypeToDim<DISTYPE>::dim>& metrictensor,
         double& sqrtdetg,
-        LINALG::Matrix<(1 + DRT::UTILS::DisTypeToDim<DISTYPE>::dim), 1>* normalvec = NULL)
+        LINALG::Matrix<(1 + DRT::UTILS::DisTypeToDim<DISTYPE>::dim), 1>* normalvec = nullptr)
     {
+      const bool throw_error_if_negative_determinant(true);
       ComputeMetricTensorForBoundaryEle<DISTYPE, (1 + DRT::UTILS::DisTypeToDim<DISTYPE>::dim)>(
-          xyze, deriv, metrictensor, sqrtdetg, normalvec);
+          xyze, deriv, metrictensor, sqrtdetg, throw_error_if_negative_determinant, normalvec);
     }
 
     /*-----------------------------------------------------------------
@@ -796,7 +764,7 @@ namespace DRT
            2D-version
       -----------------------------------------------------------------*/
     inline void BoundaryGPToParentGP2(Epetra_SerialDenseMatrix& pqxg,
-        const Epetra_SerialDenseMatrix intpoints, const DRT::Element::DiscretizationType pdistype,
+        const Epetra_SerialDenseMatrix& intpoints, const DRT::Element::DiscretizationType pdistype,
         const DRT::Element::DiscretizationType distype, const int beleid)
     {
       // resize output array
@@ -1110,7 +1078,7 @@ namespace DRT
            3D-version
       -----------------------------------------------------------------*/
     inline void BoundaryGPToParentGP3(Epetra_SerialDenseMatrix& pqxg,
-        const Epetra_SerialDenseMatrix intpoints, const DRT::Element::DiscretizationType pdistype,
+        const Epetra_SerialDenseMatrix& intpoints, const DRT::Element::DiscretizationType pdistype,
         const DRT::Element::DiscretizationType distype, const int beleid)
     {
       // resize output array
@@ -1648,8 +1616,6 @@ namespace DRT
 
       // compute integration factor
       fac = intpoints.IP().qwgt[gpid] * drs;
-
-      return;
     };  // EvalShapeFuncAtBouIntPoint
 
     // Calculate mass-consistent node normals for the boundary element
@@ -1688,9 +1654,11 @@ namespace DRT
       // This functionality has only been tested for types fluid, ale and structure
       if (not((discretization.Name() == "fluid") or (discretization.Name() == "inflow") or
               (discretization.Name() == "ale") or (discretization.Name() == "structure")))
+      {
         dserror(
             "ElementNodeNormal: The mass-consistent-node-normal calculation can currently only be "
             "performed for discretization types 'fluid', 'inflow', 'ale' and 'structure'.");
+      }
 
       // Get gaussrule
       const DRT::UTILS::IntPointsAndWeights<bdrynsd> intpoints(
@@ -1737,9 +1705,7 @@ namespace DRT
           }
         }
       } /* end of loop over integration points gpid */
-
-      return;
-    }  // ElementNodeNormal
+    }   // ElementNodeNormal
 
   }  // namespace UTILS
 }  // namespace DRT

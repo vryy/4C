@@ -272,6 +272,7 @@ void MAT::Electrode::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+  {
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -283,6 +284,7 @@ void MAT::Electrode::Unpack(const std::vector<char>& data)
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
+  }
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
@@ -292,24 +294,22 @@ void MAT::Electrode::Unpack(const std::vector<char>& data)
  | compute half cell open circuit potential                  fang 08/15 |
  *----------------------------------------------------------------------*/
 double MAT::Electrode::ComputeOpenCircuitPotential(
-    const double concentration, const double faraday, const double frt) const
+    const double concentration, const double faraday, const double frt, const double detF) const
 {
   double ocp(0.0);
 
   // intercalation fraction
-  // TODO: Check whether we should hand in the determinant of the deformation gradient
-  const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), 1.0);
+  const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), detF);
 
   // print warning to screen if prescribed interval of validity for ocp calculation model is given
   // but not satisfied
   if (((X < params_->xmin_) or (X > params_->xmax_)) and !(params_->xmax_ < 0.))
   {
     std::cout << "WARNING: intercalation fraction X = c/c_max is violating prescribed bounds of "
-                 "ocp calculation model. Calculated "
-                 "values might therefore not be reasonable!"
+                 "ocp calculation model. Calculated values might therefore not be reasonable!"
               << std::endl;
     std::cout << "X: " << X << " lower bound is: " << params_->xmin_
-              << "  upper bound is: " << params_->xmax_ << std::endl
+              << " upper bound is: " << params_->xmax_ << std::endl
               << std::endl;
   }
 
@@ -419,13 +419,12 @@ double MAT::Electrode::ComputeOpenCircuitPotential(
  08/15 |
  *---------------------------------------------------------------------------------------------------------*/
 double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialConc(
-    const double concentration, const double faraday, const double frt) const
+    const double concentration, const double faraday, const double frt, const double detF) const
 {
   double ocpderiv(0.0);
 
   // intercalation fraction
-  // TODO: Check whether we should hand in the determinant of the deformation gradient
-  const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), 1.0);
+  const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), detF);
 
   // physically reasonable intercalation fraction
   if (X > 0. and X < 1.)
@@ -475,9 +474,11 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialConc(
 
         // terms associated with remaining Redlich-Kister coefficients
         for (int i = 3; i < params_->ocpparanum_ - 1; ++i)
+        {
           ocpderiv += params_->ocppara_[i + 1] *
                       ((2. * i + 1.) * std::pow(2. * X - 1., i) +
                           2. * X * i * (X - 1.) * (i - 1.) * std::pow(2. * X - 1., i - 2));
+        }
 
         // intermediate scaling
         ocpderiv *= 2. / faraday;
@@ -534,13 +535,12 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialConc(
  08/15 |
  *----------------------------------------------------------------------------------------------------------*/
 double MAT::Electrode::ComputeSecondDerivOpenCircuitPotentialConc(
-    const double concentration, const double faraday, const double frt) const
+    const double concentration, const double faraday, const double frt, const double detF) const
 {
   double ocpderiv2(0.0);
 
   // intercalation fraction
-  // TODO: Check whether we should hand in the determinant of the deformation gradient
-  const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), 1.0);
+  const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), detF);
 
   // physically reasonable intercalation fraction
   if (X > 0. and X < 1.)
@@ -591,9 +591,11 @@ double MAT::Electrode::ComputeSecondDerivOpenCircuitPotentialConc(
 
         // terms associated with remaining Redlich-Kister coefficients
         for (int i = 4; i < params_->ocpparanum_ - 1; ++i)
+        {
           ocpderiv2 += params_->ocppara_[i + 1] * (3. * i * i * std::pow(2. * X - 1., i - 1) +
                                                       2. * i * (i - 1.) * (i - 2.) * X * (X - 1.) *
                                                           std::pow(2. * X - 1., i - 3));
+        }
 
         // intermediate scaling
         ocpderiv2 *= 4. / faraday;

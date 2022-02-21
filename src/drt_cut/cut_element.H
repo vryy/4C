@@ -438,8 +438,9 @@ namespace GEO
         else if (dim < probdim)
         {
           LINALG::Matrix<dim, dim> metrictensor;
+          const double throw_error_if_negative_determinant(true);
           DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, probdim, double>(
-              xyze, deriv, metrictensor, det, NULL);
+              xyze, deriv, metrictensor, det, throw_error_if_negative_determinant);
         }
         else
           dserror("The element dimension is larger than the problem dimension! (%d > %d)", dim,

@@ -265,12 +265,15 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
         const double timefacrhsfac =
             DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(dis->Name())->TimeFacRhs() * fac;
         if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
+        // no deformation available
+        const double dummy_detF(1.0);
 
         // equilibrium electric potential difference and its derivative w.r.t. concentration
         // at electrode surface
-        const double epd = matelectrode->ComputeOpenCircuitPotential(ed_conc, faraday, frt);
-        const double epdderiv =
-            matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(ed_conc, faraday, frt);
+        const double epd =
+            matelectrode->ComputeOpenCircuitPotential(ed_conc, faraday, frt, dummy_detF);
+        const double epdderiv = matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(
+            ed_conc, faraday, frt, dummy_detF);
 
         // overpotential
         const double eta = ed_pot - el_pot - epd;
@@ -666,6 +669,8 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
     // evaluate shape functions and domain integration factor at current integration point
     const double fac = my::EvalShapeFuncAndDomIntFacAtIntPoint(
         slaveelement, masterelement, cell, intpoints, iquad);
+    // no deformation available
+    const double dummy_detF(1.0);
 
     // overall integration factors
     const double timefacfac =
@@ -679,7 +684,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
         my::ephinp_slave_, my::ephinp_master_, dummy_slave_temp, dummy_master_temp,
         my::funct_slave_, my::funct_master_, my::test_lm_slave_, my::test_lm_master_, kineticmodel,
         numelectrons, kr, alphaa, alphac, resistance, itemaxmimplicitBV, convtolimplicitBV,
-        timefacfac, timefacrhsfac, GetFRT(), k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+        timefacfac, timefacrhsfac, dummy_detF, GetFRT(), k_ss, k_sm, k_ms, k_mm, r_s, r_m);
   }
 }
 
@@ -732,13 +737,16 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(DRT::C
       DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFacRhs() * lumpedarea;
   if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
 
+  // no deformation available
+  const double dummy_detF(1.0);
+
   DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
       distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
       ephinp_slave, ephinp_master, dummy_slave_temp, dummy_master_temp, my::funct_slave_,
       my::funct_master_, my::funct_slave_, my::funct_master_, kineticmodel, numelectrons, kr,
       alphaa, alphac, resistance, itemaxmimplicitBV, convtolimplicitBV, timefacfac, timefacrhsfac,
-      DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(), k_ss, k_sm, k_ms, k_mm, r_s,
-      r_m);
+      dummy_detF, DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(), k_ss, k_sm,
+      k_ms, k_mm, r_s, r_m);
 }
 
 
@@ -951,11 +959,14 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
 
     const double timefacwgt = timefac * intpoints.IP().qwgt[gpid];
 
+    // no deformation available
+    const double dummy_detF(1.0);
+
     DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
         distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(matelectrode,
         my::ephinp_slave_, etempnp_slave_, dummy_master_temp, my::ephinp_master_, my::funct_slave_,
         my::funct_master_, my::test_lm_slave_, my::test_lm_master_, dummy_shapederivatives,
-        kineticmodel, numelectrons, kr, alphaa, alphac, timefacfac, timefacwgt,
+        kineticmodel, numelectrons, kr, alphaa, alphac, timefacfac, timefacwgt, dummy_detF,
         static_cast<int>(SCATRA::DifferentiationType::temp), k_ss, k_ms);
   }  // loop over integration points
 }
@@ -1211,11 +1222,14 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
         DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("thermo")->TimeFacRhs() * fac;
     if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
 
+    // no deformation available
+    const double dummy_detF(1.0);
+
     DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
         distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
         my::ephinp_slave_[0], my::ephinp_master_[0], eelchnp_slave_, eelchnp_master_,
         my::funct_slave_, my::funct_master_, kineticmodel, kr, alphaa, alphac, peltier, thermoperm,
-        molar_heat_capacity, timefacfac, timefacrhsfac, k_ss, dummy_ksm, r_s);
+        molar_heat_capacity, timefacfac, timefacrhsfac, dummy_detF, k_ss, dummy_ksm, r_s);
   }  // loop over integration points
 }
 
@@ -1287,12 +1301,15 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
         DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("thermo")->TimeFac() * fac;
     if (timefacfac < 0.) dserror("Integration factor is negative!");
 
+    // no deformation available
+    const double dummy_detF(1.0);
+
     DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
         distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(matelectrode,
         my::ephinp_slave_[0], my::ephinp_master_[0], eelchnp_slave_, eelchnp_master_,
         my::funct_slave_, my::funct_master_, kineticmodel, kr, alphaa, alphac, peltier, thermoperm,
-        molar_heat_capacity, timefacfac, fac, static_cast<int>(SCATRA::DifferentiationType::elch),
-        dummy_shape_deriv, k_ss, k_sm);
+        molar_heat_capacity, timefacfac, fac, dummy_detF,
+        static_cast<int>(SCATRA::DifferentiationType::elch), dummy_shape_deriv, k_ss, k_sm);
   }  // loop over integration points
 }
 

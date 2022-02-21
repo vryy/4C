@@ -74,6 +74,7 @@ namespace DRT
        * @param[in] timefacfac       time-integration factor times domain-integration factor
        * @param[in] timefacrhsfac    time-integration factor for right-hand side times
        *                             domain-integration factor
+       * @param[in] detF             determinant of jacobian at current integration point
        * @param[in] frt              factor F/(RT)
        * @param[out] k_ss            linearizations of slave-side residuals w.r.t. slave-side dofs
        * @param[out] k_sm            linearizations of slave-side residuals w.r.t. master-side dofs
@@ -106,7 +107,7 @@ namespace DRT
               test_master,
           int kineticmodel, int numelectrons, double kr, double alphaa, double alphac,
           double resistance, double itemaxmodifiedBV, double convtolmodifiedBV, double timefacfac,
-          double timefacrhsfac, double frt, Epetra_SerialDenseMatrix& k_ss,
+          double timefacrhsfac, double detF, double frt, Epetra_SerialDenseMatrix& k_ss,
           Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
           Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s,
           Epetra_SerialDenseVector& r_m);
