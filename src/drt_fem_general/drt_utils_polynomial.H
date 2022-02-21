@@ -35,24 +35,8 @@ namespace DRT
 
       bool operator<(const PolynomialSpaceParams &otherparams) const
       {
-        if (degree_ < otherparams.degree_)
-          return true;
-        else if (degree_ == otherparams.degree_)
-        {
-          if ((int)distype_ < (int)(otherparams.distype_))
-            return true;
-          else if ((int)distype_ == (int)(otherparams.distype_))
-          {
-            if (completeSpace_ < otherparams.completeSpace_)
-              return true;
-            else
-              return false;
-          }
-          else
-            return false;
-        }
-        else
-          return false;
+        return std::tie(distype_, degree_, completeSpace_) <
+               std::tie(otherparams.distype_, otherparams.degree_, otherparams.completeSpace_);
       }
     };
 
@@ -154,7 +138,7 @@ namespace DRT
      \brief A class of polynomials based on monomial coefficients
 
      This class takes a vector of coefficients of the monomials and evaluates a
-     polynomial from these coefficients. The evaluation is done by the Horner scheme.
+     polynomial from these coefficients. The evaluation is done by the Horner's method.
      */
     class Polynomial
     {
@@ -170,8 +154,8 @@ namespace DRT
       Polynomial(const Polynomial &other) : coefficients_(other.coefficients_) {}
 
       /*!
-\brief Assignment operator
-*/
+      \brief Assignment operator
+      */
       Polynomial &operator=(const Polynomial &other)
       {
         coefficients_ = other.coefficients_;
@@ -183,11 +167,12 @@ namespace DRT
        */
       double Evaluate(const double point) const
       {
-        // classical Horner scheme
-        const int length = coefficients_.size() - 1;
-        double value = coefficients_[length];
-        for (int i = length - 1; i >= 0; --i) value = value * point + coefficients_[i];
-        return value;
+        // classical Horner's method
+        return std::accumulate(coefficients_.rbegin(),
+                               coefficients_.rend(),
+                               0.0,
+                               [](const double& acc, const double& coeff) {return acc * point + coeff;});
+
       }
 
       /*!
@@ -218,6 +203,38 @@ namespace DRT
           kfaculty *= static_cast<double>(k + 1);
         }
         for (int k = maxder; k < nderivs; ++k) derivatives(k) = 0;
+      }
+
+      /*!
+       \brief Evaluates the polynomial or its derivative (of the given order) on the given point
+       */
+      double EvaluateDerivative(const double point, const int deriv_order) const
+      {
+        switch (deriv_order)
+        {
+          case 1:
+          {
+            LINALG::Matrix<2, 1> derivatives(false);
+            Evaluate(point, derivatives);
+            return derivatives(1, 0);
+          }
+          case 2:
+          {
+            LINALG::Matrix<3, 1> derivatives(false);
+            Evaluate(point, derivatives);
+            return derivatives(2, 0);
+          }
+          case 3:
+          {
+            LINALG::Matrix<4, 1> derivatives(false);
+            Evaluate(point, derivatives);
+            return derivatives(3, 0);
+          }
+          default:
+          {
+            dserror("Only derivatives up to order 2 supported");
+          }
+        }
       }
 
       // Here, we do not know about nodes, so put the center of the 1d element
