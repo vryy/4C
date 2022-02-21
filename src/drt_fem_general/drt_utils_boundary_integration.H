@@ -685,7 +685,7 @@ namespace DRT
         dserror(
             "--- ERROR DETECTED ---\n The determinant of the matrix is equal zero or negative!"
             "(det( matrix ) = %lf)",
-            sqrtdetg);
+            static_cast<double>(sqrtdetg));
       }
 
       // Calculate outward pointing normal vector
