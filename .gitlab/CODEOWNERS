@@ -380,6 +380,8 @@ src/solver_nonlin_nox/             @baci/team_solvers
 /Input/ref/pasi*/**                @baci/team_particle
 /Input/ref/sohex8fbar*/**          @baci/team_structure
 /Input/ref/solid*/**               @baci/team_structure
+/Input/ref/ssi*                    @baci/team_scatra
+/Input/ref/ssti*                   @baci/team_scatra
 /Input/ref/structure*/**           @baci/team_structure
 
 Input/rigidsphere*                 @baci/team_structure
