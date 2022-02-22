@@ -13,6 +13,7 @@
 #include "inpar_elch.H"
 
 #include "scatra_timint_implicit.H"
+#include "io_runtime_csv_writer.H"
 
 /*==========================================================================*/
 // forward declarations
@@ -22,6 +23,12 @@ namespace FLD
 {
   class Meshtying;
 }
+
+namespace ADAPTER
+{
+  class Coupling;
+  class ScaTraBaseAlgorithm;
+}  // namespace ADAPTER
 
 namespace SCATRA
 {
@@ -98,7 +105,7 @@ namespace SCATRA
     /*--- query and output ---------------------------------------------------*/
 
     //! output solution and restart data to file
-    void Output(int num) final;
+    void Output(int num) override;
 
     //! problem-specific outputs
     void OutputProblemSpecific() override;
@@ -396,6 +403,7 @@ namespace SCATRA
     //! map extractor for macro scale in multi-scale simulations
     Teuchos::RCP<const LINALG::MultiMapExtractor> splitter_macro_;
   };  // class ScaTraTimIntElch
+
 
   /*========================================================================*/
   /*========================================================================*/

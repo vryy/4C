@@ -188,6 +188,7 @@ namespace INPAR
       impltype_elch_diffcond,
       impltype_elch_diffcond_multiscale,
       impltype_elch_diffcond_thermo,
+      impltype_elch_scl,
       impltype_thermo_elch_electrode,
       impltype_thermo_elch_diffcond,
       impltype_lsreinit,

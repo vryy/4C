@@ -118,6 +118,7 @@ namespace SCATRA
     calc_Neumann,
     add_convective_mass_flux,
     calc_boundary_integral,
+    calc_nodal_size,  ///< evaluate int N dv
     calc_convective_heat_transfer,
     calc_elch_boundary_kinetics,
     calc_elch_cell_voltage,

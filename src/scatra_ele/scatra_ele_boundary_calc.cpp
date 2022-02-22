@@ -373,6 +373,11 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(DRT::FaceEleme
       CalcBoundaryIntegral(ele, elevec1_epetra);
       break;
     }
+    case SCATRA::BoundaryAction::calc_nodal_size:
+    {
+      EvaluateNodalSize(ele, params, discretization, la, elevec1_epetra);
+      break;
+    }
     case SCATRA::BoundaryAction::calc_Robin:
     {
       CalcRobinBoundary(ele, params, discretization, la, elemat1_epetra, elevec1_epetra, 1.);
@@ -2848,6 +2853,30 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ReinitCharacteristicGalerkin
     }  // loop over scalars
   }    // loop over integration points
 }
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateNodalSize(const DRT::FaceElement* ele,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, Epetra_SerialDenseVector& nodalsize)
+{
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // loop over integration points
+  for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
+  {
+    // evaluate values of shape functions and domain integration factor at current integration point
+    const double fac =
+        DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(intpoints, gpid);
+    for (int vi = 0; vi < nen_; ++vi)
+    {
+      nodalsize[numdofpernode_ * vi] += funct_(vi, 0) * fac;
+    }
+  }
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

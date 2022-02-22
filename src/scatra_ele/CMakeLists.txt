@@ -32,6 +32,7 @@ set(OBJS_SCATRA_ELE
     scatra_ele_calc_elch_electrode.cpp
     scatra_ele_calc_elch_electrode_sti_thermo.cpp
     scatra_ele_calc_elch_NP.cpp
+    scatra_ele_calc_elch_scl.cpp
     scatra_ele_calc_hdg.cpp
     scatra_ele_calc_loma.cpp
     scatra_ele_calc_ls.cpp
@@ -78,6 +79,7 @@ set(OBJS_SCATRA_ELE
     scatra_ele_utils_elch.cpp
     scatra_ele_utils_elch_diffcond.cpp
     scatra_ele_utils_elch_electrode.cpp
+    scatra_ele_utils_elch_scl.cpp
     )
 
 baci_add_library(ele_scatra ${OBJS_SCATRA_ELE})

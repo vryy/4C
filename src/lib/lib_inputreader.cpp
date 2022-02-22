@@ -505,6 +505,10 @@ namespace DRT
       {
         field = "THERMO";
       }
+      else if (name == "scatra_micro")
+      {
+        field = "TRANSPORT2";
+      }
       else
       {
         dserror("Unknown discretization name for knotvector input\n");

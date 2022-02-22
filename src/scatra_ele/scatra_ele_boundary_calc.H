@@ -280,6 +280,14 @@ namespace DRT
           Epetra_SerialDenseVector& eslaveresidual  ///< element residual for slave side
       );
 
+      //! evaluate size of element projected to node, i.e. int N dv
+      virtual void EvaluateNodalSize(const DRT::FaceElement* ele,  ///< current boundary element
+          Teuchos::ParameterList& params,                          ///< parameter list
+          DRT::Discretization& discretization,                     ///< discretization
+          DRT::Element::LocationArray& la,                         ///< location array
+          Epetra_SerialDenseVector& nodalsize  ///< elemental size projected to nodes
+      );
+
       /*!
        * @brief evaluate flux due to capacitance of scatra-scatra interface coupling condition
        *

@@ -1041,3 +1041,150 @@ void SCATRA::ScaTraTimIntElchStationary::ComputeTimeDerivPot0(const bool init)
     }
   }
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+SCATRA::ScaTraTimIntElchSCLOST::ScaTraTimIntElchSCLOST(Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
+      ScaTraTimIntElch(actdis, solver, params, sctratimintparams, extraparams, output),
+      ScaTraTimIntElchSCL(actdis, solver, params, sctratimintparams, extraparams, output),
+      TimIntOneStepTheta(actdis, solver, sctratimintparams, extraparams, output)
+{
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchSCLOST::Init()
+{
+  // call Init()-functions of base classes
+  // note: this order is important
+  TimIntOneStepTheta::Init();
+  ScaTraTimIntElchSCL::Init();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchSCLOST::Setup()
+{
+  // call Setup()-functions of base classes
+  // note: this order is important
+  TimIntOneStepTheta::Setup();
+  ScaTraTimIntElchSCL::Setup();
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchSCLOST::PreCalcInitialPotentialField()
+{
+  // evaluate Dirichlet boundary conditions at time t=0
+  // the values should match your initial field at the boundary!
+  ApplyDirichletBC(time_, phin_, Teuchos::null);
+  ApplyDirichletBC(time_, phinp_, Teuchos::null);
+  ComputeIntermediateValues();
+
+  // evaluate Neumann boundary conditions at time t = 0
+  ApplyNeumannBC(neumann_loads_);
+
+  // standard general element parameters without stabilization
+  SetElementGeneralParameters(true);
+
+  // we also have to modify the time-parameter list (incremental solve)
+  // actually we do not need a time integration scheme for calculating the initial electric
+  // potential field, but the rhs of the standard element routine is used as starting point for this
+  // special system of equations. Therefore, the rhs vector has to be scaled correctly.
+  SetElementTimeParameter(true);
+
+  // deactivate turbulence settings
+  SetElementTurbulenceParameters(true);
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchSCLOST::PostCalcInitialPotentialField()
+{  // and finally undo our temporary settings
+  SetElementGeneralParameters(false);
+  SetElementTimeParameter(false);
+  SetElementTurbulenceParameters(false);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchSCLOST::OutputRestart() const
+{
+  // output restart information associated with one-step-theta time integration scheme
+  TimIntOneStepTheta::OutputRestart();
+
+  // output restart information associated with electrochemistry
+  ScaTraTimIntElchSCL::OutputRestart();
+}
+
+
+/*----------------------------------------------------------------------*
+ -----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchSCLOST::ReadRestart(
+    const int step, Teuchos::RCP<IO::InputControl> input)
+{
+  dserror("Restart is not implemented for coupled space-charge layers.");
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchSCLOST::Update(const int num)
+{
+  TimIntOneStepTheta::Update(num);
+  ScaTraTimIntElchSCL::Update(num);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchSCLOST::ExplicitPredictor() const
+{
+  // call base class routine
+  TimIntOneStepTheta::ExplicitPredictor();
+
+  // for the electric potential we just use the old values from the previous time step
+  splitter_->InsertCondVector(splitter_->ExtractCondVector(phin_), phinp_);
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchSCLOST::SetOldPartOfRighthandside()
+{
+  // call base class routine
+  TimIntOneStepTheta::SetOldPartOfRighthandside();
+
+  // contribution from galvanostatic equation
+  if ((DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
+  {
+    std::vector<DRT::Condition*> conditions;
+    discret_->GetCondition("ElchBoundaryKinetics", conditions);
+    if (!conditions.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", conditions);
+    for (auto& condition : conditions)  // we update simply every condition!
+    {
+      // prepare "old part of rhs" for galvanostatic equation (to be used at this time step)
+      {
+        // re-read values (just to be really sure no mix-up occurs)
+        double pot0n = condition->GetDouble("pot0n");
+        double pot0dtn = condition->GetDouble("pot0dtn");
+        // prepare old part of rhs for galvanostatic mode
+        double pothist = pot0n + (1.0 - theta_) * dta_ * pot0dtn;
+        condition->Add("pot0hist", pothist);
+      }
+    }
+  }
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchSCLOST::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
+{
+  TimIntOneStepTheta::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
+  ScaTraTimIntElchSCL::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
+}

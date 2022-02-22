@@ -33,29 +33,28 @@ namespace DRT
     {
      public:
       //! destructor
-      virtual ~ScaTraEleParameterElchDiffCond() { return; };
+      ~ScaTraEleParameterElchDiffCond() override = default;
 
       //! singleton access method
       static ScaTraEleParameterElchDiffCond* Instance(
           const std::string& disname  //!< name of discretization
       );
 
-
-
       //! set parameters
       void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list
       );
 
       //! return flag for current as solution variable
-      bool CurSolVar() const { return cursolvar_; };
+      bool CurSolVar() const { return cursolvar_; }
 
       //! return flag for diffusion potential
-      bool DiffusionCoeffBased() const { return diffusioncoefbased_; };
+      bool DiffusionCoeffBased() const { return diffusioncoefbased_; }
 
       //! return Newman constants
-      double NewmanConstA() const { return newmanconsta_; };
-      double NewmanConstB() const { return newmanconstb_; };
-      double NewmanConstC() const { return newmanconstc_; };
+      double NewmanConstA() const { return newmanconsta_; }
+      double NewmanConstB() const { return newmanconstb_; }
+      double NewmanConstC() const { return newmanconstc_; }
+      double Epsilon0() const { return epsilon_0_; }
 
      private:
       //! private constructor for singletons
@@ -81,6 +80,7 @@ namespace DRT
       double newmanconsta_;
       double newmanconstb_;
       double newmanconstc_;
+      double epsilon_0_;
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

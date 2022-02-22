@@ -14,6 +14,7 @@ set(OBJS_SCATRA
     scatra_timint_convcheck_strategies.cpp
     scatra_timint_elch.cpp
     scatra_timint_elch_scheme.cpp
+    scatra_timint_elch_scl.cpp
     scatra_timint_elch_service.cpp
     scatra_timint_genalpha.cpp
     scatra_timint_hdg.cpp

@@ -62,6 +62,7 @@ namespace INPAR
     {
       diffcondmat_newman,
       diffcondmat_ion,
+      diffcondmat_scl,
       diffcondmat_undefined
     };
 

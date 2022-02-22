@@ -158,6 +158,7 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case INPAR::SCATRA::impltype_elch_electrode_growth:
     case INPAR::SCATRA::impltype_elch_electrode_thermo:
     case INPAR::SCATRA::impltype_elch_NP:
+    case INPAR::SCATRA::impltype_elch_scl:
     {
       // adapt number of transported scalars for electrochemistry problems
       numscal -= 1;
