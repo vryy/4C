@@ -439,10 +439,10 @@ lnm-codeclimate:
         - . venv/bin/activate
         - pip install -r ${CI_PROJECT_DIR}/utilities/code_climate/requirements.txt
         # run clang tidy and export report
-        - python ${CI_PROJECT_DIR}/utilities/code_climate/run_clang_tidy.py -j 6 -p . -extra-arg="-I/usr/include/openmpi-x86_64/" -src ${CI_PROJECT_DIR} -export ${CI_PROJECT_DIR}/codeclimate.json -header-filter ".*\/baci\/src\/.*" ".*\/baci\/src\/.*"
+        - python ${CI_PROJECT_DIR}/utilities/code_climate/run_clang_tidy.py -j 6 -p . -extra-arg="-I/usr/lib/x86_64-linux-gnu/openmpi/include/" -src ${CI_PROJECT_DIR} -export ${CI_PROJECT_DIR}/codeclimate.json -header-filter ".*\/baci\/src\/.*" ".*\/baci\/src\/.*"
         - cd ${CI_PROJECT_DIR}
     variables:
-        CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation_ubuntu20-04.config"
     artifacts:
         paths: [codeclimate.json]
         reports:
