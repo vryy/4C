@@ -110,6 +110,8 @@ DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
       kintype_(INPAR::STR::kinem_vague)
 //    so_interface_(NULL)
 {
+  anisotropic_permeability_directions_.resize(my::nsd_, std::vector<double>(my::nsd_, 0.0));
+
   // change pointer to parameter list in base class to poro parameters
   my::fldpara_ = DRT::ELEMENTS::FluidEleParameterPoro::Instance();
   // this is just for convenience. The same pointer as above to circumvent casts when accessing poro
@@ -176,7 +178,11 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele
 
   DRT::ELEMENTS::FluidPoro* poroele = dynamic_cast<DRT::ELEMENTS::FluidPoro*>(ele);
 
-  if (poroele) kintype_ = poroele->KinematicType();
+  if (poroele)
+  {
+    kintype_ = poroele->KinematicType();
+    anisotropic_permeability_directions_ = poroele->GetAnisotropicPermeabilityDirections();
+  }
 
   if (not offdiag)  // evaluate diagonal block (pure fluid block)
     return Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
@@ -5236,7 +5242,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeSpatialReactionTerms(
       Teuchos::rcp_static_cast<const MAT::FluidPoro>(material);
 
   // material reaction tensor = inverse material permeability
-  actmat->ComputeReactionTensor(matreatensor_, J_, porosity_);
+  actmat->ComputeReactionTensor(matreatensor_, J_, porosity_, anisotropic_permeability_directions_);
 
   // spatial reaction tensor = J * F^-T * material reaction tensor * F^-1
   static LINALG::Matrix<my::nsd_, my::nsd_> temp(false);

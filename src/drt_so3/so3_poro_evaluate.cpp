@@ -2247,7 +2247,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::FillMatrixAndVectors(const int& 
     static LINALG::Matrix<numdim_, 1> reavel(true);
     {
       static LINALG::Matrix<numdim_, numdim_> temp(true);
-      fluidmat_->ComputeReactionTensor(matreatensor, J, porosity);
+      fluidmat_->ComputeReactionTensor(
+          matreatensor, J, porosity, anisotropic_permeability_directions_);
       fluidmat_->ComputeLinMatReactionTensor(linreac_dphi, linreac_dJ, J, porosity);
       temp.Multiply(1.0, matreatensor, defgrd_inv);
       reatensor.MultiplyTN(defgrd_inv, temp);
@@ -2735,7 +2736,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::FillMatrixAndVectorsOD(const int
   static LINALG::Matrix<numdim_, 1> reavel(true);
   {
     LINALG::Matrix<numdim_, numdim_> temp(true);
-    fluidmat_->ComputeReactionTensor(matreatensor, J, porosity);
+    fluidmat_->ComputeReactionTensor(
+        matreatensor, J, porosity, anisotropic_permeability_directions_);
     fluidmat_->ComputeLinMatReactionTensor(linreac_dphi, linreac_dJ, J, porosity);
     temp.Multiply(1.0, matreatensor, defgrd_inv);
     reatensor.MultiplyTN(defgrd_inv, temp);

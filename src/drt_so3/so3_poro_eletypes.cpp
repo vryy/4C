@@ -58,6 +58,11 @@ void DRT::ELEMENTS::So_hex8PoroType::SetupElementDefinition(
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"] = defs_hex8["HEX8"];
+
+  defs["HEX8"]
+      .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
+      .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
+      .AddOptionalNamedDoubleVector("POROANISODIR3", 3);
 }
 
 /*----------------------------------------------------------------------*
@@ -126,6 +131,11 @@ void DRT::ELEMENTS::So_tet4PoroType::SetupElementDefinition(
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET4"] = defs_tet4["TET4"];
+
+  defs["TET4"]
+      .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
+      .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
+      .AddOptionalNamedDoubleVector("POROANISODIR3", 3);
 }
 
 /*----------------------------------------------------------------------*
@@ -193,6 +203,11 @@ void DRT::ELEMENTS::So_hex27PoroType::SetupElementDefinition(
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX27"] = defs_hex27["HEX27"];
+
+  defs["HEX27"]
+      .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
+      .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
+      .AddOptionalNamedDoubleVector("POROANISODIR3", 3);
 }
 
 /*----------------------------------------------------------------------*
@@ -259,6 +274,11 @@ void DRT::ELEMENTS::So_tet10PoroType::SetupElementDefinition(
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET10"] = defs_tet10["TET10"];
+
+  defs["TET10"]
+      .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
+      .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
+      .AddOptionalNamedDoubleVector("POROANISODIR3", 3);
 }
 
 /*----------------------------------------------------------------------*
@@ -332,6 +352,11 @@ void DRT::ELEMENTS::So_nurbs27PoroType::SetupElementDefinition(
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["NURBS27"] = defs_nurbs27["NURBS27"];
+
+  defs["NURBS27"]
+      .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
+      .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
+      .AddOptionalNamedDoubleVector("POROANISODIR3", 3);
 }
 
 /*----------------------------------------------------------------------*

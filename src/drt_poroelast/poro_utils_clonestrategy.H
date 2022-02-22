@@ -45,6 +45,10 @@ namespace POROELAST
       /// check for correct material
       void CheckMaterialType(const int matid);
 
+      /// set anisotropic permeability directions onto fluid element
+      void SetAnisotropicPermeabilityDirectionsOntoFluid(
+          Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele);
+
     };  // class PoroelastCloneStrategy
 
 

@@ -297,6 +297,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   // initialization of plenty of variables
   double fluiddynamicviscosity = 0.0;
   double permeability = 0.0;
+  double reaction_coefficient = 0.0;
   double beaversjosephcoefficient = 0.0;
   double normoftangential1 = 0.0;
   double normoftangential2 = 0.0;
@@ -401,12 +402,18 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 
       generalmaterial = porofluidelement->Material();
       porofluidmaterial = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(generalmaterial);
-      permeability = porofluidmaterial->Permeability();
+      reaction_coefficient = porofluidmaterial->ComputeReactionCoeff();
     }
 
     newtonianfluidmaterial = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(currentmaterial);
 
     fluiddynamicviscosity = newtonianfluidmaterial->Viscosity();
+
+    /* Obtain permeability from the reaction coefficient because the reaction coefficient is
+     * calculated consistently for anisotropic cases where there are more than one permeability
+     * values for the material (in different directions).
+     */
+    permeability = fluiddynamicviscosity / reaction_coefficient;
   }
   else if (discretization.Name() == "porofluid")
   {
@@ -421,8 +428,14 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     newtonianfluidmaterial = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(fluidmaterial);
     porofluidmaterial = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(currentmaterial);
 
-    permeability = porofluidmaterial->Permeability();
+    reaction_coefficient = porofluidmaterial->ComputeReactionCoeff();
     fluiddynamicviscosity = newtonianfluidmaterial->Viscosity();
+
+    /* Obtain permeability from the reaction coefficient because the reaction coefficient is
+     * calculated consistently for anisotropic cases where there are more than one permeability
+     * values for the material (in different directions).
+     */
+    permeability = fluiddynamicviscosity / reaction_coefficient;
   }
 
   if (block != "NeumannIntegration" && block != "NeumannIntegration_Ale")

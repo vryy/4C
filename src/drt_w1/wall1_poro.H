@@ -271,6 +271,13 @@ namespace DRT
       */
       virtual bool VisData(const std::string& name, std::vector<double>& data);
 
+
+      //! return anisotropic permeability directions (used for cloning)
+      const std::vector<std::vector<double>>& GetAnisotropicPermeabilityDirections() const
+      {
+        return anisotropic_permeability_directions_;
+      };
+
      protected:
       //! don't want = operator
       Wall1_Poro& operator=(const Wall1_Poro& old);
@@ -584,6 +591,10 @@ namespace DRT
       //! get materials (solid and fluidmulti)
       void GetMaterials_presbased();
 
+      //! anisotropic permeability directions in the element definition
+      void ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(
+          DRT::INPUT::LineDefinition* linedef);
+
       //! Gauss integration rule
       DRT::UTILS::GaussIntegration intpoints_;
 
@@ -609,6 +620,9 @@ namespace DRT
       LINALG::Matrix<numnod_, 1> weights_;
       //! knot vector for nurbs elements
       std::vector<Epetra_SerialDenseVector> myknots_;
+
+      //! directions for anisotropic permeability
+      std::vector<std::vector<double>> anisotropic_permeability_directions_;
 
     };  // class So3_Poro
 

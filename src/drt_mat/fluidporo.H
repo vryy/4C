@@ -20,6 +20,10 @@
  *---------------------------------------------------------------------*/
 namespace MAT
 {
+  namespace FLUIDPORO
+  {
+    class PoroAnisotropyStrategyBase;
+  }
   namespace PAR
   {
     enum PoroFlowType
@@ -33,7 +37,9 @@ namespace MAT
     {
       pf_undefined,
       const_,
-      kozeny_karman
+      kozeny_karman,
+      const_material_transverse,
+      const_material_orthotropic
     };
 
     /*----------------------------------------------------------------------*/
@@ -61,6 +67,10 @@ namespace MAT
       const double density_;
       /// permeability
       const double permeability_;
+      /// axial permeability for material transverse isotropy
+      const double axial_permeability_;
+      /// vector of orthotropic permeabilities
+      std::vector<double> orthotropic_permeabilities_;
       /// flow type: Darcy or Darcy-Brinkman
       PoroFlowType type_;
       /// flag indicating varying permeablity
@@ -149,25 +159,24 @@ namespace MAT
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new FluidPoro(*this)); }
 
+    /// compute reaction tensor - 2D
+    void ComputeReactionTensor(LINALG::Matrix<2, 2>& reaction_tensor, double J, double porosity,
+        const std::vector<std::vector<double>>& anisotropic_permeability_directions = {}) const;
+
+    /// compute reaction tensor - 3D
+    void ComputeReactionTensor(LINALG::Matrix<3, 3>& reaction_tensor, double J, double porosity,
+        const std::vector<std::vector<double>>& anisotropic_permeability_directions = {}) const;
+
     /// compute reaction coefficient
     double ComputeReactionCoeff() const;
 
-    /// compute reaction coefficient
-    void ComputeReactionTensor(
-        LINALG::Matrix<2, 2>& reactiontensor, double J, double porosity) const;
-
-    /// compute reaction coefficient
-    void ComputeReactionTensor(
-        LINALG::Matrix<3, 3>& reactiontensor, double J, double porosity) const;
-
+    /// compute linearization of reaction tensor - 2D
     void ComputeLinMatReactionTensor(LINALG::Matrix<2, 2>& linreac_dphi,
         LINALG::Matrix<2, 2>& linreac_dJ, double J, double porosity) const;
 
+    /// compute linearization of reaction tensor - 3D
     void ComputeLinMatReactionTensor(LINALG::Matrix<3, 3>& linreac_dphi,
         LINALG::Matrix<3, 3>& linreac_dJ, double J, double porosity) const;
-
-    /// correction factor to ensure the permeability set in the input file
-    double PermeabilityCorrectionFactor() const { return params_->permeabilitycorrectionfactor_; }
 
     /// effective viscosity (zero for Darcy and greater than zero for Darcy-Brinkman)
     double EffectiveViscosity() const;
@@ -181,8 +190,11 @@ namespace MAT
     /// return density
     double Density() const { return params_->density_; }
 
-    /// return permeability
-    double Permeability() const { return params_->permeability_; }
+    /// return permeability values for orthotropic permeability tensor
+    const std::vector<double>& OrthotropicPermeabilities() const
+    {
+      return params_->orthotropic_permeabilities_;
+    }
 
     /// return permeabilityfunction
     PAR::PoroFlowPermeabilityFunction PermeabilityFunction() const
@@ -203,6 +215,9 @@ namespace MAT
    private:
     /// my material parameters
     MAT::PAR::FluidPoro* params_;
+
+    /// anisotropy strategy (isotropy, transverse isotropy, or orthotropy)
+    Teuchos::RCP<MAT::FLUIDPORO::PoroAnisotropyStrategyBase> anisotropy_strategy_;
   };
 
 }  // namespace MAT

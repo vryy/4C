@@ -98,6 +98,7 @@ void DRT::ELEMENTS::FluidPoroEleType::SetupElementDefinition(
 DRT::ELEMENTS::FluidPoro::FluidPoro(int id, int owner)
     : Fluid(id, owner), kintype_(INPAR::STR::kinem_vague)
 {
+  anisotropic_permeability_directions_.resize(3, std::vector<double>(3, 0.0));
   return;
 }
 
@@ -105,7 +106,9 @@ DRT::ELEMENTS::FluidPoro::FluidPoro(int id, int owner)
  |  copy-ctor (public)                                     vuong 06/13   |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidPoro::FluidPoro(const DRT::ELEMENTS::FluidPoro& old)
-    : Fluid(old), kintype_(old.kintype_)
+    : Fluid(old),
+      kintype_(old.kintype_),
+      anisotropic_permeability_directions_(old.anisotropic_permeability_directions_)
 {
   return;
 }
@@ -135,6 +138,7 @@ void DRT::ELEMENTS::FluidPoro::Pack(DRT::PackBuffer& data) const
 
   // kinemtics type
   AddtoPack(data, kintype_);
+  for (int dim = 0; dim < 3; ++dim) AddtoPack(data, anisotropic_permeability_directions_[dim]);
 
   // add base class Element
   Fluid::Pack(data);
@@ -157,6 +161,8 @@ void DRT::ELEMENTS::FluidPoro::Unpack(const std::vector<char>& data)
 
   // kintype_
   kintype_ = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
+  for (int dim = 0; dim < 3; ++dim)
+    ExtractfromPack(position, data, anisotropic_permeability_directions_[dim]);
 
   // extract base class Element
   std::vector<char> basedata(0);

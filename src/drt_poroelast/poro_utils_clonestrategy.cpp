@@ -108,11 +108,58 @@ void POROELAST::UTILS::PoroelastCloneStrategy::SetElementData(
       fluid->SetKinematicType(so_base->KinematicType());
     else
       dserror(" dynamic cast from DRT::Element* to DRT::ELEMENTS::So_base* failed ");
+
+    SetAnisotropicPermeabilityDirectionsOntoFluid(newele, oldele);
   }
   else
   {
     dserror("unsupported element type '%s'", typeid(*newele).name());
   }
+  return;
+}
+
+void POROELAST::UTILS::PoroelastCloneStrategy::SetAnisotropicPermeabilityDirectionsOntoFluid(
+    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele)
+{
+  Teuchos::RCP<DRT::ELEMENTS::FluidPoro> fluid =
+      Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidPoro>(newele);
+
+  // the element type name, needed to cast correctly in the following
+  const std::string eletypename = oldele->ElementType().Name();
+
+  if (eletypename == "So_tet4PoroType")
+    fluid->SetAnisotropicPermeabilityDirections(
+        (dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>*>(oldele))
+            ->GetAnisotropicPermeabilityDirections());
+  else if (eletypename == "So_tet10PoroType")
+    fluid->SetAnisotropicPermeabilityDirections(
+        (dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>*>(
+             oldele))
+            ->GetAnisotropicPermeabilityDirections());
+  else if (eletypename == "So_hex8PoroType")
+    fluid->SetAnisotropicPermeabilityDirections(
+        (dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(oldele))
+            ->GetAnisotropicPermeabilityDirections());
+  else if (eletypename == "So_hex27PoroType")
+    fluid->SetAnisotropicPermeabilityDirections(
+        (dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>*>(
+             oldele))
+            ->GetAnisotropicPermeabilityDirections());
+  else if (eletypename == "WallQuad4PoroType")
+    fluid->SetAnisotropicPermeabilityDirections(
+        (dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>*>(oldele))
+            ->GetAnisotropicPermeabilityDirections());
+  else if (eletypename == "WallQuad9PoroType")
+    fluid->SetAnisotropicPermeabilityDirections(
+        (dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad9>*>(oldele))
+            ->GetAnisotropicPermeabilityDirections());
+  else if (eletypename == "WallTri3PoroType")
+    fluid->SetAnisotropicPermeabilityDirections(
+        (dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>*>(oldele))
+            ->GetAnisotropicPermeabilityDirections());
+
+  // Anisotropic permeability not yet supported for p1 or scatra type elements. Do nothing.
+
   return;
 }
 

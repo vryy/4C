@@ -149,6 +149,18 @@ namespace DRT
 
       INPAR::STR::KinemType KinematicType() const { return kintype_; };
 
+      //! Set anisotropic permeability directions obtained from structure element during cloning
+      void SetAnisotropicPermeabilityDirections(
+          const std::vector<std::vector<double>>& ref_anisotropic_permeability_directions)
+      {
+        anisotropic_permeability_directions_ = ref_anisotropic_permeability_directions;
+      };
+
+      //! Provide the anisotropic permeability directions of the element
+      const std::vector<std::vector<double>>& GetAnisotropicPermeabilityDirections() const
+      {
+        return anisotropic_permeability_directions_;
+      }
       //@}
 
       //! @name Evaluation
@@ -189,6 +201,9 @@ namespace DRT
 
       //! kinematic type
       INPAR::STR::KinemType kintype_;
+
+      //! directions for anisotropic permeability
+      std::vector<std::vector<double>> anisotropic_permeability_directions_;
     };
 
     //=======================================================================
