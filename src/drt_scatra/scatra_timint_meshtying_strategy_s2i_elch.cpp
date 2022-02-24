@@ -650,15 +650,6 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
   // determine quadrature rule
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_tri_7point);
 
-  const int kineticmodel = my::scatraparamsboundary_->KineticModel();
-  const int numelectrons = my::scatraparamsboundary_->NumElectrons();
-  const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
-  const double alphaa = my::scatraparamsboundary_->AlphaA();
-  const double alphac = my::scatraparamsboundary_->AlphaC();
-  const double resistance = my::scatraparamsboundary_->Resistance();
-  const double itemaxmimplicitBV = my::scatraparamsboundary_->ItemaximplicitBV();
-  const double convtolimplicitBV = my::scatraparamsboundary_->ConvtolimplicitBV();
-
   // dummy matrix of nodal temperature values
   LINALG::Matrix<my::nen_slave_, 1> dummy_slave_temp(true);
   LINALG::Matrix<my::nen_master_, 1> dummy_master_temp(true);
@@ -682,9 +673,9 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
     DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
         distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
         my::ephinp_slave_, my::ephinp_master_, dummy_slave_temp, dummy_master_temp,
-        my::funct_slave_, my::funct_master_, my::test_lm_slave_, my::test_lm_master_, kineticmodel,
-        numelectrons, kr, alphaa, alphac, resistance, itemaxmimplicitBV, convtolimplicitBV,
-        timefacfac, timefacrhsfac, dummy_detF, GetFRT(), k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+        my::funct_slave_, my::funct_master_, my::test_lm_slave_, my::test_lm_master_,
+        my::scatraparamsboundary_, timefacfac, timefacrhsfac, dummy_detF, GetFRT(), k_ss, k_sm,
+        k_ms, k_mm, r_s, r_m);
   }
 }
 
@@ -717,15 +708,6 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(DRT::C
   // evaluate shape functions at position of slave-side node
   my::EvalShapeFuncAtSlaveNode(slavenode, slaveelement, masterelement);
 
-  const int kineticmodel = my::scatraparamsboundary_->KineticModel();
-  const int numelectrons = my::scatraparamsboundary_->NumElectrons();
-  const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
-  const double alphaa = my::scatraparamsboundary_->AlphaA();
-  const double alphac = my::scatraparamsboundary_->AlphaC();
-  const double resistance = my::scatraparamsboundary_->Resistance();
-  const double itemaxmimplicitBV = my::scatraparamsboundary_->ItemaximplicitBV();
-  const double convtolimplicitBV = my::scatraparamsboundary_->ConvtolimplicitBV();
-
   // dummy matrix of nodal temperature values
   LINALG::Matrix<my::nen_slave_, 1> dummy_slave_temp(true);
   LINALG::Matrix<my::nen_master_, 1> dummy_master_temp(true);
@@ -743,10 +725,9 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(DRT::C
   DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
       distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
       ephinp_slave, ephinp_master, dummy_slave_temp, dummy_master_temp, my::funct_slave_,
-      my::funct_master_, my::funct_slave_, my::funct_master_, kineticmodel, numelectrons, kr,
-      alphaa, alphac, resistance, itemaxmimplicitBV, convtolimplicitBV, timefacfac, timefacrhsfac,
-      dummy_detF, DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(), k_ss, k_sm,
-      k_ms, k_mm, r_s, r_m);
+      my::funct_master_, my::funct_slave_, my::funct_master_, my::scatraparamsboundary_, timefacfac,
+      timefacrhsfac, dummy_detF, DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(),
+      k_ss, k_sm, k_ms, k_mm, r_s, r_m);
 }
 
 
@@ -935,12 +916,6 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
   // determine quadrature rule
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_tri_7point);
 
-  const int kineticmodel = my::scatraparamsboundary_->KineticModel();
-  const int numelectrons = my::scatraparamsboundary_->NumElectrons();
-  const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
-  const double alphaa = my::scatraparamsboundary_->AlphaA();
-  const double alphac = my::scatraparamsboundary_->AlphaC();
-
   // dummy matrix of nodal master temperature values and shape derivatives
   LINALG::Matrix<my::nen_master_, 1> dummy_master_temp(true);
   LINALG::Matrix<my::nsd_slave_ + 1, my::nen_slave_> dummy_shapederivatives(true);
@@ -966,8 +941,8 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
         distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(matelectrode,
         my::ephinp_slave_, etempnp_slave_, dummy_master_temp, my::ephinp_master_, my::funct_slave_,
         my::funct_master_, my::test_lm_slave_, my::test_lm_master_, dummy_shapederivatives,
-        kineticmodel, numelectrons, kr, alphaa, alphac, timefacfac, timefacwgt, dummy_detF,
-        static_cast<int>(SCATRA::DifferentiationType::temp), k_ss, k_ms);
+        my::scatraparamsboundary_, static_cast<int>(SCATRA::DifferentiationType::temp), timefacfac,
+        timefacwgt, dummy_detF, k_ss, k_ms);
   }  // loop over integration points
 }
 
@@ -1197,14 +1172,6 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
   // determine quadrature rule
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_tri_7point);
 
-  const int kineticmodel = my::scatraparamsboundary_->KineticModel();
-  const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
-  const double alphaa = my::scatraparamsboundary_->AlphaA();
-  const double alphac = my::scatraparamsboundary_->AlphaC();
-  const double peltier = my::scatraparamsboundary_->Peltier();
-  const double thermoperm = my::scatraparamsboundary_->ThermoPerm();
-  const double molar_heat_capacity = my::scatraparamsboundary_->MolarHeatCapacity();
-
   // dummy matrix for derivative of slave fluxes w.r.t. master side temperatures
   Epetra_SerialDenseMatrix dummy_ksm;
 
@@ -1228,8 +1195,8 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
     DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
         distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
         my::ephinp_slave_[0], my::ephinp_master_[0], eelchnp_slave_, eelchnp_master_,
-        my::funct_slave_, my::funct_master_, kineticmodel, kr, alphaa, alphac, peltier, thermoperm,
-        molar_heat_capacity, timefacfac, timefacrhsfac, dummy_detF, k_ss, dummy_ksm, r_s);
+        my::funct_slave_, my::funct_master_, my::scatraparamsboundary_, timefacfac, timefacrhsfac,
+        dummy_detF, k_ss, dummy_ksm, r_s);
   }  // loop over integration points
 }
 
@@ -1278,14 +1245,6 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
   // determine quadrature rule
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_tri_7point);
 
-  const int kineticmodel = my::scatraparamsboundary_->KineticModel();
-  const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
-  const double alphaa = my::scatraparamsboundary_->AlphaA();
-  const double alphac = my::scatraparamsboundary_->AlphaC();
-  const double peltier = my::scatraparamsboundary_->Peltier();
-  const double thermoperm = my::scatraparamsboundary_->ThermoPerm();
-  const double molar_heat_capacity = my::scatraparamsboundary_->MolarHeatCapacity();
-
   // dummy matrix for shape derivatives
   LINALG::Matrix<3, my::nen_slave_> dummy_shape_deriv;
 
@@ -1307,8 +1266,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
     DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
         distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(matelectrode,
         my::ephinp_slave_[0], my::ephinp_master_[0], eelchnp_slave_, eelchnp_master_,
-        my::funct_slave_, my::funct_master_, kineticmodel, kr, alphaa, alphac, peltier, thermoperm,
-        molar_heat_capacity, timefacfac, fac, dummy_detF,
+        my::funct_slave_, my::funct_master_, my::scatraparamsboundary_, timefacfac, fac, dummy_detF,
         static_cast<int>(SCATRA::DifferentiationType::elch), dummy_shape_deriv, k_ss, k_sm);
   }  // loop over integration points
 }

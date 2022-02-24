@@ -165,8 +165,7 @@ namespace DRT
        * @param[in] test_slave      slave-side test function values
        * @param[in] test_master     master-side test function values
        * @param[in] numscal         number of transported scalars
-       * @param[in] kineticmodel    kinetic model of scatra-scatra interface condition
-       * @param[in] permeabilities  vector of permeabilities
+       * @param[in] scatra_parameter_boundary  interface parameter class
        * @param[in] timefacfac      time-integration factor times domain-integration factor
        * @param[in] timefacrhsfac   time-integration factor for right-hand side times
        *                            domain-integration factor
@@ -193,7 +192,8 @@ namespace DRT
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
-          const int numscal, const int kineticmodel, const std::vector<double>* permeabilities,
+          const int numscal,
+          const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           const double timefacfac, const double timefacrhsfac, Epetra_SerialDenseMatrix& k_ss,
           Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
           Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s,

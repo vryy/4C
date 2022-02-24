@@ -4507,9 +4507,6 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateCondition(
   // determine quadrature rule
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_tri_7point);
 
-  const int kineticmodel = scatraparamsboundary_->KineticModel();
-  const std::vector<double>* permeabilities = scatraparamsboundary_->Permeabilities();
-
   // loop over all integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -4526,8 +4523,8 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateCondition(
 
     DRT::ELEMENTS::ScaTraEleBoundaryCalc<distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<
         distypeM>(ephinp_slave_, ephinp_master_, funct_slave_, funct_master_, test_lm_slave_,
-        test_lm_master_, numdofpernode_slave_, kineticmodel, permeabilities, timefacfac,
-        timefacrhsfac, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+        test_lm_master_, numdofpernode_slave_, scatraparamsboundary_, timefacfac, timefacrhsfac,
+        k_ss, k_sm, k_ms, k_mm, r_s, r_m);
   }
 }
 
@@ -4553,9 +4550,6 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateConditionNTS(DRT::Condi
   // evaluate shape functions at position of slave-side node
   EvalShapeFuncAtSlaveNode(slavenode, slaveelement, masterelement);
 
-  const int kineticmodel = scatraparamsboundary_->KineticModel();
-  const std::vector<double>* permeabilities = scatraparamsboundary_->Permeabilities();
-
   // overall integration factors
   const double timefacfac =
       DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac() * lumpedarea;
@@ -4565,8 +4559,8 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateConditionNTS(DRT::Condi
 
   DRT::ELEMENTS::ScaTraEleBoundaryCalc<distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<
       distypeM>(ephinp_slave, ephinp_master, funct_slave_, funct_master_, funct_slave_,
-      funct_master_, numdofpernode_slave_, kineticmodel, permeabilities, timefacfac, timefacrhsfac,
-      k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+      funct_master_, numdofpernode_slave_, scatraparamsboundary_, timefacfac, timefacrhsfac, k_ss,
+      k_sm, k_ms, k_mm, r_s, r_m);
 }
 
 /*----------------------------------------------------------------------*

@@ -57,16 +57,9 @@ namespace DRT
        * @param[in] emastertempnp  thermo state variables at master-side nodes
        * @param[in] eslavephinp    scatra state variables at slave-side nodes
        * @param[in] emasterphinp   scatra state variables at master-side nodes
-       * @param[in] funct_slave    slave-side shape function values
-       * @param[in] funct_master   master-side shape function values
-       * @param[in] kineticmodel   kinetic model of scatra-scatra interface condition
-       * @param[in] kr             charge transfer constant
-       * @param[in] alphaa         symmetry coefficient of anodic intercalation reaction
-       * @param[in] alphac         symmetry coefficient of cathodic intercalation reaction
-       * @param[in] peltier        peltier coefficient
-       * @param[in] thermoperm     thermal permeability at interface
-       * @param[in] molar_heat_capacity
-       *                           energy transported by flux of species
+       * @param[in] funct_slave                slave-side shape function values
+       * @param[in] funct_master               master-side shape function values
+       * @param[in] scatra_parameter_boundary  interface parameter class
        * @param[in] timefacfac     time-integration factor times domain-integration factor
        * @param[in] timefacrhsfac  time-integration factor for right-hand side times
        *                           domain-integration factor
@@ -92,8 +85,7 @@ namespace DRT
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
-          const int kineticmodel, const double kr, const double alphaa, const double alphac,
-          const double peltier, const double thermoperm, const double molar_heat_capacity,
+          const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           const double timefacfac, const double timefacrhsfac, const double detF,
           Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm,
           Epetra_SerialDenseVector& r_s);
@@ -106,17 +98,12 @@ namespace DRT
        * @param[in] emastertempnp thermo state variables at master-side nodes
        * @param[in] eslavephinp   scatra state variables at slave-side nodes
        * @param[in] emasterphinp  scatra state variables at master-side nodes
-       * @param[in] funct_slave   slave-side shape function values
-       * @param[in] funct_master  master-side shape function values
-       * @param[in] kineticmodel  kinetic model of scatra-scatra interface condition
-       * @param[in] kr            charge transfer constant
-       * @param[in] alphaa        symmetry coefficient of anodic intercalation reaction
-       * @param[in] alphac        symmetry coefficient of cathodic intercalation reaction
-       * @param[in] peltier       peltier coefficient
-       * @param[in] thermoperm     thermal permeability at interface
-       * @param[in] molar_heat_capacity
-       *                          energy transported by flux of species
-       * @param[in] timefacfac    time-integration factor times domain-integration factor
+       * @param[in] funct_slave                slave-side shape function values
+       * @param[in] funct_master               master-side shape function values
+       * @param[in] scatra_parameter_boundary  interface parameter class
+       * @param[in] timefacfac      time-integration factor times domain-integration factor
+       * @param[in] timefacwgt      time-integration factor times Gauss point weight
+       * @param[in] detF            determinant of Jacobian from deformation at Gauss point
        * @param[in] differentiationtype
        *                          type of variable for linearization
        * @param[i] shapederivatives
@@ -139,9 +126,8 @@ namespace DRT
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
-          int kineticmodel, double kr, double alphaa, double alphac, double peltier,
-          const double thermoperm, const double molar_heat_capacity, const double timefacfac,
-          const double timefacwgt, double detF, int differentiationtype,
+          const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
+          double timefacfac, double timefacwgt, double detF, int differentiationtype,
           const LINALG::Matrix<my::nsd_ + 1, my::nen_>& shapederivatives,
           Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm);
 
