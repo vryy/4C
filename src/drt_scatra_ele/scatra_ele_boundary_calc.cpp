@@ -979,9 +979,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICoupling(const DR
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
-  const int kineticmodel = scatraparamsboundary_->KineticModel();
-  const std::vector<double>* permeabilities = scatraparamsboundary_->Permeabilities();
-
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
   {
@@ -995,7 +992,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICoupling(const DR
     if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
 
     EvaluateS2ICouplingAtIntegrationPoint<distype>(ephinp_, emasterphinp, funct_, funct_, funct_,
-        funct_, numscal_, kineticmodel, permeabilities, timefacfac, timefacrhsfac, eslavematrix,
+        funct_, numscal_, scatraparamsboundary_, timefacfac, timefacrhsfac, eslavematrix,
         emastermatrix, dummymatrix, dummymatrix, eslaveresidual, dummyvector);
   }  // end of loop over integration points
 }
@@ -1015,11 +1012,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingAtIntegra
     const LINALG::Matrix<nen_, 1>& test_slave,
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
         test_master,
-    const int numscal, const int kineticmodel, const std::vector<double>* permeabilities,
+    const int numscal,
+    const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
     const double timefacfac, const double timefacrhsfac, Epetra_SerialDenseMatrix& k_ss,
     Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms, Epetra_SerialDenseMatrix& k_mm,
     Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m)
 {
+  // get condition specific parameters
+  const int kineticmodel = scatra_parameter_boundary->KineticModel();
+  const std::vector<double>* permeabilities = scatra_parameter_boundary->Permeabilities();
+
   // number of nodes of master-side mortar element
   const int nen_master = DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement;
 
@@ -2812,7 +2814,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri3>::EvaluateS2ICouplingAtI
     const LINALG::Matrix<nen_, 1>&,
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,
         1>&,
-    const int, const int, const std::vector<double>*, const double, const double,
+    const int, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double, const double,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&);
 template void
@@ -2826,7 +2828,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri3>::EvaluateS2ICouplingAtI
     const LINALG::Matrix<nen_, 1>&,
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,
         1>&,
-    const int, const int, const std::vector<double>*, const double, const double,
+    const int, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double, const double,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&);
 template void
@@ -2840,7 +2842,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad4>::EvaluateS2ICouplingAt
     const LINALG::Matrix<nen_, 1>&,
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,
         1>&,
-    const int, const int, const std::vector<double>*, const double, const double,
+    const int, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double, const double,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&);
 template void
@@ -2854,7 +2856,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad4>::EvaluateS2ICouplingAt
     const LINALG::Matrix<nen_, 1>&,
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,
         1>&,
-    const int, const int, const std::vector<double>*, const double, const double,
+    const int, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double, const double,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&);
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri6>;

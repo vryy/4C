@@ -59,18 +59,9 @@ namespace DRT
        * @param[in] emastertempnp    temperature at master side of interface
        * @param[in] funct_slave      slave-side shape function values
        * @param[in] funct_master     master-side shape function values
-       * @param[in] test_slave       slave-side test function values
-       * @param[in] test_master      master-side test function values
-       * @param[in] kineticmodel     kinetic model of scatra-scatra interface condition
-       * @param[in] numelectrons     number of electrons involved in charge transfer
-       * @param[in] kr               charge transfer constant
-       * @param[in] alphaa           symmetry coefficient of anodic intercalation reaction
-       * @param[in] alphac           symmetry coefficient of cathodic intercalation reaction
-       * @param[in] resistance       ohmic resistance at the interface
-       * @param[in] itemaxmodifiedBV   maximum number of iterations for local Newton due to the
-       *                               implicit modified BV
-       * @param[in] convtolmodifiedBV  convergence tolerance for local Newton due to the implicit
-       *                               modified BV
+       * @param[in] test_slave                 slave-side test function values
+       * @param[in] test_master                master-side test function values
+       * @param[in] scatra_parameter_boundary  interface parameter class
        * @param[in] timefacfac       time-integration factor times domain-integration factor
        * @param[in] timefacrhsfac    time-integration factor for right-hand side times
        *                             domain-integration factor
@@ -105,12 +96,11 @@ namespace DRT
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
-          int kineticmodel, int numelectrons, double kr, double alphaa, double alphac,
-          double resistance, double itemaxmodifiedBV, double convtolmodifiedBV, double timefacfac,
-          double timefacrhsfac, double detF, double frt, Epetra_SerialDenseMatrix& k_ss,
-          Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
-          Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s,
-          Epetra_SerialDenseVector& r_m);
+          const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
+          double timefacfac, double timefacrhsfac, double detF, double frt,
+          Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm,
+          Epetra_SerialDenseMatrix& k_ms, Epetra_SerialDenseMatrix& k_mm,
+          Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m);
 
       /*!
        * @brief evaluate capacitive part of the scatra-scatra interface coupling condition at
@@ -124,11 +114,9 @@ namespace DRT
        * @param[in] emasterphinp   state variables at master-side nodes at time n+1
        * @param[in] funct_slave    slave-side shape function values
        * @param[in] funct_master   master-side shape function values
-       * @param[in] test_slave     slave-side test function values
-       * @param[in] test_master    master-side test function values
-       * @param[in] kineticmodel   kinetic model of scatra-scatra interface condition
-       * @param[in] numelectrons   number of electrons involved in charge transfer
-       * @param[in] capacitance    surface capacitance at the interface
+       * @param[in] test_slave                 slave-side test function values
+       * @param[in] test_master                master-side test function values
+       * @param[in] scatra_parameter_boundary  interface parameter class
        * @param[in] timederivfac   factor to account for time-derivative in linearization
        * @param[in] timefacfac     time-integration factor times domain-integration factor
        * @param[in] timefacrhsfac  time-integration factor for right-hand side times
@@ -158,10 +146,10 @@ namespace DRT
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
-          int kineticmodel, int numelectrons, double capacitance, double timederivfac,
-          double timefacfac, double timefacrhsfac, Epetra_SerialDenseMatrix& k_ss,
-          Epetra_SerialDenseMatrix& k_ms, Epetra_SerialDenseVector& r_s,
-          Epetra_SerialDenseVector& r_m);
+          const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
+          double timederivfac, double timefacfac, double timefacrhsfac,
+          Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_ms,
+          Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m);
 
       /*!
        * \brief calculate out-parameters such as residual vectors and linearizations of residuals
