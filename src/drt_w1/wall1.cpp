@@ -56,10 +56,11 @@ void DRT::ELEMENTS::Wall1Type::NodalBlockInformation(
   nv = 2;
 }
 
-void DRT::ELEMENTS::Wall1Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::Wall1Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, int const numdof, int const dimnsp)
 {
-  LINALG::ComputeStructure2DNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid2DNullSpace(node, x0, numdof, dimnsp);
+  return nullspace;
 }
 
 void DRT::ELEMENTS::Wall1Type::SetupElementDefinition(

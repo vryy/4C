@@ -53,8 +53,8 @@ namespace DRT
       void NodalBlockInformation(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns, const double* x0,
-          int numdf, int dimns) override;
+      Epetra_SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void SetupElementDefinition(
           std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)

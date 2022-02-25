@@ -8,77 +8,79 @@
 *----------------------------------------------------------------------*/
 
 #include "linalg_nullspace.H"
-#include "linalg_utils_nullspace.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_print.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::Nullspace::ComputeNullSpace(
-    DRT::Discretization& dis, Teuchos::RCP<std::vector<double>> nullspace, int numdf, int dimns)
+Teuchos::RCP<Epetra_MultiVector> LINALG::Nullspace::ComputeNullSpace(
+    const DRT::Discretization& dis, const int numdf, const int dimns)
 {
-  // get number of dofs to check or allocate nullspace storage
-  const int lrows = dis.DofRowMap(0)->NumMyElements();
-
-  // if nullspace is null then do everything from scratch
-  if (nullspace->size() == 0)
-  {
-    int nv, np = 0;  // dummy - not needed here
-
-    // downwinding needs nodal block information, compute it
-    if (dis.NumMyRowElements())
-    {
-      // We assume that all elements are of equal type
-      DRT::Element* dwele = dis.lRowElement(0);
-      dwele->ElementType().NodalBlockInformation(dwele, numdf, dimns, nv, np);
-    }
-
-    // communicate data to procs without row element
-    int ldata[2] = {numdf, dimns};
-    int gdata[2] = {0, 0};
-    dis.Comm().MaxAll(&ldata[0], &gdata[0], 2);
-    numdf = gdata[0];
-    dimns = gdata[1];
-
-    // allocate storage for vector holding the nullspace data
-    nullspace->resize(dimns * lrows, 0.0);
-  }
-  // check if nullspace has correct size
-  else if (((ssize_t)(nullspace->size()) != (dimns * lrows) or numdf == 0))
-  {
-    dserror("nullspace does not have correct size or numdf or dimns are zero");
-  }
-
-  // check whether numdf and dimns are consistent among all procs
-  const int numproc = dis.Comm().NumProc();
-  int sumnumdf;
-  dis.Comm().SumAll(&numdf, &sumnumdf, 1);
-  if (sumnumdf != numdf * numproc) dserror("numdf not consistent among procs");
-  int sumdimns;
-  dis.Comm().SumAll(&dimns, &sumdimns, 1);
-  if (sumdimns != dimns * numproc) dserror("dimns not consistent among procs");
-
   // check if dimns is possible
   if (dimns > 10) dserror("Nullspace size only upto 10 supported");
+
+  Teuchos::RCP<Epetra_MultiVector> nullspace =
+      Teuchos::rcp(new Epetra_MultiVector(*dis.DofRowMap(), dimns, true));
 
   // compute nullspace for simple case: vector of ones
   if (dimns == 1 && numdf == 1)
   {
-    for (int i = 0; i < lrows; ++i) (*nullspace)[i] = 1.0;
-    return;
+    nullspace->PutScalar(1.0);
+  }
+  else
+  {
+    // for rigid body rotations compute nodal center of the discretization
+    double x0send[3] = {0.0, 0.0, 0.0};
+    for (int i = 0; i < dis.NumMyRowNodes(); ++i)
+      for (int j = 0; j < 3; ++j) x0send[j] += dis.lRowNode(i)->X()[j];
+    double x0[3];
+    dis.Comm().SumAll(x0send, x0, 3);
+    for (int i = 0; i < 3; ++i) x0[i] /= dis.NumGlobalNodes();
+
+    // do some assembly process of the nodalNullspace into the actual nullspace
+    for (int dim = 0; dim < dimns; ++dim)
+    {
+      for (int i = 0; i < dis.NumMyRowNodes(); ++i)
+      {
+        const Epetra_Map* rowmap = dis.DofRowMap();
+
+        DRT::Node* actnode = dis.lRowNode(i);
+        std::vector<int> dofs = dis.Dof(0, actnode);
+
+        double** arrayOfPointers;
+        nullspace->ExtractView(&arrayOfPointers);
+        double* data = arrayOfPointers[dim];
+        int localLength = dofs.size();
+
+        // check if degrees of freedom are zero
+        if (localLength == 0) continue;
+
+        // check size of degrees of freedom
+        if (localLength != numdf)
+        {
+          std::cout << "Warning: At local node " << i << " : nullspace degrees of freedom ( "
+                    << numdf << " ) "
+                    << "and rowmap degrees of freedom ( " << localLength << " ) are not consistent"
+                    << std::endl;
+        }
+
+        Epetra_SerialDenseMatrix nodalNullspace =
+            actnode->Elements()[0]->ElementType().ComputeNullSpace(
+                *actnode, x0, localLength, dimns);
+
+        Teuchos::ArrayRCP<double> dataVector(data, rowmap->LID(dofs[0]), localLength, false);
+
+        for (int j = 0; j < localLength; ++j)
+        {
+          const int lid = rowmap->LID(dofs[j]);
+          dataVector[lid] = nodalNullspace(j, dim);
+        }
+      }
+    }
   }
 
-  // for rigid body rotations
-  // compute nodal center of the discretization
-  double x0send[3] = {0.0, 0.0, 0.0};
-  for (int i = 0; i < dis.NumMyRowNodes(); ++i)
-    for (int j = 0; j < 3; ++j) x0send[j] += dis.lRowNode(i)->X()[j];
-  double x0[3];
-  dis.Comm().SumAll(x0send, x0, 3);
-  for (int i = 0; i < 3; ++i) x0[i] /= dis.NumGlobalNodes();
-
-  // let the elementtype compute the nullspace
-  DRT::Element* dwele = dis.lRowElement(0);
-  dwele->ElementType().ComputeNullSpace(dis, *nullspace, x0, numdf, dimns);
+  return nullspace;
 }
 
 /*----------------------------------------------------------------------*

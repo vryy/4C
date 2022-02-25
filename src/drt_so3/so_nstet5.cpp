@@ -78,12 +78,14 @@ void DRT::ELEMENTS::NStet5Type::NodalBlockInformation(
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-void DRT::ELEMENTS::NStet5Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::NStet5Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  LINALG::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid3DNullSpace(node, x0, numdof, dimnsp);
 
+  // TODO: switch to correct data container!
   // do nullspace for element degrees of freedom
+  /*
   const Epetra_Map* rowmap = dis.DofRowMap(0);
   const int lrows = rowmap->NumMyElements();
   double* mode[6];
@@ -136,6 +138,9 @@ void DRT::ELEMENTS::NStet5Type::ComputeNullSpace(
       }  // switch (j)
     }
   }
+  */
+
+  return nullspace;
 }
 
 //-----------------------------------------------------------------------

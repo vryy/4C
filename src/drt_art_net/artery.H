@@ -55,10 +55,12 @@ namespace DRT
         nv = numdf;
       }
 
-      virtual void ComputeNullSpace(
-          DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+      virtual Epetra_SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        LINALG::ComputeFluidDNullSpace(dis, ns, x0, numdf, dimns);
+        Epetra_SerialDenseMatrix nullspace =
+            LINALG::ComputeFluidDNullSpace(node, x0, numdof, dimnsp);
+        return nullspace;
       }
 
       virtual void SetupElementDefinition(

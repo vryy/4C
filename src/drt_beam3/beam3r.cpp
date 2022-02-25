@@ -88,10 +88,12 @@ void DRT::ELEMENTS::Beam3rType::NodalBlockInformation(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3rType::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam3rType::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
+  Epetra_SerialDenseMatrix nullspace;
   dserror("method ComputeNullSpace not implemented for element type beam3r!");
+  return nullspace;
 }
 
 /*------------------------------------------------------------------------------------------------*

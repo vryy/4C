@@ -70,10 +70,13 @@ void DRT::ELEMENTS::ElemagType::NodalBlockInformation(
 }
 
 
-void DRT::ELEMENTS::ElemagType::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::ElemagType::ComputeNullSpace(
+    DRT::Node& node, const double* x0, int numdof, int dimnsp)
 {
-  // DRT::UTILS::ComputeFluidDNullSpace( dis, ns, x0, numdf, dimns );
+  Epetra_SerialDenseMatrix nullspace;
+
+  // TODO: What is this? Not covered right now.
+  /*
   if (DRT::DiscretizationFaces* facedis = dynamic_cast<DRT::DiscretizationFaces*>(&dis))
   {
     const Epetra_Map* rowmap = dis.DofRowMap();
@@ -110,8 +113,10 @@ void DRT::ELEMENTS::ElemagType::ComputeNullSpace(
   }
   else
     dserror("Faces not initialized");
+  */
 
-  return;
+  dserror("method ComputeNullSpace not covered right now!");
+  return nullspace;
 }
 
 

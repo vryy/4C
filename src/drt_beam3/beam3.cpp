@@ -20,8 +20,6 @@
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 
-#include "../linalg/linalg_utils_nullspace.H"
-
 DRT::ELEMENTS::Beam3Type DRT::ELEMENTS::Beam3Type::instance_;
 
 DRT::ELEMENTS::Beam3Type& DRT::ELEMENTS::Beam3Type::Instance() { return instance_; }
@@ -61,10 +59,12 @@ void DRT::ELEMENTS::Beam3Type::NodalBlockInformation(
   nv = 6;
 }
 
-void DRT::ELEMENTS::Beam3Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam3Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
+  Epetra_SerialDenseMatrix nullspace;
   dserror("method ComputeNullSpace not implemented for element type beam3r!");
+  return nullspace;
 }
 
 void DRT::ELEMENTS::Beam3Type::SetupElementDefinition(

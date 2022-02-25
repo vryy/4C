@@ -1,7 +1,8 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of helper methods for namespace DRT
+\brief A collection of helper methods for the nullspace calculation at
+       node level
 
 \level 0
 
@@ -14,8 +15,8 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ComputeStructure3DNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix LINALG::ComputeSolid3DNullSpace(
+    const DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   /* the rigid body modes for structures are:
 
@@ -30,66 +31,52 @@ void LINALG::ComputeStructure3DNullSpace(
                        so_tet10, so_weg6, sodisp, so_shw6, truss3, torsion3
   */
 
-  const Epetra_Map* rowmap = dis.DofRowMap(0);
-  const int lrows = rowmap->NumMyElements();
-  double* mode[6];
-  for (int i = 0; i < dimns; ++i) mode[i] = &(ns[i * lrows]);
+  const double* x = node.X();
 
-  for (int i = 0; i < dis.NumMyRowNodes(); ++i)
-  {
-    DRT::Node* actnode = dis.lRowNode(i);
-    const double* x = actnode->X();
-    std::vector<int> dofs = dis.Dof(0, actnode);  // use current dofset
+  if (numdof != 3)
+    dserror(
+        "The computation of the solid nullspace in three dimensions requires three DOFs"
+        "per solid node, however the current node carries %d DOFs.",
+        numdof);
 
-    if (dofs.size() != 3)
-      dserror(
-          "The computation of the solid nullspace in three dimensions requires three DOFs"
-          "per solid node, however the current node carries %d DOFs.",
-          dofs.size());
+  if (dimnsp != 6)
+    dserror(
+        "The computation of the solid nullspace in three dimensions requires six nullspace"
+        "vectors per node, however the current node carries %d vectors.",
+        numdof);
 
-    for (unsigned j = 0; j < dofs.size(); ++j)
-    {
-      const int dof = dofs[j];
-      const int lid = rowmap->LID(dof);
-      if (lid < 0) dserror("Cannot find dof");
-      switch (j)  // j is degree of freedom
-      {
-        case 0:
-          mode[0][lid] = 1.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = 0.0;
-          mode[4][lid] = x[2] - x0[2];
-          mode[5][lid] = -x[1] + x0[1];
-          break;
-        case 1:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 1.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = -x[2] + x0[2];
-          mode[4][lid] = 0.0;
-          mode[5][lid] = x[0] - x0[0];
-          break;
-        case 2:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 1.0;
-          mode[3][lid] = x[1] - x0[1];
-          mode[4][lid] = -x[0] + x0[0];
-          mode[5][lid] = 0.0;
-          break;
-        default:
-          dserror("Only dofs 0 - 5 supported");
-          break;
-      }  // switch (j)
-    }    // for (int j=0; j<actnode->Dof().NumDof(); ++j)
-  }      // for (int i=0; i<NumMyRowNodes(); ++i)
+  // this is new old code!
+  Epetra_SerialDenseMatrix nullspace = Epetra_SerialDenseMatrix(numdof, dimnsp);
+  // x-modes
+  nullspace(0, 0) = 1.0;
+  nullspace(0, 1) = 0.0;
+  nullspace(0, 2) = 0.0;
+  nullspace(0, 3) = 0.0;
+  nullspace(0, 4) = x[2] - x0[2];
+  ;
+  nullspace(0, 5) = -x[1] + x0[1];
+  // y-modes
+  nullspace(1, 0) = 0.0;
+  nullspace(1, 1) = 1.0;
+  nullspace(1, 2) = 0.0;
+  nullspace(1, 3) = -x[2] + x0[2];
+  nullspace(1, 4) = 0.0;
+  nullspace(1, 5) = x[0] - x0[0];
+  // z-modes
+  nullspace(2, 0) = 0.0;
+  nullspace(2, 1) = 0.0;
+  nullspace(2, 2) = 1.0;
+  nullspace(2, 3) = x[1] - x0[1];
+  nullspace(2, 4) = -x[0] + x0[0];
+  nullspace(2, 5) = 0.0;
+
+  return nullspace;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ComputeStructure2DNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix LINALG::ComputeSolid2DNullSpace(
+    const DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   /* the rigid body modes for structures are:
 
@@ -103,52 +90,38 @@ void LINALG::ComputeStructure2DNullSpace(
 
    */
 
-  const Epetra_Map* rowmap = dis.DofRowMap(0);
-  const int lrows = rowmap->NumMyElements();
-  double* mode[6];
-  for (int i = 0; i < dimns; ++i) mode[i] = &(ns[i * lrows]);
+  const double* x = node.X();
 
-  for (int i = 0; i < dis.NumMyRowNodes(); ++i)
-  {
-    DRT::Node* actnode = dis.lRowNode(i);
-    const double* x = actnode->X();
-    std::vector<int> dofs = dis.Dof(0, actnode);
+  if (numdof != 2)
+    dserror(
+        "The computation of the solid nullspace in two dimensions requires two DOFs"
+        "per solid node, however the current node carries %d DOFs.",
+        numdof);
 
-    if (dofs.size() != 2)
-      dserror(
-          "The computation of the solid nullspace in two dimensions requires two DOFs"
-          "per solid node, however the current node carries %d DOFs.",
-          dofs.size());
+  if (dimnsp != 3)
+    dserror(
+        "The computation of the solid nullspace in two dimensions requires three nullspace"
+        "vectors per node, however the current node carries %d vectors.",
+        numdof);
 
-    for (unsigned j = 0; j < dofs.size(); ++j)
-    {
-      const int dof = dofs[j];
-      const int lid = rowmap->LID(dof);
-      if (lid < 0) dserror("Cannot find dof");
-      switch (j)  // j is degree of freedom
-      {
-        case 0:
-          mode[0][lid] = 1.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = -x[1] + x0[1];
-          break;
-        case 1:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 1.0;
-          mode[2][lid] = x[0] - x0[0];
-          break;
-        default:
-          dserror("Only dofs 0 - 1 supported");
-          break;
-      }  // switch (j)
-    }    // for (int j=0; j<actnode->Dof().NumDof(); ++j)
-  }      // for (int i=0; i<NumMyRowNodes(); ++i)
+  // this is the new code!
+  Epetra_SerialDenseMatrix nullspace = Epetra_SerialDenseMatrix(numdof, dimnsp);
+  // x-modes
+  nullspace(0, 0) = 1.0;
+  nullspace(0, 1) = 0.0;
+  nullspace(0, 2) = -x[1] + x0[1];
+  // y-modes
+  nullspace(1, 0) = 0.0;
+  nullspace(1, 1) = 1.0;
+  nullspace(1, 2) = x[0] - x0[0];
+
+  return nullspace;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ComputeShell3DNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix LINALG::ComputeShell3DNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   /* the rigid body modes for structures are:
       xtrans   ytrans  ztrans   xrot       yrot       zrot
@@ -165,227 +138,116 @@ void LINALG::ComputeShell3DNullSpace(
 
    */
 
-  const Epetra_Map* rowmap = dis.DofRowMap(0);
-  const int lrows = rowmap->NumMyElements();
-  double* mode[6];
-  for (int i = 0; i < dimns; ++i) mode[i] = &(ns[i * lrows]);
+  Epetra_SerialDenseMatrix dir(1, 3);
 
-  Epetra_SerialDenseMatrix dir;
+  DRT::ELEMENTS::Shell8* s8 = dynamic_cast<DRT::ELEMENTS::Shell8*>(node.Elements()[0]);
+  if (!s8) dserror("Cannot cast to Shell8");
+  int j;
+  for (j = 0; j < s8->NumNode(); ++j)
+    if (s8->Nodes()[j]->Id() == node.Id()) break;
+  if (j == s8->NumNode()) dserror("Can't find matching node - weird!");
+  double h2 = (*s8->GetThickness())[j] / 2.0;
 
-  dir.Shape(dis.NumMyRowNodes(), 3);
-  for (int i = 0; i < dis.NumMyRowNodes(); ++i)
-  {
-    DRT::Node* actnode = dis.lRowNode(i);
-    DRT::ELEMENTS::Shell8* s8 = dynamic_cast<DRT::ELEMENTS::Shell8*>(actnode->Elements()[0]);
-    if (!s8) dserror("Cannot cast to Shell8");
-    int j;
-    for (j = 0; j < s8->NumNode(); ++j)
-      if (s8->Nodes()[j]->Id() == actnode->Id()) break;
-    if (j == s8->NumNode()) dserror("Can't find matching node - weird!");
-    double h2 = (*s8->GetThickness())[j] / 2.0;
-    // get director
-    const Epetra_SerialDenseMatrix* a3ref = s8->GetDirectors();
-    dir(i, 0) = (*a3ref)(0, j) * h2;
-    dir(i, 1) = (*a3ref)(1, j) * h2;
-    dir(i, 2) = (*a3ref)(2, j) * h2;
-  }
+  // get director
+  const Epetra_SerialDenseMatrix* a3ref = s8->GetDirectors();
+  dir(0, 0) = (*a3ref)(0, j) * h2;
+  dir(0, 1) = (*a3ref)(1, j) * h2;
+  dir(0, 2) = (*a3ref)(2, j) * h2;
 
-  for (int i = 0; i < dis.NumMyRowNodes(); ++i)
-  {
-    DRT::Node* actnode = dis.lRowNode(i);
-    const double* x = actnode->X();
-    std::vector<int> dofs = dis.Dof(0, actnode);  // use current dofset
+  const double* x = node.X();
 
-    if (dofs.size() != 6)
-      dserror(
-          "The computation of the shell nullspace in three dimensions requires six DOFs"
-          "per solid node, however the current node carries %d DOFs.",
-          dofs.size());
+  if (numdof != 6)
+    dserror(
+        "The computation of the shell nullspace in three dimensions requires six DOFs"
+        "per node, however the current node carries %d DOFs.",
+        numdof);
 
-    for (unsigned j = 0; j < dofs.size(); ++j)
-    {
-      const int dof = dofs[j];
-      const int lid = rowmap->LID(dof);
-      if (lid < 0) dserror("Cannot find dof");
-      switch (j)  // j is degree of freedom
-      {
-        case 0:
-          mode[0][lid] = 1.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = 0.0;
-          mode[4][lid] = x[2] - x0[2];
-          mode[5][lid] = -x[1] + x0[1];
-          break;
-        case 1:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 1.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = -x[2] + x0[2];
-          mode[4][lid] = 0.0;
-          mode[5][lid] = x[0] - x0[0];
-          break;
-        case 2:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 1.0;
-          mode[3][lid] = x[1] - x0[1];
-          mode[4][lid] = -x[0] + x0[0];
-          mode[5][lid] = 0.0;
-          break;
-        case 3:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = 0.0;
-          mode[4][lid] = dir(i, 2);
-          mode[5][lid] = -dir(i, 1);
-          break;
-        case 4:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = -dir(i, 2);
-          mode[4][lid] = 0.0;
-          mode[5][lid] = dir(i, 0);
-          break;
-        case 5:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = dir(i, 1);
-          mode[4][lid] = -dir(i, 0);
-          mode[5][lid] = 0.0;
-          break;
-        default:
-          dserror("Only dofs 0 - 5 supported");
-          break;
-      }  // switch (j)
-    }    // for (int j=0; j<actnode->Dof().NumDof(); ++j)
-  }      // for (int i=0; i<NumMyRowNodes(); ++i)
+  if (dimnsp != 6)
+    dserror(
+        "The computation of the shell nullspace in three dimensions requires six nullspace"
+        "vectors per node, however the current node carries %d vectors.",
+        numdof);
+
+
+  // this is the new code!
+  Epetra_SerialDenseMatrix nullspace = Epetra_SerialDenseMatrix(numdof, dimnsp);
+  // x-modes
+  nullspace(0, 0) = 1.0;
+  nullspace(0, 1) = 0.0;
+  nullspace(0, 2) = 0.0;
+  nullspace(0, 3) = 0.0;
+  nullspace(0, 4) = x[2] - x0[2];
+  nullspace(0, 5) = -x[1] + x0[1];
+  // y-modes
+  nullspace(1, 0) = 0.0;
+  nullspace(1, 1) = 1.0;
+  nullspace(1, 2) = 0.0;
+  nullspace(1, 3) = -x[2] + x0[2];
+  nullspace(1, 4) = 0.0;
+  nullspace(1, 5) = x[0] - x0[0];
+  // z-modes
+  nullspace(2, 0) = 0.0;
+  nullspace(2, 1) = 0.0;
+  nullspace(2, 2) = 1.0;
+  nullspace(2, 3) = x[1] - x0[1];
+  nullspace(2, 4) = -x[0] + x0[0];
+  nullspace(2, 5) = 0.0;
+  // dx-modes
+  nullspace(3, 0) = 0.0;
+  nullspace(3, 1) = 0.0;
+  nullspace(3, 2) = 0.0;
+  nullspace(3, 3) = 0.0;
+  nullspace(3, 4) = dir(0, 2);
+  nullspace(3, 5) = -dir(0, 1);
+  // dy-modes
+  nullspace(4, 0) = 0.0;
+  nullspace(4, 1) = 0.0;
+  nullspace(4, 2) = 0.0;
+  nullspace(4, 3) = -dir(0, 2);
+  nullspace(4, 4) = 0.0;
+  nullspace(4, 5) = dir(0, 0);
+  // dz-modes
+  nullspace(5, 0) = 0.0;
+  nullspace(5, 1) = 0.0;
+  nullspace(5, 2) = 0.0;
+  nullspace(5, 3) = dir(0, 1);
+  nullspace(5, 4) = -dir(0, 0);
+  nullspace(5, 5) = 0.0;
+
+  return nullspace;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ComputeXFluidDNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix LINALG::ComputeFluidDNullSpace(
+    const DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   /* the rigid body modes for fluids are:
 
-        xtrans   ytrans  ztrans   pressure
-        mode[0]  mode[1] mode[2]  mode[3]
-    ----------------------------------------
-  x   |    1       0       0       0
-  y   |    0       1       0       0
-  z   |    0       0       1       0
-  p   |    0       0       0       1
+            xtrans   ytrans  ztrans   pressure
+            mode[0]  mode[1] mode[2]  mode[3]
+      ----------------------------------------
+      x   |    1       0       0       0
+      y   |    0       1       0       0
+      z   |    0       0       1       0
+      p   |    0       0       0       1
 
-  valid element types: fluid3, xfluid3
-
+      valid element types: fluid3, xfluid3
   */
 
-  const Epetra_Map* rowmap = dis.DofRowMap();
-  const int lrows = rowmap->NumMyElements();
-  double* mode[6];
-  for (int i = 0; i < dimns; ++i) mode[i] = &(ns[i * lrows]);
+  if (numdof > 10) dserror("Cannot define more than 10 degrees of freedom!");
 
-  for (int i = 0; i < dis.NumMyRowNodes(); ++i)
+  Epetra_SerialDenseMatrix nullspace = Epetra_SerialDenseMatrix(numdof, dimnsp);
+  for (int i = 0; i < numdof; i++)
   {
-    DRT::Node* actnode = dis.lRowNode(i);
-    std::vector<int> dofs = dis.Dof(actnode);
-    for (unsigned j = 0; j < dofs.size(); ++j)
+    for (int j = 0; j < dimnsp; j++)
     {
-      const int dof = dofs[j];
-      const int lid = rowmap->LID(dof);
-      if (lid < 0) dserror("Cannot find dof");
-      switch (j)  // j is degree of freedom
-      {
-        case 0:
-          mode[0][lid] = 1.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = 0.0;
-          break;
-        case 1:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 1.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = 0.0;
-          break;
-        case 2:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 1.0;
-          mode[3][lid] = 0.0;
-          break;
-        case 3:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = 1.0;
-          break;
-        case 4:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = 0.0;
-          break;
-        case 5:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = 0.0;
-          break;
-        case 6:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = 0.0;
-          break;
-        case 7:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = 0.0;
-          break;
-        default:
-          dserror("Only dofs 0 - 7 supported");
-          break;
-      }  // switch (j)
-    }    // for (int j=0; j<actnode->Dof().NumDof(); ++j)
-  }      // for (int i=0; i<NumMyRowNodes(); ++i)
-}
+      if (i == j)
+        nullspace(i, j) = 1.0;
+      else
+        nullspace(i, j) = 0.0;
+    }
+  }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void LINALG::ComputeFluidDNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
-{
-  const Epetra_Map* rowmap = dis.DofRowMap();
-  const int lrows = rowmap->NumMyElements();
-  double* mode[10];
-  for (int i = 0; i < dimns; ++i) mode[i] = &(ns[i * lrows]);
-
-  for (int i = 0; i < dis.NumMyRowNodes(); ++i)
-  {
-    DRT::Node* actnode = dis.lRowNode(i);
-    std::vector<int> dofs = dis.Dof(0, actnode);
-    const unsigned int ndof = dofs.size();
-
-    if (numdf > 10) dserror("Cannot define more than 10 modes");
-    for (unsigned j = 0; j < ndof; ++j)
-    {
-      const int dof = dofs[j];
-      const int lid = rowmap->LID(dof);
-      if (lid < 0) dserror("Cannot find dof");
-
-      for (unsigned k = 0; k < ndof; ++k)
-      {
-        if (k % numdf == j % numdf)
-          mode[k % numdf][lid] = 1.0;
-        else
-          mode[k % numdf][lid] = 0.0;
-      }
-    }  // for (int j=0; j<actnode->Dof().NumDof(); ++j)
-  }    // for (int i=0; i<NumMyRowNodes(); ++i)
+  return nullspace;
 }

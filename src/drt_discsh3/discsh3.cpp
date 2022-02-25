@@ -57,10 +57,11 @@ void DRT::ELEMENTS::DiscSh3Type::NodalBlockInformation(
   dimns = 6;  // Number of dimensions. 3 Translations, 3 rotations, Global dofs
 }
 
-void DRT::ELEMENTS::DiscSh3Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::DiscSh3Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  LINALG::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid3DNullSpace(node, x0, numdof, dimnsp);
+  return nullspace;
 }
 
 void DRT::ELEMENTS::DiscSh3Type::SetupElementDefinition(

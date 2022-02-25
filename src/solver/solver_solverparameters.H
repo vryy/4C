@@ -36,17 +36,8 @@ namespace LINALG
 
         // set specific information for the multigrid preconditioner ML / MueLu
         {
-          // allocate dimns times the local length of the rowmap
-          const int lrows = dis.DofRowMap(0)->NumMyElements();
-          Teuchos::RCP<std::vector<double>> ns =
-              Teuchos::rcp(new std::vector<double>(dimns * lrows));
-
-          // compute null space directly. that will call eletypes.
-          LINALG::Nullspace::ComputeNullSpace(dis, ns, numdf, dimns);
-
           Teuchos::RCP<Epetra_MultiVector> nullspace =
-              Teuchos::rcp(new Epetra_MultiVector(*dis.DofRowMap(), dimns, true));
-          LINALG::StdVectorToEpetraMultiVector(ns, nullspace, dimns);
+              LINALG::Nullspace::ComputeNullSpace(dis, numdf, dimns);
 
           solverlist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
           solverlist.set("null space: vectors", nullspace->Values());

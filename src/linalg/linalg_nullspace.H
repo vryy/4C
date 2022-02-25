@@ -28,9 +28,9 @@ namespace LINALG
        \param nullspace (in): nullspace
        \param numdf (in): number of degrees of freedom
        \param dimns (in): nullspace dimension
-     */
-    void ComputeNullSpace(DRT::Discretization& dis, Teuchos::RCP<std::vector<double>> nullspace,
-        int numdf = 0, int dimns = 0);
+    */
+    Teuchos::RCP<Epetra_MultiVector> ComputeNullSpace(
+        const DRT::Discretization& dis, const int numdf, const int dimns);
 
     /*!
        \brief Fix the nullspace to match a new given map
@@ -42,9 +42,10 @@ namespace LINALG
        \param oldmap (in): row map of nullspace
        \param newmap (in): row map of nullspace upon exit
        \param solveparams (in): parameterlist including nullspace vector
-     */
+    */
     void FixNullSpace(std::string field, const Epetra_Map& oldmap, const Epetra_Map& newmap,
         Teuchos::ParameterList& solveparams);
+
   }  // namespace Nullspace
 }  // namespace LINALG
 

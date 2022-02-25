@@ -66,11 +66,11 @@ void DRT::ELEMENTS::So_tet4avType::NodalBlockInformation(
 }
 
 //------------------------------------------------------------------------
-void DRT::ELEMENTS::So_tet4avType::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::So_tet4avType::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  LINALG::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
-  return;
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid3DNullSpace(node, x0, numdof, dimnsp);
+  return nullspace;
 }
 
 //------------------------------------------------------------------------

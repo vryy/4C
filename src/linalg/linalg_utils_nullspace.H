@@ -1,7 +1,8 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of helper methods for namespace DRT
+\brief A collection of helper methods for the nullspace calculation at
+       node level
 
 \level 0
 
@@ -19,16 +20,49 @@ namespace LINALG
   // forward declarations
   class Discretization;
 
-  void ComputeStructure3DNullSpace(
-      DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns);
-  void ComputeStructure2DNullSpace(
-      DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns);
-  void ComputeShell3DNullSpace(
-      DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns);
-  void ComputeXFluidDNullSpace(
-      DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns);
-  void ComputeFluidDNullSpace(
-      DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns);
+  /*!
+    \brief Helper function for the nodal nullspace of solid elements in 3D
+
+     \param node (in):    node to calculate the nullspace on
+     \param x0 (in):      center of discretization
+     \param numdof (in):  number of degrees of freedom
+     \param dimnsp (in):  dimension of the nullspace
+  */
+  Epetra_SerialDenseMatrix ComputeSolid3DNullSpace(
+      const DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+
+  /*!
+   \brief Helper function for the nodal nullspace of solid elements in 2D
+
+    \param node (in):    node to calculate the nullspace on
+    \param x0 (in):      center of discretization
+    \param numdof (in):  number of degrees of freedom
+    \param dimnsp (in):  dimension of the nullspace
+  */
+  Epetra_SerialDenseMatrix ComputeSolid2DNullSpace(
+      const DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+
+  /*!
+    \brief Helper function for the nodal nullspace of shell elements in 3D
+
+    \param node (in):    node to calculate the nullspace on
+    \param x0 (in):      center of discretization
+    \param numdof (in):  number of degrees of freedom
+    \param dimnsp (in):  dimension of the nullspace
+  */
+  Epetra_SerialDenseMatrix ComputeShell3DNullSpace(
+      DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+
+  /*!
+    \brief Helper function for the nodal nullspace of fluid elements
+
+    \param node (in):    node to calculate the nullspace on
+    \param x0 (in):      center of discretization
+    \param numdof (in):  number of degrees of freedom
+    \param dimnsp (in):  dimension of the nullspace
+  */
+  Epetra_SerialDenseMatrix ComputeFluidDNullSpace(
+      const DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
 }  // namespace LINALG
 
 #endif

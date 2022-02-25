@@ -56,11 +56,14 @@ void DRT::ELEMENTS::Beam3ebType::NodalBlockInformation(
 }
 
 
-void DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  if (dimns != 5) dserror("Wrong nullspace dimension for this model.");
+  if (dimnsp != 5) dserror("Wrong nullspace dimension for this model.");
 
+  Epetra_SerialDenseMatrix nullspace;
+
+  /*
   constexpr std::size_t spacedim = 3;
   const Epetra_Map* rowmap = dis.DofRowMap();
   const int lrows = rowmap->NumMyElements();
@@ -79,8 +82,8 @@ void DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
     DRT::Element** actele = actnode->Elements();
     const DRT::ELEMENTS::Beam3eb* actbeamele = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(*actele);
 
-    /* Compute tangent vector with unit length from nodal coordinates.
-    Note: Tangent vector is the same at both nodes due to straight initial configuration. */
+    // Compute tangent vector with unit length from nodal coordinates.
+    // Note: Tangent vector is the same at both nodes due to straight initial configuration.
     LINALG::Matrix<spacedim, 1> tangent(true);
     {
       const DRT::Node* firstnode = actbeamele->Nodes()[0];
@@ -210,6 +213,9 @@ void DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
       }
     }
   }
+  */
+
+  return nullspace;
 }
 
 void DRT::ELEMENTS::Beam3ebType::SetupElementDefinition(

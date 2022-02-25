@@ -804,33 +804,24 @@ void STR::TimIntImpl::UpdateKrylovSpaceProjection()
   Teuchos::RCP<Epetra_MultiVector> c = projector_->GetNonConstKernel();
   c->PutScalar(0.0);
 
-  // We recompute the entire nullspace no matter what.
-  // This is not nice yet since:
-  // - translations are constant throughout the entire computation
-  // - SAME nullspace is sometimes recomputed AGAIN for some iterative solvers
-  // So here is space for optimization.
-
   // get number of modes and their ids
   std::vector<int> modeids = projector_->Modes();
+  for (auto ids : modeids) std::cout << ids << std::endl;
 
-  // Teuchos::RCP on vector of size 0 holding the nullspace data - resized within ComputeNullspace
-  Teuchos::RCP<std::vector<double>> nullspace = Teuchos::rcp(new std::vector<double>(0));
-  LINALG::Nullspace::ComputeNullSpace(*discret_, nullspace);
+  Teuchos::RCP<Epetra_MultiVector> nullspace = LINALG::Nullspace::ComputeNullSpace(*discret_, 3, 6);
 
   // check if everything went fine
-  if (nullspace->size() == 0) dserror("nullspace not successfully computed");
-
-  // pointer on first element of nullspace data
-  double* nsdata = nullspace->data();
+  if (nullspace == Teuchos::null) dserror("nullspace not successfully computed");
 
   // sort vector of nullspace data into kernel vector c_
   for (size_t i = 0; i < Teuchos::as<size_t>(modeids.size()); i++)
   {
     Epetra_Vector* ci = (*c)(i);
+    Epetra_Vector* ni = (*nullspace)(modeids[i]);
     const size_t myLength = ci->MyLength();
     for (size_t j = 0; j < myLength; j++)
     {
-      (*ci)[j] = nsdata[modeids[i] * myLength + j];
+      (*ci)[j] = (*ni)[j];
     }
   }
 

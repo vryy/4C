@@ -104,9 +104,13 @@ void DRT::ELEMENTS::ScaTraHDGType::NodalBlockInformation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDGType::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::ScaTraHDGType::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
+  Epetra_SerialDenseMatrix nullspace;
+
+  // TODO: transform this into the correct data container and cover it with a test?!
+  /*
   if (DRT::DiscretizationFaces* facedis = dynamic_cast<DRT::DiscretizationFaces*>(&dis))
   {
     const Epetra_Map* rowmap = dis.DofRowMap();
@@ -144,6 +148,9 @@ void DRT::ELEMENTS::ScaTraHDGType::ComputeNullSpace(
   }
   else
     dserror("Faces not initialized");
+  */
+
+  return nullspace;
 }
 
 

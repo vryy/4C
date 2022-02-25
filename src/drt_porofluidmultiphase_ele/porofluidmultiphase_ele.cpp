@@ -85,10 +85,11 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseType::NodalBlockInformation(
 /*----------------------------------------------------------------------*
  |  do the null space computation                            vuong 08/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhaseType::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::PoroFluidMultiPhaseType::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  LINALG::ComputeFluidDNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeFluidDNullSpace(node, x0, numdof, dimnsp);
+  return nullspace;
 }
 
 /*----------------------------------------------------------------------*
