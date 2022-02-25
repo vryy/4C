@@ -67,6 +67,13 @@ MAT::PAR::Electrode::Electrode(Teuchos::RCP<MAT::PAR::Material> matdata)
       // parse *.csv file
       if (ocpcsv[0] != '/')
       {
+        if (DRT::Problem::Instance()->OutputControlFile() == Teuchos::null)
+        {
+          std::cout << "WARNING: could not check, if OCP .csv file in MAT_electrode is correct."
+                    << std::endl;
+
+          break;
+        }
         std::string ocpcsvpath = DRT::Problem::Instance()->OutputControlFile()->InputFileName();
         ocpcsvpath = ocpcsvpath.substr(0, ocpcsvpath.rfind('/') + 1);
         ocpcsv.insert(ocpcsv.begin(), ocpcsvpath.begin(), ocpcsvpath.end());
