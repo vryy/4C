@@ -60,7 +60,7 @@ void DRT::ELEMENTS::Membrane_tri3Type::NodalBlockInformation(
 Epetra_SerialDenseMatrix DRT::ELEMENTS::Membrane_tri3Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid3DNullSpace(node, x0, numdof, dimnsp);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid3DNullSpace(node, x0);
   return nullspace;
 }
 
@@ -128,7 +128,7 @@ void DRT::ELEMENTS::Membrane_tri6Type::NodalBlockInformation(
 Epetra_SerialDenseMatrix DRT::ELEMENTS::Membrane_tri6Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid2DNullSpace(node, x0, numdof, dimnsp);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid2DNullSpace(node, x0);
   return nullspace;
 }
 
@@ -199,7 +199,7 @@ void DRT::ELEMENTS::Membrane_quad4Type::NodalBlockInformation(
 Epetra_SerialDenseMatrix DRT::ELEMENTS::Membrane_quad4Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid2DNullSpace(node, x0, numdof, dimnsp);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid2DNullSpace(node, x0);
   return nullspace;
 }
 
@@ -270,7 +270,7 @@ void DRT::ELEMENTS::Membrane_quad9Type::NodalBlockInformation(
 Epetra_SerialDenseMatrix DRT::ELEMENTS::Membrane_quad9Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid2DNullSpace(node, x0, numdof, dimnsp);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid2DNullSpace(node, x0);
   return nullspace;
 }
 

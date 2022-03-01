@@ -259,7 +259,7 @@ void LINALG::Preconditioner::EnrichFluidNullSpace(Teuchos::ParameterList& mllist
   if (nullspace == Teuchos::null) dserror("there is no nullspace in ml list");
   Teuchos::RCP<std::vector<double>> ns =
       Teuchos::rcp(new std::vector<double>(nullspace->MyLength() * nullspace->NumVectors()));
-  LINALG::EpetraMultiVectorToStdVector(nullspace, ns, nsdim);
+  LINALG::EpetraMultiVectorToStdVector(nullspace, *ns, nsdim);
 
   // new nullspace
   Teuchos::RCP<std::vector<double>> newns =
@@ -365,7 +365,7 @@ void LINALG::Preconditioner::EnrichFluidNullSpace(Teuchos::ParameterList& mllist
 
   Teuchos::RCP<Epetra_MultiVector> nullspacenew =
       Teuchos::rcp(new Epetra_MultiVector(*fluidmap, newnsdim, true));
-  LINALG::StdVectorToEpetraMultiVector(newns, nullspacenew, newnsdim);
+  LINALG::StdVectorToEpetraMultiVector(*newns, nullspacenew, newnsdim);
 
   mllist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspacenew);
   mllist.set("null space: vectors", nullspacenew->Values());

@@ -81,14 +81,13 @@ void DRT::ELEMENTS::NStet5Type::NodalBlockInformation(
 Epetra_SerialDenseMatrix DRT::ELEMENTS::NStet5Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid3DNullSpace(node, x0, numdof, dimnsp);
-
   // TODO: switch to correct data container!
   // do nullspace for element degrees of freedom
   /*
   const Epetra_Map* rowmap = dis.DofRowMap(0);
   const int lrows = rowmap->NumMyElements();
-  double* mode[6];
+
+   double* mode[6];
   for (int i = 0; i < dimns; ++i) mode[i] = &(ns[i * lrows]);
 
   for (int i = 0; i < dis.NumMyRowElements(); ++i)
@@ -139,6 +138,45 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::NStet5Type::ComputeNullSpace(
     }
   }
   */
+
+  if (numdof != 3)
+    dserror(
+        "The computation of the solid nullspace in three dimensions requires three DOFs"
+        "per solid node, however the current node carries %d DOFs.",
+        numdof);
+
+  if (dimnsp != 6)
+    dserror(
+        "The computation of the solid nullspace in three dimensions requires six nullspace"
+        "vectors per node, however the current node carries %d vectors.",
+        dimnsp);
+
+  DRT::ELEMENTS::NStet5* nstet = dynamic_cast<DRT::ELEMENTS::NStet5*>(node.Elements()[0]);
+  if (!nstet) dserror("Cannot cast to NStet5");
+  const double* x = nstet->MidX();
+
+  Epetra_SerialDenseMatrix nullspace = Epetra_SerialDenseMatrix(numdof, dimnsp);
+  // x-modes
+  nullspace(0, 0) = 1.0;
+  nullspace(0, 1) = 0.0;
+  nullspace(0, 2) = 0.0;
+  nullspace(0, 3) = 0.0;
+  nullspace(0, 4) = x[2] - x0[2];
+  nullspace(0, 5) = -x[1] + x0[1];
+  // y-modes
+  nullspace(1, 0) = 0.0;
+  nullspace(1, 1) = 1.0;
+  nullspace(1, 2) = 0.0;
+  nullspace(1, 3) = -x[2] + x0[2];
+  nullspace(1, 4) = 0.0;
+  nullspace(1, 5) = x[0] - x0[0];
+  // z-modes
+  nullspace(2, 0) = 0.0;
+  nullspace(2, 1) = 0.0;
+  nullspace(2, 2) = 1.0;
+  nullspace(2, 3) = x[1] - x0[1];
+  nullspace(2, 4) = -x[0] + x0[0];
+  nullspace(2, 5) = 0.0;
 
   return nullspace;
 }

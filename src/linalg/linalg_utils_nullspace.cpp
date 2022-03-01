@@ -15,8 +15,7 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Epetra_SerialDenseMatrix LINALG::ComputeSolid3DNullSpace(
-    const DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+Epetra_SerialDenseMatrix LINALG::ComputeSolid3DNullSpace(const DRT::Node& node, const double* x0)
 {
   /* the rigid body modes for structures are:
 
@@ -33,27 +32,13 @@ Epetra_SerialDenseMatrix LINALG::ComputeSolid3DNullSpace(
 
   const double* x = node.X();
 
-  if (numdof != 3)
-    dserror(
-        "The computation of the solid nullspace in three dimensions requires three DOFs"
-        "per solid node, however the current node carries %d DOFs.",
-        numdof);
-
-  if (dimnsp != 6)
-    dserror(
-        "The computation of the solid nullspace in three dimensions requires six nullspace"
-        "vectors per node, however the current node carries %d vectors.",
-        numdof);
-
-  // this is new old code!
-  Epetra_SerialDenseMatrix nullspace = Epetra_SerialDenseMatrix(numdof, dimnsp);
+  Epetra_SerialDenseMatrix nullspace = Epetra_SerialDenseMatrix(3, 6);
   // x-modes
   nullspace(0, 0) = 1.0;
   nullspace(0, 1) = 0.0;
   nullspace(0, 2) = 0.0;
   nullspace(0, 3) = 0.0;
   nullspace(0, 4) = x[2] - x0[2];
-  ;
   nullspace(0, 5) = -x[1] + x0[1];
   // y-modes
   nullspace(1, 0) = 0.0;
@@ -75,8 +60,7 @@ Epetra_SerialDenseMatrix LINALG::ComputeSolid3DNullSpace(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Epetra_SerialDenseMatrix LINALG::ComputeSolid2DNullSpace(
-    const DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+Epetra_SerialDenseMatrix LINALG::ComputeSolid2DNullSpace(const DRT::Node& node, const double* x0)
 {
   /* the rigid body modes for structures are:
 
@@ -92,20 +76,7 @@ Epetra_SerialDenseMatrix LINALG::ComputeSolid2DNullSpace(
 
   const double* x = node.X();
 
-  if (numdof != 2)
-    dserror(
-        "The computation of the solid nullspace in two dimensions requires two DOFs"
-        "per solid node, however the current node carries %d DOFs.",
-        numdof);
-
-  if (dimnsp != 3)
-    dserror(
-        "The computation of the solid nullspace in two dimensions requires three nullspace"
-        "vectors per node, however the current node carries %d vectors.",
-        numdof);
-
-  // this is the new code!
-  Epetra_SerialDenseMatrix nullspace = Epetra_SerialDenseMatrix(numdof, dimnsp);
+  Epetra_SerialDenseMatrix nullspace = Epetra_SerialDenseMatrix(2, 3);
   // x-modes
   nullspace(0, 0) = 1.0;
   nullspace(0, 1) = 0.0;
@@ -120,10 +91,10 @@ Epetra_SerialDenseMatrix LINALG::ComputeSolid2DNullSpace(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Epetra_SerialDenseMatrix LINALG::ComputeShell3DNullSpace(
-    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+Epetra_SerialDenseMatrix LINALG::ComputeShell3DNullSpace(DRT::Node& node, const double* x0)
 {
   /* the rigid body modes for structures are:
+
       xtrans   ytrans  ztrans   xrot       yrot       zrot
       mode[0]  mode[1] mode[2]  mode[3]    mode[4]    mode[5]
     -----------------------------------------------------------
@@ -156,21 +127,7 @@ Epetra_SerialDenseMatrix LINALG::ComputeShell3DNullSpace(
 
   const double* x = node.X();
 
-  if (numdof != 6)
-    dserror(
-        "The computation of the shell nullspace in three dimensions requires six DOFs"
-        "per node, however the current node carries %d DOFs.",
-        numdof);
-
-  if (dimnsp != 6)
-    dserror(
-        "The computation of the shell nullspace in three dimensions requires six nullspace"
-        "vectors per node, however the current node carries %d vectors.",
-        numdof);
-
-
-  // this is the new code!
-  Epetra_SerialDenseMatrix nullspace = Epetra_SerialDenseMatrix(numdof, dimnsp);
+  Epetra_SerialDenseMatrix nullspace = Epetra_SerialDenseMatrix(6, 6);
   // x-modes
   nullspace(0, 0) = 1.0;
   nullspace(0, 1) = 0.0;
@@ -219,8 +176,8 @@ Epetra_SerialDenseMatrix LINALG::ComputeShell3DNullSpace(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Epetra_SerialDenseMatrix LINALG::ComputeFluidDNullSpace(
-    const DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+Epetra_SerialDenseMatrix LINALG::ComputeFluidNullSpace(
+    const DRT::Node& node, const int numdof, const int dimnsp)
 {
   /* the rigid body modes for fluids are:
 

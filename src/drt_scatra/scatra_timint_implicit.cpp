@@ -3541,7 +3541,7 @@ void SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(
     discret_->ComputeNullSpaceIfNecessary(blocksmootherparams);
 
     // reduce full null space to match degrees of freedom associated with current matrix block
-    LINALG::Nullspace::FixNullSpace("Block " + iblockstr.str(), *discret_->DofRowMap(),
+    LINALG::NULLSPACE::FixNullSpace("Block " + iblockstr.str(), *discret_->DofRowMap(),
         *BlockMaps().Map(iblock - init_block_number), blocksmootherparams);
   }
 }

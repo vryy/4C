@@ -60,19 +60,19 @@ FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(
     LINALG::Solver& solver = *(structure.LinearSolver());
     const Epetra_Map& oldmap = *(structure.Discretization()->DofRowMap());
     const Epetra_Map& newmap = Matrix(0, 0).EpetraMatrix()->RowMap();
-    LINALG::Nullspace::FixNullSpace("Structure", oldmap, newmap, solver.Params());
+    LINALG::NULLSPACE::FixNullSpace("Structure", oldmap, newmap, solver.Params());
   }
   {
     LINALG::Solver& solver = *(fluid.LinearSolver());
     const Epetra_Map& oldmap = *(fluid.DofRowMap());
     const Epetra_Map& newmap = Matrix(1, 1).EpetraMatrix()->RowMap();
-    LINALG::Nullspace::FixNullSpace("Fluid", oldmap, newmap, solver.Params());
+    LINALG::NULLSPACE::FixNullSpace("Fluid", oldmap, newmap, solver.Params());
   }
   {
     LINALG::Solver& solver = *(ale.LinearSolver());
     const Epetra_Map& oldmap = *(ale.Discretization()->DofRowMap());
     const Epetra_Map& newmap = Matrix(2, 2).EpetraMatrix()->RowMap();
-    LINALG::Nullspace::FixNullSpace("Ale", oldmap, newmap, solver.Params());
+    LINALG::NULLSPACE::FixNullSpace("Ale", oldmap, newmap, solver.Params());
   }
 }
 

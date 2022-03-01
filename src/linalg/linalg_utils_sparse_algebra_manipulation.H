@@ -335,21 +335,27 @@ namespace LINALG
 
   /*! \brief Write values from a std::vector to a Epetra_MultiVector
    *
+   *  The data layout in the std::vector is consecutivly ordered. The Epetra_MultiVector consists
+   *  of several single vectors put together after each other.
+   *
    *  \param(in) stdVector:         A std::vector<double> to read data from.
    *  \param(in) epetraMultiVector: A Epetra_MultiVector to write data to.
    *  \param(in) blockSize:         Block size of the Epetra_MultiVector.
    */
-  void StdVectorToEpetraMultiVector(const Teuchos::RCP<std::vector<double>> stdVector,
+  void StdVectorToEpetraMultiVector(const std::vector<double>& stdVector,
       Teuchos::RCP<Epetra_MultiVector> epetraMultiVector, const int blockSize);
 
   /*! \brief Write values from a std::vector to a Epetra_MultiVector
+   *
+   *  The data layout in the std::vector is consecutivly ordered. The Epetra_MultiVector consists
+   *  of several single vectors put together after each other.
    *
    *  \param(in) epetraMultiVector: A Epetra_MultiVector to read data from.
    *  \param(in) stdVector:         A std::vector<double> to read data to.
    *  \param(in) blockSize:         Block size of the Epetra_MultiVector.
    */
   void EpetraMultiVectorToStdVector(const Teuchos::RCP<Epetra_MultiVector> epetraMultiVector,
-      Teuchos::RCP<std::vector<double>> stdVector, const int blockSize);
+      std::vector<double>& stdVector, const int blockSize);
 
 }  // namespace LINALG
 

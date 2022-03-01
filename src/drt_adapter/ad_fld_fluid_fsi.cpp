@@ -507,17 +507,19 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
 
   if (solver->Params().isSublist("ML Parameters"))
   {
-    Teuchos::RCP<Epetra_MultiVector> pnewns =
+    Teuchos::RCP<Epetra_MultiVector> pressure_nullspace =
         Teuchos::rcp(new Epetra_MultiVector(*(dis_->DofRowMap()), 1));
-    pnewns->PutScalar(1.0);
+    pressure_nullspace->PutScalar(1.0);
 
     solver->Params().sublist("ML Parameters").set("PDE equations", 1);
     solver->Params().sublist("ML Parameters").set("null space: dimension", 1);
-    solver->Params().sublist("ML Parameters").set("null space: vectors", pnewns->Values());
+    solver->Params()
+        .sublist("ML Parameters")
+        .set("null space: vectors", pressure_nullspace->Values());
     solver->Params().sublist("ML Parameters").remove("nullspace", false);  // necessary?
     solver->Params()
         .sublist("Michael's secret vault")
-        .set<Teuchos::RCP<Epetra_MultiVector>>("pressure nullspace", pnewns);
+        .set<Teuchos::RCP<Epetra_MultiVector>>("pressure nullspace", pressure_nullspace);
   }
 
   solver->Solve(BTB->EpetraOperator(), x, BTvR, true, true);

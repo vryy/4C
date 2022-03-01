@@ -592,7 +592,7 @@ Teuchos::RCP<Epetra_Map> LINALG::ComputeDofMapFromNodeMap(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::StdVectorToEpetraMultiVector(Teuchos::RCP<std::vector<double>> stdVector,
+void LINALG::StdVectorToEpetraMultiVector(const std::vector<double>& stdVector,
     Teuchos::RCP<Epetra_MultiVector> epetraMultiVector, int blockSize)
 {
   for (size_t dim = 0; dim < Teuchos::as<size_t>(blockSize); ++dim)
@@ -607,15 +607,15 @@ void LINALG::StdVectorToEpetraMultiVector(Teuchos::RCP<std::vector<double>> stdV
     const double myLength = epetraMultiVector->MyLength();
     for (double dofLID = 0; dofLID < myLength; ++dofLID)
     {
-      dataVector[dofLID] = (*stdVector)[dim * myLength + dofLID];
+      dataVector[dofLID] = stdVector[dim * myLength + dofLID];
     }
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::EpetraMultiVectorToStdVector(Teuchos::RCP<Epetra_MultiVector> epetraMultiVector,
-    Teuchos::RCP<std::vector<double>> stdVector, int blockSize)
+void LINALG::EpetraMultiVectorToStdVector(const Teuchos::RCP<Epetra_MultiVector> epetraMultiVector,
+    std::vector<double>& stdVector, int blockSize)
 {
   for (size_t dim = 0; dim < Teuchos::as<size_t>(blockSize); ++dim)
   {
@@ -628,6 +628,6 @@ void LINALG::EpetraMultiVectorToStdVector(Teuchos::RCP<Epetra_MultiVector> epetr
 
     const double myLength = epetraMultiVector->MyLength();
     for (double dofLID = 0; dofLID < myLength; ++dofLID)
-      (*stdVector)[dim * myLength + dofLID] = dataVector[dofLID];
+      stdVector[dim * myLength + dofLID] = dataVector[dofLID];
   }
 }

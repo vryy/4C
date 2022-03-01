@@ -63,7 +63,7 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam3Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   Epetra_SerialDenseMatrix nullspace;
-  dserror("method ComputeNullSpace not implemented for element type beam3r!");
+  dserror("method ComputeNullSpace not implemented for element type beam3!");
   return nullspace;
 }
 

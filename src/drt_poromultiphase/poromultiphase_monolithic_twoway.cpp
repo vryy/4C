@@ -1453,7 +1453,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::BuildArteryBl
   // build null space of complete discretization
   FluidField()->ArtNetTimInt()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams3);
   // fix the null space if some DOFs are condensed out
-  LINALG::Nullspace::FixNullSpace("Artery",
+  LINALG::NULLSPACE::FixNullSpace("Artery",
       *(FluidField()->ArtNetTimInt()->Discretization()->DofRowMap(0)),
       *(FluidField()->ArteryDofRowMap()), blocksmootherparams3);
 

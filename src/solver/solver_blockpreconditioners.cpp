@@ -72,16 +72,6 @@ void LINALG::SOLVER::SimplePreconditioner::Setup(
           Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
       if (A == Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
 
-      // fix null space for "Inverse1"
-      //      {
-      //        const Epetra_Map& oldmap = A->FullRowMap();
-      //        const Epetra_Map& newmap = A->Matrix(0,0).EpetraMatrix()->RowMap();
-      //        LINALG::Nullspace::FixNullSpace("Inverse1",oldmap, newmap,
-      //        params_.sublist("CheapSIMPLE Parameters").sublist("Inverse1"));
-      //      }
-
-      // adapt null space for constraint equations
-      // Teuchos::ParameterList& inv2 = params_.sublist("Inverse2");
       Teuchos::ParameterList& inv2 = params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2");
       if (inv2.isSublist("ML Parameters"))
       {
@@ -107,8 +97,6 @@ void LINALG::SOLVER::SimplePreconditioner::Setup(
             .set<Teuchos::RCP<std::vector<double>>>("pressure nullspace", pnewns);
       }
 
-      // P_ = Teuchos::rcp(new
-      // LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner(A,params_.sublist("Inverse1"),params_.sublist("Inverse2"),outfile_));
       P_ = Teuchos::rcp(new LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner(A,
           params_.sublist("CheapSIMPLE Parameters").sublist("Inverse1"),
           params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2"), outfile_));
@@ -175,7 +163,7 @@ void LINALG::SOLVER::SimplePreconditioner::Setup(
 
         Teuchos::RCP<Epetra_MultiVector> nullspace =
             Teuchos::rcp(new Epetra_MultiVector(A->Matrix(0, 0).RowMap(), nv, true));
-        LINALG::StdVectorToEpetraMultiVector(vnewns, nullspace, nv);
+        LINALG::StdVectorToEpetraMultiVector(*vnewns, nullspace, nv);
 
         inv1.sublist("ML Parameters").set("null space: vectors", nullspace->Values());
         inv1.sublist("ML Parameters").remove("nullspace", false);  // necessary??

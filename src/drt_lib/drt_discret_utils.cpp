@@ -39,7 +39,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   // downwinding needs nodal block information, compute it
   if (NumMyRowElements())
   {
-    // We assume that all elements are of equal type //TODO: Here the bullshit already starts
+    // We assume that all elements are of equal type
     DRT::Element* dwele = lRowElement(0);
     dwele->ElementType().NodalBlockInformation(dwele, numdf, dimns, nv, np);
   }

@@ -3374,7 +3374,7 @@ void SCATRA::ScaTraTimIntElch::ReduceDimensionNullSpaceBlocks(
 
     const int dimns = mueluparams.get<int>("null space: dimension");
     std::vector<double> nullspace(nspVector->MyLength() * nspVector->NumVectors());
-    LINALG::EpetraMultiVectorToStdVector(nspVector, Teuchos::rcp(&nullspace, false), dimns);
+    LINALG::EpetraMultiVectorToStdVector(nspVector, nullspace, dimns);
 
     // null space associated with concentration dofs
     if (iblock % 2 == 0)
@@ -3402,7 +3402,7 @@ void SCATRA::ScaTraTimIntElch::ReduceDimensionNullSpaceBlocks(
     const int dimnsnew = mueluparams.get<int>("null space: dimension");
     Teuchos::RCP<Epetra_MultiVector> nspVectornew =
         Teuchos::rcp(new Epetra_MultiVector(*(BlockMaps().Map(iblock)), dimnsnew, true));
-    LINALG::StdVectorToEpetraMultiVector(Teuchos::rcp(&nullspace, false), nspVectornew, dimnsnew);
+    LINALG::StdVectorToEpetraMultiVector(nullspace, nspVectornew, dimnsnew);
 
     mueluparams.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nspVectornew);
   }

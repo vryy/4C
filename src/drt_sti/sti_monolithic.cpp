@@ -1191,7 +1191,7 @@ void STI::Monolithic::BuildNullSpaces() const
   // reduce full null space to match degrees of freedom associated with thermo matrix block if
   // necessary
   if (condensationthermo_)
-    LINALG::Nullspace::FixNullSpace("Block " + iblockstr.str(),
+    LINALG::NULLSPACE::FixNullSpace("Block " + iblockstr.str(),
         *ThermoField()->Discretization()->DofRowMap(), *maps_->Map(1), blocksmootherparams);
 }  // STI::Monolithic::BuildBlockNullSpaces
 
@@ -1245,7 +1245,7 @@ void STI::Monolithic::ComputeNullSpaceIfNecessary(Teuchos::ParameterList& solver
 
     Teuchos::RCP<Epetra_MultiVector> nullspace =
         Teuchos::rcp(new Epetra_MultiVector(DofRowMap().operator*(), dimns, true));
-    LINALG::StdVectorToEpetraMultiVector(ns, nullspace, dimns);
+    LINALG::StdVectorToEpetraMultiVector(*ns, nullspace, dimns);
 
     mllist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
     mllist.set("null space: vectors", nullspace->Values());

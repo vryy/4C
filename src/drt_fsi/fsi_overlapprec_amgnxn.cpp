@@ -145,7 +145,7 @@ void FSI::AMGnxnInterfaceFSI::Setup()
     Teuchos::RCP<std::vector<double>> ns =
         Teuchos::rcp(new std::vector<double>(nullspace->MyLength() * nullspace->NumVectors()));
 
-    LINALG::EpetraMultiVectorToStdVector(nullspace, ns, null_spaces_dim_[block]);
+    LINALG::EpetraMultiVectorToStdVector(nullspace, *ns, null_spaces_dim_[block]);
     null_spaces_data_[block] = ns;
   }
 
@@ -173,7 +173,7 @@ void FSI::AMGnxnInterfaceFSI::Setup()
     Teuchos::RCP<std::vector<double>> ns =
         Teuchos::rcp(new std::vector<double>(nullspace->MyLength() * nullspace->NumVectors()));
 
-    LINALG::EpetraMultiVectorToStdVector(nullspace, ns, null_spaces_dim_[block]);
+    LINALG::EpetraMultiVectorToStdVector(nullspace, *ns, null_spaces_dim_[block]);
     null_spaces_data_[block] = ns;
   }
 
@@ -197,7 +197,7 @@ void FSI::AMGnxnInterfaceFSI::Setup()
     Teuchos::RCP<std::vector<double>> ns =
         Teuchos::rcp(new std::vector<double>(nullspace->MyLength() * nullspace->NumVectors()));
 
-    LINALG::EpetraMultiVectorToStdVector(nullspace, ns, null_spaces_dim_[block]);
+    LINALG::EpetraMultiVectorToStdVector(nullspace, *ns, null_spaces_dim_[block]);
     null_spaces_data_[block] = ns;
   }
 

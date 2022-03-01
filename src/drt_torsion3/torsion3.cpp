@@ -55,7 +55,7 @@ void DRT::ELEMENTS::Torsion3Type::NodalBlockInformation(
 Epetra_SerialDenseMatrix DRT::ELEMENTS::Torsion3Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid3DNullSpace(node, x0, numdof, dimnsp);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid3DNullSpace(node, x0);
   return nullspace;
 }
 

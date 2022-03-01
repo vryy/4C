@@ -16,7 +16,7 @@
 
 namespace LINALG
 {
-  namespace Nullspace
+  namespace NULLSPACE
   {
     /*!
        \brief Calculate the nullspace based on a given discretization
@@ -46,7 +46,7 @@ namespace LINALG
     void FixNullSpace(std::string field, const Epetra_Map& oldmap, const Epetra_Map& newmap,
         Teuchos::ParameterList& solveparams);
 
-  }  // namespace Nullspace
+  }  // namespace NULLSPACE
 }  // namespace LINALG
 
 #endif

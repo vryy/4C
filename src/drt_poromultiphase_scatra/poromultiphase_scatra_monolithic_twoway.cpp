@@ -1756,7 +1756,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
   scatramsht_->ArtScatraField()->Discretization()->ComputeNullSpaceIfNecessary(
       blocksmootherparams5);
   // fix the null space if some DOFs are condensed out
-  LINALG::Nullspace::FixNullSpace("ArteryScatra",
+  LINALG::NULLSPACE::FixNullSpace("ArteryScatra",
       *(scatramsht_->ArtScatraField()->Discretization()->DofRowMap(0)),
       *(scatramsht_->ArtScatraDofRowMap()), blocksmootherparams5);
 

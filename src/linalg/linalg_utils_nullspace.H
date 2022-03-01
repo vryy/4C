@@ -25,44 +25,35 @@ namespace LINALG
 
      \param node (in):    node to calculate the nullspace on
      \param x0 (in):      center of discretization
-     \param numdof (in):  number of degrees of freedom
-     \param dimnsp (in):  dimension of the nullspace
   */
-  Epetra_SerialDenseMatrix ComputeSolid3DNullSpace(
-      const DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+  Epetra_SerialDenseMatrix ComputeSolid3DNullSpace(const DRT::Node& node, const double* x0);
 
   /*!
    \brief Helper function for the nodal nullspace of solid elements in 2D
 
     \param node (in):    node to calculate the nullspace on
     \param x0 (in):      center of discretization
-    \param numdof (in):  number of degrees of freedom
-    \param dimnsp (in):  dimension of the nullspace
   */
-  Epetra_SerialDenseMatrix ComputeSolid2DNullSpace(
-      const DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+  Epetra_SerialDenseMatrix ComputeSolid2DNullSpace(const DRT::Node& node, const double* x0);
 
   /*!
     \brief Helper function for the nodal nullspace of shell elements in 3D
 
     \param node (in):    node to calculate the nullspace on
     \param x0 (in):      center of discretization
-    \param numdof (in):  number of degrees of freedom
-    \param dimnsp (in):  dimension of the nullspace
   */
-  Epetra_SerialDenseMatrix ComputeShell3DNullSpace(
-      DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+  Epetra_SerialDenseMatrix ComputeShell3DNullSpace(DRT::Node& node, const double* x0);
 
   /*!
     \brief Helper function for the nodal nullspace of fluid elements
 
     \param node (in):    node to calculate the nullspace on
-    \param x0 (in):      center of discretization
     \param numdof (in):  number of degrees of freedom
     \param dimnsp (in):  dimension of the nullspace
   */
-  Epetra_SerialDenseMatrix ComputeFluidDNullSpace(
-      const DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+  Epetra_SerialDenseMatrix ComputeFluidNullSpace(
+      const DRT::Node& node, const int numdof, const int dimnsp);
+
 }  // namespace LINALG
 
 #endif

@@ -23,6 +23,13 @@ namespace LINALG
     class Parameters
     {
      public:
+      /*!
+        \brief Setting parameters related to specific solvers
+
+        This method sets specific solver parameters as the nullspace,
+        block information and  number of degrees of freedom.
+      */
+
       static void ComputeSolverParameters(DRT::Discretization& dis,
           Teuchos::ParameterList& solverlist, const int numdf, const int dimns)
       {
@@ -37,7 +44,7 @@ namespace LINALG
         // set specific information for the multigrid preconditioner ML / MueLu
         {
           Teuchos::RCP<Epetra_MultiVector> nullspace =
-              LINALG::Nullspace::ComputeNullSpace(dis, numdf, dimns);
+              LINALG::NULLSPACE::ComputeNullSpace(dis, numdf, dimns);
 
           solverlist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
           solverlist.set("null space: vectors", nullspace->Values());
@@ -45,6 +52,7 @@ namespace LINALG
         }
       }
     };
+
   }  // namespace SOLVER
 }  // namespace LINALG
 

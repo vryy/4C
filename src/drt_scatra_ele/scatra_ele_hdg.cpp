@@ -108,48 +108,7 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::ScaTraHDGType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   Epetra_SerialDenseMatrix nullspace;
-
-  // TODO: transform this into the correct data container and cover it with a test?!
-  /*
-  if (DRT::DiscretizationFaces* facedis = dynamic_cast<DRT::DiscretizationFaces*>(&dis))
-  {
-    const Epetra_Map* rowmap = dis.DofRowMap();
-    const int lrows = rowmap->NumMyElements();
-    double* mode[6];
-    for (int i = 0; i < dimns; ++i) mode[i] = &(ns[i * lrows]);
-
-    const Epetra_Map* frowmap = facedis->FaceRowMap();
-    for (int i = 0; i < frowmap->NumMyElements(); ++i)
-    {
-      std::vector<int> dofs = facedis->Dof(0, facedis->lRowFace(i));
-      const unsigned int dim = DRT::UTILS::getDimension(facedis->lRowFace(i)->Shape()) + 1;
-      dsassert(dofs.size() % dim == 0, "Could not match face dofs");
-      const unsigned int ndofs = dofs.size() / dim;
-      for (unsigned int i = 0; i < dofs.size(); ++i)
-      {
-        const unsigned int lid = rowmap->LID(dofs[i]);
-        for (unsigned int d = 0; d < dim + 1; ++d) mode[d][lid] = 0.;
-        mode[i / ndofs][lid] = 1.;
-      }
-    }
-    // Scatra does not have element dofs as fluid does(pressure)
-    // Keeping the code anyways for future additions
-    const Epetra_Map* erowmap = dis.ElementRowMap();
-    for (int i = 0; i < erowmap->NumMyElements(); ++i)
-    {
-      std::vector<int> dofs = dis.Dof(0, dis.lRowElement(i));
-      dsassert(dofs.size() == 1, "Expect a single concentration dof per element for scatra HDG");
-      if (dofs.size() == 0) break;
-      const unsigned int lid = rowmap->LID(dofs[0]);
-      const unsigned int dim = DRT::UTILS::getDimension(dis.lRowElement(i)->Shape());
-      for (unsigned int d = 0; d < dim; ++d) mode[d][lid] = 0.;
-      mode[dim][lid] = 1.;
-    }
-  }
-  else
-    dserror("Faces not initialized");
-  */
-
+  dserror("method ComputeNullSpace not implemented right now!");
   return nullspace;
 }
 

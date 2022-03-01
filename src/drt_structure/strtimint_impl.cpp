@@ -793,11 +793,9 @@ void STR::TimIntImpl::SetupKrylovSpaceProjection(DRT::Condition* kspcond)
 void STR::TimIntImpl::UpdateKrylovSpaceProjection()
 {
   const std::string* weighttype = projector_->WeightType();
+
   // only pointvalues are permissible for now - feel free to extend to integration!
-  if (*weighttype == "integration")
-  {
-    dserror("option integration not implemented");
-  }
+  if (*weighttype == "integration") dserror("option integration not implemented");
 
   // get Teuchos::RCP to kernel vector of projector
   // since we are in 'pointvalue' mode, weights are changed implicitly
@@ -806,11 +804,8 @@ void STR::TimIntImpl::UpdateKrylovSpaceProjection()
 
   // get number of modes and their ids
   std::vector<int> modeids = projector_->Modes();
-  for (auto ids : modeids) std::cout << ids << std::endl;
 
-  Teuchos::RCP<Epetra_MultiVector> nullspace = LINALG::Nullspace::ComputeNullSpace(*discret_, 3, 6);
-
-  // check if everything went fine
+  Teuchos::RCP<Epetra_MultiVector> nullspace = LINALG::NULLSPACE::ComputeNullSpace(*discret_, 3, 6);
   if (nullspace == Teuchos::null) dserror("nullspace not successfully computed");
 
   // sort vector of nullspace data into kernel vector c_
