@@ -767,6 +767,161 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
 
 #endif
 
+#ifdef TRILINOS_DEVELOP
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+LINALG::SOLVER::MueLuBSIBlockPreconditioner::MueLuBSIBlockPreconditioner(
+    FILE* outfile, Teuchos::ParameterList& muelulist)
+    : MueLuPreconditioner(outfile, muelulist)
+{
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::SOLVER::MueLuBSIBlockPreconditioner::Setup(
+    bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
+{
+  using EpetraMap = Xpetra::EpetraMapT<int, Xpetra::EpetraNode>;
+#ifdef TRILINOS_DEVELOP
+  using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
+#else
+  using EpetraCrsMatrix = Xpetra::EpetraCrsMatrix;
+#endif
+
+  SetupLinearProblem(matrix, x, b);
+
+  // first we check if the input matrix is of normal CRS type
+  Teuchos::RCP<Epetra_CrsMatrix> A =
+      Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::rcp(matrix, false));
+  if (A == Teuchos::null) dserror("Matrix is not a SparseMatrix");
+
+  ///////////////////////////////////////////////////////////////////////
+  // First get the solid and beam rowmaps and split the matrix
+  // before constructing the actual preconditioner
+  ///////////////////////////////////////////////////////////////////////
+
+  Teuchos::ParameterList solidList = muelulist_.sublist("Inverse1");
+  Teuchos::RCP<Epetra_Map> solidDofRowmap =
+      solidList.get<Teuchos::RCP<Epetra_Map>>("null space: map", Teuchos::null);
+  if (solidDofRowmap == Teuchos::null) dserror("Solid row map is zero!");
+
+  Teuchos::ParameterList beamList = muelulist_.sublist("Inverse2");
+  Teuchos::RCP<Epetra_Map> beamDofRowmap =
+      beamList.get<Teuchos::RCP<Epetra_Map>>("null space: map", Teuchos::null);
+  if (beamDofRowmap == Teuchos::null) dserror("Beam row map is zero!");
+
+  Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy>> Ablock = Teuchos::null;
+  LINALG::SplitMatrix2x2(A, Ablock, solidDofRowmap, beamDofRowmap);
+
+  ///////////////////////////////////////////////////////////////////////
+  // Here the actual construction of the preconditioner starts
+  ///////////////////////////////////////////////////////////////////////
+
+  Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA11 =
+      Teuchos::rcp(new EpetraCrsMatrix(Ablock->Matrix(0, 0).EpetraMatrix()));
+  Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA12 =
+      Teuchos::rcp(new EpetraCrsMatrix(Ablock->Matrix(0, 1).EpetraMatrix()));
+  Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA21 =
+      Teuchos::rcp(new EpetraCrsMatrix(Ablock->Matrix(1, 0).EpetraMatrix()));
+  Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA22 =
+      Teuchos::rcp(new EpetraCrsMatrix(Ablock->Matrix(1, 1).EpetraMatrix()));
+
+  Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> fullrangemap =
+      Teuchos::rcp(new EpetraMap(Teuchos::rcpFromRef(A->RangeMap())));
+
+  // define strided maps
+  int solidDofs = solidList.get<int>("PDE equations");
+  int beamDofs = beamList.get<int>("PDE equations");
+
+  std::vector<size_t> solidStriding;
+  std::vector<size_t> beamStriding;
+  solidStriding.push_back(solidDofs);
+  beamStriding.push_back(beamDofs);
+
+  Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> solidmap =
+      Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(
+          xA11->getRowMap(), solidStriding, xA11->getRowMap()->getIndexBase(), -1, 0));
+  Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> beammap =
+      Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(
+          xA22->getRowMap(), beamStriding, xA22->getRowMap()->getIndexBase(), -1, 0));
+
+  // build map extractor
+  std::vector<Teuchos::RCP<const Xpetra::Map<LO, GO, NO>>> maps;
+  maps.push_back(solidmap);
+  maps.push_back(beammap);
+
+#ifdef TRILINOS_Q1_2015
+  Teuchos::RCP<const Xpetra::MapExtractor<SC, LO, GO>> map_extractor =
+      Xpetra::MapExtractorFactory<SC, LO, GO>::Build(fullrangemap, maps);
+#else
+  Teuchos::RCP<const Xpetra::MapExtractor<SC, LO, GO, NO>> map_extractor =
+      Xpetra::MapExtractorFactory<SC, LO, GO, NO>::Build(fullrangemap, maps);
+#endif
+
+  // build blocked Xpetra operator
+  Teuchos::RCP<Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>> bOp =
+      Teuchos::rcp(new Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>(map_extractor, map_extractor, 81));
+
+  bOp->setMatrix(0, 0, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA11)));
+  bOp->setMatrix(0, 1, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA12)));
+  bOp->setMatrix(1, 0, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA21)));
+  bOp->setMatrix(1, 1, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA22)));
+
+  bOp->fillComplete();
+
+  Teuchos::ParameterList mueluParameters = muelulist_.sublist("MueLu (BSI) Parameters");
+  if (mueluParameters.get<bool>("MUELU_XML_ENFORCE"))
+  {
+    if (create)
+    {
+      if (!mueluParameters.isParameter("MUELU_XML_FILE"))
+        dserror(
+            "XML-file w/ MueLu preconditioner configuration is missing in solver parameter list. "
+            "Please set it as entry 'MUELU_XML_FILE'.");
+      std::string xmlFileName = mueluParameters.get<std::string>("MUELU_XML_FILE");
+
+      int solidDimns = solidList.get<int>("null space: dimension", -1);
+      if (solidDimns == -1 || beamDofs == -1)
+        dserror("Error: PDE equations solid or null space dimension wrong.");
+
+      int beamDimns = beamList.get<int>("null space: dimension", -1);
+      if (beamDimns == -1 || solidDofs == -1)
+        dserror("Error: PDE equations beam or null space dimension wrong.");
+
+      Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace11 = Teuchos::null;
+      Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 = Teuchos::null;
+      {
+        nullspace11 =
+            LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(solidmap, solidList);
+
+        nullspace22 =
+            LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(beammap, beamList);
+      }
+
+      MueLu::ParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(
+          xmlFileName, *(bOp->getRangeMap()->getComm()));
+
+      Teuchos::RCP<MueLu::Hierarchy<SC, LO, GO, NO>> H = mueLuFactory.CreateHierarchy();
+      H->GetLevel(0)->Set("A", Teuchos::rcp_dynamic_cast<Xpetra::Matrix<SC, LO, GO, NO>>(bOp));
+      H->GetLevel(0)->Set("Nullspace1", nullspace11);
+      H->GetLevel(0)->Set("Nullspace2", nullspace22);
+      H->setlib(Xpetra::UseEpetra);
+
+      mueLuFactory.SetupHierarchy(*H);
+
+      // set preconditioner
+      P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
+    }
+  }
+  else
+  {
+    dserror("Only works with .xml file");
+  }
+}
+
+#endif
+
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>>

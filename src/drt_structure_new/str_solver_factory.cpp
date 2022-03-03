@@ -12,11 +12,14 @@
 
 #include "str_solver_factory.H"
 
+#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
+
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_nullspace.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 #include "../drt_io/io_control.H"
@@ -51,6 +54,7 @@ Teuchos::RCP<STR::SOLVER::Factory::LinSolMap> STR::SOLVER::Factory::BuildLinSolv
   {
     switch (*mt_iter)
     {
+        // TODO: which case makes sense for beam-solid interaction?
       case INPAR::STR::model_structure:
       case INPAR::STR::model_springdashpot:
       case INPAR::STR::model_browniandyn:
@@ -95,100 +99,69 @@ Teuchos::RCP<STR::SOLVER::Factory::LinSolMap> STR::SOLVER::Factory::BuildLinSolv
 Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildStructureLinSolver(
     const Teuchos::ParameterList& sdyn, DRT::DiscretizationInterface& actdis) const
 {
-  Teuchos::RCP<LINALG::Solver> linsolver = Teuchos::null;
-
   // get the linear solver number used for structural problems
   const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
+
   // check if the structural solver has a valid solver number
   if (linsolvernumber == (-1))
     dserror(
         "no linear solver defined for structural field. "
         "Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
 
-  linsolver =
-      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-          actdis.Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  const Teuchos::ParameterList& linsolverparams =
+      DRT::Problem::Instance()->SolverParams(linsolvernumber);
 
-  actdis.ComputeNullSpaceIfNecessary(linsolver->Params());
+  Teuchos::RCP<LINALG::Solver> linsolver = Teuchos::rcp(new LINALG::Solver(
+      linsolverparams, actdis.Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
-  if (DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(sdyn, "STC_SCALING") !=
-          INPAR::STR::stc_none &&
-      (linsolver->Params().isSublist("Aztec Parameters") ||
-          linsolver->Params().isSublist("Belos Parameters")) &&
-      linsolver->Params().isSublist("ML Parameters")  // TODO what about MueLu?
-  )
+  const int azprectype =
+      DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(linsolverparams, "AZPREC");
+
+  switch (azprectype)
   {
-    Teuchos::ParameterList& mllist = linsolver->Params().sublist("ML Parameters");
-    Teuchos::RCP<std::vector<double>> ns =
-        mllist.get<Teuchos::RCP<std::vector<double>>>("nullspace");
-
-    const int size = actdis.DofRowMap()->NumMyElements();
-
-    // extract the six nullspace vectors corresponding to the modes
-    // trans x, trans y, trans z, rot x, rot y, rot z
-    // Note: We assume 3d here!
-    Teuchos::RCP<Epetra_Vector> nsv1 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis.DofRowMap()), &((*ns)[0])));
-    Teuchos::RCP<Epetra_Vector> nsv2 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis.DofRowMap()), &((*ns)[size])));
-    Teuchos::RCP<Epetra_Vector> nsv3 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis.DofRowMap()), &((*ns)[2 * size])));
-    Teuchos::RCP<Epetra_Vector> nsv4 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis.DofRowMap()), &((*ns)[3 * size])));
-    Teuchos::RCP<Epetra_Vector> nsv5 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis.DofRowMap()), &((*ns)[4 * size])));
-    Teuchos::RCP<Epetra_Vector> nsv6 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis.DofRowMap()), &((*ns)[5 * size])));
-
-
-    // prepare matrix for scaled thickness business of thin shell structures
-    Teuchos::RCP<LINALG::SparseMatrix> stcinv =
-        Teuchos::rcp(new LINALG::SparseMatrix(*actdis.DofRowMap(), 81, true, true));
-
-    stcinv->Zero();
-    // create the parameters for the discretization
-    Teuchos::ParameterList p;
-    // action for elements
-    const std::string action = "calc_stc_matrix_inverse";
-    p.set("action", action);
-    p.set<int>(
-        "stc_scaling", DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(sdyn, "STC_SCALING"));
-    p.set("stc_layer", 1);
-
-    actdis.Evaluate(p, stcinv, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-
-    stcinv->Complete();
-
-    for (int lay = 2; lay <= sdyn.get<int>("STC_LAYER"); ++lay)
+    case INPAR::SOLVER::azprec_ML:
+    case INPAR::SOLVER::azprec_MLfluid:
+    case INPAR::SOLVER::azprec_MLfluid2:
+    case INPAR::SOLVER::azprec_MueLuAMG:
     {
-      Teuchos::ParameterList pe;
-
-      p.set("stc_layer", lay);
-
-      Teuchos::RCP<LINALG::SparseMatrix> tmpstcmat =
-          Teuchos::rcp(new LINALG::SparseMatrix(*(actdis.DofRowMap()), 81, true, true));
-      tmpstcmat->Zero();
-
-      actdis.Evaluate(p, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-      tmpstcmat->Complete();
-
-      stcinv = MLMultiply(*stcinv, *tmpstcmat, false, false, true);
+      actdis.ComputeNullSpaceIfNecessary(linsolver->Params());
+      break;
     }
+    case INPAR::SOLVER::azprec_MueLuAMG_bsi:
+    {
+      // Create the beam and solid maps
+      std::vector<int> solidDofs(0);
+      std::vector<int> beamDofs(0);
 
-    Teuchos::RCP<Epetra_Vector> temp = LINALG::CreateVector(*(actdis.DofRowMap()), false);
+      for (int i = 0; i < actdis.NumMyRowNodes(); i++)
+      {
+        const DRT::Node* node = actdis.lRowNode(i);
 
-    stcinv->Multiply(false, *nsv1, *temp);
-    nsv1->Update(1.0, *temp, 0.0);
-    stcinv->Multiply(false, *nsv2, *temp);
-    nsv2->Update(1.0, *temp, 0.0);
-    stcinv->Multiply(false, *nsv3, *temp);
-    nsv3->Update(1.0, *temp, 0.0);
-    stcinv->Multiply(false, *nsv4, *temp);
-    nsv4->Update(1.0, *temp, 0.0);
-    stcinv->Multiply(false, *nsv5, *temp);
-    nsv5->Update(1.0, *temp, 0.0);
-    stcinv->Multiply(false, *nsv6, *temp);
-    nsv6->Update(1.0, *temp, 0.0);
+        if (BEAMINTERACTION::UTILS::IsBeamNode(*node))
+          actdis.Dof(node, beamDofs);
+        else
+          actdis.Dof(node, solidDofs);
+      }
+
+      Teuchos::RCP<Epetra_Map> rowmap1 =
+          Teuchos::rcp(new Epetra_Map(-1, solidDofs.size(), solidDofs.data(), 0, actdis.Comm()));
+      Teuchos::RCP<Epetra_Map> rowmap2 =
+          Teuchos::rcp(new Epetra_Map(-1, beamDofs.size(), beamDofs.data(), 0, actdis.Comm()));
+
+      linsolver->PutSolverParamsToSubParams("Inverse1", linsolverparams);
+      linsolver->Params()
+          .sublist("Inverse1")
+          .set<Teuchos::RCP<Epetra_Map>>("null space: map", rowmap1);
+      actdis.ComputeNullSpaceIfNecessary(linsolver->Params().sublist("Inverse1"));
+
+      linsolver->PutSolverParamsToSubParams("Inverse2", linsolverparams);
+      linsolver->Params()
+          .sublist("Inverse2")
+          .set<Teuchos::RCP<Epetra_Map>>("null space: map", rowmap2);
+      actdis.ComputeNullSpaceIfNecessary(linsolver->Params().sublist("Inverse2"));
+
+      break;
+    }
   }
 
   return linsolver;

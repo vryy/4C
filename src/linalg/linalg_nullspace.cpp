@@ -14,13 +14,13 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> LINALG::NULLSPACE::ComputeNullSpace(
-    const DRT::Discretization& dis, const int numdf, const int dimns)
+Teuchos::RCP<Epetra_MultiVector> LINALG::NULLSPACE::ComputeNullSpace(const DRT::Discretization& dis,
+    const int numdf, const int dimns, const Teuchos::RCP<Epetra_Map> dofmap)
 {
-  if (dimns > 10) dserror("Nullspace size only up to 10 supported");
+  if (dimns > 10) dserror("Nullspace size only up to 10 supported!");
 
   Teuchos::RCP<Epetra_MultiVector> nullspace =
-      Teuchos::rcp(new Epetra_MultiVector(*dis.DofRowMap(), dimns, true));
+      Teuchos::rcp(new Epetra_MultiVector(*dofmap, dimns, true));
 
   if (dimns == 1 && numdf == 1)
   {
@@ -40,14 +40,15 @@ Teuchos::RCP<Epetra_MultiVector> LINALG::NULLSPACE::ComputeNullSpace(
     // assembly process of the nodalNullspace into the actual nullspace
     for (int i = 0; i < dis.NumMyRowNodes(); ++i)
     {
-      const Epetra_Map* rowmap = dis.DofRowMap();
-
       DRT::Node* actnode = dis.lRowNode(i);
       std::vector<int> dofs = dis.Dof(0, actnode);
-      int localLength = dofs.size();
+      const int localLength = dofs.size();
 
       // check if degrees of freedom are zero
       if (localLength == 0) continue;
+
+      // check if dof is exisiting as index
+      if (dofmap->LID(dofs[0]) == -1) continue;
 
       // check size of degrees of freedom
       if (localLength != numdf)
@@ -58,6 +59,24 @@ Teuchos::RCP<Epetra_MultiVector> LINALG::NULLSPACE::ComputeNullSpace(
                   << std::endl;
       }
 
+      // Here we check the first element type of the node. One node can be owned by several elements
+      // we restrict the routine, that a node is only owned by elements with the same physics
+      if (actnode->NumElement() > 1)
+        for (int i = 0; i < actnode->NumElement() - 1; i++)
+          // if element types are different, check nullspace dimension and dofs
+          if (actnode->Elements()[i + 1]->ElementType() != actnode->Elements()[i]->ElementType())
+          {
+            int numdof1, dimnsp1, nv1, np1;
+            actnode->Elements()[i]->ElementType().NodalBlockInformation(
+                actnode->Elements()[i], numdof1, dimnsp1, nv1, np1);
+            int numdof2, dimnsp2, nv2, np2;
+            actnode->Elements()[i + 1]->ElementType().NodalBlockInformation(
+                actnode->Elements()[i + 1], numdof2, dimnsp2, nv2, np2);
+
+            if (numdof1 != numdof2 || dimnsp1 != dimnsp2)
+              dserror("Node is owned by different element types, nullspace calculation aborted!");
+          }
+
       Epetra_SerialDenseMatrix nodalNullspace =
           actnode->Elements()[0]->ElementType().ComputeNullSpace(*actnode, x0, localLength, dimns);
 
@@ -66,11 +85,11 @@ Teuchos::RCP<Epetra_MultiVector> LINALG::NULLSPACE::ComputeNullSpace(
         double** arrayOfPointers;
         nullspace->ExtractView(&arrayOfPointers);
         double* data = arrayOfPointers[dim];
-        Teuchos::ArrayRCP<double> dataVector(data, rowmap->LID(dofs[0]), localLength, false);
+        Teuchos::ArrayRCP<double> dataVector(data, dofmap->LID(dofs[0]), localLength, false);
 
         for (int j = 0; j < localLength; ++j)
         {
-          const int lid = rowmap->LID(dofs[j]);
+          const int lid = dofmap->LID(dofs[j]);
           dataVector[lid] = nodalNullspace(j, dim);
         }
       }
