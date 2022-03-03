@@ -793,6 +793,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
     case INPAR::SOLVER::azprec_MueLuAMG_contactSP:
       beloslist.set("Preconditioner Type", "ContactSP");
       break;
+    case INPAR::SOLVER::azprec_MueLuAMG_BeamSolid:
+      beloslist.set("Preconditioner Type", "BeamSolid");
+      break;
     case INPAR::SOLVER::azprec_BGS2x2:
       beloslist.set("Preconditioner Type", "ML");
       break;
@@ -897,6 +900,11 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
   if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contactSP)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
+    muelulist = LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
+  }
+  if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_BeamSolid)
+  {
+    Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (BeamSolid) Parameters");
     muelulist = LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
   }
   if (azprectyp == INPAR::SOLVER::azprec_BGS2x2)
@@ -1056,6 +1064,10 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToAztec(
       azlist.set("AZ_precond", AZ_user_precond);
       azlist.set("Preconditioner Type", "ContactSP");
       break;
+    case INPAR::SOLVER::azprec_MueLuAMG_BeamSolid:
+      azlist.set("AZ_precond", AZ_user_precond);
+      azlist.set("Preconditioner Type", "BeamSolid");
+      break;
     case INPAR::SOLVER::azprec_CheapSIMPLE:
       azlist.set("AZ_precond", AZ_user_precond);
       azlist.set("Preconditioner Type", "CheapSIMPLE");
@@ -1157,6 +1169,11 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToAztec(
   if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contactSP)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
+    muelulist = LINALG::Solver::TranslateBACIToMuelu(inparams, &azlist);
+  }
+  if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_BeamSolid)
+  {
+    Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (BeamSolid) Parameters");
     muelulist = LINALG::Solver::TranslateBACIToMuelu(inparams, &azlist);
   }
   if (azprectyp == INPAR::SOLVER::azprec_BGS2x2)

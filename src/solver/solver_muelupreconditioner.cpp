@@ -11,6 +11,7 @@
 #include "solver_muelupreconditioner.H"
 
 #include "../drt_lib/drt_dserror.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 // Teuchos
 #include <Teuchos_RCP.hpp>
@@ -771,7 +772,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-LINALG::SOLVER::MueLuBSIBlockPreconditioner::MueLuBSIBlockPreconditioner(
+LINALG::SOLVER::MueLuBeamSolidBlockPreconditioner::MueLuBeamSolidBlockPreconditioner(
     FILE* outfile, Teuchos::ParameterList& muelulist)
     : MueLuPreconditioner(outfile, muelulist)
 {
@@ -779,15 +780,11 @@ LINALG::SOLVER::MueLuBSIBlockPreconditioner::MueLuBSIBlockPreconditioner(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::MueLuBSIBlockPreconditioner::Setup(
+void LINALG::SOLVER::MueLuBeamSolidBlockPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   using EpetraMap = Xpetra::EpetraMapT<int, Xpetra::EpetraNode>;
-#ifdef TRILINOS_DEVELOP
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
-#else
-  using EpetraCrsMatrix = Xpetra::EpetraCrsMatrix;
-#endif
 
   SetupLinearProblem(matrix, x, b);
 
@@ -851,13 +848,8 @@ void LINALG::SOLVER::MueLuBSIBlockPreconditioner::Setup(
   maps.push_back(solidmap);
   maps.push_back(beammap);
 
-#ifdef TRILINOS_Q1_2015
-  Teuchos::RCP<const Xpetra::MapExtractor<SC, LO, GO>> map_extractor =
-      Xpetra::MapExtractorFactory<SC, LO, GO>::Build(fullrangemap, maps);
-#else
   Teuchos::RCP<const Xpetra::MapExtractor<SC, LO, GO, NO>> map_extractor =
       Xpetra::MapExtractorFactory<SC, LO, GO, NO>::Build(fullrangemap, maps);
-#endif
 
   // build blocked Xpetra operator
   Teuchos::RCP<Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>> bOp =
@@ -870,7 +862,7 @@ void LINALG::SOLVER::MueLuBSIBlockPreconditioner::Setup(
 
   bOp->fillComplete();
 
-  Teuchos::ParameterList mueluParameters = muelulist_.sublist("MueLu (BSI) Parameters");
+  Teuchos::ParameterList mueluParameters = muelulist_.sublist("MueLu (BeamSolid) Parameters");
   if (mueluParameters.get<bool>("MUELU_XML_ENFORCE"))
   {
     if (create)
@@ -882,12 +874,12 @@ void LINALG::SOLVER::MueLuBSIBlockPreconditioner::Setup(
       std::string xmlFileName = mueluParameters.get<std::string>("MUELU_XML_FILE");
 
       int solidDimns = solidList.get<int>("null space: dimension", -1);
-      if (solidDimns == -1 || beamDofs == -1)
-        dserror("Error: PDE equations solid or null space dimension wrong.");
+      if (solidDimns == -1 || solidDofs == -1)
+        dserror("Error: PDE equations of solid or null space dimension wrong.");
 
       int beamDimns = beamList.get<int>("null space: dimension", -1);
-      if (beamDimns == -1 || solidDofs == -1)
-        dserror("Error: PDE equations beam or null space dimension wrong.");
+      if (beamDimns == -1 || beamDofs == -1)
+        dserror("Error: PDE equations of beam or null space dimension wrong.");
 
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace11 = Teuchos::null;
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 = Teuchos::null;
@@ -935,14 +927,15 @@ LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
   if (nspDimension < 1)
     dserror("Multigrid parameter 'null space: dimension' wrong. It has to be > 0.");
 
-  Teuchos::RCP<Epetra_MultiVector> nsdata =
+  Teuchos::RCP<Epetra_MultiVector> nullspaceData =
       muelulist.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
 
   Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace =
+
 #ifdef TRILINOS_2015_Q1
-      Teuchos::rcp(new Xpetra::EpetraMultiVector(nsdata));
+      Teuchos::rcp(new Xpetra::EpetraMultiVector(nullspaceData));
 #else
-      Teuchos::rcp(new Xpetra::EpetraMultiVectorT<GO, NO>(nsdata));
+      Teuchos::rcp(new Xpetra::EpetraMultiVectorT<GO, NO>(nullspaceData));
 #endif
 
   nullspace->replaceMap(rowMap);
@@ -950,6 +943,8 @@ LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
   return nullspace;
 }
 
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
 void LINALG::SOLVER::MUELU::UTILS::convertMatrixToStridedMaps(
     Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> matrix, std::vector<size_t>& rangeStridingInfo,
     std::vector<size_t>& domainStridingInfo)

@@ -68,6 +68,7 @@ namespace INPAR
       azprec_MueLuAMG_fluid,       ///< MueLu AMG preconditioner for blocked fluid problems
       azprec_MueLuAMG_tsi,         ///< MueLu AMG preconditioner for blocked tsi problems
       azprec_MueLuAMG_contactSP,   ///< MueLu AMG preconditioner for blocked contact problems
+      azprec_MueLuAMG_BeamSolid,   ///< MueLu AMG preconditioner for blocked bsi problems
       azprec_AMGnxn,               ///< AMG preconditioner for a nxn block matrix
       azprec_Chebyshev             ///< Chebyshev polynomials for preconditioning
     };

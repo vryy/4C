@@ -148,6 +148,27 @@ namespace LINALG
 
   /*!
    \brief split a matrix into a 2x2 block system where the rowmap of one of the blocks is given
+          and return a block matrix
+
+   Splits a given matrix into a 2x2 block system where the rowmap of one of the blocks is given
+   on input. Blocks A11 and A22 are assumed to be square.
+   All values on entry have to be Teuchos::null except the given rowmap and matrix A.
+   Note that either A11rowmap or A22rowmap or both have to be nonzero. In case
+   both rowmaps are supplied they have to be an exact and nonoverlapping split of A->RowMap().
+   Matrix blocks are FillComplete() on exit.
+
+   \param A         : Matrix A on input
+   \param Ablock    : Blockmatrix version of A to be calculated
+   \param A11rowmap : rowmap of A11 or null
+   \param A22rowmap : rowmap of A22 or null
+   */
+  bool SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
+      Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy>>& Ablock,
+      Teuchos::RCP<Epetra_Map>& A11rowmap, Teuchos::RCP<Epetra_Map>& A22rowmap);
+
+  /*!
+   \brief split a matrix into a 2x2 block system where the rowmap of one of the blocks is given
+          and return the submatrices
 
    Splits a given matrix into a 2x2 block system where the rowmap of one of the blocks is given
    on input. Blocks A11 and A22 are assumed to be square.

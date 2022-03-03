@@ -220,12 +220,10 @@ void LINALG::ExtractMyVector(
 }
 
 /*----------------------------------------------------------------------*
- | split matrix into 2x2 block system                              06/06|
  *----------------------------------------------------------------------*/
-bool LINALG::SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A, Teuchos::RCP<Epetra_Map>& A11rowmap,
-    Teuchos::RCP<Epetra_Map>& A22rowmap, Teuchos::RCP<Epetra_CrsMatrix>& A11,
-    Teuchos::RCP<Epetra_CrsMatrix>& A12, Teuchos::RCP<Epetra_CrsMatrix>& A21,
-    Teuchos::RCP<Epetra_CrsMatrix>& A22)
+bool LINALG::SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
+    Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy>>& Ablock,
+    Teuchos::RCP<Epetra_Map>& A11rowmap, Teuchos::RCP<Epetra_Map>& A22rowmap)
 {
   if (A == Teuchos::null) dserror("LINALG::SplitMatrix2x2: A==null on entry");
 
@@ -245,9 +243,22 @@ bool LINALG::SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A, Teuchos::RCP<Epetr
   SparseMatrix a(A, View);
 
   // split matrix into pieces, where main diagonal blocks are square
-  Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy>> Ablock =
-      a.Split<DefaultBlockMatrixStrategy>(extractor, extractor);
+  Ablock = a.Split<DefaultBlockMatrixStrategy>(extractor, extractor);
   Ablock->Complete();
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool LINALG::SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A, Teuchos::RCP<Epetra_Map>& A11rowmap,
+    Teuchos::RCP<Epetra_Map>& A22rowmap, Teuchos::RCP<Epetra_CrsMatrix>& A11,
+    Teuchos::RCP<Epetra_CrsMatrix>& A12, Teuchos::RCP<Epetra_CrsMatrix>& A21,
+    Teuchos::RCP<Epetra_CrsMatrix>& A22)
+{
+  Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy>> Ablock = Teuchos::null;
+
+  SplitMatrix2x2(A, Ablock, A11rowmap, A22rowmap);
 
   // get Epetra objects out of the block matrix (prevents them from dying)
   A11 = (*Ablock)(0, 0).EpetraMatrix();
@@ -259,7 +270,6 @@ bool LINALG::SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A, Teuchos::RCP<Epetr
 }
 
 /*----------------------------------------------------------------------*
- | split matrix into 2x2 block system                          gee 02/08|
  *----------------------------------------------------------------------*/
 bool LINALG::SplitMatrix2x2(Teuchos::RCP<LINALG::SparseMatrix> A,
     Teuchos::RCP<Epetra_Map>& A11rowmap, Teuchos::RCP<Epetra_Map>& A22rowmap,

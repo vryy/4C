@@ -28,6 +28,9 @@
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_cardiovascular0d.H"
 
+#include "../drt_so3/so_base.H"
+#include "../drt_beam3/beam3eb.H"
+
 #include <Teuchos_ParameterList.hpp>
 
 
@@ -54,7 +57,6 @@ Teuchos::RCP<STR::SOLVER::Factory::LinSolMap> STR::SOLVER::Factory::BuildLinSolv
   {
     switch (*mt_iter)
     {
-        // TODO: which case makes sense for beam-solid interaction?
       case INPAR::STR::model_structure:
       case INPAR::STR::model_springdashpot:
       case INPAR::STR::model_browniandyn:
@@ -127,11 +129,21 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildStructureLinSolver(
       actdis.ComputeNullSpaceIfNecessary(linsolver->Params());
       break;
     }
-    case INPAR::SOLVER::azprec_MueLuAMG_bsi:
+    case INPAR::SOLVER::azprec_MueLuAMG_BeamSolid:
     {
       // Create the beam and solid maps
       std::vector<int> solidDofs(0);
       std::vector<int> beamDofs(0);
+
+      // right now we only allow euler-bernoulli beam elements
+      for (int i = 0; i < actdis.NumMyRowElements(); i++)
+      {
+        DRT::Element* element = actdis.lRowElement(i);
+
+        if (BEAMINTERACTION::UTILS::IsBeamElement(*element) &&
+            (element->ElementType() != DRT::ELEMENTS::Beam3ebType::Instance()))
+          dserror("Only beam3eb elements are currently allowed!");
+      }
 
       for (int i = 0; i < actdis.NumMyRowNodes(); i++)
       {

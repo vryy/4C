@@ -230,13 +230,13 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
       preconditioner_ = Teuchos::rcp(
           new LINALG::SOLVER::MueLuPreconditioner(outfile_, Params().sublist("MueLu Parameters")));
     }
-    else if (Params().isSublist("MueLu (BSI) Parameters"))
+    else if (Params().isSublist("MueLu (BeamSolid) Parameters"))
     {
 #ifdef TRILINOS_DEVELOP
       preconditioner_ =
-          Teuchos::rcp(new LINALG::SOLVER::MueLuBSIBlockPreconditioner(outfile_, Params()));
+          Teuchos::rcp(new LINALG::SOLVER::MueLuBeamSolidBlockPreconditioner(outfile_, Params()));
 #else
-      dserror("MueLu (BSI) preconditioner only available in Trilinos_Develop.");
+      dserror("MueLu (BeamSolid) preconditioner only available in Trilinos_Develop.");
 #endif
     }
     else if (azlist.get<int>("AZ_precond") == AZ_none)  // FIXME Attention: this is dangerous.
