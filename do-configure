@@ -20,6 +20,9 @@ USE_LLD=0
 USE_TRILINOS_Q1_2015=OFF
 USE_TRILINOS_Q4_2019=OFF
 
+# ignore unstable cut test 
+IGNORE_UNSTABLE_CUTTEST=OFF
+
 # activate debug version: ./do-configure --debug
 
 # Info about profiling mode: ./do-configure --profiling
@@ -281,6 +284,7 @@ CMAKE_FULL_ARGS=(--no-warn-unused-cli \
   -D CMAKE_C_COMPILER_LAUNCHER="$CCACHE_COMMAND" \
   -D CMAKE_CXX_COMPILER_LAUNCHER="$CCACHE_COMMAND" \
   -D AMDLIBMDIR:FILEPATH="$AMDLIBMDIR_PATH" \
+  -D IGNORE_UNSTABLE_CUTTEST:BOOL=$IGNORE_UNSTABLE_CUTTEST \
   "${BACI_HOME}")
 
 $CMAKE_COMMAND "${CMAKE_FULL_ARGS[@]}"

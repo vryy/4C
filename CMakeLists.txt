@@ -147,6 +147,14 @@ if (OPENMP_FOUND)
 endif()
 endif(HAVE_OpenMP)
 
+
+# ignore selected cut test 
+option (IGNORE_UNSTABLE_CUTTEST "Ignore unstable cut test" OFF)
+if (IGNORE_UNSTABLE_CUTTEST)
+  MESSAGE("-- Ignore unstable cut test ")
+  add_definitions("-DIGNORE_UNSTABLE_CUTTEST")
+endif (IGNORE_UNSTABLE_CUTTEST)
+
 #   fancy stuff
 
 option (COLOROUTPUT "use colored output to the terminal" OFF)
