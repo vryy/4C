@@ -544,7 +544,13 @@ Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindNonDiagonalDominantRows(
 
   // loop over all local rows in matrix A and keep diagonal entries if corresponding
   // matrix rows are not contained in permRowMap
-  for (size_t row = 0; row < xA->getRowMap()->getNodeNumElements(); row++)
+  const int numLocalElements =
+#ifdef TRILINOS_DEVELOP
+      xA->getRowMap()->getLocalNumElements();
+#else
+      xA->getRowMap()->getNodeNumElements();
+#endif
+  for (int row = 0; row < numLocalElements; row++)
   {
     GlobalOrdinal grow = xA->getRowMap()->getGlobalElement(row);
 
@@ -619,7 +625,14 @@ Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindZeroDiagonalEntries(
   Teuchos::ArrayRCP<const Scalar> diagAVecData = diagAVec->getData(0);
   LocalOrdinal lNumZeros = 0;
   std::vector<GlobalOrdinal> zeroGids;
-  for (size_t i = 0; i < diagAVec->getMap()->getNodeNumElements(); ++i)
+
+  const int numLocalElements =
+#ifdef TRILINOS_DEVELOP
+      xA->getRowMap()->getLocalNumElements();
+#else
+      xA->getRowMap()->getNodeNumElements();
+#endif
+  for (int i = 0; i < numLocalElements; ++i)
   {
     if (std::abs(diagAVecData[i]) < tolerance)
     {  // pick out all rows with very small diagonal entries
@@ -679,7 +692,14 @@ int LINALG::SOLVER::KrylovSolver::CountZerosOnDiagonal(const Teuchos::RCP<const 
   Teuchos::ArrayRCP<const Scalar> diagAVecData = diagAVec->getData(0);
   LocalOrdinal lNumZeros = 0;
   GlobalOrdinal gNumZeros = 0;
-  for (size_t i = 0; i < diagAVec->getMap()->getNodeNumElements(); ++i)
+
+  const int numLocalElements =
+#ifdef TRILINOS_DEVELOP
+      diagAVec->getMap()->getLocalNumElements();
+#else
+      diagAVec->getMap()->getNodeNumElements();
+#endif
+  for (int i = 0; i < numLocalElements; ++i)
   {
     if (diagAVecData[i] == 0.0)
     {

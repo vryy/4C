@@ -456,7 +456,13 @@ void LINALG::SOLVER::AMGNXN::MueluAMGWrapper::BuildHierarchy()
 
   // Prepare null space vector for MueLu
   // safety check
-  if (mueluA->getNodeNumRows() * null_space_dim_ != null_space_data_->size())
+  const size_t localNumRows =
+#ifdef TRILINOS_DEVELOP
+      mueluA->getLocalNumRows();
+#else
+      mueluA->getNodeNumRows();
+#endif
+  if (localNumRows * null_space_dim_ != null_space_data_->size())
     dserror("Matrix size is inconsistent with length of nullspace vector!");
   Teuchos::RCP<const Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>> rowMap = mueluA->getRowMap();
   Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>> nspVector =
