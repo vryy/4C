@@ -19,7 +19,7 @@
 #include <MueLu_SmootherPrototype.hpp>
 #include <MueLu_SmootherFactory.hpp>
 #include <MueLu_DirectSolver.hpp>
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
 #include <MueLu_HierarchyHelpers.hpp>
 #else
 #include <MueLu_HierarchyUtils.hpp>
@@ -38,7 +38,7 @@ typedef Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node> MultiVect
 typedef Xpetra::VectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node> VectorFactory;
 typedef Xpetra::MapFactory<LocalOrdinal, GlobalOrdinal, Node> MapFactory;
 
-#ifdef TRILINOS_DEVELOP
+#ifdef TRILINOS_2022_Q1
 using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
 #else
 using EpetraCrsMatrix = Xpetra::EpetraCrsMatrix;
@@ -299,7 +299,7 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
-#ifdef TRILINOS_DEVELOP
+#ifdef TRILINOS_2022_Q1
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactSpPreconditioner(
           outfile_, Params().sublist("MueLu (Contact) Parameters")));
 #else
@@ -353,7 +353,7 @@ void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(
   // check, if "SlaveDofMap" information is available in parameter lists
   if (epSlaveDofMap != Teuchos::null)
   {
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
     Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap =
         Teuchos::rcp(new Xpetra::EpetraMap(epSlaveDofMap));
 #else
@@ -545,7 +545,7 @@ Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindNonDiagonalDominantRows(
   // loop over all local rows in matrix A and keep diagonal entries if corresponding
   // matrix rows are not contained in permRowMap
   const int numLocalElements =
-#ifdef TRILINOS_DEVELOP
+#ifdef TRILINOS_2022_Q1
       xA->getRowMap()->getLocalNumElements();
 #else
       xA->getRowMap()->getNodeNumElements();
@@ -627,7 +627,7 @@ Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindZeroDiagonalEntries(
   std::vector<GlobalOrdinal> zeroGids;
 
   const int numLocalElements =
-#ifdef TRILINOS_DEVELOP
+#ifdef TRILINOS_2022_Q1
       xA->getRowMap()->getLocalNumElements();
 #else
       xA->getRowMap()->getNodeNumElements();
@@ -694,7 +694,7 @@ int LINALG::SOLVER::KrylovSolver::CountZerosOnDiagonal(const Teuchos::RCP<const 
   GlobalOrdinal gNumZeros = 0;
 
   const int numLocalElements =
-#ifdef TRILINOS_DEVELOP
+#ifdef TRILINOS_2022_Q1
       diagAVec->getMap()->getLocalNumElements();
 #else
       diagAVec->getMap()->getNodeNumElements();

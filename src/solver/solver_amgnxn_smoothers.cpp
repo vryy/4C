@@ -363,7 +363,7 @@ void LINALG::SOLVER::AMGNXN::MueluSmootherWrapper::Apply(
 
   // Convert to Tpetra
   Teuchos::RCP<Epetra_MultiVector> X_rcp = Teuchos::rcp(new Epetra_MultiVector(X));
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
   Teuchos::RCP<Xpetra::EpetraMultiVector> Xex = Teuchos::rcp(new Xpetra::EpetraMultiVector(X_rcp));
 #else
   Teuchos::RCP<Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>> Xex =
@@ -373,7 +373,7 @@ void LINALG::SOLVER::AMGNXN::MueluSmootherWrapper::Apply(
       Teuchos::rcp_dynamic_cast<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>>(
           Xex);
   Teuchos::RCP<Epetra_MultiVector> Y_rcp = Teuchos::rcp(new Epetra_MultiVector(Y));
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
   Teuchos::RCP<Xpetra::EpetraMultiVector> Yex = Teuchos::rcp(new Xpetra::EpetraMultiVector(Y_rcp));
 #else
   Teuchos::RCP<Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>> Yex =
@@ -388,7 +388,7 @@ void LINALG::SOLVER::AMGNXN::MueluSmootherWrapper::Apply(
 
   // Convert to Epetra
   const Teuchos::RCP<Epetra_MultiVector>& Ye =
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
       MueLu::Utils<double, int, int, Node>::MV2NonConstEpetraMV(Yx);
 #else
       MueLu::Utilities<double, int, int, Node>::MV2NonConstEpetraMV(Yx);
@@ -443,7 +443,7 @@ void LINALG::SOLVER::AMGNXN::MueluAMGWrapper::BuildHierarchy()
   if (A_crs == Teuchos::null)
     dserror("Make sure that the input matrix is a Epetra_CrsMatrix (or derived)");
   Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> mueluA =
-#ifdef TRILINOS_DEVELOP
+#ifdef TRILINOS_2022_Q1
       Teuchos::rcp(new Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>(A_crs));
 #else
       Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A_crs));
@@ -457,7 +457,7 @@ void LINALG::SOLVER::AMGNXN::MueluAMGWrapper::BuildHierarchy()
   // Prepare null space vector for MueLu
   // safety check
   const size_t localNumRows =
-#ifdef TRILINOS_DEVELOP
+#ifdef TRILINOS_2022_Q1
       mueluA->getLocalNumRows();
 #else
       mueluA->getNodeNumRows();
@@ -559,7 +559,7 @@ void LINALG::SOLVER::AMGNXN::SingleFieldAMG::Setup()
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::SingleFieldAMG::Setup");
 
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
   using MueLuUtils = MueLu::Utils<double, int, int, Node>;
 #else
   using MueLuUtils = MueLu::Utilities<double, int, int, Node>;

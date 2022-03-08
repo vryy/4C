@@ -71,7 +71,7 @@ namespace INVANA
   class SurfCurrentGroup : public ObjectiveFunct
   {
    private:
-#ifndef TRILINOS_Q1_2015
+#ifndef TRILINOS_2015_Q1
     //! Kokkos ScopeGuard ensures correct finalization of Kokkos in destructor of this class
     Kokkos::ScopeGuard kokkosscopeguard_;
 #endif
@@ -98,7 +98,7 @@ namespace INVANA
     //! Standard destructor
     virtual ~SurfCurrentGroup()
     {
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
       Kokkos::finalize();
 #endif
     }
@@ -278,7 +278,7 @@ namespace INVANA
     KOKKOS_INLINE_FUNCTION
     void operator()(const typename ViewType::size_type i, double& sum) const
     {
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
       for (currents_type::size_type j = 0; j < c2.dimension_0(); j++)
 #else
       for (currents_type::size_type j = 0; j < c2.extent(0); j++)
@@ -324,7 +324,7 @@ namespace INVANA
     KOKKOS_INLINE_FUNCTION
     void operator()(int i) const
     {
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
       for (trimesh_type::size_type j = 0; j < in.dimension_1(); j++) in(i, j) = 0.0;
 #else
       for (trimesh_type::size_type j = 0; j < in.extent(1); j++) in(i, j) = 0.0;
@@ -355,7 +355,7 @@ namespace INVANA
     KOKKOS_INLINE_FUNCTION
     void operator()(const typename ViewType1::size_type i) const
     {
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
       for (currents_type::size_type j = 0; j < c2.dimension_0(); j++)
 #else
       for (currents_type::size_type j = 0; j < c2.extent(0); j++)
@@ -402,7 +402,7 @@ namespace INVANA
     KOKKOS_INLINE_FUNCTION
     void operator()(const typename ViewType::size_type i) const
     {
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
       for (currents_type::size_type j = 0; j < c2.dimension_0(); j++)
 #else
       for (currents_type::size_type j = 0; j < c2.extent(0); j++)

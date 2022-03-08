@@ -88,7 +88,7 @@ LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::CheapSIMPLE_BlockPreconditioner
 void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_Operator> A,
     const Teuchos::ParameterList& origvlist, const Teuchos::ParameterList& origplist)
 {
-#ifdef TRILINOS_DEVELOP
+#ifdef TRILINOS_2022_Q1
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
 #else
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrix;

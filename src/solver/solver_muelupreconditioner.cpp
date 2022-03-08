@@ -29,7 +29,7 @@
 #include <MueLu_AggregationExportFactory.hpp>
 #include <MueLu_EpetraOperator.hpp>
 #include <MueLu_UseDefaultTypes.hpp>
-#ifdef TRILINOS_DEVELOP
+#ifdef TRILINOS_2022_Q1
 #include <MueLu_CreateXpetraPreconditioner.hpp>
 #endif
 
@@ -42,10 +42,10 @@
 #include <Xpetra_EpetraCrsMatrix.hpp>
 #include <Xpetra_EpetraMap.hpp>
 #include <Xpetra_EpetraMultiVector.hpp>
-#ifndef TRILINOS_Q1_2015
+#ifndef TRILINOS_2015_Q1
 #include <Xpetra_IO.hpp>
 #endif
-#ifdef TRILINOS_DEVELOP
+#ifdef TRILINOS_2022_Q1
 #include <Xpetra_MatrixUtils.hpp>
 #endif
 #include <Xpetra_Map.hpp>
@@ -88,7 +88,7 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup(
 
   // wrap Epetra_CrsMatrix to Xpetra::Matrix for use in MueLu
   Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> mueluA =
-#ifdef TRILINOS_DEVELOP
+#ifdef TRILINOS_2022_Q1
       Teuchos::rcp(new Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>(Pmatrix_));
 #else
       Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix_));
@@ -182,7 +182,7 @@ LINALG::SOLVER::MueLuFluidBlockPreconditioner::MueLuFluidBlockPreconditioner(
 void LINALG::SOLVER::MueLuFluidBlockPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
-#ifdef TRILINOS_DEVELOP
+#ifdef TRILINOS_2022_Q1
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
 #else
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrix;
@@ -222,7 +222,7 @@ void LINALG::SOLVER::MueLuFluidBlockPreconditioner::Setup(
 
       // create maps
       Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> epetra_fullrangemap =
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
           Teuchos::rcp(new Xpetra::EpetraMap(Teuchos::rcpFromRef(A->FullRangeMap())));
 #else
           Teuchos::rcp(new Xpetra::EpetraMapT<GO, NO>(Teuchos::rcpFromRef(A->FullRangeMap())));
@@ -249,7 +249,7 @@ void LINALG::SOLVER::MueLuFluidBlockPreconditioner::Setup(
       xmaps.push_back(strMap1);
       xmaps.push_back(strMap2);
 
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
       Teuchos::RCP<const Xpetra::MapExtractor<SC, LO, GO>> map_extractor =
           Xpetra::MapExtractorFactory<SC, LO, GO>::Build(fullrangemap, xmaps);
 #else
@@ -261,7 +261,7 @@ void LINALG::SOLVER::MueLuFluidBlockPreconditioner::Setup(
       Teuchos::RCP<Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>> bOp = Teuchos::rcp(
           new Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>(map_extractor, map_extractor, 10));
 
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
       bOp->setMatrix(0, 0, xA11);
       bOp->setMatrix(0, 1, xA12);
       bOp->setMatrix(1, 0, xA21);
@@ -338,7 +338,7 @@ LINALG::SOLVER::MueLuTsiBlockPreconditioner::MueLuTsiBlockPreconditioner(
 void LINALG::SOLVER::MueLuTsiBlockPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
-#ifdef TRILINOS_DEVELOP
+#ifdef TRILINOS_2022_Q1
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
 #else
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrix;
@@ -355,7 +355,7 @@ void LINALG::SOLVER::MueLuTsiBlockPreconditioner::Setup(
     if (create)
     {
       Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> fullrangemap =
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
           Teuchos::rcp(new Xpetra::EpetraMap(Teuchos::rcpFromRef(A->FullRangeMap())));
 #else
           Teuchos::rcp(new Xpetra::EpetraMapT<GO, NO>(Teuchos::rcpFromRef(A->FullRangeMap())));
@@ -394,7 +394,7 @@ void LINALG::SOLVER::MueLuTsiBlockPreconditioner::Setup(
       stridedMaps.push_back(stridedMap1);
       stridedMaps.push_back(stridedMap2);
 
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
       Teuchos::RCP<const Xpetra::MapExtractor<SC, LO, GO>> map_extractor =
           Xpetra::MapExtractorFactory<SC, LO, GO>::Build(fullrangemap, stridedMaps);
 #else
@@ -406,7 +406,7 @@ void LINALG::SOLVER::MueLuTsiBlockPreconditioner::Setup(
       Teuchos::RCP<Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>> bOp = Teuchos::rcp(
           new Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>(map_extractor, map_extractor, 10));
 
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
       bOp->setMatrix(0, 0, xA11);
       bOp->setMatrix(0, 1, xA12);
       bOp->setMatrix(1, 0, xA21);
@@ -472,7 +472,7 @@ void LINALG::SOLVER::MueLuTsiBlockPreconditioner::Setup(
   }
 }
 
-#ifdef TRILINOS_DEVELOP
+#ifdef TRILINOS_2022_Q1
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
@@ -488,11 +488,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   using EpetraMap = Xpetra::EpetraMapT<int, Xpetra::EpetraNode>;
-#ifdef TRILINOS_DEVELOP
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
-#else
-  using EpetraCrsMatrix = Xpetra::EpetraCrsMatrix;
-#endif
 
   SetupLinearProblem(matrix, x, b);
 
@@ -769,7 +765,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
   return;
 }
 
-#endif  // #ifdef TRILINOS_DEVELOP
+#endif
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------

@@ -322,7 +322,7 @@ void CONTACT::AUG::Plot::Create(Teuchos::ParameterList& nox_params,
 
   Teuchos::ParameterList& p_sol_opt = nox_params.sublist("Solver Options");
 
-#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
+#ifdef TRILINOS_2015_Q1
   Teuchos::RCP<NOX::Abstract::PrePostOperator> prepost_solver_ptr =
 #else
   Teuchos::RCP<NOX::Observer> prepost_solver_ptr =

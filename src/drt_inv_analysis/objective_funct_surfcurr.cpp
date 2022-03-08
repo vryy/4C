@@ -29,7 +29,7 @@
 /*----------------------------------------------------------------------*/
 INVANA::SurfCurrentGroup::SurfCurrentGroup(Teuchos::RCP<DRT::Discretization> discret)
     :
-#ifndef TRILINOS_Q1_2015
+#ifndef TRILINOS_2015_Q1
       kokkosscopeguard_(),
 #endif
       sourcedis_(discret),
@@ -59,7 +59,7 @@ INVANA::SurfCurrentGroup::SurfCurrentGroup(Teuchos::RCP<DRT::Discretization> dis
         "Size of conditions in source and target differs. We need the size to be equal for "
         "meaningful computation");
 
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
   // initialize parallel environment for the computation of each surface current pair
   Kokkos::initialize();
 #endif
@@ -377,7 +377,7 @@ double INVANA::SurfCurrentPair::WSpaceNorm()
       MyIndices(numrnk, myrank, xsize);
   auto my_c_source = Kokkos::subview(c_source, mychunk, Kokkos::ALL());
   auto my_n_source = Kokkos::subview(n_source, mychunk, Kokkos::ALL());
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
   int my_xsize = my_c_source.dimension_0();
 #else
   int my_xsize = my_c_source.extent(0);
@@ -461,7 +461,7 @@ void INVANA::SurfCurrentPair::GradientWSpaceNorm(Teuchos::RCP<Epetra_MultiVector
   auto my_c_source = Kokkos::subview(c_source, mychunk, Kokkos::ALL());
   auto my_n_source = Kokkos::subview(n_source, mychunk, Kokkos::ALL());
   auto my_dn_source = Kokkos::subview(dn_source, mychunk, Kokkos::ALL());
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
   int my_xsize = my_c_source.dimension_0();
 #else
   int my_xsize = my_c_source.extent(0);
@@ -512,7 +512,7 @@ std::pair<int, int> INVANA::SurfCurrentPair::MyIndices(int nrnk, int myrnk, int 
 template <typename host_data_type>
 void INVANA::SurfCurrentPair::ExtractToHView(const extract_type& in, host_data_type& out)
 {
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
   dsassert(in.size() == out.dimension_0(), "dimension mismatch");
 #else
   dsassert(in.size() == out.extent(0), "dimension mismatch");
@@ -532,7 +532,7 @@ template <typename host_data_type>
 void INVANA::SurfCurrentPair::ExtractToHView(
     const extract_type& in, host_data_type& out, Teuchos::RCP<Epetra_Map> map)
 {
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
   dsassert(in.size() == out.dimension_0(), "dimension mismatch");
 #else
   dsassert(in.size() == out.extent(0), "dimension mismatch");
@@ -557,7 +557,7 @@ template <typename host_data_type>
 void INVANA::SurfCurrentPair::HViewToExtract(
     const host_data_type& in, const Epetra_Map& inmap, extract_type& out)
 {
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
   int size0 = in.dimension_0();
 #else
   int size0 = in.extent(0);
@@ -565,7 +565,7 @@ void INVANA::SurfCurrentPair::HViewToExtract(
   std::vector<double> dum;
   for (int i = 0; i < size0; i++)
   {
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
     for (unsigned j = 0; j < in.dimension_1(); j++) dum.push_back(in(i, j));
 #else
     for (unsigned j = 0; j < in.extent(1); j++) dum.push_back(in(i, j));
@@ -580,7 +580,7 @@ void INVANA::SurfCurrentPair::HViewToExtract(
 template <typename host_data_type>
 void INVANA::SurfCurrentPair::HViewToExtract(const host_data_type& in, extract_type& out)
 {
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
   int size0 = in.dimension_0();
 #else
   int size0 = in.extent(0);
@@ -588,7 +588,7 @@ void INVANA::SurfCurrentPair::HViewToExtract(const host_data_type& in, extract_t
   std::vector<double> dum;
   for (int i = 0; i < size0; i++)
   {
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
     for (unsigned j = 0; j < in.dimension_1(); j++) dum.push_back(in(i, j));
 #else
     for (unsigned j = 0; j < in.extent(1); j++) dum.push_back(in(i, j));

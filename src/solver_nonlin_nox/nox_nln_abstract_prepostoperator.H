@@ -16,7 +16,7 @@
 #ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_ABSTRACT_PREPOSTOPERATOR_H_
 #define SRC_SOLVER_NONLIN_NOX_NOX_NLN_ABSTRACT_PREPOSTOPERATOR_H_
 
-#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
+#ifdef TRILINOS_2015_Q1
 #include <NOX_Abstract_PrePostOperator.H>  // base class
 #else
 #include <NOX_Observer.hpp>  // base class
@@ -85,7 +85,7 @@ namespace NOX
 
         \author Michael Hiermeier
        */
-#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
+#ifdef TRILINOS_2015_Q1
       class PrePostOperator : public NOX::Abstract::PrePostOperator
 #else
       class PrePostOperator : public NOX::Observer

@@ -81,7 +81,7 @@ namespace LINALG
    */
   void PrintMapInMatlabFormat(std::string fname, const Epetra_Map& map, const bool newfile = true);
 
-#ifndef TRILINOS_Q1_2015
+#ifndef TRILINOS_2015_Q1
   /*!
   \brief Write matrix to ASCII-file via Xpetra::IO
 

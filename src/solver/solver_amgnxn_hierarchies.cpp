@@ -132,7 +132,7 @@ void LINALG::SOLVER::AMGNXN::Hierarchies::Setup()
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::Hierarchies::Setup");
 
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
   using MueLuUtils = MueLu::Utils<double, int, int, Node>;
 #else
   using MueLuUtils = MueLu::Utilities<double, int, int, Node>;
@@ -315,7 +315,7 @@ LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy(Teuchos::ParameterList 
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy");
 
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
   using MueLuUtils = MueLu::Utils<double, int, int, Node>;
 #else
   using MueLuUtils = MueLu::Utilities<double, int, int, Node>;
@@ -345,7 +345,7 @@ LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy(Teuchos::ParameterList 
     if (A_crs == Teuchos::null)
       dserror("Make sure that the input matrix is a Epetra_CrsMatrix (or derived)");
     Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> mueluA =
-#ifdef TRILINOS_DEVELOP
+#ifdef TRILINOS_2022_Q1
         Teuchos::rcp(new Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>(A_crs));
 #else
         Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A_crs));

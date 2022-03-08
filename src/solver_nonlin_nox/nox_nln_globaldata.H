@@ -37,7 +37,7 @@ namespace LINALG
 namespace NOX
 {
   class Utils;
-#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
+#ifdef TRILINOS_2015_Q1
   namespace Abstract
   {
     class PrePostOperator;
@@ -218,7 +218,7 @@ namespace NOX
       Teuchos::RCP<NOX::Direction::UserDefinedFactory> direction_factory_;
 
       /// pre/post operator pointer for the NOX::NLN::Solver pre/post operator
-#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
+#ifdef TRILINOS_2015_Q1
       Teuchos::RCP<NOX::Abstract::PrePostOperator> prePostOpPtr_;
 #else
       Teuchos::RCP<NOX::Observer> prePostOpPtr_;
