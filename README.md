@@ -103,7 +103,7 @@ Our Wiki provides a [detailed setup guide for your local git configuration](http
 BACI heavily relies on the [Trilinos project](www.trilinos.org).
 
 Some further third party libraries (TPLs) are mandatory, e.g.
-- Parmetis (recommended verions: 3.1.1)
+- ParMETIS (recommended version: 4.0.3)
 - SuiteSparse (recommended version: 3.3.0)
 - SuperLUDist (mandatory version: 2.5 (due to Trilinos/Amesos))
 - Qhull (recommended version: 2012.1)
