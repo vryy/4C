@@ -80,7 +80,7 @@ namespace LARGEROTATIONS
     T abs_theta = 0.0;
     for (int i = 0; i < 3; i++) abs_theta += theta(i) * theta(i);
 
-    abs_theta = pow(abs_theta, 0.5);
+    abs_theta = FADUTILS::sqrt<T>(abs_theta);
 
     // computing quaterion for rotation by angle theta, Crisfield, Vol. 2, equation (16.67)
     if (abs_theta > 1e-12)
@@ -156,7 +156,7 @@ namespace LARGEROTATIONS
         abs_omega += omega(i) * omega(i);
       }
 
-      abs_omega = pow(abs_omega, 0.5);
+      abs_omega = FADUTILS::sqrt<T>(abs_omega);
       T tanhalf = abs_omega / 2;
       T thetaabs = atan(tanhalf) * 2;
 
@@ -190,7 +190,7 @@ namespace LARGEROTATIONS
 
     if (trace > R(0, 0) && trace > R(1, 1) && trace > R(2, 2))
     {
-      q(3) = 0.5 * pow(1 + trace, 0.5);
+      q(3) = 0.5 * FADUTILS::sqrt<T>(1 + trace);
       /*note: if trace is greater than each element on diagonal, all diagonal elements are positive
        *and hence also the trace is positive and thus q(3) > 0 so that division by q(3) is allowed*/
       q(0) = (R(2, 1) - R(1, 2)) / (4 * q(3));
@@ -207,7 +207,7 @@ namespace LARGEROTATIONS
         if (R(i, i) >= R(j, j) && R(i, i) >= R(k, k))
         {
           // equation (16.78a)
-          q(i) = pow(0.5 * R(i, i) + 0.25 * (1 - trace), 0.5);
+          q(i) = FADUTILS::sqrt<T>(0.5 * R(i, i) + 0.25 * (1 - trace));
 
           // equation (16.78b)
           q(3) = 0.25 * (R(k, j) - R(j, k)) / q(i);
@@ -292,7 +292,8 @@ namespace LARGEROTATIONS
   LINALG::Matrix<3, 3, T> Tmatrix(LINALG::Matrix<3, 1, T> theta)
   {
     LINALG::Matrix<3, 3, T> result(true);
-    T theta_abs = pow(theta(0) * theta(0) + theta(1) * theta(1) + theta(2) * theta(2), 0.5);
+    T theta_abs =
+        FADUTILS::sqrt<T>(theta(0) * theta(0) + theta(1) * theta(1) + theta(2) * theta(2));
 
     // in case of theta_abs == 0 the following computation has problems with singularities
     if (theta_abs > 1e-8)
@@ -328,7 +329,8 @@ namespace LARGEROTATIONS
   LINALG::Matrix<3, 3, T> Tinvmatrix(LINALG::Matrix<3, 1, T> theta)
   {
     LINALG::Matrix<3, 3, T> result(true);
-    T theta_abs = pow(theta(0) * theta(0) + theta(1) * theta(1) + theta(2) * theta(2), 0.5);
+    T theta_abs =
+        FADUTILS::sqrt<T>(theta(0) * theta(0) + theta(1) * theta(1) + theta(2) * theta(2));
 
     // in case of theta_abs == 0 the following computation has problems with ill-conditioning /
     // singularities
@@ -375,7 +377,7 @@ namespace LARGEROTATIONS
     LINALG::Matrix<3, 3, T> auxmatrix;
 
     // norm of \Psi^l:
-    T normPsil = pow(Psil(0) * Psil(0) + Psil(1) * Psil(1) + Psil(2) * Psil(2), 0.5);
+    T normPsil = FADUTILS::sqrt<T>(Psil(0) * Psil(0) + Psil(1) * Psil(1) + Psil(2) * Psil(2));
 
     // for relative rotations smaller then 1e-12 we use the limit for Psil -> 0 according to the
     // comment above NOTE 4 on page 152, Jelenic 1999
