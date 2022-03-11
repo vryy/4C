@@ -66,6 +66,10 @@ void DRT::ELEMENTS::WallQuad4PoroType::SetupElementDefinition(
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLQ4PORO"];
 
   defs["QUAD4"] = defs_wall["QUAD4"];
+
+  defs["QUAD4"]
+      .AddOptionalNamedDoubleVector("POROANISODIR1", 2)
+      .AddOptionalNamedDoubleVector("POROANISODIR2", 2);
 }
 
 /*----------------------------------------------------------------------*
@@ -136,6 +140,10 @@ void DRT::ELEMENTS::WallQuad9PoroType::SetupElementDefinition(
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLQ9PORO"];
 
   defs["QUAD9"] = defs_wall["QUAD9"];
+
+  defs["QUAD9"]
+      .AddOptionalNamedDoubleVector("POROANISODIR1", 2)
+      .AddOptionalNamedDoubleVector("POROANISODIR2", 2);
 }
 
 /*----------------------------------------------------------------------*
@@ -210,6 +218,10 @@ void DRT::ELEMENTS::WallNurbs4PoroType::SetupElementDefinition(
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLN4PORO"];
 
   defs["NURBS4"] = defs_wall["NURBS4"];
+
+  defs["NURBS4"]
+      .AddOptionalNamedDoubleVector("POROANISODIR1", 2)
+      .AddOptionalNamedDoubleVector("POROANISODIR2", 2);
 }
 
 /*----------------------------------------------------------------------*
@@ -284,6 +296,10 @@ void DRT::ELEMENTS::WallNurbs9PoroType::SetupElementDefinition(
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLN9PORO"];
 
   defs["NURBS9"] = defs_wall["NURBS9"];
+
+  defs["NURBS9"]
+      .AddOptionalNamedDoubleVector("POROANISODIR1", 2)
+      .AddOptionalNamedDoubleVector("POROANISODIR2", 2);
 }
 
 /*----------------------------------------------------------------------*
@@ -355,6 +371,10 @@ void DRT::ELEMENTS::WallTri3PoroType::SetupElementDefinition(
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLT3PORO"];
 
   defs["TRI3"] = defs_wall["TRI3"];
+
+  defs["TRI3"]
+      .AddOptionalNamedDoubleVector("POROANISODIR1", 2)
+      .AddOptionalNamedDoubleVector("POROANISODIR2", 2);
 }
 
 /*----------------------------------------------------------------------*

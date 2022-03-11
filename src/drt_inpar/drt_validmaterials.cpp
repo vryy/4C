@@ -2846,7 +2846,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AddNamedReal(m, "DYNVISCOSITY", "dynamic viscosity");
     AddNamedReal(m, "DENSITY", "density");
-    AddNamedReal(m, "PERMEABILITY", "permeability of medium");
+    AddNamedReal(m, "PERMEABILITY", "permeability of medium", 0.0, true);
+    AddNamedReal(m, "AXIALPERMEABILITY", "axial permeability for transverse isotropy", 0.0, true);
+    AddNamedReal(m, "ORTHOPERMEABILITY1", "first permeability for orthotropy", 0.0, true);
+    AddNamedReal(m, "ORTHOPERMEABILITY2", "second permeability for orthotropy", 0.0, true);
+    AddNamedReal(m, "ORTHOPERMEABILITY3", "third permeability for orthotropy", 0.0, true);
     AddNamedString(m, "TYPE", "Problem type: Darcy or Darcy-Brinkman", "Darcy");
     // optional parameter
     AddNamedString(m, "PERMEABILITYFUNCTION",

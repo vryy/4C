@@ -101,9 +101,7 @@ void DRT::ELEMENTS::Wall1Type::SetupElementDefinition(
       .AddNamedString("EAS")
       .AddNamedDouble("THICK")
       .AddNamedString("STRESS_STRAIN")
-      .AddNamedIntVector("GP", 2)
-      //.AddNamedString("STRESSES")
-      ;
+      .AddNamedIntVector("GP", 2);
 
   defs["TRI6"]
       .AddIntVector("TRI6", 6)

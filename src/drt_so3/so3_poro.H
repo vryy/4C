@@ -280,6 +280,12 @@ namespace DRT
           LINALG::Matrix<3, 1>* d_cauchyndir_dn, LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
           LINALG::Matrix<3, 1>* d_cauchyndir_dxi);
 
+      //! return anisotropic permeability directions (used for cloning)
+      const std::vector<std::vector<double>>& GetAnisotropicPermeabilityDirections() const
+      {
+        return anisotropic_permeability_directions_;
+      };
+
      protected:
       //! don't want = operator
       So3_Poro& operator=(const So3_Poro& old);
@@ -614,6 +620,10 @@ namespace DRT
           const LINALG::Matrix<numdim_, numnod_>& xcurr  ///<<    (i) current position of gausspoint
       );
 
+      //! read anisotropic permeability directions in the element definition
+      void ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(
+          DRT::INPUT::LineDefinition* linedef);
+
       //! Gauss integration rule
       DRT::UTILS::GaussIntegration intpoints_;
 
@@ -642,6 +652,9 @@ namespace DRT
 
       //! own poro structure material
       Teuchos::RCP<MAT::StructPoro> structmat_;
+
+      //! directions for anisotropic permeability
+      std::vector<std::vector<double>> anisotropic_permeability_directions_;
 
       // int numscal_;
 

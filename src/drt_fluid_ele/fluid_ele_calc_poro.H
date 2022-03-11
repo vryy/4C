@@ -1075,6 +1075,9 @@ namespace DRT
       //! kinematic type
       INPAR::STR::KinemType kintype_;
 
+      //! directions for anisotropic permeability
+      std::vector<std::vector<double>> anisotropic_permeability_directions_;
+
       //! pointer to parameter lists
       DRT::ELEMENTS::FluidEleParameterPoro* porofldpara_;
     };

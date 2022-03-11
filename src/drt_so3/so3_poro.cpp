@@ -50,6 +50,7 @@ DRT::ELEMENTS::So3_Poro<so3_ele, distype>::So3_Poro(int id, int owner)
   invJ_.resize(numgpt_, LINALG::Matrix<numdim_, numdim_>(true));
   detJ_.resize(numgpt_, 0.0);
   xsi_.resize(numgpt_, LINALG::Matrix<numdim_, 1>(true));
+  anisotropic_permeability_directions_.resize(3, std::vector<double>(3, 0.0));
 
   return;
 }
@@ -76,7 +77,8 @@ DRT::ELEMENTS::So3_Poro<so3_ele, distype>::So3_Poro(
       myknots_(old.myknots_),
       fluidmat_(old.fluidmat_),
       fluidmultimat_(old.fluidmultimat_),
-      structmat_(old.structmat_)
+      structmat_(old.structmat_),
+      anisotropic_permeability_directions_(old.anisotropic_permeability_directions_)
 // numscal_(old.numscal_)
 {
   numgpt_ = intpoints_.NumPoints();
@@ -130,6 +132,11 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Pack(DRT::PackBuffer& data) cons
   // isNurbs_
   so3_ele::AddtoPack(data, isNurbs_);
 
+  // anisotropic_permeability_directions_
+  size = (int)anisotropic_permeability_directions_.size();
+  so3_ele::AddtoPack(data, size);
+  for (int i = 0; i < size; ++i) so3_ele::AddtoPack(data, anisotropic_permeability_directions_[i]);
+
   // so3_ele::AddtoPack(data,numscal_);
 
   // add base class Element
@@ -176,6 +183,13 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Unpack(const std::vector<char>& 
 
   // isNurbs_
   isNurbs_ = (bool)(so3_ele::ExtractInt(position, data));
+
+  // anisotropic_permeability_directions_
+  size = 0;
+  so3_ele::ExtractfromPack(position, data, size);
+  anisotropic_permeability_directions_.resize(size, std::vector<double>(3, 0.0));
+  for (int i = 0; i < size; ++i)
+    so3_ele::ExtractfromPack(position, data, anisotropic_permeability_directions_[i]);
 
   // numscal_ = so3_ele::ExtractInt(position,data);
 
@@ -264,7 +278,22 @@ bool DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ReadElement(
   if (poromat == Teuchos::null) dserror("no poro material assigned to poro element!");
   poromat->PoroSetup(numgpt_, linedef);
 
+  ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(linedef);
+
   return true;
+}
+
+template <class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::
+    ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(
+        DRT::INPUT::LineDefinition* linedef)
+{
+  for (int dim = 0; dim < 3; ++dim)
+  {
+    std::string definition_name = "POROANISODIR" + std::to_string(dim + 1);
+    if (linedef->HaveNamed(definition_name))
+      linedef->ExtractDoubleVector(definition_name, anisotropic_permeability_directions_[dim]);
+  }
 }
 
 /*----------------------------------------------------------------------*
