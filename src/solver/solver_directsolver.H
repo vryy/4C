@@ -55,8 +55,6 @@ namespace LINALG
 
       virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y);
 
-      virtual PreconditionerType* Preconditioner() { return NULL; }
-
       bool IsFactored() { return factored_; }
 
      private:
