@@ -20,7 +20,7 @@
   | Operator () compare operator for plain_volumecell_sets
   |                                                             shahmiri 06/12
  *-----------------------------------------------------------------------------*/
-bool GEO::CUT::Cmp::operator()(const plain_volumecell_set& s1, const plain_volumecell_set& s2)
+bool GEO::CUT::Cmp::operator()(const plain_volumecell_set& s1, const plain_volumecell_set& s2) const
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets ---
   // GEO::CUT::Cmp::operator()" );
@@ -36,7 +36,7 @@ bool GEO::CUT::Cmp::operator()(const plain_volumecell_set& s1, const plain_volum
  plain_volumecell_sets |                                                             shahmiri 06/12
  *-----------------------------------------------------------------------------*/
 bool GEO::CUT::Cmp::Compare(const std::set<plain_volumecell_set, Cmp>& set1,
-    const std::set<plain_volumecell_set, Cmp>& set2)
+    const std::set<plain_volumecell_set, Cmp>& set2) const
 {
   // compare two sets of plain_volumecell_set
   // take the first plain_volumecell_set of each set and compare them
@@ -54,7 +54,7 @@ bool GEO::CUT::Cmp::Compare(const std::set<plain_volumecell_set, Cmp>& set1,
   | Compare() to compare two plain_volumecell_set via the ids of their first volumecell's points
   |                                                             shahmiri 06/12
  *-----------------------------------------------------------------------------*/
-bool GEO::CUT::Cmp::Compare(const plain_volumecell_set& s1, const plain_volumecell_set& s2)
+bool GEO::CUT::Cmp::Compare(const plain_volumecell_set& s1, const plain_volumecell_set& s2) const
 {
   // take the first vc in plain_volumecell_set. In case of linear elements
   // this is the only volumecell. For quadratic elements this is a set of vcs
@@ -75,7 +75,7 @@ bool GEO::CUT::Cmp::Compare(const plain_volumecell_set& s1, const plain_volumece
   | Operator () to compare two volume cells via the ids of their points
   |                                                             shahmiri 06/12
  *-----------------------------------------------------------------------------*/
-bool GEO::CUT::Cmp::Compare(VolumeCell* vc1, VolumeCell* vc2)
+bool GEO::CUT::Cmp::Compare(VolumeCell* vc1, VolumeCell* vc2) const
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets ---
   // GEO::CUT::Cmp::Compare(vc,vc)" );
