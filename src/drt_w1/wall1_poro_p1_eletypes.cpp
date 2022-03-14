@@ -13,7 +13,7 @@
 
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils_nullspace.H"
+#include "../linalg/linalg_utils_nullspace.H"
 
 /*----------------------------------------------------------------------*
  |  QUAD 4 Element                                          vuong 07/13 |
@@ -88,10 +88,11 @@ void DRT::ELEMENTS::WallQuad4PoroP1Type::NodalBlockInformation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::WallQuad4PoroP1Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::WallQuad4PoroP1Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  DRT::UTILS::ComputeFluidDNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return nullspace;
 }
 
 /*----------------------------------------------------------------------*
@@ -184,10 +185,11 @@ void DRT::ELEMENTS::WallQuad9PoroP1Type::NodalBlockInformation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::WallQuad9PoroP1Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::WallQuad9PoroP1Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  DRT::UTILS::ComputeFluidDNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return nullspace;
 }
 
 /*----------------------------------------------------------------------*
@@ -280,10 +282,11 @@ void DRT::ELEMENTS::WallTri3PoroP1Type::NodalBlockInformation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::WallTri3PoroP1Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::WallTri3PoroP1Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  DRT::UTILS::ComputeFluidDNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return nullspace;
 }
 
 /*----------------------------------------------------------------------*

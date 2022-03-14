@@ -1042,11 +1042,14 @@ void SCATRA::ScaTraTimIntImpl::ComputeNullSpaceIfNecessary() const
       mllist.set("null space: dimension", 1);
       mllist.set("null space: type", "pre-computed");
       mllist.set("null space: add default vectors", false);
-      const Teuchos::RCP<std::vector<double>> ns =
-          Teuchos::rcp(new std::vector<double>(discret_->DofRowMap()->NumMyElements(), 1.));
-      mllist.set<Teuchos::RCP<std::vector<double>>>("nullspace", ns);
-      mllist.set("null space: vectors", &((*ns)[0]));
-      mllist.set<bool>("ML validate parameter list", false);
+
+      Teuchos::RCP<Epetra_MultiVector> nullspace =
+          Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()), 1, true));
+      nullspace->PutScalar(1.0);
+
+      mllist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
+      mllist.set("null space: vectors", nullspace->Values());
+      mllist.set("ML validate parameter list", false);
     }
 
     else

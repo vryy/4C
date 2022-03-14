@@ -14,7 +14,7 @@
 #include "so_line.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_utils_nullspace.H"
+#include "../linalg/linalg_utils_nullspace.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -74,10 +74,11 @@ void DRT::ELEMENTS::So_tet10Type::NodalBlockInformation(
   nv = 3;
 }
 
-void DRT::ELEMENTS::So_tet10Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::So_tet10Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  DRT::UTILS::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid3DNullSpace(node, x0);
+  return nullspace;
 }
 
 void DRT::ELEMENTS::So_tet10Type::SetupElementDefinition(

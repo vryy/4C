@@ -588,3 +588,46 @@ Teuchos::RCP<Epetra_Map> LINALG::ComputeDofMapFromNodeMap(
 
   return Teuchos::rcp(new Epetra_Map(-1, dof_vec.size(), dof_vec.data(), 0, discret.Comm()));
 }
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::StdVectorToEpetraMultiVector(const std::vector<double>& stdVector,
+    Teuchos::RCP<Epetra_MultiVector> epetraMultiVector, int blockSize)
+{
+  for (size_t dim = 0; dim < Teuchos::as<size_t>(blockSize); ++dim)
+  {
+    double** arrayOfPointers;
+    epetraMultiVector->ExtractView(&arrayOfPointers);
+    double* data = arrayOfPointers[dim];
+    int localLength = epetraMultiVector->MyLength();
+
+    Teuchos::ArrayRCP<double> dataVector(data, 0, localLength, false);
+
+    const double myLength = epetraMultiVector->MyLength();
+    for (double dofLID = 0; dofLID < myLength; ++dofLID)
+    {
+      dataVector[dofLID] = stdVector[dim * myLength + dofLID];
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::EpetraMultiVectorToStdVector(const Teuchos::RCP<Epetra_MultiVector> epetraMultiVector,
+    std::vector<double>& stdVector, int blockSize)
+{
+  for (size_t dim = 0; dim < Teuchos::as<size_t>(blockSize); ++dim)
+  {
+    double** arrayOfPointers;
+    epetraMultiVector->ExtractView(&arrayOfPointers);
+    double* data = arrayOfPointers[dim];
+    int localLength = epetraMultiVector->MyLength();
+
+    Teuchos::ArrayRCP<double> dataVector(data, 0, localLength, false);
+
+    const double myLength = epetraMultiVector->MyLength();
+    for (double dofLID = 0; dofLID < myLength; ++dofLID)
+      stdVector[dim * myLength + dofLID] = dataVector[dofLID];
+  }
+}

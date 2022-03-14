@@ -11,7 +11,7 @@
 /* headers */
 #include "so_sh8p8.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils_nullspace.H"
+#include "../linalg/linalg_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -58,10 +58,12 @@ void DRT::ELEMENTS::So_sh8p8Type::NodalBlockInformation(
   np = 1;
 }
 
-void DRT::ELEMENTS::So_sh8p8Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::So_sh8p8Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  DRT::UTILS::ComputeXFluidDNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace;
+  dserror("method ComputeNullSpace not implemented!");
+  return nullspace;
 }
 
 void DRT::ELEMENTS::So_sh8p8Type::SetupElementDefinition(

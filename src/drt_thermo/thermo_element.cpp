@@ -76,10 +76,13 @@ void DRT::ELEMENTS::ThermoType::NodalBlockInformation(
 /*----------------------------------------------------------------------*
  | ctor (public)                                             dano 08/12 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ThermoType::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::ThermoType::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-}  // ComputeNullSpace()
+  Epetra_SerialDenseMatrix nullspace;
+  dserror("method ComputeNullSpace not implemented!");
+  return nullspace;
+}
 
 
 /*----------------------------------------------------------------------*

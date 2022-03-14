@@ -13,10 +13,10 @@
 #include "../drt_ale2/ale2_nurbs.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 
+#include "../linalg/linalg_utils_nullspace.H"
 
 DRT::ELEMENTS::Ale2Type DRT::ELEMENTS::Ale2Type::instance_;
 
@@ -68,10 +68,11 @@ void DRT::ELEMENTS::Ale2Type::NodalBlockInformation(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::Ale2Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  DRT::UTILS::ComputeStructure2DNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid2DNullSpace(node, x0);
+  return nullspace;
 }
 
 /*----------------------------------------------------------------------------*/

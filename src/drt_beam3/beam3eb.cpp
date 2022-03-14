@@ -56,160 +56,136 @@ void DRT::ELEMENTS::Beam3ebType::NodalBlockInformation(
 }
 
 
-void DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  if (dimns != 5) dserror("Wrong nullspace dimension for this model.");
+  if (numdof != 6)
+    dserror(
+        "The computation of the euler-bernoulli beam nullspace in three dimensions requires six"
+        "DOFs per node, however the current node carries %d DOFs.",
+        numdof);
+
+  if (dimnsp != 5)
+    dserror(
+        "The computation of the euler-bernoulli beam nullspace in three dimensions requires five"
+        " nullspace vectors per node, however the current node carries %d vectors.",
+        dimnsp);
 
   constexpr std::size_t spacedim = 3;
-  const Epetra_Map* rowmap = dis.DofRowMap();
-  const int lrows = rowmap->NumMyElements();
 
-  // looping through all nodes
-  for (int localNodeID = 0; localNodeID < dis.NumMyRowNodes(); ++localNodeID)
+  // getting coordinates of current node
+  const double* x = node.X();
+
+  // getting pointer at current element
+  const DRT::ELEMENTS::Beam3eb* beam3eb =
+      dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(node.Elements()[0]);
+  if (!beam3eb) dserror("Cannot cast to Beam3eb");
+
+  // Compute tangent vector with unit length from nodal coordinates.
+  // Note: Tangent vector is the same at both nodes due to straight initial configuration.
+  LINALG::Matrix<spacedim, 1> tangent(true);
   {
-    // getting pointer at current node
-    DRT::Node* actnode = dis.lRowNode(localNodeID);
-    if (actnode == nullptr) dserror("Could not grab a node.");
+    const DRT::Node* firstnode = beam3eb->Nodes()[0];
+    const DRT::Node* secondnode = beam3eb->Nodes()[1];
+    const double* xfirst = firstnode->X();
+    const double* xsecond = secondnode->X();
 
-    // getting coordinates of current node
-    const double* x = actnode->X();
+    for (std::size_t dim = 0; dim < spacedim; ++dim) tangent(dim) = xsecond[dim] - xfirst[dim];
+    tangent.Scale(1.0 / tangent.Norm2());
+  }
 
-    // getting pointer at current element
-    DRT::Element** actele = actnode->Elements();
-    const DRT::ELEMENTS::Beam3eb* actbeamele = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(*actele);
+  // Form a Cartesian basis
+  std::array<LINALG::Matrix<spacedim, 1>, spacedim> basis;
+  LINALG::Matrix<spacedim, 1> e1(true);
+  e1(0) = 1.0;
+  LINALG::Matrix<spacedim, 1> e2(true);
+  e2(1) = 1.0;
+  LINALG::Matrix<spacedim, 1> e3(true);
+  e3(2) = 1.0;
+  basis[0] = e1;
+  basis[1] = e2;
+  basis[2] = e3;
 
-    /* Compute tangent vector with unit length from nodal coordinates.
-    Note: Tangent vector is the same at both nodes due to straight initial configuration. */
-    LINALG::Matrix<spacedim, 1> tangent(true);
+  // Find basis vector that is the least parallel to the tangent vector
+  std::size_t baseVecIndexWithMindDotProduct = 0;
+  {
+    double dotProduct = tangent.Dot(basis[0]);
+    double minDotProduct = dotProduct;
+    // First basis vector is already done. Start looping at second basis vector.
+    for (std::size_t i = 1; i < spacedim; ++i)
     {
-      const DRT::Node* firstnode = actbeamele->Nodes()[0];
-      const DRT::Node* secondnode = actbeamele->Nodes()[1];
-      const double* xfirst = firstnode->X();
-      const double* xsecond = secondnode->X();
-
-      for (std::size_t dim = 0; dim < spacedim; ++dim) tangent(dim) = xsecond[dim] - xfirst[dim];
-      tangent.Scale(1.0 / tangent.Norm2());
-    }
-
-    // Form a Cartesian basis
-    std::array<LINALG::Matrix<spacedim, 1>, spacedim> basis;
-    LINALG::Matrix<spacedim, 1> e1(true);
-    e1(0) = 1.0;
-    LINALG::Matrix<spacedim, 1> e2(true);
-    e2(1) = 1.0;
-    LINALG::Matrix<spacedim, 1> e3(true);
-    e3(2) = 1.0;
-    basis[0] = e1;
-    basis[1] = e2;
-    basis[2] = e3;
-
-    // Find basis vector that is the least parallel to the tangent vector
-    std::size_t baseVecIndexWithMindDotProduct = 0;
-    {
-      double dotProduct = tangent.Dot(basis[0]);
-      double minDotProduct = dotProduct;
-      // First basis vector is already done. Start looping at second basis vector.
-      for (std::size_t i = 1; i < spacedim; ++i)
+      dotProduct = tangent.Dot(basis[i]);
+      if (dotProduct < minDotProduct)
       {
-        dotProduct = tangent.Dot(basis[i]);
-        if (dotProduct < minDotProduct)
-        {
-          minDotProduct = dotProduct;
-          baseVecIndexWithMindDotProduct = i;
-        }
-      }
-    }
-
-    // Compute two vectors orthogonal to the tangent vector
-    LINALG::Matrix<spacedim, 1> someVector = basis[baseVecIndexWithMindDotProduct];
-    LINALG::Matrix<spacedim, 1> omegaOne, omegaTwo;
-    omegaOne.CrossProduct(tangent, someVector);
-    omegaTwo.CrossProduct(tangent, omegaOne);
-
-    if (std::abs(omegaOne.Dot(tangent)) > 1.0e-12)
-      dserror("omegaOne not orthogonal to tangent vector.");
-    if (std::abs(omegaTwo.Dot(tangent)) > 1.0e-12)
-      dserror("omegaTwo not orthogonal to tangent vector.");
-
-    LINALG::Matrix<3, 1> nodeCoords(true);
-    for (std::size_t dim = 0; dim < 3; ++dim) nodeCoords(dim) = x[dim] - x0[dim];
-
-    // Compute rotations in displacement DOFs
-    LINALG::Matrix<spacedim, 1> rotOne(true), rotTwo(true);
-    rotOne.CrossProduct(omegaOne, nodeCoords);
-    rotTwo.CrossProduct(omegaTwo, nodeCoords);
-
-    // Compute rotations in tangent DOFs
-    LINALG::Matrix<spacedim, 1> rotTangOne(true), rotTangTwo(true);
-    rotTangOne.CrossProduct(omegaOne, tangent);
-    rotTangTwo.CrossProduct(omegaTwo, tangent);
-
-    // Global DOF IDs of current node
-    std::vector<int> dofs = dis.Dof(actnode);
-
-    // Extract addresses of first elements of each nullspace vector from appended nullspace vector
-    double* mode[dimns];
-    for (int i = 0; i < dimns; ++i) mode[i] = &(ns[i * lrows]);
-
-    // looping through all degrees of freedom of a node
-    for (std::size_t j = 0; j < dofs.size(); ++j)
-    {
-      const int dof = dofs[j];
-      const int lid = rowmap->LID(dof);
-      if (lid < 0) dserror("Cannot find dof");
-
-      // Each case fills one line in the nodal block of the nullspace multivector.
-      switch (j)
-      {
-        case 0:
-          mode[0][lid] = 1.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = rotOne(0);
-          mode[4][lid] = rotTwo(0);
-          break;
-        case 1:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 1.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = rotOne(1);
-          mode[4][lid] = rotTwo(1);
-          break;
-        case 2:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 1.0;
-          mode[3][lid] = rotOne(2);
-          mode[4][lid] = rotTwo(2);
-          break;
-        case 3:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = rotTangOne(0);
-          mode[4][lid] = rotTangTwo(0);
-          break;
-        case 4:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = rotTangOne(1);
-          mode[4][lid] = rotTangTwo(1);
-          break;
-        case 5:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 0.0;
-          mode[3][lid] = rotTangOne(2);
-          mode[4][lid] = rotTangTwo(2);
-          break;
-        default:
-          dserror("Only dofs 0 - 5 supported");
-          break;
+        minDotProduct = dotProduct;
+        baseVecIndexWithMindDotProduct = i;
       }
     }
   }
+
+  // Compute two vectors orthogonal to the tangent vector
+  LINALG::Matrix<spacedim, 1> someVector = basis[baseVecIndexWithMindDotProduct];
+  LINALG::Matrix<spacedim, 1> omegaOne, omegaTwo;
+  omegaOne.CrossProduct(tangent, someVector);
+  omegaTwo.CrossProduct(tangent, omegaOne);
+
+  if (std::abs(omegaOne.Dot(tangent)) > 1.0e-12)
+    dserror("omegaOne not orthogonal to tangent vector.");
+  if (std::abs(omegaTwo.Dot(tangent)) > 1.0e-12)
+    dserror("omegaTwo not orthogonal to tangent vector.");
+
+  LINALG::Matrix<3, 1> nodeCoords(true);
+  for (std::size_t dim = 0; dim < 3; ++dim) nodeCoords(dim) = x[dim] - x0[dim];
+
+  // Compute rotations in displacement DOFs
+  LINALG::Matrix<spacedim, 1> rotOne(true), rotTwo(true);
+  rotOne.CrossProduct(omegaOne, nodeCoords);
+  rotTwo.CrossProduct(omegaTwo, nodeCoords);
+
+  // Compute rotations in tangent DOFs
+  LINALG::Matrix<spacedim, 1> rotTangOne(true), rotTangTwo(true);
+  rotTangOne.CrossProduct(omegaOne, tangent);
+  rotTangTwo.CrossProduct(omegaTwo, tangent);
+
+  Epetra_SerialDenseMatrix nullspace = Epetra_SerialDenseMatrix(numdof, dimnsp);
+  // x-modes
+  nullspace(0, 0) = 1.0;
+  nullspace(0, 1) = 0.0;
+  nullspace(0, 2) = 0.0;
+  nullspace(0, 3) = rotOne(0);
+  nullspace(0, 4) = rotTwo(0);
+  // y-modes
+  nullspace(1, 0) = 0.0;
+  nullspace(1, 1) = 1.0;
+  nullspace(1, 2) = 0.0;
+  nullspace(1, 3) = rotOne(1);
+  nullspace(1, 4) = rotTwo(1);
+  // z-modes
+  nullspace(2, 0) = 0.0;
+  nullspace(2, 1) = 0.0;
+  nullspace(2, 2) = 1.0;
+  nullspace(2, 3) = rotOne(2);
+  nullspace(2, 4) = rotTwo(2);
+  // dx-modes
+  nullspace(3, 0) = 0.0;
+  nullspace(3, 1) = 0.0;
+  nullspace(3, 2) = 0.0;
+  nullspace(3, 3) = rotTangOne(0);
+  nullspace(3, 4) = rotTangTwo(0);
+  // dy-modes
+  nullspace(4, 0) = 0.0;
+  nullspace(4, 1) = 0.0;
+  nullspace(4, 2) = 0.0;
+  nullspace(4, 3) = rotTangOne(1);
+  nullspace(4, 4) = rotTangTwo(1);
+  // dz-modes
+  nullspace(5, 0) = 0.0;
+  nullspace(5, 1) = 0.0;
+  nullspace(5, 2) = 0.0;
+  nullspace(5, 3) = rotTangOne(2);
+  nullspace(5, 4) = rotTangTwo(2);
+
+  return nullspace;
 }
 
 void DRT::ELEMENTS::Beam3ebType::SetupElementDefinition(

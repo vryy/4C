@@ -10,13 +10,13 @@
 
 #include "so_hex8fbar.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "prestress.H"
 #include "../drt_lib/prestress_service.H"
 #include "so_utils.H"
+#include "../linalg/linalg_utils_nullspace.H"
 
 DRT::ELEMENTS::So_hex8fbarType DRT::ELEMENTS::So_hex8fbarType::instance_;
 
@@ -58,10 +58,11 @@ void DRT::ELEMENTS::So_hex8fbarType::NodalBlockInformation(
   np = 0;
 }
 
-void DRT::ELEMENTS::So_hex8fbarType::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::So_hex8fbarType::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  DRT::UTILS::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid3DNullSpace(node, x0);
+  return nullspace;
 }
 
 void DRT::ELEMENTS::So_hex8fbarType::SetupElementDefinition(

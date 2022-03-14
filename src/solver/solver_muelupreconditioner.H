@@ -225,7 +225,7 @@ namespace LINALG
          * @return MultiVector with nullspace data
          */
         Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
-        ExtractNullspaceFromMLList(
+        ExtractNullspaceFromParameterlist(
             const Teuchos::RCP<const Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>>& rowMap,
             Teuchos::ParameterList& muelulist);
 

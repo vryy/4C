@@ -16,6 +16,7 @@ Created on: Feb 27, 2014
 #include <MueLu_ParameterListInterpreter.hpp>
 #include "EpetraExt_RowMatrixOut.h"
 #include "../drt_lib/drt_dserror.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "solver_amgnxn_preconditioner.H"
 #include "solver_amgnxn_vcycle.H"
 
@@ -242,8 +243,16 @@ LINALG::SOLVER::AMGnxn_Interface::AMGnxn_Interface(Teuchos::ParameterList& param
     xml_files_[block] = mllist.get<std::string>("xml file", "none");
     num_pdes_[block] = mllist.get<int>("PDE equations", -1);
     null_spaces_dim_[block] = mllist.get<int>("null space: dimension", -1);
-    null_spaces_data_[block] =
-        mllist.get<Teuchos::RCP<std::vector<double>>>("nullspace", Teuchos::null);
+
+    Teuchos::RCP<Epetra_MultiVector> nullspace =
+        mllist.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
+    if (nullspace == Teuchos::null) dserror("Nullspace vector is null!");
+
+    Teuchos::RCP<std::vector<double>> ns =
+        Teuchos::rcp(new std::vector<double>(nullspace->MyLength() * nullspace->NumVectors()));
+
+    LINALG::EpetraMultiVectorToStdVector(nullspace, *ns, null_spaces_dim_[block]);
+    null_spaces_data_[block] = ns;
 
     // Some checks
     if (num_pdes_[block] < 1 or null_spaces_dim_[block] < 1)

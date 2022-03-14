@@ -39,6 +39,7 @@
 #include "../drt_lib/drt_locsys.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../linalg/linalg_nullspace.H"
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_krylov_projector.H"
@@ -792,44 +793,30 @@ void STR::TimIntImpl::SetupKrylovSpaceProjection(DRT::Condition* kspcond)
 void STR::TimIntImpl::UpdateKrylovSpaceProjection()
 {
   const std::string* weighttype = projector_->WeightType();
+
   // only pointvalues are permissible for now - feel free to extend to integration!
-  if (*weighttype == "integration")
-  {
-    dserror("option integration not implemented");
-  }
+  if (*weighttype == "integration") dserror("option integration not implemented");
 
   // get Teuchos::RCP to kernel vector of projector
   // since we are in 'pointvalue' mode, weights are changed implicitly
   Teuchos::RCP<Epetra_MultiVector> c = projector_->GetNonConstKernel();
   c->PutScalar(0.0);
 
-  // We recompute the entire nullspace no matter what.
-  // This is not nice yet since:
-  // - translations are constant throughout the entire computation
-  // - SAME nullspace is sometimes recomputed AGAIN for some iterative solvers
-  // So here is space for optimization.
-
   // get number of modes and their ids
   std::vector<int> modeids = projector_->Modes();
 
-  // Teuchos::RCP on vector of size 0 holding the nullspace data - resized within ComputeNullspace
-  Teuchos::RCP<std::vector<double>> nullspace = Teuchos::rcp(new std::vector<double>(0));
-  discret_->ComputeNullSpace(nullspace);
-
-  // check if everything went fine
-  if (nullspace->size() == 0) dserror("nullspace not successfully computed");
-
-  // pointer on first element of nullspace data
-  double* nsdata = nullspace->data();
+  Teuchos::RCP<Epetra_MultiVector> nullspace = LINALG::NULLSPACE::ComputeNullSpace(*discret_, 3, 6);
+  if (nullspace == Teuchos::null) dserror("nullspace not successfully computed");
 
   // sort vector of nullspace data into kernel vector c_
   for (size_t i = 0; i < Teuchos::as<size_t>(modeids.size()); i++)
   {
     Epetra_Vector* ci = (*c)(i);
+    Epetra_Vector* ni = (*nullspace)(modeids[i]);
     const size_t myLength = ci->MyLength();
     for (size_t j = 0; j < myLength; j++)
     {
-      (*ci)[j] = nsdata[modeids[i] * myLength + j];
+      (*ci)[j] = (*ni)[j];
     }
   }
 

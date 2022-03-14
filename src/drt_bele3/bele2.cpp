@@ -12,8 +12,8 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_utils_nullspace.H"
 
+#include "../linalg/linalg_utils_nullspace.H"
 
 DRT::ELEMENTS::Bele2Type DRT::ELEMENTS::Bele2Type::instance_;
 
@@ -54,10 +54,11 @@ void DRT::ELEMENTS::Bele2Type::NodalBlockInformation(
   nv = 2;
 }
 
-void DRT::ELEMENTS::Bele2Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::Bele2Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  DRT::UTILS::ComputeStructure2DNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid2DNullSpace(node, x0);
+  return nullspace;
 }
 
 void DRT::ELEMENTS::Bele2Type::SetupElementDefinition(

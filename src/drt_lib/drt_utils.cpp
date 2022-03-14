@@ -454,25 +454,18 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::SolveNodalL2Projection(
           dserror("please add correct parameter list");
 
         Teuchos::ParameterList& preclist = *preclist_ptr;
-        preclist.set<Teuchos::RCP<std::vector<double>>>("nullspace", Teuchos::null);
-        // ML would not tolerate this Teuchos::rcp-ptr in its list otherwise
-        preclist.set<bool>("ML validate parameter list", false);
-
         preclist.set("PDE equations", 1);
         preclist.set("null space: dimension", 1);
         preclist.set("null space: type", "pre-computed");
         preclist.set("null space: add default vectors", false);
 
-        // allocate the local length of the rowmap
-        const int lrows = noderowmap.NumMyElements();
-        Teuchos::RCP<std::vector<double>> ns = Teuchos::rcp(new std::vector<double>(lrows));
-        double* nullsp = &((*ns)[0]);
+        Teuchos::RCP<Epetra_MultiVector> nullspace =
+            Teuchos::rcp(new Epetra_MultiVector(noderowmap, 1, true));
+        nullspace->PutScalar(1.0);
 
-        // compute null space manually
-        for (int j = 0; j < lrows; ++j) nullsp[j] = 1.0;
-
-        preclist.set<Teuchos::RCP<std::vector<double>>>("nullspace", ns);
-        preclist.set("null space: vectors", nullsp);
+        preclist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
+        preclist.set("null space: vectors", nullspace->Values());
+        preclist.set("ML validate parameter list", false);
       }
       break;
       case INPAR::SOLVER::azprec_ILU:

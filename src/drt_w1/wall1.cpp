@@ -11,10 +11,10 @@
 #include "wall1.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../linalg/linalg_utils_nullspace.H"
 
 DRT::ELEMENTS::Wall1Type DRT::ELEMENTS::Wall1Type::instance_;
 
@@ -56,10 +56,11 @@ void DRT::ELEMENTS::Wall1Type::NodalBlockInformation(
   nv = 2;
 }
 
-void DRT::ELEMENTS::Wall1Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::Wall1Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, int const numdof, int const dimnsp)
 {
-  DRT::UTILS::ComputeStructure2DNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid2DNullSpace(node, x0);
+  return nullspace;
 }
 
 void DRT::ELEMENTS::Wall1Type::SetupElementDefinition(

@@ -8,7 +8,6 @@
 /*----------------------------------------------------------------------*/
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/matlist_reactions.H"
@@ -23,6 +22,9 @@
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
+
+#include "../linalg/linalg_utils_nullspace.H"
+
 #include "scatra_ele_calc_utils.H"
 #include "scatra_ele.H"
 
@@ -75,10 +77,11 @@ void DRT::ELEMENTS::TransportType::NodalBlockInformation(
   }
 }
 
-void DRT::ELEMENTS::TransportType::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::TransportType::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  DRT::UTILS::ComputeFluidDNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return nullspace;
 }
 
 void DRT::ELEMENTS::TransportType::SetupElementDefinition(

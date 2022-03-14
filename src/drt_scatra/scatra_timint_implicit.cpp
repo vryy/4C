@@ -60,6 +60,7 @@
 #include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
 
 #include "../linalg/linalg_krylov_projector.H"
+#include "../linalg/linalg_nullspace.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode_utils.H"
 
@@ -3540,7 +3541,7 @@ void SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(
     discret_->ComputeNullSpaceIfNecessary(blocksmootherparams);
 
     // reduce full null space to match degrees of freedom associated with current matrix block
-    LINALG::Solver::FixMLNullspace("Block " + iblockstr.str(), *discret_->DofRowMap(),
+    LINALG::NULLSPACE::FixNullSpace("Block " + iblockstr.str(), *discret_->DofRowMap(),
         *BlockMaps().Map(iblock - init_block_number), blocksmootherparams);
   }
 }

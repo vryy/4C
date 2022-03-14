@@ -28,6 +28,7 @@
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 #include "scatra_timint_elch.H"
 #include "scatra_timint_elch_service.H"
@@ -3368,8 +3369,12 @@ void SCATRA::ScaTraTimIntElch::ReduceDimensionNullSpaceBlocks(
         solver->Params().sublist("Inverse" + iblockstr.str()).sublist("MueLu Parameters");
 
     // extract already reduced null space associated with current matrix block
-    std::vector<double>& nullspace =
-        *mueluparams.get<Teuchos::RCP<std::vector<double>>>("nullspace");
+    Teuchos::RCP<Epetra_MultiVector> nspVector =
+        mueluparams.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
+
+    const int dimns = mueluparams.get<int>("null space: dimension");
+    std::vector<double> nullspace(nspVector->MyLength() * nspVector->NumVectors());
+    LINALG::EpetraMultiVectorToStdVector(nspVector, nullspace, dimns);
 
     // null space associated with concentration dofs
     if (iblock % 2 == 0)
@@ -3390,6 +3395,16 @@ void SCATRA::ScaTraTimIntElch::ReduceDimensionNullSpaceBlocks(
     // decrease null space dimension and number of partial differential equations by one
     --mueluparams.get<int>("null space: dimension");
     --mueluparams.get<int>("PDE equations");
+
+    // TODO:
+    // Above a reference is used to directly modify the nullspace vector
+    // This can be done more elegant as writing it back in a different container!
+    const int dimnsnew = mueluparams.get<int>("null space: dimension");
+    Teuchos::RCP<Epetra_MultiVector> nspVectornew =
+        Teuchos::rcp(new Epetra_MultiVector(*(BlockMaps().Map(iblock)), dimnsnew, true));
+    LINALG::StdVectorToEpetraMultiVector(nullspace, nspVectornew, dimnsnew);
+
+    mueluparams.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nspVectornew);
   }
 }
 

@@ -19,7 +19,7 @@
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_inpar/inpar_bio.H"
-#include "../drt_lib/drt_utils_nullspace.H"
+#include "../linalg/linalg_utils_nullspace.H"
 
 // forward declarations
 struct _MATERIAL;
@@ -55,10 +55,11 @@ namespace DRT
         nv = numdf;
       }
 
-      virtual void ComputeNullSpace(
-          DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+      virtual Epetra_SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        DRT::UTILS::ComputeFluidDNullSpace(dis, ns, x0, numdf, dimns);
+        Epetra_SerialDenseMatrix nullspace = LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
+        return nullspace;
       }
 
       virtual void SetupElementDefinition(

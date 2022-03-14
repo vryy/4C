@@ -11,7 +11,7 @@
 #include "so3_poro_p1.H"
 
 #include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_utils_nullspace.H"
+#include "../linalg/linalg_utils_nullspace.H"
 
 /*----------------------------------------------------------------------*
  |  HEX 8 Element                                    vuong 03/12    |
@@ -72,10 +72,11 @@ void DRT::ELEMENTS::So_hex8PoroP1Type::NodalBlockInformation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8PoroP1Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::So_hex8PoroP1Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  DRT::UTILS::ComputeFluidDNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return nullspace;
 }
 
 /*----------------------------------------------------------------------*
@@ -174,8 +175,9 @@ void DRT::ELEMENTS::So_tet4PoroP1Type::NodalBlockInformation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet4PoroP1Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::So_tet4PoroP1Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  DRT::UTILS::ComputeFluidDNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return nullspace;
 }

@@ -51,9 +51,12 @@ void DRT::ELEMENTS::ConstraintElement3Type::NodalBlockInformation(
 {
 }
 
-void DRT::ELEMENTS::ConstraintElement3Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::ConstraintElement3Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
+  Epetra_SerialDenseMatrix nullspace;
+  dserror("method ComputeNullSpace not implemented!");
+  return nullspace;
 }
 
 

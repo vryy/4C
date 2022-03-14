@@ -71,12 +71,12 @@ void DRT::ELEMENTS::RigidsphereType::NodalBlockInformation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-// TODO: the function ComputeNullSpace has still to be implemented
-void DRT::ELEMENTS::RigidsphereType::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::RigidsphereType::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  dserror("Function not implemented yet.");
-  // DRT::UTILS::ComputeXFluid3DNullSpace( dis, ns, x0, numdf, dimns );
+  Epetra_SerialDenseMatrix nullspace;
+  dserror("method ComputeNullSpace not implemented!");
+  return nullspace;
 }
 
 /*----------------------------------------------------------------------*

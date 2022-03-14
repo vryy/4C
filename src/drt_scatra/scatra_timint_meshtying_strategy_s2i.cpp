@@ -3474,11 +3474,14 @@ void SCATRA::MeshtyingStrategyS2I::EquipExtendedSolverWithNullSpaceInfo() const
     mllist.set("null space: dimension", 1);
     mllist.set("null space: type", "pre-computed");
     mllist.set("null space: add default vectors", false);
-    const Teuchos::RCP<std::vector<double>> ns =
-        Teuchos::rcp(new std::vector<double>(scatratimint_->DofRowMap(2)->NumMyElements(), 1.));
-    mllist.set<Teuchos::RCP<std::vector<double>>>("nullspace", ns);
-    mllist.set("null space: vectors", &((*ns)[0]));
-    mllist.set<bool>("ML validate parameter list", false);
+
+    const Teuchos::RCP<Epetra_MultiVector> nullspace =
+        Teuchos::rcp(new Epetra_MultiVector(*(scatratimint_->DofRowMap(2)), 1, true));
+    nullspace->PutScalar(1.0);
+
+    mllist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
+    mllist.set("null space: vectors", nullspace->Values());
+    mllist.set("ML validate parameter list", false);
   }
 }  // SCATRA::MeshtyingStrategyS2I::BuildBlockNullSpaces
 

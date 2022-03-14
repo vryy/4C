@@ -333,6 +333,30 @@ namespace LINALG
   Teuchos::RCP<Epetra_Map> ComputeDofMapFromNodeMap(
       const int dofset_id, const Epetra_Map& node_map, const DRT::DiscretizationInterface& discret);
 
+  /*! \brief Write values from a std::vector to a Epetra_MultiVector
+   *
+   *  The data layout in the std::vector is consecutivly ordered. The Epetra_MultiVector consists
+   *  of several single vectors put together after each other.
+   *
+   *  \param(in) stdVector:         A std::vector<double> to read data from.
+   *  \param(in) epetraMultiVector: A Epetra_MultiVector to write data to.
+   *  \param(in) blockSize:         Block size of the Epetra_MultiVector.
+   */
+  void StdVectorToEpetraMultiVector(const std::vector<double>& stdVector,
+      Teuchos::RCP<Epetra_MultiVector> epetraMultiVector, const int blockSize);
+
+  /*! \brief Write values from a std::vector to a Epetra_MultiVector
+   *
+   *  The data layout in the std::vector is consecutivly ordered. The Epetra_MultiVector consists
+   *  of several single vectors put together after each other.
+   *
+   *  \param(in) epetraMultiVector: A Epetra_MultiVector to read data from.
+   *  \param(in) stdVector:         A std::vector<double> to read data to.
+   *  \param(in) blockSize:         Block size of the Epetra_MultiVector.
+   */
+  void EpetraMultiVectorToStdVector(const Teuchos::RCP<Epetra_MultiVector> epetraMultiVector,
+      std::vector<double>& stdVector, const int blockSize);
+
 }  // namespace LINALG
 
 #endif /* SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_MANIPULATION_H_ */

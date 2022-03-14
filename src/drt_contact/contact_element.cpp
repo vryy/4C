@@ -33,9 +33,12 @@ void CONTACT::CoElementType::NodalBlockInformation(
 {
 }
 
-void CONTACT::CoElementType::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix CONTACT::CoElementType::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
+  Epetra_SerialDenseMatrix nullspace;
+  dserror("method ComputeNullSpace not implemented!");
+  return nullspace;
 }
 
 /*----------------------------------------------------------------------*

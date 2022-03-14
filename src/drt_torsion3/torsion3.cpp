@@ -9,10 +9,10 @@
 /*----------------------------------------------------------------------------*/
 
 #include "torsion3.H"
-#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "../linalg/linalg_utils_nullspace.H"
 
 DRT::ELEMENTS::Torsion3Type DRT::ELEMENTS::Torsion3Type::instance_;
 
@@ -52,10 +52,11 @@ void DRT::ELEMENTS::Torsion3Type::NodalBlockInformation(
   dimns = 6;
 }
 
-void DRT::ELEMENTS::Torsion3Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::Torsion3Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  DRT::UTILS::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid3DNullSpace(node, x0);
+  return nullspace;
 }
 
 void DRT::ELEMENTS::Torsion3Type::SetupElementDefinition(

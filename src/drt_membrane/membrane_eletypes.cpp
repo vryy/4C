@@ -11,9 +11,9 @@
 #include "membrane.H"
 #include "membrane_eletypes.H"
 
-#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_linedefinition.H"
 
+#include "../linalg/linalg_utils_nullspace.H"
 
 /*----------------------------------------------------------------------*
  |  TRI 3 Element                                          fbraeu 06/16 |
@@ -57,10 +57,11 @@ void DRT::ELEMENTS::Membrane_tri3Type::NodalBlockInformation(
   nv = 3;     // default value for no. of velocity dofs
 }
 
-void DRT::ELEMENTS::Membrane_tri3Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::Membrane_tri3Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  DRT::UTILS::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid3DNullSpace(node, x0);
+  return nullspace;
 }
 
 void DRT::ELEMENTS::Membrane_tri3Type::SetupElementDefinition(
@@ -124,10 +125,11 @@ void DRT::ELEMENTS::Membrane_tri6Type::NodalBlockInformation(
   nv = 3;     // default value for no. of velocity dofs
 }
 
-void DRT::ELEMENTS::Membrane_tri6Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::Membrane_tri6Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  DRT::UTILS::ComputeStructure2DNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid2DNullSpace(node, x0);
+  return nullspace;
 }
 
 void DRT::ELEMENTS::Membrane_tri6Type::SetupElementDefinition(
@@ -194,10 +196,11 @@ void DRT::ELEMENTS::Membrane_quad4Type::NodalBlockInformation(
   nv = 3;     // default value for no. of velocity dofs
 }
 
-void DRT::ELEMENTS::Membrane_quad4Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::Membrane_quad4Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  DRT::UTILS::ComputeStructure2DNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid2DNullSpace(node, x0);
+  return nullspace;
 }
 
 void DRT::ELEMENTS::Membrane_quad4Type::SetupElementDefinition(
@@ -264,10 +267,11 @@ void DRT::ELEMENTS::Membrane_quad9Type::NodalBlockInformation(
   nv = 3;     // default value for no. of velocity dofs
 }
 
-void DRT::ELEMENTS::Membrane_quad9Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::Membrane_quad9Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  DRT::UTILS::ComputeStructure2DNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid2DNullSpace(node, x0);
+  return nullspace;
 }
 
 void DRT::ELEMENTS::Membrane_quad9Type::SetupElementDefinition(

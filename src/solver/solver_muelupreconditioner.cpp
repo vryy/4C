@@ -41,6 +41,7 @@
 #include <Xpetra_CrsMatrix.hpp>
 #include <Xpetra_EpetraCrsMatrix.hpp>
 #include <Xpetra_EpetraMap.hpp>
+#include <Xpetra_EpetraMultiVector.hpp>
 #ifndef TRILINOS_Q1_2015
 #include <Xpetra_IO.hpp>
 #endif
@@ -111,7 +112,8 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup(
       Teuchos::RCP<const Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>> rowMap =
           mueluA->getRowMap();
       Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>> nullspace;
-      nullspace = LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromMLList(rowMap, muelulist_);
+      nullspace =
+          LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(rowMap, muelulist_);
 
       mueluOp->SetFixedBlockSize(numdf);
 
@@ -422,8 +424,8 @@ void LINALG::SOLVER::MueLuTsiBlockPreconditioner::Setup(
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 = Teuchos::null;
       {
         // Extract pre-computed nullspace for block (0,0) from Baci's ML parameter list
-        nullspace11 =
-            LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromMLList(stridedMap1, muelulist_);
+        nullspace11 = LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
+            stridedMap1, muelulist_);
 
         // Compute default nullspace for block (1,1)
         {
@@ -708,7 +710,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
     Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 = Teuchos::null;
     {
       // Extract pre-computed nullspace for block (0,0) from Baci's ML parameter list
-      nullspace11 = LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromMLList(
+      nullspace11 = LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
           stridedRangeMapPrimal, muelulist_);
 
       // Compute default nullspace for block (1,1)
@@ -772,7 +774,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>>
-LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromMLList(
+LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
     const Teuchos::RCP<const Xpetra::Map<LO, GO, NO>>& rowMap, Teuchos::ParameterList& muelulist)
 {
   // Extract info about nullspace dimension
@@ -782,19 +784,12 @@ LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromMLList(
   if (nspDimension < 1)
     dserror("Multigrid parameter 'null space: dimension' wrong. It has to be > 0.");
 
-  // Create an Xpetra::MultiVector, where the i-th column will then be filled with the i-th
-  // nullspace vector
+  Teuchos::RCP<Epetra_MultiVector> nsdata =
+      muelulist.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
   Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace =
-      Xpetra::MultiVectorFactory<SC, LO, GO, NO>::Build(rowMap, nspDimension, true);
-  Teuchos::RCP<std::vector<double>> nsdata =
-      muelulist.get<Teuchos::RCP<std::vector<double>>>("nullspace", Teuchos::null);
-  for (size_t dim = 0; dim < Teuchos::as<size_t>(nspDimension); ++dim)
-  {
-    Teuchos::ArrayRCP<SC> nspVectorData = nullspace->getDataNonConst(dim);
-    const LO myLength = nullspace->getLocalLength();
-    for (LO dofLID = 0; dofLID < myLength; ++dofLID)
-      nspVectorData[dofLID] = (*nsdata)[dim * myLength + dofLID];
-  }
+      Teuchos::rcp(new Xpetra::EpetraMultiVectorT<GO, NO>(nsdata));
+  nullspace->replaceMap(rowMap);
+
   return nullspace;
 }
 

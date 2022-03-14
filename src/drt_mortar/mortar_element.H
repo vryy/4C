@@ -47,8 +47,8 @@ namespace MORTAR
     virtual void NodalBlockInformation(
         DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
-    virtual void ComputeNullSpace(
-        DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns);
+    virtual Epetra_SerialDenseMatrix ComputeNullSpace(
+        DRT::Node& node, const double* x0, int numdof, int dimnsp);
 
    private:
     static MortarElementType instance_;

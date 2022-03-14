@@ -20,6 +20,7 @@
 #include "../drt_poroelast/poroelast_monolithic.H"
 
 // LINALG includes
+#include "../linalg/linalg_nullspace.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
@@ -694,16 +695,15 @@ void FPSI::Monolithic::CreateLinearSolver()
     const Epetra_Map& oldmap = *(PoroField()->StructureField()->DofRowMap());
     const Epetra_Map& newmap =
         systemmatrix_->Matrix(structure_block_, structure_block_).EpetraMatrix()->RowMap();
-    solver_->FixMLNullspace(&inv[0], oldmap, newmap, solver_->Params().sublist("Inverse1"));
+    LINALG::NULLSPACE::FixNullSpace(&inv[0], oldmap, newmap, solver_->Params().sublist("Inverse1"));
   }
   // fixing length of Inverse2 nullspace (solver/preconditioner ML)
   {
     std::string inv = "Inverse2";
     const Epetra_Map& oldmap = *(PoroField()->FluidField()->DofRowMap());
-    ;
     const Epetra_Map& newmap =
         systemmatrix_->Matrix(porofluid_block_, porofluid_block_).EpetraMatrix()->RowMap();
-    solver_->FixMLNullspace(&inv[0], oldmap, newmap, solver_->Params().sublist("Inverse2"));
+    LINALG::NULLSPACE::FixNullSpace(&inv[0], oldmap, newmap, solver_->Params().sublist("Inverse2"));
   }
   // fixing length of Inverse3 nullspace (solver/preconditioner ML)
   {
@@ -711,7 +711,7 @@ void FPSI::Monolithic::CreateLinearSolver()
     const Epetra_Map& oldmap = *(FluidField()->DofRowMap());
     const Epetra_Map& newmap =
         systemmatrix_->Matrix(fluid_block_, fluid_block_).EpetraMatrix()->RowMap();
-    solver_->FixMLNullspace(&inv[0], oldmap, newmap, solver_->Params().sublist("Inverse3"));
+    LINALG::NULLSPACE::FixNullSpace(&inv[0], oldmap, newmap, solver_->Params().sublist("Inverse3"));
   }
   // fixing length of Inverse4 nullspace (solver/preconditioner ML)
   {
@@ -720,7 +720,7 @@ void FPSI::Monolithic::CreateLinearSolver()
     ;
     const Epetra_Map& newmap =
         systemmatrix_->Matrix(ale_i_block_, ale_i_block_).EpetraMatrix()->RowMap();
-    solver_->FixMLNullspace(&inv[0], oldmap, newmap, solver_->Params().sublist("Inverse4"));
+    LINALG::NULLSPACE::FixNullSpace(&inv[0], oldmap, newmap, solver_->Params().sublist("Inverse4"));
   }
 }
 

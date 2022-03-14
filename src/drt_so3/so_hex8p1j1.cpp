@@ -54,10 +54,12 @@ void DRT::ELEMENTS::So_Hex8P1J1Type::NodalBlockInformation(
   //   nv = 3;
 }
 
-void DRT::ELEMENTS::So_Hex8P1J1Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::So_Hex8P1J1Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  //   DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+  Epetra_SerialDenseMatrix nullspace;
+  dserror("method ComputeNullSpace not implemented!");
+  return nullspace;
 }
 
 void DRT::ELEMENTS::So_Hex8P1J1Type::SetupElementDefinition(

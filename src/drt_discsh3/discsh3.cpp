@@ -9,10 +9,11 @@
 #include "discsh3.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
+
+#include "../linalg/linalg_utils_nullspace.H"
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 
@@ -56,10 +57,11 @@ void DRT::ELEMENTS::DiscSh3Type::NodalBlockInformation(
   dimns = 6;  // Number of dimensions. 3 Translations, 3 rotations, Global dofs
 }
 
-void DRT::ELEMENTS::DiscSh3Type::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::DiscSh3Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  DRT::UTILS::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
+  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid3DNullSpace(node, x0);
+  return nullspace;
 }
 
 void DRT::ELEMENTS::DiscSh3Type::SetupElementDefinition(

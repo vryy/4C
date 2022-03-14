@@ -12,12 +12,15 @@
 #include "drt_discret.H"
 #include "drt_exporter.H"
 #include "drt_dserror.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "drt_elementtype.H"
+
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "../solver/solver_solverparameters.H"
 
 /*----------------------------------------------------------------------*
  |  compute nullspace of system (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
+// TODO: Rename function name ... as this is not really true what it does
 void DRT::Discretization::ComputeNullSpaceIfNecessary(
     Teuchos::ParameterList& solveparams, bool recompute)
 {
@@ -109,8 +112,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   // see whether we have previously computed the nullspace
   // and recomputation is enforced
   Teuchos::ParameterList& mllist = *mllist_ptr;
-  Teuchos::RCP<std::vector<double>> ns =
-      mllist.get<Teuchos::RCP<std::vector<double>>>("nullspace", Teuchos::null);
+  Teuchos::RCP<Epetra_MultiVector> ns =
+      mllist.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
   if (ns != Teuchos::null && !recompute) return;
 
   // no, we have not previously computed the nullspace
@@ -120,104 +123,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   if (!Filled()) dserror("FillComplete was not called on discretization");
   if (!HaveDofs()) dserror("Discretization has no dofs assigned");
 
-  // compute nullspace and fill it into the ML parameter list
-  ComputeNullSpaceML(mllist, numdf, dimns);
-}
-
-/*--------------------------------------------------------------------------*
- |  directly compute nullspace (for Krylov projection)   (public) nis Feb13 |
- *--------------------------------------------------------------------------*/
-void DRT::Discretization::ComputeNullSpaceML(
-    Teuchos::ParameterList& mllist, const int numdf, const int dimns)
-{
-  mllist.set("PDE equations", numdf);
-  mllist.set("null space: dimension", dimns);
-  mllist.set("null space: type", "pre-computed");
-  mllist.set("null space: add default vectors", false);
-
-  // allocate dimns times the local length of the rowmap
-  const int lrows = DofRowMap(0)->NumMyElements();
-  Teuchos::RCP<std::vector<double>> ns = Teuchos::rcp(new std::vector<double>(dimns * lrows));
-  double* nullsp = &((*ns)[0]);
-  mllist.set<Teuchos::RCP<std::vector<double>>>("nullspace", ns);
-  mllist.set("null space: vectors", nullsp);
-  mllist.set<bool>(
-      "ML validate parameter list", false);  // otherwise, ML would not tolerate the Teuchos::RCP
-                                             // pointer to the null space in its list
-
-  // compute null space directly. that will call eletypes.
-  ComputeNullSpace(ns, numdf, dimns);
-}
-
-/*--------------------------------------------------------------------------*
- |  directly compute nullspace (for Krylov projection)   (public) nis Feb13 |
- *--------------------------------------------------------------------------*/
-void DRT::Discretization::ComputeNullSpace(
-    Teuchos::RCP<std::vector<double>> nullspace, int numdf, int dimns)
-{
-  // get number of dofs to check or allocate nullspace storage
-  const int lrows = DofRowMap(0)->NumMyElements();
-
-  // if nullspace is null then do everything from scratch
-  if (nullspace->size() == 0)
-  {
-    int nv, np = 0;  // dummy - not needed here
-
-    // downwinding needs nodal block information, compute it
-    if (NumMyRowElements())
-    {
-      // We assume that all elements are of equal type
-      DRT::Element* dwele = lRowElement(0);
-      dwele->ElementType().NodalBlockInformation(dwele, numdf, dimns, nv, np);
-    }
-
-    // communicate data to procs without row element
-    int ldata[2] = {numdf, dimns};
-    int gdata[2] = {0, 0};
-    Comm().MaxAll(&ldata[0], &gdata[0], 2);
-    numdf = gdata[0];
-    dimns = gdata[1];
-
-    // allocate storage for vector holding the nullspace data
-    nullspace->resize(dimns * lrows, 0.0);
-  }
-  // check if nullspace has correct size
-  else if (((ssize_t)(nullspace->size()) != (dimns * lrows) or numdf == 0))
-  {
-    dserror("nullspace does not have correct size or numdf or dimns are zero");
-  }
-
-  // check whether numdf and dimns are consistent among all procs
-  const int numproc = Comm().NumProc();
-  int sumnumdf;
-  Comm().SumAll(&numdf, &sumnumdf, 1);
-  if (sumnumdf != numdf * numproc) dserror("numdf not consistent among procs");
-  int sumdimns;
-  Comm().SumAll(&dimns, &sumdimns, 1);
-  if (sumdimns != dimns * numproc) dserror("dimns not consistent among procs");
-
-  // check if dimns is possible
-  if (dimns > 10) dserror("Nullspace size only upto 10 supported");
-
-  // compute nullspace for simple case: vector of ones
-  if (dimns == 1 && numdf == 1)
-  {
-    for (int i = 0; i < lrows; ++i) (*nullspace)[i] = 1.0;
-    return;
-  }
-
-  // for rigid body rotations
-  // compute nodal center of the discretization
-  double x0send[3] = {0.0, 0.0, 0.0};
-  for (int i = 0; i < NumMyRowNodes(); ++i)
-    for (int j = 0; j < 3; ++j) x0send[j] += lRowNode(i)->X()[j];
-  double x0[3];
-  Comm().SumAll(x0send, x0, 3);
-  for (int i = 0; i < 3; ++i) x0[i] /= NumGlobalNodes();
-
-  // let the elementtype compute the nullspace
-  DRT::Element* dwele = lRowElement(0);
-  dwele->ElementType().ComputeNullSpace(*this, *nullspace, x0, numdf, dimns);
+  // compute solver parameters and set them into list
+  LINALG::SOLVER::Parameters::ComputeSolverParameters(*this, mllist, numdf, dimns);
 }
 
 /*----------------------------------------------------------------------*

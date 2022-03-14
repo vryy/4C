@@ -1656,34 +1656,6 @@ namespace DRT
         Teuchos::ParameterList& solveparams, bool recompute = false);
 
     /*!
-    \brief Compute the nullspace of the discretization
-
-    A given ML parameter list is filled with the nullspace that is computed within
-    ComputeNullSpace()
-
-    \param mllist (in): List of ML parameters, to be filled with nullspace
-
-    \sa ComputeNullSpaceIfNecessary()
-    \sa ComputeNullSpace()
-    */
-    virtual void ComputeNullSpaceML(
-        Teuchos::ParameterList& mllist, const int numdf, const int dimns);
-
-    /*!
-    \brief Compute the nullspace of the discretization
-
-    This method computes the nullspace regardless of solver settings etc. It is
-    needed for the Krylov space projection, especially to compute the rotational
-    rigid body modes in solids.
-
-    \param ns (out): the nullspace vectors
-    \param numdf (in): no. of degrees of freedom per node
-    \param dimns (in): no. of nullspace vectors
-    */
-    virtual void ComputeNullSpace(
-        Teuchos::RCP<std::vector<double>> nullspace, int numdf = 0, int dimns = 0);
-
-    /*!
      * \brief Assemble scalar quantities across elements
      *
      * Every element is only called \b once by its owning processor. (We are

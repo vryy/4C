@@ -35,6 +35,7 @@
 #include "../drt_adapter/ad_art_net.H"
 
 #include "../linalg/linalg_equilibrate.H"
+#include "../linalg/linalg_nullspace.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
@@ -1755,7 +1756,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
   scatramsht_->ArtScatraField()->Discretization()->ComputeNullSpaceIfNecessary(
       blocksmootherparams5);
   // fix the null space if some DOFs are condensed out
-  LINALG::Solver::FixMLNullspace("ArteryScatra",
+  LINALG::NULLSPACE::FixNullSpace("ArteryScatra",
       *(scatramsht_->ArtScatraField()->Discretization()->DofRowMap(0)),
       *(scatramsht_->ArtScatraDofRowMap()), blocksmootherparams5);
 

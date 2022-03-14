@@ -15,10 +15,10 @@
 
 // Todo @grill: check for obsolete header inclusions
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
+#include "../linalg/linalg_utils_nullspace.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_fem_general/largerotations.H"
@@ -88,10 +88,12 @@ void DRT::ELEMENTS::Beam3rType::NodalBlockInformation(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3rType::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam3rType::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
+  Epetra_SerialDenseMatrix nullspace;
   dserror("method ComputeNullSpace not implemented for element type beam3r!");
+  return nullspace;
 }
 
 /*------------------------------------------------------------------------------------------------*

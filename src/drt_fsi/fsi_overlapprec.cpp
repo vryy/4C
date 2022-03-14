@@ -19,6 +19,7 @@
 
 #include "../drt_lib/drt_discret.H"
 
+#include "../linalg/linalg_nullspace.H"
 #include "../linalg/linalg_precond.H"
 #include "../linalg/linalg_solver.H"
 
@@ -59,19 +60,19 @@ FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(
     LINALG::Solver& solver = *(structure.LinearSolver());
     const Epetra_Map& oldmap = *(structure.Discretization()->DofRowMap());
     const Epetra_Map& newmap = Matrix(0, 0).EpetraMatrix()->RowMap();
-    solver.FixMLNullspace("Structure", oldmap, newmap, solver.Params());
+    LINALG::NULLSPACE::FixNullSpace("Structure", oldmap, newmap, solver.Params());
   }
   {
     LINALG::Solver& solver = *(fluid.LinearSolver());
     const Epetra_Map& oldmap = *(fluid.DofRowMap());
     const Epetra_Map& newmap = Matrix(1, 1).EpetraMatrix()->RowMap();
-    solver.FixMLNullspace("Fluid", oldmap, newmap, solver.Params());
+    LINALG::NULLSPACE::FixNullSpace("Fluid", oldmap, newmap, solver.Params());
   }
   {
     LINALG::Solver& solver = *(ale.LinearSolver());
     const Epetra_Map& oldmap = *(ale.Discretization()->DofRowMap());
     const Epetra_Map& newmap = Matrix(2, 2).EpetraMatrix()->RowMap();
-    solver.FixMLNullspace("Ale", oldmap, newmap, solver.Params());
+    LINALG::NULLSPACE::FixNullSpace("Ale", oldmap, newmap, solver.Params());
   }
 }
 
