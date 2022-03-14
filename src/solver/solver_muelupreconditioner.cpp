@@ -786,8 +786,14 @@ LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
 
   Teuchos::RCP<Epetra_MultiVector> nsdata =
       muelulist.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
+
   Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace =
+#ifdef TRILINOS_Q1_2015
+      Teuchos::rcp(new Xpetra::EpetraMultiVector(nsdata));
+#else
       Teuchos::rcp(new Xpetra::EpetraMultiVectorT<GO, NO>(nsdata));
+#endif
+
   nullspace->replaceMap(rowMap);
 
   return nullspace;
