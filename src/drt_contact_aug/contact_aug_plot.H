@@ -12,7 +12,7 @@ MATLAB, PGFPlot or other tools.
 #define SRC_DRT_CONTACT_AUG_CONTACT_AUG_PLOT_H_
 
 #include <Teuchos_RCP.hpp>
-#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
+#ifdef TRILINOS_2015_Q1
 #include <NOX_Abstract_PrePostOperator.H>
 #else
 #include <NOX_Observer.hpp>
@@ -299,7 +299,7 @@ namespace NOX
       {
         namespace CONTACT
         {
-#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
+#ifdef TRILINOS_2015_Q1
           class Plot : public NOX::Abstract::PrePostOperator
 #else
           class Plot : public NOX::Observer

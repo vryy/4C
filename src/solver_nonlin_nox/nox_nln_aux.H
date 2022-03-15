@@ -29,7 +29,7 @@ namespace LINALG
 }  // namespace LINALG
 namespace NOX
 {
-#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
+#ifdef TRILINOS_2015_Q1
   namespace Abstract
   {
     class PrePostOperator;
@@ -147,7 +147,7 @@ namespace NOX
 
       /// add pre/post operator to pre/post operator vector
       void AddToPrePostOpVector(Teuchos::ParameterList& p_nox_opt,
-#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
+#ifdef TRILINOS_2015_Q1
           const Teuchos::RCP<NOX::Abstract::PrePostOperator>& ppo_ptr);
 #else
           const Teuchos::RCP<NOX::Observer>& ppo_ptr);

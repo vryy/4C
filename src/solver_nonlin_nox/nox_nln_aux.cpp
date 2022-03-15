@@ -25,7 +25,7 @@
 #include <Epetra_Vector.h>
 
 #include <NOX_Abstract_ImplicitWeighting.H>
-#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
+#ifdef TRILINOS_2015_Q1
 #include <NOX_PrePostOperator_Vector.H>
 #else
 #include <NOX_Observer_Vector.hpp>
@@ -598,7 +598,7 @@ enum NOX::Abstract::Vector::NormType NOX::NLN::AUX::String2NormType(const std::s
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
+#ifdef TRILINOS_2015_Q1
 void NOX::NLN::AUX::AddToPrePostOpVector(
     Teuchos::ParameterList& p_nox_opt, const Teuchos::RCP<NOX::Abstract::PrePostOperator>& ppo_ptr)
 {

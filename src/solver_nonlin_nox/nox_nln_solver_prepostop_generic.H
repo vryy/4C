@@ -11,7 +11,7 @@
 #ifndef NOX_NLN_PREPOSTOPERATOR_H_
 #define NOX_NLN_PREPOSTOPERATOR_H_
 
-#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
+#ifdef TRILINOS_2015_Q1
 #include <NOX_Abstract_PrePostOperator.H>  // base class
 #else
 #include <NOX_Observer.hpp>
@@ -34,7 +34,7 @@ namespace NOX
          * derived from the LineSearchBased class.
          *
          * \author Michael Hiermeier */
-#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_Q1_2019)
+#ifdef TRILINOS_2015_Q1
         class Generic : public NOX::Abstract::PrePostOperator
 #else
         class Generic : public NOX::Observer

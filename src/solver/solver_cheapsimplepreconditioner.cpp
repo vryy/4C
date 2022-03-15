@@ -88,7 +88,7 @@ LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::CheapSIMPLE_BlockPreconditioner
 void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_Operator> A,
     const Teuchos::ParameterList& origvlist, const Teuchos::ParameterList& origplist)
 {
-#ifdef TRILINOS_DEVELOP
+#ifdef TRILINOS_2022_Q1
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
 #else
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrix;
@@ -242,7 +242,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
         if (nsdata == Teuchos::null) dserror("Error: null space data is empty");
 
         Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nspVector =
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
             Teuchos::rcp(new Xpetra::EpetraMultiVector(nsdata));
 #else
             Teuchos::rcp(new Xpetra::EpetraMultiVectorT<GO, NO>(nsdata));
@@ -323,7 +323,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
         if (nsdata == Teuchos::null) dserror("Error: null space data is empty");
 
         Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nspVector =
-#ifdef TRILINOS_Q1_2015
+#ifdef TRILINOS_2015_Q1
             Teuchos::rcp(new Xpetra::EpetraMultiVector(nsdata));
 #else
             Teuchos::rcp(new Xpetra::EpetraMultiVectorT<GO, NO>(nsdata));

@@ -22,7 +22,7 @@
 #include <MueLu_UseDefaultTypes.hpp>
 #include <Xpetra_CrsMatrix.hpp>
 #include <Xpetra_CrsMatrixWrap.hpp>
-#ifndef TRILINOS_Q1_2015
+#ifndef TRILINOS_2015_Q1
 #include <Xpetra_IO.hpp>
 #endif
 #include <Xpetra_EpetraMultiVector.hpp>
@@ -246,7 +246,7 @@ void LINALG::PrintMapInMatlabFormat(std::string fname, const Epetra_Map& map, co
   return;
 }
 
-#ifndef TRILINOS_Q1_2015
+#ifndef TRILINOS_2015_Q1
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void LINALG::WriteEpetraCrsMatrixAsXpetra(
