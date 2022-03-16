@@ -52,7 +52,7 @@ namespace NOX
         template <typename T>
         struct rcp_comp
         {
-          inline bool operator()(const Teuchos::RCP<T>& i, const Teuchos::RCP<T>& j)
+          inline bool operator()(const Teuchos::RCP<T>& i, const Teuchos::RCP<T>& j) const
           {
             return i.get() < j.get();
           }

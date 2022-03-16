@@ -30,22 +30,22 @@ namespace GEO
     {
      public:
       /// compare operator for plain_volumecell_sets
-      bool operator()(const plain_volumecell_set& s1, const plain_volumecell_set& s2);
+      bool operator()(const plain_volumecell_set& s1, const plain_volumecell_set& s2) const;
 
       /// compare operator for sets of plain_volumecell_sets
       bool operator()(const std::set<plain_volumecell_set, Cmp>& set1,
-          const std::set<plain_volumecell_set, Cmp>& set2);
+          const std::set<plain_volumecell_set, Cmp>& set2) const;
 
       /// compare routine for sets of plain_volumecell_set
       bool Compare(const std::set<plain_volumecell_set, Cmp>& set1,
-          const std::set<plain_volumecell_set, Cmp>& set2);
+          const std::set<plain_volumecell_set, Cmp>& set2) const;
 
      private:
       /// compare routine for plain_volumecell_sets
-      bool Compare(const plain_volumecell_set& s1, const plain_volumecell_set& s2);
+      bool Compare(const plain_volumecell_set& s1, const plain_volumecell_set& s2) const;
 
       /// compare routine for volumecells based on point ids
-      bool Compare(VolumeCell* vc1, VolumeCell* vc2);
+      bool Compare(VolumeCell* vc1, VolumeCell* vc2) const;
     };
 
     /*----------------------------------------------------------------------------*/
@@ -299,7 +299,7 @@ namespace GEO
       void CollectNodalDofSets(bool connect_ghost_with_standard_nds);
 
       /// compare operator for sorting NodalDofSets
-      bool operator()(NodalDofSet* nodaldofset1, NodalDofSet* nodaldofset2);
+      bool operator()(NodalDofSet* nodaldofset1, NodalDofSet* nodaldofset2) const;
 
 
 
