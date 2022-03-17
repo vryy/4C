@@ -22,6 +22,7 @@
 #include "../drt_contact/contact_interface.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "springdashpot.H"
+#include "../drt_truss3/truss3.H"
 
 /*----------------------------------------------------------------------*
  |                                                         pfaller Apr15|
@@ -111,15 +112,15 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<LINALG::SparseMatrix> stif
   actdisc_->SetState("offset_prestress", offset_prestr_new_);
 
   // get values and switches from the condition
-  const std::vector<int>* onoff = spring_->Get<std::vector<int>>("onoff");
-  const std::vector<double>* springstiff = spring_->Get<std::vector<double>>("stiff");
-  const std::vector<int>* numfuncstiff = spring_->Get<std::vector<int>>("funct_stiff");
-  const std::vector<double>* dashpotvisc = spring_->Get<std::vector<double>>("visco");
-  const std::vector<int>* numfuncvisco = spring_->Get<std::vector<int>>("funct_visco");
-  const std::vector<double>* disploffset = spring_->Get<std::vector<double>>("disploffset");
-  const std::vector<int>* numfuncdisploffset = spring_->Get<std::vector<int>>("funct_disploffset");
-  const std::vector<int>* numfuncnonlinstiff = spring_->Get<std::vector<int>>("funct_nonlinstiff");
-  const std::string* direction = spring_->Get<std::string>("direction");
+  const auto* onoff = spring_->Get<std::vector<int>>("onoff");
+  const auto* springstiff = spring_->Get<std::vector<double>>("stiff");
+  const auto* numfuncstiff = spring_->Get<std::vector<int>>("funct_stiff");
+  const auto* dashpotvisc = spring_->Get<std::vector<double>>("visco");
+  const auto* numfuncvisco = spring_->Get<std::vector<int>>("funct_visco");
+  const auto* disploffset = spring_->Get<std::vector<double>>("disploffset");
+  const auto* numfuncdisploffset = spring_->Get<std::vector<int>>("funct_disploffset");
+  const auto* numfuncnonlinstiff = spring_->Get<std::vector<int>>("funct_nonlinstiff");
+  const auto* direction = spring_->Get<std::string>("direction");
 
   // time-integration factor for stiffness contribution of dashpot, d(v_{n+1})/d(d_{n+1})
   const double time_fac = p.get("time_fac", 0.0);
@@ -139,57 +140,163 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<LINALG::SparseMatrix> stif
   params.set("funct_nonlinstiff", numfuncnonlinstiff);
   params.set("total time", total_time);
 
-  std::map<int, Teuchos::RCP<DRT::Element>>& geom = spring_->Geometry();
-
-  // if (geom.empty()) dserror("evaluation of condition with empty geometry");
-  // no check for empty geometry here since in parallel computations
-  // can exist processors which do not own a portion of the elements belonging
-  // to the condition geometry
-  std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
-  for (auto& curr : geom)
+  switch (spring_->GType())
   {
-    // get element location vector and ownerships
-    std::vector<int> lm;
-    std::vector<int> lmowner;
-    std::vector<int> lmstride;
-
-    curr.second->LocationVector(*actdisc_, lm, lmowner, lmstride);
-
-    const int eledim = (int)lm.size();
-
-    // define element matrices and vectors
-    Epetra_SerialDenseMatrix elematrix1;
-    Epetra_SerialDenseMatrix elematrix2;
-    Epetra_SerialDenseVector elevector1;
-    Epetra_SerialDenseVector elevector2;
-    Epetra_SerialDenseVector elevector3;
-
-    elevector1.Size(eledim);
-    elevector2.Size(eledim);
-    elevector3.Size(eledim);
-    elematrix1.Shape(eledim, eledim);
-
-    int err = curr.second->Evaluate(
-        params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
-    if (err) dserror("error while evaluating elements");
-
-    if (assvec) LINALG::Assemble(*fint, elevector1, lm, lmowner);
-    if (assmat) stiff->Assemble(curr.second->Id(), lmstride, elematrix1, lm, lmowner);
-
-    // save spring stress for postprocessing
-    const int numdim = 3;
-    const int numdf = 3;
-    std::vector<double> stress(numdim, 0.0);
-
-    for (int node = 0; node < curr.second->NumNode(); ++node)
+    case DRT::Condition::Surface:
     {
-      for (int dim = 0; dim < numdim; dim++) stress[dim] = elevector3[node * numdf + dim];
-      springstress_.insert(
-          std::pair<int, std::vector<double>>(curr.second->NodeIds()[node], stress));
-    }
-  } /* end of loop over geometry */
+      std::map<int, Teuchos::RCP<DRT::Element>>& geom = spring_->Geometry();
 
-  return;
+      // no check for empty geometry here since in parallel computations
+      // can exist processors which do not own a portion of the elements belonging
+      // to the condition geometry
+      std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
+      for (auto& curr : geom)
+      {
+        // get element location vector and ownerships
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
+
+        curr.second->LocationVector(*actdisc_, lm, lmowner, lmstride);
+
+        const int eledim = (int)lm.size();
+
+        // define element matrices and vectors
+        Epetra_SerialDenseMatrix elematrix1;
+        Epetra_SerialDenseMatrix elematrix2;
+        Epetra_SerialDenseVector elevector1;
+        Epetra_SerialDenseVector elevector2;
+        Epetra_SerialDenseVector elevector3;
+
+        elevector1.Size(eledim);
+        elevector2.Size(eledim);
+        elevector3.Size(eledim);
+        elematrix1.Shape(eledim, eledim);
+
+        int err = curr.second->Evaluate(
+            params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
+        if (err) dserror("error while evaluating elements");
+
+        if (assvec) LINALG::Assemble(*fint, elevector1, lm, lmowner);
+        if (assmat) stiff->Assemble(curr.second->Id(), lmstride, elematrix1, lm, lmowner);
+
+        // save spring stress for postprocessing
+        const int numdim = 3;
+        const int numdf = 3;
+        std::vector<double> stress(numdim, 0.0);
+
+        for (int node = 0; node < curr.second->NumNode(); ++node)
+        {
+          for (int dim = 0; dim < numdim; dim++) stress[dim] = elevector3[node * numdf + dim];
+          springstress_.insert(
+              std::pair<int, std::vector<double>>(curr.second->NodeIds()[node], stress));
+        }
+      } /* end of loop over geometry */
+      break;
+    }
+    case DRT::Condition::Point:
+    {
+      if (*direction == "xyz")
+      {
+        // get all nodes of this condition and check, if it's just one -> get this node
+        const auto* nodes_cond = spring_->Nodes();
+        if (nodes_cond->size() != 1) dserror("Point Robin condition must be defined on one node.");
+        const int node_gid = nodes_cond->at(0);
+        auto* node = actdisc_->gNode(node_gid);
+
+        // get adjacent element of this node and check if it's just one -> get this element and cast
+        // it to truss element
+        if (node->NumElement() != 1) dserror("Node may only have one element");
+        auto* ele = node->Elements();
+        auto* truss_ele = dynamic_cast<DRT::ELEMENTS::Truss3*>(ele[0]);
+        if (truss_ele == nullptr)
+        {
+          dserror(
+              "Currently, only Truss Elements are allowed to evaluate point Robin Conditon. Cast "
+              "to "
+              "Truss Element failed.");
+        }
+
+        // dofs of this node
+        auto dofs_gid = actdisc_->Dof(0, node);
+
+        // get cross section for integration of this element
+        const double cross_section = truss_ele->CrossSection();
+
+        for (size_t dof = 0; dof < onoff->size(); ++dof)
+        {
+          const int dof_onoff = (*onoff)[dof];
+          if (dof_onoff == 0) continue;
+
+          const int dof_gid = dofs_gid[dof];
+          const int dof_lid = actdisc_->DofRowMap()->LID(dof_gid);
+
+          const double dof_disp = (*disp)[dof_lid];
+          const double dof_vel = (*velo)[dof_lid];
+
+          // compute stiffness, viscosity, and initial offset from functions
+          const double dof_stiffness =
+              (*numfuncstiff)[dof] != 0
+                  ? (*springstiff)[dof] * DRT::Problem::Instance()
+                                              ->Funct((*numfuncstiff)[dof] - 1)
+                                              .EvaluateTime(total_time)
+                  : (*springstiff)[dof];
+          const double dof_viscosity =
+              (*numfuncvisco)[dof] != 0
+                  ? (*dashpotvisc)[dof] * DRT::Problem::Instance()
+                                              ->Funct((*numfuncvisco)[dof] - 1)
+                                              .EvaluateTime(total_time)
+                  : (*dashpotvisc)[dof];
+          const double dof_disploffset =
+              (*numfuncdisploffset)[dof] != 0
+                  ? (*disploffset)[dof] * DRT::Problem::Instance()
+                                              ->Funct((*numfuncdisploffset)[dof] - 1)
+                                              .EvaluateTime(total_time)
+                  : (*disploffset)[dof];
+
+          // displacement related forces and derivatives
+          double force_disp = 0.0;
+          double force_disp_deriv = 0.0;
+          if ((*numfuncnonlinstiff)[dof] == 0)
+          {
+            force_disp = dof_stiffness * (dof_disp - dof_disploffset);
+            force_disp_deriv = dof_stiffness;
+          }
+          else
+          {
+            std::array<double, 3> displ = {(*disp)[0], (*disp)[1], (*disp)[2]};
+            force_disp = DRT::Problem::Instance()
+                             ->Funct((*numfuncnonlinstiff)[dof] - 1)
+                             .Evaluate(0, displ.data(), total_time);
+
+            force_disp_deriv = (DRT::Problem::Instance()
+                                    ->Funct((*numfuncnonlinstiff)[dof] - 1)
+                                    .EvaluateSpatialDerivative(0, displ.data(), total_time))[dof];
+          }
+
+          // velocity related forces and derivatives
+          const double force_vel = dof_viscosity * dof_vel;
+          const double force_vel_deriv = dof_viscosity;
+
+          const double force = force_disp + force_vel;
+          const double stiffness = force_disp_deriv + force_vel_deriv * time_fac;
+
+          // assemble contributions into force vector and stiffness matrix
+          (*fint)[dof_lid] += force * cross_section;
+          if (stiff != Teuchos::null) stiff->Assemble(-stiffness * cross_section, dof_gid, dof_gid);
+        }
+      }
+      else
+      {
+        dserror(
+            "Only 'xyz' for 'DIRECTION' supported in 'DESIGN POINT ROBIN SPRING DASHPOT "
+            "CONDITIONS'");
+      }
+      break;
+    }
+    default:
+      dserror("Geometry type for spring dashpot must either be either 'Surface' or 'Point'.");
+  }
 }
 
 
@@ -363,22 +470,32 @@ void UTILS::SpringDashpot::EvaluateForceStiff(LINALG::SparseMatrix& stiff, Epetr
           const auto* numfuncvisco = spring_->Get<std::vector<int>>("funct_visco");
           const auto* numfuncdisploffset = spring_->Get<std::vector<int>>("funct_disploffset");
           const auto* numfuncnonlinstiff = spring_->Get<std::vector<int>>("funct_nonlinstiff");
-          for (unsigned i = 0; i < numfuncstiff->size(); ++i)
-            if ((*numfuncstiff)[i])
+          for (int dof_numfuncstiff : *numfuncstiff)
+          {
+            if (dof_numfuncstiff != 0)
+            {
               dserror(
                   "temporal dependence of stiffness not implemented for current surface "
                   "evaluation");
-          for (unsigned i = 0; i < numfuncvisco->size(); ++i)
-            if ((*numfuncvisco)[i])
+            }
+          }
+          for (int dof_numfuncvisco : *numfuncvisco)
+          {
+            if (dof_numfuncvisco != 0)
               dserror(
                   "temporal dependence of damping not implemented for current surface evaluation");
-          for (unsigned i = 0; i < numfuncdisploffset->size(); ++i)
-            if ((*numfuncdisploffset)[i])
+          }
+          for (int dof_numfuncdisploffset : *numfuncdisploffset)
+          {
+            if (dof_numfuncdisploffset != 0)
               dserror(
                   "temporal dependence of offset not implemented for current surface evaluation");
-          for (unsigned i = 0; i < numfuncnonlinstiff->size(); ++i)
-            if ((*numfuncnonlinstiff)[i])
+          }
+          for (int dof_numfuncnonlinstiff : *numfuncnonlinstiff)
+          {
+            if (dof_numfuncnonlinstiff != 0)
               dserror("Nonlinear spring not implemented for current surface evaluation");
+          }
 
           // spring displacement
           gap = gap_[gid];

@@ -127,6 +127,9 @@ namespace DRT
 
       inline bool IsParamsInterface() const override { return (not interface_ptr_.is_null()); }
 
+      //! cross section area
+      double CrossSection() const { return crosssec_; }
+
       //! Return the current length of the truss from @p curr_nodal_coords
       double CurrLength(const LINALG::Matrix<6, 1>& curr_nodal_coords) const
       {
