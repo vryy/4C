@@ -65,15 +65,10 @@ namespace UTILS
      */
     SpringDashpot(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<DRT::Condition> cond);
 
-    /*!
-    \brief destructor
-     */
-    ~SpringDashpot() { return; };
-
     //! add contribution of spring dashpot BC to residual vector
     // old version, NOT consistently integrated over element surface!!
     void EvaluateForce(Epetra_Vector& fint, const Teuchos::RCP<const Epetra_Vector> disp,
-        const Teuchos::RCP<const Epetra_Vector> velp, Teuchos::ParameterList p);
+        const Teuchos::RCP<const Epetra_Vector> velp, const Teuchos::ParameterList& p);
 
     //! add contribution of spring dashpot BC to stiffness matrix
     // old version, NOT consistently integrated over element surface!!
@@ -232,4 +227,4 @@ namespace UTILS
 
   };  // class
 }  // namespace UTILS
-#endif /* SPRINGDASHPOT_MANAGER_NEW_H */
+#endif /* SPRINGDASHPOT_NEW_H */
