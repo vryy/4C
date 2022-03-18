@@ -200,7 +200,7 @@ double MAT::LinElast1DGrowth::EvaluatePK2(const double def_grad, const double co
   const double def_grad_el = def_grad / def_grad_inel;
   const double epsilon_el = 0.5 * (def_grad_el * def_grad_el - 1.0);
 
-  return 2.0 * growth_params_->youngs_ * epsilon_el / def_grad_inel;
+  return growth_params_->youngs_ * epsilon_el / def_grad_inel;
 }
 
 /*----------------------------------------------------------------------*
@@ -231,7 +231,7 @@ double MAT::LinElast1DGrowth::EvaluateStiffness(const double def_grad, const dou
   // dE_el_dF
   const double d_epsilon_el_d_def_grad = d_epsilon_el_d_def_grad_el * d_def_grad_el_d_def_grad;
 
-  return 2.0 * growth_params_->youngs_ *
+  return growth_params_->youngs_ *
          (d_epsilon_el_d_def_grad * def_grad_inel - epsilon_el * d_def_grad_inel_d_def_grad) /
          (def_grad_inel * def_grad_inel);
 }

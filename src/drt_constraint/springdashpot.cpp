@@ -8,28 +8,27 @@
 
 *----------------------------------------------------------------------*/
 
+#include "springdashpot.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include <iostream>
+#include <utility>
+#include "../drt_adapter/adapter_coupling_nonlin_mortar.H"
+#include "../drt_contact/contact_interface.H"
 #include "../drt_io/io_pstream.H"  // has to go before io.H
 #include "../drt_io/io.H"
-#include <Epetra_Time.h>
-
-#include "../drt_adapter/adapter_coupling_nonlin_mortar.H"
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_contact/contact_interface.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "springdashpot.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_truss3/truss3.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 /*----------------------------------------------------------------------*
  |                                                         pfaller Apr15|
  *----------------------------------------------------------------------*/
 UTILS::SpringDashpot::SpringDashpot(
     Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<DRT::Condition> cond)
-    : actdisc_(dis),
-      spring_(cond),
+    : actdisc_(std::move(dis)),
+      spring_(std::move(cond)),
       stiff_tens_((*spring_->Get<std::vector<double>>("stiff"))[0]),
       stiff_comp_((*spring_->Get<std::vector<double>>("stiff"))[0]),
       offset_((*spring_->Get<std::vector<double>>("disploffset"))[0]),
@@ -53,17 +52,19 @@ UTILS::SpringDashpot::SpringDashpot(
   SetSpringType();
 
   if (springtype_ != cursurfnormal && coupling_ >= 0)
+  {
     dserror(
         "Coupling of spring dashpot to reference surface only possible for DIRECTION "
         "cursurfnormal.");
+  }
 
   if (springtype_ == cursurfnormal && coupling_ == -1)
     dserror("Coupling id necessary for DIRECTION cursurfnormal.");
 
   // safety checks of input
-  const std::vector<double>* springstiff = spring_->Get<std::vector<double>>("stiff");
-  const std::vector<int>* numfuncstiff = spring_->Get<std::vector<int>>("funct_stiff");
-  const std::vector<int>* numfuncnonlinstiff = spring_->Get<std::vector<int>>("funct_nonlinstiff");
+  const auto* springstiff = spring_->Get<std::vector<double>>("stiff");
+  const auto* numfuncstiff = spring_->Get<std::vector<int>>("funct_stiff");
+  const auto* numfuncnonlinstiff = spring_->Get<std::vector<int>>("funct_nonlinstiff");
 
   for (unsigned i = 0; i < (*numfuncnonlinstiff).size(); ++i)
   {
@@ -87,8 +88,6 @@ UTILS::SpringDashpot::SpringDashpot(
   // ToDo: do we really need this??
   // initialize prestressing offset
   InitializePrestrOffset();
-
-  return;
 }
 
 // NEW version, consistently integrated over element surface!!
@@ -111,15 +110,15 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<LINALG::SparseMatrix> stif
   actdisc_->SetState("offset_prestress", offset_prestr_new_);
 
   // get values and switches from the condition
-  const std::vector<int>* onoff = spring_->Get<std::vector<int>>("onoff");
-  const std::vector<double>* springstiff = spring_->Get<std::vector<double>>("stiff");
-  const std::vector<int>* numfuncstiff = spring_->Get<std::vector<int>>("funct_stiff");
-  const std::vector<double>* dashpotvisc = spring_->Get<std::vector<double>>("visco");
-  const std::vector<int>* numfuncvisco = spring_->Get<std::vector<int>>("funct_visco");
-  const std::vector<double>* disploffset = spring_->Get<std::vector<double>>("disploffset");
-  const std::vector<int>* numfuncdisploffset = spring_->Get<std::vector<int>>("funct_disploffset");
-  const std::vector<int>* numfuncnonlinstiff = spring_->Get<std::vector<int>>("funct_nonlinstiff");
-  const std::string* direction = spring_->Get<std::string>("direction");
+  const auto* onoff = spring_->Get<std::vector<int>>("onoff");
+  const auto* springstiff = spring_->Get<std::vector<double>>("stiff");
+  const auto* numfuncstiff = spring_->Get<std::vector<int>>("funct_stiff");
+  const auto* dashpotvisc = spring_->Get<std::vector<double>>("visco");
+  const auto* numfuncvisco = spring_->Get<std::vector<int>>("funct_visco");
+  const auto* disploffset = spring_->Get<std::vector<double>>("disploffset");
+  const auto* numfuncdisploffset = spring_->Get<std::vector<int>>("funct_disploffset");
+  const auto* numfuncnonlinstiff = spring_->Get<std::vector<int>>("funct_nonlinstiff");
+  const auto* direction = spring_->Get<std::string>("direction");
 
   // time-integration factor for stiffness contribution of dashpot, d(v_{n+1})/d(d_{n+1})
   const double time_fac = p.get("time_fac", 0.0);
@@ -139,57 +138,162 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<LINALG::SparseMatrix> stif
   params.set("funct_nonlinstiff", numfuncnonlinstiff);
   params.set("total time", total_time);
 
-  std::map<int, Teuchos::RCP<DRT::Element>>& geom = spring_->Geometry();
-
-  // if (geom.empty()) dserror("evaluation of condition with empty geometry");
-  // no check for empty geometry here since in parallel computations
-  // can exist processors which do not own a portion of the elements belonging
-  // to the condition geometry
-  std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
-  for (auto& curr : geom)
+  switch (spring_->GType())
   {
-    // get element location vector and ownerships
-    std::vector<int> lm;
-    std::vector<int> lmowner;
-    std::vector<int> lmstride;
-
-    curr.second->LocationVector(*actdisc_, lm, lmowner, lmstride);
-
-    const int eledim = (int)lm.size();
-
-    // define element matrices and vectors
-    Epetra_SerialDenseMatrix elematrix1;
-    Epetra_SerialDenseMatrix elematrix2;
-    Epetra_SerialDenseVector elevector1;
-    Epetra_SerialDenseVector elevector2;
-    Epetra_SerialDenseVector elevector3;
-
-    elevector1.Size(eledim);
-    elevector2.Size(eledim);
-    elevector3.Size(eledim);
-    elematrix1.Shape(eledim, eledim);
-
-    int err = curr.second->Evaluate(
-        params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
-    if (err) dserror("error while evaluating elements");
-
-    if (assvec) LINALG::Assemble(*fint, elevector1, lm, lmowner);
-    if (assmat) stiff->Assemble(curr.second->Id(), lmstride, elematrix1, lm, lmowner);
-
-    // save spring stress for postprocessing
-    const int numdim = 3;
-    const int numdf = 3;
-    std::vector<double> stress(numdim, 0.0);
-
-    for (int node = 0; node < curr.second->NumNode(); ++node)
+    case DRT::Condition::Surface:
     {
-      for (int dim = 0; dim < numdim; dim++) stress[dim] = elevector3[node * numdf + dim];
-      springstress_.insert(
-          std::pair<int, std::vector<double>>(curr.second->NodeIds()[node], stress));
-    }
-  } /* end of loop over geometry */
+      std::map<int, Teuchos::RCP<DRT::Element>>& geom = spring_->Geometry();
 
-  return;
+      // no check for empty geometry here since in parallel computations
+      // can exist processors which do not own a portion of the elements belonging
+      // to the condition geometry
+      for (auto& curr : geom)
+      {
+        // get element location vector and ownerships
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
+
+        curr.second->LocationVector(*actdisc_, lm, lmowner, lmstride);
+
+        const int eledim = (int)lm.size();
+
+        // define element matrices and vectors
+        Epetra_SerialDenseMatrix elematrix1;
+        Epetra_SerialDenseMatrix elematrix2;
+        Epetra_SerialDenseVector elevector1;
+        Epetra_SerialDenseVector elevector2;
+        Epetra_SerialDenseVector elevector3;
+
+        elevector1.Size(eledim);
+        elevector2.Size(eledim);
+        elevector3.Size(eledim);
+        elematrix1.Shape(eledim, eledim);
+
+        int err = curr.second->Evaluate(
+            params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
+        if (err) dserror("error while evaluating elements");
+
+        if (assvec) LINALG::Assemble(*fint, elevector1, lm, lmowner);
+        if (assmat) stiff->Assemble(curr.second->Id(), lmstride, elematrix1, lm, lmowner);
+
+        // save spring stress for postprocessing
+        const int numdim = 3;
+        const int numdf = 3;
+        std::vector<double> stress(numdim, 0.0);
+
+        for (int node = 0; node < curr.second->NumNode(); ++node)
+        {
+          for (int dim = 0; dim < numdim; dim++) stress[dim] = elevector3[node * numdf + dim];
+          springstress_.insert(
+              std::pair<int, std::vector<double>>(curr.second->NodeIds()[node], stress));
+        }
+      } /* end of loop over geometry */
+      break;
+    }
+    case DRT::Condition::Point:
+    {
+      if (*direction == "xyz")
+      {
+        // get all nodes of this condition and check, if it's just one -> get this node
+        const auto* nodes_cond = spring_->Nodes();
+        if (nodes_cond->size() != 1) dserror("Point Robin condition must be defined on one node.");
+        const int node_gid = nodes_cond->at(0);
+        auto* node = actdisc_->gNode(node_gid);
+
+        // get adjacent element of this node and check if it's just one -> get this element and cast
+        // it to truss element
+        if (node->NumElement() != 1) dserror("Node may only have one element");
+        auto* ele = node->Elements();
+        auto* truss_ele = dynamic_cast<DRT::ELEMENTS::Truss3*>(ele[0]);
+        if (truss_ele == nullptr)
+        {
+          dserror(
+              "Currently, only Truss Elements are allowed to evaluate point Robin Conditon. Cast "
+              "to "
+              "Truss Element failed.");
+        }
+
+        // dofs of this node
+        auto dofs_gid = actdisc_->Dof(0, node);
+
+        // get cross section for integration of this element
+        const double cross_section = truss_ele->CrossSection();
+
+        for (size_t dof = 0; dof < onoff->size(); ++dof)
+        {
+          const int dof_onoff = (*onoff)[dof];
+          if (dof_onoff == 0) continue;
+
+          const int dof_gid = dofs_gid[dof];
+          const int dof_lid = actdisc_->DofRowMap()->LID(dof_gid);
+
+          const double dof_disp = (*disp)[dof_lid];
+          const double dof_vel = (*velo)[dof_lid];
+
+          // compute stiffness, viscosity, and initial offset from functions
+          const double dof_stiffness =
+              (*numfuncstiff)[dof] != 0
+                  ? (*springstiff)[dof] * DRT::Problem::Instance()
+                                              ->Funct((*numfuncstiff)[dof] - 1)
+                                              .EvaluateTime(total_time)
+                  : (*springstiff)[dof];
+          const double dof_viscosity =
+              (*numfuncvisco)[dof] != 0
+                  ? (*dashpotvisc)[dof] * DRT::Problem::Instance()
+                                              ->Funct((*numfuncvisco)[dof] - 1)
+                                              .EvaluateTime(total_time)
+                  : (*dashpotvisc)[dof];
+          const double dof_disploffset =
+              (*numfuncdisploffset)[dof] != 0
+                  ? (*disploffset)[dof] * DRT::Problem::Instance()
+                                              ->Funct((*numfuncdisploffset)[dof] - 1)
+                                              .EvaluateTime(total_time)
+                  : (*disploffset)[dof];
+
+          // displacement related forces and derivatives
+          double force_disp = 0.0;
+          double force_disp_deriv = 0.0;
+          if ((*numfuncnonlinstiff)[dof] == 0)
+          {
+            force_disp = dof_stiffness * (dof_disp - dof_disploffset);
+            force_disp_deriv = dof_stiffness;
+          }
+          else
+          {
+            std::array<double, 3> displ = {(*disp)[0], (*disp)[1], (*disp)[2]};
+            force_disp = DRT::Problem::Instance()
+                             ->Funct((*numfuncnonlinstiff)[dof] - 1)
+                             .Evaluate(0, displ.data(), total_time);
+
+            force_disp_deriv = (DRT::Problem::Instance()
+                                    ->Funct((*numfuncnonlinstiff)[dof] - 1)
+                                    .EvaluateSpatialDerivative(0, displ.data(), total_time))[dof];
+          }
+
+          // velocity related forces and derivatives
+          const double force_vel = dof_viscosity * dof_vel;
+          const double force_vel_deriv = dof_viscosity;
+
+          const double force = force_disp + force_vel;
+          const double stiffness = force_disp_deriv + force_vel_deriv * time_fac;
+
+          // assemble contributions into force vector and stiffness matrix
+          (*fint)[dof_lid] += force * cross_section;
+          if (stiff != Teuchos::null) stiff->Assemble(-stiffness * cross_section, dof_gid, dof_gid);
+        }
+      }
+      else
+      {
+        dserror(
+            "Only 'xyz' for 'DIRECTION' supported in 'DESIGN POINT ROBIN SPRING DASHPOT "
+            "CONDITIONS'");
+      }
+      break;
+    }
+    default:
+      dserror("Geometry type for spring dashpot must either be either 'Surface' or 'Point'.");
+  }
 }
 
 
@@ -199,20 +303,19 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<LINALG::SparseMatrix> stif
  *----------------------------------------------------------------------*/
 void UTILS::SpringDashpot::EvaluateForce(Epetra_Vector& fint,
     const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> velo,
-    Teuchos::ParameterList p)
+    const Teuchos::ParameterList& p)
 {
   if (disp == Teuchos::null) dserror("Cannot find displacement state in discretization");
 
   if (springtype_ == cursurfnormal) GetCurNormals(disp, p);
 
   // loop nodes of current condition
-  const std::vector<int>& nds = *nodes_;
-  for (unsigned j = 0; j < nds.size(); ++j)
+  for (int node_gid : *nodes_)
   {
     // nodes owned by processor
-    if (actdisc_->NodeRowMap()->MyGID(nds[j]))
+    if (actdisc_->NodeRowMap()->MyGID(node_gid))
     {
-      int gid = nds[j];
+      int gid = node_gid;
       DRT::Node* node = actdisc_->gNode(gid);
       if (!node) dserror("Cannot find global node %d", gid);
 
@@ -249,23 +352,32 @@ void UTILS::SpringDashpot::EvaluateForce(Epetra_Vector& fint,
           const auto* numfuncvisco = spring_->Get<std::vector<int>>("funct_visco");
           const auto* numfuncdisploffset = spring_->Get<std::vector<int>>("funct_disploffset");
           const auto* numfuncnonlinstiff = spring_->Get<std::vector<int>>("funct_nonlinstiff");
-          for (unsigned i = 0; i < numfuncstiff->size(); ++i)
-            if ((*numfuncstiff)[i])
+          for (int dof_numfuncstiff : *numfuncstiff)
+          {
+            if (dof_numfuncstiff != 0)
+            {
               dserror(
                   "temporal dependence of stiffness not implemented for current surface "
                   "evaluation");
-          for (unsigned i = 0; i < numfuncvisco->size(); ++i)
-            if ((*numfuncvisco)[i])
+            }
+          }
+          for (int dof_numfuncvisco : *numfuncvisco)
+          {
+            if (dof_numfuncvisco != 0)
               dserror(
                   "temporal dependence of damping not implemented for current surface evaluation");
-          for (unsigned i = 0; i < numfuncdisploffset->size(); ++i)
-            if ((*numfuncdisploffset)[i])
+          }
+          for (int dof_numfuncdisploffset : *numfuncdisploffset)
+          {
+            if (dof_numfuncdisploffset != 0)
               dserror(
                   "temporal dependence of offset not implemented for current surface evaluation");
-
-          for (unsigned i = 0; i < numfuncnonlinstiff->size(); ++i)
-            if ((*numfuncnonlinstiff)[i])
+          }
+          for (int dof_numfuncnonlinstiff : *numfuncnonlinstiff)
+          {
+            if (dof_numfuncnonlinstiff != 0)
               dserror("Nonlinear spring not implemented for current surface evaluation");
+          }
 
           // spring displacement
           gap = gap_[gid];
@@ -295,8 +407,6 @@ void UTILS::SpringDashpot::EvaluateForce(Epetra_Vector& fint,
       }
     }  // node owned by processor
   }    // loop over nodes
-
-  return;
 }
 
 
@@ -320,21 +430,20 @@ void UTILS::SpringDashpot::EvaluateForceStiff(LINALG::SparseMatrix& stiff, Epetr
   const double dt = p.get("dt", 1.0);
 
   // loop nodes of current condition
-  const std::vector<int>& nds = *nodes_;
-  for (unsigned j = 0; j < nds.size(); ++j)
+  for (int node_gid : *nodes_)
   {
     // nodes owned by processor
-    if (actdisc_->NodeRowMap()->MyGID(nds[j]))
+    if (actdisc_->NodeRowMap()->MyGID(node_gid))
     {
-      int gid = nds[j];
-      DRT::Node* node = actdisc_->gNode(gid);
-      if (!node) dserror("Cannot find global node %d", gid);
+      DRT::Node* node = actdisc_->gNode(node_gid);
+      if (!node) dserror("Cannot find global node %d", node_gid);
 
       // get nodal values
-      const double nodalarea = area_[gid];               // nodal area
-      const std::vector<double> normal = normals_[gid];  // normalized nodal normal
+      const double nodalarea = area_[node_gid];               // nodal area
+      const std::vector<double> normal = normals_[node_gid];  // normalized nodal normal
       const std::vector<double> offsetprestr =
-          offset_prestr_[gid];  // get nodal displacement values of last time step for MULF offset
+          offset_prestr_[node_gid];  // get nodal displacement values of last time step for MULF
+                                     // offset
 
       const int numdof = actdisc_->NumDof(0, node);
       assert(numdof == 3);
@@ -363,26 +472,36 @@ void UTILS::SpringDashpot::EvaluateForceStiff(LINALG::SparseMatrix& stiff, Epetr
           const auto* numfuncvisco = spring_->Get<std::vector<int>>("funct_visco");
           const auto* numfuncdisploffset = spring_->Get<std::vector<int>>("funct_disploffset");
           const auto* numfuncnonlinstiff = spring_->Get<std::vector<int>>("funct_nonlinstiff");
-          for (unsigned i = 0; i < numfuncstiff->size(); ++i)
-            if ((*numfuncstiff)[i])
+          for (int dof_numfuncstiff : *numfuncstiff)
+          {
+            if (dof_numfuncstiff != 0)
+            {
               dserror(
                   "temporal dependence of stiffness not implemented for current surface "
                   "evaluation");
-          for (unsigned i = 0; i < numfuncvisco->size(); ++i)
-            if ((*numfuncvisco)[i])
+            }
+          }
+          for (int dof_numfuncvisco : *numfuncvisco)
+          {
+            if (dof_numfuncvisco != 0)
               dserror(
                   "temporal dependence of damping not implemented for current surface evaluation");
-          for (unsigned i = 0; i < numfuncdisploffset->size(); ++i)
-            if ((*numfuncdisploffset)[i])
+          }
+          for (int dof_numfuncdisploffset : *numfuncdisploffset)
+          {
+            if (dof_numfuncdisploffset != 0)
               dserror(
                   "temporal dependence of offset not implemented for current surface evaluation");
-          for (unsigned i = 0; i < numfuncnonlinstiff->size(); ++i)
-            if ((*numfuncnonlinstiff)[i])
+          }
+          for (int dof_numfuncnonlinstiff : *numfuncnonlinstiff)
+          {
+            if (dof_numfuncnonlinstiff != 0)
               dserror("Nonlinear spring not implemented for current surface evaluation");
+          }
 
           // spring displacement
-          gap = gap_[gid];
-          gapdt = gapdt_[gid];
+          gap = gap_[node_gid];
+          gapdt = gapdt_[node_gid];
 
           // select spring stiffnes
           springstiff = SelectStiffness(gap);
@@ -399,8 +518,8 @@ void UTILS::SpringDashpot::EvaluateForceStiff(LINALG::SparseMatrix& stiff, Epetr
             if (err) dserror("SumIntoGlobalValues failed!");
 
             // stiffness
-            std::map<int, double> dgap = dgap_[gid];
-            std::vector<GEN::pairedvector<int, double>> dnormal = dnormals_[gid];
+            std::map<int, double> dgap = dgap_[node_gid];
+            std::vector<GEN::pairedvector<int, double>> dnormal = dnormals_[node_gid];
 
             // check if projection exists
             if (!dnormal.empty() && !dgap.empty())
@@ -428,15 +547,13 @@ void UTILS::SpringDashpot::EvaluateForceStiff(LINALG::SparseMatrix& stiff, Epetr
             out_vec[k] = -val;
           }
           // add to output
-          springstress_.insert(std::pair<int, std::vector<double>>(gid, out_vec));
+          springstress_.insert(std::pair<int, std::vector<double>>(node_gid, out_vec));
           break;
       }
     }  // node owned by processor
   }    // loop over nodes
 
   if (springtype_ == cursurfnormal) stiff.Complete();  // sparsity pattern might have changed
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -469,15 +586,13 @@ void UTILS::SpringDashpot::ResetPrestress(Teuchos::RCP<const Epetra_Vector> dis)
   // loop over all nodes only necessary for cursurfnormal which does not use consistent integration
   if (springtype_ == cursurfnormal)
   {
-    const std::vector<int>& nds = *nodes_;
-    for (unsigned j = 0; j < nds.size(); ++j)
+    for (int node_gid : *nodes_)
     {
       // nodes owned by processor
-      if (actdisc_->NodeRowMap()->MyGID(nds[j]))
+      if (actdisc_->NodeRowMap()->MyGID(node_gid))
       {
-        int gid = nds[j];
-        DRT::Node* node = actdisc_->gNode(gid);
-        if (!node) dserror("Cannot find global node %d", gid);
+        DRT::Node* node = actdisc_->gNode(node_gid);
+        if (!node) dserror("Cannot find global node %d", node_gid);
 
         const int numdof = actdisc_->NumDof(0, node);
         assert(numdof == 3);
@@ -485,7 +600,7 @@ void UTILS::SpringDashpot::ResetPrestress(Teuchos::RCP<const Epetra_Vector> dis)
 
         // initialize. calculation of displacements differs for each spring variant
         std::vector<double> uoff(numdof, 0.0);  // displacement vector of condition nodes
-        offset_prestr_.insert(std::pair<int, std::vector<double>>(gid, uoff));
+        offset_prestr_.insert(std::pair<int, std::vector<double>>(node_gid, uoff));
 
       }  // node owned by processor
     }    // loop over nodes
@@ -498,8 +613,6 @@ void UTILS::SpringDashpot::ResetPrestress(Teuchos::RCP<const Epetra_Vector> dis)
 void UTILS::SpringDashpot::SetRestart(Teuchos::RCP<Epetra_Vector> vec)
 {
   offset_prestr_new_->Update(1.0, *vec, 0.0);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -508,15 +621,13 @@ void UTILS::SpringDashpot::SetRestart(Teuchos::RCP<Epetra_Vector> vec)
 void UTILS::SpringDashpot::SetRestartOld(Teuchos::RCP<Epetra_MultiVector> vec)
 {
   // loop nodes of current condition
-  const std::vector<int>& nds = *nodes_;
-  for (unsigned j = 0; j < nds.size(); ++j)
+  for (int node_gid : *nodes_)
   {
     // nodes owned by processor
-    if (actdisc_->NodeRowMap()->MyGID(nds[j]))
+    if (actdisc_->NodeRowMap()->MyGID(node_gid))
     {
-      int gid = nds[j];
-      DRT::Node* node = actdisc_->gNode(gid);
-      if (!node) dserror("Cannot find global node %d", gid);
+      DRT::Node* node = actdisc_->gNode(node_gid);
+      if (!node) dserror("Cannot find global node %d", node_gid);
 
       const int numdof = actdisc_->NumDof(0, node);
       assert(numdof == 3);
@@ -552,7 +663,7 @@ void UTILS::SpringDashpot::OutputGapNormal(Teuchos::RCP<Epetra_Vector>& gap,
     Teuchos::RCP<Epetra_MultiVector>& normals, Teuchos::RCP<Epetra_MultiVector>& stress) const
 {
   // export gap function
-  for (auto& i : gap_)
+  for (const auto& i : gap_)
   {
     // global id -> local id
     const int lid = gap->Map().LID(i.first);
@@ -561,23 +672,22 @@ void UTILS::SpringDashpot::OutputGapNormal(Teuchos::RCP<Epetra_Vector>& gap,
   }
 
   // export normal
-  for (std::map<int, std::vector<double>>::const_iterator i = normals_.begin(); i != normals_.end();
-       ++i)
+  for (const auto& normal : normals_)
   {
     // global id -> local id
-    const int lid = normals->Map().LID(i->first);
+    const int lid = normals->Map().LID(normal.first);
     // local id on processor
     if (lid >= 0)
     {
       // copy all components of normal vector
-      (*(*normals)(0))[lid] += (i->second).at(0);
-      (*(*normals)(1))[lid] += (i->second).at(1);
-      (*(*normals)(2))[lid] += (i->second).at(2);
+      (*(*normals)(0))[lid] += (normal.second).at(0);
+      (*(*normals)(1))[lid] += (normal.second).at(1);
+      (*(*normals)(2))[lid] += (normal.second).at(2);
     }
   }
 
   // export spring stress
-  for (auto& i : springstress_)
+  for (const auto& i : springstress_)
   {
     // global id -> local id
     const int lid = stress->Map().LID(i.first);
@@ -590,8 +700,6 @@ void UTILS::SpringDashpot::OutputGapNormal(Teuchos::RCP<Epetra_Vector>& gap,
       (*(*stress)(2))[lid] += (i.second).at(2);
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -600,8 +708,6 @@ void UTILS::SpringDashpot::OutputGapNormal(Teuchos::RCP<Epetra_Vector>& gap,
 void UTILS::SpringDashpot::OutputPrestrOffset(Teuchos::RCP<Epetra_Vector>& springprestroffset) const
 {
   springprestroffset->Update(1.0, *offset_prestr_new_, 0.0);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -611,7 +717,7 @@ void UTILS::SpringDashpot::OutputPrestrOffsetOld(
     Teuchos::RCP<Epetra_MultiVector>& springprestroffset) const
 {
   // export spring offset length
-  for (auto& i : offset_prestr_)
+  for (const auto& i : offset_prestr_)
   {
     // global id -> local id
     const int lid = springprestroffset->Map().LID(i.first);
@@ -624,8 +730,6 @@ void UTILS::SpringDashpot::OutputPrestrOffsetOld(
       (*(*springprestroffset)(2))[lid] = (i.second)[2];
     }
   }
-
-  return;
 }
 
 /*-----------------------------------------------------------------------*
@@ -650,8 +754,6 @@ void UTILS::SpringDashpot::InitializeCurSurfNormal()
 
   // initialize gap in reference configuration
   mortar_->Interface()->EvaluateDistances(disp, tmpnormals_, tmpdnormals_, gap0_, tmpdgap_);
-
-  return;
 }
 
 // ToDo: this function should vanish completely
@@ -661,8 +763,7 @@ void UTILS::SpringDashpot::InitializeCurSurfNormal()
  *-----------------------------------------------------------------------*/
 void UTILS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element>>& geom)
 {
-  std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator ele;
-  for (auto& ele : geom)
+  for (const auto& ele : geom)
   {
     DRT::Element* element = ele.second.get();
 
@@ -781,8 +882,6 @@ void UTILS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element
       area_.insert(std::pair<int, double>(gid, newarea));
     }
   }  // for (ele=geom.begin(); ele != geom.end(); ++ele)
-
-  return;
 }
 
 
@@ -793,15 +892,12 @@ void UTILS::SpringDashpot::InitializePrestrOffset()
 {
   offset_prestr_.clear();
 
-  const std::vector<int>& nds = *nodes_;
-  for (unsigned j = 0; j < nds.size(); ++j)
+  for (int node_gid : *nodes_)
   {
-    if (actdisc_->NodeRowMap()->MyGID(nds[j]))
+    if (actdisc_->NodeRowMap()->MyGID(node_gid))
     {
-      int gid = nds[j];
-
-      DRT::Node* node = actdisc_->gNode(gid);
-      if (!node) dserror("Cannot find global node %d", gid);
+      DRT::Node* node = actdisc_->gNode(node_gid);
+      if (!node) dserror("Cannot find global node %d", node_gid);
 
       int numdof = actdisc_->NumDof(0, node);
       std::vector<int> dofs = actdisc_->Dof(0, node);
@@ -811,11 +907,9 @@ void UTILS::SpringDashpot::InitializePrestrOffset()
       std::vector<double> temp(numdof, 0.0);
 
       // insert to map
-      offset_prestr_.insert(std::pair<int, std::vector<double>>(gid, temp));
+      offset_prestr_.insert(std::pair<int, std::vector<double>>(node_gid, temp));
     }
   }
-
-  return;
 }
 
 
@@ -837,7 +931,7 @@ void UTILS::SpringDashpot::GetCurNormals(
   // subtract reference gap from current gap (gap in reference configuration is zero everywhere)
   for (auto& i : tmpgap)
   {
-    std::map<int, double>::iterator j = gap0_.find(i.first);
+    auto j = gap0_.find(i.first);
     if (j == gap0_.end()) gap_[i.first] = i.second;
     //      dserror("The maps of reference gap and current gap are inconsistent.");
     else
@@ -846,8 +940,6 @@ void UTILS::SpringDashpot::GetCurNormals(
     // calculate gap velocity via local finite difference (not the best way but also not the worst)
     gapdt_[i.first] = (gap_[i.first] - gapn_[i.first]) / dt;
   }
-
-  return;
 }
 
 /*-----------------------------------------------------------------------*
@@ -856,7 +948,7 @@ void UTILS::SpringDashpot::GetCurNormals(
 void UTILS::SpringDashpot::SetSpringType()
 {
   // get spring direction from condition
-  const std::string* dir = spring_->Get<std::string>("direction");
+  const auto* dir = spring_->Get<std::string>("direction");
 
   if (*dir == "xyz")
     springtype_ = xyz;
@@ -865,9 +957,11 @@ void UTILS::SpringDashpot::SetSpringType()
   else if (*dir == "cursurfnormal")
     springtype_ = cursurfnormal;
   else
+  {
     dserror(
         "Invalid direction option! Choose DIRECTION xyz, DIRECTION refsurfnormal or DIRECTION "
         "cursurfnormal!");
+  }
 }
 
 /*-----------------------------------------------------------------------*
