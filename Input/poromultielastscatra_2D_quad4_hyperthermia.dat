@@ -103,7 +103,7 @@ ABSTOLRES                       -1
 NAME                            solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 2 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.0e-9 NUMMAT 5 MATIDS 10 11 12 13 14 NUMFLUIDPHASES 3 NUMREAC 3 REACIDS 20 21 22 END
+MAT 2 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.0e-9 NUMMAT 5 MATIDS 10 11 12 13 14 NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE 3 NUMREAC 3 REACIDS 20 21 22 END
 
 MAT 20 MAT_FluidPoroSingleReaction NUMSCAL 7 TOTALNUMDOF 5 NUMVOLFRAC 1 SCALE 0 1 -1 0 0 COUPLING scalar_by_function FUNCTID 1  // tumour growth
 MAT 21 MAT_FluidPoroSingleReaction NUMSCAL 7 TOTALNUMDOF 5 NUMVOLFRAC 1 SCALE 0 0 1 0 0 COUPLING scalar_by_function FUNCTID 2   // leakage + drainage
@@ -147,7 +147,7 @@ MAT 503 MAT_scatra_multiporo_fluid PHASEID 2 DIFFUSIVITY 2.9e-5 DELTA 0.0 // TAF
 MAT 504 MAT_scatra_multiporo_volfrac PHASEID 3 DIFFUSIVITY 3.2e-3 // oxygen in neovasculature
 MAT 505 MAT_scatra_multiporo_volfrac PHASEID 3 DIFFUSIVITY 9.0687e-5 // nanoparticle in neovasculature
 MAT 506 MAT_scatra_multiporo_fluid PHASEID 2 DIFFUSIVITY 1.2955e-7 // nanoparticle --> belong to IF
-MAT 507 MAT_scatra_multiporo_temperature NUMFLUIDPHASES 3 CP_FLUID 3.47e9 3.47e9 3.47e9 NUMVOLFRAC 1 CP_VOLFRAC 3.47e9 CP_SOLID 3.47e9 KAPPA_FLUID 0.51e6 0.51e6 0.51e6 KAPPA_VOLFRAC 0.51e6 KAPPA_SOLID 0.51e6
+MAT 507 MAT_scatra_multiporo_temperature NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE 3 CP_FLUID 3.47e9 3.47e9 3.47e9 NUMVOLFRAC 1 CP_VOLFRAC 3.47e9 CP_SOLID 3.47e9 KAPPA_FLUID 0.51e6 0.51e6 0.51e6 KAPPA_VOLFRAC 0.51e6 KAPPA_SOLID 0.51e6
 
 MAT 511 MAT_scatra_reaction NUMSCAL 7 STOICH -1 0 0 0 0 0 0 REACCOEFF 1.0 COUPLING by_function ROLE 4 0 0 0 0 0 0   // - M^(nl->t)
 MAT 512 MAT_scatra_reaction NUMSCAL 7 STOICH 1 0 0 0 0 0 0  REACCOEFF 1.0 COUPLING by_function ROLE 5 0 0 0 0 0 0   // + w^nl * M^(l->t)_growth

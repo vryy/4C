@@ -106,7 +106,7 @@ INITFUNCNO                      2
 NAME                            solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.0e-3 NUMMAT 3 MATIDS 10 11 12 NUMFLUIDPHASES 3 NUMREAC 1 REACIDS 50 END
+MAT 1 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.0e-3 NUMMAT 3 MATIDS 10 11 12 NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE 3 NUMREAC 1 REACIDS 50 END
 
 MAT 50 MAT_FluidPoroSingleReaction NUMSCAL 1 TOTALNUMDOF 3 NUMVOLFRAC 0 SCALE 0 1 -1 COUPLING scalar_by_function FUNCTID 7
 

@@ -25,7 +25,7 @@
 MAT::PAR::FluidPoroMultiPhase::FluidPoroMultiPhase(Teuchos::RCP<MAT::PAR::Material> matdata)
     : MatList(matdata),
       permeability_(matdata->GetDouble("PERMEABILITY")),
-      numfluidphases_(matdata->GetInt("NUMFLUIDPHASES")),
+      numfluidphases_(matdata->GetInt("NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE")),
       numvolfrac_(-1),
       dof2pres_(Teuchos::null),
       constraintphaseID_(-1),
@@ -63,11 +63,11 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
         "definition\n"
         "Your Input should always look like (for example: 4 fluid phases, 2 volume fractions):\n"
         "MAT 0 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS    1 2 3 4 5 6 7 "
-        "8 NUMFLUIDPHASES 4 END\n"
-        "with: 4 fluid phases: materials have to be MAT_FluidPoroSinglePhase        ^^^^^^^\n"
-        "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac          ^^^\n"
-        "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure   "
-        "^^^",
+        "8 NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE 4 END\n"
+        "with: 4 fluid phases in multiphase pore space: materials have to be "
+        "MAT_FluidPoroSinglePhase \n"
+        "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac \n"
+        "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure ",
         (int)matids_->size(), numfluidphases_,
         (double)(((double)matids_->size() - (double)numfluidphases_) / 2.0));
 
@@ -88,12 +88,11 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
             "Your Input should always look like (for example: 4 fluid phases, 2 volume "
             "fractions):\n"
             "MAT 0 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS    1 2 3 4 5 "
-            "6 7 8 NUMFLUIDPHASES 4 END\n"
-            "with: 4 fluid phases: materials have to be MAT_FluidPoroSinglePhase        ^^^^^^^\n"
-            "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac          "
-            "^^^\n"
-            "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure  "
-            " ^^^",
+            "6 7 8 NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE 4 END\n"
+            "with: 4 fluid phases in multiphase pore space: materials have to be "
+            "MAT_FluidPoroSinglePhase \n"
+            "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac \n"
+            "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure ",
             numfluidphases_, iphase + 1);
 
       const MAT::FluidPoroSinglePhase& singlephase =
@@ -120,12 +119,11 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
             "Your Input should always look like (for example: 4 fluid phases, 2 volume "
             "fractions):\n"
             "MAT 0 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS    1 2 3 4 5 "
-            "6 7 8 NUMFLUIDPHASES 4 END\n"
-            "with: 4 fluid phases: materials have to be MAT_FluidPoroSinglePhase        ^^^^^^^\n"
-            "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac          "
-            "^^^\n"
-            "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure  "
-            " ^^^",
+            "6 7 8 NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE 4 END\n"
+            "with: 4 fluid phases in multiphase pore space: materials have to be "
+            "MAT_FluidPoroSinglePhase \n"
+            "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac \n"
+            "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure ",
             numfluidphases_, (int)matids_->size() - numfluidphases_, iphase + 1);
     }
     // volume fraction pressures at [numfluidphases-1+numvolfrac...numfluidphases-1+2*numvolfrac]
@@ -139,12 +137,11 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
             "Your Input should always look like (for example: 4 fluid phases, 2 volume "
             "fractions):\n"
             "MAT 0 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS    1 2 3 4 5 "
-            "6 7 8 NUMFLUIDPHASES 4 END\n"
-            "with: 4 fluid phases: materials have to be MAT_FluidPoroSinglePhase        ^^^^^^^\n"
-            "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac          "
-            "^^^\n"
-            "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure  "
-            " ^^^",
+            "6 7 8 NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE 4 END\n"
+            "with: 4 fluid phases in multiphase pore space: materials have to be "
+            "MAT_FluidPoroSinglePhase \n"
+            "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac \n"
+            "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure ",
             numfluidphases_, (int)matids_->size() - numfluidphases_, iphase + 1);
     }
     else
@@ -154,7 +151,8 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
   // check
   if (constraintphaseID_ == -1 && numfluidphases_ > 0)
     dserror(
-        "No constraint phase law defined but NUMFLUIDPHASES > 0. Are you sure this makes sense?");
+        "No constraint phase law defined but NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE > 0. Are you "
+        "sure this makes sense?");
 
   // invert dof2pres_ to get conversion from dofs to pressures for the fluid phases
   if (numfluidphases_ > 0)

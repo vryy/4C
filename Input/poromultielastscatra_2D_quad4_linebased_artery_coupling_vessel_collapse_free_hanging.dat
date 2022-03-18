@@ -109,7 +109,7 @@ INITFUNCNO                      2
 NAME                            solver
 SOLVER                          Superlu
 -------------------------------------------------------------------MATERIALS
-MAT 2 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.0e-9 NUMMAT 3 MATIDS 10 11 12 NUMFLUIDPHASES 3 NUMREAC 2 REACIDS 20 21 END
+MAT 2 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.0e-9 NUMMAT 3 MATIDS 10 11 12 NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE 3 NUMREAC 2 REACIDS 20 21 END
 
 MAT 20 MAT_FluidPoroSingleReaction NUMSCAL 2 TOTALNUMDOF 3 NUMVOLFRAC 0 SCALE 0 1 -1 COUPLING scalar_by_function FUNCTID 5 // tumor growth
 MAT 21 MAT_FluidPoroSingleReaction NUMSCAL 2 TOTALNUMDOF 3 NUMVOLFRAC 0 SCALE 0 0 -1 COUPLING scalar_by_function FUNCTID 10 // lymphatic drainage

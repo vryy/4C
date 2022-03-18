@@ -289,7 +289,7 @@ void MAT::ScatraMatMultiPoroSolid::Unpack(const std::vector<char>& data)
 MAT::PAR::ScatraMatMultiPoroTemperature::ScatraMatMultiPoroTemperature(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : ScatraMat(matdata),
-      numfluidphases_(matdata->GetInt("NUMFLUIDPHASES")),
+      numfluidphases_(matdata->GetInt("NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE")),
       numvolfrac_(matdata->GetInt("NUMVOLFRAC")),
       cp_fluid_(*(matdata->Get<std::vector<double>>("CP_FLUID"))),
       cp_volfrac_(*(matdata->Get<std::vector<double>>("CP_VOLFRAC"))),

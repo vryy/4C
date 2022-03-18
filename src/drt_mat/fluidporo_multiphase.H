@@ -4,12 +4,13 @@
 
         The input line should read (for example: 4 fluid phases, 2 volume fractions)
 
-        MAT 0 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS    1 2 3 4 5 6 7 8
- NUMFLUIDPHASES 4 END with: 4 fluid phases: materials have to be MAT_FluidPoroSinglePhase ^^^^^^^ 2
- volume fractions: materials have to be MAT_FluidPoroSingleVolFrac          ^^^ 2 volume fraction
- pressures: materials have to be MAT_FluidPoroVolFracPressure   ^^^
+        MAT 0 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS 1 2 3 4 5 6 7 8
+        NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE 4 END with: 4 fluid phases in multiphase pores pace:
+        materials have to be MAT_FluidPoroSinglePhase | 2 volume fractions: materials have to be
+        MAT_FluidPoroSingleVolFrac | 2 volume fraction pressures: materials have to be
+        MAT_FluidPoroVolFracPressure
 
-   \level 3
+\level 3
 
  *----------------------------------------------------------------------*/
 
