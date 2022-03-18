@@ -40,7 +40,7 @@ void DRT::UTILS::LibFunctValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> line
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::LibFunctTryCreateFunction(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
-    const int i)
+    const int index_current_funct_in_manager)
 {
   if (function_lin_def->HaveNamed("FASTPOLYNOMIAL"))
   {
@@ -55,19 +55,19 @@ Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::LibFunctTryCreateFunction(
     function_lin_def->ExtractInt("ORIGIN", origin);
     function_lin_def->ExtractInt("LOCAL", local);
 
-    if (origin <= 0 or origin >= i)
+    if (origin <= 0 or origin >= index_current_funct_in_manager)
     {
       dserror(
           "ORIGIN function ID (currently %d) must be positive and smaller than "
           "TRANSLATEDFUNCTION (currently %d).",
-          origin, i);
+          origin, index_current_funct_in_manager);
     }
-    if (local <= 0 or local >= i)
+    if (local <= 0 or local >= index_current_funct_in_manager)
     {
       dserror(
           "LOCAL function ID (currently %d) must be positive and smaller than "
           "TRANSLATEDFUNCTION (currently %d).",
-          local, i);
+          local, index_current_funct_in_manager);
     }
 
     Teuchos::RCP<Function> origin_funct = Teuchos::rcpFromRef(manager.Funct(origin - 1));

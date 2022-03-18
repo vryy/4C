@@ -29,7 +29,8 @@ namespace DRT
 
     /// try to create xfluid-specific functions from a given line definition
     Teuchos::RCP<DRT::UTILS::Function> XfluidTryCreateFunction(
-        Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def);
+        Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
+        DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
 
     /// special implementation level set cut utilizing xfluid
     class GerstenbergerForwardfacingStep : public Function

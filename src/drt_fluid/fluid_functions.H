@@ -34,7 +34,8 @@ namespace FLD
 
   /// try to create fluid-specific functions from a given line definition
   Teuchos::RCP<DRT::UTILS::Function> FluidTryCreateFunction(
-      Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def);
+      Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
+      DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
 
   /// special implementation for beltrami flow (velocity, pressure)
   class BeltramiUP : public DRT::UTILS::Function

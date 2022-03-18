@@ -33,7 +33,8 @@ namespace STR
 
   /// try to create structure-specific functions from a given line definition
   Teuchos::RCP<DRT::UTILS::Function> StructureTryCreateFunction(
-      Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def);
+      Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
+      DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
 
   /// special implementation for weakly compressible flow - Etienne FSI problem
   class WeaklyCompressibleEtienneFSIStructureFunction : public DRT::UTILS::Function

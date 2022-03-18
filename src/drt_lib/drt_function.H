@@ -220,18 +220,6 @@ namespace DRT
     };
 
 
-    /// add valid function lines
-    void FunctValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
-
-    /// try to create functions from a given line definition
-    Teuchos::RCP<Function> FunctTryCreateFunction(
-        Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def);
-
-    /// create a vector function from multiple expressions
-    Teuchos::RCP<Function> BasicFunctionTryCreateFunction(
-        std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs);
-
-
     /// class that manages all defined spatial functions
     class FunctionManager
     {
@@ -335,6 +323,20 @@ namespace DRT
       bool isparsed_;
     };
 
+
+    /// add valid function lines
+    void FunctValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+
+
+    /// try to create functions from a given line definition
+    Teuchos::RCP<Function> FunctTryCreateFunction(
+        Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, FunctionManager& manager,
+        const int index_current_funct_in_manager);
+
+
+    /// create a vector function from multiple expressions
+    Teuchos::RCP<Function> BasicFunctionTryCreateFunction(
+        std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs);
   }  // namespace UTILS
 
 }  // namespace DRT

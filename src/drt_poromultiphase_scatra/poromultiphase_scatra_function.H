@@ -184,7 +184,8 @@ namespace POROMULTIPHASESCATRA
 
   /// try to create poro-specific functions from a given line definition
   Teuchos::RCP<PoroMultiPhaseScaTraFunction> PoroTryCreateFunction(
-      Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def);
+      Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
+      DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
 
   /*!
    * @brief standard growth law for tumor cells <--> IF (with lysis) and pressure dependency:

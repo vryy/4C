@@ -36,7 +36,8 @@ void POROMULTIPHASESCATRA::PoroValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction>
 POROMULTIPHASESCATRA::PoroTryCreateFunction(
-    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def)
+    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
+    const int index_current_funct_in_manager)
 {
   if (function_lin_def->HaveNamed("POROMULTIPHASESCATRA_FUNCTION"))
   {

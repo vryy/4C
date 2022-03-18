@@ -124,31 +124,21 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
       bool found_function = false;
 
-      std::vector<std::function<Teuchos::RCP<Function>(Teuchos::RCP<DRT::INPUT::LineDefinition>)>>
+      std::vector<std::function<Teuchos::RCP<Function>(
+          Teuchos::RCP<DRT::INPUT::LineDefinition>, DRT::UTILS::FunctionManager&, const int)>>
           try_create_function_vector{DRT::UTILS::FunctTryCreateFunction,
               POROMULTIPHASESCATRA::PoroTryCreateFunction, STR::StructureTryCreateFunction,
               FLD::FluidTryCreateFunction, DRT::UTILS::CombustTryCreateFunction,
-              DRT::UTILS::XfluidTryCreateFunction};
+              DRT::UTILS::XfluidTryCreateFunction, DRT::UTILS::LibFunctTryCreateFunction};
 
       for (const auto& try_create_function : try_create_function_vector)
       {
-        auto special_funct = try_create_function(function_lin_def);
+        auto special_funct = try_create_function(function_lin_def, *this, i);
         if (special_funct != Teuchos::null)
         {
           functions_.emplace_back(special_funct);
           found_function = true;
           break;  // jumps out of for statement
-        }
-      }
-
-      if (!found_function)
-      {
-        auto special_funct_from_lin_def_and_other_functs =
-            DRT::UTILS::LibFunctTryCreateFunction(function_lin_def, *this, i);
-        if (special_funct_from_lin_def_and_other_functs != Teuchos::null)
-        {
-          functions_.emplace_back(special_funct_from_lin_def_and_other_functs);
-          found_function = true;
         }
       }
 
@@ -224,7 +214,8 @@ void DRT::UTILS::FunctValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 }
 
 Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::FunctTryCreateFunction(
-    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def)
+    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
+    const int index_current_funct_in_manager)
 {
   if (function_lin_def->HaveNamed("VARFUNCTION"))
   {

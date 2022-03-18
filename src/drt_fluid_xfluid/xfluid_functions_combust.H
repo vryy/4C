@@ -29,7 +29,8 @@ namespace DRT
 
     /// try to create combustion-specific functions from a given line definition
     Teuchos::RCP<DRT::UTILS::Function> CombustTryCreateFunction(
-        Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def);
+        Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
+        DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
 
     /// special implementation for a level set test function "Zalesak's disk"
     class ZalesaksDiskFunction : public DRT::UTILS::Function
