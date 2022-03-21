@@ -32,7 +32,7 @@ namespace
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::StructureValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+void STR::AddValidStructureFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 {
   DRT::INPUT::LineDefinition weaklycompressibleetiennefsistructure;
   weaklycompressibleetiennefsistructure.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE")

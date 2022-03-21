@@ -22,7 +22,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction::PoroMultiPhaseScaTraFunction
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+void POROMULTIPHASESCATRA::AddValidPoroFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 {
   DRT::INPUT::LineDefinition poromultiphasescatra_funct;
   poromultiphasescatra_funct.AddNamedString("POROMULTIPHASESCATRA_FUNCTION")

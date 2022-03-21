@@ -25,7 +25,7 @@ namespace DRT
   namespace UTILS
   {
     /// add valid xfluid-specific function lines
-    void XfluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+    void AddValidXfluidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
 
     /// try to create xfluid-specific functions from a given line definition
     Teuchos::RCP<DRT::UTILS::Function> XfluidTryCreateFunction(

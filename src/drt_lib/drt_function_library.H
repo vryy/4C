@@ -20,7 +20,7 @@ namespace DRT
   namespace UTILS
   {
     /// add valid function lines
-    void LibFunctValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+    void AddValidLibraryFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
 
     /// try to create functions from a given line definition
     Teuchos::RCP<Function> LibFunctTryCreateFunction(

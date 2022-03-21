@@ -13,7 +13,7 @@
 #include "../drt_lib/drt_linedefinition.H"
 
 
-void DRT::UTILS::CombustValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+void DRT::UTILS::AddValidCombustFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 {
   DRT::INPUT::LineDefinition zalesaksdisk;
   zalesaksdisk.AddTag("ZALESAKSDISK");

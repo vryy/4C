@@ -91,13 +91,13 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
 {
   Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("FUNCT"));
 
-  DRT::UTILS::FunctValidFunctionLines(lines);
-  DRT::UTILS::LibFunctValidFunctionLines(lines);
-  STR::StructureValidFunctionLines(lines);
-  FLD::FluidValidFunctionLines(lines);
-  DRT::UTILS::CombustValidFunctionLines(lines);
-  DRT::UTILS::XfluidValidFunctionLines(lines);
-  POROMULTIPHASESCATRA::PoroValidFunctionLines(lines);
+  DRT::UTILS::AddValidFunctionFunctionLines(lines);
+  DRT::UTILS::AddValidLibraryFunctionLines(lines);
+  STR::AddValidStructureFunctionLines(lines);
+  FLD::AddValidFluidFunctionLines(lines);
+  DRT::UTILS::AddValidCombustFunctionLines(lines);
+  DRT::UTILS::AddValidXfluidFunctionLines(lines);
+  POROMULTIPHASESCATRA::AddValidPoroFunctionLines(lines);
 
   return lines;
 }
@@ -164,7 +164,7 @@ DRT::UTILS::Function& DRT::UTILS::FunctionManager::Funct(int num)
 }
 
 
-void DRT::UTILS::FunctValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+void DRT::UTILS::AddValidFunctionFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 {
   DRT::INPUT::LineDefinition onecomponentexpr;
   onecomponentexpr.AddNamedString("FUNCTION");

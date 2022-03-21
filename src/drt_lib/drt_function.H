@@ -325,7 +325,7 @@ namespace DRT
 
 
     /// add valid function lines
-    void FunctValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+    void AddValidFunctionFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
 
 
     /// try to create functions from a given line definition

@@ -25,7 +25,7 @@ namespace DRT
   namespace UTILS
   {
     /// add valid combustion-specific function lines
-    void CombustValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+    void AddValidCombustFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
 
     /// try to create combustion-specific functions from a given line definition
     Teuchos::RCP<DRT::UTILS::Function> CombustTryCreateFunction(

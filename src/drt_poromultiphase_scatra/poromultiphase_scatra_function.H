@@ -180,7 +180,7 @@ namespace POROMULTIPHASESCATRA
   };
 
   /// add valid poro-specific function lines
-  void PoroValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+  void AddValidPoroFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
 
   /// try to create poro-specific functions from a given line definition
   Teuchos::RCP<PoroMultiPhaseScaTraFunction> PoroTryCreateFunction(

@@ -29,7 +29,7 @@ namespace DRT
 namespace STR
 {
   /// add valid structure-specific function lines
-  void StructureValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+  void AddValidStructureFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
 
   /// try to create structure-specific functions from a given line definition
   Teuchos::RCP<DRT::UTILS::Function> StructureTryCreateFunction(

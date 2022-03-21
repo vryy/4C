@@ -22,7 +22,7 @@ The functions in this file are not problem-specific and may be useful for a numb
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::LibFunctValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+void DRT::UTILS::AddValidLibraryFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 {
   DRT::INPUT::LineDefinition fastpolynomial_funct;
   fastpolynomial_funct.AddTag("FASTPOLYNOMIAL")

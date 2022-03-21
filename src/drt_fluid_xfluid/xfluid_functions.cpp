@@ -15,7 +15,7 @@
 #include "../drt_lib/drt_linedefinition.H"
 
 
-void DRT::UTILS::XfluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+void DRT::UTILS::AddValidXfluidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 {
   DRT::INPUT::LineDefinition gerstenbergerforwardfacingstep;
   gerstenbergerforwardfacingstep.AddTag("FORWARDFACINGSTEP");

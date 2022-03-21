@@ -47,7 +47,7 @@ namespace
   }
 }  // namespace
 
-void FLD::FluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+void FLD::AddValidFluidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 {
   DRT::INPUT::LineDefinition beltrami;
   beltrami.AddTag("BELTRAMI").AddNamedDouble("c1");
