@@ -38,7 +38,7 @@ void DRT::UTILS::AddValidLibraryFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> li
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::LibFunctTryCreateFunction(
+Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateLibraryFunction(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager)
 {

@@ -33,7 +33,7 @@ namespace FLD
   void AddValidFluidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
 
   /// try to create fluid-specific functions from a given line definition
-  Teuchos::RCP<DRT::UTILS::Function> FluidTryCreateFunction(
+  Teuchos::RCP<DRT::UTILS::Function> TryCreateFluidFunction(
       Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
       DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
 

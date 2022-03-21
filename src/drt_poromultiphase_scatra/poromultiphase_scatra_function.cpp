@@ -35,7 +35,7 @@ void POROMULTIPHASESCATRA::AddValidPoroFunctionLines(Teuchos::RCP<DRT::INPUT::Li
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction>
-POROMULTIPHASESCATRA::PoroTryCreateFunction(
+POROMULTIPHASESCATRA::TryCreatePoroFunction(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager)
 {

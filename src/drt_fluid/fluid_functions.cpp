@@ -156,7 +156,7 @@ void FLD::AddValidFluidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
   lines->Add(kimmoinstress);
 }
 
-Teuchos::RCP<DRT::UTILS::Function> FLD::FluidTryCreateFunction(
+Teuchos::RCP<DRT::UTILS::Function> FLD::TryCreateFluidFunction(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager)
 {

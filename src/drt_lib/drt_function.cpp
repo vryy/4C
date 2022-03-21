@@ -124,12 +124,14 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
       bool found_function = false;
 
+      // list all known TryCreate functions in a vector so they can be called with a unified syntax
+      // below
       std::vector<std::function<Teuchos::RCP<Function>(
           Teuchos::RCP<DRT::INPUT::LineDefinition>, DRT::UTILS::FunctionManager&, const int)>>
-          try_create_function_vector{DRT::UTILS::FunctTryCreateFunction,
-              POROMULTIPHASESCATRA::PoroTryCreateFunction, STR::StructureTryCreateFunction,
-              FLD::FluidTryCreateFunction, DRT::UTILS::CombustTryCreateFunction,
-              DRT::UTILS::XfluidTryCreateFunction, DRT::UTILS::LibFunctTryCreateFunction};
+          try_create_function_vector{DRT::UTILS::TryCreateFunctionFunction,
+              POROMULTIPHASESCATRA::TryCreatePoroFunction, STR::TryCreateStructureFunction,
+              FLD::TryCreateFluidFunction, DRT::UTILS::TryCreateCombustFunction,
+              DRT::UTILS::TryCreateXfluidFunction, DRT::UTILS::TryCreateLibraryFunction};
 
       for (const auto& try_create_function : try_create_function_vector)
       {
@@ -144,7 +146,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
       if (!found_function)
       {
-        auto basic_funct = DRT::UTILS::BasicFunctionTryCreateFunction(functions_lin_defs);
+        auto basic_funct = DRT::UTILS::TryCreateBasicFunction(functions_lin_defs);
         if (basic_funct != Teuchos::null)
         {
           functions_.emplace_back(basic_funct);
@@ -213,7 +215,7 @@ void DRT::UTILS::AddValidFunctionFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> l
   lines->Add(varfunct);
 }
 
-Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::FunctTryCreateFunction(
+Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateFunctionFunction(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager)
 {
@@ -240,7 +242,7 @@ Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::FunctTryCreateFunction(
   }
 }
 
-Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::BasicFunctionTryCreateFunction(
+Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateBasicFunction(
     std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs)
 {
   // define a new vector of functions

@@ -121,7 +121,7 @@ void DRT::UTILS::AddValidXfluidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lin
   lines->Add(urquizaboxflowtraction);
 }
 
-Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::XfluidTryCreateFunction(
+Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateXfluidFunction(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager)
 {

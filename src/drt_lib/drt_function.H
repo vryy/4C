@@ -329,13 +329,13 @@ namespace DRT
 
 
     /// try to create functions from a given line definition
-    Teuchos::RCP<Function> FunctTryCreateFunction(
+    Teuchos::RCP<Function> TryCreateFunctionFunction(
         Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, FunctionManager& manager,
         const int index_current_funct_in_manager);
 
 
     /// create a vector function from multiple expressions
-    Teuchos::RCP<Function> BasicFunctionTryCreateFunction(
+    Teuchos::RCP<Function> TryCreateBasicFunction(
         std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs);
   }  // namespace UTILS
 

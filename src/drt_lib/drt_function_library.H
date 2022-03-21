@@ -23,7 +23,7 @@ namespace DRT
     void AddValidLibraryFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
 
     /// try to create functions from a given line definition
-    Teuchos::RCP<Function> LibFunctTryCreateFunction(
+    Teuchos::RCP<Function> TryCreateLibraryFunction(
         Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
         DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
 

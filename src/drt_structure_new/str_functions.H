@@ -32,7 +32,7 @@ namespace STR
   void AddValidStructureFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
 
   /// try to create structure-specific functions from a given line definition
-  Teuchos::RCP<DRT::UTILS::Function> StructureTryCreateFunction(
+  Teuchos::RCP<DRT::UTILS::Function> TryCreateStructureFunction(
       Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
       DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
 
