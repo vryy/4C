@@ -151,6 +151,10 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         {
           functions_.emplace_back(basic_funct);
         }
+        else
+        {
+          dserror("Could not create any function from the given function line definition.");
+        }
       }
     }  // end else
   }    // end for
