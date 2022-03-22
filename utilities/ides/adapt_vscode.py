@@ -54,7 +54,7 @@ def do_vscode_configuration(src_dir, build_dir, cmake_config):
         # check for compatibility
         if "version" not in cpp_properties:
             print(
-                "The c_cpp_properties.json file is corrupt! Have to abort automaic setup of VS Code"
+                "The c_cpp_properties.json file is corrupt! Have to abort automatic setup of VS Code"
             )
             return
         elif cpp_properties["version"] != 4:
@@ -83,8 +83,8 @@ def do_vscode_configuration(src_dir, build_dir, cmake_config):
         "compileCommands": compile_commands,
         "defines": [],
         "compilerPath": compiler_path,
-        "cStandard": "c11",
-        "cppStandard": "c++11",
+        "cStandard": "c17",
+        "cppStandard": "c++17",
         "intelliSenseMode": "gcc-x64",
     }
 
