@@ -618,7 +618,7 @@ lnm-buildtest_daily_bruteforce:
         CTEST_BUILD_CONFIG_GITLAB: "lnm_bruteforce.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
     before_script:
-        - module load comp/gcc/5.3.0 mpi/openmpi/gcc/1.10.1 boost/1.64_gcc5
+        - module load comp/gcc/9.1.0 mpi/openmpi/gcc/1.10.1 boost/1.71_gcc9
     tags:
         - lnm-release-nightly-build-bruteforce
     only:
@@ -637,7 +637,7 @@ lnm-buildtest-bruteforce_interactive:
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
         GIT_STRATEGY: fetch
     before_script:
-        - module load comp/gcc/5.3.0 mpi/openmpi/gcc/1.10.1 boost/1.64_gcc5
+        - module load comp/gcc/9.1.0 mpi/openmpi/gcc/1.10.1 boost/1.71_gcc9
     tags:
         - lnm-bruteforce-interactive
     rules:
@@ -653,6 +653,8 @@ lnm-buildtest_daily_deep:
         CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Deep-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_deep.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
+    before_script:
+        - module load gcc/9 mpi/openmpi-4.0.1 boost/1.71_gcc9
     tags:
         - lnm-release-nightly-build-deep
     only:
@@ -670,6 +672,8 @@ lnm-buildtest-deep_interactive:
         CTEST_BUILD_CONFIG_GITLAB: "lnm_deep.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
         GIT_STRATEGY: fetch
+    before_script:
+        - module load gcc/9 mpi/openmpi-4.0.1 boost/1.71_gcc9
     tags:
         - lnm-deep-interactive
     rules:

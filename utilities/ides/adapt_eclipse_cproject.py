@@ -80,8 +80,8 @@ def getDefineValue(build_folder):
     with open(build_folder+"/CMakeFiles/drt_lib.dir/flags.make","r") as f:
       for l in f.readlines():
         if l.startswith("CXX_FLAGS"):
-            if "-std=c++11" in l:
-                definevalueset.add(("__cplusplus","201103L"))
+            if "-std=c++17" in l:
+                definevalueset.add(("__cplusplus","201703L"))
         elif l.startswith("CXX_DEFINES"):
             for w in l.split():
                 if w.startswith("-D"):
