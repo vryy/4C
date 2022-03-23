@@ -199,8 +199,6 @@ src/drt_membrane/                  @baci/team_structure
 
 src/drt_mixture/                   @baci/team_structure @baci/team_material
 
-src/drt_mlmc/                      @baci/team_queens
-
 src/drt_mor/                       @baci/team_structure
 
 src/drt_mortar/                    @baci/team_contact
