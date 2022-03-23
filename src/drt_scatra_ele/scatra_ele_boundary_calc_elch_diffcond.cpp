@@ -292,6 +292,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateS2ICoupl
   {
     case INPAR::S2I::kinetics_nointerfaceflux:
       break;
+    case INPAR::S2I::kinetics_constantinterfaceresistance:
+    {
+      myelectrode::EvaluateS2ICoupling(
+          ele, params, discretization, la, eslavematrix, emastermatrix, eslaveresidual);
+      break;
+    }
     default:
     {
       dserror(
@@ -315,6 +321,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateS2ICoupl
   {
     case INPAR::S2I::kinetics_nointerfaceflux:
       break;
+    case INPAR::S2I::kinetics_constantinterfaceresistance:
+    {
+      myelectrode::EvaluateS2ICouplingOD(ele, params, discretization, la, eslavematrix);
+      break;
+    }
     default:
     {
       dserror(

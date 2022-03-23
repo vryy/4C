@@ -92,10 +92,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
 
   // access material of parent element
-  Teuchos::RCP<const MAT::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
-  if (matelectrode == Teuchos::null)
-    dserror("Invalid electrode material for scatra-scatra interface coupling!");
+  Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::null;
+  if (ele->ParentElement()->Material()->MaterialType() == INPAR::MAT::MaterialType::m_electrode)
+  {
+    matelectrode =
+        Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
+  }
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   this->ExtractNodeValues(discretization, la);
@@ -206,24 +208,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
     frt = faraday / (etempint * gasconstant);
   }
 
-  // extract saturation value of intercalated lithium concentration from electrode material
-  const double cmax = matelectrode->CMax();
-
-  // equilibrium electric potential difference at electrode surface
-  const double epd = matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt, detF);
-
-  // derivative of equilibrium electric potential difference w.r.t. concentration at electrode
-  // surface
-  const double epdderiv =
-      matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(eslavephiint, faraday, frt, detF);
-
-  // Butler-Volmer exchange mass flux density
-  const double j0 = myelectrodeutils::IsReducedButlerVolmer(kineticmodel)
-                        ? kr
-                        : kr * std::pow(emasterphiint, alphaa) *
-                              std::pow(cmax - eslavephiint, alphaa) *
-                              std::pow(eslavephiint, alphac);
-
   // compute matrix and vector contributions according to kinetic model for current scatra-scatra
   // interface coupling condition
   switch (kineticmodel)
@@ -234,89 +218,131 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
     case INPAR::S2I::kinetics_butlervolmerreducedthermoresistance:
     case INPAR::S2I::kinetics_butlervolmerreduced:
     case INPAR::S2I::kinetics_butlervolmerreducedcapacitance:
-    {
-      // skip further computation in case equilibrium electric potential difference is outside
-      // physically meaningful range
-      if (std::isinf(epd)) break;
-
-      // electrode-electrolyte overpotential at integration point
-      const double eta = eslavepotint - emasterpotint - epd;
-
-      // exponential Butler-Volmer terms
-      const double expterm1 = std::exp(alphaa * frt * eta);
-      const double expterm2 = std::exp(-alphac * frt * eta);
-      const double expterm = expterm1 - expterm2;
-
-      // safety check
-      if (std::abs(expterm) > 1.0e5)
-        dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
-            expterm);
-
-      // core residual term associated with Butler-Volmer mass flux density
-      const double j = j0 * expterm;
-
-      // forward declarations
-      double dj_dc_slave(0.0);
-      double dj_dc_master(0.0);
-      double dj_dpot_slave(0.0);
-      double dj_dpot_master(0.0);
-
-      // calculate linearizations of Butler-Volmer kinetics w.r.t. elch dofs
-      myelectrodeutils::CalculateButlerVolmerElchLinearizations(kineticmodel, j0, frt, epdderiv,
-          alphaa, alphac, resistance, expterm1, expterm2, kr, faraday, emasterphiint, eslavephiint,
-          cmax, dj_dc_slave, dj_dc_master, dj_dpot_slave, dj_dpot_master);
-
-      // calculate RHS and linearizations of master and slave-side residuals
-      CalculateRHSandGlobalSystem<distype_master>(funct_slave, funct_master, test_slave,
-          test_master, numelectrons, nen_master, timefacfac, timefacrhsfac, dj_dc_slave,
-          dj_dc_master, dj_dpot_slave, dj_dpot_master, j, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
-
-      break;
-    }
-
     case INPAR::S2I::kinetics_butlervolmerresistance:
     case INPAR::S2I::kinetics_butlervolmerreducedresistance:
     {
+      if (matelectrode == Teuchos::null)
+        dserror("Invalid electrode material for scatra-scatra interface coupling!");
+
+      // extract saturation value of intercalated lithium concentration from electrode material
+      const double cmax = matelectrode->CMax();
+
+      // equilibrium electric potential difference at electrode surface
+      const double epd =
+          matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt, detF);
+
       // skip further computation in case equilibrium electric potential difference is outside
       // physically meaningful range
       if (std::isinf(epd)) break;
 
-      // compute Butler-Volmer mass flux density via Newton-Raphson method
-      const double j = myelectrodeutils::CalculateModifiedButlerVolmerMassFluxDensity(j0, alphaa,
-          alphac, frt, eslavepotint, emasterpotint, epd, resistance, itemaxmimplicitBV,
-          convtolimplicitBV, faraday);
+      // derivative of equilibrium electric potential difference w.r.t. concentration at
+      // electrode surface
+      const double epdderiv =
+          matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(eslavephiint, faraday, frt, detF);
 
-      // electrode-electrolyte overpotential at integration point
-      const double eta = eslavepotint - emasterpotint - epd - j * faraday * resistance;
+      // Butler-Volmer exchange mass flux density
+      const double j0 =
+          (myelectrodeutils::IsReducedButlerVolmer(kineticmodel)
+                  ? kr
+                  : kr * std::pow(emasterphiint, alphaa) * std::pow(cmax - eslavephiint, alphaa) *
+                        std::pow(eslavephiint, alphac));
 
-      // exponential Butler-Volmer terms
-      const double expterm1 = std::exp(alphaa * frt * eta);
-      const double expterm2 = std::exp(-alphac * frt * eta);
-      const double expterm = expterm1 - expterm2;
+      switch (kineticmodel)
+      {
+        case INPAR::S2I::kinetics_butlervolmer:
+        case INPAR::S2I::kinetics_butlervolmerpeltier:
+        case INPAR::S2I::kinetics_butlervolmerreducedthermoresistance:
+        case INPAR::S2I::kinetics_butlervolmerreduced:
+        case INPAR::S2I::kinetics_butlervolmerreducedcapacitance:
+        {
+          // electrode-electrolyte overpotential at integration point
+          const double eta = eslavepotint - emasterpotint - epd;
 
-      // safety check
-      if (std::abs(expterm) > 1.0e5)
-        dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
-            expterm);
+          // exponential Butler-Volmer terms
+          const double expterm1 = std::exp(alphaa * frt * eta);
+          const double expterm2 = std::exp(-alphac * frt * eta);
+          const double expterm = expterm1 - expterm2;
 
-      // forward declarations
-      double dj_dc_slave(0.0);
-      double dj_dc_master(0.0);
-      double dj_dpot_slave(0.0);
-      double dj_dpot_master(0.0);
+          // safety check
+          if (std::abs(expterm) > 1.0e5)
+          {
+            dserror(
+                "Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
+                expterm);
+          }
 
-      // calculate linearizations of Butler-Volmer kinetics w.r.t. elch dofs
-      myelectrodeutils::CalculateButlerVolmerElchLinearizations(kineticmodel, j0, frt, epdderiv,
-          alphaa, alphac, resistance, expterm1, expterm2, kr, faraday, emasterphiint, eslavephiint,
-          cmax, dj_dc_slave, dj_dc_master, dj_dpot_slave, dj_dpot_master);
+          // core residual term associated with Butler-Volmer mass flux density
+          const double j = j0 * expterm;
 
-      // calculate RHS and linearizations of master and slave-side residuals
-      CalculateRHSandGlobalSystem<distype_master>(funct_slave, funct_master, test_slave,
-          test_master, numelectrons, nen_master, timefacfac, timefacrhsfac, dj_dc_slave,
-          dj_dc_master, dj_dpot_slave, dj_dpot_master, j, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+          // forward declarations
+          double dj_dc_slave(0.0);
+          double dj_dc_master(0.0);
+          double dj_dpot_slave(0.0);
+          double dj_dpot_master(0.0);
 
+          // calculate linearizations of Butler-Volmer kinetics w.r.t. elch dofs
+          myelectrodeutils::CalculateButlerVolmerElchLinearizations(kineticmodel, j0, frt, epdderiv,
+              alphaa, alphac, resistance, expterm1, expterm2, kr, faraday, emasterphiint,
+              eslavephiint, cmax, dj_dc_slave, dj_dc_master, dj_dpot_slave, dj_dpot_master);
+
+          // calculate RHS and linearizations of master and slave-side residuals
+          CalculateRHSandGlobalSystem<distype_master>(funct_slave, funct_master, test_slave,
+              test_master, numelectrons, nen_master, timefacfac, timefacrhsfac, dj_dc_slave,
+              dj_dc_master, dj_dpot_slave, dj_dpot_master, j, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+
+          break;
+        }
+
+        case INPAR::S2I::kinetics_butlervolmerresistance:
+        case INPAR::S2I::kinetics_butlervolmerreducedresistance:
+        {
+          // compute Butler-Volmer mass flux density via Newton-Raphson method
+          const double j = myelectrodeutils::CalculateModifiedButlerVolmerMassFluxDensity(j0,
+              alphaa, alphac, frt, eslavepotint, emasterpotint, epd, resistance, itemaxmimplicitBV,
+              convtolimplicitBV, faraday);
+
+          // electrode-electrolyte overpotential at integration point
+          const double eta = eslavepotint - emasterpotint - epd - j * faraday * resistance;
+
+          // exponential Butler-Volmer terms
+          const double expterm1 = std::exp(alphaa * frt * eta);
+          const double expterm2 = std::exp(-alphac * frt * eta);
+          const double expterm = expterm1 - expterm2;
+
+          // safety check
+          if (std::abs(expterm) > 1.0e5)
+          {
+            dserror(
+                "Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
+                expterm);
+          }
+
+          // forward declarations
+          double dj_dc_slave(0.0);
+          double dj_dc_master(0.0);
+          double dj_dpot_slave(0.0);
+          double dj_dpot_master(0.0);
+
+          // calculate linearizations of Butler-Volmer kinetics w.r.t. elch dofs
+          myelectrodeutils::CalculateButlerVolmerElchLinearizations(kineticmodel, j0, frt, epdderiv,
+              alphaa, alphac, resistance, expterm1, expterm2, kr, faraday, emasterphiint,
+              eslavephiint, cmax, dj_dc_slave, dj_dc_master, dj_dpot_slave, dj_dpot_master);
+
+          // calculate RHS and linearizations of master and slave-side residuals
+          CalculateRHSandGlobalSystem<distype_master>(funct_slave, funct_master, test_slave,
+              test_master, numelectrons, nen_master, timefacfac, timefacrhsfac, dj_dc_slave,
+              dj_dc_master, dj_dpot_slave, dj_dpot_master, j, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+
+          break;
+        }  // case INPAR::S2I::kinetics_butlervolmerresistance:
+        default:
+        {
+          dserror("something went wrong");
+          break;
+        }
+      }
       break;
-    }  // case INPAR::S2I::kinetics_butlervolmerresistance:
+    }
 
     case INPAR::S2I::kinetics_constantinterfaceresistance:
     {
@@ -527,11 +553,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     Epetra_SerialDenseMatrix& eslavematrix)
 {
-  // access material of parent element
-  Teuchos::RCP<const MAT::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
-  if (matelectrode == Teuchos::null)
-    dserror("Invalid electrode material for scatra-scatra interface coupling!");
+  Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::null;
+  if (ele->ParentElement()->Material()->MaterialType() == INPAR::MAT::MaterialType::m_electrode)
+  {
+    matelectrode =
+        Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
+  }
 
   // get condition specific parameters
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
@@ -592,6 +619,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
         const double alphaa = my::scatraparamsboundary_->AlphaA();
         const double alphac = my::scatraparamsboundary_->AlphaC();
         const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
+
+        if (matelectrode == Teuchos::null)
+          dserror("Invalid electrode material for scatra-scatra interface coupling!");
 
         // extract saturation value of intercalated lithium concentration from electrode material
         const double cmax = matelectrode->CMax();
