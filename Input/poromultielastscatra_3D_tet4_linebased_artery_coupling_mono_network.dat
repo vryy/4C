@@ -109,7 +109,7 @@ INITIALFIELD                    field_by_condition
 NAME                            solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.0e-3 NUMMAT 2 MATIDS 14 15 NUMFLUIDPHASES 0 NUMREAC 1 REACIDS 50 END
+MAT 1 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.0e-3 NUMMAT 2 MATIDS 14 15 NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE 0 NUMREAC 1 REACIDS 50 END
 MAT 50 MAT_FluidPoroSingleReaction NUMSCAL 1 TOTALNUMDOF 2 NUMVOLFRAC 1 SCALE 1 -1 COUPLING scalar_by_function FUNCTID 7
 
 MAT 2 MAT_StructPoro MATID 20 POROLAWID 200 INITPOROSITY 0.7

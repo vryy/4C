@@ -1833,8 +1833,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetMaterials_presbased()
         dserror("invalid fluid material for poro-multiphase-elasticity");
       if (fluidmultimat_->NumFluidPhases() == 0)
         dserror(
-            "NUMFLUIDPHASES = 0 currently not supported since this requires an adaption of the "
-            "definition of the solid pressure");
+            "NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE = 0 currently not supported since this requires "
+            "an adaption of the definition of the solid pressure");
     }
     else
       dserror("no second material defined for element %i", Id());

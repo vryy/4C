@@ -378,12 +378,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         "advanced reaction material for multiphase porous flow (temperature)",
         INPAR::MAT::m_scatra_multiporo_temperature));
 
-    AddNamedInt(m, "NUMFLUIDPHASES", "number of fluid dofs");
-    AddNamedRealVector(m, "CP_FLUID", "heat capacity fluid phases", "NUMFLUIDPHASES");
+    AddNamedInt(m, "NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE", "number of fluid dofs");
+    AddNamedRealVector(
+        m, "CP_FLUID", "heat capacity fluid phases", "NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE");
     AddNamedInt(m, "NUMVOLFRAC", "number of volfrac dofs");
     AddNamedRealVector(m, "CP_VOLFRAC", "heat capacity volfrac", "NUMVOLFRAC");
     AddNamedReal(m, "CP_SOLID", "heat capacity solid");
-    AddNamedRealVector(m, "KAPPA_FLUID", "thermal diffusivity fluid phases", "NUMFLUIDPHASES");
+    AddNamedRealVector(m, "KAPPA_FLUID", "thermal diffusivity fluid phases",
+        "NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE");
     AddNamedRealVector(m, "KAPPA_VOLFRAC", "thermal diffusivity volfrac", "NUMVOLFRAC");
     AddNamedReal(m, "KAPPA_SOLID", "heat capacity solid");
     AddNamedReal(m, "DIFFUSIVITY", "kinematic diffusivity", 1.0, true);
@@ -2870,7 +2872,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "PERMEABILITY", "permeability of medium");
     AddNamedInt(m, "NUMMAT", "number of materials in list");
     AddNamedIntVector(m, "MATIDS", "the list material IDs", "NUMMAT");
-    AddNamedInt(m, "NUMFLUIDPHASES", "number of fluid phases");
+    AddNamedInt(m, "NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE", "number of fluid phases");
     AddNamedSeparator(m, "END", "indicating end of line");
 
     AppendMaterialDefinition(matlist, m);
@@ -2887,7 +2889,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "PERMEABILITY", "permeability of medium");
     AddNamedInt(m, "NUMMAT", "number of materials in list");
     AddNamedIntVector(m, "MATIDS", "the list material IDs", "NUMMAT");
-    AddNamedInt(m, "NUMFLUIDPHASES", "number of fluid phases");
+    AddNamedInt(m, "NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE", "number of fluid phases");
     AddNamedInt(m, "NUMREAC", "number of reactions for these elements", 0);
     AddNamedIntVector(m, "REACIDS", "advanced reaction list", "NUMREAC", 0);
     AddNamedSeparator(m, "END", "indicating end of line");
