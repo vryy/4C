@@ -25,12 +25,12 @@ namespace LINALG
        in the respective variable.
 
        \param dis (in): discretization
-       \param nullspace (in): nullspace
        \param numdf (in): number of degrees of freedom
        \param dimns (in): nullspace dimension
+       \param map (in): nullspace map
     */
-    Teuchos::RCP<Epetra_MultiVector> ComputeNullSpace(
-        const DRT::Discretization& dis, const int numdf, const int dimns);
+    Teuchos::RCP<Epetra_MultiVector> ComputeNullSpace(const DRT::Discretization& dis,
+        const int numdf, const int dimns, const Teuchos::RCP<Epetra_Map> dofmap);
 
     /*!
        \brief Fix the nullspace to match a new given map

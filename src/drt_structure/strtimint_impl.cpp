@@ -805,7 +805,9 @@ void STR::TimIntImpl::UpdateKrylovSpaceProjection()
   // get number of modes and their ids
   std::vector<int> modeids = projector_->Modes();
 
-  Teuchos::RCP<Epetra_MultiVector> nullspace = LINALG::NULLSPACE::ComputeNullSpace(*discret_, 3, 6);
+  Teuchos::RCP<Epetra_Map> nullspaceMap = Teuchos::rcp(new Epetra_Map(*discret_->DofRowMap()));
+  Teuchos::RCP<Epetra_MultiVector> nullspace =
+      LINALG::NULLSPACE::ComputeNullSpace(*discret_, 3, 6, nullspaceMap);
   if (nullspace == Teuchos::null) dserror("nullspace not successfully computed");
 
   // sort vector of nullspace data into kernel vector c_

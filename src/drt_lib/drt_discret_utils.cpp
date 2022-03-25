@@ -20,7 +20,6 @@
 /*----------------------------------------------------------------------*
  |  compute nullspace of system (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
-// TODO: Rename function name ... as this is not really true what it does
 void DRT::Discretization::ComputeNullSpaceIfNecessary(
     Teuchos::ParameterList& solveparams, bool recompute)
 {
@@ -87,7 +86,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   if (!solveparams.isSublist("ML Parameters") && !solveparams.isSublist("MueLu Parameters") &&
       !solveparams.isSublist("MueLu (Contact) Parameters") &&
       !solveparams.isSublist("MueLu (Fluid) Parameters") &&
-      !solveparams.isSublist("MueLu (TSI) Parameters"))
+      !solveparams.isSublist("MueLu (TSI) Parameters") &&
+      !solveparams.isSublist("MueLu (BeamSolid) Parameters"))
     return;
   Teuchos::ParameterList* mllist_ptr = NULL;
   if (solveparams.isSublist("ML Parameters"))
@@ -100,6 +100,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     mllist_ptr = &(solveparams.sublist("MueLu (Fluid) Parameters"));
   else if (solveparams.isSublist("MueLu (TSI) Parameters"))
     mllist_ptr = &(solveparams.sublist("MueLu (TSI) Parameters"));
+  else if (solveparams.isSublist("MueLu (BeamSolid) Parameters"))
+    mllist_ptr = &(solveparams);
   else
     return;
 
@@ -124,7 +126,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   if (!HaveDofs()) dserror("Discretization has no dofs assigned");
 
   // compute solver parameters and set them into list
-  LINALG::SOLVER::Parameters::ComputeSolverParameters(*this, mllist, numdf, dimns);
+  LINALG::SOLVER::Parameters::ComputeSolverParameters(*this, mllist);
 }
 
 /*----------------------------------------------------------------------*

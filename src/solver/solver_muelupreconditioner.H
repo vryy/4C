@@ -208,6 +208,53 @@ namespace LINALG
 
     };  // class MueLuContactSpPreconditioner
 
+    /*! \brief MueLu preconditioner for blocked linear systems of equations for beam coupling
+     Set of single-matrix algebraic multi-grid preconditioners for blocked problems
+
+    */
+    class MueLuBeamSolidBlockPreconditioner : public MueLuPreconditioner
+    {
+     public:
+      MueLuBeamSolidBlockPreconditioner(FILE* outfile, Teuchos::ParameterList& muelulist);
+
+      /*! \brief Create and compute the preconditioner
+       *
+       * The block preconditioner only works for matrices of the type
+       * SparseMatrix. Internally the matrix is split into the form
+       * \f[
+       * A = \left[\begin{array}{cc}
+       *       A_{11} & A_{12}\\
+       *       A_{21} & A_{22}
+       *     \end{array}\right]
+       * \f]
+       * We check whether the input \c matrix is of proper type and throw an
+       * error if not.
+       *
+       * This routine either re-create the entire preconditioner from scratch or
+       * it re-uses the existing preconditioner and only updates the fine level matrix
+       * for the Krylov solver.
+       *
+       * @param create Boolean flag to enforce (re-)creation of the preconditioner
+       * @param matrix SparseMatrix to be used as input for the preconditioner
+       * @param x Solution of the linear system
+       * @param b Right-hand side of the linear system
+       */
+      void Setup(
+          bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) final;
+
+      void Print(std::ostream& stream) final { stream << "MueLuBeamSolidBlockPreconditioner"; }
+
+      /// return name of sublist in paramterlist which contains parameters for preconditioner
+      const std::string getParameterListName() const final
+      {
+        return "MueLu (BeamSolid) Parameters";
+      }
+
+     private:
+      //! system of equations used for preconditioning used by P_ only
+      Teuchos::RCP<BlockSparseMatrixBase> Pmatrix_;
+
+    };  // class MueLuBeamCpPreconditioner
 
     namespace MUELU
     {
