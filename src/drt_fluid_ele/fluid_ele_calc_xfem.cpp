@@ -9,6 +9,7 @@
 /*----------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>
+#include "Teuchos_RCP.hpp"
 
 #include <fstream>
 
@@ -23,7 +24,8 @@
 #include "fluid_ele_calc_xfem.H"
 
 #include "../drt_mat/newtonianfluid.H"
-//#include "../drt_lib/drt_function.H"
+#include "../drt_mat/matpar_bundle.H"
+
 #include "../drt_fluid/fluid_functions.H"
 
 #include "../drt_lib/drt_condition_utils.H"
@@ -402,11 +404,16 @@ namespace DRT
           // evaluate the velocity gradient
           Teuchos::RCP<DRT::UTILS::Function> function_grad = Teuchos::null;
 
+          // get material
+          MAT::PAR::Parameter* params = mat->Parameter();
+          auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
+
+          if (!fparams) dserror("Material does not cast to Newtonian fluid");
+
           // evaluate velocity and pressure
           // evaluate the velocity gradient
-
-          function = Teuchos::rcp(new FLD::BeltramiUP(mat->Parameter()->Id()));
-          function_grad = Teuchos::rcp(new FLD::BeltramiGradU(mat->Parameter()->Id()));
+          function = Teuchos::rcp(new FLD::BeltramiUP(*fparams));
+          function_grad = Teuchos::rcp(new FLD::BeltramiGradU(*fparams));
 
           if (my::nsd_ == 3)
           {
@@ -539,9 +546,13 @@ namespace DRT
             is_stationary = false;
           }
 
-          function = Teuchos::rcp(new FLD::KimMoinUP(mat->Parameter()->Id(), is_stationary));
-          function_grad =
-              Teuchos::rcp(new FLD::KimMoinGradU(mat->Parameter()->Id(), is_stationary));
+          // get material
+          MAT::PAR::Parameter* params = mat->Parameter();
+          auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
+          if (!fparams) dserror("Material does not cast to Newtonian fluid");
+
+          function = Teuchos::rcp(new FLD::KimMoinUP(*fparams, is_stationary));
+          function_grad = Teuchos::rcp(new FLD::KimMoinGradU(*fparams, is_stationary));
 
           if (my::nsd_ == 3)
           {

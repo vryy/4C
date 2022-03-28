@@ -8,26 +8,324 @@
  */
 /*----------------------------------------------------------------------*/
 
-
 #include <utility>
-
 #include "xfluid_functions.H"
 #include "../drt_lib/drt_discret_interface.H"
 #include "../drt_lib/standardtypes_cpp.H"
-
-
-// For reading input lines:
 #include "../drt_lib/drt_linedefinition.H"
 
 
-/*----------------------------------------------------------------------*
- | constructor                                          rasthofer 04/10 |
- *----------------------------------------------------------------------*/
+void DRT::UTILS::AddValidXfluidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+{
+  DRT::INPUT::LineDefinition gerstenbergerforwardfacingstep;
+  gerstenbergerforwardfacingstep.AddTag("FORWARDFACINGSTEP");
+
+  DRT::INPUT::LineDefinition movinglevelsetcylinder;
+  movinglevelsetcylinder.AddTag("MOVINGLEVELSETCYLINDER")
+      .AddNamedDoubleVector("ORIGIN", 3)
+      .AddNamedDouble("RADIUS")
+      .AddNamedDoubleVector("DIRECTION", 3)
+      .AddNamedDouble("DISTANCE")
+      .AddNamedDouble("MAXSPEED");
+
+  DRT::INPUT::LineDefinition movinglevelsettorus;
+  movinglevelsettorus.AddTag("MOVINGLEVELSETTORUS")
+      .AddNamedDoubleVector("ORIGIN", 3)
+      .AddNamedDoubleVector("ORIENTVEC_TORUS", 3)
+      .AddNamedDouble("RADIUS")
+      .AddNamedDouble("RADIUS_TUBE")
+      .AddNamedDoubleVector("DIRECTION", 3)
+      .AddNamedDouble("DISTANCE")
+      .AddNamedDouble("MAXSPEED")
+      .AddNamedDoubleVector("ROTATION_VEC", 3)
+      .AddNamedDouble("ROTATION_SPEED")
+      .AddNamedDouble("ROTATION_RAMPTIME");
+
+  DRT::INPUT::LineDefinition movinglevelsettorusvelocity;
+  movinglevelsettorusvelocity.AddTag("MOVINGLEVELSETTORUSVELOCITY")
+      .AddNamedDoubleVector("ORIGIN", 3)
+      .AddNamedDoubleVector("ORIENTVEC_TORUS", 3)
+      .AddNamedDouble("RADIUS")
+      .AddNamedDouble("RADIUS_TUBE")
+      .AddNamedDoubleVector("DIRECTION", 3)
+      .AddNamedDouble("DISTANCE")
+      .AddNamedDouble("MAXSPEED")
+      .AddNamedDoubleVector("ROTATION_VEC", 3)
+      .AddNamedDouble("ROTATION_SPEED")
+      .AddNamedDouble("ROTATION_RAMPTIME");
+
+  DRT::INPUT::LineDefinition movinglevelsettorussliplength;
+  movinglevelsettorussliplength.AddTag("MOVINGLEVELSETTORUSSLIPLENGTH")
+      .AddNamedDoubleVector("ORIGIN", 3)
+      .AddNamedDoubleVector("ORIENTVEC_TORUS", 3)
+      .AddNamedDouble("RADIUS")
+      .AddNamedDouble("RADIUS_TUBE")
+      .AddNamedDoubleVector("DIRECTION", 3)
+      .AddNamedDouble("DISTANCE")
+      .AddNamedDouble("MAXSPEED")
+      .AddNamedDoubleVector("ROTATION_VEC", 3)
+      .AddNamedDouble("ROTATION_SPEED")
+      .AddNamedDouble("ROTATION_RAMPTIME")
+      .AddNamedInt("SLIP_FUNCT");
+
+  DRT::INPUT::LineDefinition taylorcouetteflow;
+  taylorcouetteflow.AddTag("TAYLORCOUETTEFLOW")
+      .AddNamedDouble("RADIUS_I")
+      .AddNamedDouble("RADIUS_O")
+      .AddNamedDouble("VEL_THETA_I")
+      .AddNamedDouble("VEL_THETA_O")
+      .AddNamedDouble("SLIPLENGTH_I")
+      .AddNamedDouble("SLIPLENGTH_O")
+      .AddNamedDouble("TRACTION_THETA_I")
+      .AddNamedDouble("TRACTION_THETA_O")
+      .AddNamedDouble("VISCOSITY");
+
+  DRT::INPUT::LineDefinition urquizaboxflow;
+  urquizaboxflow.AddTag("URQUIZABOXFLOW")
+      .AddNamedDouble("LENGTHX")
+      .AddNamedDouble("LENGTHY")
+      .AddNamedDouble("ROTATION")
+      .AddNamedDouble("VISCOSITY")
+      .AddNamedDouble("DENSITY")
+      .AddNamedInt("CASE")
+      .AddOptionalNamedDoubleVector("COMBINATION", 2);
+
+  DRT::INPUT::LineDefinition urquizaboxflowtraction;
+  urquizaboxflowtraction.AddTag("URQUIZABOXFLOW_TRACTION")
+      .AddNamedDouble("LENGTHX")
+      .AddNamedDouble("LENGTHY")
+      .AddNamedDouble("ROTATION")
+      .AddNamedDouble("VISCOSITY")
+      .AddNamedDouble("DENSITY")
+      .AddNamedInt("CASE")
+      .AddOptionalNamedDoubleVector("COMBINATION", 2);
+
+  DRT::INPUT::LineDefinition urquizaboxflowforce;
+  urquizaboxflowforce.AddTag("URQUIZABOXFLOW_FORCE")
+      .AddNamedDouble("LENGTHX")
+      .AddNamedDouble("LENGTHY")
+      .AddNamedDouble("ROTATION")
+      .AddNamedDouble("VISCOSITY")
+      .AddNamedDouble("DENSITY")
+      .AddNamedInt("CASE")
+      .AddOptionalNamedDoubleVector("COMBINATION", 2);
+
+  lines->Add(gerstenbergerforwardfacingstep);
+  lines->Add(movinglevelsetcylinder);
+  lines->Add(movinglevelsettorus);
+  lines->Add(movinglevelsettorusvelocity);
+  lines->Add(movinglevelsettorussliplength);
+  lines->Add(taylorcouetteflow);
+  lines->Add(urquizaboxflow);
+  lines->Add(urquizaboxflowforce);
+  lines->Add(urquizaboxflowtraction);
+}
+
+Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateXfluidFunction(
+    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
+    const int index_current_funct_in_manager)
+{
+  if (function_lin_def->HaveNamed("FORWARDFACINGSTEP"))
+  {
+    return Teuchos::rcp(new GerstenbergerForwardfacingStep());
+  }
+  else if (function_lin_def->HaveNamed("MOVINGLEVELSETCYLINDER"))
+  {
+    std::vector<double> origin;
+    function_lin_def->ExtractDoubleVector("ORIGIN", origin);
+
+    double radius;
+    function_lin_def->ExtractDouble("RADIUS", radius);
+
+    std::vector<double> direction;
+    function_lin_def->ExtractDoubleVector("DIRECTION", direction);
+
+    double distance;
+    function_lin_def->ExtractDouble("DISTANCE", distance);
+
+    double maxspeed;
+    function_lin_def->ExtractDouble("MAXSPEED", maxspeed);
+
+    return Teuchos::rcp(
+        new MovingLevelSetCylinder(&origin, radius, &direction, distance, maxspeed));
+  }
+  else if (function_lin_def->HaveNamed("MOVINGLEVELSETTORUS") or
+           function_lin_def->HaveNamed("MOVINGLEVELSETTORUSVELOCITY") or
+           function_lin_def->HaveNamed("MOVINGLEVELSETTORUSSLIPLENGTH"))
+  {
+    std::vector<double> origin;
+    function_lin_def->ExtractDoubleVector("ORIGIN", origin);
+
+    std::vector<double> orient_vec_torus;
+    function_lin_def->ExtractDoubleVector("ORIENTVEC_TORUS", orient_vec_torus);
+
+    double radius;
+    function_lin_def->ExtractDouble("RADIUS", radius);
+
+    double radius_tube;
+    function_lin_def->ExtractDouble("RADIUS_TUBE", radius_tube);
+
+    std::vector<double> direction;
+    function_lin_def->ExtractDoubleVector("DIRECTION", direction);
+
+    double distance;
+    function_lin_def->ExtractDouble("DISTANCE", distance);
+
+    double maxspeed;
+    function_lin_def->ExtractDouble("MAXSPEED", maxspeed);
+
+    std::vector<double> rot_vec_torus;
+    function_lin_def->ExtractDoubleVector("ROTATION_VEC", rot_vec_torus);
+
+    double rotspeed;
+    function_lin_def->ExtractDouble("ROTATION_SPEED", rotspeed);  // revolutions per second
+
+    double rotramptime;
+    function_lin_def->ExtractDouble("ROTATION_RAMPTIME", rotramptime);  // revolutions per second
+
+    if (function_lin_def->HaveNamed("MOVINGLEVELSETTORUS"))
+      return Teuchos::rcp(new MovingLevelSetTorus(&origin, &orient_vec_torus, radius, radius_tube,
+          &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime));
+    else if (function_lin_def->HaveNamed("MOVINGLEVELSETTORUSVELOCITY"))
+      return Teuchos::rcp(new MovingLevelSetTorusVelocity(&origin, &orient_vec_torus, radius,
+          radius_tube, &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime));
+    else if (function_lin_def->HaveNamed("MOVINGLEVELSETTORUSSLIPLENGTH"))
+    {
+      int slipfunct;
+      function_lin_def->ExtractInt("SLIP_FUNCT", slipfunct);
+      return Teuchos::rcp(
+          new MovingLevelSetTorusSliplength(&origin, &orient_vec_torus, radius, radius_tube,
+              &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime, slipfunct));
+    }
+    else
+    {
+      dserror("How did you end up here :)?");
+      return Teuchos::RCP<DRT::UTILS::Function>(NULL);
+    }
+  }
+  else if (function_lin_def->HaveNamed("TAYLORCOUETTEFLOW"))
+  {
+    double radius_i;
+    function_lin_def->ExtractDouble("RADIUS_I", radius_i);
+    double radius_o;
+    function_lin_def->ExtractDouble("RADIUS_O", radius_o);
+
+    double vel_theta_i;
+    function_lin_def->ExtractDouble("VEL_THETA_I", vel_theta_i);
+    double vel_theta_o;
+    function_lin_def->ExtractDouble("VEL_THETA_O", vel_theta_o);
+
+    double sliplength_i;
+    function_lin_def->ExtractDouble("SLIPLENGTH_I", sliplength_i);
+    double sliplength_o;
+    function_lin_def->ExtractDouble("SLIPLENGTH_O", sliplength_o);
+
+    double traction_theta_i;
+    function_lin_def->ExtractDouble("TRACTION_THETA_I", traction_theta_i);
+    double traction_theta_o;
+    function_lin_def->ExtractDouble("TRACTION_THETA_O", traction_theta_o);
+
+    double viscosity;
+    function_lin_def->ExtractDouble("VISCOSITY", viscosity);
+
+    return Teuchos::rcp(new TaylorCouetteFlow(radius_i, radius_o, vel_theta_i, vel_theta_o,
+        sliplength_i, sliplength_o, traction_theta_i, traction_theta_o, viscosity));
+  }
+  else if (function_lin_def->HaveNamed("URQUIZABOXFLOW"))
+  {
+    double lengthx;
+    function_lin_def->ExtractDouble("LENGTHX", lengthx);
+    double lengthy;
+    function_lin_def->ExtractDouble("LENGTHY", lengthy);
+
+    double rotation;
+    function_lin_def->ExtractDouble("ROTATION", rotation);
+    double viscosity;
+    function_lin_def->ExtractDouble("VISCOSITY", viscosity);
+    double density;
+    function_lin_def->ExtractDouble("DENSITY", density);
+
+    int functno;
+    function_lin_def->ExtractInt("CASE", functno);
+
+    std::vector<double> lin_comb(2, 0.0);
+    if (function_lin_def->HaveNamed("COMBINATION"))
+    {
+      function_lin_def->ExtractDoubleVector("COMBINATION", lin_comb);
+    }
+    else if (functno == 3)
+      dserror(
+          "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "
+          "DEFINE: COMBINATION C1 C2");
+
+    return Teuchos::rcp(
+        new UrquizaBoxFlow(lengthx, lengthy, rotation, viscosity, density, functno, lin_comb));
+  }
+  else if (function_lin_def->HaveNamed("URQUIZABOXFLOW_FORCE"))
+  {
+    double lengthx;
+    function_lin_def->ExtractDouble("LENGTHX", lengthx);
+    double lengthy;
+    function_lin_def->ExtractDouble("LENGTHY", lengthy);
+
+    double rotation;
+    function_lin_def->ExtractDouble("ROTATION", rotation);
+    double viscosity;
+    function_lin_def->ExtractDouble("VISCOSITY", viscosity);
+    double density;
+    function_lin_def->ExtractDouble("DENSITY", density);
+
+    int functno;
+    function_lin_def->ExtractInt("CASE", functno);
+
+    std::vector<double> lin_comb(2, 0.0);
+    if (function_lin_def->HaveNamed("COMBINATION"))
+      function_lin_def->ExtractDoubleVector("COMBINATION", lin_comb);
+    else if (functno == 3)
+      dserror(
+          "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "
+          "DEFINE: COMBINATION C1 C2");
+
+    return Teuchos::rcp(
+        new UrquizaBoxFlowForce(lengthx, lengthy, rotation, viscosity, density, functno, lin_comb));
+  }
+  else if (function_lin_def->HaveNamed("URQUIZABOXFLOW_TRACTION"))
+  {
+    double lengthx;
+    function_lin_def->ExtractDouble("LENGTHX", lengthx);
+    double lengthy;
+    function_lin_def->ExtractDouble("LENGTHY", lengthy);
+
+    double rotation;
+    function_lin_def->ExtractDouble("ROTATION", rotation);
+    double viscosity;
+    function_lin_def->ExtractDouble("VISCOSITY", viscosity);
+    double density;
+    function_lin_def->ExtractDouble("DENSITY", density);
+
+    int functno;
+    function_lin_def->ExtractInt("CASE", functno);
+
+    std::vector<double> lin_comb(2, 0.0);
+    if (function_lin_def->HaveNamed("COMBINATION"))
+      function_lin_def->ExtractDoubleVector("COMBINATION", lin_comb);
+    else if (functno == 3)
+      dserror(
+          "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "
+          "DEFINE: COMBINATION C1 C2");
+
+    return Teuchos::rcp(new UrquizaBoxFlowTraction(
+        lengthx, lengthy, rotation, viscosity, density, functno, lin_comb));
+  }
+  else
+  {
+    return Teuchos::RCP<DRT::UTILS::Function>(NULL);
+  }
+}
+
+
 DRT::UTILS::GerstenbergerForwardfacingStep::GerstenbergerForwardfacingStep() : Function() {}
 
-/*----------------------------------------------------------------------*
- | evaluation of xfluid level set test case             winter    09/14 |
- *----------------------------------------------------------------------*/
 double DRT::UTILS::GerstenbergerForwardfacingStep::Evaluate(int index, const double* xp, double t)
 {
   //  //cube_Gerstenberger:
@@ -93,9 +391,7 @@ double DRT::UTILS::GerstenbergerForwardfacingStep::Evaluate(int index, const dou
   return distance;
 }
 
-/*----------------------------------------------------------------------*
- | constructor                                            winter 10/15  |
- *----------------------------------------------------------------------*/
+
 DRT::UTILS::MovingLevelSetCylinder::MovingLevelSetCylinder(std::vector<double>* origin,
     double radius, std::vector<double>* direction, double distance, double maxspeed)
     : Function()
@@ -133,9 +429,6 @@ DRT::UTILS::MovingLevelSetCylinder::MovingLevelSetCylinder(std::vector<double>* 
   // std::cout << "T_halfcycle: " << (L/2)/maxspeed * PI; //i.e. -d/2 -> d/2
 }
 
-/*----------------------------------------------------------------------*
- | evaluation of xfluid level set test case             winter    10/15 |
- *----------------------------------------------------------------------*/
 double DRT::UTILS::MovingLevelSetCylinder::Evaluate(int index, const double* xp, double t)
 {
   // d = L/2 * sin(f*t-PI/2)
@@ -159,10 +452,7 @@ double DRT::UTILS::MovingLevelSetCylinder::Evaluate(int index, const double* xp,
   return lsvalue;
 }
 
-/*----------------------------------------------------------------------*
- | constructor                                                          |
- |   3D Torus                                             winter 04/16  |
- *----------------------------------------------------------------------*/
+
 DRT::UTILS::MovingLSTorus::MovingLSTorus(std::vector<double>* origin,
     std::vector<double>* orientationvec_torus, double radius, double radius_tube,
     std::vector<double>* direction, double distance, double maxspeed,
@@ -265,10 +555,7 @@ DRT::UTILS::MovingLSTorus::MovingLSTorus(std::vector<double>* origin,
   // std::cout << "T_halfcycle: " << (L/2)/maxspeed * PI; //i.e. -d/2 -> d/2
 }
 
-/*----------------------------------------------------------------------*
- | constructor                                                          |
- |   3D Torus                                             winter 04/16  |
- *----------------------------------------------------------------------*/
+
 DRT::UTILS::MovingLevelSetTorus::MovingLevelSetTorus(std::vector<double>* origin,
     std::vector<double>* orientationvec_torus, double radius, double radius_tube,
     std::vector<double>* direction, double distance, double maxspeed,
@@ -276,13 +563,8 @@ DRT::UTILS::MovingLevelSetTorus::MovingLevelSetTorus(std::vector<double>* origin
     : MovingLSTorus(origin, orientationvec_torus, radius, radius_tube, direction, distance,
           maxspeed, rotvector, rotspeed, rotramptime)
 {
-  // Do noth'in
 }
 
-/*----------------------------------------------------------------------*
- | Moving and rotating 3D Torus, returns level set value                |
- |                                                        winter 04/16  |
- *----------------------------------------------------------------------*/
 double DRT::UTILS::MovingLevelSetTorus::Evaluate(int index, const double* xp, double t)
 {
   // d = L/2 * sin(f*t-PI/2)
@@ -385,10 +667,6 @@ double DRT::UTILS::MovingLevelSetTorus::Evaluate(int index, const double* xp, do
 }
 
 
-/*----------------------------------------------------------------------*
- | constructor                                                          |
- |   3D Torus                                             winter 04/16  |
- *----------------------------------------------------------------------*/
 DRT::UTILS::MovingLevelSetTorusVelocity::MovingLevelSetTorusVelocity(std::vector<double>* origin,
     std::vector<double>* orientationvec_torus, double radius, double radius_tube,
     std::vector<double>* direction, double distance, double maxspeed,
@@ -396,13 +674,8 @@ DRT::UTILS::MovingLevelSetTorusVelocity::MovingLevelSetTorusVelocity(std::vector
     : MovingLSTorus(origin, orientationvec_torus, radius, radius_tube, direction, distance,
           maxspeed, rotvector, rotspeed, rotramptime)
 {
-  // Do noth'in
 }
 
-/*----------------------------------------------------------------------*
- | Evaluate velocity                                                    |
- |   3D Torus                                             winter 04/16  |
- *----------------------------------------------------------------------*/
 double DRT::UTILS::MovingLevelSetTorusVelocity::Evaluate(int index, const double* xp, double t)
 {
   // d = L/2 * sin(f*t-PI/2)
@@ -492,10 +765,7 @@ double DRT::UTILS::MovingLevelSetTorusVelocity::Evaluate(int index, const double
   }
 }
 
-/*----------------------------------------------------------------------*
- | constructor                                                          |
- |   3D Torus                                             winter 04/16  |
- *----------------------------------------------------------------------*/
+
 DRT::UTILS::MovingLevelSetTorusSliplength::MovingLevelSetTorusSliplength(
     std::vector<double>* origin, std::vector<double>* orientationvec_torus, double radius,
     double radius_tube, std::vector<double>* direction, double distance, double maxspeed,
@@ -535,10 +805,6 @@ DRT::UTILS::MovingLevelSetTorusSliplength::MovingLevelSetTorusSliplength(
   }
 }
 
-/*----------------------------------------------------------------------*
- | Evaluate sliplength                                                  |
- |   3D Torus                                             winter 04/16  |
- *----------------------------------------------------------------------*/
 double DRT::UTILS::MovingLevelSetTorusSliplength::Evaluate(int index, const double* xp, double t)
 {
   // coefficient for sinus.
@@ -668,9 +934,7 @@ double DRT::UTILS::MovingLevelSetTorusSliplength::Evaluate(int index, const doub
   return sliplength;
 }
 
-/*----------------------------------------------------------------------*
- | constructor                                            winter 10/15  |
- *----------------------------------------------------------------------*/
+
 DRT::UTILS::TaylorCouetteFlow::TaylorCouetteFlow(double radius_inner, double radius_outer,
     double vel_theta_inner, double vel_theta_outer, double sliplength_inner,
     double sliplength_outer, double traction_theta_inner, double traction_theta_outer,
@@ -728,9 +992,6 @@ DRT::UTILS::TaylorCouetteFlow::TaylorCouetteFlow(double radius_inner, double rad
         (0.5 * ((radius_outer * radius_outer) - (radius_inner * radius_inner)));
 }
 
-/*----------------------------------------------------------------------*
- | evaluation of Taylor-Couette analytical solution     winter    10/15 |
- *----------------------------------------------------------------------*/
 double DRT::UTILS::TaylorCouetteFlow::Evaluate(int index, const double* xp, double t)
 {
   double radius = sqrt(xp[0] * xp[0] + xp[1] * xp[1]);
@@ -812,9 +1073,7 @@ std::vector<double> DRT::UTILS::TaylorCouetteFlow::EvaluateSpatialDerivative(
   return res;
 }
 
-/*----------------------------------------------------------------------*
- | constructor                                            winter 10/15  |
- *----------------------------------------------------------------------*/
+
 DRT::UTILS::UrquizaBoxFlow::UrquizaBoxFlow(double lengthx, double lengthy, double rotation,
     double viscosity, double density, int functno, std::vector<double> lincomb)
     : Function(),
@@ -1013,7 +1272,6 @@ double DRT::UTILS::UrquizaBoxFlow::Evaluate(int index, const double* xp, double 
   return 0.0;
 }
 
-
 std::vector<double> DRT::UTILS::UrquizaBoxFlow::EvaluateSpatialDerivative(
     int index, const double* xp, const double t)
 {
@@ -1109,15 +1367,11 @@ std::vector<double> DRT::UTILS::UrquizaBoxFlow::EvaluateSpatialDerivative(
 }
 
 
-/*----------------------------------------------------------------------*
- | constructor                                            winter 10/15  |
- *----------------------------------------------------------------------*/
 DRT::UTILS::UrquizaBoxFlowForce::UrquizaBoxFlowForce(double lengthx, double lengthy,
     double rotation, double viscosity, double density, int functno, std::vector<double> lincomb)
     : UrquizaBoxFlow(lengthx, lengthy, rotation, viscosity, density, functno, std::move(lincomb))
 {
 }
-
 
 double DRT::UTILS::UrquizaBoxFlowForce::Evaluate(int index, const double* xp, double t)
 {
@@ -1266,15 +1520,11 @@ double DRT::UTILS::UrquizaBoxFlowForce::Evaluate(int index, const double* xp, do
 }
 
 
-/*----------------------------------------------------------------------*
- | constructor                                            winter 10/15  |
- *----------------------------------------------------------------------*/
 DRT::UTILS::UrquizaBoxFlowTraction::UrquizaBoxFlowTraction(double lengthx, double lengthy,
     double rotation, double viscosity, double density, int functno, std::vector<double> lincomb)
     : UrquizaBoxFlow(lengthx, lengthy, rotation, viscosity, density, functno, std::move(lincomb))
 {
 }
-
 
 double DRT::UTILS::UrquizaBoxFlowTraction::Evaluate(int index, const double* xp, double t)
 {
@@ -1447,313 +1697,4 @@ double DRT::UTILS::UrquizaBoxFlowTraction::Evaluate(int index, const double* xp,
   }
 
   return 0.0;
-}
-
-void DRT::UTILS::XfluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
-{
-  DRT::INPUT::LineDefinition gerstenbergerforwardfacingstep;
-  gerstenbergerforwardfacingstep.AddTag("FORWARDFACINGSTEP");
-
-  DRT::INPUT::LineDefinition movinglevelsetcylinder;
-  movinglevelsetcylinder.AddTag("MOVINGLEVELSETCYLINDER")
-      .AddNamedDoubleVector("ORIGIN", 3)
-      .AddNamedDouble("RADIUS")
-      .AddNamedDoubleVector("DIRECTION", 3)
-      .AddNamedDouble("DISTANCE")
-      .AddNamedDouble("MAXSPEED");
-
-  DRT::INPUT::LineDefinition movinglevelsettorus;
-  movinglevelsettorus.AddTag("MOVINGLEVELSETTORUS")
-      .AddNamedDoubleVector("ORIGIN", 3)
-      .AddNamedDoubleVector("ORIENTVEC_TORUS", 3)
-      .AddNamedDouble("RADIUS")
-      .AddNamedDouble("RADIUS_TUBE")
-      .AddNamedDoubleVector("DIRECTION", 3)
-      .AddNamedDouble("DISTANCE")
-      .AddNamedDouble("MAXSPEED")
-      .AddNamedDoubleVector("ROTATION_VEC", 3)
-      .AddNamedDouble("ROTATION_SPEED")
-      .AddNamedDouble("ROTATION_RAMPTIME");
-
-  DRT::INPUT::LineDefinition movinglevelsettorusvelocity;
-  movinglevelsettorusvelocity.AddTag("MOVINGLEVELSETTORUSVELOCITY")
-      .AddNamedDoubleVector("ORIGIN", 3)
-      .AddNamedDoubleVector("ORIENTVEC_TORUS", 3)
-      .AddNamedDouble("RADIUS")
-      .AddNamedDouble("RADIUS_TUBE")
-      .AddNamedDoubleVector("DIRECTION", 3)
-      .AddNamedDouble("DISTANCE")
-      .AddNamedDouble("MAXSPEED")
-      .AddNamedDoubleVector("ROTATION_VEC", 3)
-      .AddNamedDouble("ROTATION_SPEED")
-      .AddNamedDouble("ROTATION_RAMPTIME");
-
-  DRT::INPUT::LineDefinition movinglevelsettorussliplength;
-  movinglevelsettorussliplength.AddTag("MOVINGLEVELSETTORUSSLIPLENGTH")
-      .AddNamedDoubleVector("ORIGIN", 3)
-      .AddNamedDoubleVector("ORIENTVEC_TORUS", 3)
-      .AddNamedDouble("RADIUS")
-      .AddNamedDouble("RADIUS_TUBE")
-      .AddNamedDoubleVector("DIRECTION", 3)
-      .AddNamedDouble("DISTANCE")
-      .AddNamedDouble("MAXSPEED")
-      .AddNamedDoubleVector("ROTATION_VEC", 3)
-      .AddNamedDouble("ROTATION_SPEED")
-      .AddNamedDouble("ROTATION_RAMPTIME")
-      .AddNamedInt("SLIP_FUNCT");
-
-  DRT::INPUT::LineDefinition taylorcouetteflow;
-  taylorcouetteflow.AddTag("TAYLORCOUETTEFLOW")
-      .AddNamedDouble("RADIUS_I")
-      .AddNamedDouble("RADIUS_O")
-      .AddNamedDouble("VEL_THETA_I")
-      .AddNamedDouble("VEL_THETA_O")
-      .AddNamedDouble("SLIPLENGTH_I")
-      .AddNamedDouble("SLIPLENGTH_O")
-      .AddNamedDouble("TRACTION_THETA_I")
-      .AddNamedDouble("TRACTION_THETA_O")
-      .AddNamedDouble("VISCOSITY");
-
-  DRT::INPUT::LineDefinition urquizaboxflow;
-  urquizaboxflow.AddTag("URQUIZABOXFLOW")
-      .AddNamedDouble("LENGTHX")
-      .AddNamedDouble("LENGTHY")
-      .AddNamedDouble("ROTATION")
-      .AddNamedDouble("VISCOSITY")
-      .AddNamedDouble("DENSITY")
-      .AddNamedInt("CASE")
-      .AddOptionalNamedDoubleVector("COMBINATION", 2);
-
-  DRT::INPUT::LineDefinition urquizaboxflowtraction;
-  urquizaboxflowtraction.AddTag("URQUIZABOXFLOW_TRACTION")
-      .AddNamedDouble("LENGTHX")
-      .AddNamedDouble("LENGTHY")
-      .AddNamedDouble("ROTATION")
-      .AddNamedDouble("VISCOSITY")
-      .AddNamedDouble("DENSITY")
-      .AddNamedInt("CASE")
-      .AddOptionalNamedDoubleVector("COMBINATION", 2);
-
-  DRT::INPUT::LineDefinition urquizaboxflowforce;
-  urquizaboxflowforce.AddTag("URQUIZABOXFLOW_FORCE")
-      .AddNamedDouble("LENGTHX")
-      .AddNamedDouble("LENGTHY")
-      .AddNamedDouble("ROTATION")
-      .AddNamedDouble("VISCOSITY")
-      .AddNamedDouble("DENSITY")
-      .AddNamedInt("CASE")
-      .AddOptionalNamedDoubleVector("COMBINATION", 2);
-
-  lines->Add(gerstenbergerforwardfacingstep);
-  lines->Add(movinglevelsetcylinder);
-  lines->Add(movinglevelsettorus);
-  lines->Add(movinglevelsettorusvelocity);
-  lines->Add(movinglevelsettorussliplength);
-  lines->Add(taylorcouetteflow);
-  lines->Add(urquizaboxflow);
-  lines->Add(urquizaboxflowforce);
-  lines->Add(urquizaboxflowtraction);
-}
-
-bool DRT::UTILS::XfluidFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> function,
-    std::vector<Teuchos::RCP<Function>>* functions_)
-{
-  bool found_xfluid_name = true;
-
-  if (function->HaveNamed("FORWARDFACINGSTEP"))
-  {
-    functions_->push_back(Teuchos::rcp(new GerstenbergerForwardfacingStep()));
-  }
-  else if (function->HaveNamed("MOVINGLEVELSETCYLINDER"))
-  {
-    std::vector<double> origin;
-    function->ExtractDoubleVector("ORIGIN", origin);
-
-    double radius;
-    function->ExtractDouble("RADIUS", radius);
-
-    std::vector<double> direction;
-    function->ExtractDoubleVector("DIRECTION", direction);
-
-    double distance;
-    function->ExtractDouble("DISTANCE", distance);
-
-    double maxspeed;
-    function->ExtractDouble("MAXSPEED", maxspeed);
-
-    functions_->push_back(
-        Teuchos::rcp(new MovingLevelSetCylinder(&origin, radius, &direction, distance, maxspeed)));
-  }
-  else if (function->HaveNamed("MOVINGLEVELSETTORUS") or
-           function->HaveNamed("MOVINGLEVELSETTORUSVELOCITY") or
-           function->HaveNamed("MOVINGLEVELSETTORUSSLIPLENGTH"))
-  {
-    std::vector<double> origin;
-    function->ExtractDoubleVector("ORIGIN", origin);
-
-    std::vector<double> orient_vec_torus;
-    function->ExtractDoubleVector("ORIENTVEC_TORUS", orient_vec_torus);
-
-    double radius;
-    function->ExtractDouble("RADIUS", radius);
-
-    double radius_tube;
-    function->ExtractDouble("RADIUS_TUBE", radius_tube);
-
-    std::vector<double> direction;
-    function->ExtractDoubleVector("DIRECTION", direction);
-
-    double distance;
-    function->ExtractDouble("DISTANCE", distance);
-
-    double maxspeed;
-    function->ExtractDouble("MAXSPEED", maxspeed);
-
-    std::vector<double> rot_vec_torus;
-    function->ExtractDoubleVector("ROTATION_VEC", rot_vec_torus);
-
-    double rotspeed;
-    function->ExtractDouble("ROTATION_SPEED", rotspeed);  // revolutions per second
-
-    double rotramptime;
-    function->ExtractDouble("ROTATION_RAMPTIME", rotramptime);  // revolutions per second
-
-    if (function->HaveNamed("MOVINGLEVELSETTORUS"))
-      functions_->push_back(Teuchos::rcp(new MovingLevelSetTorus(&origin, &orient_vec_torus, radius,
-          radius_tube, &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime)));
-    else if (function->HaveNamed("MOVINGLEVELSETTORUSVELOCITY"))
-      functions_->push_back(
-          Teuchos::rcp(new MovingLevelSetTorusVelocity(&origin, &orient_vec_torus, radius,
-              radius_tube, &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime)));
-    else if (function->HaveNamed("MOVINGLEVELSETTORUSSLIPLENGTH"))
-    {
-      int slipfunct;
-      function->ExtractInt("SLIP_FUNCT", slipfunct);
-      functions_->push_back(Teuchos::rcp(
-          new MovingLevelSetTorusSliplength(&origin, &orient_vec_torus, radius, radius_tube,
-              &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime, slipfunct)));
-    }
-    else
-      dserror("How did you end up here :)?");
-  }
-  else if (function->HaveNamed("TAYLORCOUETTEFLOW"))
-  {
-    double radius_i;
-    function->ExtractDouble("RADIUS_I", radius_i);
-    double radius_o;
-    function->ExtractDouble("RADIUS_O", radius_o);
-
-    double vel_theta_i;
-    function->ExtractDouble("VEL_THETA_I", vel_theta_i);
-    double vel_theta_o;
-    function->ExtractDouble("VEL_THETA_O", vel_theta_o);
-
-    double sliplength_i;
-    function->ExtractDouble("SLIPLENGTH_I", sliplength_i);
-    double sliplength_o;
-    function->ExtractDouble("SLIPLENGTH_O", sliplength_o);
-
-    double traction_theta_i;
-    function->ExtractDouble("TRACTION_THETA_I", traction_theta_i);
-    double traction_theta_o;
-    function->ExtractDouble("TRACTION_THETA_O", traction_theta_o);
-
-    double viscosity;
-    function->ExtractDouble("VISCOSITY", viscosity);
-
-    functions_->push_back(Teuchos::rcp(new TaylorCouetteFlow(radius_i, radius_o, vel_theta_i,
-        vel_theta_o, sliplength_i, sliplength_o, traction_theta_i, traction_theta_o, viscosity)));
-  }
-  else if (function->HaveNamed("URQUIZABOXFLOW"))
-  {
-    double lengthx;
-    function->ExtractDouble("LENGTHX", lengthx);
-    double lengthy;
-    function->ExtractDouble("LENGTHY", lengthy);
-
-    double rotation;
-    function->ExtractDouble("ROTATION", rotation);
-    double viscosity;
-    function->ExtractDouble("VISCOSITY", viscosity);
-    double density;
-    function->ExtractDouble("DENSITY", density);
-
-    int functno;
-    function->ExtractInt("CASE", functno);
-
-    std::vector<double> lin_comb(2, 0.0);
-    if (function->HaveNamed("COMBINATION"))
-    {
-      function->ExtractDoubleVector("COMBINATION", lin_comb);
-    }
-    else if (functno == 3)
-      dserror(
-          "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "
-          "DEFINE: COMBINATION C1 C2");
-
-    functions_->push_back(Teuchos::rcp(
-        new UrquizaBoxFlow(lengthx, lengthy, rotation, viscosity, density, functno, lin_comb)));
-  }
-  else if (function->HaveNamed("URQUIZABOXFLOW_FORCE"))
-  {
-    double lengthx;
-    function->ExtractDouble("LENGTHX", lengthx);
-    double lengthy;
-    function->ExtractDouble("LENGTHY", lengthy);
-
-    double rotation;
-    function->ExtractDouble("ROTATION", rotation);
-    double viscosity;
-    function->ExtractDouble("VISCOSITY", viscosity);
-    double density;
-    function->ExtractDouble("DENSITY", density);
-
-    int functno;
-    function->ExtractInt("CASE", functno);
-
-    std::vector<double> lin_comb(2, 0.0);
-    if (function->HaveNamed("COMBINATION"))
-      function->ExtractDoubleVector("COMBINATION", lin_comb);
-    else if (functno == 3)
-      dserror(
-          "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "
-          "DEFINE: COMBINATION C1 C2");
-
-    functions_->push_back(Teuchos::rcp(new UrquizaBoxFlowForce(
-        lengthx, lengthy, rotation, viscosity, density, functno, lin_comb)));
-  }
-  else if (function->HaveNamed("URQUIZABOXFLOW_TRACTION"))
-  {
-    double lengthx;
-    function->ExtractDouble("LENGTHX", lengthx);
-    double lengthy;
-    function->ExtractDouble("LENGTHY", lengthy);
-
-    double rotation;
-    function->ExtractDouble("ROTATION", rotation);
-    double viscosity;
-    function->ExtractDouble("VISCOSITY", viscosity);
-    double density;
-    function->ExtractDouble("DENSITY", density);
-
-    int functno;
-    function->ExtractInt("CASE", functno);
-
-    std::vector<double> lin_comb(2, 0.0);
-    if (function->HaveNamed("COMBINATION"))
-      function->ExtractDoubleVector("COMBINATION", lin_comb);
-    else if (functno == 3)
-      dserror(
-          "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "
-          "DEFINE: COMBINATION C1 C2");
-
-    functions_->push_back(Teuchos::rcp(new UrquizaBoxFlowTraction(
-        lengthx, lengthy, rotation, viscosity, density, functno, lin_comb)));
-  }
-  else
-  {
-    found_xfluid_name = false;
-  }
-
-  return found_xfluid_name;
 }

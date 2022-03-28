@@ -10,6 +10,8 @@
 #include "poromultiphase_scatra_function.H"
 #include "poromultiphase_scatra_utils.H"
 #include "../headers/FAD_utils.H"
+#include "Teuchos_RCP.hpp"
+#include "../drt_lib/drt_linedefinition.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -18,18 +20,68 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction::PoroMultiPhaseScaTraFunction
 {
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::AddValidPoroFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+{
+  DRT::INPUT::LineDefinition poromultiphasescatra_funct;
+  poromultiphasescatra_funct.AddNamedString("POROMULTIPHASESCATRA_FUNCTION")
+      .AddOptionalNamedInt("NUMPARAMS")
+      .AddOptionalNamedPairOfStringAndDoubleVector("PARAMS", "NUMPARAMS");
 
-// standard growth law for tumor cells <--> IF (with lysis) and pressure dependency:
-// +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-// | TUMOR_GROWTH_LAW_HEAVISIDE | |
-// (gamma_T_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2))*(1-phi2)*porosity*S2
-// - lambda*phi2*porosity*S2 | | with phi1: mass fraction of oxygen, phi2: mass fraction of necrotic
-// tumor cells, S2: volume fraction of tumor cells | | Furthermore, we assume that phase 1: healthy
-// cells, phase2: tumor cells, phase3: IF | | | | INPUT DEFINITION: | |
-// POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_T_growth 9.6e-6
-// w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9                  |
-// +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+  lines->Add(poromultiphasescatra_funct);
+}
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction>
+POROMULTIPHASESCATRA::TryCreatePoroFunction(
+    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
+    const int index_current_funct_in_manager)
+{
+  if (function_lin_def->HaveNamed("POROMULTIPHASESCATRA_FUNCTION"))
+  {
+    std::string type;
+    function_lin_def->ExtractString("POROMULTIPHASESCATRA_FUNCTION", type);
+
+    std::vector<std::pair<std::string, double>> params;
+    if (function_lin_def->HaveNamed("PARAMS"))
+      function_lin_def->ExtractPairOfStringAndDoubleVector("PARAMS", params);
+
+    Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction> vecfunc = Teuchos::null;
+    if (type == "TUMOR_GROWTH_LAW_HEAVISIDE")
+      vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeaviside(params));
+    else if (type == "NECROSIS_LAW_HEAVISIDE")
+      vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::NecrosisLawHeaviside(params));
+    else if (type == "OXYGEN_CONSUMPTION_LAW_HEAVISIDE")
+      vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside(params));
+    else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_OXY")
+      vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy(params));
+    else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_NECRO")
+      vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro(params));
+    else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT")
+    {
+      vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont(params));
+    }
+    else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC")
+    {
+      vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc(params));
+    }
+    else
+    {
+      dserror("Wrong type of POROMULTIPHASESCATRA_FUNCTION");
+    }
+
+    return vecfunc;
+  }
+  else
+  {
+    return Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction>(NULL);
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::TumorGrowthLawHeaviside::TumorGrowthLawHeaviside(
     std::vector<std::pair<std::string, double>> funct_params)
     : PoroMultiPhaseScaTraFunction()
@@ -176,18 +228,8 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeaviside::EvaluateDeriv
   return deriv;
 }
 
-// standard necrosis law for tumor growth model:
-// +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-// | NECROSIS_LAW_HEAVISIDE | |
-// (1-phi2)*porosity*S2*(-gamma_t_necr*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside(-(phi1-w_nl_crit)/(w_nl_env-w_nl_crit))+
-// delta_a_t*heaviside(p2-p_t_crit) )               | | with phi1: mass fraction of oxygen, phi2:
-// mass fraction of necrotic tumor cells, S2: volume fraction of tumor cells | | Furthermore, we
-// assume that phase 1: healthy cells, phase2: tumor cells, phase3: IF | | | | (possible) INPUT
-// DEFINITION with exactly 5 function parameters: | | POROMULTIPHASESCATRA_FUNCTION
-// NECROSIS_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_t_necr 9.6e-6 w_nl_crit 2.0e-6 w_nl_env 4.2e-6
-// delta_a_t 0.0 p_t_crit 1.0e9                     |
-// +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::NecrosisLawHeaviside::NecrosisLawHeaviside(
     std::vector<std::pair<std::string, double>> funct_params)
     : PoroMultiPhaseScaTraFunction()
@@ -354,18 +396,8 @@ std::vector<double> POROMULTIPHASESCATRA::NecrosisLawHeaviside::EvaluateDerivati
   return deriv;
 }
 
-// standard oxygen consumption law for tumor growth model:
-// +--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-// | OXYGEN_CONSUMPTION_LAW_HEAVISIDE | |
-// porosity*(1-phi2)*S2*(gamma_nl_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2)+
-// gamma_0_nl*sin(pi/2.0*phi1/w_nl_env)) | | with phi1: mass fraction of oxygen, phi2: mass fraction
-// of necrotic tumor cells, S2: volume fraction of tumor cells | | Furthermore, we assume that phase
-// 1: healthy cells, phase2: tumor cells, phase3: IF | | | | (possible) INPUT DEFINITION with
-// exactly 5 function parameters: | | POROMULTIPHASESCATRA_FUNCTION OXYGEN_CONSUMPTION_LAW_HEAVISIDE
-// NUMPARAMS 5 PARAMS gamma_nl_growth 2.4e-7 gamma_0_nl 6e-7 w_nl_crit 2.0e-6 w_nl_env 4.2e-6
-// p_t_crit 1.0e9                   |
-// +--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside::OxygenConsumptionLawHeaviside(
     std::vector<std::pair<std::string, double>> funct_params)
     : PoroMultiPhaseScaTraFunction()
@@ -540,18 +572,8 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside::Evaluat
   return deriv;
 }
 
-// standard growth law for tumor cells <--> IF (with lysis) and pressure dependency as introduced
-// into balance of mass of oxygen:
-// +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-// | TUMOR_GROWTH_LAW_HEAVISIDE_OXY | | phi1*S2*porosity*((
-// gamma_T_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2))*(1-phi2)-
-// lambda*phi2)      | | with phi1: mass fraction of oxygen, phi2: mass fraction of necrotic tumor
-// cells, S2: volume fraction of tumor cells | | Furthermore, we assume that phase 1: healthy cells,
-// phase2: tumor cells, phase3: IF | | | | (possible) INPUT DEFINITION: | |
-// POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_OXY NUMPARAMS 5 PARAMS
-// gamma_T_growth 9.6e-6 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9              |
-// +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy::TumorGrowthLawHeavisideOxy(
     std::vector<std::pair<std::string, double>> funct_params)
     : PoroMultiPhaseScaTraFunction()
@@ -722,18 +744,8 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy::EvaluateDe
   return deriv;
 }
 
-// standard growth law for tumor cells <--> IF (with lysis) and pressure dependency as introduced
-// into balance of mass of necrotic cells:
-// +---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-// | TUMOR_GROWTH_LAW_HEAVISIDE_NECRO | | porosity*S2*(((
-// gamma_T_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2))*(1-phi2)
-// - lambda*phi2)*phi2 + lambda*phi2)   | | with phi1: mass fraction of oxygen, phi2: mass fraction
-// of necrotic tumor cells | | Furthermore, we assume that phase 1: healthy cells, phase2: tumor
-// cells, phase3: IF | | | | (possible) INPUT DEFINITION: | | POROMULTIPHASESCATRA_FUNCTION
-// TUMOR_GROWTH_LAW_HEAVISIDE_NECRO NUMPARAMS 5 PARAMS gamma_T_growth 9.6e-6 w_nl_crit 2.0e-6
-// w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9                          |
-// +---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro::TumorGrowthLawHeavisideNecro(
     std::vector<std::pair<std::string, double>> funct_params)
     : PoroMultiPhaseScaTraFunction()
@@ -910,12 +922,8 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro::Evaluate
   return deriv;
 }
 
-// transvascular exchange of oxygen from neovasculature into interstitial fluid
-// +-------------------------------------------------------------------------------------------+
-// | OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT                                                    |
-// | S/V*gamma*rho*(P_nv-P_if)*heaviside(P_nv-P_if)*VF1                                        |
-// | with partial pressures of oxygen in neovasculature P_nv and in IF P_if                    |
-// +-------------------------------------------------------------------------------------------+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont::OxygenTransvascularExchangeLawCont(
     std::vector<std::pair<std::string, double>> funct_params)
     : PoroMultiPhaseScaTraFunction()
@@ -1108,12 +1116,8 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont::Ev
   return deriv;
 }
 
-// transvascular exchange of oxygen from pre-existing vasculature into interstitial fluid
-// +-------------------------------------------------------------------------------------------+
-// | OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC                                                    |
-// | pi*D*gamma*rho*(P_v-P_if)*VF1*heaviside(S2_max-S2)                                        |
-// | with partial pressures of oxygen in vasculature P_v and in IF P_if                        |
-// +-------------------------------------------------------------------------------------------+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc::OxygenTransvascularExchangeLawDisc(
     std::vector<std::pair<std::string, double>> funct_params)
     : PoroMultiPhaseScaTraFunction()

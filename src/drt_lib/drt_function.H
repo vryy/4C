@@ -46,18 +46,15 @@ namespace DRT
   namespace UTILS
   {
     /*!
-
-    \brief abstract interface for space- and time-dependent functions.
-
-    Functions can be defined either scalar-valued or vector-valued.
-
-    There exist function definitions using explicitly defined spatial functions
-    for test problems (beltrami, kim-moin etc).
-
-    Spatial function based on parsed expressions are provided as well.
-
-    */
-
+     * \brief abstract interface for space- and time-dependent functions.
+     *
+     * Functions can be defined either scalar-valued or vector-valued.
+     *
+     * There exist function definitions using explicitly defined spatial functions
+     * for test problems (beltrami, kim-moin etc).
+     *
+     * Spatial function based on parsed expressions are provided as well.
+     */
     class Function
     {
      public:
@@ -69,12 +66,11 @@ namespace DRT
        *
        * @param index (i) For vector-valued functions, index defines the function-component which
        *                  should be evaluated
-       * @param x     (i) The point in 3-dimensional space in which the function will be evaluated
-       * @param t     (i) The point in time in which the function will be evaluated
+       * @param x  (i) The point in 3-dimensional space in which the function will be evaluated
+       * @param t  (i) The point in time in which the function will be evaluated
        * @return function value
        */
       virtual double Evaluate(const int index, const double* x, double t) = 0;
-
 
       /// Evaluate time dependent FUNCT
       double EvaluateTime(double t  ///< time
@@ -91,14 +87,13 @@ namespace DRT
         return Evaluate(0, dummy.data(), t);
       }
 
-
       /*!
        * \brief evaluate first spatial derivatives of time and space dependent FUNCT
        *
        * \param index (i) For vector-valued functions, index defines the function-component which
        *                  should be evaluated. For scalar functions, index is always set to 0
-       * \param x     (i) The point in 3-dimensional space in which the function will be evaluated
-       * \param t     (i) Absolute time in which the function will be evaluated
+       * \param x  (i) The point in 3-dimensional space in which the function will be evaluated
+       * \param t  (i) Absolute time in which the function will be evaluated
        * \return first spatial derivative of FUNCT
        */
       virtual std::vector<double> EvaluateSpatialDerivative(
@@ -109,7 +104,7 @@ namespace DRT
         return emptyvector;
       };
 
-      /**
+      /*!
        * \brief Evaluate time derivatives and value of the time and space dependent FUNCT
        *
        * Evaluate the specified component of the function at the specified position and point in
@@ -117,10 +112,10 @@ namespace DRT
        *
        * @param index (i) For vector-valued functions, index defines the function-component which
        *                  should be evaluated
-       * @param x     (i) The point in 3-dimensional space in which the function will be evaluated
-       * @param t     (i) The point in time in which the function will be evaluated
+       * @param x  (i) The point in 3-dimensional space in which the function will be evaluated
+       * @param t  (i) The point in time in which the function will be evaluated
        * @param deg   (i) maximum time derivative degree
-         @return vector containing value and time derivative(s)
+       * @return vector containing value and time derivative(s)
        */
       virtual std::vector<double> EvaluateTimeDerivative(
           const int index, const double* x, const double t, const unsigned deg)
@@ -129,7 +124,6 @@ namespace DRT
         std::vector<double> emptyvector;
         return emptyvector;
       };
-
 
       /// Evaluate first or second time derivative of time dependent FUNCT
       std::vector<double> EvaluateTimeDerivative(const double t,  ///< time
@@ -156,13 +150,12 @@ namespace DRT
         return EvaluateTimeDerivative(0, dummy.data(), t, deg);
       };
 
-
       /// Return number of components of FUNCT
       virtual std::size_t NumberComponents() { return 0; }
     };
 
 
-
+    /// scalar valued function based on parsed expression
     class ExprFunction : public Function
     {
      public:
@@ -184,21 +177,21 @@ namespace DRT
       std::size_t NumberComponents() override { return (expr_.size()); }
 
       /*!
-       * \brief  check if a given name is a variable
+       * \brief check if a given name is a variable
        *
-       * \param index    (i)  For vector-valued functions, index defines the function-component
+       * \param index (i) For vector-valued functions, index defines the function-component
        *                      which should be evaluated
-       * \param varname  (i)  Variable name to be checked
+       * \param varname  (i) Variable name to be checked
        */
       virtual bool IsVariable(const int index, const std::string& varname) const;
 
       /*!
-       * \brief  add a variable to the function
+       * \brief add a variable to the function
        *
-       * \param index    (i)  For vector-valued functions, index defines the function-component
+       * \param index (i) For vector-valued functions, index defines the function-component
        *                      which should be evaluated
-       * \param varname  (i)  Variable name
-       * \param varvalue (i)  Value of the variable
+       * \param varname  (i) Variable name
+       * \param varvalue (i) Value of the variable
        */
       virtual void AddVariable(const int index, const std::string& varname, double varvalue);
 
@@ -227,7 +220,6 @@ namespace DRT
     };
 
 
-
     /// class that manages all defined spatial functions
     class FunctionManager
     {
@@ -251,44 +243,39 @@ namespace DRT
     {
      public:
       /*!
-
-      \brief add expression to an existing ExprFunction in order to extend
-             it to a vector-valued spatial function.
-
-             Every call to AddExpr adds one more component to the
-             vector-valued function.
-
-      \param buf (i) (c-string) expression to be parsed during evaluation of this component
-      \param constants   (i) vector containing constants defined by a pair (name and value)
-
-      */
+       * \brief add expression to an existing ExprFunction in order to extend it to a vector-valued
+       * spatial function.
+       *
+       * Every call to AddExpr adds one more component to the vector-valued function.
+       * \param buf (i) (c-string) expression to be parsed during evaluation of this component
+       * \param constants   (i) vector containing constants defined by a pair (name and value)
+       */
       void AddExpr(
           const std::string& buf, const std::vector<std::pair<std::string, double>>& constants);
 
       double Evaluate(const int index, const double* x, const double t) override;
 
       /*!
-
-      \brief evaluate function for a given set of variables
-
-      \param index    (i)  For vector-valued functions, index defines the
-                           function-component which should be evaluated
-      \param variables (i) A vector containing a pair (variablename, value) for each variable
-
-      */
+       * \brief evaluate function for a given set of variables
+       *
+       * \param index (i) For vector-valued functions, index defines the function-component which
+       * should be evaluated
+       * \param variables (i) A vector containing a pair (variablename, value)
+       * for each variable
+       */
       virtual double Evaluate(
           const int index, const std::vector<std::pair<std::string, double>>& variables);
 
       /*!
-
-      \brief evaluate function for a given set of variables
-
-      \param index    (i)  For vector-valued functions, index defines the
-                           function-component which should be evaluated
-      \param variables (i) A vector containing a pair (variablename, value) for each variable
-      \param constants (i) A vector containing a pair (variablename, value) for each constant
-
-      */
+       * \brief evaluate function for a given set of variables
+       *
+       * \param index (i) For vector-valued functions, index defines the function-component which
+       * should be evaluated
+       * \param variables (i) A vector containing a pair (variablename, value)
+       * for each variable
+       * \param constants (i) A vector containing a pair (variablename, value) for
+       * each constant
+       */
       virtual double Evaluate(const int index,
           const std::vector<std::pair<std::string, double>>& variables,
           const std::vector<std::pair<std::string, double>>& constants);
@@ -297,27 +284,27 @@ namespace DRT
           const int index, const double* x, const double t) override;
 
       /*!
-
-      \brief  at given position in space for a given set of variables
-
-      \param index    (i)  For vector-valued functions, index defines the
-                           function-component which should be evaluated
-      \param variables (i) A vector containing a pair (variablename, value) for each variable
-
-      */
+       *\brief evaluate the derivative at given position in space for a given set of variables
+       *
+       * \param index (i) For vector-valued functions, index defines the function-component which
+       * should be evaluated
+       * \param variables (i) A vector containing a pair (variablename, value)
+       * for each variable
+       */
       virtual std::vector<double> EvaluateDerivative(
           const int index, const std::vector<std::pair<std::string, double>>& variables);
 
       /*!
-
-      \brief  at given position in space for a given set of variables and constants
-
-      \param index    (i)  For vector-valued functions, index defines the
-                           function-component which should be evaluated
-      \param variables (i) A vector containing a pair (variablename, value) for each variable
-      \param constants (i) A vector containing a pair (variablename, value) for each constant
-
-      */
+       * \brief evaluate the derivative at given position in space for a given set of variables and
+       * constants
+       *
+       * \param index (i) For vector-valued functions, index defines the function-component which
+       * should be evaluated
+       * \param variables (i) A vector containing a pair (variablename, value)
+       * for each variable
+       * \param constants (i) A vector containing a pair (variablename, value) for
+       * each constant
+       */
       virtual std::vector<double> EvaluateDerivative(int index,
           const std::vector<std::pair<std::string, double>>& variables,
           const std::vector<std::pair<std::string, double>>& constants);
@@ -327,21 +314,33 @@ namespace DRT
       void AddVariable(const int index, const std::string& varname, double varvalue) override;
 
       /*!
-      \brief  parse the underlying expression
-      */
+       * \brief parse the underlying expression
+       */
       void ParseExpressions() override;
 
      private:
-      //! flag indicating whether expression was parsed
+      /// flag indicating whether expression was parsed
       bool isparsed_;
     };
 
+
+    /// add valid function lines
+    void AddValidFunctionFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+
+
+    /// try to create functions from a given line definition
+    Teuchos::RCP<Function> TryCreateFunctionFunction(
+        Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, FunctionManager& manager,
+        const int index_current_funct_in_manager);
+
+
+    /// create a vector function from multiple expressions
+    Teuchos::RCP<Function> TryCreateBasicFunction(
+        std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs);
   }  // namespace UTILS
 
 }  // namespace DRT
 
-
 void PrintFunctionDatHeader();
-
 
 #endif

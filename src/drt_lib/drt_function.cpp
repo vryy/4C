@@ -89,6 +89,89 @@ void PrintFunctionDatHeader()
 
 Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines()
 {
+  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("FUNCT"));
+
+  DRT::UTILS::AddValidFunctionFunctionLines(lines);
+  DRT::UTILS::AddValidLibraryFunctionLines(lines);
+  STR::AddValidStructureFunctionLines(lines);
+  FLD::AddValidFluidFunctionLines(lines);
+  DRT::UTILS::AddValidCombustFunctionLines(lines);
+  DRT::UTILS::AddValidXfluidFunctionLines(lines);
+  POROMULTIPHASESCATRA::AddValidPoroFunctionLines(lines);
+
+  return lines;
+}
+
+void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
+{
+  functions_.clear();
+
+  Teuchos::RCP<DRT::INPUT::Lines> lines = ValidFunctionLines();
+
+  // test for as many functions as there are
+  for (int i = 1;; ++i)
+  {
+    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs =
+        lines->Read(reader, i);
+
+    if (functions_lin_defs.empty())
+    {
+      break;
+    }
+    else
+    {
+      Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def = functions_lin_defs[0];
+
+      bool found_function = false;
+
+      // list all known TryCreate functions in a vector so they can be called with a unified syntax
+      // below
+      std::vector<std::function<Teuchos::RCP<Function>(
+          Teuchos::RCP<DRT::INPUT::LineDefinition>, DRT::UTILS::FunctionManager&, const int)>>
+          try_create_function_vector{DRT::UTILS::TryCreateFunctionFunction,
+              POROMULTIPHASESCATRA::TryCreatePoroFunction, STR::TryCreateStructureFunction,
+              FLD::TryCreateFluidFunction, DRT::UTILS::TryCreateCombustFunction,
+              DRT::UTILS::TryCreateXfluidFunction, DRT::UTILS::TryCreateLibraryFunction};
+
+      for (const auto& try_create_function : try_create_function_vector)
+      {
+        auto special_funct = try_create_function(function_lin_def, *this, i);
+        if (special_funct != Teuchos::null)
+        {
+          functions_.emplace_back(special_funct);
+          found_function = true;
+          break;  // jumps out of for statement
+        }
+      }
+
+      if (!found_function)
+      {
+        auto basic_funct = DRT::UTILS::TryCreateBasicFunction(functions_lin_defs);
+        if (basic_funct != Teuchos::null)
+        {
+          functions_.emplace_back(basic_funct);
+        }
+        else
+        {
+          dserror("Could not create any function from the given function line definition.");
+        }
+      }
+    }  // end else
+  }    // end for
+}
+
+DRT::UTILS::Function& DRT::UTILS::FunctionManager::Funct(int num)
+{
+  // ensure that desired function is available (prevents segmentation fault)
+  if (functions_.size() < (unsigned int)(num + 1) || num < 0)
+    dserror("function %d not available", num + 1);
+
+  return *(functions_[num]);
+}
+
+
+void DRT::UTILS::AddValidFunctionFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+{
   DRT::INPUT::LineDefinition onecomponentexpr;
   onecomponentexpr.AddNamedString("FUNCTION");
 
@@ -123,7 +206,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
       .AddOptionalNamedDouble("T1")
       .AddOptionalNamedDouble("T2");
 
-  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("FUNCT"));
   lines->Add(onecomponentexpr);
   lines->Add(componentexpr);
   lines->Add(variableexpr);
@@ -134,741 +216,211 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
       .AddOptionalNamedInt("NUMCONSTANTS")
       .AddOptionalNamedPairOfStringAndDoubleVector("CONSTANTS", "NUMCONSTANTS");
 
-  DRT::INPUT::LineDefinition beltrami;
-  beltrami.AddTag("BELTRAMI").AddNamedDouble("c1");
-
-  DRT::INPUT::LineDefinition channelweaklycompressible;
-  channelweaklycompressible.AddTag("CHANNELWEAKLYCOMPRESSIBLE");
-
-  DRT::INPUT::LineDefinition correctiontermchannelweaklycompressible;
-  correctiontermchannelweaklycompressible.AddTag("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE");
-
-  DRT::INPUT::LineDefinition weaklycompressiblepoiseuille;
-  weaklycompressiblepoiseuille.AddTag("WEAKLYCOMPRESSIBLE_POISEUILLE")
-      .AddNamedInt("MAT")
-      .AddNamedDouble("L")
-      .AddNamedDouble("R")
-      .AddNamedDouble("U");
-
-  DRT::INPUT::LineDefinition weaklycompressiblepoiseuilleforce;
-  weaklycompressiblepoiseuilleforce.AddTag("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE")
-      .AddNamedInt("MAT")
-      .AddNamedDouble("L")
-      .AddNamedDouble("R")
-      .AddNamedDouble("U");
-
-  DRT::INPUT::LineDefinition weaklycompressiblemanufacturedflow;
-  weaklycompressiblemanufacturedflow.AddTag("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW")
-      .AddNamedInt("MAT");
-
-  DRT::INPUT::LineDefinition weaklycompressiblemanufacturedflowforce;
-  weaklycompressiblemanufacturedflowforce.AddTag("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE")
-      .AddNamedInt("MAT");
-
-  DRT::INPUT::LineDefinition weaklycompressibleetiennecfd;
-  weaklycompressibleetiennecfd.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD").AddNamedInt("MAT");
-
-  DRT::INPUT::LineDefinition weaklycompressibleetiennecfdforce;
-  weaklycompressibleetiennecfdforce.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE")
-      .AddNamedInt("MAT");
-
-  DRT::INPUT::LineDefinition weaklycompressibleetiennecfdviscosity;
-  weaklycompressibleetiennecfdviscosity.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY")
-      .AddNamedInt("MAT");
-
-  DRT::INPUT::LineDefinition weaklycompressibleetiennefsifluid;
-  weaklycompressibleetiennefsifluid.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID")
-      .AddNamedInt("MAT_FLUID")
-      .AddNamedInt("MAT_STRUC");
-
-  DRT::INPUT::LineDefinition weaklycompressibleetiennefsifluidforce;
-  weaklycompressibleetiennefsifluidforce.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE")
-      .AddNamedInt("MAT_FLUID")
-      .AddNamedInt("MAT_STRUC");
-
-  DRT::INPUT::LineDefinition weaklycompressibleetiennefsifluidviscosity;
-  weaklycompressibleetiennefsifluidviscosity
-      .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY")
-      .AddNamedInt("MAT_FLUID")
-      .AddNamedInt("MAT_STRUC");
-
-  DRT::INPUT::LineDefinition weaklycompressibleetiennefsistructure;
-  weaklycompressibleetiennefsistructure.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE")
-      .AddNamedInt("MAT_STRUC");
-
-  DRT::INPUT::LineDefinition weaklycompressibleetiennefsistructureforce;
-  weaklycompressibleetiennefsistructureforce
-      .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE")
-      .AddNamedInt("MAT_STRUC");
-
-  DRT::INPUT::LineDefinition beltramiup;
-  beltramiup.AddTag("BELTRAMI-UP").AddNamedInt("MAT").AddNamedInt("ISSTAT");
-
-  DRT::INPUT::LineDefinition beltramigradu;
-  beltramigradu.AddTag("BELTRAMI-GRADU").AddNamedInt("MAT").AddNamedInt("ISSTAT");
-
-  DRT::INPUT::LineDefinition beltramirhs;
-  beltramirhs.AddTag("BELTRAMI-RHS")
-      .AddNamedInt("MAT")
-      .AddNamedInt("ISSTAT")
-      .AddNamedInt("ISSTOKES");
-
-  DRT::INPUT::LineDefinition kimmoinup;
-  kimmoinup.AddTag("KIMMOIN-UP").AddNamedInt("MAT").AddNamedInt("ISSTAT");
-
-  DRT::INPUT::LineDefinition kimmoingradu;
-  kimmoingradu.AddTag("KIMMOIN-GRADU").AddNamedInt("MAT").AddNamedInt("ISSTAT");
-
-  DRT::INPUT::LineDefinition kimmoinrhs;
-  kimmoinrhs.AddTag("KIMMOIN-RHS").AddNamedInt("MAT").AddNamedInt("ISSTAT").AddNamedInt("ISSTOKES");
-
-  DRT::INPUT::LineDefinition kimmoinstress;
-  kimmoinstress.AddTag("KIMMOIN-STRESS")
-      .AddNamedInt("MAT")
-      .AddNamedInt("ISSTAT")
-      .AddNamedDouble("AMPLITUDE");
-
-  DRT::INPUT::LineDefinition poromultiphasescatra_funct;
-  poromultiphasescatra_funct.AddNamedString("POROMULTIPHASESCATRA_FUNCTION")
-      .AddOptionalNamedInt("NUMPARAMS")
-      .AddOptionalNamedPairOfStringAndDoubleVector("PARAMS", "NUMPARAMS");
-
-  DRT::INPUT::LineDefinition fastpolynomial_funct;
-  fastpolynomial_funct.AddTag("FASTPOLYNOMIAL")
-      .AddNamedInt("NUMCOEFF")
-      .AddNamedDoubleVector("COEFF", "NUMCOEFF");
-
-  DRT::INPUT::LineDefinition translatedfunction_funct;
-  translatedfunction_funct.AddTag("TRANSLATEDFUNCTION").AddNamedInt("ORIGIN").AddNamedInt("LOCAL");
-
-  lines->Add(translatedfunction_funct);
   lines->Add(varfunct);
-  lines->Add(beltrami);
-  lines->Add(channelweaklycompressible);
-  lines->Add(correctiontermchannelweaklycompressible);
-  lines->Add(weaklycompressiblepoiseuille);
-  lines->Add(weaklycompressiblepoiseuilleforce);
-  lines->Add(weaklycompressiblemanufacturedflow);
-  lines->Add(weaklycompressiblemanufacturedflowforce);
-  lines->Add(weaklycompressibleetiennecfd);
-  lines->Add(weaklycompressibleetiennecfdforce);
-  lines->Add(weaklycompressibleetiennecfdviscosity);
-  lines->Add(weaklycompressibleetiennefsifluid);
-  lines->Add(weaklycompressibleetiennefsifluidforce);
-  lines->Add(weaklycompressibleetiennefsifluidviscosity);
-  lines->Add(weaklycompressibleetiennefsistructure);
-  lines->Add(weaklycompressibleetiennefsistructureforce);
-  lines->Add(beltramiup);
-  lines->Add(beltramigradu);
-  lines->Add(beltramirhs);
-  lines->Add(kimmoinup);
-  lines->Add(kimmoingradu);
-  lines->Add(kimmoinrhs);
-  lines->Add(kimmoinstress);
-  lines->Add(poromultiphasescatra_funct);
-  lines->Add(fastpolynomial_funct);
-
-  DRT::UTILS::CombustValidFunctionLines(lines);
-  DRT::UTILS::XfluidValidFunctionLines(lines);
-
-  return lines;
 }
 
-
-void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
+Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateFunctionFunction(
+    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
+    const int index_current_funct_in_manager)
 {
-  functions_.clear();
-
-  Teuchos::RCP<DRT::INPUT::Lines> lines = ValidFunctionLines();
-
-  // test for as many functions as there are
-  for (int i = 1;; ++i)
+  if (function_lin_def->HaveNamed("VARFUNCTION"))
   {
-    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions = lines->Read(reader, i);
+    Teuchos::RCP<DRT::UTILS::VariableExprFunction> vecfunc =
+        Teuchos::rcp(new DRT::UTILS::VariableExprFunction());
 
-    if (functions.empty())
+    std::string component;
+    function_lin_def->ExtractString("VARFUNCTION", component);
+
+    std::vector<std::pair<std::string, double>> constants;
+    if (function_lin_def->HaveNamed("CONSTANTS"))
     {
-      break;
+      function_lin_def->ExtractPairOfStringAndDoubleVector("CONSTANTS", constants);
     }
-    else
-    {
-      Teuchos::RCP<DRT::INPUT::LineDefinition> function = functions[0];
 
-      if (function->HaveNamed("BELTRAMI"))
-      {
-        double c1;
-        function->ExtractDouble("c1", c1);
-
-        functions_.emplace_back(Teuchos::rcp(new FLD::BeltramiFunction(c1)));
-      }
-      else if (function->HaveNamed("CHANNELWEAKLYCOMPRESSIBLE"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new FLD::ChannelWeaklyCompressibleFunction()));
-      }
-      else if (function->HaveNamed("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE"))
-      {
-        functions_.emplace_back(
-            Teuchos::rcp(new FLD::CorrectionTermChannelWeaklyCompressibleFunction()));
-      }
-      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_POISEUILLE"))
-      {
-        // read data
-        int mat_id = -1;
-        double L = 0.0;
-        double R = 0.0;
-        double U = 0.0;
-
-        function->ExtractInt("MAT", mat_id);
-        function->ExtractDouble("L", L);
-        function->ExtractDouble("R", R);
-        function->ExtractDouble("U", U);
-
-        if (mat_id <= 0)
-          dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE");
-        if (L <= 0) dserror("Please give a (reasonable) 'L' in WEAKLYCOMPRESSIBLE_POISEUILLE");
-        if (R <= 0) dserror("Please give a (reasonable) 'R' in WEAKLYCOMPRESSIBLE_POISEUILLE");
-        if (U <= 0) dserror("Please give a (reasonable) 'U' in WEAKLYCOMPRESSIBLE_POISEUILLE");
-
-        functions_.emplace_back(
-            Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleFunction(mat_id, L, R, U)));
-      }
-      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE"))
-      {
-        // read data
-        int mat_id = -1;
-        double L = 0.0;
-        double R = 0.0;
-        double U = 0.0;
-
-        function->ExtractInt("MAT", mat_id);
-        function->ExtractDouble("L", L);
-        function->ExtractDouble("R", R);
-        function->ExtractDouble("U", U);
-
-        if (mat_id <= 0)
-          dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
-        if (L <= 0)
-          dserror("Please give a (reasonable) 'L' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
-        if (R <= 0)
-          dserror("Please give a (reasonable) 'R' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
-        if (U <= 0)
-          dserror("Please give a (reasonable) 'U' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
-
-        functions_.emplace_back(
-            Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleForceFunction(mat_id, L, R, U)));
-      }
-      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW"))
-      {
-        // read data
-        int mat_id = -1;
-
-        function->ExtractInt("MAT", mat_id);
-
-        if (mat_id <= 0)
-          dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW");
-
-        functions_.emplace_back(
-            Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowFunction(mat_id)));
-      }
-      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE"))
-      {
-        // read data
-        int mat_id = -1;
-
-        function->ExtractInt("MAT", mat_id);
-
-        if (mat_id <= 0)
-          dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE");
-
-        functions_.emplace_back(
-            Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowForceFunction(mat_id)));
-      }
-      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD"))
-      {
-        // read data
-        int mat_id = -1;
-
-        function->ExtractInt("MAT", mat_id);
-
-        if (mat_id <= 0)
-          dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD");
-
-        functions_.emplace_back(
-            Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDFunction(mat_id)));
-      }
-      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE"))
-      {
-        // read data
-        int mat_id = -1;
-
-        function->ExtractInt("MAT", mat_id);
-
-        if (mat_id <= 0)
-          dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE");
-
-        functions_.emplace_back(
-            Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDForceFunction(mat_id)));
-      }
-      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY"))
-      {
-        // read data
-        int mat_id = -1;
-
-        function->ExtractInt("MAT", mat_id);
-
-        if (mat_id <= 0)
-          dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY");
-
-        functions_.emplace_back(
-            Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDViscosityFunction(mat_id)));
-      }
-      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID"))
-      {
-        // read data
-        int mat_id_fluid = -1;
-        int mat_id_struc = -1;
-
-        function->ExtractInt("MAT_FLUID", mat_id_fluid);
-        function->ExtractInt("MAT_STRUC", mat_id_struc);
-
-        if (mat_id_fluid <= 0)
-          dserror("Please give a (reasonable) 'MAT_FLUID' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID");
-        if (mat_id_struc <= 0)
-          dserror("Please give a (reasonable) 'MAT_STRUC' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID");
-
-        functions_.emplace_back(Teuchos::rcp(
-            new FLD::WeaklyCompressibleEtienneFSIFluidFunction(mat_id_fluid, mat_id_struc)));
-      }
-      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE"))
-      {
-        // read data
-        int mat_id_fluid = -1;
-        int mat_id_struc = -1;
-
-        function->ExtractInt("MAT_FLUID", mat_id_fluid);
-        function->ExtractInt("MAT_STRUC", mat_id_struc);
-
-        if (mat_id_fluid <= 0)
-        {
-          dserror(
-              "Please give a (reasonable) 'MAT_FLUID' in "
-              "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE");
-        }
-        if (mat_id_struc <= 0)
-        {
-          dserror(
-              "Please give a (reasonable) 'MAT_STRUC' in "
-              "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE");
-        }
-
-        functions_.emplace_back(Teuchos::rcp(
-            new FLD::WeaklyCompressibleEtienneFSIFluidForceFunction(mat_id_fluid, mat_id_struc)));
-      }
-      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY"))
-      {
-        // read data
-        int mat_id_fluid = -1;
-        int mat_id_struc = -1;
-
-        function->ExtractInt("MAT_FLUID", mat_id_fluid);
-        function->ExtractInt("MAT_STRUC", mat_id_struc);
-
-        if (mat_id_fluid <= 0)
-        {
-          dserror(
-              "Please give a (reasonable) 'MAT_FLUID' in "
-              "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY");
-        }
-        if (mat_id_struc <= 0)
-        {
-          dserror(
-              "Please give a (reasonable) 'MAT_STRUC' in "
-              "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY");
-        }
-
-        functions_.emplace_back(
-            Teuchos::rcp(new FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction(
-                mat_id_fluid, mat_id_struc)));
-      }
-      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE"))
-      {
-        // read data
-        int mat_id_struc = -1;
-
-        function->ExtractInt("MAT_STRUC", mat_id_struc);
-
-        if (mat_id_struc <= 0)
-          dserror(
-              "Please give a (reasonable) 'MAT_STRUC' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE");
-
-        functions_.emplace_back(
-            Teuchos::rcp(new STR::WeaklyCompressibleEtienneFSIStructureFunction(mat_id_struc)));
-      }
-      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE"))
-      {
-        // read data
-        int mat_id_struc = -1;
-
-        function->ExtractInt("MAT_STRUC", mat_id_struc);
-
-        if (mat_id_struc <= 0)
-        {
-          dserror(
-              "Please give a (reasonable) 'MAT_STRUC' in "
-              "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE");
-        }
-
-        functions_.emplace_back(Teuchos::rcp(
-            new STR::WeaklyCompressibleEtienneFSIStructureForceFunction(mat_id_struc)));
-      }
-      else if (function->HaveNamed("BELTRAMI-UP"))
-      {
-        // read material
-        int mat_id = -1;
-
-        function->ExtractInt("MAT", mat_id);
-
-        if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-UP");
-
-        functions_.emplace_back(Teuchos::rcp(new FLD::BeltramiUP(mat_id)));
-      }
-      else if (function->HaveNamed("BELTRAMI-RHS"))
-      {
-        // read material
-        int mat_id = -1;
-        int is_stokes = 0;
-
-        function->ExtractInt("MAT", mat_id);
-        function->ExtractInt("ISSTOKES", is_stokes);
-
-        if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-RHS");
-
-        functions_.emplace_back(Teuchos::rcp(new FLD::BeltramiRHS(mat_id, (bool)is_stokes)));
-      }
-      else if (function->HaveNamed("KIMMOIN-UP"))
-      {
-        // read material
-        int mat_id = -1;
-        int is_stationary = 0;
-
-        function->ExtractInt("MAT", mat_id);
-        function->ExtractInt("ISSTAT", is_stationary);
-
-        if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-UP");
-
-        functions_.emplace_back(Teuchos::rcp(new FLD::KimMoinUP(mat_id, (bool)is_stationary)));
-      }
-      else if (function->HaveNamed("KIMMOIN-RHS"))
-      {
-        // read material
-        int mat_id = -1;
-        int is_stationary = 0;
-        int is_stokes = 0;
-
-        function->ExtractInt("MAT", mat_id);
-        function->ExtractInt("ISSTAT", is_stationary);
-        function->ExtractInt("ISSTOKES", is_stokes);
-
-        if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-RHS");
-
-        functions_.emplace_back(
-            Teuchos::rcp(new FLD::KimMoinRHS(mat_id, (bool)is_stationary, (bool)is_stokes)));
-      }
-      else if (function->HaveNamed("KIMMOIN-STRESS"))
-      {
-        // read material
-        int mat_id = -1;
-        int is_stationary = 0;
-        double amplitude = 1.0;
-
-        function->ExtractInt("MAT", mat_id);
-        function->ExtractInt("ISSTAT", is_stationary);
-        function->ExtractDouble("AMPLITUDE", amplitude);
-
-        if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-STRESS");
-
-        functions_.emplace_back(
-            Teuchos::rcp(new FLD::KimMoinStress(mat_id, (bool)is_stationary, amplitude)));
-      }
-      else if (function->HaveNamed("FASTPOLYNOMIAL"))
-      {
-        std::vector<double> coefficients;
-        function->ExtractDoubleVector("COEFF", coefficients);
-
-        functions_.emplace_back(Teuchos::rcp(new FastPolynomialFunction(&coefficients)));
-      }
-      else if (function->HaveNamed("TRANSLATEDFUNCTION"))
-      {
-        int origin, local;
-        function->ExtractInt("ORIGIN", origin);
-        function->ExtractInt("LOCAL", local);
-
-        if (origin <= 0 or origin >= i)
-        {
-          dserror(
-              "ORIGIN function ID (currently %d) must be positive and smaller than "
-              "TRANSLATEDFUNCTION (currently %d).",
-              origin, i);
-        }
-        if (local <= 0 or local >= i)
-        {
-          dserror(
-              "LOCAL function ID (currently %d) must be positive and smaller than "
-              "TRANSLATEDFUNCTION (currently %d).",
-              local, i);
-        }
-
-        Teuchos::RCP<Function> origin_funct = Teuchos::rcpFromRef(Funct(origin - 1));
-        Teuchos::RCP<Function> local_funct = Teuchos::rcpFromRef(Funct(local - 1));
-
-        functions_.emplace_back(Teuchos::rcp(new TranslatedFunction(origin_funct, local_funct)));
-      }
-      else if (function->HaveNamed("VARFUNCTION"))
-      {
-        Teuchos::RCP<VariableExprFunction> vecfunc = Teuchos::rcp(new VariableExprFunction());
-
-        std::string component;
-        function->ExtractString("VARFUNCTION", component);
-
-        std::vector<std::pair<std::string, double>> constants;
-        if (function->HaveNamed("CONSTANTS"))
-          function->ExtractPairOfStringAndDoubleVector("CONSTANTS", constants);
-
-        vecfunc->AddExpr(component, constants);
-        functions_.emplace_back(vecfunc);
-      }
-      else if (function->HaveNamed("POROMULTIPHASESCATRA_FUNCTION"))
-      {
-        std::string type;
-        function->ExtractString("POROMULTIPHASESCATRA_FUNCTION", type);
-
-        std::vector<std::pair<std::string, double>> params;
-        if (function->HaveNamed("PARAMS"))
-          function->ExtractPairOfStringAndDoubleVector("PARAMS", params);
-
-        Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction> vecfunc = Teuchos::null;
-        if (type == "TUMOR_GROWTH_LAW_HEAVISIDE")
-          vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeaviside(params));
-        else if (type == "NECROSIS_LAW_HEAVISIDE")
-          vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::NecrosisLawHeaviside(params));
-        else if (type == "OXYGEN_CONSUMPTION_LAW_HEAVISIDE")
-          vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside(params));
-        else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_OXY")
-          vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy(params));
-        else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_NECRO")
-          vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro(params));
-        else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT")
-        {
-          vecfunc =
-              Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont(params));
-        }
-        else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC")
-        {
-          vecfunc =
-              Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc(params));
-        }
-        else
-        {
-          dserror("Wrong type of POROMULTIPHASESCATRA_FUNCTION");
-        }
-
-        functions_.emplace_back(vecfunc);
-      }
-      else if (DRT::UTILS::CombustFunctionHaveNamed(function, &functions_))
-      {
-      }
-      else if (DRT::UTILS::XfluidFunctionHaveNamed(function, &functions_))
-      {
-      }
-      else
-      {
-        // define a new vector of functions
-        Teuchos::RCP<ExprFunction> vecfunc = Teuchos::rcp(new ExprFunction());
-
-        // evaluate the maximum component and the number of variables
-        int maxcomp = 0;
-        int maxvar = -1;
-        for (const auto& ith_function : functions)
-        {
-          ith_function->ExtractInt("COMPONENT", maxcomp);
-          ith_function->ExtractInt("VARIABLE", maxvar);
-        }
-
-        // evaluate the number of rows used for the definition of the variables
-        std::size_t numrowsvar = functions.size() - maxcomp - 1;
-
-        // define a vector of strings
-        std::vector<std::string> functstring(maxcomp + 1);
-
-        // read each row where the components of the i-th function are defined
-        for (int n = 0; n <= maxcomp; ++n)
-        {
-          // update the current row
-          Teuchos::RCP<DRT::INPUT::LineDefinition> functcomp = functions[n];
-
-          // check the validity of the n-th component
-          int compid = 0;
-          functcomp->ExtractInt("COMPONENT", compid);
-          if (compid != n) dserror("expected COMPONENT %d but got COMPONENT %d", n, compid);
-
-
-          // read the expression of the n-th component of the i-th function
-          functcomp->ExtractString("FUNCTION", functstring[n]);
-        }
-
-        // define the structure functvarvector
-        std::vector<std::vector<Teuchos::RCP<FunctionVariable>>> functvarvector;
-
-        // define the structure functvar
-        std::vector<Teuchos::RCP<FunctionVariable>> functvar;
-
-        // define the structure vardef
-        Teuchos::RCP<FunctionVariable> vardef;
-
-        int vardefinition = 1;
-        int varidold = -1;
-
-        // read each row where the variables of the i-th function are defined
-        for (std::size_t j = 1; j <= numrowsvar; ++j)
-        {
-          // update the current row
-          Teuchos::RCP<DRT::INPUT::LineDefinition> timevar = functions[maxcomp + j];
-
-          // read the number of the variable
-          int varid;
-          timevar->ExtractInt("VARIABLE", varid);
-
-          // evaluate the number of the definition for the variable
-          if (varid == varidold)
-          {
-            ++vardefinition;
-          }
-          else
-          {
-            vardefinition = 1;
-          }
-
-          // update the old varid
-          varidold = varid;
-
-          // read the name of the variable
-          std::string varname;
-          timevar->ExtractString("NAME", varname);
-
-          // read the type of the variable
-          std::string vartype;
-          timevar->ExtractString("TYPE", vartype);
-
-          // read periodicity data
-          struct periodicstruct periodicdata
-          {
-          };
-          periodicdata.periodic = timevar->HasString("PERIODIC");
-          if (periodicdata.periodic)
-          {
-            timevar->ExtractDouble("T1", periodicdata.t1);
-            timevar->ExtractDouble("T2", periodicdata.t2);
-          }
-          else
-          {
-            periodicdata.t1 = 0;
-            periodicdata.t2 = 0;
-          }
-
-          // distinguish the type of the variable
-          if (vartype == "expression")
-          {
-            std::string description;
-            timevar->ExtractString("DESCRIPTION", description);
-            vardef = Teuchos::rcp(new ParsedFunctionVariable(varname, description));
-          }
-          else if (vartype == "linearinterpolation")
-          {
-            // read times
-            std::vector<double> times = returnTimeVector(timevar);
-
-            // read values
-            std::vector<double> values;
-            timevar->ExtractDoubleVector("VALUES", values);
-
-            vardef =
-                Teuchos::rcp(new LinearInterpolationVariable(varname, times, values, periodicdata));
-          }
-          else if (vartype == "multifunction")
-          {
-            // read times
-            std::vector<double> times = returnTimeVector(timevar);
-
-            // read descriptions (strings separated with spaces)
-            std::vector<std::string> description_vec;
-            timevar->ExtractStringVector("DESCRIPTION", description_vec);
-
-            // check if the number of times = number of descriptions + 1
-            std::size_t numtimes = times.size();
-            std::size_t numdescriptions = description_vec.size();
-            if (numtimes != numdescriptions + 1)
-              dserror("the number of TIMES and the number of DESCRIPTIONs must be consistent");
-
-            vardef = Teuchos::rcp(
-                new MultiFunctionVariable(varname, times, description_vec, periodicdata));
-          }
-          else if (vartype == "fourierinterpolation")
-          {
-            // read times
-            std::vector<double> times = returnTimeVector(timevar);
-
-            // read values
-            std::vector<double> values;
-            timevar->ExtractDoubleVector("VALUES", values);
-
-            vardef = Teuchos::rcp(
-                new FourierInterpolationVariable(varname, times, values, periodicdata));
-          }
-          else
-          {
-            dserror("unknown variable type");
-          }
-
-          // insert the variable in the vector of the variables of the function
-          if (vardefinition == 1)
-          {
-            if (varid != 0)
-            {
-              functvarvector.push_back(functvar);
-              functvar.clear();
-            }
-          }
-          functvar.push_back(vardef);
-
-          if (j == numrowsvar)
-          {
-            functvarvector.push_back(functvar);
-          }
-        }
-
-        // add the expressions to the function vector
-        for (int n = 0; n <= maxcomp; ++n)
-        {
-          vecfunc->AddExpr(functstring[n], functvarvector);
-        }
-
-        functions_.emplace_back(vecfunc);
-      }
-    }
+    vecfunc->AddExpr(component, constants);
+    return vecfunc;
+  }
+  else
+  {
+    return Teuchos::RCP<DRT::UTILS::VariableExprFunction>(NULL);
   }
 }
 
-
-DRT::UTILS::Function& DRT::UTILS::FunctionManager::Funct(int num)
+Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateBasicFunction(
+    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs)
 {
-  // ensure that desired function is available (prevents segmentation fault)
-  if (functions_.size() < (unsigned int)(num + 1) || num < 0)
-    dserror("function %d not available", num + 1);
+  // define a new vector of functions
+  Teuchos::RCP<ExprFunction> vecfunc = Teuchos::rcp(new ExprFunction());
 
-  return *(functions_[num]);
+  // evaluate the maximum component and the number of variables
+  int maxcomp = 0;
+  int maxvar = -1;
+  for (const auto& ith_function_lin_def : functions_lin_defs)
+  {
+    ith_function_lin_def->ExtractInt("COMPONENT", maxcomp);
+    ith_function_lin_def->ExtractInt("VARIABLE", maxvar);
+  }
+
+  // evaluate the number of rows used for the definition of the variables
+  std::size_t numrowsvar = functions_lin_defs.size() - maxcomp - 1;
+
+  // define a vector of strings
+  std::vector<std::string> functstring(maxcomp + 1);
+
+  // read each row where the components of the i-th function are defined
+  for (int n = 0; n <= maxcomp; ++n)
+  {
+    // update the current row
+    Teuchos::RCP<DRT::INPUT::LineDefinition> functcomp = functions_lin_defs[n];
+
+    // check the validity of the n-th component
+    int compid = 0;
+    functcomp->ExtractInt("COMPONENT", compid);
+    if (compid != n) dserror("expected COMPONENT %d but got COMPONENT %d", n, compid);
+
+
+    // read the expression of the n-th component of the i-th function
+    functcomp->ExtractString("FUNCTION", functstring[n]);
+  }
+
+  // define the structure functvarvector
+  std::vector<std::vector<Teuchos::RCP<FunctionVariable>>> functvarvector;
+
+  // define the structure functvar
+  std::vector<Teuchos::RCP<FunctionVariable>> functvar;
+
+  // define the structure vardef
+  Teuchos::RCP<FunctionVariable> vardef;
+
+  int vardefinition = 1;
+  int varidold = -1;
+
+  // read each row where the variables of the i-th function are defined
+  for (std::size_t j = 1; j <= numrowsvar; ++j)
+  {
+    // update the current row
+    Teuchos::RCP<DRT::INPUT::LineDefinition> timevar = functions_lin_defs[maxcomp + j];
+
+    // read the number of the variable
+    int varid;
+    timevar->ExtractInt("VARIABLE", varid);
+
+    // evaluate the number of the definition for the variable
+    if (varid == varidold)
+    {
+      ++vardefinition;
+    }
+    else
+    {
+      vardefinition = 1;
+    }
+
+    // update the old varid
+    varidold = varid;
+
+    // read the name of the variable
+    std::string varname;
+    timevar->ExtractString("NAME", varname);
+
+    // read the type of the variable
+    std::string vartype;
+    timevar->ExtractString("TYPE", vartype);
+
+    // read periodicity data
+    struct periodicstruct periodicdata
+    {
+    };
+    periodicdata.periodic = timevar->HasString("PERIODIC");
+    if (periodicdata.periodic)
+    {
+      timevar->ExtractDouble("T1", periodicdata.t1);
+      timevar->ExtractDouble("T2", periodicdata.t2);
+    }
+    else
+    {
+      periodicdata.t1 = 0;
+      periodicdata.t2 = 0;
+    }
+
+    // distinguish the type of the variable
+    if (vartype == "expression")
+    {
+      std::string description;
+      timevar->ExtractString("DESCRIPTION", description);
+      vardef = Teuchos::rcp(new ParsedFunctionVariable(varname, description));
+    }
+    else if (vartype == "linearinterpolation")
+    {
+      // read times
+      std::vector<double> times = returnTimeVector(timevar);
+
+      // read values
+      std::vector<double> values;
+      timevar->ExtractDoubleVector("VALUES", values);
+
+      vardef = Teuchos::rcp(new LinearInterpolationVariable(varname, times, values, periodicdata));
+    }
+    else if (vartype == "multifunction")
+    {
+      // read times
+      std::vector<double> times = returnTimeVector(timevar);
+
+      // read descriptions (strings separated with spaces)
+      std::vector<std::string> description_vec;
+      timevar->ExtractStringVector("DESCRIPTION", description_vec);
+
+      // check if the number of times = number of descriptions + 1
+      std::size_t numtimes = times.size();
+      std::size_t numdescriptions = description_vec.size();
+      if (numtimes != numdescriptions + 1)
+        dserror("the number of TIMES and the number of DESCRIPTIONs must be consistent");
+
+      vardef =
+          Teuchos::rcp(new MultiFunctionVariable(varname, times, description_vec, periodicdata));
+    }
+    else if (vartype == "fourierinterpolation")
+    {
+      // read times
+      std::vector<double> times = returnTimeVector(timevar);
+
+      // read values
+      std::vector<double> values;
+      timevar->ExtractDoubleVector("VALUES", values);
+
+      vardef = Teuchos::rcp(new FourierInterpolationVariable(varname, times, values, periodicdata));
+    }
+    else
+    {
+      dserror("unknown variable type");
+    }
+
+    // insert the variable in the vector of the variables of the function
+    if (vardefinition == 1)
+    {
+      if (varid != 0)
+      {
+        functvarvector.push_back(functvar);
+        functvar.clear();
+      }
+    }
+    functvar.push_back(vardef);
+
+    if (j == numrowsvar)
+    {
+      functvarvector.push_back(functvar);
+    }
+  }
+
+  // add the expressions to the function vector
+  for (int n = 0; n <= maxcomp; ++n)
+  {
+    vecfunc->AddExpr(functstring[n], functvarvector);
+  }
+
+  return vecfunc;
 }
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+
+
 DRT::UTILS::ExprFunction::ExprFunction()
 {
   dim_ = DRT::Problem::Instance()->NDim();
@@ -877,7 +429,6 @@ DRT::UTILS::ExprFunction::ExprFunction()
   variables_.clear();
   isparsed_ = false;
 }
-
 
 void DRT::UTILS::ExprFunction::AddExpr(const std::string& buf,
     const std::vector<std::vector<Teuchos::RCP<FunctionVariable>>>& variables)
@@ -911,7 +462,6 @@ void DRT::UTILS::ExprFunction::AddExpr(const std::string& buf,
 
   isparsed_ = false;
 }
-
 
 double DRT::UTILS::ExprFunction::Evaluate(const int index, const double* x, double t)
 {
@@ -961,7 +511,6 @@ double DRT::UTILS::ExprFunction::Evaluate(const int index, const double* x, doub
   // evaluation of F = F ( x, y, z, t, v1, ..., vn )
   return expr_[index_mod]->Evaluate();
 }
-
 
 std::vector<double> DRT::UTILS::ExprFunction::EvaluateSpatialDerivative(
     const int index, const double* x, const double t)
@@ -1072,7 +621,6 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateSpatialDerivative(
   // return derivatives
   return res;
 }
-
 
 std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
     const int index, const double* x, const double t, const unsigned deg)
@@ -1278,7 +826,6 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
   return res;
 }
 
-
 bool DRT::UTILS::ExprFunction::IsVariable(const int index, const std::string& varname) const
 {
   if (index > (int)expr_.size() - 1 || index < 0)
@@ -1286,7 +833,6 @@ bool DRT::UTILS::ExprFunction::IsVariable(const int index, const std::string& va
 
   return expr_[index]->IsVariable(varname);
 }
-
 
 void DRT::UTILS::ExprFunction::AddVariable(
     const int index, const std::string& varname, double varvalue)
@@ -1298,7 +844,6 @@ void DRT::UTILS::ExprFunction::AddVariable(
   expr_[index]->AddVariable(varname, varvalue);
   exprdd_[index]->AddVariable(varname, varvalue);
 }
-
 
 void DRT::UTILS::ExprFunction::ParseExpressions()
 {
@@ -1341,7 +886,6 @@ void DRT::UTILS::VariableExprFunction::AddExpr(
   isparsed_ = false;
 }
 
-
 bool DRT::UTILS::VariableExprFunction::IsVariable(int index, const std::string& varname) const
 {
   if (index > (int)expr_.size() - 1 || index < 0)
@@ -1349,7 +893,6 @@ bool DRT::UTILS::VariableExprFunction::IsVariable(int index, const std::string& 
 
   return expr_[index]->IsVariable(varname);
 }
-
 
 void DRT::UTILS::VariableExprFunction::AddVariable(
     int index, const std::string& varname, double varvalue)
@@ -1361,7 +904,6 @@ void DRT::UTILS::VariableExprFunction::AddVariable(
   expr_[index]->AddVariable(varname, varvalue);
   exprd_[index]->AddVariable(varname, varvalue);
 }
-
 
 void DRT::UTILS::VariableExprFunction::ParseExpressions()
 {
@@ -1377,7 +919,6 @@ void DRT::UTILS::VariableExprFunction::ParseExpressions()
   isparsed_ = true;
 }
 
-
 double DRT::UTILS::VariableExprFunction::Evaluate(
     const int index, const std::vector<std::pair<std::string, double>>& variables)
 {
@@ -1390,7 +931,6 @@ double DRT::UTILS::VariableExprFunction::Evaluate(
   // evaluate the function and return the result
   return expr_[index]->Evaluate();
 }
-
 
 double DRT::UTILS::VariableExprFunction::Evaluate(const int index,
     const std::vector<std::pair<std::string, double>>& variables,
@@ -1410,7 +950,6 @@ double DRT::UTILS::VariableExprFunction::Evaluate(const int index,
   // evaluate the function and return the result
   return expr_[index]->Evaluate();
 }
-
 
 std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(
     const int index, const std::vector<std::pair<std::string, double>>& variables)
@@ -1449,7 +988,6 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(
 
   return res;
 }
-
 
 std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(int index,
     const std::vector<std::pair<std::string, double>>& variables,
@@ -1498,7 +1036,6 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(int ind
   return res;
 }
 
-
 double DRT::UTILS::VariableExprFunction::Evaluate(const int index, const double* x, const double t)
 {
   std::vector<std::pair<std::string, double>> variables;
@@ -1527,7 +1064,6 @@ double DRT::UTILS::VariableExprFunction::Evaluate(const int index, const double*
 
   return Evaluate(index, variables);
 }
-
 
 std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateSpatialDerivative(
     int index, const double* x, const double t)

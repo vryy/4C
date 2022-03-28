@@ -16,6 +16,70 @@ The functions in this file are not problem-specific and may be useful for a numb
 #include "drt_function.H"
 #include "drt_function_library.H"
 #include "drt_globalproblem.H"
+#include "../drt_lib/drt_linedefinition.H"
+#include "Teuchos_RCP.hpp"
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::AddValidLibraryFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+{
+  DRT::INPUT::LineDefinition fastpolynomial_funct;
+  fastpolynomial_funct.AddTag("FASTPOLYNOMIAL")
+      .AddNamedInt("NUMCOEFF")
+      .AddNamedDoubleVector("COEFF", "NUMCOEFF");
+
+  DRT::INPUT::LineDefinition translatedfunction_funct;
+  translatedfunction_funct.AddTag("TRANSLATEDFUNCTION").AddNamedInt("ORIGIN").AddNamedInt("LOCAL");
+
+  lines->Add(translatedfunction_funct);
+  lines->Add(fastpolynomial_funct);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateLibraryFunction(
+    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
+    const int index_current_funct_in_manager)
+{
+  if (function_lin_def->HaveNamed("FASTPOLYNOMIAL"))
+  {
+    std::vector<double> coefficients;
+    function_lin_def->ExtractDoubleVector("COEFF", coefficients);
+
+    return Teuchos::rcp(new FastPolynomialFunction(&coefficients));
+  }
+  else if (function_lin_def->HaveNamed("TRANSLATEDFUNCTION"))
+  {
+    int origin, local;
+    function_lin_def->ExtractInt("ORIGIN", origin);
+    function_lin_def->ExtractInt("LOCAL", local);
+
+    if (origin <= 0 or origin >= index_current_funct_in_manager)
+    {
+      dserror(
+          "ORIGIN function ID (currently %d) must be positive and smaller than "
+          "TRANSLATEDFUNCTION (currently %d).",
+          origin, index_current_funct_in_manager);
+    }
+    if (local <= 0 or local >= index_current_funct_in_manager)
+    {
+      dserror(
+          "LOCAL function ID (currently %d) must be positive and smaller than "
+          "TRANSLATEDFUNCTION (currently %d).",
+          local, index_current_funct_in_manager);
+    }
+
+    Teuchos::RCP<Function> origin_funct = Teuchos::rcpFromRef(manager.Funct(origin - 1));
+    Teuchos::RCP<Function> local_funct = Teuchos::rcpFromRef(manager.Funct(local - 1));
+
+    return Teuchos::rcp(new TranslatedFunction(origin_funct, local_funct));
+  }
+  else
+  {
+    return Teuchos::RCP<DRT::UTILS::Function>(NULL);
+  }
+}
 
 
 DRT::UTILS::FastPolynomialFunction::FastPolynomialFunction(std::vector<double>* coefficients)
@@ -23,21 +87,18 @@ DRT::UTILS::FastPolynomialFunction::FastPolynomialFunction(std::vector<double>* 
 {
 }
 
-/*---------------------------------------------------------------------*
- *---------------------------------------------------------------------*/
 double DRT::UTILS::FastPolynomialFunction::Evaluate(const double argument) const
 {
   return mypoly_->Evaluate(argument);
 }
 
-/*---------------------------------------------------------------------*
- *---------------------------------------------------------------------*/
 double DRT::UTILS::FastPolynomialFunction::EvaluateDerivative(const double argument) const
 {
   LINALG::Matrix<2, 1> derivs(false);
   mypoly_->Evaluate(argument, derivs);
   return derivs(1);
 }
+
 
 DRT::UTILS::TranslatedFunction::TranslatedFunction(
     Teuchos::RCP<Function> origin, Teuchos::RCP<Function> local)

@@ -8,22 +8,44 @@
  *------------------------------------------------------------------------------------------------*/
 
 #include "xfluid_functions_combust.H"
-
 #include "../drt_lib/drt_discret_interface.H"
 #include "../drt_lib/standardtypes_cpp.H"
-
 #include "../drt_lib/drt_linedefinition.H"
 
 
-/*----------------------------------------------------------------------*
- | constructor                                              henke 05/09 |
- *----------------------------------------------------------------------*/
+void DRT::UTILS::AddValidCombustFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+{
+  DRT::INPUT::LineDefinition zalesaksdisk;
+  zalesaksdisk.AddTag("ZALESAKSDISK");
+
+  DRT::INPUT::LineDefinition collapsingwatercolumn;
+  collapsingwatercolumn.AddTag("COLLAPSINGWATERCOLUMN");
+
+  lines->Add(zalesaksdisk);
+  lines->Add(collapsingwatercolumn);
+}
+
+Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateCombustFunction(
+    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
+    const int index_current_funct_in_manager)
+{
+  if (function_lin_def->HaveNamed("ZALESAKSDISK"))
+  {
+    return Teuchos::rcp(new ZalesaksDiskFunction());
+  }
+  else if (function_lin_def->HaveNamed("COLLAPSINGWATERCOLUMN"))
+  {
+    return Teuchos::rcp(new CollapsingWaterColumnFunction());
+  }
+  else
+  {
+    return Teuchos::RCP<DRT::UTILS::Function>(NULL);
+  }
+}
+
+
 DRT::UTILS::ZalesaksDiskFunction::ZalesaksDiskFunction() : Function() {}
 
-
-/*----------------------------------------------------------------------*
- | evaluation of level set test function "Zalesak's disk"  schott 06/11 |
- *----------------------------------------------------------------------*/
 double DRT::UTILS::ZalesaksDiskFunction::Evaluate(int index, const double* xp, double t)
 {
   // the disk consists of 3 lines and a part of a circle and four points
@@ -91,14 +113,9 @@ double DRT::UTILS::ZalesaksDiskFunction::Evaluate(int index, const double* xp, d
   return distance;
 }
 
-/*----------------------------------------------------------------------*
- | constructor                                          rasthofer 04/10 |
- *----------------------------------------------------------------------*/
+
 DRT::UTILS::CollapsingWaterColumnFunction::CollapsingWaterColumnFunction() : Function() {}
 
-/*----------------------------------------------------------------------*
- | evaluation of two-phase flow test case               rasthofer 04/10 |
- *----------------------------------------------------------------------*/
 double DRT::UTILS::CollapsingWaterColumnFunction::Evaluate(int index, const double* xp, double t)
 {
   // here calculation of distance (sign is already taken in consideration)
@@ -140,37 +157,4 @@ double DRT::UTILS::CollapsingWaterColumnFunction::Evaluate(int index, const doub
   }
 
   return distance;
-}
-
-void DRT::UTILS::CombustValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
-{
-  DRT::INPUT::LineDefinition zalesaksdisk;
-  zalesaksdisk.AddTag("ZALESAKSDISK");
-
-  DRT::INPUT::LineDefinition collapsingwatercolumn;
-  collapsingwatercolumn.AddTag("COLLAPSINGWATERCOLUMN");
-
-  lines->Add(zalesaksdisk);
-  lines->Add(collapsingwatercolumn);
-}
-
-bool DRT::UTILS::CombustFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> function,
-    std::vector<Teuchos::RCP<DRT::UTILS::Function>>* functions_)
-{
-  bool found_combust_name = true;
-
-  if (function->HaveNamed("ZALESAKSDISK"))
-  {
-    functions_->push_back(Teuchos::rcp(new DRT::UTILS::ZalesaksDiskFunction()));
-  }
-  else if (function->HaveNamed("COLLAPSINGWATERCOLUMN"))
-  {
-    functions_->push_back(Teuchos::rcp(new DRT::UTILS::CollapsingWaterColumnFunction()));
-  }
-  else
-  {
-    found_combust_name = false;
-  }
-
-  return found_combust_name;
 }
