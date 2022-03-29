@@ -649,6 +649,25 @@ void SSI::SSIMono::PrepareTimeStep()
   // prepare time step for structural field
   StructureField()->PrepareTimeStep();
 
+  // StructureField()->PrepareTimeStep() evaluates the DBC displaements on the master side. Now, the
+  // master side displacements are copied to slave side to consider non zero DBC values in the first
+  // Newton step on the slave side in case of interface mesh tying
+  if (SSIInterfaceMeshtying())
+  {
+    for (const auto& meshtying : SSIStructureMeshTying()->MeshtyingHandlers())
+    {
+      auto coupling_adapter = meshtying->SlaveMasterCoupling();
+      auto coupling_map_extractor = meshtying->SlaveMasterExtractor();
+
+      // displacements
+      coupling_map_extractor->InsertVector(
+          coupling_adapter->MasterToSlave(
+              coupling_map_extractor->ExtractVector(StructureField()->Dispnp(), 2)),
+          1, StructureField()->WriteAccessDispnp());
+      StructureField()->SetState(StructureField()->WriteAccessDispnp());
+    }
+  }
+
   // print time step information to screen
   ScaTraField()->PrintTimeStepInfo();
 }
