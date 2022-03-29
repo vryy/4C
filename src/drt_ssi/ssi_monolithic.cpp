@@ -668,8 +668,7 @@ void SSI::SSIMono::PrepareTimeStep()
     }
   }
 
-  // print time step information to screen
-  ScaTraField()->PrintTimeStepInfo();
+  PrintTimeStepInfo();
 }
 
 /*--------------------------------------------------------------------------*
@@ -1597,4 +1596,17 @@ Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapStructure() 
 Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapSystemMatrix() const
 {
   return ssi_maps_->BlockMapSystemMatrix();
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+void SSI::SSIMono::PrintTimeStepInfo()
+{
+  if (Comm().MyPID() == 0)
+  {
+    std::cout << std::endl
+              << "TIME: " << std::setw(11) << std::setprecision(4) << std::scientific << Time()
+              << "/" << MaxTime() << "  DT = " << Dt() << "  STEP = " << Step() << "/" << NStep()
+              << std::endl;
+  }
 }
