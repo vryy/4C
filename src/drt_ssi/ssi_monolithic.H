@@ -213,6 +213,9 @@ namespace SSI
     //! prepare output for subproblems if needed
     void PrepareOutput();
 
+    //! print time step size, time, and number of time step
+    void PrintTimeStepInfo();
+
     //! set up a pointer to the contact strategy of the structural field and store it
     void SetupContactStrategy();
 

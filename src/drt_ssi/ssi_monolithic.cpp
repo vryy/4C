@@ -649,8 +649,26 @@ void SSI::SSIMono::PrepareTimeStep()
   // prepare time step for structural field
   StructureField()->PrepareTimeStep();
 
-  // print time step information to screen
-  ScaTraField()->PrintTimeStepInfo();
+  // StructureField()->PrepareTimeStep() evaluates the DBC displaements on the master side. Now, the
+  // master side displacements are copied to slave side to consider non zero DBC values in the first
+  // Newton step on the slave side in case of interface mesh tying
+  if (SSIInterfaceMeshtying())
+  {
+    for (const auto& meshtying : SSIStructureMeshTying()->MeshtyingHandlers())
+    {
+      auto coupling_adapter = meshtying->SlaveMasterCoupling();
+      auto coupling_map_extractor = meshtying->SlaveMasterExtractor();
+
+      // displacements
+      coupling_map_extractor->InsertVector(
+          coupling_adapter->MasterToSlave(
+              coupling_map_extractor->ExtractVector(StructureField()->Dispnp(), 2)),
+          1, StructureField()->WriteAccessDispnp());
+      StructureField()->SetState(StructureField()->WriteAccessDispnp());
+    }
+  }
+
+  PrintTimeStepInfo();
 }
 
 /*--------------------------------------------------------------------------*
@@ -1578,4 +1596,17 @@ Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapStructure() 
 Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapSystemMatrix() const
 {
   return ssi_maps_->BlockMapSystemMatrix();
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+void SSI::SSIMono::PrintTimeStepInfo()
+{
+  if (Comm().MyPID() == 0)
+  {
+    std::cout << std::endl
+              << "TIME: " << std::setw(11) << std::setprecision(4) << std::scientific << Time()
+              << "/" << MaxTime() << "  DT = " << Dt() << "  STEP = " << Step() << "/" << NStep()
+              << std::endl;
+  }
 }
