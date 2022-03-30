@@ -10,17 +10,11 @@
 #ifndef POROELAST_MONOLITHIC_H_
 #define POROELAST_MONOLITHIC_H_
 
-/*----------------------------------------------------------------------*
- | headers                                                              |
- *----------------------------------------------------------------------*/
 #include "../drt_inpar/inpar_poroelast.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "poro_base.H"
 #include "poroelast_utils.H"
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
 namespace LINALG
 {
   class SparseMatrix;
@@ -35,15 +29,12 @@ namespace LINALG
 
 namespace POROELAST
 {
-  /// base class of all monolithic Poroelasticity algorithms
+  //! base class of all monolithic Poroelasticity algorithms
   class Monolithic : public PoroBase
   {
    public:
     //! create using a Epetra_Comm
     explicit Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
-
-    //! virtual destructor
-    virtual ~Monolithic(){};
 
     /*! do the setup for the monolithic system
 
@@ -59,21 +50,21 @@ namespace POROELAST
      ReadMesh is called), the dofmaps for the blocks might get invalid.
      */
     //! Setup the monolithic Poroelasticity system
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
     //! setup composed right hand side from field solvers
-    virtual void SetupRHS(bool firstcall = false);
+    void SetupRHS(bool firstcall = false) override;
 
     //! start a new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
-    /// setup composed system matrix from field solvers
+    //! setup composed system matrix from field solvers
     virtual void SetupSystemMatrix() { SetupSystemMatrix(*systemmatrix_); }
 
-    /// setup composed system matrix from field solvers
+    //! setup composed system matrix from field solvers
     virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
 
-    /// setup equilibration of system matrix
+    //! setup equilibration of system matrix
     void SetupEquilibration();
 
     //! setup newton solver
@@ -81,44 +72,47 @@ namespace POROELAST
 
 
     //! build the combined dirichletbcmap
-    void BuildCombinedDBCMap();
+    void BuildCombinedDBCMap() override;
 
     //! @name Access methods for subclasses
 
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<const LINALG::MultiMapExtractor> Extractor() const { return blockrowdofmap_; }
+    Teuchos::RCP<const LINALG::MultiMapExtractor> Extractor() const override
+    {
+      return blockrowdofmap_;
+    }
 
-    //@}
+    //!@}
 
     //! @name Access methods
 
     //! composed system matrix
-    // Todo: remove this method!
+    // remove this method!
     // this method merges the block matrix when called.
     // As this is very expensive this,this method is not meant to be used any more.
     // Use BlockSystemMatrix() instead and assemble the blocks separately, if necessary.
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() override;
 
     //! block system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return systemmatrix_; };
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override
+    {
+      return systemmatrix_;
+    }
 
     //! full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> DofRowMap();
+    Teuchos::RCP<const Epetra_Map> DofRowMap() override;
 
     //! dof row map of Structure field
-    Teuchos::RCP<const Epetra_Map> DofRowMapStructure();
+    Teuchos::RCP<const Epetra_Map> DofRowMapStructure() override;
 
     //! dof row map of Fluid field
-    Teuchos::RCP<const Epetra_Map> DofRowMapFluid();
+    Teuchos::RCP<const Epetra_Map> DofRowMapFluid() override;
 
     //! unique map of all dofs that should be constrained with DBC
-    Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const { return combinedDBCMap_; };
-
-    //! unique map of all dofs that should be constrained with DBC (write access)
-    Teuchos::RCP<Epetra_Map> CombinedDBCMapWriteAccess() { return combinedDBCMap_; };
+    Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const override { return combinedDBCMap_; }
 
     //! right hand side vector
-    Teuchos::RCP<const Epetra_Vector> RHS() { return rhs_; };
+    Teuchos::RCP<const Epetra_Vector> RHS() override { return rhs_; }
 
     //! zero all entries in iterinc vector
     void ClearPoroIterinc();
@@ -126,7 +120,7 @@ namespace POROELAST
     //! replaces the iterinc with poroinc
     void UpdatePoroIterinc(Teuchos::RCP<const Epetra_Vector> poroinc);
 
-    // iter_ += 1
+    //! iter_ += 1
     void IncrementPoroIter();
 
     //! FluidField()->SystemMatrix()->RangeMap()
@@ -135,13 +129,10 @@ namespace POROELAST
     //! FluidField()->SystemMatrix()->DomainMap()
     const Epetra_Map& FluidDomainMap();
 
-    //! StructureField()->SystemMatrix()->RangeMap()
-    const Epetra_Map& StructureRangeMap();
-
     //! StructureField()->SystemMatrix()->DomainMap()
     const Epetra_Map& StructureDomainMap();
 
-    //@}
+    //!@}
 
     //! solve linear system
     void LinearSolve();
@@ -161,16 +152,16 @@ namespace POROELAST
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     //! and assemble systemmatrix and rhs-vector
-    virtual void Evaluate(
+    void Evaluate(
         Teuchos::RCP<const Epetra_Vector> iterinc,  //!< increment between iteration i and i+1
-        bool firstiter);
+        bool firstiter) override;
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     //! and assemble systemmatrix and rhs-vector
-    virtual void Evaluate(
+    void Evaluate(
         Teuchos::RCP<const Epetra_Vector> sx,  //!< structural increment between iteration i and i+1
         Teuchos::RCP<const Epetra_Vector> fx,  //!< fluid increment between iteration i and i+1
-        bool firstiter);
+        bool firstiter) override;
 
     //! evaluate fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     virtual void EvaluateFields(Teuchos::RCP<const Epetra_Vector> x);
@@ -185,23 +176,20 @@ namespace POROELAST
 
     //! is convergence reached of iterative solution technique?
     //! keep your fingers crossed...
-    //! \author lw  \date 12/07
     virtual bool Converged();
 
     //! inner newton iteration
-    virtual void Solve();
+    void Solve() override;
 
     //! perform one time step (setup + solve + output)
-    void DoTimeStep();
+    void DoTimeStep() override;
 
     //! @name Output
 
     //! print to screen information about residual forces and displacements
-    //! \author lw (originally) \date 12/07
     virtual void PrintNewtonIter();
 
     //! contains text to PrintNewtonIter
-    //! \author lw (originally) \date 12/07
     virtual void PrintNewtonIterText(FILE* ofile  //!< output file handle
     );
 
@@ -209,7 +197,6 @@ namespace POROELAST
     virtual void PrintNewtonIterTextStream(std::ostringstream& oss);
 
     //! contains header to PrintNewtonIter
-    //! \author lw (originally) \date 12/07
     virtual void PrintNewtonIterHeader(FILE* ofile  //!< output file handle
     );
 
@@ -219,32 +206,35 @@ namespace POROELAST
     //! print statistics of converged Newton-Raphson iteration
     void PrintNewtonConv();
 
-    //@}
+    //!@}
 
-    // finite difference check of stiffness matrix
-    void PoroFDCheck();
+    //! finite difference check of stiffness matrix
+    __attribute__((unused)) void PoroFDCheck();
 
-    /// Evaluate no penetration condition
+    //! Evaluate no penetration condition
     void EvaluateCondition(Teuchos::RCP<LINALG::SparseOperator> Sysmat,
         POROELAST::coupltype coupltype = POROELAST::fluidfluid);
 
-    /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time
-    /// step (i.e. condensed forces onto the structure) needed for rhs in next time step
-    virtual void RecoverLagrangeMultiplierAfterTimeStep() { return; };
+    //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time
+    //! step (i.e. condensed forces onto the structure) needed for rhs in next time step
+    virtual void RecoverLagrangeMultiplierAfterTimeStep() {}
 
-    /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each
-    /// iteration step (i.e. condensed forces onto the structure) needed for rhs in next time step
+    //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each
+    //! iteration step (i.e. condensed forces onto the structure) needed for rhs in next time step
     virtual void RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RCP<const Epetra_Vector> x);
 
-    // Setup solver for monolithic system
-    virtual bool SetupSolver();
+    //! Setup solver for monolithic system
+    bool SetupSolver() override;
 
-    /// read restart data
-    virtual void ReadRestart(const int step);
+    //! read restart data
+    void ReadRestart(const int step) override;
 
    protected:
+    //! Aitken
     void Aitken();
-    void AitkenReset();
+
+    //! Aitken Reset
+    __attribute__((unused)) void AitkenReset();
 
     //! @name Apply current field state to system
 
@@ -258,7 +248,7 @@ namespace POROELAST
         Teuchos::RCP<LINALG::SparseOperator> k_fs  //!< fluid-mechanical tangent matrix
     );
 
-    //@}
+    //!@}
 
     //! convergence check for Newton solver
     virtual void BuildConvergenceNorms();
@@ -276,30 +266,30 @@ namespace POROELAST
         bool firstcall = false);
 
     //! @name General purpose algorithm members
-    //@{
+    //!@{
 
     bool solveradapttol_;                  //!< adapt solver tolerance
     double solveradaptolbetter_;           //!< tolerance to which is adpated ????
     Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
 
-    //@}
+    //!@}
 
     //! @name Printing and output
-    //@{
+    //!@{
 
     int printscreen_;    //!< print infos to standard out every printscreen_ steps
     bool printiter_;     //!< print intermediate iterations during solution
     bool printerrfile_;  //!< print infos to error file #errfile_
     FILE* errfile_;      //!< error file handle
 
-    //@}
+    //!@}
 
     //! @name Global vectors
     Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
 
     Teuchos::RCP<Epetra_Vector> rhs_;  //!< rhs of Poroelasticity system
 
-    //@}
+    //!@}
 
     enum INPAR::STR::DynamicType strmethodname_;  //!< enum for STR time integration
 
@@ -313,7 +303,7 @@ namespace POROELAST
     //! fluid-structure coupling matrix
     Teuchos::RCP<LINALG::SparseOperator> k_fs_;
 
-    //@}
+    //!@}
 
     //! dof row map (not splitted)
     Teuchos::RCP<Epetra_Map> fullmap_;
@@ -339,21 +329,21 @@ namespace POROELAST
 
     //! @name poro-contact
 
-    /// apply current velocity of fluid  to ContactMangager if contact problem
+    //! apply current velocity of fluid  to ContactMangager if contact problem
     void SetPoroContactStates();
 
-    // assemble relevant matrixes for porocontact and meshtying
+    //! assemble relevant matrixes for porocontact and meshtying
     void EvalPoroMortar();
 
-    // flag activation poro contact no penetration condition
+    //! flag activation poro contact no penetration condition
     bool no_penetration_;
 
-    //@}
+    //!@}
 
     //! build block vector from field vectors, e.g. rhs, increment vector
-    void SetupVector(Epetra_Vector& f,         //!< vector of length of all dofs
-        Teuchos::RCP<const Epetra_Vector> sv,  //!< vector containing only structural dofs
-        Teuchos::RCP<const Epetra_Vector> fv   //!< vector containing only fluid dofs
+    virtual void SetupVector(Epetra_Vector& f,  //!< vector of length of all dofs
+        Teuchos::RCP<const Epetra_Vector> sv,   //!< vector containing only structural dofs
+        Teuchos::RCP<const Epetra_Vector> fv    //!< vector containing only fluid dofs
     );
 
     //! @name Iterative solution technique
@@ -402,14 +392,14 @@ namespace POROELAST
 
     int iter_;  //!< iteration step
 
-    //@}
+    //!@}
 
     //! @name Various global forces
 
     Teuchos::RCP<Epetra_Vector> iterinc_;  //!< increment between Newton steps k and k+1
     //!< \f$\Delta{x}^{<k>}_{n+1}\f$
 
-    //@}
+    //!@}
 
     //! flag for direct solver
     bool directsolve_;
@@ -424,7 +414,7 @@ namespace POROELAST
     Teuchos::RCP<Epetra_Vector> delhist_;
     //! Aitken factor
     double mu_;
-    //@}
+    //!@}
 
     //! @name matrix equilibration
 
@@ -433,11 +423,10 @@ namespace POROELAST
 
     //! equilibration method applied to system matrix
     LINALG::EquilibrationMethod equilibration_method_;
-    //@}
+    //!@}
 
-    //@}
-
-  };  // Monolithic
+    //!@}
+  };
 
 }  // namespace POROELAST
 

@@ -24,14 +24,11 @@ DRT::ELEMENTS::WallQuad4PoroType& DRT::ELEMENTS::WallQuad4PoroType::Instance() {
 
 DRT::ParObject* DRT::ELEMENTS::WallQuad4PoroType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>* object =
-      new DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>(-1, -1);
+  auto* object = new DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>(-1, -1);
   object->Unpack(data);
   return object;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
@@ -44,8 +41,6 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroType::Create(
   return Teuchos::null;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
@@ -53,8 +48,6 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroType::Create(const int id
   return ele;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::WallQuad4PoroType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
@@ -72,16 +65,13 @@ void DRT::ELEMENTS::WallQuad4PoroType::SetupElementDefinition(
       .AddOptionalNamedDoubleVector("POROANISODIR2", 2);
 }
 
-/*----------------------------------------------------------------------*
- |  init the element (public)                                           |
- *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::WallQuad4PoroType::Initialize(DRT::Discretization& dis)
 {
   DRT::ELEMENTS::Wall1Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>* actele =
+    auto* actele =
         dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>*>(dis.lColElement(i));
     if (!actele) dserror("cast to Wall1_Poro* failed");
     actele->InitElement();
@@ -98,14 +88,11 @@ DRT::ELEMENTS::WallQuad9PoroType& DRT::ELEMENTS::WallQuad9PoroType::Instance() {
 
 DRT::ParObject* DRT::ELEMENTS::WallQuad9PoroType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad9>* object =
-      new DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad9>(-1, -1);
+  auto* object = new DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad9>(-1, -1);
   object->Unpack(data);
   return object;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
@@ -118,8 +105,6 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroType::Create(
   return Teuchos::null;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
@@ -127,8 +112,6 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroType::Create(const int id
   return ele;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::WallQuad9PoroType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
@@ -146,16 +129,13 @@ void DRT::ELEMENTS::WallQuad9PoroType::SetupElementDefinition(
       .AddOptionalNamedDoubleVector("POROANISODIR2", 2);
 }
 
-/*----------------------------------------------------------------------*
- |  init the element (public)                                           |
- *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::WallQuad9PoroType::Initialize(DRT::Discretization& dis)
 {
   DRT::ELEMENTS::Wall1Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad9>* actele =
+    auto* actele =
         dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad9>*>(dis.lColElement(i));
     if (!actele) dserror("cast to Wall1_Poro* failed");
     actele->InitElement();
@@ -176,14 +156,11 @@ DRT::ELEMENTS::WallNurbs4PoroType& DRT::ELEMENTS::WallNurbs4PoroType::Instance()
 
 DRT::ParObject* DRT::ELEMENTS::WallNurbs4PoroType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Wall1_Poro<DRT::Element::nurbs4>* object =
-      new DRT::ELEMENTS::Wall1_Poro<DRT::Element::nurbs4>(-1, -1);
+  auto* object = new DRT::ELEMENTS::Wall1_Poro<DRT::Element::nurbs4>(-1, -1);
   object->Unpack(data);
   return object;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs4PoroType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
@@ -196,8 +173,6 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs4PoroType::Create(
   return Teuchos::null;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs4PoroType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
@@ -205,8 +180,6 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs4PoroType::Create(const int i
   return ele;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::WallNurbs4PoroType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
@@ -224,16 +197,13 @@ void DRT::ELEMENTS::WallNurbs4PoroType::SetupElementDefinition(
       .AddOptionalNamedDoubleVector("POROANISODIR2", 2);
 }
 
-/*----------------------------------------------------------------------*
- |  init the element (public)                                           |
- *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::WallNurbs4PoroType::Initialize(DRT::Discretization& dis)
 {
   DRT::ELEMENTS::Wall1Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::Wall1_Poro<DRT::Element::nurbs4>* actele =
+    auto* actele =
         dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::nurbs4>*>(dis.lColElement(i));
     if (!actele) dserror("cast to Wall1_Poro* failed");
     actele->InitElement();
@@ -254,14 +224,11 @@ DRT::ELEMENTS::WallNurbs9PoroType& DRT::ELEMENTS::WallNurbs9PoroType::Instance()
 
 DRT::ParObject* DRT::ELEMENTS::WallNurbs9PoroType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Wall1_Poro<DRT::Element::nurbs9>* object =
-      new DRT::ELEMENTS::Wall1_Poro<DRT::Element::nurbs9>(-1, -1);
+  auto* object = new DRT::ELEMENTS::Wall1_Poro<DRT::Element::nurbs9>(-1, -1);
   object->Unpack(data);
   return object;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs9PoroType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
@@ -274,8 +241,6 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs9PoroType::Create(
   return Teuchos::null;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs9PoroType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
@@ -283,8 +248,6 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs9PoroType::Create(const int i
   return ele;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::WallNurbs9PoroType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
@@ -302,16 +265,13 @@ void DRT::ELEMENTS::WallNurbs9PoroType::SetupElementDefinition(
       .AddOptionalNamedDoubleVector("POROANISODIR2", 2);
 }
 
-/*----------------------------------------------------------------------*
- |  init the element (public)                                           |
- *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::WallNurbs9PoroType::Initialize(DRT::Discretization& dis)
 {
   DRT::ELEMENTS::Wall1Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::Wall1_Poro<DRT::Element::nurbs9>* actele =
+    auto* actele =
         dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::nurbs9>*>(dis.lColElement(i));
     if (!actele) dserror("cast to Wall1_Poro* failed");
     actele->InitElement();
@@ -329,14 +289,11 @@ DRT::ELEMENTS::WallTri3PoroType& DRT::ELEMENTS::WallTri3PoroType::Instance() { r
 
 DRT::ParObject* DRT::ELEMENTS::WallTri3PoroType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>* object =
-      new DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>(-1, -1);
+  auto* object = new DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>(-1, -1);
   object->Unpack(data);
   return object;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
@@ -349,8 +306,6 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroType::Create(
   return Teuchos::null;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
@@ -358,8 +313,6 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroType::Create(const int id,
   return ele;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::WallTri3PoroType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
@@ -377,17 +330,13 @@ void DRT::ELEMENTS::WallTri3PoroType::SetupElementDefinition(
       .AddOptionalNamedDoubleVector("POROANISODIR2", 2);
 }
 
-/*----------------------------------------------------------------------*
- |  init the element (public)                                           |
- *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::WallTri3PoroType::Initialize(DRT::Discretization& dis)
 {
   DRT::ELEMENTS::Wall1Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>* actele =
-        dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>*>(dis.lColElement(i));
     if (!actele) dserror("cast to Wall1_Poro* failed");
     actele->InitElement();
   }

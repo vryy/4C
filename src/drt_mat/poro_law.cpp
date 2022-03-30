@@ -11,80 +11,56 @@
 
 #include "poro_density_law.H"
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-MAT::PAR::PoroLaw::PoroLaw(Teuchos::RCP<MAT::PAR::Material> matdata) : Parameter(matdata)
-{
-  return;
-}
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+MAT::PAR::PoroLaw::PoroLaw(Teuchos::RCP<MAT::PAR::Material> matdata) : Parameter(matdata) {}
+
 MAT::PAR::PoroLawLinear::PoroLawLinear(Teuchos::RCP<MAT::PAR::Material> matdata)
-    : PoroLaw(matdata), bulkmodulus_(matdata->GetDouble("BULKMODULUS"))
+    : PoroLaw(matdata), bulk_modulus_(matdata->GetDouble("BULKMODULUS"))
 {
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<MAT::Material> MAT::PAR::PoroLawLinear::CreateMaterial() { return Teuchos::null; }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void MAT::PAR::PoroLawLinear::ComputePorosity(const double& refporosity, const double& press,
     const double& J, const int& gp, double& porosity, double* dphi_dp, double* dphi_dJ,
     double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp, double* dphi_dphiref)
 {
-  porosity = refporosity + 1.0 / bulkmodulus_ * press + (1.0 - refporosity) * (J - 1.0);
+  porosity = refporosity + 1.0 / bulk_modulus_ * press + (1.0 - refporosity) * (J - 1.0);
 
-  if (dphi_dp) *dphi_dp = 1.0 / bulkmodulus_;
+  if (dphi_dp) *dphi_dp = 1.0 / bulk_modulus_;
   if (dphi_dJ) *dphi_dJ = (1.0 - refporosity);
   if (dphi_dJdp) *dphi_dJdp = 0.0;
   if (dphi_dJJ) *dphi_dJJ = 0.0;
   if (dphi_dpp) *dphi_dpp = 0.0;
   if (dphi_dphiref) *dphi_dphiref = 2.0 - J;
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void MAT::PAR::PoroLawLinear::ConstitutiveDerivatives(Teuchos::ParameterList& params, double press,
-    double J, double porosity, double refporosity, double* dW_dp, double* dW_dphi, double* dW_dJ,
-    double* dW_dphiref, double* W)
+void MAT::PAR::PoroLawLinear::ConstitutiveDerivatives(const Teuchos::ParameterList& params,
+    const double& press, const double& J, const double& porosity, const double& refporosity,
+    double* dW_dp, double* dW_dphi, double* dW_dJ, double* dW_dphiref, double* W)
 {
-  if (W) *W = bulkmodulus_ * (porosity - refporosity - (1.0 - refporosity) * (J - 1.0)) - press;
+  if (W) *W = bulk_modulus_ * (porosity - refporosity - (1.0 - refporosity) * (J - 1.0)) - press;
   if (dW_dp) *dW_dp = -1.0;
-  if (dW_dphi) *dW_dphi = bulkmodulus_;
-  if (dW_dJ) *dW_dJ = -bulkmodulus_ * (1.0 - refporosity);
-  if (dW_dphiref) *dW_dphiref = bulkmodulus_ * (-2.0 + J);
-
-  return;
+  if (dW_dphi) *dW_dphi = bulk_modulus_;
+  if (dW_dJ) *dW_dJ = -bulk_modulus_ * (1.0 - refporosity);
+  if (dW_dphiref) *dW_dphiref = bulk_modulus_ * (-2.0 + J);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 MAT::PAR::PoroLawNeoHooke::PoroLawNeoHooke(Teuchos::RCP<MAT::PAR::Material> matdata)
     : PoroLaw(matdata),
-      bulkmodulus_(matdata->GetDouble("BULKMODULUS")),
-      penaltyparameter_(matdata->GetDouble("PENALTYPARAMETER"))
+      bulk_modulus_(matdata->GetDouble("BULKMODULUS")),
+      penalty_parameter_(matdata->GetDouble("PENALTYPARAMETER"))
 {
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<MAT::Material> MAT::PAR::PoroLawNeoHooke::CreateMaterial() { return Teuchos::null; }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void MAT::PAR::PoroLawNeoHooke::ComputePorosity(const double& refporosity, const double& press,
     const double& J, const int& gp, double& porosity, double* dphi_dp, double* dphi_dJ,
     double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp, double* dphi_dphiref)
 {
-  const double& bulkmodulus = bulkmodulus_;
-  const double& penalty = penaltyparameter_;
+  const double& bulkmodulus = bulk_modulus_;
+  const double& penalty = penalty_parameter_;
 
   const double a = (bulkmodulus / (1 - refporosity) + press - penalty / refporosity) * J;
   const double b = -a + bulkmodulus + penalty;
@@ -120,7 +96,7 @@ void MAT::PAR::PoroLawNeoHooke::ComputePorosity(const double& refporosity, const
   if (dphi_dJ) *dphi_dJ = (-phi + 0.5) * J_inv + 0.5 * d_J * a_inv;
 
   // d(porosity) / d(J)d(pressure)
-  if (dphi_dJdp)
+  if (dphi_dJdp and dphi_dp)
     *dphi_dJdp = -J_inv * (*dphi_dp) + 0.5 * d_J_p * a_inv - 0.5 * d_J * J * a_inv * a_inv;
 
   // d^2(porosity) / d(J)^2
@@ -129,7 +105,7 @@ void MAT::PAR::PoroLawNeoHooke::ComputePorosity(const double& refporosity, const
                 0.5 * d_J * J_inv * a_inv + 0.5 * d_J_J * a_inv;
 
   // d^2(porosity) / d(pressure)^2
-  if (dphi_dpp)
+  if (dphi_dpp and dphi_dp)
     *dphi_dpp = -J * a_inv * (*dphi_dp) + phi * J * J * a_inv * a_inv -
                 0.5 * J * a_inv * a_inv * (J + d_p) + 0.5 * d_p_p * a_inv;
 
@@ -144,54 +120,41 @@ void MAT::PAR::PoroLawNeoHooke::ComputePorosity(const double& refporosity, const
 
     *dphi_dphiref = (a * (dadphiref + dddphiref) - dadphiref * (-b + d)) * 0.5 * a_inv * a_inv;
   }
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void MAT::PAR::PoroLawNeoHooke::ConstitutiveDerivatives(Teuchos::ParameterList& params,
-    double press, double J, double porosity, double refporosity, double* dW_dp, double* dW_dphi,
-    double* dW_dJ, double* dW_dphiref, double* W)
+void MAT::PAR::PoroLawNeoHooke::ConstitutiveDerivatives(const Teuchos::ParameterList& params,
+    const double& press, const double& J, const double& porosity, const double& refporosity,
+    double* dW_dp, double* dW_dphi, double* dW_dJ, double* dW_dphiref, double* W)
 {
   // some intermediate values
-  const double a = bulkmodulus_ / (1 - refporosity) + press - penaltyparameter_ / refporosity;
-  const double b = -1.0 * J * a + bulkmodulus_ + penaltyparameter_;
+  const double a = bulk_modulus_ / (1 - refporosity) + press - penalty_parameter_ / refporosity;
+  const double b = -1.0 * J * a + bulk_modulus_ + penalty_parameter_;
 
-  const double scale = 1.0 / bulkmodulus_;
+  const double scale = 1.0 / bulk_modulus_;
 
   // scale everything with 1/bulkmodulus (I hope this will help the solver...)
-  if (W) *W = (J * a * porosity * porosity + porosity * b - penaltyparameter_) * scale;
+  if (W) *W = (J * a * porosity * porosity + porosity * b - penalty_parameter_) * scale;
   if (dW_dp) *dW_dp = (-1.0 * J * porosity * (1.0 - porosity)) * scale;
   if (dW_dphi) *dW_dphi = (2.0 * J * a * porosity + b) * scale;
   if (dW_dJ) *dW_dJ = (a * porosity * porosity - porosity * a) * scale;
 
   if (dW_dphiref)
   {
-    const double dadphiref = J * (bulkmodulus_ / ((1 - refporosity) * (1 - refporosity)) +
-                                     penaltyparameter_ / (refporosity * refporosity));
+    const double dadphiref = J * (bulk_modulus_ / ((1 - refporosity) * (1 - refporosity)) +
+                                     penalty_parameter_ / (refporosity * refporosity));
     const double dbdphiref = -1.0 * J * dadphiref;
 
     *dW_dphiref = (J * dadphiref * porosity * porosity + porosity * dbdphiref) * scale;
   }
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 MAT::PAR::PoroLawConstant::PoroLawConstant(Teuchos::RCP<MAT::PAR::Material> matdata)
     : PoroLaw(matdata)
 {
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<MAT::Material> MAT::PAR::PoroLawConstant::CreateMaterial() { return Teuchos::null; }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void MAT::PAR::PoroLawConstant::ComputePorosity(const double& refporosity, const double& press,
     const double& J, const int& gp, double& porosity, double* dphi_dp, double* dphi_dJ,
     double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp, double* dphi_dphiref)
@@ -204,42 +167,29 @@ void MAT::PAR::PoroLawConstant::ComputePorosity(const double& refporosity, const
   if (dphi_dJJ) *dphi_dJJ = 0.0;
   if (dphi_dpp) *dphi_dpp = 0.0;
   if (dphi_dphiref) *dphi_dphiref = 1.0;
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void MAT::PAR::PoroLawConstant::ConstitutiveDerivatives(Teuchos::ParameterList& params,
-    double press, double J, double porosity, double refporosity, double* dW_dp, double* dW_dphi,
-    double* dW_dJ, double* dW_dphiref, double* W)
+void MAT::PAR::PoroLawConstant::ConstitutiveDerivatives(const Teuchos::ParameterList& params,
+    const double& press, const double& J, const double& porosity, const double& refporosity,
+    double* dW_dp, double* dW_dphi, double* dW_dJ, double* dW_dphiref, double* W)
 {
   if (W) *W = porosity - refporosity;
   if (dW_dp) *dW_dp = 0.0;
   if (dW_dphi) *dW_dphi = 1.0;
   if (dW_dJ) *dW_dJ = 0.0;
   if (dW_dphiref) *dW_dphiref = -1.0;
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 MAT::PAR::PoroLawIncompSkeleton::PoroLawIncompSkeleton(Teuchos::RCP<MAT::PAR::Material> matdata)
     : PoroLaw(matdata)
 {
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<MAT::Material> MAT::PAR::PoroLawIncompSkeleton::CreateMaterial()
 {
   return Teuchos::null;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void MAT::PAR::PoroLawIncompSkeleton::ComputePorosity(const double& refporosity,
     const double& press, const double& J, const int& gp, double& porosity, double* dphi_dp,
     double* dphi_dJ, double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp, double* dphi_dphiref)
@@ -252,100 +202,74 @@ void MAT::PAR::PoroLawIncompSkeleton::ComputePorosity(const double& refporosity,
   if (dphi_dJJ) *dphi_dJJ = -2.0 * (1.0 - refporosity) / (J * J * J);
   if (dphi_dpp) *dphi_dpp = 0.0;
   if (dphi_dphiref) *dphi_dphiref = 1.0 / J;
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void MAT::PAR::PoroLawIncompSkeleton::ConstitutiveDerivatives(Teuchos::ParameterList& params,
-    double press, double J, double porosity, double refporosity, double* dW_dp, double* dW_dphi,
-    double* dW_dJ, double* dW_dphiref, double* W)
+void MAT::PAR::PoroLawIncompSkeleton::ConstitutiveDerivatives(const Teuchos::ParameterList& params,
+    const double& press, const double& J, const double& porosity, const double& refporosity,
+    double* dW_dp, double* dW_dphi, double* dW_dJ, double* dW_dphiref, double* W)
 {
   if (W) *W = J * (1.0 - porosity) - (1.0 - refporosity);
   if (dW_dp) *dW_dp = 0.0;
   if (dW_dphi) *dW_dphi = -1.0 * J;
   if (dW_dJ) *dW_dJ = 1.0 - porosity;
   if (dW_dphiref) *dW_dphiref = 1.0;
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 MAT::PAR::PoroLawLinBiot::PoroLawLinBiot(Teuchos::RCP<MAT::PAR::Material> matdata)
     : PoroLaw(matdata),
-      invBiotModulus_(matdata->GetDouble("INVBIOTMODULUS")),
-      biotCoeff_(matdata->GetDouble("BIOTCEOFF"))
+      inv_biot_modulus_(matdata->GetDouble("INVBIOTMODULUS")),
+      biot_coeff_(matdata->GetDouble("BIOTCEOFF"))
 {
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<MAT::Material> MAT::PAR::PoroLawLinBiot::CreateMaterial() { return Teuchos::null; }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void MAT::PAR::PoroLawLinBiot::ComputePorosity(const double& refporosity, const double& press,
     const double& J, const int& gp, double& porosity, double* dphi_dp, double* dphi_dJ,
     double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp, double* dphi_dphiref)
 {
-  porosity = refporosity + invBiotModulus_ * press + biotCoeff_ * (J - 1);
+  porosity = refporosity + inv_biot_modulus_ * press + biot_coeff_ * (J - 1);
 
-  if (dphi_dp) *dphi_dp = invBiotModulus_;
-  if (dphi_dJ) *dphi_dJ = biotCoeff_;
+  if (dphi_dp) *dphi_dp = inv_biot_modulus_;
+  if (dphi_dJ) *dphi_dJ = biot_coeff_;
   if (dphi_dJdp) *dphi_dJdp = 0.0;
   if (dphi_dJJ) *dphi_dJJ = 0.0;
   if (dphi_dpp) *dphi_dpp = 0.0;
   if (dphi_dphiref) *dphi_dphiref = 1.0;
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void MAT::PAR::PoroLawLinBiot::ConstitutiveDerivatives(Teuchos::ParameterList& params, double press,
-    double J, double porosity, double refporosity, double* dW_dp, double* dW_dphi, double* dW_dJ,
-    double* dW_dphiref, double* W)
+void MAT::PAR::PoroLawLinBiot::ConstitutiveDerivatives(const Teuchos::ParameterList& params,
+    const double& press, const double& J, const double& porosity, const double& refporosity,
+    double* dW_dp, double* dW_dphi, double* dW_dJ, double* dW_dphiref, double* W)
 {
-  if (W) *W = porosity - refporosity - invBiotModulus_ * press - biotCoeff_ * (J - 1);
-  if (dW_dp) *dW_dp = -1.0 * invBiotModulus_;
+  if (W) *W = porosity - refporosity - inv_biot_modulus_ * press - biot_coeff_ * (J - 1);
+  if (dW_dp) *dW_dp = -1.0 * inv_biot_modulus_;
   if (dW_dphi) *dW_dphi = 1.0;
-  if (dW_dJ) *dW_dJ = -1.0 * biotCoeff_;
+  if (dW_dJ) *dW_dJ = -1.0 * biot_coeff_;
   if (dW_dphiref) *dW_dphiref = -1.0;
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 MAT::PAR::PoroLawDensityDependent::PoroLawDensityDependent(Teuchos::RCP<MAT::PAR::Material> matdata)
     : PoroLaw(matdata)
 {
   const int densityID = matdata->GetInt("DENSITYLAWID");
-  densitylaw_ = MAT::PAR::PoroDensityLaw::CreateDensityLaw(densityID);
-  return;
+  density_law_ = MAT::PAR::PoroDensityLaw::CreateDensityLaw(densityID);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<MAT::Material> MAT::PAR::PoroLawDensityDependent::CreateMaterial()
 {
   return Teuchos::null;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void MAT::PAR::PoroLawDensityDependent::ComputePorosity(const double& refporosity,
     const double& press, const double& J, const int& gp, double& porosity, double* dphi_dp,
     double* dphi_dJ, double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp, double* dphi_dphiref)
 {
   // compute relation of reference to current density
-  const double reldensity = densitylaw_->ComputeRefDensityToCurDensity(press);
-  const double reldensityderiv = densitylaw_->ComputeRefDensityToCurDensityDerivative(press);
+  const double reldensity = density_law_->ComputeRefDensityToCurDensity(press);
+  const double reldensityderiv = density_law_->ComputeRefDensityToCurDensityDerivative(press);
   const double reldensityderivderiv =
-      densitylaw_->ComputeRefDensityToCurDensitySecondDerivative(press);
+      density_law_->ComputeRefDensityToCurDensitySecondDerivative(press);
 
   // compute porosity
   porosity = 1.0 - reldensity * (1.0 - refporosity) / J;
@@ -356,32 +280,25 @@ void MAT::PAR::PoroLawDensityDependent::ComputePorosity(const double& refporosit
   if (dphi_dJJ) *dphi_dJJ = -2.0 * reldensityderiv * (1.0 - refporosity) / (J * J * J);
   if (dphi_dpp) *dphi_dpp = -1.0 * reldensityderivderiv * (1.0 - refporosity) / J;
   if (dphi_dphiref) *dphi_dphiref = reldensity / J;
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void MAT::PAR::PoroLawDensityDependent::ConstitutiveDerivatives(Teuchos::ParameterList& params,
-    double press, double J, double porosity, double refporosity, double* dW_dp, double* dW_dphi,
+void MAT::PAR::PoroLawDensityDependent::ConstitutiveDerivatives(
+    const Teuchos::ParameterList& params, const double& press, const double& J,
+    const double& porosity, const double& refporosity, double* dW_dp, double* dW_dphi,
     double* dW_dJ, double* dW_dphiref, double* W)
 {
   // compute relation of reference to current density
-  const double reldensity = densitylaw_->ComputeRefDensityToCurDensity(press);
-  const double reldensityderiv = densitylaw_->ComputeRefDensityToCurDensityDerivative(press);
+  const double reldensity = density_law_->ComputeRefDensityToCurDensity(press);
+  const double reldensityderiv = density_law_->ComputeRefDensityToCurDensityDerivative(press);
 
   if (W) *W = porosity - 1.0 + reldensity * (1.0 - refporosity) / J;
   if (dW_dp) *dW_dp = reldensityderiv * (1.0 - refporosity) / J;
   if (dW_dphi) *dW_dphi = 1.0;
   if (dW_dJ) *dW_dJ = -1.0 * reldensity * (1.0 - refporosity) / (J * J);
   if (dW_dphiref) *dW_dphiref = -1.0 * reldensity / J;
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-double MAT::PAR::PoroLawDensityDependent::InvBulkmodulus() const
+double MAT::PAR::PoroLawDensityDependent::InvBulkModulus() const
 {
-  return densitylaw_->InvBulkmodulus();
+  return density_law_->InvBulkmodulus();
 }

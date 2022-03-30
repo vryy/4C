@@ -25,39 +25,35 @@ namespace FLD
   class TimIntPoroGenAlpha : public TimIntGenAlpha, public TimIntPoro
   {
    public:
-    /// Standard Constructor
+    //! Standard Constructor
     TimIntPoroGenAlpha(const Teuchos::RCP<DRT::Discretization>& actdis,
         const Teuchos::RCP<LINALG::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-    /// Destructor
-    virtual ~TimIntPoroGenAlpha();
-
     /*!
     \brief initialization
 
     */
-    virtual void Init();
+    void Init() override;
 
     /*!
     \brief read restart data
 
     */
-    virtual void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
    protected:
     /*!
     \brief compute values at intermediate time steps for gen.-alpha
 
     */
-    virtual void GenAlphaIntermediateValues();
+    void GenAlphaIntermediateValues() override;
 
    private:
-  };  // class TimIntPoroGenAlpha
+  };
 
 }  // namespace FLD
-
 
 
 #endif /* FLUID_TIMINT_PORO_GENALPHA_H_ */

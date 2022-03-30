@@ -18,84 +18,58 @@
 
 #include "../drt_io/io.H"
 
-
-/*----------------------------------------------------------------------*
- |  Constructor (public)                                       bk 11/13 |
- *----------------------------------------------------------------------*/
 FLD::TimIntPoro::TimIntPoro(const Teuchos::RCP<DRT::Discretization>& actdis,
     const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid)
 {
-  return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  initialize algorithm                                rasthofer 04/14 |
- *----------------------------------------------------------------------*/
 void FLD::TimIntPoro::Init()
 {
   Teuchos::ParameterList* stabparams;
   stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
 
   if (stabparams->get<std::string>("STABTYPE") == "residual_based")
+  {
     if (stabparams->get<std::string>("TDS") == "time_dependent")
+    {
       dserror(
           "TDS is not implemented for Poro yet. An error will occur in "
           "FluidImplicitTimeInt::TimeUpdate().");
+    }
+  }
 
   if (not alefluid_) dserror("poro fluid has to be an ale fluid!");
 
   // set some poro-specific parameters
   SetElementCustomParameter();
-  return;
 }
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                     bk 11/13 |
-*----------------------------------------------------------------------*/
-FLD::TimIntPoro::~TimIntPoro() { return; }
-
-/*----------------------------------------------------------------------*
-| set params in constructor                                    bk 11/13 |
-*----------------------------------------------------------------------*/
 void FLD::TimIntPoro::SetElementGeneralFluidParameter()
 {
   // set some poro-specific parameters only in specific poro cases
   FluidImplicitTimeInt::SetElementGeneralFluidParameter();
-  return;
 }
 
-/*----------------------------------------------------------------------*
-| set params in constructor                                    bk 11/13 |
-*----------------------------------------------------------------------*/
 void FLD::TimIntPoro::SetElementTurbulenceParameters()
 {
   // set some poro-specific parameters only in specific poro cases
   FluidImplicitTimeInt::SetElementTurbulenceParameters();
-  return;
 }
 
 void FLD::TimIntPoro::AssembleMatAndRHS()
 {
   FluidImplicitTimeInt::AssembleMatAndRHS();
   PoroIntUpdate();
-
-  return;
 }
 
 void FLD::TimIntPoro::ReadRestart(int step)
 {
   IO::DiscretizationReader reader(discret_, step);
   reader.ReadVector(gridv_, "gridv");
-
-  return;
 }
 
-// -------------------------------------------------------------------
-// set poro parameters                               vuong  11/2012
-// -------------------------------------------------------------------
 void FLD::TimIntPoro::SetElementCustomParameter()
 {
   Teuchos::ParameterList eleparams;
@@ -119,12 +93,8 @@ void FLD::TimIntPoro::SetElementCustomParameter()
   // call standard loop over elements
   discret_->Evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-  return;
 }
 
-/*----------------------------------------------------------------------*
- |  set initial field for porosity                                      |
- *----------------------------------------------------------------------*/
 void FLD::TimIntPoro::SetInitialPorosityField(
     const INPAR::POROELAST::InitialField init, const int startfuncno)
 {
@@ -156,7 +126,7 @@ void FLD::TimIntPoro::SetInitialPorosityField(
           const int dofgid = nodedofset[k];
           int doflid = dofrowmap->LID(dofgid);
           // evaluate component k of spatial function
-          int err = initporosityfield_->ReplaceMyValues(1, &initialval, &doflid);
+          int err = init_porosity_field_->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) dserror("dof not on proc");
         }
       }
@@ -166,14 +136,9 @@ void FLD::TimIntPoro::SetInitialPorosityField(
     default:
       dserror("Unknown option for initial field: %d", init);
       break;
-  }  // switch(init)
+  }
+}
 
-  return;
-}  // TimIntPoro::SetInitialPorosityField
-
-/*----------------------------------------------------------------------*
-| add some functionality to UpdateIterIncrementally            bk 11/13 |
-*----------------------------------------------------------------------*/
 void FLD::TimIntPoro::UpdateIterIncrementally(
     Teuchos::RCP<const Epetra_Vector> vel)  //!< input residual velocities
 
@@ -194,14 +159,8 @@ void FLD::TimIntPoro::UpdateIterIncrementally(
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(accnp_), aux);
     *accnp_ = *aux;
   }
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- | output of solution vector to binio                        gammi 04/07|
- | overloading function                                         bk 12/13|
- *----------------------------------------------------------------------*/
 void FLD::TimIntPoro::Output()
 {
   FluidImplicitTimeInt::Output();
@@ -218,12 +177,8 @@ void FLD::TimIntPoro::Output()
   {
     output_->WriteVector("gridv", gridv_);
   }
-  return;
-}  // TimIntPoro::Output
+}
 
-/*----------------------------------------------------------------------*
-| set params in constructor                                    bk 11/13 |
-*----------------------------------------------------------------------*/
 void FLD::TimIntPoro::SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams)
 {
   eleparams.set<int>("Physical Type", physicaltype_);
@@ -236,13 +191,8 @@ void FLD::TimIntPoro::SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList
 
   eleparams.set("total time", time_);
   eleparams.set("delta time", dta_);
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
-| update sysmat after AssembleMatAndRHS                        bk 11/13 |
-*----------------------------------------------------------------------*/
 void FLD::TimIntPoro::PoroIntUpdate()
 {
   sysmat_->UnComplete();
@@ -292,19 +242,12 @@ void FLD::TimIntPoro::PoroIntUpdate()
     discret_->ClearState();
   }
   sysmat_->Complete();
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
-| Calculate acceleration for poro                              bk 11/13 |
-*----------------------------------------------------------------------*/
 void FLD::TimIntPoro::TimIntCalculateAcceleration()
 {
   // for poro problems, there is a time derivative of the porosity/pressure
   // in the continuity equation. Therefore, we potentially need time
   // derivatives of the pressure and thus do not split the state vectors
   CalculateAcceleration(velnp_, veln_, velnm_, accn_, accnp_);
-
-  return;
 }

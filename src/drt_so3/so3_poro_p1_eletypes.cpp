@@ -14,7 +14,7 @@
 #include "../linalg/linalg_utils_nullspace.H"
 
 /*----------------------------------------------------------------------*
- |  HEX 8 Element                                    vuong 03/12    |
+ |  HEX 8 Element                                                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex8PoroP1Type DRT::ELEMENTS::So_hex8PoroP1Type::instance_;
 
@@ -60,8 +60,6 @@ void DRT::ELEMENTS::So_hex8PoroP1Type::SetupElementDefinition(
   defs["HEX8"] = defs_hex8["HEX8"];
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8PoroP1Type::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
@@ -70,8 +68,6 @@ void DRT::ELEMENTS::So_hex8PoroP1Type::NodalBlockInformation(
   nv = 3;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Epetra_SerialDenseMatrix DRT::ELEMENTS::So_hex8PoroP1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
@@ -79,9 +75,6 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::So_hex8PoroP1Type::ComputeNullSpace(
   return nullspace;
 }
 
-/*----------------------------------------------------------------------*
- |  init the element (public)                        vuong 03/12        |
- *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_hex8PoroP1Type::Initialize(DRT::Discretization& dis)
 {
   So_hex8Type::Initialize(dis);
@@ -98,9 +91,8 @@ int DRT::ELEMENTS::So_hex8PoroP1Type::Initialize(DRT::Discretization& dis)
 }
 
 /*----------------------------------------------------------------------*
- |  TET 4 Element                                       |
+ |  TET 4 Element                                                       |
  *----------------------------------------------------------------------*/
-
 
 DRT::ELEMENTS::So_tet4PoroP1Type DRT::ELEMENTS::So_tet4PoroP1Type::instance_;
 
@@ -145,9 +137,6 @@ void DRT::ELEMENTS::So_tet4PoroP1Type::SetupElementDefinition(
   defs["TET4"] = defs_tet4["TET4"];
 }
 
-/*----------------------------------------------------------------------*
- |  init the element (public)                                           |
- *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_tet4PoroP1Type::Initialize(DRT::Discretization& dis)
 {
   So_tet4PoroType::Initialize(dis);
@@ -163,8 +152,6 @@ int DRT::ELEMENTS::So_tet4PoroP1Type::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet4PoroP1Type::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
@@ -173,8 +160,6 @@ void DRT::ELEMENTS::So_tet4PoroP1Type::NodalBlockInformation(
   nv = 3;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Epetra_SerialDenseMatrix DRT::ELEMENTS::So_tet4PoroP1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {

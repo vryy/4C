@@ -24,30 +24,27 @@ namespace FLD
   class TimIntPoroOst : public TimIntOneStepTheta, public TimIntPoro
   {
    public:
-    /// Standard Constructor
+    //! Standard Constructor
     TimIntPoroOst(const Teuchos::RCP<DRT::Discretization>& actdis,
         const Teuchos::RCP<LINALG::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-    /// Destructor
-    virtual ~TimIntPoroOst();
-
     /*!
     \brief initialization
 
     */
-    virtual void Init();
+    void Init() override;
 
     /*!
     \brief read restart data
 
     */
-    virtual void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
    protected:
    private:
-  };  // class TimIntPoroOst
+  };
 
 }  // namespace FLD
 

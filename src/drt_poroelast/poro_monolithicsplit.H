@@ -11,9 +11,6 @@
 #ifndef PORO_MONOLITHICSPLIT_H_
 #define PORO_MONOLITHICSPLIT_H_
 
-/*----------------------------------------------------------------------*
- | headers                                                              |
- *----------------------------------------------------------------------*/
 
 #include "poroelast_monolithic.H"
 
@@ -21,44 +18,38 @@ namespace ADAPTER
 {
   class CouplingConverter;
 }
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
 
 namespace POROELAST
 {
-  /// base class for monolithic approaches, when the system is splitted for some reason
-  /// (most of the time this means some dofs are condensed)
+  //! base class for monolithic approaches, when the system is splitted for some reason
+  //! (most of the time this means some dofs are condensed)
   class MonolithicSplit : public Monolithic
   {
    public:
     //! create using a Epetra_Comm
     explicit MonolithicSplit(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
-    //! virtual destructor to support polymorph destruction
-    virtual ~MonolithicSplit(){};
-
     //! Setup the monolithic system (depends on which field is splitted)
-    virtual void SetupSystem() = 0;
+    void SetupSystem() override = 0;
 
-    /// setup composed right hand side from field solvers (depends on which field is splitted)
-    virtual void SetupRHS(bool firstcall = false) = 0;
+    //! setup composed right hand side from field solvers (depends on which field is splitted)
+    void SetupRHS(bool firstcall = false) override = 0;
 
-    /// setup composed system matrix from field solvers (depends on which field is splitted)
-    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) = 0;
+    //! setup composed system matrix from field solvers (depends on which field is splitted)
+    void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) override = 0;
 
     //! start a new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
-    /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time
-    /// step (i.e. condensed forces onto the structure) needed for rhs in next time step
-    virtual void RecoverLagrangeMultiplierAfterTimeStep() = 0;
+    //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time
+    //! step (i.e. condensed forces onto the structure) needed for rhs in next time step
+    void RecoverLagrangeMultiplierAfterTimeStep() override = 0;
 
     //! inner newton iteration
-    virtual void Solve();
+    void Solve() override;
 
    protected:
-    /// @name transfer helpers
+    //! @name transfer helpers
 
     //! field transform (interface only)
     Teuchos::RCP<Epetra_Vector> StructureToFluidAtInterface(
@@ -68,11 +59,11 @@ namespace POROELAST
     Teuchos::RCP<Epetra_Vector> FluidToStructureAtInterface(
         Teuchos::RCP<const Epetra_Vector> iv) const;
 
-    //@}
+    //!@}
 
     //! combined DBC map
     //! unique map of all dofs that should be constrained with DBC
-    void BuildCombinedDBCMap();
+    void BuildCombinedDBCMap() override;
 
     //! map containing the dofs with Dirichlet BC and FSI Coupling Condition on structure side
     Teuchos::RCP<Epetra_Map> FSIDBCMap();
@@ -93,7 +84,7 @@ namespace POROELAST
     //! map extractor DOFs with both fsi- and DBC conditions
     Teuchos::RCP<LINALG::MapExtractor> fsibcextractor_;
 
-    /// @name Some quantities to recover the Langrange multiplier at the end of each time step
+    //! @name Some quantities to recover the Langrange multiplier at the end of each time step
 
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the
     //! structure) evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
@@ -102,9 +93,6 @@ namespace POROELAST
     //! interface force \f$f_{\Gamma,i+1}^{S,n+1}\f$ onto the structure at current iteration
     //! \f$i+1\f$
     Teuchos::RCP<const Epetra_Vector> fgcur_;
-
-    //! interface force \f$f_{\Gamma,i}^{S,n+1}\f$ onto the structure at previous iteration \f$i\f$
-    // Teuchos::RCP<const Epetra_Vector> fgpre_;
 
     //! inner structural displacement increment \f$\Delta(\Delta d_{I,i+1}^{n+1})\f$ at current
     //! iteration \f$i+1\f$
@@ -134,7 +122,7 @@ namespace POROELAST
     //! interface displacement solution of the fluid at previous iteration
     Teuchos::RCP<const Epetra_Vector> solgvelpre_;
 
-    //@}
+    //!@}
 
     //! interface increment for dof with dirichlet condition on fsi-interface
     Teuchos::RCP<Epetra_Vector> ddi_;

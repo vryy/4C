@@ -21,7 +21,7 @@ namespace DRT
   namespace ELEMENTS
   {
     /*----------------------------------------------------------------------*
-     |  HEX 8 Element                                       |
+     |  HEX 8 Element                                                       |
      *----------------------------------------------------------------------*/
     class So_hex8PoroP1Type : public So_hex8PoroType
     {
@@ -56,7 +56,7 @@ namespace DRT
     };
 
     /*----------------------------------------------------------------------*
-     |  TET 4 Element                                       |
+     |  TET 4 Element                                                       |
      *----------------------------------------------------------------------*/
     class So_tet4PoroP1Type : public So_tet4PoroType
     {

@@ -24,10 +24,9 @@
 
 namespace POROELAST
 {
-  /// POROELAST::UTILS: Random stuff that might be helpful when dealing with poroelasticity problems
   namespace UTILS
   {
-    /// setup poro discretization,i.e. clone the structural discretization
+    //! setup poro discretization,i.e. clone the structural discretization
     template <class PoroCloneStrategy>
     void SetupPoro(bool setmaterialpointers = true)
     {
@@ -55,9 +54,11 @@ namespace POROELAST
       if (fluiddis->NumGlobalNodes() == 0)
       {
         if (!matchinggrid)
+        {
           dserror(
               "MATCHINGGRID is set to 'no' in POROELASTICITY DYNAMIC section, but fluid "
               "discretization is empty!");
+        }
 
         // create fluid discretization
         DRT::UTILS::CloneDiscretization<PoroCloneStrategy>(structdis, fluiddis);
@@ -113,9 +114,11 @@ namespace POROELAST
       else
       {
         if (matchinggrid)
+        {
           dserror(
               "MATCHINGGRID is set to 'yes' in POROELASTICITY DYNAMIC section, but fluid "
               "discretization is not empty!");
+        }
 
         // first call FillComplete for single discretizations.
         // This way the physical dofs are numbered successively
@@ -145,11 +148,11 @@ namespace POROELAST
         structdis->FillComplete(true, false, false);
         fluiddis->FillComplete(true, false, false);
       }
-    };
+    }
 
     //! setup discretization, includes cloning the structure discretization
     template <class PoroCloneStrategy, class PoroScatraCloneStrategy>
-    void SetupPoroScatraDiscretizations(bool setmaterialpointers = true)
+    void SetupPoroScatraDiscretizations()
     {
       // Scheme    : the structure discretization is received from the input. Then, an ale-fluid
       // disc.is cloned from the struct. one.
@@ -255,8 +258,7 @@ namespace POROELAST
         fluiddis->FillComplete(true, false, false);
         scatradis->FillComplete(true, false, false);
       }
-    };
-
+    }
   }  // namespace UTILS
 }  // namespace POROELAST
 

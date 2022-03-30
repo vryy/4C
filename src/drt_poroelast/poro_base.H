@@ -9,10 +9,9 @@
 #ifndef PORO_BASE_H_
 #define PORO_BASE_H_
 
-/*----------------------------------------------------------------------*
- | headers                                                              |
- *----------------------------------------------------------------------*/
 #include <Epetra_Time.h>
+
+#include <utility>
 
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include "../drt_adapter/ad_field.H"
@@ -22,9 +21,6 @@
 
 #include "../linalg/linalg_mapextractor.H"
 
-/*----------------------------------------------------------------------*
- | forward declarations                                                 |
- *----------------------------------------------------------------------*/
 namespace DRT
 {
   class Condition;
@@ -46,30 +42,24 @@ namespace ADAPTER
   class MortarVolCoupl;
 }  // namespace ADAPTER
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 namespace POROELAST
 {
-  // forward declaration
   class NoPenetrationConditionHandle;
 
-  /// base class for porous media algorithm
+  //! base class for porous media algorithm
   class PoroBase : public ADAPTER::AlgorithmBase, public ADAPTER::Field
   {
    public:
     //! create using a Epetra_Comm
     explicit PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
-    //! virtual destructor to support polymorph destruction
-    virtual ~PoroBase();
-
-    /// read restart data
-    virtual void ReadRestart(const int step);
+    //! read restart data
+    void ReadRestart(const int step) override;
 
     //! outer level time loop
     virtual void TimeLoop();
 
-    /// initialize system
+    //! initialize system
     virtual void SetupSystem() = 0;
 
     //! perform result tests
@@ -81,7 +71,7 @@ namespace POROELAST
       dserror(
           "BuildCombinedDBCMap() not implemented in base class. must be implemented in sub "
           "classes.");
-    };
+    }
 
     //! @name access methods
 
@@ -92,25 +82,25 @@ namespace POROELAST
     const Teuchos::RCP<ADAPTER::FluidPoro>& FluidField() { return fluid_; }
 
     //! composed system matrix
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
+    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() override
     {
       dserror("SystemMatrix() only available for monolithic schemes!");
       return Teuchos::null;
-    };
+    }
 
     //! block system matrix
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override
     {
       dserror("BlockSystemMatrix() only available for monolithic schemes!");
       return Teuchos::null;
-    };
+    }
 
     //! full monolithic dof row map
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap()
+    Teuchos::RCP<const Epetra_Map> DofRowMap() override
     {
       dserror("DofRowMap() only available for monolithic schemes!");
       return Teuchos::null;
-    };
+    }
 
     //! dof row map of Structure field
     virtual Teuchos::RCP<const Epetra_Map> DofRowMapStructure() = 0;
@@ -123,23 +113,23 @@ namespace POROELAST
     {
       dserror("ExtractorPointer only available for monolithic schemes!");
       return Teuchos::null;
-    };
+    }
 
     //! unique map of all dofs that should be constrained with DBC
     virtual Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const
     {
       dserror("CombinedDBCMap() only available for monolithic schemes!");
       return Teuchos::null;
-    };
+    }
 
     //! return rhs of poro problem
-    virtual Teuchos::RCP<const Epetra_Vector> RHS()
+    Teuchos::RCP<const Epetra_Vector> RHS() override
     {
       dserror("RHS() only available for monolithic schemes!");
       return Teuchos::null;
-    };
+    }
 
-    //@}
+    //!@}
 
     //! update all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     void UpdateStateIncrementally(
@@ -147,37 +137,37 @@ namespace POROELAST
         ) override
     {
       dserror("UpdateStateIncrementally() only available for monolithic schemes!");
-    };
+    }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void Evaluate(
+    void Evaluate(
         Teuchos::RCP<const Epetra_Vector> iterinc  //!< increment between iteration i and i+1
-    )
+        ) override
     {
       dserror("Evaluate() only available for monolithic schemes!");
-    };
+    }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     virtual void Evaluate(
         Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx)
     {
       dserror("Evaluate(sx,fx) only available for monolithic schemes!");
-    };
+    }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void Evaluate(
+    void Evaluate(
         Teuchos::RCP<const Epetra_Vector> iterinc,  //!< increment between iteration i and i+1
-        bool firstiter)
+        bool firstiter) override
     {
       dserror("Evaluate() only available for monolithic schemes!");
-    };
+    }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     virtual void Evaluate(
         Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx, bool firstiter)
     {
       dserror("Evaluate(sx,fx) only available for monolithic schemes!");
-    };
+    }
 
     //! solve time step (depending on algorithm)
     virtual void Solve() = 0;
@@ -186,38 +176,35 @@ namespace POROELAST
     virtual void DoTimeStep() = 0;
 
     //! setup solver (for monolithic only)
-    virtual bool SetupSolver() { return false; };
+    virtual bool SetupSolver() { return false; }
 
     virtual void SetupRHS(bool firstcall = false)
     {
       dserror("SetupRHS() only available for monolithic schemes!");
-    };
+    }
 
     //! @name Time loop building blocks
 
     //! start a new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     //! take current results for converged and save for next time step
-    virtual void Update();
+    void Update() override;
 
     //! calculate stresses, strains, energies
-    virtual void PrepareOutput();
+    void PrepareOutput() override;
 
     //! output
-    virtual void Output(bool forced_writerestart = false);
+    void Output(bool forced_writerestart = false) override;
 
-    //@}
+    //!@}
 
     //! return whether the poro discretization contains submeshes (i.e. it is coupled with a pure
     //! solid)
-    bool HasSubmeshes() { return submeshes_; };
-
-    //! Evaluate porosity at surface
-    void CalculateSurfPoro(const std::string& condstring);
+    bool HasSubmeshes() { return submeshes_; }
 
     //! return coupling object
-    ADAPTER::Coupling& FluidStructureCoupling() { return *coupfs_; }
+    ADAPTER::Coupling& FluidStructureCoupling() { return *coupling_fluid_structure_; }
 
    protected:
     //! @name Transfer helpers
@@ -225,10 +212,7 @@ namespace POROELAST
     //! field transform
     Teuchos::RCP<Epetra_Vector> StructureToFluidField(Teuchos::RCP<const Epetra_Vector> iv);
 
-    //! field transform
-    Teuchos::RCP<Epetra_Vector> FluidToStructureField(Teuchos::RCP<const Epetra_Vector> iv);
-
-    //@}
+    //!@}
 
     //! @name Transfer methods
 
@@ -238,30 +222,30 @@ namespace POROELAST
     //! set structure solution on fluid
     void SetStructSolution();
 
-    //@}
+    //!@}
 
     //! Extractor used for constraint structure
-    Teuchos::RCP<LINALG::MapExtractor> consplitter_;
+    Teuchos::RCP<LINALG::MapExtractor> cond_splitter_;
 
     //! Extractor used for poro structure interaction
-    Teuchos::RCP<LINALG::MapExtractor> psiextractor_;
+    Teuchos::RCP<LINALG::MapExtractor> psi_extractor_;
 
     //! helper class for no penetration condition
-    Teuchos::RCP<NoPenetrationConditionHandle> noPenHandle_;
+    Teuchos::RCP<NoPenetrationConditionHandle> nopen_handle_;
 
     //! flag for partial integration condition of porous fluid continuity equation
-    bool partincond_;
+    bool part_int_cond_;
 
     //! flag for pressure coupling condition
-    bool presintcond_;
+    bool pres_int_cond_;
 
     //! flag for additional porosity degree of freedom
-    bool porositydof_;
+    bool porosity_dof_;
 
-    Teuchos::RCP<LINALG::MapExtractor> porositysplitter_;
+    Teuchos::RCP<LINALG::MapExtractor> porosity_splitter_;
 
     //! true if the poroelast problem is only part of a larger problem (like e.g. in FPSI)
-    bool PartOfMultifieldProblem_;
+    bool is_part_of_multifield_problem_;
 
     //! @name Volume Mortar stuff
 
@@ -270,18 +254,16 @@ namespace POROELAST
 
     //! volume coupling (using mortar) adapter
     Teuchos::RCP<::ADAPTER::MortarVolCoupl> volcoupl_;
-    //@}
+    //!@}
 
     //! flag for old time integration
-    // TODO: delete this once unused!!
-    const bool oldstructimint_;
+    const bool oldstructimint_;  // delete this once unused!
 
-    // flag indicating if nitsche contact is active
+    //! flag indicating if nitsche contact is active
     bool nit_contact_;
 
    private:
     //! setup of everything, that is needed for the volumetric coupling
-    // void SetupProxies();
     void SetupCoupling();
 
     //! add dof set of structure/fluid discretization to fluid/structure discretization
@@ -294,7 +276,7 @@ namespace POROELAST
     bool submeshes_;
 
     //! coupling of fluid and structure (whole field)
-    Teuchos::RCP<ADAPTER::Coupling> coupfs_;
+    Teuchos::RCP<ADAPTER::Coupling> coupling_fluid_structure_;
 
     //! @name Underlying fields
 
@@ -304,9 +286,8 @@ namespace POROELAST
     //! underlying fluid of the poro problem
     Teuchos::RCP<::ADAPTER::FluidPoro> fluid_;
 
-    //@}
-
-  };  // PoroBase
+    //!@}
+  };
 
   //! helper class for no penetration condition
   class NoPenetrationConditionHandle
@@ -314,24 +295,24 @@ namespace POROELAST
    public:
     //! create using a Epetra_Comm
     explicit NoPenetrationConditionHandle(std::vector<DRT::Condition*> nopencond)
-        : condIDs_(Teuchos::null),
-          condVector_(Teuchos::null),
-          condRHS_(Teuchos::null),
-          nopencond_(nopencond),
+        : cond_ids_(Teuchos::null),
+          cond_dofs_(Teuchos::null),
+          cond_rhs_(Teuchos::null),
+          nopencond_(std::move(nopencond)),
           nopenetration_(Teuchos::null),
-          hascond_(false),
-          fluidfluidConstraintMatrix_(Teuchos::null),
-          fluidstructureConstraintMatrix_(Teuchos::null),
-          structVelConstraintMatrix_(Teuchos::null)
+          has_cond_(false),
+          fluid_fluid_constraint_matrix_(Teuchos::null),
+          fluid_structure_constraint_matrix_(Teuchos::null),
+          structure_vel_constraint_matrix_(Teuchos::null)
     {
       if (nopencond_.size())
       {
-        hascond_ = true;
-        condIDs_ = Teuchos::rcp(new std::set<int>());
+        has_cond_ = true;
+        cond_ids_ = Teuchos::rcp(new std::set<int>());
       }
-    };
+    }
 
-    ~NoPenetrationConditionHandle(){};
+    ~NoPenetrationConditionHandle() = default;
 
     //! build map containing dofs with no penetration condition (fluid)
     void BuidNoPenetrationMap(const Epetra_Comm& comm, Teuchos::RCP<const Epetra_Map> dofRowMap);
@@ -340,19 +321,19 @@ namespace POROELAST
     void ApplyCondRHS(Teuchos::RCP<Epetra_Vector> iterinc, Teuchos::RCP<Epetra_Vector> rhs);
 
     //! return no penetration map extractor
-    Teuchos::RCP<const LINALG::MapExtractor> Extractor() { return nopenetration_; };
+    Teuchos::RCP<const LINALG::MapExtractor> Extractor() { return nopenetration_; }
 
     //! return vector containing global IDs of dofs with no penetration condition
-    Teuchos::RCP<std::set<int>> CondIDs() { return condIDs_; };
+    Teuchos::RCP<std::set<int>> CondIDs() { return cond_ids_; }
 
     //! return vector containing global IDs of dofs with no penetration condition
-    Teuchos::RCP<Epetra_Vector> CondVector() { return condVector_; };
+    Teuchos::RCP<Epetra_Vector> CondVector() { return cond_dofs_; }
 
     //! check if a no penetration condition exists
-    bool HasCond() { return hascond_; };
+    bool HasCond() { return has_cond_; }
 
     //! return condrhs
-    Teuchos::RCP<Epetra_Vector> RHS() { return condRHS_; };
+    Teuchos::RCP<Epetra_Vector> RHS() { return cond_rhs_; }
 
     //! clear everything that is needed for coupling
     void Clear(POROELAST::coupltype coupltype = POROELAST::undefined);
@@ -368,13 +349,13 @@ namespace POROELAST
 
    private:
     //! set containing global IDs of dofs with no penetration condition
-    Teuchos::RCP<std::set<int>> condIDs_;
+    Teuchos::RCP<std::set<int>> cond_ids_;
 
     //! vector marking dofs with no penetration condition
-    Teuchos::RCP<Epetra_Vector> condVector_;
+    Teuchos::RCP<Epetra_Vector> cond_dofs_;
 
     //! vector containing rhs terms from no penetration condition
-    Teuchos::RCP<Epetra_Vector> condRHS_;
+    Teuchos::RCP<Epetra_Vector> cond_rhs_;
 
     //! vector containing no penetration - conditions
     std::vector<DRT::Condition*> nopencond_;
@@ -383,13 +364,13 @@ namespace POROELAST
     Teuchos::RCP<LINALG::MapExtractor> nopenetration_;
 
     //! flag indicating if a no penetration condition exists
-    bool hascond_;
+    bool has_cond_;
 
     //! @name coupling matrices
-    Teuchos::RCP<LINALG::SparseMatrix> fluidfluidConstraintMatrix_;
-    Teuchos::RCP<LINALG::SparseMatrix> fluidstructureConstraintMatrix_;
-    Teuchos::RCP<LINALG::SparseMatrix> structVelConstraintMatrix_;
-    //@}
+    Teuchos::RCP<LINALG::SparseMatrix> fluid_fluid_constraint_matrix_;
+    Teuchos::RCP<LINALG::SparseMatrix> fluid_structure_constraint_matrix_;
+    Teuchos::RCP<LINALG::SparseMatrix> structure_vel_constraint_matrix_;
+    //!@}
   };
 }  // namespace POROELAST
 

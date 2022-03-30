@@ -9,15 +9,10 @@
 #ifndef FLUIDPORO_H_
 #define FLUIDPORO_H_
 
-/*---------------------------------------------------------------------*
- | headers                                                              |
- *---------------------------------------------------------------------*/
 #include "material.H"
 #include "matpar_parameter.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
-/*---------------------------------------------------------------------*
- *---------------------------------------------------------------------*/
 namespace MAT
 {
   namespace FLUIDPORO
@@ -36,83 +31,78 @@ namespace MAT
     enum PoroFlowPermeabilityFunction
     {
       pf_undefined,
-      const_,
-      kozeny_karman,
+      constant,
+      kozeny_carman,
       const_material_transverse,
       const_material_orthotropic
     };
 
     /*----------------------------------------------------------------------*/
-    /// material parameters for Permeable fluid
-    ///
-    /// This object exists only once for each read Newton fluid.
+    //! material parameters for fluid poro
+    //! This object exists only once for each read Newton fluid.
     class FluidPoro : public Parameter
     {
      public:
-      /// standard constructor
+      //! standard constructor
       FluidPoro(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~FluidPoro() { ; }
+      //! set initial porosity from structural material and calculate
+      //! permeability_correction_factor_
+      void SetInitialPorosity(double initial_porosity);
 
-      /// set inital porosity from structural material and calculate permeabilitycorrectionfactor_
-      void SetInitialPorosity(double initialporosity);
+      //! @name material parameters
+      //!@{
 
-      /// @name material parameters
-      //@{
-
-      /// kinematic or dynamic viscosity
+      //! kinematic or dynamic viscosity
       const double viscosity_;
-      /// density
+      //! density
       const double density_;
-      /// permeability
+      //! permeability
       const double permeability_;
-      /// axial permeability for material transverse isotropy
+      //! axial permeability for material transverse isotropy
       const double axial_permeability_;
-      /// vector of orthotropic permeabilities
+      //! vector of orthotropic permeabilities
       std::vector<double> orthotropic_permeabilities_;
-      /// flow type: Darcy or Darcy-Brinkman
+      //! flow type: Darcy or Darcy-Brinkman
       PoroFlowType type_;
-      /// flag indicating varying permeablity
-      const bool varyingpermeability_;
-      /// permeability function type: Const or Kozeny_Carman
-      PoroFlowPermeabilityFunction permeabilityfunc_;
-      /// a correction factor to ensure the permeability set in the input file
-      double permeabilitycorrectionfactor_;
-      /// initial porosity
-      double initialporosity_;
+      //! flag indicating varying permeability
+      const bool varying_permeability_;
+      //! permeability function type: Const or Kozeny_Carman
+      PoroFlowPermeabilityFunction permeability_func_;
+      //! a correction factor to ensure the permeability set in the input file
+      double permeability_correction_factor_;
+      //! initial porosity
+      double initial_porosity_;
 
-      /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
-
-    };  // class FluidPoro
+      //! create material instance of matching type with my parameters
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+    };
 
   }  // namespace PAR
 
   class FluidPoroType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "FluidPoroType"; }
+    std::string Name() const override { return "FluidPoroType"; }
 
     static FluidPoroType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FluidPoroType instance_;
   };
 
   /*----------------------------------------------------------------------*/
-  /// Wrapper for poro fluid flow material
-  ///
-  /// This object exists (several times) at every element
+  //! Wrapper for poro fluid flow material
+  //! This object exists (several times) at every element
   class FluidPoro : public Material
   {
    public:
-    /// construct empty material object
+    //! construct empty material object
     FluidPoro();
 
-    /// construct the material object given material parameters
+    //! construct the material object given material parameters
     explicit FluidPoro(MAT::PAR::FluidPoro* params);
 
     //! @name Packing and Unpacking
@@ -123,7 +113,7 @@ namespace MAT
      every class implementing ParObject needs a unique id defined at the
      top of drt_parobject.H (this file) and should return it in this method.
      */
-    virtual int UniqueParObjectId() const { return FluidPoroType::Instance().UniqueParObjectId(); }
+    int UniqueParObjectId() const override { return FluidPoroType::Instance().UniqueParObjectId(); }
 
     /*!
      \brief Pack this class so it can be communicated
@@ -135,7 +125,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -149,74 +139,66 @@ namespace MAT
      \param data (in) : vector storing all data to be unpacked into this
      instance.
      */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
-    //@}
+    //!@}
 
-    /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_fluidporo; }
+    //! material type
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_fluidporo; }
 
-    /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new FluidPoro(*this)); }
+    //! return copy of this material object
+    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new FluidPoro(*this)); }
 
-    /// compute reaction tensor - 2D
-    void ComputeReactionTensor(LINALG::Matrix<2, 2>& reaction_tensor, double J, double porosity,
+    //! compute reaction tensor - 2D
+    void ComputeReactionTensor(LINALG::Matrix<2, 2>& reaction_tensor, const double& J,
+        const double& porosity,
         const std::vector<std::vector<double>>& anisotropic_permeability_directions = {}) const;
 
-    /// compute reaction tensor - 3D
-    void ComputeReactionTensor(LINALG::Matrix<3, 3>& reaction_tensor, double J, double porosity,
+    //! compute reaction tensor - 3D
+    void ComputeReactionTensor(LINALG::Matrix<3, 3>& reaction_tensor, const double& J,
+        const double& porosity,
         const std::vector<std::vector<double>>& anisotropic_permeability_directions = {}) const;
 
-    /// compute reaction coefficient
+    //! compute reaction coefficient
     double ComputeReactionCoeff() const;
 
-    /// compute linearization of reaction tensor - 2D
+    //! compute linearization of reaction tensor - 2D
     void ComputeLinMatReactionTensor(LINALG::Matrix<2, 2>& linreac_dphi,
-        LINALG::Matrix<2, 2>& linreac_dJ, double J, double porosity) const;
+        LINALG::Matrix<2, 2>& linreac_dJ, const double& J, const double& porosity) const;
 
-    /// compute linearization of reaction tensor - 3D
+    //! compute linearization of reaction tensor - 3D
     void ComputeLinMatReactionTensor(LINALG::Matrix<3, 3>& linreac_dphi,
-        LINALG::Matrix<3, 3>& linreac_dJ, double J, double porosity) const;
+        LINALG::Matrix<3, 3>& linreac_dJ, const double& J, const double& porosity) const;
 
-    /// effective viscosity (zero for Darcy and greater than zero for Darcy-Brinkman)
+    //! effective viscosity (zero for Darcy and greater than zero for Darcy-Brinkman)
     double EffectiveViscosity() const;
 
-    /// return type
+    //! return type
     PAR::PoroFlowType Type() const { return params_->type_; }
 
-    /// return viscosity
+    //! return viscosity
     double Viscosity() const { return params_->viscosity_; }
 
-    /// return density
-    double Density() const { return params_->density_; }
+    //! return density
+    double Density() const override { return params_->density_; }
 
-    /// return permeability values for orthotropic permeability tensor
-    const std::vector<double>& OrthotropicPermeabilities() const
-    {
-      return params_->orthotropic_permeabilities_;
-    }
-
-    /// return permeabilityfunction
+    //! return permeability function
     PAR::PoroFlowPermeabilityFunction PermeabilityFunction() const
     {
-      return params_->permeabilityfunc_;
+      return params_->permeability_func_;
     }
 
-    /// evaluate material law
-    void EvaluateViscStress(LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        const LINALG::Matrix<6, 1>* glstrain, const int gp, Teuchos::ParameterList& params);
+    //! Return quick accessible material parameter data
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
-    /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
-
-    // flag indicating a varying permeability
-    bool VaryingPermeablity() const { return params_->varyingpermeability_; }
+    //! flag indicating a varying permeability
+    bool VaryingPermeability() const { return params_->varying_permeability_; }
 
    private:
-    /// my material parameters
+    //! my material parameters
     MAT::PAR::FluidPoro* params_;
 
-    /// anisotropy strategy (isotropy, transverse isotropy, or orthotropy)
+    //! anisotropy strategy (isotropy, transverse isotropy, or orthotropy)
     Teuchos::RCP<MAT::FLUIDPORO::PoroAnisotropyStrategyBase> anisotropy_strategy_;
   };
 

@@ -12,8 +12,6 @@
 
 #include "poro_monolithicmeshtying.H"
 
-#include <Teuchos_TimeMonitor.hpp>
-
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_adapter/adapter_coupling.H"
@@ -25,13 +23,7 @@
 #include "../drt_structure/stru_aux.H"
 
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_blocksparsematrix.H"
 
-
-/*----------------------------------------------------------------------*
- | constructor                                                  2015    |
- *----------------------------------------------------------------------*/
 POROELAST::MonolithicMeshtying::MonolithicMeshtying(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : Monolithic(comm, timeparams), normrhsfactiven_(0.0), tolfres_ncoup_(0.0)
@@ -49,19 +41,15 @@ POROELAST::MonolithicMeshtying::MonolithicMeshtying(
 
   // mesh tying not yet works for non-matching structure and fluid discretizations
   if (not matchinggrid_)
+  {
     dserror(
         "The coupling algorithm 'poro_monolithicmeshtying' does not yet work for non-matching "
         "discretizations!");
+  }
 }
 
-/*----------------------------------------------------------------------*
- | setup system (called in poro_dyn.cpp)                         2015   |
- *----------------------------------------------------------------------*/
-void POROELAST::MonolithicMeshtying::SetupSystem() { Monolithic::SetupSystem(); }  // SetupSystem()
+void POROELAST::MonolithicMeshtying::SetupSystem() { Monolithic::SetupSystem(); }
 
-/*----------------------------------------------------------------------*
- | Evaluate override for meshtying matrices                     2015    |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicMeshtying::Evaluate(Teuchos::RCP<const Epetra_Vector> x, bool firstiter)
 {
   // evaluate monolithic system for newton iterations
@@ -120,23 +108,14 @@ void POROELAST::MonolithicMeshtying::Evaluate(Teuchos::RCP<const Epetra_Vector> 
   // because the mesh tying interface stays the same, the map extractors for a separate convergence
   // check of the mesh tying fluid coupling condition is only build once
   if ((iter_ == 1) and (Step() == 1)) SetupExtractor();
+}
 
-  return;
-}  // Evaluate()
-
-/*----------------------------------------------------------------------*
- | Update override for meshtying matrices and LMP               2015    |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicMeshtying::Update()
 {
   Monolithic::Update();
   mortar_adapter_->UpdatePoroMt();
-  return;
-}  // POROELAST::MonolithicMeshtying::Update()
+}
 
-/*----------------------------------------------------------------------*
-| Recover the Lagrange multipliers after newton step            2015    |
-*-----------------------------------------------------------------------*/
 void POROELAST::MonolithicMeshtying::RecoverLagrangeMultiplierAfterNewtonStep(
     Teuchos::RCP<const Epetra_Vector> x)
 {
@@ -152,14 +131,8 @@ void POROELAST::MonolithicMeshtying::RecoverLagrangeMultiplierAfterNewtonStep(
   Teuchos::RCP<Epetra_Vector> tmpfx = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*fx));
 
   mortar_adapter_->RecoverFluidLMPoroMt(tmpsx, tmpfx);
+}
 
-  return;
-}  // POROELAST::MonolithicMeshtying::RecoverLagrangeMultiplierAfterNewtonStep
-
-// mostly copied from Monolithic Method
-/*----------------------------------------------------------------------*
- |   evaluate poroelastic meshtying specific constraint            2015 |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicMeshtying::BuildConvergenceNorms()
 {
   //------------------------------------------------------------ build residual force norms
@@ -185,7 +158,7 @@ void POROELAST::MonolithicMeshtying::BuildConvergenceNorms()
   // pressure is treated separately anyway
   rhs_fpres = FluidField()->ExtractPressurePart(rhs_f);
 
-  if (porositydof_)
+  if (porosity_dof_)
   {
     dserror("porosity dof not implemented for poro_monolithicmeshtying");
     // consult method of mother class for further hints how to do this
@@ -224,13 +197,8 @@ void POROELAST::MonolithicMeshtying::BuildConvergenceNorms()
   normincfluid_ = UTILS::CalculateVectorNorm(vectornorminc_, interincf);
   normincfluidvel_ = UTILS::CalculateVectorNorm(vectornorminc_, interincfvel);
   normincfluidpres_ = UTILS::CalculateVectorNorm(vectornorminc_, interincfpres);
+}
 
-  return;
-}  // POROELAST::MonolithicMeshtying::BuildConvergenceNorms()
-
-/*----------------------------------------------------------------------*
- |   setup meshtying activedof extractors                          2015 |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicMeshtying::SetupExtractor()
 {
   // some maps and vectors
@@ -245,19 +213,12 @@ void POROELAST::MonolithicMeshtying::SetupExtractor()
   factivenmapcomplement = LINALG::SplitMap(*FluidField()->VelocityRowMap(), *factivenmap);
 
   // write things into the vector for ->Setup
-  fluidveldofmapvec.push_back(factivenmap);
-  fluidveldofmapvec.push_back(factivenmapcomplement);
+  fluidveldofmapvec.emplace_back(factivenmap);
+  fluidveldofmapvec.emplace_back(factivenmapcomplement);
 
   fvelactiverowdofmap_->Setup(*FluidField()->VelocityRowMap(), fluidveldofmapvec);
+}
 
-  return;
-}  // POROELAST::MonolithicMeshtying::SetupExtractor()
-
-// mostly copied from Monolithic method
-/*----------------------------------------------------------------------*
- | check convergence of Newton iteration (public)                       |
- |         with separate check of the meshtying constraint       2015   |
- *----------------------------------------------------------------------*/
 bool POROELAST::MonolithicMeshtying::Converged()
 {
   // check for single norms
@@ -305,14 +266,9 @@ bool POROELAST::MonolithicMeshtying::Converged()
   else
     dserror("Something went terribly wrong with binary operator!");
 
-  // return things
   return conv;
-}  // POROELAST::MonolithicMeshtying::Converged()
+}
 
-/*----------------------------------------------------------------------*
- | setup solver for monolithic system                                   |
- |            with exisiting meshtying interface               2015     |
- *----------------------------------------------------------------------*/
 bool POROELAST::MonolithicMeshtying::SetupSolver()
 {
   Monolithic::SetupSolver();
@@ -323,12 +279,8 @@ bool POROELAST::MonolithicMeshtying::SetupSolver()
   tolfres_ncoup_ = poroelastdyn.get<double>("TOLRES_NCOUP");
 
   return true;
-}  // POROELAST::Monolithic::SetupSolver()
+}
 
-/*----------------------------------------------------------------------*
- | print Newton-Raphson iteration to screen and error file              |
- | originally by lw 12/07, tk 01/08                           2015      |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicMeshtying::PrintNewtonIterHeaderStream(std::ostringstream& oss)
 {
   oss << "------------------------------------------------------------" << std::endl;
@@ -353,7 +305,7 @@ void POROELAST::MonolithicMeshtying::PrintNewtonIterHeaderStream(std::ostringstr
     case INPAR::POROELAST::convnorm_abs_singlefields:
       oss << std::setw(15) << "abs-s-res"
           << "(" << std::setw(5) << std::setprecision(2) << tolfres_struct_ << ")";
-      if (porositydof_)
+      if (porosity_dof_)
         oss << std::setw(15) << "abs-poro-res"
             << "(" << std::setw(5) << std::setprecision(2) << tolfres_porosity_ << ")";
       oss << std::setw(15) << "abs-fvel-res"
@@ -374,11 +326,10 @@ void POROELAST::MonolithicMeshtying::PrintNewtonIterHeaderStream(std::ostringstr
       oss << std::setw(15) << "abs-inc"
           << "(" << std::setw(5) << std::setprecision(2) << tolinc_ << ")";
       break;
-      break;
     case INPAR::POROELAST::convnorm_abs_singlefields:
       oss << std::setw(15) << "abs-s-inc"
           << "(" << std::setw(5) << std::setprecision(2) << tolinc_struct_ << ")";
-      if (porositydof_)
+      if (porosity_dof_)
         oss << std::setw(15) << "abs-poro-inc"
             << "(" << std::setw(5) << std::setprecision(2) << tolinc_porosity_ << ")";
       oss << std::setw(15) << "abs-fvel-inc"
@@ -390,15 +341,8 @@ void POROELAST::MonolithicMeshtying::PrintNewtonIterHeaderStream(std::ostringstr
       dserror("Unknown or undefined convergence form for increment.");
       break;
   }
+}
 
-  return;
-}  // POROELAST::MonolithicMeshtying::PrintNewtonIterHeaderStream
-
-
-/*----------------------------------------------------------------------*
- | print Newton-Raphson iteration to screen                             |
- | originally by lw 12/07, tk 01/08                          2015       |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicMeshtying::PrintNewtonIterTextStream(std::ostringstream& oss)
 {
   // enter converged state etc
@@ -437,7 +381,7 @@ void POROELAST::MonolithicMeshtying::PrintNewtonIterTextStream(std::ostringstrea
   {
     case INPAR::POROELAST::convnorm_abs_singlefields:
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhsstruct_;
-      if (porositydof_)
+      if (porosity_dof_)
         oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhsporo_;
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhsfluidvel_;
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhsfluidpres_;
@@ -454,7 +398,7 @@ void POROELAST::MonolithicMeshtying::PrintNewtonIterTextStream(std::ostringstrea
   {
     case INPAR::POROELAST::convnorm_abs_singlefields:
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normincstruct_;
-      if (porositydof_)
+      if (porosity_dof_)
         oss << std::setw(22) << std::setprecision(5) << std::scientific << normincporo_;
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normincfluidvel_;
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normincfluidpres_;
@@ -465,5 +409,4 @@ void POROELAST::MonolithicMeshtying::PrintNewtonIterTextStream(std::ostringstrea
       dserror("Unknown or undefined convergence form for single field increment.");
       break;
   }
-
-}  // POROELAST::MonolithicMeshtying::PrintNewtonIterTextStream()
+}

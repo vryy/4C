@@ -1553,7 +1553,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::GetEl
 
     // calculate reaction coefficient
     reacoeff_ = actmat->ComputeReactionCoeff() *
-                dynamic_cast<MAT::PAR::FluidPoro*>(actmat->Parameter())->initialporosity_;
+                dynamic_cast<MAT::PAR::FluidPoro*>(actmat->Parameter())->initial_porosity_;
   }
   else if (material->MaterialType() == INPAR::MAT::m_matlist)
   {

@@ -20,31 +20,28 @@ namespace FLD
   class TimIntPoro : public virtual FluidImplicitTimeInt
   {
    public:
-    /// Standard Constructor
+    //! Standard Constructor
     TimIntPoro(const Teuchos::RCP<DRT::Discretization>& actdis,
         const Teuchos::RCP<LINALG::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-    /// Destructor
-    virtual ~TimIntPoro();
-
     /*!
     \brief initialization
 
     */
-    virtual void Init();
+    void Init() override;
 
     /*!
     \brief call elements to calculate system matrix/rhs and assemble
 
     */
-    virtual void AssembleMatAndRHS();
+    void AssembleMatAndRHS() override;
 
     /*!
     \brief read restart data
     */
-    virtual void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
     //! @name Set general parameter in class f3Parameter
     /*!
@@ -54,25 +51,25 @@ namespace FLD
            and in the fluid boundary element*/
     virtual void SetElementCustomParameter();
 
-    /// set the initial porosity field
-    virtual void SetInitialPorosityField(
-        const INPAR::POROELAST::InitialField,  ///< type of initial field
-        const int startfuncno                  ///< number of spatial function
-    );
+    //! set the initial porosity field
+    void SetInitialPorosityField(
+        const INPAR::POROELAST::InitialField init,  //!< type of initial field
+        const int startfuncno                       //!< number of spatial function
+        ) override;
 
     /*!
     \brief update iterative increment
 
     */
-    virtual void UpdateIterIncrementally(
+    void UpdateIterIncrementally(
         Teuchos::RCP<const Epetra_Vector> vel  //!< input residual velocities
-    );
+        ) override;
 
     /*!
     \brief update configuration and output to file/screen
 
     */
-    virtual void Output();
+    void Output() override;
 
     /*!
     \brief Do some poro-specific stuff in AssembleMatAndRHS
@@ -84,7 +81,7 @@ namespace FLD
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
     */
-    virtual void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams);
+    void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams) override;
 
     /*!
 
@@ -93,7 +90,7 @@ namespace FLD
            and in the fluid boundary element
 
     */
-    virtual void TimIntCalculateAcceleration();
+    void TimIntCalculateAcceleration() override;
 
     /*!
 
@@ -102,7 +99,7 @@ namespace FLD
            and in the fluid boundary element
 
     */
-    virtual void SetElementGeneralFluidParameter();
+    void SetElementGeneralFluidParameter() override;
 
     /*!
 
@@ -111,15 +108,15 @@ namespace FLD
            and in the fluid boundary element
 
     */
-    virtual void SetElementTurbulenceParameters();
+    void SetElementTurbulenceParameters() override;
 
 
    protected:
-    /// initial porosity (poroelasticity)
-    Teuchos::RCP<Epetra_Vector> initporosityfield_;
+    //! initial porosity (poroelasticity)
+    Teuchos::RCP<Epetra_Vector> init_porosity_field_;
 
    private:
-  };  // class TimIntPoro
+  };
 
 }  // namespace FLD
 

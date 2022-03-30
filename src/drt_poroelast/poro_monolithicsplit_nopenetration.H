@@ -12,11 +12,6 @@
 #ifndef PORO_MONOLITHICSPLIT_NOPENETRATION_H_
 #define PORO_MONOLITHICSPLIT_NOPENETRATION_H_
 
-
-/*----------------------------------------------------------------------*
- | headers                                                              |
- *----------------------------------------------------------------------*/
-
 #include "poro_monolithicsplit.H"
 
 namespace LINALG
@@ -31,13 +26,9 @@ namespace ADAPTER
   class CouplingNonLinMortar;
 }
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
-
 namespace POROELAST
 {
-  /// monolithic structure split for condensing DOFs, when using the brinkman-equation
+  //! monolithic structure split for condensing DOFs, when using the brinkman-equation
   class MonolithicSplitNoPenetration : public MonolithicSplit
   {
    public:
@@ -45,71 +36,68 @@ namespace POROELAST
     explicit MonolithicSplitNoPenetration(
         const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
-    //! virtual destructor to support polymorph destruction
-    virtual ~MonolithicSplitNoPenetration(){};
-
     //! Setup the monolithic system
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
-    /// setup composed right hand side from field solvers
-    virtual void SetupRHS(bool firstcall = false);
+    //! setup composed right hand side from field solvers
+    void SetupRHS(bool firstcall = false) override;
 
-    /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
+    //! setup composed system matrix from field solvers
+    void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) override;
 
     //! take current results for converged and save for next time step
-    virtual void Update();
+    void Update() override;
 
-    /// read restart data
-    virtual void ReadRestart(const int step);
+    //! read restart data
+    void ReadRestart(const int step) override;
 
     //! contains text to PrintNewtonIter
-    virtual void PrintNewtonIterTextStream(std::ostringstream& oss);
+    void PrintNewtonIterTextStream(std::ostringstream& oss) override;
 
     //! contains header to PrintNewtonIter
-    virtual void PrintNewtonIterHeaderStream(std::ostringstream& oss);
+    void PrintNewtonIterHeaderStream(std::ostringstream& oss) override;
 
 
    protected:
     //! @name Apply current field state to system
 
     //! Evaluate mechanical-fluid system matrix
-    virtual void ApplyStrCouplMatrix(
+    void ApplyStrCouplMatrix(
         Teuchos::RCP<LINALG::SparseOperator> k_sf  //!< mechanical-fluid stiffness matrix
-    );
+        ) override;
 
     //! Evaluate fluid-mechanical system matrix
-    virtual void ApplyFluidCouplMatrix(
+    void ApplyFluidCouplMatrix(
         Teuchos::RCP<LINALG::SparseOperator> k_fs  //!< fluid-mechanical tangent matrix
-    );
+        ) override;
 
-    /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each
-    /// iteration step (i.e. condensed forces onto the structure) needed for rhs in next newton step
-    virtual void RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RCP<const Epetra_Vector> x);
+    //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each
+    //! iteration step (i.e. condensed forces onto the structure) needed for rhs in next newton step
+    void RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RCP<const Epetra_Vector> x) override;
 
-    /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time
-    /// step (i.e. condensed forces onto the structure) needed for rhs in next time step
-    virtual void RecoverLagrangeMultiplierAfterTimeStep();
+    //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time
+    //! step (i.e. condensed forces onto the structure) needed for rhs in next time step
+    void RecoverLagrangeMultiplierAfterTimeStep() override;
 
     //! output
-    virtual void Output(bool forced_writerestart = false);
+    void Output(bool forced_writerestart = false) override;
 
     //! setup of coupling object and system matrices
-    virtual void SetupCouplingAndMatrices();
+    void SetupCouplingAndMatrices() override;
 
     //! start a new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     //! convergence check for Newton solver
-    virtual void BuildConvergenceNorms();
+    void BuildConvergenceNorms() override;
 
-    //@}
+    //!@}
    private:
     //! build block vector from field vectors, e.g. rhs, increment vector
     void SetupVector(Epetra_Vector& f,         //!< vector of length of all dofs
         Teuchos::RCP<const Epetra_Vector> sv,  //!< vector containing only structural dofs
         Teuchos::RCP<const Epetra_Vector> fv   //!< vector containing only fluid dofs
-    );
+        ) override;
 
     //! @name Global matrices and vectors
 
@@ -142,9 +130,9 @@ namespace POROELAST
     //! iteration step
     Teuchos::RCP<Epetra_Vector> lambdanp_;
 
-    //@}
+    //!@}
 
-    /// @name Some quantities to recover the Langrange multiplier at the end of each iteration step
+    //! @name Some quantities to recover the Langrange multiplier at the end of each iteration step
 
     //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current iteration \f$i+1\f$
     Teuchos::RCP<const LINALG::SparseMatrix> fgicur_;
@@ -160,13 +148,13 @@ namespace POROELAST
 
     Teuchos::RCP<Epetra_Vector> rhs_fgcur_;
 
-    //@}
+    //!@}
 
     //! @name Iterative solution technique
 
     //!< norm of no-penetration constraint
     double normrhs_nopenetration_;
-    //@}
+    //!@}
 
     Teuchos::RCP<ADAPTER::CouplingNonLinMortar> mortar_adapter_;
   };

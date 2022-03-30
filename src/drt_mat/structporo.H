@@ -9,16 +9,12 @@
 #ifndef STRUCTPORO_H_
 #define STRUCTPORO_H_
 
-/*---------------------------------------------------------------------*
- | headers                                                              |
- *---------------------------------------------------------------------*/
 #include "matpar_parameter.H"
 #include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT
 {
-  // forward declaration
   class StructPoro;
 
   namespace PAR
@@ -30,30 +26,29 @@ namespace MAT
       friend class MAT::StructPoro;
 
      public:
-      /// standard constructor
+      //! standard constructor
       StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// create material instance of matching type with my parameters
+      //! create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
-      /// @name material parameters
-      //@{
+      //! @name material parameters
+      //!@{
 
-      /// material ID of sub-material
+      //! material ID of sub-material
       int matid_;
 
-      /// initial porosity
-      int porolawID_;
+      //! poro law ID
+      int poro_law_ID_;
 
-      /// initial porosity
-      double initporosity_;
+      //! initial porosity
+      double init_porosity_;
 
-      //@}
+      //!@}
 
-      // implementation of porosity law
-      PoroLaw* porolaw_;
-
-    };  // class StructPoro
+      //! implementation of porosity law
+      PoroLaw* poro_law_;
+    };
 
   }  // namespace PAR
 
@@ -62,7 +57,7 @@ namespace MAT
    public:
     std::string Name() const override { return "StructPoroType"; }
 
-    static StructPoroType& Instance() { return instance_; };
+    static StructPoroType& Instance() { return instance_; }
 
     DRT::ParObject* Create(const std::vector<char>& data) override;
 
@@ -71,9 +66,9 @@ namespace MAT
   };
 
   /*----------------------------------------------------------------------*/
-  /// Wrapper for StructPoro material
-  ///
-  /// This object exists (several times) at every element
+  //! Wrapper for StructPoro material
+  //!
+  //! This object exists (several times) at every element
 
   /*!
     The idea is to use any material formulation within the poro framework.
@@ -96,16 +91,14 @@ namespace MAT
     wise saved porosity must not be used during simulation as it is not
     guaranteed (and actually not the case) that the gauss point numbering
     is the same for every element (especially for e.g. fluid and solid elements).
-
-   \author vuong 10/14
    */
   class StructPoro : public So3Material
   {
    public:
-    /// construct empty material object
+    //! construct empty material object
     StructPoro();
 
-    /// construct the material object given material parameters
+    //! construct the material object given material parameters
     explicit StructPoro(MAT::PAR::StructPoro* params);
 
     //! @name Packing and Unpacking
@@ -147,86 +140,86 @@ namespace MAT
      */
     void Unpack(const std::vector<char>& data) override;
 
-    //@}
+    //!@}
 
-    /// material type
+    //! material type
     INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_structporo; }
 
-    /// poro law type
+    //! poro law type
     virtual INPAR::MAT::MaterialType PoroLawType() const;
 
-    /// return inverse bulkmodulus (=compressibility)
-    double InvBulkmodulus() const;
+    //! return inverse bulk modulus (=compressibility)
+    double InvBulkModulus() const;
 
-    /// check if element kinematics and material kinematics are compatible
+    //! check if element kinematics and material kinematics are compatible
     void ValidKinematics(INPAR::STR::KinemType kinem) override { mat_->ValidKinematics(kinem); }
 
-    /// return material
+    //! return material
     Teuchos::RCP<MAT::Material> GetMaterial() const { return mat_; }
 
-    /// return material ID
+    //! return material ID
     int MatID() const { return params_->matid_; }
 
-    /// return porosity average (for post processing only!)
+    //! return porosity average (for post processing only!)
     double PorosityAv() const;
 
-    /// return initial porosity
-    double Initporosity() const { return params_->initporosity_; }
+    //! return initial porosity
+    double InitPorosity() const { return params_->init_porosity_; }
 
-    /// return time derivative of reference porosity (only nonzero with reaction)
+    //! return time derivative of reference porosity (only nonzero with reaction)
     virtual double RefPorosityTimeDeriv() const { return 0.0; }
 
-    /// compute current porosity and save it
-    virtual void ComputePorosity(Teuchos::ParameterList& params,  ///< (i) element parameter list
-        double press,                                             ///< (i) pressure at gauss point
-        double J,          ///< (i) determinant of jacobian at gauss point
-        int gp,            ///< (i) number of current gauss point
-        double& porosity,  ///< (o) porosity at gauss point
-        double* dphi_dp,   ///< (o) first derivative of porosity w.r.t. pressure at gauss point
-        double* dphi_dJ,   ///< (o) first derivative of porosity w.r.t. jacobian at gauss point
+    //! compute current porosity and save it
+    virtual void ComputePorosity(Teuchos::ParameterList& params,  //!< (i) element parameter list
+        double press,                                             //!< (i) pressure at gauss point
+        double J,          //!< (i) determinant of jacobian at gauss point
+        int gp,            //!< (i) number of current gauss point
+        double& porosity,  //!< (o) porosity at gauss point
+        double* dphi_dp,   //!< (o) first derivative of porosity w.r.t. pressure at gauss point
+        double* dphi_dJ,   //!< (o) first derivative of porosity w.r.t. jacobian at gauss point
         double*
-            dphi_dJdp,  ///< (o) derivative of porosity w.r.t. pressure and jacobian at gauss point
-        double* dphi_dJJ,  ///< (o) second derivative of porosity w.r.t. jacobian at gauss point
-        double* dphi_dpp,  ///< (o) second derivative of porosity w.r.t. pressure at gauss point
+            dphi_dJdp,  //!< (o) derivative of porosity w.r.t. pressure and jacobian at gauss point
+        double* dphi_dJJ,  //!< (o) second derivative of porosity w.r.t. jacobian at gauss point
+        double* dphi_dpp,  //!< (o) second derivative of porosity w.r.t. pressure at gauss point
         bool save = true);
 
-    /// compute current porosity and save it
-    void ComputePorosity(Teuchos::ParameterList& params,  ///< (i) element parameter list
-        double press,                                     ///< (i) pressure at gauss point
-        double J,          ///< (i) determinant of jacobian at gauss point
-        int gp,            ///< (i) number of current gauss point
-        double& porosity,  ///< (o) porosity at gauss point
+    //! compute current porosity and save it
+    void ComputePorosity(Teuchos::ParameterList& params,  //!< (i) element parameter list
+        double press,                                     //!< (i) pressure at gauss point
+        double J,          //!< (i) determinant of jacobian at gauss point
+        int gp,            //!< (i) number of current gauss point
+        double& porosity,  //!< (o) porosity at gauss point
         bool save = true);
 
-    /// compute current surface porosity and save it
-    void ComputeSurfPorosity(Teuchos::ParameterList& params,  ///< (i) element parameter list
-        double press,                                         ///< (i) pressure at gauss point
-        double J,           ///< (i) determinant of jacobian at gauss point
-        const int surfnum,  ///< (i) number of surface
-        int gp,             ///< (i) number of current gauss point
-        double& porosity,   ///< (o) porosity at gauss point
-        double* dphi_dp,    ///< (o) first derivative of porosity w.r.t. pressure at gauss point
-        double* dphi_dJ,    ///< (o) first derivative of porosity w.r.t. jacobian at gauss point
+    //! compute current surface porosity and save it
+    void ComputeSurfPorosity(Teuchos::ParameterList& params,  //!< (i) element parameter list
+        double press,                                         //!< (i) pressure at gauss point
+        double J,           //!< (i) determinant of jacobian at gauss point
+        const int surfnum,  //!< (i) number of surface
+        int gp,             //!< (i) number of current gauss point
+        double& porosity,   //!< (o) porosity at gauss point
+        double* dphi_dp,    //!< (o) first derivative of porosity w.r.t. pressure at gauss point
+        double* dphi_dJ,    //!< (o) first derivative of porosity w.r.t. jacobian at gauss point
         double*
-            dphi_dJdp,  ///< (o) derivative of porosity w.r.t. pressure and jacobian at gauss point
-        double* dphi_dJJ,  ///< (o) second derivative of porosity w.r.t. jacobian at gauss point
-        double* dphi_dpp,  ///< (o) second derivative of porosity w.r.t. pressure at gauss point
+            dphi_dJdp,  //!< (o) derivative of porosity w.r.t. pressure and jacobian at gauss point
+        double* dphi_dJJ,  //!< (o) second derivative of porosity w.r.t. jacobian at gauss point
+        double* dphi_dpp,  //!< (o) second derivative of porosity w.r.t. pressure at gauss point
         bool save = true);
 
-    /// compute current surface porosity and save it
-    void ComputeSurfPorosity(Teuchos::ParameterList& params,  ///< (i) element parameter list
-        double press,                                         ///< (i) pressure at gauss point
-        double J,           ///< (i) determinant of jacobian at gauss point
-        const int surfnum,  ///< (i) number of surface
-        int gp,             ///< (i) number of current gauss point
-        double& porosity,   ///< (o) porosity at gauss point
+    //! compute current surface porosity and save it
+    void ComputeSurfPorosity(Teuchos::ParameterList& params,  //!< (i) element parameter list
+        double press,                                         //!< (i) pressure at gauss point
+        double J,           //!< (i) determinant of jacobian at gauss point
+        const int surfnum,  //!< (i) number of surface
+        int gp,             //!< (i) number of current gauss point
+        double& porosity,   //!< (o) porosity at gauss point
         bool save = true);
 
-    /// return copy of this material object
+    //! return copy of this material object
     Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new StructPoro(*this)); }
 
-    /// Initialize internal variables
-    virtual void PoroSetup(int numgp,  ///< number of Gauss points
+    //! Initialize internal variables
+    virtual void PoroSetup(int numgp,  //!< number of Gauss points
         DRT::INPUT::LineDefinition* linedef);
 
     /*!
@@ -250,31 +243,31 @@ namespace MAT
         LINALG::Matrix<4, 1>& couplstress) const;
 
     //! evaluate constitutive relation for porosity and compute derivatives
-    virtual void ConstitutiveDerivatives(Teuchos::ParameterList& params,  ///< (i) parameter list
-        double press,        ///< (i) fluid pressure at gauss point
-        double J,            ///< (i) Jacobian determinant at gauss point
-        double porosity,     ///< (i) porosity at gauss point
-        double* dW_dp,       ///< (o) derivative of potential w.r.t. pressure
-        double* dW_dphi,     ///< (o) derivative of potential w.r.t. porosity
-        double* dW_dJ,       ///< (o) derivative of potential w.r.t. jacobian
-        double* dW_dphiref,  ///< (o) derivative of potential w.r.t. reference porosity
-        double* W            ///< (o) inner potential
+    virtual void ConstitutiveDerivatives(Teuchos::ParameterList& params,  //!< (i) parameter list
+        double press,        //!< (i) fluid pressure at gauss point
+        double J,            //!< (i) Jacobian determinant at gauss point
+        double porosity,     //!< (i) porosity at gauss point
+        double* dW_dp,       //!< (o) derivative of potential w.r.t. pressure
+        double* dW_dphi,     //!< (o) derivative of potential w.r.t. porosity
+        double* dW_dJ,       //!< (o) derivative of potential w.r.t. jacobian
+        double* dW_dphiref,  //!< (o) derivative of potential w.r.t. reference porosity
+        double* W            //!< (o) inner potential
     );
 
     //! evaluate constitutive relation for porosity and compute derivatives using reference porosity
-    void ConstitutiveDerivatives(Teuchos::ParameterList& params,  ///< (i) parameter list
-        double press,        ///< (i) fluid pressure at gauss point
-        double J,            ///< (i) Jacobian determinant at gauss point
-        double porosity,     ///< (i) porosity at gauss point
-        double refporosity,  ///< (i) porosity at gauss point
-        double* dW_dp,       ///< (o) derivative of potential w.r.t. pressure
-        double* dW_dphi,     ///< (o) derivative of potential w.r.t. porosity
-        double* dW_dJ,       ///< (o) derivative of potential w.r.t. jacobian
-        double* dW_dphiref,  ///< (o) derivative of potential w.r.t. reference porosity
-        double* W            ///< (o) inner potential
+    void ConstitutiveDerivatives(Teuchos::ParameterList& params,  //!< (i) parameter list
+        double press,        //!< (i) fluid pressure at gauss point
+        double J,            //!< (i) Jacobian determinant at gauss point
+        double porosity,     //!< (i) porosity at gauss point
+        double refporosity,  //!< (i) porosity at gauss point
+        double* dW_dp,       //!< (o) derivative of potential w.r.t. pressure
+        double* dW_dphi,     //!< (o) derivative of potential w.r.t. porosity
+        double* dW_dJ,       //!< (o) derivative of potential w.r.t. jacobian
+        double* dW_dphiref,  //!< (o) derivative of potential w.r.t. reference porosity
+        double* W            //!< (o) inner potential
     );
 
-    /// Return quick accessible material parameter data
+    //! Return quick accessible material parameter data
     MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //! @name Evaluation methods
@@ -284,13 +277,13 @@ namespace MAT
         int gp, int EleID) override
     {
       mat_->Evaluate(defgrd, glstrain, params, stress, cmat, gp, EleID);
-    };
+    }
 
     void StrainEnergy(
         const LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int EleID) override
     {
       mat_->StrainEnergy(glstrain, psi, gp, EleID);
-    };
+    }
 
     void EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
         LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat, double* density,
@@ -301,7 +294,7 @@ namespace MAT
     {
       mat_->EvaluateGEMM(stress, cmat, density, glstrain_m, glstrain_new, glstrain_old, rcg_new,
           rcg_old, gp, eleGID);
-    };
+    }
 
     void EvaluateCauchyNDirAndDerivatives(const LINALG::Matrix<3, 3>& defgrd,
         const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
@@ -317,9 +310,9 @@ namespace MAT
           d2_cauchyndir_dF_dT);
     }
 
-    //@}
+    //!@}
 
-    /// Return material density (if provided by the specific material)
+    //! Return material density (if provided by the specific material)
     double Density() const override;
     virtual double DensitySolidPhase() const;
 
@@ -331,15 +324,15 @@ namespace MAT
       // setup the underlying material
       // Note: poro material itself is setup when calling PoroSetup()
       mat_->Setup(numgp, linedef);
-    };
+    }
 
-    void Update() override { mat_->Update(); };
+    void Update() override { mat_->Update(); }
 
-    void ResetStep() override { mat_->ResetStep(); };
+    void ResetStep() override { mat_->ResetStep(); }
 
-    void ResetAll(int numgp) override { mat_->ResetAll(numgp); };
+    void ResetAll(int numgp) override { mat_->ResetAll(numgp); }
 
-    //@}
+    //!@}
 
     //! @name Visualization methods
 
@@ -347,40 +340,40 @@ namespace MAT
 
     bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
-    //@}
+    //!@}
 
    protected:
-    /// compute current porosity and save it
+    //! compute current porosity and save it
     void ComputePorosity(
-        const double& refporosity,  ///< (i) initial/reference porosity at gauss point
-        const double& press,        ///< (i) pressure at gauss point
-        const double& J,            ///< (i) determinant of jacobian at gauss point
-        const int& gp,              ///< (i) number of current gauss point
-        double& porosity,           ///< (o) porosity at gauss point
-        double* dphi_dp,  ///< (o) first derivative of porosity w.r.t. pressure at gauss point
-        double* dphi_dJ,  ///< (o) first derivative of porosity w.r.t. jacobian at gauss point
+        const double& refporosity,  //!< (i) initial/reference porosity at gauss point
+        const double& press,        //!< (i) pressure at gauss point
+        const double& J,            //!< (i) determinant of jacobian at gauss point
+        const int& gp,              //!< (i) number of current gauss point
+        double& porosity,           //!< (o) porosity at gauss point
+        double* dphi_dp,  //!< (o) first derivative of porosity w.r.t. pressure at gauss point
+        double* dphi_dJ,  //!< (o) first derivative of porosity w.r.t. jacobian at gauss point
         double*
-            dphi_dJdp,  ///< (o) derivative of porosity w.r.t. pressure and jacobian at gauss point
-        double* dphi_dJJ,      ///< (o) second derivative of porosity w.r.t. jacobian at gauss point
-        double* dphi_dpp,      ///< (o) second derivative of porosity w.r.t. pressure at gauss point
-        double* dphi_dphiref,  ///< (o) derivative of porosity w.r.t. reference porosity (only
-                               ///< nonzero with reaction)
+            dphi_dJdp,  //!< (o) derivative of porosity w.r.t. pressure and jacobian at gauss point
+        double* dphi_dJJ,      //!< (o) second derivative of porosity w.r.t. jacobian at gauss point
+        double* dphi_dpp,      //!< (o) second derivative of porosity w.r.t. pressure at gauss point
+        double* dphi_dphiref,  //!< (o) derivative of porosity w.r.t. reference porosity (only
+                               //!< nonzero with reaction)
         bool save = true);
 
-    /// my material parameters
+    //! my material parameters
     MAT::PAR::StructPoro* params_;
 
-    /// actual material
+    //! actual material
     Teuchos::RCP<MAT::So3Material> mat_;
 
-    /// porosity at gauss points
+    //! porosity at gauss points
     Teuchos::RCP<std::vector<double>> porosity_;
 
-    /// porosity at gauss points of surface element
-    Teuchos::RCP<std::map<int, std::vector<double>>> surfporosity_;
+    //! porosity at gauss points of surface element
+    Teuchos::RCP<std::map<int, std::vector<double>>> surf_porosity_;
 
-    /// flag indicating initialization of attributes
-    bool isinitialized_;
+    //! flag indicating initialization of attributes
+    bool is_initialized_;
   };
 
 }  // namespace MAT

@@ -17,18 +17,11 @@
 
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 
-/*----------------------------------------------------------------------*
- | constructor (public)                                    vuong 01/12  |
- *----------------------------------------------------------------------*/
 POROELAST::Partitioned::Partitioned(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : PoroBase(comm, timeparams),
       fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(FluidField()->Velnp())))),
-      structincnp_(Teuchos::rcp(new Epetra_Vector(*(StructureField()->Dispnp())))),
-      del_(Teuchos::null),
-      delhist_(Teuchos::null),
-      omegan_(0.0),
-      omeganp_(0.0)
+      structincnp_(Teuchos::rcp(new Epetra_Vector(*(StructureField()->Dispnp()))))
 {
   const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
   // Get the parameters for the ConvergenceCheck
@@ -39,9 +32,6 @@ POROELAST::Partitioned::Partitioned(
   fluidveln_->PutScalar(0.0);
 }
 
-/*----------------------------------------------------------------------*
-                                                           vuong 01/12  |
-*----------------------------------------------------------------------*/
 void POROELAST::Partitioned::DoTimeStep()
 {
   PrepareTimeStep();
@@ -51,14 +41,8 @@ void POROELAST::Partitioned::DoTimeStep()
   UpdateAndOutput();
 }
 
-/*----------------------------------------------------------------------*
-                                                           vuong 01/12  |
-*----------------------------------------------------------------------*/
 void POROELAST::Partitioned::SetupSystem() {}  // SetupSystem()
 
-/*----------------------------------------------------------------------*
-                                                           vuong 01/12  |
-*----------------------------------------------------------------------*/
 void POROELAST::Partitioned::UpdateAndOutput()
 {
   PrepareOutput();
@@ -66,11 +50,8 @@ void POROELAST::Partitioned::UpdateAndOutput()
   Update();
 
   Output();
-}  // UpdateAndOutput()
+}
 
-/*----------------------------------------------------------------------*
-                                                           vuong 01/12  |
-*----------------------------------------------------------------------*/
 void POROELAST::Partitioned::Solve()
 {
   int itnum = 0;
@@ -82,15 +63,12 @@ void POROELAST::Partitioned::Solve()
                  "LOOP\n****************************************\n";
   }
 
-  // initially solve coupled scalar transport equation system
-  // DoScatraStep();
-
   if (Step() == 1)
   {
     fluidveln_->Update(1.0, *(FluidField()->Veln()), 0.0);
   }
 
-  while (stopnonliniter == false)
+  while (!stopnonliniter)
   {
     itnum++;
 
@@ -128,21 +106,9 @@ void POROELAST::Partitioned::Solve()
     // check convergence for all fields and stop iteration loop if
     // convergence is achieved overall
     stopnonliniter = ConvergenceCheck(itnum);
-
-    // AitkenRelax();
   }
+}
 
-  // initial guess for next time step n+1
-  // use maximum between omeganp_ and 1.0 as start value for omega_n+1^{i=0}
-  // in case of doubt use 1.0, meaning that direction of new solution vector
-  // dispnp better old one
-  omegan_ = std::max(omeganp_, 1.0);
-
-  return;
-}  // OuterLoop()
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void POROELAST::Partitioned::DoStructStep()
 {
   if (Comm().MyPID() == 0)
@@ -154,8 +120,6 @@ void POROELAST::Partitioned::DoStructStep()
   StructureField()->Solve();
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void POROELAST::Partitioned::DoFluidStep()
 {
   if (Comm().MyPID() == 0)
@@ -168,8 +132,6 @@ void POROELAST::Partitioned::DoFluidStep()
   FluidField()->Solve();
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void POROELAST::Partitioned::PrepareTimeStep()
 {
   IncrementTimeAndStep();
@@ -181,44 +143,34 @@ void POROELAST::Partitioned::PrepareTimeStep()
   SetFluidSolution();
 }
 
-/*----------------------------------------------------------------------*
- | convergence check for both fields (fluid & structure)
- *----------------------------------------------------------------------*/
 bool POROELAST::Partitioned::ConvergenceCheck(int itnum)
 {
-  // convergence check based on the temperature increment
+  // convergence check based on the increment
   bool stopnonliniter = false;
 
-  //    | temperature increment |_2
-  //  -------------------------------- < Tolerance
-  //     | temperature_n+1 |_2
-
   // variables to save different L2 - Norms
-  // define L2-norm of incremental temperature and temperature
-  // here: only the temperature field is checked for convergence!!!
+  // define L2-norm of increments and solution
   double fluidincnorm_L2(0.0);
   double fluidnorm_L2(0.0);
   double dispincnorm_L2(0.0);
   double structnorm_L2(0.0);
 
-  // build the current temperature increment Inc T^{i+1}
-  // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
+  // build the current increment
   fluidincnp_->Update(1.0, *(FluidField()->Velnp()), -1.0);
   structincnp_->Update(1.0, *(StructureField()->Dispnp()), -1.0);
 
-  // build the L2-norm of the temperature increment and the temperature
+  // build the L2-norm of the increment and the solution
   fluidincnp_->Norm2(&fluidincnorm_L2);
   FluidField()->Velnp()->Norm2(&fluidnorm_L2);
   structincnp_->Norm2(&dispincnorm_L2);
   StructureField()->Dispnp()->Norm2(&structnorm_L2);
 
-  // care for the case that there is (almost) zero temperature
-  // (usually not required for temperature)
+  // care for the case that there is (almost) zero solution
   if (fluidnorm_L2 < 1e-6) fluidnorm_L2 = 1.0;
   if (structnorm_L2 < 1e-6) structnorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
-  if (Comm().MyPID() == 0)  // and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
+  if (Comm().MyPID() == 0)
   {
     std::cout << "\n";
     std::cout
@@ -239,7 +191,7 @@ bool POROELAST::Partitioned::ConvergenceCheck(int itnum)
   if ((fluidincnorm_L2 / fluidnorm_L2 <= ittol_) && (dispincnorm_L2 / structnorm_L2 <= ittol_))
   {
     stopnonliniter = true;
-    if (Comm().MyPID() == 0)  // and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
+    if (Comm().MyPID() == 0)
     {
       printf("\n");
       printf(
@@ -270,99 +222,11 @@ bool POROELAST::Partitioned::ConvergenceCheck(int itnum)
   return stopnonliniter;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void POROELAST::Partitioned::AitkenRelax()
-{
-  dserror("Aitken Relaxation not yet implemented");
-  // ------------------------------------------------------------
-  // if r_{i+1} not converged in ConvergenceCheck()
-  // --> apply Aitken relaxation to displacements
-  // as implemented in FSI by Irons and Tuck (1969)
-
-  // Aitken factor
-  // relaxation can start when two vectors are available, starting at i=2
-  // (also stated in Diss Uli, p. 82ff)
-  // we need vectors from iteration step 0,1,2 to calculate relaxed step
-  // with omega^i_0 = 0.0
-  // Irons & Tuck:
-  // increment r := old - new
-
-  // BACI:
-  // increment inc := new - old
-  // omega^{i+1}_{n+1} = omega^i_{n+1} +
-  //
-  //                         ( r^i_{n+1} - r^{i+1}_{n+1} )^T . ( r^{i+1}_{n+1} )
-  // + (omega^i_{n+1} - 1) . -------------------------------------------------
-  //                                 | r^i_{n+1} - r^{i+1}_{n+1} |^2
-  //
-  // | r^i_{n+1} - r^{i+1}_{n+1} |^2
-  // = | (-1)^2*(r^{i+1}_{n+1} - r^i_{n+1} |^2
-  // = | (r^{i+1}_{n+1} - r^i_{n+1} |^2
-
-  // initialise increment vector with solution of last iteration (i)
-  // update del_ with current residual vector
-  // difference of last two solutions
-  if (del_ == Teuchos::null)
-  {
-    del_ = LINALG::CreateVector(*(FluidField()->DofRowMap(0)), true);
-    delhist_ = LINALG::CreateVector(*(FluidField()->DofRowMap(0)), true);
-    del_->PutScalar(1.0e20);
-    delhist_->PutScalar(0.0);
-  }
-
-  // calculate difference of current (i+1) and old (i) residual vector
-  // del = r^{i+1}_{n+1}
-  del_->Update(1.0, *fluidincnp_, 0.0);
-  // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
-  delhist_->Update(1.0, *del_, (-1.0));
-  double normdel = 0.0;
-  double dot = 0.0;
-  delhist_->Norm2(&normdel);
-  // calculate dot product
-  // dot = delhist_ . del_ = ( r^{i+1}_{n+1} - r^i_{n+1} )^T . r^{i+1}_{n+1}
-  del_->Dot(*delhist_, &dot);
-
-  // Aikten factor
-  // omega^{i+1}_{n+1} == omeganp_
-  // omega^{i}_{n+1} == omegan_
-  // ome^{i+1} = ome^i + (ome^i -1) . (r^i - r^{i+1})^T . r^{i+1} / |r^{i+1} - r^{i}|^2
-  omeganp_ = omegan_ + (omegan_ - 1.0) * (-dot) / (normdel * normdel);
-
-  // relaxation parameter
-  // omega_relax^{i+1} = 1- omega^{i+1}
-  double relax = 1.0 - omeganp_;
-
-  if (Comm().MyPID() == 0)
-    std::cout << "Aitken relaxation with omega_relax = " << relax << std::endl;
-
-  // relax displacement solution for next iteration step
-  // overwrite temp_ with relaxed solution vector
-  // T^{i+1} = relax . T^{i+1} + (1- relax^{i+1}) T^i
-  //         = T^i + relax^{i+1} * ( T^{i+1} - T^i )
-  fluidveln_->Update(relax, *del_, 1.0);
-
-  // update Aitken parameter omega^{i+1}_{n+1}
-  omegan_ = omeganp_;
-
-  // update history vector with residual displacement of old iteration step
-  delhist_->Update(1.0, *del_, 0.0);
-
-  // end Aitken relaxation
-  // ------------------------------------------------------------
-}
-
-/*----------------------------------------------------------------------*
-                                                           vuong 01/12  |
-*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> POROELAST::Partitioned::DofRowMapStructure()
 {
   return StructureField()->DofRowMap();
 }
 
-/*----------------------------------------------------------------------*
-                                                           vuong 01/12  |
-*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> POROELAST::Partitioned::DofRowMapFluid()
 {
   return FluidField()->DofRowMap();

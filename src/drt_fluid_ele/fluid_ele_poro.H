@@ -28,26 +28,27 @@ namespace DRT
     class FluidPoroEleType : public FluidType
     {
      public:
-      std::string Name() const { return "FluidPoroEleType"; }
+      std::string Name() const override { return "FluidPoroEleType"; }
 
       static FluidPoroEleType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
-      /// pre-evaluation
-      virtual void PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
+      //! pre-evaluation
+      void PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
           Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
           Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
           Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-          Teuchos::RCP<Epetra_Vector> systemvector3);
+          Teuchos::RCP<Epetra_Vector> systemvector3) override;
 
      private:
       static FluidPoroEleType instance_;
@@ -59,14 +60,14 @@ namespace DRT
     class FluidPoro : public virtual Fluid
     {
      public:
-      //@}
+      //!@}
       //! @name constructors and destructors and related methods
 
       /*!
       \brief standard constructor
       */
-      FluidPoro(int id,  ///< A unique global id
-          int owner      ///< number of owning processor
+      FluidPoro(int id,  //!< A unique global id
+          int owner      //!< number of owning processor
       );
 
       /*!
@@ -78,19 +79,13 @@ namespace DRT
       FluidPoro(const FluidPoro& old);
 
       /*!
-      \brief Destructor
-
-      */
-      virtual ~FluidPoro(){};
-
-      /*!
       \brief Deep copy this instance of fluid and return pointer to the copy
 
       The Clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -98,7 +93,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return FluidPoroEleType::Instance().UniqueParObjectId();
       }
@@ -109,59 +104,59 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
 
       \ref Pack and \ref Unpack are used to communicate this element
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
+      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the volume of this element
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Volumes();
+      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
 
-      //@}
+      //!@}
 
       //! @name Acess methods
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const { return FluidPoroEleType::Instance(); }
+      DRT::ElementType& ElementType() const override { return FluidPoroEleType::Instance(); }
 
 
-      void SetKinematicType(INPAR::STR::KinemType kintype) { kintype_ = kintype; };
+      void SetKinematicType(INPAR::STR::KinemType kintype) { kintype_ = kintype; }
 
-      INPAR::STR::KinemType KinematicType() const { return kintype_; };
+      INPAR::STR::KinemType KinematicType() const { return kintype_; }
 
       //! Set anisotropic permeability directions obtained from structure element during cloning
       void SetAnisotropicPermeabilityDirections(
           const std::vector<std::vector<double>>& ref_anisotropic_permeability_directions)
       {
         anisotropic_permeability_directions_ = ref_anisotropic_permeability_directions;
-      };
+      }
 
       //! Provide the anisotropic permeability directions of the element
       const std::vector<std::vector<double>>& GetAnisotropicPermeabilityDirections() const
       {
         return anisotropic_permeability_directions_;
       }
-      //@}
+      //!@}
 
       //! @name Evaluation
 
@@ -191,9 +186,9 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
           Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
 
-      //@}
+      //!@}
 
      private:
       //! don't want = operator
@@ -206,12 +201,6 @@ namespace DRT
       std::vector<std::vector<double>> anisotropic_permeability_directions_;
     };
 
-    //=======================================================================
-    //=======================================================================
-    //=======================================================================
-    //=======================================================================
-
-
     /*!
     \brief An element representing a boundary element of a fluid element
 
@@ -220,18 +209,15 @@ namespace DRT
     class FluidPoroBoundaryType : public FluidBoundaryType
     {
      public:
-      std::string Name() const { return "FluidPoroBoundaryType"; }
+      std::string Name() const override { return "FluidPoroBoundaryType"; }
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
       static FluidPoroBoundaryType& Instance();
 
      private:
       static FluidPoroBoundaryType instance_;
     };
-
-
-    // class FluidPoroBoundary
 
     class FluidPoroBoundary : public FluidBoundary
     {
@@ -268,7 +254,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -276,29 +262,23 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of the drt_parobject.H file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return FluidPoroBoundaryType::Instance().UniqueParObjectId();
       }
 
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~FluidPoroBoundary(){};
-
-      //@}
+      //!@}
 
       //! @name Acess methods
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const { return FluidPoroBoundaryType::Instance(); }
+      DRT::ElementType& ElementType() const override { return FluidPoroBoundaryType::Instance(); }
 
-      //@}
+      //!@}
 
       //! @name Evaluation
 
@@ -327,13 +307,13 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
           Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
 
-      //@}
+      //!@}
 
       //! @name Evaluate methods
 
-      //@}
+      //!@}
 
       /*!
       \brief Return the location vector of this element
@@ -365,14 +345,13 @@ namespace DRT
       \param condstring (in) : Name of condition to be evaluated
       \param params (in)     : List of parameters for use at element level
       */
-      virtual void LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet,
-          const std::string& condstring, Teuchos::ParameterList& params) const;
+      void LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet,
+          const std::string& condstring, Teuchos::ParameterList& params) const override;
 
      private:
       // don't want = operator
       FluidPoroBoundary& operator=(const FluidPoroBoundary& old);
-
-    };  // class FluidBoundary
+    };
 
   }  // namespace ELEMENTS
 }  // namespace DRT

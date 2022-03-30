@@ -18,23 +18,16 @@
 
 // for secondDerivativesZero
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
-#include "../drt_fem_general/drt_utils_gausspoints.H"
 
 #include "../drt_mat/structporo.H"
-#include "../drt_mat/structporo_reaction.H"
 #include "../drt_mat/fluidporo.H"
 #include "../drt_mat/fluidporo_multiphase.H"
 
-
-/*----------------------------------------------------------------------*
- *                                                            vuong 12/12|
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(int id, int owner)
     : DRT::ELEMENTS::Wall1(id, owner),
       data_(),
       intpoints_(distype),
-      // numscal_(3),
       weights_(true),
       myknots_(numdim_)
 {
@@ -48,15 +41,9 @@ DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(int id, int owner)
 
   init_ = false;
 
-  scatracoupling_ = false;
-
-  return;
+  scatra_coupling_ = false;
 }
 
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                        vuong 12/12|
- |  id             (in)  this element's global id                       |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(const DRT::ELEMENTS::Wall1_Poro<distype>& old)
     : DRT::ELEMENTS::Wall1(old),
@@ -67,30 +54,21 @@ DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(const DRT::ELEMENTS::Wall1_Poro<d
       intpoints_(distype),
       ishigherorder_(old.ishigherorder_),
       init_(old.init_),
-      scatracoupling_(old.scatracoupling_),
-      // numscal_(3),
+      scatra_coupling_(old.scatra_coupling_),
       weights_(old.weights_),
       myknots_(old.myknots_),
       anisotropic_permeability_directions_(old.anisotropic_permeability_directions_)
 {
   numgpt_ = intpoints_.NumPoints();
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *                                                            vuong 12/12|
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::Element* DRT::ELEMENTS::Wall1_Poro<distype>::Clone() const
 {
-  DRT::ELEMENTS::Wall1_Poro<distype>* newelement = new DRT::ELEMENTS::Wall1_Poro<distype>(*this);
+  auto* newelement = new DRT::ELEMENTS::Wall1_Poro<distype>(*this);
   return newelement;
 }
 
-/*----------------------------------------------------------------------*
- *                                                            vuong 12/12|
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::Pack(DRT::PackBuffer& data) const
 {
@@ -107,34 +85,27 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, detJ_);
 
   // invJ_
-  int size = (int)invJ_.size();
+  int size = static_cast<int>(invJ_.size());
   AddtoPack(data, size);
   for (int i = 0; i < size; ++i) AddtoPack(data, invJ_[i]);
 
   // xsi_
-  size = (int)xsi_.size();
+  size = static_cast<int>(xsi_.size());
   AddtoPack(data, size);
   for (int i = 0; i < size; ++i) AddtoPack(data, xsi_[i]);
 
-  // scatracoupling_
-  AddtoPack(data, scatracoupling_);
+  // scatra_coupling_
+  AddtoPack(data, scatra_coupling_);
 
   // anisotropic_permeability_directions_
-  size = (int)anisotropic_permeability_directions_.size();
+  size = static_cast<int>(anisotropic_permeability_directions_.size());
   AddtoPack(data, size);
   for (int i = 0; i < size; ++i) AddtoPack(data, anisotropic_permeability_directions_[i]);
 
-  //  AddtoPack(data,numscal_);
-
   // add base class Element
   DRT::ELEMENTS::Wall1::Pack(data);
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *                                                            vuong 12/12|
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::Unpack(const std::vector<char>& data)
 {
@@ -164,8 +135,8 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Unpack(const std::vector<char>& data)
   xsi_.resize(size, LINALG::Matrix<numdim_, 1>(true));
   for (int i = 0; i < size; ++i) ExtractfromPack(position, data, xsi_[i]);
 
-  // scatracoupling_
-  scatracoupling_ = (bool)(ExtractInt(position, data));
+  // scatra_coupling_
+  scatra_coupling_ = static_cast<bool>(ExtractInt(position, data));
 
   // anisotropic_permeability_directions_
   size = 0;
@@ -181,16 +152,11 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Unpack(const std::vector<char>& data)
 
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    dserror("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
 
   init_ = true;
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *                                                            vuong 12/12|
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1_Poro<distype>::Lines()
 {
@@ -204,10 +170,6 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1_Poro<distype>::Line
   return DRT::UTILS::ElementBoundaryFactory<Wall1Line, Wall1_Poro>(DRT::UTILS::buildLines, this);
 }
 
-
-/*----------------------------------------------------------------------*
- *                                                            vuong 12/12|
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1_Poro<distype>::Surfaces()
 {
@@ -216,9 +178,6 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1_Poro<distype>::Surf
   return surfaces;
 }
 
-/*----------------------------------------------------------------------*
- *                                                            vuong 12/12|
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::Print(std::ostream& os) const
 {
@@ -226,12 +185,8 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Print(std::ostream& os) const
   Element::Print(os);
   std::cout << std::endl;
   std::cout << data_;
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *                                                            vuong 12/12|
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 bool DRT::ELEMENTS::Wall1_Poro<distype>::ReadElement(
     const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
@@ -263,98 +218,83 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::
   }
 }
 
-/*----------------------------------------------------------------------*
- *                                                            vuong 12/12|
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterials()
 {
   // get structure material
-  if (structmat_ == Teuchos::null)
+  if (struct_mat_ == Teuchos::null)
   {
-    structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
-    if (structmat_ == Teuchos::null) dserror("cast to poro material failed");
+    struct_mat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
+    if (struct_mat_ == Teuchos::null) dserror("cast to poro material failed");
 
-    if (structmat_->MaterialType() != INPAR::MAT::m_structporo and
-        structmat_->MaterialType() != INPAR::MAT::m_structpororeaction and
-        structmat_->MaterialType() != INPAR::MAT::m_structpororeactionECM)
+    if (struct_mat_->MaterialType() != INPAR::MAT::m_structporo and
+        struct_mat_->MaterialType() != INPAR::MAT::m_structpororeaction and
+        struct_mat_->MaterialType() != INPAR::MAT::m_structpororeactionECM)
       dserror("invalid structure material for poroelasticity");
   }
 
   // get fluid material
-  if (fluidmat_ == Teuchos::null)
+  if (fluid_mat_ == Teuchos::null)
   {
     // access second material in structure element
     if (NumMaterial() > 1)
     {
-      fluidmat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(Material(1));
-      if (fluidmat_ == Teuchos::null) return;
+      fluid_mat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(Material(1));
+      if (fluid_mat_ == Teuchos::null) return;
       // dserror("cast to fluid poro material failed");
-      if (fluidmat_->MaterialType() != INPAR::MAT::m_fluidporo)
+      if (fluid_mat_->MaterialType() != INPAR::MAT::m_fluidporo)
         dserror("invalid fluid material for poroelasticity");
     }
     else
       dserror("no second material defined for element %i", Id());
   }
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *                                                      kremheller 03/17|
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterials_presbased()
+void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterialsPressureBased()
 {
   // get structure material
-  if (structmat_ == Teuchos::null)
+  if (struct_mat_ == Teuchos::null)
   {
-    structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
-    if (structmat_ == Teuchos::null) dserror("cast to poro material failed");
+    struct_mat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
+    if (struct_mat_ == Teuchos::null) dserror("cast to poro material failed");
 
-    if (structmat_->MaterialType() != INPAR::MAT::m_structporo and
-        structmat_->MaterialType() != INPAR::MAT::m_structpororeaction and
-        structmat_->MaterialType() != INPAR::MAT::m_structpororeactionECM)
+    if (struct_mat_->MaterialType() != INPAR::MAT::m_structporo and
+        struct_mat_->MaterialType() != INPAR::MAT::m_structpororeaction and
+        struct_mat_->MaterialType() != INPAR::MAT::m_structpororeactionECM)
       dserror("invalid structure material for poroelasticity");
   }
 
   // Get Fluid-multiphase-Material
-  if (fluidmultimat_ == Teuchos::null)
+  if (fluidmulti_mat_ == Teuchos::null)
   {
     // access second material in structure element
     if (NumMaterial() > 1)
     {
-      fluidmultimat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoroMultiPhase>(Material(1));
-      if (fluidmultimat_ == Teuchos::null) dserror("cast to multiphase fluid poro material failed");
-      if (fluidmultimat_->MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
-          fluidmultimat_->MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+      fluidmulti_mat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoroMultiPhase>(Material(1));
+      if (fluidmulti_mat_ == Teuchos::null)
+        dserror("cast to multiphase fluid poro material failed");
+      if (fluidmulti_mat_->MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
+          fluidmulti_mat_->MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
         dserror("invalid fluid material for poro-multiphase-elasticity");
-      if (fluidmultimat_->NumFluidPhases() == 0)
+      if (fluidmulti_mat_->NumFluidPhases() == 0)
+      {
         dserror(
             "NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE = 0 currently not supported since this requires "
             "an adaption of the definition of the solid pressure");
+      }
     }
     else
       dserror("no second material defined for element %i", Id());
   }
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- |  Return names of visualization data (public)           vuong 12/12    |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::VisNames(std::map<std::string, int>& names)
 {
   SolidMaterial()->VisNames(names);
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- |  Return visualization data (public)                     vuong 12/12    |
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 bool DRT::ELEMENTS::Wall1_Poro<distype>::VisData(const std::string& name, std::vector<double>& data)
 {
@@ -364,10 +304,6 @@ bool DRT::ELEMENTS::Wall1_Poro<distype>::VisData(const std::string& name, std::v
   return SolidMaterial()->VisData(name, data, numgpt_, this->Id());
 }
 
-
-/*----------------------------------------------------------------------*
- *                                                            vuong 12/12|
- *----------------------------------------------------------------------*/
 template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>;
 template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>;
 template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad9>;

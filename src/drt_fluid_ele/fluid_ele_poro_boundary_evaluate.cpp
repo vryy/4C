@@ -16,17 +16,13 @@
 
 #include "../drt_inpar/inpar_fluid.H"
 
-
-/*----------------------------------------------------------------------*
- |  evaluate the element (public)                            vuong 11/13 |
- *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::FluidPoroBoundary::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::BoundaryAction act = DRT::INPUT::get<FLD::BoundaryAction>(params, "action");
+  const auto act = DRT::INPUT::get<FLD::BoundaryAction>(params, "action");
 
   // switch between different physical types as used below
   std::string impltype = "poro";
@@ -67,19 +63,16 @@ int DRT::ELEMENTS::FluidPoroBoundary::Evaluate(Teuchos::ParameterList& params,
           params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
-  }  // end of switch(act)
+  }
 
   return 0;
 }
 
-/*----------------------------------------------------------------------*
- |  Get degrees of freedom used by this element      (public) vuong 11/13 |
- *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidPoroBoundary::LocationVector(const Discretization& dis, LocationArray& la,
     bool doDirichlet, const std::string& condstring, Teuchos::ParameterList& params) const
 {
   // get the action required
-  const FLD::BoundaryAction act = DRT::INPUT::get<FLD::BoundaryAction>(params, "action");
+  const auto act = DRT::INPUT::get<FLD::BoundaryAction>(params, "action");
   switch (act)
   {
     case FLD::poro_boundary:
@@ -94,7 +87,7 @@ void DRT::ELEMENTS::FluidPoroBoundary::LocationVector(const Discretization& dis,
     case FLD::poro_splitnopenetration:
     case FLD::poro_splitnopenetration_OD:
     {
-      // Todo: this is a hack ...
+      // This is a hack ...
       // Remove pressure dofs from location vector!!!
       // call standard fluid boundary element
       FluidBoundary::LocationVector(dis, la, doDirichlet, condstring, params);
@@ -116,5 +109,4 @@ void DRT::ELEMENTS::FluidPoroBoundary::LocationVector(const Discretization& dis,
       FluidBoundary::LocationVector(dis, la, doDirichlet, condstring, params);
       break;
   }
-  return;
 }

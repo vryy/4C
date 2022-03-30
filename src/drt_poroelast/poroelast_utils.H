@@ -10,19 +10,14 @@
 #ifndef POROELAST_UTILS_H_
 #define POROELAST_UTILS_H_
 
-/*----------------------------------------------------------------------*
- |  headers                                                             |
- *----------------------------------------------------------------------*/
 #include "Epetra_Vector.h"
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include "../drt_inpar/inpar_poroelast.H"
 
 #include "../drt_volmortar/volmortar_utils.H"
+#include "../drt_lib/drt_element.H"
 
-/*----------------------------------------------------------------------*
- |  forward declaration                                                 |
- *----------------------------------------------------------------------*/
 namespace DRT
 {
   class Element;
@@ -32,16 +27,13 @@ namespace DRT
 namespace LINALG
 {
   class MapExtractor;
-}
+}  // namespace LINALG
 
 namespace MAT
 {
   class Material;
-}
+}  // namespace MAT
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
 namespace POROELAST
 {
   class PoroBase;
@@ -55,21 +47,18 @@ namespace POROELAST
     undefined
   };
 
-  /// POROELAST::UTILS: Random stuff that might be helpful when dealing with poroelasticity problems
+  //! POROELAST::UTILS: Random stuff that might be helpful when dealing with poroelasticity problems
   namespace UTILS
   {
-    /// check if element is a poro-element
+    //! check if element is a poro-element
     bool CheckPoro(const DRT::Element* actele);
 
-    /// check if element is a poro-p1-element
+    //! check if element is a poro-p1-element
     bool CheckPoroP1(const DRT::Element* actele);
-
-    /// check if element is a poro-material
-    bool CheckPoroMaterial(Teuchos::RCP<const MAT::Material> material);
 
     Teuchos::RCP<LINALG::MapExtractor> BuildPoroSplitter(Teuchos::RCP<DRT::Discretization> dis);
 
-    /// create solution algorithm depending on input file
+    //! create solution algorithm depending on input file
     Teuchos::RCP<POROELAST::PoroBase> CreatePoroAlgorithm(
         const Teuchos::ParameterList& timeparams,  //!< problem parameters (i)
         const Epetra_Comm& comm,                   //!< communicator(i)
@@ -77,13 +66,13 @@ namespace POROELAST
                                  //!< Solve() is called) (i)
     );
 
-    /// create solution algorithm depending on input file
+    //! create solution algorithm depending on input file
     Teuchos::RCP<POROELAST::PoroScatraBase> CreatePoroScatraAlgorithm(
         const Teuchos::ParameterList& timeparams,  //!< problem parameters (i)
         const Epetra_Comm& comm                    //!< communicator(i)
     );
 
-    /// reset Material pointers after redistribution
+    //! reset Material pointers after redistribution
     void SetMaterialPointersMatchingGrid(Teuchos::RCP<const DRT::Discretization> sourcedis,
         Teuchos::RCP<const DRT::Discretization> targetdis);
 
@@ -102,16 +91,21 @@ namespace POROELAST
      exist already.
      */
     void ReconnectParentPointers(DRT::Discretization& idiscret, DRT::Discretization& voldiscret,
-        DRT::Discretization* voldiscret2 = NULL);
+        DRT::Discretization* voldiscret2 = nullptr);
 
     //! Determine norm of vector
     double CalculateVectorNorm(const enum INPAR::POROELAST::VectorNorm norm,  //!< norm to use
         const Teuchos::RCP<const Epetra_Vector> vect  //!< the vector of interest
     );
 
+    //! Set the slave and master elements of the face element
+    void SetSlaveAndMaster(const DRT::Discretization& voldiscret,
+        const DRT::Discretization* voldiscret2, const Epetra_Map* elecolmap,
+        DRT::FaceElement* faceele);
+
     //! strategy for material assignment for non matching meshes with poro
 
-    /// Helper class for assigning materials for volumetric coupling of non conforming meshes (poro)
+    //! Helper class for assigning materials for volumetric coupling of non conforming meshes (poro)
     /*!
      When coupling two overlapping discretizations, most often one discretization needs access
      to the corresponding element/material on the other side. For conforming meshes this is straight
@@ -131,20 +125,17 @@ namespace POROELAST
     {
      public:
       //! constructor
-      PoroMaterialStrategy(){};
-
-      //! destructor
-      virtual ~PoroMaterialStrategy(){};
+      PoroMaterialStrategy() = default;
 
       //! assignment of fluid material to structure material
-      virtual void AssignMaterial2To1(const VOLMORTAR::VolMortarCoupl* volmortar,
-          DRT::Element* ele1, const std::vector<int>& ids_2, Teuchos::RCP<DRT::Discretization> dis1,
-          Teuchos::RCP<DRT::Discretization> dis2);
+      void AssignMaterial2To1(const VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele1,
+          const std::vector<int>& ids_2, Teuchos::RCP<DRT::Discretization> dis1,
+          Teuchos::RCP<DRT::Discretization> dis2) override;
 
       //! assignment of structure material to fluid material
-      virtual void AssignMaterial1To2(const VOLMORTAR::VolMortarCoupl* volmortar,
-          DRT::Element* ele2, const std::vector<int>& ids_1, Teuchos::RCP<DRT::Discretization> dis1,
-          Teuchos::RCP<DRT::Discretization> dis2);
+      void AssignMaterial1To2(const VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele2,
+          const std::vector<int>& ids_1, Teuchos::RCP<DRT::Discretization> dis1,
+          Teuchos::RCP<DRT::Discretization> dis2) override;
     };
   }  // namespace UTILS
 
@@ -152,5 +143,4 @@ namespace POROELAST
 
 }  // namespace POROELAST
 
-/*----------------------------------------------------------------------*/
-#endif  // POROELAST_UTILS_H
+#endif  // POROELAST_UTILS_H_

@@ -14,9 +14,6 @@
 #ifndef PORO_MONOLITHICMESHTYING_H_
 #define PORO_MONOLITHICMESHTYING_H_
 
-/*----------------------------------------------------------------------*
- | headers                                                              |
- *----------------------------------------------------------------------*/
 
 #include "poroelast_monolithic.H"
 
@@ -27,66 +24,62 @@ namespace ADAPTER
 
 namespace POROELAST
 {
-  //
   class MonolithicMeshtying : public Monolithic
   {
    public:
     //! create using a Epetra_Comm
     explicit MonolithicMeshtying(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
-    //! virtual destructor to support polymorph destruction
-    virtual ~MonolithicMeshtying(){};
-
     //! Setup the monolithic system
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void Evaluate(
+    void Evaluate(
         Teuchos::RCP<const Epetra_Vector> iterinc,  //!< increment between iteration i and i+1
-        bool firstiter = false);
+        bool firstiter = false) override;
 
-    // use monolithic update and set old meshtying quantities at the end of a timestep
-    virtual void Update();
+    //! use monolithic update and set old meshtying quantities at the end of a timestep
+    void Update() override;
 
-    // Recover Lagrange Multiplier after Newton step
-    virtual void RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RCP<const Epetra_Vector> x);
+    //! Recover Lagrange Multiplier after Newton step
+    void RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RCP<const Epetra_Vector> x) override;
 
-    // build meshtying specific norms where meshtying constraint residuals are evaluated separately
-    virtual void BuildConvergenceNorms();
+    //! build meshtying specific norms where meshtying constraint residuals are evaluated separately
+    void BuildConvergenceNorms() override;
 
-    // extractor to split fluid RHS vector for convergence check
-    // should be named fluidvelocityactiverowdofmap_
+    //! extractor to split fluid RHS vector for convergence check
+    //! should be named fluidvelocityactiverowdofmap_
     Teuchos::RCP<const LINALG::MultiMapExtractor> FluidVelActiveDofExtractor() const
     {
       return fvelactiverowdofmap_;
     }
 
-    // setup meshtying activedof extractors
+    //! setup meshtying activedof extractors
     void SetupExtractor();
 
-    // decide convergence with additional evaluation of meshtying constraint residuals
-    virtual bool Converged();
+    //! decide convergence with additional evaluation of meshtying constraint residuals
+    bool Converged() override;
 
-    // setup solver with additional residual tolerances for meshtying
-    virtual bool SetupSolver();
+    //! setup solver with additional residual tolerances for meshtying
+    bool SetupSolver() override;
 
-    // contains header to PrintNewtonIter with meshtying solver tolerance
-    virtual void PrintNewtonIterHeaderStream(std::ostringstream& oss);
+    //! contains header to PrintNewtonIter with meshtying solver tolerance
+    void PrintNewtonIterHeaderStream(std::ostringstream& oss) override;
 
-    // contains text to PrintNewtonIter with meshtying residuals
-    virtual void PrintNewtonIterTextStream(std::ostringstream& oss);
+    //! contains text to PrintNewtonIter with meshtying residuals
+    void PrintNewtonIterTextStream(std::ostringstream& oss) override;
 
    private:
-    // nonlinear mortar adapter used to evaluate meshtying
+    //! nonlinear mortar adapter used to evaluate meshtying
     Teuchos::RCP<ADAPTER::CouplingPoroMortar> mortar_adapter_;
 
-    // fluid velocity dof row map splitted in active dofs and the rest (no pressures)
+    //! fluid velocity dof row map splitted in active dofs and the rest (no pressures)
     Teuchos::RCP<LINALG::MultiMapExtractor>
-        fvelactiverowdofmap_;  // should be named fluidvelocityactiverowdofmap_, but kept shorter
+        fvelactiverowdofmap_;  //!< should be named fluidvelocityactiverowdofmap_, but kept shorter
 
     double normrhsfactiven_;  //!< norm of coupling part of residual forces (fluid )
 
-    double tolfres_ncoup_;  // residuum tolerance for porofluid normal coupling condition
+    double tolfres_ncoup_;  //!< residuum tolerance for porofluid normal coupling condition
   };
 }  // namespace POROELAST
 

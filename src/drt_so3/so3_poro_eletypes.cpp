@@ -22,8 +22,7 @@ DRT::ELEMENTS::So_hex8PoroType& DRT::ELEMENTS::So_hex8PoroType::Instance() { ret
 
 DRT::ParObject* DRT::ELEMENTS::So_hex8PoroType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>* object =
-      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -65,9 +64,6 @@ void DRT::ELEMENTS::So_hex8PoroType::SetupElementDefinition(
       .AddOptionalNamedDoubleVector("POROANISODIR3", 3);
 }
 
-/*----------------------------------------------------------------------*
- |  init the element (public)                                           |
- *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_hex8PoroType::Initialize(DRT::Discretization& dis)
 {
   So_hex8Type::Initialize(dis);
@@ -87,16 +83,13 @@ int DRT::ELEMENTS::So_hex8PoroType::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  TET 4 Element                                       |
  *----------------------------------------------------------------------*/
-
-
 DRT::ELEMENTS::So_tet4PoroType DRT::ELEMENTS::So_tet4PoroType::instance_;
 
 DRT::ELEMENTS::So_tet4PoroType& DRT::ELEMENTS::So_tet4PoroType::Instance() { return instance_; }
 
 DRT::ParObject* DRT::ELEMENTS::So_tet4PoroType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>* object =
-      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -138,9 +131,6 @@ void DRT::ELEMENTS::So_tet4PoroType::SetupElementDefinition(
       .AddOptionalNamedDoubleVector("POROANISODIR3", 3);
 }
 
-/*----------------------------------------------------------------------*
- |  init the element (public)                                           |
- *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_tet4PoroType::Initialize(DRT::Discretization& dis)
 {
   So_tet4Type::Initialize(dis);
@@ -159,16 +149,13 @@ int DRT::ELEMENTS::So_tet4PoroType::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  HEX 27 Element                                       |
  *----------------------------------------------------------------------*/
-
-
 DRT::ELEMENTS::So_hex27PoroType DRT::ELEMENTS::So_hex27PoroType::instance_;
 
 DRT::ELEMENTS::So_hex27PoroType& DRT::ELEMENTS::So_hex27PoroType::Instance() { return instance_; }
 
 DRT::ParObject* DRT::ELEMENTS::So_hex27PoroType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>* object =
-      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -210,9 +197,6 @@ void DRT::ELEMENTS::So_hex27PoroType::SetupElementDefinition(
       .AddOptionalNamedDoubleVector("POROANISODIR3", 3);
 }
 
-/*----------------------------------------------------------------------*
- |  init the element (public)                                           |
- *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_hex27PoroType::Initialize(DRT::Discretization& dis)
 {
   So_hex27Type::Initialize(dis);
@@ -231,8 +215,6 @@ int DRT::ELEMENTS::So_hex27PoroType::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  TET 10 Element                                       |
  *----------------------------------------------------------------------*/
-
-
 DRT::ELEMENTS::So_tet10PoroType DRT::ELEMENTS::So_tet10PoroType::instance_;
 
 DRT::ELEMENTS::So_tet10PoroType& DRT::ELEMENTS::So_tet10PoroType::Instance() { return instance_; }
@@ -281,9 +263,6 @@ void DRT::ELEMENTS::So_tet10PoroType::SetupElementDefinition(
       .AddOptionalNamedDoubleVector("POROANISODIR3", 3);
 }
 
-/*----------------------------------------------------------------------*
- |  init the element (public)                                           |
- *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_tet10PoroType::Initialize(DRT::Discretization& dis)
 {
   So_tet10Type::Initialize(dis);
@@ -302,8 +281,6 @@ int DRT::ELEMENTS::So_tet10PoroType::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  NURBS 27 Element                                       |
  *----------------------------------------------------------------------*/
-
-
 DRT::ELEMENTS::So_nurbs27PoroType DRT::ELEMENTS::So_nurbs27PoroType::instance_;
 
 DRT::ELEMENTS::So_nurbs27PoroType& DRT::ELEMENTS::So_nurbs27PoroType::Instance()
@@ -359,9 +336,6 @@ void DRT::ELEMENTS::So_nurbs27PoroType::SetupElementDefinition(
       .AddOptionalNamedDoubleVector("POROANISODIR3", 3);
 }
 
-/*----------------------------------------------------------------------*
- |  init the element (public)                                           |
- *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_nurbs27PoroType::Initialize(DRT::Discretization& dis)
 {
   NURBS::So_nurbs27Type::Initialize(dis);

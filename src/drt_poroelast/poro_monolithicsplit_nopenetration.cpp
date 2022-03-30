@@ -8,10 +8,6 @@
 
  *----------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*
- | headers                                                              |
- *----------------------------------------------------------------------*/
-
 #include "poro_monolithicsplit_nopenetration.H"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -38,13 +34,9 @@
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_blocksparsematrix.H"
 #include "../linalg/linalg_matrixtransform.H"
 
 
-/*----------------------------------------------------------------------*
- |                                                         vuong 09/14  |
- *----------------------------------------------------------------------*/
 POROELAST::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : MonolithicSplit(comm, timeparams), normrhs_nopenetration_(-1.0)
@@ -62,13 +54,8 @@ POROELAST::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(
   k_Dn_ = Teuchos::null;
 
   mortar_adapter_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar);
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- | setup system (called in porolast.cpp)               vuong 09/14     |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::SetupSystem()
 {
   {
@@ -107,11 +94,8 @@ void POROELAST::MonolithicSplitNoPenetration::SetupSystem()
   BuildCombinedDBCMap();
 
   SetupEquilibration();
-}  // SetupSystem()
+}
 
-/*----------------------------------------------------------------------*
- |                                                         vuong 09/14  |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::SetupRHS(bool firstcall)
 {
   // only Lagrange multipliers are condensed -> use unchanged maps from single fields
@@ -123,9 +107,6 @@ void POROELAST::MonolithicSplitNoPenetration::SetupRHS(bool firstcall)
   SetupVector(*rhs_, StructureField()->RHS(), FluidField()->RHS());
 }
 
-/*----------------------------------------------------------------------*
- | setup vector of the structure and fluid field                        |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::SetupVector(
     Epetra_Vector& f, Teuchos::RCP<const Epetra_Vector> sv, Teuchos::RCP<const Epetra_Vector> fv)
 {
@@ -168,12 +149,8 @@ void POROELAST::MonolithicSplitNoPenetration::SetupVector(
   Extractor()->AddVector(*fullfov, 1, f, 1.0);
 
   rhs_fgcur_ = fcv;  // Store interface rhs for recovering of lagrange multiplier
-  return;
 }
 
-/*----------------------------------------------------------------------*
-| Recover the Lagrange multipliers for poro no pen.          ager 09/14 |
-*----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::RecoverLagrangeMultiplierAfterNewtonStep(
     Teuchos::RCP<const Epetra_Vector> x)
 {
@@ -255,18 +232,12 @@ void POROELAST::MonolithicSplitNoPenetration::RecoverLagrangeMultiplierAfterNewt
 
   k_invD_->Apply(*tmplambda, *lambdanp_);
   lambdanp_->Scale(-1 / (1.0 - stiparam));  //*-1/b
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- |                                                         vuong 09/14  |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicSplitNoPenetration::SetupSystemMatrix");
 
-  // Teuchos::RCP<LINALG::BlockSparseMatrixBase> s = StructureField()->BlockSystemMatrix();
   Teuchos::RCP<LINALG::SparseMatrix> s = StructureField()->SystemMatrix();
   if (s == Teuchos::null) dserror("expect structure matrix");
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> f = FluidField()->BlockSystemMatrix();
@@ -281,7 +252,7 @@ void POROELAST::MonolithicSplitNoPenetration::SetupSystemMatrix(LINALG::BlockSpa
 
   /*----------------------------------------------------------------------*/
 
-  // just to play it save ...
+  // just to play it safe ...
   mat.Reset();
 
   // build block matrix
@@ -324,7 +295,7 @@ void POROELAST::MonolithicSplitNoPenetration::SetupSystemMatrix(LINALG::BlockSpa
   mat.Matrix(0, 1).Add(k_sf->Matrix(sidx_nopen, fidx_nopen), false, 1.0, 1.0);
   /*----------------------------------------------------------------------*/
   // pure fluid part
-  // uncomplete because the fluid interface can have more connections than the
+  // incomplete because the fluid interface can have more connections than the
   // structural one. (Tet elements in fluid can cause this.) We should do
   // this just once...
   // f->UnComplete();
@@ -367,16 +338,10 @@ void POROELAST::MonolithicSplitNoPenetration::SetupSystemMatrix(LINALG::BlockSpa
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
   mat.Complete();
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- |    evaluate fluid-structural system matrix at state      vuong 09/14   |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
-    Teuchos::RCP<LINALG::SparseOperator> k_fs  //!< off-diagonal tangent matrix term
-)
+    Teuchos::RCP<LINALG::SparseOperator> k_fs)
 {
   // call base class
   Monolithic::ApplyFluidCouplMatrix(k_fs);
@@ -546,12 +511,14 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
 
   // set zero diagonal values to dummy 1.0 ??
   for (int i = 0; i < diag->MyLength(); ++i)
+  {
     if ((*diag)[i] == 0.0)
     {
       (*diag)[i] = 1.0;
       std::cout << "--- --- --- WARNING: D-Matrix Diagonal Element " << i
                 << " is zero!!! --- --- ---" << std::endl;
     }
+  }
 
   // scalar inversion of diagonal values
   err = diag->Reciprocal(*diag);
@@ -590,35 +557,21 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
   // Calculate 1/b*Tangent*invD
   k_lambdainvD_ = LINALG::MLMultiply(*k_lambda_, *k_invD_, true);
   k_lambdainvD_->Scale(1.0 / (1.0 - stiparam));  // *= 1/b
-  return;
 }
 
-/*----------------------------------------------------------------------*
- |  evaluate mechanical-fluid system matrix at state        vuong 09/14    |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::ApplyStrCouplMatrix(
     Teuchos::RCP<LINALG::SparseOperator> k_sf  //!< off-diagonal tangent matrix term
 )
 {
   // call base class
   Monolithic::ApplyStrCouplMatrix(k_sf);
-
-  // done.
-  return;
 }
 
-/*----------------------------------------------------------------------*
- | RecoverLagrangeMultiplier (protected)              vuong 09/14        |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::RecoverLagrangeMultiplierAfterTimeStep()
 {
   // we do not need to recover after a time step, it is done after every newton step
-  return;
 }
 
-/*----------------------------------------------------------------------*
- | RecoverLagrangeMultiplier (protected)              vuong 09/14        |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::Update()
 {
   // call base class
@@ -630,12 +583,8 @@ void POROELAST::MonolithicSplitNoPenetration::Update()
   // copy D matrix from current time step to old D matrix
   k_Dn_ = Teuchos::rcp(
       new LINALG::SparseMatrix(*k_D_, LINALG::Copy));  // store D-Matrix from last timestep
-  return;
 }
 
-/*----------------------------------------------------------------------*
-| RecoverLagrangeMultiplier (protected)               ager 09/14        |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::Output(bool forced_writerestart)
 {
   // call base class
@@ -646,11 +595,8 @@ void POROELAST::MonolithicSplitNoPenetration::Output(bool forced_writerestart)
       Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*StructureField()->DofRowMap()));
   LINALG::Export(*lambdanp_, *fulllambda);
   StructureField()->DiscWriter()->WriteVector("poronopencond_lambda", fulllambda);
-}  // MonolithicSplitNoPenetration::Output()
+}
 
-/*----------------------------------------------------------------------*
- | RecoverLagrangeMultiplier (protected)              vuong 09/14        |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::SetupCouplingAndMatrices()
 {
   const int ndim = DRT::Problem::Instance()->NDim();
@@ -695,23 +641,14 @@ void POROELAST::MonolithicSplitNoPenetration::SetupCouplingAndMatrices()
 
   nopenetration_rhs_ =
       Teuchos::rcp(new Epetra_Vector(*FluidField()->Interface()->FSICondMap(), true));
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*
- | RecoverLagrangeMultiplier (protected)              vuong 09/14        |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::PrepareTimeStep()
 {
   // call base class
   POROELAST::Monolithic::PrepareTimeStep();
 }
 
-/*----------------------------------------------------------------------*
- | Read Restart (public)                          vuong 09/14        |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::ReadRestart(const int step)
 {
   // call base class
@@ -743,21 +680,13 @@ void POROELAST::MonolithicSplitNoPenetration::ReadRestart(const int step)
   }
 }
 
-/*----------------------------------------------------------------------*
- *                                                    vuong 11/14        |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::PrintNewtonIterHeaderStream(std::ostringstream& oss)
 {
   Monolithic::PrintNewtonIterHeaderStream(oss);
 
   oss << std::setw(20) << "abs-crhs-res";
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- *                                                    vuong 11/14        |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::PrintNewtonIterTextStream(std::ostringstream& oss)
 {
   Monolithic::PrintNewtonIterTextStream(oss);
@@ -765,14 +694,9 @@ void POROELAST::MonolithicSplitNoPenetration::PrintNewtonIterTextStream(std::ost
   oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhs_nopenetration_;
 }
 
-/*----------------------------------------------------------------------*
- *                                                    vuong 11/14        |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::BuildConvergenceNorms()
 {
   Monolithic::BuildConvergenceNorms();
 
   normrhs_nopenetration_ = UTILS::CalculateVectorNorm(vectornormfres_, nopenetration_rhs_);
-
-  return;
 }
