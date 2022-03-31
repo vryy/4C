@@ -35,8 +35,9 @@ namespace DRT
 
   namespace UTILS
   {
+    template <int dim>
     class VariableExprFunction;
-  }
+  }  // namespace UTILS
 }  // namespace DRT
 namespace MAT
 {
@@ -148,7 +149,7 @@ namespace POROMULTIPHASESCATRA
 
   //! the coupling pair
   template <DRT::Element::DiscretizationType distypeArt,
-      DRT::Element::DiscretizationType distypeCont>
+      DRT::Element::DiscretizationType distypeCont, int dim>
   class PoroMultiPhaseScatraArteryCouplingPair : public PoroMultiPhaseScatraArteryCouplingPairBase
   {
    public:
@@ -392,7 +393,8 @@ namespace POROMULTIPHASESCATRA
         LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22);
 
     //! evaluate function and its derivative
-    void EvaluateFunctionAndDeriv(DRT::UTILS::VariableExprFunction* funct,
+
+    void EvaluateFunctionAndDeriv(DRT::UTILS::VariableExprFunction<dim>* funct,
         const double& artpressnpAtGP, const std::vector<double>& artscalarnpAtGP,
         const std::vector<double>& scalarnpAtGP, double& functval, std::vector<double>& artderivs,
         std::vector<double>& contderivs);
@@ -437,11 +439,12 @@ namespace POROMULTIPHASESCATRA
         LINALG::SerialDenseVector& Kappa_ele);
 
     //! fill the function vector
-    void FillFunctionVector(std::vector<DRT::UTILS::VariableExprFunction*>* my_funct_vec,
+    void FillFunctionVector(std::vector<DRT::UTILS::VariableExprFunction<dim>*>* my_funct_vec,
         const std::vector<int>& funct_vec, const std::vector<int>& scale_vec);
 
+
     //! initialize a function
-    void InitializeFunction(DRT::UTILS::VariableExprFunction* funct);
+    void InitializeFunction(DRT::UTILS::VariableExprFunction<dim>* funct);
 
     //! initialize names used in functions
     void InitializeFunctionNames();
@@ -450,7 +453,7 @@ namespace POROMULTIPHASESCATRA
     void InitializeAssembleIntoContDofVector();
 
     //! get function
-    DRT::UTILS::VariableExprFunction* Function(int functnum) const;
+    DRT::UTILS::VariableExprFunction<dim>* Function(int functnum) const;
 
     //! coupling type
     CouplingType coupltype_;
@@ -630,9 +633,10 @@ namespace POROMULTIPHASESCATRA
     //! scale vector
     std::vector<std::vector<int>> scale_vec_;
     //! function vector
-    std::vector<std::vector<DRT::UTILS::VariableExprFunction*>> funct_vec_;
+    std::vector<std::vector<DRT::UTILS::VariableExprFunction<dim>*>> funct_vec_;
+
     //! diameter function
-    DRT::UTILS::VariableExprFunction* artdiam_funct_;
+    DRT::UTILS::VariableExprFunction<dim>* artdiam_funct_;
 
     //! string name used for scalars in function parser
     std::vector<std::string> scalarnames_;

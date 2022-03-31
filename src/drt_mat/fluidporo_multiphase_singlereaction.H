@@ -19,6 +19,7 @@ namespace DRT
 {
   namespace UTILS
   {
+    template <int dim>
     class VariableExprFunction;
   }
 }  // namespace DRT
@@ -108,7 +109,25 @@ namespace MAT
           Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// return variable expression function holding the reaction equation
-      inline DRT::UTILS::VariableExprFunction& Function(int functnum) const;
+      template <int dim>
+      inline DRT::UTILS::VariableExprFunction<dim>& Function(int functnum) const;
+
+      //! templated internal Initialize implementation
+      template <int dim>
+      void InitializeInternal();
+
+      //! templated internal EvaluateFunction implementation
+      template <int dim>
+      void EvaluateFunctionInternal(std::vector<double>& reacval,
+          std::vector<std::vector<double>>& reacderivspressure,
+          std::vector<std::vector<double>>& reacderivssaturation,
+          std::vector<double>& reacderivsporosity,
+          std::vector<std::vector<double>>& reacderivsvolfrac,
+          std::vector<std::vector<double>>& reacderivsvolfracpressure,
+          std::vector<std::vector<double>>& reacderivsscalar, const std::vector<double>& pressure,
+          const std::vector<double>& saturation, const double& porosity,
+          const std::vector<double>& volfracs, const std::vector<double>& volfracpressures,
+          const std::vector<double>& scalar);
 
       /// flag if Initialize() has been called
       bool isinit_;

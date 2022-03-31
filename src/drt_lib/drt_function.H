@@ -200,11 +200,10 @@ namespace DRT
 
 
     /// vector-valued spatial function based on parsed expression
+    template <int dim>
     class VariableExprFunction : public Function
     {
      public:
-      VariableExprFunction();
-
       /*!
        * \brief add expression to an existing ExprFunction in order to extend it to a vector-valued
        * spatial function.
@@ -317,11 +316,15 @@ namespace DRT
     };
 
 
-    /// try to create functions from a given line definition
-    Teuchos::RCP<Function> TryCreateFunctionFunction(
+    /// try to create VariableExprFunction from a given line definition
+    Teuchos::RCP<Function> TryCreateVariableExprFunction(
         Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
         DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
 
+    //! create VariableExprFunction from a given line definition
+    template <int dim>
+    Teuchos::RCP<DRT::UTILS::Function> CreateVariableExprFunction(
+        const std::string& component, const std::vector<std::pair<std::string, double>>& constants);
 
     /// create a vector function from multiple expressions
     Teuchos::RCP<Function> TryCreateExprFunction(

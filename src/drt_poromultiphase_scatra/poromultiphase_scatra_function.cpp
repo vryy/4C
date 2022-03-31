@@ -12,10 +12,12 @@
 #include "../headers/FAD_utils.H"
 #include "Teuchos_RCP.hpp"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction::PoroMultiPhaseScaTraFunction()
+template <int dim>
+POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction<dim>::PoroMultiPhaseScaTraFunction()
     : order_checked_(false)
 {
 }
@@ -34,8 +36,7 @@ void POROMULTIPHASESCATRA::AddValidPoroFunctionLines(Teuchos::RCP<DRT::INPUT::Li
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction>
-POROMULTIPHASESCATRA::TryCreatePoroFunction(
+Teuchos::RCP<DRT::UTILS::Function> POROMULTIPHASESCATRA::TryCreatePoroFunction(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager)
 {
@@ -48,43 +49,66 @@ POROMULTIPHASESCATRA::TryCreatePoroFunction(
     if (function_lin_def->HaveNamed("PARAMS"))
       function_lin_def->ExtractPairOfStringAndDoubleVector("PARAMS", params);
 
-    Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction> vecfunc = Teuchos::null;
-    if (type == "TUMOR_GROWTH_LAW_HEAVISIDE")
-      vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeaviside(params));
-    else if (type == "NECROSIS_LAW_HEAVISIDE")
-      vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::NecrosisLawHeaviside(params));
-    else if (type == "OXYGEN_CONSUMPTION_LAW_HEAVISIDE")
-      vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside(params));
-    else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_OXY")
-      vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy(params));
-    else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_NECRO")
-      vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro(params));
-    else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT")
+    switch (DRT::Problem::Instance()->NDim())
     {
-      vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont(params));
+      case 1:
+        return CreatePoroFunction<1>(type, params);
+      case 2:
+        return CreatePoroFunction<2>(type, params);
+      case 3:
+        return CreatePoroFunction<3>(type, params);
+      default:
+        dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+        return Teuchos::RCP<DRT::UTILS::Function>(nullptr);
     }
-    else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC")
-    {
-      vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc(params));
-    }
-    else
-    {
-      dserror("Wrong type of POROMULTIPHASESCATRA_FUNCTION");
-    }
-
-    return vecfunc;
   }
   else
   {
-    return Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction>(NULL);
+    return Teuchos::RCP<DRT::UTILS::Function>(nullptr);
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::TumorGrowthLawHeaviside::TumorGrowthLawHeaviside(
+template <int dim>
+Teuchos::RCP<DRT::UTILS::Function> POROMULTIPHASESCATRA::CreatePoroFunction(
+    const std::string& type, const std::vector<std::pair<std::string, double>>& params)
+{
+  if (type == "TUMOR_GROWTH_LAW_HEAVISIDE")
+    return Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>(params));
+  else if (type == "NECROSIS_LAW_HEAVISIDE")
+    return Teuchos::rcp(new POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>(params));
+  else if (type == "OXYGEN_CONSUMPTION_LAW_HEAVISIDE")
+    return Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>(params));
+  else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_OXY")
+    return Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>(params));
+  else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_NECRO")
+    return Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>(params));
+  else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT")
+  {
+    return Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>(params));
+  }
+  else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC")
+  {
+    return Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>(params));
+  }
+  else if (type == "LUNG_OXYGEN_EXCHANGE_LAW")
+  {
+    return Teuchos::rcp(new POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>(params));
+  }
+  else
+  {
+    dserror("Wrong type of POROMULTIPHASESCATRA_FUNCTION");
+    return Teuchos::RCP<DRT::UTILS::Function>(nullptr);
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template <int dim>
+POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>::TumorGrowthLawHeaviside(
     std::vector<std::pair<std::string, double>> funct_params)
-    : PoroMultiPhaseScaTraFunction()
+    : PoroMultiPhaseScaTraFunction<dim>()
 {
   // Check size
   if (funct_params.size() != 5)
@@ -111,17 +135,18 @@ POROMULTIPHASESCATRA::TumorGrowthLawHeaviside::TumorGrowthLawHeaviside(
     dserror("Fifth parameter for TUMOR_GROWTH_LAW_HEAVISIDE has to be p_t_crit");
 
   // save funct_params in class variable
-  myfunct_params_.resize(5);
-  myfunct_params_[0] = funct_params[0].second;
-  myfunct_params_[1] = funct_params[1].second;
-  myfunct_params_[2] = funct_params[2].second;
-  myfunct_params_[3] = funct_params[3].second;
-  myfunct_params_[4] = funct_params[4].second;
+  this->myfunct_params_.resize(5);
+  this->myfunct_params_[0] = funct_params[0].second;
+  this->myfunct_params_[1] = funct_params[1].second;
+  this->myfunct_params_[2] = funct_params[2].second;
+  this->myfunct_params_[3] = funct_params[3].second;
+  this->myfunct_params_[4] = funct_params[4].second;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::TumorGrowthLawHeaviside::CheckOrder(
+template <int dim>
+void POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>::CheckOrder(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
@@ -138,24 +163,25 @@ void POROMULTIPHASESCATRA::TumorGrowthLawHeaviside::CheckOrder(
     dserror("wrong order in variable vector, phi2 (necrotic mass fraction) not at position 9");
 
   // order is correct
-  order_checked_ = true;
+  this->order_checked_ = true;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double POROMULTIPHASESCATRA::TumorGrowthLawHeaviside::Evaluate(const int index,
+template <int dim>
+double POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>::Evaluate(const int index,
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
   // Check order (only once since it does not change)
-  if (not order_checked_) CheckOrder(variables, constants);
+  if (not this->order_checked_) CheckOrder(variables, constants);
 
   // read function params
-  const double gamma_T_growth = myfunct_params_[0];
-  const double w_nl_crit = myfunct_params_[1];
-  const double w_nl_env = myfunct_params_[2];
-  const double lambda = myfunct_params_[3];
-  const double p_t_crit = myfunct_params_[4];
+  const double gamma_T_growth = this->myfunct_params_[0];
+  const double w_nl_crit = this->myfunct_params_[1];
+  const double w_nl_env = this->myfunct_params_[2];
+  const double lambda = this->myfunct_params_[3];
+  const double p_t_crit = this->myfunct_params_[4];
 
   // read variables and constants (order is crucial)
   const double p2 = variables[1].second;
@@ -178,19 +204,20 @@ double POROMULTIPHASESCATRA::TumorGrowthLawHeaviside::Evaluate(const int index,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeaviside::EvaluateDerivative(int index,
-    const std::vector<std::pair<std::string, double>>& variables,
+template <int dim>
+std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>::EvaluateDerivative(
+    int index, const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
 
   // read function params
-  const double gamma_T_growth = myfunct_params_[0];
-  const double w_nl_crit = myfunct_params_[1];
-  const double w_nl_env = myfunct_params_[2];
-  const double lambda = myfunct_params_[3];
-  const double p_t_crit = myfunct_params_[4];
+  const double gamma_T_growth = this->myfunct_params_[0];
+  const double w_nl_crit = this->myfunct_params_[1];
+  const double w_nl_env = this->myfunct_params_[2];
+  const double lambda = this->myfunct_params_[3];
+  const double p_t_crit = this->myfunct_params_[4];
 
   // read variables and constants
   const double p2 = variables[1].second;
@@ -230,9 +257,10 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeaviside::EvaluateDeriv
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::NecrosisLawHeaviside::NecrosisLawHeaviside(
+template <int dim>
+POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::NecrosisLawHeaviside(
     std::vector<std::pair<std::string, double>> funct_params)
-    : PoroMultiPhaseScaTraFunction()
+    : PoroMultiPhaseScaTraFunction<dim>()
 {
   // Check size
   if (funct_params.size() != 5)
@@ -259,17 +287,18 @@ POROMULTIPHASESCATRA::NecrosisLawHeaviside::NecrosisLawHeaviside(
     dserror("Fifth parameter for NECROSIS_LAW_HEAVISIDE has to be p_t_crit");
 
   // save funct_params in class variable
-  myfunct_params_.resize(5);
-  myfunct_params_[0] = funct_params[0].second;
-  myfunct_params_[1] = funct_params[1].second;
-  myfunct_params_[2] = funct_params[2].second;
-  myfunct_params_[3] = funct_params[3].second;
-  myfunct_params_[4] = funct_params[4].second;
+  this->myfunct_params_.resize(5);
+  this->myfunct_params_[0] = funct_params[0].second;
+  this->myfunct_params_[1] = funct_params[1].second;
+  this->myfunct_params_[2] = funct_params[2].second;
+  this->myfunct_params_[3] = funct_params[3].second;
+  this->myfunct_params_[4] = funct_params[4].second;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::NecrosisLawHeaviside::CheckOrder(
+template <int dim>
+void POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::CheckOrder(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
@@ -286,24 +315,25 @@ void POROMULTIPHASESCATRA::NecrosisLawHeaviside::CheckOrder(
     dserror("wrong order in variable vector, phi1 (necrotic mass fraction) not at position 2");
 
   // order is correct
-  order_checked_ = true;
+  this->order_checked_ = true;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double POROMULTIPHASESCATRA::NecrosisLawHeaviside::Evaluate(const int index,
+template <int dim>
+double POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::Evaluate(const int index,
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
   // Check order (only once since it does not change)
-  if (not order_checked_) CheckOrder(variables, constants);
+  if (not this->order_checked_) CheckOrder(variables, constants);
 
   // read function params
-  const double gamma_t_necr = myfunct_params_[0];
-  const double w_nl_crit = myfunct_params_[1];
-  const double w_nl_env = myfunct_params_[2];
-  const double delta_a_t = myfunct_params_[3];
-  const double p_t_crit = myfunct_params_[4];
+  const double gamma_t_necr = this->myfunct_params_[0];
+  const double w_nl_crit = this->myfunct_params_[1];
+  const double w_nl_env = this->myfunct_params_[2];
+  const double delta_a_t = this->myfunct_params_[3];
+  const double p_t_crit = this->myfunct_params_[4];
 
   // read variables and constants (order is crucial)
   const double p2 = constants[1].second;
@@ -327,7 +357,8 @@ double POROMULTIPHASESCATRA::NecrosisLawHeaviside::Evaluate(const int index,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> POROMULTIPHASESCATRA::NecrosisLawHeaviside::EvaluateDerivative(int index,
+template <int dim>
+std::vector<double> POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::EvaluateDerivative(int index,
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
@@ -335,11 +366,11 @@ std::vector<double> POROMULTIPHASESCATRA::NecrosisLawHeaviside::EvaluateDerivati
   std::vector<double> deriv(variables.size(), 0.0);
 
   // read function params
-  const double gamma_t_necr = myfunct_params_[0];
-  const double w_nl_crit = myfunct_params_[1];
-  const double w_nl_env = myfunct_params_[2];
-  const double delta_a_t = myfunct_params_[3];
-  const double p_t_crit = myfunct_params_[4];
+  const double gamma_t_necr = this->myfunct_params_[0];
+  const double w_nl_crit = this->myfunct_params_[1];
+  const double w_nl_env = this->myfunct_params_[2];
+  const double delta_a_t = this->myfunct_params_[3];
+  const double p_t_crit = this->myfunct_params_[4];
 
   if (variables[0].first == "phi1")  // maindiag-derivative
   {
@@ -398,9 +429,10 @@ std::vector<double> POROMULTIPHASESCATRA::NecrosisLawHeaviside::EvaluateDerivati
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside::OxygenConsumptionLawHeaviside(
+template <int dim>
+POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::OxygenConsumptionLawHeaviside(
     std::vector<std::pair<std::string, double>> funct_params)
-    : PoroMultiPhaseScaTraFunction()
+    : PoroMultiPhaseScaTraFunction<dim>()
 {
   // Check size
   if (funct_params.size() != 5)
@@ -428,17 +460,18 @@ POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside::OxygenConsumptionLawHeavisi
     dserror("Fifth parameter for OXYGEN_CONSUMPTION_LAW_HEAVISIDE has to be p_t_crit");
 
   // save funct_params in class variable
-  myfunct_params_.resize(5);
-  myfunct_params_[0] = funct_params[0].second;
-  myfunct_params_[1] = funct_params[1].second;
-  myfunct_params_[2] = funct_params[2].second;
-  myfunct_params_[3] = funct_params[3].second;
-  myfunct_params_[4] = funct_params[4].second;
+  this->myfunct_params_.resize(5);
+  this->myfunct_params_[0] = funct_params[0].second;
+  this->myfunct_params_[1] = funct_params[1].second;
+  this->myfunct_params_[2] = funct_params[2].second;
+  this->myfunct_params_[3] = funct_params[3].second;
+  this->myfunct_params_[4] = funct_params[4].second;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside::CheckOrder(
+template <int dim>
+void POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::CheckOrder(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
@@ -455,24 +488,25 @@ void POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside::CheckOrder(
     dserror("wrong order in variable vector, phi1 (necrotic mass fraction) not at position 2");
 
   // order is correct
-  order_checked_ = true;
+  this->order_checked_ = true;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside::Evaluate(const int index,
+template <int dim>
+double POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::Evaluate(const int index,
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
   // Check order (only once since it does not change)
-  if (not order_checked_) CheckOrder(variables, constants);
+  if (not this->order_checked_) CheckOrder(variables, constants);
 
   // read function params
-  const double gamma_nl_growth = myfunct_params_[0];
-  const double gamma_0_nl = myfunct_params_[1];
-  const double w_nl_crit = myfunct_params_[2];
-  const double w_nl_env = myfunct_params_[3];
-  const double p_t_crit = myfunct_params_[4];
+  const double gamma_nl_growth = this->myfunct_params_[0];
+  const double gamma_0_nl = this->myfunct_params_[1];
+  const double w_nl_crit = this->myfunct_params_[2];
+  const double w_nl_env = this->myfunct_params_[3];
+  const double p_t_crit = this->myfunct_params_[4];
 
   // read variables and constants (order is crucial)
   const double S2 = constants[4].second;
@@ -497,7 +531,8 @@ double POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside::Evaluate(const int i
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside::EvaluateDerivative(
+template <int dim>
+std::vector<double> POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::EvaluateDerivative(
     int index, const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
@@ -505,11 +540,11 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside::Evaluat
   std::vector<double> deriv(variables.size(), 0.0);
 
   // read function params
-  const double gamma_nl_growth = myfunct_params_[0];
-  const double gamma_0_nl = myfunct_params_[1];
-  const double w_nl_crit = myfunct_params_[2];
-  const double w_nl_env = myfunct_params_[3];
-  const double p_t_crit = myfunct_params_[4];
+  const double gamma_nl_growth = this->myfunct_params_[0];
+  const double gamma_0_nl = this->myfunct_params_[1];
+  const double w_nl_crit = this->myfunct_params_[2];
+  const double w_nl_env = this->myfunct_params_[3];
+  const double p_t_crit = this->myfunct_params_[4];
 
   if (variables[0].first == "phi1")  // maindiag-derivative
   {
@@ -574,9 +609,10 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside::Evaluat
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy::TumorGrowthLawHeavisideOxy(
+template <int dim>
+POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::TumorGrowthLawHeavisideOxy(
     std::vector<std::pair<std::string, double>> funct_params)
-    : PoroMultiPhaseScaTraFunction()
+    : PoroMultiPhaseScaTraFunction<dim>()
 {
   // Check size
   if (funct_params.size() != 5)
@@ -603,17 +639,18 @@ POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy::TumorGrowthLawHeavisideOxy(
     dserror("Fifth parameter for TUMOR_GROWTH_LAW_HEAVISIDE_OXY has to be p_t_crit");
 
   // save funct_params in class variable
-  myfunct_params_.resize(5);
-  myfunct_params_[0] = funct_params[0].second;
-  myfunct_params_[1] = funct_params[1].second;
-  myfunct_params_[2] = funct_params[2].second;
-  myfunct_params_[3] = funct_params[3].second;
-  myfunct_params_[4] = funct_params[4].second;
+  this->myfunct_params_.resize(5);
+  this->myfunct_params_[0] = funct_params[0].second;
+  this->myfunct_params_[1] = funct_params[1].second;
+  this->myfunct_params_[2] = funct_params[2].second;
+  this->myfunct_params_[3] = funct_params[3].second;
+  this->myfunct_params_[4] = funct_params[4].second;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy::CheckOrder(
+template <int dim>
+void POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::CheckOrder(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
@@ -630,24 +667,25 @@ void POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy::CheckOrder(
     dserror("wrong order in variable vector, phi1 (necrotic mass fraction) not at position 2");
 
   // order is correct
-  order_checked_ = true;
+  this->order_checked_ = true;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy::Evaluate(const int index,
+template <int dim>
+double POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::Evaluate(const int index,
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
   // Check order (only once since it does not change)
-  if (not order_checked_) CheckOrder(variables, constants);
+  if (not this->order_checked_) CheckOrder(variables, constants);
 
   // read function params
-  const double gamma_T_growth = myfunct_params_[0];
-  const double w_nl_crit = myfunct_params_[1];
-  const double w_nl_env = myfunct_params_[2];
-  const double lambda = myfunct_params_[3];
-  const double p_t_crit = myfunct_params_[4];
+  const double gamma_T_growth = this->myfunct_params_[0];
+  const double w_nl_crit = this->myfunct_params_[1];
+  const double w_nl_env = this->myfunct_params_[2];
+  const double lambda = this->myfunct_params_[3];
+  const double p_t_crit = this->myfunct_params_[4];
 
   // read variables and constants (order is crucial)
   const double p2 = constants[1].second;
@@ -671,19 +709,20 @@ double POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy::Evaluate(const int inde
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy::EvaluateDerivative(int index,
-    const std::vector<std::pair<std::string, double>>& variables,
+template <int dim>
+std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::EvaluateDerivative(
+    int index, const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
 
   // read function params
-  const double gamma_T_growth = myfunct_params_[0];
-  const double w_nl_crit = myfunct_params_[1];
-  const double w_nl_env = myfunct_params_[2];
-  const double lambda = myfunct_params_[3];
-  const double p_t_crit = myfunct_params_[4];
+  const double gamma_T_growth = this->myfunct_params_[0];
+  const double w_nl_crit = this->myfunct_params_[1];
+  const double w_nl_env = this->myfunct_params_[2];
+  const double lambda = this->myfunct_params_[3];
+  const double p_t_crit = this->myfunct_params_[4];
 
   if (variables[0].first == "phi1")  // maindiag-derivative
   {
@@ -746,9 +785,10 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy::EvaluateDe
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro::TumorGrowthLawHeavisideNecro(
+template <int dim>
+POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::TumorGrowthLawHeavisideNecro(
     std::vector<std::pair<std::string, double>> funct_params)
-    : PoroMultiPhaseScaTraFunction()
+    : PoroMultiPhaseScaTraFunction<dim>()
 {
   // Check size
   if (funct_params.size() != 5)
@@ -775,17 +815,18 @@ POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro::TumorGrowthLawHeavisideNecro
     dserror("Fifth parameter for TUMOR_GROWTH_LAW_HEAVISIDE_OXY has to be p_t_crit");
 
   // save funct_params in class variable
-  myfunct_params_.resize(5);
-  myfunct_params_[0] = funct_params[0].second;
-  myfunct_params_[1] = funct_params[1].second;
-  myfunct_params_[2] = funct_params[2].second;
-  myfunct_params_[3] = funct_params[3].second;
-  myfunct_params_[4] = funct_params[4].second;
+  this->myfunct_params_.resize(5);
+  this->myfunct_params_[0] = funct_params[0].second;
+  this->myfunct_params_[1] = funct_params[1].second;
+  this->myfunct_params_[2] = funct_params[2].second;
+  this->myfunct_params_[3] = funct_params[3].second;
+  this->myfunct_params_[4] = funct_params[4].second;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro::CheckOrder(
+template <int dim>
+void POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::CheckOrder(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
@@ -802,24 +843,25 @@ void POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro::CheckOrder(
     dserror("wrong order in variable vector, phi1 (necrotic mass fraction) not at position 2");
 
   // order is correct
-  order_checked_ = true;
+  this->order_checked_ = true;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro::Evaluate(const int index,
+template <int dim>
+double POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::Evaluate(const int index,
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
   // Check order (only once since it does not change)
-  if (not order_checked_) CheckOrder(variables, constants);
+  if (not this->order_checked_) CheckOrder(variables, constants);
 
   // read function params
-  const double gamma_T_growth = myfunct_params_[0];
-  const double w_nl_crit = myfunct_params_[1];
-  const double w_nl_env = myfunct_params_[2];
-  const double lambda = myfunct_params_[3];
-  const double p_t_crit = myfunct_params_[4];
+  const double gamma_T_growth = this->myfunct_params_[0];
+  const double w_nl_crit = this->myfunct_params_[1];
+  const double w_nl_env = this->myfunct_params_[2];
+  const double lambda = this->myfunct_params_[3];
+  const double p_t_crit = this->myfunct_params_[4];
 
   // read variables and constants (order is crucial)
   const double p2 = constants[1].second;
@@ -845,7 +887,8 @@ double POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro::Evaluate(const int in
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro::EvaluateDerivative(
+template <int dim>
+std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::EvaluateDerivative(
     int index, const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
@@ -853,11 +896,11 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro::Evaluate
   std::vector<double> deriv(variables.size(), 0.0);
 
   // read function params
-  const double gamma_T_growth = myfunct_params_[0];
-  const double w_nl_crit = myfunct_params_[1];
-  const double w_nl_env = myfunct_params_[2];
-  const double lambda = myfunct_params_[3];
-  const double p_t_crit = myfunct_params_[4];
+  const double gamma_T_growth = this->myfunct_params_[0];
+  const double w_nl_crit = this->myfunct_params_[1];
+  const double w_nl_env = this->myfunct_params_[2];
+  const double lambda = this->myfunct_params_[3];
+  const double p_t_crit = this->myfunct_params_[4];
 
   if (variables[0].first == "phi1")  // maindiag-derivative
   {
@@ -924,9 +967,10 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro::Evaluate
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont::OxygenTransvascularExchangeLawCont(
+template <int dim>
+POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::OxygenTransvascularExchangeLawCont(
     std::vector<std::pair<std::string, double>> funct_params)
-    : PoroMultiPhaseScaTraFunction()
+    : PoroMultiPhaseScaTraFunction<dim>()
 {
   // Check size
   if (funct_params.size() != 9)
@@ -967,21 +1011,22 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont::OxygenTransvascularExc
     dserror("Sixth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT has to be alpha_IF");
 
   // save funct_params in class variable
-  myfunct_params_.resize(9);
-  myfunct_params_[0] = funct_params[0].second;
-  myfunct_params_[1] = funct_params[1].second;
-  myfunct_params_[2] = funct_params[2].second;
-  myfunct_params_[3] = funct_params[3].second;
-  myfunct_params_[4] = funct_params[4].second;
-  myfunct_params_[5] = funct_params[5].second;
-  myfunct_params_[6] = funct_params[6].second;
-  myfunct_params_[7] = funct_params[7].second;
-  myfunct_params_[8] = funct_params[8].second;
+  this->myfunct_params_.resize(9);
+  this->myfunct_params_[0] = funct_params[0].second;
+  this->myfunct_params_[1] = funct_params[1].second;
+  this->myfunct_params_[2] = funct_params[2].second;
+  this->myfunct_params_[3] = funct_params[3].second;
+  this->myfunct_params_[4] = funct_params[4].second;
+  this->myfunct_params_[5] = funct_params[5].second;
+  this->myfunct_params_[6] = funct_params[6].second;
+  this->myfunct_params_[7] = funct_params[7].second;
+  this->myfunct_params_[8] = funct_params[8].second;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont::CheckOrder(
+template <int dim>
+void POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::CheckOrder(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
@@ -1000,28 +1045,29 @@ void POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont::CheckOrder(
     dserror("wrong order in variable vector, phi4 (necrotic mass fraction) not at position 4");
 
   // order is correct
-  order_checked_ = true;
+  this->order_checked_ = true;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont::Evaluate(const int index,
+template <int dim>
+double POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::Evaluate(const int index,
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
   // Check order (only once since it does not change)
-  if (not order_checked_) CheckOrder(variables, constants);
+  if (not this->order_checked_) CheckOrder(variables, constants);
 
   // read function params
-  const double n = myfunct_params_[0];
-  const double Pb50 = myfunct_params_[1];
-  const double CaO2_max = myfunct_params_[2];
-  const double alpha_bl_eff = myfunct_params_[3];
-  const double gammarhoSV = myfunct_params_[4];
-  const double rho_oxy = myfunct_params_[5];
-  const double rho_if = myfunct_params_[6];
-  const double rho_bl = myfunct_params_[7];
-  const double alpha_IF = myfunct_params_[8];
+  const double n = this->myfunct_params_[0];
+  const double Pb50 = this->myfunct_params_[1];
+  const double CaO2_max = this->myfunct_params_[2];
+  const double alpha_bl_eff = this->myfunct_params_[3];
+  const double gammarhoSV = this->myfunct_params_[4];
+  const double rho_oxy = this->myfunct_params_[5];
+  const double rho_if = this->myfunct_params_[6];
+  const double rho_bl = this->myfunct_params_[7];
+  const double alpha_IF = this->myfunct_params_[8];
 
   const double fac_if = rho_oxy / rho_if * alpha_IF;
 
@@ -1047,23 +1093,25 @@ double POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont::Evaluate(const 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont::EvaluateDerivative(
-    int index, const std::vector<std::pair<std::string, double>>& variables,
+template <int dim>
+std::vector<double>
+POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::EvaluateDerivative(int index,
+    const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
 
   // read function params
-  const double n = myfunct_params_[0];
-  const double Pb50 = myfunct_params_[1];
-  const double CaO2_max = myfunct_params_[2];
-  const double alpha_bl_eff = myfunct_params_[3];
-  const double gammarhoSV = myfunct_params_[4];
-  const double rho_oxy = myfunct_params_[5];
-  const double rho_if = myfunct_params_[6];
-  const double rho_bl = myfunct_params_[7];
-  const double alpha_IF = myfunct_params_[8];
+  const double n = this->myfunct_params_[0];
+  const double Pb50 = this->myfunct_params_[1];
+  const double CaO2_max = this->myfunct_params_[2];
+  const double alpha_bl_eff = this->myfunct_params_[3];
+  const double gammarhoSV = this->myfunct_params_[4];
+  const double rho_oxy = this->myfunct_params_[5];
+  const double rho_if = this->myfunct_params_[6];
+  const double rho_bl = this->myfunct_params_[7];
+  const double alpha_IF = this->myfunct_params_[8];
 
   const double fac_if = rho_oxy / rho_if * alpha_IF;
 
@@ -1118,9 +1166,10 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont::Ev
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc::OxygenTransvascularExchangeLawDisc(
+template <int dim>
+POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::OxygenTransvascularExchangeLawDisc(
     std::vector<std::pair<std::string, double>> funct_params)
-    : PoroMultiPhaseScaTraFunction()
+    : PoroMultiPhaseScaTraFunction<dim>()
 {
   // Check size
   if (funct_params.size() != 10)
@@ -1164,17 +1213,17 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc::OxygenTransvascularExc
     dserror("Sixth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC has to be alpha_IF");
 
   // save funct_params in class variable
-  myfunct_params_.resize(10);
-  myfunct_params_[0] = funct_params[0].second;
-  myfunct_params_[1] = funct_params[1].second;
-  myfunct_params_[2] = funct_params[2].second;
-  myfunct_params_[3] = funct_params[3].second;
-  myfunct_params_[4] = funct_params[4].second;
-  myfunct_params_[5] = funct_params[5].second;
-  myfunct_params_[6] = funct_params[6].second;
-  myfunct_params_[7] = funct_params[7].second;
-  myfunct_params_[8] = funct_params[8].second;
-  myfunct_params_[9] = funct_params[9].second;
+  this->myfunct_params_.resize(10);
+  this->myfunct_params_[0] = funct_params[0].second;
+  this->myfunct_params_[1] = funct_params[1].second;
+  this->myfunct_params_[2] = funct_params[2].second;
+  this->myfunct_params_[3] = funct_params[3].second;
+  this->myfunct_params_[4] = funct_params[4].second;
+  this->myfunct_params_[5] = funct_params[5].second;
+  this->myfunct_params_[6] = funct_params[6].second;
+  this->myfunct_params_[7] = funct_params[7].second;
+  this->myfunct_params_[8] = funct_params[8].second;
+  this->myfunct_params_[9] = funct_params[9].second;
 
   pos_oxy_art_ = -1;
   pos_diam_ = -1;
@@ -1182,7 +1231,8 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc::OxygenTransvascularExc
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc::CheckOrder(
+template <int dim>
+void POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::CheckOrder(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
@@ -1212,29 +1262,30 @@ void POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc::CheckOrder(
   if (pos_diam_ == -1) dserror("cannot find position of artery diameter");
 
   // order is correct
-  order_checked_ = true;
+  this->order_checked_ = true;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc::Evaluate(const int index,
+template <int dim>
+double POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::Evaluate(const int index,
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
   // Check order (only once since it does not change)
-  if (not order_checked_) CheckOrder(variables, constants);
+  if (not this->order_checked_) CheckOrder(variables, constants);
 
   // read function params
-  const double n = myfunct_params_[0];
-  const double Pb50 = myfunct_params_[1];
-  const double CaO2_max = myfunct_params_[2];
-  const double alpha_bl_eff = myfunct_params_[3];
-  const double gammarho = myfunct_params_[4];
-  const double rho_oxy = myfunct_params_[5];
-  const double rho_if = myfunct_params_[6];
-  const double rho_bl = myfunct_params_[7];
-  const double S2_max = myfunct_params_[8];
-  const double alpha_IF = myfunct_params_[9];
+  const double n = this->myfunct_params_[0];
+  const double Pb50 = this->myfunct_params_[1];
+  const double CaO2_max = this->myfunct_params_[2];
+  const double alpha_bl_eff = this->myfunct_params_[3];
+  const double gammarho = this->myfunct_params_[4];
+  const double rho_oxy = this->myfunct_params_[5];
+  const double rho_if = this->myfunct_params_[6];
+  const double rho_bl = this->myfunct_params_[7];
+  const double S2_max = this->myfunct_params_[8];
+  const double alpha_IF = this->myfunct_params_[9];
 
   const double fac_if = rho_oxy / rho_if * alpha_IF;
 
@@ -1261,24 +1312,26 @@ double POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc::Evaluate(const 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc::EvaluateDerivative(
-    int index, const std::vector<std::pair<std::string, double>>& variables,
+template <int dim>
+std::vector<double>
+POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::EvaluateDerivative(int index,
+    const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
 
   // read function params
-  const double n = myfunct_params_[0];
-  const double Pb50 = myfunct_params_[1];
-  const double CaO2_max = myfunct_params_[2];
-  const double alpha_bl_eff = myfunct_params_[3];
-  const double gammarho = myfunct_params_[4];
-  const double rho_oxy = myfunct_params_[5];
-  const double rho_if = myfunct_params_[6];
-  const double rho_bl = myfunct_params_[7];
-  const double S2_max = myfunct_params_[8];
-  const double alpha_IF = myfunct_params_[9];
+  const double n = this->myfunct_params_[0];
+  const double Pb50 = this->myfunct_params_[1];
+  const double CaO2_max = this->myfunct_params_[2];
+  const double alpha_bl_eff = this->myfunct_params_[3];
+  const double gammarho = this->myfunct_params_[4];
+  const double rho_oxy = this->myfunct_params_[5];
+  const double rho_if = this->myfunct_params_[6];
+  const double rho_bl = this->myfunct_params_[7];
+  const double S2_max = this->myfunct_params_[8];
+  const double alpha_IF = this->myfunct_params_[9];
 
   const double fac_if = rho_oxy / rho_if * alpha_IF;
 
@@ -1308,3 +1361,262 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc::Ev
 
   return deriv;
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template <int dim>
+POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::LungOxygenExchangeLaw(
+    const std::vector<std::pair<std::string, double>>& funct_params)
+    : PoroMultiPhaseScaTraFunction<dim>()
+{
+  // Check size
+  if (funct_params.size() != 9)
+  {
+    dserror(
+        "Wrong size of funct_params for LUNG_OXYGEN_EXCHANGE_LAW, it should have "
+        "exactly\n"
+        "9 funct_params (in this order) rho_oxy, DiffAdVTLC, alpha_oxy, rho_air, rho_bl, "
+        "n, P_oB50, NC_Hb, P_atmospheric");
+  }
+
+  // Check correct naming and order of funct_params
+  if (funct_params[0].first != "rho_oxy")
+    dserror("First parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be rho_oxy");
+
+  if (funct_params[1].first != "DiffAdVTLC")
+    dserror("Second parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be DiffAdVTLC");
+
+  if (funct_params[2].first != "alpha_oxy")
+    dserror("Third parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be alpha_oxy");
+
+  if (funct_params[3].first != "rho_air")
+    dserror("Third parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be rho_air");
+
+  if (funct_params[4].first != "rho_bl")
+    dserror("Fourth parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be rho_bl");
+
+  if (funct_params[5].first != "n")
+    dserror("Fifth parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be n");
+
+  if (funct_params[6].first != "P_oB50")
+    dserror("Sixth parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be P_oB50");
+
+  if (funct_params[7].first != "NC_Hb")
+    dserror("Seventh parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be NC_Hb");
+
+  if (funct_params[8].first != "P_atmospheric")
+  {
+    dserror(
+        "Eighth parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be P_atmospheric, which should be "
+        "1.013 bar");
+  }
+
+  // save funct_params in class variable
+  this->myfunct_params_.resize(11);
+  this->myfunct_params_[0] = funct_params[0].second;
+  this->myfunct_params_[1] = funct_params[1].second;
+  this->myfunct_params_[2] = funct_params[2].second;
+  this->myfunct_params_[3] = funct_params[3].second;
+  this->myfunct_params_[4] = funct_params[4].second;
+  this->myfunct_params_[5] = funct_params[5].second;
+  this->myfunct_params_[6] = funct_params[6].second;
+  this->myfunct_params_[7] = funct_params[7].second;
+  this->myfunct_params_[8] = funct_params[8].second;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template <int dim>
+void POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::CheckOrder(
+    const std::vector<std::pair<std::string, double>>& variables,
+    const std::vector<std::pair<std::string, double>>& constants)
+{
+  // safety check for correct ordering of variables and constants
+  if (variables[0].first == "phi1")
+  {
+    if (constants[0].first != "p1")
+      dserror("wrong order in constants vector, P1 (Pressure of air) not at position 0");
+    if (variables[1].first != "phi2")
+      dserror(
+          "wrong order in variable vector, phi2 (oxygen mass fraction in blood) not at position 2");
+  }
+  else if (variables[0].first == "p1")
+  {
+    if (constants[0].first != "phi1")
+      dserror(
+          "wrong order in variable vector, phi1 (oxygen mass fraction in air) not at position 1");
+    if (constants[1].first != "phi2")
+      dserror(
+          "wrong order in variable vector, phi2 (oxygen mass fraction in blood) not at position 2");
+  }
+  else
+  {
+    dserror("Variable <%s> not supported on position 0. Wrong order in variable vector! ",
+        variables[0].first.c_str());
+  }
+
+  // order is correct
+  this->order_checked_ = true;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template <int dim>
+double POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::Evaluate(const int index,
+    const std::vector<std::pair<std::string, double>>& variables,
+    const std::vector<std::pair<std::string, double>>& constants)
+{
+  // Check order of variables and constants vector only once (since it does not change)
+  if (not this->order_checked_) CheckOrder(variables, constants);
+
+    // In debug mode, check order of variables and constants vector on every call
+#ifdef DEBUG
+  CheckOrder(variables, constants);
+#endif
+
+  // read function params
+  const double rho_oxy = this->myfunct_params_[0];
+  const double DiffAdVTLC = this->myfunct_params_[1];
+  const double alpha_oxy = this->myfunct_params_[2];
+  const double rho_air = this->myfunct_params_[3];
+  const double rho_bl = this->myfunct_params_[4];
+  const double n = this->myfunct_params_[5];
+  const double P_oB50 = this->myfunct_params_[6];
+  const double NC_Hb = this->myfunct_params_[7];
+  const double P_atmospheric = this->myfunct_params_[8];
+
+  // read variables (order is crucial)
+  const double oxy_mass_frac_air = variables[0].second;
+  const double oxy_mass_frac_bl = variables[1].second;
+
+  // read constants (order is crucial)
+  const double P_air = constants[0].second;
+
+  // partial pressure of oxygen in air
+  const double P_oA = oxy_mass_frac_air * (P_air + P_atmospheric) * rho_air / rho_oxy;
+
+  // CoB_total is total concentration of oxygen in blood (physically dissolved and bound to
+  // hemoglobin)
+  const double CoB_total = oxy_mass_frac_bl * rho_bl / rho_oxy;
+
+  // partial pressure of oxygen in blood
+  double P_oB = 0.0;
+
+  // Calculate partial pressure of oxygen in blood
+  POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<double>(
+      P_oB, CoB_total, NC_Hb, P_oB50, n, alpha_oxy);
+
+  // evaluate function
+  const double functval = rho_oxy * DiffAdVTLC * alpha_oxy * (P_oA - P_oB);
+
+  return functval;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template <int dim>
+std::vector<double> POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::EvaluateDerivative(int index,
+    const std::vector<std::pair<std::string, double>>& variables,
+    const std::vector<std::pair<std::string, double>>& constants)
+{
+// In debug mode, check order of variables and constants vector on every call
+#ifdef DEBUG
+  CheckOrder(variables, constants);
+#endif
+
+  // create derivative vector (should have size of variables)
+  std::vector<double> deriv(variables.size(), 0.0);
+
+  // read function params
+  const double rho_oxy = this->myfunct_params_[0];
+  const double DiffAdVTLC = this->myfunct_params_[1];
+  const double alpha_oxy = this->myfunct_params_[2];
+  const double rho_air = this->myfunct_params_[3];
+  const double rho_bl = this->myfunct_params_[4];
+  const double n = this->myfunct_params_[5];
+  const double P_oB50 = this->myfunct_params_[6];
+  const double NC_Hb = this->myfunct_params_[7];
+  const double P_atmospheric = this->myfunct_params_[8];
+
+  // define Fad object for evaluation
+  using FAD = Sacado::Fad::DFad<double>;
+  FAD oxy_mass_frac_bl = 0.0;
+  oxy_mass_frac_bl.diff(0, 1);  // independent variable 0 out of a total of 1
+
+  double oxy_mass_frac_air, P_air;
+
+  if (variables[0].first == "phi1")  // maindiag-derivative
+  {
+    // read variables and constants (order is crucial)
+    oxy_mass_frac_air = variables[0].second;
+    oxy_mass_frac_bl.val() = variables[1].second;
+    P_air = constants[0].second;
+  }
+  else if (variables[0].first == "p1")  // OD-derivative
+  {
+    // read variables and constants (order is crucial)
+    oxy_mass_frac_air = constants[0].second;
+    oxy_mass_frac_bl = constants[1].second;
+    P_air = variables[0].second;
+  }
+  else
+    dserror("Derivative w.r.t. <%s> not supported in LUNG_OXYGEN_EXCHANGE_LAW.",
+        variables[0].first.c_str());
+
+  FAD P_oB = 0.0;
+  FAD C_oB_total = oxy_mass_frac_bl * rho_bl / rho_oxy;
+
+  POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<FAD>(
+      P_oB, C_oB_total, NC_Hb, P_oB50, n, alpha_oxy);
+
+  if (variables[0].first == "phi1")  // maindiag-derivative
+  {
+    deriv[0] = rho_oxy * DiffAdVTLC * alpha_oxy * ((P_air + P_atmospheric) * rho_air / rho_oxy);
+    deriv[1] = rho_oxy * DiffAdVTLC * alpha_oxy * (-1.0) * P_oB.fastAccessDx(0);
+  }
+  else if (variables[0].first == "p1")  // OD-derivative
+  {
+    deriv[0] = (rho_oxy * DiffAdVTLC * alpha_oxy) *
+               ((oxy_mass_frac_air * rho_air) /
+                   rho_oxy);  // derivative wrt P_air (dFunc/dP_oA * dP_oA/P_air)
+  }
+  else
+    dserror("Derivative w.r.t. <%s> not supported in LUNG_OXYGEN_EXCHANGE_LAW.",
+        variables[0].first.c_str());
+
+  return deriv;
+}
+
+// explicit instantiations
+
+template class POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<1>;
+template class POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<2>;
+template class POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<3>;
+
+template class POROMULTIPHASESCATRA::NecrosisLawHeaviside<1>;
+template class POROMULTIPHASESCATRA::NecrosisLawHeaviside<2>;
+template class POROMULTIPHASESCATRA::NecrosisLawHeaviside<3>;
+
+template class POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<1>;
+template class POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<2>;
+template class POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<3>;
+
+template class POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<1>;
+template class POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<2>;
+template class POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<3>;
+
+template class POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<1>;
+template class POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<2>;
+template class POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<3>;
+
+template class POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<1>;
+template class POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<2>;
+template class POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<3>;
+
+template class POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<1>;
+template class POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<2>;
+template class POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<3>;
+
+template class POROMULTIPHASESCATRA::LungOxygenExchangeLaw<1>;
+template class POROMULTIPHASESCATRA::LungOxygenExchangeLaw<2>;
+template class POROMULTIPHASESCATRA::LungOxygenExchangeLaw<3>;
