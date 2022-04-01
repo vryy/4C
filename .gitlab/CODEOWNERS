@@ -162,6 +162,7 @@ src/drt_inpar/inpar_IO_runtime_vt*_output*                 @baci/team_input @bac
 src/drt_inpar/inpar_particle*      @baci/team_particle
 src/drt_inpar/inpar_pasi*          @baci/team_particle
 src/drt_inpar/inpar_poro*          @baci/team_poro
+src/drt_inpar/inpar_solver*        @baci/team_solvers
 
 src/drt_inv_analysis/              @baci/team_queens
 
