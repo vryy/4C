@@ -81,7 +81,6 @@ namespace LINALG
    */
   void PrintMapInMatlabFormat(std::string fname, const Epetra_Map& map, const bool newfile = true);
 
-#ifndef TRILINOS_2015_Q1
   /*!
   \brief Write matrix to ASCII-file via Xpetra::IO
 
@@ -109,7 +108,6 @@ namespace LINALG
   */
   void WriteEpetraMultiVectorAsXpetra(
       const std::string& filename, Teuchos::RCP<Epetra_MultiVector> vec);
-#endif
 
 }  // namespace LINALG
 

@@ -168,11 +168,7 @@ void STR::TIMINT::BaseDataIO::InitSetupEveryIterationWriter(
   // insert the every_iter output writer as ppo for the solver object
   Teuchos::ParameterList& p_sol_opt = p_nox.sublist("Solver Options");
 
-#ifdef TRILINOS_2015_Q1
-  Teuchos::RCP<NOX::Abstract::PrePostOperator> prepost_solver_ptr = Teuchos::rcp(
-#else
   Teuchos::RCP<NOX::Observer> prepost_solver_ptr = Teuchos::rcp(
-#endif
       new NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration(*writer_every_iter_));
 
   NOX::NLN::AUX::AddToPrePostOpVector(p_sol_opt, prepost_solver_ptr);

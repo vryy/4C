@@ -242,11 +242,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
         if (nsdata == Teuchos::null) dserror("Error: null space data is empty");
 
         Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nspVector =
-#ifdef TRILINOS_2015_Q1
-            Teuchos::rcp(new Xpetra::EpetraMultiVector(nsdata));
-#else
             Teuchos::rcp(new Xpetra::EpetraMultiVectorT<GO, NO>(nsdata));
-#endif
 
         Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> rowMap = mueluA->getRowMap();
         nspVector->replaceMap(rowMap);
@@ -323,11 +319,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
         if (nsdata == Teuchos::null) dserror("Error: null space data is empty");
 
         Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nspVector =
-#ifdef TRILINOS_2015_Q1
-            Teuchos::rcp(new Xpetra::EpetraMultiVector(nsdata));
-#else
             Teuchos::rcp(new Xpetra::EpetraMultiVectorT<GO, NO>(nsdata));
-#endif
 
         Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> rowMap = mueluA->getRowMap();
         nspVector->replaceMap(rowMap);

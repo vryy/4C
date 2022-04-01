@@ -20,10 +20,7 @@
 #include <MueLu_PermutationFactory.hpp>
 #include <MueLu_SmootherPrototype.hpp>
 #include <MueLu_SmootherFactory.hpp>
-#include <MueLu_DirectSolver.hpp>  // remove me
-#ifdef TRILINOS_2015_Q1
-#include <MueLu_HierarchyHelpers.hpp>
-#endif
+#include <MueLu_HierarchyUtils.hpp>
 #include <MueLu_VerboseObject.hpp>
 
 // Aztec headers

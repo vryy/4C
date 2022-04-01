@@ -19,11 +19,7 @@
 #include <MueLu_SmootherPrototype.hpp>
 #include <MueLu_SmootherFactory.hpp>
 #include <MueLu_DirectSolver.hpp>
-#ifdef TRILINOS_2015_Q1
-#include <MueLu_HierarchyHelpers.hpp>
-#else
 #include <MueLu_HierarchyUtils.hpp>
-#endif
 #include <MueLu_VerboseObject.hpp>
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
@@ -355,13 +351,9 @@ void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(
   // check, if "SlaveDofMap" information is available in parameter lists
   if (epSlaveDofMap != Teuchos::null)
   {
-#ifdef TRILINOS_2015_Q1
-    Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap =
-        Teuchos::rcp(new Xpetra::EpetraMap(epSlaveDofMap));
-#else
     Teuchos::RCP<Xpetra::EpetraMapT<GO, NO>> xSlaveDofMap =
         Teuchos::rcp(new Xpetra::EpetraMapT<GO, NO>(epSlaveDofMap));
-#endif
+
     data_->Set("SlaveDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO, GO, Node>>(
                                   xSlaveDofMap));  // set map with active dofs
 

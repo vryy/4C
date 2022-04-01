@@ -28,12 +28,7 @@
 
 /*----------------------------------------------------------------------*/
 INVANA::SurfCurrentGroup::SurfCurrentGroup(Teuchos::RCP<DRT::Discretization> discret)
-    :
-#ifndef TRILINOS_2015_Q1
-      kokkosscopeguard_(),
-#endif
-      sourcedis_(discret),
-      targetdis_(Teuchos::null)
+    : kokkosscopeguard_(), sourcedis_(discret), targetdis_(Teuchos::null)
 {
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
@@ -59,10 +54,6 @@ INVANA::SurfCurrentGroup::SurfCurrentGroup(Teuchos::RCP<DRT::Discretization> dis
         "Size of conditions in source and target differs. We need the size to be equal for "
         "meaningful computation");
 
-#ifdef TRILINOS_2015_Q1
-  // initialize parallel environment for the computation of each surface current pair
-  Kokkos::initialize();
-#endif
 #if defined(KOKKOS_HAVE_OPENMP)
   std::cout << "Surface Currents in OpenMP-mode" << std::endl;
 #else
@@ -377,11 +368,7 @@ double INVANA::SurfCurrentPair::WSpaceNorm()
       MyIndices(numrnk, myrank, xsize);
   auto my_c_source = Kokkos::subview(c_source, mychunk, Kokkos::ALL());
   auto my_n_source = Kokkos::subview(n_source, mychunk, Kokkos::ALL());
-#ifdef TRILINOS_2015_Q1
-  int my_xsize = my_c_source.dimension_0();
-#else
   int my_xsize = my_c_source.extent(0);
-#endif
 
   //-------------------------------------------------
   // Do the convolutions
@@ -461,12 +448,8 @@ void INVANA::SurfCurrentPair::GradientWSpaceNorm(Teuchos::RCP<Epetra_MultiVector
   auto my_c_source = Kokkos::subview(c_source, mychunk, Kokkos::ALL());
   auto my_n_source = Kokkos::subview(n_source, mychunk, Kokkos::ALL());
   auto my_dn_source = Kokkos::subview(dn_source, mychunk, Kokkos::ALL());
-#ifdef TRILINOS_2015_Q1
-  int my_xsize = my_c_source.dimension_0();
-#else
-  int my_xsize = my_c_source.extent(0);
-#endif
 
+  int my_xsize = my_c_source.extent(0);
   int off = mychunk.first;
   Kokkos::parallel_for(my_xsize, ConvoluteDN<ViewStride, ViewStride>(my_c_source, my_dn_source,
                                      c_source, n_source, grad, off, sigmaW_, 2.0));
@@ -512,11 +495,7 @@ std::pair<int, int> INVANA::SurfCurrentPair::MyIndices(int nrnk, int myrnk, int 
 template <typename host_data_type>
 void INVANA::SurfCurrentPair::ExtractToHView(const extract_type& in, host_data_type& out)
 {
-#ifdef TRILINOS_2015_Q1
-  dsassert(in.size() == out.dimension_0(), "dimension mismatch");
-#else
   dsassert(in.size() == out.extent(0), "dimension mismatch");
-#endif
 
   // fill the data in the view
   int i = 0;
@@ -532,11 +511,7 @@ template <typename host_data_type>
 void INVANA::SurfCurrentPair::ExtractToHView(
     const extract_type& in, host_data_type& out, Teuchos::RCP<Epetra_Map> map)
 {
-#ifdef TRILINOS_2015_Q1
-  dsassert(in.size() == out.dimension_0(), "dimension mismatch");
-#else
   dsassert(in.size() == out.extent(0), "dimension mismatch");
-#endif
 
   std::vector<int> gids;
 
@@ -557,20 +532,11 @@ template <typename host_data_type>
 void INVANA::SurfCurrentPair::HViewToExtract(
     const host_data_type& in, const Epetra_Map& inmap, extract_type& out)
 {
-#ifdef TRILINOS_2015_Q1
-  int size0 = in.dimension_0();
-#else
   int size0 = in.extent(0);
-#endif
   std::vector<double> dum;
   for (int i = 0; i < size0; i++)
   {
-#ifdef TRILINOS_2015_Q1
-    for (unsigned j = 0; j < in.dimension_1(); j++) dum.push_back(in(i, j));
-#else
     for (unsigned j = 0; j < in.extent(1); j++) dum.push_back(in(i, j));
-#endif
-
     out.insert(std::pair<int, std::vector<double>>(inmap.GID(i), dum));
     dum.clear();
   }
@@ -580,20 +546,11 @@ void INVANA::SurfCurrentPair::HViewToExtract(
 template <typename host_data_type>
 void INVANA::SurfCurrentPair::HViewToExtract(const host_data_type& in, extract_type& out)
 {
-#ifdef TRILINOS_2015_Q1
-  int size0 = in.dimension_0();
-#else
   int size0 = in.extent(0);
-#endif
   std::vector<double> dum;
   for (int i = 0; i < size0; i++)
   {
-#ifdef TRILINOS_2015_Q1
-    for (unsigned j = 0; j < in.dimension_1(); j++) dum.push_back(in(i, j));
-#else
     for (unsigned j = 0; j < in.extent(1); j++) dum.push_back(in(i, j));
-#endif
-
     out.insert(std::pair<int, std::vector<double>>(i, dum));
     dum.clear();
   }
