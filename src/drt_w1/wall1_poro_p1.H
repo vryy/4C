@@ -16,7 +16,6 @@
 
 namespace DRT
 {
-  // forward declarations
   class Discretization;
 
   namespace ELEMENTS
@@ -28,10 +27,10 @@ namespace DRT
     template <DRT::Element::DiscretizationType distype>
     class Wall1_PoroP1 : public Wall1_Poro<distype>
     {
-      typedef DRT::ELEMENTS::Wall1_Poro<distype> my;
+      using Base = DRT::ELEMENTS::Wall1_Poro<distype>;
 
      public:
-      //@}
+      //!@}
       //! @name Constructors and destructors and related methods
 
       /*!
@@ -50,19 +49,13 @@ namespace DRT
       */
       Wall1_PoroP1(const Wall1_PoroP1& old);
 
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~Wall1_PoroP1(){};
-
-      //@}
+      //!@}
 
       //! number of dofs per node
-      static const int noddof_ = my::noddof_ + 1;
+      static const int noddof_ = Base::noddof_ + 1;
 
       //! total dofs per element
-      static const int numdof_ = noddof_ * my::numnod_;
+      static const int numdof_ = noddof_ * Base::numnod_;
 
       //! @name Acess methods
 
@@ -73,7 +66,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -81,7 +74,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const;
+      int UniqueParObjectId() const override;
 
       /*!
       \brief Pack this class so it can be communicated
@@ -89,7 +82,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -97,13 +90,13 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
-      /// Get vector of Teuchos::RCPs to the lines of this element
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      //! Get vector of Teuchos::RCPs to the lines of this element
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
-      /// Get vector of Teuchos::RCPs to the surfaces of this element
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
+      //! Get vector of Teuchos::RCPs to the surfaces of this element
+      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       //! @name Access methods
 
@@ -116,16 +109,16 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      virtual int NumDofPerNode(const DRT::Node& node) const { return 3; }
+      int NumDofPerNode(const DRT::Node& node) const override { return 3; }
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const;
+      DRT::ElementType& ElementType() const override;
 
-      //@}
+      //!@}
 
       //! @name Evaluation
 
@@ -134,140 +127,139 @@ namespace DRT
 
       Evaluate element stiffness, mass, internal forces, etc.
 
-      If NULL on input, the controlling method does not expect the element
+      If nullptr on input, the controlling method does not expect the element
       to fill these matrices or vectors.
 
       \return 0 if successful, negative otherwise
       */
-      virtual int Evaluate(
+      int Evaluate(
           Teuchos::ParameterList&
-              params,  ///< ParameterList for communication between control routine and elements
-          DRT::Discretization& discretization,  ///< pointer to discretization for de-assembly
-          DRT::Element::LocationArray& la,      ///< location array for de-assembly
-          Epetra_SerialDenseMatrix& elemat1,    ///< (stiffness-)matrix to be filled by element.
-          Epetra_SerialDenseMatrix& elemat2,    ///< (mass-)matrix to be filled by element.
-          Epetra_SerialDenseVector& elevec1,    ///< (internal force-)vector to be filled by element
-          Epetra_SerialDenseVector& elevec2,    ///< vector to be filled by element
-          Epetra_SerialDenseVector& elevec3     ///< vector to be filled by element
-      );
+              params,  //!< ParameterList for communication between control routine and elements
+          DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
+          DRT::Element::LocationArray& la,      //!< location array for de-assembly
+          Epetra_SerialDenseMatrix& elemat1,    //!< (stiffness-)matrix to be filled by element.
+          Epetra_SerialDenseMatrix& elemat2,    //!< (mass-)matrix to be filled by element.
+          Epetra_SerialDenseVector& elevec1,    //!< (internal force-)vector to be filled by element
+          Epetra_SerialDenseVector& elevec2,    //!< vector to be filled by element
+          Epetra_SerialDenseVector& elevec3     //!< vector to be filled by element
+          ) override;
 
-      /// Evaluate a Neumann boundary condition
-      ///
-      /// this method evaluates a surfaces Neumann condition on the wall element
-      ///
-      /// \return 0 if successful, negative otherwise
-      virtual int EvaluateNeumann(
-          Teuchos::ParameterList& params,  ///< (in/out) ParameterList for communication between
-                                           ///< control routine and elements
-          DRT::Discretization& discretization,  ///< A reference to the underlying discretization
-          DRT::Condition& condition,            ///<  The condition to be evaluated
-          std::vector<int>& lm,                 ///< location vector of this element
-          Epetra_SerialDenseVector& elevec1,  ///< vector to be filled by element. If NULL on input
-          Epetra_SerialDenseMatrix* elemat1 = NULL);
+      //! Evaluate a Neumann boundary condition
+      //!
+      //! this method evaluates a surfaces Neumann condition on the wall element
+      //!
+      //! \return 0 if successful, negative otherwise
+      int EvaluateNeumann(
+          Teuchos::ParameterList& params,  //!< (in/out) ParameterList for communication between
+                                           //!< control routine and elements
+          DRT::Discretization& discretization,  //!< A reference to the underlying discretization
+          DRT::Condition& condition,            //!<  The condition to be evaluated
+          std::vector<int>& lm,                 //!< location vector of this element
+          Epetra_SerialDenseVector& elevec1,    //!< vector to be filled by element.
+          Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
 
-      //@}
+      //!@}
 
       //! initialize the inverse of the jacobian and its determinant in the material configuration
       virtual void InitElement();
 
-     protected:
       //! don't want = operator
-      Wall1_PoroP1& operator=(const Wall1_PoroP1& old);
+      Wall1_PoroP1& operator=(const Wall1_PoroP1& old) = delete;
 
+     protected:
       /*!
       \brief Evaluate an element
 
       Evaluate So3_poro element stiffness, mass, internal forces, etc.
       Templated evaluate routine of element matrixes
 
-      If NULL on input, the controlling method does not expect the element
+      If nullptr on input, the controlling method does not expect the element
       to fill these matrices or vectors.
 
       \return 0 if successful, negative otherwise
       */
       virtual int MyEvaluate(
           Teuchos::ParameterList&
-              params,  ///< ParameterList for communication between control routine and elements
-          DRT::Discretization& discretization,  ///< pointer to discretization for de-assembly
-          DRT::Element::LocationArray& la,      ///< location array for de-assembly
-          Epetra_SerialDenseMatrix& elemat1,    ///< (stiffness-)matrix to be filled by element.
-          Epetra_SerialDenseMatrix& elemat2,    ///< (mass-)matrix to be filled by element.
-          Epetra_SerialDenseVector& elevec1,    ///< (internal force-)vector to be filled by element
-          Epetra_SerialDenseVector& elevec2,    ///< vector to be filled by element
-          Epetra_SerialDenseVector& elevec3     ///< vector to be filled by element
+              params,  //!< ParameterList for communication between control routine and elements
+          DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
+          DRT::Element::LocationArray& la,      //!< location array for de-assembly
+          Epetra_SerialDenseMatrix& elemat1,    //!< (stiffness-)matrix to be filled by element.
+          Epetra_SerialDenseMatrix& elemat2,    //!< (mass-)matrix to be filled by element.
+          Epetra_SerialDenseVector& elevec1,    //!< (internal force-)vector to be filled by element
+          Epetra_SerialDenseVector& elevec2,    //!< vector to be filled by element
+          Epetra_SerialDenseVector& elevec3     //!< vector to be filled by element
       );
 
       //! Calculate nonlinear stiffness and internal force for poroelasticity problems
-      void nlnstiff_poroelast(std::vector<int>& lm,        ///< location matrix
-          LINALG::Matrix<my::numdim_, my::numnod_>& disp,  // current displacements
-          LINALG::Matrix<my::numdim_, my::numnod_>& vel,   // current velocities
-          LINALG::Matrix<my::numnod_, 1>* porosity,
-          //    std::vector<double>&      residual,       ///< current residual displ
-          LINALG::Matrix<my::numdim_, my::numnod_>& evelnp,  //< fluid velocity of element
-          LINALG::Matrix<my::numnod_, 1>& epreaf,            //< fluid pressure of element
-          LINALG::Matrix<numdof_, numdof_>* stiffmatrix,     ///< element stiffness matrix
-          LINALG::Matrix<numdof_, numdof_>* reamatrix,       // element reactive matrix
-          LINALG::Matrix<numdof_, 1>* force,                 ///< element internal force vector
-          Teuchos::ParameterList& params                     ///< algorithmic parameters e.g. time
+      void NonlinearStiffnessPoroelast(std::vector<int>& lm,     //!< location matrix
+          LINALG::Matrix<Base::numdim_, Base::numnod_>& disp,    //!< current displacements
+          LINALG::Matrix<Base::numdim_, Base::numnod_>& vel,     //!< current velocities
+          LINALG::Matrix<Base::numnod_, 1>* porosity_dof,        //!< porosity at element nodes
+          LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp,  //!< fluid velocity of element
+          LINALG::Matrix<Base::numnod_, 1>& epreaf,              //!< fluid pressure of element
+          LINALG::Matrix<numdof_, numdof_>* stiffmatrix,         //!< element stiffness matrix
+          LINALG::Matrix<numdof_, numdof_>* reamatrix,           //!< element reactive matrix
+          LINALG::Matrix<numdof_, 1>* force,                     //!< element internal force vector
+          Teuchos::ParameterList& params  //!< algorithmic parameters e.g. time
       );
 
       //! Calculate coupling terms in nonlinear stiffness and internal force for poroelasticity
       //! problems
-      void coupling_poroelast(std::vector<int>& lm,        ///< location matrix
-          LINALG::Matrix<my::numdim_, my::numnod_>& disp,  // current displacements
-          LINALG::Matrix<my::numdim_, my::numnod_>& vel,   // current velocities
-          LINALG::Matrix<my::numnod_, 1>* porosity,
-          LINALG::Matrix<my::numdim_, my::numnod_>& evelnp,  //< fluid velocity of element
-          LINALG::Matrix<my::numnod_, 1>& epreaf,            //< fluid pressure of element
-          LINALG::Matrix<numdof_, (my::numdim_ + 1) * my::numnod_>*
-              stiffmatrix,  ///< element stiffness matrix
-          LINALG::Matrix<numdof_, (my::numdim_ + 1) * my::numnod_>*
-              reamatrix,                      //< element reactive matrix
-          LINALG::Matrix<numdof_, 1>* force,  ///< element internal force vector
-          Teuchos::ParameterList& params);    ///< algorithmic parameters e.g. time
+      void CouplingPoroelast(std::vector<int>& lm,               //!< location matrix
+          LINALG::Matrix<Base::numdim_, Base::numnod_>& disp,    //!< current displacements
+          LINALG::Matrix<Base::numdim_, Base::numnod_>& vel,     //!< current velocities
+          LINALG::Matrix<Base::numnod_, 1>* porosity,            //!< porosity value
+          LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp,  //!< fluid velocity of element
+          LINALG::Matrix<Base::numnod_, 1>& epreaf,              //!< fluid pressure of element
+          LINALG::Matrix<numdof_, (Base::numdim_ + 1) * Base::numnod_>*
+              stiffmatrix,  //!< element stiffness matrix
+          LINALG::Matrix<numdof_, (Base::numdim_ + 1) * Base::numnod_>*
+              reamatrix,                      //!< element reactive matrix
+          LINALG::Matrix<numdof_, 1>* force,  //!< element internal force vector
+          Teuchos::ParameterList& params);    //!< algorithmic parameters e.g. time
 
       //! compute porosity at gausspoint and linearization of porosity w.r.t. structural
       //! displacements
       virtual void ComputePorosityAndLinearization(Teuchos::ParameterList& params,
           const double& press, const double& J, const int& gp,
-          const LINALG::Matrix<my::numnod_, 1>& shapfct,
-          const LINALG::Matrix<my::numnod_, 1>* myporosity,
-          const LINALG::Matrix<1, my::numdof_>& dJ_dus, double& porosity,
-          LINALG::Matrix<1, my::numdof_>& dphi_dus);
+          const LINALG::Matrix<Base::numnod_, 1>& shapfct,
+          const LINALG::Matrix<Base::numnod_, 1>* myporosity,
+          const LINALG::Matrix<1, Base::numdof_>& dJ_dus, double& porosity,
+          LINALG::Matrix<1, Base::numdof_>& dphi_dus);
 
       //! compute porosity at gausspoint and linearization of porosity w.r.t. fluid pressure
       virtual void ComputePorosityAndLinearizationOD(Teuchos::ParameterList& params,
           const double& press, const double& J, const int& gp,
-          const LINALG::Matrix<my::numnod_, 1>& shapfct,
-          const LINALG::Matrix<my::numnod_, 1>* myporosity, double& porosity, double& dphi_dp);
+          const LINALG::Matrix<Base::numnod_, 1>& shapfct,
+          const LINALG::Matrix<Base::numnod_, 1>* myporosity, double& porosity, double& dphi_dp);
 
       //! evaluate gauss points for diagonal terms
       void GaussPointLoopP1(Teuchos::ParameterList& params,
-          const LINALG::Matrix<my::numdim_, my::numnod_>& xrefe,
-          const LINALG::Matrix<my::numdim_, my::numnod_>& xcurr,
-          const LINALG::Matrix<my::numdim_, my::numnod_>& nodaldisp,
-          const LINALG::Matrix<my::numdim_, my::numnod_>& nodalvel,
-          const LINALG::Matrix<my::numdim_, my::numnod_>& evelnp,
-          const LINALG::Matrix<my::numnod_, 1>& epreaf,
-          const LINALG::Matrix<my::numnod_, 1>* porosity_dof,
-          LINALG::Matrix<my::numdof_, my::numdof_>& erea_v,
-          LINALG::Matrix<my::numdof_, my::numdof_>* sub_stiff,
-          LINALG::Matrix<my::numdof_, 1>* sub_force,
-          LINALG::Matrix<my::numdof_, my::numnod_>& ecoupl_p1,
-          LINALG::Matrix<my::numnod_, numdof_>& estiff_p1,
-          LINALG::Matrix<my::numnod_, 1>& ecoupl_force_p1);
+          const LINALG::Matrix<Base::numdim_, Base::numnod_>& xrefe,
+          const LINALG::Matrix<Base::numdim_, Base::numnod_>& xcurr,
+          const LINALG::Matrix<Base::numdim_, Base::numnod_>& nodaldisp,
+          const LINALG::Matrix<Base::numdim_, Base::numnod_>& nodalvel,
+          const LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp,
+          const LINALG::Matrix<Base::numnod_, 1>& epreaf,
+          const LINALG::Matrix<Base::numnod_, 1>* porosity_dof,
+          LINALG::Matrix<Base::numdof_, Base::numdof_>& erea_v,
+          LINALG::Matrix<Base::numdof_, Base::numdof_>* sub_stiff,
+          LINALG::Matrix<Base::numdof_, 1>* sub_force,
+          LINALG::Matrix<Base::numdof_, Base::numnod_>& ecoupl_p1,
+          LINALG::Matrix<Base::numnod_, numdof_>& estiff_p1,
+          LINALG::Matrix<Base::numnod_, 1>& ecoupl_force_p1);
 
       //! evaluate gauss points for off-diagonal terms
       void GaussPointLoopP1OD(Teuchos::ParameterList& params,
-          const LINALG::Matrix<my::numdim_, my::numnod_>& xrefe,
-          const LINALG::Matrix<my::numdim_, my::numnod_>& xcurr,
-          const LINALG::Matrix<my::numdim_, my::numnod_>& nodaldisp,
-          const LINALG::Matrix<my::numdim_, my::numnod_>& nodalvel,
-          const LINALG::Matrix<my::numdim_, my::numnod_>& evelnp,
-          const LINALG::Matrix<my::numnod_, 1>& epreaf,
-          const LINALG::Matrix<my::numnod_, 1>* porosity_dof,
-          LINALG::Matrix<my::numnod_, my::numnod_>& estiff_p1,
-          LINALG::Matrix<my::numdof_, (my::numdim_ + 1) * my::numnod_>& sub_stiff);
+          const LINALG::Matrix<Base::numdim_, Base::numnod_>& xrefe,
+          const LINALG::Matrix<Base::numdim_, Base::numnod_>& xcurr,
+          const LINALG::Matrix<Base::numdim_, Base::numnod_>& nodaldisp,
+          const LINALG::Matrix<Base::numdim_, Base::numnod_>& nodalvel,
+          const LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp,
+          const LINALG::Matrix<Base::numnod_, 1>& epreaf,
+          const LINALG::Matrix<Base::numnod_, 1>* porosity_dof,
+          LINALG::Matrix<Base::numnod_, Base::numnod_>& estiff_p1,
+          LINALG::Matrix<Base::numdof_, (Base::numdim_ + 1) * Base::numnod_>& sub_stiff);
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

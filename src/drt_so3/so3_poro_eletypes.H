@@ -18,7 +18,6 @@
 
 namespace DRT
 {
-  // forward declarations
   class Discretization;
 
   namespace ELEMENTS
@@ -168,8 +167,7 @@ namespace DRT
 
       std::string GetElementTypeString() const { return "SONURBS27PORO"; }
     };
-
-
   }  // namespace ELEMENTS
 }  // namespace DRT
+
 #endif /* SO3_PORO_ELETYPES_H_ */

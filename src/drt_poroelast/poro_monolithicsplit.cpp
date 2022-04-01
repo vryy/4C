@@ -22,7 +22,6 @@
 
 #include "../drt_structure/stru_aux.H"
 
-#include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 
 POROELAST::MonolithicSplit::MonolithicSplit(
@@ -49,9 +48,6 @@ POROELAST::MonolithicSplit::MonolithicSplit(
   ddi_ = Teuchos::null;
 }
 
-/*----------------------------------------------------------------------*
- |                                                         vuong 11/12  |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplit::PrepareTimeStep()
 {
   // call base class
@@ -108,27 +104,18 @@ void POROELAST::MonolithicSplit::PrepareTimeStep()
   }
 }
 
-/*----------------------------------------------------------------------*
- |                                                         vuong 11/12  |
- *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> POROELAST::MonolithicSplit::StructureToFluidAtInterface(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return icoupfs_->MasterToSlave(iv);
 }
 
-/*----------------------------------------------------------------------*
- |                                                         vuong 11/12  |
- *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> POROELAST::MonolithicSplit::FluidToStructureAtInterface(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return icoupfs_->SlaveToMaster(iv);
 }
 
-/*----------------------------------------------------------------------*
- |  map containing the dofs with Dirichlet BC and FSI Coupling Condition on structure side
- *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::FSIDBCMap()
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicSplit::FSIDBCMap");
@@ -188,9 +175,6 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::FSIDBCMap()
   return structfsidbcmap;
 }
 
-/*----------------------------------------------------------------------*
- |                                                         vuong 11/12  |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplit::SetupCouplingAndMatrices()
 {
   const int ndim = DRT::Problem::Instance()->NDim();
@@ -231,9 +215,6 @@ void POROELAST::MonolithicSplit::SetupCouplingAndMatrices()
       *(FluidField()->Interface()), *(StructureField()->Interface()), 81, false, true));
 }
 
-/*----------------------------------------------------------------------*
- |  map containing the dofs with Dirichlet BC            vuong 11/12  |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplit::BuildCombinedDBCMap()
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicSplit::CombinedDBCMap");
@@ -253,17 +234,12 @@ void POROELAST::MonolithicSplit::BuildCombinedDBCMap()
   // are in the global
   // system, i.e. are not condensed
   std::vector<Teuchos::RCP<const Epetra_Map>> vectordbcmaps;
-  vectordbcmaps.push_back(overallfsidbcmaps);
-  vectordbcmaps.push_back(fullmap_);
+  vectordbcmaps.emplace_back(overallfsidbcmaps);
+  vectordbcmaps.emplace_back(fullmap_);
 
   combinedDBCMap_ = LINALG::MultiMapExtractor::IntersectMaps(vectordbcmaps);
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- | solution with full Newton-Raphson iteration            vuong 11/12    |
- *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplit::Solve()
 {
   // solve monolithic system by newton iteration

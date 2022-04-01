@@ -292,7 +292,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Setup(
   Teuchos::RCP<MAT::StructPoro> structmat =
       Teuchos::rcp_static_cast<MAT::StructPoro>(ele_->Material(1));
 
-  invbulkmodulussolid_ = structmat->InvBulkmodulus();
+  invbulkmodulussolid_ = structmat->InvBulkModulus();
   soliddensity_ = structmat->DensitySolidPhase();
 
   for (int iphase = 0; iphase < numfluidphases_; iphase++)

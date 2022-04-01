@@ -7,14 +7,9 @@
 
  */
 
-/*----------------------------------------------------------------------*
- | headers                                                              |
- *----------------------------------------------------------------------*/
-
 #include "poroelast_utils.H"
 
 #include <Epetra_Time.h>
-#include <Epetra_MpiComm.h>
 
 #include "poro_base.H"
 
@@ -25,14 +20,12 @@
 #include "poro_monolithicsplit_nopenetration.H"
 #include "poro_monolithicmeshtying.H"
 #include "poro_utils_clonestrategy.H"
-#include "../drt_inpar/inpar_poroelast.H"
 
 #include "poro_scatra_base.H"
 
 #include "poro_scatra_part_1wc.H"
 #include "poro_scatra_part_2wc.H"
 #include "poro_scatra_monolithic.H"
-#include "../drt_inpar/inpar_poroscatra.H"
 
 
 #include "../drt_lib/drt_condition_utils.H"
@@ -55,76 +48,47 @@
 #include "../linalg/linalg_utils_densematrix_communication.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 
-
-/*----------------------------------------------------------------------*
- |                                                         vuong 08/13  |
- *----------------------------------------------------------------------*/
 bool POROELAST::UTILS::CheckPoro(const DRT::Element* actele)
 {
   // all poro elements need to be listed here
-  if (actele->ElementType() == DRT::ELEMENTS::So_hex8PoroType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::So_hex8PoroScatraType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::So_tet4PoroType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::So_tet4PoroScatraType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::So_tet10PoroType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::So_tet10PoroScatraType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::So_hex27PoroType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::So_hex27PoroScatraType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::So_nurbs27PoroType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::So_nurbs27PoroScatraType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::WallTri3PoroType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::WallTri3PoroScatraType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroScatraType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroScatraType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::WallNurbs4PoroType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::WallNurbs4PoroScatraType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::WallNurbs9PoroType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::WallNurbs9PoroScatraType::Instance() or
-      CheckPoroP1(actele))
-    return true;
-
-  return false;
+  return actele->ElementType() == DRT::ELEMENTS::So_hex8PoroType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::So_hex8PoroScatraType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::So_tet4PoroType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::So_tet4PoroScatraType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::So_tet10PoroType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::So_tet10PoroScatraType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::So_hex27PoroType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::So_hex27PoroScatraType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::So_nurbs27PoroType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::So_nurbs27PoroScatraType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::WallTri3PoroType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::WallTri3PoroScatraType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroScatraType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroScatraType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::WallNurbs4PoroType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::WallNurbs4PoroScatraType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::WallNurbs9PoroType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::WallNurbs9PoroScatraType::Instance() or
+         CheckPoroP1(actele);
 }
 
-/*----------------------------------------------------------------------*
- |                                                         vuong 08/13  |
- *----------------------------------------------------------------------*/
 bool POROELAST::UTILS::CheckPoroP1(const DRT::Element* actele)
 {
   // all poro-p1 elements need to be listed here
-  if (actele->ElementType() == DRT::ELEMENTS::So_hex8PoroP1Type::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::So_hex8PoroP1ScatraType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::So_tet4PoroP1Type::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::So_tet4PoroP1ScatraType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroP1Type::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroP1ScatraType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::WallTri3PoroP1Type::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::WallTri3PoroP1ScatraType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroP1Type::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroP1ScatraType::Instance())
-    return true;
-
-  return false;
+  return actele->ElementType() == DRT::ELEMENTS::So_hex8PoroP1Type::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::So_hex8PoroP1ScatraType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::So_tet4PoroP1Type::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::So_tet4PoroP1ScatraType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroP1Type::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroP1ScatraType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::WallTri3PoroP1Type::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::WallTri3PoroP1ScatraType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroP1Type::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroP1ScatraType::Instance();
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-bool POROELAST::UTILS::CheckPoroMaterial(Teuchos::RCP<const MAT::Material> material)
-{
-  // all poro materials need to be listed here
-  if (material->MaterialType() == INPAR::MAT::m_structporo or
-      material->MaterialType() == INPAR::MAT::m_structpororeaction or
-      material->MaterialType() == INPAR::MAT::m_structpororeactionECM)
-    return true;
-
-  return false;
-}
-
-/*----------------------------------------------------------------------*
- | setup Poro algorithm                                            |
- *----------------------------------------------------------------------*/
 Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
     const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm, bool setup_solver)
 {
@@ -134,9 +98,8 @@ Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
   const Teuchos::ParameterList& poroelastdyn = problem->PoroelastDynamicParams();
 
   //  problem->MortarCouplingParams()
-  const INPAR::POROELAST::SolutionSchemeOverFields coupling =
-      DRT::INPUT::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(
-          poroelastdyn, "COUPALGO");
+  const auto coupling = DRT::INPUT::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(
+      poroelastdyn, "COUPALGO");
 
   // create an empty Poroelast::Algorithm instance
   Teuchos::RCP<POROELAST::PoroBase> poroalgo = Teuchos::null;
@@ -182,7 +145,7 @@ Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
     default:
       dserror("Unknown solutiontype for poroelasticity: %d", coupling);
       break;
-  }  // end switch
+  }
 
   // setup solver (if needed)
   if (setup_solver) poroalgo->SetupSolver();
@@ -190,9 +153,6 @@ Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
   return poroalgo;
 }
 
-/*----------------------------------------------------------------------*
- | setup PoroScatra algorithm                                            |
- *----------------------------------------------------------------------*/
 Teuchos::RCP<POROELAST::PoroScatraBase> POROELAST::UTILS::CreatePoroScatraAlgorithm(
     const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm)
 {
@@ -203,7 +163,7 @@ Teuchos::RCP<POROELAST::PoroScatraBase> POROELAST::UTILS::CreatePoroScatraAlgori
 
   // Parameter reading
   const Teuchos::ParameterList& params = problem->PoroScatraControlParams();
-  const INPAR::PORO_SCATRA::SolutionSchemeOverFields coupling =
+  const auto coupling =
       DRT::INPUT::IntegralValue<INPAR::PORO_SCATRA::SolutionSchemeOverFields>(params, "COUPALGO");
 
   switch (coupling)
@@ -236,9 +196,6 @@ Teuchos::RCP<POROELAST::PoroScatraBase> POROELAST::UTILS::CreatePoroScatraAlgori
   return algo;
 }
 
-/*----------------------------------------------------------------------*
- |                                                         vuong 08/13  |
- *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::MapExtractor> POROELAST::UTILS::BuildPoroSplitter(
     Teuchos::RCP<DRT::Discretization> dis)
 {
@@ -266,9 +223,6 @@ Teuchos::RCP<LINALG::MapExtractor> POROELAST::UTILS::BuildPoroSplitter(
   return porositysplitter;
 }
 
-/*----------------------------------------------------------------------*
- | reset Material pointers after redistribution            vuong 08/13  |
- *----------------------------------------------------------------------*/
 void POROELAST::UTILS::SetMaterialPointersMatchingGrid(
     Teuchos::RCP<const DRT::Discretization> sourcedis,
     Teuchos::RCP<const DRT::Discretization> targetdis)
@@ -288,9 +242,6 @@ void POROELAST::UTILS::SetMaterialPointersMatchingGrid(
   }
 }
 
-/*----------------------------------------------------------------------*
- | create volume ghosting (public)                            ager 06/15|
- *----------------------------------------------------------------------*/
 void POROELAST::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
 {
   //**********************************************************************
@@ -312,16 +263,15 @@ void POROELAST::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
 
   const Epetra_Map* ielecolmap = idiscret.ElementColMap();
 
-  for (uint disidx = 0; disidx < voldis.size(); ++disidx)
+  for (auto& voldi : voldis)
   {
     // 1 Ghost all Volume Element + Nodes,for all ghosted mortar elements!
     std::vector<int> rdata;
 
     // Fill rdata with existing colmap
 
-    const Epetra_Map* elecolmap = voldis[disidx]->ElementColMap();
-    const Teuchos::RCP<Epetra_Map> allredelecolmap =
-        LINALG::AllreduceEMap(*voldis[disidx]->ElementRowMap());
+    const Epetra_Map* elecolmap = voldi->ElementColMap();
+    const Teuchos::RCP<Epetra_Map> allredelecolmap = LINALG::AllreduceEMap(*voldi->ElementRowMap());
 
     for (int i = 0; i < elecolmap->NumMyElements(); ++i)
     {
@@ -336,10 +286,14 @@ void POROELAST::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
 
       DRT::Element* ele = idiscret.gElement(gid);
       if (!ele) dserror("ERROR: Cannot find element with gid %", gid);
-      DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
-      if (!faceele) dserror("Cast to FaceElement failed!");
+      auto* faceele = dynamic_cast<DRT::FaceElement*>(ele);
 
-      int volgid = faceele->ParentElementId();
+      int volgid = 0;
+      if (!faceele)
+        dserror("Cast to FaceElement failed!");
+      else
+        volgid = faceele->ParentElementId();
+
       // Ghost the parent element additionally
       if (elecolmap->LID(volgid) == -1 &&
           allredelecolmap->LID(volgid) !=
@@ -348,13 +302,13 @@ void POROELAST::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
     }
 
     // re-build element column map
-    Teuchos::RCP<Epetra_Map> newelecolmap =
-        Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), &rdata[0], 0, voldis[disidx]->Comm()));
+    Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(
+        new Epetra_Map(-1, static_cast<int>(rdata.size()), &rdata[0], 0, voldi->Comm()));
     rdata.clear();
 
     // redistribute the volume discretization according to the
     // new (=old) element column layout & and ghost also nodes!
-    voldis[disidx]->ExtendedGhosting(*newelecolmap, true, true, true, false);  // no check!!!
+    voldi->ExtendedGhosting(*newelecolmap, true, true, true, false);  // no check!!!
   }
 
   // 2 Material pointers need to be reset after redistribution.
@@ -369,9 +323,6 @@ void POROELAST::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
   if (facediscret != Teuchos::null) facediscret->FillCompleteFaces(true, true, true, true);
 }
 
-/*----------------------------------------------------------------------*
- | Reconnect Face Element - Parent Element Pointers! (public) ager 12/16|
- *----------------------------------------------------------------------*/
 void POROELAST::UTILS::ReconnectParentPointers(DRT::Discretization& idiscret,
     DRT::Discretization& voldiscret, DRT::Discretization* voldiscret2)
 {
@@ -385,36 +336,39 @@ void POROELAST::UTILS::ReconnectParentPointers(DRT::Discretization& idiscret,
     DRT::Element* ele = idiscret.gElement(gid);
     if (!ele) dserror("ERROR: Cannot find element with gid %", gid);
 
-    DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+    auto* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+
     if (!faceele) dserror("Cast to FaceElement failed!");
+    SetSlaveAndMaster(voldiscret, voldiscret2, elecolmap, faceele);
+  }
+}
 
-    int volgid = faceele->ParentElementId();
-    if (elecolmap->LID(volgid) == -1)  // Volume Discretization has not Element
-      dserror("CreateVolumeGhosting: Element %d does not exist on this Proc!", volgid);
+void POROELAST::UTILS::SetSlaveAndMaster(const DRT::Discretization& voldiscret,
+    const DRT::Discretization* voldiscret2, const Epetra_Map* elecolmap, DRT::FaceElement* faceele)
+{
+  int volgid = faceele->ParentElementId();
 
-    DRT::Element* vele = voldiscret.gElement(volgid);
-    if (!vele) dserror("ERROR: Cannot find element with gid %", volgid);
+  if (elecolmap->LID(volgid) == -1)  // Volume Discretization has not Element
+    dserror("CreateVolumeGhosting: Element %d does not exist on this Proc!", volgid);
 
-    faceele->SetParentMasterElement(vele, faceele->FaceParentNumber());
+  DRT::Element* vele = voldiscret.gElement(volgid);
+  if (!vele) dserror("ERROR: Cannot find element with gid %", volgid);
+  faceele->SetParentMasterElement(vele, faceele->FaceParentNumber());
 
-    if (voldiscret2)
+  if (voldiscret2)
+  {
+    const Epetra_Map* elecolmap2 = voldiscret2->ElementColMap();
+    if (elecolmap2->LID(volgid) == -1)  // Volume Discretization has not Element
+      faceele->SetParentSlaveElement(nullptr, -1);
+    else
     {
-      const Epetra_Map* elecolmap2 = voldiscret2->ElementColMap();
-      if (elecolmap2->LID(volgid) == -1)  // Volume Discretization has not Element
-        faceele->SetParentSlaveElement(NULL, -1);
-      else
-      {
-        DRT::Element* vele = voldiscret2->gElement(volgid);
-        if (!vele) dserror("ERROR: Cannot find element with gid %", volgid);
-        faceele->SetParentSlaveElement(vele, faceele->FaceParentNumber());
-      }
+      vele = voldiscret2->gElement(volgid);
+      if (!vele) dserror("ERROR: Cannot find element with gid %", volgid);
+      faceele->SetParentSlaveElement(vele, faceele->FaceParentNumber());
     }
   }
 }
 
-/*----------------------------------------------------------------------*
- |                                                         vuong 08/13  |
- *----------------------------------------------------------------------*/
 void POROELAST::PrintLogo()
 {
   std::cout << "This is a Porous Media problem" << std::endl;
@@ -439,12 +393,8 @@ void POROELAST::PrintLogo()
   std::cout << "              ||       || " << std::endl;
   std::cout << "              ||_.-.   ||_.-. " << std::endl;
   std::cout << "             (_.--__) (_.--__) " << std::endl;
-  return;
 }
 
-/*----------------------------------------------------------------------*
- | calculate vector norm                                   vuong 08/14   |
- *----------------------------------------------------------------------*/
 double POROELAST::UTILS::CalculateVectorNorm(
     const enum INPAR::POROELAST::VectorNorm norm, const Teuchos::RCP<const Epetra_Vector> vect)
 {
@@ -492,12 +442,8 @@ double POROELAST::UTILS::CalculateVectorNorm(
     dserror("Cannot handle vector norm");
     return 0;
   }
-}  // CalculateVectorNorm()
+}
 
-
-/*----------------------------------------------------------------------*
- |  assign material to discretization A                       vuong 09/14|
- *----------------------------------------------------------------------*/
 void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial2To1(
     const VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele1, const std::vector<int>& ids_2,
     Teuchos::RCP<DRT::Discretization> dis1, Teuchos::RCP<DRT::Discretization> dis2)
@@ -506,14 +452,14 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial2To1(
   VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(volmortar, ele1, ids_2, dis1, dis2);
 
   // default strategy: take material of element with closest center in reference coordinates
-  DRT::Element* ele2 = NULL;
+  DRT::Element* ele2 = nullptr;
   double mindistance = 1e10;
   {
     std::vector<double> centercoords1 = DRT::UTILS::ElementCenterRefeCoords(ele1);
 
-    for (unsigned i = 0; i < ids_2.size(); ++i)
+    for (int id_2 : ids_2)
     {
-      DRT::Element* actele2 = dis2->gElement(ids_2[i]);
+      DRT::Element* actele2 = dis2->gElement(id_2);
       std::vector<double> centercoords2 = DRT::UTILS::ElementCenterRefeCoords(actele2);
 
       LINALG::Matrix<3, 1> diffcoords(true);
@@ -529,27 +475,20 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial2To1(
   }
 
   // if Bele is a fluid element
-  DRT::ELEMENTS::FluidPoro* fluid = dynamic_cast<DRT::ELEMENTS::FluidPoro*>(ele2);
-  if (fluid != NULL)
+  auto* fluid = dynamic_cast<DRT::ELEMENTS::FluidPoro*>(ele2);
+  if (fluid != nullptr)
   {
     // Copy Initial Porosity from StructPoro Material to FluidPoro Material
     static_cast<MAT::PAR::FluidPoro*>(fluid->Material()->Parameter())
         ->SetInitialPorosity(
-            Teuchos::rcp_static_cast<MAT::StructPoro>(ele1->Material())->Initporosity());
+            Teuchos::rcp_static_cast<MAT::StructPoro>(ele1->Material())->InitPorosity());
   }
   else
   {
     dserror("ERROR: Unsupported element type '%s'", typeid(*ele2).name());
   }
+}
 
-  // done
-  return;
-};
-
-
-/*----------------------------------------------------------------------*
- |  assign material to discretization B                       vuong 09/14|
- *----------------------------------------------------------------------*/
 void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
     const VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele2, const std::vector<int>& ids_1,
     Teuchos::RCP<DRT::Discretization> dis1, Teuchos::RCP<DRT::Discretization> dis2)
@@ -561,14 +500,14 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
   if (ids_1.empty()) return;
 
   // default strategy: take material of element with closest center in reference coordinates
-  DRT::Element* ele1 = NULL;
+  DRT::Element* ele1 = nullptr;
   double mindistance = 1e10;
   {
     std::vector<double> centercoords2 = DRT::UTILS::ElementCenterRefeCoords(ele2);
 
-    for (unsigned i = 0; i < ids_1.size(); ++i)
+    for (int id_1 : ids_1)
     {
-      DRT::Element* actele1 = dis1->gElement(ids_1[i]);
+      DRT::Element* actele1 = dis1->gElement(id_1);
       std::vector<double> centercoords1 = DRT::UTILS::ElementCenterRefeCoords(actele1);
 
       LINALG::Matrix<3, 1> diffcoords(true);
@@ -584,11 +523,11 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
   }
 
   // if Aele is a so3_base element
-  DRT::ELEMENTS::So_base* so_base = dynamic_cast<DRT::ELEMENTS::So_base*>(ele1);
+  auto* so_base = dynamic_cast<DRT::ELEMENTS::So_base*>(ele1);
 
   // if Bele is a fluid element
-  DRT::ELEMENTS::FluidPoro* fluid = dynamic_cast<DRT::ELEMENTS::FluidPoro*>(ele2);
-  if (fluid != NULL)
+  auto* fluid = dynamic_cast<DRT::ELEMENTS::FluidPoro*>(ele2);
+  if (fluid != nullptr)
   {
     if (so_base)
     {
@@ -601,7 +540,4 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
   {
     dserror("ERROR: Unsupported element type '%s'", typeid(*ele2).name());
   }
-
-  // done
-  return;
 }

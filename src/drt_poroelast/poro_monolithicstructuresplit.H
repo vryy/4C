@@ -11,15 +11,8 @@ interface
 #ifndef PORO_MONOLITHICSTRUCTURESPLIT_H_
 #define PORO_MONOLITHICSTRUCTURESPLIT_H_
 
-/*----------------------------------------------------------------------*
- | headers                                                              |
- *----------------------------------------------------------------------*/
-
 #include "poro_monolithicsplit.H"
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
 
 namespace LINALG
 {
@@ -30,16 +23,13 @@ namespace LINALG
 
 namespace POROELAST
 {
-  /// monolithic structure split for condensing DOFs, when using the brinkman-equation
+  //! monolithic structure split for condensing DOFs, when using the brinkman-equation
   class MonolithicStructureSplit : public MonolithicSplit
   {
    public:
     //! create using a Epetra_Comm
     explicit MonolithicStructureSplit(
         const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
-
-    //! virtual destructor to support polymorph destruction
-    virtual ~MonolithicStructureSplit(){};
 
     /*! do the setup for the monolithic system
 
@@ -54,17 +44,17 @@ namespace POROELAST
      directly in the constructor. This is necessary since during restart (if
      ReadMesh is called), the dofmaps for the blocks might get invalid.
      */
-    /// Setup the monolithic system
-    virtual void SetupSystem();
+    //! Setup the monolithic system
+    void SetupSystem() override;
 
-    /// setup composed right hand side from field solvers
-    virtual void SetupRHS(bool firstcall = false);
+    //! setup composed right hand side from field solvers
+    void SetupRHS(bool firstcall = false) override;
 
-    /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
+    //! setup composed system matrix from field solvers
+    void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) override;
 
    private:
-    /// build block vector from field vectors
+    //! build block vector from field vectors
     void SetupVector(Epetra_Vector& f, Teuchos::RCP<const Epetra_Vector> sv,
         Teuchos::RCP<const Epetra_Vector> fv, double fluidscale);
 
@@ -76,13 +66,13 @@ namespace POROELAST
      */
     void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
-        bool firstcall = false);
+        bool firstcall = false) override;
 
-    /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time
-    /// step (i.e. condensed forces onto the structure) needed for rhs in next time step
-    virtual void RecoverLagrangeMultiplierAfterTimeStep();
+    //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time
+    //! step (i.e. condensed forces onto the structure) needed for rhs in next time step
+    void RecoverLagrangeMultiplierAfterTimeStep() override;
 
-    /// @name matrix transformation
+    //! @name matrix transformation
     //! transform object for structure interface matrix \f$S_{\Gamma \Gamma}\f$
     Teuchos::RCP<LINALG::MatrixRowColTransform> sggtransform_;
     //! transform object for structure interface matrix \f$S_{\Gamma I}\f$
@@ -98,37 +88,24 @@ namespace POROELAST
     //! transform object for fluid coupling matrix \f$C_{I \Gamma}^F\f$
     Teuchos::RCP<LINALG::MatrixColTransform> cfigtransform_;
 
-    //@}
+    //!@}
 
-    /// @name Some quantities to recover the Langrange multiplier at the end of each time step
+    //! @name Some quantities to recover the Langrange multiplier at the end of each time step
 
     //! block \f$S_{\Gamma I,i+1}\f$ of structural matrix at current iteration \f$i+1\f$
     Teuchos::RCP<const LINALG::SparseOperator> sgicur_;
 
-    //! block \f$S_{\Gamma I,i}\f$ of structural matrix at previous iteration \f$i\f$
-    // Teuchos::RCP<const LINALG::SparseOperator> sgipre_;
-
     //! block \f$S_{\Gamma\Gamma,i+1}\f$ of structural matrix at current iteration \f$i+1\f$
     Teuchos::RCP<const LINALG::SparseOperator> sggcur_;
-
-    //! block \f$S_{\Gamma\Gamma,i}\f$ of structural matrix at previous iteration \f$i\f$
-    // Teuchos::RCP<const LINALG::SparseOperator> sggpre_;
 
     //! block \f$S_{\Gamma\Gamma,i+1}\f$ of structural matrix at current iteration \f$i+1\f$
     Teuchos::RCP<const LINALG::SparseOperator> cgicur_;
 
-    //! block \f$S_{\Gamma\Gamma,i}\f$ of structural matrix at previous iteration \f$i\f$
-    // Teuchos::RCP<const LINALG::SparseOperator> cgipre_;
-
     //! block \f$S_{\Gamma\Gamma,i+1}\f$ of structural matrix at current iteration \f$i+1\f$
     Teuchos::RCP<const LINALG::SparseOperator> cggcur_;
 
-    //! block \f$S_{\Gamma\Gamma,i}\f$ of structural matrix at previous iteration \f$i\f$
-    // Teuchos::RCP<const LINALG::SparseOperator> cggpre_;
-
-    //@}
-
-  };  // Monolithic
+    //!@}
+  };
 
 }  // namespace POROELAST
 

@@ -16,7 +16,7 @@
 #include "../linalg/linalg_utils_nullspace.H"
 
 /*----------------------------------------------------------------------*
- |  QUAD 4 Element                                          vuong 07/13 |
+ |  QUAD 4 Element                                                      |
  *----------------------------------------------------------------------*/
 
 DRT::ELEMENTS::WallQuad4PoroP1Type DRT::ELEMENTS::WallQuad4PoroP1Type::instance_;
@@ -28,15 +28,11 @@ DRT::ELEMENTS::WallQuad4PoroP1Type& DRT::ELEMENTS::WallQuad4PoroP1Type::Instance
 
 DRT::ParObject* DRT::ELEMENTS::WallQuad4PoroP1Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::quad4>* object =
-      new DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::quad4>(-1, -1);
+  auto* object = new DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::quad4>(-1, -1);
   object->Unpack(data);
   return object;
 }
 
-/*----------------------------------------------------------------------*
- *                                                           vuong 07/13 |
- *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroP1Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
@@ -49,9 +45,6 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroP1Type::Create(
   return Teuchos::null;
 }
 
-/*----------------------------------------------------------------------*
- *                                                           vuong 07/13 |
- *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroP1Type::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
@@ -59,9 +52,6 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroP1Type::Create(const int 
   return ele;
 }
 
-/*----------------------------------------------------------------------*
- *                                                           vuong 07/13 |
- *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::WallQuad4PoroP1Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
@@ -76,8 +66,6 @@ void DRT::ELEMENTS::WallQuad4PoroP1Type::SetupElementDefinition(
   defs["QUAD4"] = defs_wallporo["QUAD4"];
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::WallQuad4PoroP1Type::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
@@ -86,8 +74,6 @@ void DRT::ELEMENTS::WallQuad4PoroP1Type::NodalBlockInformation(
   nv = 2;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Epetra_SerialDenseMatrix DRT::ELEMENTS::WallQuad4PoroP1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
@@ -95,9 +81,6 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::WallQuad4PoroP1Type::ComputeNullSpace(
   return nullspace;
 }
 
-/*----------------------------------------------------------------------*
- |  init the element (public)                              vuong 07/13     |
- *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::WallQuad4PoroP1Type::Initialize(DRT::Discretization& dis)
 {
   DRT::ELEMENTS::Wall1Type::Initialize(dis);
@@ -113,7 +96,7 @@ int DRT::ELEMENTS::WallQuad4PoroP1Type::Initialize(DRT::Discretization& dis)
 }
 
 /*----------------------------------------------------------------------*
- |  QUAD 9 Element                                       vuong 07/13 |
+ |  QUAD 9 Element                                                      |
  *----------------------------------------------------------------------*/
 
 DRT::ELEMENTS::WallQuad9PoroP1Type DRT::ELEMENTS::WallQuad9PoroP1Type::instance_;
@@ -125,15 +108,11 @@ DRT::ELEMENTS::WallQuad9PoroP1Type& DRT::ELEMENTS::WallQuad9PoroP1Type::Instance
 
 DRT::ParObject* DRT::ELEMENTS::WallQuad9PoroP1Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::quad9>* object =
-      new DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::quad9>(-1, -1);
+  auto* object = new DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::quad9>(-1, -1);
   object->Unpack(data);
   return object;
 }
 
-/*----------------------------------------------------------------------*
- *                                                           vuong 07/13 |
- *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroP1Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
@@ -146,9 +125,6 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroP1Type::Create(
   return Teuchos::null;
 }
 
-/*----------------------------------------------------------------------*
- *                                                           vuong 07/13 |
- *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroP1Type::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
@@ -156,9 +132,6 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroP1Type::Create(const int 
   return ele;
 }
 
-/*----------------------------------------------------------------------*
- *                                                           vuong 07/13 |
- *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::WallQuad9PoroP1Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
@@ -173,8 +146,6 @@ void DRT::ELEMENTS::WallQuad9PoroP1Type::SetupElementDefinition(
   defs["QUAD9"] = defs_wallporo["QUAD9"];
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::WallQuad9PoroP1Type::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
@@ -183,8 +154,6 @@ void DRT::ELEMENTS::WallQuad9PoroP1Type::NodalBlockInformation(
   nv = 2;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Epetra_SerialDenseMatrix DRT::ELEMENTS::WallQuad9PoroP1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
@@ -192,9 +161,6 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::WallQuad9PoroP1Type::ComputeNullSpace(
   return nullspace;
 }
 
-/*----------------------------------------------------------------------*
- |  init the element (public)                             vuong 07/13 |
- *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::WallQuad9PoroP1Type::Initialize(DRT::Discretization& dis)
 {
   DRT::ELEMENTS::Wall1Type::Initialize(dis);
@@ -210,7 +176,7 @@ int DRT::ELEMENTS::WallQuad9PoroP1Type::Initialize(DRT::Discretization& dis)
 }
 
 /*----------------------------------------------------------------------*
- |  TRI 3 Element                                          vuong 07/13 |
+ |  TRI 3 Element                                                       |
  *----------------------------------------------------------------------*/
 
 DRT::ELEMENTS::WallTri3PoroP1Type DRT::ELEMENTS::WallTri3PoroP1Type::instance_;
@@ -228,9 +194,6 @@ DRT::ParObject* DRT::ELEMENTS::WallTri3PoroP1Type::Create(const std::vector<char
   return object;
 }
 
-/*----------------------------------------------------------------------*
- *                                                           vuong 07/13 |
- *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroP1Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
@@ -243,9 +206,6 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroP1Type::Create(
   return Teuchos::null;
 }
 
-/*----------------------------------------------------------------------*
- *                                                           vuong 07/13 |
- *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroP1Type::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
@@ -253,9 +213,6 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroP1Type::Create(const int i
   return ele;
 }
 
-/*----------------------------------------------------------------------*
- *                                                           vuong 07/13 |
- *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::WallTri3PoroP1Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
@@ -270,8 +227,6 @@ void DRT::ELEMENTS::WallTri3PoroP1Type::SetupElementDefinition(
   defs["TRI3"] = defs_wallporo["TRI3"];
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::WallTri3PoroP1Type::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
@@ -280,8 +235,6 @@ void DRT::ELEMENTS::WallTri3PoroP1Type::NodalBlockInformation(
   nv = 2;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Epetra_SerialDenseMatrix DRT::ELEMENTS::WallTri3PoroP1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
@@ -289,9 +242,6 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::WallTri3PoroP1Type::ComputeNullSpace(
   return nullspace;
 }
 
-/*----------------------------------------------------------------------*
- |  init the element (public)                              vuong 07/13     |
- *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::WallTri3PoroP1Type::Initialize(DRT::Discretization& dis)
 {
   DRT::ELEMENTS::Wall1Type::Initialize(dis);

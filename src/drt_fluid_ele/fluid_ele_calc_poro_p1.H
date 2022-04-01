@@ -12,25 +12,18 @@
 #ifndef FLUID_ELE_CALC_PORO_P1_H_
 #define FLUID_ELE_CALC_PORO_P1_H_
 
-/*---------------------------------------------------------------------*
- | headers                                                              |
- *---------------------------------------------------------------------*/
 #include "fluid_ele_calc_poro.H"
 
-/*---------------------------------------------------------------------*
- | forward declarations                                                 |
- *---------------------------------------------------------------------*/
 namespace MAT
 {
   class StructPoro;
 }
 
-
 namespace DRT
 {
   namespace ELEMENTS
   {
-    /// Class for Evaluating boundary integrals for porous media problems
+    //! Class for Evaluating boundary integrals for porous media problems
     /*!
      This class is derived from the FluidEleCalc class, i.e. it is capable of
      evaluated all integrals implemented there. It will do so, if the evaluate action
@@ -55,19 +48,19 @@ namespace DRT
     template <DRT::Element::DiscretizationType distype>
     class FluidEleCalcPoroP1 : public FluidEleCalcPoro<distype>
     {
-      typedef FluidEleCalcPoro<distype> my;
+      using Base = FluidEleCalcPoro<distype>;
 
      protected:
-      /// private Constructor since we are a Singleton.
+      //! private Constructor since we are a Singleton.
       FluidEleCalcPoroP1();
 
      public:
-      virtual ~FluidEleCalcPoroP1() {}
+      virtual ~FluidEleCalcPoroP1() = default;
 
-      /// Singleton access method
+      //! Singleton access method
       static FluidEleCalcPoroP1<distype>* Instance(bool create = true);
 
-      /// called upon destruction
+      //! called upon destruction
       virtual void Done();
 
       /*!
@@ -141,27 +134,27 @@ namespace DRT
             \param intpoints        (i) Gaussian integration points
        */
       int EvaluateOD(Teuchos::ParameterList& params,
-          const LINALG::Matrix<my::nsd_, my::nen_>& ebofoaf,
-          LINALG::Matrix<(my::nsd_ + 1) * my::nen_, (my::nsd_ + 1) * my::nen_>& elemat1,
-          LINALG::Matrix<(my::nsd_ + 1) * my::nen_, 1>& elevec1,
-          const LINALG::Matrix<my::nsd_, my::nen_>& evelaf,
-          const LINALG::Matrix<my::nen_, 1>& epreaf,
-          const LINALG::Matrix<my::nsd_, my::nen_>& evelnp,
-          const LINALG::Matrix<my::nsd_, my::nen_>& eveln,
-          const LINALG::Matrix<my::nen_, 1>& eprenp, const LINALG::Matrix<my::nen_, 1>& epren,
-          const LINALG::Matrix<my::nsd_, my::nen_>& emhist,
-          const LINALG::Matrix<my::nen_, 1>& echist,
-          const LINALG::Matrix<my::nen_, 1>& epressnp_timederiv,
-          const LINALG::Matrix<my::nen_, 1>& epressam_timederiv,
-          const LINALG::Matrix<my::nen_, 1>& epressn_timederiv,
-          const LINALG::Matrix<my::nsd_, my::nen_>& eaccam,
-          const LINALG::Matrix<my::nsd_, my::nen_>& edispnp,
-          const LINALG::Matrix<my::nsd_, my::nen_>& edispn,
-          const LINALG::Matrix<my::nsd_, my::nen_>& egridv,
-          const LINALG::Matrix<my::nsd_, my::nen_>& egridvn,
-          const LINALG::Matrix<my::nen_, 1>& escaaf, const LINALG::Matrix<my::nen_, 1>* eporositynp,
-          Teuchos::RCP<MAT::Material> mat, bool isale,
-          const DRT::UTILS::GaussIntegration& intpoints);
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& ebofoaf,
+          LINALG::Matrix<(Base::nsd_ + 1) * Base::nen_, (Base::nsd_ + 1) * Base::nen_>& elemat1,
+          LINALG::Matrix<(Base::nsd_ + 1) * Base::nen_, 1>& elevec1,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& evelaf,
+          const LINALG::Matrix<Base::nen_, 1>& epreaf,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& evelnp,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& eveln,
+          const LINALG::Matrix<Base::nen_, 1>& eprenp, const LINALG::Matrix<Base::nen_, 1>& epren,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& emhist,
+          const LINALG::Matrix<Base::nen_, 1>& echist,
+          const LINALG::Matrix<Base::nen_, 1>& epressnp_timederiv,
+          const LINALG::Matrix<Base::nen_, 1>& epressam_timederiv,
+          const LINALG::Matrix<Base::nen_, 1>& epressn_timederiv,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& eaccam,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& edispnp,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& edispn,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& egridv,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& egridvn,
+          const LINALG::Matrix<Base::nen_, 1>& escaaf,
+          const LINALG::Matrix<Base::nen_, 1>* eporositynp, Teuchos::RCP<MAT::Material> mat,
+          bool isale, const DRT::UTILS::GaussIntegration& intpoints);
 
       /*!
         \brief calculate off diagonal element matrix and rhs for porous flow
@@ -183,25 +176,26 @@ namespace DRT
         \param intpoints        (i) Gaussian integration points
       */
       void SysmatOD(Teuchos::ParameterList& params,
-          const LINALG::Matrix<my::nsd_, my::nen_>& ebofoaf,
-          const LINALG::Matrix<my::nsd_, my::nen_>& evelaf,
-          const LINALG::Matrix<my::nsd_, my::nen_>& evelnp,
-          const LINALG::Matrix<my::nsd_, my::nen_>& eveln,
-          const LINALG::Matrix<my::nen_, 1>& epreaf, const LINALG::Matrix<my::nen_, 1>& eprenp,
-          const LINALG::Matrix<my::nen_, 1>& epren,
-          const LINALG::Matrix<my::nsd_, my::nen_>& emhist,
-          const LINALG::Matrix<my::nen_, 1>& echist,
-          const LINALG::Matrix<my::nen_, 1>& epressnp_timederiv,
-          const LINALG::Matrix<my::nen_, 1>& epressam_timederiv,
-          const LINALG::Matrix<my::nen_, 1>& epressn_timederiv,
-          const LINALG::Matrix<my::nsd_, my::nen_>& eaccam,
-          const LINALG::Matrix<my::nsd_, my::nen_>& edispnp,
-          const LINALG::Matrix<my::nsd_, my::nen_>& edispn,
-          const LINALG::Matrix<my::nsd_, my::nen_>& egridv,
-          const LINALG::Matrix<my::nsd_, my::nen_>& egridvn,
-          const LINALG::Matrix<my::nen_, 1>& escaaf, const LINALG::Matrix<my::nen_, 1>* eporositynp,
-          LINALG::Matrix<(my::nsd_ + 1) * my::nen_, (my::nsd_ + 1) * my::nen_>& ecoupl,
-          LINALG::Matrix<(my::nsd_ + 1) * my::nen_, 1>& eforce,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& ebofoaf,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& evelaf,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& evelnp,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& eveln,
+          const LINALG::Matrix<Base::nen_, 1>& epreaf, const LINALG::Matrix<Base::nen_, 1>& eprenp,
+          const LINALG::Matrix<Base::nen_, 1>& epren,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& emhist,
+          const LINALG::Matrix<Base::nen_, 1>& echist,
+          const LINALG::Matrix<Base::nen_, 1>& epressnp_timederiv,
+          const LINALG::Matrix<Base::nen_, 1>& epressam_timederiv,
+          const LINALG::Matrix<Base::nen_, 1>& epressn_timederiv,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& eaccam,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& edispnp,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& edispn,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& egridv,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& egridvn,
+          const LINALG::Matrix<Base::nen_, 1>& escaaf,
+          const LINALG::Matrix<Base::nen_, 1>* eporositynp,
+          LINALG::Matrix<(Base::nsd_ + 1) * Base::nen_, (Base::nsd_ + 1) * Base::nen_>& ecoupl,
+          LINALG::Matrix<(Base::nsd_ + 1) * Base::nen_, 1>& eforce,
           Teuchos::RCP<const MAT::Material> material, bool isale,
           const DRT::UTILS::GaussIntegration& intpoints);
 
@@ -228,28 +222,29 @@ namespace DRT
         Gaussian integration points
       */
       virtual void GaussPointLoopP1OD(Teuchos::ParameterList& params,
-          const LINALG::Matrix<my::nsd_, my::nen_>& ebofoaf,
-          const LINALG::Matrix<my::nsd_, my::nen_>& evelaf,
-          const LINALG::Matrix<my::nsd_, my::nen_>& evelnp,
-          const LINALG::Matrix<my::nsd_, my::nen_>& eveln,
-          const LINALG::Matrix<my::nen_, 1>& epreaf, const LINALG::Matrix<my::nen_, 1>& eprenp,
-          const LINALG::Matrix<my::nen_, 1>& epren,
-          const LINALG::Matrix<my::nsd_, my::nen_>& emhist,
-          const LINALG::Matrix<my::nen_, 1>& echist,
-          const LINALG::Matrix<my::nen_, 1>& epressnp_timederiv,
-          const LINALG::Matrix<my::nen_, 1>& epressam_timederiv,
-          const LINALG::Matrix<my::nen_, 1>& epressn_timederiv,
-          const LINALG::Matrix<my::nsd_, my::nen_>& eaccam,
-          const LINALG::Matrix<my::nsd_, my::nen_>& edispnp,
-          const LINALG::Matrix<my::nsd_, my::nen_>& edispn,
-          const LINALG::Matrix<my::nsd_, my::nen_>& egridv,
-          const LINALG::Matrix<my::nsd_, my::nen_>& egridvn,
-          const LINALG::Matrix<my::nen_, 1>& escaaf, const LINALG::Matrix<my::nen_, 1>* eporositynp,
-          LINALG::Matrix<(my::nsd_ + 1) * my::nen_, 1>& eforce,
-          LINALG::Matrix<my::nen_ * my::nsd_, my::nen_ * my::nsd_>& ecoupl_u,
-          LINALG::Matrix<my::nen_, my::nen_ * my::nsd_>& ecoupl_p,
-          LINALG::Matrix<my::nen_ * my::nsd_, my::nen_>& ecouplp1_u,
-          LINALG::Matrix<my::nen_, my::nen_>& ecouplp1_p,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& ebofoaf,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& evelaf,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& evelnp,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& eveln,
+          const LINALG::Matrix<Base::nen_, 1>& epreaf, const LINALG::Matrix<Base::nen_, 1>& eprenp,
+          const LINALG::Matrix<Base::nen_, 1>& epren,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& emhist,
+          const LINALG::Matrix<Base::nen_, 1>& echist,
+          const LINALG::Matrix<Base::nen_, 1>& epressnp_timederiv,
+          const LINALG::Matrix<Base::nen_, 1>& epressam_timederiv,
+          const LINALG::Matrix<Base::nen_, 1>& epressn_timederiv,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& eaccam,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& edispnp,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& edispn,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& egridv,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& egridvn,
+          const LINALG::Matrix<Base::nen_, 1>& escaaf,
+          const LINALG::Matrix<Base::nen_, 1>* eporositynp,
+          LINALG::Matrix<(Base::nsd_ + 1) * Base::nen_, 1>& eforce,
+          LINALG::Matrix<Base::nen_ * Base::nsd_, Base::nen_ * Base::nsd_>& ecoupl_u,
+          LINALG::Matrix<Base::nen_, Base::nen_ * Base::nsd_>& ecoupl_p,
+          LINALG::Matrix<Base::nen_ * Base::nsd_, Base::nen_>& ecouplp1_u,
+          LINALG::Matrix<Base::nen_, Base::nen_>& ecouplp1_p,
           Teuchos::RCP<const MAT::Material> material,
           const DRT::UTILS::GaussIntegration& intpoints);
 
@@ -276,12 +271,12 @@ namespace DRT
       virtual void EvaluatePressureEquation(Teuchos::ParameterList& params,
           const double& timefacfacpre, const double& rhsfac, const double& dphi_dp,
           const double& dphi_dJ, const double& dphi_dJdp, const double& dphi_dpp,
-          const LINALG::Matrix<my::nen_, 1>* eporositydot,
-          const LINALG::Matrix<my::nen_, 1>* eporositydotn,
-          const LINALG::Matrix<my::nen_, 1>& echist,
-          const LINALG::Matrix<my::nsd_, my::nen_>& dgradphi_dp,
-          LINALG::Matrix<my::nen_, my::nen_ * my::nsd_>& estif_q_u,
-          LINALG::Matrix<my::nen_, my::nen_>& ppmat, LINALG::Matrix<my::nen_, 1>& preforce);
+          const LINALG::Matrix<Base::nen_, 1>* eporositydot,
+          const LINALG::Matrix<Base::nen_, 1>* eporositydotn,
+          const LINALG::Matrix<Base::nen_, 1>& echist,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>& dgradphi_dp,
+          LINALG::Matrix<Base::nen_, Base::nen_ * Base::nsd_>& estif_q_u,
+          LINALG::Matrix<Base::nen_, Base::nen_>& ppmat, LINALG::Matrix<Base::nen_, 1>& preforce);
 
       /*!
         \brief Compute porosity and derivatives
@@ -301,8 +296,8 @@ namespace DRT
         fluid pressure \param save           (i) flag for saving porosity within structure material
       */
       virtual void ComputePorosity(Teuchos::ParameterList& params, const double& press,
-          const double& J, const int& gp, const LINALG::Matrix<my::nen_, 1>& shapfct,
-          const LINALG::Matrix<my::nen_, 1>* myporosity, double& porosity, double* dphi_dp,
+          const double& J, const int& gp, const LINALG::Matrix<Base::nen_, 1>& shapfct,
+          const LINALG::Matrix<Base::nen_, 1>* myporosity, double& porosity, double* dphi_dp,
           double* dphi_dJ, double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp, bool save);
 
       /*!
@@ -315,10 +310,10 @@ namespace DRT
         \param grad_porosity  (o) spatial gradient of porosity
       */
       virtual void ComputePorosityGradient(const double& dphidp, const double& dphidJ,
-          const LINALG::Matrix<my::nsd_, 1>& gradJ, const LINALG::Matrix<my::nsd_, 1>& gradp,
-          const LINALG::Matrix<my::nen_, 1>* eporositynp,
-          LINALG::Matrix<my::nsd_, 1>& grad_porosity,
-          LINALG::Matrix<my::nsd_, 1>& refgrad_porosity);
+          const LINALG::Matrix<Base::nsd_, 1>& gradJ, const LINALG::Matrix<Base::nsd_, 1>& gradp,
+          const LINALG::Matrix<Base::nen_, 1>* eporositynp,
+          LINALG::Matrix<Base::nsd_, 1>& grad_porosity,
+          LINALG::Matrix<Base::nsd_, 1>& refgrad_porosity);
 
       /*!
         \brief Compute linearization needed for diagonal terms (lin. of porosity gradient w.r.t.
@@ -331,8 +326,8 @@ namespace DRT
         dgradphi_dp    (o) derivate of spatial gradient of porosity w.r.t. fluid pressure
        */
       void ComputeLinearization(const double& dphi_dp, const double& dphi_dpp,
-          const double& dphi_dJp, const LINALG::Matrix<my::nsd_, 1>& gradJ,
-          LINALG::Matrix<my::nsd_, my::nen_>& dgradphi_dp);
+          const double& dphi_dJp, const LINALG::Matrix<Base::nsd_, 1>& gradJ,
+          LINALG::Matrix<Base::nsd_, Base::nen_>& dgradphi_dp);
 
       /*!
         \brief Compute linearization needed for off diagonal terms
@@ -351,56 +346,56 @@ namespace DRT
         gradient of porosity w.r.t. structure displacments
        */
       void ComputeLinearizationOD(const double& dphi_dJ, const double& dphi_dJJ,
-          const double& dphi_dJp, const LINALG::Matrix<my::nsd_, my::nsd_>& defgrd_inv,
-          const LINALG::Matrix<my::nsd_ * my::nsd_, 1>& defgrd_IT_vec,
-          const LINALG::Matrix<my::nsd_ * my::nsd_, my::nsd_>& F_x,
-          const LINALG::Matrix<my::nsd_ * my::nsd_, my::nsd_>& F_X,
-          const LINALG::Matrix<my::nsd_, 1>& gradJ, LINALG::Matrix<1, my::nsd_ * my::nen_>& dJ_dus,
-          LINALG::Matrix<1, my::nsd_ * my::nen_>& dphi_dus,
-          LINALG::Matrix<my::nsd_, my::nen_ * my::nsd_>& dgradphi_dus);
+          const double& dphi_dJp, const LINALG::Matrix<Base::nsd_, Base::nsd_>& defgrd_inv,
+          const LINALG::Matrix<Base::nsd_ * Base::nsd_, 1>& defgrd_IT_vec,
+          const LINALG::Matrix<Base::nsd_ * Base::nsd_, Base::nsd_>& F_x,
+          const LINALG::Matrix<Base::nsd_ * Base::nsd_, Base::nsd_>& F_X,
+          const LINALG::Matrix<Base::nsd_, 1>& gradJ,
+          LINALG::Matrix<1, Base::nsd_ * Base::nen_>& dJ_dus,
+          LINALG::Matrix<1, Base::nsd_ * Base::nen_>& dphi_dus,
+          LINALG::Matrix<Base::nsd_, Base::nen_ * Base::nsd_>& dgradphi_dus);
 
       //! Compute element matrix entries: PSPG
-      virtual void PSPG(LINALG::Matrix<my::nen_, my::nen_ * my::nsd_>&
-                            estif_q_u,                ///< block (weighting function q x u)
-          LINALG::Matrix<my::nen_, my::nen_>& ppmat,  ///< block (weighting function q x p)
-          LINALG::Matrix<my::nen_, 1>& preforce,      ///< rhs forces pressure
-          const LINALG::Matrix<my::nsd_ * my::nsd_, my::nen_>&
-              lin_resM_Du,  ///< linearisation of the stabilization residual
-          const LINALG::Matrix<my::nsd_ * my::nsd_, my::nen_>& lin_resMRea_Du,
-          const LINALG::Matrix<my::nsd_, my::nen_>&
-              lin_resM_Dp,        ///< linearisation of the stabilization residual w.r.t. pressure
-          const double& dphi_dp,  ///< linearisation of porosity w.r.t. pressure
-          const double& fac3,     ///< factor for residual in current subgrid velocities
-          const double& timefacfac,     ///< = timefac x fac
-          const double& timefacfacpre,  ///< = timefacpre x fac
-          const double& rhsfac          ///< right-hand-side factor for residuals
+      virtual void PSPG(LINALG::Matrix<Base::nen_, Base::nen_ * Base::nsd_>&
+                            estif_q_u,                    //!< block (weighting function q x u)
+          LINALG::Matrix<Base::nen_, Base::nen_>& ppmat,  //!< block (weighting function q x p)
+          LINALG::Matrix<Base::nen_, 1>& preforce,        //!< rhs forces pressure
+          const LINALG::Matrix<Base::nsd_ * Base::nsd_, Base::nen_>&
+              lin_resM_Du,  //!< linearisation of the stabilization residual
+          const LINALG::Matrix<Base::nsd_ * Base::nsd_, Base::nen_>& lin_resMRea_Du,
+          const LINALG::Matrix<Base::nsd_, Base::nen_>&
+              lin_resM_Dp,        //!< linearisation of the stabilization residual w.r.t. pressure
+          const double& dphi_dp,  //!< linearisation of porosity w.r.t. pressure
+          const double& fac3,     //!< factor for residual in current subgrid velocities
+          const double& timefacfac,     //!< = timefac x fac
+          const double& timefacfacpre,  //!< = timefacpre x fac
+          const double& rhsfac          //!< right-hand-side factor for residuals
       );
 
       //! Compute element matrix entries: reactive stabilization
-      virtual void ReacStab(LINALG::Matrix<my::nen_ * my::nsd_, my::nen_ * my::nsd_>&
-                                estif_u,  ///< block (weighting function v x u)
-          LINALG::Matrix<my::nen_ * my::nsd_, my::nen_>&
-              estif_p_v,                                 ///< block (weighting function v x p)
-          LINALG::Matrix<my::nsd_, my::nen_>& velforce,  ///< rhs forces velocity
-          LINALG::Matrix<my::nsd_ * my::nsd_, my::nen_>&
-              lin_resM_Du,  ///< linearisation of the stabilization residual
-          const LINALG::Matrix<my::nsd_, my::nen_>&
-              lin_resM_Dp,        ///< linearisation of the stabilization residual w.r.t. pressure
-          const double& dphi_dp,  ///< linearisation of porosity w.r.t. pressure
-          const double& timefacfac,     ///< = timefac x fac
-          const double& timefacfacpre,  ///< = timefacpre x fac
-          const double& rhsfac,         ///< right-hand-side factor for residuals
-          const double& fac3            ///< factor for residual in current subgrid velocities
+      virtual void ReacStab(LINALG::Matrix<Base::nen_ * Base::nsd_, Base::nen_ * Base::nsd_>&
+                                estif_u,  //!< block (weighting function v x u)
+          LINALG::Matrix<Base::nen_ * Base::nsd_, Base::nen_>&
+              estif_p_v,                                     //!< block (weighting function v x p)
+          LINALG::Matrix<Base::nsd_, Base::nen_>& velforce,  //!< rhs forces velocity
+          LINALG::Matrix<Base::nsd_ * Base::nsd_, Base::nen_>&
+              lin_resM_Du,  //!< linearisation of the stabilization residual
+          const LINALG::Matrix<Base::nsd_, Base::nen_>&
+              lin_resM_Dp,        //!< linearisation of the stabilization residual w.r.t. pressure
+          const double& dphi_dp,  //!< linearisation of porosity w.r.t. pressure
+          const double& timefacfac,     //!< = timefac x fac
+          const double& timefacfacpre,  //!< = timefacpre x fac
+          const double& rhsfac,         //!< right-hand-side factor for residuals
+          const double& fac3            //!< factor for residual in current subgrid velocities
       );
 
       virtual int ComputeVolume(Teuchos::ParameterList& params,
-          DRT::ELEMENTS::Fluid* ele,            //< current fluid element
-          DRT::Discretization& discretization,  //< fluid discretization
-          std::vector<int>& lm,                 //< location vector for DOF management
-          Epetra_SerialDenseVector& elevec1     //< reference to element vector to be filled
+          DRT::ELEMENTS::Fluid* ele,            //!< current fluid element
+          DRT::Discretization& discretization,  //!< fluid discretization
+          std::vector<int>& lm,                 //!< location vector for DOF management
+          Epetra_SerialDenseVector& elevec1     //!< reference to element vector to be filled
       );
     };
-
   }  // namespace ELEMENTS
 }  // namespace DRT
 

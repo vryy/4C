@@ -7,10 +7,6 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-
-/*----------------------------------------------------------------------*
- |  headers                                                             |
- *----------------------------------------------------------------------*/
 #include "poro_dyn.H"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -21,15 +17,7 @@
 #include "poroelast_utils_setup.H"
 #include "poro_utils_clonestrategy.H"
 
-#include "../drt_inpar/inpar_poroelast.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-
-
-/*------------------------------------------------------------------------------------------------*
- | main control routine for poroelasticity problems                                   vuong 01/12 |
- *------------------------------------------------------------------------------------------------*/
 void poroelast_drt()
 {
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -65,13 +53,8 @@ void poroelast_drt()
 
   // perform the result test
   poroalgo->TestResults(comm);
+}
 
-  return;
-}  // poroelast_drt()
-
-/*------------------------------------------------------------------------------------------------*
- | main control routine for poro scatra problems                                   vuong 01/12 |
- *------------------------------------------------------------------------------------------------*/
 void poro_scatra_drt()
 {
   DRT::Problem* problem = DRT::Problem::Instance();

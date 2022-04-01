@@ -10,7 +10,6 @@
 #include "so3_poro.H"
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_utils_factory.H"
 
@@ -21,45 +20,29 @@
 
 // for ReadElement()
 #include "../drt_mat/structporo.H"
-// for secondDerivativesZero
-#include "../drt_fem_general/drt_utils_shapefunctions_service.H"
 
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                            vuong 03/12|
- |  id             (in)  this element's global id                       |
- *----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Poro<so3_ele, distype>::So3_Poro(int id, int owner)
     : so3_ele(id, owner),
       data_(),
       intpoints_(distype),
       init_(false),
-      scatracoupling_(false),
+      scatra_coupling_(false),
       isNurbs_(false),
       weights_(true),
       myknots_(numdim_),
-      fluidmat_(Teuchos::null),
-      fluidmultimat_(Teuchos::null),
-      structmat_(Teuchos::null)
-// numscal_(0)
+      fluid_mat_(Teuchos::null),
+      fluidmulti_mat_(Teuchos::null),
+      struct_mat_(Teuchos::null)
 {
   numgpt_ = intpoints_.NumPoints();
-  // ishigherorder_ = DRT::UTILS::secondDerivativesZero<distype>();
 
   invJ_.resize(numgpt_, LINALG::Matrix<numdim_, numdim_>(true));
   detJ_.resize(numgpt_, 0.0);
   xsi_.resize(numgpt_, LINALG::Matrix<numdim_, 1>(true));
   anisotropic_permeability_directions_.resize(3, std::vector<double>(3, 0.0));
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       vuong 03/12|
- |  id             (in)  this element's global id                       |
- *----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Poro<so3_ele, distype>::So3_Poro(
     const DRT::ELEMENTS::So3_Poro<so3_ele, distype>& old)
@@ -69,26 +52,19 @@ DRT::ELEMENTS::So3_Poro<so3_ele, distype>::So3_Poro(
       detJ_(old.detJ_),
       xsi_(old.xsi_),
       intpoints_(distype),
-      // ishigherorder_(old.ishigherorder_),
       init_(old.init_),
-      scatracoupling_(old.scatracoupling_),
+      scatra_coupling_(old.scatra_coupling_),
       isNurbs_(old.isNurbs_),
       weights_(old.weights_),
       myknots_(old.myknots_),
-      fluidmat_(old.fluidmat_),
-      fluidmultimat_(old.fluidmultimat_),
-      structmat_(old.structmat_),
+      fluid_mat_(old.fluid_mat_),
+      fluidmulti_mat_(old.fluidmulti_mat_),
+      struct_mat_(old.struct_mat_),
       anisotropic_permeability_directions_(old.anisotropic_permeability_directions_)
-// numscal_(old.numscal_)
 {
   numgpt_ = intpoints_.NumPoints();
-  return;
 }
 
-/*----------------------------------------------------------------------*
- |  Deep copy this instance of Solid3 and return pointer to it (public) |
- |                                                            vuong 03/12|
- *----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::Element* DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Clone() const
 {
@@ -96,10 +72,6 @@ DRT::Element* DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Clone() const
   return newelement;
 }
 
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                           vuong 03/12|
- *----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Pack(DRT::PackBuffer& data) const
 {
@@ -117,38 +89,30 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Pack(DRT::PackBuffer& data) cons
   so3_ele::AddtoPack(data, detJ_);
 
   // invJ_
-  auto size = (int)invJ_.size();
+  auto size = static_cast<int>(invJ_.size());
   so3_ele::AddtoPack(data, size);
   for (int i = 0; i < size; ++i) so3_ele::AddtoPack(data, invJ_[i]);
 
   // xsi_
-  size = (int)xsi_.size();
+  size = static_cast<int>(xsi_.size());
   so3_ele::AddtoPack(data, size);
   for (int i = 0; i < size; ++i) so3_ele::AddtoPack(data, xsi_[i]);
 
-  // scatracoupling_
-  so3_ele::AddtoPack(data, scatracoupling_);
+  // scatra_coupling_
+  so3_ele::AddtoPack(data, scatra_coupling_);
 
   // isNurbs_
   so3_ele::AddtoPack(data, isNurbs_);
 
   // anisotropic_permeability_directions_
-  size = (int)anisotropic_permeability_directions_.size();
+  size = static_cast<int>(anisotropic_permeability_directions_.size());
   so3_ele::AddtoPack(data, size);
   for (int i = 0; i < size; ++i) so3_ele::AddtoPack(data, anisotropic_permeability_directions_[i]);
 
-  // so3_ele::AddtoPack(data,numscal_);
-
   // add base class Element
   so3_ele::Pack(data);
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                           vuong 03/12|
- *----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Unpack(const std::vector<char>& data)
 {
@@ -178,11 +142,11 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Unpack(const std::vector<char>& 
   xsi_.resize(size, LINALG::Matrix<numdim_, 1>(true));
   for (int i = 0; i < size; ++i) so3_ele::ExtractfromPack(position, data, xsi_[i]);
 
-  // scatracoupling_
-  scatracoupling_ = (bool)(so3_ele::ExtractInt(position, data));
+  // scatra_coupling_
+  scatra_coupling_ = static_cast<bool>(so3_ele::ExtractInt(position, data));
 
   // isNurbs_
-  isNurbs_ = (bool)(so3_ele::ExtractInt(position, data));
+  isNurbs_ = static_cast<bool>(so3_ele::ExtractInt(position, data));
 
   // anisotropic_permeability_directions_
   size = 0;
@@ -190,8 +154,6 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Unpack(const std::vector<char>& 
   anisotropic_permeability_directions_.resize(size, std::vector<double>(3, 0.0));
   for (int i = 0; i < size; ++i)
     so3_ele::ExtractfromPack(position, data, anisotropic_permeability_directions_[i]);
-
-  // numscal_ = so3_ele::ExtractInt(position,data);
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -201,13 +163,9 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Unpack(const std::vector<char>& 
   init_ = true;
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
-  return;
+    dserror("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
 }
 
-/*----------------------------------------------------------------------*
- |  get vector of volumes (length 1) (public)                 vuong 11/13|
- *----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Volumes()
 {
@@ -216,10 +174,6 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Poro<so3_ele, distype
   return volumes;
 }
 
-/*----------------------------------------------------------------------*
-|  get vector of surfaces (public)                           vuong 11/13|
-|  surface normals always point outward                                 |
-*----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Surfaces()
 {
@@ -234,9 +188,6 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Poro<so3_ele, distype
       DRT::UTILS::buildSurfaces, this);
 }
 
-/*----------------------------------------------------------------------*
- |  get vector of lines (public)                             vuong 11/13|
- *----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Lines()
 {
@@ -251,21 +202,14 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Poro<so3_ele, distype
       DRT::UTILS::buildLines, this);
 }
 
-/*----------------------------------------------------------------------*
- |  print this element (public)                              vuong 03/12|
- *----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Print(std::ostream& os) const
 {
   os << "So3_poro ";
   os << DRT::DistypeToString(distype).c_str() << " ";
   Element::Print(os);
-  return;
 }
 
-/*----------------------------------------------------------------------*
- |                                                           vuong 03/12|
- *----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 bool DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ReadElement(
     const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
@@ -296,18 +240,12 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::
   }
 }
 
-/*----------------------------------------------------------------------*
- |                                                           vuong 03/12|
- *----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::VisNames(std::map<std::string, int>& names)
 {
   so3_ele::VisNames(names);
 }
 
-/*----------------------------------------------------------------------*
- |                                                           vuong 03/12|
- *----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 bool DRT::ELEMENTS::So3_Poro<so3_ele, distype>::VisData(
     const std::string& name, std::vector<double>& data)
@@ -315,9 +253,6 @@ bool DRT::ELEMENTS::So3_Poro<so3_ele, distype>::VisData(
   return so3_ele::VisData(name, data);
 }
 
-/*----------------------------------------------------------------------*
- |                                                           vuong 03/12|
- *----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::UniqueParObjectId() const
 {
@@ -325,19 +260,14 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::UniqueParObjectId() const
   {
     case DRT::Element::tet4:
       return So_tet4PoroType::Instance().UniqueParObjectId();
-      break;
     case DRT::Element::tet10:
       return So_tet10PoroType::Instance().UniqueParObjectId();
-      break;
     case DRT::Element::hex8:
       return So_hex8PoroType::Instance().UniqueParObjectId();
-      break;
     case DRT::Element::hex27:
       return So_hex27PoroType::Instance().UniqueParObjectId();
-      break;
     case DRT::Element::nurbs27:
       return So_nurbs27PoroType::Instance().UniqueParObjectId();
-      break;
     default:
       dserror("unknown element type!");
       break;
@@ -345,9 +275,6 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::UniqueParObjectId() const
   return -1;
 }
 
-/*----------------------------------------------------------------------*
- |                                                           vuong 03/12|
- *----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ElementType& DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ElementType() const
 {
@@ -368,29 +295,20 @@ DRT::ElementType& DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ElementType() const
       break;
   }
   return So_hex8PoroType::Instance();
-};
+}
 
-/*----------------------------------------------------------------------*
- |                                                           vuong 03/12|
- *----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 inline DRT::Node** DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Nodes()
 {
   return so3_ele::Nodes();
 }
 
-/*----------------------------------------------------------------------*
- |                                                           vuong 03/12|
- *----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 inline Teuchos::RCP<MAT::Material> DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Material() const
 {
   return so3_ele::Material();
 }
 
-/*----------------------------------------------------------------------*
- |                                                           vuong 03/12|
- *----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 inline int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Id() const
 {

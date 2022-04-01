@@ -18,25 +18,15 @@
 
 DRT::ELEMENTS::FluidPoroEleType DRT::ELEMENTS::FluidPoroEleType::instance_;
 
-/*----------------------------------------------------------------------*
- *   return instance (public,static)                                    |
- *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidPoroEleType& DRT::ELEMENTS::FluidPoroEleType::Instance() { return instance_; }
 
-
-/*----------------------------------------------------------------------*
- *   create element (public)                                 vuong 06/13|
- *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::FluidPoroEleType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::FluidPoro* object = new DRT::ELEMENTS::FluidPoro(-1, -1);
+  auto* object = new DRT::ELEMENTS::FluidPoro(-1, -1);
   object->Unpack(data);
   return object;
 }
 
-/*----------------------------------------------------------------------*
- *   create element (public)                                 vuong 06/13|
- *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidPoroEleType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
@@ -47,17 +37,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidPoroEleType::Create(
   return Teuchos::null;
 }
 
-/*----------------------------------------------------------------------*
- *   create element (public)                                 vuong 06/13|
- *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidPoroEleType::Create(const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::FluidPoro(id, owner));
 }
 
-/*----------------------------------------------------------------------*
- *   Setup Element Definition                               vuong 06/13|
- *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidPoroEleType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
@@ -90,43 +74,25 @@ void DRT::ELEMENTS::FluidPoroEleType::SetupElementDefinition(
   defs["NURBS9"] = defs_fluid["NURBS9"];
 }
 
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                            vuong 06/13 |
- |  id             (in)  this element's global id                       |
- *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidPoro::FluidPoro(int id, int owner)
     : Fluid(id, owner), kintype_(INPAR::STR::kinem_vague)
 {
   anisotropic_permeability_directions_.resize(3, std::vector<double>(3, 0.0));
-  return;
 }
 
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                     vuong 06/13   |
- *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidPoro::FluidPoro(const DRT::ELEMENTS::FluidPoro& old)
     : Fluid(old),
       kintype_(old.kintype_),
       anisotropic_permeability_directions_(old.anisotropic_permeability_directions_)
 {
-  return;
 }
 
-/*----------------------------------------------------------------------*
- |  Deep copy this instance of Fluid and return pointer to it (public) |
- |                                                     vuong 06/13    |
- *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::FluidPoro::Clone() const
 {
-  DRT::ELEMENTS::FluidPoro* newelement = new DRT::ELEMENTS::FluidPoro(*this);
+  auto* newelement = new DRT::ELEMENTS::FluidPoro(*this);
   return newelement;
 }
 
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                         vuong 06/13  |
- *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidPoro::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm(data);
@@ -142,15 +108,8 @@ void DRT::ELEMENTS::FluidPoro::Pack(DRT::PackBuffer& data) const
 
   // add base class Element
   Fluid::Pack(data);
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                         vuong 06/13   |
- *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidPoro::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
@@ -170,13 +129,9 @@ void DRT::ELEMENTS::FluidPoro::Unpack(const std::vector<char>& data)
   Fluid::Unpack(basedata);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
-  return;
+    dserror("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
 }
 
-/*----------------------------------------------------------------------*
- |  get vector of lines              (public)           vuong 06/13     |
- *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidPoro::Lines()
 {
   // do NOT store line or surface elements inside the parent element
@@ -207,10 +162,6 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidPoro::Lines()
   }
 }
 
-
-/*----------------------------------------------------------------------*
- |  get vector of surfaces (public)                       vuong 06/13    |
- *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidPoro::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
@@ -221,9 +172,11 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidPoro::Surfaces()
 
   // so we have to allocate new line elements:
 
-  if (NumSurface() > 1)  // 2D boundary element and 3D parent element
+  if (NumSurface() > 1)
+  {  // 2D boundary element and 3D parent element
     return DRT::UTILS::ElementBoundaryFactory<FluidPoroBoundary, FluidPoro>(
         DRT::UTILS::buildSurfaces, this);
+  }
   else if (NumSurface() ==
            1)  // 2D boundary element and 2D parent element -> body load (calculated in evaluate)
   {
@@ -239,10 +192,6 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidPoro::Surfaces()
   }
 }
 
-
-/*----------------------------------------------------------------------*
- |  get vector of volumes (length 1) (public)           vuong 06/13      |
- *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidPoro::Volumes()
 {
   if (NumVolume() ==
@@ -259,12 +208,8 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidPoro::Volumes()
   }
 }
 
-/*----------------------------------------------------------------------*
- |  print this element (public)                         vuong 06/13    |
- *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidPoro::Print(std::ostream& os) const
 {
   os << "FluidPoro " << (DistypeToString(distype_)).c_str();
   Element::Print(os);
-  return;
 }

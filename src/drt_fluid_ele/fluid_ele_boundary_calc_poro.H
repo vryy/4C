@@ -12,14 +12,8 @@
 #ifndef FLUID_ELE_BOUNDARY_CALC_PORO_H
 #define FLUID_ELE_BOUNDARY_CALC_PORO_H
 
-/*---------------------------------------------------------------------*
- | headers                                                              |
- *---------------------------------------------------------------------*/
 #include "fluid_ele_boundary_calc.H"
 
-/*---------------------------------------------------------------------*
- | forward declarations                                                 |
- *---------------------------------------------------------------------*/
 namespace DRT
 {
   class Condition;
@@ -58,14 +52,15 @@ namespace DRT
     template <DRT::Element::DiscretizationType distype>
     class FluidEleBoundaryCalcPoro : public FluidBoundaryImpl<distype>
     {
-      typedef DRT::ELEMENTS::FluidBoundaryImpl<distype> my;
+      using Base = DRT::ELEMENTS::FluidBoundaryImpl<distype>;
 
      public:
       /// Singleton access method
       static FluidEleBoundaryCalcPoro<distype>* Instance(bool create = true);
 
       /// Empty destructor
-      virtual ~FluidEleBoundaryCalcPoro(){};
+      virtual ~FluidEleBoundaryCalcPoro() = default;
+      ;
 
       /// called upon destruction
       virtual void Done();
@@ -346,7 +341,7 @@ namespace DRT
       \param eporosity (in/out)  : matrix to be filled with nodal porosities
       */
       virtual bool ComputeNodalPorosity(DRT::ELEMENTS::FluidBoundary* ele,
-          const std::vector<double>& mydispnp, LINALG::Matrix<my::bdrynen_, 1>& eporosity)
+          const std::vector<double>& mydispnp, LINALG::Matrix<Base::bdrynen_, 1>& eporosity)
       {
         return false;
       };
@@ -369,8 +364,8 @@ namespace DRT
       \param save (in)           : flag whether the porosity is to be saved for later access
       */
       virtual void ComputePorosityAtGP(Teuchos::ParameterList& params,
-          DRT::ELEMENTS::FluidBoundary* ele, const LINALG::Matrix<my::bdrynen_, 1>& funct,
-          const LINALG::Matrix<my::bdrynen_, 1>& eporosity, double press, double J, int gp,
+          DRT::ELEMENTS::FluidBoundary* ele, const LINALG::Matrix<Base::bdrynen_, 1>& funct,
+          const LINALG::Matrix<Base::bdrynen_, 1>& eporosity, double press, double J, int gp,
           double& porosity, double& dphi_dp, double& dphi_dJ, bool save);
 
     };  // class FluidEleBoundaryCalcPoro
@@ -386,14 +381,15 @@ namespace DRT
     template <DRT::Element::DiscretizationType distype>
     class FluidEleBoundaryCalcPoroP1 : public FluidEleBoundaryCalcPoro<distype>
     {
-      typedef DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype> my;
+      using Base = DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>;
 
      public:
       /// Singleton access method
       static FluidEleBoundaryCalcPoroP1<distype>* Instance(bool create = true);
 
       /// Empty destructor
-      virtual ~FluidEleBoundaryCalcPoroP1(){};
+      virtual ~FluidEleBoundaryCalcPoroP1() = default;
+      ;
 
       /// called upon destruction
       virtual void Done();
@@ -409,7 +405,7 @@ namespace DRT
       \param eporosity (in/out)  : matrix to be filled with nodal porosities
       */
       bool ComputeNodalPorosity(DRT::ELEMENTS::FluidBoundary* ele,
-          const std::vector<double>& mydispnp, LINALG::Matrix<my::bdrynen_, 1>& eporosity);
+          const std::vector<double>& mydispnp, LINALG::Matrix<Base::bdrynen_, 1>& eporosity);
 
       /*!
       \brief compute the porosity at nodes
@@ -422,10 +418,10 @@ namespace DRT
       \param eporosity (in/out)  : matrix to be filled with nodal porosities
       */
       void ComputePorosityAtGP(Teuchos::ParameterList& params, DRT::ELEMENTS::FluidBoundary* ele,
-          const LINALG::Matrix<my::bdrynen_, 1>& funct,
-          const LINALG::Matrix<my::bdrynen_, 1>& eporosity, double press, double J, int gp,
+          const LINALG::Matrix<Base::bdrynen_, 1>& funct,
+          const LINALG::Matrix<Base::bdrynen_, 1>& eporosity, double press, double J, int gp,
           double& porosity, double& dphi_dp, double& dphi_dJ, bool save);
-    };  // class FluidEleBoundaryCalcPoroP1
+    };
 
   }  // namespace ELEMENTS
 }  // namespace DRT

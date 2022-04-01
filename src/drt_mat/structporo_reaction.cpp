@@ -59,7 +59,7 @@ MAT::StructPoroReaction::StructPoroReaction(MAT::PAR::StructPoroReaction* params
 void MAT::StructPoroReaction::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   StructPoro::Setup(numgp, linedef);
-  refporosity_ = params_->initporosity_;
+  refporosity_ = params_->init_porosity_;
 }
 
 /*----------------------------------------------------------------------*/
@@ -188,8 +188,8 @@ void MAT::StructPoroReaction::Reaction(const double porosity, const double J,
     double limitporosity = 0.45;  // 0.8;
 
     refporosity_ =
-        limitporosity - (limitporosity - params_->initporosity_) * exp(-1.0 * time / tau);
-    refporositydot_ = (limitporosity - params_->initporosity_) / tau * exp(-1.0 * time / tau);
+        limitporosity - (limitporosity - params_->init_porosity_) * exp(-1.0 * time / tau);
+    refporositydot_ = (limitporosity - params_->init_porosity_) / tau * exp(-1.0 * time / tau);
   }
   else  //(time==-1.0) -> time not set (this happens during setup-> no reaction)
   {
@@ -208,8 +208,8 @@ void MAT::StructPoroReaction::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   StructPoro::Evaluate(defgrd, glstrain, params, stress, cmat, gp, eleGID);
 
   // scale stresses and cmat
-  stress->Scale((1.0 - refporosity_) / (1.0 - params_->initporosity_));
-  cmat->Scale((1.0 - refporosity_) / (1.0 - params_->initporosity_));
+  stress->Scale((1.0 - refporosity_) / (1.0 - params_->init_porosity_));
+  cmat->Scale((1.0 - refporosity_) / (1.0 - params_->init_porosity_));
 }
 
 /*----------------------------------------------------------------------*/

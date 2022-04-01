@@ -19,16 +19,12 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 
-
-/*---------------------------------------------------------------------*
-|  Call the element to set all basic parameter                         |
-*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidPoroEleType::PreEvaluate(DRT::Discretization& dis,
     Teuchos::ParameterList& p, Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, Teuchos::RCP<Epetra_Vector> systemvector1,
     Teuchos::RCP<Epetra_Vector> systemvector2, Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  const FLD::Action action = DRT::INPUT::get<FLD::Action>(p, "action");
+  const auto action = DRT::INPUT::get<FLD::Action>(p, "action");
 
   // poro specific actions
   if (action == FLD::set_poro_parameter)
@@ -38,23 +34,20 @@ void DRT::ELEMENTS::FluidPoroEleType::PreEvaluate(DRT::Discretization& dis,
     fldpara->SetElementPoroParameter(p, dis.Comm().MyPID());
   }
   else
+  {
     // call standard fluid type
     FluidType::PreEvaluate(
         dis, p, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
-
-  return;
+  }
 }
 
-/*----------------------------------------------------------------------*
- |  evaluate the element (public)                            g.bau 03/07|
- *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::FluidPoro::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = DRT::INPUT::get<FLD::Action>(params, "action");
+  const auto act = DRT::INPUT::get<FLD::Action>(params, "action");
 
   // get material
   Teuchos::RCP<MAT::Material> mat = Material();
@@ -86,20 +79,17 @@ int DRT::ELEMENTS::FluidPoro::Evaluate(Teuchos::ParameterList& params,
           ->Evaluate(
               this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2, elevec3);
     }
-    break;
     //-----------------------------------------------------------------------
     // standard implementation enabling time-integration schemes such as
     // one-step-theta, BDF2, and generalized-alpha (n+alpha_F and n+1)
     // for the particular case of porous flow
     //-----------------------------------------------------------------------
-    /***********************************************/
     case FLD::calc_porousflow_fluid_coupling:
     {
       return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
           ->Evaluate(this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2,
               elevec3, true);
     }
-    break;
     //-----------------------------------------------------------------------
     // standard implementation enabling time-integration schemes such as
     // one-step-theta, BDF2, and generalized-alpha (n+alpha_F and n+1)
@@ -112,10 +102,9 @@ int DRT::ELEMENTS::FluidPoro::Evaluate(Teuchos::ParameterList& params,
       {
         case INPAR::FLUID::poro:
         {
-          // no coupling -> return
+          // no coupling
           return 0;
         }
-        break;
         default:
           dserror("Invalid physical type for monolithic poroelasticity with scalar transport\n");
           break;
@@ -127,7 +116,6 @@ int DRT::ELEMENTS::FluidPoro::Evaluate(Teuchos::ParameterList& params,
       return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
           ->EvaluateService(
               this, params, mat, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
-      break;
     }
     case FLD::set_poro_parameter:
       break;
@@ -135,8 +123,7 @@ int DRT::ELEMENTS::FluidPoro::Evaluate(Teuchos::ParameterList& params,
       // call evaluate of standard fluid
       return Fluid::Evaluate(
           params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
-      break;
-  }  // end of switch(act)
+  }
 
   return 0;
-}  // end of DRT::ELEMENTS::Fluid::Evaluate
+}
