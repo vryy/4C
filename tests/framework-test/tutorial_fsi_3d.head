@@ -1117,9 +1117,6 @@ AZTOL                           1e-08
 // damping for GaussSeidel and jacobi type methods
 AZOMEGA                         0
 //
-// threshold tau for downwinding
-DWINDTAU                        1.5
-//
 // scaling of the system
 //     none,sym,infnorm
 AZSCAL                          none

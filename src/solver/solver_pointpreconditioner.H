@@ -40,63 +40,6 @@ namespace LINALG
       Teuchos::RCP<LINALG::NoneOperator> prec_;
     };
 
-
-
-    /// downwinding, a preconditioner-wrapper
-    /*!
-    Downwinding does a matrix-reordering that is supposed to speed-up the
-    solution process. The actual solution is performed using another
-    preconditioner. DWindPreconditioner is just a wrapper that presents a
-    permuted matrix to the actual preconditioner (and solver).
-
-    \note DWindPreconditioner is a preconditioner in the solver framework, not
-    in a mathematical sense.
-     */
-    class DWindPreconditioner : public PreconditionerType
-    {
-     public:
-      DWindPreconditioner(FILE* outfile, Teuchos::RCP<PreconditionerType> preconditioner,
-          Teuchos::ParameterList& azlist);
-
-      virtual void Setup(
-          bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
-
-      /// undo reordering of lhs, don't care for rhs or matrix
-      virtual void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
-
-      /// return the wrapped preconditioner, no work needs to be done after the
-      /// permutation is performed
-      virtual Epetra_Operator* PrecOperator() const { return preconditioner_->PrecOperator(); }
-
-      /// linear operator used for preconditioning
-      virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const
-      {
-        return preconditioner_->PrecOperatorRCP();
-      }
-
-      virtual void Print(std::ostream& stream)
-      {
-        stream << "DWind(";
-        preconditioner_->Print(stream);
-        stream << ")";
-      }
-
-      /// return name of sublist in paramterlist which contains parameters for preconditioner
-      virtual const std::string getParameterListName() const { return "unknown"; }
-
-     private:
-      Teuchos::RCP<SOLVER::PreconditionerType> preconditioner_;
-
-      Teuchos::ParameterList& azlist_;
-
-      //! downwinding reindexer for downwind smoothers
-      Teuchos::RCP<LINALG::DownwindMatrix> dwind_;
-
-      Teuchos::RCP<Epetra_CrsMatrix> dwA_;
-      Teuchos::RCP<Epetra_MultiVector> dwx_;
-      Teuchos::RCP<Epetra_MultiVector> dwb_;
-    };
-
     /// inf-norm scaling fits the preconditioner framework perfecty
     /*!
     Modifies the underlying matrix and needs to unscale the result

@@ -145,7 +145,6 @@ AZOMEGA        1.0
 AZGRAPH        1
 AZPOLY         1
 AZSCAL         none
-//DWINDTAU       2.5
 ---------------------------------------------------------SOLVER 3
 SOLVER         Aztec_MSR
 AZOUTPUT       0
@@ -164,7 +163,6 @@ AZOMEGA        1.0
 AZGRAPH        1
 AZPOLY         1
 AZSCAL         none
-DWINDTAU       2.5
 ---------------------------------------------------------------------SOLVER 4
 NAME           2,2 block solver/smoothers
 SOLVER         Aztec_MSR

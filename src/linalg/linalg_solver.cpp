@@ -281,15 +281,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToIfpack(
           "relaxation: sweeps", inparams.get<int>("IFPACKGFILL"));  // misuse IFPACKGFILL parameter
     }
     break;
-    case INPAR::SOLVER::azprec_DownwindGaussSeidel:
-    {
-      // in case of downwinding prevent ifpack from again reordering
-      ifpacklist.set("schwarz: reordering type", "none");
-      ifpacklist.set("relaxation: type", "Gauss-Seidel");
-      ifpacklist.set(
-          "relaxation: sweeps", inparams.get<int>("IFPACKGFILL"));  // misuse IFPACKGFILL parameter
-    }
-    break;
     case INPAR::SOLVER::azprec_Chebyshev:
     {
       ifpacklist.set("chebyshev: degree", inparams.get<int>("IFPACKGFILL"));
@@ -431,24 +422,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
         smolevelsublist.set("smoother: sweeps", mlsmotimessteps[i]);
         smolevelsublist.set("smoother: damping factor", damp);
         break;
-      case 8:  // DGS
-        smolevelsublist.set("smoother: type", "Gauss-Seidel");
-        smolevelsublist.set("smoother: sweeps", mlsmotimessteps[i]);
-        smolevelsublist.set("smoother: damping factor", damp);
-        if (azlist != NULL)
-        {
-          azlist->set<bool>("downwinding", true);
-          azlist->set<double>("downwinding tau", inparams.get<double>("DWINDTAU"));
-        }
-        else
-        {
-          std::cout << "WARNING: cannot set parameters for Downwinding Gauss Seidel" << std::endl;
-        }
-        {
-          Teuchos::ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
-          ifpacklist.set("schwarz: reordering type", "true");
-        }
-        break;
       case 1:  // Jacobi
         smolevelsublist.set("smoother: type", "Jacobi");
         smolevelsublist.set("smoother: sweeps", mlsmotimessteps[i]);
@@ -558,24 +531,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
       mllist.set("coarse: type", "Gauss-Seidel");
       mllist.set("coarse: sweeps", mlsmotimessteps[coarse]);
       mllist.set("coarse: damping factor", inparams.get<double>("ML_DAMPCOARSE"));
-      break;
-    case 8:
-      mllist.set("coarse: type", "Gauss-Seidel");
-      mllist.set("coarse: sweeps", mlsmotimessteps[coarse]);
-      mllist.set("coarse: damping factor", inparams.get<double>("ML_DAMPCOARSE"));
-      if (azlist != NULL)
-      {
-        azlist->set<bool>("downwinding", true);
-        azlist->set<double>("downwinding tau", inparams.get<double>("DWINDTAU"));
-      }
-      else
-      {
-        std::cout << "WARNING: cannot set parameters for Downwinding Gauss Seidel" << std::endl;
-      }
-      {
-        Teuchos::ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
-        ifpacklist.set("schwarz: reordering type", "true");
-      }
       break;
     case 1:
       mllist.set("coarse: type", "Jacobi");
@@ -767,13 +722,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
       // using ifpack
       beloslist.set("Preconditioner Type", "point relaxation");
       break;
-    case INPAR::SOLVER::azprec_DownwindGaussSeidel:
-      // using ifpack
-      beloslist.set("Preconditioner Type", "point relaxation");
-      beloslist.set<bool>("downwinding", true);
-      beloslist.set<double>("downwinding tau", inparams.get<double>("DWINDTAU"));
-      std::cout << "warning: downwinding not supported?" << std::endl;
-      break;
     case INPAR::SOLVER::azprec_LU:
       // using ifpack
       beloslist.set("Preconditioner Type", "Amesos");
@@ -853,9 +801,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
   if (azprectyp == INPAR::SOLVER::azprec_ILU || azprectyp == INPAR::SOLVER::azprec_ILUT ||
       azprectyp == INPAR::SOLVER::azprec_ICC || azprectyp == INPAR::SOLVER::azprec_LU ||
       azprectyp == INPAR::SOLVER::azprec_SymmGaussSeidel ||
-      azprectyp == INPAR::SOLVER::azprec_GaussSeidel ||
-      azprectyp == INPAR::SOLVER::azprec_DownwindGaussSeidel ||
-      azprectyp == INPAR::SOLVER::azprec_Jacobi)
+      azprectyp == INPAR::SOLVER::azprec_GaussSeidel || azprectyp == INPAR::SOLVER::azprec_Jacobi)
   {
     Teuchos::ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
     ifpacklist = LINALG::Solver::TranslateBACIToIfpack(inparams);
@@ -1022,13 +968,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToAztec(
       azlist.set("AZ_precond", AZ_user_precond);
       azlist.set("Preconditioner Type", "point relaxation");
       break;
-    case INPAR::SOLVER::azprec_DownwindGaussSeidel:
-      // using ifpack
-      azlist.set("AZ_precond", AZ_user_precond);
-      azlist.set("Preconditioner Type", "point relaxation");
-      azlist.set<bool>("downwinding", true);
-      azlist.set<double>("downwinding tau", inparams.get<double>("DWINDTAU"));
-      break;
     case INPAR::SOLVER::azprec_LU:
       // using ifpack
       azlist.set("AZ_precond", AZ_user_precond);
@@ -1123,9 +1062,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToAztec(
   if (azprectyp == INPAR::SOLVER::azprec_ILU || azprectyp == INPAR::SOLVER::azprec_ILUT ||
       azprectyp == INPAR::SOLVER::azprec_ICC || azprectyp == INPAR::SOLVER::azprec_LU ||
       azprectyp == INPAR::SOLVER::azprec_SymmGaussSeidel ||
-      azprectyp == INPAR::SOLVER::azprec_GaussSeidel ||
-      azprectyp == INPAR::SOLVER::azprec_DownwindGaussSeidel ||
-      azprectyp == INPAR::SOLVER::azprec_Jacobi || azprectyp == INPAR::SOLVER::azprec_Chebyshev)
+      azprectyp == INPAR::SOLVER::azprec_GaussSeidel || azprectyp == INPAR::SOLVER::azprec_Jacobi ||
+      azprectyp == INPAR::SOLVER::azprec_Chebyshev)
   {
     Teuchos::ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
     ifpacklist = LINALG::Solver::TranslateBACIToIfpack(inparams);

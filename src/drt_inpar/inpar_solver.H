@@ -46,31 +46,30 @@ namespace INPAR
     // TODO: think about which of these are really needed
     enum AzPrecType
     {
-      azprec_none,                 ///< no preconditioning
-      azprec_ILUT,                 ///< incomplete LU fact. with numerical drop tolerance
-      azprec_ILU,                  ///< incomplete LU fact. with fill in levels
-      azprec_Jacobi,               ///< Jacobi preconditioning
-      azprec_Neumann,              ///< neumann polynomials
-      azprec_Least_Squares,        ///< least squares something
-      azprec_SymmGaussSeidel,      ///< symmetric n-step gauss-seidel preconditioner
-      azprec_GaussSeidel,          ///< symmetric n-step gauss-seidel preconditioner
-      azprec_DownwindGaussSeidel,  ///< symmetric n-step gauss-seidel preconditioner
-      azprec_LU,                   ///< ?
-      azprec_RILU,                 ///< relaxed incomplete LU
-      azprec_ICC,                  ///< incomplete cholesky
-      azprec_MLfluid,              ///< ML for Fluids
-      azprec_MLfluid2,             ///< energy optimal unsymmetric ML for Fluids
-      azprec_ML,                   ///< standard ML for structures
-      azprec_BGS2x2,               ///< Block Gauss-Seidel for 2x2 system
-      azprec_CheapSIMPLE,          ///< CheapSIMPLE
-                                   ///< (BACI implementation for contact/meshtying/constraints)
-      azprec_MueLuAMG,             ///< MueLu AMG preconditioner
-      azprec_MueLuAMG_fluid,       ///< MueLu AMG preconditioner for blocked fluid problems
-      azprec_MueLuAMG_tsi,         ///< MueLu AMG preconditioner for blocked tsi problems
-      azprec_MueLuAMG_contactSP,   ///< MueLu AMG preconditioner for blocked contact problems
-      azprec_MueLuAMG_BeamSolid,   ///< MueLu AMG preconditioner for blocked bsi problems
-      azprec_AMGnxn,               ///< AMG preconditioner for a nxn block matrix
-      azprec_Chebyshev             ///< Chebyshev polynomials for preconditioning
+      azprec_none,                ///< no preconditioning
+      azprec_ILUT,                ///< incomplete LU fact. with numerical drop tolerance
+      azprec_ILU,                 ///< incomplete LU fact. with fill in levels
+      azprec_Jacobi,              ///< Jacobi preconditioning
+      azprec_Neumann,             ///< neumann polynomials
+      azprec_Least_Squares,       ///< least squares something
+      azprec_SymmGaussSeidel,     ///< symmetric n-step gauss-seidel preconditioner
+      azprec_GaussSeidel,         ///< symmetric n-step gauss-seidel preconditioner
+      azprec_LU,                  ///< ?
+      azprec_RILU,                ///< relaxed incomplete LU
+      azprec_ICC,                 ///< incomplete cholesky
+      azprec_MLfluid,             ///< ML for Fluids
+      azprec_MLfluid2,            ///< energy optimal unsymmetric ML for Fluids
+      azprec_ML,                  ///< standard ML for structures
+      azprec_BGS2x2,              ///< Block Gauss-Seidel for 2x2 system
+      azprec_CheapSIMPLE,         ///< CheapSIMPLE
+                                  ///< (BACI implementation for contact/meshtying/constraints)
+      azprec_MueLuAMG,            ///< MueLu AMG preconditioner
+      azprec_MueLuAMG_fluid,      ///< MueLu AMG preconditioner for blocked fluid problems
+      azprec_MueLuAMG_tsi,        ///< MueLu AMG preconditioner for blocked tsi problems
+      azprec_MueLuAMG_contactSP,  ///< MueLu AMG preconditioner for blocked contact problems
+      azprec_MueLuAMG_BeamSolid,  ///< MueLu AMG preconditioner for blocked bsi problems
+      azprec_AMGnxn,              ///< AMG preconditioner for a nxn block matrix
+      azprec_Chebyshev            ///< Chebyshev polynomials for preconditioning
     };
 
     /// permutation strategies for linear solvers

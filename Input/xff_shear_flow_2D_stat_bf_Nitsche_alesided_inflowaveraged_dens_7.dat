@@ -93,7 +93,6 @@ AZSCAL                          none                          // scaling of the 
 AZSOLVE                         GMRES                         // Type of linear solver algorithm to use.
 AZSUB                           40                            // The maximum size of the Krylov subspace used with "GMRES" before
 AZTOL                           1e-04                         // tolerance in (un)scaled residual
-DWINDTAU                        2.5                           // threshold tau for downwinding
 ML_AGG_SIZE                     27
 ML_COARSEN                      UC
 ML_DAMPCOARSE                   1                             // damping coarse grid

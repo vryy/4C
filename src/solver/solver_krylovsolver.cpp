@@ -214,7 +214,6 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     // get type of preconditioner and build either Ifpack or ML
     // if we have an ifpack parameter list, we do ifpack
     // if we have an ml parameter list we do ml
-    // if we have a downwinding flag we downwind the linear problem
     if (Params().isSublist("IFPACK Parameters"))
     {
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::IFPACKPreconditioner(
@@ -263,12 +262,6 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else
       dserror("Unknown type of scaling found in parameter list");
-
-    if (azlist.get<bool>("downwinding", false))
-    {
-      preconditioner_ =
-          Teuchos::rcp(new LINALG::SOLVER::DWindPreconditioner(outfile_, preconditioner_, azlist));
-    }
 
     if (projector != Teuchos::null)
     {

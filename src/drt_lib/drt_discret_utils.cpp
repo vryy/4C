@@ -60,27 +60,6 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   solveparams.sublist("NodalBlockInformation").set("number of dofs per node", numdf);
   solveparams.sublist("NodalBlockInformation").set("nullspace dimension", dimns);
 
-  if (solveparams.isSublist("Aztec Parameters"))
-  {
-    // get the aztec list and see whether we use downwinding
-    Teuchos::ParameterList& azlist = solveparams.sublist("Aztec Parameters");
-
-    azlist.set<int>("downwinding nv", nv);
-    azlist.set<int>("downwinding np", np);
-  }
-  else if (solveparams.isSublist("Belos Parameters"))
-  {
-    // get the belos list and see whether we use downwinding
-    Teuchos::ParameterList& beloslist = solveparams.sublist("Belos Parameters");
-
-    beloslist.set<int>("downwinding nv", nv);
-    beloslist.set<int>("downwinding np", np);
-  }
-  else
-  {
-    dserror("No suitable parameter list for iterative solver available.");
-  }
-
   // adapt multigrid settings (if a multigrid preconditioner is used)
   // see whether we have a sublist indicating usage of Trilinos::ML or Trilinos::MueLu
   if (!solveparams.isSublist("ML Parameters") && !solveparams.isSublist("MueLu Parameters") &&

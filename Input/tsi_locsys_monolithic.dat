@@ -139,7 +139,6 @@ AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-06  // 1e-08
 BGS2X2_FLIPORDER                block1_block0_order  // ThrStr, StrThr:block0_block1_order
-DWINDTAU                        1.5
 IFPACKCOMBINE                   Add
 IFPACKFILL                      1
 IFPACKGFILL                     0
