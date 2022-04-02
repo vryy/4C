@@ -685,10 +685,12 @@ lnm-buildtest_daily_schmarrn:
     variables:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
-        CTEST_MAKE: "make -j3"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-Kaiser-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "schmarrn_Q12015_gcc48_ACML_ompi162.config"
+        CTEST_MAKE: "make -j3 baci-release post_processor"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Schmarrn-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_schmarrn.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
+    before_script:
+        - module load gcc/gcc9 mpi/openmpi-4.0.7 boost/1.71_gcc9
     tags:
         - lnm-release-nightly-build-schmarrn
     only:
@@ -701,11 +703,13 @@ lnm-buildtest-schmarrn_interactive:
     variables:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
-        CTEST_MAKE: "make -j3"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-interactive-baci-Q1-2015-Kaiser-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "schmarrn_Q12015_gcc48_ACML_ompi162.config"
+        CTEST_MAKE: "make -j3 baci-release post_processor"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-interactive-baci-Schmarrn-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_schmarrn.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
         GIT_STRATEGY: fetch
+    before_script:
+        - module load gcc/gcc9 mpi/openmpi-4.0.7 boost/1.71_gcc9
     tags:
         - lnm-schmarrn-interactive
     rules:
