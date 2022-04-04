@@ -43,9 +43,7 @@
 #include <Xpetra_EpetraCrsMatrix.hpp>
 #include <Xpetra_EpetraMap.hpp>
 #include <Xpetra_EpetraMultiVector.hpp>
-#ifndef TRILINOS_2015_Q1
 #include <Xpetra_IO.hpp>
-#endif
 #ifdef TRILINOS_2022_Q1
 #include <Xpetra_MatrixUtils.hpp>
 #endif
@@ -223,11 +221,8 @@ void LINALG::SOLVER::MueLuFluidBlockPreconditioner::Setup(
 
       // create maps
       Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> epetra_fullrangemap =
-#ifdef TRILINOS_2015_Q1
-          Teuchos::rcp(new Xpetra::EpetraMap(Teuchos::rcpFromRef(A->FullRangeMap())));
-#else
           Teuchos::rcp(new Xpetra::EpetraMapT<GO, NO>(Teuchos::rcpFromRef(A->FullRangeMap())));
-#endif
+
       Teuchos::RCP<const Xpetra::StridedMap<LO, GO, NO>> fullrangemap =
           Xpetra::StridedMapFactory<LO, GO, NO>::Build(epetra_fullrangemap, stridingInfo, -1, 0);
       Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> strMap1 =
@@ -250,29 +245,18 @@ void LINALG::SOLVER::MueLuFluidBlockPreconditioner::Setup(
       xmaps.push_back(strMap1);
       xmaps.push_back(strMap2);
 
-#ifdef TRILINOS_2015_Q1
-      Teuchos::RCP<const Xpetra::MapExtractor<SC, LO, GO>> map_extractor =
-          Xpetra::MapExtractorFactory<SC, LO, GO>::Build(fullrangemap, xmaps);
-#else
       Teuchos::RCP<const Xpetra::MapExtractor<SC, LO, GO, NO>> map_extractor =
           Xpetra::MapExtractorFactory<SC, LO, GO, NO>::Build(fullrangemap->getMap(), xmaps);
-#endif
 
       // build blocked Xpetra operator
       Teuchos::RCP<Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>> bOp = Teuchos::rcp(
           new Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>(map_extractor, map_extractor, 10));
 
-#ifdef TRILINOS_2015_Q1
-      bOp->setMatrix(0, 0, xA11);
-      bOp->setMatrix(0, 1, xA12);
-      bOp->setMatrix(1, 0, xA21);
-      bOp->setMatrix(1, 1, xA22);
-#else
       bOp->setMatrix(0, 0, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA11)));
       bOp->setMatrix(0, 1, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA12)));
       bOp->setMatrix(1, 0, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA21)));
       bOp->setMatrix(1, 1, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA22)));
-#endif
+
       bOp->fillComplete();
 
       // create velocity null space
@@ -356,11 +340,7 @@ void LINALG::SOLVER::MueLuTsiBlockPreconditioner::Setup(
     if (create)
     {
       Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> fullrangemap =
-#ifdef TRILINOS_2015_Q1
-          Teuchos::rcp(new Xpetra::EpetraMap(Teuchos::rcpFromRef(A->FullRangeMap())));
-#else
           Teuchos::rcp(new Xpetra::EpetraMapT<GO, NO>(Teuchos::rcpFromRef(A->FullRangeMap())));
-#endif
 
       Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA11 =
           Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 0).EpetraMatrix()));
@@ -395,29 +375,18 @@ void LINALG::SOLVER::MueLuTsiBlockPreconditioner::Setup(
       stridedMaps.push_back(stridedMap1);
       stridedMaps.push_back(stridedMap2);
 
-#ifdef TRILINOS_2015_Q1
-      Teuchos::RCP<const Xpetra::MapExtractor<SC, LO, GO>> map_extractor =
-          Xpetra::MapExtractorFactory<SC, LO, GO>::Build(fullrangemap, stridedMaps);
-#else
       Teuchos::RCP<const Xpetra::MapExtractor<SC, LO, GO, NO>> map_extractor =
           Xpetra::MapExtractorFactory<SC, LO, GO, NO>::Build(fullrangemap, stridedMaps);
-#endif
 
       // build blocked Xpetra operator
       Teuchos::RCP<Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>> bOp = Teuchos::rcp(
           new Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>(map_extractor, map_extractor, 10));
 
-#ifdef TRILINOS_2015_Q1
-      bOp->setMatrix(0, 0, xA11);
-      bOp->setMatrix(0, 1, xA12);
-      bOp->setMatrix(1, 0, xA21);
-      bOp->setMatrix(1, 1, xA22);
-#else
       bOp->setMatrix(0, 0, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA11)));
       bOp->setMatrix(0, 1, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA12)));
       bOp->setMatrix(1, 0, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA21)));
       bOp->setMatrix(1, 1, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA22)));
-#endif
+
       bOp->fillComplete();
 
       // Get/compute nullspace vectors
@@ -931,12 +900,7 @@ LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
       muelulist.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
 
   Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace =
-
-#ifdef TRILINOS_2015_Q1
-      Teuchos::rcp(new Xpetra::EpetraMultiVector(nullspaceData));
-#else
       Teuchos::rcp(new Xpetra::EpetraMultiVectorT<GO, NO>(nullspaceData));
-#endif
 
   nullspace->replaceMap(rowMap);
 

@@ -363,22 +363,18 @@ void LINALG::SOLVER::AMGNXN::MueluSmootherWrapper::Apply(
 
   // Convert to Tpetra
   Teuchos::RCP<Epetra_MultiVector> X_rcp = Teuchos::rcp(new Epetra_MultiVector(X));
-#ifdef TRILINOS_2015_Q1
-  Teuchos::RCP<Xpetra::EpetraMultiVector> Xex = Teuchos::rcp(new Xpetra::EpetraMultiVector(X_rcp));
-#else
+
   Teuchos::RCP<Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>> Xex =
       Teuchos::rcp(new Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>(X_rcp));
-#endif
+
   Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>> Xx =
       Teuchos::rcp_dynamic_cast<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>>(
           Xex);
   Teuchos::RCP<Epetra_MultiVector> Y_rcp = Teuchos::rcp(new Epetra_MultiVector(Y));
-#ifdef TRILINOS_2015_Q1
-  Teuchos::RCP<Xpetra::EpetraMultiVector> Yex = Teuchos::rcp(new Xpetra::EpetraMultiVector(Y_rcp));
-#else
+
   Teuchos::RCP<Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>> Yex =
       Teuchos::rcp(new Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>(Y_rcp));
-#endif
+
   Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>> Yx =
       Teuchos::rcp_dynamic_cast<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>>(
           Yex);
@@ -388,11 +384,8 @@ void LINALG::SOLVER::AMGNXN::MueluSmootherWrapper::Apply(
 
   // Convert to Epetra
   const Teuchos::RCP<Epetra_MultiVector>& Ye =
-#ifdef TRILINOS_2015_Q1
-      MueLu::Utils<double, int, int, Node>::MV2NonConstEpetraMV(Yx);
-#else
       MueLu::Utilities<double, int, int, Node>::MV2NonConstEpetraMV(Yx);
-#endif
+
   Y.Update(1.0, *Ye, 0.0);
 
   return;
@@ -559,11 +552,7 @@ void LINALG::SOLVER::AMGNXN::SingleFieldAMG::Setup()
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::SingleFieldAMG::Setup");
 
-#ifdef TRILINOS_2015_Q1
-  using MueLuUtils = MueLu::Utils<double, int, int, Node>;
-#else
   using MueLuUtils = MueLu::Utilities<double, int, int, Node>;
-#endif
 
   Epetra_Time timer(A_->Comm());
   timer.ResetStartTime();

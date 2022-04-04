@@ -22,9 +22,7 @@
 #include <MueLu_SmootherFactory.hpp>
 #include <MueLu_DirectSolver.hpp>
 #include <Trilinos_version.h>
-#ifdef TRILINOS_2015_Q1
-#include <MueLu_HierarchyHelpers.hpp>
-#endif
+#include <MueLu_HierarchyUtils.hpp>
 #include <MueLu_VerboseObject.hpp>
 
 // Belos headers

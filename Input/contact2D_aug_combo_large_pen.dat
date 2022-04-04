@@ -206,7 +206,7 @@ AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        10
 AZPOLY                          3
-AZPREC                          MueLu_contact
+AZPREC                          MueLu
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES

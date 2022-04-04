@@ -322,11 +322,7 @@ void CONTACT::AUG::Plot::Create(Teuchos::ParameterList& nox_params,
 
   Teuchos::ParameterList& p_sol_opt = nox_params.sublist("Solver Options");
 
-#ifdef TRILINOS_2015_Q1
-  Teuchos::RCP<NOX::Abstract::PrePostOperator> prepost_solver_ptr =
-#else
   Teuchos::RCP<NOX::Observer> prepost_solver_ptr =
-#endif
       Teuchos::rcp(new NOX::NLN::Solver::PrePostOp::CONTACT::Plot(contact_plot));
 
   NOX::NLN::AUX::AddToPrePostOpVector(p_sol_opt, prepost_solver_ptr);
