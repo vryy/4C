@@ -498,7 +498,7 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
 {
   // safety check
   if (Material()->MaterialType() != INPAR::MAT::m_linelast1D)
-    dserror("only spring material supported for truss element");
+    dserror("only linear elastic material supported for truss element");
 
   static LINALG::Matrix<6, 1> truss_disp;
   static LINALG::Matrix<6, 6> dtruss_disp_du;
@@ -549,7 +549,7 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
     Teuchos::ParameterList& params, const std::map<std::string, std::vector<double>>& ele_state)
 {
   // safety check
-  if (Material()->MaterialType() != INPAR::MAT::m_spring)
+  if (Material()->MaterialType() != INPAR::MAT::m_linelast1D)
     dserror("only linear elastic material supported for truss element");
 
   Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
