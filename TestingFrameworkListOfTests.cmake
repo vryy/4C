@@ -2008,8 +2008,7 @@ baci_test(sti_mono_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_mortar_standar
 baci_test(sti_mono_3D_tet4_hex8_elch_s2i_butlervolmerpeltier_adiabatic_condensed_mortar_standard_BGS-AMG_4x4 3 15)
 baci_test(sti_mono_3D_tet4_hex8_elch_s2i_butlervolmerpeltier_adiabatic_mortar_standard_BGS-AMG_4x4 3 15)
 
-# brownian dynamic test cases using random numbers from Boost Random libraries
-if ((${Boost_MAJOR_VERSION} EQUAL 1) AND (${Boost_MINOR_VERSION} GREATER 56) AND (${Boost_MINOR_VERSION} LESS 59))
+# brownian dynamic test cases
 baci_test(beam3eb_backweuler_browndyn_singlefil 3 "")
 baci_test(beam3r_herm2line3_backweuler_browndyn_crosslinking_beam3rline2 2 70)
 baci_test(beam3r_herm2line3_backweuler_browndyn_randcrosslinking_beam3rline2 2 "")
@@ -2040,4 +2039,3 @@ baci_test(beam3r_line2_backweuler_browndyn_rve_and_node_dirich 2 "50")
 baci_test(beam3r_rigidsphere_activecrosslinking_truss_browndyn_truss 3 60)
 baci_test(beam3r_rigidsphere_activecrosslinking_truss_browndyn_truss_catchslipbond 3 "")
 baci_test(beam3r_rigidsphere_activecrosslinking_truss_browndyn_truss_forcedependetoffrate 3 "")
-endif ()
