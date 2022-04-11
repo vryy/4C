@@ -28,7 +28,7 @@
  */
 BEAMINTERACTION::BeamInteractionConditionBase::BeamInteractionConditionBase(
     const Teuchos::RCP<const DRT::Condition>& condition_line)
-    : condition_line_(condition_line), line_ids_(), geometry_evaluation_data_(Teuchos::null)
+    : condition_line_(condition_line), line_ids_()
 {
 }
 
@@ -54,7 +54,7 @@ void BEAMINTERACTION::BeamInteractionConditionBase::Setup(
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditionBase::Clear() { geometry_evaluation_data_->Clear(); }
+void BEAMINTERACTION::BeamInteractionConditionBase::Clear() {}
 
 /**
  *

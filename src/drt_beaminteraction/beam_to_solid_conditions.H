@@ -95,6 +95,15 @@ namespace BEAMINTERACTION
     Teuchos::RCP<SUBMODELEVALUATOR::BeamContactAssemblyManager> CreateIndirectAssemblyManager(
         const Teuchos::RCP<const DRT::Discretization>& discret) override;
 
+    /**
+     * \brief Return a pointer to the geometry evaluation data in this condition.
+     */
+    const Teuchos::RCP<const GEOMETRYPAIR::GeometryEvaluationDataBase> GetGeometryEvaluationData()
+        const
+    {
+      return geometry_evaluation_data_;
+    }
+
    protected:
     /**
      * \brief Check if a solid ID is in this condition.
@@ -114,6 +123,9 @@ namespace BEAMINTERACTION
         const std::vector<DRT::Element const*>& ele_ptrs) = 0;
 
    protected:
+    //! Pointer to the geometry evaluation data for this condition.
+    Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase> geometry_evaluation_data_;
+
     //! Pointer to the solid condition.
     Teuchos::RCP<const DRT::Condition> condition_other_;
 
