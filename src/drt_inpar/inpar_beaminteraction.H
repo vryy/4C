@@ -88,6 +88,8 @@ namespace INPAR
     {
       //! Default value.
       none,
+      //! Beam-to-beam contact.
+      beam_to_beam_contact,
       //! Beam-to-solid volume mesh tying.
       beam_to_solid_volume_meshtying,
       //! Beam-to-solid surface mesh tying.

@@ -9,6 +9,7 @@
 
 #include "beaminteraction_conditions.H"
 
+#include "beam_to_beam_contact_condition.H"
 #include "beam_to_solid_conditions.H"
 #include "beam_contact_params.H"
 #include "beam_contact_pair.H"
@@ -77,12 +78,65 @@ void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
   // Loop over interaction types.
   for (const auto& interaction_type : interaction_types)
   {
-    // Add all beam-to-solid contitions.
-    if (interaction_type ==
-            INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_volume_meshtying or
-        interaction_type ==
-            INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_meshtying)
+    if (interaction_type == INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_beam_contact)
     {
+      // Add all beam-to-solid contitions.
+      std::vector<Teuchos::RCP<BeamInteractionConditionBase>>& interaction_vector =
+          condition_map_[interaction_type];
+
+      // Get the names for the conditions of this type.
+      std::string condition_name = "BeamToBeamContact";
+
+      // Get the line conditions from the discretization.
+      std::vector<Teuchos::RCP<DRT::Condition>> condition_lines;
+      discret->GetCondition(condition_name, condition_lines);
+
+      // Match the coupling IDs from the input line.
+      std::map<int,
+          std::pair<Teuchos::RCP<const DRT::Condition>, Teuchos::RCP<const DRT::Condition>>>
+          coupling_id_map;
+      for (const auto& condition : condition_lines)
+      {
+        const int coupling_id = condition->GetInt("COUPLING_ID");
+        if (coupling_id_map[coupling_id].first == Teuchos::null)
+        {
+          coupling_id_map[coupling_id].first = condition;
+        }
+        else if (coupling_id_map[coupling_id].second == Teuchos::null)
+        {
+          coupling_id_map[coupling_id].second = condition;
+        }
+        else
+        {
+          dserror("There can not be three different beam-to-beam coupling conditions.");
+        }
+      }
+
+      for (const auto& map_item : coupling_id_map)
+      {
+        if (map_item.second.first != Teuchos::null && map_item.second.second != Teuchos::null)
+        {
+          // We found the matching conditions, now create the beam-to-beam condition objects.
+          interaction_vector.push_back(Teuchos::rcp(new BEAMINTERACTION::BeamToBeamContactCondition(
+              map_item.second.first, map_item.second.second)));
+        }
+        else
+          dserror("Could not find both conditions (%s) for the COUPLING_ID %d",
+              condition_name.c_str(), map_item.first);
+      }
+
+      // Check that all conditions were added, i.e. that there are no double definitions of
+      // COUPLING_ID.
+      if (2 * interaction_vector.size() != condition_lines.size())
+        dserror("There are multiple definitions of the same COUPLING_ID for %s",
+            condition_name.c_str());
+    }
+    else if (interaction_type == INPAR::BEAMINTERACTION::BeamInteractionConditions::
+                                     beam_to_solid_volume_meshtying or
+             interaction_type ==
+                 INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_meshtying)
+    {
+      // Add all beam-to-solid contitions.
       std::vector<Teuchos::RCP<BeamInteractionConditionBase>>& interaction_vector =
           condition_map_[interaction_type];
 

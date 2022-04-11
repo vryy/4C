@@ -258,6 +258,8 @@ void DRT::Condition::Print(std::ostream& os) const
     os << "blend materials: ";
   else if (Type() == FilamentBeamLineCondition)
     os << "line condition for polymer networks: ";
+  else if (Type() == BeamToBeamContact)
+    os << "condition for beam-to-beam contact: ";
   else if (Type() == BeamToSolidVolumeMeshtyingLine)
     os << "line condition for beam-to-volume interaction: ";
   else if (Type() == BeamToSolidVolumeMeshtyingVolume)
