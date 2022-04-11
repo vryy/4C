@@ -7,7 +7,7 @@ General Data File CCARAT
 DIM                             3
 ----------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Polymer_Network
-RANDSEED                        1
+RANDSEED                        3
 RESTART                         0
 ----------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
@@ -199,7 +199,7 @@ MAT 3 MAT_BeamReissnerElastHyper YOUNG 1.3e+09 POISSONRATIO 0.3 DENS 1.384e-09 C
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.0001 0.01 1.0 VALUES 0.0 0.0 1.0 1.0
 ---------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -2.42880646760662094e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  4.34491748747881601e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE -2.41724095364741765e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -3.56771839302090776e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE 5.50193216404469054e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE -3.99802054938980189e-01 TOLERANCE 1e-10
 ---------------------------------------------------------------END

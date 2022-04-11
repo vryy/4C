@@ -13,7 +13,7 @@
 #define UTILS_H
 
 #include <signal.h>
-#include <boost/random.hpp>
+#include <random>
 #include <stdio.h>
 
 #include <Teuchos_RCP.hpp>
@@ -310,17 +310,11 @@ namespace DRT
     std::vector<double> ElementCenterRefeCoords(const DRT::Element* const ele);
 
     /*!
-    \brief handles random numbers through boost
-
-    \author wichmann
+    \brief handles random numbers
     */
     class Random
     {
      public:
-      Random();
-
-      virtual ~Random();
-
       /// get a random number
       double Uni();
 
@@ -342,47 +336,17 @@ namespace DRT
       /// set the mean and variance for the normal rng
       void SetMeanVariance(const double mean, const double var);
 
-     protected:
-/// @name Random number generation
-#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
+     private:
+      /// @name Random number generation
+      /// @{
       /// random number engine
-      boost::random::mt19937 rand_engine_;
+      std::mt19937 rand_engine_{0};
 
-      /// uniform random number distribution
-      boost::random::uniform_real_distribution<double> uni_dist_;
+      /// uniform random number distribution between -1.0 and 1.0
+      std::uniform_real_distribution<double> uni_dist_{-1.0, 1.0};
 
-      /// uniform random number generator
-      boost::random::variate_generator<boost::random::mt19937&,
-          boost::random::uniform_real_distribution<double>>
-          uni_rand_no_;
-
-      /// normal random number distribution
-      boost::random::normal_distribution<double> norm_dist_;
-
-      /// uniform random number generator
-      boost::random::variate_generator<boost::random::mt19937&,
-          boost::random::normal_distribution<double>>
-          norm_rand_no_;
-#else
-      /********************************************************
-       * The following declarations are deprecated in current *
-       * Boosts, but they are all we got on FC8 and F12       *
-       ********************************************************/
-      /// random number engine
-      boost::mt19937 rand_engine_;
-
-      /// uniform random number distribution
-      boost::uniform_real<double> uni_dist_;
-
-      /// uniform random number generator
-      boost::variate_generator<boost::mt19937&, boost::uniform_real<double>> uni_rand_no_;
-
-      /// normal random number distribution
-      boost::normal_distribution<double> norm_dist_;
-
-      /// uniform random number generator
-      boost::variate_generator<boost::mt19937&, boost::normal_distribution<double>> norm_rand_no_;
-#endif
+      /// unit normal random number distribution
+      std::normal_distribution<double> norm_dist_{};
       //@}
     };
 
