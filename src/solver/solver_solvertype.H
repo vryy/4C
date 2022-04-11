@@ -11,45 +11,42 @@
 #define SOLVER_SOLVERTYPE_H_
 
 #include "../drt_lib/drt_dserror.H"
+#include "../linalg/linalg_krylov_projector.H"
 
-namespace LINALG
+namespace LINALG::SOLVER
 {
-  class KrylovProjector;
-  namespace SOLVER
+  /// linear solver type base class
+  template <class MatrixType, class VectorType>
+  class SolverType
   {
-    /// linear solver type base class
-    class SolverType
+   public:
+    //! Destructor
+    virtual ~SolverType() = default;
+
+    /*! \brief Setup the solver object
+     *
+     * @param A Matrix of the linear system
+     * @param x Solution vector of the linear system
+     * @param b Right-hand side vector of the linear system
+     * @param refactor Boolean flag to enforce a refactorization of the matrix
+     * @param reset Boolean flag to enforce a full reset of the solver object
+     * @param projector Krylov projector
+     */
+    virtual void Setup(Teuchos::RCP<MatrixType> A, Teuchos::RCP<VectorType> x,
+        Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
+        Teuchos::RCP<LINALG::KrylovProjector> projector) = 0;
+
+    virtual int Solve() = 0;
+
+    virtual int ApplyInverse(const VectorType& X, VectorType& Y) = 0;
+
+    /// return number of iterations performed by solver
+    virtual int getNumIters() const
     {
-     public:
-      //! Destructor
-      virtual ~SolverType() {}
-
-      /*! \brief Setup the solver object
-       *
-       * @param matrix Matrix of the linear system
-       * @param x Solution vector of the linear system
-       * @param b Right-hand side vector of the linear system
-       * @param refactor Boolean flag to enforce a refactorization of the matrix
-       * @param reset Boolean flag to enforce a full reset of the solver object
-       * @param projector Krylov projector
-       */
-      virtual void Setup(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
-          Teuchos::RCP<Epetra_MultiVector> b, const bool refactor, const bool reset,
-          Teuchos::RCP<LINALG::KrylovProjector> projector) = 0;
-
-      virtual int Solve() = 0;
-
-      virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) = 0;
-
-      /// return number of iterations performed by solver
-      virtual int getNumIters() const
-      {
-        dserror("Not implemented in base class!");
-        return -1;
-      };
+      dserror("Not implemented in base class!");
+      return -1;
     };
-  }  // namespace SOLVER
-}  // namespace LINALG
-
+  };
+}  // namespace LINALG::SOLVER
 
 #endif /* SOLVER_SOLVERTYPE_H_ */

@@ -39,101 +39,114 @@
 // parameter name)
 #define LINALG_COPY_PARAM(paramList, paramStr, varType, defaultValue, outParamList, outParamStr) \
   if (paramList.isParameter(paramStr))                                                           \
-    outParamList.set<varType>(outParamStr, paramList.get<varType>(paramStr));                    \
+    outParamList.template set<varType>(outParamStr, paramList.template get<varType>(paramStr));  \
   else                                                                                           \
-    outParamList.set<varType>(outParamStr, defaultValue);
+    outParamList.template set<varType>(outParamStr, defaultValue);
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-LINALG::SOLVER::AztecSolver::AztecSolver(
+// explicit initialization
+template class LINALG::SOLVER::AztecSolver<Epetra_Operator, Epetra_MultiVector>;
+
+template <class MatrixType, class VectorType>
+LINALG::SOLVER::AztecSolver<MatrixType, VectorType>::AztecSolver(
     const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile)
-    : KrylovSolver(comm, params, outfile), numiters_(-1)
+    : KrylovSolver<MatrixType, VectorType>(comm, params, outfile), numiters_(-1)
 {
-  ncall_ = 0;
+  this->ncall_ = 0;
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-LINALG::SOLVER::AztecSolver::~AztecSolver()
+template <class MatrixType, class VectorType>
+LINALG::SOLVER::AztecSolver<MatrixType, VectorType>::~AztecSolver()
 {
-  preconditioner_ = Teuchos::null;
-  A_ = Teuchos::null;
-  x_ = Teuchos::null;
-  b_ = Teuchos::null;
+  this->preconditioner_ = Teuchos::null;
+  this->A_ = Teuchos::null;
+  this->x_ = Teuchos::null;
+  this->b_ = Teuchos::null;
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::AztecSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
-    Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b, const bool refactor,
-    const bool reset, Teuchos::RCP<LINALG::KrylovProjector> projector)
+template <class MatrixType, class VectorType>
+void LINALG::SOLVER::AztecSolver<MatrixType, VectorType>::Setup(Teuchos::RCP<MatrixType> matrix,
+    Teuchos::RCP<VectorType> x, Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
+    Teuchos::RCP<LINALG::KrylovProjector> projector)
 {
-  if (!Params().isSublist("Aztec Parameters")) dserror("Do not have aztec parameter list");
-  Teuchos::ParameterList& azlist = Params().sublist("Aztec Parameters");
+  if (!this->Params().isSublist("Aztec Parameters")) dserror("Do not have aztec parameter list");
+  Teuchos::ParameterList& azlist = this->Params().sublist("Aztec Parameters");
   // int azoutput = azlist.get<int>("AZ_output",0);
 
   // see whether operator is a Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> A = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(matrix);
 
-  permutationStrategy_ = azlist.get<std::string>("permutation strategy", "none");
-  diagDominanceRatio_ = azlist.get<double>("diagonal dominance ratio", 1.0);
-  if (permutationStrategy_ == "none")
-    bAllowPermutation_ = false;
+  this->permutationStrategy_ = azlist.get<std::string>("permutation strategy", "none");
+  this->diagDominanceRatio_ = azlist.get<double>("diagonal dominance ratio", 1.0);
+  if (this->permutationStrategy_ == "none")
+    this->bAllowPermutation_ = false;
   else
-    bAllowPermutation_ = true;
+    this->bAllowPermutation_ = true;
 
   // decide whether we recreate preconditioners
   // after this call, the solver can access the preconditioner object using the
   // Preconditioner() function.
   int reuse = azlist.get("reuse", 0);
-  const bool create = AllowReusePreconditioner(reuse, reset) == false;
+  const bool create = this->AllowReusePreconditioner(reuse, reset) == false;
   if (create)
   {
-    ncall_ = 0;
+    this->ncall_ = 0;
     projector_ = projector;
-    CreatePreconditioner(azlist, A != Teuchos::null, projector_);
+    this->CreatePreconditioner(azlist, A != Teuchos::null, projector_);
   }
 
   // feed preconditioner with more information about linear system using
   // the "Linear System properties" sublist in the preconditioner's
   // paramter list
   {
-    const std::string precondParamListName = Preconditioner().getParameterListName();
-    if (Params().isSublist(precondParamListName))
+    const std::string precondParamListName = this->Preconditioner().getParameterListName();
+    if (this->Params().isSublist(precondParamListName))
     {
-      Teuchos::ParameterList& precondParams = Params().sublist(precondParamListName);
+      Teuchos::ParameterList& precondParams = this->Params().sublist(precondParamListName);
       Teuchos::ParameterList& linSystemProps = precondParams.sublist("Linear System properties");
 
-      LINALG_COPY_PARAM(Params().sublist("Aztec Parameters").sublist("Linear System properties"),
+      LINALG_COPY_PARAM(
+          this->Params().sublist("Aztec Parameters").sublist("Linear System properties"),
           "contact slaveDofMap", Teuchos::RCP<Epetra_Map>, Teuchos::null, linSystemProps,
           "contact slaveDofMap");
-      LINALG_COPY_PARAM(Params().sublist("Aztec Parameters").sublist("Linear System properties"),
+      LINALG_COPY_PARAM(
+          this->Params().sublist("Aztec Parameters").sublist("Linear System properties"),
           "contact masterDofMap", Teuchos::RCP<Epetra_Map>, Teuchos::null, linSystemProps,
           "contact masterDofMap");
-      LINALG_COPY_PARAM(Params().sublist("Aztec Parameters").sublist("Linear System properties"),
+      LINALG_COPY_PARAM(
+          this->Params().sublist("Aztec Parameters").sublist("Linear System properties"),
           "contact innerDofMap", Teuchos::RCP<Epetra_Map>, Teuchos::null, linSystemProps,
           "contact innerDofMap");
-      LINALG_COPY_PARAM(Params().sublist("Aztec Parameters").sublist("Linear System properties"),
+      LINALG_COPY_PARAM(
+          this->Params().sublist("Aztec Parameters").sublist("Linear System properties"),
           "contact activeDofMap", Teuchos::RCP<Epetra_Map>, Teuchos::null, linSystemProps,
           "contact activeDofMap");
-      LINALG_COPY_PARAM(Params().sublist("Aztec Parameters").sublist("Linear System properties"),
+      LINALG_COPY_PARAM(
+          this->Params().sublist("Aztec Parameters").sublist("Linear System properties"),
           "ProblemType", std::string, "contact", linSystemProps, "ProblemType");
-      LINALG_COPY_PARAM(Params().sublist("Aztec Parameters").sublist("Linear System properties"),
+      LINALG_COPY_PARAM(
+          this->Params().sublist("Aztec Parameters").sublist("Linear System properties"),
           "time step", int, -1, linSystemProps, "time step");
-      LINALG_COPY_PARAM(Params().sublist("Aztec Parameters").sublist("Linear System properties"),
-          "iter", int, -1, linSystemProps, "iter");
+      LINALG_COPY_PARAM(
+          this->Params().sublist("Aztec Parameters").sublist("Linear System properties"), "iter",
+          int, -1, linSystemProps, "iter");
     }
   }
 
   ///////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////
   ////////////////////////////////////// permutation stuff
-  if (bAllowPermutation_)
+  if (this->bAllowPermutation_)
   {
     // extract (user-given) additional information about linear system from
     // "Aztec Parameters" -> "Linear System properties"
     Teuchos::RCP<Epetra_Map> epSlaveDofMap =
-        ExtractPermutationMap("Aztec Parameters", "contact slaveDofMap");
+        this->ExtractPermutationMap("Aztec Parameters", "contact slaveDofMap");
 
     // build permutation operators
     // permP, permQT and A = permQ^T A permP
@@ -141,22 +154,22 @@ void LINALG::SOLVER::AztecSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
     // note: we only allow permutations for rows in epSlaveDofMap
     //       the idea is not to disturb the matrix in regions which are
     //       known to work perfectly (no contact)
-    BuildPermutationOperator(A, epSlaveDofMap);
+    this->BuildPermutationOperator(A, epSlaveDofMap);
 
     // TODO decide whether to permute linear system or not using the information of
     //      the permuted system matrix A
 
     // decide whether to permute linear system or not.
     // set all information corresponding to the decision.
-    bPermuteLinearSystem_ = DecideAboutPermutation(A);
+    this->bPermuteLinearSystem_ = this->DecideAboutPermutation(A);
   }
 
-  if (bAllowPermutation_ && bPermuteLinearSystem_)
+  if (this->bAllowPermutation_ && this->bPermuteLinearSystem_)
   {
     // set
     // b_ = permP * b;
     // A_ = permQ^T * A * permP
-    PermuteLinearSystem(A, b);
+    this->PermuteLinearSystem(A, b);
 
     // calculate (permQT)^T * b_f where b_f is the fine level null space (multi)vector
     // PermuteNullSpace(A);  // TODO think about this
@@ -165,17 +178,17 @@ void LINALG::SOLVER::AztecSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
   }
   else
   {
-    b_ = b;
-    A_ = matrix;  // we cannot use A, since it could be Teuchos::null (for blocked operators)
+    this->b_ = b;
+    this->A_ = matrix;  // we cannot use A, since it could be Teuchos::null (for blocked operators)
   }
-  x_ = x;
+  this->x_ = x;
   ////
 
 #ifdef WRITEOUTSTATISTICS
   tttcreate.ResetStartTime();
 #endif
 
-  preconditioner_->Setup(create, &*A_, &*x_, &*b_);
+  this->preconditioner_->Setup(create, &*(this->A_), &*(this->x_), &*(this->b_));
 
 #ifdef WRITEOUTSTATISTICS
   dtimeprecondsetup = tttcreate.ElapsedTime();
@@ -184,14 +197,15 @@ void LINALG::SOLVER::AztecSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-int LINALG::SOLVER::AztecSolver::Solve()
+template <class MatrixType, class VectorType>
+int LINALG::SOLVER::AztecSolver<MatrixType, VectorType>::Solve()
 {
 #ifdef WRITEOUTSTATISTICS
   Epetra_Time ttt(Comm());  // time measurement for whole routine
   ttt.ResetStartTime();
 #endif
 
-  Teuchos::ParameterList& azlist = Params().sublist("Aztec Parameters");
+  Teuchos::ParameterList& azlist = this->Params().sublist("Aztec Parameters");
 
   // Allocate an aztec solver with default parameters
   // We do this every time because reusing the solver object
@@ -207,7 +221,7 @@ int LINALG::SOLVER::AztecSolver::Solve()
 
   // Don't want linear problem to alter our aztec parameters (idiot feature!)
   // this is why we set our list here AFTER the linear problem has been set
-  aztec.SetProblem(preconditioner_->LinearProblem());
+  aztec.SetProblem(this->preconditioner_->LinearProblem());
 
   {
     // We don't want to use Aztec's scaling capabilities as we prefer to do
@@ -220,7 +234,7 @@ int LINALG::SOLVER::AztecSolver::Solve()
     azlist.set("scaling", scaling);
   }
 
-  aztec.SetPrecOperator(preconditioner_->PrecOperator());
+  aztec.SetPrecOperator(this->preconditioner_->PrecOperator());
 
   // iterate on the solution
   int iter = azlist.get("AZ_max_iter", 500);
@@ -232,7 +246,7 @@ int LINALG::SOLVER::AztecSolver::Solve()
   // This hurts! It supresses error messages. This needs to be fixed.
   if (projector_ != Teuchos::null)
   {
-    Epetra_Operator* op = aztec.GetProblem()->GetOperator();
+    MatrixType* op = aztec.GetProblem()->GetOperator();
     Epetra_Vector* rhs = static_cast<Epetra_Vector*>(aztec.GetProblem()->GetRHS());
     Epetra_Vector* lhs = static_cast<Epetra_Vector*>(aztec.GetProblem()->GetLHS());
     // max iterations
@@ -293,7 +307,7 @@ int LINALG::SOLVER::AztecSolver::Solve()
   // store number of iterations
   numiters_ = aztec.NumIters();
 
-  preconditioner_->Finish(&*A_, &*x_, &*b_);
+  this->preconditioner_->Finish(&*(this->A_), &*(this->x_), &*(this->b_));
 
   // check status of solution process
   const double* status = aztec.GetAztecStatus();
@@ -318,19 +332,19 @@ int LINALG::SOLVER::AztecSolver::Solve()
     we_have_a_problem = true;
     if (status[AZ_why] == AZ_breakdown)
     {
-      if (comm_.MyPID() == 0) printf("Numerical breakdown in AztecOO\n");
+      if (this->comm_.MyPID() == 0) printf("Numerical breakdown in AztecOO\n");
     }
     else if (status[AZ_why] == AZ_ill_cond)
     {
-      if (comm_.MyPID() == 0) printf("Problem is near singular in AztecOO\n");
+      if (this->comm_.MyPID() == 0) printf("Problem is near singular in AztecOO\n");
     }
     else if (status[AZ_why] == AZ_loss)
     {
-      if (comm_.MyPID() == 0) printf("Numerical loss of precision occurred in AztecOO\n");
+      if (this->comm_.MyPID() == 0) printf("Numerical loss of precision occurred in AztecOO\n");
     }
     else if (status[AZ_why] == AZ_maxits)
     {
-      if (comm_.MyPID() == 0) printf("Max iterations reached in AztecOO\n");
+      if (this->comm_.MyPID() == 0) printf("Max iterations reached in AztecOO\n");
     }
   }  // if (status[AZ_why] != AZ_normal)
 #endif
@@ -357,40 +371,44 @@ int LINALG::SOLVER::AztecSolver::Solve()
   int PermutedNearZeros = 0;
   int NonPermutedNearZeros = 0;
 
-  if (bAllowPermutation_ && bPermuteLinearSystem_)
+  if (this->bAllowPermutation_ && this->bPermuteLinearSystem_)
   {
     // repermutate solution vector
     this->ReTransformSolution();
-    rowperm = data_->Get<GlobalOrdinal>("#RowPermutations", PermFact_.get());
-    colperm = data_->Get<GlobalOrdinal>("#ColPermutations", PermFact_.get());
-    lrowperm = data_->Get<GlobalOrdinal>("#WideRangeRowPermutations", PermFact_.get());
-    lcolperm = data_->Get<GlobalOrdinal>("#WideRangeColPermutations", PermFact_.get());
+    rowperm = this->data_->template Get<GlobalOrdinal>("#RowPermutations", this->PermFact_.get());
+    colperm = this->data_->template Get<GlobalOrdinal>("#ColPermutations", this->PermFact_.get());
+    lrowperm = this->data_->template Get<GlobalOrdinal>(
+        "#WideRangeRowPermutations", this->PermFact_.get());
+    lcolperm = this->data_->template Get<GlobalOrdinal>(
+        "#WideRangeColPermutations", this->PermFact_.get());
   }
-  if (data_->IsAvailable("nonDiagDomRows")) nonDiagDomRows = data_->Get<int>("nonDiagDomRows");
-  if (data_->IsAvailable("NonPermutedZerosOnDiagonal"))
-    nonPermutedZeros = data_->Get<int>("NonPermutedZerosOnDiagonal");
-  if (data_->IsAvailable("PermutedZerosOnDiagonal"))
-    PermutedZeros = data_->Get<int>("PermutedZerosOnDiagonal");
-  if (data_->IsAvailable("PermutedNearZeros"))
-    PermutedNearZeros = data_->Get<int>("PermutedNearZeros");
-  if (data_->IsAvailable("NonPermutedNearZeros"))
-    NonPermutedNearZeros = data_->Get<int>("NonPermutedNearZeros");
+  if (this->data_->IsAvailable("nonDiagDomRows"))
+    nonDiagDomRows = this->data_->template Get<int>("nonDiagDomRows");
+  if (this->data_->IsAvailable("NonPermutedZerosOnDiagonal"))
+    nonPermutedZeros = this->data_->template Get<int>("NonPermutedZerosOnDiagonal");
+  if (this->data_->IsAvailable("PermutedZerosOnDiagonal"))
+    PermutedZeros = this->data_->template Get<int>("PermutedZerosOnDiagonal");
+  if (this->data_->IsAvailable("PermutedNearZeros"))
+    PermutedNearZeros = this->data_->template Get<int>("PermutedNearZeros");
+  if (this->data_->IsAvailable("NonPermutedNearZeros"))
+    NonPermutedNearZeros = this->data_->template Get<int>("NonPermutedNearZeros");
 
   // print some output if desired
-  if (comm_.MyPID() == 0 && outfile_)
+  if (this->comm_.MyPID() == 0 && this->outfile_)
   {
-    fprintf(outfile_,
+    fprintf(this->outfile_,
         "AztecOO: "
         "unknowns/iterations/time/rowpermutations/colpermutations/lrowperm/lcolperm/nonDiagDomRows "
         "%d  %d  %f %d %d %d %d %d NonPermutedZeros/PermutedZeros %d %d bPermuted %d "
         "nonPermNearZeros/PermNearZeros %d %d\n",
-        A_->OperatorRangeMap().NumGlobalElements(), (int)status[AZ_its], status[AZ_solve_time],
-        rowperm, colperm, lrowperm, lcolperm, nonDiagDomRows, nonPermutedZeros, PermutedZeros,
-        bPermuteLinearSystem_ ? 1 : 0, NonPermutedNearZeros, PermutedNearZeros);
-    fflush(outfile_);
+        this->A_->OperatorRangeMap().NumGlobalElements(), (int)status[AZ_its],
+        status[AZ_solve_time], rowperm, colperm, lrowperm, lcolperm, nonDiagDomRows,
+        nonPermutedZeros, PermutedZeros, this->bPermuteLinearSystem_ ? 1 : 0, NonPermutedNearZeros,
+        PermutedNearZeros);
+    fflush(this->outfile_);
   }
 
-  ncall_ += 1;
+  this->ncall_ += 1;
   if (we_have_a_problem)
     return 1;
   else  // everything is fine

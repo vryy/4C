@@ -25,55 +25,50 @@ class AztecOO_StatusTestProjResNorm;
 class AztecOO_StatusTestCombo;
 class AztecOO_StatusTestMaxIters;
 
-namespace LINALG
+namespace LINALG::SOLVER
 {
-  class KrylovProjector;
-
-  namespace SOLVER
+  /// kryolv subspace linear solvers (aztec) with right-side preconditioning
+  template <class MatrixType, class VectorType>
+  class AztecSolver : public KrylovSolver<MatrixType, VectorType>
   {
-    /// kryolv subspace linear solvers (aztec) with right-side preconditioning
-    class AztecSolver : public KrylovSolver
-    {
-     public:
-      //! Constructor
-      AztecSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile);
+   public:
+    //! Constructor
+    AztecSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile);
 
-      //! Destructor
-      virtual ~AztecSolver();
+    //! Destructor
+    virtual ~AztecSolver();
 
-      /*! \brief Setup the solver object
-       *
-       * @param matrix Matrix of the linear system
-       * @param x Solution vector of the linear system
-       * @param b Right-hand side vector of the linear system
-       * @param refactor Boolean flag to enforce a refactorization of the matrix
-       * @param reset Boolean flag to enforce a full reset of the solver object
-       * @param projector Krylov projector
-       */
-      virtual void Setup(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
-          Teuchos::RCP<Epetra_MultiVector> b, const bool refactor, const bool reset,
-          Teuchos::RCP<LINALG::KrylovProjector> projector);
+    /*! \brief Setup the solver object
+     *
+     * @param A Matrix of the linear system
+     * @param x Solution vector of the linear system
+     * @param b Right-hand side vector of the linear system
+     * @param refactor Boolean flag to enforce a refactorization of the matrix
+     * @param reset Boolean flag to enforce a full reset of the solver object
+     * @param projector Krylov projector
+     */
+    virtual void Setup(Teuchos::RCP<MatrixType> A, Teuchos::RCP<VectorType> x,
+        Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
+        Teuchos::RCP<LINALG::KrylovProjector> projector);
 
-      //! Actual call to the underlying Aztec solver
-      virtual int Solve();
+    //! Actual call to the underlying Aztec solver
+    virtual int Solve();
 
-      //! return number of iterations
-      int getNumIters() const { return numiters_; };
+    //! return number of iterations
+    int getNumIters() const { return numiters_; };
 
-     private:
-      //! the Krylov projector
-      Teuchos::RCP<LINALG::KrylovProjector> projector_;
-      //! an aztec maxiter status test
-      Teuchos::RCP<AztecOO_StatusTestMaxIters> aztest_maxiter_;
-      //! an aztec projected residual 2-norm convergence test
-      Teuchos::RCP<AztecOO_StatusTestProjResNorm> aztest_norm2_;
-      //! a test combination (for norm2 and maxiter)
-      Teuchos::RCP<AztecOO_StatusTestCombo> aztest_combo_;
-      //! number of iterations
-      int numiters_;
-    };
-  }  // namespace SOLVER
-}  // namespace LINALG
-
+   private:
+    //! the Krylov projector
+    Teuchos::RCP<LINALG::KrylovProjector> projector_;
+    //! an aztec maxiter status test
+    Teuchos::RCP<AztecOO_StatusTestMaxIters> aztest_maxiter_;
+    //! an aztec projected residual 2-norm convergence test
+    Teuchos::RCP<AztecOO_StatusTestProjResNorm> aztest_norm2_;
+    //! a test combination (for norm2 and maxiter)
+    Teuchos::RCP<AztecOO_StatusTestCombo> aztest_combo_;
+    //! number of iterations
+    int numiters_;
+  };
+}  // namespace LINALG::SOLVER
 
 #endif /* SOLVER_AZTECSOLVER_H_ */

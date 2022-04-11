@@ -31,6 +31,7 @@ namespace LINALG
 
   namespace SOLVER
   {
+    template <class MatrixType, class VectorType>
     class SolverType;
   }
 
@@ -321,7 +322,7 @@ namespace LINALG
     FILE* outfile_;
 
     /// internal solver strategy
-    Teuchos::RCP<SOLVER::SolverType> solver_;
+    Teuchos::RCP<SOLVER::SolverType<Epetra_Operator, Epetra_MultiVector>> solver_;
 
    private:
     //! don't want = operator

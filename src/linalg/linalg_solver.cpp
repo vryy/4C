@@ -183,16 +183,19 @@ void LINALG::Solver::Setup(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Ep
 
     if ("aztec" == solvertype)
     {
-      solver_ = Teuchos::rcp(new LINALG::SOLVER::AztecSolver(comm_, Params(), outfile_));
+      solver_ = Teuchos::rcp(new LINALG::SOLVER::AztecSolver<Epetra_Operator, Epetra_MultiVector>(
+          comm_, Params(), outfile_));
     }
     else if ("belos" == solvertype)
     {
-      solver_ = Teuchos::rcp(new LINALG::SOLVER::BelosSolver(comm_, Params(), outfile_));
+      solver_ = Teuchos::rcp(new LINALG::SOLVER::BelosSolver<Epetra_Operator, Epetra_MultiVector>(
+          comm_, Params(), outfile_));
     }
     else if ("klu" == solvertype or "umfpack" == solvertype or "superlu" == solvertype or
              "lapack" == solvertype)
     {
-      solver_ = Teuchos::rcp(new LINALG::SOLVER::DirectSolver(solvertype));
+      solver_ = Teuchos::rcp(
+          new LINALG::SOLVER::DirectSolver<Epetra_Operator, Epetra_MultiVector>(solvertype));
     }
     else
       dserror("Unknown type of solver");

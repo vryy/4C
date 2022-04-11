@@ -64,7 +64,11 @@ typedef Node NO;
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-LINALG::SOLVER::KrylovSolver::KrylovSolver(
+// explicit initialization
+template class LINALG::SOLVER::KrylovSolver<Epetra_Operator, Epetra_MultiVector>;
+
+template <class MatrixType, class VectorType>
+LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::KrylovSolver(
     const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile)
     : comm_(comm),
       params_(params),
@@ -82,7 +86,8 @@ LINALG::SOLVER::KrylovSolver::KrylovSolver(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-LINALG::SOLVER::KrylovSolver::~KrylovSolver()
+template <class MatrixType, class VectorType>
+LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::~KrylovSolver()
 {
   preconditioner_ = Teuchos::null;
   A_ = Teuchos::null;
@@ -94,14 +99,18 @@ LINALG::SOLVER::KrylovSolver::~KrylovSolver()
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-int LINALG::SOLVER::KrylovSolver::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y)
+template <class MatrixType, class VectorType>
+int LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::ApplyInverse(
+    const VectorType& X, VectorType& Y)
 {
   return preconditioner_->ApplyInverse(X, Y);
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-bool LINALG::SOLVER::KrylovSolver::AllowReusePreconditioner(const int reuse, const bool reset)
+template <class MatrixType, class VectorType>
+bool LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::AllowReusePreconditioner(
+    const int reuse, const bool reset)
 {
   bool bAllowReuse = true;  // default: allow reuse of preconditioner
 
@@ -147,7 +156,8 @@ bool LINALG::SOLVER::KrylovSolver::AllowReusePreconditioner(const int reuse, con
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::KrylovSolver::CheckReuseStatusOfActiveSet(
+template <class MatrixType, class VectorType>
+void LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::CheckReuseStatusOfActiveSet(
     bool& bAllowReuse, const Teuchos::ParameterList* linSysParams)
 {
   if (linSysParams != NULL)
@@ -194,8 +204,10 @@ void LINALG::SOLVER::KrylovSolver::CheckReuseStatusOfActiveSet(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& azlist,
-    const bool isCrsMatrix, Teuchos::RCP<LINALG::KrylovProjector> projector)
+template <class MatrixType, class VectorType>
+void LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::CreatePreconditioner(
+    Teuchos::ParameterList& azlist, const bool isCrsMatrix,
+    Teuchos::RCP<LINALG::KrylovProjector> projector)
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::Solver:  1.1)   CreatePreconditioner");
 
@@ -318,7 +330,8 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(
+template <class MatrixType, class VectorType>
+void LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::BuildPermutationOperator(
     const Teuchos::RCP<Epetra_CrsMatrix>& A, const Teuchos::RCP<Epetra_Map>& epSlaveDofMap)
 {
   // wrap Epetra_CrsMatrix -> Xpetra::Matrix
@@ -328,9 +341,9 @@ void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(
       Teuchos::rcp(new Xpetra::CrsMatrixWrap<Scalar, LO, GO, Node>(xCrsA));
   Teuchos::RCP<Xpetra::Matrix<Scalar, LO, GO, Node>> xOp =
       Teuchos::rcp_dynamic_cast<Xpetra::Matrix<Scalar, LO, GO, Node>>(xCrsOp);
-  xOp->SetFixedBlockSize(Params()
+  xOp->SetFixedBlockSize(this->Params()
                              .sublist("NodalBlockInformation")
-                             .get<int>("number of momentum dofs"));  // set nBlockSize
+                             .template get<int>("number of momentum dofs"));  // set nBlockSize
 
   data_->setDefaultVerbLevel(Teuchos::VERB_NONE);
   data_->setlib(Xpetra::UseEpetra);
@@ -394,7 +407,8 @@ void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::KrylovSolver::PermuteLinearSystem(
+template <class MatrixType, class VectorType>
+void LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::PermuteLinearSystem(
     const Teuchos::RCP<Epetra_CrsMatrix>& A, const Teuchos::RCP<Epetra_MultiVector>& b)
 {
   if (!data_->IsAvailable("A", PermFact_.get()) || !data_->IsAvailable("permP", PermFact_.get()) ||
@@ -423,7 +437,9 @@ void LINALG::SOLVER::KrylovSolver::PermuteLinearSystem(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::KrylovSolver::PermuteNullSpace(const Teuchos::RCP<Epetra_CrsMatrix>& A)
+template <class MatrixType, class VectorType>
+void LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::PermuteNullSpace(
+    const Teuchos::RCP<Epetra_CrsMatrix>& A)
 {
   // note: we usually do not permute the null space!!!
 
@@ -432,9 +448,9 @@ void LINALG::SOLVER::KrylovSolver::PermuteNullSpace(const Teuchos::RCP<Epetra_Cr
       Teuchos::rcp(new EpetraCrsMatrix(A));
   Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
   Teuchos::RCP<Matrix> xOp = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
-  xOp->SetFixedBlockSize(Params()
+  xOp->SetFixedBlockSize(this->Params()
                              .sublist("NodalBlockInformation")
-                             .get<int>("number of momentum dofs"));  // set nBlockSize
+                             .template get<int>("number of momentum dofs"));  // set nBlockSize
 
   // detect MueLu/ML Paramter list
   std::string MultiGridParameterListName = "";
@@ -449,8 +465,11 @@ void LINALG::SOLVER::KrylovSolver::PermuteNullSpace(const Teuchos::RCP<Epetra_Cr
   if (MultiGridParameterListName == "") return;  // no nullspace to permute
 
   Teuchos::RCP<Matrix> xPermQtMatrix = data_->Get<Teuchos::RCP<Matrix>>("permQT", PermFact_.get());
-  int numdf = Params().sublist(MultiGridParameterListName).get<int>("PDE equations", -1);
-  int dimns = Params().sublist(MultiGridParameterListName).get<int>("null space: dimension", -1);
+  int numdf =
+      this->Params().sublist(MultiGridParameterListName).template get<int>("PDE equations", -1);
+  int dimns = this->Params()
+                  .sublist(MultiGridParameterListName)
+                  .template get<int>("null space: dimension", -1);
   if (dimns == -1 || numdf == -1)
     dserror(
         "PermutedAztecSolver: Error in MueLu/ML parameters: PDE equations or null space dimension "
@@ -461,9 +480,9 @@ void LINALG::SOLVER::KrylovSolver::PermuteNullSpace(const Teuchos::RCP<Epetra_Cr
       Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(
           rowMap, dimns, true);
   Teuchos::RCP<std::vector<double>> nsdata =
-      Params()
+      this->Params()
           .sublist(MultiGridParameterListName)
-          .get<Teuchos::RCP<std::vector<double>>>("nullspace", Teuchos::null);
+          .template get<Teuchos::RCP<std::vector<double>>>("nullspace", Teuchos::null);
 
   for (size_t i = 0; i < Teuchos::as<size_t>(dimns); i++)
   {
@@ -514,7 +533,8 @@ void LINALG::SOLVER::KrylovSolver::PermuteNullSpace(const Teuchos::RCP<Epetra_Cr
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindNonDiagonalDominantRows(
+template <class MatrixType, class VectorType>
+Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::FindNonDiagonalDominantRows(
     const Teuchos::RCP<Matrix>& xA, double diagDominanceRatio)
 {
   Teuchos::RCP<Teuchos::FancyOStream> fos =
@@ -574,7 +594,8 @@ Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindNonDiagonalDominantRows(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindNonDiagonalDominantRows(
+template <class MatrixType, class VectorType>
+Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::FindNonDiagonalDominantRows(
     const Teuchos::RCP<Epetra_CrsMatrix>& A, double diagDominanceRatio)
 {
   // wrap Epetra_CrsMatrix -> Xpetra::Matrix
@@ -582,16 +603,17 @@ Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindNonDiagonalDominantRows(
       Teuchos::rcp(new EpetraCrsMatrix(A));
   Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
   Teuchos::RCP<Matrix> xA = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
-  xA->SetFixedBlockSize(Params()
+  xA->SetFixedBlockSize(this->Params()
                             .sublist("NodalBlockInformation")
-                            .get<int>("number of momentum dofs"));  // set nBlockSize
+                            .template get<int>("number of momentum dofs"));  // set nBlockSize
 
   return FindNonDiagonalDominantRows(xA, diagDominanceRatio);
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindZeroDiagonalEntries(
+template <class MatrixType, class VectorType>
+Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::FindZeroDiagonalEntries(
     const Teuchos::RCP<Matrix>& xA, double tolerance)
 {
   Teuchos::RCP<Teuchos::FancyOStream> fos =
@@ -629,7 +651,8 @@ Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindZeroDiagonalEntries(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindZeroDiagonalEntries(
+template <class MatrixType, class VectorType>
+Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::FindZeroDiagonalEntries(
     const Teuchos::RCP<Epetra_CrsMatrix>& A, double tolerance)
 {
   // wrap Epetra_CrsMatrix -> Xpetra::Matrix
@@ -637,16 +660,17 @@ Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindZeroDiagonalEntries(
       Teuchos::rcp(new EpetraCrsMatrix(A));
   Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
   Teuchos::RCP<Matrix> xA = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
-  xA->SetFixedBlockSize(Params()
+  xA->SetFixedBlockSize(this->Params()
                             .sublist("NodalBlockInformation")
-                            .get<int>("number of momentum dofs"));  // set nBlockSize
+                            .template get<int>("number of momentum dofs"));  // set nBlockSize
 
   return FindZeroDiagonalEntries(xA, tolerance);
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-int LINALG::SOLVER::KrylovSolver::CountZerosOnDiagonalEpetra(
+template <class MatrixType, class VectorType>
+int LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::CountZerosOnDiagonalEpetra(
     const Teuchos::RCP<Epetra_CrsMatrix>& A)
 {
   // wrap Epetra_CrsMatrix -> Xpetra::Matrix
@@ -654,16 +678,18 @@ int LINALG::SOLVER::KrylovSolver::CountZerosOnDiagonalEpetra(
       Teuchos::rcp(new EpetraCrsMatrix(A));
   Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
   Teuchos::RCP<Matrix> xOp = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
-  xOp->SetFixedBlockSize(Params()
+  xOp->SetFixedBlockSize(this->Params()
                              .sublist("NodalBlockInformation")
-                             .get<int>("number of momentum dofs"));  // set nBlockSize
+                             .template get<int>("number of momentum dofs"));  // set nBlockSize
 
   return CountZerosOnDiagonal(xOp);
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-int LINALG::SOLVER::KrylovSolver::CountZerosOnDiagonal(const Teuchos::RCP<const Matrix>& xOp)
+template <class MatrixType, class VectorType>
+int LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::CountZerosOnDiagonal(
+    const Teuchos::RCP<const Matrix>& xOp)
 {
   Teuchos::RCP<Vector> diagAVec = VectorFactory::Build(xOp->getRowMap(), true);
   xOp->getLocalDiagCopy(*diagAVec);
@@ -689,7 +715,8 @@ int LINALG::SOLVER::KrylovSolver::CountZerosOnDiagonal(const Teuchos::RCP<const 
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::KrylovSolver::ReTransformSolution()
+template <class MatrixType, class VectorType>
+void LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::ReTransformSolution()
 {
   Teuchos::RCP<const Epetra_CrsMatrix> epPermQTMatrix = GetOperator("permQT", PermFact_);
   Teuchos::RCP<Epetra_MultiVector> xtemp = Teuchos::rcp(new Epetra_MultiVector(*x_));
@@ -699,7 +726,9 @@ void LINALG::SOLVER::KrylovSolver::ReTransformSolution()
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<Epetra_Map> LINALG::SOLVER::KrylovSolver::ExtractPermutationMap(
+template <class MatrixType, class VectorType>
+Teuchos::RCP<Epetra_Map>
+LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::ExtractPermutationMap(
     const std::string solverSublist, const std::string mapName)
 {
   // extract (user-given) additional information about linear system from
@@ -719,7 +748,9 @@ Teuchos::RCP<Epetra_Map> LINALG::SOLVER::KrylovSolver::ExtractPermutationMap(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-bool LINALG::SOLVER::KrylovSolver::DecideAboutPermutation(const Teuchos::RCP<Epetra_CrsMatrix>& A)
+template <class MatrixType, class VectorType>
+bool LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::DecideAboutPermutation(
+    const Teuchos::RCP<Epetra_CrsMatrix>& A)
 {
   bool bPermutationRecommended = false;
 
@@ -848,7 +879,9 @@ bool LINALG::SOLVER::KrylovSolver::DecideAboutPermutation(const Teuchos::RCP<Epe
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<const Epetra_CrsMatrix> LINALG::SOLVER::KrylovSolver::GetOperator(
+template <class MatrixType, class VectorType>
+Teuchos::RCP<const Epetra_CrsMatrix>
+LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::GetOperator(
     const std::string name, const Teuchos::RCP<FactoryBase>& fact)
 {
   Teuchos::RCP<Matrix> xPermScalOp = data_->Get<Teuchos::RCP<Matrix>>(name, fact.get());
@@ -862,7 +895,9 @@ Teuchos::RCP<const Epetra_CrsMatrix> LINALG::SOLVER::KrylovSolver::GetOperator(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<Epetra_CrsMatrix> LINALG::SOLVER::KrylovSolver::GetOperatorNonConst(
+template <class MatrixType, class VectorType>
+Teuchos::RCP<Epetra_CrsMatrix>
+LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::GetOperatorNonConst(
     const std::string name, const Teuchos::RCP<FactoryBase>& fact)
 {
   Teuchos::RCP<Matrix> xPermScalOp = data_->Get<Teuchos::RCP<Matrix>>(name, fact.get());
