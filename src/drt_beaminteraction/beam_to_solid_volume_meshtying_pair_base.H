@@ -41,15 +41,15 @@ namespace BEAMINTERACTION
    */
   template <typename beam, typename solid>
   class BeamToSolidVolumeMeshtyingPairBase
-      : public BeamToSolidPairBase<GEOMETRYPAIR::line_to_volume_scalar_type<beam, solid>, beam,
-            solid>
+      : public BeamToSolidPairBase<GEOMETRYPAIR::line_to_volume_scalar_type<beam, solid>, double,
+            beam, solid>
   {
    protected:
     //! Type to be used for scalar AD variables.
     using scalar_type = GEOMETRYPAIR::line_to_volume_scalar_type<beam, solid>;
 
     //! Shortcut to the base class.
-    using base_class = BeamToSolidPairBase<scalar_type, beam, solid>;
+    using base_class = BeamToSolidPairBase<scalar_type, double, beam, solid>;
 
    public:
     /**

@@ -51,11 +51,12 @@ namespace BEAMINTERACTION
    * @tparam surface Type from GEOMETRYPAIR::ElementDiscretization... representing the surface.
    */
   template <typename scalar_type, typename beam, typename surface>
-  class BeamToSolidSurfaceMeshtyingPairBase : public BeamToSolidPairBase<scalar_type, beam, surface>
+  class BeamToSolidSurfaceMeshtyingPairBase
+      : public BeamToSolidPairBase<scalar_type, double, beam, surface>
   {
    protected:
     //! Shortcut to the base class.
-    using base_class = BeamToSolidPairBase<scalar_type, beam, surface>;
+    using base_class = BeamToSolidPairBase<scalar_type, double, beam, surface>;
 
    public:
     /**
