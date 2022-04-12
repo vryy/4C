@@ -67,6 +67,10 @@ BEAMS_MAXDISISCALEFAC           -1.0
 BEAMS_MAXDELTADISSCALEFAC       -1.0
 BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    2.0
+-----------------------------------------BEAM INTERACTION/BEAM TO BEAM CONTACT CONDITIONS
+DLINE 2
+E 1 - COUPLING_ID 1
+E 2 - COUPLING_ID 1
 --------------------------------------------------------------------BINNING STRATEGY
 BIN_SIZE_LOWER_BOUND            1
 DOMAINBOUNDINGBOX               -3 -3 -3 3 3 3

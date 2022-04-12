@@ -72,6 +72,10 @@ BEAMS_MAXDELTADISSCALEFAC       -1.0  //3.0
 //BEAMS_OCTREE                    octree_spherical
 BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    0.02
+-----------------------------------------BEAM INTERACTION/BEAM TO BEAM CONTACT CONDITIONS
+DLINE 2
+E 1 - COUPLING_ID 1
+E 1 - COUPLING_ID 1
 ---------------------------------------------BEAM CONTACT/RUNTIME VTK OUTPUT
 VTK_OUTPUT_BEAM_CONTACT         yes
 OUTPUT_DATA_FORMAT              binary
@@ -91,7 +95,7 @@ Test Details                    = No
 Debug                           = No
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
-NDLINE                          0
+NDLINE                          1
 NDSURF                          0
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
@@ -105,6 +109,41 @@ NODE  1 DNODE 1
 NODE 17 DNODE 2
 NODE 18 DNODE 3
 NODE 34 DNODE 4
+---------------------------------------------------------DLINE-NODE TOPOLOGY
+NODE  1 DLINE 1
+NODE  2 DLINE 1
+NODE  3 DLINE 1
+NODE  4 DLINE 1
+NODE  5 DLINE 1
+NODE  6 DLINE 1
+NODE  7 DLINE 1
+NODE  8 DLINE 1
+NODE  9 DLINE 1
+NODE  10 DLINE 1
+NODE  11 DLINE 1
+NODE  12 DLINE 1
+NODE  13 DLINE 1
+NODE  14 DLINE 1
+NODE  15 DLINE 1
+NODE  16 DLINE 1
+NODE  17 DLINE 1
+NODE  18 DLINE 1
+NODE  19 DLINE 1
+NODE  20 DLINE 1
+NODE  21 DLINE 1
+NODE  22 DLINE 1
+NODE  23 DLINE 1
+NODE  24 DLINE 1
+NODE  25 DLINE 1
+NODE  26 DLINE 1
+NODE  27 DLINE 1
+NODE  28 DLINE 1
+NODE  29 DLINE 1
+NODE  30 DLINE 1
+NODE  31 DLINE 1
+NODE  32 DLINE 1
+NODE  33 DLINE 1
+NODE  34 DLINE 1
 -----------------------------------------------------------------NODE COORDS
 NODE  1 COORD  9.5e-03  0.0  0.0
 NODE  2 COORD  9.5e-03  0.0  0.3125

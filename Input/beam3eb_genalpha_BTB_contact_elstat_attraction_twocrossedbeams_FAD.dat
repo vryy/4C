@@ -82,6 +82,10 @@ BEAMS_MAXDELTADISSCALEFAC       -1   //10000
 BEAMS_OCTREE                    none //octree_spherical
 BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    0.01
+-----------------------------------------BEAM INTERACTION/BEAM TO BEAM CONTACT CONDITIONS
+DLINE 2
+E 3 - COUPLING_ID 1
+E 3 - COUPLING_ID 1
 --------------------------------------------------------------BEAM POTENTIAL
 POT_LAW_PREFACTOR               0.3 0.1
 POT_LAW_EXPONENT                1.0 1.0
@@ -96,7 +100,7 @@ NAME                            Structure_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
-NDLINE                          2
+NDLINE                          3
 NDSURF                          0
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
@@ -127,6 +131,18 @@ NODE  9 DLINE 2
 NODE 10 DLINE 2
 NODE 11 DLINE 2
 NODE 12 DLINE 2
+NODE 1 DLINE 3
+NODE 2 DLINE 3
+NODE 3 DLINE 3
+NODE 4 DLINE 3
+NODE 5 DLINE 3
+NODE 6 DLINE 3
+NODE 7 DLINE 3
+NODE 8 DLINE 3
+NODE 9 DLINE 3
+NODE 10 DLINE 3
+NODE 11 DLINE 3
+NODE 12 DLINE 3
 -----------------------------------------------------------------NODE COORDS
 NODE  1 COORD 0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
 NODE  2 COORD 1.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
