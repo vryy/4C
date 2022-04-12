@@ -14,8 +14,10 @@
 #include "beam_contact_pair.H"
 #include "beaminteraction_calc_utils.H"
 #include "beam_to_solid_mortar_manager.H"
+#include "beam_to_solid_surface_contact_params.H"
 #include "../drt_geometry_pair/geometry_pair.H"
 #include "../drt_geometry_pair/geometry_pair_element.H"
+#include "../drt_geometry_pair/geometry_pair_scalar_types.H"
 #include "../headers/FAD_utils.H"
 #include "../drt_geometry_pair/geometry_pair_element_functions.H"
 #include "../drt_fem_general/largerotations.H"
@@ -25,6 +27,100 @@
 
 #include <Epetra_FEVector.h>
 
+
+/**
+ *
+ */
+template <typename scalar_type>
+scalar_type BEAMINTERACTION::PenaltyForce(const scalar_type& gap,
+    const Teuchos::RCP<const BeamToSolidSurfaceContactParams>& contact_params)
+{
+  const INPAR::BEAMTOSOLID::BeamToSolidSurfaceContactPenaltyLaw penalty_law =
+      contact_params->GetPenaltyLaw();
+  const double penalty_parameter = contact_params->GetPenaltyParameter();
+
+  scalar_type penalty_force = 0.0;
+
+  switch (penalty_law)
+  {
+    case INPAR::BEAMTOSOLID::BeamToSolidSurfaceContactPenaltyLaw::linear:
+    {
+      if (gap < 0.0)
+      {
+        penalty_force = -gap * penalty_parameter;
+      }
+      break;
+    }
+    case INPAR::BEAMTOSOLID::BeamToSolidSurfaceContactPenaltyLaw::linear_quadratic:
+    {
+      const double penalty_parameter_g0 = contact_params->GetPenaltyParameterG0();
+
+      if (gap < 0.0)
+      {
+        penalty_force = 0.5 * (-2.0 * gap + penalty_parameter_g0) * penalty_parameter;
+      }
+      else if (gap < penalty_parameter_g0)
+      {
+        penalty_force = 0.5 * std::pow(gap - penalty_parameter_g0, 2) * penalty_parameter /
+                        penalty_parameter_g0;
+      }
+      break;
+    }
+    default:
+      dserror("Got unexpected penalty law.");
+      break;
+  }
+
+  return penalty_force;
+}
+
+/**
+ *
+ */
+template <typename scalar_type>
+scalar_type BEAMINTERACTION::PenaltyPotential(const scalar_type& gap,
+    const Teuchos::RCP<const BeamToSolidSurfaceContactParams>& contact_params)
+{
+  const INPAR::BEAMTOSOLID::BeamToSolidSurfaceContactPenaltyLaw penalty_law =
+      contact_params->GetPenaltyLaw();
+  const double penalty_parameter = contact_params->GetPenaltyParameter();
+
+  scalar_type penalty_potential = 0.0;
+
+  switch (penalty_law)
+  {
+    case INPAR::BEAMTOSOLID::BeamToSolidSurfaceContactPenaltyLaw::linear:
+    {
+      if (gap < 0.0)
+      {
+        penalty_potential = 0.5 * std::pow(gap, 2) * penalty_parameter;
+      }
+      break;
+    }
+    case INPAR::BEAMTOSOLID::BeamToSolidSurfaceContactPenaltyLaw::linear_quadratic:
+    {
+      const double penalty_parameter_g0 = contact_params->GetPenaltyParameterG0();
+
+      if (gap < 0.0)
+      {
+        penalty_potential = penalty_parameter / 6.0 *
+                            (3.0 * std::pow(gap, 2) - 3.0 * gap * penalty_parameter_g0 +
+                                std::pow(penalty_parameter_g0, 2));
+      }
+      else if (gap < penalty_parameter_g0)
+      {
+        penalty_potential = penalty_parameter / (6.0 * penalty_parameter_g0) *
+                            std::pow(penalty_parameter_g0 - gap, 3);
+      }
+      break;
+    }
+    default:
+      dserror("Got unexpected penalty law.");
+      break;
+  }
+
+  return penalty_potential;
+}
 
 /**
  *
@@ -744,6 +840,26 @@ void BEAMINTERACTION::AssembleLocalMortarContributions(const BEAMINTERACTION::Be
 namespace BEAMINTERACTION
 {
   using namespace GEOMETRYPAIR;
+
+  // Helper types for the macro initialization. The compiler has troubles inserting the templated
+  // typenames into the macros.
+  using line_to_surface_patch_scalar_type_fixed_size_1st_order_nurbs_9 =
+      line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>;
+  using line_to_surface_patch_scalar_type_fixed_size_nurbs_9 =
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>;
+
+#define initialize_template_penalty(scalar_type)                                       \
+  template scalar_type PenaltyForce<scalar_type>(                                      \
+      const scalar_type&, const Teuchos::RCP<const BeamToSolidSurfaceContactParams>&); \
+  template scalar_type PenaltyPotential<scalar_type>(                                  \
+      const scalar_type&, const Teuchos::RCP<const BeamToSolidSurfaceContactParams>&);
+
+  initialize_template_penalty(double);
+  initialize_template_penalty(line_to_surface_patch_scalar_type_1st_order);
+  initialize_template_penalty(line_to_surface_patch_scalar_type_fixed_size_1st_order_nurbs_9);
+  initialize_template_penalty(line_to_surface_patch_scalar_type);
+  initialize_template_penalty(line_to_surface_patch_scalar_type_fixed_size_nurbs_9);
+
 
 #define initialize_template_get_solid_rotation_vector(a, fad_order)                                \
   template void GetSolidRotationVector<a,                                                          \

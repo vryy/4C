@@ -231,4 +231,33 @@ namespace BEAMINTERACTION
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, double, t_hermite, t_quad8>;
   template class BeamToSolidPairBase<
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, double, t_hermite, t_quad9>;
+
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type_1st_order,
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_tri3>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type_1st_order,
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_tri6>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type_1st_order,
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad4>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type_1st_order,
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad8>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type_1st_order,
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad9>;
+  template class BeamToSolidPairBase<
+      line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>,
+      line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>, t_hermite,
+      t_nurbs9>;
+
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type,
+      line_to_surface_patch_scalar_type, t_hermite, t_tri3>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type,
+      line_to_surface_patch_scalar_type, t_hermite, t_tri6>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type,
+      line_to_surface_patch_scalar_type, t_hermite, t_quad4>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type,
+      line_to_surface_patch_scalar_type, t_hermite, t_quad8>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type,
+      line_to_surface_patch_scalar_type, t_hermite, t_quad9>;
+  template class BeamToSolidPairBase<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>,
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
 }  // namespace BEAMINTERACTION

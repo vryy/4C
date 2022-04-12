@@ -50,6 +50,7 @@ namespace BEAMINTERACTION
 {
   class BeamContactPair;
   class BeamToSolidMortarManager;
+  class BeamToSolidSurfaceContactParams;
 }  // namespace BEAMINTERACTION
 class Epetra_Vector;
 class Epetra_FEVector;
@@ -57,6 +58,24 @@ class Epetra_FEVector;
 
 namespace BEAMINTERACTION
 {
+  /**
+   * \brief Evaluate the penalty force depending on the gap function.
+   * @param gap (in) Gap function value.
+   * @return Penalty force.
+   */
+  template <typename scalar_type>
+  scalar_type PenaltyForce(const scalar_type& gap,
+      const Teuchos::RCP<const BeamToSolidSurfaceContactParams>& contact_params);
+
+  /**
+   * \brief Evaluate the penalty potential depending on the gap function.
+   * @param gap (in) Gap function value.
+   * @return Penalty potential.
+   */
+  template <typename scalar_type>
+  scalar_type PenaltyPotential(const scalar_type& gap,
+      const Teuchos::RCP<const BeamToSolidSurfaceContactParams>& contact_params);
+
   /**
    * \brief Get the number of Lagrange multiplicator values corresponding to the beam nodes and beam
    * element.
