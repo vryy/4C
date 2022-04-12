@@ -78,12 +78,6 @@ if (DEBUGCUTLIBRARY)
   add_definitions("-DDEBUGCUTLIBRARY")
 endif (DEBUGCUTLIBRARY)
 
-option (TRILINOS_2022_Q1 "Select Trilinos installation 2022_Q1" OFF)
-if (TRILINOS_2022_Q1)
-  MESSAGE("II Trilinos installation: 2022_Q1")
-  add_definitions("-DTRILINOS_2022_Q1")
-endif (TRILINOS_2022_Q1)
-
 option (TRILINOS_DEVELOP "Select Trilinos installation based on current develop branch (highly experimental!)" OFF)
 if (TRILINOS_DEVELOP)
   MESSAGE("II Trilinos installation: develop branch (highly experimental!)")
