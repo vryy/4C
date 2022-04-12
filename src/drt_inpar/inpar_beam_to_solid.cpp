@@ -233,6 +233,57 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
     INPAR::GEOMETRYPAIR::SetValidParametersLineToSurface(beam_to_solid_surface_mestying);
   }
 
+  // Beam to solid surface contact parameters.
+  Teuchos::ParameterList& beam_to_solid_surface_contact =
+      beaminteraction.sublist("BEAM TO SOLID SURFACE CONTACT", false, "");
+  {
+    setStringToIntegralParameter<BeamToSolidContactDiscretization>("CONTACT_DISCRETIZATION", "none",
+        "Type of employed contact discretization",
+        tuple<std::string>("none", "gauss_point_to_segment"),
+        tuple<BeamToSolidContactDiscretization>(BeamToSolidContactDiscretization::none,
+            BeamToSolidContactDiscretization::gauss_point_to_segment),
+        &beam_to_solid_surface_contact);
+
+    setStringToIntegralParameter<BeamToSolidConstraintEnforcement>("CONSTRAINT_STRATEGY", "none",
+        "Type of employed constraint enforcement strategy", tuple<std::string>("none", "penalty"),
+        tuple<BeamToSolidConstraintEnforcement>(
+            BeamToSolidConstraintEnforcement::none, BeamToSolidConstraintEnforcement::penalty),
+        &beam_to_solid_surface_contact);
+
+    DoubleParameter("PENALTY_PARAMETER", 0.0, "Penalty parameter for beam-to-solid surface contact",
+        &beam_to_solid_surface_contact);
+
+    setStringToIntegralParameter<BeamToSolidSurfaceContact>("CONTACT_TYPE", "none",
+        "How the contact constraints are formulated",
+        tuple<std::string>("none", "gap_variation", "potential"),
+        tuple<BeamToSolidSurfaceContact>(BeamToSolidSurfaceContact::none,
+            BeamToSolidSurfaceContact::gap_variation, BeamToSolidSurfaceContact::potential),
+        &beam_to_solid_surface_contact);
+
+    setStringToIntegralParameter<BeamToSolidSurfaceContactPenaltyLaw>("PENALTY_LAW", "none",
+        "Type of penalty law", tuple<std::string>("none", "linear", "linear_quadratic"),
+        tuple<BeamToSolidSurfaceContactPenaltyLaw>(BeamToSolidSurfaceContactPenaltyLaw::none,
+            BeamToSolidSurfaceContactPenaltyLaw::linear,
+            BeamToSolidSurfaceContactPenaltyLaw::linear_quadratic),
+        &beam_to_solid_surface_contact);
+
+    DoubleParameter("PENALTY_PARAMETER_G0", 0.0,
+        "First penalty regularization parameter G0 >=0: For gap<G0 contact is active",
+        &beam_to_solid_surface_contact);
+
+    // Add the geometry pair input parameters.
+    INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(beam_to_solid_surface_contact);
+
+    // Add the surface options.
+    INPAR::GEOMETRYPAIR::SetValidParametersLineToSurface(beam_to_solid_surface_contact);
+
+    // This is only needed because the base parameter class requires mortar shape functions.
+    setStringToIntegralParameter<BeamToSolidMortarShapefunctions>("MORTAR_SHAPE_FUNCTION", "none",
+        "Shape function for the mortar Lagrange-multipliers", tuple<std::string>("none"),
+        tuple<BeamToSolidMortarShapefunctions>(BeamToSolidMortarShapefunctions::none),
+        &beam_to_solid_surface_contact);
+  }
+
   // Beam to solid surface parameters.
   Teuchos::ParameterList& beam_to_solid_surface =
       beaminteraction.sublist("BEAM TO SOLID SURFACE", false, "");

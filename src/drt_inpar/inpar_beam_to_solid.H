@@ -159,6 +159,33 @@ namespace INPAR
     };
 
     /**
+     * \brief How the contact between a beam and a surface should be evaluated.
+     */
+    enum class BeamToSolidSurfaceContact
+    {
+      //! Default value.
+      none,
+      //! Manual variation of the gap function.
+      gap_variation,
+      //! Based on a penalty potential.
+      potential
+    };
+
+    /**
+     * \brief Type of penalty law to be used.
+     */
+    enum class BeamToSolidSurfaceContactPenaltyLaw
+    {
+      //! Default value.
+      none,
+      //! Linear penalty law for negative values of the gap function.
+      linear,
+      //! Linear penalty law for negative values of the gap function, with a quadratic
+      //! regularization.
+      linear_quadratic
+    };
+
+    /**
     \brief Set the beam-to-solid parameters
     */
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);

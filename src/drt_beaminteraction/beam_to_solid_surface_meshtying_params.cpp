@@ -36,26 +36,27 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::BeamToSolidSurfaceMeshtyingP
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::Init()
 {
   // Teuchos parameter list for beam contact
-  const Teuchos::ParameterList& beam_to_solid_contact_params_list =
+  const Teuchos::ParameterList& beam_to_solid_surface_meshtying_params_list =
       DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID SURFACE MESHTYING");
 
   // Set the common beam-to-solid parameters.
-  SetBaseParams(beam_to_solid_contact_params_list);
+  SetBaseParams(beam_to_solid_surface_meshtying_params_list);
 
   // Get parameters form input file.
   {
     // Type of coupling evaluation to be used.
     coupling_type_ = Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling>(
-        beam_to_solid_contact_params_list, "COUPLING_TYPE");
+        beam_to_solid_surface_meshtying_params_list, "COUPLING_TYPE");
 
     // Parameters for rotational coupling.
     rotational_coupling_ = (bool)DRT::INPUT::IntegralValue<int>(
-        beam_to_solid_contact_params_list, "ROTATIONAL_COUPLING");
+        beam_to_solid_surface_meshtying_params_list, "ROTATIONAL_COUPLING");
     rotational_coupling_penalty_parameter_ =
-        beam_to_solid_contact_params_list.get<double>("ROTATIONAL_COUPLING_PENALTY_PARAMETER");
+        beam_to_solid_surface_meshtying_params_list.get<double>(
+            "ROTATIONAL_COUPLING_PENALTY_PARAMETER");
     rotational_coupling_triad_construction_ =
         Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidSurfaceRotationCoupling>(
-            beam_to_solid_contact_params_list, "ROTATIONAL_COUPLING_SURFACE_TRIAD");
+            beam_to_solid_surface_meshtying_params_list, "ROTATIONAL_COUPLING_SURFACE_TRIAD");
 
     if (rotational_coupling_)
     {

@@ -47,6 +47,7 @@
 
 #include "beaminteraction_conditions.H"
 #include "beam_to_solid_surface_meshtying_params.H"
+#include "beam_to_solid_surface_contact_params.H"
 #include "beam_to_solid_surface_vtk_output_params.H"
 #include "beam_to_solid_surface_vtk_output_writer.H"
 #include "beam_to_solid_volume_meshtying_params.H"
@@ -164,6 +165,18 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
           beam_contact_params_ptr_->BeamToSolidSurfaceMeshtyingParams()->GetVtkOuputParamsPtr(),
           GState().GetTimeN());
     }
+  }
+
+  // Check if beam-to-solid surface contact is present.
+  const Teuchos::ParameterList& beam_to_solid_surface_contact_parameters =
+      DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID SURFACE CONTACT");
+  if (Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
+          beam_to_solid_surface_contact_parameters, "CONTACT_DISCRETIZATION") !=
+      INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none)
+  {
+    contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
+
+    beam_contact_params_ptr_->BuildBeamToSolidSurfaceContactParams();
   }
 
   // Build the container to manage beam-to-solid conditions and get all coupling conditions.
