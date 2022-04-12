@@ -29,6 +29,7 @@
 
 #include <revision.H>
 #include <trilinos_version.H>
+#include <unistd.h>
 
 #ifdef TRAP_FE
 #include <cfenv>
