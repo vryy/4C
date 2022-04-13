@@ -436,11 +436,8 @@ void LINALG::SOLVER::AMGNXN::MueluAMGWrapper::BuildHierarchy()
   if (A_crs == Teuchos::null)
     dserror("Make sure that the input matrix is a Epetra_CrsMatrix (or derived)");
   Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> mueluA =
-#ifdef TRILINOS_2022_Q1
       Teuchos::rcp(new Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>(A_crs));
-#else
-      Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A_crs));
-#endif
+
   Teuchos::RCP<Xpetra::CrsMatrixWrap<Scalar, LocalOrdinal, GlobalOrdinal, Node>> mueluA_wrap =
       Teuchos::rcp(new Xpetra::CrsMatrixWrap<Scalar, LocalOrdinal, GlobalOrdinal, Node>(mueluA));
   Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> mueluOp =
@@ -449,12 +446,8 @@ void LINALG::SOLVER::AMGNXN::MueluAMGWrapper::BuildHierarchy()
 
   // Prepare null space vector for MueLu
   // safety check
-  const size_t localNumRows =
-#ifdef TRILINOS_2022_Q1
-      mueluA->getLocalNumRows();
-#else
-      mueluA->getNodeNumRows();
-#endif
+  const size_t localNumRows = mueluA->getLocalNumRows();
+
   if (localNumRows * null_space_dim_ != null_space_data_->size())
     dserror("Matrix size is inconsistent with length of nullspace vector!");
   Teuchos::RCP<const Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>> rowMap = mueluA->getRowMap();

@@ -34,11 +34,7 @@ typedef Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node> MultiVect
 typedef Xpetra::VectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node> VectorFactory;
 typedef Xpetra::MapFactory<LocalOrdinal, GlobalOrdinal, Node> MapFactory;
 
-#ifdef TRILINOS_2022_Q1
 using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
-#else
-using EpetraCrsMatrix = Xpetra::EpetraCrsMatrix;
-#endif
 
 typedef MueLu::FactoryManager<Scalar, LocalOrdinal, GlobalOrdinal, Node> FactoryManager;
 typedef MueLu::FactoryBase FactoryBase;
@@ -297,12 +293,8 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
-#ifdef TRILINOS_2022_Q1
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactSpPreconditioner(
           outfile_, Params().sublist("MueLu (Contact) Parameters")));
-#else
-      dserror("MueLu (Contact) preconditioner not available in Trilinos Q1_2015 or Q4_2019.");
-#endif
     }
     else if (Params().isSublist("AMGnxn Parameters"))
     {
@@ -538,12 +530,8 @@ Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindNonDiagonalDominantRows(
 
   // loop over all local rows in matrix A and keep diagonal entries if corresponding
   // matrix rows are not contained in permRowMap
-  const int numLocalElements =
-#ifdef TRILINOS_2022_Q1
-      xA->getRowMap()->getLocalNumElements();
-#else
-      xA->getRowMap()->getNodeNumElements();
-#endif
+  const int numLocalElements = xA->getRowMap()->getLocalNumElements();
+
   for (int row = 0; row < numLocalElements; row++)
   {
     GlobalOrdinal grow = xA->getRowMap()->getGlobalElement(row);
@@ -620,12 +608,8 @@ Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindZeroDiagonalEntries(
   LocalOrdinal lNumZeros = 0;
   std::vector<GlobalOrdinal> zeroGids;
 
-  const int numLocalElements =
-#ifdef TRILINOS_2022_Q1
-      xA->getRowMap()->getLocalNumElements();
-#else
-      xA->getRowMap()->getNodeNumElements();
-#endif
+  const int numLocalElements = xA->getRowMap()->getLocalNumElements();
+
   for (int i = 0; i < numLocalElements; ++i)
   {
     if (std::abs(diagAVecData[i]) < tolerance)
@@ -687,12 +671,8 @@ int LINALG::SOLVER::KrylovSolver::CountZerosOnDiagonal(const Teuchos::RCP<const 
   LocalOrdinal lNumZeros = 0;
   GlobalOrdinal gNumZeros = 0;
 
-  const int numLocalElements =
-#ifdef TRILINOS_2022_Q1
-      diagAVec->getMap()->getLocalNumElements();
-#else
-      diagAVec->getMap()->getNodeNumElements();
-#endif
+  const int numLocalElements = diagAVec->getMap()->getLocalNumElements();
+
   for (int i = 0; i < numLocalElements; ++i)
   {
     if (diagAVecData[i] == 0.0)

@@ -276,20 +276,6 @@ namespace LINALG
             const Teuchos::RCP<const Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>>& rowMap,
             Teuchos::ParameterList& muelulist);
 
-        /*!
-         * \brief Sets the striding maps of a matrix
-         *
-         * \note this function is copied from Xpetra and can be
-         * removed after the next trilinos update
-         *
-         * @param matrix Matrix with striding maps to be set
-         * @param rangeStridingInfo Range map striding information
-         * @param domainStridingInfo Domain map striding information
-         */
-        void convertMatrixToStridedMaps(
-            Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> matrix,
-            std::vector<size_t>& rangeStridingInfo, std::vector<size_t>& domainStridingInfo);
-
       }  // namespace UTILS
     }    // namespace MUELU
   }      // namespace SOLVER

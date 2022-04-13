@@ -30,9 +30,7 @@
 #include <MueLu_AggregationExportFactory.hpp>
 #include <MueLu_EpetraOperator.hpp>
 #include <MueLu_UseDefaultTypes.hpp>
-#ifdef TRILINOS_2022_Q1
 #include <MueLu_CreateXpetraPreconditioner.hpp>
-#endif
 
 // EpetraExt
 #include <EpetraExt_BlockMapOut.h>
@@ -44,9 +42,7 @@
 #include <Xpetra_EpetraMap.hpp>
 #include <Xpetra_EpetraMultiVector.hpp>
 #include <Xpetra_IO.hpp>
-#ifdef TRILINOS_2022_Q1
 #include <Xpetra_MatrixUtils.hpp>
-#endif
 #include <Xpetra_Map.hpp>
 #include <Xpetra_MapExtractor.hpp>
 #include <Xpetra_MapExtractorFactory.hpp>
@@ -87,11 +83,8 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup(
 
   // wrap Epetra_CrsMatrix to Xpetra::Matrix for use in MueLu
   Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> mueluA =
-#ifdef TRILINOS_2022_Q1
       Teuchos::rcp(new Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>(Pmatrix_));
-#else
-      Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix_));
-#endif
+
   Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> mueluOp =
       Teuchos::rcp(new Xpetra::CrsMatrixWrap<Scalar, LocalOrdinal, GlobalOrdinal, Node>(mueluA));
 
@@ -181,11 +174,7 @@ LINALG::SOLVER::MueLuFluidBlockPreconditioner::MueLuFluidBlockPreconditioner(
 void LINALG::SOLVER::MueLuFluidBlockPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
-#ifdef TRILINOS_2022_Q1
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
-#else
-  using EpetraCrsMatrix = Xpetra::EpetraCrsMatrix;
-#endif
 
   SetupLinearProblem(matrix, x, b);
 
@@ -323,11 +312,7 @@ LINALG::SOLVER::MueLuTsiBlockPreconditioner::MueLuTsiBlockPreconditioner(
 void LINALG::SOLVER::MueLuTsiBlockPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
-#ifdef TRILINOS_2022_Q1
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
-#else
-  using EpetraCrsMatrix = Xpetra::EpetraCrsMatrix;
-#endif
 
   SetupLinearProblem(matrix, x, b);
 
@@ -442,7 +427,6 @@ void LINALG::SOLVER::MueLuTsiBlockPreconditioner::Setup(
   }
 }
 
-#ifdef TRILINOS_2022_Q1
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
@@ -735,8 +719,6 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
   return;
 }
 
-#endif
-
 #ifdef TRILINOS_DEVELOP
 
 //----------------------------------------------------------------------------------
@@ -905,22 +887,4 @@ LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
   nullspace->replaceMap(rowMap);
 
   return nullspace;
-}
-
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-void LINALG::SOLVER::MUELU::UTILS::convertMatrixToStridedMaps(
-    Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> matrix, std::vector<size_t>& rangeStridingInfo,
-    std::vector<size_t>& domainStridingInfo)
-{
-  Teuchos::RCP<const Xpetra::StridedMap<LO, GO, NO>> stridedRowMap =
-      Xpetra::StridedMapFactory<LO, GO, NO>::Build(matrix->getRowMap(), rangeStridingInfo, -1, 0);
-  Teuchos::RCP<const Xpetra::StridedMap<LO, GO, NO>> stridedColMap =
-      Xpetra::StridedMapFactory<LO, GO, NO>::Build(matrix->getColMap(), domainStridingInfo, -1, 0);
-
-  if (matrix->IsView("stridedMaps") == true)
-  {
-    matrix->RemoveView("stridedMaps");
-    matrix->CreateView("stridedMaps", stridedRowMap, stridedColMap);
-  }
 }
