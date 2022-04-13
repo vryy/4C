@@ -31,7 +31,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_utils_parallel.H"
-#include "../drt_lib/drt_utils_rebalancing.H"
 
 #include "../drt_mat/matpar_bundle.H"
 
@@ -42,7 +41,6 @@
 #include "../drt_scatra_ele/scatra_ele.H"
 
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -685,61 +683,18 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
 
   auto structdis = problem->GetDis("structure");
   auto scatradis = problem->GetDis("scatra");
-  if (redistribution_type == SSI::RedistributionType::match)
+  if (redistribution_type == SSI::RedistributionType::match and !IsScaTraManifold())
   {
-    if (IsScaTraManifold())
-    {
-      auto scatra_manifold_dis = problem->GetDis("scatra_manifold");
+    // first we bin the scatra discretization
+    std::vector<Teuchos::RCP<DRT::Discretization>> dis;
+    dis.push_back(scatradis);
+    DRT::UTILS::RedistributeDiscretizationsByBinning(dis, false);
 
-      // redistribute nodes of scatra manifold field
-      DRT::UTILS::REBALANCING::RedistributeAndFillCompleteDiscretizationUsingWeights(
-          scatra_manifold_dis, true, true, true);
+    DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
+        *scatradis, *scatradis, "ScatraHeteroReactionMaster", "ScatraHeteroReactionSlave");
 
-      // build map with scatra nodes on manifold condition
-      std::vector<int> scatra_node_col_vec(0);
-      std::vector<DRT::Condition*> manifold_conditions_on_scatra;
-      scatradis->GetCondition("SSISurfaceManifold", manifold_conditions_on_scatra);
-
-      for (auto* manifold_condition_on_scatra : manifold_conditions_on_scatra)
-      {
-        for (int gid : *manifold_condition_on_scatra->Nodes())
-          if (!scatra_manifold_dis->HaveGlobalNode(gid)) scatra_node_col_vec.emplace_back(gid);
-      }
-      // remove duplicates
-      std::sort(scatra_node_col_vec.begin(), scatra_node_col_vec.end());
-      scatra_node_col_vec.erase(unique(scatra_node_col_vec.begin(), scatra_node_col_vec.end()),
-          scatra_node_col_vec.end());
-
-      auto scatra_node_col_map =
-          Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(scatra_node_col_vec.size()),
-              &scatra_node_col_vec[0], 0, scatradis->Comm()));
-
-      scatra_manifold_dis->ExportColumnNodes(
-          *LINALG::MergeMap(*scatra_manifold_dis->NodeColMap(), *scatra_node_col_map, true));
-      scatra_manifold_dis->FillComplete();
-
-      // export new distributed column nodes on other fields to enable field coupling
-      structdis->ExportColumnNodes(
-          *LINALG::MergeMap(*scatra_manifold_dis->NodeColMap(), *structdis->NodeColMap(), true));
-      scatradis->ExportColumnNodes(
-          *LINALG::MergeMap(*scatra_manifold_dis->NodeColMap(), *scatradis->NodeColMap(), true));
-
-      structdis->FillComplete();
-      scatradis->FillComplete();
-    }
-    else
-    {
-      // first we bin the scatra discretization
-      std::vector<Teuchos::RCP<DRT::Discretization>> dis;
-      dis.push_back(scatradis);
-      DRT::UTILS::RedistributeDiscretizationsByBinning(dis, false);
-
-      DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
-          *scatradis, *scatradis, "ScatraHeteroReactionMaster", "ScatraHeteroReactionSlave");
-
-      // now we redistribute the structure dis to match the scatra dis
-      DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(*scatradis, *structdis);
-    }
+    // now we redistribute the structure dis to match the scatra dis
+    DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(*scatradis, *structdis);
   }
   else if (redistribution_type == SSI::RedistributionType::binning)
   {

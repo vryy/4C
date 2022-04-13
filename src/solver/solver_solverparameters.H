@@ -44,7 +44,7 @@ namespace LINALG
 
         // set parameter information for solver
         {
-          if (nullspaceMap == Teuchos::null)
+          if (nullspaceMap == Teuchos::null and dis.NumMyRowNodes() > 0)
           {
             // no map given, just grab the block information on the first element that appears
             DRT::Element* dwele = dis.lRowElement(0);

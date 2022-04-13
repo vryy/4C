@@ -84,12 +84,6 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   else
     return;
 
-  // check whether all procs have at least one row element. ML cannot handle this!
-  if (!NumMyRowElements())
-    dserror(
-        "Proc does not have any elements. ML is not working in this case, use ILU,... MueLu might "
-        "work as well.");
-
   // see whether we have previously computed the nullspace
   // and recomputation is enforced
   Teuchos::ParameterList& mllist = *mllist_ptr;
