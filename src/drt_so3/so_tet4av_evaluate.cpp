@@ -18,7 +18,6 @@
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <boost/static_assert.hpp>
 
 
 
@@ -274,7 +273,7 @@ int DRT::ELEMENTS::So_tet4av::EvaluateNeumann(Teuchos::ParameterList& params,
   }
 
   // (SPATIAL) FUNCTION BUSINESS
-  BOOST_STATIC_ASSERT((NUMGPT_SOTET4av == 1)) BACI_ATTRIBUTE_UNUSED;
+  static_assert(NUMGPT_SOTET4av == 1);
   const auto* funct = condition.Get<std::vector<int>>("funct");
   LINALG::Matrix<NUMDIM_SOTET4av, 1> xrefegp(false);
   bool havefunct = false;

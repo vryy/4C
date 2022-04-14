@@ -20,7 +20,6 @@ MAT::Anisotropy::Anisotropy()
       gp_fibers_initialized_(false),
       elementFibers_(0),
       gpFibers_(0),
-      elementCylinderCoordinateSystemManager_(boost::none),
       gpCylinderCoordinateSystemManagers_(0),
       extensions_(0)
 {
@@ -67,7 +66,7 @@ void MAT::Anisotropy::UnpackAnisotropy(
   }
   else
   {
-    elementCylinderCoordinateSystemManager_ = boost::none;
+    elementCylinderCoordinateSystemManager_ = std::nullopt;
   }
 
   for (auto& gpCylinderCoordinateSystemManager : gpCylinderCoordinateSystemManagers_)
@@ -288,7 +287,7 @@ int MAT::Anisotropy::GetNumberOfGPFibers() const
 
 bool MAT::Anisotropy::HasElementCylinderCoordinateSystem() const
 {
-  return elementCylinderCoordinateSystemManager_.is_initialized();
+  return elementCylinderCoordinateSystemManager_.has_value();
 }
 
 bool MAT::Anisotropy::HasGPCylinderCoordinateSystem() const

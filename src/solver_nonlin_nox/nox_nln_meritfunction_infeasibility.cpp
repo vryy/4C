@@ -17,7 +17,6 @@
 
 #include "../drt_lib/drt_dserror.H"
 
-#include <boost/algorithm/string/predicate.hpp>
 #include <Teuchos_ParameterList.hpp>
 
 /*----------------------------------------------------------------------------*

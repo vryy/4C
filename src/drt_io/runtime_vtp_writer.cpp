@@ -20,8 +20,6 @@
 #include <sstream>
 #include <vector>
 
-#include <boost/filesystem.hpp>
-
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 RuntimeVtpWriter::RuntimeVtpWriter() { vtp_writer_ = Teuchos::rcp(new VtpWriter()); }

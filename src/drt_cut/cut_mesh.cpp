@@ -8,8 +8,6 @@ mesh
  *------------------------------------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>
 
-#include <boost/bind.hpp>
-
 #include "../drt_lib/drt_discret.H"
 
 #include "cut_mesh.H"
@@ -3513,11 +3511,12 @@ void GEO::CUT::Mesh::AssignOtherVolumeCells_CutTest(const Mesh& other)
     const plain_facet_set& facets = vc->Facets();
     plain_facet_set cut_facets;
     std::remove_copy_if(facets.begin(), facets.end(), std::inserter(cut_facets, cut_facets.begin()),
-        not boost::bind(&Facet::OnCutSide, _1));
+        [](auto&& PH1) { return !PH1->OnCutSide(); });
 
     plain_side_set cut_sides;
     std::transform(cut_facets.begin(), cut_facets.end(),
-        std::inserter(cut_sides, cut_sides.begin()), boost::bind(&Facet::ParentSide, _1));
+        std::inserter(cut_sides, cut_sides.begin()),
+        [](auto&& facet) { return facet->ParentSide(); });
 
     if (cut_sides.size() > 1)
     {

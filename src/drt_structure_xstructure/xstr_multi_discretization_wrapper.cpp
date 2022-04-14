@@ -19,7 +19,7 @@
 
 #include "../drt_lib/drt_utils_discret.H"
 
-#include <boost/bind.hpp>
+#include <functional>
 #include <Epetra_SerialDenseVector.h>
 
 /*----------------------------------------------------------------------------*
@@ -68,7 +68,7 @@ void XSTR::MultiDiscretizationWrapper::Setup()
   cXDisVec discret_vec(0);
   // copy the second value of the map into a vector
   std::transform(discret_map_.begin(), discret_map_.end(), std::back_inserter(discret_vec),
-      boost::bind(&XDisMap::value_type::second, _1));
+      [](XDisMap::value_type& pair) { return pair.second; });
 
   // build the multi field map extractor
   map_extractor_ = Teuchos::rcp(new XFEM::MultiFieldMapExtractor());

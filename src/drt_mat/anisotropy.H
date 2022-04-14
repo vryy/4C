@@ -12,7 +12,6 @@
 #ifndef BACI_ANISOTROPY_H
 #define BACI_ANISOTROPY_H
 
-#include <boost/optional.hpp>
 #include <Teuchos_RCPDecl.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -245,7 +244,7 @@ namespace MAT
     std::vector<std::vector<LINALG::Matrix<3, 1>>> gpFibers_;
 
     /// Cylinder coordinate system manager on element level
-    boost::optional<CylinderCoordinateSystemManager> elementCylinderCoordinateSystemManager_;
+    std::optional<CylinderCoordinateSystemManager> elementCylinderCoordinateSystemManager_;
 
     /// Cylinder coordinate system manager on gp level
     std::vector<CylinderCoordinateSystemManager> gpCylinderCoordinateSystemManagers_;

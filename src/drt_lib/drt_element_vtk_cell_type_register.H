@@ -16,8 +16,6 @@
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_dserror.H"
 
-#include <boost/static_assert.hpp>
-
 #include <vector>
 
 namespace
@@ -47,10 +45,9 @@ namespace DRT
     std::pair<uint8_t, std::vector<int>> inline GetVtkCellTypeFromBaciElementShapeType(
         int baciele_shape_type)
     {
-      BOOST_STATIC_ASSERT_MSG(29 == DRT::Element::max_distype,
+      static_assert(29 == DRT::Element::max_distype,
           "The number of element types defined by DRT::Element::DiscretizationType does not match "
-          "the number of vtk cell types supported by the vtu writer.")
-      BACI_ATTRIBUTE_UNUSED;
+          "the number of vtk cell types supported by the vtu writer.");
 
       // the VTK element types are from the documentation of vtkCellType,
       // e.g. at http://www.vtk.org/doc/nightly/html/vtkCellType_8h.html

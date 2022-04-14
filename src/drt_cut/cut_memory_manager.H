@@ -17,8 +17,8 @@
 #include <string>
 #include <vector>
 #include <iostream>
-#include <boost/unordered_map.hpp>  // for unordered map
-#include "cut_tolerance.H"          // for info whether debug or not
+#include <unordered_map>
+#include "cut_tolerance.H"  // for info whether debug or not
 
 namespace GEO
 {
@@ -155,7 +155,7 @@ namespace GEO
     {
      private:
       // list of memory pools that we need
-      boost::unordered_map<size_t, ConstMemoryPool*> const_memory_map_;
+      std::unordered_map<size_t, ConstMemoryPool*> const_memory_map_;
       // extends of the pointers  in the container; beginn and start of it in the pair, should be
       // sorted by the starting adress
       std::map<size_t, std::pair<size_t, size_t>> memory_map_;
@@ -176,7 +176,7 @@ namespace GEO
       std::vector<void*> free_pointers_;
 
       // for debugging of memory leaks
-      boost::unordered_map<size_t, int> recorder_;
+      std::unordered_map<size_t, int> recorder_;
 
       // if this container is reusable, we assume that after Finalize is called, all containers
       // were successfull freed
@@ -198,11 +198,11 @@ namespace GEO
 
       bool CheckFree(bool debug = false);
 
-      GenericMemoryPool(const boost::unordered_map<size_t, int>& mem_pattern, bool reusable = true,
+      GenericMemoryPool(const std::unordered_map<size_t, int>& mem_pattern, bool reusable = true,
           bool allocating_together = false);
 
       // unify allocation of all containers in a single memory chunk
-      void AllInOneAllocation(const boost::unordered_map<size_t, int>& mem_pattern);
+      void AllInOneAllocation(const std::unordered_map<size_t, int>& mem_pattern);
 
       void* Allocate(size_t size);
 
@@ -264,7 +264,7 @@ namespace GEO
       // previous memory allocator
       MemoryAllocator* prev_;
 
-      boost::unordered_map<size_t, int> memory_allocations_;
+      std::unordered_map<size_t, int> memory_allocations_;
     };
 
     // Used for debugging if default set up does not work
@@ -295,7 +295,7 @@ namespace GEO
 
       // Set state for a memory pool allocator, with a memory pattern specified by
       // memory_allocations
-      void SetState(int newstate, boost::unordered_map<size_t, int>& memory_allocations_);
+      void SetState(int newstate, std::unordered_map<size_t, int>& memory_allocations_);
 
       inline void Free(void* ptr) { mem_->Free(ptr); }
 
@@ -315,7 +315,7 @@ namespace GEO
       // Delete free memory from the memory pool allocator
       void Delete();
 
-      boost::unordered_map<size_t, int>& GetMemoryPattern();
+      std::unordered_map<size_t, int>& GetMemoryPattern();
 
       // zeroing out all the allocation statics
       void ResetAllocated();
@@ -360,7 +360,7 @@ namespace GEO
 
       bool recording_;
 
-      boost::unordered_map<size_t, int> memory_allocations_;
+      std::unordered_map<size_t, int> memory_allocations_;
     };
 
 

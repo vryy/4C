@@ -19,6 +19,7 @@
 #include "cut_utils.H"
 #include "cut_enum.H"
 #include "cut_memory_manager.H"
+#include <unordered_map>
 
 #include "../linalg/linalg_gauss.H"
 
@@ -1191,7 +1192,7 @@ namespace GEO
        protected:
         static size_t cln_byte_size_[CLN_LIMIT_ITER];
 
-        static boost::unordered_map<size_t, int> memory_allocations_;
+        static std::unordered_map<size_t, int> memory_allocations_;
 
         static std::map<size_t, int> memory_allocations_intersection_;
 
@@ -1206,16 +1207,14 @@ namespace GEO
         static bool all_position_done_once_;
         // specifies whether to run on the custor allocator now
 
-        void UpdateMemoryAllocations(const boost::unordered_map<size_t, int>& allocations)
+        void UpdateMemoryAllocations(const std::unordered_map<size_t, int>& allocations)
         {
-          for (boost::unordered_map<size_t, int>::const_iterator it = allocations.begin();
-               it != allocations.end(); ++it)
+          for (auto const& [size, times] : allocations)
           {
-            if (memory_allocations_[it->first] < (it->second))
+            if (memory_allocations_[size] < times)
             {
-              std::cout << "Size " << (*it).first << " was allocated " << (*it).second << " times "
-                        << std::endl;
-              memory_allocations_[it->first] = it->second;
+              std::cout << "Size " << size << " was allocated " << times << " times " << std::endl;
+              memory_allocations_[size] = times;
             }
           }
         }
@@ -1315,12 +1314,10 @@ namespace GEO
         {
           size_t total = 0;
           std::cout << "REPORTING MAXIMUM MEMORY ALLOCATION" << std::endl;
-          for (boost::unordered_map<size_t, int>::iterator it = memory_allocations_.begin();
-               it != memory_allocations_.end(); ++it)
+          for (auto const& [size, times] : memory_allocations_)
           {
-            std::cout << "Size " << (*it).first << " was allocated " << (*it).second << " times "
-                      << std::endl;
-            total += (*it).second * (*it).first;
+            std::cout << "Size " << size << " was allocated " << times << " times " << std::endl;
+            total += times * size;
           }
           std::cout << "Totally maximum required allocationd " << total << " bytes" << std::endl;
         }
@@ -1552,13 +1549,13 @@ namespace GEO
           {
             GEO::CUT::MemorySingleton::getInstance().StopRecord();
 
-            boost::unordered_map<size_t, int>& allocation_map =
+            std::unordered_map<size_t, int>& allocation_map =
                 GEO::CUT::MemorySingleton::getInstance().GetMemoryPattern();
 
             // update the global number of allocations to the maximum
             int max_num = 0;
             int size_max_num = 0;
-            for (boost::unordered_map<size_t, int>::iterator it = allocation_map.begin();
+            for (std::unordered_map<size_t, int>::iterator it = allocation_map.begin();
                  it != allocation_map.end(); ++it)
             {
               size_t size = it->first;
@@ -2798,12 +2795,12 @@ namespace GEO
           {
             GEO::CUT::MemorySingleton::getInstance().StopRecord();
 
-            boost::unordered_map<size_t, int>& allocation_map =
+            std::unordered_map<size_t, int>& allocation_map =
                 GEO::CUT::MemorySingleton::getInstance().GetMemoryPattern();
             int max_num = 0;
             int size_max_num = 0;
             // update the global number of allocations to the maximum
-            for (boost::unordered_map<size_t, int>::iterator it = allocation_map.begin();
+            for (std::unordered_map<size_t, int>::iterator it = allocation_map.begin();
                  it != allocation_map.end(); ++it)
             {
               size_t size = it->first;
@@ -4256,13 +4253,13 @@ namespace GEO
           {
             GEO::CUT::MemorySingleton::getInstance().StopRecord();
 
-            boost::unordered_map<size_t, int>& allocation_map =
+            std::unordered_map<size_t, int>& allocation_map =
                 GEO::CUT::MemorySingleton::getInstance().GetMemoryPattern();
 
             int max_num = 0;
             int size_max_num = 0;
             // update the global number of allocations to the maximum
-            for (boost::unordered_map<size_t, int>::iterator it = allocation_map.begin();
+            for (std::unordered_map<size_t, int>::iterator it = allocation_map.begin();
                  it != allocation_map.end(); ++it)
             {
               size_t size = it->first;

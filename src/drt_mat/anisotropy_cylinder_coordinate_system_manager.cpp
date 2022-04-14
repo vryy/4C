@@ -61,7 +61,7 @@ void MAT::CylinderCoordinateSystemManager::EvaluateLocalCoordinateSystem(
 const MAT::CylinderCoordinateSystemManager& MAT::Anisotropy::GetElementCylinderCoordinateSystem()
     const
 {
-  return elementCylinderCoordinateSystemManager_.get();
+  return elementCylinderCoordinateSystemManager_.value();
 }
 
 const MAT::CylinderCoordinateSystemManager& MAT::Anisotropy::GetGPCylinderCoordinateSystem(

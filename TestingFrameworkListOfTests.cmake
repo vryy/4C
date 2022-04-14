@@ -930,11 +930,8 @@ vtk_test(particle_nointer_3d_nopbc_walldiscretcond_nonmoving-vtk-phase1-ghosted 
 vtk_test(particle_nointer_3d_nopbc_walldiscretcond_nonmoving-vtk-phase2-ghosted 3 xxx-particle-phase2-ghosted.pvd ref/particle_nointer_3d_nopbc_walldiscretcond_nonmoving-particle-phase2-ghosted.pvd 1e-08 0.4)
 vtk_test(particle_nointer_3d_nopbc_walldiscretcond_nonmoving-vtk-particlewalls 3 xxx-particlewalls.pvd ref/particle_nointer_3d_nopbc_walldiscretcond_nonmoving-particlewalls.pvd 1e-08 0.4)
 baci_test(particle_dem_1d_radius_from_input 2 "")
-# particle test cases using Gaussian random numbers from Boost Random libraries
-if (${Boost_MINOR_VERSION} GREATER 56)
 baci_test(particle_dem_1d_radius_normal_distribution 1 "")
 baci_test(particle_dem_1d_radius_lognormal_distribution 1 "")
-endif ()
 baci_test(particle_dem_1d_normalcontact_gravity 2 500)
 result_file_abs(particle_dem_1d_normalcontact_gravity 1 csv-particle-energy xxx-particle-energy.csv ref/particle_dem_1d_normalcontact_gravity-particle-energy.csv 1e-14)
 baci_test(particle_dem_1d_normalcontact_linspring_stiffauto 2 500)
@@ -1987,7 +1984,7 @@ pre_processing(pre_exo_cube 1)
 # cut test
 cut_test(2)
 
-# brownian dynamic test cases using random numbers from Boost Random libraries
+# brownian dynamic test cases
 baci_test(beam3eb_backweuler_browndyn_singlefil 3 "")
 baci_test(beam3r_herm2line3_backweuler_browndyn_crosslinking_beam3rline2 2 70)
 baci_test(beam3r_herm2line3_backweuler_browndyn_randcrosslinking_beam3rline2 2 "")
