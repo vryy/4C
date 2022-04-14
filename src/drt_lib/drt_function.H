@@ -1,10 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Managing and evaluating of space- and/or time-dependent functions
+\brief Evaluating of space- and/or time-dependent functions
 
 \level 0
-
 
 */
 /*----------------------------------------------------------------------*/
@@ -24,27 +23,23 @@
 #include "drt_parser.H"
 #include "drt_functionvariables.H"
 #include "../drt_fem_general/drt_utils_polynomial.H"
+#include "drt_function_manager.H"
 
-namespace MAT
-{
-  class Material;
-}
+// namespace MAT
+///{
+/// class Material;
+//}
 
 namespace DRT
 {
-  class Condition;
-  class Problem;
-
-
-  namespace INPUT
-  {
-    class Lines;
-    class DatFileReader;
-
-  }  // namespace INPUT
+  // class Condition;
+  /// class Problem;
 
   namespace UTILS
   {
+    // forward declaration
+    class FunctionManager;
+
     /*!
      * \brief abstract interface for space- and time-dependent functions.
      *
@@ -220,24 +215,6 @@ namespace DRT
     };
 
 
-    /// class that manages all defined spatial functions
-    class FunctionManager
-    {
-     public:
-      Teuchos::RCP<DRT::INPUT::Lines> ValidFunctionLines();
-
-      /// read the baci input file and set up all functions
-      void ReadInput(DRT::INPUT::DatFileReader& reader);
-
-      /// return a specified function
-      Function& Funct(int num);
-
-     private:
-      /// all functions defined. The functions may be vector valued!
-      std::vector<Teuchos::RCP<Function>> functions_;
-    };
-
-
     /// spatial function based on parsed expression
     class VariableExprFunction : public ExprFunction
     {
@@ -324,14 +301,10 @@ namespace DRT
     };
 
 
-    /// add valid function lines
-    void AddValidFunctionFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
-
-
     /// try to create functions from a given line definition
     Teuchos::RCP<Function> TryCreateFunctionFunction(
-        Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, FunctionManager& manager,
-        const int index_current_funct_in_manager);
+        Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
+        DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
 
 
     /// create a vector function from multiple expressions

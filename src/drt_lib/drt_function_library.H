@@ -12,7 +12,6 @@ The functions in this file are not problem-specific and may be useful for a numb
 /*----------------------------------------------------------------------*/
 
 
-
 #include "drt_function.H"
 
 namespace DRT
