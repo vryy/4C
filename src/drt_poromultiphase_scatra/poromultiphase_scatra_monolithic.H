@@ -22,9 +22,6 @@ namespace POROMULTIPHASESCATRA
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
         : PoroMultiPhaseScaTraBase(comm, globaltimeparams){};  // Problem builder
 
-    /// virtual destructor
-    virtual ~PoroMultiPhaseScaTraMonolithic(){};
-
 
   };  // PoroMultiPhaseMonolithic
 

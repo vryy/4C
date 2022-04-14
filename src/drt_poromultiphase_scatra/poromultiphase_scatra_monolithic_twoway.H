@@ -36,9 +36,6 @@ namespace POROMULTIPHASESCATRA
     PoroMultiPhaseScaTraMonolithicTwoWay(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    /// virtual destructor
-    virtual ~PoroMultiPhaseScaTraMonolithicTwoWay(){};
-
     /// initialization
     virtual void Init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& poroparams,
@@ -65,13 +62,13 @@ namespace POROMULTIPHASESCATRA
 
 
    protected:
-    // Setup Newton-Raphson iteration
+    //! Setup Newton-Raphson iteration
     void SetupNewton();
 
-    // Setup full map
+    //! Setup full map
     virtual void SetupMaps();
 
-    // Setup monolithic rhs-vector
+    //! Setup monolithic rhs-vector
     virtual void SetupRHS();
 
     //! build the combined dirichletbcmap
@@ -143,10 +140,10 @@ namespace POROMULTIPHASESCATRA
     //! check for convergence
     void NewtonErrorCheck();
 
-    // update the single fields after convergence
+    //! update the single fields after convergence
     void UpdateFieldsAfterConvergence();
 
-    // update the scatra field
+    //! update the scatra field
     virtual void UpdateScatra(Teuchos::RCP<const Epetra_Vector> scatrainc);
 
     //! return structure fluid coupling sparse matrix
@@ -289,9 +286,6 @@ namespace POROMULTIPHASESCATRA
     /// create using a Epetra_Comm
     PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
-
-    /// virtual destructor
-    virtual ~PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling(){};
 
    private:
     // Setup full map

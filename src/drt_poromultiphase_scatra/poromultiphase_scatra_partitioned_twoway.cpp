@@ -25,7 +25,6 @@
 #include "../drt_adapter/ad_art_net.H"
 
 /*----------------------------------------------------------------------*
- | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::PoroMultiPhaseScaTraPartitionedTwoWay(
     const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
@@ -40,7 +39,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::PoroMultiPhaseScaTr
 }
 
 /*----------------------------------------------------------------------*
- | initialization                                            vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
@@ -76,26 +74,20 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(
 }
 
 /*----------------------------------------------------------------------*
- | setup the monolithic fluid-structure system (called in               |
- | poromultiphase_scatra_dyn.cpp)                      kremheller 03/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::SetupSystem()
 {
   PoroField()->SetupSystem();
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | setup the solver if necessary                        kremheller 03/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::SetupSolver()
 {
   PoroField()->SetupSolver();
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::DoPoroStep()
 {
@@ -104,7 +96,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::DoPoroStep()
 }
 
 /*----------------------------------------------------------------------*
- |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::DoScatraStep()
 {
@@ -125,7 +116,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::DoScatraStep()
 }
 
 /*----------------------------------------------------------------------*
- | print the header                                    kremheller 11/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::PrintHeaderPartitioned()
 {
@@ -144,12 +134,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::PrintHeaderPar
               << "                                                                           *"
               << std::endl;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | update the current states in every iteration        kremheller 11/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::IterUpdateStates()
 {
@@ -164,7 +151,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::IterUpdateStat
     artscaincnp_->Update(1.0, *(scatramsht_->ArtScatraField()->Phinp()), 0.0);
   }
 
-  return;
 }  // IterUpdateStates()
 
 /*----------------------------------------------------------------------*
@@ -299,7 +285,6 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::ConvergenceChe
 }
 
 /*----------------------------------------------------------------------*
- | constructor                                         kremheller 11/17 |
  *----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested::
     PoroMultiPhaseScaTraPartitionedTwoWayNested(
@@ -309,7 +294,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested::
 }
 
 /*----------------------------------------------------------------------*
- | initialization                                      kremheller 11/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested::Init(
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
@@ -327,7 +311,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested::Init(
 }
 
 /*----------------------------------------------------------------------*
- |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested::Solve()
 {
@@ -359,12 +342,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested::Solve()
     // convergence is achieved overall
     stopnonliniter = ConvergenceCheck(itnum);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | constructor                                         kremheller 11/17 |
  *----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::
     PoroMultiPhaseScaTraPartitionedTwoWaySequential(
@@ -374,7 +354,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::
 }
 
 /*----------------------------------------------------------------------*
- | initialization                                      kremheller 11/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Init(
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
@@ -392,7 +371,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Init
 }
 
 /*----------------------------------------------------------------------*
- |                                                     kremheller 11/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Solve()
 {
@@ -435,6 +413,4 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Solv
     // convergence is achieved overall
     stopnonliniter = ConvergenceCheck(itnum);
   }
-
-  return;
 }

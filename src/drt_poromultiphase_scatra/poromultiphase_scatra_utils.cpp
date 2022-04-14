@@ -23,17 +23,12 @@
 #include "../drt_poroelast/poro_utils_clonestrategy.H"
 #include "../drt_scatra_ele/scatra_ele.H"
 
-#include "../drt_inpar/inpar_poromultiphase_scatra.H"
-#include "../drt_lib/drt_dserror.H"
-
 #include "../drt_lib/drt_utils_createdis.H"
 
-#include "../drt_inpar/inpar_bio.H"
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
 #include "../drt_lib/drt_utils_parallel.H"
 
 /*----------------------------------------------------------------------*
- | setup algorithm                                                      |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase>
 POROMULTIPHASESCATRA::UTILS::CreatePoroMultiPhaseScatraAlgorithm(
@@ -86,7 +81,6 @@ POROMULTIPHASESCATRA::UTILS::CreatePoroMultiPhaseScatraAlgorithm(
 }
 
 /*----------------------------------------------------------------------*
- | create coupling strategy to 1D network                               |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase>
 POROMULTIPHASESCATRA::UTILS::CreateAndInitArteryCouplingStrategy(
@@ -135,7 +129,6 @@ POROMULTIPHASESCATRA::UTILS::CreateAndInitArteryCouplingStrategy(
 
 
 /*----------------------------------------------------------------------*
- | setup discretizations and dofsets                         vuong 08/16 |
  *----------------------------------------------------------------------*/
 std::map<int, std::set<int>> POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(
     const Epetra_Comm& comm, const std::string& struct_disname, const std::string& fluid_disname,
@@ -225,7 +218,6 @@ std::map<int, std::set<int>> POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAn
 }
 
 /*----------------------------------------------------------------------*
- | exchange material pointers of both discretizations       vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::UTILS::AssignMaterialPointers(const std::string& struct_disname,
     const std::string& fluid_disname, const std::string& scatra_disname, const bool artery_coupl)
@@ -251,7 +243,6 @@ void POROMULTIPHASESCATRA::UTILS::AssignMaterialPointers(const std::string& stru
 }
 
 /*----------------------------------------------------------------------*
- | calculate vector norm                             kremheller 07/17   |
  *----------------------------------------------------------------------*/
 double POROMULTIPHASESCATRA::UTILS::CalculateVectorNorm(
     const enum INPAR::POROMULTIPHASESCATRA::VectorNorm norm,
@@ -304,7 +295,6 @@ double POROMULTIPHASESCATRA::UTILS::CalculateVectorNorm(
 }  // CalculateVectorNorm()
 
 /*----------------------------------------------------------------------*
- |                                                    kremheller 03/17  |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PrintLogo()
 {

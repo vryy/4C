@@ -57,7 +57,7 @@ namespace POROMULTIPHASESCATRA
     PoroMultiPhaseScatraArteryCouplingPairBase() { return; };
 
     //! destructor
-    virtual ~PoroMultiPhaseScatraArteryCouplingPairBase(){};
+    virtual ~PoroMultiPhaseScatraArteryCouplingPairBase() = default;
 
     //! Init
     virtual void Init(std::vector<DRT::Element const*> elements,
@@ -77,7 +77,11 @@ namespace POROMULTIPHASESCATRA
     //! over all coupling pairs
     virtual void DeleteUnnecessaryGPs(Teuchos::RCP<Epetra_MultiVector> gp_vector) = 0;
 
-    //! evaluate this pair (return integral of diameter of the segment)
+    /*!
+     * @brief Evaluate this pair
+     *
+     * @returns integral of diameter of the segment
+     */
     virtual double Evaluate(LINALG::SerialDenseVector* forcevec1,
         LINALG::SerialDenseVector* forcevec2, LINALG::SerialDenseMatrix* stiffmat11,
         LINALG::SerialDenseMatrix* stiffmat12, LINALG::SerialDenseMatrix* stiffmat21,
@@ -100,9 +104,10 @@ namespace POROMULTIPHASESCATRA
 
     /**
      * Setup the porofluid-managers and the materials for later evaluation
-     * @param disname: name of continuous discretization
-     * @param timefacrhs_art: right hand side factor for artery time integration
-     * @param timefacrhs_cont: right hand side factor for time integration of 2D/3D discretization
+     * @param[in] disname: name of continuous discretization
+     * @param[in] timefacrhs_art: right hand side factor for artery time integration
+     * @param[in] timefacrhs_cont: right hand side factor for time integration of 2D/3D
+     * discretization
      */
     virtual void SetupFluidManagersAndMaterials(
         const std::string disname, const double& timefacrhs_art, const double& timefacrhs_cont) = 0;
@@ -181,14 +186,19 @@ namespace POROMULTIPHASESCATRA
 
     /**
      * Setup the porofluid-managers and the materials for later evaluation
-     * @param disname: name of continuous discretization
-     * @param timefacrhs_art: right hand side factor for artery time integration
-     * @param timefacrhs_cont: right hand side factor for time integration of 2D/3D discretization
+     * @param[in] disname: name of continuous discretization
+     * @param[in] timefacrhs_art: right hand side factor for artery time integration
+     * @param[in] timefacrhs_cont: right hand side factor for time integration of 2D/3D
+     * discretization
      */
     void SetupFluidManagersAndMaterials(const std::string disname, const double& timefacrhs_art,
         const double& timefacrhs_cont) override;
 
-    //! evaluate this pair (return integral of diameter of the segment)
+    /*!
+     * @brief Evaluate this pair
+     *
+     * @returns integral of diameter of the segment
+     */
     double Evaluate(LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
         LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
         LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22,
@@ -258,10 +268,9 @@ namespace POROMULTIPHASESCATRA
      *
      * \note: the following algorithm works only for linear 1D elements and linear 2D/3D
      * elements where always 0,1 or 2 intersections can be found. For higher order elements with
-     *        special cases, it has to be re-thought. For instance, if we find two
+     * special cases, it has to be re-thought. For instance, if we find two
      * intersections, it is always assumed that the integration segment lies between these two
-     * intersections
-     *        --> for a higher order 1D element this may not be the case
+     * intersections --> for a higher order 1D element this may not be the case
      */
     void CreateIntegrationSegment();
 
@@ -311,12 +320,12 @@ namespace POROMULTIPHASESCATRA
 
     /**
      * evaluate derivative of 1D shape function times solid velocity (only porofluid has this term)
-     * @param eta [in]: GP coordinates in artery element parameter space
-     * @param xi [in]: GP coordinates in porofluid element parameter space
-     * @param segmentlengths [in]: length of all segments of this artery element
-     * @param forcevec1 [in]: rhs-vector to assemble into
-     * @param etaA [in]: beginning of segment in artery element parameter space
-     * @param etaB [in]: end of segment in artery element parameter space
+     * @param[in] eta: GP coordinates in artery element parameter space
+     * @param[in] xi: GP coordinates in porofluid element parameter space
+     * @param[in] segmentlengths: length of all segments of this artery element
+     * @param[in] forcevec1: rhs-vector to assemble into
+     * @param[in] etaA: beginning of segment in artery element parameter space
+     * @param[in] etaB: end of segment in artery element parameter space
      */
     void EvaluatedNdsSolidVel(const std::vector<double>& eta,
         const std::vector<std::vector<double>>& xi, const std::vector<double>& segmentlengths,
@@ -673,7 +682,7 @@ namespace POROMULTIPHASESCATRA
     //! summed up phase requires special treatment
     std::vector<std::vector<int>> cont_dofs_to_assemble_functions_into_;
 
-    // the artery material
+    //! the artery material
     Teuchos::RCP<MAT::Cnst_1d_art> arterymat_;
   };
 

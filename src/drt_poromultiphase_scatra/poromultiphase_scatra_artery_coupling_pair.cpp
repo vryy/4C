@@ -10,14 +10,9 @@
 #include "poromultiphase_scatra_artery_coupling_pair.H"
 #include "poromultiphase_scatra_artery_coupling_defines.H"
 
-#include "../drt_lib/drt_element.H"
+
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_mat/fluidporo_multiphase.H"
-#include "../drt_mat/scatra_mat_multiporo.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/cnst_1d_art.H"
@@ -31,8 +26,8 @@
 
 #include <Epetra_MultiVector.h>
 
+
 /*----------------------------------------------------------------------*
- | constructor                                         kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -82,11 +77,9 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       timefacrhs_art_(0.0),
       timefacrhs_cont_(0.0)
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | init                                                kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont>::Init(
@@ -223,12 +216,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 
   // get out of here
   isinit_ = true;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | setup the fluid managers and materials              kremheller 07/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -423,12 +413,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 
   // set time fac for right hand side evaluation of coupling
   SetTimeFacRhs(arterydens, contscatramat, timefacrhs_art, timefacrhs_cont);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | pre-evaluate                                        kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -442,12 +429,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     PreEvaluateCenterlineCoupling();
 
   ispreevaluated_ = true;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | pre-evaluate (lateral surface-coupling)             kremheller 12/20 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -560,7 +544,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 }
 
 /*----------------------------------------------------------------------*
- | pre-evaluate (centerline-coupling)                  kremheller 12/20 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -636,7 +619,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 }
 
 /*----------------------------------------------------------------------*
- | pre-evaluate                                        kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -675,7 +657,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 }
 
 /*----------------------------------------------------------------------*
- | reset state                                         kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -778,7 +759,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 }
 
 /*----------------------------------------------------------------------*
- | evaluate                                            kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 double
@@ -843,8 +823,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distype
 }
 
 /*------------------------------------------------------------------------*
- | evaluate additional linearization of diameter dependent terms          |
- |           (Hagen-Poiseuille)                          kremheller 11/20 |
  *------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -871,7 +849,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 }
 
 /*------------------------------------------------------------------------*
- | element-id of artery element                          kremheller 05/18 |
  *------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 int POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont>::Ele1GID()
@@ -881,7 +858,6 @@ int POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, dis
 }
 
 /*------------------------------------------------------------------------*
- | element-id of 2D/3D-element                           kremheller 05/18 |
  *------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 int POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont>::Ele2GID()
@@ -891,7 +867,6 @@ int POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, dis
 }
 
 /*------------------------------------------------------------------------*
- | get the segment id                                    kremheller 05/18 |
  *------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 int POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -901,7 +876,6 @@ int POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 }
 
 /*------------------------------------------------------------------------*
- | calculate volume of 2D/3D element                     kremheller 08/19 |
  *------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -953,7 +927,6 @@ double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 }
 
 /*------------------------------------------------------------------------*
- | set the segment id                                    kremheller 05/18 |
  *------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -963,7 +936,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 }
 
 /*----------------------------------------------------------------------*
- | apply mesh movement (on artery)                     kremheller 07/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -1020,7 +992,6 @@ double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 }
 
 /*----------------------------------------------------------------------*
- | recompute eta and xi                                kremheller 07/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -1128,13 +1099,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       eta_s_[i_gp] = eta_s.val();
     }  // GP loop
   }    // !evaluate_in_ref_config_
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | evaluate for gauss-point-to-segment -> directly assembled into       |
- | element stiffness matrix                            kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -1191,12 +1158,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     UpdateGPTSStiff(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
     EvaluateGPTSForce(*forcevec1, *forcevec2, *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | evaluate D and M for mortar penalty case            kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -1251,12 +1215,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 
     UpdateDMKappa(*D_ele, *M_ele, *Kappa_ele);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | evaluate function coupling                          kremheller 07/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -1331,7 +1292,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 }
 
 /*---------------------------------------------------------------------------------*
- | evaluate derivative of 1D shape function times solid velocity  kremheller 10/18 |
  *---------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -1402,12 +1362,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       forcevec1(i) +=
           N1_eta(i) * w_gp * jac * lambda_t_vel * arterydiamref_ * arterydiamref_ * M_PI / 4.0;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | evaluate element stiffness matrix for GPTS          kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -1463,12 +1420,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   }
 
   constant_part_evaluated_ = true;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | evaluate mortar coupling matrices D and M for MP    kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -1505,12 +1459,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   }
 
   constant_part_evaluated_ = true;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | evaluate element force for GPTS                     kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -1532,13 +1483,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 
   for (int i = 0; i < dim2_; i++)
     for (int j = 0; j < dim2_; j++) forcevec2(i) -= stiffmat22(i, j) * contelephinp_[j];
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | update element stiffness matrix for GPTS --> without valid volume    |
- | fraction pressure no coupling                       kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -1581,13 +1528,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
               j * numdof_cont_ + coupleddofs_cont_[idof]) = 0.0;
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | update D and M for MP --> without valid volume fraction pressure     |
- | no coupling                                         kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -1618,12 +1561,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
               j * numdof_cont_ + coupleddofs_cont_[idof]) = 0.0;
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | evaluate function coupling at GP                    kremheller 07/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -1685,12 +1625,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
           artderivs, contderivs, forcevec2, stiffmat21, stiffmat22);
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | evaluate the diameter function                      kremheller 11/20 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -1779,7 +1716,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   }
 }
 /*----------------------------------------------------------------------*
- | set time fac for rhs terms                          kremheller 07/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -1852,12 +1788,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       dserror("Unknown coupling type");
       break;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | extract divergence of solid phase velocity field    kremheller 10/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -1878,12 +1811,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 
   // extract local values of displacement field from global state vector
   DRT::UTILS::ExtractMyValues<LINALG::Matrix<numdim_, numnodescont_>>(*velocity, ele2vel_, lmdisp);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | integrate \int_{\eta_a}^{eta_s} || F*t0 ||_2 ds     kremheller 07/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 FAD POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -1961,7 +1891,6 @@ FAD POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 }
 
 /*----------------------------------------------------------------------*
- | get artery values (pressure and scalars) at GP      kremheller 07/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -1994,12 +1923,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       dserror("Unknown coupling type");
       break;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | get scalar values (continuous dis) at GP            kremheller 07/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -2030,13 +1956,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       dserror("Unknown coupling type");
       break;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | assemble into element force and stiffness matrix (functions of       |
- | artery discretization)                              kremheller 07/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -2067,13 +1989,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       for (int j_cont = 0; j_cont < numdof_cont_; j_cont++)
         stiffmat12(i * numdof_art_ + i_art, j * numdof_cont_ + j_cont) -=
             N1(i) * N2(j) * myscale * w_gp * jacobi * contderivs[j_cont] * timefacrhs_art_dens_;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | assemble into element force and stiffness matrix (functions of       |
- | continuous discretization)                          kremheller 07/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -2119,12 +2037,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
           stiffmat22(i * numdof_cont_ + assembleInto[idof], j * numdof_cont_ + j_cont) -= stiffval;
       }
     }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | evaluate function values and derivatives            kremheller 07/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -2197,12 +2112,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       dserror("Unknown coupling type");
       break;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | set scalar values as constants for function         kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -2216,12 +2128,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   // set artery-scalar values as constant
   for (int k = 0; k < numscalart_; k++)
     constants.push_back(std::pair<std::string, double>(artscalarnames_[k], artscalarnpAtGP[k]));
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | set fluid values as variables for function          kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -2253,12 +2162,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 
   // set artery pressure as variable
   variables.push_back(std::pair<std::string, double>(artpressname_, artpressnpAtGP));
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | set fluid values as variables for function          kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -2299,12 +2205,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 
   // set artery diameter of previous time step as constant
   constants.push_back(std::pair<std::string, double>("Dprev", arterymat_->DiamPreviousTimeStep()));
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | set scalar values as variables for function         kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -2318,12 +2221,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   // set artery-scalar values as variables
   for (int k = 0; k < numscalart_; k++)
     variables.push_back(std::pair<std::string, double>(artscalarnames_[k], artscalarnpAtGP[k]));
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | build the fluid derivatives                         kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -2376,12 +2276,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     // diameter derivs w.r.t. to artery pressure
     artderivs[0] += functderivdiam * diamderivs_[numfluidphases_ + 2 * numvolfrac_];
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | build the scalar derivatives                        kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -2395,11 +2292,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   // derivatives after artery scalars
   for (int doftoderive = 0; doftoderive < numdof_art_; doftoderive++)
     artderivs[doftoderive] += functderivs[doftoderive + numdof_cont_];
-
-  return;
 }
 /*----------------------------------------------------------------------*
- | create integration segment [eta_a, eta_b]           kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -2573,7 +2467,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   return;
 }
 /*-----------------------------------------------------------------------------*
- | get all intersections of artery-element with 2D/3D-element kremheller 05/18 |
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 std::vector<double> POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -2644,7 +2537,6 @@ std::vector<double> POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair
 }
 
 /*-----------------------------------------------------------------------------*
- | check for duplicate projections                            kremheller 05/18 |
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 bool POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -2662,7 +2554,6 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 }
 
 /*----------------------------------------------------------------------*
- | intersect with boundary of 2D/3D-element            kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -3022,7 +2913,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 }
 
 /*----------------------------------------------------------------------*
- | project into 2D/3D-element                          kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 template <typename T>
@@ -3264,7 +3154,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 }
 
 /*----------------------------------------------------------------------*
- | get artery shape-function                           kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 template <typename T>
@@ -3287,7 +3176,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 }
 
 /*----------------------------------------------------------------------*
- | get shape-function of 2D/3D-element                 kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 template <typename T>
@@ -3324,7 +3212,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 }
 
 /*------------------------------------------------------------------------*
- | compute coordinates and derivatives of artery element kremheller 05/18 |
  *------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 template <typename T>
@@ -3348,7 +3235,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 }
 
 /*------------------------------------------------------------------------*
- | compute coordinates and derivatives of 2D/3D-element  kremheller 05/18 |
  *------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 template <typename T>
@@ -3371,12 +3257,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       }
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | fill the function vector                            kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -3393,12 +3276,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     else
       my_funct_vec->at(i) = 0;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | initialize the functions                            kremheller 07/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -3451,12 +3331,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   if (not funct->IsVariable(0, "D0")) funct->AddVariable(0, "D0", 0.0);
   // add diameter of previous time step
   if (not funct->IsVariable(0, "Dprev")) funct->AddVariable(0, "Dprev", 0.0);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | initialize the names used for function coupling     kremheller 07/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -3522,12 +3399,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       volfracpressurenames_[k] = "VFP" + temp.str();
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | initialize the names used for function coupling     kremheller 07/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
@@ -3562,12 +3436,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       dserror("Unknown coupling type");
       break;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | get function                                        kremheller 07/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 DRT::UTILS::VariableExprFunction*

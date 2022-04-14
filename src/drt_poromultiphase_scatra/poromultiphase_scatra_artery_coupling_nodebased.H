@@ -35,24 +35,20 @@ namespace POROMULTIPHASESCATRA
   class PoroMultiPhaseScaTraArtCouplNodeBased : public PoroMultiPhaseScaTraArtCouplBase
   {
    public:
-    /// create using a Epetra_Comm
+    //! create using a Epetra_Comm
     PoroMultiPhaseScaTraArtCouplNodeBased(Teuchos::RCP<DRT::Discretization> arterydis,
         Teuchos::RCP<DRT::Discretization> contdis, const Teuchos::ParameterList& meshtyingparams,
         const std::string& condname, const std::string& artcoupleddofname,
         const std::string& contcoupleddofname);
-
-    /// virtual destructor
-    virtual ~PoroMultiPhaseScaTraArtCouplNodeBased() {}
 
     //! Evaluate the 1D-3D coupling
     virtual void Evaluate(
         Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
     {
       // nothing to do here, is done in SetupSystem for this type of coupling
-      return;
     }
 
-    //! set-up of global system of equations of coupled problem
+    //! set-up linear system of equations of coupled problem
     void SetupSystem(Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont,
         Teuchos::RCP<LINALG::SparseMatrix> sysmat_art, Teuchos::RCP<const Epetra_Vector> rhs_cont,
@@ -60,21 +56,27 @@ namespace POROMULTIPHASESCATRA
         Teuchos::RCP<const LINALG::MapExtractor> dbcmap_cont,
         Teuchos::RCP<const LINALG::MapExtractor> dbcmap_art);
 
-    /// setup global vector
-    /// (o)    vec:      combined vector containing both artery and continuous field quantities
-    /// (i)    vec_cont: vector containing quantities from continuous field
-    /// (i)    vec_art:  vector containing quantities from artery field
+    /*!
+     * @brief setup global vector
+     *
+     * @param[out]  vec combined vector containing both artery and continuous field quantities
+     * @param[in]   vec_cont vector containing quantities from continuous field
+     * @param[in]   vec_art vector containing quantities from artery field
+     */
     void SetupVector(Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<const Epetra_Vector> vec_cont,
         Teuchos::RCP<const Epetra_Vector> vec_art);
 
-    /// extract single field vectors
-    /// (o)    vec:      combined vector containing both artery and continuous field quantities
-    /// (i)    vec_cont: vector containing quantities from continuous field
-    /// (i)    vec_art:  vector containing quantities from artery field
+    /*!
+     * @brief extract single field vectors
+     *
+     * @param[out]  globalvec combined vector containing both artery and continuous field quantities
+     * @param[in]   vec_cont vector containing quantities from continuous field
+     * @param[in]   vec_art vector containing quantities from artery field
+     */
     void ExtractSingleFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,
         Teuchos::RCP<const Epetra_Vector>& vec_cont, Teuchos::RCP<const Epetra_Vector>& vec_art);
 
-    // check if initial fields on coupled DOFs are equal
+    //! check if initial fields on coupled DOFs are equal
     void CheckInitialFields(
         Teuchos::RCP<const Epetra_Vector> vec_cont, Teuchos::RCP<const Epetra_Vector> vec_art);
 
@@ -84,16 +86,16 @@ namespace POROMULTIPHASESCATRA
     //! access full dof row map
     Teuchos::RCP<const Epetra_Map> DofRowMap() const;
 
-    /// init the strategy
+    //! init the strategy
     void Init();
 
-    /// setup the strategy
+    //! setup the strategy
     void Setup();
 
-    /// apply mesh movement (on artery elements)
+    //! apply mesh movement (on artery elements)
     void ApplyMeshMovement();
 
-    /// return blood vessel volume fraction
+    //! access to blood vessel volume fraction
     Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction();
 
     //! print out the coupling method
@@ -109,20 +111,28 @@ namespace POROMULTIPHASESCATRA
         Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont,
         Teuchos::RCP<LINALG::SparseMatrix> sysmat_art);
 
-    //! setup map extractor
-    //  full map -> all DOFs
-    //  maps(0)  -> coupled DOFs
-    //  maps(1)  -> uncoupled DOFs
-    void SetupMapExtractor(
-        Teuchos::RCP<LINALG::MultiMapExtractor> mapextractor,  //!< the map extractor to setup
-        Teuchos::RCP<DRT::Discretization> dis,                 //!< discretization
-        const std::vector<int>& coupleddofs                    //!< vector with DOFs to couple
-    );
+    /*!
+     * @brief setup map extractor for artery mesh tying
+     *
+     * full map -> all DOFs
+     * maps(0)  -> coupled DOFs
+     * maps(1)  -> uncoupled DOFs
+     *
+     * @param[in]   mapextractor the map extractor to setup
+     * @param[in]   dis discretization
+     * @param[in]   coupleddofs vector with DOFs to couple
+     */
+    void SetupMapExtractor(Teuchos::RCP<LINALG::MultiMapExtractor> mapextractor,
+        Teuchos::RCP<DRT::Discretization> dis, const std::vector<int>& coupleddofs);
 
-    //! check if dirichlet BC defined on coupled dofs, which is not possible
-    void CheckDbcOnCoupledDofs(Teuchos::RCP<DRT::Discretization> dis,  //!< discretization
-        const Teuchos::RCP<const Epetra_Map>& coupleddofmap            //!< map with coupled DOFs
-    );
+    /*!
+     * @brief check if dirichlet BC is defined on coupled dofs, which is not possible
+     *
+     * @param[in]   dis discretizatiom
+     * @param[in]   coupleddofmap map with coupled DOFs
+     */
+    void CheckDbcOnCoupledDofs(
+        Teuchos::RCP<DRT::Discretization> dis, const Teuchos::RCP<const Epetra_Map>& coupleddofmap);
 
     //! name of the condition
     const std::string condname_;
@@ -138,7 +148,7 @@ namespace POROMULTIPHASESCATRA
     //! coupling adapter
     Teuchos::RCP<ADAPTER::Coupling> artcontfieldcoup_;
 
-    /// needed for matrix transforms
+    //! needed for matrix transforms
     Teuchos::RCP<LINALG::MatrixRowColTransform> sbbtransform_;
     Teuchos::RCP<LINALG::MatrixRowTransform> sbitransform_;
     Teuchos::RCP<LINALG::MatrixColTransform> sibtransform_;

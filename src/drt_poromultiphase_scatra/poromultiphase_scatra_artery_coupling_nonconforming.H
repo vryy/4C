@@ -32,21 +32,18 @@ namespace POROMULTIPHASESCATRA
   class PoroMultiPhaseScaTraArtCouplNonConforming : public PoroMultiPhaseScaTraArtCouplBase
   {
    public:
-    /// create using a Epetra_Comm
+    //! create using a Epetra_Comm
     PoroMultiPhaseScaTraArtCouplNonConforming(Teuchos::RCP<DRT::Discretization> arterydis,
         Teuchos::RCP<DRT::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
         const std::string& condname, const std::string& artcoupleddofname,
         const std::string& contcoupleddofname);
-
-    /// virtual destructor
-    virtual ~PoroMultiPhaseScaTraArtCouplNonConforming() {}
 
    protected:
     //! Evaluate the 1D-3D coupling
     void Evaluate(Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs) override;
 
-    //! set-up of global system of equations of coupled problem
+    //! set-up of linear system of equations of coupled problem
     void SetupSystem(Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont,
         Teuchos::RCP<LINALG::SparseMatrix> sysmat_art, Teuchos::RCP<const Epetra_Vector> rhs_cont,
@@ -55,14 +52,14 @@ namespace POROMULTIPHASESCATRA
         Teuchos::RCP<const Epetra_Map> dbcmap_art,
         Teuchos::RCP<const Epetra_Map> dbcmap_art_with_collapsed);
 
-    /// setup the strategy
+    //! setup the strategy
     void Setup() override;
 
     //! evaluate additional linearization of (integrated) element diameter dependent terms
     //! (Hagen-Poiseuille)
     virtual void EvaluateAdditionalLinearizationofIntegratedDiam() = 0;
 
-    //! FE-assemble into force and stiffness matrix
+    //! FE-assemble into global force and stiffness matrix
     virtual void FEAssembleEleForceStiffIntoSystemVectorMatrix(const int& ele1gid,
         const int& ele2gid, const double& integrated_diam,
         std::vector<LINALG::SerialDenseVector> const& elevec,
@@ -123,33 +120,26 @@ namespace POROMULTIPHASESCATRA
     //! access full dof row map
     Teuchos::RCP<const Epetra_Map> DofRowMap() const override;
 
-    /// setup global vector
-    /// (o)    vec:      combined vector containing both artery and continuous field quantities
-    /// (i)    vec_cont: vector containing quantities from continuous field
-    /// (i)    vec_art:  vector containing quantities from artery field
+    //! Setup global vector
     void SetupVector(Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<const Epetra_Vector> vec_cont,
         Teuchos::RCP<const Epetra_Vector> vec_art) override;
 
-    /// extract single field vectors
-    /// (o)    globalvec: combined vector containing both artery and continuous field quantities
-    /// (i)    vec_cont:  vector containing quantities from continuous field
-    /// (i)    vec_art:   vector containing quantities from artery field
     void ExtractSingleFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,
         Teuchos::RCP<const Epetra_Vector>& vec_cont,
         Teuchos::RCP<const Epetra_Vector>& vec_art) override;
 
-    //! set solution of fields
+    //! set solution vector of single fields
     void SetSolutionVectors(Teuchos::RCP<const Epetra_Vector> phinp_cont,
         Teuchos::RCP<const Epetra_Vector> phin_cont,
         Teuchos::RCP<const Epetra_Vector> phinp_art) override;
 
-    /// init the strategy
+    //! init the strategy
     void Init() override;
 
     //! set the element pairs that are close as found by search algorithm
     void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs) override;
 
-    /// access to blood vessel volume fraction
+    //! access to blood vessel volume fraction
     Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction() override;
 
     //! create interaction pairs
@@ -162,7 +152,7 @@ namespace POROMULTIPHASESCATRA
     void EvaluateCouplingPairs(
         Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
 
-    //! FE-assemble into D, M and kappa (MP case)
+    //! FE-assemble into global D, M and kappa (MP case)
     void FEAssembleDMKappa(const int& ele1gid, const int& ele2gid,
         const LINALG::SerialDenseMatrix& D_ele, const LINALG::SerialDenseMatrix& M_ele,
         const LINALG::SerialDenseVector& Kappa_ele);
@@ -171,10 +161,11 @@ namespace POROMULTIPHASESCATRA
     void SumDMIntoGlobalForceStiff(
         Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
 
-    //! invert kappa
+    //! invert kappa vector
     void InvertKappa();
 
-    //! return appropriate internal implementation class (acts as a simple factory)
+    //! return appropriate internal implementation class (acts as a simple factory to create single
+    //! pairs)
     static Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>
     CreateNewArteryCouplingPair(std::vector<DRT::Element const*> const& ele_ptrs);
 
@@ -187,7 +178,7 @@ namespace POROMULTIPHASESCATRA
     //! reset the integrated diameter vector to zero
     virtual void ResetIntegratedDiamToZero() = 0;
 
-    //! fill the vectors
+    //! fill Function and Scale vectors as read from input file
     void FillFunctionAndScaleVectors();
 
     //! set the right-hand side factor for time integration

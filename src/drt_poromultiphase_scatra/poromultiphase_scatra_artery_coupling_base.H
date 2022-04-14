@@ -28,22 +28,22 @@ namespace POROMULTIPHASESCATRA
   class PoroMultiPhaseScaTraArtCouplBase
   {
    public:
-    // constructor
+    //! constructor
     PoroMultiPhaseScaTraArtCouplBase(Teuchos::RCP<DRT::Discretization> arterydis,
         Teuchos::RCP<DRT::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
         const std::string& condname, const std::string& artcoupleddofname,
         const std::string& contcoupleddofname);
 
-    /// virtual destructor
-    virtual ~PoroMultiPhaseScaTraArtCouplBase(){};
+    //! virtual destructor
+    virtual ~PoroMultiPhaseScaTraArtCouplBase() = default;
 
-    /// access to full map
+    //! access to full DOF map
     const Teuchos::RCP<const Epetra_Map>& FullMap() const;
 
-    /// global extractor
+    //! get global extractor
     const Teuchos::RCP<LINALG::MultiMapExtractor>& GlobalExtractor() const;
 
-    // check if initial fields on coupled DOFs are equal
+    //! check if initial fields on coupled DOFs are equal
     virtual void CheckInitialFields(
         Teuchos::RCP<const Epetra_Vector> vec_cont, Teuchos::RCP<const Epetra_Vector> vec_art) = 0;
 
@@ -68,52 +68,63 @@ namespace POROMULTIPHASESCATRA
         Teuchos::RCP<const LINALG::MapExtractor> dbcmap_cont,
         Teuchos::RCP<const LINALG::MapExtractor> dbcmap_art) = 0;
 
-    //! set solution of fields
+    //! set solution vectors of single fields
     virtual void SetSolutionVectors(Teuchos::RCP<const Epetra_Vector> phinp_cont,
         Teuchos::RCP<const Epetra_Vector> phin_cont, Teuchos::RCP<const Epetra_Vector> phinp_art);
 
     //! set the element pairs that are close as found by search algorithm
     virtual void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs);
 
-    /// setup global vector
-    /// (o)    vec:      combined vector containing both artery and continuous field quantities
-    /// (i)    vec_cont: vector containing quantities from continuous field
-    /// (i)    vec_art:  vector containing quantities from artery field
+    /*!
+     * @brief setup global vector
+     *
+     * @param[out]  vec combined vector containing both artery and continuous field quantities
+     * @param[in]   vec_cont vector containing quantities from continuous field
+     * @param[in]   vec_art vector containing quantities from artery field
+     */
     virtual void SetupVector(Teuchos::RCP<Epetra_Vector> vec,
         Teuchos::RCP<const Epetra_Vector> vec_cont, Teuchos::RCP<const Epetra_Vector> vec_art) = 0;
 
-    /// extract single field vectors
-    /// (o)    vec:      combined vector containing both artery and continuous field quantities
-    /// (i)    vec_cont: vector containing quantities from continuous field
-    /// (i)    vec_art:  vector containing quantities from artery field
+    /*!
+     * @brief extract single field vectors
+     *
+     * @param[out]  globalvec combined vector containing both artery and continuous field quantities
+     * @param[in]   vec_cont vector containing quantities from continuous field
+     * @param[in]   vec_art vector containing quantities from artery field
+     */
     virtual void ExtractSingleFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,
         Teuchos::RCP<const Epetra_Vector>& vec_cont,
         Teuchos::RCP<const Epetra_Vector>& vec_art) = 0;
 
-    /// init the strategy
+    //! init the strategy
     virtual void Init() = 0;
 
-    /// setup the strategy
+    //! setup the strategy
     virtual void Setup() = 0;
 
-    /// apply mesh movement (on artery elements)
+    //! apply mesh movement (on artery elements)
     virtual void ApplyMeshMovement() = 0;
 
     //! return blood vessel volume fraction inside each 2D/3D element
     virtual Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction() = 0;
 
    protected:
-    /// communicator
+    //! communicator
     const Epetra_Comm& Comm() const { return comm_; }
 
     //! artery (1D) discretization
     Teuchos::RCP<DRT::Discretization> arterydis_;
+
     //! continous field (2D, 3D) discretization
     Teuchos::RCP<DRT::Discretization> contdis_;
 
-    //! coupled dofs of the single fields
+    //! coupled dofs of artery field
     std::vector<int> coupleddofs_art_;
+
+    //! coupled dofs of continous field
     std::vector<int> coupleddofs_cont_;
+
+    //! number of coupled dofs
     int num_coupled_dofs_;
 
     //! dof row map (not splitted)
@@ -125,15 +136,18 @@ namespace POROMULTIPHASESCATRA
     //! myrank
     const int myrank_;
 
-    //! so far, it is assumed that artery elements always follow the deformation of the underlying
-    //! porous medium
-    //  hence, we actually have to evalute them in current configuration
-    //  if this flag is set to true, artery elements will not move and are evaluated in reference
-    //  configuration
+    /*!
+     * @brief decide if artery elements are evaluated in reference configuration
+     *
+     * so far, it is assumed that artery elements always follow the deformation of the underlying
+     * porous medium. Hence, we actually have to evaluate them in current configuration. If this
+     * flag is set to true, artery elements will not move and are evaluated in reference
+     * configuration
+     */
     bool evaluate_in_ref_config_;
 
    private:
-    /// communication (mainly for screen output)
+    //! communication (mainly for screen output)
     const Epetra_Comm& comm_;
   };
 

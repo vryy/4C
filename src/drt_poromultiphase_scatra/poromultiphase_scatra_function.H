@@ -20,7 +20,7 @@
 namespace POROMULTIPHASESCATRA
 {
   /*!
-   * @brief abstract class derived from VariableExprFunction since reaction functions are cast to
+   * @brief abstract class derived from VariableExprFunction since reaction functions are cast to
    * VariableExprFunction in scatra_reaction_coupling and fluidporo_multiphase_singlereaction
    */
   class PoroMultiPhaseScaTraFunction : public DRT::UTILS::VariableExprFunction
@@ -156,7 +156,7 @@ namespace POROMULTIPHASESCATRA
      * should be evaluated \param varname (i) Variable name \param varvalue (i) Value of the
      * variable
      */
-    void AddVariable(const int index, const std::string& varname, double varvalue) { return; }
+    void AddVariable(const int index, const std::string& varname, double varvalue) {}
 
     /*!
      * \brief parse the underlying expression
@@ -164,7 +164,6 @@ namespace POROMULTIPHASESCATRA
     void ParseExpressions()
     {
       dserror("PoroMultiPhaseScaTraFunction does not implement ParseExpressions");
-      return;
     }
 
     /// return the number of components --> Reaction functions always have to have only one
@@ -204,7 +203,7 @@ namespace POROMULTIPHASESCATRA
   {
    public:
     /*!
-     * \brief Default constructor creating empty object. Add the function parameters (read from the
+     * \brief Constructor creating empty object. Add the function parameters (read from the
      * input file) to the function
      */
     TumorGrowthLawHeaviside(std::vector<std::pair<std::string, double>> funct_params);
@@ -266,7 +265,7 @@ namespace POROMULTIPHASESCATRA
   {
    public:
     /*!
-     * \brief Default constructor creating empty object. Add the function parameters (read from the
+     * \brief Constructor creating empty object. Add the function parameters (read from the
      * input file) to the function
      */
     NecrosisLawHeaviside(std::vector<std::pair<std::string, double>> funct_params);
@@ -328,7 +327,7 @@ namespace POROMULTIPHASESCATRA
   {
    public:
     /*!
-     * \brief Default constructor creating empty object. Add the function parameters (read from the
+     * \brief Constructor creating empty object. Add the function parameters (read from the
      * input file) to the function
      */
     OxygenConsumptionLawHeaviside(std::vector<std::pair<std::string, double>> funct_params);
@@ -389,7 +388,7 @@ namespace POROMULTIPHASESCATRA
   {
    public:
     /*!
-     * \brief Default constructor creating empty object. Add the function parameters (read from the
+     * \brief Constructor creating empty object. Add the function parameters (read from the
      * input file) to the function
      */
     TumorGrowthLawHeavisideOxy(std::vector<std::pair<std::string, double>> funct_params);
@@ -451,7 +450,7 @@ namespace POROMULTIPHASESCATRA
   {
    public:
     /*!
-     * \brief Default constructor creating empty object. Add the function parameters (read from the
+     * \brief Constructor creating empty object. Add the function parameters (read from the
      * input file) to the function
      */
     TumorGrowthLawHeavisideNecro(std::vector<std::pair<std::string, double>> funct_params);
@@ -509,7 +508,7 @@ namespace POROMULTIPHASESCATRA
   {
    public:
     /*!
-     * \brief Default constructor creating empty object. Add the function parameters (read from the
+     * \brief Constructor creating empty object. Add the function parameters (read from the
      * input file) to the function
      */
     OxygenTransvascularExchangeLawCont(std::vector<std::pair<std::string, double>> funct_params);
@@ -567,7 +566,7 @@ namespace POROMULTIPHASESCATRA
   {
    public:
     /*!
-     * \brief Default constructor creating empty object. Add the function parameters (read from the
+     * \brief Constructor creating empty object. Add the function parameters (read from the
      * input file) to the function
      */
     OxygenTransvascularExchangeLawDisc(std::vector<std::pair<std::string, double>> funct_params);
