@@ -241,33 +241,19 @@ namespace
     }
 
     // set spatial variables
-    switch (dim_)
+    for (int i = 0; i < static_cast<int>(exprdd.size()); ++i)
     {
-      case 3:
-      {
-        exprdd[index_mod]->SetValue("x", xfad);
-        exprdd[index_mod]->SetValue("y", yfad);
-        exprdd[index_mod]->SetValue("z", zfad);
-        break;
-      }
-      case 2:
-      {
-        exprdd[index_mod]->SetValue("x", xfad);
-        exprdd[index_mod]->SetValue("y", yfad);
-        exprdd[index_mod]->SetValue("z", 0);
-        break;
-      }
-      case 1:
-      {
-        exprdd[index_mod]->SetValue("x", xfad);
-        exprdd[index_mod]->SetValue("y", 0);
-        exprdd[index_mod]->SetValue("z", 0);
-        break;
-      }
-      default:
-        dserror("Problem dimension has to be 1, 2, or 3.");
-        break;
+      // init with zero
+      exprdd[index_mod]->SetValue("x", 0);
+      exprdd[index_mod]->SetValue("y", 0);
+      exprdd[index_mod]->SetValue("z", 0);
     }
+
+    if (dim_ < 0 or dim_ > 3) dserror("Problem dimension has to be 1, 2, or 3.");
+    if (dim_ > 0) exprdd[index_mod]->SetValue("x", xfad);
+    if (dim_ > 1) exprdd[index_mod]->SetValue("y", yfad);
+    if (dim_ > 2) exprdd[index_mod]->SetValue("z", zfad);
+
 
     // set temporal variable
     exprdd[index_mod]->SetValue("t", tfad);
@@ -561,13 +547,16 @@ double DRT::UTILS::ExprFunction::Evaluate(const int index, const double* x, doub
     expr_[index_mod]->SetValue(variables_[i][0]->Name(), variables_[i][n]->Value(t));
   }
 
-  // evaluation of F = F ( x, y, z, t, v1, ..., vn )
+  // evaluate F = F ( x, y, z, t, v1, ..., vn )
   return expr_[index_mod]->Evaluate();
 }
 
 std::vector<double> DRT::UTILS::ExprFunction::EvaluateSpatialDerivative(
     const int index, const double* x, const double t)
 {
+  // result vector
+  std::vector<double> res(3);
+
   // parse expression if not already parsed
   if (not isparsed_) ParseExpressions();
 
@@ -578,8 +567,7 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateSpatialDerivative(
   // FAD object for evaluation of derivatives
   Sacado::Fad::DFad<Sacado::Fad::DFad<double>> fdfad = exprdd_[index_mod]->Evaluate();
 
-  // result vector
-  std::vector<double> res(3, 0.0);
+  // add spatial derivatives in all three dimensions
   for (int d = 0; d < 3; ++d)
   {
     res[d] = fdfad.dx(d).val();
@@ -592,11 +580,8 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateSpatialDerivative(
 std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
     const int index, const double* x, const double t, const unsigned deg)
 {
-  // resulting vector holding
+  // result vector
   std::vector<double> res(deg + 1);
-
-  // add the value at time t
-  res[0] = Evaluate(index, x, t);
 
   // parse expression if not already parsed
   if (not isparsed_) ParseExpressions();
@@ -607,7 +592,11 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
 
   // FAD object for evaluation of derivatives
   Sacado::Fad::DFad<Sacado::Fad::DFad<double>> fdfad;
+
   const int number_of_arguments = 4;
+
+  // add the value at time t
+  res[0] = Evaluate(index, x, t);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
@@ -617,8 +606,8 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
 
     // evaluation of dF/dt applying the chain rule:
     // dF/dt = dF*/dt + sum_i(dF/dvi*dvi/dt)
-    double fdfad_dt = fdfad.dx(3).val();
-    for (int i = 0; i < static_cast<int>(variables_.size()); ++i)
+    double fdfad_dt = fdfad.dx(3).val();                           // 1) dF*/dt
+    for (int i = 0; i < static_cast<int>(variables_.size()); ++i)  // 2) sum_i{...}
     {
       // find the right definition of the variable according to the hierarchy
       unsigned int n = FindColIndexForVariableDefinition(variables_, i, t);
@@ -677,6 +666,7 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
     dserror("Higher time derivatives than second not supported!");
   }
 
+  // return derivatives
   return res;
 }
 
@@ -825,25 +815,13 @@ double DRT::UTILS::VariableExprFunction::Evaluate(const int index, const double*
   std::vector<std::pair<std::string, double>> variables;
   variables.reserve(dim_);
 
-  switch (dim_)
-  {
-    case 3:
-    {
-      variables.emplace_back("x", x[0]);  //-x_[index]
-      variables.emplace_back("y", x[1]);  //-y_[index]
-      variables.emplace_back("z", x[2]);  //-z_[index]
-    }
-    case 2:
-    {
-      variables.emplace_back("x", x[0]);  //-x_[index]
-      variables.emplace_back("y", x[1]);  //-y_[index]
-    }
-    case 1:
-    {
-      variables.emplace_back("x", x[0]);  //-x_[index]
-    }
-  }
+  // set spatial variables
+  if (dim_ < 0 or dim_ > 3) dserror("Problem dimension has to be 1, 2, or 3.");
+  if (dim_ > 0) variables.emplace_back("x", x[0]);
+  if (dim_ > 1) variables.emplace_back("y", x[1]);
+  if (dim_ > 2) variables.emplace_back("z", x[2]);
 
+  // set temporal variable
   variables.emplace_back("t", t);
 
   return Evaluate(index, variables);
