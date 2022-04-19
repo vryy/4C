@@ -152,6 +152,26 @@ namespace
     }
   }
 
+  /// evaluate an expression and assemble to the result vector
+  std::vector<double> EvaluateAndAssembleExpressionToResultVector(
+      const std::vector<std::pair<std::string, double>>& variables, const int index,
+      std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double>>>> exprd)
+  {
+    // number of variables
+    auto numvariables = static_cast<int>(variables.size());
+
+    // evaluate the expression
+    Sacado::Fad::DFad<double> fdfad = exprd[index]->Evaluate();
+
+    // resulting vector
+    std::vector<double> res(numvariables);
+
+    // fill the result vector
+    for (int i = 0; i < numvariables; i++) res[i] = fdfad.dx(i);
+
+    return res;
+  }
+
   /// check if index is in range of the dimensions of the expression, otherwise throw error
   void AssertVariableIndexInDimensionOfExpression(
       const int index, std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>> expr)
@@ -783,19 +803,7 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(
 
   SetVariableValuesInExpressionDeriv(variables, exprd_, index);
 
-  // number of variables
-  auto numvariables = static_cast<int>(variables.size());
-
-  // evaluate the expression
-  Sacado::Fad::DFad<double> fdfad = exprd_[index]->Evaluate();
-
-  // resulting vector
-  std::vector<double> res(numvariables);
-
-  // fill the result vector
-  for (int i = 0; i < numvariables; i++) res[i] = fdfad.dx(i);
-
-  return res;
+  return EvaluateAndAssembleExpressionToResultVector(variables, index, exprd_);
 }
 
 std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(int index,
@@ -808,19 +816,7 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(int ind
 
   SetConstantsValuesInExpressivDeriv(constants, exprd_, index);
 
-  // number of variables
-  auto numvariables = static_cast<int>(variables.size());
-
-  // evaluate the expression
-  Sacado::Fad::DFad<double> fdfad = exprd_[index]->Evaluate();
-
-  // resulting vector
-  std::vector<double> res(numvariables);
-
-  // fill the result vector
-  for (int i = 0; i < numvariables; i++) res[i] = fdfad.dx(i);
-
-  return res;
+  return EvaluateAndAssembleExpressionToResultVector(variables, index, exprd_);
 }
 
 double DRT::UTILS::VariableExprFunction::Evaluate(const int index, const double* x, const double t)
