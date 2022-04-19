@@ -59,7 +59,7 @@ namespace
     // read whether times are defined by number of points or by vector
     bool bynum = timevar->HasString("BYNUM");
 
-    // read times
+    // read respectively create times vector
     std::vector<double> times;
     if (bynum)  // times defined by number of points
     {
@@ -94,15 +94,12 @@ namespace
     // counter for variable numbering
     int counter = 0;
 
-    // define Fad object for evaluation
-    using FAD = Sacado::Fad::DFad<double>;
-
     // set the values of the variables
     std::vector<std::pair<std::string, double>>::const_iterator it;
     for (it = variables.begin(); it != variables.end(); it++)
     {
-      // for 1st order derivatives
-      FAD varfad(numvariables, counter, it->second);
+      // FAD object for 1st order derivatives
+      Sacado::Fad::DFad<double> varfad(numvariables, counter, it->second);
       // set the value in expression
       exprd[index]->SetValue(it->first, varfad);
       // update counter
@@ -578,9 +575,8 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateSpatialDerivative(
 
   SetValuesOfExprDerivDeriv(index_mod, variables_, x, t, dim_, exprdd_);
 
-  // evaluation of derivatives
-  using FAD = Sacado::Fad::DFad<Sacado::Fad::DFad<double>>;
-  FAD fdfad = exprdd_[index_mod]->Evaluate();
+  // FAD object for evaluation of derivatives
+  Sacado::Fad::DFad<Sacado::Fad::DFad<double>> fdfad = exprdd_[index_mod]->Evaluate();
 
   // result vector
   std::vector<double> res(3, 0.0);
@@ -609,8 +605,8 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
 
   SetValuesOfExprDerivDeriv(index_mod, variables_, x, t, dim_, exprdd_);
 
-  using FAD = Sacado::Fad::DFad<Sacado::Fad::DFad<double>>;
-  FAD fdfad;
+  // FAD object for evaluation of derivatives
+  Sacado::Fad::DFad<Sacado::Fad::DFad<double>> fdfad;
   const int number_of_arguments = 4;
 
   // add the 1st time derivative at time t
