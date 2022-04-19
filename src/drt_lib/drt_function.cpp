@@ -160,6 +160,8 @@ namespace
       dserror("Tried to add a variable to a function in a not available dimension.");
   }
 
+  /// needs further description: Sets the values of exprdd depending on various inputs
+  /// --> not fully understood yet
   void SetValuesOfExprDerivDeriv(std::size_t index_mod,
       std::vector<std::vector<Teuchos::RCP<DRT::UTILS::FunctionVariable>>> variables,
       const double* x, const double t, int dim_,
@@ -188,23 +190,8 @@ namespace
     for (int i = 0; i < static_cast<int>(variables.size()); ++i)
     {
       // find the right definition of the variable according to the hierarchy
-      unsigned int n = 0;
-      bool containtime = false;
-      while (!containtime)
-      {
-        if (n == variables[i].size())
-        {
-          dserror("the variable %d is not defined in the time considered", i);
-        }
-        else
-        {
-          containtime = variables[i][n]->ContainTime(t);
-        }
-        if (!containtime)
-        {
-          ++n;
-        }
-      }
+      unsigned int n = FindColIndexForVariableDefinition(variables, i, t);
+
       fadvectvars[i] = FAD(fad_size, number_of_arguments + i, variables[i][n]->Value(t));
       fadvectvars[i].val() =
           Sacado::Fad::DFad<double>(fad_size, number_of_arguments + i, variables[i][n]->Value(t));
@@ -249,6 +236,31 @@ namespace
     }
   }
 
+  /// needs further description: Finds a colum index depending on a time that is either contained in
+  /// variables at a certain row index or not
+  /// --> not fully understood yet
+  unsigned int FindColIndexForVariableDefinition(
+      std::vector<std::vector<Teuchos::RCP<DRT::UTILS::FunctionVariable>>>& variables,
+      const int index_row, const double time)
+  {
+    // find the right definition of the variable according to the hierarchy
+    unsigned int index_col = 0;
+    bool containtime = false;
+    while (!containtime)
+    {
+      containtime = variables[index_row][index_col]->ContainTime(time);
+      if (index_col == variables[index_row].size())
+      {
+        dserror("the variable %d is not defined at time %f", index_row, time);
+      }
+      if (!containtime)
+      {
+        ++index_col;
+      }
+    }
+
+    return index_col;
+  }
 }  // namespace
 
 Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateFunctionFunction(
@@ -519,23 +531,7 @@ double DRT::UTILS::ExprFunction::Evaluate(const int index, const double* x, doub
   for (unsigned int i = 0; i < variables_.size(); ++i)
   {
     // find the right definition of the variable according to the hierarchy
-    unsigned int n = 0;
-    bool containtime = false;
-    while (!containtime)
-    {
-      if (n == variables_[i].size())
-      {
-        dserror("the VARIABLE %d is not defined at time %f", i, t);
-      }
-      else
-      {
-        containtime = variables_[i][n]->ContainTime(t);
-      }
-      if (!containtime)
-      {
-        ++n;
-      }
-    }
+    unsigned int n = FindColIndexForVariableDefinition(variables_, i, t);
 
     expr_[index_mod]->SetValue(variables_[i][0]->Name(), variables_[i][n]->Value(t));
   }
@@ -610,20 +606,8 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
     for (int i = 0; i < static_cast<int>(variables_.size()); ++i)
     {
       // find the right definition of the variable according to the hierarchy
-      unsigned int n = 0;
-      bool containtime = false;
-      while (!containtime)
-      {
-        containtime = variables_[i][n]->ContainTime(t);
-        if (n == variables_[i].size())
-        {
-          dserror("the variable %d is not defined in the time considered", i);
-        }
-        if (!containtime)
-        {
-          ++n;
-        }
-      }
+      unsigned int n = FindColIndexForVariableDefinition(variables_, i, t);
+
       fdfad_dt +=
           fdfad.dx(number_of_arguments + i).val() * variables_[i][n]->TimeDerivativeValue(t);
     }
@@ -646,40 +630,16 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
     for (int i = 0; i < static_cast<int>(variables_.size()); ++i)
     {
       fdfad_dt2_term[i] = 0;
-      // find the right definition of the variable according to the hierarchy
-      unsigned int n = 0;
-      bool containtime = false;
-      while (!containtime)
-      {
-        containtime = variables_[i][n]->ContainTime(t);
-        if (n == variables_[i].size())
-        {
-          dserror("the variable %d is not defined in the time considered", i);
-        }
-        if (!containtime)
-        {
-          ++n;
-        }
-      }
+
+
+      unsigned int n = FindColIndexForVariableDefinition(variables_, i, t);
+
       fdfad_dt2_term[i] += fdfad.dx(3).dx(number_of_arguments + i);
       fdfad_dt2_term[i] += fdfad.dx(number_of_arguments + i).dx(3);
       for (int j = 0; j < static_cast<int>(variables_.size()); ++j)
       {
-        // find the right definition of the variable according to the hierarchy
-        unsigned int m = 0;
-        bool containtime_inner = false;
-        while (!containtime_inner)
-        {
-          containtime_inner = variables_[j][m]->ContainTime(t);
-          if (m == variables_[j].size())
-          {
-            dserror("the variable %d is not defined in the time considered", j);
-          }
-          if (!containtime_inner)
-          {
-            ++m;
-          }
-        }
+        unsigned int m = FindColIndexForVariableDefinition(variables_, j, t);
+
         fdfad_dt2_term[i] += fdfad.dx(number_of_arguments + i).dx(number_of_arguments + j) *
                              variables_[j][m]->TimeDerivativeValue(t);
       }
