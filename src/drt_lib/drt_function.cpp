@@ -160,6 +160,32 @@ namespace
       dserror("Tried to add a variable to a function in a not available dimension.");
   }
 
+  /// needs further description: Finds a colum index depending on a time that is either contained in
+  /// variables at a certain row index or not
+  /// --> not fully understood yet
+  unsigned int FindColIndexForVariableDefinition(
+      std::vector<std::vector<Teuchos::RCP<DRT::UTILS::FunctionVariable>>>& variables,
+      const int index_row, const double time)
+  {
+    // find the right definition of the variable according to the hierarchy
+    unsigned int index_col = 0;
+    bool containtime = false;
+    while (!containtime)
+    {
+      containtime = variables[index_row][index_col]->ContainTime(time);
+      if (index_col == variables[index_row].size())
+      {
+        dserror("the variable %d is not defined at time %f", index_row, time);
+      }
+      if (!containtime)
+      {
+        ++index_col;
+      }
+    }
+
+    return index_col;
+  }
+
   /// needs further description: Sets the values of exprdd depending on various inputs
   /// --> not fully understood yet
   void SetValuesOfExprDerivDeriv(std::size_t index_mod,
@@ -236,30 +262,17 @@ namespace
     }
   }
 
-  /// needs further description: Finds a colum index depending on a time that is either contained in
-  /// variables at a certain row index or not
-  /// --> not fully understood yet
-  unsigned int FindColIndexForVariableDefinition(
-      std::vector<std::vector<Teuchos::RCP<DRT::UTILS::FunctionVariable>>>& variables,
-      const int index_row, const double time)
+  std::size_t FindModifiedIndex(
+      const int index, std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>> expr)
   {
-    // find the right definition of the variable according to the hierarchy
-    unsigned int index_col = 0;
-    bool containtime = false;
-    while (!containtime)
+    std::size_t index_mod = index;
+
+    if (expr.size() == 1)
     {
-      containtime = variables[index_row][index_col]->ContainTime(time);
-      if (index_col == variables[index_row].size())
-      {
-        dserror("the variable %d is not defined at time %f", index_row, time);
-      }
-      if (!containtime)
-      {
-        ++index_col;
-      }
+      index_mod = 0;
     }
 
-    return index_col;
+    return index_mod;
   }
 }  // namespace
 
@@ -512,12 +525,7 @@ double DRT::UTILS::ExprFunction::Evaluate(const int index, const double* x, doub
   // we consider a function of the type F = F ( x, y, z, t, v1(t), ..., vn(t) )
   if (not isparsed_) ParseExpressions();
 
-  std::size_t index_mod = index;
-
-  if (expr_.size() == 1)
-  {
-    index_mod = 0;
-  }
+  std::size_t index_mod = FindModifiedIndex(index, expr_);
 
   // set spatial variables
   if (dim_ > 0) expr_[index_mod]->SetValue("x", x[0]);
@@ -546,12 +554,7 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateSpatialDerivative(
   // parse expression if not already parsed
   if (not isparsed_) ParseExpressions();
 
-  std::size_t index_mod = index;
-
-  if (expr_.size() == 1)
-  {
-    index_mod = 0;
-  }
+  std::size_t index_mod = FindModifiedIndex(index, expr_);
 
   SetValuesOfExprDerivDeriv(index_mod, variables_, x, t, dim_, exprdd_);
 
@@ -582,18 +585,14 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
   // parse expression if not already parsed
   if (not isparsed_) ParseExpressions();
 
-  std::size_t index_mod = index;
-
-  if (expr_.size() == 1)
-  {
-    index_mod = 0;
-  }
+  std::size_t index_mod = FindModifiedIndex(index, expr_);
 
   SetValuesOfExprDerivDeriv(index_mod, variables_, x, t, dim_, exprdd_);
 
   using FAD = Sacado::Fad::DFad<Sacado::Fad::DFad<double>>;
   FAD fdfad;
   const int number_of_arguments = 4;
+
   // add the 1st time derivative at time t
   if (deg >= 1)
   {
@@ -630,7 +629,6 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
     for (int i = 0; i < static_cast<int>(variables_.size()); ++i)
     {
       fdfad_dt2_term[i] = 0;
-
 
       unsigned int n = FindColIndexForVariableDefinition(variables_, i, t);
 
