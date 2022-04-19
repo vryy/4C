@@ -639,8 +639,8 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
     //                                * dvi/dt +
     //                                 + dF/dvi * d^2vi/dt^2
     //                                }
-    double fdfad_dt2 = fdfad.dx(3).dx(3);
-    std::vector<double> fdfad_dt2_term(variables_.size());
+    double fdfad_dt2 = fdfad.dx(3).dx(3);                   // 1) add d(dF*/dt)/dt to d^2F/dt^2
+    std::vector<double> fdfad_dt2_term(variables_.size());  // prepare sum_i{...}
 
     for (int i = 0; i < static_cast<int>(variables_.size()); ++i)
     {
@@ -648,19 +648,24 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
 
       unsigned int n = FindColIndexForVariableDefinition(variables_, i, t);
 
-      fdfad_dt2_term[i] += fdfad.dx(3).dx(number_of_arguments + i);
-      fdfad_dt2_term[i] += fdfad.dx(number_of_arguments + i).dx(3);
-      for (int j = 0; j < static_cast<int>(variables_.size()); ++j)
+      fdfad_dt2_term[i] += fdfad.dx(3).dx(number_of_arguments + i);  // ... + d(dF*/dt)/dvi
+      fdfad_dt2_term[i] += fdfad.dx(number_of_arguments + i).dx(3);  // ... + d(dF/dvi)/dt
+
+      for (int j = 0; j < static_cast<int>(variables_.size()); ++j)  // prepare + sum_j{...}
       {
         unsigned int m = FindColIndexForVariableDefinition(variables_, j, t);
 
-        fdfad_dt2_term[i] += fdfad.dx(number_of_arguments + i).dx(number_of_arguments + j) *
-                             variables_[j][m]->TimeDerivativeValue(t);
+        fdfad_dt2_term[i] +=
+            fdfad.dx(number_of_arguments + i).dx(number_of_arguments + j) *  // d(dF/dvi)/dvj ...
+            variables_[j][m]->TimeDerivativeValue(t);                        // ... * dvj/dt
       }
-      fdfad_dt2_term[i] *= variables_[i][n]->TimeDerivativeValue(t);
-      fdfad_dt2_term[i] +=
-          fdfad.dx(number_of_arguments + i).val() * variables_[i][n]->TimeDerivativeValue(t, 2);
-      fdfad_dt2 += fdfad_dt2_term[i];
+
+      fdfad_dt2_term[i] *= variables_[i][n]->TimeDerivativeValue(t);  // ... * dvi/dt
+
+      fdfad_dt2_term[i] += fdfad.dx(number_of_arguments + i).val() *     /// ... + dF/dvi ...
+                           variables_[i][n]->TimeDerivativeValue(t, 2);  /// ... * d^2vi/dt^2
+
+      fdfad_dt2 += fdfad_dt2_term[i];  // 2) add sum_i{...} to d^2F/dt^2
     }
 
     res[2] = fdfad_dt2;
