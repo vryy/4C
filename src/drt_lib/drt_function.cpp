@@ -95,13 +95,12 @@ namespace
     int counter = 0;
 
     // set the values of the variables
-    std::vector<std::pair<std::string, double>>::const_iterator it;
-    for (it = variables.begin(); it != variables.end(); it++)
+    for (const auto& [name, value] : variables)
     {
       // FAD object for 1st order derivatives
-      Sacado::Fad::DFad<double> varfad(numvariables, counter, it->second);
+      Sacado::Fad::DFad<double> varfad(numvariables, counter, value);
       // set the value in expression
-      exprd[index]->SetValue(it->first, varfad);
+      exprd[index]->SetValue(name, varfad);
       // update counter
       counter++;
     }
@@ -112,10 +111,9 @@ namespace
       std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>> expr, const int index)
   {
     // set the values of the variables
-    std::vector<std::pair<std::string, double>>::const_iterator it;
-    for (it = variables.begin(); it != variables.end(); it++)
+    for (const auto& [name, value] : variables)
     {
-      expr[index]->SetValue(it->first, it->second);
+      expr[index]->SetValue(name, value);
     }
   }
 
@@ -125,13 +123,12 @@ namespace
       std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double>>>> exprd,
       const int index)
   {
-    // set the values of the constants
-    std::vector<std::pair<std::string, double>>::const_iterator it;
-    for (it = constants.begin(); it != constants.end(); it++)
+    // set the values of the variables
+    for (const auto& [name, value] : constants)
     {
-      if (exprd[index]->IsVariable(it->first))
+      if (exprd[index]->IsVariable(name))
         // set the value in expression
-        exprd[index]->SetValue(it->first, it->second);
+        exprd[index]->SetValue(name, value);
     }
   }
 
@@ -139,13 +136,12 @@ namespace
   void SetConstantsValuesInExpression(const std::vector<std::pair<std::string, double>>& constants,
       std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>> expr, const int index)
   {
-    // set the values of the constants
-    std::vector<std::pair<std::string, double>>::const_iterator it;
-    for (it = constants.begin(); it != constants.end(); it++)
+    // set the values of the variables
+    for (const auto& [name, value] : constants)
     {
-      if (expr[index]->IsVariable(it->first))
+      if (expr[index]->IsVariable(name))
         // set the value in expression
-        expr[index]->SetValue(it->first, it->second);
+        expr[index]->SetValue(name, value);
     }
   }
 
