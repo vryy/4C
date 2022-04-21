@@ -82,12 +82,29 @@ namespace
     return times;
   }
 
-  /// set the values of the variables
-  void SetVariableValuesInExpressionDeriv(
-      const std::vector<std::pair<std::string, double>>& variables,
-      std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double>>>> exprd,
-      const int index)
+  /// set the values of the variables or constants in expression or in first derivative of
+  /// expression
+  template <typename Expression, typename ValueType>
+  void SetValuesInExpressionOrExpressionFirstDeriv(std::vector<Expression>& expr_or_exprd,
+      const int index, const std::vector<std::pair<std::string, ValueType>>& variables_or_constants)
   {
+    // set the values of the variables or constants
+    for (const auto& [name, value] : variables_or_constants)
+    {
+      if (expr_or_exprd[index]->IsVariable(name))
+        // set the value in expression
+        expr_or_exprd[index]->SetValue(name, value);
+    }
+  }
+
+  /// converts the values of variables from type double to FAD double and returns the modified
+  /// vector of name-value-pairs
+  std::vector<std::pair<std::string, Sacado::Fad::DFad<double>>> ConvertVariableValuesToFADObjects(
+      const std::vector<std::pair<std::string, double>>& variables)
+  {
+    // prepare return vector
+    std::vector<std::pair<std::string, Sacado::Fad::DFad<double>>> variables_FAD;
+
     // number of variables
     auto numvariables = static_cast<int>(variables.size());
 
@@ -99,50 +116,14 @@ namespace
     {
       // FAD object for 1st order derivatives
       Sacado::Fad::DFad<double> varfad(numvariables, counter, value);
-      // set the value in expression
-      exprd[index]->SetValue(name, varfad);
+
+      // create name-value-pairs with values now of type FAD double and add to vector
+      variables_FAD.emplace_back(name, varfad);
+
       // update counter
       counter++;
     }
-  }
-
-  /// set the values of the variables in expression
-  void SetVariableValuesInExpression(const std::vector<std::pair<std::string, double>>& variables,
-      std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>> expr, const int index)
-  {
-    // set the values of the variables
-    for (const auto& [name, value] : variables)
-    {
-      expr[index]->SetValue(name, value);
-    }
-  }
-
-  /// set the values of the constants in expression derivative
-  void SetConstantsValuesInExpressivDeriv(
-      const std::vector<std::pair<std::string, double>>& constants,
-      std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double>>>> exprd,
-      const int index)
-  {
-    // set the values of the variables
-    for (const auto& [name, value] : constants)
-    {
-      if (exprd[index]->IsVariable(name))
-        // set the value in expression
-        exprd[index]->SetValue(name, value);
-    }
-  }
-
-  /// set the values of the constants in expression
-  void SetConstantsValuesInExpression(const std::vector<std::pair<std::string, double>>& constants,
-      std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>> expr, const int index)
-  {
-    // set the values of the variables
-    for (const auto& [name, value] : constants)
-    {
-      if (expr[index]->IsVariable(name))
-        // set the value in expression
-        expr[index]->SetValue(name, value);
-    }
+    return variables_FAD;
   }
 
   /// evaluate an expression and assemble to the result vector
@@ -763,7 +744,7 @@ double DRT::UTILS::VariableExprFunction::Evaluate(
 {
   if (not isparsed_) ParseExpressions();
 
-  SetVariableValuesInExpression(variables, expr_, index);
+  SetValuesInExpressionOrDeriv(expr_, index, variables);
 
   // evaluate the function and return the result
   return expr_[index]->Evaluate();
@@ -775,9 +756,9 @@ double DRT::UTILS::VariableExprFunction::Evaluate(const int index,
 {
   if (not isparsed_) ParseExpressions();
 
-  SetVariableValuesInExpression(variables, expr_, index);
+  SetValuesInExpressionOrDeriv(expr_, index, variables);
 
-  SetConstantsValuesInExpression(constants, expr_, index);
+  SetValuesInExpressionOrDeriv(expr_, index, constants);
 
   // evaluate the function and return the result
   return expr_[index]->Evaluate();
@@ -788,7 +769,8 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(
 {
   if (not isparsed_) ParseExpressions();
 
-  SetVariableValuesInExpressionDeriv(variables, exprd_, index);
+  auto variables_FAD = ConvertVariableValuesToFADObjects(variables);
+  SetValuesInExpressionOrDeriv(exprd_, index, variables_FAD);
 
   return EvaluateAndAssembleExpressionToResultVector(variables, index, exprd_);
 }
@@ -799,9 +781,10 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(int ind
 {
   if (not isparsed_) ParseExpressions();
 
-  SetVariableValuesInExpressionDeriv(variables, exprd_, index);
+  auto variables_FAD = ConvertVariableValuesToFADObjects(variables);
+  SetValuesInExpressionOrDeriv(exprd_, index, variables_FAD);
 
-  SetConstantsValuesInExpressivDeriv(constants, exprd_, index);
+  SetValuesInExpressionOrDeriv(exprd_, index, constants);
 
   return EvaluateAndAssembleExpressionToResultVector(variables, index, exprd_);
 }
