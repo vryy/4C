@@ -34,16 +34,11 @@ namespace BEAMINTERACTION
     /**
      * \brief Constructor.
      *
-     * @param condition_line (in) The first line condition containing the beam elements.
-     * @param condition_other (in) The other line condition containing the beam elements.
+     * @param condition_line_1 (in) The first line condition containing the beam elements.
+     * @param condition_line_2 (in) The other line condition containing the beam elements.
      */
     BeamToBeamContactCondition(const Teuchos::RCP<const DRT::Condition>& condition_line_1,
         const Teuchos::RCP<const DRT::Condition>& condition_line_2);
-
-    /**
-     * \brief Destructor.
-     */
-    virtual ~BeamToBeamContactCondition(){};
 
     /**
      * \brief Build the ID sets for this condition.
@@ -74,11 +69,10 @@ namespace BEAMINTERACTION
      */
     inline static bool IdIsInCondition(const std::set<int>& id_set, const int id)
     {
-      if (id_set.find(id) != id_set.end()) return true;
-      return false;
+      return id_set.find(id) != id_set.end();
     }
 
-   protected:
+   private:
     //! Pointer to the other line condition.
     Teuchos::RCP<const DRT::Condition> condition_other_;
 

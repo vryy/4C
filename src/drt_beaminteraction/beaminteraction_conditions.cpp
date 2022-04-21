@@ -98,27 +98,25 @@ void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
       for (const auto& condition : condition_lines)
       {
         const int coupling_id = condition->GetInt("COUPLING_ID");
-        if (coupling_id_map[coupling_id].first == Teuchos::null)
-        {
-          coupling_id_map[coupling_id].first = condition;
-        }
-        else if (coupling_id_map[coupling_id].second == Teuchos::null)
-        {
-          coupling_id_map[coupling_id].second = condition;
-        }
+        auto& condition_1 = coupling_id_map[coupling_id].first;
+        auto& condition_2 = coupling_id_map[coupling_id].second;
+        if (condition_1 == Teuchos::null)
+          condition_1 = condition;
+        else if (condition_2 == Teuchos::null)
+          condition_2 = condition;
         else
-        {
           dserror("There can not be three different beam-to-beam coupling conditions.");
-        }
       }
 
       for (const auto& map_item : coupling_id_map)
       {
-        if (map_item.second.first != Teuchos::null && map_item.second.second != Teuchos::null)
+        const auto& condition_1 = map_item.second.first;
+        const auto& condition_2 = map_item.second.second;
+        if (condition_1 != Teuchos::null && condition_2 != Teuchos::null)
         {
           // We found the matching conditions, now create the beam-to-beam condition objects.
-          interaction_vector.push_back(Teuchos::rcp(new BEAMINTERACTION::BeamToBeamContactCondition(
-              map_item.second.first, map_item.second.second)));
+          interaction_vector.push_back(Teuchos::rcp(
+              new BEAMINTERACTION::BeamToBeamContactCondition(condition_1, condition_2)));
         }
         else
           dserror("Could not find both conditions (%s) for the COUPLING_ID %d",
