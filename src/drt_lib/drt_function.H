@@ -25,16 +25,9 @@
 #include "../drt_fem_general/drt_utils_polynomial.H"
 #include "drt_function_manager.H"
 
-// namespace MAT
-///{
-/// class Material;
-//}
 
 namespace DRT
 {
-  // class Condition;
-  /// class Problem;
-
   namespace UTILS
   {
     // forward declaration
@@ -67,9 +60,12 @@ namespace DRT
        */
       virtual double Evaluate(const int index, const double* x, double t) = 0;
 
-      /// Evaluate time dependent FUNCT
-      double EvaluateTime(double t  ///< time
-      )
+      /*!
+       * @brief Evaluation of time dependent FUNCT
+       *
+       * @param t  (i) The point in time in which the function will be evaluated
+       */
+      double EvaluateTime(double t)
       {
         std::array<double, 3> dummy = {0.0};
 
@@ -83,7 +79,7 @@ namespace DRT
       }
 
       /*!
-       * \brief evaluate first spatial derivatives of time and space dependent FUNCT
+       * \brief Evaluation of first spatial derivatives of time and space dependent FUNCT
        *
        * \param index (i) For vector-valued functions, index defines the function-component which
        *                  should be evaluated. For scalar functions, index is always set to 0
@@ -100,7 +96,7 @@ namespace DRT
       };
 
       /*!
-       * \brief Evaluate time derivatives and value of the time and space dependent FUNCT
+       * \brief Evaluation of time derivatives and value of the time and space dependent FUNCT
        *
        * Evaluate the specified component of the function at the specified position and point in
        * time and calculate the time derivative(s).
@@ -120,10 +116,14 @@ namespace DRT
         return emptyvector;
       };
 
-      /// Evaluate first or second time derivative of time dependent FUNCT
-      std::vector<double> EvaluateTimeDerivative(const double t,  ///< time
-          const unsigned deg                                      ///< degree of maximal derivative
-      )
+      /*!
+       * \brief Evaluation of time derivatives of time dependent FUNCT
+       *
+       * @param t  (i) The point in time in which the function will be evaluated
+       * @param deg   (i) maximum time derivative degree
+       * @return vector containing value and time derivative(s)
+       */
+      std::vector<double> EvaluateTimeDerivative(const double t, const unsigned deg)
       {
         std::array<double, 3> dummy = {0.0};
 
@@ -190,7 +190,9 @@ namespace DRT
        */
       virtual void AddVariable(const int index, const std::string& varname, double varvalue);
 
-      /// pars the expressions
+      /*!
+       * \brief parse the underlying expression
+       */
       virtual void ParseExpressions();
 
      protected:
@@ -215,7 +217,7 @@ namespace DRT
     };
 
 
-    /// spatial function based on parsed expression
+    /// vector-valued spatial function based on parsed expression
     class VariableExprFunction : public ExprFunction
     {
      public:
@@ -286,8 +288,23 @@ namespace DRT
           const std::vector<std::pair<std::string, double>>& variables,
           const std::vector<std::pair<std::string, double>>& constants);
 
+      /*!
+       * \brief check if a given name is a variable
+       *
+       * \param index (i) For vector-valued functions, index defines the function-component
+       *                      which should be evaluated
+       * \param varname  (i) Variable name to be checked
+       */
       bool IsVariable(const int index, const std::string& varname) const override;
 
+      /*!
+       * \brief add a variable to the function
+       *
+       * \param index (i) For vector-valued functions, index defines the function-component
+       *                      which should be evaluated
+       * \param varname  (i) Variable name
+       * \param varvalue (i) Value of the variable
+       */
       void AddVariable(const int index, const std::string& varname, double varvalue) override;
 
       /*!

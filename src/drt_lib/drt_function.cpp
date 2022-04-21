@@ -50,7 +50,7 @@ namespace
 
   /// returns a vector of times either from NUMPOINTS and TIMERANGE or from TIMES of a line
   /// definition
-  std::vector<double> returnTimeVector(const Teuchos::RCP<DRT::INPUT::LineDefinition> timevar)
+  std::vector<double> ReturnTimeVector(const Teuchos::RCP<DRT::INPUT::LineDefinition> timevar)
   {
     // read the number of points
     int numpoints;
@@ -82,19 +82,29 @@ namespace
     return times;
   }
 
-  /// set the values of the variables or constants in expression or in first derivative of
-  /// expression
-  template <typename Expression, typename ValueType>
-  void SetValuesInExpressionOrExpressionFirstDeriv(std::vector<Expression>& expr_or_exprd,
-      const int index, const std::vector<std::pair<std::string, ValueType>>& variables_or_constants)
+  /// finds the column index of a variable specified by a given row index of all variables
+  /// where the variable contains the considered time
+  unsigned int FindColIndexForVariableDefinition(
+      std::vector<std::vector<Teuchos::RCP<DRT::UTILS::FunctionVariable>>>& variables,
+      const int index_row, const double time)
   {
-    // set the values of the variables or constants
-    for (const auto& [name, value] : variables_or_constants)
+    // find the right definition of the variable according to the hierarchy
+    unsigned int index_col = 0;
+    bool containtime = false;
+    while (!containtime)
     {
-      if (expr_or_exprd[index]->IsVariable(name))
-        // set the value in expression
-        expr_or_exprd[index]->SetValue(name, value);
+      containtime = variables[index_row][index_col]->ContainTime(time);
+      if (index_col == variables[index_row].size())
+      {
+        dserror("the variable %d is not defined at time %f", index_row, time);
+      }
+      if (!containtime)
+      {
+        ++index_col;
+      }
     }
+
+    return index_col;
   }
 
   /// converts the values of variables from type double to FAD double and returns the modified
@@ -126,63 +136,23 @@ namespace
     return variables_FAD;
   }
 
-  /// evaluate an expression and assemble to the result vector
-  std::vector<double> EvaluateAndAssembleExpressionToResultVector(
-      const std::vector<std::pair<std::string, double>>& variables, const int index,
-      std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double>>>> exprd)
+  /// set the values of the variables or constants in expression or in first derivative of
+  /// expression
+  template <typename Expression, typename ValueType>
+  void SetValuesInExpressionOrExpressionFirstDeriv(std::vector<Expression>& expr_or_exprd,
+      const int index, const std::vector<std::pair<std::string, ValueType>>& variables_or_constants)
   {
-    // number of variables
-    auto numvariables = static_cast<int>(variables.size());
-
-    // evaluate the expression
-    Sacado::Fad::DFad<double> fdfad = exprd[index]->Evaluate();
-
-    // resulting vector
-    std::vector<double> res(numvariables);
-
-    // fill the result vector
-    for (int i = 0; i < numvariables; i++) res[i] = fdfad.dx(i);
-
-    return res;
-  }
-
-  /// check if index is in range of the dimensions of the expression, otherwise throw error
-  void AssertVariableIndexInDimensionOfExpression(
-      const int index, std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>> expr)
-  {
-    if (index > (int)expr.size() - 1 || index < 0)
-      dserror("Tried to add a variable to a function in a not available dimension.");
-  }
-
-  /// needs further description: Finds a colum index depending on a time that is either contained in
-  /// variables at a certain row index or not
-  /// --> not fully understood yet
-  unsigned int FindColIndexForVariableDefinition(
-      std::vector<std::vector<Teuchos::RCP<DRT::UTILS::FunctionVariable>>>& variables,
-      const int index_row, const double time)
-  {
-    // find the right definition of the variable according to the hierarchy
-    unsigned int index_col = 0;
-    bool containtime = false;
-    while (!containtime)
+    // set the values of the variables or constants
+    for (const auto& [name, value] : variables_or_constants)
     {
-      containtime = variables[index_row][index_col]->ContainTime(time);
-      if (index_col == variables[index_row].size())
-      {
-        dserror("the variable %d is not defined at time %f", index_row, time);
-      }
-      if (!containtime)
-      {
-        ++index_col;
-      }
+      if (expr_or_exprd[index]->IsVariable(name))
+        // set the value in expression
+        expr_or_exprd[index]->SetValue(name, value);
     }
-
-    return index_col;
   }
 
-  /// needs further description: Sets the values of exprdd depending on various inputs
-  /// --> not fully understood yet
-  void SetValuesOfExprDerivDeriv(std::size_t index_mod,
+  /// sets the values of the variables in second derivative of expression
+  void SetValuesInExpressionSecondDeriv(std::size_t index_mod,
       std::vector<std::vector<Teuchos::RCP<DRT::UTILS::FunctionVariable>>> variables,
       const double* x, const double t, int dim_,
       std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>>>
@@ -231,7 +201,6 @@ namespace
     if (dim_ > 1) exprdd[index_mod]->SetValue("y", yfad);
     if (dim_ > 2) exprdd[index_mod]->SetValue("z", zfad);
 
-
     // set temporal variable
     exprdd[index_mod]->SetValue("t", tfad);
 
@@ -242,6 +211,35 @@ namespace
     }
   }
 
+  /// evaluate an expression and assemble to the result vector
+  std::vector<double> EvaluateAndAssembleExpressionToResultVector(
+      const std::vector<std::pair<std::string, double>>& variables, const int index,
+      std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double>>>> exprd)
+  {
+    // number of variables
+    auto numvariables = static_cast<int>(variables.size());
+
+    // evaluate the expression
+    Sacado::Fad::DFad<double> fdfad = exprd[index]->Evaluate();
+
+    // resulting vector
+    std::vector<double> res(numvariables);
+
+    // fill the result vector
+    for (int i = 0; i < numvariables; i++) res[i] = fdfad.dx(i);
+
+    return res;
+  }
+
+  /// check if index is in range of the dimensions of the expression, otherwise throw an error
+  void AssertVariableIndexInDimensionOfExpression(
+      const int index, std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>> expr)
+  {
+    if (index > (int)expr.size() - 1 || index < 0)
+      dserror("Tried to add a variable to a function in a not available dimension.");
+  }
+
+  /// modifies the index to zero in case the expression is of size one
   std::size_t FindModifiedIndex(
       const int index, std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>> expr)
   {
@@ -389,7 +387,7 @@ Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateBasicFunction(
     else if (vartype == "linearinterpolation")
     {
       // read times
-      std::vector<double> times = returnTimeVector(timevar);
+      std::vector<double> times = ReturnTimeVector(timevar);
 
       // read values
       std::vector<double> values;
@@ -400,7 +398,7 @@ Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateBasicFunction(
     else if (vartype == "multifunction")
     {
       // read times
-      std::vector<double> times = returnTimeVector(timevar);
+      std::vector<double> times = ReturnTimeVector(timevar);
 
       // read descriptions (strings separated with spaces)
       std::vector<std::string> description_vec;
@@ -418,7 +416,7 @@ Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateBasicFunction(
     else if (vartype == "fourierinterpolation")
     {
       // read times
-      std::vector<double> times = returnTimeVector(timevar);
+      std::vector<double> times = ReturnTimeVector(timevar);
 
       // read values
       std::vector<double> values;
@@ -500,6 +498,40 @@ void DRT::UTILS::ExprFunction::AddExpr(const std::string& buf,
   isparsed_ = false;
 }
 
+bool DRT::UTILS::ExprFunction::IsVariable(const int index, const std::string& varname) const
+{
+  AssertVariableIndexInDimensionOfExpression(index, expr_);
+
+  return expr_[index]->IsVariable(varname);
+}
+
+void DRT::UTILS::ExprFunction::AddVariable(
+    const int index, const std::string& varname, double varvalue)
+{
+  AssertVariableIndexInDimensionOfExpression(index, expr_);
+
+  if (isparsed_) dserror("Function has already been parsed! Variables can no longer be added!");
+
+  expr_[index]->AddVariable(varname, varvalue);
+  exprdd_[index]->AddVariable(varname, varvalue);
+}
+
+void DRT::UTILS::ExprFunction::ParseExpressions()
+{
+  // define iterators
+  std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>>::iterator it;
+  std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>>>::
+      iterator itdd;
+
+  // loop over expressions and parse them
+  for (it = expr_.begin(); it != expr_.end(); it++) (*it)->ParseFunction();
+
+  // loop over expressions for derivatives and parse them
+  for (itdd = exprdd_.begin(); itdd != exprdd_.end(); itdd++) (*itdd)->ParseFunction();
+
+  isparsed_ = true;
+}
+
 double DRT::UTILS::ExprFunction::Evaluate(const int index, const double* x, double t)
 {
   // we consider a function of the type F = F ( x, y, z, t, v1(t), ..., vn(t) )
@@ -539,7 +571,7 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateSpatialDerivative(
 
   std::size_t index_mod = FindModifiedIndex(index, expr_);
 
-  SetValuesOfExprDerivDeriv(index_mod, variables_, x, t, dim_, exprdd_);
+  SetValuesInExpressionSecondDeriv(index_mod, variables_, x, t, dim_, exprdd_);
 
   // FAD object for evaluation of derivatives
   Sacado::Fad::DFad<Sacado::Fad::DFad<double>> fdfad = exprdd_[index_mod]->Evaluate();
@@ -565,7 +597,7 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
 
   std::size_t index_mod = FindModifiedIndex(index, expr_);
 
-  SetValuesOfExprDerivDeriv(index_mod, variables_, x, t, dim_, exprdd_);
+  SetValuesInExpressionSecondDeriv(index_mod, variables_, x, t, dim_, exprdd_);
 
   // FAD object for evaluation of derivatives
   Sacado::Fad::DFad<Sacado::Fad::DFad<double>> fdfad;
@@ -647,40 +679,6 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
   return res;
 }
 
-bool DRT::UTILS::ExprFunction::IsVariable(const int index, const std::string& varname) const
-{
-  AssertVariableIndexInDimensionOfExpression(index, expr_);
-
-  return expr_[index]->IsVariable(varname);
-}
-
-void DRT::UTILS::ExprFunction::AddVariable(
-    const int index, const std::string& varname, double varvalue)
-{
-  AssertVariableIndexInDimensionOfExpression(index, expr_);
-
-  if (isparsed_) dserror("Function has already been parsed! Variables can no longer be added!");
-
-  expr_[index]->AddVariable(varname, varvalue);
-  exprdd_[index]->AddVariable(varname, varvalue);
-}
-
-void DRT::UTILS::ExprFunction::ParseExpressions()
-{
-  // define iterators
-  std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>>::iterator it;
-  std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>>>::
-      iterator itdd;
-
-  // loop over expressions and parse them
-  for (it = expr_.begin(); it != expr_.end(); it++) (*it)->ParseFunction();
-
-  // loop over expressions for derivatives and parse them
-  for (itdd = exprdd_.begin(); itdd != exprdd_.end(); itdd++) (*itdd)->ParseFunction();
-
-  isparsed_ = true;
-}
-
 
 void DRT::UTILS::VariableExprFunction::AddExpr(
     const std::string& buf, const std::vector<std::pair<std::string, double>>& constants)
@@ -739,56 +737,6 @@ void DRT::UTILS::VariableExprFunction::ParseExpressions()
   isparsed_ = true;
 }
 
-double DRT::UTILS::VariableExprFunction::Evaluate(
-    const int index, const std::vector<std::pair<std::string, double>>& variables)
-{
-  if (not isparsed_) ParseExpressions();
-
-  SetValuesInExpressionOrDeriv(expr_, index, variables);
-
-  // evaluate the function and return the result
-  return expr_[index]->Evaluate();
-}
-
-double DRT::UTILS::VariableExprFunction::Evaluate(const int index,
-    const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants)
-{
-  if (not isparsed_) ParseExpressions();
-
-  SetValuesInExpressionOrDeriv(expr_, index, variables);
-
-  SetValuesInExpressionOrDeriv(expr_, index, constants);
-
-  // evaluate the function and return the result
-  return expr_[index]->Evaluate();
-}
-
-std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(
-    const int index, const std::vector<std::pair<std::string, double>>& variables)
-{
-  if (not isparsed_) ParseExpressions();
-
-  auto variables_FAD = ConvertVariableValuesToFADObjects(variables);
-  SetValuesInExpressionOrDeriv(exprd_, index, variables_FAD);
-
-  return EvaluateAndAssembleExpressionToResultVector(variables, index, exprd_);
-}
-
-std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(int index,
-    const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants)
-{
-  if (not isparsed_) ParseExpressions();
-
-  auto variables_FAD = ConvertVariableValuesToFADObjects(variables);
-  SetValuesInExpressionOrDeriv(exprd_, index, variables_FAD);
-
-  SetValuesInExpressionOrDeriv(exprd_, index, constants);
-
-  return EvaluateAndAssembleExpressionToResultVector(variables, index, exprd_);
-}
-
 double DRT::UTILS::VariableExprFunction::Evaluate(const int index, const double* x, const double t)
 {
   std::vector<std::pair<std::string, double>> variables;
@@ -819,4 +767,54 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateSpatialDerivative(
   variables[3] = std::pair<std::string, double>("t", t);
 
   return EvaluateDerivative(index, variables);
+}
+
+double DRT::UTILS::VariableExprFunction::Evaluate(
+    const int index, const std::vector<std::pair<std::string, double>>& variables)
+{
+  if (not isparsed_) ParseExpressions();
+
+  SetValuesInExpressionOrExpressionFirstDeriv(expr_, index, variables);
+
+  // evaluate the function and return the result
+  return expr_[index]->Evaluate();
+}
+
+double DRT::UTILS::VariableExprFunction::Evaluate(const int index,
+    const std::vector<std::pair<std::string, double>>& variables,
+    const std::vector<std::pair<std::string, double>>& constants)
+{
+  if (not isparsed_) ParseExpressions();
+
+  SetValuesInExpressionOrExpressionFirstDeriv(expr_, index, variables);
+
+  SetValuesInExpressionOrExpressionFirstDeriv(expr_, index, constants);
+
+  // evaluate the function and return the result
+  return expr_[index]->Evaluate();
+}
+
+std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(
+    const int index, const std::vector<std::pair<std::string, double>>& variables)
+{
+  if (not isparsed_) ParseExpressions();
+
+  auto variables_FAD = ConvertVariableValuesToFADObjects(variables);
+  SetValuesInExpressionOrExpressionFirstDeriv(exprd_, index, variables_FAD);
+
+  return EvaluateAndAssembleExpressionToResultVector(variables, index, exprd_);
+}
+
+std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(int index,
+    const std::vector<std::pair<std::string, double>>& variables,
+    const std::vector<std::pair<std::string, double>>& constants)
+{
+  if (not isparsed_) ParseExpressions();
+
+  auto variables_FAD = ConvertVariableValuesToFADObjects(variables);
+  SetValuesInExpressionOrExpressionFirstDeriv(exprd_, index, variables_FAD);
+
+  SetValuesInExpressionOrExpressionFirstDeriv(exprd_, index, constants);
+
+  return EvaluateAndAssembleExpressionToResultVector(variables, index, exprd_);
 }
