@@ -61,23 +61,17 @@ DRT::ELEMENTS::ScaTraHDGIntFaceImplInterface* DRT::ELEMENTS::ScaTraHDGIntFaceImp
   return NULL;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>*
-DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::Instance(bool create)
+DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::Instance(::UTILS::SingletonAction action)
 {
-  static ScaTraHDGIntFaceImpl<distype>* instance;
-  if (create)
-  {
-    if (instance == NULL) instance = new ScaTraHDGIntFaceImpl<distype>();
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>> singleton_owner(
+      []() {
+        return std::unique_ptr<DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>>(
+            new DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>());
+      });
+
+  return singleton_owner.Instance(action);
 }
 
 
@@ -88,7 +82,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 

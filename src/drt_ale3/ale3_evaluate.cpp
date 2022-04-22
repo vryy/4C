@@ -30,43 +30,43 @@ DRT::ELEMENTS::Ale3_Impl_Interface* DRT::ELEMENTS::Ale3_Impl_Interface::Impl(
   {
     case DRT::Element::hex8:
     {
-      return Ale3_Impl<DRT::Element::hex8>::Instance(true);
+      return Ale3_Impl<DRT::Element::hex8>::Instance(::UTILS::SingletonAction::create);
     }
     case DRT::Element::hex20:
     {
-      return Ale3_Impl<DRT::Element::hex20>::Instance(true);
+      return Ale3_Impl<DRT::Element::hex20>::Instance(::UTILS::SingletonAction::create);
     }
     case DRT::Element::hex27:
     {
-      return Ale3_Impl<DRT::Element::hex27>::Instance(true);
+      return Ale3_Impl<DRT::Element::hex27>::Instance(::UTILS::SingletonAction::create);
     }
     case DRT::Element::tet4:
     {
-      return Ale3_Impl<DRT::Element::tet4>::Instance(true);
+      return Ale3_Impl<DRT::Element::tet4>::Instance(::UTILS::SingletonAction::create);
     }
     case DRT::Element::tet10:
     {
-      return Ale3_Impl<DRT::Element::tet10>::Instance(true);
+      return Ale3_Impl<DRT::Element::tet10>::Instance(::UTILS::SingletonAction::create);
     }
     case DRT::Element::wedge6:
     {
-      return Ale3_Impl<DRT::Element::wedge6>::Instance(true);
+      return Ale3_Impl<DRT::Element::wedge6>::Instance(::UTILS::SingletonAction::create);
     }
       /*  case DRT::Element::wedge15:
         {
-          return Ale3_Impl<DRT::Element::wedge15>::Instance(true);
+          return Ale3_Impl<DRT::Element::wedge15>::Instance(::UTILS::SingletonAction::create);
         }*/
     case DRT::Element::pyramid5:
     {
-      return Ale3_Impl<DRT::Element::pyramid5>::Instance(true);
+      return Ale3_Impl<DRT::Element::pyramid5>::Instance(::UTILS::SingletonAction::create);
     }
     case DRT::Element::nurbs8:
     {
-      return Ale3_Impl<DRT::Element::nurbs8>::Instance(true);
+      return Ale3_Impl<DRT::Element::nurbs8>::Instance(::UTILS::SingletonAction::create);
     }
     case DRT::Element::nurbs27:
     {
-      return Ale3_Impl<DRT::Element::nurbs27>::Instance(true);
+      return Ale3_Impl<DRT::Element::nurbs27>::Instance(::UTILS::SingletonAction::create);
     }
     default:
       dserror("shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
@@ -75,22 +75,16 @@ DRT::ELEMENTS::Ale3_Impl_Interface* DRT::ELEMENTS::Ale3_Impl_Interface::Impl(
   return NULL;
 }
 
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::Ale3_Impl<distype>* DRT::ELEMENTS::Ale3_Impl<distype>::Instance(bool create)
+DRT::ELEMENTS::Ale3_Impl<distype>* DRT::ELEMENTS::Ale3_Impl<distype>::Instance(
+    ::UTILS::SingletonAction action)
 {
-  static Ale3_Impl<distype>* instance;
-  if (create)
-  {
-    if (instance == NULL) instance = new Ale3_Impl<distype>();
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::Ale3_Impl<distype>> singleton_owner([]() {
+    return std::unique_ptr<DRT::ELEMENTS::Ale3_Impl<distype>>(
+        new DRT::ELEMENTS::Ale3_Impl<distype>());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -100,7 +94,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 /*----------------------------------------------------------------------------*/

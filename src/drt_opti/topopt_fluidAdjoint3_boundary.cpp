@@ -71,24 +71,17 @@ DRT::ELEMENTS::FluidAdjoint3BoundaryImplInterface::Impl(const DRT::Element* ele)
   return NULL;
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>*
-DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::Instance(bool create)
+DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::Instance(::UTILS::SingletonAction action)
 {
-  static FluidAdjoint3BoundaryImpl<distype>* instance;
-  if (create)
-  {
-    if (instance == NULL) instance = new FluidAdjoint3BoundaryImpl<distype>();
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>> singleton_owner(
+      []() {
+        return std::unique_ptr<DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>>(
+            new DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>());
+      });
+
+  return singleton_owner.Instance(action);
 }
 
 
@@ -99,7 +92,7 @@ void DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 

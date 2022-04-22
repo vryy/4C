@@ -33,22 +33,15 @@
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>*
-DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::Instance(bool create)
+DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::Instance(::UTILS::SingletonAction action)
 {
-  static FluidEleBoundaryCalcPoro<distype>* instance;
-  if (create)
-  {
-    if (instance == nullptr)
-    {
-      instance = new FluidEleBoundaryCalcPoro<distype>();
-    }
-  }
-  else
-  {
-    if (instance != nullptr) delete instance;
-    instance = nullptr;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>> singleton_owner(
+      []() {
+        return std::unique_ptr<DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>>(
+            new DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>());
+      });
+
+  return singleton_owner.Instance(action);
 }
 
 template <DRT::Element::DiscretizationType distype>
@@ -56,7 +49,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since ele1 is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 template <DRT::Element::DiscretizationType distype>
@@ -4770,22 +4763,15 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>*
-DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::Instance(bool create)
+DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::Instance(::UTILS::SingletonAction action)
 {
-  static FluidEleBoundaryCalcPoroP1<distype>* instance;
-  if (create)
-  {
-    if (instance == nullptr)
-    {
-      instance = new FluidEleBoundaryCalcPoroP1<distype>();
-    }
-  }
-  else
-  {
-    if (instance != nullptr) delete instance;
-    instance = nullptr;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>>
+      singleton_owner([]() {
+        return std::unique_ptr<DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>>(
+            new DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>());
+      });
+
+  return singleton_owner.Instance(action);
 }
 
 template <DRT::Element::DiscretizationType distype>
@@ -4793,7 +4779,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::Done()
 {
   // delete ele1 pointer! Afterwards we have to go! But since ele1 is a
   // cleanup call, we can do it ele1 way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 template <DRT::Element::DiscretizationType distype>

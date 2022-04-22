@@ -19,6 +19,8 @@
 #include "../drt_inpar/inpar_elemag.H"
 #include "../drt_fem_general/drt_utils_shapevalues_hdg.H"
 
+#include "../headers/singleton_owner.H"
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -80,7 +82,8 @@ namespace DRT
       virtual ~ElemagDiffEleCalc() {}
 
       /// Singleton access method.
-      static ElemagDiffEleCalc<distype>* Instance(bool create = true);
+      static ElemagDiffEleCalc<distype>* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       /// Called upon destruction.
       virtual void Done();

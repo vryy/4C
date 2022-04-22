@@ -24,6 +24,7 @@ be set in problem specific parameter lists derived from this class.
 //#include "../drt_inpar/inpar_turbulence.H"
 #include "fluid_ele_parameter_timint.H"
 
+#include "../headers/singleton_owner.H"
 
 namespace DRT
 {
@@ -33,7 +34,8 @@ namespace DRT
     {
      public:
       //! Singleton access method
-      static FluidEleParameterIntFace* Instance(bool create = true);
+      static FluidEleParameterIntFace* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       //! called upon destruction
       void Done();

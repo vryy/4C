@@ -23,22 +23,14 @@
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcPoroP1<distype>* DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Instance(
-    bool create)
+    ::UTILS::SingletonAction action)
 {
-  static FluidEleCalcPoroP1<distype>* instance;
-  if (create)
-  {
-    if (instance == nullptr)
-    {
-      instance = new FluidEleCalcPoroP1<distype>();
-    }
-  }
-  else
-  {
-    if (instance != nullptr) delete instance;
-    instance = nullptr;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcPoroP1<distype>> singleton_owner([]() {
+    return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcPoroP1<distype>>(
+        new DRT::ELEMENTS::FluidEleCalcPoroP1<distype>());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 template <DRT::Element::DiscretizationType distype>
@@ -46,7 +38,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 template <DRT::Element::DiscretizationType distype>

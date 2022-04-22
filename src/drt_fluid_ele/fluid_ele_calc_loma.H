@@ -15,6 +15,8 @@
 #include "fluid_ele_interface.H"
 #include "fluid_ele_calc.H"
 
+#include "../headers/singleton_owner.H"
+
 // includes gauss points
 #include "../drt_lib/drt_utils.H"
 
@@ -31,7 +33,8 @@ namespace DRT
       virtual ~FluidEleCalcLoma() {}
 
       /// Singleton access method
-      static FluidEleCalcLoma<distype>* Instance(bool create = true);
+      static FluidEleCalcLoma<distype>* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       /// called upon destruction
       virtual void Done();

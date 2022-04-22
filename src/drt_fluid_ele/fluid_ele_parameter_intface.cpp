@@ -23,26 +23,15 @@ be set in problem specific parameter lists derived from this class.
 #include "../drt_io/io_pstream.H"
 
 
-//----------------------------------------------------------------------*/
-//    definition of the instance
-//----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidEleParameterIntFace* DRT::ELEMENTS::FluidEleParameterIntFace::Instance(
-    bool create)
+    ::UTILS::SingletonAction action)
 {
-  static FluidEleParameterIntFace* instance;
-  if (create)
-  {
-    if (instance == NULL)
-    {
-      instance = new FluidEleParameterIntFace();
-    }
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleParameterIntFace> singleton_owner([]() {
+    return std::unique_ptr<DRT::ELEMENTS::FluidEleParameterIntFace>(
+        new DRT::ELEMENTS::FluidEleParameterIntFace());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 //----------------------------------------------------------------------*/
@@ -52,7 +41,7 @@ void DRT::ELEMENTS::FluidEleParameterIntFace::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 //----------------------------------------------------------------------*/

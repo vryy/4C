@@ -70,23 +70,16 @@ DRT::ELEMENTS::FluidAdjoint3ImplInterface* DRT::ELEMENTS::FluidAdjoint3ImplInter
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidAdjoint3Impl<distype>* DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Instance(
-    bool create)
+    ::UTILS::SingletonAction action)
 {
-  static FluidAdjoint3Impl<distype>* instance;
-  if (create)
-  {
-    if (instance == NULL) instance = new FluidAdjoint3Impl<distype>();
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidAdjoint3Impl<distype>> singleton_owner([]() {
+    return std::unique_ptr<DRT::ELEMENTS::FluidAdjoint3Impl<distype>>(
+        new DRT::ELEMENTS::FluidAdjoint3Impl<distype>());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 
@@ -97,7 +90,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 

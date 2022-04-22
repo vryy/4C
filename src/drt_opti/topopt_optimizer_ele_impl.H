@@ -16,6 +16,7 @@
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
+#include "../headers/singleton_owner.H"
 
 namespace DRT
 {
@@ -104,7 +105,8 @@ namespace DRT
       TopOptImpl();
 
       //! Singleton access method
-      static TopOptImpl<distype>* Instance(bool create = true);
+      static TopOptImpl<distype>* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       //! called upon destruction
       virtual void Done();
@@ -345,7 +347,8 @@ namespace DRT
       TopOptBoundaryImpl();
 
       /// Singleton access method
-      static TopOptBoundaryImpl<distype>* Instance(bool create = true);
+      static TopOptBoundaryImpl<distype>* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       //! called upon destruction
       virtual void Done();

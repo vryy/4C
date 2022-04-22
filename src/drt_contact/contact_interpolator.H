@@ -20,6 +20,8 @@
 #include "../drt_inpar/inpar_wear.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
+#include "../headers/singleton_owner.H"
+
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 09/14 |
  *---------------------------------------------------------------------*/
@@ -230,7 +232,8 @@ namespace NTS
     virtual void Done();
 
     /// Singleton access method
-    static MTInterpolatorCalc<distypeM>* Instance(bool create);
+    static MTInterpolatorCalc<distypeM>* Instance(::UTILS::SingletonAction action);
+    ;
 
     //! nm_: number of master element nodes
     static const int nm_ = DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement;

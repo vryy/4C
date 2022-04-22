@@ -435,43 +435,29 @@ MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::MortarProjectorCalc_El
   // nothing
 }
 
-/*----------------------------------------------------------------------*
- |  Instance (public)                                        farah 01/14|
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-MORTAR::MortarProjectorCalc<distype>* MORTAR::MortarProjectorCalc<distype>::Instance(bool create)
+MORTAR::MortarProjectorCalc<distype>* MORTAR::MortarProjectorCalc<distype>::Instance(
+    ::UTILS::SingletonAction action)
 {
-  static MortarProjectorCalc<distype>* instance;
-  if (create)
-  {
-    if (instance == NULL) instance = new MortarProjectorCalc<distype>();
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<MORTAR::MortarProjectorCalc<distype>> singleton_owner([]() {
+    return std::unique_ptr<MORTAR::MortarProjectorCalc<distype>>(
+        new MORTAR::MortarProjectorCalc<distype>());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
-/*----------------------------------------------------------------------*
- |  Instance ele-based (public)                              farah 04/14|
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>*
-MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::Instance(bool create)
+MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::Instance(::UTILS::SingletonAction action)
 {
-  static MortarProjectorCalc_EleBased<distypeS, distypeM>* instance;
-  if (create)
-  {
-    if (instance == NULL) instance = new MortarProjectorCalc_EleBased<distypeS, distypeM>();
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>>
+      singleton_owner([]() {
+        return std::unique_ptr<MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>>(
+            new MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>());
+      });
+
+  return singleton_owner.Instance(action);
 }
 
 /*----------------------------------------------------------------------*
@@ -482,7 +468,7 @@ void MORTAR::MortarProjectorCalc<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 /*----------------------------------------------------------------------*
@@ -493,7 +479,7 @@ void MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 

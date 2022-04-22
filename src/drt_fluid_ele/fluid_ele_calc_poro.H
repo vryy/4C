@@ -17,6 +17,7 @@
 
 #include "fluid_ele_calc.H"
 
+#include "../headers/singleton_owner.H"
 
 namespace MAT
 {
@@ -59,7 +60,8 @@ namespace DRT
       virtual ~FluidEleCalcPoro() = default;
 
       //! Singleton access method
-      static FluidEleCalcPoro<distype>* Instance(bool create = true);
+      static FluidEleCalcPoro<distype>* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       //! called upon destruction
       virtual void Done();

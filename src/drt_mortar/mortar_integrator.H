@@ -13,6 +13,7 @@
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
+#include "../headers/singleton_owner.H"
 
 // forward declarations
 namespace LINALG
@@ -100,7 +101,7 @@ namespace MORTAR
     and corresponding weights.
 
     */
-    MortarIntegratorCalc(Teuchos::ParameterList& params);
+    MortarIntegratorCalc(const Teuchos::ParameterList& params);
 
     // destructor
     virtual ~MortarIntegratorCalc(){};
@@ -110,7 +111,7 @@ namespace MORTAR
 
     /// Singleton access method
     static MortarIntegratorCalc<distypeS, distypeM>* Instance(
-        bool create, Teuchos::ParameterList& params);
+        ::UTILS::SingletonAction action, const Teuchos::ParameterList& params);
 
     //! ns_: number of slave element nodes
     static const int ns_ = DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
@@ -225,7 +226,7 @@ namespace MORTAR
         int& ndof, bool& bound);
     //@}
 
-    Teuchos::ParameterList& imortar_;        // merged parameter list
+    Teuchos::ParameterList imortar_;         // merged parameter list
     INPAR::MORTAR::ShapeFcn shapefcn_;       // lm shape function type
     INPAR::MORTAR::LagMultQuad lmquadtype_;  // type of quadratic lm interpolation
     int ngp_;                                // number of Gauss points

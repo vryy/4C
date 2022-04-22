@@ -14,6 +14,7 @@
 
 #include "fluid_ele_parameter.H"
 
+#include "../headers/singleton_owner.H"
 
 namespace DRT
 {
@@ -25,7 +26,8 @@ namespace DRT
       virtual ~FluidEleParameterStd() {}
 
       /// Singleton access method
-      static FluidEleParameterStd* Instance(bool create = true);
+      static FluidEleParameterStd* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       /// called upon destruction
       virtual void Done();

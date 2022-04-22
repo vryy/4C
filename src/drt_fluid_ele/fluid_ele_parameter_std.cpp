@@ -11,25 +11,15 @@
 
 #include "fluid_ele_parameter_std.H"
 
-//----------------------------------------------------------------------*/
-//    definition of the instance
-//----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidEleParameterStd* DRT::ELEMENTS::FluidEleParameterStd::Instance(bool create)
+DRT::ELEMENTS::FluidEleParameterStd* DRT::ELEMENTS::FluidEleParameterStd::Instance(
+    ::UTILS::SingletonAction action)
 {
-  static FluidEleParameterStd* instance;
-  if (create)
-  {
-    if (instance == NULL)
-    {
-      instance = new FluidEleParameterStd();
-    }
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleParameterStd> singleton_owner([]() {
+    return std::unique_ptr<DRT::ELEMENTS::FluidEleParameterStd>(
+        new DRT::ELEMENTS::FluidEleParameterStd());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 //----------------------------------------------------------------------*/
@@ -39,7 +29,7 @@ void DRT::ELEMENTS::FluidEleParameterStd::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 //----------------------------------------------------------------------*/

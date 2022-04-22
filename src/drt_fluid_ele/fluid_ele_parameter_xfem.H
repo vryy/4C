@@ -27,7 +27,8 @@ namespace DRT
       virtual ~FluidEleParameterXFEM() {}
 
       /// Singleton access method
-      static FluidEleParameterXFEM* Instance(bool create = true);
+      static FluidEleParameterXFEM* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       /// called upon destruction
       virtual void Done();

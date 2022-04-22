@@ -16,26 +16,17 @@
 #include "../drt_fluid_ele/fluid_ele_immersed_base.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcImmersed<distype>*
-DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Instance(bool create)
+DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Instance(::UTILS::SingletonAction action)
 {
-  static FluidEleCalcImmersed<distype>* instance;
-  if (create)
-  {
-    if (instance == NULL)
-    {
-      instance = new FluidEleCalcImmersed<distype>();
-    }
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcImmersed<distype>> singleton_owner(
+      []() {
+        return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcImmersed<distype>>(
+            new DRT::ELEMENTS::FluidEleCalcImmersed<distype>());
+      });
+
+  return singleton_owner.Instance(action);
 }
 
 /*----------------------------------------------------------------------*
@@ -45,7 +36,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 /*----------------------------------------------------------------------*

@@ -12,25 +12,15 @@
 #include "fluid_ele_parameter_xfem.H"
 #include "../drt_io/io_pstream.H"
 
-//----------------------------------------------------------------------*/
-//    definition of the instance
-//----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidEleParameterXFEM* DRT::ELEMENTS::FluidEleParameterXFEM::Instance(bool create)
+DRT::ELEMENTS::FluidEleParameterXFEM* DRT::ELEMENTS::FluidEleParameterXFEM::Instance(
+    ::UTILS::SingletonAction action)
 {
-  static FluidEleParameterXFEM* instance;
-  if (create)
-  {
-    if (instance == NULL)
-    {
-      instance = new FluidEleParameterXFEM();
-    }
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleParameterXFEM> singleton_owner([]() {
+    return std::unique_ptr<DRT::ELEMENTS::FluidEleParameterXFEM>(
+        new DRT::ELEMENTS::FluidEleParameterXFEM());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 //----------------------------------------------------------------------*/
@@ -40,7 +30,7 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 //----------------------------------------------------------------------*/

@@ -415,7 +415,7 @@ void TUTORIAL::NonlinearTruss::TutorialDone()
   for (it = discretization_->begin(); it != discretization_->end(); ++it) delete it->second;
 
   // also delete the calc instance
-  TUTORIAL::ELEMENTS::TutorialEleCalc::Instance(false);
+  TUTORIAL::ELEMENTS::TutorialEleCalc::Instance(::UTILS::SingletonAction::destruct);
 }
 
 

@@ -58,7 +58,8 @@ namespace DRT
       virtual ~FluidEleCalcPoroP1() = default;
 
       //! Singleton access method
-      static FluidEleCalcPoroP1<distype>* Instance(bool create = true);
+      static FluidEleCalcPoroP1<distype>* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       //! called upon destruction
       virtual void Done();

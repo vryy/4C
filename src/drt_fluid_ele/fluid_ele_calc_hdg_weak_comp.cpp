@@ -863,22 +863,15 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateDensityMomentum(co
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>*
-DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Instance(bool create)
+DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Instance(::UTILS::SingletonAction action)
 {
-  static FluidEleCalcHDGWeakComp<distype>* instance;
-  if (create)
-  {
-    if (instance == NULL)
-    {
-      instance = new FluidEleCalcHDGWeakComp<distype>();
-    }
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>> singleton_owner(
+      []() {
+        return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>>(
+            new DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>());
+      });
+
+  return singleton_owner.Instance(action);
 }
 
 
@@ -888,7 +881,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 

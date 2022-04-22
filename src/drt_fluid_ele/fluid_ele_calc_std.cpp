@@ -13,26 +13,16 @@
 #include "fluid_ele_parameter_std.H"
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcStd<distype>* DRT::ELEMENTS::FluidEleCalcStd<distype>::Instance(
-    bool create)
+    ::UTILS::SingletonAction action)
 {
-  static FluidEleCalcStd<distype>* instance;
-  if (create)
-  {
-    if (instance == NULL)
-    {
-      instance = new FluidEleCalcStd<distype>();
-    }
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcStd<distype>> singleton_owner([]() {
+    return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcStd<distype>>(
+        new DRT::ELEMENTS::FluidEleCalcStd<distype>());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 /*----------------------------------------------------------------------*
@@ -42,7 +32,7 @@ void DRT::ELEMENTS::FluidEleCalcStd<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 

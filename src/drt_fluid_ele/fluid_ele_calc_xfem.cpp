@@ -30,26 +30,16 @@
 
 #include "../drt_lib/drt_condition_utils.H"
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcXFEM<distype>* DRT::ELEMENTS::FluidEleCalcXFEM<distype>::Instance(
-    bool create)
+    ::UTILS::SingletonAction action)
 {
-  static FluidEleCalcXFEM<distype>* instance;
-  if (create)
-  {
-    if (instance == NULL)
-    {
-      instance = new FluidEleCalcXFEM<distype>();
-    }
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcXFEM<distype>> singleton_owner([]() {
+    return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcXFEM<distype>>(
+        new DRT::ELEMENTS::FluidEleCalcXFEM<distype>());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 
@@ -60,7 +50,7 @@ void DRT::ELEMENTS::FluidEleCalcXFEM<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 

@@ -18,6 +18,8 @@
 #include "fluid_ele_calc_xfem_coupling.H"
 #include "../drt_xfem/xfem_condition_manager.H"
 
+#include "../headers/singleton_owner.H"
+
 namespace XFEM
 {
   class CouplingBase;
@@ -112,7 +114,8 @@ namespace DRT
       virtual ~FluidEleCalcXFEM() {}
 
       /// Singleton access method
-      static FluidEleCalcXFEM<distype>* Instance(bool create = true);
+      static FluidEleCalcXFEM<distype>* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       /// called upon destruction
       virtual void Done();

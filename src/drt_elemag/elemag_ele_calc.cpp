@@ -1109,23 +1109,16 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::InterpolateSolutionToNodes(DRT::ELEME
   return 0;
 }
 
-/*----------------------------------------------------------------------*
- * Instance
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ElemagEleCalc<distype>* DRT::ELEMENTS::ElemagEleCalc<distype>::Instance(bool create)
+DRT::ELEMENTS::ElemagEleCalc<distype>* DRT::ELEMENTS::ElemagEleCalc<distype>::Instance(
+    ::UTILS::SingletonAction action)
 {
-  static ElemagEleCalc<distype>* instance;
-  if (create)
-  {
-    if (instance == NULL) instance = new ElemagEleCalc<distype>();
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::ElemagEleCalc<distype>> singleton_owner([]() {
+    return std::unique_ptr<DRT::ELEMENTS::ElemagEleCalc<distype>>(
+        new DRT::ELEMENTS::ElemagEleCalc<distype>());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 /*----------------------------------------------------------------------*
@@ -1136,7 +1129,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 /*----------------------------------------------------------------------*

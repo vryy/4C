@@ -16,6 +16,7 @@
 #include "topopt_fluidAdjoint3_interface.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
+#include "../headers/singleton_owner.H"
 
 namespace FLD
 {
@@ -76,7 +77,8 @@ namespace DRT
       virtual ~FluidAdjoint3Impl() {}
 
       /// Singleton access method
-      static FluidAdjoint3Impl<distype>* Instance(bool create = true);
+      static FluidAdjoint3Impl<distype>* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       //! nen_: number of element nodes (P. Hughes: The Finite Element Method)
       static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;

@@ -18,26 +18,15 @@ with different parameters in more than one fluid field is not yet supported.
 #include "../drt_io/io_pstream.H"
 #include "fluid_ele_parameter_timint.H"
 
-//----------------------------------------------------------------------*/
-//    definition of the instance
-//----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidEleParameterTimInt* DRT::ELEMENTS::FluidEleParameterTimInt::Instance(
-    bool create)
+    ::UTILS::SingletonAction action)
 {
-  static FluidEleParameterTimInt* instance;
-  if (create)
-  {
-    if (instance == NULL)
-    {
-      instance = new FluidEleParameterTimInt();
-    }
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleParameterTimInt> singleton_owner([]() {
+    return std::unique_ptr<DRT::ELEMENTS::FluidEleParameterTimInt>(
+        new DRT::ELEMENTS::FluidEleParameterTimInt());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 //----------------------------------------------------------------------*/
@@ -47,7 +36,7 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 //----------------------------------------------------------------------*/

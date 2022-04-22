@@ -14,6 +14,8 @@
 #include "../headers/pairedvector.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
+#include "../headers/singleton_owner.H"
+
 namespace MORTAR
 {
   // forward declarations
@@ -84,7 +86,8 @@ namespace MORTAR
     virtual void Done();
 
     /// Singleton access method
-    static MortarProjectorCalc<distype>* Instance(bool create = true);
+    static MortarProjectorCalc<distype>* Instance(
+        ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
     //! n_: number of element nodes
     static const int n_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -289,7 +292,8 @@ namespace MORTAR
     virtual void Done();
 
     /// Singleton access method
-    static MortarProjectorCalc_EleBased<distypeS, distypeM>* Instance(bool create = true);
+    static MortarProjectorCalc_EleBased<distypeS, distypeM>* Instance(
+        ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
     //! ns_: number of slave element nodes
     static const int ns_ = DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
