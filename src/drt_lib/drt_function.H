@@ -213,7 +213,7 @@ namespace DRT
       std::vector<std::vector<Teuchos::RCP<FunctionVariable>>> variables_;
 
      private:
-      bool isparsed_;
+      bool isparsed_{false};
     };
 
 

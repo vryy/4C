@@ -456,28 +456,20 @@ Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateBasicFunction(
 }
 
 
-DRT::UTILS::ExprFunction::ExprFunction()
-{
-  dim_ = DRT::Problem::Instance()->NDim();
-  expr_.clear();
-  exprdd_.clear();
-  variables_.clear();
-  isparsed_ = false;
-}
+DRT::UTILS::ExprFunction::ExprFunction() : dim_(DRT::Problem::Instance()->NDim()) {}
 
 void DRT::UTILS::ExprFunction::AddExpr(const std::string& buf,
     const std::vector<std::vector<Teuchos::RCP<FunctionVariable>>>& variables)
 {
   variables_ = variables;
 
-  Teuchos::RCP<DRT::PARSER::Parser<double>> parser =
-      Teuchos::rcp(new DRT::PARSER::Parser<double>(buf));
+  auto parser = Teuchos::rcp(new DRT::PARSER::Parser<double>(buf));
   parser->AddVariable("x", 0);
   parser->AddVariable("y", 0);
   parser->AddVariable("z", 0);
   parser->AddVariable("t", 0);
 
-  Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>> parserdd =
+  auto parserdd =
       Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>(buf));
   parserdd->AddVariable("x", 0);
   parserdd->AddVariable("y", 0);
@@ -518,16 +510,11 @@ void DRT::UTILS::ExprFunction::AddVariable(
 
 void DRT::UTILS::ExprFunction::ParseExpressions()
 {
-  // define iterators
-  std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>>::iterator it;
-  std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>>>::
-      iterator itdd;
-
   // loop over expressions and parse them
-  for (it = expr_.begin(); it != expr_.end(); it++) (*it)->ParseFunction();
+  for (auto& parser : expr_) parser->ParseFunction();
 
   // loop over expressions for derivatives and parse them
-  for (itdd = exprdd_.begin(); itdd != exprdd_.end(); itdd++) (*itdd)->ParseFunction();
+  for (auto& parser : exprdd_) parser->ParseFunction();
 
   isparsed_ = true;
 }
@@ -686,12 +673,10 @@ void DRT::UTILS::VariableExprFunction::AddExpr(
   // do the almost same as the expression function (base class) but do not yet parse!
 
   // build the parser for the function evaluation
-  Teuchos::RCP<DRT::PARSER::Parser<double>> parser =
-      Teuchos::rcp(new DRT::PARSER::Parser<double>(buf));
+  auto parser = Teuchos::rcp(new DRT::PARSER::Parser<double>(buf));
 
   // build the parser for the function derivative evaluation
-  Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double>>> parserd =
-      Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<double>>(buf));
+  auto parserd = Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<double>>(buf));
 
   // add constants
   for (const auto& constant : constants) parser->AddVariable(constant.first, constant.second);
@@ -724,15 +709,11 @@ void DRT::UTILS::VariableExprFunction::AddVariable(
 
 void DRT::UTILS::VariableExprFunction::ParseExpressions()
 {
-  // define iterators
-  std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>>::iterator it;
-  std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double>>>>::iterator itd;
-
   // loop over expressions and parse them
-  for (it = expr_.begin(); it != expr_.end(); it++) (*it)->ParseFunction();
+  for (auto& parser : expr_) parser->ParseFunction();
 
   // loop over expressions for derivatives and parse them
-  for (itd = exprd_.begin(); itd != exprd_.end(); itd++) (*itd)->ParseFunction();
+  for (auto& parser : exprd_) parser->ParseFunction();
 
   isparsed_ = true;
 }
