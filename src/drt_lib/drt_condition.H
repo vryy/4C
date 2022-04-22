@@ -182,6 +182,7 @@ namespace DRT
       RigidspherePotential_PointCharge,
       FilamentBeamLineCondition,
       BeamPotential_LineChargeDensity,
+      BeamToBeamContact,
       BeamToSolidVolumeMeshtyingLine,
       BeamToSolidVolumeMeshtyingVolume,
       BeamToSolidSurfaceMeshtyingLine,

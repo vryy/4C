@@ -42,6 +42,7 @@ BEAMINTERACTION::BeamToSolidCondition::BeamToSolidCondition(
     const Teuchos::RCP<const DRT::Condition>& condition_other,
     const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params)
     : BeamInteractionConditionBase(condition_line),
+      geometry_evaluation_data_(Teuchos::null),
       condition_other_(condition_other),
       condition_contact_pairs_(),
       beam_to_solid_params_(beam_to_solid_params)
@@ -65,6 +66,7 @@ bool BEAMINTERACTION::BeamToSolidCondition::IdsInCondition(
 void BEAMINTERACTION::BeamToSolidCondition::Clear()
 {
   BeamInteractionConditionBase::Clear();
+  geometry_evaluation_data_->Clear();
   condition_contact_pairs_.clear();
 }
 

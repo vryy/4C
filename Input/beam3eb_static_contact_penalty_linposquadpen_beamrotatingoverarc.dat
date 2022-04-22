@@ -76,6 +76,10 @@ BEAMS_MAXDISISCALEFAC           -1.0
 BEAMS_MAXDELTADISSCALEFAC       -1.0
 BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    2.0
+-----------------------------------------BEAM INTERACTION/BEAM TO BEAM CONTACT CONDITIONS
+DLINE 2
+E 1 - COUPLING_ID 1
+E 2 - COUPLING_ID 1
 --------------------------------------------------------------------BINNING STRATEGY
 BIN_SIZE_LOWER_BOUND            5
 DOMAINBOUNDINGBOX               -5 -5 -5 5 5 5
@@ -88,7 +92,7 @@ Test Details                    = No
 Debug                           = No
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
-NDLINE                          0
+NDLINE                          2
 NDSURF                          0
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
@@ -102,6 +106,13 @@ NODE 1 DNODE 1
 NODE 2 DNODE 2
 NODE 3 DNODE 3
 NODE 6 DNODE 4
+-------------------------------------------------------------DLINE-NODE TOPOLOGY
+NODE 1 DLINE 1
+NODE 2 DLINE 1
+NODE 3 DLINE 2
+NODE 4 DLINE 2
+NODE 5 DLINE 2
+NODE 6 DLINE 2
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD  -1.570700000000e+00 0.00000000000000e+00 0.000000000000000e+00
 NODE 2 COORD  1.5707000000000e+00 0.00000000000000e+00 0.000000000000000e+00

@@ -12,7 +12,21 @@
 
 #include "inpar_parameterlist_utils.H"
 
+#include "../drt_lib/drt_condition.H"
+
 /*----------------------------------------------------------------------*/
+
+
+// Forward declaration.
+namespace DRT
+{
+  namespace INPUT
+  {
+    class ConditionDefinition;
+  }
+}  // namespace DRT
+
+
 namespace INPAR
 {
   namespace BEAMCONTACT
@@ -85,6 +99,10 @@ namespace INPAR
     /// set the beam contact parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
+    /**
+     * \brief Set beam beam-to-beam specific conditions.
+     */
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
   }  // namespace BEAMCONTACT
 
 }  // namespace INPAR

@@ -823,15 +823,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::SelectElesToBeConsideredFo
     {
       toerase = true;
     }
-    // 2) ensure that the two elements confirm with the beam interactions defined via conditions in
-    // the input file. For now this is only implemented for beam-to-solid elements, therefore the
-    // dynamic cast here.
-    else if (dynamic_cast<DRT::ELEMENTS::So_base*>(*eiter) != NULL)
-    {
-      if (!beam_interaction_conditions_ptr_->IdsInConditions(currele->Id(), (*eiter)->Id()))
-        toerase = true;
-    }
-    // 3) ensure that two elements sharing the same node do not get into contact
+    // 2) ensure that two elements sharing the same node do not get into contact
     else
     {
       for (int i = 0; i < 2; ++i)
@@ -881,15 +873,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
       Teuchos::RCP<BEAMINTERACTION::BeamContactPair> newbeaminteractionpair =
           BEAMINTERACTION::BeamContactPair::Create(ele_ptrs, beam_interaction_conditions_ptr_);
 
-      if (newbeaminteractionpair == Teuchos::null)
-        dserror("The creation of a beam contact pair for the element IDs %d and %d failed!",
-            ele_ptrs[0]->Id(), ele_ptrs[1]->Id());
+      if (newbeaminteractionpair != Teuchos::null)
+      {
+        newbeaminteractionpair->Init(beam_contact_params_ptr_, ele_ptrs);
+        newbeaminteractionpair->Setup();
 
-      newbeaminteractionpair->Init(beam_contact_params_ptr_, ele_ptrs);
-      newbeaminteractionpair->Setup();
-
-      // add to list of current contact pairs
-      contact_elepairs_.push_back(newbeaminteractionpair);
+        // add to list of current contact pairs
+        contact_elepairs_.push_back(newbeaminteractionpair);
+      }
     }
   }
 

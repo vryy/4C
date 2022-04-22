@@ -126,24 +126,12 @@ namespace BEAMINTERACTION
       return Teuchos::null;
     };
 
-    /**
-     * \brief Return a pointer to the geometry evaluation data in this condition.
-     */
-    const Teuchos::RCP<const GEOMETRYPAIR::GeometryEvaluationDataBase> GetGeometryEvaluationData()
-        const
-    {
-      return geometry_evaluation_data_;
-    }
-
    protected:
     //! Pointer to the beam condition.
     Teuchos::RCP<const DRT::Condition> condition_line_;
 
     //! Set containing the beam element IDs.
     std::set<int> line_ids_;
-
-    //! Pointer to the geometry evaluation data for this condition.
-    Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase> geometry_evaluation_data_;
   };
 
   /**

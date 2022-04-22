@@ -13,13 +13,15 @@
 #include "inpar_beaminteraction.H"
 #include "drt_validparameters.H"
 #include "../drt_lib/drt_conditiondefinition.H"
+#include "inpar_beamcontact.H"
 #include "inpar_beam_to_solid.H"
 
 
 void INPAR::BEAMINTERACTION::BeamInteractionConditionsGetAll(
     std::vector<INPAR::BEAMINTERACTION::BeamInteractionConditions>& interactions)
 {
-  interactions = {INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_volume_meshtying,
+  interactions = {INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_beam_contact,
+      INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_volume_meshtying,
       INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_meshtying};
 }
 
@@ -181,6 +183,9 @@ void INPAR::BEAMINTERACTION::SetValidConditions(
 
   condlist.push_back(beam_filament_condition);
 
-  // beam-to-solid interaction
+  // beam-to-beam interactions
+  INPAR::BEAMCONTACT::SetValidConditions(condlist);
+
+  // beam-to-solid interactions
   INPAR::BEAMTOSOLID::SetValidConditions(condlist);
 }

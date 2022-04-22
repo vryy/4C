@@ -12,6 +12,7 @@
 
 #include "drt_validparameters.H"
 #include "inpar_beamcontact.H"
+#include "../drt_lib/drt_conditiondefinition.H"
 
 
 
@@ -181,4 +182,28 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   // whether to write vtp output for gaps
   BoolParameter(
       "GAPS", "No", "write vtp output for gap, i.e. penetration", &beamcontact_vtk_sublist);
+}
+
+/**
+ *
+ */
+void INPAR::BEAMCONTACT::SetValidConditions(
+    std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
+{
+  using namespace DRT::INPUT;
+
+  // Beam-to-beam conditions.
+  {
+    std::string condition_name = "BeamToBeamContact";
+
+    Teuchos::RCP<ConditionDefinition> beam_to_beam_contact_condition =
+        Teuchos::rcp(new ConditionDefinition("BEAM INTERACTION/BEAM TO BEAM CONTACT CONDITIONS",
+            condition_name, "Beam-to-beam contact conditions", DRT::Condition::BeamToBeamContact,
+            true, DRT::Condition::Line));
+    beam_to_beam_contact_condition->AddComponent(
+        Teuchos::rcp(new SeparatorConditionComponent("COUPLING_ID")));
+    beam_to_beam_contact_condition->AddComponent(
+        Teuchos::rcp(new IntConditionComponent("COUPLING_ID", false, false)));
+    condlist.push_back(beam_to_beam_contact_condition);
+  }
 }
