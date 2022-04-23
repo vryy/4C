@@ -39,9 +39,6 @@ namespace LINALG::SOLVER
     //! Constructor
     KrylovSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile);
 
-    //! Destructor
-    virtual ~KrylovSolver();
-
     /*! \brief Setup the solver object
      *
      * @param A Matrix of the linear system

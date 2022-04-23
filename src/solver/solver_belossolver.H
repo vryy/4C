@@ -26,9 +26,6 @@ namespace LINALG::SOLVER
     //! Constructor
     BelosSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile);
 
-    //! Destructor
-    virtual ~BelosSolver();
-
     /*! \brief Setup the solver object
      *
      * @param A Matrix of the linear system

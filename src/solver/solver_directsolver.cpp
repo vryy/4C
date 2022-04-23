@@ -29,9 +29,6 @@
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-// explicit initialization
-template class LINALG::SOLVER::DirectSolver<Epetra_Operator, Epetra_MultiVector>;
-
 template <class MatrixType, class VectorType>
 LINALG::SOLVER::DirectSolver<MatrixType, VectorType>::DirectSolver(std::string solvertype)
     : solvertype_(solvertype),
@@ -44,16 +41,6 @@ LINALG::SOLVER::DirectSolver<MatrixType, VectorType>::DirectSolver(std::string s
       projector_(Teuchos::null)
 {
   lp_ = Teuchos::rcp(new Epetra_LinearProblem());
-}
-
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-template <class MatrixType, class VectorType>
-LINALG::SOLVER::DirectSolver<MatrixType, VectorType>::~DirectSolver()
-{
-  amesos_ = Teuchos::null;
-  reindexer_ = Teuchos::null;
-  lp_ = Teuchos::null;
 }
 
 //----------------------------------------------------------------------------------
@@ -235,3 +222,8 @@ int LINALG::SOLVER::DirectSolver<MatrixType, VectorType>::Solve()
   // direct solver does not support errorcodes
   return 0;
 }
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+// explicit initialization
+template class LINALG::SOLVER::DirectSolver<Epetra_Operator, Epetra_MultiVector>;

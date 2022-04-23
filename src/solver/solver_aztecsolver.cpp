@@ -45,9 +45,6 @@
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-// explicit initialization
-template class LINALG::SOLVER::AztecSolver<Epetra_Operator, Epetra_MultiVector>;
-
 template <class MatrixType, class VectorType>
 LINALG::SOLVER::AztecSolver<MatrixType, VectorType>::AztecSolver(
     const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile)
@@ -59,24 +56,12 @@ LINALG::SOLVER::AztecSolver<MatrixType, VectorType>::AztecSolver(
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
-LINALG::SOLVER::AztecSolver<MatrixType, VectorType>::~AztecSolver()
-{
-  this->preconditioner_ = Teuchos::null;
-  this->A_ = Teuchos::null;
-  this->x_ = Teuchos::null;
-  this->b_ = Teuchos::null;
-}
-
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-template <class MatrixType, class VectorType>
 void LINALG::SOLVER::AztecSolver<MatrixType, VectorType>::Setup(Teuchos::RCP<MatrixType> matrix,
     Teuchos::RCP<VectorType> x, Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
     Teuchos::RCP<LINALG::KrylovProjector> projector)
 {
   if (!this->Params().isSublist("Aztec Parameters")) dserror("Do not have aztec parameter list");
   Teuchos::ParameterList& azlist = this->Params().sublist("Aztec Parameters");
-  // int azoutput = azlist.get<int>("AZ_output",0);
 
   // see whether operator is a Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> A = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(matrix);
@@ -188,7 +173,7 @@ void LINALG::SOLVER::AztecSolver<MatrixType, VectorType>::Setup(Teuchos::RCP<Mat
   tttcreate.ResetStartTime();
 #endif
 
-  this->preconditioner_->Setup(create, &*(this->A_), &*(this->x_), &*(this->b_));
+  this->preconditioner_->Setup(create, this->A_.get(), this->x_.get(), this->b_.get());
 
 #ifdef WRITEOUTSTATISTICS
   dtimeprecondsetup = tttcreate.ElapsedTime();
@@ -307,7 +292,7 @@ int LINALG::SOLVER::AztecSolver<MatrixType, VectorType>::Solve()
   // store number of iterations
   numiters_ = aztec.NumIters();
 
-  this->preconditioner_->Finish(&*(this->A_), &*(this->x_), &*(this->b_));
+  this->preconditioner_->Finish(this->A_.get(), this->x_.get(), this->b_.get());
 
   // check status of solution process
   const double* status = aztec.GetAztecStatus();
@@ -414,3 +399,8 @@ int LINALG::SOLVER::AztecSolver<MatrixType, VectorType>::Solve()
   else  // everything is fine
     return 0;
 }
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+// explicit initialization
+template class LINALG::SOLVER::AztecSolver<Epetra_Operator, Epetra_MultiVector>;

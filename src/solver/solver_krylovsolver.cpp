@@ -64,9 +64,6 @@ typedef Node NO;
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-// explicit initialization
-template class LINALG::SOLVER::KrylovSolver<Epetra_Operator, Epetra_MultiVector>;
-
 template <class MatrixType, class VectorType>
 LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::KrylovSolver(
     const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile)
@@ -82,19 +79,6 @@ LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::KrylovSolver(
       PermFact_(Teuchos::null)
 {
   data_ = Teuchos::rcp(new MueLu::Level());
-}
-
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-template <class MatrixType, class VectorType>
-LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::~KrylovSolver()
-{
-  preconditioner_ = Teuchos::null;
-  A_ = Teuchos::null;
-  x_ = Teuchos::null;
-  b_ = Teuchos::null;
-  activeDofMap_ = Teuchos::null;
-  data_ = Teuchos::null;
 }
 
 //----------------------------------------------------------------------------------
@@ -908,3 +892,8 @@ LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::GetOperatorNonConst(
       Teuchos::rcp_dynamic_cast<EpetraCrsMatrix>(xPermScalCrsMat);
   return xEpPermScalCrsMat->getEpetra_CrsMatrixNonConst();
 }
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+// explicit initialization
+template class LINALG::SOLVER::KrylovSolver<Epetra_Operator, Epetra_MultiVector>;

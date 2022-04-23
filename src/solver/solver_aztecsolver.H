@@ -35,9 +35,6 @@ namespace LINALG::SOLVER
     //! Constructor
     AztecSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile);
 
-    //! Destructor
-    virtual ~AztecSolver();
-
     /*! \brief Setup the solver object
      *
      * @param A Matrix of the linear system

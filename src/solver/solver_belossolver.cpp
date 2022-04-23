@@ -53,9 +53,6 @@
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-// explicit initialization
-template class LINALG::SOLVER::BelosSolver<Epetra_Operator, Epetra_MultiVector>;
-
 template <class MatrixType, class VectorType>
 LINALG::SOLVER::BelosSolver<MatrixType, VectorType>::BelosSolver(
     const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile)
@@ -63,17 +60,6 @@ LINALG::SOLVER::BelosSolver<MatrixType, VectorType>::BelosSolver(
 {
   this->ncall_ = 0;
   this->preconditioner_ = Teuchos::null;
-}
-
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-template <class MatrixType, class VectorType>
-LINALG::SOLVER::BelosSolver<MatrixType, VectorType>::~BelosSolver()
-{
-  this->preconditioner_ = Teuchos::null;
-  this->A_ = Teuchos::null;
-  this->x_ = Teuchos::null;
-  this->b_ = Teuchos::null;
 }
 
 //----------------------------------------------------------------------------------
@@ -181,7 +167,7 @@ void LINALG::SOLVER::BelosSolver<MatrixType, VectorType>::Setup(Teuchos::RCP<Mat
 
 
   // call setup of preconditioner
-  this->preconditioner_->Setup(create, &*(this->A_), &*(this->x_), &*(this->b_));
+  this->preconditioner_->Setup(create, this->A_.get(), this->x_.get(), this->b_.get());
 }
 
 //----------------------------------------------------------------------------------
@@ -191,12 +177,9 @@ int LINALG::SOLVER::BelosSolver<MatrixType, VectorType>::Solve()
 {
   Teuchos::ParameterList& belist = this->Params().sublist("Belos Parameters");
 
-  typedef VectorType MV;
-  typedef MatrixType OP;
-
   // build Belos linear problem
-  Teuchos::RCP<Belos::LinearProblem<double, MV, OP>> problem =
-      Teuchos::rcp(new Belos::LinearProblem<double, MV, OP>(this->A_, this->x_, this->b_));
+  Teuchos::RCP<Belos::LinearProblem<double, VectorType, MatrixType>> problem = Teuchos::rcp(
+      new Belos::LinearProblem<double, VectorType, MatrixType>(this->A_, this->x_, this->b_));
   bool we_have_a_problem = false;
   // TODO support for left preconditioner?
   if (this->preconditioner_ != Teuchos::null)
@@ -214,17 +197,17 @@ int LINALG::SOLVER::BelosSolver<MatrixType, VectorType>::Solve()
   }
 
   // create iterative solver manager
-  Teuchos::RCP<Belos::SolverManager<double, MV, OP>> newSolver;
+  Teuchos::RCP<Belos::SolverManager<double, VectorType, MatrixType>> newSolver;
   std::string solverType = belist.get<std::string>("Solver Type");
   if (solverType == "GMRES")
-    newSolver = Teuchos::rcp(
-        new Belos::BlockGmresSolMgr<double, MV, OP>(problem, Teuchos::rcp(&belist, false)));
+    newSolver = Teuchos::rcp(new Belos::BlockGmresSolMgr<double, VectorType, MatrixType>(
+        problem, Teuchos::rcp(&belist, false)));
   else if (solverType == "CG")
-    newSolver = Teuchos::rcp(
-        new Belos::BlockCGSolMgr<double, MV, OP>(problem, Teuchos::rcp(&belist, false)));
+    newSolver = Teuchos::rcp(new Belos::BlockCGSolMgr<double, VectorType, MatrixType>(
+        problem, Teuchos::rcp(&belist, false)));
   else if (solverType == "BiCGSTAB")
-    newSolver = Teuchos::rcp(
-        new Belos::BiCGStabSolMgr<double, MV, OP>(problem, Teuchos::rcp(&belist, false)));
+    newSolver = Teuchos::rcp(new Belos::BiCGStabSolMgr<double, VectorType, MatrixType>(
+        problem, Teuchos::rcp(&belist, false)));
   else
     dserror("unknown solver type for Belos");
 
@@ -235,7 +218,7 @@ int LINALG::SOLVER::BelosSolver<MatrixType, VectorType>::Solve()
 
   // TODO: check me -> access solution x from linear problem???
   if (this->preconditioner_ != Teuchos::null)
-    this->preconditioner_->Finish(&*(this->A_), &*(this->x_), &*(this->b_));
+    this->preconditioner_->Finish(this->A_.get(), this->x_.get(), this->b_.get());
 
   if (ret != Belos::Converged)
   {
@@ -296,3 +279,8 @@ int LINALG::SOLVER::BelosSolver<MatrixType, VectorType>::Solve()
   else  // everything is fine
     return 0;
 }
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+// explicit initialization
+template class LINALG::SOLVER::BelosSolver<Epetra_Operator, Epetra_MultiVector>;

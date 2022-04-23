@@ -27,9 +27,6 @@ namespace LINALG::SOLVER
     //! Constructor
     explicit DirectSolver(std::string solvertype);
 
-    //! Destructor
-    virtual ~DirectSolver();
-
     /*! \brief Setup the solver object
      *
      * @param A Matrix of the linear system
