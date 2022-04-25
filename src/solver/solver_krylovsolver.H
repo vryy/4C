@@ -244,6 +244,19 @@ namespace LINALG::SOLVER
     Teuchos::RCP<Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>> FindNonDiagonalDominantRows(
         const Teuchos::RCP<Xpetra::Matrix<double, int, int>>& xA, double diagDominanceRatio = 1.0);
 
+
+    // Read a parameter value from a parameter list and copy it into a new parameter list (with
+    // another parameter name)
+    template <class varType>
+    void copyParams(const Teuchos::ParameterList& paramList, const std::string& paramStr,
+        varType defaultValue, Teuchos::ParameterList& outParamList, const std::string& outParamStr)
+    {
+      if (paramList.isParameter(paramStr))
+        outParamList.set<varType>(outParamStr, paramList.get<varType>(paramStr));
+      else
+        outParamList.set<varType>(outParamStr, defaultValue);
+    }
+
     /*! @brief if true, the linear solver is allowed to decide to solve a permuted linear system
      * (default: false)
      */

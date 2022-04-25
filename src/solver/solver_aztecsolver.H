@@ -27,7 +27,7 @@ class AztecOO_StatusTestMaxIters;
 
 namespace LINALG::SOLVER
 {
-  /// kryolv subspace linear solvers (aztec) with right-side preconditioning
+  /// krylov subspace linear solvers (aztec) with right-side preconditioning
   template <class MatrixType, class VectorType>
   class AztecSolver : public KrylovSolver<MatrixType, VectorType>
   {

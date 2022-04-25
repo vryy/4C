@@ -35,14 +35,6 @@
 #include "solver_aztecsolver_projectedresidual.H"
 #include "../linalg/linalg_krylov_projector.H"
 
-// Read a parameter value from a parameter list and copy it into a new parameter list (with another
-// parameter name)
-#define LINALG_COPY_PARAM(paramList, paramStr, varType, defaultValue, outParamList, outParamStr) \
-  if (paramList.isParameter(paramStr))                                                           \
-    outParamList.template set<varType>(outParamStr, paramList.template get<varType>(paramStr));  \
-  else                                                                                           \
-    outParamList.template set<varType>(outParamStr, defaultValue);
-
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
@@ -94,32 +86,27 @@ void LINALG::SOLVER::AztecSolver<MatrixType, VectorType>::Setup(Teuchos::RCP<Mat
     {
       Teuchos::ParameterList& precondParams = this->Params().sublist(precondParamListName);
       Teuchos::ParameterList& linSystemProps = precondParams.sublist("Linear System properties");
-
-      LINALG_COPY_PARAM(
+      this->template copyParams<Teuchos::RCP<Epetra_Map>>(
           this->Params().sublist("Aztec Parameters").sublist("Linear System properties"),
-          "contact slaveDofMap", Teuchos::RCP<Epetra_Map>, Teuchos::null, linSystemProps,
-          "contact slaveDofMap");
-      LINALG_COPY_PARAM(
+          "contact slaveDofMap", Teuchos::null, linSystemProps, "contact slaveDofMap");
+      this->template copyParams<Teuchos::RCP<Epetra_Map>>(
           this->Params().sublist("Aztec Parameters").sublist("Linear System properties"),
-          "contact masterDofMap", Teuchos::RCP<Epetra_Map>, Teuchos::null, linSystemProps,
-          "contact masterDofMap");
-      LINALG_COPY_PARAM(
+          "contact masterDofMap", Teuchos::null, linSystemProps, "contact masterDofMap");
+      this->template copyParams<Teuchos::RCP<Epetra_Map>>(
           this->Params().sublist("Aztec Parameters").sublist("Linear System properties"),
-          "contact innerDofMap", Teuchos::RCP<Epetra_Map>, Teuchos::null, linSystemProps,
-          "contact innerDofMap");
-      LINALG_COPY_PARAM(
+          "contact innerDofMap", Teuchos::null, linSystemProps, "contact innerDofMap");
+      this->template copyParams<Teuchos::RCP<Epetra_Map>>(
           this->Params().sublist("Aztec Parameters").sublist("Linear System properties"),
-          "contact activeDofMap", Teuchos::RCP<Epetra_Map>, Teuchos::null, linSystemProps,
-          "contact activeDofMap");
-      LINALG_COPY_PARAM(
+          "contact activeDofMap", Teuchos::null, linSystemProps, "contact activeDofMap");
+      this->template copyParams<std::string>(
           this->Params().sublist("Aztec Parameters").sublist("Linear System properties"),
-          "ProblemType", std::string, "contact", linSystemProps, "ProblemType");
-      LINALG_COPY_PARAM(
+          "ProblemType", "contact", linSystemProps, "ProblemType");
+      this->template copyParams<int>(
           this->Params().sublist("Aztec Parameters").sublist("Linear System properties"),
-          "time step", int, -1, linSystemProps, "time step");
-      LINALG_COPY_PARAM(
+          "time step", -1, linSystemProps, "time step");
+      this->template copyParams<int>(
           this->Params().sublist("Aztec Parameters").sublist("Linear System properties"), "iter",
-          int, -1, linSystemProps, "iter");
+          -1, linSystemProps, "iter");
     }
   }
 
