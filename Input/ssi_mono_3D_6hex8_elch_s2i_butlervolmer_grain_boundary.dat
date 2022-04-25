@@ -168,9 +168,9 @@ E 5 - 1
 ----------------------DESIGN SSI MANIFOLD KINETICS SURF CONDITIONS
 DSURF  2
 // electrolyte_grain_boundary_1
-E 4 -  ManifoldConditionID 1 KineticModel ConstantInterfaceResistance resistance 1.0e5 e- 1
+E 4 - ONOFF 1 1 ManifoldConditionID 1 KineticModel ConstantInterfaceResistance resistance 1.0e5 e- 1
 // electrolyte_grain_boundary_2
-E 5 - ManifoldConditionID 1 KineticModel ConstantInterfaceResistance resistance 1.0e5 e- 1
+E 5 - ONOFF 1 1 ManifoldConditionID 1 KineticModel ConstantInterfaceResistance resistance 1.0e5 e- 1
 ----------------------------DESIGN SURF MANIFOLD DIRICH CONDITIONS
 DSURF  1
 // electrolyte_grain_boundary_2

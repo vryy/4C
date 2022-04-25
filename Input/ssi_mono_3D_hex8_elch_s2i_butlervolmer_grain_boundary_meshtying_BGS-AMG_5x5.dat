@@ -234,17 +234,17 @@ E 6 - 3
 ----------------------DESIGN SSI MANIFOLD KINETICS SURF CONDITIONS
 DSURF  6
 // slave-side_cc-el
-E 1 - ManifoldConditionID 1 KineticModel NoFlux
+E 1 - ONOFF 1 1 ManifoldConditionID 1 KineticModel NoFlux
 // master-side_cc-el
-E 2 - ManifoldConditionID 1 KineticModel NoFlux
+E 2 - ONOFF 1 1 ManifoldConditionID 1 KineticModel NoFlux
 // slave-side_cc-cath
-E 3 - ManifoldConditionID 2 KineticModel NoFlux
+E 3 - ONOFF 1 1 ManifoldConditionID 2 KineticModel NoFlux
 // master-side_cc-cath
-E 4 - ManifoldConditionID 2 KineticModel NoFlux
+E 4 - ONOFF 1 1 ManifoldConditionID 2 KineticModel NoFlux
 // master-side_el-cath
-E 5 - ManifoldConditionID 3 KineticModel NoFlux
+E 5 - ONOFF 1 1 ManifoldConditionID 3 KineticModel NoFlux
 // slave-side_el-cath
-E 6 - ManifoldConditionID 3 KineticModel NoFlux
+E 6 - ONOFF 1 1 ManifoldConditionID 3 KineticModel NoFlux
 ----------------------------DESIGN SURF MANIFOLD DIRICH CONDITIONS
 DSURF  3
 // master-side_cc-el

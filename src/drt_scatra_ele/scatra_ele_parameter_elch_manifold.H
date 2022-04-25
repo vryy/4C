@@ -31,10 +31,13 @@ namespace DRT
 
       //! return read-only parameters
       //@{
+      bool EvaluateConcFlux() const { return evaluate_conc_flux_; }
+      bool EvaluateMasterSide() const { return evaluate_master_side_; }
+      bool EvaluatePotFlux() const { return evaluate_pot_flux_; }
       int KineticModel() const { return kinetic_model_; }
       int NumElectrons() const { return num_electrons_; }
       double Resistance() const { return resistance_; }
-      bool EvaluateMasterSide() const { return evaluate_master_side_; }
+
       //@}
 
      private:
@@ -43,7 +46,9 @@ namespace DRT
 
       //! parameters
       //@{
+      bool evaluate_conc_flux_;
       bool evaluate_master_side_;
+      bool evaluate_pot_flux_;
       int kinetic_model_;
       int num_electrons_;
       double resistance_;
