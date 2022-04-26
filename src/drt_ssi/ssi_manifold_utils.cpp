@@ -704,6 +704,18 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::PreEvaluate(
         "num_electrons", scatra_manifold_coupling->ConditionKinetics()->GetInt("e-"));
     eleparams.set<double>(
         "resistance", scatra_manifold_coupling->ConditionKinetics()->GetDouble("resistance"));
+
+    const auto onoff =
+        *scatra_manifold_coupling->ConditionKinetics()->Get<std::vector<int>>("ONOFF");
+
+    if (onoff.size() != 2)
+      dserror("exactly two dofs are required for this manifold interface law.");
+
+    if (onoff[0] != 0 and onoff[0] != 1) dserror("'conc_flux' must be '0' or '1'");
+    eleparams.set<bool>("conc_flux", static_cast<bool>(onoff[0]));
+
+    if (onoff[1] != 0 and onoff[1] != 1) dserror("'pot_flux' must be '0' or '1'");
+    eleparams.set<bool>("pot_flux", static_cast<bool>(onoff[1]));
   }
 
   scatra_manifold_->ScaTraField()->Discretization()->Evaluate(

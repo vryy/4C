@@ -47,7 +47,9 @@ void DRT::ELEMENTS::ScaTraEleParameterElchManifold::Done()
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterElchManifold::ScaTraEleParameterElchManifold(
     const std::string& disname)
-    : evaluate_master_side_(false),
+    : evaluate_conc_flux_(false),
+      evaluate_master_side_(false),
+      evaluate_pot_flux_(false),
       kinetic_model_(INPAR::SSI::kinetics_noflux),
       num_electrons_(-1),
       resistance_(-1.0)
@@ -65,18 +67,17 @@ void DRT::ELEMENTS::ScaTraEleParameterElchManifold::SetParameters(
   if (kinetic_model_ == INPAR::SSI::kinetics_constantinterfaceresistance)
   {
     resistance_ = parameters.get<double>("resistance");
+    if (resistance_ <= 0.0) dserror("Resistance is non-positive!");
 
     num_electrons_ = parameters.get<int>("num_electrons");
+    if (num_electrons_ <= 0) dserror("Number of electrons must be positive!");
+
+    evaluate_conc_flux_ = parameters.get<bool>("conc_flux");
+
+    evaluate_pot_flux_ = parameters.get<bool>("pot_flux");
   }
 
   evaluate_master_side_ = parameters.get<bool>("evaluate_master_side");
-
-  // safety checks
-  if (kinetic_model_ == INPAR::SSI::kinetics_constantinterfaceresistance)
-  {
-    if (resistance_ <= 0.0) dserror("Resistance is non-positive!");
-    if (num_electrons_ <= 0) dserror("Number of electrons must be positive!");
-  }
 }
 
 /*----------------------------------------------------------------------*

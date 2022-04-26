@@ -374,6 +374,9 @@ void INPAR::SSI::SetValidConditions(
           DRT::Condition::SSISurfaceManifoldKinetics, true, DRT::Condition::Surface));
 
   {
+    surfmanifoldkinetics->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+    surfmanifoldkinetics->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("ONOFF", 2)));
+
     surfmanifoldkinetics->AddComponent(
         Teuchos::rcp(new SeparatorConditionComponent("ManifoldConditionID")));
     surfmanifoldkinetics->AddComponent(

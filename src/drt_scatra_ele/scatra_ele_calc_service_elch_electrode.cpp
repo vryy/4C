@@ -391,6 +391,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcScaTraScaT
         const double resistance = elchmanifoldparams_->Resistance();
         const int num_electrons = elchmanifoldparams_->NumElectrons();
 
+        const bool evaluate_conc_flux = elchmanifoldparams_->EvaluateConcFlux();
+        const bool evaluate_pot_flux = elchmanifoldparams_->EvaluatePotFlux();
+
         const double inv_fluxresistance = 1.0 / resistance;
 
         const double j = (manifoldpotint - coupledpotint) * inv_fluxresistance;
@@ -416,10 +419,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcScaTraScaT
                 const int col_conc = ui * 2;
                 const int col_pot = ui * 2 + 1;
 
-                eslavematrix(row_conc, col_conc) +=
-                    my::funct_(vi) * dj_dpot_slave_timefacfac * my::funct_(ui);
-                eslavematrix(row_pot, col_pot) +=
-                    my::funct_(vi) * num_electrons * dj_dpot_slave_timefacfac * my::funct_(ui);
+                if (evaluate_conc_flux)
+                  eslavematrix(row_conc, col_conc) +=
+                      my::funct_(vi) * dj_dpot_slave_timefacfac * my::funct_(ui);
+                if (evaluate_pot_flux)
+                  eslavematrix(row_pot, col_pot) +=
+                      my::funct_(vi) * num_electrons * dj_dpot_slave_timefacfac * my::funct_(ui);
               }
 
               const int nen_master = nen;
@@ -428,14 +433,17 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcScaTraScaT
                 const int col_conc = ui * 2;
                 const int col_pot = ui * 2 + 1;
 
-                emastermatrix(row_conc, col_conc) +=
-                    my::funct_(vi) * dj_dpot_master_timefacfac * my::funct_(ui);
-                emastermatrix(row_pot, col_pot) +=
-                    my::funct_(vi) * num_electrons * dj_dpot_master_timefacfac * my::funct_(ui);
+                if (evaluate_conc_flux)
+                  emastermatrix(row_conc, col_conc) +=
+                      my::funct_(vi) * dj_dpot_master_timefacfac * my::funct_(ui);
+                if (evaluate_pot_flux)
+                  emastermatrix(row_pot, col_pot) +=
+                      my::funct_(vi) * num_electrons * dj_dpot_master_timefacfac * my::funct_(ui);
               }
 
-              eslaveresidual[row_conc] -= my::funct_(vi) * jtimefacrhsfac;
-              eslaveresidual[row_pot] -= my::funct_(vi) * num_electrons * jtimefacrhsfac;
+              if (evaluate_conc_flux) eslaveresidual[row_conc] -= my::funct_(vi) * jtimefacrhsfac;
+              if (evaluate_pot_flux)
+                eslaveresidual[row_pot] -= my::funct_(vi) * num_electrons * jtimefacrhsfac;
             }
             break;
           }
@@ -464,9 +472,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcScaTraScaT
                   const int col_disp = ui * nsd + dim;
 
                   // compute linearizations w.r.t. slave-side structural displacements
-                  eslavematrix(row_conc, col_disp) += vi_dj_dd_slave * dJ_dmesh(col_disp);
-                  eslavematrix(row_pot, col_disp) +=
-                      num_electrons * vi_dj_dd_slave * dJ_dmesh(col_disp);
+                  if (evaluate_conc_flux)
+                    eslavematrix(row_conc, col_disp) += vi_dj_dd_slave * dJ_dmesh(col_disp);
+                  if (evaluate_pot_flux)
+                    eslavematrix(row_pot, col_disp) +=
+                        num_electrons * vi_dj_dd_slave * dJ_dmesh(col_disp);
                 }
               }
             }
@@ -544,6 +554,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcManifoldIn
         const double resistance = elchmanifoldparams_->Resistance();
         const int num_electrons = elchmanifoldparams_->NumElectrons();
 
+        const bool evaluate_conc_flux = elchmanifoldparams_->EvaluateConcFlux();
+        const bool evaluate_pot_flux = elchmanifoldparams_->EvaluatePotFlux();
+
         const double inv_fluxresistance = 1.0 / resistance;
 
         const double j = (manifoldpotint - coupledpotint) * inv_fluxresistance;
@@ -555,8 +568,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcManifoldIn
           for (int i = 0; i < nen; i++)
           {
             const double jfac_funct = jfac * my::funct_(i);
-            scalars[0] += jfac_funct;                  // concentration
-            scalars[1] += num_electrons * jfac_funct;  // potential
+            if (evaluate_conc_flux) scalars[0] += jfac_funct;                 // concentration
+            if (evaluate_pot_flux) scalars[1] += num_electrons * jfac_funct;  // potential
           }
         }
 
