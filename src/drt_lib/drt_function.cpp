@@ -1,67 +1,74 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Managing and evaluating of space- and/or time-dependent functions
+\brief Evaluating of space- and/or time-dependent functions
 
 \level 0
-
 
 */
 /*----------------------------------------------------------------------*/
 
 #include <Sacado.hpp>
 #include "drt_function.H"
+#include "drt_function_manager.H"
 #include "drt_functionvariables.H"
 #include "drt_globalproblem.H"
 #include "drt_linedefinition.H"
-#include "../drt_fluid/fluid_functions.H"
-#include "../drt_structure_new/str_functions.H"
-#include "../drt_poromultiphase_scatra/poromultiphase_scatra_function.H"
-#include "../drt_fluid_xfluid/xfluid_functions.H"
-#include "../drt_fluid_xfluid/xfluid_functions_combust.H"
 #include "../drt_io/io.H"
-#include "drt_function_library.H"
 
 namespace
 {
+  /// creates a vector of times from a given NUMPOINTS and TIMERANGE
+  std::vector<double> CreateTimesFromTimeRange(
+      const std::vector<double>& timerange, const int& numpoints)
+  {
+    std::vector<double> times;
+
+    // get initial and final time
+    double t_initial = timerange[0];
+    double t_final = timerange[1];
+
+    // build the vector of times
+    times.push_back(t_initial);
+    int n = 0;
+    double dt = (t_final - t_initial) / (numpoints - 1);
+    while (times[n] + dt <= t_final + 1.0e-14)
+    {
+      if (times[n] + 2 * dt <= t_final + 1.0e-14)
+      {
+        times.push_back(times[n] + dt);
+      }
+      else
+      {
+        times.push_back(t_final);
+      }
+      ++n;
+    }
+
+    return times;
+  }
+
   /// returns a vector of times either from NUMPOINTS and TIMERANGE or from TIMES of a line
   /// definition
-  std::vector<double> returnTimeVector(const Teuchos::RCP<DRT::INPUT::LineDefinition> timevar)
+  std::vector<double> ReturnTimeVector(const Teuchos::RCP<DRT::INPUT::LineDefinition> timevar)
   {
     // read the number of points
     int numpoints;
     timevar->ExtractInt("NUMPOINTS", numpoints);
 
-    // read times
-    std::vector<double> times;
+    // read whether times are defined by number of points or by vector
     bool bynum = timevar->HasString("BYNUM");
 
+    // read respectively create times vector
+    std::vector<double> times;
     if (bynum)  // times defined by number of points
     {
       // read the time range
       std::vector<double> timerange;
       timevar->ExtractDoubleVector("TIMERANGE", timerange);
 
-      // get initial and final time
-      double t_initial = timerange[0];
-      double t_final = timerange[1];
-
-      // build the vector of times
-      times.push_back(t_initial);
-      int n = 0;
-      double dt = (t_final - t_initial) / (numpoints - 1);
-      while (times[n] + dt <= t_final + 1.0e-14)
-      {
-        if (times[n] + 2 * dt <= t_final + 1.0e-14)
-        {
-          times.push_back(times[n] + dt);
-        }
-        else
-        {
-          times.push_back(t_final);
-        }
-        ++n;
-      }
+      // create time vector from number of points and time range
+      times = CreateTimesFromTimeRange(timerange, numpoints);
     }
     else  // times defined by vector
     {
@@ -74,150 +81,178 @@ namespace
 
     return times;
   }
-}  // namespace
 
-
-/// Print Function
-void PrintFunctionDatHeader()
-{
-  DRT::UTILS::FunctionManager functionmanager;
-  Teuchos::RCP<DRT::INPUT::Lines> lines = functionmanager.ValidFunctionLines();
-
-  lines->Print(std::cout);
-}
-
-
-Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines()
-{
-  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("FUNCT"));
-
-  DRT::UTILS::AddValidFunctionFunctionLines(lines);
-  DRT::UTILS::AddValidLibraryFunctionLines(lines);
-  STR::AddValidStructureFunctionLines(lines);
-  FLD::AddValidFluidFunctionLines(lines);
-  DRT::UTILS::AddValidCombustFunctionLines(lines);
-  DRT::UTILS::AddValidXfluidFunctionLines(lines);
-  POROMULTIPHASESCATRA::AddValidPoroFunctionLines(lines);
-
-  return lines;
-}
-
-void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
-{
-  functions_.clear();
-
-  Teuchos::RCP<DRT::INPUT::Lines> lines = ValidFunctionLines();
-
-  // test for as many functions as there are
-  for (int i = 1;; ++i)
+  /// finds the column index of a variable specified by a given row index of all variables
+  /// where the variable contains the considered time
+  unsigned int FindColIndexForVariableDefinition(
+      std::vector<std::vector<Teuchos::RCP<DRT::UTILS::FunctionVariable>>>& variables,
+      const int index_row, const double time)
   {
-    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs =
-        lines->Read(reader, i);
-
-    if (functions_lin_defs.empty())
+    // find the right definition of the variable according to the hierarchy
+    unsigned int index_col = 0;
+    bool containtime = false;
+    while (!containtime)
     {
-      break;
+      containtime = variables[index_row][index_col]->ContainTime(time);
+      if (index_col == variables[index_row].size())
+      {
+        dserror("the variable %d is not defined at time %f", index_row, time);
+      }
+      if (!containtime)
+      {
+        ++index_col;
+      }
     }
-    else
+
+    return index_col;
+  }
+
+  /// converts the values of variables from type double to FAD double and returns the modified
+  /// vector of name-value-pairs
+  std::vector<std::pair<std::string, Sacado::Fad::DFad<double>>> ConvertVariableValuesToFADObjects(
+      const std::vector<std::pair<std::string, double>>& variables)
+  {
+    // prepare return vector
+    std::vector<std::pair<std::string, Sacado::Fad::DFad<double>>> variables_FAD;
+
+    // number of variables
+    auto numvariables = static_cast<int>(variables.size());
+
+    // counter for variable numbering
+    int counter = 0;
+
+    // set the values of the variables
+    for (const auto& [name, value] : variables)
     {
-      Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def = functions_lin_defs[0];
+      // FAD object for 1st order derivatives
+      Sacado::Fad::DFad<double> varfad(numvariables, counter, value);
 
-      bool found_function = false;
+      // create name-value-pairs with values now of type FAD double and add to vector
+      variables_FAD.emplace_back(name, varfad);
 
-      // list all known TryCreate functions in a vector so they can be called with a unified syntax
-      // below
-      std::vector<std::function<Teuchos::RCP<Function>(
-          Teuchos::RCP<DRT::INPUT::LineDefinition>, DRT::UTILS::FunctionManager&, const int)>>
-          try_create_function_vector{DRT::UTILS::TryCreateFunctionFunction,
-              POROMULTIPHASESCATRA::TryCreatePoroFunction, STR::TryCreateStructureFunction,
-              FLD::TryCreateFluidFunction, DRT::UTILS::TryCreateCombustFunction,
-              DRT::UTILS::TryCreateXfluidFunction, DRT::UTILS::TryCreateLibraryFunction};
+      // update counter
+      counter++;
+    }
+    return variables_FAD;
+  }
 
-      for (const auto& try_create_function : try_create_function_vector)
-      {
-        auto special_funct = try_create_function(function_lin_def, *this, i);
-        if (special_funct != Teuchos::null)
-        {
-          functions_.emplace_back(special_funct);
-          found_function = true;
-          break;  // jumps out of for statement
-        }
-      }
+  /// set the values of the variables or constants in expression or in first derivative of
+  /// expression
+  template <typename Expression, typename ValueType>
+  void SetValuesInExpressionOrExpressionFirstDeriv(std::vector<Expression>& expr_or_exprd,
+      const int index, const std::vector<std::pair<std::string, ValueType>>& variables_or_constants)
+  {
+    // set the values of the variables or constants
+    for (const auto& [name, value] : variables_or_constants)
+    {
+      if (expr_or_exprd[index]->IsVariable(name))
+        // set the value in expression
+        expr_or_exprd[index]->SetValue(name, value);
+    }
+  }
 
-      if (!found_function)
-      {
-        auto basic_funct = DRT::UTILS::TryCreateBasicFunction(functions_lin_defs);
-        if (basic_funct != Teuchos::null)
-        {
-          functions_.emplace_back(basic_funct);
-        }
-        else
-        {
-          dserror("Could not create any function from the given function line definition.");
-        }
-      }
-    }  // end else
-  }    // end for
-}
+  /// sets the values of the variables in second derivative of expression
+  void SetValuesInExpressionSecondDeriv(std::size_t index_mod,
+      std::vector<std::vector<Teuchos::RCP<DRT::UTILS::FunctionVariable>>> variables,
+      const double* x, const double t, int dim_,
+      std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>>>
+          exprdd)
+  {
+    // define Fad object for evaluation
+    using FAD = Sacado::Fad::DFad<Sacado::Fad::DFad<double>>;
 
-DRT::UTILS::Function& DRT::UTILS::FunctionManager::Funct(int num)
-{
-  // ensure that desired function is available (prevents segmentation fault)
-  if (functions_.size() < (unsigned int)(num + 1) || num < 0)
-    dserror("function %d not available", num + 1);
+    // define FAD variables
+    // arguments are: x, y, z, and t
+    const int number_of_arguments = 4;
+    // we consider a function of the type F = F ( x, y, z, t, v1(t), ..., vn(t) )
+    const int fad_size = number_of_arguments + static_cast<int>(variables.size());
+    FAD xfad(fad_size, 0, x[0]);
+    FAD yfad(fad_size, 1, x[1]);
+    FAD zfad(fad_size, 2, x[2]);
+    FAD tfad(fad_size, 3, t);
 
-  return *(functions_[num]);
-}
+    xfad.val() = Sacado::Fad::DFad<double>(fad_size, 0, x[0]);
+    yfad.val() = Sacado::Fad::DFad<double>(fad_size, 1, x[1]);
+    zfad.val() = Sacado::Fad::DFad<double>(fad_size, 2, x[2]);
+    tfad.val() = Sacado::Fad::DFad<double>(fad_size, 3, t);
 
+    std::vector<FAD> fadvectvars(variables.size());
+    for (int i = 0; i < static_cast<int>(variables.size()); ++i)
+    {
+      // find the right definition of the variable according to the hierarchy
+      unsigned int n = FindColIndexForVariableDefinition(variables, i, t);
 
-void DRT::UTILS::AddValidFunctionFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
-{
-  DRT::INPUT::LineDefinition onecomponentexpr;
-  onecomponentexpr.AddNamedString("FUNCTION");
+      fadvectvars[i] = FAD(fad_size, number_of_arguments + i, variables[i][n]->Value(t));
+      fadvectvars[i].val() =
+          Sacado::Fad::DFad<double>(fad_size, number_of_arguments + i, variables[i][n]->Value(t));
+    }
 
-  DRT::INPUT::LineDefinition componentexpr;
-  componentexpr.AddNamedInt("COMPONENT").AddNamedString("FUNCTION");
+    // set spatial variables
+    for (int i = 0; i < static_cast<int>(exprdd.size()); ++i)
+    {
+      // init with zero
+      exprdd[index_mod]->SetValue("x", 0);
+      exprdd[index_mod]->SetValue("y", 0);
+      exprdd[index_mod]->SetValue("z", 0);
+    }
 
-  DRT::INPUT::LineDefinition variableexpr;
-  variableexpr.AddNamedInt("VARIABLE")
-      .AddNamedString("NAME")
-      .AddNamedString("TYPE")
-      .AddOptionalNamedString("DESCRIPTION")
-      .AddOptionalNamedInt("NUMPOINTS")
-      .AddOptionalNamedString("BYNUM")
-      .AddOptionalNamedDoubleVector("TIMERANGE", 2)
-      .AddOptionalNamedDoubleVector("TIMES", "NUMPOINTS")
-      .AddOptionalNamedDoubleVector("VALUES", "NUMPOINTS")
-      .AddOptionalNamedString("PERIODIC")
-      .AddOptionalNamedDouble("T1")
-      .AddOptionalNamedDouble("T2");
+    if (dim_ < 0 or dim_ > 3) dserror("Problem dimension has to be 1, 2, or 3.");
+    if (dim_ > 0) exprdd[index_mod]->SetValue("x", xfad);
+    if (dim_ > 1) exprdd[index_mod]->SetValue("y", yfad);
+    if (dim_ > 2) exprdd[index_mod]->SetValue("z", zfad);
 
-  DRT::INPUT::LineDefinition variableexprmulti;
-  variableexprmulti.AddNamedInt("VARIABLE")
-      .AddNamedString("NAME")
-      .AddNamedString("TYPE")
-      .AddOptionalNamedInt("NUMPOINTS")
-      .AddOptionalNamedString("BYNUM")
-      .AddOptionalNamedDoubleVector("TIMERANGE", 2)
-      .AddOptionalNamedDoubleVector("TIMES", "NUMPOINTS")
-      .AddOptionalNamedDoubleVector("VALUES", "NUMPOINTS")
-      .AddOptionalNamedStringVector("DESCRIPTION", "NUMPOINTS")  // only NUMPOINTS-1 are taken
-      .AddOptionalNamedString("PERIODIC")
-      .AddOptionalNamedDouble("T1")
-      .AddOptionalNamedDouble("T2");
+    // set temporal variable
+    exprdd[index_mod]->SetValue("t", tfad);
 
-  lines->Add(onecomponentexpr);
-  lines->Add(componentexpr);
-  lines->Add(variableexpr);
-  lines->Add(variableexprmulti);
+    // set the values of the variables at time t
+    for (unsigned int i = 0; i < variables.size(); ++i)
+    {
+      exprdd[index_mod]->SetValue(variables[i][0]->Name(), fadvectvars[i]);
+    }
+  }
 
-  DRT::INPUT::LineDefinition varfunct;
-  varfunct.AddNamedString("VARFUNCTION")
-      .AddOptionalNamedInt("NUMCONSTANTS")
-      .AddOptionalNamedPairOfStringAndDoubleVector("CONSTANTS", "NUMCONSTANTS");
+  /// evaluate an expression and assemble to the result vector
+  std::vector<double> EvaluateAndAssembleExpressionToResultVector(
+      const std::vector<std::pair<std::string, double>>& variables, const int index,
+      std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double>>>> exprd)
+  {
+    // number of variables
+    auto numvariables = static_cast<int>(variables.size());
 
-  lines->Add(varfunct);
-}
+    // evaluate the expression
+    Sacado::Fad::DFad<double> fdfad = exprd[index]->Evaluate();
+
+    // resulting vector
+    std::vector<double> res(numvariables);
+
+    // fill the result vector
+    for (int i = 0; i < numvariables; i++) res[i] = fdfad.dx(i);
+
+    return res;
+  }
+
+  /// check if index is in range of the dimensions of the expression, otherwise throw an error
+  void AssertVariableIndexInDimensionOfExpression(
+      const int index, std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>> expr)
+  {
+    if (index > (int)expr.size() - 1 || index < 0)
+      dserror("Tried to add a variable to a function in a not available dimension.");
+  }
+
+  /// modifies the index to zero in case the expression is of size one
+  std::size_t FindModifiedIndex(
+      const int index, std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>> expr)
+  {
+    std::size_t index_mod = index;
+
+    if (expr.size() == 1)
+    {
+      index_mod = 0;
+    }
+
+    return index_mod;
+  }
+}  // namespace
 
 Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateFunctionFunction(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
@@ -352,7 +387,7 @@ Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateBasicFunction(
     else if (vartype == "linearinterpolation")
     {
       // read times
-      std::vector<double> times = returnTimeVector(timevar);
+      std::vector<double> times = ReturnTimeVector(timevar);
 
       // read values
       std::vector<double> values;
@@ -363,7 +398,7 @@ Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateBasicFunction(
     else if (vartype == "multifunction")
     {
       // read times
-      std::vector<double> times = returnTimeVector(timevar);
+      std::vector<double> times = ReturnTimeVector(timevar);
 
       // read descriptions (strings separated with spaces)
       std::vector<std::string> description_vec;
@@ -381,7 +416,7 @@ Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateBasicFunction(
     else if (vartype == "fourierinterpolation")
     {
       // read times
-      std::vector<double> times = returnTimeVector(timevar);
+      std::vector<double> times = ReturnTimeVector(timevar);
 
       // read values
       std::vector<double> values;
@@ -421,28 +456,20 @@ Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateBasicFunction(
 }
 
 
-DRT::UTILS::ExprFunction::ExprFunction()
-{
-  dim_ = DRT::Problem::Instance()->NDim();
-  expr_.clear();
-  exprdd_.clear();
-  variables_.clear();
-  isparsed_ = false;
-}
+DRT::UTILS::ExprFunction::ExprFunction() : dim_(DRT::Problem::Instance()->NDim()) {}
 
 void DRT::UTILS::ExprFunction::AddExpr(const std::string& buf,
     const std::vector<std::vector<Teuchos::RCP<FunctionVariable>>>& variables)
 {
   variables_ = variables;
 
-  Teuchos::RCP<DRT::PARSER::Parser<double>> parser =
-      Teuchos::rcp(new DRT::PARSER::Parser<double>(buf));
+  auto parser = Teuchos::rcp(new DRT::PARSER::Parser<double>(buf));
   parser->AddVariable("x", 0);
   parser->AddVariable("y", 0);
   parser->AddVariable("z", 0);
   parser->AddVariable("t", 0);
 
-  Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>> parserdd =
+  auto parserdd =
       Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>(buf));
   parserdd->AddVariable("x", 0);
   parserdd->AddVariable("y", 0);
@@ -463,17 +490,41 @@ void DRT::UTILS::ExprFunction::AddExpr(const std::string& buf,
   isparsed_ = false;
 }
 
+bool DRT::UTILS::ExprFunction::IsVariable(const int index, const std::string& varname) const
+{
+  AssertVariableIndexInDimensionOfExpression(index, expr_);
+
+  return expr_[index]->IsVariable(varname);
+}
+
+void DRT::UTILS::ExprFunction::AddVariable(
+    const int index, const std::string& varname, double varvalue)
+{
+  AssertVariableIndexInDimensionOfExpression(index, expr_);
+
+  if (isparsed_) dserror("Function has already been parsed! Variables can no longer be added!");
+
+  expr_[index]->AddVariable(varname, varvalue);
+  exprdd_[index]->AddVariable(varname, varvalue);
+}
+
+void DRT::UTILS::ExprFunction::ParseExpressions()
+{
+  // loop over expressions and parse them
+  for (auto& parser : expr_) parser->ParseFunction();
+
+  // loop over expressions for derivatives and parse them
+  for (auto& parser : exprdd_) parser->ParseFunction();
+
+  isparsed_ = true;
+}
+
 double DRT::UTILS::ExprFunction::Evaluate(const int index, const double* x, double t)
 {
   // we consider a function of the type F = F ( x, y, z, t, v1(t), ..., vn(t) )
   if (not isparsed_) ParseExpressions();
 
-  std::size_t index_mod = index;
-
-  if (expr_.size() == 1)
-  {
-    index_mod = 0;
-  }
+  std::size_t index_mod = FindModifiedIndex(index, expr_);
 
   // set spatial variables
   if (dim_ > 0) expr_[index_mod]->SetValue("x", x[0]);
@@ -487,132 +538,32 @@ double DRT::UTILS::ExprFunction::Evaluate(const int index, const double* x, doub
   for (unsigned int i = 0; i < variables_.size(); ++i)
   {
     // find the right definition of the variable according to the hierarchy
-    unsigned int n = 0;
-    bool containtime = false;
-    while (!containtime)
-    {
-      if (n == variables_[i].size())
-      {
-        dserror("the VARIABLE %d is not defined at time %f", i, t);
-      }
-      else
-      {
-        containtime = variables_[i][n]->ContainTime(t);
-      }
-      if (!containtime)
-      {
-        ++n;
-      }
-    }
+    unsigned int n = FindColIndexForVariableDefinition(variables_, i, t);
 
     expr_[index_mod]->SetValue(variables_[i][0]->Name(), variables_[i][n]->Value(t));
   }
 
-  // evaluation of F = F ( x, y, z, t, v1, ..., vn )
+  // evaluate F = F ( x, y, z, t, v1, ..., vn )
   return expr_[index_mod]->Evaluate();
 }
 
 std::vector<double> DRT::UTILS::ExprFunction::EvaluateSpatialDerivative(
     const int index, const double* x, const double t)
 {
+  // result vector
+  std::vector<double> res(3);
+
   // parse expression if not already parsed
   if (not isparsed_) ParseExpressions();
 
-  std::size_t index_mod = index;
+  std::size_t index_mod = FindModifiedIndex(index, expr_);
 
-  if (expr_.size() == 1)
-  {
-    index_mod = 0;
-  }
+  SetValuesInExpressionSecondDeriv(index_mod, variables_, x, t, dim_, exprdd_);
 
-  // define Fad object for evaluation
-  using FAD = Sacado::Fad::DFad<Sacado::Fad::DFad<double>>;
+  // FAD object for evaluation of derivatives
+  Sacado::Fad::DFad<Sacado::Fad::DFad<double>> fdfad = exprdd_[index_mod]->Evaluate();
 
-  // define FAD variables
-  // arguments are: x, y, z, and t
-  const int number_of_arguments = 4;
-  // we consider a function of the type F = F ( x, y, z, t, v1(t), ..., vn(t) )
-  const int fad_size = number_of_arguments + static_cast<int>(variables_.size());
-  FAD xfad(fad_size, 0, x[0]);
-  FAD yfad(fad_size, 1, x[1]);
-  FAD zfad(fad_size, 2, x[2]);
-  FAD tfad(fad_size, 3, t);
-
-  xfad.val() = Sacado::Fad::DFad<double>(fad_size, 0, x[0]);
-  yfad.val() = Sacado::Fad::DFad<double>(fad_size, 1, x[1]);
-  zfad.val() = Sacado::Fad::DFad<double>(fad_size, 2, x[2]);
-  tfad.val() = Sacado::Fad::DFad<double>(fad_size, 3, t);
-
-  std::vector<FAD> fadvectvars(variables_.size());
-  for (int i = 0; i < static_cast<int>(variables_.size()); ++i)
-  {
-    // find the right definition of the variable according to the hierarchy
-    unsigned int n = 0;
-    bool containtime = false;
-    while (!containtime)
-    {
-      if (n == variables_[i].size())
-      {
-        dserror("the variable %d is not defined in the time considered", i);
-      }
-      else
-      {
-        containtime = variables_[i][n]->ContainTime(t);
-      }
-      if (!containtime)
-      {
-        ++n;
-      }
-    }
-    fadvectvars[i] = FAD(fad_size, number_of_arguments + i, variables_[i][n]->Value(t));
-    fadvectvars[i].val() =
-        Sacado::Fad::DFad<double>(fad_size, number_of_arguments + i, variables_[i][n]->Value(t));
-  }
-  FAD fdfad;
-
-  // set spatial variables
-  switch (dim_)
-  {
-    case 3:
-    {
-      exprdd_[index_mod]->SetValue("x", xfad);
-      exprdd_[index_mod]->SetValue("y", yfad);
-      exprdd_[index_mod]->SetValue("z", zfad);
-      break;
-    }
-    case 2:
-    {
-      exprdd_[index_mod]->SetValue("x", xfad);
-      exprdd_[index_mod]->SetValue("y", yfad);
-      exprdd_[index_mod]->SetValue("z", 0);
-      break;
-    }
-    case 1:
-    {
-      exprdd_[index_mod]->SetValue("x", xfad);
-      exprdd_[index_mod]->SetValue("y", 0);
-      exprdd_[index_mod]->SetValue("z", 0);
-      break;
-    }
-    default:
-      dserror("Problem dimension has to be 1, 2, or 3.");
-      break;
-  }
-
-  // set temporal variable
-  exprdd_[index_mod]->SetValue("t", tfad);
-
-  // set the values of the variables at time t
-  for (unsigned int i = 0; i < variables_.size(); ++i)
-  {
-    exprdd_[index_mod]->SetValue(variables_[i][0]->Name(), fadvectvars[i]);
-  }
-
-  // evaluation of derivatives
-  fdfad = exprdd_[index_mod]->Evaluate();
-
-  // result vector
-  std::vector<double> res(3, 0.0);
+  // add spatial derivatives in all three dimensions
   for (int d = 0; d < 3; ++d)
   {
     res[d] = fdfad.dx(d).val();
@@ -625,103 +576,23 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateSpatialDerivative(
 std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
     const int index, const double* x, const double t, const unsigned deg)
 {
-  // resulting vector holding
+  // result vector
   std::vector<double> res(deg + 1);
-
-  // add the value at time t
-  res[0] = Evaluate(index, x, t);
 
   // parse expression if not already parsed
   if (not isparsed_) ParseExpressions();
 
-  std::size_t index_mod = index;
-  if (expr_.size() == 1)
-  {
-    index_mod = 0;
-  }
+  std::size_t index_mod = FindModifiedIndex(index, expr_);
 
-  // define Fad object for evaluation
-  using FAD = Sacado::Fad::DFad<Sacado::Fad::DFad<double>>;
+  SetValuesInExpressionSecondDeriv(index_mod, variables_, x, t, dim_, exprdd_);
 
-  // define FAD variables
-  // arguments are: x, y, z, and t
+  // FAD object for evaluation of derivatives
+  Sacado::Fad::DFad<Sacado::Fad::DFad<double>> fdfad;
+
   const int number_of_arguments = 4;
-  // we consider a function of the type F = F ( x, y, z, t, v1(t), ..., vn(t) )
-  const int fad_size = number_of_arguments + static_cast<int>(variables_.size());
-  FAD xfad(fad_size, 0, x[0]);
-  FAD yfad(fad_size, 1, x[1]);
-  FAD zfad(fad_size, 2, x[2]);
-  FAD tfad(fad_size, 3, t);
 
-  xfad.val() = Sacado::Fad::DFad<double>(fad_size, 0, x[0]);
-  yfad.val() = Sacado::Fad::DFad<double>(fad_size, 1, x[1]);
-  zfad.val() = Sacado::Fad::DFad<double>(fad_size, 2, x[2]);
-  tfad.val() = Sacado::Fad::DFad<double>(fad_size, 3, t);
-
-  std::vector<FAD> fadvectvars(variables_.size());
-  for (int i = 0; i < static_cast<int>(variables_.size()); ++i)
-  {
-    // find the right definition of the variable according to the hierarchy
-    unsigned int n = 0;
-    bool containtime = false;
-    while (!containtime)
-    {
-      if (n == variables_[i].size())
-      {
-        dserror("the variable %d is not defined in the time considered", i);
-      }
-      else
-      {
-        containtime = variables_[i][n]->ContainTime(t);
-      }
-      if (!containtime)
-      {
-        ++n;
-      }
-    }
-    fadvectvars[i] = FAD(fad_size, number_of_arguments + i, variables_[i][n]->Value(t));
-    fadvectvars[i].val() =
-        Sacado::Fad::DFad<double>(fad_size, number_of_arguments + i, variables_[i][n]->Value(t));
-  }
-  FAD fdfad;
-
-  // set spatial variables
-  switch (dim_)
-  {
-    case 3:
-    {
-      exprdd_[index_mod]->SetValue("x", xfad);
-      exprdd_[index_mod]->SetValue("y", yfad);
-      exprdd_[index_mod]->SetValue("z", zfad);
-      break;
-    }
-    case 2:
-    {
-      exprdd_[index_mod]->SetValue("x", xfad);
-      exprdd_[index_mod]->SetValue("y", yfad);
-      exprdd_[index_mod]->SetValue("z", 0);
-      break;
-    }
-    case 1:
-    {
-      exprdd_[index_mod]->SetValue("x", xfad);
-      exprdd_[index_mod]->SetValue("y", 0);
-      exprdd_[index_mod]->SetValue("z", 0);
-      break;
-    }
-    default:
-      dserror("Problem dimension has to be 1, 2, or 3.");
-      break;
-  }
-
-  // set temporal variable
-  exprdd_[index_mod]->SetValue("t", tfad);
-
-  // set the values of the variables at time t
-  for (unsigned int i = 0; i < variables_.size(); ++i)
-  {
-    exprdd_[index_mod]->SetValue(variables_[i][0]->Name(), fadvectvars[i]);
-  }
+  // add the value at time t
+  res[0] = Evaluate(index, x, t);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
@@ -731,24 +602,12 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
 
     // evaluation of dF/dt applying the chain rule:
     // dF/dt = dF*/dt + sum_i(dF/dvi*dvi/dt)
-    double fdfad_dt = fdfad.dx(3).val();
-    for (int i = 0; i < static_cast<int>(variables_.size()); ++i)
+    double fdfad_dt = fdfad.dx(3).val();                           // 1) dF*/dt
+    for (int i = 0; i < static_cast<int>(variables_.size()); ++i)  // 2) sum_i{...}
     {
       // find the right definition of the variable according to the hierarchy
-      unsigned int n = 0;
-      bool containtime = false;
-      while (!containtime)
-      {
-        containtime = variables_[i][n]->ContainTime(t);
-        if (n == variables_[i].size())
-        {
-          dserror("the variable %d is not defined in the time considered", i);
-        }
-        if (!containtime)
-        {
-          ++n;
-        }
-      }
+      unsigned int n = FindColIndexForVariableDefinition(variables_, i, t);
+
       fdfad_dt +=
           fdfad.dx(number_of_arguments + i).val() * variables_[i][n]->TimeDerivativeValue(t);
     }
@@ -765,53 +624,33 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
     //                                * dvi/dt +
     //                                 + dF/dvi * d^2vi/dt^2
     //                                }
-    double fdfad_dt2 = fdfad.dx(3).dx(3);
-    std::vector<double> fdfad_dt2_term(variables_.size());
+    double fdfad_dt2 = fdfad.dx(3).dx(3);                   // 1) add d(dF*/dt)/dt to d^2F/dt^2
+    std::vector<double> fdfad_dt2_term(variables_.size());  // prepare sum_i{...}
 
     for (int i = 0; i < static_cast<int>(variables_.size()); ++i)
     {
       fdfad_dt2_term[i] = 0;
-      // find the right definition of the variable according to the hierarchy
-      unsigned int n = 0;
-      bool containtime = false;
-      while (!containtime)
+
+      unsigned int n = FindColIndexForVariableDefinition(variables_, i, t);
+
+      fdfad_dt2_term[i] += fdfad.dx(3).dx(number_of_arguments + i);  // ... + d(dF*/dt)/dvi
+      fdfad_dt2_term[i] += fdfad.dx(number_of_arguments + i).dx(3);  // ... + d(dF/dvi)/dt
+
+      for (int j = 0; j < static_cast<int>(variables_.size()); ++j)  // prepare + sum_j{...}
       {
-        containtime = variables_[i][n]->ContainTime(t);
-        if (n == variables_[i].size())
-        {
-          dserror("the variable %d is not defined in the time considered", i);
-        }
-        if (!containtime)
-        {
-          ++n;
-        }
+        unsigned int m = FindColIndexForVariableDefinition(variables_, j, t);
+
+        fdfad_dt2_term[i] +=
+            fdfad.dx(number_of_arguments + i).dx(number_of_arguments + j) *  // d(dF/dvi)/dvj ...
+            variables_[j][m]->TimeDerivativeValue(t);                        // ... * dvj/dt
       }
-      fdfad_dt2_term[i] += fdfad.dx(3).dx(number_of_arguments + i);
-      fdfad_dt2_term[i] += fdfad.dx(number_of_arguments + i).dx(3);
-      for (int j = 0; j < static_cast<int>(variables_.size()); ++j)
-      {
-        // find the right definition of the variable according to the hierarchy
-        unsigned int m = 0;
-        bool containtime_inner = false;
-        while (!containtime_inner)
-        {
-          containtime_inner = variables_[j][m]->ContainTime(t);
-          if (m == variables_[j].size())
-          {
-            dserror("the variable %d is not defined in the time considered", j);
-          }
-          if (!containtime_inner)
-          {
-            ++m;
-          }
-        }
-        fdfad_dt2_term[i] += fdfad.dx(number_of_arguments + i).dx(number_of_arguments + j) *
-                             variables_[j][m]->TimeDerivativeValue(t);
-      }
-      fdfad_dt2_term[i] *= variables_[i][n]->TimeDerivativeValue(t);
-      fdfad_dt2_term[i] +=
-          fdfad.dx(number_of_arguments + i).val() * variables_[i][n]->TimeDerivativeValue(t, 2);
-      fdfad_dt2 += fdfad_dt2_term[i];
+
+      fdfad_dt2_term[i] *= variables_[i][n]->TimeDerivativeValue(t);  // ... * dvi/dt
+
+      fdfad_dt2_term[i] += fdfad.dx(number_of_arguments + i).val() *     /// ... + dF/dvi ...
+                           variables_[i][n]->TimeDerivativeValue(t, 2);  /// ... * d^2vi/dt^2
+
+      fdfad_dt2 += fdfad_dt2_term[i];  // 2) add sum_i{...} to d^2F/dt^2
     }
 
     res[2] = fdfad_dt2;
@@ -823,42 +662,8 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
     dserror("Higher time derivatives than second not supported!");
   }
 
+  // return derivatives
   return res;
-}
-
-bool DRT::UTILS::ExprFunction::IsVariable(const int index, const std::string& varname) const
-{
-  if (index > (int)expr_.size() - 1 || index < 0)
-    dserror("Tried to add a variable to a function in a not available dimension.");
-
-  return expr_[index]->IsVariable(varname);
-}
-
-void DRT::UTILS::ExprFunction::AddVariable(
-    const int index, const std::string& varname, double varvalue)
-{
-  if (index > (int)expr_.size() - 1 || index < 0)
-    dserror("Tried to add a variable to a function in a not available dimension.");
-  if (isparsed_) dserror("Function has already been parsed! Variables can no longer be added!");
-
-  expr_[index]->AddVariable(varname, varvalue);
-  exprdd_[index]->AddVariable(varname, varvalue);
-}
-
-void DRT::UTILS::ExprFunction::ParseExpressions()
-{
-  // define iterators
-  std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>>::iterator it;
-  std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>>>::
-      iterator itdd;
-
-  // loop over expressions and parse them
-  for (it = expr_.begin(); it != expr_.end(); it++) (*it)->ParseFunction();
-
-  // loop over expressions for derivatives and parse them
-  for (itdd = exprdd_.begin(); itdd != exprdd_.end(); itdd++) (*itdd)->ParseFunction();
-
-  isparsed_ = true;
 }
 
 
@@ -868,12 +673,10 @@ void DRT::UTILS::VariableExprFunction::AddExpr(
   // do the almost same as the expression function (base class) but do not yet parse!
 
   // build the parser for the function evaluation
-  Teuchos::RCP<DRT::PARSER::Parser<double>> parser =
-      Teuchos::rcp(new DRT::PARSER::Parser<double>(buf));
+  auto parser = Teuchos::rcp(new DRT::PARSER::Parser<double>(buf));
 
   // build the parser for the function derivative evaluation
-  Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double>>> parserd =
-      Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<double>>(buf));
+  auto parserd = Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<double>>(buf));
 
   // add constants
   for (const auto& constant : constants) parser->AddVariable(constant.first, constant.second);
@@ -888,8 +691,7 @@ void DRT::UTILS::VariableExprFunction::AddExpr(
 
 bool DRT::UTILS::VariableExprFunction::IsVariable(int index, const std::string& varname) const
 {
-  if (index > (int)expr_.size() - 1 || index < 0)
-    dserror("Tried to add a variable to a function in a not available dimension.");
+  AssertVariableIndexInDimensionOfExpression(index, expr_);
 
   return expr_[index]->IsVariable(varname);
 }
@@ -897,8 +699,8 @@ bool DRT::UTILS::VariableExprFunction::IsVariable(int index, const std::string& 
 void DRT::UTILS::VariableExprFunction::AddVariable(
     int index, const std::string& varname, double varvalue)
 {
-  if (index > (int)expr_.size() - 1 || index < 0)
-    dserror("Tried to add a variable to a function in a not available dimension.");
+  AssertVariableIndexInDimensionOfExpression(index, expr_);
+
   if (isparsed_) dserror("Function has already been parsed! Variables can no longer be added!");
 
   expr_[index]->AddVariable(varname, varvalue);
@@ -907,133 +709,13 @@ void DRT::UTILS::VariableExprFunction::AddVariable(
 
 void DRT::UTILS::VariableExprFunction::ParseExpressions()
 {
-  // define iterators
-  std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>>::iterator it;
-  std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double>>>>::iterator itd;
-
   // loop over expressions and parse them
-  for (it = expr_.begin(); it != expr_.end(); it++) (*it)->ParseFunction();
+  for (auto& parser : expr_) parser->ParseFunction();
+
   // loop over expressions for derivatives and parse them
-  for (itd = exprd_.begin(); itd != exprd_.end(); itd++) (*itd)->ParseFunction();
+  for (auto& parser : exprd_) parser->ParseFunction();
 
   isparsed_ = true;
-}
-
-double DRT::UTILS::VariableExprFunction::Evaluate(
-    const int index, const std::vector<std::pair<std::string, double>>& variables)
-{
-  if (not isparsed_) ParseExpressions();
-  // set the values of the variables
-  std::vector<std::pair<std::string, double>>::const_iterator it;
-  for (it = variables.begin(); it != variables.end(); it++)
-    expr_[index]->SetValue(it->first, it->second);
-
-  // evaluate the function and return the result
-  return expr_[index]->Evaluate();
-}
-
-double DRT::UTILS::VariableExprFunction::Evaluate(const int index,
-    const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants)
-{
-  if (not isparsed_) ParseExpressions();
-  // set the values of the variables
-  std::vector<std::pair<std::string, double>>::const_iterator it;
-  for (it = variables.begin(); it != variables.end(); it++)
-    expr_[index]->SetValue(it->first, it->second);
-  // set the values of the constants
-  for (it = constants.begin(); it != constants.end(); it++)
-  {
-    if (expr_[index]->IsVariable(it->first)) expr_[index]->SetValue(it->first, it->second);
-  }
-
-  // evaluate the function and return the result
-  return expr_[index]->Evaluate();
-}
-
-std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(
-    const int index, const std::vector<std::pair<std::string, double>>& variables)
-{
-  if (not isparsed_) ParseExpressions();
-
-  // number of variables
-  auto numvariables = static_cast<int>(variables.size());
-
-  // counter for variable numbering
-  int counter = 0;
-
-  // define Fad object for evaluation
-  using FAD = Sacado::Fad::DFad<double>;
-
-  // set the values of the variables
-  std::vector<std::pair<std::string, double>>::const_iterator it;
-  for (it = variables.begin(); it != variables.end(); it++)
-  {
-    // for 1st order derivatives
-    FAD varfad(numvariables, counter, it->second);
-    // set the value in expression
-    exprd_[index]->SetValue(it->first, varfad);
-    // update counter
-    counter++;
-  }
-
-  // evaluate the expression
-  FAD fdfad = exprd_[index]->Evaluate();
-
-  // resulting vector
-  std::vector<double> res(numvariables);
-
-  // fill the result vector
-  for (int i = 0; i < numvariables; i++) res[i] = fdfad.dx(i);
-
-  return res;
-}
-
-std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(int index,
-    const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants)
-{
-  if (not isparsed_) ParseExpressions();
-
-  // number of variables
-  auto numvariables = static_cast<int>(variables.size());
-
-  // counter for variable numbering
-  int counter = 0;
-
-  // define Fad object for evaluation
-  using FAD = Sacado::Fad::DFad<double>;
-
-  // set the values of the variables
-  std::vector<std::pair<std::string, double>>::const_iterator it;
-  for (it = variables.begin(); it != variables.end(); it++)
-  {
-    // for 1st order derivatives
-    FAD varfad(numvariables, counter, it->second);
-    // set the value in expression
-    exprd_[index]->SetValue(it->first, varfad);
-    // update counter
-    counter++;
-  }
-
-  // set the values of the constants
-  for (it = constants.begin(); it != constants.end(); it++)
-  {
-    if (exprd_[index]->IsVariable(it->first))
-      // set the value in expression
-      exprd_[index]->SetValue(it->first, it->second);
-  }
-
-  // evaluate the expression
-  FAD fdfad = exprd_[index]->Evaluate();
-
-  // resulting vector
-  std::vector<double> res(numvariables);
-
-  // fill the result vector
-  for (int i = 0; i < numvariables; i++) res[i] = fdfad.dx(i);
-
-  return res;
 }
 
 double DRT::UTILS::VariableExprFunction::Evaluate(const int index, const double* x, const double t)
@@ -1041,25 +723,13 @@ double DRT::UTILS::VariableExprFunction::Evaluate(const int index, const double*
   std::vector<std::pair<std::string, double>> variables;
   variables.reserve(dim_);
 
-  switch (dim_)
-  {
-    case 3:
-    {
-      variables.emplace_back("x", x[0]);  //-x_[index]
-      variables.emplace_back("y", x[1]);  //-y_[index]
-      variables.emplace_back("z", x[2]);  //-z_[index]
-    }
-    case 2:
-    {
-      variables.emplace_back("x", x[0]);  //-x_[index]
-      variables.emplace_back("y", x[1]);  //-y_[index]
-    }
-    case 1:
-    {
-      variables.emplace_back("x", x[0]);  //-x_[index]
-    }
-  }
+  // set spatial variables
+  if (dim_ < 0 or dim_ > 3) dserror("Problem dimension has to be 1, 2, or 3.");
+  if (dim_ > 0) variables.emplace_back("x", x[0]);
+  if (dim_ > 1) variables.emplace_back("y", x[1]);
+  if (dim_ > 2) variables.emplace_back("z", x[2]);
 
+  // set temporal variable
   variables.emplace_back("t", t);
 
   return Evaluate(index, variables);
@@ -1078,4 +748,54 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateSpatialDerivative(
   variables[3] = std::pair<std::string, double>("t", t);
 
   return EvaluateDerivative(index, variables);
+}
+
+double DRT::UTILS::VariableExprFunction::Evaluate(
+    const int index, const std::vector<std::pair<std::string, double>>& variables)
+{
+  if (not isparsed_) ParseExpressions();
+
+  SetValuesInExpressionOrExpressionFirstDeriv(expr_, index, variables);
+
+  // evaluate the function and return the result
+  return expr_[index]->Evaluate();
+}
+
+double DRT::UTILS::VariableExprFunction::Evaluate(const int index,
+    const std::vector<std::pair<std::string, double>>& variables,
+    const std::vector<std::pair<std::string, double>>& constants)
+{
+  if (not isparsed_) ParseExpressions();
+
+  SetValuesInExpressionOrExpressionFirstDeriv(expr_, index, variables);
+
+  SetValuesInExpressionOrExpressionFirstDeriv(expr_, index, constants);
+
+  // evaluate the function and return the result
+  return expr_[index]->Evaluate();
+}
+
+std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(
+    const int index, const std::vector<std::pair<std::string, double>>& variables)
+{
+  if (not isparsed_) ParseExpressions();
+
+  auto variables_FAD = ConvertVariableValuesToFADObjects(variables);
+  SetValuesInExpressionOrExpressionFirstDeriv(exprd_, index, variables_FAD);
+
+  return EvaluateAndAssembleExpressionToResultVector(variables, index, exprd_);
+}
+
+std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(int index,
+    const std::vector<std::pair<std::string, double>>& variables,
+    const std::vector<std::pair<std::string, double>>& constants)
+{
+  if (not isparsed_) ParseExpressions();
+
+  auto variables_FAD = ConvertVariableValuesToFADObjects(variables);
+  SetValuesInExpressionOrExpressionFirstDeriv(exprd_, index, variables_FAD);
+
+  SetValuesInExpressionOrExpressionFirstDeriv(exprd_, index, constants);
+
+  return EvaluateAndAssembleExpressionToResultVector(variables, index, exprd_);
 }
