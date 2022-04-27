@@ -1671,19 +1671,27 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
   // post-processing phase, when only one discretization is called,
   // numbering always starts with 0, so a potential offset needs to be
   // taken into account.
-  // NOTE 1: for the pressure result vector of FLUID calculations,
-  //         this offset is 2 or 3, depending on the number of space dimensions.
-  // NOTE 2: this command is only valid, if you use NOT MORE processors
-  //         for filtering than for computation. Otherwise we have empty procs
-  //         owning empty maps, and therefore epetradatamap->MinAllGID()
-  //         will always return zero, resulting in a wrong offset value.
-  //         This is the only reason, why not to use more (and empty) procs.
-  //         All other code parts of post_drt_ensight can handle that.
-  // NOTE 3: This check works for polynomial as well as NURBS discretizations!
-  if (epetradatamap->NumMyElements() < 1)
-    dserror("Proc %d is empty. Do not use more procs for postprocessing than for calculation.",
-        myrank_);
-  int offset = epetradatamap->MinAllGID() - dis->DofRowMap()->MinAllGID();
+
+  // find min. GID over all procs. 'epetradatamap->MinAllGID()' / 'dis->DofRowMap()->MinAllGID()'
+  // cannot be used, as it would return 0 for procs without elements
+  const int num_my_epetradatamap = epetradatamap->NumMyElements();
+  const int num_my_dofrowmap = dis->DofRowMap()->NumMyElements();
+
+  // get min. value on this proc or set to max. value of integers if this proc has no elements
+  int min_gid_my_epetradatamap =
+      num_my_epetradatamap > 0 ? epetradatamap->MinMyGID() : std::numeric_limits<int>::max();
+  int min_gid_my_dofrowmap =
+      num_my_dofrowmap > 0 ? dis->DofRowMap()->MinMyGID() : std::numeric_limits<int>::max();
+
+  // find min. GID over all procs
+  int min_gid_glob_epetradatamap = std::numeric_limits<int>::max();
+  int min_gid_glob_dofrowmap = std::numeric_limits<int>::max();
+
+  dis->Comm().MinAll(&min_gid_my_epetradatamap, &min_gid_glob_epetradatamap, 1);
+  dis->Comm().MinAll(&min_gid_my_dofrowmap, &min_gid_glob_dofrowmap, 1);
+
+  // get offset in dofs
+  const int offset = min_gid_glob_epetradatamap - min_gid_glob_dofrowmap;
 
   // switch between nurbs an others
   if (field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_nurbs &&
