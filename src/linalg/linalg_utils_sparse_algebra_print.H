@@ -35,52 +35,24 @@ namespace LINALG
    */
   void PrintSparsityToPostscript(const Epetra_RowMatrix& A);
 
-  /*!
-   \brief Print content of a sparse matrix in Matlab format
-
-   The sparse matrix is printed in Matlab sparse format to
-   a file with specified file name.
-
-   \note - Works in parallel and serial!
-   \note - When reading this in Matlab, entries are located according to
-   their global row and column ID, even if corresponding DOFs are condensed
-   from global system.
-   */
+  //! Print content of @p sparsematrix in Matlab format to file @p filename. Create new file or
+  //! overwrite exisiting one if @p newfile is true
   void PrintMatrixInMatlabFormat(
-      const std::string& fname, const Epetra_CrsMatrix& A, const bool newfile = true);
+      const std::string& filename, const Epetra_CrsMatrix& sparsematrix, const bool newfile = true);
 
-  /*!
-   \brief Print content of a block sparse matrix in Matlab format
+  //! Print content of @p blockmatrix in Matlab format to file @p filename
+  void PrintBlockMatrixInMatlabFormat(
+      const std::string& filename, const BlockSparseMatrixBase& blockmatrix);
 
-   The block sparse matrix is printed in Matlab sparse format to
-   a file with specified file name.
-
-   \note - Works in parallel and serial!
-   \note - When reading this in Matlab, entries are located according to
-   their global row and column ID, even if corresponding DOFs are condensed
-   from global system.
-   */
-  void PrintBlockMatrixInMatlabFormat(const std::string& fname, const BlockSparseMatrixBase& A);
-
-  /*!
-   \brief Print content of a vector in Matlab format
-
-   The Vector V is printed in Matlab sparse format to
-   a file with specified file name.
-
-   */
+  //! Print content of @p vector in Matlab format to file @p filename. Create new file or overwrite
+  //! exisiting one if @p newfile is true
   void PrintVectorInMatlabFormat(
-      const std::string& fname, const Epetra_Vector& V, const bool newfile = true);
+      const std::string& filename, const Epetra_Vector& vector, const bool newfile = true);
 
-  /*!
-   \brief Print content of a map in Matlab format
-
-   The map is printed in Matlab numbering (+1) to
-   a file with specified file name.
-
-   */
+  //! Print content of @p map in Matlab format to file @p filename. Create new file or overwrite
+  //! exisiting one if @p newfile is true
   void PrintMapInMatlabFormat(
-      const std::string& fname, const Epetra_Map& map, const bool newfile = true);
+      const std::string& filename, const Epetra_Map& map, const bool newfile = true);
 
   /*!
   \brief Write matrix to ASCII-file via Xpetra::IO

@@ -29,73 +29,81 @@ void LINALG::PrintSparsityToPostscript(const Epetra_RowMatrix& A) { Ifpack_Print
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void LINALG::PrintMatrixInMatlabFormat(
-    const std::string& fname, const Epetra_CrsMatrix& A, const bool newfile)
+    const std::string& filename, const Epetra_CrsMatrix& sparsematrix, const bool newfile)
 {
-  // The following source code has been adapted from the Print() method
-  // of the Epetra_CrsMatrix class (see "Epetra_CrsMatrix.cpp").
+  const auto& comm = sparsematrix.Comm();
 
-  const int my_PID = A.RowMap().Comm().MyPID();
-  const int num_proc = A.RowMap().Comm().NumProc();
+  const int my_PID = comm.MyPID();
+  const int num_proc = comm.NumProc();
 
-  std::ofstream os;
-
+  // loop over all procs and send row data to proc 0
   for (int iproc = 0; iproc < num_proc; iproc++)
   {
-    if (my_PID == iproc)
+    int num_rows_iproc = sparsematrix.NumMyRows();
+    comm.Broadcast(&num_rows_iproc, 1, iproc);
+
+    for (int row_lid_iproc = 0; row_lid_iproc < num_rows_iproc; ++row_lid_iproc)
     {
-      // open file for writing
-      if ((iproc == 0) && (newfile))
-        os.open(fname.c_str(), std::fstream::trunc);
-      else
-        os.open(fname.c_str(), std::fstream::ate | std::fstream::app);
+      // get gid of this row and communicate to all procs
+      int row_gid_iproc = iproc == my_PID ? sparsematrix.GRID(row_lid_iproc) : 0;
+      comm.Broadcast(&row_gid_iproc, 1, iproc);
 
-      int num_my_rows = A.NumMyRows();
-      int max_num_inidces = A.MaxNumEntries();
-      std::vector<int> indices(max_num_inidces);
-      std::vector<double> values(max_num_inidces);
-      int num_indices;
-
-      for (int row_lid = 0; row_lid < num_my_rows; row_lid++)
+      // get indices and values of this row and communicate to all procs
+      int num_indices_iproc;
+      std::vector<int> indices_iproc;
+      std::vector<double> values_iproc;
+      if (iproc == my_PID)
       {
-        int row_gid = A.GRID(row_lid);  // Get global row number
-        A.ExtractGlobalRowCopy(row_gid, max_num_inidces, num_indices, &values[0], &indices[0]);
+        const int max_num_inidces = sparsematrix.MaxNumEntries();
+        indices_iproc.resize(max_num_inidces);
+        values_iproc.resize(max_num_inidces);
 
-        for (int col_lid = 0; col_lid < num_indices; col_lid++)
+        sparsematrix.ExtractGlobalRowCopy(
+            row_gid_iproc, max_num_inidces, num_indices_iproc, &values_iproc[0], &indices_iproc[0]);
+      }
+      comm.Broadcast(&num_indices_iproc, 1, iproc);
+      values_iproc.resize(num_indices_iproc);
+      indices_iproc.resize(num_indices_iproc);
+
+      comm.Broadcast(&values_iproc[0], num_indices_iproc, iproc);
+      comm.Broadcast(&indices_iproc[0], num_indices_iproc, iproc);
+
+      if (my_PID == 0)
+      {
+        std::ofstream os;
+        // create new file
+        if (newfile and iproc == 0 and row_lid_iproc == 0)
+          os.open(filename.c_str(), std::fstream::trunc);
+        else
+          os.open(filename.c_str(), std::fstream::ate | std::fstream::app);
+
+        for (int col_idx = 0; col_idx < num_indices_iproc; col_idx++)
         {
-          os << std::setw(10) << row_gid + 1;           // increase index by one for matlab
-          os << std::setw(10) << indices[col_lid] + 1;  // increase index by one for matlab
-          os << std::setw(30) << std::setprecision(16) << std::scientific << values[col_lid];
+          os << std::setw(10) << row_gid_iproc + 1;           // increase index by one for matlab
+          os << std::setw(10) << indices_iproc[col_idx] + 1;  // increase index by one for matlab
+          os << std::setw(30) << std::setprecision(16) << std::scientific << values_iproc[col_idx];
           os << std::endl;
         }
+        os << std::flush;
       }
-
-      os << std::flush;
-
-      // close file
-      os.close();
     }
-    // Do a few global ops to give I/O a chance to complete
-    A.RowMap().Comm().Barrier();
-    A.RowMap().Comm().Barrier();
-    A.RowMap().Comm().Barrier();
+    // wait, until proc 0 has written
+    comm.Barrier();
   }
-
-  // just to be sure
-  if (os.is_open()) os.close();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void LINALG::PrintBlockMatrixInMatlabFormat(
-    const std::string& fname, const BlockSparseMatrixBase& A)
+    const std::string& filename, const BlockSparseMatrixBase& blockmatrix)
 {
-  // For each sub-matrix of A use the existing printing method
-  for (int r = 0; r < A.Rows(); r++)
+  for (int row = 0; row < blockmatrix.Rows(); row++)
   {
-    for (int c = 0; c < A.Cols(); c++)
+    for (int col = 0; col < blockmatrix.Cols(); col++)
     {
-      const LINALG::SparseMatrix& M = A.Matrix(r, c);
-      LINALG::PrintMatrixInMatlabFormat(fname, *(M.EpetraMatrix()), ((r == 0) && (c == 0)));
+      const auto& sparsematrix = blockmatrix.Matrix(row, col);
+      LINALG::PrintMatrixInMatlabFormat(
+          filename, *(sparsematrix.EpetraMatrix()), ((row == 0) && (col == 0)));
     }
   }
 }
@@ -103,123 +111,133 @@ void LINALG::PrintBlockMatrixInMatlabFormat(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void LINALG::PrintVectorInMatlabFormat(
-    const std::string& fname, const Epetra_Vector& V, const bool newfile)
+    const std::string& filename, const Epetra_Vector& vector, const bool newfile)
 {
-  // The following source code has been adapted from the Print() method
-  // of the Epetra_CrsMatrix class (see "Epetra_CrsMatrix.cpp").
+  const auto& comm = vector.Comm();
 
-  const int my_PID = V.Map().Comm().MyPID();
-  const int num_proc = V.Map().Comm().NumProc();
+  const int my_PID = comm.MyPID();
+  const int num_proc = comm.NumProc();
 
-  std::ofstream os;
-
-  for (int iproc = 0; iproc < num_proc; iproc++)  // loop over all processors
+  // loop over all procs and send data to proc 0
+  for (int iproc = 0; iproc < num_proc; iproc++)
   {
-    if (my_PID == iproc)
+    int num_elements_iproc = vector.Map().NumMyElements();
+    int max_element_size_iproc = vector.Map().MaxElementSize();
+
+    comm.Broadcast(&num_elements_iproc, 1, iproc);
+    comm.Broadcast(&max_element_size_iproc, 1, iproc);
+
+    std::vector<int> global_elements_iproc(num_elements_iproc);
+    std::vector<double> values_iproc(num_elements_iproc);
+    std::vector<int> first_point_in_element_list_iproc(num_elements_iproc);
+
+    if (iproc == my_PID)
     {
-      // open file for writing
-      if ((iproc == 0) && (newfile))
-        os.open(fname.c_str(), std::fstream::trunc);
-      else
-        os.open(fname.c_str(), std::fstream::ate | std::fstream::app);
-
-      const int num_my_elements = V.Map().NumMyElements();
-      const int max_element_size = V.Map().MaxElementSize();
-      int* my_global_elements = V.Map().MyGlobalElements();
-      double** A_Pointers = V.Pointers();
-
-      for (int lid = 0; lid < num_my_elements; lid++)
+      for (int i = 0; i < num_elements_iproc; ++i)
       {
-        if (max_element_size == 1)
-        {
-          os << std::setw(10) << my_global_elements[lid] + 1;  // add +1 for Matlab convention
+        global_elements_iproc[i] = vector.Map().MyGlobalElements()[i];
+        values_iproc[i] = vector.Values()[i];
+        first_point_in_element_list_iproc[i] = vector.Map().FirstPointInElementList()[i];
+      }
+    }
 
-          os << std::setw(30) << std::setprecision(16) << A_Pointers[0][lid]
+    comm.Broadcast(&global_elements_iproc[0], num_elements_iproc, iproc);
+    comm.Broadcast(&values_iproc[0], num_elements_iproc, iproc);
+    comm.Broadcast(&first_point_in_element_list_iproc[0], num_elements_iproc, iproc);
+
+    if (my_PID == 0)
+    {
+      std::ofstream os;
+      if (newfile and iproc == 0)
+        os.open(filename.c_str(), std::fstream::trunc);
+      else
+        os.open(filename.c_str(), std::fstream::ate | std::fstream::app);
+
+      for (int lid = 0; lid < num_elements_iproc; lid++)
+      {
+        if (max_element_size_iproc == 1)
+        {
+          os << std::setw(10) << global_elements_iproc[lid] + 1;  // add +1 for Matlab convention
+
+          os << std::setw(30) << std::setprecision(16) << values_iproc[lid]
              << std::endl;  // print out values of 1. vector (no Multi_Vector)
         }
         else
         {
-          int* first_point_in_element_list = V.Map().FirstPointInElementList();
-          for (int ele_lid = 0; ele_lid < V.Map().ElementSize(lid); ele_lid++)
+          for (int ele_lid = 0; ele_lid < vector.Map().ElementSize(lid); ele_lid++)
           {
-            os << std::setw(10) << my_global_elements[lid] << "/" << std::setw(10) << ele_lid;
+            os << std::setw(10) << global_elements_iproc[lid] << "/" << std::setw(10) << ele_lid;
 
             os << std::setw(30) << std::setprecision(16)
-               << A_Pointers[0][first_point_in_element_list[lid] + ele_lid]
+               << values_iproc[first_point_in_element_list_iproc[lid] + ele_lid]
                << std::endl;  // print out values of 1. vector (no Multi_Vector)
           }
         }
+        os << std::flush;
       }
-      os << std::flush;
     }
-    // close file
-    os.close();
-
-    // Do a few global ops to give I/O a chance to complete
-    V.Map().Comm().Barrier();
-    V.Map().Comm().Barrier();
-    V.Map().Comm().Barrier();
+    // wait, until proc 0 has written
+    comm.Barrier();
   }
-
-  // just to be sure
-  if (os.is_open()) os.close();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void LINALG::PrintMapInMatlabFormat(
-    const std::string& fname, const Epetra_Map& map, const bool newfile)
+    const std::string& filename, const Epetra_Map& map, const bool newfile)
 {
-  // The following source code has been adapted from the Print() method
-  // of the Epetra_CrsMatrix class (see "Epetra_CrsMatrix.cpp").
+  const auto& comm = map.Comm();
 
-  int my_PID = map.Comm().MyPID();
-  int num_proc = map.Comm().NumProc();
+  const int my_PID = comm.MyPID();
+  const int num_proc = comm.NumProc();
 
-  std::ofstream os;
-
-  for (int iproc = 0; iproc < num_proc; iproc++)  // loop over all processors
+  // loop over all procs and send data to proc 0
+  for (int iproc = 0; iproc < num_proc; iproc++)
   {
-    if (my_PID == iproc)
+    int num_elements_iproc = map.NumMyElements();
+    int max_element_size_iproc = map.MaxElementSize();
+
+    comm.Broadcast(&num_elements_iproc, 1, iproc);
+    comm.Broadcast(&max_element_size_iproc, 1, iproc);
+
+    std::vector<int> global_elements_iproc(num_elements_iproc);
+
+    if (iproc == my_PID)
     {
-      // open file for writing
-      if ((iproc == 0) && (newfile))
-        os.open(fname.c_str(), std::fstream::trunc);
+      for (int i = 0; i < num_elements_iproc; ++i)
+        global_elements_iproc[i] = map.MyGlobalElements()[i];
+    }
+    comm.Broadcast(&global_elements_iproc[0], num_elements_iproc, iproc);
+
+    if (my_PID == 0)
+    {
+      std::ofstream os;
+      if (newfile and iproc == 0)
+        os.open(filename.c_str(), std::fstream::trunc);
       else
-        os.open(fname.c_str(), std::fstream::ate | std::fstream::app);
+        os.open(filename.c_str(), std::fstream::ate | std::fstream::app);
 
-      const int num_my_elements = map.NumMyElements();
-      const int max_element_size = map.MaxElementSize();
-      int* my_global_elements = map.MyGlobalElements();
-
-      for (int lid = 0; lid < num_my_elements; lid++)
+      for (int lid = 0; lid < num_elements_iproc; lid++)
       {
         for (int ele_lid = 0; ele_lid < map.ElementSize(lid); ele_lid++)
         {
-          if (max_element_size == 1)
+          if (max_element_size_iproc == 1)
           {
-            os << std::setw(10) << my_global_elements[lid] + 1;
+            os << std::setw(10) << global_elements_iproc[lid] + 1;
           }
           else
           {
-            os << std::setw(10) << my_global_elements[lid] + 1 << "/" << std::setw(10) << ele_lid;
+            os << std::setw(10) << global_elements_iproc[lid] + 1 << "/" << std::setw(10)
+               << ele_lid;
           }
           os << std::endl;
         }
       }
       os << std::flush;
     }
-    // close file
-    os.close();
-
-    // Do a few global ops to give I/O a chance to complete
-    map.Comm().Barrier();
-    map.Comm().Barrier();
-    map.Comm().Barrier();
+    // wait, until proc 0 has written
+    comm.Barrier();
   }
-
-  // just to be sure
-  if (os.is_open()) os.close();
 }
 
 /*----------------------------------------------------------------------*
