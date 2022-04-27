@@ -8,17 +8,12 @@
 /*----------------------------------------------------------------------*/
 #include <fstream>
 
-#include "../headers/compiler_definitions.h" /* access to fortran routines */
-
 #include "linalg_blocksparsematrix.H"
 #include "linalg_utils_sparse_algebra_print.H"
-
-#include "../drt_lib/drt_dserror.H"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_MultiVector.h>
 #include <Ifpack_AdditiveSchwarz.h>
-#include <Kokkos_DefaultNode.hpp>
 #include <MueLu_UseDefaultTypes.hpp>
 #include <Xpetra_CrsMatrix.hpp>
 #include <Xpetra_CrsMatrixWrap.hpp>
@@ -29,28 +24,24 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LINALG::PrintSparsityToPostscript(const Epetra_RowMatrix& A)
-{
-  Ifpack_PrintSparsity(A);
-  return;
-}
+void LINALG::PrintSparsityToPostscript(const Epetra_RowMatrix& A) { Ifpack_PrintSparsity(A); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void LINALG::PrintMatrixInMatlabFormat(
-    std::string fname, const Epetra_CrsMatrix& A, const bool newfile)
+    const std::string& fname, const Epetra_CrsMatrix& A, const bool newfile)
 {
   // The following source code has been adapted from the Print() method
   // of the Epetra_CrsMatrix class (see "Epetra_CrsMatrix.cpp").
 
-  int MyPID = A.RowMap().Comm().MyPID();
-  int NumProc = A.RowMap().Comm().NumProc();
+  const int my_PID = A.RowMap().Comm().MyPID();
+  const int num_proc = A.RowMap().Comm().NumProc();
 
   std::ofstream os;
 
-  for (int iproc = 0; iproc < NumProc; iproc++)
+  for (int iproc = 0; iproc < num_proc; iproc++)
   {
-    if (MyPID == iproc)
+    if (my_PID == iproc)
     {
       // open file for writing
       if ((iproc == 0) && (newfile))
@@ -58,29 +49,25 @@ void LINALG::PrintMatrixInMatlabFormat(
       else
         os.open(fname.c_str(), std::fstream::ate | std::fstream::app);
 
-      int NumMyRows1 = A.NumMyRows();
-      int MaxNumIndices = A.MaxNumEntries();
-      int* Indices = new int[MaxNumIndices];
-      double* Values = new double[MaxNumIndices];
-      int NumIndices;
-      int i, j;
+      int num_my_rows = A.NumMyRows();
+      int max_num_inidces = A.MaxNumEntries();
+      std::vector<int> indices(max_num_inidces);
+      std::vector<double> values(max_num_inidces);
+      int num_indices;
 
-      for (i = 0; i < NumMyRows1; i++)
+      for (int row_lid = 0; row_lid < num_my_rows; row_lid++)
       {
-        int Row = A.GRID(i);  // Get global row number
-        A.ExtractGlobalRowCopy(Row, MaxNumIndices, NumIndices, Values, Indices);
+        int row_gid = A.GRID(row_lid);  // Get global row number
+        A.ExtractGlobalRowCopy(row_gid, max_num_inidces, num_indices, &values[0], &indices[0]);
 
-        for (j = 0; j < NumIndices; j++)
+        for (int col_lid = 0; col_lid < num_indices; col_lid++)
         {
-          os << std::setw(10) << Row + 1;         // increase index by one for matlab
-          os << std::setw(10) << Indices[j] + 1;  // increase index by one for matlab
-          os << std::setw(30) << std::setprecision(16) << std::scientific << Values[j];
+          os << std::setw(10) << row_gid + 1;           // increase index by one for matlab
+          os << std::setw(10) << indices[col_lid] + 1;  // increase index by one for matlab
+          os << std::setw(30) << std::setprecision(16) << std::scientific << values[col_lid];
           os << std::endl;
         }
       }
-
-      delete[] Indices;
-      delete[] Values;
 
       os << std::flush;
 
@@ -95,14 +82,12 @@ void LINALG::PrintMatrixInMatlabFormat(
 
   // just to be sure
   if (os.is_open()) os.close();
-
-  // have fun with your Matlab matrix
-  return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LINALG::PrintBlockMatrixInMatlabFormat(std::string fname, const BlockSparseMatrixBase& A)
+void LINALG::PrintBlockMatrixInMatlabFormat(
+    const std::string& fname, const BlockSparseMatrixBase& A)
 {
   // For each sub-matrix of A use the existing printing method
   for (int r = 0; r < A.Rows(); r++)
@@ -113,26 +98,24 @@ void LINALG::PrintBlockMatrixInMatlabFormat(std::string fname, const BlockSparse
       LINALG::PrintMatrixInMatlabFormat(fname, *(M.EpetraMatrix()), ((r == 0) && (c == 0)));
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void LINALG::PrintVectorInMatlabFormat(
-    std::string fname, const Epetra_Vector& V, const bool newfile)
+    const std::string& fname, const Epetra_Vector& V, const bool newfile)
 {
   // The following source code has been adapted from the Print() method
   // of the Epetra_CrsMatrix class (see "Epetra_CrsMatrix.cpp").
 
-  int MyPID = V.Map().Comm().MyPID();
-  int NumProc = V.Map().Comm().NumProc();
+  const int my_PID = V.Map().Comm().MyPID();
+  const int num_proc = V.Map().Comm().NumProc();
 
   std::ofstream os;
 
-  for (int iproc = 0; iproc < NumProc; iproc++)  // loop over all processors
+  for (int iproc = 0; iproc < num_proc; iproc++)  // loop over all processors
   {
-    if (MyPID == iproc)
+    if (my_PID == iproc)
     {
       // open file for writing
       if ((iproc == 0) && (newfile))
@@ -140,33 +123,31 @@ void LINALG::PrintVectorInMatlabFormat(
       else
         os.open(fname.c_str(), std::fstream::ate | std::fstream::app);
 
-      int NumMyElements1 = V.Map().NumMyElements();
-      int MaxElementSize1 = V.Map().MaxElementSize();
-      int* MyGlobalElements1 = V.Map().MyGlobalElements();
-      int* FirstPointInElementList1(NULL);
-      if (MaxElementSize1 != 1) FirstPointInElementList1 = V.Map().FirstPointInElementList();
+      const int num_my_elements = V.Map().NumMyElements();
+      const int max_element_size = V.Map().MaxElementSize();
+      int* my_global_elements = V.Map().MyGlobalElements();
       double** A_Pointers = V.Pointers();
 
-      for (int i = 0; i < NumMyElements1; i++)
+      for (int lid = 0; lid < num_my_elements; lid++)
       {
-        for (int ii = 0; ii < V.Map().ElementSize(i); ii++)
+        if (max_element_size == 1)
         {
-          int iii;
-          if (MaxElementSize1 == 1)
-          {
-            os << std::setw(10) << MyGlobalElements1[i] + 1;  // add +1 for Matlab convention
-            iii = i;
-          }
-          else
-          {
-            os << std::setw(10) << MyGlobalElements1[i] << "/" << std::setw(10) << ii;
-            iii = FirstPointInElementList1[i] + ii;
-          }
+          os << std::setw(10) << my_global_elements[lid] + 1;  // add +1 for Matlab convention
 
-          os << std::setw(30) << std::setprecision(16)
-             << A_Pointers[0][iii];  // print out values of 1. vector (only Epetra_Vector supported,
-                                     // no Multi_Vector)
-          os << std::endl;
+          os << std::setw(30) << std::setprecision(16) << A_Pointers[0][lid]
+             << std::endl;  // print out values of 1. vector (no Multi_Vector)
+        }
+        else
+        {
+          int* first_point_in_element_list = V.Map().FirstPointInElementList();
+          for (int ele_lid = 0; ele_lid < V.Map().ElementSize(lid); ele_lid++)
+          {
+            os << std::setw(10) << my_global_elements[lid] << "/" << std::setw(10) << ele_lid;
+
+            os << std::setw(30) << std::setprecision(16)
+               << A_Pointers[0][first_point_in_element_list[lid] + ele_lid]
+               << std::endl;  // print out values of 1. vector (no Multi_Vector)
+          }
         }
       }
       os << std::flush;
@@ -182,25 +163,24 @@ void LINALG::PrintVectorInMatlabFormat(
 
   // just to be sure
   if (os.is_open()) os.close();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LINALG::PrintMapInMatlabFormat(std::string fname, const Epetra_Map& map, const bool newfile)
+void LINALG::PrintMapInMatlabFormat(
+    const std::string& fname, const Epetra_Map& map, const bool newfile)
 {
   // The following source code has been adapted from the Print() method
   // of the Epetra_CrsMatrix class (see "Epetra_CrsMatrix.cpp").
 
-  int MyPID = map.Comm().MyPID();
-  int NumProc = map.Comm().NumProc();
+  int my_PID = map.Comm().MyPID();
+  int num_proc = map.Comm().NumProc();
 
   std::ofstream os;
 
-  for (int iproc = 0; iproc < NumProc; iproc++)  // loop over all processors
+  for (int iproc = 0; iproc < num_proc; iproc++)  // loop over all processors
   {
-    if (MyPID == iproc)
+    if (my_PID == iproc)
     {
       // open file for writing
       if ((iproc == 0) && (newfile))
@@ -208,21 +188,21 @@ void LINALG::PrintMapInMatlabFormat(std::string fname, const Epetra_Map& map, co
       else
         os.open(fname.c_str(), std::fstream::ate | std::fstream::app);
 
-      int NumMyElements1 = map.NumMyElements();
-      int MaxElementSize1 = map.MaxElementSize();
-      int* MyGlobalElements1 = map.MyGlobalElements();
+      const int num_my_elements = map.NumMyElements();
+      const int max_element_size = map.MaxElementSize();
+      int* my_global_elements = map.MyGlobalElements();
 
-      for (int i = 0; i < NumMyElements1; i++)
+      for (int lid = 0; lid < num_my_elements; lid++)
       {
-        for (int ii = 0; ii < map.ElementSize(i); ii++)
+        for (int ele_lid = 0; ele_lid < map.ElementSize(lid); ele_lid++)
         {
-          if (MaxElementSize1 == 1)
+          if (max_element_size == 1)
           {
-            os << std::setw(10) << MyGlobalElements1[i] + 1;
+            os << std::setw(10) << my_global_elements[lid] + 1;
           }
           else
           {
-            os << std::setw(10) << MyGlobalElements1[i] + 1 << "/" << std::setw(10) << ii;
+            os << std::setw(10) << my_global_elements[lid] + 1 << "/" << std::setw(10) << ele_lid;
           }
           os << std::endl;
         }
@@ -240,8 +220,6 @@ void LINALG::PrintMapInMatlabFormat(std::string fname, const Epetra_Map& map, co
 
   // just to be sure
   if (os.is_open()) os.close();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

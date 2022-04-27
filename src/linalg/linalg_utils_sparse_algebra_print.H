@@ -47,7 +47,7 @@ namespace LINALG
    from global system.
    */
   void PrintMatrixInMatlabFormat(
-      std::string fname, const Epetra_CrsMatrix& A, const bool newfile = true);
+      const std::string& fname, const Epetra_CrsMatrix& A, const bool newfile = true);
 
   /*!
    \brief Print content of a block sparse matrix in Matlab format
@@ -60,7 +60,7 @@ namespace LINALG
    their global row and column ID, even if corresponding DOFs are condensed
    from global system.
    */
-  void PrintBlockMatrixInMatlabFormat(std::string fname, const BlockSparseMatrixBase& A);
+  void PrintBlockMatrixInMatlabFormat(const std::string& fname, const BlockSparseMatrixBase& A);
 
   /*!
    \brief Print content of a vector in Matlab format
@@ -70,7 +70,7 @@ namespace LINALG
 
    */
   void PrintVectorInMatlabFormat(
-      std::string fname, const Epetra_Vector& V, const bool newfile = true);
+      const std::string& fname, const Epetra_Vector& V, const bool newfile = true);
 
   /*!
    \brief Print content of a map in Matlab format
@@ -79,7 +79,8 @@ namespace LINALG
    a file with specified file name.
 
    */
-  void PrintMapInMatlabFormat(std::string fname, const Epetra_Map& map, const bool newfile = true);
+  void PrintMapInMatlabFormat(
+      const std::string& fname, const Epetra_Map& map, const bool newfile = true);
 
   /*!
   \brief Write matrix to ASCII-file via Xpetra::IO
