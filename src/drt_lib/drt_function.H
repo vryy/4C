@@ -46,6 +46,9 @@ namespace DRT
     class Function
     {
      public:
+      //! Virtual destructor.
+      virtual ~Function() = default;
+
       /*!
        * @brief Evaluation of time and space dependent FUNCT
        *
@@ -150,15 +153,25 @@ namespace DRT
     };
 
 
-    /// scalar valued function based on parsed expression
+    /**
+     * @brief Function based on user-supplied expressions
+     *
+     * This class supports functions of type \f$ f(\mathbf{x}, t, a_1(t), ..., a_k(t)) \f$, where
+     * \f$ \mathbf{x} \f$ is the spatial coordinate with `dim` components and where \f$ a_1(t), ...,
+     * a_k(t) \f$ are time-dependent FunctionVariable objects.
+     */
+    template <int dim>
     class ExprFunction : public Function
     {
      public:
-      ExprFunction();
-
-      /// add an expression to the function
-      void AddExpr(const std::string& buf,
-          const std::vector<std::vector<Teuchos::RCP<FunctionVariable>>>& variables);
+      /**
+       * Create an ExprFunction. Each entry in @p expressions corresponds to one component of the
+       * function, thus the resulting function will have `expressions.size()` components. Any
+       * time-dependent variables that appear in the expressions must be passed in the @p variables
+       * vector.
+       */
+      ExprFunction(const std::vector<std::string>& expressions,
+          std::vector<Teuchos::RCP<FunctionVariable>> variables);
 
       double Evaluate(const int index, const double* x, double t) override;
 
@@ -171,56 +184,27 @@ namespace DRT
       /// return the number of components
       std::size_t NumberComponents() override { return (expr_.size()); }
 
-      /*!
-       * \brief check if a given name is a variable
-       *
-       * \param index (i) For vector-valued functions, index defines the function-component
-       *                      which should be evaluated
-       * \param varname  (i) Variable name to be checked
-       */
-      virtual bool IsVariable(const int index, const std::string& varname) const;
-
-      /*!
-       * \brief add a variable to the function
-       *
-       * \param index (i) For vector-valued functions, index defines the function-component
-       *                      which should be evaluated
-       * \param varname  (i) Variable name
-       * \param varvalue (i) Value of the variable
-       */
-      virtual void AddVariable(const int index, const std::string& varname, double varvalue);
-
-      /*!
-       * \brief parse the underlying expression
-       */
-      virtual void ParseExpressions();
-
-     protected:
-      /// dimension of the problem
-      int dim_;
+     private:
+      using ValueType = double;
+      using SecondDerivativeType = Sacado::Fad::DFad<Sacado::Fad::DFad<double>>;
 
       /// vector of parsed expressions
-      std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>> expr_;
-
-      /// vector of parsed 1st derivatives
-      std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double>>>> exprd_;
+      std::vector<Teuchos::RCP<DRT::PARSER::Parser<ValueType>>> expr_;
 
       /// vector of parsed 2nd derivatives
-      std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>>>
-          exprdd_;
+      std::vector<Teuchos::RCP<DRT::PARSER::Parser<SecondDerivativeType>>> exprdd_;
 
       /// vector of the function variables and all their definitions
-      std::vector<std::vector<Teuchos::RCP<FunctionVariable>>> variables_;
-
-     private:
-      bool isparsed_{false};
+      std::vector<Teuchos::RCP<FunctionVariable>> variables_;
     };
 
 
     /// vector-valued spatial function based on parsed expression
-    class VariableExprFunction : public ExprFunction
+    class VariableExprFunction : public Function
     {
      public:
+      VariableExprFunction();
+
       /*!
        * \brief add expression to an existing ExprFunction in order to extend it to a vector-valued
        * spatial function.
@@ -229,7 +213,7 @@ namespace DRT
        * \param buf (i) (c-string) expression to be parsed during evaluation of this component
        * \param constants   (i) vector containing constants defined by a pair (name and value)
        */
-      void AddExpr(
+      virtual void AddExpr(
           const std::string& buf, const std::vector<std::pair<std::string, double>>& constants);
 
       double Evaluate(const int index, const double* x, const double t) override;
@@ -295,7 +279,7 @@ namespace DRT
        *                      which should be evaluated
        * \param varname  (i) Variable name to be checked
        */
-      bool IsVariable(const int index, const std::string& varname) const override;
+      virtual bool IsVariable(const int index, const std::string& varname) const;
 
       /*!
        * \brief add a variable to the function
@@ -305,16 +289,31 @@ namespace DRT
        * \param varname  (i) Variable name
        * \param varvalue (i) Value of the variable
        */
-      void AddVariable(const int index, const std::string& varname, double varvalue) override;
+      virtual void AddVariable(const int index, const std::string& varname, double varvalue);
 
       /*!
        * \brief parse the underlying expression
        */
-      void ParseExpressions() override;
+      virtual void ParseExpressions();
+
+      /// return the number of components
+      std::size_t NumberComponents() override { return (expr_.size()); }
 
      private:
       /// flag indicating whether expression was parsed
-      bool isparsed_;
+      bool isparsed_{false};
+
+      /// dimension of the problem
+      int dim_;
+
+      /// vector of parsed expressions
+      std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>> expr_;
+
+      /// vector of parsed 1st derivatives
+      std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double>>>> exprd_;
+
+      /// vector of the function variables and all their definitions
+      std::vector<std::vector<Teuchos::RCP<FunctionVariable>>> variables_;
     };
 
 
@@ -325,12 +324,10 @@ namespace DRT
 
 
     /// create a vector function from multiple expressions
-    Teuchos::RCP<Function> TryCreateBasicFunction(
+    Teuchos::RCP<Function> TryCreateExprFunction(
         std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs);
   }  // namespace UTILS
 
 }  // namespace DRT
-
-void PrintFunctionDatHeader();
 
 #endif

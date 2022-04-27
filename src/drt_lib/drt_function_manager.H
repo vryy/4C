@@ -58,6 +58,7 @@ namespace DRT
 
 }  // namespace DRT
 
+/// Print the possible function definition lines to `std::cout`
 void PrintFunctionDatHeader();
 
 #endif

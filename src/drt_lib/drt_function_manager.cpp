@@ -18,7 +18,6 @@
 #include "drt_function_library.H"
 #include "../drt_io/io.H"
 
-/// Print Function
 void PrintFunctionDatHeader()
 {
   DRT::UTILS::FunctionManager functionmanager;
@@ -135,7 +134,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
       if (!found_function)
       {
-        auto basic_funct = DRT::UTILS::TryCreateBasicFunction(functions_lin_defs);
+        auto basic_funct = DRT::UTILS::TryCreateExprFunction(functions_lin_defs);
         if (basic_funct != Teuchos::null)
         {
           functions_.emplace_back(basic_funct);
