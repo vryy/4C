@@ -10,6 +10,7 @@ project(baci CXX C Fortran)
 
 if(${CMAKE_VERSION} VERSION_GREATER "3.12.0")
 cmake_policy(SET CMP0074 NEW)
+cmake_policy(SET CMP0057 NEW)
 endif()
 
 # Print CMake version to screen
