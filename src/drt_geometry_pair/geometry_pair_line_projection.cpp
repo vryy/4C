@@ -17,6 +17,7 @@
 #include "geometry_pair_line_to_surface_gauss_point_projection.H"
 #include "geometry_pair_line_to_surface_segmentation.H"
 #include "geometry_pair_line_to_surface_evaluation_data.H"
+#include "geometry_pair_scalar_types.H"
 
 
 /**
@@ -168,7 +169,7 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::PreEvaluate(const pa
   // Gauss rule.
   DRT::UTILS::IntegrationPoints1D gauss_points = pair->GetEvaluationData()->GetGaussPoints();
 
-  // Initilaize variables for the projection.
+  // Initialize variables for the projection.
   scalar_type eta;
   LINALG::Matrix<3, 1, scalar_type> xi;
   ProjectionResult projection_result;
@@ -439,8 +440,7 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
           if (last_segment_active)
           {
             // Create a segment with double as the scalar type.
-            LineSegment<scalar_type> new_segment_double(
-                FADUTILS::CastToDouble(segment_start.GetEta()),
+            LineSegment<double> new_segment_double(FADUTILS::CastToDouble(segment_start.GetEta()),
                 FADUTILS::CastToDouble(start_point.GetEta()));
 
             // Check if the segment already exists for this line.
@@ -530,6 +530,13 @@ namespace GEOMETRYPAIR
   initialize_template_volume_segmentation(double, t_hermite, t_tet10);
   initialize_template_volume_segmentation(double, t_hermite, t_nurbs27);
 
+  // Helper types for the macro initialization. The compiler has troubles inserting the templated
+  // typenames into the macros.
+  using line_to_surface_patch_scalar_type_fixed_size_1st_order_nurbs_9 =
+      line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>;
+  using line_to_surface_patch_scalar_type_fixed_size_nurbs_9 =
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>;
+
   // Define line-to-surface Gauss point projection pairs.
 #define initialize_template_surface_gauss_point(a, b, c)                                          \
   template class LineTo3DGaussPointProjection<                                                    \
@@ -551,6 +558,27 @@ namespace GEOMETRYPAIR
   initialize_template_surface_gauss_point(double, t_hermite, t_tri3);
   initialize_template_surface_gauss_point(double, t_hermite, t_tri6);
 
+  initialize_template_surface_gauss_point(
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad4);
+  initialize_template_surface_gauss_point(
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad8);
+  initialize_template_surface_gauss_point(
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad9);
+  initialize_template_surface_gauss_point(
+      line_to_surface_patch_scalar_type_fixed_size_1st_order_nurbs_9, t_hermite, t_nurbs9);
+  initialize_template_surface_gauss_point(
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_tri3);
+  initialize_template_surface_gauss_point(
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_tri6);
+
+  initialize_template_surface_gauss_point(line_to_surface_patch_scalar_type, t_hermite, t_quad4);
+  initialize_template_surface_gauss_point(line_to_surface_patch_scalar_type, t_hermite, t_quad8);
+  initialize_template_surface_gauss_point(line_to_surface_patch_scalar_type, t_hermite, t_quad9);
+  initialize_template_surface_gauss_point(
+      line_to_surface_patch_scalar_type_fixed_size_nurbs_9, t_hermite, t_nurbs9);
+  initialize_template_surface_gauss_point(line_to_surface_patch_scalar_type, t_hermite, t_tri3);
+  initialize_template_surface_gauss_point(line_to_surface_patch_scalar_type, t_hermite, t_tri6);
+
   // Define line-to-surface segmentation pairs.
 #define initialize_template_surface_segmentation(a, b, c)                                       \
   template class LineTo3DSegmentation<GeometryPairLineToSurfaceSegmentation<a, b, c>>;          \
@@ -565,4 +593,25 @@ namespace GEOMETRYPAIR
   initialize_template_surface_segmentation(double, t_hermite, t_nurbs9);
   initialize_template_surface_segmentation(double, t_hermite, t_tri3);
   initialize_template_surface_segmentation(double, t_hermite, t_tri6);
+
+  initialize_template_surface_segmentation(
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad4);
+  initialize_template_surface_segmentation(
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad8);
+  initialize_template_surface_segmentation(
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad9);
+  initialize_template_surface_segmentation(
+      line_to_surface_patch_scalar_type_fixed_size_1st_order_nurbs_9, t_hermite, t_nurbs9);
+  initialize_template_surface_segmentation(
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_tri3);
+  initialize_template_surface_segmentation(
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_tri6);
+
+  initialize_template_surface_segmentation(line_to_surface_patch_scalar_type, t_hermite, t_quad4);
+  initialize_template_surface_segmentation(line_to_surface_patch_scalar_type, t_hermite, t_quad8);
+  initialize_template_surface_segmentation(line_to_surface_patch_scalar_type, t_hermite, t_quad9);
+  initialize_template_surface_segmentation(
+      line_to_surface_patch_scalar_type_fixed_size_nurbs_9, t_hermite, t_nurbs9);
+  initialize_template_surface_segmentation(line_to_surface_patch_scalar_type, t_hermite, t_tri3);
+  initialize_template_surface_segmentation(line_to_surface_patch_scalar_type, t_hermite, t_tri6);
 }  // namespace GEOMETRYPAIR

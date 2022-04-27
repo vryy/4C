@@ -11,6 +11,7 @@
 #include "geometry_pair_element_functions.H"
 #include "geometry_pair_utility_classes.H"
 #include "geometry_pair_constants.H"
+#include "geometry_pair_scalar_types.H"
 
 #include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../drt_lib/drt_dserror.H"
@@ -79,8 +80,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
       residuum -= point;
 
       // Check if tolerance is fulfilled.
-      if (residuum.Norm2() < CONSTANTS::local_newton_res_tol &&
-          delta_xi.Norm2() < CONSTANTS::projection_xi_eta_tol)
+      if (FADUTILS::VectorNorm(residuum) < CONSTANTS::local_newton_res_tol &&
+          FADUTILS::VectorNorm(delta_xi) < CONSTANTS::projection_xi_eta_tol)
       {
         if (ValidParameterSurface(xi, surface_size, beam_radius))
           projection_result = ProjectionResult::projection_found_valid;
@@ -90,7 +91,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
       }
 
       // Check if residuum is in a sensible range where we still expect to find a solution.
-      if (residuum.Norm2() > CONSTANTS::local_newton_res_max) break;
+      if (FADUTILS::VectorNorm(residuum) > CONSTANTS::local_newton_res_max) break;
 
       // Solve the linearized system.
       if (LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
@@ -281,8 +282,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
       }
 
       // Check if tolerance is fulfilled.
-      if (residuum.Norm2() < CONSTANTS::local_newton_res_tol &&
-          delta_x.Norm2() < CONSTANTS::projection_xi_eta_tol)
+      if (FADUTILS::VectorNorm(residuum) < CONSTANTS::local_newton_res_tol &&
+          FADUTILS::VectorNorm(delta_x) < CONSTANTS::projection_xi_eta_tol)
       {
         // Check if the parameter coordinates are valid.
         if (ValidParameter1D(eta) && ValidParameterSurface(xi, surface_size, beam_radius))
@@ -293,7 +294,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
       }
 
       // Check if residuum is in a sensible range where we still expect to find a solution.
-      if (residuum.Norm2() > CONSTANTS::local_newton_res_max) break;
+      if (FADUTILS::VectorNorm(residuum) > CONSTANTS::local_newton_res_max) break;
 
       // Fill up the jacobian.
       for (unsigned int i = 0; i < 3; i++)
@@ -384,7 +385,7 @@ scalar_type GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>:
 
       diff = corner_nodes(j_node);
       diff -= corner_nodes(i_node);
-      distance = diff.Norm2();
+      distance = FADUTILS::VectorNorm(diff);
       if (distance > max_distance) max_distance = distance;
     }
   }
@@ -396,15 +397,34 @@ scalar_type GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>:
 /**
  * Explicit template initialization of template class.
  */
-template class GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tri3>;
-template class GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tri6>;
-template class GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad4>;
-template class GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad8>;
-template class GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad9>;
-template class GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_nurbs9>;
+namespace GEOMETRYPAIR
+{
+  template class GeometryPairLineToSurface<double, t_hermite, t_tri3>;
+  template class GeometryPairLineToSurface<double, t_hermite, t_tri6>;
+  template class GeometryPairLineToSurface<double, t_hermite, t_quad4>;
+  template class GeometryPairLineToSurface<double, t_hermite, t_quad8>;
+  template class GeometryPairLineToSurface<double, t_hermite, t_quad9>;
+  template class GeometryPairLineToSurface<double, t_hermite, t_nurbs9>;
+
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_hermite,
+      t_tri3>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_hermite,
+      t_tri6>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_hermite,
+      t_quad4>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_hermite,
+      t_quad8>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_hermite,
+      t_quad9>;
+  template class GeometryPairLineToSurface<
+      line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>, t_hermite,
+      t_nurbs9>;
+
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_hermite, t_tri3>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_hermite, t_tri6>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_hermite, t_quad4>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_hermite, t_quad8>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_hermite, t_quad9>;
+  template class GeometryPairLineToSurface<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
+}  // namespace GEOMETRYPAIR

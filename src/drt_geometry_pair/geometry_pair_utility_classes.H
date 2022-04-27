@@ -227,7 +227,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Default constructor, the segment is from -1 to 1.
      */
-    LineSegment() : LineSegment(-1.0, 1.0){};
+    LineSegment() : LineSegment(scalar_type(-1.0), scalar_type(1.0)){};
 
     /**
      * \brief Constructor. Set the range of the segment.

@@ -12,6 +12,7 @@
 #include "geometry_pair_element_functions.H"
 #include "geometry_pair_line_to_surface_evaluation_data.H"
 #include "geometry_pair_line_projection.H"
+#include "geometry_pair_scalar_types.H"
 
 
 /**
@@ -58,15 +59,39 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<scalar_type, line, surf
 /**
  * Explicit template initialization of template class.
  */
-template class GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tri3>;
-template class GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tri6>;
-template class GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad4>;
-template class GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad8>;
-template class GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad9>;
-template class GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_nurbs9>;
+namespace GEOMETRYPAIR
+{
+  template class GeometryPairLineToSurfaceSegmentation<double, t_hermite, t_tri3>;
+  template class GeometryPairLineToSurfaceSegmentation<double, t_hermite, t_tri6>;
+  template class GeometryPairLineToSurfaceSegmentation<double, t_hermite, t_quad4>;
+  template class GeometryPairLineToSurfaceSegmentation<double, t_hermite, t_quad8>;
+  template class GeometryPairLineToSurfaceSegmentation<double, t_hermite, t_quad9>;
+  template class GeometryPairLineToSurfaceSegmentation<double, t_hermite, t_nurbs9>;
+
+  template class GeometryPairLineToSurfaceSegmentation<line_to_surface_patch_scalar_type_1st_order,
+      t_hermite, t_tri3>;
+  template class GeometryPairLineToSurfaceSegmentation<line_to_surface_patch_scalar_type_1st_order,
+      t_hermite, t_tri6>;
+  template class GeometryPairLineToSurfaceSegmentation<line_to_surface_patch_scalar_type_1st_order,
+      t_hermite, t_quad4>;
+  template class GeometryPairLineToSurfaceSegmentation<line_to_surface_patch_scalar_type_1st_order,
+      t_hermite, t_quad8>;
+  template class GeometryPairLineToSurfaceSegmentation<line_to_surface_patch_scalar_type_1st_order,
+      t_hermite, t_quad9>;
+  template class GeometryPairLineToSurfaceSegmentation<
+      line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>, t_hermite,
+      t_nurbs9>;
+
+  template class GeometryPairLineToSurfaceSegmentation<line_to_surface_patch_scalar_type, t_hermite,
+      t_tri3>;
+  template class GeometryPairLineToSurfaceSegmentation<line_to_surface_patch_scalar_type, t_hermite,
+      t_tri6>;
+  template class GeometryPairLineToSurfaceSegmentation<line_to_surface_patch_scalar_type, t_hermite,
+      t_quad4>;
+  template class GeometryPairLineToSurfaceSegmentation<line_to_surface_patch_scalar_type, t_hermite,
+      t_quad8>;
+  template class GeometryPairLineToSurfaceSegmentation<line_to_surface_patch_scalar_type, t_hermite,
+      t_quad9>;
+  template class GeometryPairLineToSurfaceSegmentation<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
+}  // namespace GEOMETRYPAIR

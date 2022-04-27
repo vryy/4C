@@ -16,6 +16,7 @@
 #include "geometry_pair_line_to_volume_gauss_point_projection.H"
 #include "geometry_pair_line_to_volume_segmentation.H"
 #include "geometry_pair_line_to_3D_evaluation_data.H"
+#include "geometry_pair_scalar_types.H"
 
 
 /**
@@ -134,4 +135,49 @@ template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLine
     const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
     double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>(
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
+
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
+    GEOMETRYPAIR::line_to_surface_patch_scalar_type_1st_order, GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_tri3>(const Teuchos::RCP<GeometryEvaluationDataBase>&);
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
+    GEOMETRYPAIR::line_to_surface_patch_scalar_type_1st_order, GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_tri6>(const Teuchos::RCP<GeometryEvaluationDataBase>&);
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
+    GEOMETRYPAIR::line_to_surface_patch_scalar_type_1st_order, GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_quad4>(const Teuchos::RCP<GeometryEvaluationDataBase>&);
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
+    GEOMETRYPAIR::line_to_surface_patch_scalar_type_1st_order, GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_quad8>(const Teuchos::RCP<GeometryEvaluationDataBase>&);
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
+    GEOMETRYPAIR::line_to_surface_patch_scalar_type_1st_order, GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_quad9>(const Teuchos::RCP<GeometryEvaluationDataBase>&);
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
+    GEOMETRYPAIR::line_to_surface_patch_scalar_type_fixed_size_1st_order<GEOMETRYPAIR::t_hermite,
+        GEOMETRYPAIR::t_nurbs9>,
+    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>(
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
+
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
+    GEOMETRYPAIR::line_to_surface_patch_scalar_type, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>(
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
+    GEOMETRYPAIR::line_to_surface_patch_scalar_type, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>(
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair>
+GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<GEOMETRYPAIR::line_to_surface_patch_scalar_type,
+    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>(
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair>
+GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<GEOMETRYPAIR::line_to_surface_patch_scalar_type,
+    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>(
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair>
+GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<GEOMETRYPAIR::line_to_surface_patch_scalar_type,
+    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>(
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
+    GEOMETRYPAIR::line_to_surface_patch_scalar_type_fixed_size<GEOMETRYPAIR::t_hermite,
+        GEOMETRYPAIR::t_nurbs9>,
+    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>(
     const Teuchos::RCP<GeometryEvaluationDataBase>&);
