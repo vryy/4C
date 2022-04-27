@@ -22,10 +22,7 @@
 #include "../drt_io/io_pstream.H"
 
 #include <Epetra_Time.h>
-
-#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
-#include <boost/algorithm/string.hpp>
-#endif
+#include <algorithm>
 
 namespace DRT
 {
@@ -173,9 +170,8 @@ namespace DRT
               {
                 std::string tmp;
                 t >> tmp;
-#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
-                boost::algorithm::to_lower(tmp);
-#endif
+                std::transform(tmp.begin(), tmp.end(), tmp.begin(),
+                    [](unsigned char c) { return std::tolower(c); });
                 if (tmp == "auto")
                   autopartition = true;
                 else if (tmp == "structured")

@@ -23,6 +23,7 @@
 #include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_solver.H"
+#include <list>
 
 #include "../drt_io/io_gmsh.H"
 

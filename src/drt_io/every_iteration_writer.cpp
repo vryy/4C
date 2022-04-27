@@ -16,7 +16,7 @@
 
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <Teuchos_ParameterList.hpp>
 
 /*----------------------------------------------------------------------------*
@@ -123,9 +123,9 @@ void IO::CreateDirectory(const std::string& dir_path, const int myrank)
 {
   if (myrank != 0) return;
 
-  boost::filesystem::path dir(dir_path);
-  if (not boost::filesystem::is_directory(dir))
-    if (not boost::filesystem::create_directory(dir))
+  std::filesystem::path dir(dir_path);
+  if (!std::filesystem::is_directory(dir))
+    if (!std::filesystem::create_directory(dir))
       dserror("The directory \"%s\" could not be created!", dir_path.c_str());
 }
 

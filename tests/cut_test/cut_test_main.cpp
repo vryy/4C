@@ -12,7 +12,6 @@
 #include "../../src/drt_lib/drt_globalproblem.H"
 #include "cut_test_utils.H"
 
-//#include <boost/program_options.hpp>
 #include <Teuchos_CommandLineProcessor.hpp>
 #include <map>
 #include <string>

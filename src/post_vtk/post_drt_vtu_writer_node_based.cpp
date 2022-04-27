@@ -13,7 +13,6 @@
 #include "post_drt_vtu_writer.H"
 
 #include <sstream>
-#include <boost/static_assert.hpp>
 
 #include "../drt_lib/drt_element_vtk_cell_type_register.H"
 #include "../drt_lib/drt_discret.H"
@@ -33,10 +32,9 @@
 PostVtuWriterNode::PostVtuWriterNode(PostField* field, const std::string& filename)
     : PostVtuWriter(field, filename)
 {
-  BOOST_STATIC_ASSERT_MSG(29 == DRT::Element::max_distype,
+  static_assert(29 == DRT::Element::max_distype,
       "The number of element types defined by DRT::Element::DiscretizationType does not match the "
-      "number of element types supported by the post vtu filter.")
-  BACI_ATTRIBUTE_UNUSED;
+      "number of element types supported by the post vtu filter.");
   if (myrank_ != 0) dserror("Node based filtering only works in serial mode");
 }
 

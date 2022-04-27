@@ -14,7 +14,6 @@
 
 #include <functional>
 #include <utility>
-#include <boost/optional.hpp>
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "anisotropy.H"
 #include "../drt_lib/drt_linedefinition.H"

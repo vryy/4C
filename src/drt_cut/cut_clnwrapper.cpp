@@ -10,7 +10,6 @@
 #include "cut_clnwrapper.H"
 #include <iomanip>
 #include "cut_tolerance.H"
-#include <boost/unordered_map.hpp>
 #include <cmath>
 #ifdef CLN_CALC
 #include <cln/malloc.h>

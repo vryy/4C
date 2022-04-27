@@ -213,7 +213,7 @@ if (USE_NO_SYSTEM_PATHS)
   set(Boost_NO_SYSTEM_PATHS ON )
 endif(USE_NO_SYSTEM_PATHS)
 
-FIND_PACKAGE(Boost COMPONENTS graph program_options system filesystem REQUIRED)
+FIND_PACKAGE(Boost COMPONENTS graph system REQUIRED)
 
 if (Boost_FOUND)
   message("-- Found Boost: ${Boost_INCLUDE_DIRS}")
@@ -228,23 +228,6 @@ if (Boost_FOUND)
   # Pass the version to baci
   add_definitions("-DBOOST_MAJOR_VERSION=${Boost_MAJOR_VERSION}")
   add_definitions("-DBOOST_MINOR_VERSION=${Boost_MINOR_VERSION}")
-
-  CHECK_CXX_SOURCE_COMPILES(
-  "
-  #include <boost/static_assert.hpp>
-  int main()
-  {
-    BOOST_STATIC_ASSERT(2 < 3) __attribute__((unused));
-  }
-  "
-  BOOST_STATIC_ASSERT_UNUSED_WORKS
-  )
-
-  if (BOOST_STATIC_ASSERT_UNUSED_WORKS)
-    add_definitions(-DBACI_ATTRIBUTE_UNUSED=__attribute__\(\(unused\)\))
-  else ()
-    add_definitions(-DBACI_ATTRIBUTE_UNUSED=)
-  endif()
 
 else()
  message(FATAL_ERROR ${Boost_ERROR_REASON})

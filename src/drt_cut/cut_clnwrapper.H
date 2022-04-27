@@ -12,8 +12,9 @@
 #define CUT_CLNWRAPPER_H
 #include <stddef.h>
 #include "../drt_lib/drt_dserror.H"
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 #include "cut_memory_manager.H"
+#include <sstream>
 
 // whether we want to use CLN at all or not
 #define CLN_CALC
@@ -350,11 +351,11 @@ namespace GEO
           }
           return zeros_cache[prec_id].first;
         }
-        typedef boost::unordered_map<double, cln::cl_F> maptype;
+        using maptype = std::unordered_map<double, cln::cl_F>;
         // initialize look-up vector  with maximum number of different precisions
         static std::vector<maptype> clnval_cache(
             static_cast<int>(double(CLN_REFERENCE_PREC) / double(CLN_INCREMENT_STEP)));
-        maptype::iterator it = clnval_cache[prec_id].find(a);
+        auto it = clnval_cache[prec_id].find(a);
         if (it != clnval_cache[prec_id].end())
         {
           return it->second;

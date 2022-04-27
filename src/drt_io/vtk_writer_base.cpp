@@ -12,7 +12,7 @@
 #include <iomanip>
 #include <limits>
 #include <cmath>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "../pss_full/pss_cpp.h"
 
@@ -235,9 +235,9 @@ void VtkWriterBase::SetAndCreateVtkWorkingDirectory(
   working_directory_full_path_ =
       path_existing_working_directory + name_vtk_subdirectory_to_be_created;
 
-  boost::filesystem::create_directories(working_directory_full_path_);
+  std::filesystem::create_directories(working_directory_full_path_);
 
-  if (not boost::filesystem::is_directory(working_directory_full_path_))
+  if (!std::filesystem::is_directory(working_directory_full_path_))
     dserror("VtkWriterBase failed to create working (sub)directory!");
 }
 

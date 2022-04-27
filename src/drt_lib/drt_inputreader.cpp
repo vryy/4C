@@ -22,8 +22,6 @@
 
 #include "drt_utils_reader.H"
 
-#include <boost/lexical_cast.hpp>
-
 #include <Epetra_Time.h>
 #include <sstream>
 #include <utility>

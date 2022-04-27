@@ -11,6 +11,9 @@
 #ifndef CUT_TRIANGULATEFACET_H
 #define CUT_TRIANGULATEFACET_H
 
+#include <list>
+#include <vector>
+#include "cut_side.H"
 namespace GEO
 {
   namespace CUT

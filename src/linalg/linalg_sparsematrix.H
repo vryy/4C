@@ -19,8 +19,6 @@
 #include "linalg_mapextractor.H"
 #include "../drt_lib/drt_dserror.H"
 
-#include <boost/static_assert.hpp>
-
 
 namespace LINALG
 {
@@ -91,37 +89,8 @@ namespace LINALG
     /// The following dummy templated constructors will catch all attempts to call any constructor
     /// with arguments that require implicit casting. Therefore you have to instantiate this class
     /// with exactly the types matching one of the constructors
-#if __cplusplus >= 201103L
     template <typename... T>
     SparseMatrix(T...) = delete;
-#else
-    template <typename T0>
-    SparseMatrix(T0)
-    {
-      BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") BACI_ATTRIBUTE_UNUSED;
-    }
-    template <typename T0, typename T1>
-    SparseMatrix(T0, T1)
-    {
-      BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") BACI_ATTRIBUTE_UNUSED;
-    }
-    template <typename T0, typename T1, typename T2>
-    SparseMatrix(T0, T1, T2)
-    {
-      BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") BACI_ATTRIBUTE_UNUSED;
-    }
-    template <typename T0, typename T1, typename T2, typename T3>
-    SparseMatrix(T0, T1, T2, T3)
-    {
-      BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") BACI_ATTRIBUTE_UNUSED;
-    }
-    template <typename T0, typename T1, typename T2, typename T3, typename T4>
-    SparseMatrix(T0, T1, T2, T3, T4)
-    {
-      BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") BACI_ATTRIBUTE_UNUSED;
-    }
-#endif
-
     /// construction of sparse matrix
     SparseMatrix(
         Teuchos::RCP<Epetra_CrsGraph> crsgraph, Teuchos::RCP<LINALG::MultiMapExtractor> dbcmaps);

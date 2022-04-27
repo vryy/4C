@@ -22,7 +22,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <boost/static_assert.hpp>
 
 // inverse design object
 #include "inversedesign.H"
@@ -1087,7 +1086,7 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(Teuchos::ParameterList& params,
   }
 
   // (SPATIAL) FUNCTION BUSINESS
-  BOOST_STATIC_ASSERT((NUMGPT_SOTET4 == 1)) BACI_ATTRIBUTE_UNUSED;
+  static_assert((NUMGPT_SOTET4 == 1));
   const auto* funct = condition.Get<std::vector<int>>("funct");
   LINALG::Matrix<NUMDIM_SOTET4, 1> xrefegp(false);
   bool havefunct = false;

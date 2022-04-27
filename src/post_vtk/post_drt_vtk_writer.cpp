@@ -11,7 +11,7 @@
 #include "post_drt_vtk_writer.H"
 
 #include <iomanip>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "../post_drt_common/post_drt_common.H"
 #include "../pss_full/pss_cpp.h"
@@ -308,7 +308,7 @@ void PostVtkWriter::WriteFiles(PostFilterBase &filter)
   std::vector<std::pair<double, std::string>> filenames;
 
   const std::string dirname = filename_ + "-files";
-  boost::filesystem::create_directories(dirname);
+  std::filesystem::create_directories(dirname);
 
   for (timestep_ = 0; timestep_ < (int)soltime.size(); ++timestep_)
   {
@@ -366,7 +366,7 @@ void PostVtkWriter::WriteFilesChangingGeom(PostFilterBase &filter)
   std::vector<std::pair<double, std::string>> filenames;
 
   const std::string dirname = filename_ + "-files";
-  boost::filesystem::create_directories(dirname);
+  std::filesystem::create_directories(dirname);
 
   for (timestep_ = 0; timestep_ < (int)soltime.size(); ++timestep_)
   {

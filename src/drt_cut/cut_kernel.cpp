@@ -17,6 +17,7 @@
 #include "cut_position.H"
 #include "../drt_io/io_pstream.H"
 #include <iostream>
+#include <unordered_map>
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -983,7 +984,7 @@ bool GEO::CUT::KERNEL::AdaptiveKernelSharedData::all_position_done_once_ = true;
 
 size_t GEO::CUT::KERNEL::AdaptiveKernelSharedData::cln_byte_size_[] = {48, 56, 56, 64};
 
-boost::unordered_map<size_t, int> GEO::CUT::KERNEL::AdaptiveKernelSharedData::memory_allocations_;
+std::unordered_map<size_t, int> GEO::CUT::KERNEL::AdaptiveKernelSharedData::memory_allocations_;
 
 std::map<size_t, int> GEO::CUT::KERNEL::AdaptiveKernelSharedData::memory_allocations_intersection_;
 

@@ -14,8 +14,8 @@
 #include <iostream>
 #include <iomanip>  // for std::setw
 #include "../drt_lib/drt_dserror.H"
-#include <boost/unordered_map.hpp>  // for unordered map
-//#include <boost/align/alignment_of.hpp>
+#include <unordered_map>
+
 
 #define DEBUG_MEMORY false
 //// number of elements in the the "unexpected container"
@@ -57,7 +57,7 @@ static size_t lcm(size_t a, size_t b) { return (a * b) / gcd(a, b); }
 GEO::CUT::ConstMemoryPool::ConstMemoryPool(size_t constSize, int n)
     : size_(constSize), n_(n), free_size_(n), free_size_linear_(n), linear_(true)
 {
-  const size_t alignment_of_char = boost::alignment_of<char*>::value;
+  const size_t alignment_of_char = std::alignment_of<char*>::value;
   if (alignment_of_char != 8) dserror("How it this possible?");
 
   container_start_ = malloc(constSize * n);
@@ -238,7 +238,7 @@ void GEO::CUT::GenericMemoryPool::DeleteMissing()
 
 void GEO::CUT::GenericMemoryPool::SetCurrent(size_t size)
 {
-  boost::unordered_map<size_t, ConstMemoryPool*>::iterator it = const_memory_map_.find(size);
+  auto it = const_memory_map_.find(size);
   if (it != const_memory_map_.end())
     current_ = it->second;
   else
@@ -258,25 +258,23 @@ bool GEO::CUT::GenericMemoryPool::CheckFree(bool debug)
   bool result = true;
   if (!debug)
   {
-    for (boost::unordered_map<size_t, ConstMemoryPool*>::iterator it = const_memory_map_.begin();
-         it != const_memory_map_.end(); ++it)
+    for (const auto& it : const_memory_map_)
     {
-      if (not(*it).second->IsFree()) result = false;
+      if (!it.second->IsFree()) result = false;
     }
   }
   else
   {
-    for (boost::unordered_map<size_t, ConstMemoryPool*>::iterator it = const_memory_map_.begin();
-         it != const_memory_map_.end(); ++it)
+    for (const auto& it : const_memory_map_)
     {
-      if (not(*it).second->IsFreeDebug()) result = false;
+      if (!it.second->IsFreeDebug()) result = false;
     }
   }
   return result;
 }
 
 GEO::CUT::GenericMemoryPool::GenericMemoryPool(
-    const boost::unordered_map<size_t, int>& mem_pattern, bool reusable, bool allocating_together)
+    const std::unordered_map<size_t, int>& mem_pattern, bool reusable, bool allocating_together)
     : is_reusable_(reusable), is_allocated_together_(allocating_together)
 {
   // Initializing memory containers
@@ -292,11 +290,10 @@ GEO::CUT::GenericMemoryPool::GenericMemoryPool(
     int frequency = 0;
     size_t total_size = 0;
     size_t total_byte_size = 0;
-    for (boost::unordered_map<size_t, int>::const_iterator it = mem_pattern.begin();
-         it != mem_pattern.end(); ++it)
+    for (const auto& it : mem_pattern)
     {
-      size_t const_size = it->first;
-      int num_el = it->second;
+      size_t const_size = it.first;
+      int num_el = it.second;
       if (num_el > frequency)
       {
         most_frequent_size = const_size;
@@ -331,7 +328,7 @@ GEO::CUT::GenericMemoryPool::GenericMemoryPool(
 }
 
 void GEO::CUT::GenericMemoryPool::AllInOneAllocation(
-    const boost::unordered_map<size_t, int>& mem_pattern)
+    const std::unordered_map<size_t, int>& mem_pattern)
 {
 #if EXTENDED_CUT_DEBUG_OUTPUT
   std::cout << "\nCreating constant memory containers for CLN..\n";
@@ -343,11 +340,10 @@ void GEO::CUT::GenericMemoryPool::AllInOneAllocation(
   std::vector<std::pair<size_t, int>> mem_pattern_vec;
   mem_pattern_vec.reserve(mem_pattern.size());
   size_t total_size = 0;
-  for (boost::unordered_map<size_t, int>::const_iterator it = mem_pattern.begin();
-       it != mem_pattern.end(); ++it)
+  for (auto it : mem_pattern)
   {
-    mem_pattern_vec.push_back(std::make_pair(it->first, it->second * SCALE_FACTOR));
-    total_size += it->first * it->second * SCALE_FACTOR;
+    mem_pattern_vec.push_back(std::make_pair(it.first, it.second * SCALE_FACTOR));
+    total_size += it.first * it.second * SCALE_FACTOR;
 #if EXTENDED_CUT_DEBUG_OUTPUT
     std::cout << "|" << std::setw(14) << it->first << " | " << std::setw(19)
               << it->second * SCALE_FACTOR << "|\n";
@@ -443,7 +439,7 @@ void* GEO::CUT::GenericMemoryPool::Allocate(size_t size)
   else
   {
     ConstMemoryPool* onduty;
-    boost::unordered_map<size_t, ConstMemoryPool*>::iterator it = const_memory_map_.find(size);
+    auto it = const_memory_map_.find(size);
     if (it != const_memory_map_.end())
     {
       onduty = (it->second);
@@ -482,10 +478,9 @@ void GEO::CUT::GenericMemoryPool::Finalize()
   // otherwise delete quequed pointers for real
   if (is_reusable_)
   {
-    for (boost::unordered_map<size_t, ConstMemoryPool*>::iterator it = const_memory_map_.begin();
-         it != const_memory_map_.end(); ++it)
+    for (const auto& it : const_memory_map_)
     {
-      it->second->ResetContainer();
+      it.second->ResetContainer();
     }
   }
   else
@@ -512,14 +507,13 @@ void GEO::CUT::GenericMemoryPool::Delete()
   }
 
   // delete objects
-  for (boost::unordered_map<size_t, ConstMemoryPool*>::iterator it = const_memory_map_.begin();
-       it != const_memory_map_.end(); ++it)
+  for (auto& it : const_memory_map_)
   {
 #if EXTENDED_CUT_DEBUG_OUTPUT
     std::cout << "Deleting container with the size of " << (*it).first << std::endl;
 #endif
-    if (not is_allocated_together_) (*it).second->Delete();
-    delete (*it).second;
+    if (not is_allocated_together_) it.second->Delete();
+    delete it.second;
   }
 }
 
@@ -539,7 +533,7 @@ std::string GEO::CUT::DebugCustomMemoryManager::State2String()
 }
 
 void GEO::CUT::DebugCustomMemoryManager::SetState(
-    int newstate, boost::unordered_map<size_t, int>& memory_allocations)
+    int newstate, std::unordered_map<size_t, int>& memory_allocations)
 {
   MemoryState prev_state = state_;
   state_ = newstate ? pool : normal;
@@ -576,20 +570,18 @@ void GEO::CUT::DebugCustomMemoryManager::SwitchState()
 
 void GEO::CUT::DebugCustomMemoryManager::ReportAllocated()
 {
-  for (boost::unordered_map<size_t, int>::iterator it = memory_allocations_.begin();
-       it != memory_allocations_.end(); ++it)
+  for (auto& memory_allocation : memory_allocations_)
   {
-    std::cout << "Size " << (*it).first << " was allocated " << (*it).second << " times "
-              << std::endl;
+    std::cout << "Size " << memory_allocation.first << " was allocated " << memory_allocation.second
+              << " times " << std::endl;
   }
 }
 
 void GEO::CUT::DebugCustomMemoryManager::ResetAllocated()
 {
-  for (boost::unordered_map<size_t, int>::iterator it = memory_allocations_.begin();
-       it != memory_allocations_.end(); ++it)
+  for (auto& memory_allocation : memory_allocations_)
   {
-    (*it).second = 0;
+    memory_allocation.second = 0;
   }
 }
 
@@ -607,7 +599,7 @@ void GEO::CUT::DebugCustomMemoryManager::Delete()
   }
 }
 
-boost::unordered_map<size_t, int>& GEO::CUT::DebugCustomMemoryManager::GetMemoryPattern()
+std::unordered_map<size_t, int>& GEO::CUT::DebugCustomMemoryManager::GetMemoryPattern()
 {
   return memory_allocations_;
 }

@@ -12,9 +12,8 @@ the Baci guide in the Convention chapter.
 #ifndef DRT_UTILS_FEM_SHAPEFUNCTION
 #define DRT_UTILS_FEM_SHAPEFUNCTION
 
+#include <type_traits>
 #include "drt_utils_local_connectivity_matrices.H"
-#include <boost/static_assert.hpp>
-#include <boost/type_traits.hpp>
 #include "../drt_cut/cut_clnwrapper.H"
 
 #define PY5TOL 1.0e-14
@@ -34,9 +33,8 @@ namespace DRT
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
-      // if the given template parameter is of type int, the error
-      // "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-      BOOST_STATIC_ASSERT((not boost::is_same<int, T>::value)) BACI_ATTRIBUTE_UNUSED;
+      // if the given template parameter is of type int, the error occurs during compilation
+      static_assert(!std::is_integral_v<T>);
 
       const T Q18 = 0.125;
       const T Q12 = 0.5;
@@ -371,9 +369,8 @@ namespace DRT
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
-      // if the given template parameter is of type int, the error
-      // "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-      BOOST_STATIC_ASSERT((not boost::is_same<int, T>::value)) BACI_ATTRIBUTE_UNUSED;
+      // if the given template parameter is of type int, the error occurs during compilation
+      static_assert(!std::is_integral_v<T>);
 
       const int dr = 0;
       const int ds = 1;
@@ -1051,9 +1048,8 @@ namespace DRT
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
-      // if the given template parameter is of type int, the error
-      // "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-      BOOST_STATIC_ASSERT((not boost::is_same<int, T>::value)) BACI_ATTRIBUTE_UNUSED;
+      // if the given template parameter is of type int, the error occurs during compilation
+      static_assert(!std::is_integral_v<T>);
 
       const T Q18 = 1.0 / 8.0;
       const T Q12 = 1.0 / 2.0;
@@ -2077,9 +2073,8 @@ namespace DRT
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
-      // if the given template parameter is of type int, the error
-      // "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-      BOOST_STATIC_ASSERT((not boost::is_same<int, T>::value)) BACI_ATTRIBUTE_UNUSED;
+      // if the given template parameter is of type int, the error occurs during compilation
+      static_assert(!std::is_integral_v<T>);
 
       switch (distype)
       {
@@ -2228,9 +2223,8 @@ namespace DRT
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
-      // if the given template parameter is of type int, the error
-      // "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-      BOOST_STATIC_ASSERT((not boost::is_same<int, T>::value)) BACI_ATTRIBUTE_UNUSED;
+      // if the given template parameter is of type int, the error occurs during compilation
+      static_assert((not std::is_same<int, T>::value));
 
       const int dr = 0;
       const int ds = 1;
@@ -2451,9 +2445,8 @@ namespace DRT
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
-      // if the given template parameter is of type int, the error
-      // "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-      BOOST_STATIC_ASSERT((not boost::is_same<int, T>::value)) BACI_ATTRIBUTE_UNUSED;
+      // if the given template parameter is of type int, the error occurs during compilation
+      static_assert((not std::is_same<int, T>::value));
 
       const int drdr = 0;
       const int dsds = 1;
@@ -2741,9 +2734,8 @@ namespace DRT
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
-      // if the given template parameter is of type int, the error
-      // "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-      BOOST_STATIC_ASSERT((not boost::is_same<int, T>::value)) BACI_ATTRIBUTE_UNUSED;
+      // if the given template parameter is of type int, the error occurs during compilation
+      static_assert(!std::is_integral_v<T>);
 
       switch (distype)
       {
@@ -2837,9 +2829,8 @@ namespace DRT
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
-      // if the given template parameter is of type int, the error
-      // "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-      BOOST_STATIC_ASSERT((not boost::is_same<int, T>::value)) BACI_ATTRIBUTE_UNUSED;
+      // if the given template parameter is of type int, the error occurs during compilation
+      static_assert(!std::is_integral_v<T>);
 
       const int dr = 0;
       switch (distype)
@@ -2934,9 +2925,8 @@ namespace DRT
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
-      // if the given template parameter is of type int, the error
-      // "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-      BOOST_STATIC_ASSERT((not boost::is_same<int, T>::value)) BACI_ATTRIBUTE_UNUSED;
+      // if the given template parameter is of type int, the error occurs during compilation
+      static_assert(!std::is_integral_v<T>);
 
       const int drdr = 0;
       switch (distype)
@@ -2985,9 +2975,8 @@ namespace DRT
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
-      // if the given template parameter is of type int, the error
-      // "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-      BOOST_STATIC_ASSERT((not boost::is_same<int, T>::value)) BACI_ATTRIBUTE_UNUSED;
+      // if the given template parameter is of type int, the error occurs during compilation
+      static_assert(!std::is_integral_v<T>);
 
       switch (distype)
       {
@@ -3019,9 +3008,8 @@ namespace DRT
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
-      // if the given template parameter is of type int, the error
-      // "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-      BOOST_STATIC_ASSERT((not boost::is_same<int, T>::value)) BACI_ATTRIBUTE_UNUSED;
+      // if the given template parameter is of type int, the error occurs during compilation
+      static_assert(!std::is_integral_v<T>);
 
       switch (distype)
       {
@@ -3052,9 +3040,8 @@ namespace DRT
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
-      // if the given template parameter is of type int, the error
-      // "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-      BOOST_STATIC_ASSERT((not boost::is_same<int, T>::value)) BACI_ATTRIBUTE_UNUSED;
+      // if the given template parameter is of type int, the error occurs during compilation
+      static_assert(!std::is_integral_v<T>);
 
       switch (distype)
       {
@@ -3085,9 +3072,8 @@ namespace DRT
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
-      // if the given template parameter is of type int, the error
-      // "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-      BOOST_STATIC_ASSERT((not boost::is_same<int, T>::value)) BACI_ATTRIBUTE_UNUSED;
+      // if the given template parameter is of type int, the error occurs during compilation
+      static_assert(!std::is_integral_v<T>);
 
       switch (distype)
       {
@@ -3119,9 +3105,8 @@ namespace DRT
             distype  ///< distinguish between Discretization Type
     )
     {
-      // if the given template parameter is of type int, the error
-      // "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-      BOOST_STATIC_ASSERT((not boost::is_same<int, T>::value)) BACI_ATTRIBUTE_UNUSED;
+      // if the given template parameter is of type int, the error occurs during compilation
+      static_assert(!std::is_integral_v<T>);
 
       switch (distype)
       {
@@ -3158,9 +3143,8 @@ namespace DRT
             distype  ///< distinguish between Discretization Type
     )
     {
-      // if the given template parameter is of type int, the error
-      // "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-      BOOST_STATIC_ASSERT((not boost::is_same<int, T>::value)) BACI_ATTRIBUTE_UNUSED;
+      // if the given template parameter is of type int, the error occurs during compilation
+      static_assert(!std::is_integral_v<T>);
 
       switch (distype)
       {
@@ -3196,9 +3180,8 @@ namespace DRT
             distype  ///< distinguish between Discretization Type
     )
     {
-      // if the given template parameter is of type int, the error
-      // "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-      BOOST_STATIC_ASSERT((not boost::is_same<int, T>::value)) BACI_ATTRIBUTE_UNUSED;
+      // if the given template parameter is of type int, the error occurs during compilation
+      static_assert(!std::is_integral_v<T>);
 
       switch (distype)
       {
@@ -3233,9 +3216,8 @@ namespace DRT
             distype  ///< distinguish between Discretization Type
     )
     {
-      // if the given template parameter is of type int, the error
-      // "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-      BOOST_STATIC_ASSERT((not boost::is_same<int, T>::value)) BACI_ATTRIBUTE_UNUSED;
+      // if the given template parameter is of type int, the error occurs during compilation
+      static_assert(!std::is_integral_v<T>);
 
       switch (distype)
       {
