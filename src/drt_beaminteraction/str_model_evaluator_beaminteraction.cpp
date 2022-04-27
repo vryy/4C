@@ -264,6 +264,10 @@ void STR::MODELEVALUATOR::BeamInteraction::SetSubModelTypes()
       Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist(
               "BEAM TO SOLID SURFACE MESHTYING"),
+          "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none or
+      Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
+          DRT::Problem::Instance()->BeamInteractionParams().sublist(
+              "BEAM TO SOLID SURFACE CONTACT"),
           "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none)
     submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_beamcontact);
 

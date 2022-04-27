@@ -38,6 +38,12 @@ void INPAR::BEAMTOSOLID::BeamToSolidInteractionGetString(
     condition_names[0] = "BeamToSolidSurfaceMeshtyingLine";
     condition_names[1] = "BeamToSolidSurfaceMeshtyingSurface";
   }
+  else if (interaction ==
+           INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_contact)
+  {
+    condition_names[0] = "BeamToSolidSurfaceContactLine";
+    condition_names[1] = "BeamToSolidSurfaceContactSurface";
+  }
   else
     dserror("Got unexpected beam-to-solid interaction type.");
 }
@@ -392,5 +398,33 @@ void INPAR::BEAMTOSOLID::SetValidConditions(
     beam_to_solid_surface_meshtying_condition->AddComponent(
         Teuchos::rcp(new IntConditionComponent("COUPLING_ID", false, false)));
     condlist.push_back(beam_to_solid_surface_meshtying_condition);
+  }
+
+  // Beam-to-surface contact conditions.
+  {
+    std::array<std::string, 2> condition_names;
+    BeamToSolidInteractionGetString(
+        INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_contact,
+        condition_names);
+
+    Teuchos::RCP<ConditionDefinition> beam_to_solid_surface_contact_condition = Teuchos::rcp(
+        new ConditionDefinition("BEAM INTERACTION/BEAM TO SOLID SURFACE CONTACT SURFACE",
+            condition_names[1], "Beam-to-surface contact conditions - surface definition",
+            DRT::Condition::BeamToSolidSurfaceContactSurface, true, DRT::Condition::Surface));
+    beam_to_solid_surface_contact_condition->AddComponent(
+        Teuchos::rcp(new SeparatorConditionComponent("COUPLING_ID")));
+    beam_to_solid_surface_contact_condition->AddComponent(
+        Teuchos::rcp(new IntConditionComponent("COUPLING_ID", false, false)));
+    condlist.push_back(beam_to_solid_surface_contact_condition);
+
+    beam_to_solid_surface_contact_condition =
+        Teuchos::rcp(new ConditionDefinition("BEAM INTERACTION/BEAM TO SOLID SURFACE CONTACT LINE",
+            condition_names[0], "Beam-to-surface contact conditions - line definition",
+            DRT::Condition::BeamToSolidSurfaceContactLine, true, DRT::Condition::Line));
+    beam_to_solid_surface_contact_condition->AddComponent(
+        Teuchos::rcp(new SeparatorConditionComponent("COUPLING_ID")));
+    beam_to_solid_surface_contact_condition->AddComponent(
+        Teuchos::rcp(new IntConditionComponent("COUPLING_ID", false, false)));
+    condlist.push_back(beam_to_solid_surface_contact_condition);
   }
 }

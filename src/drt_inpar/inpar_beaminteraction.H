@@ -93,7 +93,9 @@ namespace INPAR
       //! Beam-to-solid volume mesh tying.
       beam_to_solid_volume_meshtying,
       //! Beam-to-solid surface mesh tying.
-      beam_to_solid_surface_meshtying
+      beam_to_solid_surface_meshtying,
+      //! Beam-to-solid surface contact.
+      beam_to_solid_surface_contact
     };
 
     //! Map type std::string to enum
