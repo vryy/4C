@@ -41,6 +41,18 @@ namespace GEOMETRYPAIR
   template <typename scalar_type, typename line, typename surface>
   Teuchos::RCP<GeometryPair> GeometryPairLineToSurfaceFactory(
       const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);
+
+  /**
+   * \brief Create the correct geometry pair for line to surface coupling with FAD scalar types.
+   *
+   * The default GeometryPairLineToSurfaceFactory would be sufficient for this, however, for
+   * performance reasons it is better use the wrapped pairs, which are created in this function.
+   *
+   * @return RCP to created geometry pair.
+   */
+  template <typename scalar_type, typename line, typename surface>
+  Teuchos::RCP<GeometryPair> GeometryPairLineToSurfaceFactoryFAD(
+      const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);
 }  // namespace GEOMETRYPAIR
 
 #endif

@@ -77,8 +77,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam,
   BeamContactPair::CreateGeometryPair(geometry_evaluation_data_ptr);
 
   // Set up the geometry pair, it will be initialized in the Init call of the base class.
-  this->geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<scalar_type, beam, surface>(
-      geometry_evaluation_data_ptr);
+  this->geometry_pair_ =
+      GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<scalar_type, beam, surface>(
+          geometry_evaluation_data_ptr);
 }
 
 /**

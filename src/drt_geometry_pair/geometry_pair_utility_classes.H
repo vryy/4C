@@ -59,6 +59,7 @@ namespace GEOMETRYPAIR
           xi_(xi),
           projection_result_(ProjectionResult::none),
           gauss_weight_(gauss_weight),
+          intersection_face_(-1),
           eta_cross_section_(true),
           is_cross_section_point_(false){};
 
@@ -88,6 +89,21 @@ namespace GEOMETRYPAIR
     virtual ~ProjectionPoint1DTo3D(){};
 
     /**
+     * \brief Construct the point from another point where all scalar values are cast to double.
+     * @param point_double Projection point with scalar type double.
+     */
+    template <typename scalar_type_other>
+    inline void SetFromOtherPointDouble(const ProjectionPoint1DTo3D<scalar_type_other>& point_other)
+    {
+      eta_ = FADUTILS::CastToDouble(point_other.GetEta());
+      for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+        xi_(i_dim) = FADUTILS::CastToDouble(point_other.GetXi()(i_dim));
+      projection_result_ = point_other.GetProjectionResult();
+      gauss_weight_ = point_other.GetGaussWeightNoCheck();
+      intersection_face_ = point_other.GetIntersectionFace();
+    }
+
+    /**
      * \brief Set the parameter coordinate on the line.
      */
     inline void SetEta(const scalar_type& eta) { eta_ = eta; };
@@ -96,6 +112,11 @@ namespace GEOMETRYPAIR
      * \brief Get the parameter coordinate on the line.
      */
     inline const scalar_type& GetEta() const { return eta_; };
+
+    /**
+     * \brief Get a mutable reference to the parameter coordinate on the line.
+     */
+    inline scalar_type& GetEtaMutable() { return eta_; };
 
     /**
      * \brief Set the parameter coordinates in the volume.
@@ -164,7 +185,25 @@ namespace GEOMETRYPAIR
         dserror(
             "Negative Gauss weight not possible. Probably the default value was not overwritten!");
       return gauss_weight_;
-    };
+    }
+
+    /**
+     * \brief Get the Gauss weight for this point.
+     */
+    inline double GetGaussWeightNoCheck() const { return gauss_weight_; }
+
+    /**
+     * \brief Set the index of the intersection face.
+     */
+    inline void SetIntersectionFace(const int intersection_face)
+    {
+      intersection_face_ = intersection_face;
+    }
+
+    /**
+     * \brief Get the index of the intersection face.
+     */
+    inline int GetIntersectionFace() const { return intersection_face_; }
 
     /**
      * \brief Overloaded $<$ operator.
@@ -208,6 +247,10 @@ namespace GEOMETRYPAIR
 
     //! Gauss weight for this point.
     double gauss_weight_;
+
+    //! If this point is an intersection point, this is the index of the local face that the
+    //! intersection occurs on.
+    int intersection_face_;
 
     //! Parameter coordinates in the cross section.
     LINALG::Matrix<2, 1, scalar_type> eta_cross_section_;
@@ -269,9 +312,19 @@ namespace GEOMETRYPAIR
     inline const ProjectionPoint1DTo3D<scalar_type>& GetStartPoint() const { return start_point_; };
 
     /**
+     * \brief Return a mutable reference to the start point.
+     */
+    inline ProjectionPoint1DTo3D<scalar_type>& GetStartPointMutable() { return start_point_; };
+
+    /**
      * \brief Return a const reference to the end point.
      */
     inline const ProjectionPoint1DTo3D<scalar_type>& GetEndPoint() const { return end_point_; };
+
+    /**
+     * \brief Return a mutable reference to the end point.
+     */
+    inline ProjectionPoint1DTo3D<scalar_type>& GetEndPointMutable() { return end_point_; };
 
     /**
      * \brief Add a projection point to the projection point vector.

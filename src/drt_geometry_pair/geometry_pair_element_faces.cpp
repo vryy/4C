@@ -344,18 +344,18 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::EvaluateFaceN
   {
     LINALG::Matrix<surface::n_dof_, 1, double> position_double(true);
     LINALG::Matrix<3 * surface::n_nodes_, 1, double> normals_double;
-    bool valid_pointer = false;
+    LINALG::Matrix<3 * surface::n_nodes_, 1, double>* normals_double_ptr;
 
     if (reference)
-      VectorPointerToVectorDouble(this->GetReferenceNormals(), normals_double, valid_pointer);
+      normals_double_ptr = VectorPointerToVectorDouble(this->GetReferenceNormals(), normals_double);
     else
-      VectorPointerToVectorDouble(this->GetCurrentNormals(), normals_double, valid_pointer);
+      normals_double_ptr = VectorPointerToVectorDouble(this->GetCurrentNormals(), normals_double);
 
-    if (valid_pointer)
+    if (normals_double_ptr != nullptr)
     {
       // Return the normal calculated with the averaged normal field.
       EvaluateSurfaceNormal<surface>(
-          xi, position_double, n, this->drt_face_element_.get(), &normals_double);
+          xi, position_double, n, this->drt_face_element_.get(), normals_double_ptr);
     }
     else
     {
@@ -588,18 +588,18 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
   {
     LINALG::Matrix<surface::n_dof_, 1, double> position_double(true);
     LINALG::Matrix<3 * surface::n_nodes_, 1, double> normals_double;
-    bool valid_pointer = false;
+    LINALG::Matrix<3 * surface::n_nodes_, 1, double>* normals_double_ptr;
 
     if (reference)
-      VectorPointerToVectorDouble(this->GetReferenceNormals(), normals_double, valid_pointer);
+      normals_double_ptr = VectorPointerToVectorDouble(this->GetReferenceNormals(), normals_double);
     else
-      VectorPointerToVectorDouble(this->GetCurrentNormals(), normals_double, valid_pointer);
+      normals_double_ptr = VectorPointerToVectorDouble(this->GetCurrentNormals(), normals_double);
 
-    if (valid_pointer)
+    if (normals_double_ptr != nullptr)
     {
       // Return the normal calculated with the averaged normal field.
       EvaluateSurfaceNormal<surface>(
-          xi, position_double, n, this->drt_face_element_.get(), &normals_double);
+          xi, position_double, n, this->drt_face_element_.get(), normals_double_ptr);
     }
     else
     {

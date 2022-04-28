@@ -114,6 +114,23 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurface
   }
 }
 
+/**
+ *
+ */
+template <typename scalar_type, typename line, typename surface>
+Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD(
+    const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data)
+{
+  // Create the internal pair as double.
+  auto internal_geometry_pair_double =
+      Teuchos::rcp_dynamic_cast<GeometryPairLineToSurface<double, line, surface>>(
+          GeometryPairLineToSurfaceFactory<double, line, surface>(geometry_evaluation_data), true);
+
+  // Create the wrapper.
+  return Teuchos::rcp(new GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surface>(
+      internal_geometry_pair_double));
+}
+
 
 /**
  * Explicit template initialization of factory function.
@@ -137,46 +154,46 @@ template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLine
     double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>(
     const Teuchos::RCP<GeometryEvaluationDataBase>&);
 
-template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type_1st_order, GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tri3>(const Teuchos::RCP<GeometryEvaluationDataBase>&);
-template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type_1st_order, GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tri6>(const Teuchos::RCP<GeometryEvaluationDataBase>&);
-template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type_1st_order, GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_quad4>(const Teuchos::RCP<GeometryEvaluationDataBase>&);
-template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type_1st_order, GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_quad8>(const Teuchos::RCP<GeometryEvaluationDataBase>&);
-template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type_1st_order, GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_quad9>(const Teuchos::RCP<GeometryEvaluationDataBase>&);
-template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type_fixed_size_1st_order<GEOMETRYPAIR::t_hermite,
         GEOMETRYPAIR::t_nurbs9>,
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>(
     const Teuchos::RCP<GeometryEvaluationDataBase>&);
 
-template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>(
     const Teuchos::RCP<GeometryEvaluationDataBase>&);
-template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>(
     const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair>
-GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<GEOMETRYPAIR::line_to_surface_patch_scalar_type,
+GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<GEOMETRYPAIR::line_to_surface_patch_scalar_type,
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>(
     const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair>
-GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<GEOMETRYPAIR::line_to_surface_patch_scalar_type,
+GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<GEOMETRYPAIR::line_to_surface_patch_scalar_type,
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>(
     const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair>
-GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<GEOMETRYPAIR::line_to_surface_patch_scalar_type,
+GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<GEOMETRYPAIR::line_to_surface_patch_scalar_type,
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>(
     const Teuchos::RCP<GeometryEvaluationDataBase>&);
-template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type_fixed_size<GEOMETRYPAIR::t_hermite,
         GEOMETRYPAIR::t_nurbs9>,
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>(

@@ -14,6 +14,7 @@
 
 #include <string>
 
+#include "geometry_pair_utility_classes.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../headers/FAD_utils.H"
 
@@ -36,30 +37,61 @@ namespace GEOMETRYPAIR
       const DiscretizationTypeGeometry discretization_type);
 
   /**
-   * \brief Convert a pointer to a fixed size vector to a reference to a double vector.
+   * \brief Convert a pointer on a FAD vector to a pointer on a double vector.
    *
    * @param vector_scalar_type_ptr (in) Pointer to a vector of arbitrary scalar type.
-   * @param vector_double (out) Reference to double vector.
-   * @param valid_pointer (out) True if the given vector was a valid pointer, false otherwise.
+   * @param vector_double (out) Temp reference to double vector (this has to come from the outside
+   * scope).
+   * @return Pointer on the double vector.
    *
    * @tparam scalar_type_normal Scalar type of the input vector.
    * @tparam n_dof Length of the in- and output vectors.
    */
   template <typename scalar_type_normal, unsigned int n_dof>
-  void VectorPointerToVectorDouble(
+  LINALG::Matrix<n_dof, 1, double>* VectorPointerToVectorDouble(
       const LINALG::Matrix<n_dof, 1, scalar_type_normal>* vector_scalar_type_ptr,
-      LINALG::Matrix<n_dof, 1, double>& vector_double, bool& valid_pointer)
+      LINALG::Matrix<n_dof, 1, double>& vector_double)
   {
     if (vector_scalar_type_ptr == nullptr)
     {
-      valid_pointer = false;
+      return nullptr;
     }
     else
     {
-      valid_pointer = true;
       vector_double = FADUTILS::CastToDouble(*vector_scalar_type_ptr);
+      return &vector_double;
     }
-  };
+  }
+
+  /**
+   * \brief Set a line-to-xxx segment from a segment with a different scalar type (all dependencies
+   * of FAD variables will be deleted).
+   *
+   * @param vector_scalar_type_ptr (in) Pointer to a vector of arbitrary scalar type.
+   * @param vector_double (out) Temp reference to double vector (this has to come from the outside
+   * scope).
+   * @return Pointer on the double vector.
+   *
+   * @tparam A Scalar type of segment_in.
+   * @tparam B Scalar type of segment_out.
+   */
+  template <typename A, typename B>
+  void CopySegment(const LineSegment<A>& segment_in, LineSegment<B>& segment_out)
+  {
+    // Add the start and end points.
+    segment_out.GetStartPointMutable().SetFromOtherPointDouble(segment_in.GetStartPoint());
+    segment_out.GetEndPointMutable().SetFromOtherPointDouble(segment_in.GetEndPoint());
+
+    // Add the projection points.
+    const auto n_points = segment_in.GetNumberOfProjectionPoints();
+    const std::vector<ProjectionPoint1DTo3D<A>>& projection_points_in =
+        segment_in.GetProjectionPoints();
+    std::vector<ProjectionPoint1DTo3D<B>>& projection_points_out =
+        segment_out.GetProjectionPointsMutable();
+    projection_points_out.resize(n_points);
+    for (unsigned int i_point = 0; i_point < n_points; i_point++)
+      projection_points_out[i_point].SetFromOtherPointDouble(projection_points_in[i_point]);
+  }
 }  // namespace GEOMETRYPAIR
 
 

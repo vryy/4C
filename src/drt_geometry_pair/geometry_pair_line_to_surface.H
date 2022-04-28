@@ -120,7 +120,8 @@ namespace GEOMETRYPAIR
     void ProjectPointToOther(const LINALG::Matrix<3, 1, scalar_type>& point,
         const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
         LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals = nullptr) const;
+        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals = nullptr,
+        const bool min_one_iteration = false) const;
 
     /**
      * \brief Intersect a line with all edges of a surface.
@@ -132,7 +133,7 @@ namespace GEOMETRYPAIR
      * @param nodal_normals (in) Optional - Normals on the nodes.
      */
     void IntersectLineWithOther(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_volume,
+        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
         const scalar_type& eta_start, const LINALG::Matrix<3, 1, scalar_type>& xi_start,
         const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals = nullptr) const;
@@ -183,7 +184,8 @@ namespace GEOMETRYPAIR
         const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
         const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
         LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const;
+        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals,
+        const bool min_one_iteration = false) const;
 
     /**
      * \brief Check if a projection to a surface lies in a variable range.
@@ -215,6 +217,17 @@ namespace GEOMETRYPAIR
     scalar_type GetSurfaceSize(
         const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface) const;
 
+    /**
+     * \brief Get number of faces for this surface and create a vector with the indices of the
+     * faces, so all surfaces can be checked for an intersection with the line.
+     * @param n_faces (out) Number of faces.
+     * @param face_fixed_parameters (out) Index of fixed parameter.
+     * @param face_fixed_values (out) Value of fixed parameter.
+     */
+    void GetFaceFixedParameters(unsigned int& n_faces,
+        std::vector<unsigned int>& face_fixed_parameters,
+        std::vector<double>& face_fixed_values) const;
+
    protected:
     //! Link to the geometry evaluation container.
     Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData> line_to_surface_evaluation_data_;
@@ -224,6 +237,111 @@ namespace GEOMETRYPAIR
     //! ValidParameterSurface will be explicitly given.
     bool is_unit_test_;
   };
+
+
+  /**
+   * \brief Wrapper for line to surface pairs with FAD scalar types.
+   *
+   * The default GeometryPairLineToSurface can also be used for this. This wrapper exists for
+   * performance reasons. In the geometry pairs we have a lot of local Newton iterations. If they
+   * are performed with the full FAD types, the performance drops significantly. Therefore, we use
+   * geometry pairs with double type to evaluate all intersections and then only perform a single
+   * Netwon iteration (with the previously calculated result as starting point) to get the correct
+   * FAD dependencies.
+   *
+   * @tparam scalar_type Type that will be used for scalar values.
+   * @tparam line Type of line element.
+   * @tparam surface Type of surface element.
+   */
+  template <typename scalar_type, typename line, typename surface>
+  class GeometryPairLineToSurfaceFADWrapper
+      : public GeometryPairLineToSurface<scalar_type, line, surface>
+  {
+   protected:
+    //! Shortcut to the base class.
+    using base_class = GeometryPairLineToSurface<scalar_type, line, surface>;
+
+   public:
+    /**
+     * \brief Constructor.
+     */
+    GeometryPairLineToSurfaceFADWrapper(
+        const Teuchos::RCP<GeometryPairLineToSurface<double, line, surface>>& double_geometry_pair)
+        : base_class(double_geometry_pair->GetEvaluationData()),
+          geometry_pair_double_(double_geometry_pair){};
+
+    /**
+     * \brief Initialize the pair.
+     * @param element1 Pointer to the first element.
+     * @param element2 Pointer to the second element.
+     */
+    void Init(const DRT::Element* element1, const DRT::Element* element2) override
+    {
+      base_class::Init(element1, element2);
+      geometry_pair_double_->Init(element1, element2);
+    };
+
+    /**
+     * \brief Setup the pair.
+     */
+    void Setup() override
+    {
+      base_class::Setup();
+      geometry_pair_double_->Setup();
+    }
+
+    /**
+     * \brief Set the pointer to the second element.
+     *
+     * For surface elements the pairs need the face element representing the surface, not the volume
+     * element.
+     */
+    inline void SetElement2(const DRT::Element* element2) override
+    {
+      base_class::SetElement2(element2);
+      geometry_pair_double_->SetElement2(element2);
+    };
+
+    /**
+     * \brief Wrap the PreEvaluate call.
+     *
+     * The returned segment will be directly converted from double to the FAD type, i.e., the
+     * derivatives will be WRONG. The correct derivatives are set in the Evaluate wrapper.
+     *
+     * @param q_line (in) Degrees of freedom for the line.
+     * @param q_surface (in) Degrees of freedom for the surface.
+     * @param segments (out) Vector with the segments of this line to surface pair.
+     * @param nodal_normals (in) Optional - Normals on the nodes.
+     */
+    void PreEvaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+        std::vector<LineSegment<scalar_type>>& segments,
+        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
+            nullptr) const override;
+
+    /**
+     * \brief Wrap the PreEvaluate call.
+     *
+     * The segments will be evaluated as double segments and only the converged projections /
+     * intersections will be revaluated to contain the correct FAD derivatives. This procedue
+     * reduces the performance bottleneck introduced by using the FAD types.
+     *
+     * @param q_line (in) Degrees of freedom for the line.
+     * @param q_surface (in) Degrees of freedom for the surface.
+     * @param segments (out) Vector with the segments of this line to surface pair.
+     * @param nodal_normals (in) Optional - Normals on the nodes.
+     */
+    void Evaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+        std::vector<LineSegment<scalar_type>>& segments,
+        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
+            nullptr) const override;
+
+   private:
+    //! Pair to evaluate the intersections with the scalar type double.
+    Teuchos::RCP<GeometryPairLineToSurface<double, line, surface>> geometry_pair_double_;
+  };
+
 }  // namespace GEOMETRYPAIR
 
 #endif
