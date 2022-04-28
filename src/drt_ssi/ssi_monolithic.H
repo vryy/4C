@@ -213,6 +213,9 @@ namespace SSI
     //! prepare output for subproblems if needed
     void PrepareOutput();
 
+    //! print system matrix, rhs, and map of system matrix to file
+    void PrintSystemMatrixRHSToMatLabFormat();
+
     //! print time step size, time, and number of time step
     void PrintTimeStepInfo();
 
@@ -265,6 +268,9 @@ namespace SSI
 
     //! type of global system matrix in global system of equations
     const LINALG::MatrixType matrixtype_;
+
+    //! print system matrix, rhs, and map of system matrix to file
+    const bool print_matlab_;
 
     //! all OD evaluation is in here
     Teuchos::RCP<SSI::ScatraStructureOffDiagCoupling> scatrastructureOffDiagcoupling_;

@@ -45,6 +45,7 @@
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_sparse_algebra_print.H"
 
 #include <Epetra_Time.h>
 
@@ -66,6 +67,8 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       manifoldscatraflux_(Teuchos::null),
       matrixtype_(Teuchos::getIntegralValue<LINALG::MatrixType>(
           globaltimeparams.sublist("MONOLITHIC"), "MATRIXTYPE")),
+      print_matlab_(DRT::INPUT::IntegralValue<bool>(
+          globaltimeparams.sublist("MONOLITHIC"), "PRINT_MAT_RHS_MAP_MATLAB")),
       scatrastructureOffDiagcoupling_(Teuchos::null),
       solver_(Teuchos::rcp(
           new LINALG::Solver(DRT::Problem::Instance()->SolverParams(
@@ -572,6 +575,8 @@ void SSI::SSIMono::Output()
 
   // output structure field
   StructureField()->Output();
+
+  if (print_matlab_) PrintSystemMatrixRHSToMatLabFormat();
 }
 
 /*----------------------------------------------------------------------*
@@ -1271,7 +1276,7 @@ void SSI::SSIMono::CalcInitialPotentialField()
     auto dbc_zeros = Teuchos::rcp(new Epetra_Vector(*pseudo_dbc_map, true));
 
     auto rhs = ssi_vectors_->Residual();
-    ApplyDirichlettoSystem(
+    LINALG::ApplyDirichlettoSystem(
         ssi_matrices_->SystemMatrix(), rhs, Teuchos::null, dbc_zeros, *pseudo_dbc_map);
     ssi_vectors_->Residual()->Update(1.0, *rhs, 0.0);
 
@@ -1608,5 +1613,66 @@ void SSI::SSIMono::PrintTimeStepInfo()
               << "TIME: " << std::setw(11) << std::setprecision(4) << std::scientific << Time()
               << "/" << MaxTime() << "  DT = " << Dt() << "  STEP = " << Step() << "/" << NStep()
               << std::endl;
+  }
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+void SSI::SSIMono::PrintSystemMatrixRHSToMatLabFormat()
+{
+  // print system matrix
+  switch (matrixtype_)
+  {
+    case LINALG::MatrixType::block_field:
+    {
+      auto block_matrix =
+          LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(ssi_matrices_->SystemMatrix());
+
+      for (int row = 0; row < block_matrix->Rows(); ++row)
+      {
+        for (int col = 0; col < block_matrix->Cols(); ++col)
+        {
+          std::ostringstream filename;
+          filename << DRT::Problem::Instance()->OutputControlFile()->FileName()
+                   << "_block_system_matrix_" << row << "_" << col << ".csv";
+
+          LINALG::PrintMatrixInMatlabFormat(
+              filename.str(), *block_matrix->Matrix(row, col).EpetraMatrix(), true);
+        }
+      }
+      break;
+    }
+
+    case LINALG::MatrixType::sparse:
+    {
+      auto sparse_matrix =
+          LINALG::CastToConstSparseMatrixAndCheckSuccess(ssi_matrices_->SystemMatrix());
+
+      const std::string filename =
+          DRT::Problem::Instance()->OutputControlFile()->FileName() + "_sparse_system_matrix.csv";
+
+      LINALG::PrintMatrixInMatlabFormat(filename, *sparse_matrix->EpetraMatrix(), true);
+      break;
+    }
+
+    default:
+    {
+      dserror("Type of global system matrix for scalar-structure interaction not recognized!");
+      break;
+    }
+  }
+
+  // print rhs
+  {
+    const std::string filename =
+        DRT::Problem::Instance()->OutputControlFile()->FileName() + "_system_vector.csv";
+    LINALG::PrintVectorInMatlabFormat(filename, *ssi_vectors_->Residual(), true);
+  }
+
+  // print full map
+  {
+    const std::string filename =
+        DRT::Problem::Instance()->OutputControlFile()->FileName() + "_full_map.csv";
+    LINALG::PrintMapInMatlabFormat(filename, *ssi_maps_->MapSystemMatrix(), true);
   }
 }

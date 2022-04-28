@@ -165,6 +165,11 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           LINALG::EquilibrationMethod::symmetry),
       &ssidynmono);
 
+  BoolParameter("PRINT_MAT_RHS_MAP_MATLAB", "no",
+      "print system matrix, rhs vector, and full map to matlab readable file after solution of "
+      "time step",
+      &ssidynmono);
+
   /*----------------------------------------------------------------------*/
   /* parameters for SSI with manifold */
   /*----------------------------------------------------------------------*/

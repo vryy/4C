@@ -50,6 +50,7 @@ SCATRATIMINTTYPE                Elch
 --------------------------------------------SSI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
 MATRIXTYPE                      sparse
+PRINT_MAT_RHS_MAP_MATLAB        yes
 ----------------------------------------------SSI CONTROL/ELCH
 INITPOTCALC                     yes
 ----------------------------------------------------------SOLVER 1
