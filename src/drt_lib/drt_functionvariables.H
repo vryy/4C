@@ -38,7 +38,11 @@ namespace DRT
     class FunctionVariable
     {
      public:
+      /// Base constructor takign the @p name of the FunctionVariable.
       FunctionVariable(std::string name);
+
+      /// Virtual destructor.
+      virtual ~FunctionVariable() = default;
 
       /// evaluate the function at given time
       virtual double Value(const double t) = 0;
@@ -55,8 +59,6 @@ namespace DRT
      private:
       /// name of the variable
       const std::string name_;
-
-     private:
     };
 
 
@@ -198,6 +200,36 @@ namespace DRT
       const double t2_;
     };
 
+
+    /**
+     * @brief A FunctionVariable constructed piece-wise from other FunctionVariables.
+     *
+     * When the function is evaluated with either a call to Value() or TimeDerivativeValue(), the
+     * first piece that contains the given time will be used for evaluation, even if multiple pieces
+     * would be able to evaluate the time.
+     */
+    class PiecewiseVariable : public FunctionVariable
+    {
+     public:
+      //! Create a PiecewiseVariable from the given @p pieces.
+      PiecewiseVariable(
+          const std::string& name, std::vector<Teuchos::RCP<FunctionVariable>> pieces);
+
+      double Value(double t) override;
+
+      double TimeDerivativeValue(double t, unsigned int deg) override;
+
+      bool ContainTime(double t) override;
+
+     private:
+      //! Helper function to access the piece that contains time @p time. Returns the first
+      //! FunctionVariable that contains the time @p t and does not check if other FunctionVariables
+      //! also contain it.
+      FunctionVariable& FindPieceForTime(double t);
+
+      //! Store the pieces that make up the variable in different time intervals.
+      std::vector<Teuchos::RCP<FunctionVariable>> pieces_;
+    };
 
   }  // namespace UTILS
 }  // namespace DRT

@@ -510,3 +510,42 @@ bool DRT::UTILS::FourierInterpolationVariable::ContainTime(const double t)
     return false;
   }
 }
+
+
+DRT::UTILS::PiecewiseVariable::PiecewiseVariable(
+    const std::string& name, std::vector<Teuchos::RCP<FunctionVariable>> pieces)
+    : FunctionVariable(name), pieces_(std::move(pieces))
+{
+  if (pieces_.empty())
+    dserror("A PiecewiseVariable must have at least one FunctionVariable piece.");
+}
+
+
+double DRT::UTILS::PiecewiseVariable::Value(const double t) { return FindPieceForTime(t).Value(t); }
+
+
+double DRT::UTILS::PiecewiseVariable::TimeDerivativeValue(const double t, const unsigned int deg)
+{
+  return FindPieceForTime(t).TimeDerivativeValue(t, deg);
+}
+
+
+bool DRT::UTILS::PiecewiseVariable::ContainTime(const double t)
+{
+  const auto active_piece =
+      std::find_if(pieces_.begin(), pieces_.end(), [t](auto& var) { return var->ContainTime(t); });
+
+  return active_piece != pieces_.end();
+}
+
+
+DRT::UTILS::FunctionVariable& DRT::UTILS::PiecewiseVariable::FindPieceForTime(const double t)
+{
+  auto active_piece =
+      std::find_if(pieces_.begin(), pieces_.end(), [t](auto& var) { return var->ContainTime(t); });
+
+  if (active_piece == pieces_.end())
+    dserror("Piece-wise variable <%s> is not defined at time %f.", Name().c_str(), t);
+
+  return **active_piece;
+}
