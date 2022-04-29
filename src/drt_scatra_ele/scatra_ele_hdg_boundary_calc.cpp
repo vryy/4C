@@ -74,25 +74,17 @@ DRT::ELEMENTS::ScaTraHDGBoundaryImplInterface* DRT::ELEMENTS::ScaTraHDGBoundaryI
   return NULL;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-
-
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>*
-DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::Instance(bool create)
+DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::Instance(::UTILS::SingletonAction action)
 {
-  static ScaTraHDGBoundaryImpl<distype>* instance;
-  if (create)
-  {
-    if (instance == NULL) instance = new ScaTraHDGBoundaryImpl<distype>();
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>> singleton_owner(
+      []() {
+        return std::unique_ptr<DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>>(
+            new DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>());
+      });
+
+  return singleton_owner.Instance(action);
 }
 
 
@@ -103,7 +95,7 @@ void DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 

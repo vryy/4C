@@ -16,6 +16,8 @@
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_inpar/inpar_xfem.H"
 
+#include "../headers/singleton_owner.H"
+
 // forward declarations
 namespace LINALG
 {
@@ -116,7 +118,8 @@ namespace DRT
     {
      public:
       /// Singleton access method
-      static FluidIntFaceImpl<distype>* Instance(bool create = true);
+      static FluidIntFaceImpl<distype>* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       /// called upon destruction
       virtual void Done();

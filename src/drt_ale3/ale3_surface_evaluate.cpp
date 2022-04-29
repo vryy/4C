@@ -32,7 +32,8 @@ DRT::ELEMENTS::Ale3Surface_Impl_Interface* DRT::ELEMENTS::Ale3Surface_Impl_Inter
   {
     case DRT::Element::quad4:
     {
-      return DRT::ELEMENTS::Ale3Surface_Impl<DRT::Element::quad4>::Instance(true);
+      return DRT::ELEMENTS::Ale3Surface_Impl<DRT::Element::quad4>::Instance(
+          ::UTILS::SingletonAction::create);
     }
     default:
       dserror("shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
@@ -41,23 +42,16 @@ DRT::ELEMENTS::Ale3Surface_Impl_Interface* DRT::ELEMENTS::Ale3Surface_Impl_Inter
   return NULL;
 }
 
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Ale3Surface_Impl<distype>* DRT::ELEMENTS::Ale3Surface_Impl<distype>::Instance(
-    bool create)
+    ::UTILS::SingletonAction action)
 {
-  static Ale3Surface_Impl<distype>* instance;
-  if (create)
-  {
-    if (instance == NULL) instance = new Ale3Surface_Impl<distype>();
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::Ale3Surface_Impl<distype>> singleton_owner([]() {
+    return std::unique_ptr<DRT::ELEMENTS::Ale3Surface_Impl<distype>>(
+        new DRT::ELEMENTS::Ale3Surface_Impl<distype>());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -67,7 +61,7 @@ void DRT::ELEMENTS::Ale3Surface_Impl<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 /*----------------------------------------------------------------------------*/

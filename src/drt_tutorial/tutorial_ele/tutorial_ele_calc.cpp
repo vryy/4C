@@ -16,25 +16,15 @@
 #include "../tutorial_material/tutorial_mat.H"
 
 
-/*----------------------------------------------------------------------*
- * construct/return pointer to singleton                                |
- *----------------------------------------------------------------------*/
-TUTORIAL::ELEMENTS::TutorialEleCalc* TUTORIAL::ELEMENTS::TutorialEleCalc::Instance(bool create)
+TUTORIAL::ELEMENTS::TutorialEleCalc* TUTORIAL::ELEMENTS::TutorialEleCalc::Instance(
+    ::UTILS::SingletonAction action)
 {
-  static TutorialEleCalc* instance;
-  if (create)
-  {
-    if (instance == NULL)
-    {
-      instance = new TutorialEleCalc();
-    }
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<TUTORIAL::ELEMENTS::TutorialEleCalc> singleton_owner([]() {
+    return std::unique_ptr<TUTORIAL::ELEMENTS::TutorialEleCalc>(
+        new TUTORIAL::ELEMENTS::TutorialEleCalc());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 
@@ -45,7 +35,7 @@ void TUTORIAL::ELEMENTS::TutorialEleCalc::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 

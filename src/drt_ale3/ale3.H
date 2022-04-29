@@ -24,6 +24,8 @@
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
+#include "../headers/singleton_owner.H"
+
 const int NUMDIM_ALE3 = 3;  ///< number of dimensions
 const int NODDOF_ALE3 = 3;  ///< number of dofs per node
 
@@ -443,7 +445,8 @@ namespace DRT
       ~Ale3_Impl() {}
 
       /// Singleton access method
-      static Ale3_Impl<distype>* Instance(bool create = true);
+      static Ale3_Impl<distype>* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       /// called upon destruction
       virtual void Done();
@@ -789,7 +792,8 @@ namespace DRT
       ~Ale3Surface_Impl() {}
 
       /// Singleton access method
-      static Ale3Surface_Impl<distype>* Instance(bool create = true);
+      static Ale3Surface_Impl<distype>* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       /// called upon destruction
       virtual void Done();

@@ -31,6 +31,8 @@ convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods A
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
+#include "../headers/singleton_owner.H"
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -123,7 +125,8 @@ namespace DRT
     {
      public:
       /// Singleton access method
-      static FluidInternalSurfaceStab<distype, pdistype, ndistype>* Instance(bool create = true);
+      static FluidInternalSurfaceStab<distype, pdistype, ndistype>* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       /// called upon destruction
       virtual void Done();

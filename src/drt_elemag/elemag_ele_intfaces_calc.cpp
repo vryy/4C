@@ -59,23 +59,16 @@ DRT::ELEMENTS::ElemagIntFaceImplInterface* DRT::ELEMENTS::ElemagIntFaceImplInter
   return NULL;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ElemagIntFaceImpl<distype>* DRT::ELEMENTS::ElemagIntFaceImpl<distype>::Instance(
-    bool create)
+    ::UTILS::SingletonAction action)
 {
-  static ElemagIntFaceImpl<distype>* instance;
-  if (create)
-  {
-    if (instance == NULL) instance = new ElemagIntFaceImpl<distype>();
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::ElemagIntFaceImpl<distype>> singleton_owner([]() {
+    return std::unique_ptr<DRT::ELEMENTS::ElemagIntFaceImpl<distype>>(
+        new DRT::ELEMENTS::ElemagIntFaceImpl<distype>());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 
@@ -86,7 +79,7 @@ void DRT::ELEMENTS::ElemagIntFaceImpl<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 

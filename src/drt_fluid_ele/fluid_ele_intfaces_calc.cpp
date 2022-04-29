@@ -66,23 +66,16 @@ DRT::ELEMENTS::FluidIntFaceImplInterface* DRT::ELEMENTS::FluidIntFaceImplInterfa
   return NULL;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidIntFaceImpl<distype>* DRT::ELEMENTS::FluidIntFaceImpl<distype>::Instance(
-    bool create)
+    ::UTILS::SingletonAction action)
 {
-  static FluidIntFaceImpl<distype>* instance;
-  if (create)
-  {
-    if (instance == NULL) instance = new FluidIntFaceImpl<distype>();
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidIntFaceImpl<distype>> singleton_owner([]() {
+    return std::unique_ptr<DRT::ELEMENTS::FluidIntFaceImpl<distype>>(
+        new DRT::ELEMENTS::FluidIntFaceImpl<distype>());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 
@@ -93,7 +86,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 

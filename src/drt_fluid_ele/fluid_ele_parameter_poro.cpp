@@ -14,25 +14,15 @@ set all general porofluid parameter once for all elements.
 
 #include "fluid_ele_parameter_poro.H"
 
-//----------------------------------------------------------------------*/
-//    definition of the instance
-//----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidEleParameterPoro* DRT::ELEMENTS::FluidEleParameterPoro::Instance(bool create)
+DRT::ELEMENTS::FluidEleParameterPoro* DRT::ELEMENTS::FluidEleParameterPoro::Instance(
+    ::UTILS::SingletonAction action)
 {
-  static FluidEleParameterPoro* instance;
-  if (create)
-  {
-    if (instance == NULL)
-    {
-      instance = new FluidEleParameterPoro();
-    }
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleParameterPoro> singleton_owner([]() {
+    return std::unique_ptr<DRT::ELEMENTS::FluidEleParameterPoro>(
+        new DRT::ELEMENTS::FluidEleParameterPoro());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 //----------------------------------------------------------------------*/
@@ -42,7 +32,7 @@ void DRT::ELEMENTS::FluidEleParameterPoro::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 //----------------------------------------------------------------------*/

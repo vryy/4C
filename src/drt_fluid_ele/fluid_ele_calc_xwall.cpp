@@ -59,26 +59,17 @@ DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::FluidEleCalcXWall()
 {
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>*
-DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Instance(bool create)
+DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Instance(::UTILS::SingletonAction action)
 {
-  static FluidEleCalcXWall<distype, enrtype>* instance;
-  if (create)
-  {
-    if (instance == NULL)
-    {
-      instance = new FluidEleCalcXWall<distype, enrtype>();
-    }
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>>
+      singleton_owner([]() {
+        return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>>(
+            new DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>());
+      });
+
+  return singleton_owner.Instance(action);
 }
 
 /*----------------------------------------------------------------------*
@@ -88,7 +79,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 /*-----------------------------------------------------------------------------*

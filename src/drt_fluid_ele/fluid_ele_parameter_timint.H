@@ -20,6 +20,8 @@ with different parameters in more than one fluid field is not yet supported.
 #include "../drt_lib/drt_singletondestruction.H"
 #include "../drt_inpar/inpar_fluid.H"
 
+#include "../headers/singleton_owner.H"
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -29,7 +31,8 @@ namespace DRT
     {
      public:
       //! Singleton access method
-      static FluidEleParameterTimInt* Instance(bool create = true);
+      static FluidEleParameterTimInt* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       //! Singleton destruction method called from global problem
       void Done();

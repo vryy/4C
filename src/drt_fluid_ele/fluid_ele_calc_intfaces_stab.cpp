@@ -220,29 +220,21 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
   return NULL;
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
     DRT::Element::DiscretizationType ndistype>
 DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>*
-DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Instance(bool create)
+DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Instance(
+    ::UTILS::SingletonAction action)
 {
-  static FluidInternalSurfaceStab<distype, pdistype, ndistype>* instance;
+  static ::UTILS::SingletonOwner<
+      DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>>
+      singleton_owner([]() {
+        return std::unique_ptr<
+            DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>>(
+            new DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>());
+      });
 
-  if (create)
-  {
-    if (instance == NULL)
-    {
-      instance = new FluidInternalSurfaceStab<distype, pdistype, ndistype>();
-    }
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  return singleton_owner.Instance(action);
 }
 
 
@@ -254,7 +246,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Done(
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 //-----------------------------------------------------------------

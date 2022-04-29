@@ -15,6 +15,7 @@
 #include "../drt_lib/drt_element.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
+#include "../headers/singleton_owner.H"
 
 namespace DRT
 {
@@ -61,7 +62,8 @@ namespace DRT
     {
      public:
       //! Singleton access method
-      static ScaTraHDGBoundaryImpl<distype>* Instance(bool create = true);
+      static ScaTraHDGBoundaryImpl<distype>* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       //! called upon destruction
       virtual void Done();

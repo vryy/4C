@@ -14,6 +14,8 @@
 
 #include "fluid_ele_boundary_calc.H"
 
+#include "../headers/singleton_owner.H"
+
 namespace DRT
 {
   class Condition;
@@ -30,7 +32,8 @@ namespace DRT
 
      public:
       /// Singleton access method
-      static FluidEleBoundaryCalcStd<distype>* Instance(bool create = true);
+      static FluidEleBoundaryCalcStd<distype>* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       /// Empty destructor
       virtual ~FluidEleBoundaryCalcStd(){};

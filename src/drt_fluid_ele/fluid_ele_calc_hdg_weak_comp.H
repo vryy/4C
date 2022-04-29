@@ -16,7 +16,7 @@
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_fem_general/drt_utils_shapevalues_hdg.H"
 
-
+#include "../headers/singleton_owner.H"
 
 namespace DRT
 {
@@ -241,7 +241,8 @@ namespace DRT
       virtual ~FluidEleCalcHDGWeakComp() {}
 
       /// Singleton access method
-      static FluidEleCalcHDGWeakComp<distype>* Instance(bool create = true);
+      static FluidEleCalcHDGWeakComp<distype>* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       /// called upon destruction
       virtual void Done();

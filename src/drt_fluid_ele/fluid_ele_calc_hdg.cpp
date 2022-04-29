@@ -1292,27 +1292,16 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateAll(const int startfunc,
   }
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcHDG<distype>* DRT::ELEMENTS::FluidEleCalcHDG<distype>::Instance(
-    bool create)
+    ::UTILS::SingletonAction action)
 {
-  static FluidEleCalcHDG<distype>* instance;
-  if (create)
-  {
-    if (instance == NULL)
-    {
-      instance = new FluidEleCalcHDG<distype>();
-    }
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcHDG<distype>> singleton_owner([]() {
+    return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcHDG<distype>>(
+        new DRT::ELEMENTS::FluidEleCalcHDG<distype>());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 
@@ -1324,7 +1313,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 

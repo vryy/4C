@@ -1737,32 +1737,32 @@ NTS::MTInterpolator* NTS::MTInterpolator::Impl(std::vector<MORTAR::MortarElement
     // 2D surface elements
     case DRT::Element::quad4:
     {
-      return MTInterpolatorCalc<DRT::Element::quad4>::Instance(true);
+      return MTInterpolatorCalc<DRT::Element::quad4>::Instance(::UTILS::SingletonAction::create);
     }
     case DRT::Element::quad8:
     {
-      return MTInterpolatorCalc<DRT::Element::quad8>::Instance(true);
+      return MTInterpolatorCalc<DRT::Element::quad8>::Instance(::UTILS::SingletonAction::create);
     }
     case DRT::Element::quad9:
     {
-      return MTInterpolatorCalc<DRT::Element::quad9>::Instance(true);
+      return MTInterpolatorCalc<DRT::Element::quad9>::Instance(::UTILS::SingletonAction::create);
     }
     case DRT::Element::tri3:
     {
-      return MTInterpolatorCalc<DRT::Element::tri3>::Instance(true);
+      return MTInterpolatorCalc<DRT::Element::tri3>::Instance(::UTILS::SingletonAction::create);
     }
     case DRT::Element::tri6:
     {
-      return MTInterpolatorCalc<DRT::Element::tri6>::Instance(true);
+      return MTInterpolatorCalc<DRT::Element::tri6>::Instance(::UTILS::SingletonAction::create);
     }
       // 1D surface elements
     case DRT::Element::line2:
     {
-      return MTInterpolatorCalc<DRT::Element::line2>::Instance(true);
+      return MTInterpolatorCalc<DRT::Element::line2>::Instance(::UTILS::SingletonAction::create);
     }
     case DRT::Element::line3:
     {
-      return MTInterpolatorCalc<DRT::Element::line3>::Instance(true);
+      return MTInterpolatorCalc<DRT::Element::line3>::Instance(::UTILS::SingletonAction::create);
     }
     default:
       dserror("Chosen element type not supported!");
@@ -1781,24 +1781,16 @@ NTS::MTInterpolatorCalc<distypeM>::MTInterpolatorCalc()
   //...
 }
 
-
-/*----------------------------------------------------------------------*
- |  Instance (public)                                        farah 10/14|
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeM>
-NTS::MTInterpolatorCalc<distypeM>* NTS::MTInterpolatorCalc<distypeM>::Instance(bool create)
+NTS::MTInterpolatorCalc<distypeM>* NTS::MTInterpolatorCalc<distypeM>::Instance(
+    ::UTILS::SingletonAction action)
 {
-  static MTInterpolatorCalc<distypeM>* instance;
-  if (create)
-  {
-    if (instance == NULL) instance = new MTInterpolatorCalc<distypeM>();
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<NTS::MTInterpolatorCalc<distypeM>> singleton_owner([]() {
+    return std::unique_ptr<NTS::MTInterpolatorCalc<distypeM>>(
+        new NTS::MTInterpolatorCalc<distypeM>());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 
@@ -1810,7 +1802,7 @@ void NTS::MTInterpolatorCalc<distypeM>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 /*----------------------------------------------------------------------*

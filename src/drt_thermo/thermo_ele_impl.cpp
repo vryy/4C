@@ -99,22 +99,15 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT
 }  // TemperImperInterface::Impl()
 
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::TemperImpl<distype>* DRT::ELEMENTS::TemperImpl<distype>::Instance(bool create)
+DRT::ELEMENTS::TemperImpl<distype>* DRT::ELEMENTS::TemperImpl<distype>::Instance(
+    ::UTILS::SingletonAction action)
 {
-  static TemperImpl<distype>* instance;
-  if (create)
-  {
-    if (instance == nullptr)
-    {
-      instance = new TemperImpl<distype>();
-    }
-  }
-  else
-  {
-    if (instance != nullptr) delete instance;
-    instance = nullptr;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::TemperImpl<distype>> singleton_owner([]() {
+    return std::unique_ptr<DRT::ELEMENTS::TemperImpl<distype>>(
+        new DRT::ELEMENTS::TemperImpl<distype>());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 template <DRT::Element::DiscretizationType distype>
@@ -122,7 +115,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 template <DRT::Element::DiscretizationType distype>

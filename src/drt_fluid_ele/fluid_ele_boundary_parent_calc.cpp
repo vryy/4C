@@ -50,7 +50,7 @@ DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentI
   {
     case DRT::Element::line2:
     {
-      return FluidBoundaryParent<DRT::Element::line2>::Instance(true);
+      return FluidBoundaryParent<DRT::Element::line2>::Instance(::UTILS::SingletonAction::create);
     }
     /*case DRT::Element::line3:
     {
@@ -66,7 +66,7 @@ DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentI
     }
     case DRT::Element::quad4:
     {
-      return FluidBoundaryParent<DRT::Element::quad4>::Instance(true);
+      return FluidBoundaryParent<DRT::Element::quad4>::Instance(::UTILS::SingletonAction::create);
     }
     case DRT::Element::quad8:
     {
@@ -102,26 +102,16 @@ DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentI
   return NULL;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParent<distype>::Instance(
-    bool create)
+    ::UTILS::SingletonAction action)
 {
-  static FluidBoundaryParentInterface* instance;
-  if (create)
-  {
-    if (instance == NULL)
-    {
-      instance = new FluidBoundaryParent<distype>();
-    }
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidBoundaryParent<distype>> singleton_owner([]() {
+    return std::unique_ptr<DRT::ELEMENTS::FluidBoundaryParent<distype>>(
+        new DRT::ELEMENTS::FluidBoundaryParent<distype>());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 
@@ -133,7 +123,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 

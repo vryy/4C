@@ -74,25 +74,16 @@ DRT::ELEMENTS::ElemagBoundaryImplInterface* DRT::ELEMENTS::ElemagBoundaryImplInt
   return NULL;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-
-
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ElemagBoundaryImpl<distype>* DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Instance(
-    bool create)
+    ::UTILS::SingletonAction action)
 {
-  static ElemagBoundaryImpl<distype>* instance;
-  if (create)
-  {
-    if (instance == NULL) instance = new ElemagBoundaryImpl<distype>();
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::ElemagBoundaryImpl<distype>> singleton_owner([]() {
+    return std::unique_ptr<DRT::ELEMENTS::ElemagBoundaryImpl<distype>>(
+        new DRT::ELEMENTS::ElemagBoundaryImpl<distype>());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 
@@ -103,7 +94,7 @@ void DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 

@@ -20,6 +20,8 @@
 #include "thermo_ele_impl_utils.H"
 #include "../drt_inpar/inpar_thermo.H"
 
+#include "../headers/singleton_owner.H"
+
 /*----------------------------------------------------------------------*
  |                                                            gjb 01/08 |
  *----------------------------------------------------------------------*/
@@ -112,7 +114,8 @@ namespace DRT
       TemperImpl();
 
       //! Singleton access method
-      static TemperImpl<distype>* Instance(bool create = true);
+      static TemperImpl<distype>* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       //! called upon destruction
       void Done() override;

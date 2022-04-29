@@ -14,6 +14,8 @@
 
 #include "fluid_ele_calc.H"
 
+#include "../headers/singleton_owner.H"
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -27,7 +29,8 @@ namespace DRT
       virtual ~FluidEleCalcStd() {}
 
       /// Singleton access method
-      static FluidEleCalcStd<distype>* Instance(bool create = true);
+      static FluidEleCalcStd<distype>* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       /// called upon destruction
       virtual void Done();

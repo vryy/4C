@@ -15,6 +15,8 @@
 #include "fluid_ele_parameter.H"
 #include "../drt_inpar/inpar_poroelast.H"
 
+#include "../headers/singleton_owner.H"
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -25,7 +27,8 @@ namespace DRT
       virtual ~FluidEleParameterPoro() {}
 
       /// Singleton access method
-      static FluidEleParameterPoro* Instance(bool create = true);
+      static FluidEleParameterPoro* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       /// called upon destruction
       virtual void Done();

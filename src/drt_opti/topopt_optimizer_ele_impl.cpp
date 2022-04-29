@@ -78,25 +78,16 @@ DRT::ELEMENTS::TopOptImplInterface* DRT::ELEMENTS::TopOptImplInterface::Impl(
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::TopOptImpl<distype>* DRT::ELEMENTS::TopOptImpl<distype>::Instance(bool create)
+DRT::ELEMENTS::TopOptImpl<distype>* DRT::ELEMENTS::TopOptImpl<distype>::Instance(
+    ::UTILS::SingletonAction action)
 {
-  static TopOptImpl<distype>* instance;
-  if (create)
-  {
-    if (instance == NULL)
-    {
-      instance = new TopOptImpl<distype>();
-    }
-  }
-  else
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::TopOptImpl<distype>> singleton_owner([]() {
+    return std::unique_ptr<DRT::ELEMENTS::TopOptImpl<distype>>(
+        new DRT::ELEMENTS::TopOptImpl<distype>());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 
@@ -107,7 +98,7 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 
@@ -1381,26 +1372,16 @@ DRT::ELEMENTS::TopOptBoundaryImplInterface* DRT::ELEMENTS::TopOptBoundaryImplInt
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::TopOptBoundaryImpl<distype>* DRT::ELEMENTS::TopOptBoundaryImpl<distype>::Instance(
-    bool create)
+    ::UTILS::SingletonAction action)
 {
-  static TopOptBoundaryImpl<distype>* instance;
-  if (create)  // create instance if not present
-  {
-    if (instance == NULL)
-    {
-      instance = new TopOptBoundaryImpl<distype>();
-    }
-  }
-  else  // delete instance if present
-  {
-    if (instance != NULL) delete instance;
-    instance = NULL;
-  }
-  return instance;
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::TopOptBoundaryImpl<distype>> singleton_owner([]() {
+    return std::unique_ptr<DRT::ELEMENTS::TopOptBoundaryImpl<distype>>(
+        new DRT::ELEMENTS::TopOptBoundaryImpl<distype>());
+  });
+
+  return singleton_owner.Instance(action);
 }
 
 
@@ -1411,7 +1392,7 @@ void DRT::ELEMENTS::TopOptBoundaryImpl<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance(false);
+  Instance(::UTILS::SingletonAction::destruct);
 }
 
 
