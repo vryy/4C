@@ -41,12 +41,10 @@ namespace UTILS
     /*!
      * @brief Return pointer to singleton instance
      *
-     * If the create flag is True, create the singleton instance (if not already created)
-     * and return the pointer to it. If the create flag is False, destruct the instance.
+     * If the @p action is SingletonAction::create, create the singleton instance (if not already
+     * created) and return the pointer to it. If the @p action is SingletonAction::destruct,
+     * destroy the instance and return a `nullptr`.
      *
-     * @param [in] create   Boolean flag to create or destruct the instance
-     *
-     * @return
      */
     T* Instance(SingletonAction action)
     {
