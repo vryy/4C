@@ -19,20 +19,18 @@
 
 // EpetraExt headers
 #include <EpetraExt_Reindex_LinearProblem2.h>
+#include <Epetra_CrsMatrix.h>
 
 // BACI headers
 #include "solver_directsolver.H"
 
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_blocksparsematrix.H"
 #include "../linalg/linalg_krylov_projector.H"
-#include <Epetra_CrsMatrix.h>
-#include <Teuchos_Time.hpp>
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-LINALG::SOLVER::DirectSolver::DirectSolver(std::string solvertype)
+template <class MatrixType, class VectorType>
+LINALG::SOLVER::DirectSolver<MatrixType, VectorType>::DirectSolver(std::string solvertype)
     : solvertype_(solvertype),
       factored_(false),
       x_(Teuchos::null),
@@ -47,18 +45,10 @@ LINALG::SOLVER::DirectSolver::DirectSolver(std::string solvertype)
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-LINALG::SOLVER::DirectSolver::~DirectSolver()
-{
-  amesos_ = Teuchos::null;
-  reindexer_ = Teuchos::null;
-  lp_ = Teuchos::null;
-}
-
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-void LINALG::SOLVER::DirectSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
-    Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b, const bool refactor,
-    const bool reset, Teuchos::RCP<LINALG::KrylovProjector> projector)
+template <class MatrixType, class VectorType>
+void LINALG::SOLVER::DirectSolver<MatrixType, VectorType>::Setup(Teuchos::RCP<MatrixType> matrix,
+    Teuchos::RCP<VectorType> x, Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
+    Teuchos::RCP<LINALG::KrylovProjector> projector)
 {
   // Assume the input matrix to be a single block matrix
   bool bIsCrsMatrix = true;
@@ -191,7 +181,9 @@ void LINALG::SOLVER::DirectSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-int LINALG::SOLVER::DirectSolver::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y)
+template <class MatrixType, class VectorType>
+int LINALG::SOLVER::DirectSolver<MatrixType, VectorType>::ApplyInverse(
+    const VectorType& X, VectorType& Y)
 {
   x_->Update(1., X, 0.);
   Solve();
@@ -202,7 +194,8 @@ int LINALG::SOLVER::DirectSolver::ApplyInverse(const Epetra_MultiVector& X, Epet
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-int LINALG::SOLVER::DirectSolver::Solve()
+template <class MatrixType, class VectorType>
+int LINALG::SOLVER::DirectSolver<MatrixType, VectorType>::Solve()
 {
   if (amesos_ == Teuchos::null) dserror("No solver allocated");
 
@@ -229,3 +222,8 @@ int LINALG::SOLVER::DirectSolver::Solve()
   // direct solver does not support errorcodes
   return 0;
 }
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+// explicit initialization
+template class LINALG::SOLVER::DirectSolver<Epetra_Operator, Epetra_MultiVector>;
