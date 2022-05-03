@@ -8,6 +8,7 @@ variables:
     # If not called by a scheduler this variable has to be 0.
     # 1: daily full (release, debug)
     # 3: weekly coverage
+    # 4: weekly testing of Baci with a current Trilinos develop version
     GITLAB_SCHEDULER_TYPE: "0"
 
     # Build type for pipelines started via the GitLab GUI
@@ -86,6 +87,7 @@ variables:
             - $GITLAB_SCHEDULER_TYPE == "1"
             - $GITLAB_SCHEDULER_TYPE == "2"
             - $GITLAB_SCHEDULER_TYPE == "3"
+            - $GITLAB_SCHEDULER_TYPE == "4"
 
 # This kind of job is started when a user triggers a job in the gitlab UI.
 # Full tests are performed.
@@ -127,6 +129,7 @@ variables:
             - $GITLAB_SCHEDULER_TYPE == "1"
             - $GITLAB_SCHEDULER_TYPE == "2"
             - $GITLAB_SCHEDULER_TYPE == "3"
+            - $GITLAB_SCHEDULER_TYPE == "4"
             - $GITLAB_INTERACTIVE_MODE == "1"
 
 # This kind of job is started when a user triggers a job in the Gitlab UI and sets the interactive flag GITLAB_INTERACTIVE_MODE to 1
@@ -302,6 +305,57 @@ variables:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "1"
 
+# Trilinos-develop build job
+.buildtest_release_trilinos_develop: &buildtest_release_trilinos_develop
+    stage: buildtest
+    script: 
+        - "echo Build and test Trilinos develop branch"
+        - cd $CI_PROJECT_DIR/..
+        # Delete old Trilinos 
+        - rm -rf Trilinos
+        # Cloning the Trilinos-develop branch 
+        - git clone -b develop https://github.com/trilinos/Trilinos.git 
+        - cd Trilinos
+        # Apply patches for baci
+        - git apply $CI_PROJECT_DIR/trilinos/trilinos_for_baci.patch
+        # Delete old Trilinos build files
+        - rm -rf $CI_PROJECT_DIR/../Trilinos-develop-build
+        - mkdir $CI_PROJECT_DIR/../Trilinos-develop-build
+        - cd $CI_PROJECT_DIR/../Trilinos-develop-build
+        # Configure Trilinos and build it
+        - source $CI_PROJECT_DIR/trilinos/$TRILINOS_DEVELOP_CONFIG |& tee ../buildtest_release_trilinos_develop.log
+        - make -j3 install |& tee -a ../buildtest_release_trilinos_develop.log
+        # Specify which configuration is tested by this pipeline
+        - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
+        - "echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]"
+        - "echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]"
+        # Delete old build files.
+        - rm -rf ../baci-build/
+        # Clear eventual ccache cache.
+        - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
+        # Output to log because it is too much for the gitlab console.
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_${CTEST_BUILD_TYPE_GITLAB}.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" | tee -a ../buildtest_release_trilinos_develop.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
+    after_script:
+        # Write Selection of the output into the terminal and therefore to GITLAB
+        # Output 200 lines for any failing test
+        - grep -B 200 '*Failed\|*Timeout' ../buildtest_release_trilinos_develop.log || true
+        - sed -n '/tests passed,/,//p' ../buildtest_release_trilinos_develop.log
+        # Specify which configuration was tested by this pipeline
+        - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
+        - "echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]"
+        - "echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]"
+        # Move the log file to the source folder, so it can be found by artifacts.
+        - mv ../buildtest_release_trilinos_develop.log buildtest_release_trilinos_develop.log
+    artifacts:
+        name: "$CI_JOB_NAME-$CI_JOB_ID"
+        paths:
+            - buildtest_release_trilinos_develop.log
+        when: on_failure
+        expire_in: 1 week
+    only:
+        variables:
+                - $GITLAB_SCHEDULER_TYPE == "4"
+
 # Doxygen job
 .doxygen: &doxygen
     stage: doxygen
@@ -359,6 +413,7 @@ checkcode:
     except:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "3"
+            - $GITLAB_SCHEDULER_TYPE == "4"
             - $GITLAB_INTERACTIVE_MODE == "1"
     tags:
         - all
@@ -419,6 +474,17 @@ imcs-buildtest_daily_debug_ubuntu20:
         - imcs-nightly-debug-ubuntu20
     needs: ["checkcode"]
 
+imcs-buildtest_release_trilinos_develop:
+    <<: *buildtest_release_trilinos_develop
+    variables:
+        CTEST_MAKE: "make full -j3"
+        CTEST_BUILD_NAME_GITLAB: "imcs-workstation-ubuntu20-trilinos-develop-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation_ubuntu20-04_develop.config"
+        TRILINOS_ROOT: "$CI_PROJECT_DIR/../Trilinos-develop-build"
+        TRILINOS_DEVELOP_CONFIG: "do-configure-trilinos-develop-imcs"
+    tags:
+        - imcs-buildtest_release_trilinos_develop-ubuntu20
+    needs: []
 
 # LNM---------------------------------------------------------------------------
 

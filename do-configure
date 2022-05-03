@@ -11,11 +11,13 @@ COVERAGE=0
 DEBUG_OPTIMIZED=0
 USE_ACML=0
 USE_FORCEBUILD=0
-TRILINOS_EXPERIMENTAL=OFF  # use experimental Trilinos version (e.g. current state of develop)
 SHARED_LIBS=OFF
 CCACHE_COMMAND=ccache
 MPIEXEC_EXTRA_OPTS=
 USE_LLD=0
+
+# use experimental Trilinos version (e.g. current state of develop)
+TRILINOS_EXPERIMENTAL=OFF
 
 # ignore unstable cut test 
 IGNORE_UNSTABLE_CUTTEST=OFF
@@ -34,11 +36,11 @@ IGNORE_UNSTABLE_CUTTEST=OFF
 # testing is achieved by setting '--debug-optimized'
 # Note: Use only one of them! No checks in place if both are specified.
 
-OPTIONS=`getopt -o hc:daef -l help,config:,debug,debug-optimized,trilinos-debug,profiling,coverage,useACML,experimental,forceBuild,no-ccache,uselld,ide: -- "$@"`
+OPTIONS=`getopt -o hc:daef -l help,config:,debug,debug-optimized,trilinos-debug,profiling,coverage,useACML,forceBuild,no-ccache,uselld,ide: -- "$@"`
 
 [ $? -ne 0 ] && exit 1
 
-USAGEINFO="usage: do-configure --config=configurationfile [--debug] [--debug-optimized] [--trilinos-debug] [--profiling] [--coverage] [--experimental] [--useACML] [--forceBuild] [--ide=clion/eclipse/vscode] [--no-ccache] [--uselld]"
+USAGEINFO="usage: do-configure --config=configurationfile [--debug] [--debug-optimized] [--trilinos-debug] [--profiling] [--coverage] [--useACML] [--forceBuild] [--ide=clion/eclipse/vscode] [--no-ccache] [--uselld]"
 
 eval set -- $OPTIONS
 
@@ -67,9 +69,6 @@ while true; do
       ;;
     --trilinos-debug)
       TRILINOS_BUILD_TYPE="dbg"
-      ;;
-    -e|--experimental)
-      TRILINOS_EXPERIMENTAL=ON
       ;;
     -a|--useACML)
       USE_ACML=1
@@ -131,7 +130,7 @@ if [[ $USE_FORCEBUILD == 0 ]]; then
       echo "HOWTO:"
       echo "  mkdir -p \"$PROPOSED_BUILDDIR\""
       echo "  cd \"$PROPOSED_BUILDDIR\""
-      echo "  $BACI_HOME/do-configure [--debug] [--experimental] [--useACML] [...]"
+      echo "  $BACI_HOME/do-configure [--debug] [--useACML] [...]"
       echo "  make -j 6 baci"
       echo "********************************************************************************************"
 

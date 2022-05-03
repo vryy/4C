@@ -33,6 +33,8 @@
 
 /tests/                            @baci/team_testing
 
+/trilinos/                         @baci/team_infrastructure
+
 # Note: the code ownershiop of the directories baci/Unittests/src/<dir> is overwritten by the specification based on the BACI source directories
 /Unittests/                        @baci/team_testing
 
