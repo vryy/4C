@@ -706,11 +706,11 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
               case DRT::Element::tri3:
                 return Teuchos::rcp(
                     new BeamToSolidSurfaceContactPairPotential<line_to_surface_patch_scalar_type,
-                        t_hermite, t_quad4>());
+                        t_hermite, t_tri3>());
               case DRT::Element::tri6:
                 return Teuchos::rcp(
                     new BeamToSolidSurfaceContactPairPotential<line_to_surface_patch_scalar_type,
-                        t_hermite, t_quad4>());
+                        t_hermite, t_tri6>());
               case DRT::Element::quad4:
                 return Teuchos::rcp(
                     new BeamToSolidSurfaceContactPairPotential<line_to_surface_patch_scalar_type,
@@ -718,15 +718,15 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
               case DRT::Element::quad8:
                 return Teuchos::rcp(
                     new BeamToSolidSurfaceContactPairPotential<line_to_surface_patch_scalar_type,
-                        t_hermite, t_quad4>());
+                        t_hermite, t_quad8>());
               case DRT::Element::quad9:
                 return Teuchos::rcp(
                     new BeamToSolidSurfaceContactPairPotential<line_to_surface_patch_scalar_type,
-                        t_hermite, t_quad4>());
+                        t_hermite, t_quad9>());
               case DRT::Element::nurbs9:
-                return Teuchos::rcp(
-                    new BeamToSolidSurfaceContactPairPotential<line_to_surface_patch_scalar_type,
-                        t_hermite, t_quad4>());
+                return Teuchos::rcp(new BeamToSolidSurfaceContactPairPotential<
+                    line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite,
+                    t_nurbs9>());
               default:
                 dserror("Wrong element type for surface element.");
             }
