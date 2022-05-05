@@ -34,7 +34,8 @@ namespace MAT
       constant,
       kozeny_carman,
       const_material_transverse,
-      const_material_orthotropic
+      const_material_orthotropic,
+      const_material_nodal_orthotropic
     };
 
     /*----------------------------------------------------------------------*/
@@ -67,7 +68,7 @@ namespace MAT
       PoroFlowType type_;
       //! flag indicating varying permeability
       const bool varying_permeability_;
-      //! permeability function type: Const or Kozeny_Carman
+      //! permeability function type
       PoroFlowPermeabilityFunction permeability_func_;
       //! a correction factor to ensure the permeability set in the input file
       double permeability_correction_factor_;
@@ -152,12 +153,14 @@ namespace MAT
     //! compute reaction tensor - 2D
     void ComputeReactionTensor(LINALG::Matrix<2, 2>& reaction_tensor, const double& J,
         const double& porosity,
-        const std::vector<std::vector<double>>& anisotropic_permeability_directions = {}) const;
+        const std::vector<std::vector<double>>& anisotropic_permeability_directions = {},
+        const std::vector<double>& anisotropic_permeability_coeffs = {}) const;
 
     //! compute reaction tensor - 3D
     void ComputeReactionTensor(LINALG::Matrix<3, 3>& reaction_tensor, const double& J,
         const double& porosity,
-        const std::vector<std::vector<double>>& anisotropic_permeability_directions = {}) const;
+        const std::vector<std::vector<double>>& anisotropic_permeability_directions = {},
+        const std::vector<double>& anisotropic_permeability_coeffs = {}) const;
 
     //! compute reaction coefficient
     double ComputeReactionCoeff() const;
@@ -194,11 +197,17 @@ namespace MAT
     //! flag indicating a varying permeability
     bool VaryingPermeability() const { return params_->varying_permeability_; }
 
+    //! flag indicating nodal orthotropy
+    bool IsNodalOrthotropic() const
+    {
+      return params_->permeability_func_ == MAT::PAR::const_material_nodal_orthotropic;
+    }
+
    private:
     //! my material parameters
     MAT::PAR::FluidPoro* params_;
 
-    //! anisotropy strategy (isotropy, transverse isotropy, or orthotropy)
+    //! anisotropy strategy (isotropy, transverse isotropy, orthotropy, or nodal orthotropy)
     Teuchos::RCP<MAT::FLUIDPORO::PoroAnisotropyStrategyBase> anisotropy_strategy_;
   };
 

@@ -279,6 +279,12 @@ namespace DRT
         return anisotropic_permeability_directions_;
       }
 
+      //! return scaling coefficients for anisotropic permeability (used for cloning)
+      const std::vector<std::vector<double>>& GetAnisotropicPermeabilityNodalCoeffs() const
+      {
+        return anisotropic_permeability_nodal_coeffs_;
+      }
+
       //! don't want = operator
       So3_Poro& operator=(const So3_Poro& old) = delete;
 
@@ -612,6 +618,14 @@ namespace DRT
       void ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(
           DRT::INPUT::LineDefinition* linedef);
 
+      //! read nodal anisotropic permeability scaling coefficients in the element definition
+      void ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(
+          DRT::INPUT::LineDefinition* linedef);
+
+      //! interpolate the anisotropic permeability coefficients at GP from nodal values
+      std::vector<double> ComputeAnisotropicPermeabilityCoeffsAtGP(
+          const LINALG::Matrix<numnod_, 1>& shapefct) const;
+
       //! Gauss integration rule
       DRT::UTILS::GaussIntegration intpoints_;
 
@@ -641,6 +655,9 @@ namespace DRT
 
       //! directions for anisotropic permeability
       std::vector<std::vector<double>> anisotropic_permeability_directions_;
+
+      //! scaling coefficients for nodal anisotropic permeability
+      std::vector<std::vector<double>> anisotropic_permeability_nodal_coeffs_;
 
       //! get nodes of element
       DRT::Node** Nodes() override;

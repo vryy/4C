@@ -151,11 +151,25 @@ namespace DRT
         anisotropic_permeability_directions_ = ref_anisotropic_permeability_directions;
       }
 
+      //! Set anisotropic permeability coefficients obtained from structure element during cloning
+      void SetAnisotropicPermeabilityNodalCoeffs(
+          const std::vector<std::vector<double>>& ref_anisotropic_permeability_nodal_coeffs)
+      {
+        anisotropic_permeability_nodal_coeffs_ = ref_anisotropic_permeability_nodal_coeffs;
+      }
+
       //! Provide the anisotropic permeability directions of the element
       const std::vector<std::vector<double>>& GetAnisotropicPermeabilityDirections() const
       {
         return anisotropic_permeability_directions_;
       }
+
+      //! Provide the nodal anisotropic permeability coefficients of the element
+      const std::vector<std::vector<double>>& GetAnisotropicPermeabilityNodalCoeffs() const
+      {
+        return anisotropic_permeability_nodal_coeffs_;
+      }
+
       //!@}
 
       //! @name Evaluation
@@ -199,6 +213,9 @@ namespace DRT
 
       //! directions for anisotropic permeability
       std::vector<std::vector<double>> anisotropic_permeability_directions_;
+
+      //! nodal coefficients for anisotropic permeability
+      std::vector<std::vector<double>> anisotropic_permeability_nodal_coeffs_;
     };
 
     /*!

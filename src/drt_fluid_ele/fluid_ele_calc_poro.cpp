@@ -89,6 +89,7 @@ DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
       kintype_(INPAR::STR::kinem_vague)
 {
   anisotropic_permeability_directions_.resize(Base::nsd_, std::vector<double>(Base::nsd_, 0.0));
+  anisotropic_permeability_nodal_coeffs_.resize(Base::nsd_, std::vector<double>(Base::nen_, 0.0));
 
   // change pointer to parameter list in base class to poro parameters
   Base::fldpara_ = DRT::ELEMENTS::FluidEleParameterPoro::Instance();
@@ -150,6 +151,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele
   {
     kintype_ = poroele->KinematicType();
     anisotropic_permeability_directions_ = poroele->GetAnisotropicPermeabilityDirections();
+    anisotropic_permeability_nodal_coeffs_ = poroele->GetAnisotropicPermeabilityNodalCoeffs();
   }
 
   if (not offdiag)
@@ -5162,9 +5164,21 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeSpatialReactionTerms(
   Teuchos::RCP<const MAT::FluidPoro> actmat =
       Teuchos::rcp_static_cast<const MAT::FluidPoro>(material);
 
+  // Acquire anisotropic permeability coefficients at the GP in case of a nodal orthotropic material
+  const std::vector<double> anisotropic_permeability_coeffs = std::invoke([&]() {
+    if (actmat->IsNodalOrthotropic())
+    {
+      return ComputeAnisotropicPermeabilityCoeffsAtGP();
+    }
+    else
+    {
+      return std::vector<double>();
+    }
+  });
+
   // material reaction tensor = inverse material permeability
-  actmat->ComputeReactionTensor(
-      mat_reac_tensor_, J_, porosity_, anisotropic_permeability_directions_);
+  actmat->ComputeReactionTensor(mat_reac_tensor_, J_, porosity_,
+      anisotropic_permeability_directions_, anisotropic_permeability_coeffs);
 
   // spatial reaction tensor = J * F^-T * material reaction tensor * F^-1
   static LINALG::Matrix<Base::nsd_, Base::nsd_> temp(false);
@@ -6814,6 +6828,25 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeJacobianDeterminantVolumeC
   }
   else
     dserror("invalid kinematic type!");
+}
+
+template <DRT::Element::DiscretizationType distype>
+std::vector<double>
+DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeAnisotropicPermeabilityCoeffsAtGP() const
+{
+  std::vector<double> anisotropic_permeability_coeffs(Base::nsd_, 0.0);
+
+  for (int node = 0; node < Base::nen_; ++node)
+  {
+    const double shape_val = Base::funct_(node);
+    for (int dim = 0; dim < Base::nsd_; ++dim)
+    {
+      anisotropic_permeability_coeffs[dim] +=
+          shape_val * anisotropic_permeability_nodal_coeffs_[dim][node];
+    }
+  }
+
+  return anisotropic_permeability_coeffs;
 }
 
 template class DRT::ELEMENTS::FluidEleCalcPoro<DRT::Element::hex8>;

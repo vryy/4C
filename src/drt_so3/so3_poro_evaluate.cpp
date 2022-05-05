@@ -1949,8 +1949,10 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::FillMatrixAndVectors(const int& 
     static LINALG::Matrix<numdim_, 1> reavel(true);
     {
       static LINALG::Matrix<numdim_, numdim_> temp(true);
-      fluid_mat_->ComputeReactionTensor(
-          matreatensor, J, porosity, anisotropic_permeability_directions_);
+      std::vector<double> anisotropic_permeability_coeffs =
+          ComputeAnisotropicPermeabilityCoeffsAtGP(shapefct);
+      fluid_mat_->ComputeReactionTensor(matreatensor, J, porosity,
+          anisotropic_permeability_directions_, anisotropic_permeability_coeffs);
       fluid_mat_->ComputeLinMatReactionTensor(linreac_dphi, linreac_dJ, J, porosity);
       temp.Multiply(1.0, matreatensor, defgrd_inv);
       reatensor.MultiplyTN(defgrd_inv, temp);
@@ -2430,8 +2432,10 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::FillMatrixAndVectorsOD(const int
   static LINALG::Matrix<numdim_, 1> reavel(true);
   {
     LINALG::Matrix<numdim_, numdim_> temp(true);
-    fluid_mat_->ComputeReactionTensor(
-        matreatensor, J, porosity, anisotropic_permeability_directions_);
+    std::vector<double> anisotropic_permeability_coeffs =
+        ComputeAnisotropicPermeabilityCoeffsAtGP(shapefct);
+    fluid_mat_->ComputeReactionTensor(matreatensor, J, porosity,
+        anisotropic_permeability_directions_, anisotropic_permeability_coeffs);
     fluid_mat_->ComputeLinMatReactionTensor(linreac_dphi, linreac_dJ, J, porosity);
     temp.Multiply(1.0, matreatensor, defgrd_inv);
     reatensor.MultiplyTN(defgrd_inv, temp);
@@ -2773,6 +2777,26 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
       }
     }
   }
+}
+
+template <class so3_ele, DRT::Element::DiscretizationType distype>
+std::vector<double>
+DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeAnisotropicPermeabilityCoeffsAtGP(
+    const LINALG::Matrix<numnod_, 1>& shapefct) const
+{
+  std::vector<double> anisotropic_permeability_coeffs(numdim_, 0.0);
+
+  for (int node = 0; node < numnod_; ++node)
+  {
+    const double shape_val = shapefct(node);
+    for (int dim = 0; dim < numdim_; ++dim)
+    {
+      anisotropic_permeability_coeffs[dim] +=
+          shape_val * anisotropic_permeability_nodal_coeffs_[dim][node];
+    }
+  }
+
+  return anisotropic_permeability_coeffs;
 }
 
 #include "so3_poro_fwd.hpp"

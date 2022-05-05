@@ -61,7 +61,10 @@ void DRT::ELEMENTS::So_hex8PoroType::SetupElementDefinition(
   defs["HEX8"]
       .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
       .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
-      .AddOptionalNamedDoubleVector("POROANISODIR3", 3);
+      .AddOptionalNamedDoubleVector("POROANISODIR3", 3)
+      .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS1", 8)
+      .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS2", 8)
+      .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS3", 8);
 }
 
 int DRT::ELEMENTS::So_hex8PoroType::Initialize(DRT::Discretization& dis)
@@ -128,7 +131,10 @@ void DRT::ELEMENTS::So_tet4PoroType::SetupElementDefinition(
   defs["TET4"]
       .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
       .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
-      .AddOptionalNamedDoubleVector("POROANISODIR3", 3);
+      .AddOptionalNamedDoubleVector("POROANISODIR3", 3)
+      .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS1", 4)
+      .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS2", 4)
+      .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS3", 4);
 }
 
 int DRT::ELEMENTS::So_tet4PoroType::Initialize(DRT::Discretization& dis)

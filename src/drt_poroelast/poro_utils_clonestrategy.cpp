@@ -94,6 +94,7 @@ void POROELAST::UTILS::PoroelastCloneStrategy::SetElementData(
       dserror(" dynamic cast from DRT::Element* to DRT::ELEMENTS::So_base* failed ");
 
     SetAnisotropicPermeabilityDirectionsOntoFluid(newele, oldele);
+    SetAnisotropicPermeabilityNodalCoeffsOntoFluid(newele, oldele);
   }
   else
   {
@@ -156,6 +157,44 @@ void POROELAST::UTILS::PoroelastCloneStrategy::SetAnisotropicPermeabilityDirecti
   }
 
   // Anisotropic permeability not yet supported for p1 or scatra type elements. Do nothing.
+}
+
+void POROELAST::UTILS::PoroelastCloneStrategy::SetAnisotropicPermeabilityNodalCoeffsOntoFluid(
+    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele)
+{
+  Teuchos::RCP<DRT::ELEMENTS::FluidPoro> fluid =
+      Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidPoro>(newele);
+
+  // the element type name, needed to cast correctly in the following
+  const std::string eletypename = oldele->ElementType().Name();
+
+  if (eletypename == "So_tet4PoroType")
+  {
+    fluid->SetAnisotropicPermeabilityNodalCoeffs(
+        (dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>*>(oldele))
+            ->GetAnisotropicPermeabilityNodalCoeffs());
+  }
+  else if (eletypename == "So_hex8PoroType")
+  {
+    fluid->SetAnisotropicPermeabilityNodalCoeffs(
+        (dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(oldele))
+            ->GetAnisotropicPermeabilityNodalCoeffs());
+  }
+  else if (eletypename == "WallQuad4PoroType")
+  {
+    fluid->SetAnisotropicPermeabilityNodalCoeffs(
+        (dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>*>(oldele))
+            ->GetAnisotropicPermeabilityNodalCoeffs());
+  }
+  else if (eletypename == "WallTri3PoroType")
+  {
+    fluid->SetAnisotropicPermeabilityNodalCoeffs(
+        (dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>*>(oldele))
+            ->GetAnisotropicPermeabilityNodalCoeffs());
+  }
+
+  // Nodal anisotropic permeability not yet supported for higher order, p1, or scatra type elements.
+  // Do nothing.
 }
 
 bool POROELAST::UTILS::PoroelastCloneStrategy::DetermineEleType(
