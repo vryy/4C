@@ -77,6 +77,17 @@ namespace BEAMINTERACTION
     }
 
     /**
+     * \brief Returns the order of the FAD type.
+     */
+    inline int GetFADOrder() const override
+    {
+      if (GetIsFAD())
+        return 2;
+      else
+        return 0;
+    }
+
+    /**
      * \brief Returns if rotational coupling is activated.
      */
     inline bool GetIsRotationalCoupling() const { return rotational_coupling_; }

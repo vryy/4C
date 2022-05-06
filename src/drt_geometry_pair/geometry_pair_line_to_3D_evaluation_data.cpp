@@ -60,3 +60,14 @@ void GEOMETRYPAIR::LineTo3DEvaluationData::Clear()
     segment_tracker_.clear();
   }
 }
+
+/**
+ *
+ */
+void GEOMETRYPAIR::LineTo3DEvaluationData::ResetTracker()
+{
+  for (auto& data : gauss_point_projection_tracker_)
+    std::fill(data.second.begin(), data.second.end(), false);
+
+  for (auto& data : segment_tracker_) data.second.clear();
+}

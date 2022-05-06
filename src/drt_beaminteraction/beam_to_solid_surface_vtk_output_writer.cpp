@@ -222,7 +222,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputBeamToSolidS
     {
       // Get the line-to-surface evaluation data for the current condition.
       auto beam_to_surface_condition =
-          Teuchos::rcp_dynamic_cast<const BeamToSolidConditionSurfaceMeshtying>(condition, true);
+          Teuchos::rcp_dynamic_cast<const BeamToSolidConditionSurface>(condition, true);
       Teuchos::RCP<const GEOMETRYPAIR::LineToSurfaceEvaluationData> surface_evaluation_data =
           Teuchos::rcp_dynamic_cast<const GEOMETRYPAIR::LineToSurfaceEvaluationData>(
               beam_to_surface_condition->GetGeometryEvaluationData(), true);

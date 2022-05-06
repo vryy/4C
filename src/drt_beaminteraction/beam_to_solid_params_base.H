@@ -120,6 +120,11 @@ namespace BEAMINTERACTION
      */
     virtual inline bool GetIsFAD() const { return false; }
 
+    /**
+     * \brief Returns the order for the FAD type.
+     */
+    virtual inline int GetFADOrder() const { return 0; }
+
    protected:
     //! Flag if Init was called.
     bool isinit_;

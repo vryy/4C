@@ -187,20 +187,21 @@ namespace BEAMINTERACTION
    * \brief This base class represents a single beam-to-solid surface mesh tying interaction
    * condition.
    */
-  class BeamToSolidConditionSurfaceMeshtying : public BeamToSolidCondition
+  class BeamToSolidConditionSurface : public BeamToSolidCondition
   {
    public:
     /**
      * \brief Constructor (derived).
      */
-    BeamToSolidConditionSurfaceMeshtying(const Teuchos::RCP<const DRT::Condition>& condition_line,
+    BeamToSolidConditionSurface(const Teuchos::RCP<const DRT::Condition>& condition_line,
         const Teuchos::RCP<const DRT::Condition>& condition_other,
-        const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params);
+        const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params,
+        const bool is_mesh_tying);
 
     /**
      * \brief Destructor.
      */
-    ~BeamToSolidConditionSurfaceMeshtying(){};
+    ~BeamToSolidConditionSurface(){};
 
     /**
      * \brief Build the surface ID sets for this condition. The BuildIdSets method from the base
@@ -239,7 +240,20 @@ namespace BEAMINTERACTION
       return false;
     }
 
+    /**
+     * \brief If this condition is a mesh tying condition.
+     */
+    inline bool IsMeshTying() const { return is_mesh_tying_; }
+
+    /**
+     * \brief If this condition is a contact condition.
+     */
+    inline bool IsContact() const { return !is_mesh_tying_; }
+
    private:
+    //! If the condition is mesh tying or contact.
+    bool is_mesh_tying_;
+
     //! Map containing the global volume element IDs for each face element of the surface in this
     //! condition.
     std::unordered_map<int, Teuchos::RCP<const DRT::FaceElement>> surface_ids_;

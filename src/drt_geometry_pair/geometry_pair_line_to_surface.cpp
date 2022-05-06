@@ -11,6 +11,7 @@
 #include "geometry_pair_element_functions.H"
 #include "geometry_pair_utility_classes.H"
 #include "geometry_pair_constants.H"
+#include "geometry_pair_scalar_types.H"
 
 #include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../drt_lib/drt_dserror.H"
@@ -47,7 +48,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
     const LINALG::Matrix<3, 1, scalar_type>& point,
     const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
     LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
+    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals,
+    const bool min_one_iteration) const
 {
   // Initialize data structures
 
@@ -78,9 +80,13 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
       residuum = r_surface;
       residuum -= point;
 
-      // Check if tolerance is fulfilled.
-      if (residuum.Norm2() < CONSTANTS::local_newton_res_tol &&
-          delta_xi.Norm2() < CONSTANTS::projection_xi_eta_tol)
+      if (counter == 0 and min_one_iteration)
+      {
+        // if the min_one_iteration flag is set we run at least one iteration, so the dependency on
+        // FAD variables is calculated correctly.
+      }
+      else if (FADUTILS::VectorNorm(residuum) < CONSTANTS::local_newton_res_tol &&
+               FADUTILS::VectorNorm(delta_xi) < CONSTANTS::projection_xi_eta_tol)
       {
         if (ValidParameterSurface(xi, surface_size, beam_radius))
           projection_result = ProjectionResult::projection_found_valid;
@@ -90,7 +96,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
       }
 
       // Check if residuum is in a sensible range where we still expect to find a solution.
-      if (residuum.Norm2() > CONSTANTS::local_newton_res_max) break;
+      if (FADUTILS::VectorNorm(residuum) > CONSTANTS::local_newton_res_max) break;
 
       // Solve the linearized system.
       if (LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
@@ -120,27 +126,10 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Inters
     const scalar_type& eta_start, const LINALG::Matrix<3, 1, scalar_type>& xi_start,
     const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
 {
-  // Get number of faces for this volume and create a vector with the indices of the faces, so all
-  // surfaces of the volume can be checked for an intersection with the line.
   unsigned int n_faces;
   std::vector<unsigned int> face_fixed_parameters;
   std::vector<double> face_fixed_values;
-  if (surface::geometry_type_ == DiscretizationTypeGeometry::quad)
-  {
-    n_faces = 4;
-    face_fixed_parameters = {0, 0, 1, 1};
-    face_fixed_values = {-1., 1., -1., 1.};
-  }
-  else if (surface::geometry_type_ == DiscretizationTypeGeometry::triangle)
-  {
-    n_faces = 3;
-    face_fixed_parameters = {0, 1, 2};
-    face_fixed_values = {0., 0., 1.};
-  }
-  else
-  {
-    dserror("Wrong DiscretizationTypeGeometry given!");
-  }
+  GetFaceFixedParameters(n_faces, face_fixed_parameters, face_fixed_values);
 
   // Clear the input vector.
   intersection_points.clear();
@@ -166,6 +155,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Inters
     if (intersection_found == ProjectionResult::projection_found_valid)
     {
       intersection_points.push_back(ProjectionPoint1DTo3D<scalar_type>(eta, xi));
+      intersection_points.back().SetIntersectionFace(i);
     }
   }
 }
@@ -210,7 +200,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
     const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
     const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
     LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
+    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals,
+    const bool min_one_iteration) const
 {
   // Check the input parameters.
   {
@@ -280,11 +271,15 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
         residuum(3) -= fixed_value;
       }
 
-      // Check if tolerance is fulfilled.
-      if (residuum.Norm2() < CONSTANTS::local_newton_res_tol &&
-          delta_x.Norm2() < CONSTANTS::projection_xi_eta_tol)
+      if (counter == 0 and min_one_iteration)
       {
-        // Check if the parameter coordinates are valid.
+        // if the min_one_iteration flag is set we run at least one iteration, so the dependency on
+        // FAD variables is calculated correctly.
+      }
+      else if (FADUTILS::VectorNorm(residuum) < CONSTANTS::local_newton_res_tol &&
+               FADUTILS::VectorNorm(delta_x) < CONSTANTS::projection_xi_eta_tol)
+      {
+        // System is solved, now check if the parameter coordinates are valid.
         if (ValidParameter1D(eta) && ValidParameterSurface(xi, surface_size, beam_radius))
           projection_result = ProjectionResult::projection_found_valid;
         else
@@ -293,7 +288,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
       }
 
       // Check if residuum is in a sensible range where we still expect to find a solution.
-      if (residuum.Norm2() > CONSTANTS::local_newton_res_max) break;
+      if (FADUTILS::VectorNorm(residuum) > CONSTANTS::local_newton_res_max) break;
 
       // Fill up the jacobian.
       for (unsigned int i = 0; i < 3; i++)
@@ -384,7 +379,7 @@ scalar_type GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>:
 
       diff = corner_nodes(j_node);
       diff -= corner_nodes(i_node);
-      distance = diff.Norm2();
+      distance = FADUTILS::VectorNorm(diff);
       if (distance > max_distance) max_distance = distance;
     }
   }
@@ -392,19 +387,208 @@ scalar_type GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>:
   return max_distance;
 }
 
+/**
+ *
+ */
+template <typename scalar_type, typename line, typename surface>
+void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GetFaceFixedParameters(
+    unsigned int& n_faces, std::vector<unsigned int>& face_fixed_parameters,
+    std::vector<double>& face_fixed_values) const
+{
+  if (surface::geometry_type_ == DiscretizationTypeGeometry::quad)
+  {
+    n_faces = 4;
+    face_fixed_parameters = {0, 0, 1, 1};
+    face_fixed_values = {-1., 1., -1., 1.};
+  }
+  else if (surface::geometry_type_ == DiscretizationTypeGeometry::triangle)
+  {
+    n_faces = 3;
+    face_fixed_parameters = {0, 1, 2};
+    face_fixed_values = {0., 0., 1.};
+  }
+  else
+  {
+    dserror("Wrong DiscretizationTypeGeometry given!");
+  }
+}
+
+
+/**
+ *
+ */
+template <typename scalar_type, typename line, typename surface>
+void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surface>::PreEvaluate(
+    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+    std::vector<LineSegment<scalar_type>>& segments,
+    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
+{
+  // Call PreEvaluate on the double pair.
+  std::vector<LineSegment<double>> segments_double;
+  LINALG::Matrix<3 * surface::n_nodes_, 1, double> nodal_normals_double(false);
+  geometry_pair_double_->PreEvaluate(FADUTILS::CastToDouble(q_line),
+      FADUTILS::CastToDouble(q_surface), segments_double,
+      VectorPointerToVectorDouble(nodal_normals, nodal_normals_double));
+
+  // Convert the created double segments to a segment of scalar type.
+  segments.clear();
+  for (auto& segment_double : segments_double)
+  {
+    // Create the segment with the scalar FAD type.
+    segments.push_back(LineSegment<scalar_type>());
+    CopySegment(segment_double, segments.back());
+  }
+}
+
+/**
+ *
+ */
+template <typename scalar_type, typename line, typename surface>
+void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surface>::Evaluate(
+    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+    std::vector<LineSegment<scalar_type>>& segments,
+    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
+{
+  // Convert the input segments to a segment of scalar type double.
+  std::vector<LineSegment<double>> segments_double;
+  for (auto& segment : segments)
+  {
+    // Create the segment with the scalar FAD type.
+    segments_double.push_back(LineSegment<double>());
+    CopySegment(segment, segments_double.back());
+  }
+
+  // Call Evaluate on the double pair.
+  LINALG::Matrix<3 * surface::n_nodes_, 1, double> nodal_normals_double(false);
+  geometry_pair_double_->Evaluate(FADUTILS::CastToDouble(q_line), FADUTILS::CastToDouble(q_surface),
+      segments_double, VectorPointerToVectorDouble(nodal_normals, nodal_normals_double));
+
+  // Get the face parameters.
+  unsigned int n_faces;
+  std::vector<unsigned int> face_fixed_parameters;
+  std::vector<double> face_fixed_values;
+  this->GetFaceFixedParameters(n_faces, face_fixed_parameters, face_fixed_values);
+
+  // Initialize variables for the projections.
+  ProjectionResult projection_result = ProjectionResult::none;
+  LINALG::Matrix<3, 1, scalar_type> point_in_space;
+
+  // If segments are found, convert them to FAD segments.
+  segments.clear();
+  for (auto& segment_double : segments_double)
+  {
+    // Create the segment with the scalar FAD type.
+    segments.push_back(LineSegment<scalar_type>());
+    LineSegment<scalar_type>& new_segment = segments.back();
+
+    // Add the projection point to an array.
+    std::array<std::reference_wrapper<ProjectionPoint1DTo3D<scalar_type>>, 2>
+        segment_start_end_points = {
+            new_segment.GetStartPointMutable(), new_segment.GetEndPointMutable()};
+    segment_start_end_points[0].get().SetFromOtherPointDouble(segment_double.GetStartPoint());
+    segment_start_end_points[1].get().SetFromOtherPointDouble(segment_double.GetEndPoint());
+
+    // If the start or end points are intersection points, the intersections have to be reevaluated.
+    for (auto& point : segment_start_end_points)
+    {
+      const int intersection_face = point.get().GetIntersectionFace();
+      if (intersection_face >= 0)
+      {
+        this->IntersectLineWithSurfaceEdge(q_line, q_surface,
+            face_fixed_parameters[intersection_face], face_fixed_values[intersection_face],
+            point.get().GetEtaMutable(), point.get().GetXiMutable(), projection_result,
+            nodal_normals, true);
+      }
+    }
+
+    // Reevaluate the integration points along the segment.
+    std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points =
+        new_segment.GetProjectionPointsMutable();
+    projection_points.resize(segment_double.GetNumberOfProjectionPoints());
+    for (unsigned int i_point = 0; i_point < segment_double.GetNumberOfProjectionPoints();
+         i_point++)
+    {
+      // Position of the projection point within the segment.
+      auto& projection_point_double = segment_double.GetProjectionPoints()[i_point];
+      const double factor = (projection_point_double.GetEta() - segment_double.GetEtaA()) /
+                            segment_double.GetSegmentLength();
+
+      // Calculate spatial point.
+      auto& projection_point = projection_points[i_point];
+      projection_point.SetFromOtherPointDouble(projection_point_double);
+      projection_point.SetEta(new_segment.GetEtaA() + new_segment.GetSegmentLength() * factor);
+
+      // EvaluatePosition<line>(eta, q_line, r_line, this->Element1());
+      EvaluatePosition<line>(projection_point.GetEta(), q_line, point_in_space, this->Element1());
+
+      // Calculate the projection.
+      this->ProjectPointToOther(point_in_space, q_surface, projection_point.GetXiMutable(),
+          projection_result, nodal_normals, true);
+    }
+  }
+}
+
 
 /**
  * Explicit template initialization of template class.
  */
-template class GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tri3>;
-template class GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tri6>;
-template class GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad4>;
-template class GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad8>;
-template class GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad9>;
-template class GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_nurbs9>;
+namespace GEOMETRYPAIR
+{
+  template class GeometryPairLineToSurface<double, t_hermite, t_tri3>;
+  template class GeometryPairLineToSurface<double, t_hermite, t_tri6>;
+  template class GeometryPairLineToSurface<double, t_hermite, t_quad4>;
+  template class GeometryPairLineToSurface<double, t_hermite, t_quad8>;
+  template class GeometryPairLineToSurface<double, t_hermite, t_quad9>;
+  template class GeometryPairLineToSurface<double, t_hermite, t_nurbs9>;
+
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_hermite,
+      t_tri3>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_hermite,
+      t_tri6>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_hermite,
+      t_quad4>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_hermite,
+      t_quad8>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_hermite,
+      t_quad9>;
+  template class GeometryPairLineToSurface<
+      line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>, t_hermite,
+      t_nurbs9>;
+
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_hermite, t_tri3>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_hermite, t_tri6>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_hermite, t_quad4>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_hermite, t_quad8>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_hermite, t_quad9>;
+  template class GeometryPairLineToSurface<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
+
+  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type_1st_order,
+      t_hermite, t_tri3>;
+  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type_1st_order,
+      t_hermite, t_tri6>;
+  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type_1st_order,
+      t_hermite, t_quad4>;
+  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type_1st_order,
+      t_hermite, t_quad8>;
+  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type_1st_order,
+      t_hermite, t_quad9>;
+  template class GeometryPairLineToSurfaceFADWrapper<
+      line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>, t_hermite,
+      t_nurbs9>;
+
+  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_hermite,
+      t_tri3>;
+  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_hermite,
+      t_tri6>;
+  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_hermite,
+      t_quad4>;
+  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_hermite,
+      t_quad8>;
+  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_hermite,
+      t_quad9>;
+  template class GeometryPairLineToSurfaceFADWrapper<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
+}  // namespace GEOMETRYPAIR

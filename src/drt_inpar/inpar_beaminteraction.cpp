@@ -22,7 +22,8 @@ void INPAR::BEAMINTERACTION::BeamInteractionConditionsGetAll(
 {
   interactions = {INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_beam_contact,
       INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_volume_meshtying,
-      INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_meshtying};
+      INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_meshtying,
+      INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_contact};
 }
 
 void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)

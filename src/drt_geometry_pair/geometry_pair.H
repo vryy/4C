@@ -75,7 +75,7 @@ namespace GEOMETRYPAIR
      * For surface elements the pairs need the face element representing the surface, not the volume
      * element.
      */
-    inline void SetElement2(const DRT::Element* element2) { element2_ = element2; };
+    virtual inline void SetElement2(const DRT::Element* element2) { element2_ = element2; };
 
    protected:
     /**

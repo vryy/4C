@@ -14,6 +14,7 @@
 #include "beam_to_sphere_contact_params.H"
 #include "beam_to_solid_volume_meshtying_params.H"
 #include "beam_to_solid_surface_meshtying_params.H"
+#include "beam_to_solid_surface_contact_params.H"
 #include "beam_contact_runtime_vtk_output_params.H"
 
 /*----------------------------------------------------------------------------*
@@ -22,6 +23,8 @@ BEAMINTERACTION::BeamContactParams::BeamContactParams()
     : beam_to_beam_contact_params_(Teuchos::null),
       beam_to_sphere_contact_params_(Teuchos::null),
       beam_to_solid_volume_meshtying_params_(Teuchos::null),
+      beam_to_solid_surface_meshtying_params_(Teuchos::null),
+      beam_to_solid_surface_contact_params_(Teuchos::null),
       beam_contact_runtime_vtk_output_params_(Teuchos::null)
 {
   // empty constructor
@@ -77,4 +80,14 @@ void BEAMINTERACTION::BeamContactParams::BuildBeamToSolidSurfaceMeshtyingParams(
       Teuchos::rcp(new BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams());
   beam_to_solid_surface_meshtying_params_->Init();
   beam_to_solid_surface_meshtying_params_->Setup();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::BeamContactParams::BuildBeamToSolidSurfaceContactParams()
+{
+  beam_to_solid_surface_contact_params_ =
+      Teuchos::rcp(new BEAMINTERACTION::BeamToSolidSurfaceContactParams());
+  beam_to_solid_surface_contact_params_->Init();
+  beam_to_solid_surface_contact_params_->Setup();
 }

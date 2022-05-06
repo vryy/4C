@@ -43,6 +43,11 @@ namespace GEOMETRYPAIR
     void Clear() override;
 
     /**
+     * \brief Reset the evaluation data tracker objects.
+     */
+    void ResetTracker();
+
+    /**
      * \brief Get the segmentation strategy.
      * @return flag for segmentation strategy.
      */

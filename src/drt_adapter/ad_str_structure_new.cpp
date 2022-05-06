@@ -515,6 +515,10 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
           DRT::Problem::Instance()->BeamInteractionParams().sublist(
               "BEAM TO SOLID SURFACE MESHTYING"),
           "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none or
+      Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
+          DRT::Problem::Instance()->BeamInteractionParams().sublist(
+              "BEAM TO SOLID SURFACE CONTACT"),
+          "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none or
       beampotconditions.size() > 0)
     modeltypes.insert(INPAR::STR::model_beaminteraction);
 

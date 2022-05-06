@@ -344,18 +344,18 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::EvaluateFaceN
   {
     LINALG::Matrix<surface::n_dof_, 1, double> position_double(true);
     LINALG::Matrix<3 * surface::n_nodes_, 1, double> normals_double;
-    bool valid_pointer = false;
+    LINALG::Matrix<3 * surface::n_nodes_, 1, double>* normals_double_ptr;
 
     if (reference)
-      VectorPointerToVectorDouble(this->GetReferenceNormals(), normals_double, valid_pointer);
+      normals_double_ptr = VectorPointerToVectorDouble(this->GetReferenceNormals(), normals_double);
     else
-      VectorPointerToVectorDouble(this->GetCurrentNormals(), normals_double, valid_pointer);
+      normals_double_ptr = VectorPointerToVectorDouble(this->GetCurrentNormals(), normals_double);
 
-    if (valid_pointer)
+    if (normals_double_ptr != nullptr)
     {
       // Return the normal calculated with the averaged normal field.
       EvaluateSurfaceNormal<surface>(
-          xi, position_double, n, this->drt_face_element_.get(), &normals_double);
+          xi, position_double, n, this->drt_face_element_.get(), normals_double_ptr);
     }
     else
     {
@@ -588,18 +588,18 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
   {
     LINALG::Matrix<surface::n_dof_, 1, double> position_double(true);
     LINALG::Matrix<3 * surface::n_nodes_, 1, double> normals_double;
-    bool valid_pointer = false;
+    LINALG::Matrix<3 * surface::n_nodes_, 1, double>* normals_double_ptr;
 
     if (reference)
-      VectorPointerToVectorDouble(this->GetReferenceNormals(), normals_double, valid_pointer);
+      normals_double_ptr = VectorPointerToVectorDouble(this->GetReferenceNormals(), normals_double);
     else
-      VectorPointerToVectorDouble(this->GetCurrentNormals(), normals_double, valid_pointer);
+      normals_double_ptr = VectorPointerToVectorDouble(this->GetCurrentNormals(), normals_double);
 
-    if (valid_pointer)
+    if (normals_double_ptr != nullptr)
     {
       // Return the normal calculated with the averaged normal field.
       EvaluateSurfaceNormal<surface>(
-          xi, position_double, n, this->drt_face_element_.get(), &normals_double);
+          xi, position_double, n, this->drt_face_element_.get(), normals_double_ptr);
     }
     else
     {
@@ -635,9 +635,10 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
  *
  */
 Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
-    const Teuchos::RCP<const DRT::FaceElement>& face_element, const bool is_fad,
+    const Teuchos::RCP<const DRT::FaceElement>& face_element, const int fad_order,
     const INPAR::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy)
 {
+  const bool is_fad = fad_order > 0;
   if (not is_fad)
   {
     switch (face_element->Shape())
@@ -674,33 +675,72 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
   {
     if (surface_normal_strategy == INPAR::GEOMETRYPAIR::SurfaceNormals::standard)
     {
-      switch (face_element->Shape())
+      switch (fad_order)
       {
-        case DRT::Element::quad4:
-          return Teuchos::rcp(
-              new FaceElementPatchTemplate<t_quad4, line_to_surface_patch_scalar_type>(
-                  face_element, true));
-        case DRT::Element::quad8:
-          return Teuchos::rcp(
-              new FaceElementPatchTemplate<t_quad8, line_to_surface_patch_scalar_type>(
-                  face_element, true));
-        case DRT::Element::quad9:
-          return Teuchos::rcp(
-              new FaceElementPatchTemplate<t_quad9, line_to_surface_patch_scalar_type>(
-                  face_element, true));
-        case DRT::Element::tri3:
-          return Teuchos::rcp(
-              new FaceElementPatchTemplate<t_tri3, line_to_surface_patch_scalar_type>(
-                  face_element, true));
-        case DRT::Element::tri6:
-          return Teuchos::rcp(
-              new FaceElementPatchTemplate<t_tri6, line_to_surface_patch_scalar_type>(
-                  face_element, true));
-        case DRT::Element::nurbs9:
-          return Teuchos::rcp(new FaceElementTemplate<t_nurbs9,
-              line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>>(face_element));
+        case 1:
+        {
+          switch (face_element->Shape())
+          {
+            case DRT::Element::quad4:
+              return Teuchos::rcp(new FaceElementPatchTemplate<t_quad4,
+                  line_to_surface_patch_scalar_type_1st_order>(face_element, true));
+            case DRT::Element::quad8:
+              return Teuchos::rcp(new FaceElementPatchTemplate<t_quad8,
+                  line_to_surface_patch_scalar_type_1st_order>(face_element, true));
+            case DRT::Element::quad9:
+              return Teuchos::rcp(new FaceElementPatchTemplate<t_quad9,
+                  line_to_surface_patch_scalar_type_1st_order>(face_element, true));
+            case DRT::Element::tri3:
+              return Teuchos::rcp(
+                  new FaceElementPatchTemplate<t_tri3, line_to_surface_patch_scalar_type_1st_order>(
+                      face_element, true));
+            case DRT::Element::tri6:
+              return Teuchos::rcp(
+                  new FaceElementPatchTemplate<t_tri6, line_to_surface_patch_scalar_type_1st_order>(
+                      face_element, true));
+            case DRT::Element::nurbs9:
+              return Teuchos::rcp(new FaceElementTemplate<t_nurbs9,
+                  line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>>(
+                  face_element));
+            default:
+              dserror("Wrong discretization type given.");
+          }
+          break;
+        }
+        case 2:
+        {
+          switch (face_element->Shape())
+          {
+            case DRT::Element::quad4:
+              return Teuchos::rcp(
+                  new FaceElementPatchTemplate<t_quad4, line_to_surface_patch_scalar_type>(
+                      face_element, true));
+            case DRT::Element::quad8:
+              return Teuchos::rcp(
+                  new FaceElementPatchTemplate<t_quad8, line_to_surface_patch_scalar_type>(
+                      face_element, true));
+            case DRT::Element::quad9:
+              return Teuchos::rcp(
+                  new FaceElementPatchTemplate<t_quad9, line_to_surface_patch_scalar_type>(
+                      face_element, true));
+            case DRT::Element::tri3:
+              return Teuchos::rcp(
+                  new FaceElementPatchTemplate<t_tri3, line_to_surface_patch_scalar_type>(
+                      face_element, true));
+            case DRT::Element::tri6:
+              return Teuchos::rcp(
+                  new FaceElementPatchTemplate<t_tri6, line_to_surface_patch_scalar_type>(
+                      face_element, true));
+            case DRT::Element::nurbs9:
+              return Teuchos::rcp(new FaceElementTemplate<t_nurbs9,
+                  line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>>(face_element));
+            default:
+              dserror("Wrong discretization type given.");
+          }
+          break;
+        }
         default:
-          dserror("Wrong discretization type given.");
+          dserror("Got unexpected fad order.");
       }
     }
     else if (surface_normal_strategy == INPAR::GEOMETRYPAIR::SurfaceNormals::extended_volume)

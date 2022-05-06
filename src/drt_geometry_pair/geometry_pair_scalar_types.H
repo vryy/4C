@@ -27,7 +27,20 @@ namespace GEOMETRYPAIR
   using line_to_surface_scalar_type = typename FADUTILS::HigherOrderFadType<1,
       Sacado::ELRFad::SLFad<double, line::n_dof_ + surface::n_dof_>>::type;
 
-  //! Scalar type to be used for line to surface patch pairs with averaged current normals.
+  //! First order FAD scalar type to be used for line to surface patch pairs with averaged current
+  //! normals.
+  using line_to_surface_patch_scalar_type_1st_order =
+      typename FADUTILS::HigherOrderFadType<1, Sacado::ELRFad::DFad<double>>::type;
+
+  //! First order FAD scalar type to be used for line to surface patch pairs with nurbs
+  //! discretization.
+  template <typename line, typename surface>
+  using line_to_surface_patch_scalar_type_fixed_size_1st_order =
+      typename FADUTILS::HigherOrderFadType<1,
+          Sacado::ELRFad::SLFad<double, line::n_dof_ + surface::n_dof_>>::type;
+
+  //! Second order FAD scalar type to be used for line to surface patch pairs with averaged current
+  //! normals.
   using line_to_surface_patch_scalar_type =
       typename FADUTILS::HigherOrderFadType<2, Sacado::ELRFad::DFad<double>>::type;
 

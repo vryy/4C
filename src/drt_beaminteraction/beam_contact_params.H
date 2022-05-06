@@ -26,6 +26,7 @@ namespace BEAMINTERACTION
   class BeamToSphereContactParams;
   class BeamToSolidVolumeMeshtyingParams;
   class BeamToSolidSurfaceMeshtyingParams;
+  class BeamToSolidSurfaceContactParams;
   class BeamContactRuntimeVtkOutputParams;
 
   /*!
@@ -50,6 +51,9 @@ namespace BEAMINTERACTION
 
     //! builds a new BeamToSolidSurfaceMeshtyingParams object
     void BuildBeamToSolidSurfaceMeshtyingParams();
+
+    //! builds a new BeamToSolidSurfaceContactParams object
+    void BuildBeamToSolidSurfaceContactParams();
 
     //! builds a new BeamContactRuntimeVtkParams object
     void BuildBeamContactRuntimeVtkOutputParams();
@@ -78,6 +82,12 @@ namespace BEAMINTERACTION
       return beam_to_solid_surface_meshtying_params_;
     }
 
+    inline Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceContactParams>
+    BeamToSolidSurfaceContactParams() const
+    {
+      return beam_to_solid_surface_contact_params_;
+    }
+
     inline Teuchos::RCP<BEAMINTERACTION::BeamContactRuntimeVtkOutputParams>
     BeamContactRuntimeVtkOutputParams() const
     {
@@ -96,9 +106,13 @@ namespace BEAMINTERACTION
     Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>
         beam_to_solid_volume_meshtying_params_;
 
-    //! pointer to the parameter class of beam-to-solid-surface contact
+    //! pointer to the parameter class of beam-to-solid-surface mesh tying
     Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams>
         beam_to_solid_surface_meshtying_params_;
+
+    //! pointer to the parameter class of beam-to-solid-surface contact
+    Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceContactParams>
+        beam_to_solid_surface_contact_params_;
 
     //! pointer to the parameter class of beam contact vtk output
     Teuchos::RCP<BEAMINTERACTION::BeamContactRuntimeVtkOutputParams>

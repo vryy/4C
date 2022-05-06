@@ -230,6 +230,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--BEAM INTERACTION/SPHERE BEAM LINK", *list);
   reader.ReadGidSection("--BEAM INTERACTION/BEAM TO BEAM CONTACT", *list);
   reader.ReadGidSection("--BEAM INTERACTION/BEAM TO SPHERE CONTACT", *list);
+  reader.ReadGidSection("--BEAM INTERACTION/BEAM TO SOLID SURFACE CONTACT", *list);
   reader.ReadGidSection("--BEAM INTERACTION/BEAM TO SOLID SURFACE MESHTYING", *list);
   reader.ReadGidSection("--BEAM INTERACTION/BEAM TO SOLID SURFACE", *list);
   reader.ReadGidSection("--BEAM INTERACTION/BEAM TO SOLID SURFACE/RUNTIME VTK OUTPUT", *list);

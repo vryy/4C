@@ -21,11 +21,12 @@ namespace BEAMINTERACTION
 {
   /**
    * \brief Base class for beam to solid interactions.
-   * @tparam scalar_type_fad Scalar FAD type to be used in this pair.
+   * @tparam scalar_type Scalar FAD type to be used in this pair.
+   * @tparam segments_scalar_type Scalar FAD type to be used for the beam-to-solid segments.
    * @tparam beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @tparam solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
    */
-  template <typename scalar_type_fad, typename beam, typename solid>
+  template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
   class BeamToSolidPairBase : public BeamContactPair
   {
    public:
@@ -174,14 +175,14 @@ namespace BEAMINTERACTION
      */
     virtual void EvaluateBeamPosition(
         const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
-        LINALG::Matrix<3, 1, scalar_type_fad>& r_beam, bool reference) const;
+        LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const;
 
    protected:
     //! Vector with the segments of the line to 3D pair.
-    std::vector<GEOMETRYPAIR::LineSegment<double>> line_to_3D_segments_;
+    std::vector<GEOMETRYPAIR::LineSegment<segments_scalar_type>> line_to_3D_segments_;
 
     //! Current nodal positions (and tangents) of the beam.
-    LINALG::Matrix<beam::n_dof_, 1, scalar_type_fad> ele1pos_;
+    LINALG::Matrix<beam::n_dof_, 1, scalar_type> ele1pos_;
 
     //! Reference nodal positions (and tangents) of the beam.
     LINALG::Matrix<beam::n_dof_, 1, double> ele1posref_;

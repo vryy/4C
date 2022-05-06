@@ -187,6 +187,8 @@ namespace DRT
       BeamToSolidVolumeMeshtyingVolume,
       BeamToSolidSurfaceMeshtyingLine,
       BeamToSolidSurfaceMeshtyingSurface,
+      BeamToSolidSurfaceContactLine,
+      BeamToSolidSurfaceContactSurface,
       ElchBoundaryKinetics,
       ElchDomainKinetics,
       SurfacePermeability,

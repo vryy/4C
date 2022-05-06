@@ -25,8 +25,9 @@
 /**
  *
  */
-template <typename scalar_type_fad, typename beam, typename solid>
-BEAMINTERACTION::BeamToSolidPairBase<scalar_type_fad, beam, solid>::BeamToSolidPairBase()
+template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
+BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam,
+    solid>::BeamToSolidPairBase()
     : BeamContactPair(), line_to_3D_segments_()
 {
 }
@@ -35,8 +36,8 @@ BEAMINTERACTION::BeamToSolidPairBase<scalar_type_fad, beam, solid>::BeamToSolidP
 /**
  *
  */
-template <typename scalar_type_fad, typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidPairBase<scalar_type_fad, beam, solid>::Setup()
+template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam, solid>::Setup()
 {
   CheckInit();
 
@@ -96,23 +97,23 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type_fad, beam, solid>::Setup()
 /**
  *
  */
-template <typename scalar_type_fad, typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidPairBase<scalar_type_fad, beam, solid>::ResetState(
-    const std::vector<double>& beam_centerline_dofvec,
+template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam,
+    solid>::ResetState(const std::vector<double>& beam_centerline_dofvec,
     const std::vector<double>& solid_nodal_dofvec)
 {
   // Beam element.
   for (unsigned int i = 0; i < beam::n_dof_; i++)
-    ele1pos_(i) = FADUTILS::HigherOrderFadValue<scalar_type_fad>::apply(
+    ele1pos_(i) = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
         beam::n_dof_ + solid::n_dof_, i, beam_centerline_dofvec[i]);
 }
 
 /**
  *
  */
-template <typename scalar_type_fad, typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidPairBase<scalar_type_fad, beam, solid>::SetRestartDisplacement(
-    const std::vector<std::vector<double>>& centerline_restart_vec_)
+template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam,
+    solid>::SetRestartDisplacement(const std::vector<std::vector<double>>& centerline_restart_vec_)
 {
   // Call the parent method.
   BeamContactPair::SetRestartDisplacement(centerline_restart_vec_);
@@ -121,8 +122,8 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type_fad, beam, solid>::SetRest
 /**
  *
  */
-template <typename scalar_type_fad, typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidPairBase<scalar_type_fad, beam, solid>::Print(
+template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam, solid>::Print(
     std::ostream& out) const
 {
   CheckInitSetup();
@@ -141,8 +142,8 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type_fad, beam, solid>::Print(
 /**
  *
  */
-template <typename scalar_type_fad, typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidPairBase<scalar_type_fad, beam,
+template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam,
     solid>::PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const
 {
   CheckInitSetup();
@@ -158,8 +159,8 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type_fad, beam,
   for (unsigned int index_segment = 0; index_segment < line_to_3D_segments_.size(); index_segment++)
   {
     out << "    segment " << index_segment << ": ";
-    out << "eta in [" << line_to_3D_segments_[index_segment].GetEtaA() << ", "
-        << line_to_3D_segments_[index_segment].GetEtaB() << "]";
+    out << "eta in [" << FADUTILS::CastToDouble(line_to_3D_segments_[index_segment].GetEtaA())
+        << ", " << FADUTILS::CastToDouble(line_to_3D_segments_[index_segment].GetEtaB()) << "]";
     out << ", Gauss points = " << line_to_3D_segments_[index_segment].GetNumberOfProjectionPoints();
     out << "\n";
   }
@@ -168,10 +169,11 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type_fad, beam,
 /**
  *
  */
-template <typename scalar_type_fad, typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidPairBase<scalar_type_fad, beam, solid>::EvaluateBeamPosition(
-    const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
-    LINALG::Matrix<3, 1, scalar_type_fad>& r_beam, bool reference) const
+template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam,
+    solid>::EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
+                                     integration_point,
+    LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const
 {
   if (reference)
     GEOMETRYPAIR::EvaluatePosition<beam>(
@@ -189,43 +191,73 @@ namespace BEAMINTERACTION
 {
   using namespace GEOMETRYPAIR;
 
-  template class BeamToSolidPairBase<line_to_volume_scalar_type<t_hermite, t_hex8>, t_hermite,
-      t_hex8>;
-  template class BeamToSolidPairBase<line_to_volume_scalar_type<t_hermite, t_hex20>, t_hermite,
-      t_hex20>;
-  template class BeamToSolidPairBase<line_to_volume_scalar_type<t_hermite, t_hex27>, t_hermite,
-      t_hex27>;
-  template class BeamToSolidPairBase<line_to_volume_scalar_type<t_hermite, t_tet4>, t_hermite,
-      t_tet4>;
-  template class BeamToSolidPairBase<line_to_volume_scalar_type<t_hermite, t_tet10>, t_hermite,
-      t_tet10>;
-  template class BeamToSolidPairBase<line_to_volume_scalar_type<t_hermite, t_nurbs27>, t_hermite,
-      t_nurbs27>;
+  template class BeamToSolidPairBase<line_to_volume_scalar_type<t_hermite, t_hex8>, double,
+      t_hermite, t_hex8>;
+  template class BeamToSolidPairBase<line_to_volume_scalar_type<t_hermite, t_hex20>, double,
+      t_hermite, t_hex20>;
+  template class BeamToSolidPairBase<line_to_volume_scalar_type<t_hermite, t_hex27>, double,
+      t_hermite, t_hex27>;
+  template class BeamToSolidPairBase<line_to_volume_scalar_type<t_hermite, t_tet4>, double,
+      t_hermite, t_tet4>;
+  template class BeamToSolidPairBase<line_to_volume_scalar_type<t_hermite, t_tet10>, double,
+      t_hermite, t_tet10>;
+  template class BeamToSolidPairBase<line_to_volume_scalar_type<t_hermite, t_nurbs27>, double,
+      t_hermite, t_nurbs27>;
 
-  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_hermite, t_quad4>, t_hermite,
-      t_quad4>;
-  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_hermite, t_quad8>, t_hermite,
-      t_quad8>;
-  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_hermite, t_quad9>, t_hermite,
-      t_quad9>;
-  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_hermite, t_tri3>, t_hermite,
-      t_tri3>;
-  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_hermite, t_tri6>, t_hermite,
-      t_tri6>;
-  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_hermite, t_nurbs9>, t_hermite,
+  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_hermite, t_quad4>, double,
+      t_hermite, t_quad4>;
+  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_hermite, t_quad8>, double,
+      t_hermite, t_quad8>;
+  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_hermite, t_quad9>, double,
+      t_hermite, t_quad9>;
+  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_hermite, t_tri3>, double,
+      t_hermite, t_tri3>;
+  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_hermite, t_tri6>, double,
+      t_hermite, t_tri6>;
+  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_hermite, t_nurbs9>, double,
+      t_hermite, t_nurbs9>;
+
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type, double, t_hermite, t_quad4>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type, double, t_hermite, t_quad8>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type, double, t_hermite, t_quad9>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type, double, t_hermite, t_tri3>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type, double, t_hermite, t_tri6>;
+  template class BeamToSolidPairBase<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, double, t_hermite,
+      t_nurbs9>;
+  template class BeamToSolidPairBase<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex8>, double, t_hermite, t_quad4>;
+  template class BeamToSolidPairBase<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, double, t_hermite, t_quad8>;
+  template class BeamToSolidPairBase<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, double, t_hermite, t_quad9>;
+
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type_1st_order,
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_tri3>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type_1st_order,
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_tri6>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type_1st_order,
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad4>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type_1st_order,
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad8>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type_1st_order,
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad9>;
+  template class BeamToSolidPairBase<
+      line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>,
+      line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>, t_hermite,
       t_nurbs9>;
 
-  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type, t_hermite, t_quad4>;
-  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type, t_hermite, t_quad8>;
-  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type, t_hermite, t_quad9>;
-  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type, t_hermite, t_tri3>;
-  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type, t_hermite, t_tri6>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type,
+      line_to_surface_patch_scalar_type, t_hermite, t_tri3>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type,
+      line_to_surface_patch_scalar_type, t_hermite, t_tri6>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type,
+      line_to_surface_patch_scalar_type, t_hermite, t_quad4>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type,
+      line_to_surface_patch_scalar_type, t_hermite, t_quad8>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type,
+      line_to_surface_patch_scalar_type, t_hermite, t_quad9>;
   template class BeamToSolidPairBase<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>,
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
-  template class BeamToSolidPairBase<
-      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex8>, t_hermite, t_quad4>;
-  template class BeamToSolidPairBase<
-      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hermite, t_quad8>;
-  template class BeamToSolidPairBase<
-      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite, t_quad9>;
 }  // namespace BEAMINTERACTION
