@@ -35,8 +35,9 @@
 
 /trilinos/                         @baci/team_infrastructure
 
-# Note: the code ownershiop of the directories baci/Unittests/src/<dir> is overwritten by the specification based on the BACI source directories
-/Unittests/                        @baci/team_testing
+# Note: the code ownership of the respective unit test directories
+# can be overwritten by the specification based on the BACI source directories
+/unittests*/     @baci/team_testing
 
 /utilities/                        @baci/baci_maintainer @baci/team_infrastructure
 
@@ -51,7 +52,9 @@ UnittestingFramework.cmake         @baci/team_testing
 
 # --- specify code owner of BACI source directories (including corresponding unit test directory) -------------------- #
 #
-# Note: omitting a leading `/` in the list below matches not only the directory baci/src/<dir> but also baci/Unittests/src/<dir>
+# Note: omitting a leading `/` in the list below matches not only
+# the directory baci/src/<dir> but also baci/unittests*/src/<dir>
+
 # Note: stick to alphabetical order
 
 src/drt_adapter/                   @baci/team_discretization
