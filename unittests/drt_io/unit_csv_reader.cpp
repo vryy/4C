@@ -6,25 +6,19 @@
 \level 1
 
 *-----------------------------------------------------------------------*/
+#include <gtest/gtest.h>
 
-#ifndef UNIT_IO_CSVREADER_H_
-#define UNIT_IO_CSVREADER_H_
+#include <fstream>
 
-#include "src/common/unit_cxx_test_wrapper.H"
-#include "src/common/special_assertions.H"
 #include "src/drt_io/csv_reader.H"
 
-namespace IO
-{
-  class CsvReader_TestSuite;
-}
+#include "unittests/common/assertions.h"
 
-class IO::CsvReader_TestSuite : public BACICxxTestWrapper
+namespace
 {
- public:
-  void TestDataProcessingCsvStream()
+  TEST(CsvReaderTest, DataProcessingCsvStream)
   {
-    const std::vector<double> x = {0.3, 0.4, 0.45};
+    const std::vector<double> x = {0.2, 0.4, 0.45};
     const std::vector<double> y = {4.3, 4.1, 4.15};
     const std::vector<double> z = {-1.0, 0.1, 1.3};
 
@@ -36,12 +30,12 @@ class IO::CsvReader_TestSuite : public BACICxxTestWrapper
 
     auto csv_values = IO::ReadCsv(3, test_csv_file_stream);
 
-    TESTING::AssertDelta(csv_values[0], x, 1.0e-16);
-    TESTING::AssertDelta(csv_values[1], y, 1.0e-16);
-    TESTING::AssertDelta(csv_values[2], z, 1.0e-16);
+    EXPECT_EQ(csv_values[0], x);
+    EXPECT_EQ(csv_values[1], y);
+    EXPECT_EQ(csv_values[2], z);
   }
 
-  void TestDataProcessingCsvFile()
+  TEST(CsvReaderTest, DataProcessingCsvFile)
   {
     const std::vector<double> x = {0.3, 0.4, 0.45};
     const std::vector<double> y = {4.3, 4.1, 4.15};
@@ -60,65 +54,68 @@ class IO::CsvReader_TestSuite : public BACICxxTestWrapper
 
     auto csv_values = IO::ReadCsv(3, csv_template_file_name);
 
-    TESTING::AssertDelta(csv_values[0], x, 1.0e-16);
-    TESTING::AssertDelta(csv_values[1], y, 1.0e-16);
-    TESTING::AssertDelta(csv_values[2], z, 1.0e-16);
+    EXPECT_EQ(csv_values[0], x);
+    EXPECT_EQ(csv_values[1], y);
+    EXPECT_EQ(csv_values[2], z);
   }
 
-  void TestDifferentColumnLength()
+
+  TEST(CsvReaderTest, DifferentColumnLengthThrows)
   {
     std::stringstream test_csv_file;
     test_csv_file << "#x,y" << std::endl;
     test_csv_file << "0.30,4.40" << std::endl;
     test_csv_file << "0.30," << std::endl;
 
-    TS_ASSERT_THROWS(IO::ReadCsv(3, test_csv_file), const std::runtime_error &)
+    BACI_EXPECT_THROW_WITH_MESSAGE(
+        IO::ReadCsv(3, test_csv_file), std::runtime_error, "same length");
   }
 
-  void TestTrailingComma()
+  TEST(CsvReaderTest, TrailingCommaThrows)
   {
     std::stringstream test_csv_file;
     test_csv_file << "#x,y" << std::endl;
     test_csv_file << "0.30,4.40," << std::endl;
 
-    TS_ASSERT_THROWS(IO::ReadCsv(2, test_csv_file), const std::runtime_error &)
+    BACI_EXPECT_THROW_WITH_MESSAGE(
+        IO::ReadCsv(2, test_csv_file), std::runtime_error, "trailing comma");
   }
 
-  void TestWrongColumnNumber()
+  TEST(CsvReaderTest, WrongColumnNumberThrows)
   {
     std::stringstream test_csv_file;
     test_csv_file << "#x,y" << std::endl;
     test_csv_file << "0.30,4.40" << std::endl;
 
-    TS_ASSERT_THROWS(IO::ReadCsv(3, test_csv_file), const std::runtime_error &)
+    BACI_EXPECT_THROW_WITH_MESSAGE(IO::ReadCsv(3, test_csv_file), std::runtime_error, "");
   }
 
-  void TestWrongHeaderStyle()
+  TEST(CsvReaderTest, WrongHeaderStyleThrows)
   {
     std::stringstream test_csv_file;
     test_csv_file << "x,y" << std::endl;
     test_csv_file << "0.30,4.40" << std::endl;
 
-    TS_ASSERT_THROWS(IO::ReadCsv(2, test_csv_file), const std::runtime_error &)
+    BACI_EXPECT_THROW_WITH_MESSAGE(IO::ReadCsv(2, test_csv_file), std::runtime_error, "header");
   }
 
-  void TestWrongInputDataType()
+  TEST(CsvReaderTest, WrongInputDataTypeThrows)
   {
     std::stringstream test_csv_file;
     test_csv_file << "x,y" << std::endl;
     test_csv_file << "0.30,a" << std::endl;
 
-    TS_ASSERT_THROWS(IO::ReadCsv(2, test_csv_file), const std::runtime_error &)
+    BACI_EXPECT_THROW_WITH_MESSAGE(IO::ReadCsv(2, test_csv_file), std::runtime_error, "numbers");
   }
 
-  void TestWrongSeparator()
+  TEST(CsvReaderTest, WrongSeparatorThrows)
   {
     std::stringstream test_csv_file;
     test_csv_file << "x;y" << std::endl;
     test_csv_file << "0.30;4.40" << std::endl;
 
-    TS_ASSERT_THROWS(IO::ReadCsv(2, test_csv_file), const std::runtime_error &)
+    BACI_EXPECT_THROW_WITH_MESSAGE(
+        IO::ReadCsv(2, test_csv_file), std::runtime_error, "separated by commas");
   }
-};
 
-#endif
+}  // namespace
