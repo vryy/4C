@@ -227,21 +227,11 @@ bool GEO::CUT::IntegrationCellCreator::CreateLine2Cell(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-#if __cplusplus < 201103L
-template <DRT::Element::DiscretizationType celltype>
-bool GEO::CUT::IntegrationCellCreator::Create2DCell(
-    Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets)
-{
-  const DRT::Element::DiscretizationType facetype =
-      DRT::UTILS::DisTypeToFaceShapeType<celltype>::shape;
-  const unsigned numfaces = DRT::UTILS::DisTypeToNumFaces<celltype>::numFaces;
-#else
 template <DRT::Element::DiscretizationType celltype, DRT::Element::DiscretizationType facetype,
     unsigned numfaces>
 bool GEO::CUT::IntegrationCellCreator::Create2DCell(
     Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets)
 {
-#endif
   // check the facet number
   if (facets.size() != numfaces) return false;
 

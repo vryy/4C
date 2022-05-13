@@ -814,21 +814,12 @@ namespace GEO
        *  \param point   (in) : Given global point
        *
        *  \author hiermeier \date 08/16 */
-#if __cplusplus < 201103L
-      template <unsigned probdim, DRT::Element::DiscretizationType eletype>
-      Teuchos::RCP<Position> BuildPosition(const Element& element, const Point& point) const
-      {
-        const unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim;
-        const unsigned numNodesElement =
-            DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement;
-#else
       template <unsigned probdim, DRT::Element::DiscretizationType eletype,
           unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
           unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
       Teuchos::RCP<Position> BuildPosition(const Element& element, const Point& point,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
-#endif
         LINALG::Matrix<probdim, numNodesElement> xyze;
         element.Coordinates(xyze);
         LINALG::Matrix<probdim, 1> px;
@@ -892,15 +883,6 @@ namespace GEO
        *  \param xyz     (in) : Global coordinates of the given point.
        *
        *  \author hiermeier \date 08/16 */
-#if __cplusplus < 201103L
-      template <unsigned probdim, DRT::Element::DiscretizationType eletype>
-      static Teuchos::RCP<Position> BuildPosition(
-          const Element& element, const LINALG::Matrix<probdim, 1>& xyz)
-      {
-        const unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim;
-        const unsigned numNodesElement =
-            DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement;
-#else
       template <unsigned probdim, DRT::Element::DiscretizationType eletype,
           unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
           unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
@@ -908,7 +890,6 @@ namespace GEO
           const LINALG::Matrix<probdim, 1>& xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
       {
-#endif
         LINALG::Matrix<probdim, numNodesElement> xyze;
         element.Coordinates(xyze);
 
@@ -976,15 +957,6 @@ namespace GEO
        *  \param xyz     (in) : Global coordinates of the given point.
        *
        *  \author hiermeier \date 08/16 */
-#if __cplusplus < 201103L
-      template <unsigned probdim, DRT::Element::DiscretizationType eletype>
-      static Teuchos::RCP<Position> BuildPosition(
-          const LINALG::Matrix<probdim,
-              DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>& xyze,
-          const LINALG::Matrix<probdim, 1>& xyz)
-      {
-        const unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim;
-#else
       template <unsigned probdim, DRT::Element::DiscretizationType eletype,
           unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
           unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
@@ -993,8 +965,6 @@ namespace GEO
           const LINALG::Matrix<probdim, 1>& xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
       {
-#endif
-
         if (probdim > dim)
         {
           return Teuchos::rcp(
@@ -1056,15 +1026,6 @@ namespace GEO
        *  \param xyz   (in) : Global coordinates of the given point.
        *
        *  \author hiermeier \date 08/16 */
-#if __cplusplus < 201103L
-      template <unsigned probdim, DRT::Element::DiscretizationType eletype>
-      static Teuchos::RCP<Position> BuildPosition(
-          const std::vector<Node*> nodes, const LINALG::Matrix<probdim, 1>& xyz)
-      {
-        const unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim;
-        const unsigned numNodesElement =
-            DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement;
-#else
       template <unsigned probdim, DRT::Element::DiscretizationType eletype,
           unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
           unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
@@ -1072,7 +1033,6 @@ namespace GEO
           const LINALG::Matrix<probdim, 1>& xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
       {
-#endif
         if (not(nodes.size() == numNodesElement))
           dserror(
               "node number for this element is not correct\n"

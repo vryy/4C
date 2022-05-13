@@ -7,8 +7,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-#if __cplusplus >= 201103L
-
 #include "likelihood_evaluation.H"
 
 #include "invana_base.H"  // for the posterior evaluation
@@ -185,5 +183,3 @@ void INVANA::LogLikePrior::Evaluate(const Epetra_Vector& state, double* val)
 
   return;
 }
-
-#endif

@@ -7,8 +7,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-#if __cplusplus >= 201103L
-
 #ifndef METROPOLIS_KERNEL_H_
 #define METROPOLIS_KERNEL_H_
 
@@ -96,4 +94,3 @@ namespace INVANA
 }  // namespace INVANA
 
 #endif /* METROPOLIS_KERNEL_H_ */
-#endif

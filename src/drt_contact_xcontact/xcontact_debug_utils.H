@@ -32,11 +32,7 @@ namespace XCONTACT
      *  \param a         (in) : check this object
      *
      *  \author hiermeier \date 10/16 */
-#if __cplusplus < 201103L
-    template <bool weak_row_check, bool weak_col_check, class T>
-#else
     template <bool weak_row_check = false, bool weak_col_check = false, class T>
-#endif
     inline void CheckDimensions(const T& a, unsigned row_check, unsigned col_check)
     {
       // ToDo Use dsassert as soon as everything is running!
@@ -153,16 +149,10 @@ namespace XCONTACT
      *
      *  \author Hofer
      *  \date 08/16 */
-#if __cplusplus < 201103L
-    template <unsigned probdim, DRT::Element::DiscretizationType eletype>
-    void OutputGaussPoint(const LINALG::Matrix<probdim, 1>& sx, LINALG::Matrix<probdim, 1>& mx,
-        double& gN, LINALG::Matrix<1, DRT::UTILS::DisTypeToDim<eletype>::dim>& gN_sxi)
-#else
     template <unsigned probdim, DRT::Element::DiscretizationType eletype,
         unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim>
     void OutputGaussPoint(const LINALG::Matrix<probdim, 1>& sx, LINALG::Matrix<probdim, 1>& mx,
         double& gN, LINALG::Matrix<1, dim>& gN_sxi)
-#endif
     {
       std::ofstream outputfile;
       outputfile.open("../o/GP.txt", std::ios::app);

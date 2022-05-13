@@ -7,8 +7,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-#if __cplusplus >= 201103L
-
 #ifndef PARTICLE_GROUP_H_
 #define PARTICLE_GROUP_H_
 
@@ -299,4 +297,3 @@ namespace INVANA
 
 
 #endif /* PARTICLE_GROUP_H_ */
-#endif

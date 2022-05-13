@@ -7,8 +7,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-#if __cplusplus >= 201103L
-
 #include "metropolis_kernel.H"
 
 #include "likelihood_evaluation.H"
@@ -134,5 +132,3 @@ void INVANA::MetropolisKernel::Sample(const int& numiter, const double& scale,
 
   return;
 }
-
-#endif

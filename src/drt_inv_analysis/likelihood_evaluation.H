@@ -7,8 +7,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-#if __cplusplus >= 201103L
-
 #ifndef LIKELIHOOD_EVALUATION_H_
 #define LIKELIHOOD_EVALUATION_H_
 
@@ -224,4 +222,3 @@ namespace INVANA
 
 
 #endif /* LIKELIHOOD_EVALUATION_H_ */
-#endif

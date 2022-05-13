@@ -28,11 +28,8 @@ namespace XCONTACT
   void SpatialCoordinates(const DRT::Element& ele, T& xyze)
   {
     // check dimensions
-#if __cplusplus < 201103L
-    DEBUG::CheckDimensions<true, false, T>(xyze, 3, ele.NumNode());
-#else
     DEBUG::CheckDimensions<true>(xyze, 3, ele.NumNode());
-#endif
+
     for (unsigned k = 0; k < static_cast<unsigned>(ele.NumNode()); ++k)
     {
       const MORTAR::MortarNode* node = dynamic_cast<const MORTAR::MortarNode*>(ele.Nodes()[k]);
@@ -56,11 +53,7 @@ namespace XCONTACT
     // check dimensions
     /* Currently we support only frictionless contact, such that the
      * Lagrange Multiplier dimension per node is restricted to one! */
-#if __cplusplus < 201103L
-    DEBUG::CheckDimensions<false, false, T>(lme, 1, ele.NumNode());
-#else
     DEBUG::CheckDimensions(lme, 1, ele.NumNode());
-#endif
 
     for (unsigned k = 0; k < static_cast<unsigned>(ele.NumNode()); ++k)
     {
@@ -79,17 +72,6 @@ namespace XCONTACT
    *
    * \author Hofer
    * \date 08/16 */
-#if __cplusplus < 201103L
-  template <unsigned probdim, DRT::Element::DiscretizationType eletype>
-  void SpatialPoint(
-      const LINALG::Matrix<probdim, DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>&
-          xyze,
-      const LINALG::Matrix<DRT::UTILS::DisTypeToDim<eletype>::dim, 1>& xi,
-      LINALG::Matrix<1, DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>& val,
-      LINALG::Matrix<probdim, 1>& x)
-  {
-    const unsigned numNodeEle = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement;
-#else
   template <unsigned probdim, DRT::Element::DiscretizationType eletype,
       unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
       unsigned numNodeEle = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
@@ -97,7 +79,6 @@ namespace XCONTACT
       const LINALG::Matrix<dim, 1>& xi, LINALG::Matrix<1, numNodeEle>& val,
       LINALG::Matrix<probdim, 1>& x)
   {
-#endif
     // Evaluate shape functions
     DRT::UTILS::shape_function<eletype>(xi, val);
 
@@ -110,19 +91,6 @@ namespace XCONTACT
    *
    *  \author Hofer
    *  \date 08/16 */
-#if __cplusplus < 201103L
-  template <unsigned probdim, DRT::Element::DiscretizationType eletype>
-  void CovariantBasisVectors(
-      const LINALG::Matrix<probdim, DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>&
-          xyze,
-      const LINALG::Matrix<DRT::UTILS::DisTypeToDim<eletype>::dim, 1>& xi,
-      LINALG::Matrix<DRT::UTILS::DisTypeToDim<eletype>::dim,
-          DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>& deriv,
-      LINALG::Matrix<DRT::UTILS::DisTypeToDim<eletype>::dim, probdim>& g)
-  {
-    const unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim;
-    const unsigned numNodeEle = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement;
-#else
   template <unsigned probdim, DRT::Element::DiscretizationType eletype,
       unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
       unsigned numNodeEle = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
@@ -130,7 +98,6 @@ namespace XCONTACT
       const LINALG::Matrix<dim, 1>& xi, LINALG::Matrix<dim, numNodeEle>& deriv,
       LINALG::Matrix<dim, probdim>& g)
   {
-#endif
     // Evaluate shape functions
     DRT::UTILS::shape_function_deriv1<eletype>(xi, deriv);
 
@@ -144,21 +111,11 @@ namespace XCONTACT
    *
    *  \author Hofer
    *  \date 08/16 */
-#if __cplusplus < 201103L
-  template <unsigned probdim, DRT::Element::DiscretizationType eletype>
-  void Normal(const DRT::Element& ele,
-      const LINALG::Matrix<DRT::UTILS::DisTypeToDim<eletype>::dim, 1>& xi,
-      const LINALG::Matrix<DRT::UTILS::DisTypeToDim<eletype>::dim, probdim>& g,
-      LINALG::Matrix<probdim, 1>& n, double& ln)
-  {
-    const unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim;
-#else
   template <unsigned probdim, DRT::Element::DiscretizationType eletype,
       unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim>
   void Normal(const DRT::Element& ele, const LINALG::Matrix<dim, 1>& xi,
       const LINALG::Matrix<dim, probdim>& g, LINALG::Matrix<probdim, 1>& n, double& ln)
   {
-#endif
     // Compute non-unit normal
     if (probdim == 2 && dim == 1)
     {
@@ -182,24 +139,12 @@ namespace XCONTACT
    *
    *  \author Hofer
    *  \date 07/16 */
-#if __cplusplus < 201103L
-  template <unsigned probdim, DRT::Element::DiscretizationType eletype>
-  void ParDerivMetrics(
-      const LINALG::Matrix<probdim, DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>&
-          xyze,
-      const LINALG::Matrix<DRT::UTILS::DisTypeToDim<eletype>::dim, 1>& xi,
-      LINALG::Matrix<DRT::UTILS::DisTypeToDim<eletype>::dim, 1, LINALG::Matrix<probdim, 1>>& g_xi)
-  {
-    const unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim;
-    const unsigned numNodeEle = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement;
-#else
   template <unsigned probdim, DRT::Element::DiscretizationType eletype,
       unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
       unsigned numNodeEle = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
   void ParDerivMetrics(const LINALG::Matrix<probdim, numNodeEle>& xyze,
       const LINALG::Matrix<dim, 1>& xi, LINALG::Matrix<dim, 1, LINALG::Matrix<probdim, 1>>& g_xi)
   {
-#endif
     DEBUG::CheckIsZero(g_xi);
     // Evaluate second parametric derivatives of shape functions
     const int numderiv2 = DRT::UTILS::DisTypeToNumDeriv2<eletype>::numderiv2;
@@ -230,16 +175,10 @@ namespace XCONTACT
    *
    *  \author Hofer
    *  \date 06/16 */
-#if __cplusplus < 201103L
-  template <unsigned probdim, DRT::Element::DiscretizationType eletype>
-  void InvMetrics(const LINALG::Matrix<DRT::UTILS::DisTypeToDim<eletype>::dim, probdim>& g,
-      const double& j, LINALG::Matrix<DRT::UTILS::DisTypeToDim<eletype>::dim, probdim>& gc)
-#else
   template <unsigned probdim, DRT::Element::DiscretizationType eletype,
       unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim>
   void InvMetrics(
       const LINALG::Matrix<dim, probdim>& g, const double& j, LINALG::Matrix<dim, probdim>& gc)
-#endif
   {
     /* Computation of contravariant basis vectors:
      *
@@ -276,20 +215,11 @@ namespace XCONTACT
    *
    *  \author Hofer
    *  \date 06/16 */
-#if __cplusplus < 201103L
-  template <unsigned probdim, DRT::Element::DiscretizationType eletype>
-  void GradSpatialPoint(const LINALG::Matrix<DRT::UTILS::DisTypeToDim<eletype>::dim, probdim>& g,
-      const LINALG::Matrix<DRT::UTILS::DisTypeToDim<eletype>::dim, probdim>& gc,
-      LINALG::Matrix<probdim, probdim>& x_x)
-  {
-    const unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim;
-#else
   template <unsigned probdim, DRT::Element::DiscretizationType eletype,
       unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim>
   void GradSpatialPoint(const LINALG::Matrix<dim, probdim>& g,
       const LINALG::Matrix<dim, probdim>& gc, LINALG::Matrix<probdim, probdim>& x_x)
   {
-#endif
     // Compute spatial gradient of spatial point on element
     for (unsigned a = 0; a < dim; ++a)
       for (unsigned i = 0; i < probdim; ++i)
@@ -300,23 +230,12 @@ namespace XCONTACT
    *
    *  \author Hofer
    *  \date 08/16 */
-#if __cplusplus < 201103L
-  template <unsigned probdim, DRT::Element::DiscretizationType eletype>
-  void LagrangeMultiplier(
-      const LINALG::Matrix<1, DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>& lme,
-      const LINALG::Matrix<DRT::UTILS::DisTypeToDim<eletype>::dim, 1>& xi,
-      LINALG::Matrix<1, DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>& lmval,
-      double& lm)
-  {
-    const unsigned numNodeEle = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement;
-#else
   template <unsigned probdim, DRT::Element::DiscretizationType eletype,
       unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
       unsigned numNodeEle = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
   void LagrangeMultiplier(const LINALG::Matrix<1, numNodeEle>& lme,
       const LINALG::Matrix<dim, 1>& xi, LINALG::Matrix<1, numNodeEle>& lmval, double& lm)
   {
-#endif
     // Evaluate shape functions
     DRT::UTILS::shape_function<eletype>(xi, lmval);
 
@@ -329,18 +248,6 @@ namespace XCONTACT
    *
    *  \author Hofer
    *  \date 08/16 */
-#if __cplusplus < 201103L
-  template <unsigned probdim, DRT::Element::DiscretizationType eletype>
-  void LagrangeMultiplierParDeriv(
-      const LINALG::Matrix<1, DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>& lme,
-      const LINALG::Matrix<DRT::UTILS::DisTypeToDim<eletype>::dim, 1>& xi,
-      LINALG::Matrix<DRT::UTILS::DisTypeToDim<eletype>::dim,
-          DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>& lmderiv,
-      LINALG::Matrix<1, DRT::UTILS::DisTypeToDim<eletype>::dim>& lm_xi)
-  {
-    const unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim;
-    const unsigned numNodeEle = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement;
-#else
   template <unsigned probdim, DRT::Element::DiscretizationType eletype,
       unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
       unsigned numNodeEle = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
@@ -348,7 +255,6 @@ namespace XCONTACT
       const LINALG::Matrix<dim, 1>& xi, LINALG::Matrix<dim, numNodeEle>& lmderiv,
       LINALG::Matrix<1, dim>& lm_xi)
   {
-#endif
     // Evaluate shape functions
     DRT::UTILS::shape_function_deriv1<eletype>(xi, lmderiv);
 

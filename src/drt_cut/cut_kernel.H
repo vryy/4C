@@ -471,28 +471,10 @@ namespace GEO
       /** \brief check if the local augmented coordinates are within the specified limits
        *
        *  \author hiermeier */
-#if __cplusplus < 201103L
-
-      template <unsigned probDim, DRT::Element::DiscretizationType sideType>
-      bool WithinLimitsEmbeddedManifold(
-          const Epetra_SerialDenseMatrix& xsi_aug, double tol, bool allow_dist, double tol2)
-      {
-        const LINALG::Matrix<probDim, 1> xsi_aug_linalg(xsi_aug.A(), true);
-        return WithinLimitsEmbeddedManifold<probDim, sideType>(
-            xsi_aug_linalg, tol, allow_dist, tol2);
-      }
-
-      template <unsigned probDim, DRT::Element::DiscretizationType sideType>
-      bool WithinLimitsEmbeddedManifold(
-          const LINALG::Matrix<probDim, 1>& xsi_aug, double tol, bool allow_dist, double tol2)
-      {
-        const unsigned dimSide = DRT::UTILS::DisTypeToDim<sideType>::dim;
-#else
       template <unsigned probDim, DRT::Element::DiscretizationType sideType,
           unsigned dimSide = DRT::UTILS::DisTypeToDim<sideType>::dim, class T>
       bool WithinLimitsEmbeddedManifold(const T& xsi_aug, double tol, bool allow_dist, double tol2)
       {
-#endif
         if (probDim == 1) dserror("probDim is not allowed to be equal 1!");
         if (xsi_aug.M() != probDim)
           dserror(

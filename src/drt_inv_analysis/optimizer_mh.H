@@ -7,8 +7,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-#if __cplusplus >= 201103L
-
 #ifndef OPTIMIZER_MH_H_
 #define OPTIMIZER_MH_H_
 
@@ -164,4 +162,3 @@ namespace INVANA
 
 
 #endif /* OPTIMIZER_SMC_H_ */
-#endif
