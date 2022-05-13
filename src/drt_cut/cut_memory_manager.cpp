@@ -23,21 +23,6 @@
 /// how much more elements, that minimally needed to generate in the memory container
 #define SCALE_FACTOR 6
 
-#if __cplusplus < 201103L
-
-class ConstMemoryPool;
-
-static bool sortMissingPointers(const void* a, const void* b)
-{
-  return (reinterpret_cast<size_t>(a) < reinterpret_cast<size_t>(b));
-}
-
-static bool sortMemoryMap(const std::pair<size_t, int> a, const std::pair<size_t, int>& b)
-{
-  return (a.first > b.first);
-}
-
-#endif
 
 // required for creation allocation in one big chunk
 static size_t gcd(size_t a, size_t b)
@@ -161,7 +146,6 @@ void GEO::CUT::GenericMemoryPool::DeleteMissing()
     sorted_mem_pools.push_back(std::make_pair((*it).second, mem_pool));
   }
 
-#if __cplusplus >= 201103L
   // NOTE: Actually sorting of mempools needs to be done once, unless something else is created, so
   // this could be in the separate function and done only in the beginning
   std::sort(sorted_mem_pools.begin(), sorted_mem_pools.end(),
@@ -172,11 +156,6 @@ void GEO::CUT::GenericMemoryPool::DeleteMissing()
   std::sort(free_queue_.begin(), free_queue_.end(), [](const void* a, const void* b) {
     return (reinterpret_cast<size_t>(a) < reinterpret_cast<size_t>(b));
   });
-#else
-  // sort in ascending order of memory adresses
-  std::sort(sorted_mem_pools.begin(), sorted_mem_pools.end(), sortConstMempools);
-  std::sort(free_queue_.begin(), free_queue_.end(), sortMissingPointers);
-#endif
 
   int deleted = 0;
 
@@ -350,15 +329,10 @@ void GEO::CUT::GenericMemoryPool::AllInOneAllocation(
 #endif
   }
 
-
-#if __cplusplus >= 201103L
   std::sort(mem_pattern_vec.begin(), mem_pattern_vec.end(),
       [](const std::pair<size_t, int>& a, const std::pair<size_t, int>& b) {
         return (a.first > b.first);
       });
-#else
-  std::sort(mem_pattern_vec.begin(), mem_pattern_vec.end(), sortMemoryMap);
-#endif
 
   size_t offset = 0;
   const size_t char_pointer_size = 8;

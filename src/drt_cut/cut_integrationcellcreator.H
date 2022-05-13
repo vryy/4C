@@ -48,14 +48,10 @@ namespace GEO
       /** \brief fill the 2-D volume cells
        *
        *  \author hiermeier \date 01/17 */
-#if __cplusplus < 201103L
-      template <DRT::Element::DiscretizationType celltype>
-#else
       template <DRT::Element::DiscretizationType celltype,
           DRT::Element::DiscretizationType facetype =
               DRT::UTILS::DisTypeToFaceShapeType<celltype>::shape,
           unsigned numfaces = DRT::UTILS::DisTypeToNumFaces<celltype>::numFaces>
-#endif
       bool Create2DCell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
 
       /// fill the tet4 volume cell

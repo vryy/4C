@@ -7,8 +7,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-#if __cplusplus >= 201103L
-
 #include "optimizer_smc_predict.H"
 
 #include "particle_data.H"
@@ -114,5 +112,3 @@ int INVANA::PredictionSMC::EvaluateParticles()
 
   return 0;
 }
-
-#endif

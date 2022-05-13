@@ -41,29 +41,17 @@ Teuchos::RCP<INVANA::OptimizerBase> INVANA::OptimizerFactory::Create(
     break;
     case INPAR::INVANA::stat_inv_smc:
     {
-#if __cplusplus >= 201103L
       opti = Teuchos::rcp(new INVANA::OptimizerSMC(invp));
-#else
-      dserror("Compile with >=C++11.");
-#endif
     }
     break;
     case INPAR::INVANA::stat_inv_mh:
     {
-#if __cplusplus >= 201103L
       opti = Teuchos::rcp(new INVANA::OptimizerMH(invp));
-#else
-      dserror("Compile with >=C++11.");
-#endif
     }
     break;
     case INPAR::INVANA::stat_inv_prediction:
     {
-#if __cplusplus >= 201103L
       opti = Teuchos::rcp(new INVANA::PredictionSMC(invp));
-#else
-      dserror("Compile with >=C++11.");
-#endif
     }
     break;
     default:

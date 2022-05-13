@@ -137,25 +137,6 @@ namespace GEO
      *
      *  \date 07/16
      *  \author hiermeier */
-#if __cplusplus < 201103L
-    template <unsigned probdim, DRT::Element::DiscretizationType distype, typename valtype>
-    valtype EvalDerivsInParameterSpace(
-        const LINALG::Matrix<probdim,
-            DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, valtype>& xyze,
-        const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, 1, valtype>& rst,
-        LINALG::Matrix<probdim, DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-            valtype>& deriv1,
-        LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
-            DRT::UTILS::DisTypeToDim<distype>::dim, valtype>& metrictensor,
-        LINALG::Matrix<probdim, probdim, valtype>& xjm,
-        LINALG::Matrix<probdim, probdim, valtype>* xij,
-        LINALG::Matrix<probdim, 1, valtype>* normalvec1,
-        LINALG::Matrix<probdim, 1, valtype>* normalvec2, bool unit_normal)
-    {
-      const unsigned dim = DRT::UTILS::DisTypeToDim<distype>::dim;
-      const unsigned numNodesElement =
-          DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-#else
     template <unsigned probdim, DRT::Element::DiscretizationType distype, typename valtype,
         unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
         unsigned dim = DRT::UTILS::DisTypeToDim<distype>::dim>
@@ -169,7 +150,6 @@ namespace GEO
         LINALG::Matrix<probdim, 1, valtype>* normalvec1,
         LINALG::Matrix<probdim, 1, valtype>* normalvec2, bool unit_normal)
     {
-#endif
       valtype det = 0.0;
 
       // ---------------------------------------------------------------
@@ -273,21 +253,6 @@ namespace GEO
      *
      *  \author hiermeier
      *  \date 08/16 */
-#if __cplusplus < 201103L
-    template <unsigned probdim, DRT::Element::DiscretizationType distype, typename valtype>
-    inline valtype EvalDerivsInParameterSpace(
-        const LINALG::Matrix<probdim,
-            DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, valtype>& xyze,
-        const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, 1, valtype>& rst,
-        LINALG::Matrix<probdim, DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-            valtype>& deriv1,
-        LINALG::Matrix<probdim, probdim, valtype>& xjm,
-        LINALG::Matrix<probdim, probdim, valtype>* xij,
-        LINALG::Matrix<probdim, 1, valtype>* normalvec1,
-        LINALG::Matrix<probdim, 1, valtype>* normalvec2, bool unit_normal)
-    {
-      const unsigned dim = DRT::UTILS::DisTypeToDim<distype>::dim;
-#else
     template <unsigned probdim, DRT::Element::DiscretizationType distype, typename valtype,
         unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
         unsigned dim = DRT::UTILS::DisTypeToDim<distype>::dim>
@@ -300,7 +265,6 @@ namespace GEO
         LINALG::Matrix<probdim, 1, valtype>* normalvec1,
         LINALG::Matrix<probdim, 1, valtype>* normalvec2, bool unit_normal)
     {
-#endif
       LINALG::Matrix<dim, dim, valtype> metrictensor;
       return EvalDerivsInParameterSpace<probdim, distype, valtype>(
           xyze, rst, deriv1, metrictensor, xjm, xij, normalvec1, normalvec2, unit_normal);
@@ -411,16 +375,6 @@ namespace GEO
      *  \param unit_normal (in) : scale the normal to unit length
      *
      *  \author hiermeier \date 12/16 */
-#if __cplusplus < 201103L
-    template <unsigned probdim, DRT::Element::DiscretizationType distype, class T1, class T2,
-        class T3>
-    void EvalNormalVectors(const T1& xyze, const T2& rst, T3& normalvec1, T3* normalvec2 = NULL,
-        bool unit_normal = true)
-    {
-      const unsigned numNodesElement =
-          DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      const unsigned dim = DRT::UTILS::DisTypeToDim<distype>::dim;
-#else
     template <unsigned probdim, DRT::Element::DiscretizationType distype, class T1, class T2,
         class T3,
         unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
@@ -428,7 +382,6 @@ namespace GEO
     void EvalNormalVectors(const T1& xyze, const T2& rst, T3& normalvec1, T3* normalvec2 = NULL,
         bool unit_normal = true)
     {
-#endif
       if (dim >= probdim) dserror("This function is only meaningful for the embedded case!");
 
       LINALG::Matrix<dim, dim> metrictensor;

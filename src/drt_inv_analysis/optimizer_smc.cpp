@@ -7,8 +7,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-#if __cplusplus >= 201103L
-
 #include "optimizer_smc.H"
 
 #include "particle_group.H"
@@ -450,5 +448,3 @@ void INVANA::OptimizerSMC::WriteRestart()
 
   return;
 }
-
-#endif

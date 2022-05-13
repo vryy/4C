@@ -7,8 +7,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-#if __cplusplus >= 201103L
-
 #include "optimizer_mh.H"
 
 #include "metropolis_kernel.H"
@@ -470,5 +468,3 @@ void INVANA::OptimizerMH::WriteRestart()
 
   return;
 }
-
-#endif

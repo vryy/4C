@@ -119,19 +119,11 @@ namespace XCONTACT
 
     //! @}
    private:
-#if __cplusplus < 201103L
-    /// get the number of nodes per slave element
-    unsigned SlNumNodeEle() const { return numNodeEle; }
-
-    /// get the number of nodes per master element
-    unsigned MaNumNodeEle() const { return numNodeEle; }
-#else
     /// get the number of nodes per slave element
     constexpr unsigned SlNumNodeEle() const { return numNodeEle; }
 
     /// get the number of nodes per master element
     constexpr unsigned MaNumNodeEle() const { return numNodeEle; }
-#endif
 
     const bool& IsConstantNormal() const { return is_const_normal_; };
 
