@@ -7,7 +7,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "../headers/compiler_definitions.h" /* access to fortran routines */
+#include "../headers/fortran_definitions.h"
 #include "linalg_utils_densematrix_eigen.H"
 #include "../drt_lib/drt_dserror.H"
 

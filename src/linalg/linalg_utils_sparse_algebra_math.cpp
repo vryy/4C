@@ -7,7 +7,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "../headers/compiler_definitions.h" /* access to fortran routines */
 #include "linalg_utils_sparse_algebra_math.H"
 #include "../drt_lib/drt_dserror.H"
 #include <EpetraExt_Transpose_RowMatrix.h>
