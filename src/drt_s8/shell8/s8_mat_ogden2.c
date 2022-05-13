@@ -8,7 +8,6 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "../../headers/compiler_definitions.h" /* access to fortran routines */
 #include "shell8.h"
 #include "../../headers/standardtypes.h"
 #include "../../drt_lib/drt_dserror.H"

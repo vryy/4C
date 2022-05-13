@@ -2045,9 +2045,6 @@ set(OBJS_DRT_IO_LIB
   src/drt_lib/drt_nodereader.cpp
   src/drt_lib/drt_particlereader.cpp
 )
-set(OBJS_FORTRAN
-  src/fortran/hex_fserv.f
-)
 set(OBJS_DRT_NURBS_DISCRET
   src/drt_nurbs_discret/drt_apply_nurbs_initial_condition.cpp
 )

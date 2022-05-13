@@ -11,7 +11,6 @@
 
 #include "linalg_utils_densematrix_communication.H"
 
-#include "../headers/compiler_definitions.h" /* access to fortran routines */
 #include "../drt_lib/drt_dserror.H"
 
 /*----------------------------------------------------------------------*/
