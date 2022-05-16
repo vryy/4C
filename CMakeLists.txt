@@ -5,16 +5,12 @@
 #
 ### General Setup
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.17)
+
 project(baci CXX C Fortran)
 
-if(${CMAKE_VERSION} VERSION_GREATER "3.12.0")
-cmake_policy(SET CMP0074 NEW)
-cmake_policy(SET CMP0057 NEW)
-endif()
-
 # Print CMake version to screen
-message("II Using CMAke ${CMAKE_VERSION}")
+message("II Using CMake ${CMAKE_VERSION}")
 
 # The version number.
 set (baci_VERSION_MAJOR 1)
