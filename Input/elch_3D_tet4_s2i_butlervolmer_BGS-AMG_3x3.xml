@@ -76,7 +76,7 @@
                 <ParameterList name="AggregationExportFactory_List">
                     <Parameter name="factory" type="string" value="AggregationExportFactory"/>
                     <Parameter name="Output filename" type="string"
-                               value="xxx_aggs_level%LEVELID_block0_proc%PROCID.out"/>
+                               value="framework_test_output/elch_3D_tet4_s2i_butlervolmer_BGS-AMG_3x3/xxx_aggs_level%LEVELID_block0_proc%PROCID.out"/>
                     <Parameter name="DofsPerNode" type="string" value="CoalesceDropFactory_List"/>
                 </ParameterList>
 
@@ -165,7 +165,7 @@
                 <ParameterList name="AggregationExportFactory_List">
                     <Parameter name="factory" type="string" value="AggregationExportFactory"/>
                     <Parameter name="Output filename" type="string"
-                               value="xxx_aggs_level%LEVELID_block1_proc%PROCID.out"/>
+                               value="framework_test_output/elch_3D_tet4_s2i_butlervolmer_BGS-AMG_3x3/xxx_aggs_level%LEVELID_block1_proc%PROCID.out"/>
                     <Parameter name="DofsPerNode" type="string" value="CoalesceDropFactory_List"/>
                 </ParameterList>
 
@@ -257,7 +257,7 @@
                 <ParameterList name="AggregationExportFactory_List">
                     <Parameter name="factory" type="string" value="AggregationExportFactory"/>
                     <Parameter name="Output filename" type="string"
-                               value="xxx_aggs_level%LEVELID_block2_proc%PROCID.out"/>
+                               value="framework_test_output/elch_3D_tet4_s2i_butlervolmer_BGS-AMG_3x3/xxx_aggs_level%LEVELID_block2_proc%PROCID.out"/>
                     <Parameter name="DofsPerNode" type="string" value="CoalesceDropFactory_List"/>
                 </ParameterList>
 

@@ -289,5 +289,5 @@ volume all scale {scaling}
 $ --------------------------
 $ |         export         |
 $ --------------------------
-export genesis "xxx_tutorial_battery.e" block all dimension 3 overwrite
+export genesis "framework_test_output/tutorial_battery/xxx_tutorial_battery.e" block all dimension 3 overwrite
 exit

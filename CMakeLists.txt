@@ -1374,7 +1374,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_parameter_boundary.cpp
   src/drt_scatra_ele/scatra_ele_parameter_elch.cpp
   src/drt_scatra_ele/scatra_ele_parameter_elch_diffcond.cpp
-  src/drt_scatra_ele/scatra_ele_parameter_elch_manifold.cpp  
+  src/drt_scatra_ele/scatra_ele_parameter_elch_manifold.cpp
   src/drt_scatra_ele/scatra_ele_parameter_lsreinit.cpp
   src/drt_scatra_ele/scatra_ele_parameter_std.cpp
   src/drt_scatra_ele/scatra_ele_parameter_timint.cpp
@@ -2913,7 +2913,7 @@ add_executable(cut_test EXCLUDE_FROM_ALL ${OBJS_CUT_TEST})
 target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} ${LAPACK_LIBRARIES}
  -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group ${LIBRARIES})
 
-add_test(NAME run_cut_test COMMAND ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_LIST} $<TARGET_FILE:cut_test>)
+add_test(NAME run_cut_test COMMAND bash -c "mkdir -p ${PROJECT_BINARY_DIR}/framework_test_output/cut_test && cd ${PROJECT_BINARY_DIR}/framework_test_output/cut_test && ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} $<TARGET_FILE:cut_test>")
 
 include (TestingFramework.cmake)
 include (UnittestingFramework.cmake)

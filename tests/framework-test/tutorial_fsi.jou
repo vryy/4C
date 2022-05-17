@@ -237,4 +237,4 @@ nodeset 13 vertex in group fluid_vertex
 nodeset 13 name "fluid vertices all"
 
 $======================= export mesh
-export mesh "xxx_tutorial_fsi.e" block all dimension 2 overwrite
+export mesh "framework_test_output/tutorial_fsi/xxx_tutorial_fsi.e" block all dimension 2 overwrite
