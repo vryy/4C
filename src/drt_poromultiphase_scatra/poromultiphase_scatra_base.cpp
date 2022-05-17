@@ -28,7 +28,6 @@
 #include "../drt_mat/scatra_mat_multiporo.H"
 
 /*----------------------------------------------------------------------*
- | constructor                                              vuong 08/16  |
  *----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PoroMultiPhaseScaTraBase(
     const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
@@ -47,7 +46,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PoroMultiPhaseScaTraBase(
 
 
 /*----------------------------------------------------------------------*
- | initialize algorithm                                    vuong 08/16  |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
@@ -164,11 +162,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
       -1, 0, &(mydirichdofs[0]), 0, ScatraAlgo()->ScaTraField()->Discretization()->Comm()));
 
   // done.
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | read restart information for given time step (public)   vuong 08/16  |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ReadRestart(int restart)
 {
@@ -184,12 +180,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ReadRestart(int restart)
     // reset time and step for the global algorithm
     SetTimeStep(scatra_->ScaTraField()->Time(), restart);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | time loop                                                 vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Timeloop()
 {
@@ -212,11 +205,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Timeloop()
 
     UpdateAndOutput();
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | prepare one time step                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PrepareTimeStep(bool printheader)
 {
@@ -235,12 +226,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PrepareTimeStep(bool printh
   poromulti_->PrepareTimeStep();
   SetPoroSolution();
   ApplyAdditionalDBCForVolFracSpecies();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | prepare the time loop                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PrepareTimeLoop()
 {
@@ -251,12 +239,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PrepareTimeLoop()
   SetPoroSolution();
   scatra_->ScaTraField()->Output();
   if (artery_coupl_) scatramsht_->ArtScatraField()->Output();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | update fields and output results                         vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::UpdateAndOutput()
 {
@@ -284,7 +269,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::UpdateAndOutput()
 }
 
 /*----------------------------------------------------------------------*
- | Test the results of all subproblems                       vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::CreateFieldTest()
 {
@@ -295,7 +279,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::CreateFieldTest()
 }
 
 /*----------------------------------------------------------------------*
- |                                                         vuong 05/13  |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetPoroSolution()
 {
@@ -323,7 +306,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetPoroSolution()
 }
 
 /*----------------------------------------------------------------------*
- |                                                     kremheller 06/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ApplyAdditionalDBCForVolFracSpecies()
 {
@@ -432,7 +414,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ApplyAdditionalDBCForVolFra
 }
 
 /*----------------------------------------------------------------------*
- |                                                         vuong 05/13  |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetScatraSolution()
 {
@@ -440,11 +421,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetScatraSolution()
   if (artery_coupl_)
     poromulti_->FluidField()->ArtNetTimInt()->Discretization()->SetState(
         2, "one_d_artery_phinp", scatramsht_->ArtScatraField()->Phinp());
-  return;
 }
 
 /*------------------------------------------------------------------------*
- | dof map of vector of unknowns of scatra field        kremheller 06/17  |
  *------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ScatraDofRowMap()
     const
@@ -453,7 +432,6 @@ Teuchos::RCP<const Epetra_Map> POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::S
 }
 
 /*------------------------------------------------------------------------*
- | handle divergence of nonlinear solver                kremheller 10/18  |
  *------------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::HandleDivergence() const
 {
@@ -484,5 +462,4 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::HandleDivergence() const
       dserror("unknown divercont action!");
       break;
   }
-  return;
 }

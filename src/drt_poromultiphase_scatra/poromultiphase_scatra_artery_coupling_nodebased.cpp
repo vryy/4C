@@ -8,15 +8,12 @@
  *----------------------------------------------------------------------*/
 
 #include "poromultiphase_scatra_artery_coupling_nodebased.H"
-#include "../drt_lib/drt_discret.H"
 
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_lib/drt_condition_selector.H"
 #include "../linalg/linalg_matrixtransform.H"
 
-
 /*----------------------------------------------------------------------*
- | constructor                                         kremheller 04/18 |
  *----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::PoroMultiPhaseScaTraArtCouplNodeBased(
     Teuchos::RCP<DRT::Discretization> arterydis, Teuchos::RCP<DRT::Discretization> contdis,
@@ -40,7 +37,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::PoroMultiPhaseScaTr
 }
 
 /*----------------------------------------------------------------------*
- | init the strategy                                 kremheller 07/18   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
 {
@@ -109,21 +105,16 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
   sbbtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform());
   sbitransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform());
   sibtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform());
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | setup the strategy                                kremheller 03/19   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::Setup()
 {
   // do nothing
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | setup map extractor for artery mesh tying         kremheller 04/18   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupMapExtractor(
     Teuchos::RCP<LINALG::MultiMapExtractor> mapextractor, Teuchos::RCP<DRT::Discretization> dis,
@@ -158,12 +149,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupMapExtrac
   fullmap_vector.push_back(fullmap_coupled);
 
   mapextractor->Setup(*dis->DofRowMap(), fullmap_vector);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | setup the linear system of equations                kremheller 04/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupSystem(
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
@@ -174,24 +162,18 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupSystem(
 {
   SetupRHS(rhs, rhs_cont, rhs_art);
   SetupMatrix(sysmat, sysmat_cont, sysmat_art);
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | setup the global rhs                                kremheller 04/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupRHS(
     Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<const Epetra_Vector> rhs_cont,
     Teuchos::RCP<const Epetra_Vector> rhs_art)
 {
   SetupVector(rhs, rhs_cont, rhs_art);
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | setup a global vector                               kremheller 04/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupVector(
     Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<const Epetra_Vector> vec_cont,
@@ -216,12 +198,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupVector(
   // set up global vector
   globalex_->InsertVector(*temp, 0, *vec);
   globalex_->InsertVector(*vec2_uncoupled, 1, *vec);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | setup system matrix                                 kremheller 04/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupMatrix(
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
@@ -253,12 +232,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupMatrix(
   sysmat->Assign(0, 0, LINALG::View, *sysmat_cont);
   // complete
   sysmat->Complete();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | extract single field vectors                        kremheller 04/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::ExtractSingleFieldVectors(
     Teuchos::RCP<const Epetra_Vector> globalvec, Teuchos::RCP<const Epetra_Vector>& vec_cont,
@@ -281,12 +257,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::ExtractSingleF
   artex_->InsertVector(artery_boundary, 1, artery_temp);
 
   vec_art = artery_temp;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | check if nodal coupling and DBC on same DOF         kremheller 04/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::CheckDbcOnCoupledDofs(
     Teuchos::RCP<DRT::Discretization> dis, const Teuchos::RCP<const Epetra_Map>& coupleddofmap)
@@ -321,12 +294,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::CheckDbcOnCoup
     intersect_dbc_coupled->Print(std::cout);
     dserror("Re-think your Input file definition");
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | check if initial fields on coupled DOFs match       kremheller 04/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::CheckInitialFields(
     Teuchos::RCP<const Epetra_Vector> vec_cont, Teuchos::RCP<const Epetra_Vector> vec_art)
@@ -351,13 +321,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::CheckInitialFi
   {
     dserror("Your initial fields apparently are different with an L2 norm of %f", diff);
   }
-
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | artery dof row map                                  kremheller 04/18 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map>
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::ArteryDofRowMap() const
@@ -366,7 +332,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::ArteryDofRowMap() c
 }
 
 /*----------------------------------------------------------------------*
- | artery dof row map                                  kremheller 04/18 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map>
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::DofRowMap() const
@@ -375,18 +340,14 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::DofRowMap() const
 }
 
 /*----------------------------------------------------------------------*
- | apply mesh movement                                 kremheller 06/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::ApplyMeshMovement()
 {
   if (!evaluate_in_ref_config_)
     dserror("Evaluation in current configuration not possible for node-based coupling");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | access to blood vessel volume fraction              kremheller 10/19 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::BloodVesselVolumeFraction()
@@ -397,11 +358,8 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::BloodVesselVolumeFr
 }
 
 /*----------------------------------------------------------------------*
- | print out method                                    kremheller 06/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::PrintOutCouplingMethod() const
 {
   std::cout << "<   Coupling-Method : Nodebased                    >" << std::endl;
-
-  return;
 }

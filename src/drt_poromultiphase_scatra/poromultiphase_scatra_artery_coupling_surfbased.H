@@ -23,14 +23,11 @@ namespace POROMULTIPHASESCATRA
   class PoroMultiPhaseScaTraArtCouplSurfBased : public PoroMultiPhaseScaTraArtCouplNonConforming
   {
    public:
-    /// create using a Epetra_Comm
+    //! create using a Epetra_Comm
     PoroMultiPhaseScaTraArtCouplSurfBased(Teuchos::RCP<DRT::Discretization> arterydis,
         Teuchos::RCP<DRT::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
         const std::string& condname, const std::string& artcoupleddofname,
         const std::string& contcoupleddofname);
-
-    /// virtual destructor
-    virtual ~PoroMultiPhaseScaTraArtCouplSurfBased() {}
 
     //! set-up of global system of equations of coupled problem
     void SetupSystem(Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
@@ -40,13 +37,13 @@ namespace POROMULTIPHASESCATRA
         Teuchos::RCP<const LINALG::MapExtractor> dbcmap_cont,
         Teuchos::RCP<const LINALG::MapExtractor> dbcmap_art) override;
 
-    /// setup the strategy
+    //! setup the strategy
     void Setup() override;
 
-    /// apply mesh movement (on artery elements)
+    //! apply mesh movement (on artery elements)
     void ApplyMeshMovement() override;
 
-    /// access to blood vessel volume fraction
+    //! access to blood vessel volume fraction
     Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction() override;
 
     //! Evaluate the 1D-3D coupling
@@ -61,19 +58,19 @@ namespace POROMULTIPHASESCATRA
     void CalculateBloodVesselVolumeFraction();
 
     /*!
-     * set the artery diameter in material to be able to use it on 1D discretization
+     * @brief et the artery diameter in material to be able to use it on 1D discretization
      * \note nothing to do for surface-based formulation since varying diameter not yet possible
      */
     void SetArteryDiamInMaterial() override{};
 
     /*!
-     * reset the integrated diameter vector to zero
+     * @brief reset the integrated diameter vector to zero
      * \note nothing to do for surface-based formulation since varying diameter not yet possible
      */
     void ResetIntegratedDiamToZero() override{};
 
     /*!
-     * evaluate additional linearization of (integrated) element diameter dependent terms
+     * @brief evaluate additional linearization of (integrated) element diameter dependent terms
      * (Hagen-Poiseuille)
      * \note nothing to do for surface-based formulation since varying diameter not yet possible
      */
@@ -86,8 +83,8 @@ namespace POROMULTIPHASESCATRA
     void PrintOutCouplingMethod() const override;
 
     /*!
-     * check if pair is not active
-     * @param coupling_pair: the coupling pair which is checked
+     * @brief check if pair is not active
+     * @param[in] coupling_pair: the coupling pair which is checked
      * @return true if pair is not active, false otherwise
      */
     static bool IsNotActive(

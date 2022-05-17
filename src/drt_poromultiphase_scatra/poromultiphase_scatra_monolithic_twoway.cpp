@@ -22,27 +22,22 @@
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_assemblestrategy.H"
 
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_io/io_control.H"
 #include "../linalg/linalg_solver.H"
-#include "../drt_inpar/inpar_solver.H"
 
 #include "../drt_scatra/scatra_timint_meshtying_strategy_artery.H"
 #include "../drt_adapter/ad_art_net.H"
 
 #include "../linalg/linalg_equilibrate.H"
 #include "../linalg/linalg_nullspace.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_utils_sparse_algebra_print.H"
+
 
 /*----------------------------------------------------------------------*
- | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PoroMultiPhaseScaTraMonolithicTwoWay(
     const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
@@ -92,7 +87,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PoroMultiPhaseScaTra
 }
 
 /*----------------------------------------------------------------------*
- | initialization                                            vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Init(
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
@@ -132,8 +126,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Init(
 }
 
 /*----------------------------------------------------------------------*
- | setup the fully monolithic fluid-structure-scatra system (called in  |
- | poromultiphase_scatra_dyn.cpp)                      kremheller 03/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSystem()
 {
@@ -176,7 +168,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSystem()
 }
 
 /*----------------------------------------------------------------------*
- | setup the map                                       kremheller 04/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupMaps()
 {
@@ -219,7 +210,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupMaps()
 }
 
 /*-----------------------------------------------------------------------/
-|  build the combined dbcmap                           kremheller 06/17  |
 /-----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::BuildCombinedDBCMap()
 {
@@ -233,7 +223,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::BuildCombinedDB
 }
 
 /*-----------------------------------------------------------------------------------*
- | build null spaces associated with blocks of global system matrix kremheller 08/17 |
  *-----------------------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::BuildBlockNullSpaces()
 {
@@ -262,7 +251,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::BuildBlockNullS
 }
 
 /*----------------------------------------------------------------------*
- | setup the solver if necessary                        kremheller 03/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSolver()
 {
@@ -292,7 +280,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSolver()
 }
 
 /*-----------------------------------------------------------------------------------*
- | create the linear solver                                         kremheller 08/17 |
  *-----------------------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::CreateLinearSolver(
     const Teuchos::ParameterList& solverparams, const int solvertype)
@@ -337,7 +324,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::CreateLinearSol
 }
 
 /*----------------------------------------------------------------------*
- |                                                    kremheller 06/17  |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::TimeStep()
 {
@@ -388,7 +374,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::TimeStep()
 }
 
 /*----------------------------------------------------------------------*
- | Evaluate (build global Matrix and RHS)            kremheller 06/17   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Evaluate(
     Teuchos::RCP<const Epetra_Vector> x)
@@ -441,7 +426,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Evaluate(
 }
 
 /*----------------------------------------------------------------------*
- | setup monolithic system matrix                      kremheller 06/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSystemMatrix()
 {
@@ -546,7 +530,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSystemMatr
 }
 
 /*----------------------------------------------------------------------*
- | get porofluid-scatra coupling sparse matrix         kremheller 06/17 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix>
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PoroFluidScatraCouplingMatrix()
@@ -559,7 +542,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PoroFluidScatraCoupl
 }
 
 /*----------------------------------------------------------------------*
- | get scatra-structure coupling sparse matrix         kremheller 07/17 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix>
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ScatraStructCouplingMatrix()
@@ -572,7 +554,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ScatraStructCoupling
 }
 
 /*----------------------------------------------------------------------*
- | get scatra-fluid coupling sparse matrix             kremheller 07/17 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix>
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ScatraPoroFluidCouplingMatrix()
@@ -585,17 +566,13 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ScatraPoroFluidCoupl
 }
 
 /*----------------------------------------------------------------------*
- | evaluate scatra field                               kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::EvaluateScatra()
 {
   ScatraAlgo()->ScaTraField()->PrepareLinearSolve();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | evaluate porofluid-scatra coupling sparse matrix    kremheller 06/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ApplyPoroFluidScatraCouplMatrix(
     Teuchos::RCP<LINALG::SparseOperator> k_pfs  //!< off-diagonal tangent matrix term
@@ -608,12 +585,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ApplyPoroFluidS
   // complete
   k_pfs->Complete(ScatraAlgo()->ScaTraField()->SystemMatrix()->RangeMap(),
       PoroField()->FluidField()->SystemMatrix()->RangeMap());
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | evaluate scatra-structure coupling sparse matrix    kremheller 07/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ApplyScatraStructCouplMatrix(
     Teuchos::RCP<LINALG::SparseOperator> k_sps  //!< off-diagonal tangent matrix term
@@ -661,12 +635,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ApplyScatraStru
       ScatraAlgo()->ScaTraField()->SystemMatrix()->RangeMap());
 
   ScatraAlgo()->ScaTraField()->Discretization()->ClearState();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | evaluate scatra-porofluid coupling sparse matrix    kremheller 07/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ApplyScatraPoroFluidCouplMatrix(
     Teuchos::RCP<LINALG::SparseOperator> k_spf  //!< off-diagonal tangent matrix term
@@ -712,12 +683,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ApplyScatraPoro
       ScatraAlgo()->ScaTraField()->SystemMatrix()->RangeMap());
 
   ScatraAlgo()->ScaTraField()->Discretization()->ClearState();
-
-  return;
 }
 
 /*-----------------------------------------------------------------------------*
- | update fields after convergence as phi_i+1=phi_i+iterinc   kremheller 07/17 |
  *-----------------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::UpdateFieldsAfterConvergence()
 {
@@ -734,7 +702,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::UpdateFieldsAft
   PoroField()->UpdateFieldsAfterConvergence(porostructinc, porofluidinc);
 }
 /*----------------------------------------------------------------------*
- | update scatra field                               kremheller 05/18   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::UpdateScatra(
     Teuchos::RCP<const Epetra_Vector> scatrainc)
@@ -743,7 +710,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::UpdateScatra(
 }
 
 /*----------------------------------------------------------------------*
- | setup RHS (like fsimon)                             kremheller 06/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupRHS()
 {
@@ -757,7 +723,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupRHS()
 }
 
 /*----------------------------------------------------------------------*
- | setup vector of the poro and scatra field           kremheller 06/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupVector(
     Epetra_Vector& f, Teuchos::RCP<const Epetra_Vector> pv, Teuchos::RCP<const Epetra_Vector> sv)
@@ -776,8 +741,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupVector(
 }
 
 /*----------------------------------------------------------------------*
- | extract field vectors for calling Evaluate() of the  kremheller 03/17|
- | single fields                                                        |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ExtractFieldVectors(
     Teuchos::RCP<const Epetra_Vector> x, Teuchos::RCP<const Epetra_Vector>& stx,
@@ -800,7 +763,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ExtractFieldVec
 }
 
 /*----------------------------------------------------------------------*
- | extract field vectors (only of 3D fields)          kremheller 10/20  |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Extract3DFieldVectors(
     Teuchos::RCP<const Epetra_Vector> x, Teuchos::RCP<const Epetra_Vector>& stx,
@@ -810,7 +772,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Extract3DFieldV
 }
 
 /*----------------------------------------------------------------------*
- | Solve linear Poromultiphase-elasticity system     kremheller 06/17   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::LinearSolve()
 {
@@ -842,12 +803,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::LinearSolve()
   double mydtsolve = timernewton_.WallTime() - dtcpu;
   Comm().MaxAll(&mydtsolve, &dtsolve_, 1);
   // *********** time measurement ***********
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | simple convergence check                            kremheller 06/17 |
  *----------------------------------------------------------------------*/
 bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Converged()
 {
@@ -858,7 +816,6 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Converged()
 }
 
 /*----------------------------------------------------------------------*
- | Build necessary norms                               kremheller 06/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::BuildConvergenceNorms()
 {
@@ -914,12 +871,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::BuildConvergenc
   maxinc_ = std::max({normincfluid_, normincstruct_, normincscatra_, normincart_, normincartsca_});
   maxres_ = std::max(
       {normrhs_, normrhsfluid_, normrhsstruct_, normrhsscatra_, normrhsart_, normrhsartsca_});
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | Setup Newton-Raphson iteration                    kremheller 06/17   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupNewton()
 {
@@ -962,12 +916,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupNewton()
     zeros_->PutScalar(0.0);
 
   // AitkenReset();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | Newton Output (adapted form tsi)                    kremheller 06/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::NewtonOutput()
 {
@@ -993,12 +944,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::NewtonOutput()
         "+--------------+-------------+-------------+--------------+------------+-----"
         "-------+-----------------+\n");
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | Error-Check and final output                        kremheller 06/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::NewtonErrorCheck()
 {
@@ -1056,13 +1004,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::NewtonErrorChec
     }
     HandleDivergence();
   }
-
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | get the dofrowmap                                   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map>
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::DofRowMap()
@@ -1071,7 +1015,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::DofRowMap()
 }
 
 /*----------------------------------------------------------------------*
- | Print Header                                      kremheller 06/17   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PrintHeader()
 {
@@ -1094,7 +1037,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PrintHeader()
 }
 
 /*----------------------------------------------------------------------*
- | inform user that structure is not solved            kremheller 08/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PrintStructureDisabledInfo()
 {
@@ -1112,7 +1054,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PrintStructureD
 }
 
 /*----------------------------------------------------------------------*
- |  check tangent stiffness matrix via finite differences      vuong 08/13  |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PoroMultiPhaseScaTraFDCheck()
 {
@@ -1375,12 +1316,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PoroMultiPhaseS
   }
   else
     dserror("PoroFDCheck failed");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | constructor                                         kremheller 05/18 |
  *----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
     PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling(
@@ -1390,13 +1328,9 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
   blockrowdofmap_artscatra_ = Teuchos::rcp(new LINALG::MultiMapExtractor);
   blockrowdofmap_artporo_ = Teuchos::rcp(new LINALG::MultiMapExtractor);
   nodal_coupl_inactive_ = false;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | setup the fully monolithic fluid-structure-scatra system (called in  |
- | poromultiphase_scatra_dyn.cpp)                      kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::SetupSystem()
 {
@@ -1420,7 +1354,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::S
           scatramsht_->ArtScatraField()->Discretization()->DofRowMap(0)->NumGlobalElements());
 }
 /*----------------------------------------------------------------------*
- | setup the map                                       kremheller 04/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::SetupMaps()
 {
@@ -1480,12 +1413,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::S
   // full artery-arteryscatra blockmap
   blockrowdofmap_artscatra_->Setup(
       *fullmap_artscatra_, {vecSpaces[struct_offset_ + 1], vecSpaces[struct_offset_ + 3]});
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | update scatra field                               kremheller 05/18   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::UpdateScatra(
     Teuchos::RCP<const Epetra_Vector> scatrainc)
@@ -1495,8 +1425,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::U
 }
 
 /*----------------------------------------------------------------------*
- | extract field vectors for calling Evaluate() of the  kremheller 05/18|
- | single fields                                                        |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::ExtractFieldVectors(
     Teuchos::RCP<const Epetra_Vector> x, Teuchos::RCP<const Epetra_Vector>& stx,
@@ -1536,7 +1464,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::E
   scx = dummy2;
 }
 /*----------------------------------------------------------------------*
- | setup monolithic system matrix                      kremheller 06/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::SetupSystemMatrix()
 {
@@ -1581,12 +1508,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::S
   }
 
   systemmatrix_->Complete();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | setup monolithic system matrix                      kremheller 06/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::SetupRHS()
 {
@@ -1612,12 +1536,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::S
   Extractor()->InsertVector(
       *(blockrowdofmap_artscatra_->ExtractVector(scatramsht_->CombinedRHS(), 1)),
       struct_offset_ + 3, *rhs_);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | Build necessary norms                               kremheller 06/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
     BuildConvergenceNorms()
@@ -1646,24 +1567,18 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
 
   // call base class
   POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::BuildConvergenceNorms();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | get scatra-fluid coupling sparse matrix             kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::EvaluateScatra()
 {
   PoroMultiPhaseScaTraMonolithicTwoWay::EvaluateScatra();
   scatramsht_->SetupSystem(
       ScatraAlgo()->ScaTraField()->SystemMatrix(), ScatraAlgo()->ScaTraField()->Residual());
-
-  return;
 }
 
 /*-----------------------------------------------------------------------/
-|  build the combined dbcmap                            kremheller 05/18 |
 /-----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::BuildCombinedDBCMap()
 {
@@ -1673,12 +1588,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::B
       scatramsht_->ArtScatraField()->DirichMaps()->CondMap();
 
   combinedDBCMap_ = LINALG::MergeMap(combinedDBCMap_, artscatracondmap, false);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | get arteryscatra-artery coupling sparse matrix      kremheller 05/18 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> POROMULTIPHASESCATRA::
     PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::ArteryScatraArteryCouplingMatrix()
@@ -1691,7 +1603,6 @@ Teuchos::RCP<LINALG::SparseMatrix> POROMULTIPHASESCATRA::
 }
 
 /*----------------------------------------------------------------------*
- | evaluate arteryscatra-artery coupling sparse matrix kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
     ApplyArteryScatraArteryCouplMatrix(
@@ -1730,12 +1641,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
       scatramsht_->ArtScatraField()->SystemMatrix()->RangeMap());
 
   scatramsht_->ArtScatraField()->Discretization()->ClearState();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | evaluate arteryscatra-artery coupling sparse matrix kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
     BuildBlockNullSpaces()
@@ -1759,6 +1667,4 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
   LINALG::NULLSPACE::FixNullSpace("ArteryScatra",
       *(scatramsht_->ArtScatraField()->Discretization()->DofRowMap(0)),
       *(scatramsht_->ArtScatraDofRowMap()), blocksmootherparams5);
-
-  return;
 }

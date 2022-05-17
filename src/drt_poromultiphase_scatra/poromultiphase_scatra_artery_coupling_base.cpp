@@ -8,7 +8,6 @@
  *----------------------------------------------------------------------*/
 
 #include "poromultiphase_scatra_artery_coupling_base.H"
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -17,7 +16,6 @@
 #include <Teuchos_ParameterListExceptions.hpp>
 
 /*----------------------------------------------------------------------*
- | constructor                                         kremheller 05/18 |
  *----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtCouplBase(
     Teuchos::RCP<DRT::Discretization> arterydis, Teuchos::RCP<DRT::Discretization> contdis,
@@ -35,7 +33,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtC
   if (arterydis_->NumGlobalNodes() == 0)
     dserror("artery discretization does not seem to have any nodes");
 
-  // get the actual coupled DOFs  ----------------------------------------------------
+  // get the actual coupled DOFs
   // 1) 1D artery discretization
   int word1;
   int dummy = 0;
@@ -92,12 +90,9 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtC
     else
       std::cout << "<   No Coupling DOFs selected                      >" << std::endl;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | get the full DOF map                                kremheller 04/18 |
  *----------------------------------------------------------------------*/
 const Teuchos::RCP<const Epetra_Map>&
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::FullMap() const
@@ -106,7 +101,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::FullMap() const
 }
 
 /*----------------------------------------------------------------------*
- | get the global extractor                            kremheller 04/18 |
  *----------------------------------------------------------------------*/
 const Teuchos::RCP<LINALG::MultiMapExtractor>&
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::GlobalExtractor() const
@@ -115,23 +109,18 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::GlobalExtractor() const
 }
 
 /*----------------------------------------------------------------------*
- | set solution vectors of single fields               kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::SetSolutionVectors(
     Teuchos::RCP<const Epetra_Vector> phinp_cont, Teuchos::RCP<const Epetra_Vector> phin_cont,
     Teuchos::RCP<const Epetra_Vector> phinp_art)
 {
   // do nothing
-  return;
 }
 
-
-/*-------------------------------------------------------------------------*
- | set element pairs that are close                       kremheller 03/19 |
- *------------------------------------------------------------------------ */
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::SetNearbyElePairs(
     const std::map<int, std::set<int>>* nearbyelepairs)
 {
   // do nothing
-  return;
 }

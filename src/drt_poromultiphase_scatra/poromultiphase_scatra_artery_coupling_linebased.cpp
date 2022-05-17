@@ -22,7 +22,6 @@
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------------*
- | constructor                                         kremheller 05/18 |
  *----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PoroMultiPhaseScaTraArtCouplLineBased(
     Teuchos::RCP<DRT::Discretization> arterydis, Teuchos::RCP<DRT::Discretization> contdis,
@@ -47,7 +46,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PoroMultiPhaseScaTr
 }
 
 /*----------------------------------------------------------------------*
- | setup the strategy                                kremheller 03/19   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Setup()
 {
@@ -78,12 +76,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Setup()
     OutputSummary();
 
   issetup_ = true;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | setup the linear system of equations                kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetupSystem(
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
@@ -103,10 +98,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetupSystem(
       dbcmap_art_with_collapsed);
 }
 
-/*----------------------------------------------------------------------*
- | apply additional Dirichlet boundary condition for collapsed          |
- | 1D elements to avoid singular stiffness matrix      kremheller 11/20 |
- *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map>
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetAdditionalDBCForCollapsedEles(
     Teuchos::RCP<const LINALG::MapExtractor> dbcmap_art,
@@ -173,7 +164,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetAdditionalDBCFor
 }
 
 /*----------------------------------------------------------------------*
- | pre-evaluate the pairs and sort out duplicates      kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PreEvaluateCouplingPairs()
 {
@@ -291,15 +281,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PreEvaluateCou
   int numactive_pairs = static_cast<int>(coupl_elepairs_.size());
   Comm().SumAll(&numactive_pairs, &total_numactive_pairs, 1);
   if (myrank_ == 0)
+  {
     std::cout << "Only " << total_numactive_pairs
               << " Artery-to-PoroMultiphaseScatra coupling pairs (segments) are active"
               << std::endl;
-
-  return;
+  }
 }
 
 /*------------------------------------------------------------------------*
- | fill the unaffected length and initialize curr length kremheller 05/18 |
  *------------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillUnaffectedArteryLength()
 {
@@ -402,13 +391,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillUnaffected
   // the current length is simply the unaffected length
   else
     current_seg_lengths_artery_->Update(1.0, *unaffected_seg_lengths_artery_, 0.0);
-
-  return;
 }
 
-/*------------------------------------------------------------------------*
- | fill the unaffected integrated diameter               kremheller 11/20 |
- *------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillUnaffectedIntegratedDiam()
 {
   Teuchos::RCP<Epetra_FEVector> unaffected_diams_artery_row =
@@ -450,13 +436,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillUnaffected
   if (unaffected_diams_artery_row->GlobalAssemble(Add, false) != 0)
     dserror("GlobalAssemble of unaffected_seg_lengths_artery_ failed");
   LINALG::Export(*unaffected_diams_artery_row, *unaffected_integrated_diams_artery_col_);
-
-  return;
 }
 
-/*------------------------------------------------------------------------*
- | calculate blood vessel volume fraction                kremheller 08/19 |
- *------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
     CalculateBloodVesselVolumeFraction()
 {
@@ -504,13 +487,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
               << "                 >" << std::endl;
     std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
   }
-
-  return;
 }
 
-/*------------------------------------------------------------------------*
- | set flag if varying diameter has to be calculated     kremheller 04/21 |
- *------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetVaryingDiamFlag()
 {
   PoroMultiPhaseScaTraArtCouplNonConforming::SetVaryingDiamFlag();
@@ -529,7 +509,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetVaryingDiam
 }
 
 /*----------------------------------------------------------------------*
- | create the GID to segment vector                    kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateGIDToSegmentVector()
 {
@@ -574,10 +553,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateGIDToSeg
     // 1) check if artery element has more than MAXNUMSEGPERARTELE segments
     const int artelegid = arterydis_->ElementColMap()->GID(i);
     if ((int)gid_to_segment_[artelegid].size() > 2 * maxnumsegperartele_)
+    {
       dserror(
           "Artery element %i has %i segments, which is more than the maximum allowed number of %i "
           "segments per artery element, increase MAXNUMSEGPERARTELE",
           artelegid, (int)(gid_to_segment_[artelegid].size() / 2), maxnumsegperartele_);
+    }
     // 2) check if segment has been overlooked
     for (int iseg = 0; iseg < (int)(gid_to_segment_[artelegid].size() / 2) - 1; iseg++)
     {
@@ -594,12 +575,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateGIDToSeg
       }
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | fill the GID to segment vector                      kremheller 08/19 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillGIDToSegmentVector(
     const std::vector<Teuchos::RCP<
@@ -633,12 +611,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillGIDToSegme
   for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
   LINALG::Gather<double>(
       gid_to_seglength, gid_to_seglength, (int)allproc.size(), &allproc[0], Comm());
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | FE-assemble into global force and stiffness         kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
     FEAssembleEleForceStiffIntoSystemVectorMatrix(const int& ele1gid, const int& ele2gid,
@@ -657,7 +632,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
 }
 
 /*----------------------------------------------------------------------*
- | (re-)set the artery diameter in the material        kremheller 11/20 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetArteryDiamInMaterial()
 {
@@ -712,7 +686,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetArteryDiamI
 }
 
 /*----------------------------------------------------------------------*
- | reset integrated diam vector                        kremheller 11/20 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::ResetIntegratedDiamToZero()
 {
@@ -720,7 +693,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::ResetIntegrate
 }
 
 /*----------------------------------------------------------------------*
- | fill the element diameter vector in col-format      kremheller 04/21 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillArteryEleDiamCol()
 {
@@ -746,7 +718,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillArteryEleD
 }
 
 /*----------------------------------------------------------------------*
- | find free-hanging 1D elements                       kremheller 04/21 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FindFreeHanging1DElements(
     std::vector<int>& eles_to_be_deleted)
@@ -878,8 +849,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FindFreeHangin
               << std::endl;
   }
 }
+
 /*----------------------------------------------------------------------*
- | depth-first search in 1D graph                      kremheller 04/21 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::DepthFirstSearchUtil(
     DRT::Node* actnode, Teuchos::RCP<Epetra_IntVector> visited,
@@ -921,8 +892,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::DepthFirstSear
 }
 
 /*----------------------------------------------------------------------*
- | evaluate additional linearization of diameter dependent terms        |
- |                                                     kremheller 11/20 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
     EvaluateAdditionalLinearizationofIntegratedDiam()
@@ -962,7 +931,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
 }
 
 /*----------------------------------------------------------------------*
- | get element segment lengths                         kremheller 09/18 |
  *----------------------------------------------------------------------*/
 std::vector<double>
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetEleSegmentLengths(
@@ -984,8 +952,8 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetEleSegmentLength
 
   return seglengths;
 }
+
 /*----------------------------------------------------------------------*
- | check for duplicate segment                         kremheller 05/18 |
  *----------------------------------------------------------------------*/
 bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::IsDuplicateSegment(
     const std::vector<Teuchos::RCP<
@@ -1005,7 +973,6 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::IsDuplicateSeg
 }
 
 /*----------------------------------------------------------------------*
- | check for identical segment                         kremheller 05/18 |
  *----------------------------------------------------------------------*/
 bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::IsIdenticalSegment(
     const std::vector<Teuchos::RCP<
@@ -1031,7 +998,6 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::IsIdenticalSeg
 }
 
 /*----------------------------------------------------------------------*
- | apply mesh movement                                 kremheller 06/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::ApplyMeshMovement()
 {
@@ -1069,12 +1035,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::ApplyMeshMovem
   // set state on artery dis
   arterydis_->SetState(1, "curr_seg_lengths",
       Teuchos::rcp(new Epetra_Vector(Copy, *current_seg_lengths_artery_, 0)));
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | print out method                                    kremheller 06/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PrintOutCouplingMethod() const
 {
@@ -1083,7 +1046,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PrintOutCoupli
 }
 
 /*----------------------------------------------------------------------*
- | print out summary                                   kremheller 06/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::OutputSummary() const
 {
@@ -1106,7 +1068,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::OutputSummary(
 }
 
 /*----------------------------------------------------------------------*
- | access to blood vessel volume fraction              kremheller 08/19 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::BloodVesselVolumeFraction()

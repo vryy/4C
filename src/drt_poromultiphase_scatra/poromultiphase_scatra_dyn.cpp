@@ -10,15 +10,12 @@
 #include "poromultiphase_scatra_base.H"
 #include "poromultiphase_scatra_utils.H"
 
-#include "../drt_inpar/inpar_poromultiphase_scatra.H"
-
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
- | Main control routine                                      vuong 08/16 |
  *----------------------------------------------------------------------*/
 void poromultiphasescatra_dyn(int restart)
 {
@@ -112,6 +109,5 @@ void poromultiphasescatra_dyn(int restart)
   algo->CreateFieldTest();
   problem->TestAll(comm);
 
-  return;
 
 }  // poromultiphase_dyn

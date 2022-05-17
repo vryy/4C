@@ -13,23 +13,20 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include <Epetra_FEVector.h>
-#include <Epetra_IntVector.h>
 
 #include "../drt_porofluidmultiphase/porofluidmultiphase_utils.H"
 #include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_parameter.H"
 #include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
 #include "../linalg/linalg_utils_sparse_algebra_print.H"
 #include "poromultiphase_scatra_artery_coupling_pair.H"
 #include "poromultiphase_scatra_artery_coupling_defines.H"
 #include "../drt_mat/cnst_1d_art.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+
 
 /*----------------------------------------------------------------------*
- | constructor                                         kremheller 05/18 |
  *----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
     PoroMultiPhaseScaTraArtCouplNonConforming(Teuchos::RCP<DRT::Discretization> arterydis,
@@ -60,7 +57,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
 }
 
 /*----------------------------------------------------------------------*
- | init the strategy                                 kremheller 07/18   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
 {
@@ -112,12 +108,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
 
   // check global map extractor
   globalex_->CheckForValidMapExtractor();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | setup the strategy                                kremheller 03/19   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Setup()
 {
@@ -129,7 +122,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Setup()
 }
 
 /*----------------------------------------------------------------------*
- | evaluate the coupling                               kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Evaluate(
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
@@ -148,11 +140,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Evaluate(
 
   // evaluate and assemble the pairs
   EvaluateCouplingPairs(sysmat, rhs);
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | setup the linear system of equations                kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSystem(
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
@@ -186,12 +176,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSyste
   // Assign view to 3D system matrix (such that it now includes also contributions from coupling)
   // this is important! Monolithic algorithms use this matrix
   sysmat_cont->Assign(LINALG::View, sysmat->Matrix(0, 0));
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | create the pairs                                    kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateCouplingPairs()
 {
@@ -250,9 +237,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateCoup
   nearbyelepairs_.clear();
 }
 
-/*------------------------------------------------------------------------*
- | set flag if varying diameter has to be calculated     kremheller 04/21 |
- *------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetVaryingDiamFlag()
 {
   int has_varying_diam = 0;
@@ -282,7 +268,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetVarying
 }
 
 /*----------------------------------------------------------------------*
- | evaluate the pairs                                  kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::EvaluateCouplingPairs(
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
@@ -379,12 +364,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::EvaluateCo
   if (coupling_method_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp and
       num_coupled_dofs_ > 0)
     SumDMIntoGlobalForceStiff(sysmat, rhs);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | FE-assemble into global force and stiffness         kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
     FEAssembleEleForceStiffIntoSystemVectorMatrix(const int& ele1gid, const int& ele2gid,
@@ -415,7 +397,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
 }
 
 /*----------------------------------------------------------------------*
- | assemble D, M and kappa into global D, M and kappa  kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::FEAssembleDMKappa(
     const int& ele1gid, const int& ele2gid, const LINALG::SerialDenseMatrix& D_ele,
@@ -437,12 +418,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::FEAssemble
   D_->FEAssemble(D_ele, lmrow1, lmrow1);
   M_->FEAssemble(M_ele, lmrow1, lmrow2);
   kappaInv_->SumIntoGlobalValues(Kappa_ele.Length(), &lmrow1[0], Kappa_ele.Values());
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | sum global D and M into global force and stiff      kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SumDMIntoGlobalForceStiff(
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
@@ -504,12 +482,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SumDMIntoG
   // -pp*M^T*kappa^{-1}*D*phi_np^art = -pp*(D^T*kappa^{-1}*M)^T*phi_np^art
   dtkm->Multiply(true, *phinp_art_, *cont_contribution);
   rhs->Update(pp_ * timefacrhs_cont_, *globalex_->InsertVector(cont_contribution, 0), 1.0);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | invert kappa vector                                 kremheller 08/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::InvertKappa()
 {
@@ -526,12 +501,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::InvertKapp
     else
       kappaInv_->ReplaceGlobalValue(artdofgid, 0, 0.0);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | factory method to create single pairs               kremheller 05/18 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateNewArteryCouplingPair(
@@ -570,7 +542,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateNewArtery
 }
 
 /*----------------------------------------------------------------------*
- | setup a global vector                               kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetupVector(
     Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<const Epetra_Vector> vec_cont,
@@ -581,12 +552,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetupVecto
   // set up global vector
   globalex_->InsertVector(*vec_cont, 0, *vec);
   globalex_->InsertVector(*vec_art, 1, *vec);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | extract single field vectors                        kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::ExtractSingleFieldVectors(
     Teuchos::RCP<const Epetra_Vector> globalvec, Teuchos::RCP<const Epetra_Vector>& vec_cont,
@@ -599,7 +567,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::ExtractSin
 }
 
 /*----------------------------------------------------------------------*
- | artery dof row map                                  kremheller 05/18 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map>
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::ArteryDofRowMap() const
@@ -608,7 +575,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::ArteryDofRowMap
 }
 
 /*----------------------------------------------------------------------*
- | artery dof row map                                  kremheller 05/18 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map>
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::DofRowMap() const
@@ -617,7 +583,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::DofRowMap() con
 }
 
 /*----------------------------------------------------------------------*
- | set solution vectors of single fields               kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetSolutionVectors(
     Teuchos::RCP<const Epetra_Vector> phinp_cont, Teuchos::RCP<const Epetra_Vector> phin_cont,
@@ -626,12 +591,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetSolutio
   phinp_cont_ = phinp_cont;
   if (phin_cont != Teuchos::null) phin_cont_ = phin_cont;
   phinp_art_ = phinp_art;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | access to blood vessel volume fraction              kremheller 08/19 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::BloodVesselVolumeFraction()
@@ -640,9 +602,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::BloodVesselVolu
   return Teuchos::null;
 }
 
-
 /*----------------------------------------------------------------------*
- | print out method                                    kremheller 06/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::PrintOutCouplingMethod() const
 {
@@ -665,7 +625,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::PrintOutCo
 }
 
 /*----------------------------------------------------------------------*
- | fill vectors as read from input                     kremheller 06/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::FillFunctionAndScaleVectors()
 {
@@ -694,7 +653,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::FillFuncti
 }
 
 /*----------------------------------------------------------------------*
- | set factor for right hand side                      kremheller 03/19 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetTimeFacRhs()
 {
@@ -718,14 +676,15 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetTimeFac
     timefacrhs_cont_ = eleparams->TimeFacRhs();
   }
   else
+  {
     dserror(
         "Only porofluid and scatra-discretizations are supported for non-conforming coupling so "
         "far");
+  }
 }
 
-/*-------------------------------------------------------------------------*
- | set element pairs that are close                       kremheller 03/19 |
- *------------------------------------------------------------------------ */
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetNearbyElePairs(
     const std::map<int, std::set<int>>* nearbyelepairs)
 {

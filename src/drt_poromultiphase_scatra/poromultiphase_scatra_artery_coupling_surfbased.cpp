@@ -17,7 +17,6 @@
 #include <Epetra_MultiVector.h>
 
 /*----------------------------------------------------------------------*
- | constructor                                         kremheller 05/18 |
  *----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PoroMultiPhaseScaTraArtCouplSurfBased(
     Teuchos::RCP<DRT::Discretization> arterydis, Teuchos::RCP<DRT::Discretization> contdis,
@@ -35,12 +34,9 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PoroMultiPhaseScaTr
     std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
     std::cout << "\n";
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | pre-evaluate the pairs and sort out duplicates      kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PreEvaluateCouplingPairs()
 {
@@ -165,12 +161,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PreEvaluateCou
               << "(" << (double)(numgp) / (double)(total_num_gp)*100.0 << "% of all GPs)"
               << std::endl;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | setup the strategy                                kremheller 03/19   |
  *----------------------------------------------------------------------*/
 bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::IsNotActive(
     const Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>
@@ -180,7 +173,6 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::IsNotActive(
 }
 
 /*----------------------------------------------------------------------*
- | setup the strategy                                kremheller 03/19   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::Setup()
 {
@@ -196,7 +188,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::Setup()
 }
 
 /*----------------------------------------------------------------------*
- | evaluate the coupling                               kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::Evaluate(
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
@@ -214,7 +205,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::Evaluate(
 }
 
 /*----------------------------------------------------------------------*
- | setup the linear system of equations                kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::SetupSystem(
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
@@ -230,17 +220,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::SetupSystem(
 }
 
 /*----------------------------------------------------------------------*
- | apply mesh movement                                 kremheller 06/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::ApplyMeshMovement()
 {
   if (!evaluate_in_ref_config_)
     dserror("Evaluation in current configuration not possible for surface-based coupling");
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | access to blood vessel volume fraction              kremheller 08/19 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::BloodVesselVolumeFraction()
@@ -252,7 +239,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::BloodVesselVolumeFr
 
 
 /*----------------------------------------------------------------------*
- | print out method                                    kremheller 06/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PrintOutCouplingMethod() const
 {
