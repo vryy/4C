@@ -102,7 +102,7 @@ namespace STI
     //! compute null space information associated with global system matrix if applicable
     void ComputeNullSpaceIfNecessary(Teuchos::ParameterList&
             solverparams  //! solver parameter list for scatra-thermo interaction
-        ) const;
+    ) const;
 
     //! global map of degrees of freedom
     const Teuchos::RCP<const Epetra_Map>& DofRowMap() const;

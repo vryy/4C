@@ -65,7 +65,7 @@ void STI::STIResultTest::TestSpecial(
  *----------------------------------------------------------------------*/
 double STI::STIResultTest::ResultSpecial(
     const std::string& quantity  //! name of quantity to be tested
-    ) const
+) const
 {
   // initialize variable for result
   double result(0.);

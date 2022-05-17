@@ -21,7 +21,8 @@ DRT::ELEMENTS::FluidEleCalcImmersed<distype>*
 DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Instance(::UTILS::SingletonAction action)
 {
   static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcImmersed<distype>> singleton_owner(
-      []() {
+      []()
+      {
         return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcImmersed<distype>>(
             new DRT::ELEMENTS::FluidEleCalcImmersed<distype>());
       });

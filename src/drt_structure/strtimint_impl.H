@@ -609,7 +609,7 @@ namespace STR
     //! Create printing parameters for non-linear solution with NOX
     Teuchos::RCP<Teuchos::ParameterList> NoxCreatePrintParameters(
         const bool verbose = false  //!< verbosity level
-        ) const;
+    ) const;
 
     //! Create the linear system that is passed into NOX
     Teuchos::RCP<NOX::Epetra::LinearSystem> NoxCreateLinearSystem(

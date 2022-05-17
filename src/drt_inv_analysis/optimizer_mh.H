@@ -67,7 +67,7 @@ namespace INVANA
     virtual void PrintInfo(const int& iter,  /// [int] iteration
         const double& acc,                   /// [in] acceptance ratio
         const double& scale                  /// [in] current covariance scale factor
-        ) const;
+    ) const;
 
     //! @name Restarts
     //@{

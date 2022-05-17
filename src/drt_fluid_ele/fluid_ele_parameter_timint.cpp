@@ -21,10 +21,12 @@ with different parameters in more than one fluid field is not yet supported.
 DRT::ELEMENTS::FluidEleParameterTimInt* DRT::ELEMENTS::FluidEleParameterTimInt::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleParameterTimInt> singleton_owner([]() {
-    return std::unique_ptr<DRT::ELEMENTS::FluidEleParameterTimInt>(
-        new DRT::ELEMENTS::FluidEleParameterTimInt());
-  });
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleParameterTimInt> singleton_owner(
+      []()
+      {
+        return std::unique_ptr<DRT::ELEMENTS::FluidEleParameterTimInt>(
+            new DRT::ELEMENTS::FluidEleParameterTimInt());
+      });
 
   return singleton_owner.Instance(action);
 }

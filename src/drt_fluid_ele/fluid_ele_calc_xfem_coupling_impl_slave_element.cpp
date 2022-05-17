@@ -150,7 +150,7 @@ namespace DRT
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceVelnp(
           LINALG::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
-          ) const
+      ) const
       {
         ivelint.Multiply(slave_vel_, slave_funct_);
       }
@@ -161,7 +161,7 @@ namespace DRT
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceVeln(
           LINALG::Matrix<nsd_, 1>& ivelintn  ///< interface velocity at coupling slave side
-          ) const
+      ) const
       {
         ivelintn.Multiply(slave_veln_, slave_funct_);
       }
@@ -172,7 +172,7 @@ namespace DRT
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfacePresnp(
           double& ipres  ///< interface pressure at coupling slave side
-          ) const
+      ) const
       {
         // pressure at current gauss-point
         ipres = slave_funct_.Dot(slave_pres_);
@@ -184,7 +184,7 @@ namespace DRT
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfacePresn(
           double& ipresn  ///< interface pressure at coupling slave side
-          ) const
+      ) const
       {
         // pressure at current gauss-point
         ipresn = slave_funct_.Dot(slave_presn_);
@@ -197,7 +197,7 @@ namespace DRT
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceVelGradnp(
           LINALG::Matrix<nsd_, nsd_>&
               velgradint  ///< interface velocity gradients at coupling slave side
-          ) const
+      ) const
       {
         velgradint = slave_vderxy_;
       }
@@ -209,7 +209,7 @@ namespace DRT
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceVelGradn(
           LINALG::Matrix<nsd_, nsd_>&
               velgradintn  ///< interface velocity gradients at coupling slave side
-          ) const
+      ) const
       {
         velgradintn = slave_vderxyn_;
       }
@@ -220,7 +220,7 @@ namespace DRT
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetSlaveFunct(
           LINALG::Matrix<slave_nen_, 1>& slave_funct  ///< coupling slave shape functions
-          ) const
+      ) const
       {
         slave_funct = slave_funct_;
       }
@@ -297,7 +297,7 @@ namespace DRT
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceJumpVelnp(
           LINALG::Matrix<nsd_, 1>& ivelint_jump  ///< cutter element interface velocity jump or
                                                  ///< prescribed DBC at Gaussian point
-          ) const
+      ) const
       {
         ivelint_jump.Multiply(interface_velnp_jump_, slave_funct_);
       }
@@ -309,7 +309,7 @@ namespace DRT
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceJumpVeln(
           LINALG::Matrix<nsd_, 1>& ivelintn_jump  ///< cutter element interface velocity jump or
                                                   ///< prescribed DBC at Gaussian point
-          ) const
+      ) const
       {
         ivelintn_jump.Multiply(interface_veln_jump_, slave_funct_);
       }

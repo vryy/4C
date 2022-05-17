@@ -151,7 +151,7 @@ namespace UTILS
          \brief Return differences between prescribed and actual value of constraint number i
     */
     double GetError(int i  ///< ID of constraint of interest
-        ) const
+    ) const
     {
       return (*constrainterr_)[i];
     }
@@ -175,7 +175,7 @@ namespace UTILS
       \brief Return lagrange multiplier for constraint i
     */
     double GetLagrMult(int i  ///< ID of constraint of interest
-        ) const
+    ) const
     {
       return (*lagrMultVec_)[i];
     };
@@ -219,7 +219,7 @@ namespace UTILS
      \brief Return current value
     */
     double GetCurrValue(int i  ///< ID of constraint of interest
-        ) const
+    ) const
     {
       return (*actvalues_)[i];
     };

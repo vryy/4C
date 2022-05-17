@@ -370,7 +370,7 @@ namespace MAT
         const double time,                 //!< current time
         const double* gpcoord,             //!< Gauss-point coordinates
         const double scale                 //!< scaling factor for reference concentrations
-        ) const;
+    ) const;
 
     void CalcPermInfluenceDeriv(const int k,  //!< current scalar id
         std::vector<double>& derivs,          //!< vector with derivatives (to be filled)
@@ -378,7 +378,7 @@ namespace MAT
         const double time,                    //!< current time
         const double* gpcoord,                //!< Gauss-point coordinates
         const double scale                    //!< scaling factor for reference concentrations
-        ) const;
+    ) const;
 
    protected:
     /// return ID of function for spatial distribution of reaction coefficient
@@ -397,7 +397,7 @@ namespace MAT
        */
     virtual double ReacCoeff(const std::vector<std::pair<std::string, double>>&
             constants  //!< vector containing values which are independent of the scalars
-        ) const;
+    ) const;
 
     /// return stoichometrie
     const std::vector<int>* Stoich() const { return params_->stoich_; }
@@ -427,7 +427,7 @@ namespace MAT
             constants,  //!< vector containing values which are independent of the scalars
         const double
             scale_phi  //!< scaling factor for scalar values (used for reference concentrations)
-        ) const;
+    ) const;
 
     /// calculate advanced reaction term derivatives
     void CalcReaBodyForceDerivMatrix(const int k,  //!< current scalar id
@@ -437,7 +437,7 @@ namespace MAT
             constants,  //!< vector containing values which are independent of the scalars
         const double
             scale_phi  //!< scaling factor for scalar values (used for reference concentrations)
-        ) const;
+    ) const;
 
     /// calculate advanced reaction term derivatives after additional variables of the specified
     /// function
@@ -447,12 +447,12 @@ namespace MAT
         const std::vector<std::pair<std::string, double>>&
             constants,    //!< constants (including the scalar values phinp)
         double scale_phi  //!< scaling factor for scalar values (used for reference concentrations)
-        ) const;
+    ) const;
 
     /// add variables to the by-function reaction
     void AddAdditionalVariables(const int k,                          //!< current scalar id
         const std::vector<std::pair<std::string, double>>& variables  //!< variables
-        ) const;
+    ) const;
 
    protected:
     /// helper for calculating advanced reaction terms
@@ -463,7 +463,7 @@ namespace MAT
         double scale_reac,  //!< scaling factor for reaction term (= reaction coefficient *
                             //!< stoichometry)
         double scale_phi  //!< scaling factor for scalar values (used for reference concentrations)
-        ) const;
+    ) const;
 
     /// helper for calculating advanced reaction term derivatives
     void CalcReaBodyForceDeriv(int k,      //!< current scalar id
@@ -474,7 +474,7 @@ namespace MAT
         double scale_reac,  //!< scaling factor for reaction term (= reaction coefficient *
                             //!< stoichometry)
         double scale_phi  //!< scaling factor for scalar values (used for reference concentrations)
-        ) const;
+    ) const;
 
     /// helper for calculating advanced reaction term derivatives
     void CalcReaBodyForceDerivAddVariables(int k,  //!< current scalar id
@@ -485,7 +485,7 @@ namespace MAT
         double scale_reac,  //!< scaling factor for reaction term (= reaction coefficient *
                             //!< stoichometry)
         double scale_phi  //!< scaling factor for scalar values (used for reference concentrations)
-        ) const;
+    ) const;
 
    private:
     /// my material parameters

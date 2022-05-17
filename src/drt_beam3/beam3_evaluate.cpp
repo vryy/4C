@@ -1853,8 +1853,8 @@ inline void DRT::ELEMENTS::Beam3::MyRotationalDamping(
 template <int nnode, int ndim,
     int dof>  // number of nodes, number of dimensions of embedding space, number of degrees of
               // freedom per node
-inline void
-DRT::ELEMENTS::Beam3::MyTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
+inline void DRT::ELEMENTS::Beam3::MyTranslationalDamping(
+    Teuchos::ParameterList& params,         //!< parameter list
     const std::vector<double>& vel,         //!< element velocity vector
     const std::vector<double>& disp,        //!< element disp vector
     Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
@@ -1973,8 +1973,8 @@ template <int nnode, int ndim, int dof,
     int randompergauss>  // number of nodes, number of dimensions of embedding space, number of
                          // degrees of freedom per node, number of random numbers required per Gauss
                          // point
-inline void
-DRT::ELEMENTS::Beam3::MyStochasticForces(Teuchos::ParameterList& params,  //!< parameter list
+inline void DRT::ELEMENTS::Beam3::MyStochasticForces(
+    Teuchos::ParameterList& params,         //!< parameter list
     const std::vector<double>& vel,         //!< element velocity vector
     const std::vector<double>& disp,        //!< element disp vector
     Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
@@ -2061,8 +2061,8 @@ DRT::ELEMENTS::Beam3::MyStochasticForces(Teuchos::ParameterList& params,  //!< p
 template <int nnode,
     int randompergauss>  // number of nodes, number of random numbers required per Gauss point,
                          // number of random numbers required per Gauss point
-inline void
-DRT::ELEMENTS::Beam3::MyStochasticMoments(Teuchos::ParameterList& params,  //!< parameter list
+inline void DRT::ELEMENTS::Beam3::MyStochasticMoments(
+    Teuchos::ParameterList& params,         //!< parameter list
     const std::vector<double>& vel,         //!< element velocity vector
     const std::vector<double>& disp,        //!< element disp vector
     Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
@@ -2138,8 +2138,7 @@ template <int nnode, int ndim, int dof,
     int randompergauss>  // number of nodes, number of dimensions of embedding space, number of
                          // degrees of freedom per node, number of random numbers required per Gauss
                          // point
-inline void
-DRT::ELEMENTS::Beam3::CalcBrownianForcesAndStiff(Teuchos::ParameterList& params,
+inline void DRT::ELEMENTS::Beam3::CalcBrownianForcesAndStiff(Teuchos::ParameterList& params,
     const std::vector<double>& vel,         //!< element velocity vector
     const std::vector<double>& disp,        //!< element displacement vector
     Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix

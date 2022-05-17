@@ -213,15 +213,15 @@ namespace STR
 
     //! Print time adapting constants
     void PrintConstants(std::ostream& str  //!< output stream
-        ) const;
+    ) const;
 
     //! Print time adapting variables
     void PrintVariables(std::ostream& str  //!< output stream
-        ) const;
+    ) const;
 
     //! Print time adapting parameters:TimeIntegrator
     void Print(std::ostream& str  //!< output stream
-        ) const;
+    ) const;
 
     //! Modify step size to hit precisely output period
     void SizeForOutput();

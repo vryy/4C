@@ -80,7 +80,7 @@ namespace DRT
     /// get number of nodal dofs
     virtual int NumDofPerNode(
         const Node& node  ///< node, for which you want to know the number of dofs
-        ) const
+    ) const
     {
       if (not sourcedis_->HaveGlobalNode(node.Id())) return 0;
       DRT::Node* sourcenode = sourcedis_->gNode(node.Id());
@@ -129,7 +129,7 @@ namespace DRT
     virtual void Dof(std::vector<int>& dof,  ///< vector of dof gids (to be filled)
         const Node* node,                    ///< the node
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
-        ) const
+    ) const
     {
       CheckIsAssigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return;
@@ -160,7 +160,7 @@ namespace DRT
     virtual void Dof(const Node* node,  ///< node, for which you want the dof positions
         const unsigned startindex,      ///< first index of vector at which will be written to end
         std::vector<int>& lm  ///< already allocated vector to be filled with dof positions
-        ) const
+    ) const
     {
       CheckIsAssigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return;
@@ -173,7 +173,7 @@ namespace DRT
         const Element* element,  ///< element which provides its expected number of DOFs per node
         const Node* node,        ///< node, for which you want the DOF positions
         std::vector<int>& lm     ///< already allocated vector to be filled with DOF positions
-        ) const
+    ) const
     {
       CheckIsAssigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return;

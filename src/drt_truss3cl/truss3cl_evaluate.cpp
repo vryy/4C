@@ -868,8 +868,8 @@ void DRT::ELEMENTS::Truss3CL::MyBackgroundVelocity(
 template <int fnnode, int ndim,
     int dof>  // number of nodes, number of dimensions of embedding space, number of degrees of
               // freedom per node
-inline void
-DRT::ELEMENTS::Truss3CL::MyTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
+inline void DRT::ELEMENTS::Truss3CL::MyTranslationalDamping(
+    Teuchos::ParameterList& params,          //!< parameter list
     const LINALG::Matrix<6, 1>& fvel,        //!< element velocity vector
     const std::vector<double>& disp,         //!< element real disp vector
     const LINALG::Matrix<6, 1>& fdisp,       //!< element fictitious disp vector
@@ -992,8 +992,8 @@ template <int fnnode, int ndim, int dof,
     int randompergauss>  // number of nodes, number of dimensions of embedding space, number of
                          // degrees of freedom per node, number of random numbers required per Gauss
                          // point
-inline void
-DRT::ELEMENTS::Truss3CL::MyStochasticForces(Teuchos::ParameterList& params,  //!< parameter list
+inline void DRT::ELEMENTS::Truss3CL::MyStochasticForces(
+    Teuchos::ParameterList& params,          //!< parameter list
     const LINALG::Matrix<6, 1>& fdisp,       //!< element disp vector
     Epetra_SerialDenseMatrix& fstiffmatrix,  //!< element stiffness matrix
     Epetra_SerialDenseVector& fforce)        //!< element internal force vector
@@ -1082,8 +1082,7 @@ template <int fnnode, int ndim, int dof,
     int randompergauss>  // number of nodes, number of dimensions of embedding space, number of
                          // degrees of freedom per node, number of random numbers required per Gauss
                          // point
-inline void
-DRT::ELEMENTS::Truss3CL::CalcBrownian(Teuchos::ParameterList& params,
+inline void DRT::ELEMENTS::Truss3CL::CalcBrownian(Teuchos::ParameterList& params,
     const LINALG::Matrix<6, 1>& fvel,        //!< element velocity vector
     const std::vector<double>& disp,         //!< element real displacement vector
     const LINALG::Matrix<6, 1>& fdisp,       //!< element fictitious displacement vector

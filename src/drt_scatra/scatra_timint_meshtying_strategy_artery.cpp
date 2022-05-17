@@ -211,7 +211,7 @@ void SCATRA::MeshtyingStrategyArtery::Solve(const Teuchos::RCP<LINALG::Solver>& 
     const Teuchos::RCP<Epetra_Vector>& phinp,                  //!< state vector at time n+1
     const int& iteration,  //!< number of current Newton-Raphson iteration
     const Teuchos::RCP<LINALG::KrylovProjector>& projector  //!< Krylov projector
-    ) const
+) const
 {
   // setup the system (evaluate mesh tying)
   // reason for this being done here is that we need the system matrix of the continuous scatra
@@ -245,7 +245,7 @@ void SCATRA::MeshtyingStrategyArtery::Solve(const Teuchos::RCP<LINALG::Solver>& 
 void SCATRA::MeshtyingStrategyArtery::SetupSystem(
     const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
     const Teuchos::RCP<Epetra_Vector>& residual                //!< residual vector
-    ) const
+) const
 {
   arttoscatracoupling_->SetSolutionVectors(
       scatratimint_->Phinp(), Teuchos::null, artscatratimint_->Phinp());

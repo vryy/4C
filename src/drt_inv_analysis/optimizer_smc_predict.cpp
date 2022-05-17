@@ -58,12 +58,12 @@ void INVANA::PredictionSMC::Integrate()
       std::cout << "(Group " << MyGroup() << ") Particles initialized from Prior." << std::endl;
   }
   else
-      // inform user
-      if (Particles()->PComm().LComm().MyPID() == 0)
-    std::cout << "(Group " << MyGroup()
-              << ") Particles initialized from existing "
-                 "Particle basis"
-              << std::endl;
+    // inform user
+    if (Particles()->PComm().LComm().MyPID() == 0)
+      std::cout << "(Group " << MyGroup()
+                << ") Particles initialized from existing "
+                   "Particle basis"
+                << std::endl;
 
   // run all the particles
   EvaluateParticles();

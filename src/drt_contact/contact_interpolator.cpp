@@ -1785,10 +1785,12 @@ template <DRT::Element::DiscretizationType distypeM>
 NTS::MTInterpolatorCalc<distypeM>* NTS::MTInterpolatorCalc<distypeM>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<NTS::MTInterpolatorCalc<distypeM>> singleton_owner([]() {
-    return std::unique_ptr<NTS::MTInterpolatorCalc<distypeM>>(
-        new NTS::MTInterpolatorCalc<distypeM>());
-  });
+  static ::UTILS::SingletonOwner<NTS::MTInterpolatorCalc<distypeM>> singleton_owner(
+      []()
+      {
+        return std::unique_ptr<NTS::MTInterpolatorCalc<distypeM>>(
+            new NTS::MTInterpolatorCalc<distypeM>());
+      });
 
   return singleton_owner.Instance(action);
 }

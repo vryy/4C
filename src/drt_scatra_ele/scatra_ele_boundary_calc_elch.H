@@ -120,7 +120,7 @@ namespace DRT
       virtual double GetValence(
           const Teuchos::RCP<const MAT::Material>& material,  //! element material
           const int k                                         //! species number
-          ) const = 0;
+      ) const = 0;
 
       //! parameter class for electrochemistry problems
       const DRT::ELEMENTS::ScaTraEleParameterElch* elchparams_;

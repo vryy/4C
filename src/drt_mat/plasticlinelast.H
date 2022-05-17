@@ -126,7 +126,7 @@ namespace MAT
     //!  \param data (in/out): char vector to store class information
     virtual void Pack(
         DRT::PackBuffer& data  //!<  data (i/o): char vector to store class information
-        ) const;
+    ) const;
 
     //!  \brief Unpack data from a char vector into this class
     //!
@@ -227,7 +227,7 @@ namespace MAT
     //! the old history vectors last_, while the current history vectors curr_
     //! are reset
     double AccumulatedStrain(int gp  //!< current Gauss point
-        ) const
+    ) const
     {
       return strainbarpllast_->at(gp);
     }

@@ -75,12 +75,12 @@ namespace STI
     //! pass scatra degrees of freedom to thermo discretization
     void TransferScatraToThermo(
         const Teuchos::RCP<const Epetra_Vector> scatra  //!< scatra state vector
-        ) const;
+    ) const;
 
     //! pass thermo degrees of freedom to scatra discretization
     void TransferThermoToScatra(
         const Teuchos::RCP<const Epetra_Vector> thermo  //!< thermo state vector
-        ) const;
+    ) const;
 
     //! scatra time integrator
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;

@@ -1296,10 +1296,12 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcHDG<distype>* DRT::ELEMENTS::FluidEleCalcHDG<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcHDG<distype>> singleton_owner([]() {
-    return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcHDG<distype>>(
-        new DRT::ELEMENTS::FluidEleCalcHDG<distype>());
-  });
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcHDG<distype>> singleton_owner(
+      []()
+      {
+        return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcHDG<distype>>(
+            new DRT::ELEMENTS::FluidEleCalcHDG<distype>());
+      });
 
   return singleton_owner.Instance(action);
 }

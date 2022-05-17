@@ -194,11 +194,11 @@ namespace GEO
       bool TransformFromGlobalToUndeformedBoundingBoxSystem(
           LINALG::Matrix<3, 1> const& x,  ///< input  -> global position
           LINALG::Matrix<3, 1>& xi        ///< output -> position in undeformed bounding box system
-          ) const;
+      ) const;
       bool TransformFromGlobalToUndeformedBoundingBoxSystem(
           double const* x,  ///< input  -> global position
           double* xi        ///< output -> position in undeformed bounding box system
-          ) const;
+      ) const;
 
       //! @}
 

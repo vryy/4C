@@ -64,10 +64,12 @@ DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>*
 DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Instance(::UTILS::SingletonAction action)
 {
   static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>>
-      singleton_owner([]() {
-        return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>>(
-            new DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>());
-      });
+      singleton_owner(
+          []()
+          {
+            return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>>(
+                new DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>());
+          });
 
   return singleton_owner.Instance(action);
 }

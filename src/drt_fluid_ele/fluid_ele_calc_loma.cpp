@@ -22,10 +22,12 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcLoma<distype>* DRT::ELEMENTS::FluidEleCalcLoma<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcLoma<distype>> singleton_owner([]() {
-    return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcLoma<distype>>(
-        new DRT::ELEMENTS::FluidEleCalcLoma<distype>());
-  });
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcLoma<distype>> singleton_owner(
+      []()
+      {
+        return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcLoma<distype>>(
+            new DRT::ELEMENTS::FluidEleCalcLoma<distype>());
+      });
 
   return singleton_owner.Instance(action);
 }

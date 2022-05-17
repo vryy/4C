@@ -311,7 +311,7 @@ void MAT::ScatraReactionMat::Unpack(const std::vector<char>& data)
 /-------------------------------------------------------------------------------*/
 double MAT::ScatraReactionMat::ReacCoeff(const std::vector<std::pair<std::string, double>>&
         constants  //!< vector containing values which are independent of the scalars
-    ) const
+) const
 {
   double reaccoeff = params_->reaccoeff_;
 
@@ -358,7 +358,7 @@ double MAT::ScatraReactionMat::CalcReaBodyForceTerm(const int k,  //!< current s
     const std::vector<std::pair<std::string, double>>&
         constants,    //!< vector containing values which are independent of the scalars
     double scale_phi  //!< scaling factor for scalar values (used for reference concentrations)
-    ) const
+) const
 {
   const double reaccoeff = ReacCoeff(constants);
 
@@ -380,7 +380,7 @@ void MAT::ScatraReactionMat::CalcReaBodyForceDerivMatrix(const int k,  //!< curr
     const std::vector<std::pair<std::string, double>>&
         constants,    //!< vector containing values which are independent of the scalars
     double scale_phi  //!< scaling factor for scalar values (used for reference concentrations)
-    ) const
+) const
 {
   const double reaccoeff = ReacCoeff(constants);
 
@@ -403,7 +403,7 @@ void MAT::ScatraReactionMat::CalcReaBodyForceDerivMatrixAddVariables(
     const std::vector<std::pair<std::string, double>>&
         constants,    //!< constants (including the scalar values phinp)
     double scale_phi  //!< scaling factor for scalar values (used for reference concentrations)
-    ) const
+) const
 {
   const double reaccoeff = ReacCoeff(constants);
 
@@ -421,7 +421,7 @@ void MAT::ScatraReactionMat::CalcReaBodyForceDerivMatrixAddVariables(
 /----------------------------------------------------------------------*/
 void MAT::ScatraReactionMat::AddAdditionalVariables(const int k,  //!< current scalar id
     const std::vector<std::pair<std::string, double>>& variables  //!< variables
-    ) const
+) const
 {
   if (Stoich()->at(k) != 0)
   {
@@ -441,7 +441,7 @@ double MAT::ScatraReactionMat::CalcReaBodyForceTerm(int k,  //!< current scalar 
     double
         scale_reac,   //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
     double scale_phi  //!< scaling factor for scalar values (used for reference concentrations)
-    ) const
+) const
 {
   return params_->reaction_->CalcReaBodyForceTerm(
       k, NumScal(), phinp, constants, *Couprole(), scale_reac, scale_phi);
@@ -458,7 +458,7 @@ void MAT::ScatraReactionMat::CalcReaBodyForceDeriv(int k,  //!< current scalar i
     double
         scale_reac,   //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
     double scale_phi  //!< scaling factor for scalar values (used for reference concentrations)
-    ) const
+) const
 {
   params_->reaction_->CalcReaBodyForceDeriv(
       k, NumScal(), derivs, phinp, constants, *Couprole(), scale_reac, scale_phi);
@@ -478,7 +478,7 @@ void MAT::ScatraReactionMat::CalcReaBodyForceDerivAddVariables(int k,  //!< curr
     double
         scale_reac,   //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
     double scale_phi  //!< scaling factor for scalar values (used for reference concentrations)
-    ) const
+) const
 {
   params_->reaction_->CalcReaBodyForceDerivAddVariables(
       k, derivs, variables, constants, *Couprole(), scale_reac, scale_phi);
@@ -494,7 +494,7 @@ double MAT::ScatraReactionMat::CalcPermInfluence(const int k,  //!< current scal
     const double time,                                         //!< current time
     const double* gpcoord,                                     //!< Gauss-point coordinates
     const double scale  //!< scaling factor for reference concentrations
-    ) const
+) const
 {
   // set time and space coordinates
   std::vector<std::pair<std::string, double>> constants;
@@ -519,7 +519,7 @@ void MAT::ScatraReactionMat::CalcPermInfluenceDeriv(const int k,  //!< current s
     const double time,                 //!< current time
     const double* gpcoord,             //!< Gauss-point coordinates
     const double scale                 //!< scaling factor for reference concentrations
-    ) const
+) const
 {
   // set time and space coordinates
   std::vector<std::pair<std::string, double>> constants;

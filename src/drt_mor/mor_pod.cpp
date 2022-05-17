@@ -268,7 +268,8 @@ void UTILS::MOR::ReadMatrix(std::string filename, Teuchos::RCP<Epetra_MultiVecto
   file1.close();
 
   // union for conversion of 4 bytes to int or float
-  union CharIntFloat {
+  union CharIntFloat
+  {
     char ValueAsChars[4];
     int ValueAsInt;
     float ValueAsFloat;
@@ -296,7 +297,8 @@ void UTILS::MOR::ReadMatrix(std::string filename, Teuchos::RCP<Epetra_MultiVecto
   const int formatfactor = 4;  // 8 is double 4 is single
 
   // union for conversion of some bytes to int or float
-  union NewCharIntFloat {
+  union NewCharIntFloat
+  {
     char VAsChar[formatfactor];
     double VAsDbl;
     float VAsFlt;

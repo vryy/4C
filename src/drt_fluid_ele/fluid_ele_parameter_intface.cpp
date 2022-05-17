@@ -26,10 +26,12 @@ be set in problem specific parameter lists derived from this class.
 DRT::ELEMENTS::FluidEleParameterIntFace* DRT::ELEMENTS::FluidEleParameterIntFace::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleParameterIntFace> singleton_owner([]() {
-    return std::unique_ptr<DRT::ELEMENTS::FluidEleParameterIntFace>(
-        new DRT::ELEMENTS::FluidEleParameterIntFace());
-  });
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleParameterIntFace> singleton_owner(
+      []()
+      {
+        return std::unique_ptr<DRT::ELEMENTS::FluidEleParameterIntFace>(
+            new DRT::ELEMENTS::FluidEleParameterIntFace());
+      });
 
   return singleton_owner.Instance(action);
 }

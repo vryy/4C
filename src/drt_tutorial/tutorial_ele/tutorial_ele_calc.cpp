@@ -19,10 +19,12 @@
 TUTORIAL::ELEMENTS::TutorialEleCalc* TUTORIAL::ELEMENTS::TutorialEleCalc::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<TUTORIAL::ELEMENTS::TutorialEleCalc> singleton_owner([]() {
-    return std::unique_ptr<TUTORIAL::ELEMENTS::TutorialEleCalc>(
-        new TUTORIAL::ELEMENTS::TutorialEleCalc());
-  });
+  static ::UTILS::SingletonOwner<TUTORIAL::ELEMENTS::TutorialEleCalc> singleton_owner(
+      []()
+      {
+        return std::unique_ptr<TUTORIAL::ELEMENTS::TutorialEleCalc>(
+            new TUTORIAL::ELEMENTS::TutorialEleCalc());
+      });
 
   return singleton_owner.Instance(action);
 }

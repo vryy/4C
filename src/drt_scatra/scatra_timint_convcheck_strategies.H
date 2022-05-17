@@ -50,12 +50,12 @@ namespace SCATRA
     virtual bool AbortNonlinIter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
-        ) const = 0;
+    ) const = 0;
 
     //! perform convergence check for outer iteration in partitioned coupling schemes
     virtual bool AbortOuterIter(
         const ScaTraTimIntImpl& scatratimint  //!< scalar transport time integrator
-        ) const
+    ) const
     {
       dserror("Not implemented in base class!");
       return false;
@@ -107,11 +107,11 @@ namespace SCATRA
     bool AbortNonlinIter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
-        ) const;
+    ) const;
 
     //! perform convergence check for outer iteration in partitioned coupling schemes
     bool AbortOuterIter(const ScaTraTimIntImpl& scatratimint  //!< scalar transport time integrator
-        ) const;
+    ) const;
 
    private:
     //! copy constructor
@@ -143,7 +143,7 @@ namespace SCATRA
     bool AbortNonlinIter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
-        ) const;
+    ) const;
 
    private:
     //! copy constructor
@@ -175,7 +175,7 @@ namespace SCATRA
     bool AbortNonlinIter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
-        ) const;
+    ) const;
 
    private:
     //! copy constructor
@@ -207,7 +207,7 @@ namespace SCATRA
     bool AbortNonlinIter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
-        ) const;
+    ) const;
 
    private:
     //! copy constructor
@@ -239,7 +239,7 @@ namespace SCATRA
     bool AbortNonlinIter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
-        ) const;
+    ) const;
 
    private:
     //! copy constructor
@@ -271,11 +271,11 @@ namespace SCATRA
     bool AbortNonlinIter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
-        ) const;
+    ) const;
 
     //! perform convergence check for outer iteration in partitioned coupling schemes
     bool AbortOuterIter(const ScaTraTimIntImpl& scatratimint  //!< scalar transport time integrator
-        ) const;
+    ) const;
 
    private:
     //! copy constructor
@@ -308,7 +308,7 @@ namespace SCATRA
     bool AbortNonlinIter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
-        ) const;
+    ) const;
 
    private:
     //! copy constructorexit
@@ -341,7 +341,7 @@ namespace SCATRA
     bool AbortNonlinIter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
-        ) const;
+    ) const;
 
    private:
     //! copy constructorexit

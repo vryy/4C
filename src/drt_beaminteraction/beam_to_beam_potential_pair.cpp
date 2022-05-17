@@ -3533,11 +3533,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 template <typename T2>
-void
-    BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::ComputeCenterlineTangent(
-        LINALG::Matrix<3, 1, T>& r_xi,
-        const LINALG::Matrix<1, numnodes * numnodalvalues, T2>& N_i_xi,
-        const LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T> eledofvec) const
+void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
+    T>::ComputeCenterlineTangent(LINALG::Matrix<3, 1, T>& r_xi,
+    const LINALG::Matrix<1, numnodes * numnodalvalues, T2>& N_i_xi,
+    const LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T> eledofvec) const
 {
   DRT::UTILS::BEAM::CalcInterpolation<numnodes, numnodalvalues, 3, T, T2>(eledofvec, N_i_xi, r_xi);
 }

@@ -537,8 +537,9 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
   // BACI-Dat eles start with 1, this int is adapted for more than one element section
   int startele = 1;
 
-  const auto printElementSection = [&](const std::vector<elem_def>& ele_vector,
-                                       const std::string& section_name) {
+  const auto printElementSection =
+      [&](const std::vector<elem_def>& ele_vector, const std::string& section_name)
+  {
     const unsigned padding_length = 66;
     // we need at least 2 dashes at the beginning to be recognizable to the dat file reader
     const unsigned min_num_preceding_dashes = 2;

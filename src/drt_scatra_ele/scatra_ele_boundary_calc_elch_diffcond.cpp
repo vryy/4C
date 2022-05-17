@@ -345,7 +345,7 @@ template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::GetValence(
     const Teuchos::RCP<const MAT::Material>& material,  // element material
     const int k                                         // species number
-    ) const
+) const
 {
   double valence(0.);
 

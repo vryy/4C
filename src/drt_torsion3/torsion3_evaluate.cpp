@@ -541,40 +541,42 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
   }  // bending potetial quadratic
 
   else
-      // bending potential cosine
-      if (bendingpotential_ == cosine)
-  {
-    // internal forces (equation 3.16, same as for theta almost zero)
-    if (force != NULL)
+    // bending potential cosine
+    if (bendingpotential_ == cosine)
     {
-      for (int j = 0; j < 9; ++j) (*force)(j) = -spring * grtheta(j);
-    }
-
-
-    // stiffness matrix (equation 3.17, same as for theta almost zero)
-    if (stiffmatrix != NULL)
-    {
-      for (int j = 0; j < 3; ++j)
+      // internal forces (equation 3.16, same as for theta almost zero)
+      if (force != NULL)
       {
-        for (int i = 0; i < 3; ++i)
-        {
-          (*stiffmatrix)(j, i) = -spring * (-A(j, i));
-          (*stiffmatrix)(j, 3 + i) = -spring * (A(j, i) + B(j + 3, i));
-          (*stiffmatrix)(j, 6 + i) = -spring * (-B(j + 3, i));
-          (*stiffmatrix)(3 + j, i) = -spring * (A(j, i) + B(j, i));
-          (*stiffmatrix)(3 + j, 3 + i) = -spring * (-A(j, i) - A(j + 3, i) - B(j, i) - B(j + 3, i));
-          (*stiffmatrix)(3 + j, 6 + i) = -spring * (A(j + 3, i) + B(j + 3, i));
-          (*stiffmatrix)(6 + j, i) = -spring * (-B(j, i));
-          (*stiffmatrix)(6 + j, 3 + i) = -spring * (A(j + 3, i) + B(j, i));
-          (*stiffmatrix)(6 + j, 6 + i) = -spring * (-A(j + 3, i));
-        }
+        for (int j = 0; j < 9; ++j) (*force)(j) = -spring * grtheta(j);
       }
-    }  // stiffness matrix
-  }    // bending potential cosine
 
-  else
-    std::cout << "\n No such bending potential. Possible bending potentials: \n quadratic \n cosine"
-              << std::endl;
+
+      // stiffness matrix (equation 3.17, same as for theta almost zero)
+      if (stiffmatrix != NULL)
+      {
+        for (int j = 0; j < 3; ++j)
+        {
+          for (int i = 0; i < 3; ++i)
+          {
+            (*stiffmatrix)(j, i) = -spring * (-A(j, i));
+            (*stiffmatrix)(j, 3 + i) = -spring * (A(j, i) + B(j + 3, i));
+            (*stiffmatrix)(j, 6 + i) = -spring * (-B(j + 3, i));
+            (*stiffmatrix)(3 + j, i) = -spring * (A(j, i) + B(j, i));
+            (*stiffmatrix)(3 + j, 3 + i) =
+                -spring * (-A(j, i) - A(j + 3, i) - B(j, i) - B(j + 3, i));
+            (*stiffmatrix)(3 + j, 6 + i) = -spring * (A(j + 3, i) + B(j + 3, i));
+            (*stiffmatrix)(6 + j, i) = -spring * (-B(j, i));
+            (*stiffmatrix)(6 + j, 3 + i) = -spring * (A(j + 3, i) + B(j, i));
+            (*stiffmatrix)(6 + j, 6 + i) = -spring * (-A(j + 3, i));
+          }
+        }
+      }  // stiffness matrix
+    }    // bending potential cosine
+
+    else
+      std::cout
+          << "\n No such bending potential. Possible bending potentials: \n quadratic \n cosine"
+          << std::endl;
 
 
 }  // nlnstiffmass

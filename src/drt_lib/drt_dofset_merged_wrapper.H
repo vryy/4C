@@ -90,7 +90,7 @@ namespace DRT
     /// get number of nodal dofs
     virtual int NumDofPerNode(
         const Node& node  ///< node, for which you want to know the number of dofs
-        ) const
+    ) const
     {
       const DRT::Node* masternode = GetMasterNode(node.LID());
       const DRT::Node* slavenode = GetSlaveNode(node.LID());
@@ -122,7 +122,7 @@ namespace DRT
     virtual void Dof(std::vector<int>& dof,  ///< vector of dof gids (to be filled)
         const Node* node,                    ///< node, for which you want the dof positions
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
-        ) const
+    ) const
     {
       const DRT::Node* masternode = GetMasterNode(node->LID());
       const DRT::Node* slavenode = GetSlaveNode(node->LID());
@@ -177,7 +177,7 @@ namespace DRT
     virtual void Dof(const Node* node,  ///< node, for which you want the dof positions
         const unsigned startindex,      ///< first index of vector at which will be written to end
         std::vector<int>& lm  ///< already allocated vector to be filled with dof positions
-        ) const
+    ) const
     {
       const DRT::Node* slavenode = GetSlaveNode(node->LID());
       const int numslavedofs = sourcedofset_->NumDof(slavenode);
@@ -198,7 +198,7 @@ namespace DRT
         const Element* element,  ///< element which provides its expected number of DOFs per node
         const Node* node,        ///< node, for which you want the DOF positions
         std::vector<int>& lm     ///< already allocated vector to be filled with DOF positions
-        ) const
+    ) const
     {
       const DRT::Node* slavenode = GetSlaveNode(node->LID());
       sourcedofset_->Dof(element, slavenode, lm);

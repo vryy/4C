@@ -17,10 +17,12 @@ set all general porofluid parameter once for all elements.
 DRT::ELEMENTS::FluidEleParameterPoro* DRT::ELEMENTS::FluidEleParameterPoro::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleParameterPoro> singleton_owner([]() {
-    return std::unique_ptr<DRT::ELEMENTS::FluidEleParameterPoro>(
-        new DRT::ELEMENTS::FluidEleParameterPoro());
-  });
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleParameterPoro> singleton_owner(
+      []()
+      {
+        return std::unique_ptr<DRT::ELEMENTS::FluidEleParameterPoro>(
+            new DRT::ELEMENTS::FluidEleParameterPoro());
+      });
 
   return singleton_owner.Instance(action);
 }

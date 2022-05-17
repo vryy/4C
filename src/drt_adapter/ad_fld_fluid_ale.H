@@ -105,22 +105,22 @@ namespace ADAPTER
     /// field transform
     virtual Teuchos::RCP<Epetra_Vector> AleToFluidField(
         Teuchos::RCP<Epetra_Vector> iv  ///< ALE vector (to be converted)
-        ) const;
+    ) const;
 
     /// field transform
     virtual Teuchos::RCP<Epetra_Vector> AleToFluidField(
         Teuchos::RCP<const Epetra_Vector> iv  ///< ALE vector (to be converted)
-        ) const;
+    ) const;
 
     /// interface transform
     virtual Teuchos::RCP<Epetra_Vector> FluidToAle(
         Teuchos::RCP<Epetra_Vector> iv  ///< Fluid vector (to be converted)
-        ) const;
+    ) const;
 
     /// interface transform
     virtual Teuchos::RCP<Epetra_Vector> FluidToAle(
         Teuchos::RCP<const Epetra_Vector> iv  ///< Fluid vector (to be converted)
-        ) const;
+    ) const;
 
     //@}
 

@@ -39,7 +39,8 @@ typedef struct _ARRAY
     cca_IA, /*!< integer array  */
     cca_IV  /*!< integer vector */
   } Typ;    /*!< enum type of field */
-  union {
+  union
+  {
     INT *iv;     /*!< integer vector */
     DOUBLE *dv;  /*!< DOUBLE vector  */
     INT **ia;    /*!< integer array  */
@@ -73,7 +74,8 @@ typedef struct _ARRAY4D
     cca_I3,   /*!< integer 3D-array  */
     cca_I4    /*!< integer 4D-array  */
   } Typ;      /*!< enum type of field */
-  union {
+  union
+  {
     DOUBLE ***d3;  /*!< 3D - DOUBLE array */
     DOUBLE ****d4; /*!< 4D - DOUBLE array */
     INT ***i3;     /*!< 3D - integer array */

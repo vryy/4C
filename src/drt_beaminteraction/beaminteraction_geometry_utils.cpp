@@ -763,10 +763,10 @@ template void BEAMINTERACTION::GEO::CalcLinearizationPointToCurveProjectionParam
     const LINALG::Matrix<3, 12, Sacado::Fad::DFad<double>>&);
 
 template void
-    BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartialDerivs<double>(
-        LINALG::Matrix<1, 3, double>&, LINALG::Matrix<1, 3, double>&, LINALG::Matrix<1, 3, double>&,
-        const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
-        const LINALG::Matrix<3, 1, double>&);
+BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartialDerivs<double>(
+    LINALG::Matrix<1, 3, double>&, LINALG::Matrix<1, 3, double>&, LINALG::Matrix<1, 3, double>&,
+    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 1, double>&);
 template void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartialDerivs<
     Sacado::Fad::DFad<double>>(LINALG::Matrix<1, 3, Sacado::Fad::DFad<double>>&,
     LINALG::Matrix<1, 3, Sacado::Fad::DFad<double>>&,
@@ -776,17 +776,17 @@ template void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMast
     const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&);
 
 template void
-    BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial2ndDerivs<double>(
-        LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&,
-        LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&,
-        LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&,
-        LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&,
-        LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&,
-        const LINALG::Matrix<1, 3, double>&, const LINALG::Matrix<1, 3, double>&,
-        const LINALG::Matrix<1, 3, double>&, const LINALG::Matrix<3, 3, double>&,
-        const LINALG::Matrix<3, 3, double>&, const LINALG::Matrix<3, 3, double>&,
-        const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
-        const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&);
+BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial2ndDerivs<double>(
+    LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&,
+    LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&,
+    LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&,
+    LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&,
+    LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&,
+    const LINALG::Matrix<1, 3, double>&, const LINALG::Matrix<1, 3, double>&,
+    const LINALG::Matrix<1, 3, double>&, const LINALG::Matrix<3, 3, double>&,
+    const LINALG::Matrix<3, 3, double>&, const LINALG::Matrix<3, 3, double>&,
+    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&);
 template void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial2ndDerivs<
     Sacado::Fad::DFad<double>>(LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
     LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,

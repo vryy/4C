@@ -75,7 +75,7 @@ namespace INVANA
      */
     int ApplyInverse(const Epetra_MultiVector& X,  ///[in] to apply the inverse to
         Epetra_MultiVector& Y                      /// [out] result
-        ) const;
+    ) const;
 
     //@}
 

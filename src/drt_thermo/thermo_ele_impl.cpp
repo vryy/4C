@@ -102,10 +102,12 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::TemperImpl<distype>* DRT::ELEMENTS::TemperImpl<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::TemperImpl<distype>> singleton_owner([]() {
-    return std::unique_ptr<DRT::ELEMENTS::TemperImpl<distype>>(
-        new DRT::ELEMENTS::TemperImpl<distype>());
-  });
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::TemperImpl<distype>> singleton_owner(
+      []()
+      {
+        return std::unique_ptr<DRT::ELEMENTS::TemperImpl<distype>>(
+            new DRT::ELEMENTS::TemperImpl<distype>());
+      });
 
   return singleton_owner.Instance(action);
 }

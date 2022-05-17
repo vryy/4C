@@ -427,7 +427,7 @@ namespace DRT
        */
       bool isHigherOrderElement(
           const DRT::Element::DiscretizationType distype  ///< discretization type
-          ) const;
+      ) const;
 
 
     };  // class RedAirway
@@ -827,7 +827,7 @@ namespace DRT
        */
       bool isHigherOrderElement(
           const DRT::Element::DiscretizationType distype  ///< discretization type
-          ) const;
+      ) const;
 
 
     };  // class RedAcinus
@@ -1206,7 +1206,7 @@ namespace DRT
        */
       bool isHigherOrderElement(
           const DRT::Element::DiscretizationType distype  ///< discretization type
-          ) const;
+      ) const;
 
 
     };  // class RedInterAcinarDep
@@ -1582,7 +1582,7 @@ namespace DRT
        */
       bool isHigherOrderElement(
           const DRT::Element::DiscretizationType distype  ///< discretization type
-          ) const;
+      ) const;
 
     };  // class RedAirBloodScatra
 
@@ -1964,7 +1964,7 @@ namespace DRT
        */
       bool isHigherOrderElement(
           const DRT::Element::DiscretizationType distype  ///< discretization type
-          ) const;
+      ) const;
 
     };  // class RedAirBloodScatraLine3
 

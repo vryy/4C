@@ -2669,13 +2669,9 @@ template <unsigned int nnodecl, unsigned int vpernode, unsigned int ndim,
     unsigned int randompergauss>  // number of nodes, number of dimensions of embedding space,
                                   // number of degrees of freedom per node, number of random numbers
                                   // required per Gauss point
-                                  void
-                                  DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(
-                                      Teuchos::ParameterList& params,
-                                      const LINALG::Matrix< ndim * vpernode * nnodecl, 1,double>&
-                                          disp_totlag_centerline,
-                                      Epetra_SerialDenseMatrix* stiffmatrix,
-                                      Epetra_SerialDenseVector* force) const
+void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(Teuchos::ParameterList& params,
+    const LINALG::Matrix<ndim * vpernode * nnodecl, 1, double>& disp_totlag_centerline,
+    Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseVector* force) const
 {
   /* only nodes for centerline interpolation are considered here (= first nnodecl nodes of this
      element); each of these nodes holds 3*vpernode translational DoFs AND 3 rotational DoFs */

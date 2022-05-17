@@ -46,10 +46,12 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Ale3Surface_Impl<distype>* DRT::ELEMENTS::Ale3Surface_Impl<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::Ale3Surface_Impl<distype>> singleton_owner([]() {
-    return std::unique_ptr<DRT::ELEMENTS::Ale3Surface_Impl<distype>>(
-        new DRT::ELEMENTS::Ale3Surface_Impl<distype>());
-  });
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::Ale3Surface_Impl<distype>> singleton_owner(
+      []()
+      {
+        return std::unique_ptr<DRT::ELEMENTS::Ale3Surface_Impl<distype>>(
+            new DRT::ELEMENTS::Ale3Surface_Impl<distype>());
+      });
 
   return singleton_owner.Instance(action);
 }

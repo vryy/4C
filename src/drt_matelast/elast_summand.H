@@ -144,7 +144,7 @@ namespace MAT
       //! add shear modulus equivalent
       virtual void AddShearMod(bool& haveshearmod,  ///< non-zero shear modulus was added
           double& shearmod                          ///< variable to add upon
-          ) const;
+      ) const;
 
       //! add young's modulus equivalent
       virtual void AddYoungsMod(double& young, double& shear, double& bulk)

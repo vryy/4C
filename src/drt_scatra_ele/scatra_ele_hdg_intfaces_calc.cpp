@@ -66,7 +66,8 @@ DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>*
 DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::Instance(::UTILS::SingletonAction action)
 {
   static ::UTILS::SingletonOwner<DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>> singleton_owner(
-      []() {
+      []()
+      {
         return std::unique_ptr<DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>>(
             new DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>());
       });

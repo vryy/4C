@@ -2378,13 +2378,12 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
  | Compute beam point coordinates and their derivatives                 |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void
-    CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::ComputeBeamCoordsAndDerivs(
-        LINALG::Matrix<3, 1, TYPEBTS>& r, LINALG::Matrix<3, 1, TYPEBTS>& r_eta,
-        LINALG::Matrix<3, 1, TYPEBTS>& r_etaeta,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N_eta,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N_etaeta)
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
+    numnodalvalues>::ComputeBeamCoordsAndDerivs(LINALG::Matrix<3, 1, TYPEBTS>& r,
+    LINALG::Matrix<3, 1, TYPEBTS>& r_eta, LINALG::Matrix<3, 1, TYPEBTS>& r_etaeta,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N_eta,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N_etaeta)
 {
   r.Clear();
   r_eta.Clear();
@@ -2412,18 +2411,18 @@ void
  | Compute solid surface point coordinates and their derivatives        |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void
-    CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::ComputeSurfCoordsAndDerivs(
-        LINALG::Matrix<3, 1, TYPEBTS>& r, LINALG::Matrix<3, 1, TYPEBTS>& r_xi1,
-        LINALG::Matrix<3, 1, TYPEBTS>& r_xi2, LINALG::Matrix<3, 1, TYPEBTS>& r_xi1xi1,
-        LINALG::Matrix<3, 1, TYPEBTS>& r_xi2xi2, LINALG::Matrix<3, 1, TYPEBTS>& r_xi1xi2,
-        LINALG::Matrix<3, 1, TYPEBTS>& r_xi2xi1, LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N,
-        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1,
-        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2,
-        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1xi1,
-        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2xi2,
-        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1xi2,
-        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2xi1)
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
+    numnodalvalues>::ComputeSurfCoordsAndDerivs(LINALG::Matrix<3, 1, TYPEBTS>& r,
+    LINALG::Matrix<3, 1, TYPEBTS>& r_xi1, LINALG::Matrix<3, 1, TYPEBTS>& r_xi2,
+    LINALG::Matrix<3, 1, TYPEBTS>& r_xi1xi1, LINALG::Matrix<3, 1, TYPEBTS>& r_xi2xi2,
+    LINALG::Matrix<3, 1, TYPEBTS>& r_xi1xi2, LINALG::Matrix<3, 1, TYPEBTS>& r_xi2xi1,
+    LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N,
+    LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1,
+    LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2,
+    LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1xi1,
+    LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2xi2,
+    LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1xi2,
+    LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2xi1)
 {
   r.Clear();
   r_xi1.Clear();

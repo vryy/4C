@@ -229,7 +229,7 @@ namespace DRT
       \brief Create matrix with material configuration for 2 dimensions and 3 nodes
       */
       inline void MaterialConfiguration(LINALG::Matrix<3, 2>& x  ///< nodal coords in material frame
-          ) const
+      ) const
       {
         const int numnode = 3;
         const int numdim = 2;
@@ -248,7 +248,7 @@ namespace DRT
       */
       inline void SpatialConfiguration(LINALG::Matrix<3, 2>& x,  ///< nodal coords in spatial frame
           const std::vector<double> disp                         ///< displacements
-          ) const
+      ) const
       {
         const int numnode = 3;
         const int numdim = 2;

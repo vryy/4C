@@ -63,10 +63,12 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ElemagIntFaceImpl<distype>* DRT::ELEMENTS::ElemagIntFaceImpl<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::ElemagIntFaceImpl<distype>> singleton_owner([]() {
-    return std::unique_ptr<DRT::ELEMENTS::ElemagIntFaceImpl<distype>>(
-        new DRT::ELEMENTS::ElemagIntFaceImpl<distype>());
-  });
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::ElemagIntFaceImpl<distype>> singleton_owner(
+      []()
+      {
+        return std::unique_ptr<DRT::ELEMENTS::ElemagIntFaceImpl<distype>>(
+            new DRT::ELEMENTS::ElemagIntFaceImpl<distype>());
+      });
 
   return singleton_owner.Instance(action);
 }

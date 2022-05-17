@@ -86,35 +86,35 @@ namespace DRT
         //! extract interface velocity at current time step
         void GetInterfaceVelnp(
             LINALG::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
-            ) const;
+        ) const;
 
         //! get interface pressure at current time step
         void GetInterfacePresnp(double& ipres  ///< interface pressure at coupling slave side
-            ) const;
+        ) const;
 
         //! get interface velocity gradient at current time step
         void GetInterfaceVelGradnp(LINALG::Matrix<nsd_, nsd_>&
                 velgradint  ///< interface velocity gradients at coupling slave side
-            ) const;
+        ) const;
 
         //! extract interface velocity at previous time step
         void GetInterfaceVeln(
             LINALG::Matrix<nsd_, 1>& ivelintn  ///< interface velocity at coupling slave side
-            ) const;
+        ) const;
 
         //! get interface pressure at previous time step
         void GetInterfacePresn(double& ipresn  ///< interface pressure at coupling slave side
-            ) const;
+        ) const;
 
         //! get interface velocity gradient at previous time step
         void GetInterfaceVelGradn(LINALG::Matrix<nsd_, nsd_>&
                 velgradintn  ///< interface velocity gradients at coupling slave side
-            ) const;
+        ) const;
 
         //! get slave elements nodal shape functions
         void GetSlaveFunct(
             LINALG::Matrix<slave_nen_, 1>& slave_funct  ///< coupling slave shape functions
-            ) const;
+        ) const;
 
         //! set state for interface velocity jump
         void SetInterfaceJumpStatenp(
@@ -134,13 +134,13 @@ namespace DRT
         void GetInterfaceJumpVelnp(
             LINALG::Matrix<nsd_, 1>& ivelint_jump  ///< cutter element interface velocity jump or
                                                    ///< prescribed DBC at Gaussian point
-            ) const;
+        ) const;
 
         //! get interface velocity jump for previous time step at Gaussian point
         void GetInterfaceJumpVeln(
             LINALG::Matrix<nsd_, 1>& ivelintn_jump  ///< cutter element interface velocity jump or
                                                     ///< prescribed DBC at Gaussian point
-            ) const;
+        ) const;
 
         //@}
 
@@ -271,7 +271,7 @@ namespace DRT
         //! field, the request is unfulfilled
         void GetSlaveFunct(
             LINALG::Matrix<slave_nen_, 1>& slave_funct  ///< coupling slave shape functions
-            ) const
+        ) const
         {
           dserror("There is no concrete slave element available.");
         };

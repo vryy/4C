@@ -64,7 +64,8 @@ namespace DRT
       NodeType type_;
 
       //! particularise the node content: a literal number is double, an operatir has a character
-      union {
+      union
+      {
         double number;  // holds 1.0, 7.e-9, etc
         char op;        // hold '+', '*', etc
       } v_;

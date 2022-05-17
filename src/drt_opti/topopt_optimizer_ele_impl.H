@@ -192,7 +192,7 @@ namespace DRT
           LINALG::Matrix<nsd_, nen_>* matrixtofill,                     ///< vector field
           LINALG::Matrix<nen_, 1>* vectortofill,                        ///< scalar field
           Teuchos::RCP<Epetra_Vector>& globalvector                     ///< global vector
-          ) const;
+      ) const;
 
 
       //! @name coordinate data
@@ -399,7 +399,7 @@ namespace DRT
           LINALG::Matrix<nsd_, nen_>* matrixtofill,                     ///< vector field
           LINALG::Matrix<nen_, 1>* vectortofill,                        ///< scalar field
           Teuchos::RCP<Epetra_Vector>& globalvector                     ///< global vector
-          ) const;
+      ) const;
 
 
       //! @name gauss point data

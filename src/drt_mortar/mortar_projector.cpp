@@ -439,10 +439,12 @@ template <DRT::Element::DiscretizationType distype>
 MORTAR::MortarProjectorCalc<distype>* MORTAR::MortarProjectorCalc<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<MORTAR::MortarProjectorCalc<distype>> singleton_owner([]() {
-    return std::unique_ptr<MORTAR::MortarProjectorCalc<distype>>(
-        new MORTAR::MortarProjectorCalc<distype>());
-  });
+  static ::UTILS::SingletonOwner<MORTAR::MortarProjectorCalc<distype>> singleton_owner(
+      []()
+      {
+        return std::unique_ptr<MORTAR::MortarProjectorCalc<distype>>(
+            new MORTAR::MortarProjectorCalc<distype>());
+      });
 
   return singleton_owner.Instance(action);
 }
@@ -452,10 +454,12 @@ MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>*
 MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::Instance(::UTILS::SingletonAction action)
 {
   static ::UTILS::SingletonOwner<MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>>
-      singleton_owner([]() {
-        return std::unique_ptr<MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>>(
-            new MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>());
-      });
+      singleton_owner(
+          []()
+          {
+            return std::unique_ptr<MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>>(
+                new MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>());
+          });
 
   return singleton_owner.Instance(action);
 }

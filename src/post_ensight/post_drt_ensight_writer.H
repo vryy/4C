@@ -171,7 +171,7 @@ class EnsightWriter : public PostWriterBase
 
   void WriteString(std::ofstream& stream,  ///< filestream we are writing to
       const std::string str                ///< string to be written to file
-      ) const;
+  ) const;
   void WriteGeoFile(const std::string& geofilename);
   void WriteGeoFileOneTimeStep(std::ofstream& file,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
@@ -205,7 +205,7 @@ class EnsightWriter : public PostWriterBase
           dis,  ///< discretization where the nodal positions are take from
       const Teuchos::RCP<Epetra_Map>&
           proc0map  ///< current proc0 node map, created by WriteCoordinatesPar
-      ) const;
+  ) const;
 
   /*! \brief Write the cells for a Nurbs discretization
     quadratic nurbs split one element in knot space into
@@ -376,7 +376,7 @@ class EnsightWriter : public PostWriterBase
       const int stepsize,                                                          ///< ???
       const std::string name,                                                      ///< ???
       const std::string filename  ///< constant part of the filename
-      ) const;
+  ) const;
 
   int GetNumEleOutput(const DRT::Element::DiscretizationType distype, const int numele) const;
 
@@ -393,7 +393,7 @@ class EnsightWriter : public PostWriterBase
   //! create string for one TIME section in the case file
   std::string GetTimeSectionString(const int timeset,  ///< number of timeset to be written
       const std::vector<double>& times  ///< vector with time value for each time step
-      ) const;
+  ) const;
 
   //! create string for TIME section in the case file
   std::string GetTimeSectionStringFromTimesets(
@@ -402,7 +402,7 @@ class EnsightWriter : public PostWriterBase
   //! create string for FILE section in the case file
   std::string GetFileSectionStringFromFilesets(const std::map<std::string, std::vector<int>>&
           filesetmap  ///< filesets when using multiple huge binary files
-      ) const;
+  ) const;
 
   bool nodeidgiven_;  ///< indicates whether BACI global node ids are written to geometry file.
                       ///< default value: true

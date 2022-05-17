@@ -901,12 +901,11 @@ namespace DRT
           int randompergauss>  // number of nodes, number of dimensions of embedding space, number
                                // of degrees of freedom per node, number of random numbers required
                                // per Gauss point
-      void
-      CalcBrownianForcesAndStiff(Teuchos::ParameterList& params,  //!< parameter list
-          const std::vector<double>& vel,                         //!< element velocity vector
-          const std::vector<double>& disp,                        //!< element disp vector
-          Epetra_SerialDenseMatrix* stiffmatrix,                  //!< element stiffness matrix
-          Epetra_SerialDenseVector* force);                       //!< element internal force vector
+      void CalcBrownianForcesAndStiff(Teuchos::ParameterList& params,  //!< parameter list
+          const std::vector<double>& vel,                              //!< element velocity vector
+          const std::vector<double>& disp,                             //!< element disp vector
+          Epetra_SerialDenseMatrix* stiffmatrix,                       //!< element stiffness matrix
+          Epetra_SerialDenseVector* force);  //!< element internal force vector
 
       //! computes damping coefficients for employed friction model
       void MyDampingConstants(LINALG::Matrix<3, 1>& gamma);
@@ -923,34 +922,31 @@ namespace DRT
       template <int nnode, int ndim,
           int dof>  // number of nodes, number of dimensions of embedding space, number of degrees
                     // of freedom per node
-      void
-      MyTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
-          const std::vector<double>& vel,                     //!< element velocity vector
-          const std::vector<double>& disp,                    //!< element disp vector
-          Epetra_SerialDenseMatrix* stiffmatrix,              //!< element stiffness matrix
-          Epetra_SerialDenseVector* force);                   //!< element internal force vector
+      void MyTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
+          const std::vector<double>& vel,                          //!< element velocity vector
+          const std::vector<double>& disp,                         //!< element disp vector
+          Epetra_SerialDenseMatrix* stiffmatrix,                   //!< element stiffness matrix
+          Epetra_SerialDenseVector* force);  //!< element internal force vector
 
       //! computes stochastic translational forces and resulting stiffness
       template <int nnode, int ndim, int dof,
           int randompergauss>  // number of nodes, number of dimensions of embedding space, number
                                // of degrees of freedom per node, number of random numbers required
                                // per Gauss point
-      void
-      MyStochasticForces(Teuchos::ParameterList& params,  //!< parameter list
-          const std::vector<double>& vel,                 //!< element velocity vector
-          const std::vector<double>& disp,                //!< element disp vector
-          Epetra_SerialDenseMatrix* stiffmatrix,          //!< element stiffness matrix
-          Epetra_SerialDenseVector* force);               //!< element internal force vector
+      void MyStochasticForces(Teuchos::ParameterList& params,  //!< parameter list
+          const std::vector<double>& vel,                      //!< element velocity vector
+          const std::vector<double>& disp,                     //!< element disp vector
+          Epetra_SerialDenseMatrix* stiffmatrix,               //!< element stiffness matrix
+          Epetra_SerialDenseVector* force);                    //!< element internal force vector
 
       //! computes stochastic rotational moments and resulting stiffness
       template <int nnode,
           int randompergauss>  // number of nodes, number of random numbers required per Gauss point
-      void
-      MyStochasticMoments(Teuchos::ParameterList& params,  //!< parameter list
-          const std::vector<double>& vel,                  //!< element velocity vector
-          const std::vector<double>& disp,                 //!< element disp vector
-          Epetra_SerialDenseMatrix* stiffmatrix,           //!< element stiffness matrix
-          Epetra_SerialDenseVector* force);                //!< element internal force vector
+      void MyStochasticMoments(Teuchos::ParameterList& params,  //!< parameter list
+          const std::vector<double>& vel,                       //!< element velocity vector
+          const std::vector<double>& disp,                      //!< element disp vector
+          Epetra_SerialDenseMatrix* stiffmatrix,                //!< element stiffness matrix
+          Epetra_SerialDenseVector* force);                     //!< element internal force vector
 
       //! computes velocity of background fluid and gradient of that velocity at a certain
       //! evaluation point in the physical space and adds respective terms to internal forces and

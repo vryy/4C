@@ -36,7 +36,8 @@ DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>*
 DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::Instance(::UTILS::SingletonAction action)
 {
   static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>> singleton_owner(
-      []() {
+      []()
+      {
         return std::unique_ptr<DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>>(
             new DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>());
       });
@@ -4766,10 +4767,12 @@ DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>*
 DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::Instance(::UTILS::SingletonAction action)
 {
   static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>>
-      singleton_owner([]() {
-        return std::unique_ptr<DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>>(
-            new DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>());
-      });
+      singleton_owner(
+          []()
+          {
+            return std::unique_ptr<DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>>(
+                new DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>());
+          });
 
   return singleton_owner.Instance(action);
 }

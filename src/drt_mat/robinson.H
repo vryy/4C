@@ -146,7 +146,7 @@ namespace MAT
     //!  identify the exact class on the receiving processor.
     //!
     virtual void Pack(DRT::PackBuffer& data  //!< (i/o): char vector to store class information
-        ) const;
+    ) const;
 
     //!  \brief Unpack data from a char vector into this class
     //!

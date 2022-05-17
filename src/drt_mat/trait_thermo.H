@@ -22,21 +22,21 @@ namespace MAT
           const LINALG::Matrix<3, 1>& gradtemp,  ///< temperature gradient (strain tensor)
           LINALG::Matrix<3, 3>& cmat,            ///< constitutive matrix
           LINALG::Matrix<3, 1>& heatflux         ///< heatflux
-          ) const = 0;
+      ) const = 0;
 
       //! Main material call to determine heat flux and constitutive tensor in 2D
       virtual void Evaluate(
           const LINALG::Matrix<2, 1>& gradtemp,  ///< temperature gradient (strain tensor)
           LINALG::Matrix<2, 2>& cmat,            ///< constitutive matrix
           LINALG::Matrix<2, 1>& heatflux         ///< heatflux
-          ) const = 0;
+      ) const = 0;
 
       //! Main material call to determine heat flux and constitutive tensor in 1D
       virtual void Evaluate(
           const LINALG::Matrix<1, 1>& gradtemp,  ///< temperature gradient (strain tensor)
           LINALG::Matrix<1, 1>& cmat,            ///< constitutive matrix
           LINALG::Matrix<1, 1>& heatflux         ///< heatflux
-          ) const = 0;
+      ) const = 0;
 
 
       //! @name Derivatives of conductivity tensor

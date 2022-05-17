@@ -65,7 +65,7 @@ namespace DRT
           const double scalar,  ///< scaling factor for element matrix and right-hand side vector
                                 ///< contributions
           const int k           ///< index of evaluated scalar
-          ) const;
+      ) const;
 
       //! evaluate electrode kinetics status information at integration point on domain or boundary
       //! element
@@ -87,7 +87,7 @@ namespace DRT
           const double fac,      ///< integration factor
           const double scalar,   ///< scaling factor for current related quantities
           const int k            ///< index of evaluated scalar
-          ) const;
+      ) const;
 
       //! evaluate ion material
       void MatIon(const Teuchos::RCP<const MAT::Material> material,  //!< ion material

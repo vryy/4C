@@ -1044,8 +1044,7 @@ namespace DRT
       template <unsigned int nnodecl, unsigned int vpernode,
           unsigned int ndim>  // number of nodes, number of dimensions of embedding space, number of
                               // degrees of freedom per node
-      void
-      EvaluateTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
+      void EvaluateTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
           const LINALG::Matrix<ndim * vpernode * nnodecl, 1, double>& vel_centerline,
           const LINALG::Matrix<ndim * vpernode * nnodecl, 1, double>& disp_totlag_centerline,
           Epetra_SerialDenseMatrix* stiffmatrix,   //!< element stiffness matrix

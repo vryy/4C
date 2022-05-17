@@ -853,44 +853,44 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
     // point data.
     auto DetermineStressStrainRuntimeOutput =
         [this](const Teuchos::RCP<std::vector<char>>& data, const Epetra_Map* result_map,
-            Teuchos::RCP<Epetra_MultiVector>& postprocessed_data, const std::string& stress_type) {
-          // Get the values at the Gauss-points.
-          Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> mapdata =
-              Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
-          std::vector<char>::size_type position = 0;
-          for (int i = 0; i < DiscretPtr()->ElementRowMap()->NumMyElements(); ++i)
-          {
-            // Skip beam elements.
-            const DRT::ELEMENTS::Beam3Base* beam_element =
-                dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Discret().lRowElement(i));
-            if (beam_element == nullptr)
-            {
-              Teuchos::RCP<Epetra_SerialDenseMatrix> gpstress =
-                  Teuchos::rcp(new Epetra_SerialDenseMatrix);
-              DRT::ParObject::ExtractfromPack(position, *data, *gpstress);
-              (*mapdata)[DiscretPtr()->ElementRowMap()->GID(i)] = gpstress;
-            }
-          }
+            Teuchos::RCP<Epetra_MultiVector>& postprocessed_data, const std::string& stress_type)
+    {
+      // Get the values at the Gauss-points.
+      Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> mapdata =
+          Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
+      std::vector<char>::size_type position = 0;
+      for (int i = 0; i < DiscretPtr()->ElementRowMap()->NumMyElements(); ++i)
+      {
+        // Skip beam elements.
+        const DRT::ELEMENTS::Beam3Base* beam_element =
+            dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Discret().lRowElement(i));
+        if (beam_element == nullptr)
+        {
+          Teuchos::RCP<Epetra_SerialDenseMatrix> gpstress =
+              Teuchos::rcp(new Epetra_SerialDenseMatrix);
+          DRT::ParObject::ExtractfromPack(position, *data, *gpstress);
+          (*mapdata)[DiscretPtr()->ElementRowMap()->GID(i)] = gpstress;
+        }
+      }
 
-          // Export to element column map.
-          const DRT::Discretization* discret = dynamic_cast<const DRT::Discretization*>(&Discret());
-          DRT::Exporter ex(
-              *(Discret().ElementRowMap()), *(discret->ElementColMap()), Discret().Comm());
-          ex.Export(*mapdata);
+      // Export to element column map.
+      const DRT::Discretization* discret = dynamic_cast<const DRT::Discretization*>(&Discret());
+      DRT::Exporter ex(*(Discret().ElementRowMap()), *(discret->ElementColMap()), Discret().Comm());
+      ex.Export(*mapdata);
 
-          // Set up everything for the postprocess call
-          Teuchos::ParameterList p;
-          p.set("action", "postprocess_stress");
-          p.set("stresstype", stress_type);
-          p.set("gpstressmap", mapdata);
+      // Set up everything for the postprocess call
+      Teuchos::ParameterList p;
+      p.set("action", "postprocess_stress");
+      p.set("stresstype", stress_type);
+      p.set("gpstressmap", mapdata);
 
-          postprocessed_data = Teuchos::rcp(new Epetra_MultiVector(*result_map, 6, true));
-          p.set("poststress", postprocessed_data);
+      postprocessed_data = Teuchos::rcp(new Epetra_MultiVector(*result_map, 6, true));
+      p.set("poststress", postprocessed_data);
 
-          // Perform the postprocess call.
-          DiscretPtr()->Evaluate(
-              p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-        };
+      // Perform the postprocess call.
+      DiscretPtr()->Evaluate(
+          p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    };
 
     // Postprocess the result vectors.
     const DRT::Discretization* discret = dynamic_cast<const DRT::Discretization*>(&Discret());

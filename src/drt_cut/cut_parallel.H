@@ -119,7 +119,7 @@ namespace GEO
       void unpackPoints(std::vector<char>::size_type& posinData,  //!< position in data
           std::vector<char>& dataRecv,                            //!< received data
           std::vector<LINALG::Matrix<3, 1>>& points_coords        //!< point coordinates
-          ) const;
+      ) const;
 
       /*!
       \brief Basic function sending data to destination and receiving data from source
@@ -128,7 +128,7 @@ namespace GEO
           int& dest,                            //!< destination proc
           int& source,                          //!< source proc
           std::vector<char>& dataRecv           //!< received data
-          ) const;
+      ) const;
 
       /*!
       \brief Print current dofset data

@@ -126,7 +126,7 @@ void SCATRA::MeshtyingStrategyFluid::Solve(const Teuchos::RCP<LINALG::Solver>& s
     const Teuchos::RCP<Epetra_Vector>& phinp,                  //!< state vector at time n+1
     const int& iteration,  //!< number of current Newton-Raphson iteration
     const Teuchos::RCP<LINALG::KrylovProjector>& projector  //!< Krylov projector
-    ) const
+) const
 {
   meshtying_->SolveMeshtying(
       *solver, systemmatrix, increment, residual, phinp, iteration, projector);

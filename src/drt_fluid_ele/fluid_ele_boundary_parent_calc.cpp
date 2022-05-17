@@ -106,10 +106,12 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParent<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidBoundaryParent<distype>> singleton_owner([]() {
-    return std::unique_ptr<DRT::ELEMENTS::FluidBoundaryParent<distype>>(
-        new DRT::ELEMENTS::FluidBoundaryParent<distype>());
-  });
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidBoundaryParent<distype>> singleton_owner(
+      []()
+      {
+        return std::unique_ptr<DRT::ELEMENTS::FluidBoundaryParent<distype>>(
+            new DRT::ELEMENTS::FluidBoundaryParent<distype>());
+      });
 
   return singleton_owner.Instance(action);
 }
