@@ -76,6 +76,8 @@ $CMAKE_COMMAND \
     -D SuperLUDist_INCLUDE_DIRS:PATH="$TPLDIR/include" \
     -D SuperLUDist_LIBRARY_DIRS:PATH="$TPLDIR/lib" \
     -D SuperLUDist_LIBRARY_NAMES:STRING="superlu_dist_2.5" \
+  \
+  -D Gtest_SKIP_INSTALL:BOOL=TRUE \
 $EXTRA_ARGS \
 ${TRILINOS_HOME}
 
