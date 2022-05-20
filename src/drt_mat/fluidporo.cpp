@@ -14,66 +14,31 @@
 
 namespace MAT::FLUIDPORO
 {
-  /*! @brief Compute structure tensor from a given direction vector - 2D
+  /*! @brief Compute structure tensor from a given direction vector
    *
-   * Compute the structure tensor corresponding to a direction vector taking the dyadic product of
-   * the vector with itself.
+   * Templated for the number of spatial dimensions, compute the structure tensor corresponding to a
+   * direction vector taking the dyadic product of the vector with itself.
    *
    * @param [in] direction_vector     Non-zero direction vector (not necessarily unit-length)
-   *                                  (2D vector)
+   *                                  (@p dim dimensional vector)
    * @param [out] structure_tensor    Normalized structure tensor of the direction vector
-   *                                  (2x2 dyadic)
+   *                                  (@p dim x @p dim dyadic)
    */
+  template <unsigned int dim>
   void CreateStructureTensorFromVector(
-      const std::vector<double>& direction_vector, LINALG::Matrix<2, 2>& structure_tensor)
+      const std::vector<double>& direction_vector, LINALG::Matrix<dim, dim>& structure_tensor)
   {
     structure_tensor.Clear();
 
     // Factor to normalize the structure tensor
-    const double square_length =
-        (direction_vector[0] * direction_vector[0] + direction_vector[1] * direction_vector[1]);
+    const double square_length = std::inner_product(
+        direction_vector.begin(), direction_vector.end(), direction_vector.begin(), 0.0);
 
     if (square_length > EPS8)
     {
-      for (int i = 0; i < 2; i++)
+      for (unsigned int i = 0; i < dim; ++i)
       {
-        for (int j = 0; j < 2; j++)
-        {
-          structure_tensor(i, j) = direction_vector[i] * direction_vector[j];
-        }
-      }
-
-      structure_tensor.Scale(1. / square_length);
-    }
-    else
-      dserror("Check for a zero direction vector");
-  }
-
-  /*! @brief Compute structure tensor from a given direction vector - 3D
-   *
-   * Compute the structure tensor corresponding to a direction vector taking the dyadic product of
-   * the vector with itself.
-   *
-   * @param [in] direction_vector     Non-zero direction vector (not necessarily unit-length)
-   *                                  (3D vector)
-   * @param [out] structure_tensor    Normalized structure tensor of the direction vector
-   *                                  (3x3 dyadic)
-   */
-  void CreateStructureTensorFromVector(
-      const std::vector<double>& direction_vector, LINALG::Matrix<3, 3>& structure_tensor)
-  {
-    structure_tensor.Clear();
-
-    // Factor to normalize the structure tensor
-    const double square_length =
-        (direction_vector[0] * direction_vector[0] + direction_vector[1] * direction_vector[1] +
-            direction_vector[2] * direction_vector[2]);
-
-    if (square_length > EPS8)
-    {
-      for (int i = 0; i < 3; ++i)
-      {
-        for (int j = 0; j < 3; ++j)
+        for (unsigned int j = 0; j < dim; ++j)
         {
           structure_tensor(i, j) = direction_vector[i] * direction_vector[j];
         }
@@ -91,8 +56,9 @@ namespace MAT::FLUIDPORO
    * For materials with anisotropic permeability properties, the reaction tensor will represent
    * the type of anisotropy and therefore will be calculated in different ways. This base class
    * defines the methods that are affected by the anisotropy. These methods are responsible for
-   * computations regarding the reaction tensor. Some methods are already implemented by the base
-   * class. They can be overridden depending on the needs of the specific type of anisotropy.
+   * computations regarding the reaction tensor. Some methods are already implemented by the
+   * base class. They can be overridden depending on the needs of the specific type of
+   * anisotropy.
    */
   class PoroAnisotropyStrategyBase
   {
@@ -125,10 +91,13 @@ namespace MAT::FLUIDPORO
      * @param [in] anisotropic_permeability_directions    Principal directions of anisotropy
      *                                                    required to construct the reaction
      *                                                    tensor
+     * @param [in] anisotropic_permeability_coeffs  Scaling coefficients for the permeability in
+     *                                              anisotropy directions
      */
     virtual void ComputeReactionTensor(LINALG::Matrix<2, 2>& reaction_tensor, const double& J,
         const double& porosity,
-        const std::vector<std::vector<double>>& anisotropic_permeability_directions) const = 0;
+        const std::vector<std::vector<double>>& anisotropic_permeability_directions,
+        const std::vector<double>& anisotropic_permeability_coeffs) const = 0;
 
     /*!
      * @brief Compute the material reaction tensor for the fluid - 3D
@@ -144,10 +113,13 @@ namespace MAT::FLUIDPORO
      * @param [in] anisotropic_permeability_directions    Principal directions of anisotropy
      *                                                    required to construct the reaction
      *                                                    tensor
+     * @param [in] anisotropic_permeability_coeffs  Scaling coefficients for the permeability in
+     *                                              anisotropy directions
      */
     virtual void ComputeReactionTensor(LINALG::Matrix<3, 3>& reaction_tensor, const double& J,
         const double& porosity,
-        const std::vector<std::vector<double>>& anisotropic_permeability_directions) const = 0;
+        const std::vector<std::vector<double>>& anisotropic_permeability_directions,
+        const std::vector<double>& anisotropic_permeability_coeffs) const = 0;
 
     /*! @brief Compute the derivatives of the material reaction tensor - 2D
      *
@@ -218,8 +190,8 @@ namespace MAT::FLUIDPORO
       const double viscosity = params_->viscosity_;
       const double permeability = params_->permeability_;
 
-      if (viscosity < EPS15) dserror("zero or negative viscosity");
-      if (permeability < EPS15) dserror("zero or negative permeability");
+      if (viscosity <= 0.0) dserror("zero or negative viscosity");
+      if (permeability <= 0.0) dserror("zero or negative permeability");
 
       // trace of the reaction tensor divided by the dimension
       const double reacoeff = viscosity / permeability;
@@ -230,27 +202,47 @@ namespace MAT::FLUIDPORO
     //! compute isotropic reaction tensor - 2D
     void ComputeReactionTensor(LINALG::Matrix<2, 2>& reaction_tensor, const double& J,
         const double& porosity,
-        const std::vector<std::vector<double>>& anisotropic_permeability_directions) const override
+        [[maybe_unused]] const std::vector<std::vector<double>>&
+            anisotropic_permeability_directions,
+        [[maybe_unused]] const std::vector<double>& anisotropic_permeability_coeffs) const override
     {
-      double reacoeff = ComputeReactionCoeff();
-      const double permeability_correction_factor = params_->permeability_correction_factor_;
-      const auto permeability_function = params_->permeability_func_;
-
-      reaction_tensor.Clear();
-
-      if (permeability_function == MAT::PAR::kozeny_carman)
-      {
-        reacoeff *= (1 - porosity * porosity * J * J) /
-                    (porosity * porosity * porosity * J * J * J) * permeability_correction_factor;
-      }
-
-      for (int i = 0; i < 2; i++) reaction_tensor(i, i) = reacoeff;
+      ComputeReactionTensorForIsotropy<2>(reaction_tensor, J, porosity,
+          anisotropic_permeability_directions, anisotropic_permeability_coeffs);
     };
 
     //! compute isotropic reaction tensor - 3D
     void ComputeReactionTensor(LINALG::Matrix<3, 3>& reaction_tensor, const double& J,
         const double& porosity,
-        const std::vector<std::vector<double>>& anisotropic_permeability_directions) const override
+        [[maybe_unused]] const std::vector<std::vector<double>>&
+            anisotropic_permeability_directions,
+        [[maybe_unused]] const std::vector<double>& anisotropic_permeability_coeffs) const override
+    {
+      ComputeReactionTensorForIsotropy<3>(reaction_tensor, J, porosity,
+          anisotropic_permeability_directions, anisotropic_permeability_coeffs);
+    };
+
+    /*!
+     * @brief Compute reaction tensor for isotropy
+     *
+     * Templated for the number of spatial dimensions, compute the specific reaction tensor in the
+     * case of isotropic permeability.
+     *
+     * @tparam dim  Number of spatial dimensions
+     * @param [out] reaction_tensor Reaction tensor (@tp dim x @p dim dyadic)
+     * @param [in] J  Determinant of the deformation gradient
+     * @param [in] porosity   Porosity value
+     * @param [in] anisotropic_permeability_directions  Unused - Principal directions of
+     *                                                  anisotropy required to construct the
+     *                                                  reaction tensor
+     * @param [in] anisotropic_permeability_coeffs  Unused - Scaling coefficients for the
+     *                                              permeability in anisotropy directions
+     */
+    template <unsigned int dim>
+    void ComputeReactionTensorForIsotropy(LINALG::Matrix<dim, dim>& reaction_tensor,
+        const double& J, const double& porosity,
+        [[maybe_unused]] const std::vector<std::vector<double>>&
+            anisotropic_permeability_directions,
+        [[maybe_unused]] const std::vector<double>& anisotropic_permeability_coeffs) const
     {
       double reacoeff = ComputeReactionCoeff();
       const double permeability_correction_factor = params_->permeability_correction_factor_;
@@ -264,44 +256,42 @@ namespace MAT::FLUIDPORO
                     (porosity * porosity * porosity * J * J * J) * permeability_correction_factor;
       }
 
-      for (int i = 0; i < 3; i++) reaction_tensor(i, i) = reacoeff;
+      for (unsigned int i = 0; i < dim; i++) reaction_tensor(i, i) = reacoeff;
     };
 
     //! compute linearization of isotropic reaction tensor - 2D
     void ComputeLinMatReactionTensor(LINALG::Matrix<2, 2>& linreac_dphi,
         LINALG::Matrix<2, 2>& linreac_dJ, const double& J, const double& porosity) const override
     {
-      const double reacoeff = ComputeReactionCoeff();
-      const double permeability_correction_factor = params_->permeability_correction_factor_;
-      const auto permeability_function = params_->permeability_func_;
-
-      linreac_dphi.Clear();
-      linreac_dJ.Clear();
-
-      if (permeability_function == MAT::PAR::constant)
-        return;  // Permeability is not a function of porosity or J
-      else if (permeability_function == MAT::PAR::kozeny_carman)
-      {
-        // d(isotropic_mat_reactiontensor)/d(phi) = reacoeff * [(J * phi)^2 - 3] / ( J^3 * phi^4 )
-        // d(isotropic_mat_reactiontensor)/d(J) = reacoeff * [(J * phi)^2 - 3] / ( J^4 * phi^3 )
-
-        double linreac_tmp = reacoeff * ((J * J * porosity * porosity) - 3.0) /
-                             (J * J * J * porosity * porosity * porosity) *
-                             permeability_correction_factor;
-        linreac_dphi(0, 0) = linreac_tmp / porosity;
-        linreac_dJ(0, 0) = linreac_tmp / J;
-
-        for (int i = 1; i < 2; i++)
-        {
-          linreac_dphi(i, i) = linreac_dphi(0, 0);
-          linreac_dJ(i, i) = linreac_dJ(0, 0);
-        }
-      }
+      ComputeLinMatReactionTensorForIsotropy<2>(linreac_dphi, linreac_dJ, J, porosity);
     };
 
     //! compute linearization of isotropic reaction tensor - 3D
     void ComputeLinMatReactionTensor(LINALG::Matrix<3, 3>& linreac_dphi,
         LINALG::Matrix<3, 3>& linreac_dJ, const double& J, const double& porosity) const override
+    {
+      ComputeLinMatReactionTensorForIsotropy<3>(linreac_dphi, linreac_dJ, J, porosity);
+    };
+
+    /*!
+     * @brief Compute linearization reaction tensor for isotropy
+     *
+     * Templated for the number of spatial dimensions, compute the specific linearizations of the
+     * reaction tensor w.r.t. the porosity and J in the case of isotropic permeability. A
+     * distinction between constant permeability and the Kozeny-Carman permeability function is
+     * made, which results in different derivatives.
+     *
+     * @tparam dim  Number of spatial dimensions
+     * @param [out] linreac_dphi    Derivative of the material reaction tensor w.r.t. the porosity
+     *                              (@p dim x @p dim dyadic)
+     * @param [out] linreac_dJ  Derivative of the material reaction tensor w.r.t. the
+     *                          determinant of the deformation gradient (@p dim x @p dim dyadic)
+     * @param [in] J    Determinant of the deformation gradient
+     * @param [in] porosity Porosity value
+     */
+    template <unsigned int dim>
+    void ComputeLinMatReactionTensorForIsotropy(LINALG::Matrix<dim, dim>& linreac_dphi,
+        LINALG::Matrix<dim, dim>& linreac_dJ, const double& J, const double& porosity) const
     {
       const double reacoeff = ComputeReactionCoeff();
       const double permeability_correction_factor = params_->permeability_correction_factor_;
@@ -311,19 +301,22 @@ namespace MAT::FLUIDPORO
       linreac_dJ.Clear();
 
       if (permeability_function == MAT::PAR::constant)
-        return;  // Permeability is not a function of porosity or J
+      {
+        // Permeability is not a function of porosity or J
+        return;
+      }
       else if (permeability_function == MAT::PAR::kozeny_carman)
       {
         // d(isotropic_mat_reactiontensor)/d(phi) = reacoeff * [(J * phi)^2 - 3] / ( J^3 * phi^4 )
         // d(isotropic_mat_reactiontensor)/d(J) = reacoeff * [(J * phi)^2 - 3] / ( J^4 * phi^3 )
 
-        double linreac_tmp = reacoeff * ((J * J * porosity * porosity) - 3.0) /
-                             (J * J * J * porosity * porosity * porosity) *
-                             permeability_correction_factor;
+        const double linreac_tmp = reacoeff * ((J * J * porosity * porosity) - 3.0) /
+                                   (J * J * J * porosity * porosity * porosity) *
+                                   permeability_correction_factor;
         linreac_dphi(0, 0) = linreac_tmp / porosity;
         linreac_dJ(0, 0) = linreac_tmp / J;
 
-        for (int i = 1; i < 3; i++)
+        for (unsigned int i = 1; i < dim; i++)
         {
           linreac_dphi(i, i) = linreac_dphi(0, 0);
           linreac_dJ(i, i) = linreac_dJ(0, 0);
@@ -352,9 +345,9 @@ namespace MAT::FLUIDPORO
       const double permeability = params_->permeability_;
       const double axial_permeability = params_->axial_permeability_;
 
-      if (viscosity < EPS15) dserror("zero or negative viscosity");
-      if (permeability < EPS15) dserror("zero or negative permeability");
-      if (axial_permeability < EPS15) dserror("zero or negative axial permeability");
+      if (viscosity <= 0.0) dserror("zero or negative viscosity");
+      if (permeability <= 0.0) dserror("zero or negative permeability");
+      if (axial_permeability <= 0.0) dserror("zero or negative axial permeability");
 
       // trace of the 3D reaction tensor divided by 3 (even if the problem is in 2D)
       const double reacoeff = viscosity / 3. * (1. / axial_permeability + 2. / permeability);
@@ -365,60 +358,71 @@ namespace MAT::FLUIDPORO
     //! compute reaction tensor for constant material transverse isotropy - 2D
     void ComputeReactionTensor(LINALG::Matrix<2, 2>& reaction_tensor, const double& J,
         const double& porosity,
-        const std::vector<std::vector<double>>& anisotropic_permeability_directions) const override
+        const std::vector<std::vector<double>>& anisotropic_permeability_directions,
+        [[maybe_unused]] const std::vector<double>& anisotropic_permeability_coeffs) const override
     {
-      const double dynamic_viscosity = params_->viscosity_;
-      const double permeability = params_->permeability_;
-      const double axial_permeability = params_->axial_permeability_;
-
-      if (dynamic_viscosity < EPS15) dserror("zero or negative viscosity");
-      if (permeability < EPS15) dserror("zero or negative permeability");
-      if (axial_permeability < EPS15) dserror("zero or negative axial permeability");
-
-      reaction_tensor.Clear();
-
-      LINALG::Matrix<2, 2> permeability_tensor(true);
-      LINALG::Matrix<2, 2> structure_tensor(true);
-      CreateStructureTensorFromVector(anisotropic_permeability_directions[0], structure_tensor);
-
-      // Transverse component of the transversely isotropic permeability tensor
-      for (int i = 0; i < 2; ++i) permeability_tensor(i, i) += permeability;
-
-      // Axial component of the transversely isotropic permeability tensor
-      permeability_tensor.Update(axial_permeability - permeability, structure_tensor, 1.0);
-
-      reaction_tensor.Invert(permeability_tensor);
-      reaction_tensor.Scale(dynamic_viscosity);
+      ComputeReactionTensorForConstantMaterialTransverseIsotropy<2>(reaction_tensor, J, porosity,
+          anisotropic_permeability_directions, anisotropic_permeability_coeffs);
     };
 
     //! compute reaction tensor for constant material transverse isotropy - 3D
     void ComputeReactionTensor(LINALG::Matrix<3, 3>& reaction_tensor, const double& J,
         const double& porosity,
-        const std::vector<std::vector<double>>& anisotropic_permeability_directions) const override
+        const std::vector<std::vector<double>>& anisotropic_permeability_directions,
+        [[maybe_unused]] const std::vector<double>& anisotropic_permeability_coeffs) const override
+    {
+      ComputeReactionTensorForConstantMaterialTransverseIsotropy<3>(reaction_tensor, J, porosity,
+          anisotropic_permeability_directions, anisotropic_permeability_coeffs);
+    };
+
+    /*!
+     * @brief Compute reaction tensor for constant material transverse isotropy
+     *
+     * Templated for the number of spatial dimensions, compute the specific reaction tensor in the
+     * case of constant material transversely isotropic permeability.
+     *
+     * @tparam dim  Number of spatial dimensions
+     * @param [out] reaction_tensor   Reaction tensor (@p dim x @p dim dyadic)
+     * @param [in] J  Determinant of the deformation gradient
+     * @param [in] porosity   Porosity value
+     * @param [in] anisotropic_permeability_directions    Principal directions of anisotropy
+     *                                                    required to construct the reaction
+     *                                                    tensor
+     * @param [in] anisotropic_permeability_coeffs  Unused - Scaling coefficients for the
+     *                                              permeability in anisotropy directions
+     */
+    template <unsigned int dim>
+    void ComputeReactionTensorForConstantMaterialTransverseIsotropy(
+        LINALG::Matrix<dim, dim>& reaction_tensor, const double& J, const double& porosity,
+        const std::vector<std::vector<double>>& anisotropic_permeability_directions,
+        [[maybe_unused]] const std::vector<double>& anisotropic_permeability_coeffs) const
     {
       const double dynamic_viscosity = params_->viscosity_;
       const double permeability = params_->permeability_;
       const double axial_permeability = params_->axial_permeability_;
 
-      if (dynamic_viscosity < EPS15) dserror("zero or negative viscosity");
-      if (permeability < EPS15) dserror("zero or negative permeability");
-      if (axial_permeability < EPS15) dserror("zero or negative axial permeability");
+      if (dynamic_viscosity <= 0.0) dserror("zero or negative viscosity");
+      if (permeability <= 0.0) dserror("zero or negative permeability");
+      if (axial_permeability <= 0.0) dserror("zero or negative axial permeability");
+      if (anisotropic_permeability_directions.empty())
+        dserror("orthotropy directions not specified");
 
       reaction_tensor.Clear();
 
-      LINALG::Matrix<3, 3> permeability_tensor(true);
-      LINALG::Matrix<3, 3> structure_tensor(true);
-      CreateStructureTensorFromVector(anisotropic_permeability_directions[0], structure_tensor);
+      LINALG::Matrix<dim, dim> permeability_tensor(true);
+      LINALG::Matrix<dim, dim> structure_tensor(true);
+      CreateStructureTensorFromVector<dim>(
+          anisotropic_permeability_directions[0], structure_tensor);
 
       // Transverse component of the transversely isotropic permeability tensor
-      for (int i = 0; i < 3; ++i) permeability_tensor(i, i) += permeability;
+      for (unsigned int i = 0; i < dim; ++i) permeability_tensor(i, i) += permeability;
 
       // Axial component of the transversely isotropic permeability tensor
       permeability_tensor.Update(axial_permeability - permeability, structure_tensor, 1.0);
 
       reaction_tensor.Invert(permeability_tensor);
       reaction_tensor.Scale(dynamic_viscosity);
-    };
+    }
   };
 
   /*!
@@ -441,9 +445,9 @@ namespace MAT::FLUIDPORO
       const double viscosity = params_->viscosity_;
       const std::vector<double> orthotropic_permeabilities = params_->orthotropic_permeabilities_;
 
-      if (viscosity < EPS15) dserror("zero or negative viscosity");
+      if (viscosity <= 0.0) dserror("zero or negative viscosity");
       for (int dim = 0; dim < 3; ++dim)
-        if (orthotropic_permeabilities[dim] < EPS15)
+        if (orthotropic_permeabilities[dim] <= 0.0)
           dserror("zero or negative permeability in direction " + std::to_string(dim + 1));
 
       // trace of the reaction tensor divided by 3
@@ -458,7 +462,8 @@ namespace MAT::FLUIDPORO
     //! constant material orthotropy in 2D is not allowed
     void ComputeReactionTensor(LINALG::Matrix<2, 2>& reaction_tensor, const double& J,
         const double& porosity,
-        const std::vector<std::vector<double>>& anisotropic_permeability_directions) const override
+        const std::vector<std::vector<double>>& anisotropic_permeability_directions,
+        [[maybe_unused]] const std::vector<double>& anisotropic_permeability_coeffs) const override
     {
       dserror("Use transverse isotropy in 2D!");
     };
@@ -466,15 +471,18 @@ namespace MAT::FLUIDPORO
     //! compute reaction tensor for constant material orthotropy - 3D
     void ComputeReactionTensor(LINALG::Matrix<3, 3>& reaction_tensor, const double& J,
         const double& porosity,
-        const std::vector<std::vector<double>>& anisotropic_permeability_directions) const override
+        const std::vector<std::vector<double>>& anisotropic_permeability_directions,
+        [[maybe_unused]] const std::vector<double>& anisotropic_permeability_coeffs) const override
     {
       const double dynamic_viscosity = params_->viscosity_;
       const std::vector<double> orthotropic_permeabilities = params_->orthotropic_permeabilities_;
 
-      if (dynamic_viscosity < EPS15) dserror("zero or negative viscosity");
+      if (dynamic_viscosity <= 0.0) dserror("zero or negative viscosity");
       for (int dim = 0; dim < 3; ++dim)
-        if (orthotropic_permeabilities[dim] < EPS15)
+        if (orthotropic_permeabilities[dim] <= 0.0)
           dserror("zero or negative permeability in direction " + std::to_string(dim + 1));
+      if (anisotropic_permeability_directions.empty())
+        dserror("orthotropy directions not specified");
 
       reaction_tensor.Clear();
 
@@ -483,7 +491,8 @@ namespace MAT::FLUIDPORO
 
       for (int dim = 0; dim < 3; ++dim)
       {
-        CreateStructureTensorFromVector(anisotropic_permeability_directions[dim], structure_tensor);
+        CreateStructureTensorFromVector<3>(
+            anisotropic_permeability_directions[dim], structure_tensor);
         permeability_tensor.Update(orthotropic_permeabilities[dim], structure_tensor, 1.0);
       }
 
@@ -500,6 +509,111 @@ namespace MAT::FLUIDPORO
     };
   };
 
+  /*!
+   * @brief Reaction tensor (anisotropy) strategy for nodal material orthotropy.
+   *
+   * Orthotropy can only be used in 3D simulations. For now, only constant material permeabilities
+   * are allowed, i.e. there is no dependency between the permeability and porosity in the
+   * material reaction tensor.
+   *
+   * This orthotropy strategy does not obtain the different permeability values from the material
+   * properties. Instead, it works with a basis permeability value from the material properties and
+   * scales it in different directions with coefficients that are provided by the evaluation
+   * methods. Obtaining the scaling coefficients from the evaluation methods allows to have varying
+   * permeabilities inside the elements, where each element has prescribed nodal values for the
+   * coefficients.
+   */
+  class PoroConstantMaterialNodalOrthotropyStrategy : public PoroAnisotropyStrategyBase
+  {
+   public:
+    //! Simple constructor
+    PoroConstantMaterialNodalOrthotropyStrategy(const MAT::PAR::FluidPoro* params)
+        : PoroAnisotropyStrategyBase(params){};
+
+    //! compute reaction coefficient for constant material nodal orthotropy
+    double ComputeReactionCoeff() const override
+    {
+      const double viscosity = params_->viscosity_;
+      const double permeability = params_->permeability_;
+
+      if (viscosity <= 0.0) dserror("zero or negative viscosity");
+      if (permeability <= 0.0) dserror("zero or negative permeability");
+
+      // reaction coefficient computed with the base permeability as a good approximation
+      const double reacoeff = viscosity / permeability;
+
+      return reacoeff;
+    };
+
+    //!  compute reaction tensor for constant material nodal orthotropy - 2D
+    void ComputeReactionTensor(LINALG::Matrix<2, 2>& reaction_tensor, const double& J,
+        const double& porosity,
+        const std::vector<std::vector<double>>& anisotropic_permeability_directions,
+        const std::vector<double>& anisotropic_permeability_coeffs) const override
+    {
+      ComputeReactionTensorForConstantMaterialNodalOrthotropy<2>(reaction_tensor, J, porosity,
+          anisotropic_permeability_directions, anisotropic_permeability_coeffs);
+    };
+
+    //! compute reaction tensor for constant material nodal orthotropy - 3D
+    void ComputeReactionTensor(LINALG::Matrix<3, 3>& reaction_tensor, const double& J,
+        const double& porosity,
+        const std::vector<std::vector<double>>& anisotropic_permeability_directions,
+        const std::vector<double>& anisotropic_permeability_coeffs) const override
+    {
+      ComputeReactionTensorForConstantMaterialNodalOrthotropy<3>(reaction_tensor, J, porosity,
+          anisotropic_permeability_directions, anisotropic_permeability_coeffs);
+    };
+
+    /*!
+     * @brief Compute reaction tensor for constant material nodal orthotropy
+     *
+     * Templated for the number of spatial dimensions, compute the specific reaction tensor in the
+     * case of constant material nodal orthotropic permeability.
+     *
+     * @tparam dim  Number of spatial dimensions
+     * @param [out] reaction_tensor Reaction tensor (@p dim x @p dim dyadic)
+     * @param [in] J  Determinant of the deformation gradient
+     * @param [in] porosity   Porosity value
+     * @param [in] anisotropic_permeability_directions    Principal directions of anisotropy
+     *                                                    required to construct the reaction
+     *                                                    tensor
+     * @param [in] anisotropic_permeability_coeffs  Scaling coefficients for the permeability in
+     *                                              anisotropy directions
+     */
+    template <unsigned int dim>
+    void ComputeReactionTensorForConstantMaterialNodalOrthotropy(
+        LINALG::Matrix<dim, dim>& reaction_tensor, const double& J, const double& porosity,
+        const std::vector<std::vector<double>>& anisotropic_permeability_directions,
+        const std::vector<double>& anisotropic_permeability_coeffs) const
+    {
+      const double dynamic_viscosity = params_->viscosity_;
+      const double permeability = params_->permeability_;
+
+      if (dynamic_viscosity <= 0.0) dserror("zero or negative viscosity");
+      if (permeability <= 0.0) dserror("zero or negative permeability");
+      if (anisotropic_permeability_directions.empty())
+        dserror("orthotropy directions not specified");
+      if (anisotropic_permeability_coeffs.empty()) dserror("orthotropy coefficients not specified");
+
+      reaction_tensor.Clear();
+
+      LINALG::Matrix<dim, dim> permeability_tensor(true);
+      LINALG::Matrix<dim, dim> structure_tensor(true);
+
+      for (unsigned int i = 0; i < dim; ++i)
+      {
+        CreateStructureTensorFromVector<dim>(
+            anisotropic_permeability_directions[i], structure_tensor);
+        permeability_tensor.Update(
+            permeability * anisotropic_permeability_coeffs[i], structure_tensor, 1.0);
+      }
+
+      reaction_tensor.Invert(permeability_tensor);
+      reaction_tensor.Scale(dynamic_viscosity);
+    }
+  };
+
   Teuchos::RCP<MAT::FLUIDPORO::PoroAnisotropyStrategyBase> CreateAnisotropyStrategy(
       const MAT::PAR::FluidPoro* params)
   {
@@ -513,6 +627,9 @@ namespace MAT::FLUIDPORO
             new MAT::FLUIDPORO::PoroConstantMaterialTransverseIsotropyStrategy(params));
       case MAT::PAR::const_material_orthotropic:
         return Teuchos::rcp(new MAT::FLUIDPORO::PoroConstantMaterialOrthotropyStrategy(params));
+      case MAT::PAR::const_material_nodal_orthotropic:
+        return Teuchos::rcp(
+            new MAT::FLUIDPORO::PoroConstantMaterialNodalOrthotropyStrategy(params));
       default:
         return Teuchos::null;
     }
@@ -549,6 +666,8 @@ MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<MAT::PAR::Material> matdata)
     permeability_func_ = MAT::PAR::const_material_transverse;
   else if (*pfuncstring == "Const_Material_Orthotropy")
     permeability_func_ = MAT::PAR::const_material_orthotropic;
+  else if (*pfuncstring == "Const_Material_Nodal_Orthotropy")
+    permeability_func_ = MAT::PAR::const_material_nodal_orthotropic;
   else
     dserror("Unknown permeability function: %s", pfuncstring->c_str());
 
@@ -570,15 +689,15 @@ void MAT::PAR::FluidPoro::SetInitialPorosity(double initial_porosity)
 {
   initial_porosity_ = initial_porosity;
 
-  if (permeability_func_ == MAT::PAR::constant)
-  {
-    permeability_correction_factor_ = 1.0;
-  }
-  else if (permeability_func_ == MAT::PAR::kozeny_carman)
+  if (permeability_func_ == MAT::PAR::kozeny_carman)
   {
     // c = (phi0^3 / (1 - phi0^2))
     permeability_correction_factor_ = initial_porosity_ * initial_porosity_ * initial_porosity_ /
                                       (1 - initial_porosity_ * initial_porosity_);
+  }
+  else
+  {
+    permeability_correction_factor_ = 1.0;
   }
 }
 
@@ -653,18 +772,20 @@ double MAT::FluidPoro::ComputeReactionCoeff() const
 
 void MAT::FluidPoro::ComputeReactionTensor(LINALG::Matrix<2, 2>& reaction_tensor, const double& J,
     const double& porosity,
-    const std::vector<std::vector<double>>& anisotropic_permeability_directions) const
+    const std::vector<std::vector<double>>& anisotropic_permeability_directions,
+    const std::vector<double>& anisotropic_permeability_coeffs) const
 {
-  anisotropy_strategy_->ComputeReactionTensor(
-      reaction_tensor, J, porosity, anisotropic_permeability_directions);
+  anisotropy_strategy_->ComputeReactionTensor(reaction_tensor, J, porosity,
+      anisotropic_permeability_directions, anisotropic_permeability_coeffs);
 }
 
 void MAT::FluidPoro::ComputeReactionTensor(LINALG::Matrix<3, 3>& reaction_tensor, const double& J,
     const double& porosity,
-    const std::vector<std::vector<double>>& anisotropic_permeability_directions) const
+    const std::vector<std::vector<double>>& anisotropic_permeability_directions,
+    const std::vector<double>& anisotropic_permeability_coeffs) const
 {
-  anisotropy_strategy_->ComputeReactionTensor(
-      reaction_tensor, J, porosity, anisotropic_permeability_directions);
+  anisotropy_strategy_->ComputeReactionTensor(reaction_tensor, J, porosity,
+      anisotropic_permeability_directions, anisotropic_permeability_coeffs);
 }
 
 void MAT::FluidPoro::ComputeLinMatReactionTensor(LINALG::Matrix<2, 2>& linreac_dphi,

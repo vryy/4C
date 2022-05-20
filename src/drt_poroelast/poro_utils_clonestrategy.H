@@ -44,6 +44,10 @@ namespace POROELAST
       //! set anisotropic permeability directions onto fluid element
       void SetAnisotropicPermeabilityDirectionsOntoFluid(
           Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele);
+
+      //! set anisotropic permeability nodal coefficients onto fluid element
+      void SetAnisotropicPermeabilityNodalCoeffsOntoFluid(
+          Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele);
     };
 
     //! \brief implementation of special clone strategy for automatic generation

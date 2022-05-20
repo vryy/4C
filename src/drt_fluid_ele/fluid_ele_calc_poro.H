@@ -975,6 +975,9 @@ namespace DRT
           std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
           const DRT::UTILS::GaussIntegration& intpoints2);
 
+      //! interpolate the anisotropic permeability coefficients at GP from nodal values
+      std::vector<double> ComputeAnisotropicPermeabilityCoeffsAtGP() const;
+
       //! first derivatives of shape functions w.r.t. material coordinates
       LINALG::Matrix<Base::nsd_, Base::nen_> N_XYZ_;
       /*!
@@ -1076,6 +1079,9 @@ namespace DRT
 
       //! directions for anisotropic permeability
       std::vector<std::vector<double>> anisotropic_permeability_directions_;
+
+      //! nodal coefficients for anisotropic permeability
+      std::vector<std::vector<double>> anisotropic_permeability_nodal_coeffs_;
 
       //! pointer to parameter lists
       DRT::ELEMENTS::FluidEleParameterPoro* porofldpara_;

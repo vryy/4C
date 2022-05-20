@@ -62,7 +62,9 @@ void DRT::ELEMENTS::WallQuad4PoroType::SetupElementDefinition(
 
   defs["QUAD4"]
       .AddOptionalNamedDoubleVector("POROANISODIR1", 2)
-      .AddOptionalNamedDoubleVector("POROANISODIR2", 2);
+      .AddOptionalNamedDoubleVector("POROANISODIR2", 2)
+      .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS1", 4)
+      .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS2", 4);
 }
 
 int DRT::ELEMENTS::WallQuad4PoroType::Initialize(DRT::Discretization& dis)
@@ -327,7 +329,9 @@ void DRT::ELEMENTS::WallTri3PoroType::SetupElementDefinition(
 
   defs["TRI3"]
       .AddOptionalNamedDoubleVector("POROANISODIR1", 2)
-      .AddOptionalNamedDoubleVector("POROANISODIR2", 2);
+      .AddOptionalNamedDoubleVector("POROANISODIR2", 2)
+      .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS1", 3)
+      .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS2", 3);
 }
 
 int DRT::ELEMENTS::WallTri3PoroType::Initialize(DRT::Discretization& dis)
