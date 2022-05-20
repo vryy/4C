@@ -20,29 +20,6 @@ STRUCT_DISP                     Yes
 FILESTEPS                       1000000
 STDOUTEVRY                      100
 VERBOSITY                       standard//debug
-----------------------------------------------------------IO/RUNTIME VTP OUTPUT STRUCTURE
-OUTPUT_DATA_FORMAT              binary
-INTERVAL_STEPS                  1
-EVERY_ITERATION                 No
-OWNER                           Yes
-ORIENTATIONANDLENGTH            Yes
-NUMBEROFBONDS                   Yes
-//DISPLACEMENT                    Yes
-----------------------------------------------------------IO/RUNTIME VTK OUTPUT
-OUTPUT_DATA_FORMAT              binary
-INTERVAL_STEPS                  1
-EVERY_ITERATION                 No
-----------------------------------------------------------IO/RUNTIME VTK OUTPUT/STRUCTURE
-OUTPUT_STRUCTURE                Yes
-DISPLACEMENT                    Yes
-----------------------------------------------------------IO/RUNTIME VTK OUTPUT/BEAMS
-OUTPUT_BEAMS                    Yes
-DISPLACEMENT                    Yes
-USE_ABSOLUTE_POSITIONS          Yes
-TRIAD_VISUALIZATIONPOINT        Yes
-STRAINS_GAUSSPOINT              Yes
-MATERIAL_FORCES_GAUSSPOINT      Yes
-BEAMFILAMENTCONDITION           Yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard

@@ -26,5 +26,5 @@ block 1 volume 1
 block 2 volume 2
 
 $$ This line allows to create an .e /.exo file from the command line, the prefix xxx_ is needed for running the comlete framework test with ctest.
-export genesis "xxx_tutorial_contact_3d.e" block all dimension 3 overwrite
+export genesis "framework_test_output/tutorial_contact_3d/xxx_tutorial_contact_3d.e" block all dimension 3 overwrite
 exit

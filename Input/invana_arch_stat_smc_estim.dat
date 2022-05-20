@@ -57,7 +57,7 @@ SYNTHNOISESEED                  1654
 NUM_PARTICLES                   24
 MAP_PRIOR_SCALE                 0.1
 MAP_REDUCT_RESTART              59//42
-MAP_REDUCT_RESTARTFILE          xxx
+MAP_REDUCT_RESTARTFILE          framework_test_output/invana_arch_stat_smc_estim/xxx
 SMC_ESS_REDUCTION               0.05
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1

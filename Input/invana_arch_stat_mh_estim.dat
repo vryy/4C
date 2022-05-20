@@ -57,7 +57,7 @@ SYNTHNOISESEED                  1654
 NUM_PARTICLES                   12
 MAP_PRIOR_SCALE                 0.1
 MAP_REDUCT_RESTART              59 //42
-MAP_REDUCT_RESTARTFILE          xxx
+MAP_REDUCT_RESTARTFILE          framework_test_output/invana_arch_stat_mh_estim/xxx
 MH_ACCADAPT_EVRY                2
 MH_ACCADAPT_ITER                10
 MH_THIN                         2

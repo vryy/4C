@@ -1,5 +1,23 @@
+from codecs import namereplace_errors
+import dataclasses
 import os, sys, argparse, re, json
 import common_utils as utils
+from typing import Optional, List
+
+
+@dataclasses.dataclass(frozen=True)
+class TestMacro:
+  #  regular expression matching all test names and mpi ranks
+  pattern: re.Pattern
+
+  # category used during whitelisting of tests
+  category: str
+
+  # group ids in the regular expression that matches a test name
+  test_names_groups: List[int] = dataclasses.field(default_factory=lambda: [0])
+  
+  # group id in the regular expression that matches the mpi rank
+  mpirank_group: Optional[int] = None
 
 # CHECK UNITTESTS
 def check_unittests(look_cmd, allerrors):
@@ -127,117 +145,71 @@ def check_unittests(look_cmd, allerrors):
 
   return errors
 
+def check_mpirank_against_whitelist(name: str, category: str, mpi_rank: int, whitelist: List) -> bool:
+  for item in whitelist:
+    if item["test_name"] == name and item["test_category"] == category and item["mpi_rank"] == mpi_rank:
+      return True
+  return False
+
 # CHECK INPUT FILE TESTS
 def check_inputtests(look_cmd, allerrors):
   errors = 0
   input_tests = [str(ff) for ff in utils.files_changed(look_cmd)[:-1] if utils.is_input_file(ff)]
 
+  # load mpi rank whitelist
+  with open(os.path.join(sys.path[0],'whitelist_mpi_ranks.json')) as whitelist_file:
+      mpirank_whitelist = json.load(whitelist_file)
+  
+  mpi_non_compliant_tests: List[str] = []
+  list_of_all_testnames: List[str] = []
+
   # read TestingFrameworkListOfTests.cmake
-  entries = []
-  mpi_ranks = []
-  categories = []
   with open('TestingFrameworkListOfTests.cmake', 'r') as cmakefile:
-    entry_regex = [
-      re.compile(r'baci_test *\( *([a-zA-Z0-9_\.\-]+ .) *'),
-      re.compile(r'baci_test_extended_timeout *\( *([a-zA-Z0-9_\.\-]+ .) *'),
-      re.compile(r'baci_test_and_post_ensight_test *\( *([a-zA-Z0-9_\.\-]+ .) *'),
-      re.compile(r'baci_test_restartonly *\( *([a-zA-Z0-9_\.\-]+ .) *'),
-      re.compile(r'baci_test_Nested_Par *\( *([a-zA-Z0-9_\.\-]+) +([a-zA-Z0-9_\.\-]+) *'),
-      re.compile(r'baci_test_Nested_Par_MultipleInvana *\( *([a-zA-Z0-9_\.\-]+) +([a-zA-Z0-9_\.\-]+)*'),
-      re.compile(r'baci_test_Nested_Par_CopyDat *\( *([a-zA-Z0-9_\.\-]+ .) *'),
-      re.compile(r'baci_test_Nested_Par_CopyDat_prepost *\( *([a-zA-Z0-9_\.\-]+)\s+([a-zA-Z0-9_\.\-]+)\s+([a-zA-Z0-9_\.\-\"\"]+ .) *')
+
+    all_lines = "\n".join(cmakefile.readlines())
+
+    # Defining the list of test macros with regular expressions that recognize them in the cmake file
+    test_macros = [
+      TestMacro(re.compile(r'baci_test\s*\(*([a-zA-Z0-9_\.\-]+)\s+(\d+)'), "baci_test", mpirank_group=1),
+      TestMacro(re.compile(r'baci_test_extended_timeout\s*\(*([a-zA-Z0-9_\.\-]+)\s+(\d+)'), "baci_test_extended_timeout", mpirank_group=1),
+      TestMacro(re.compile(r'baci_test_and_post_ensight_test\s*\(*([a-zA-Z0-9_\.\-]+)\s+(\d+)'), "baci_test_and_post_ensight_test", mpirank_group=1),
+      TestMacro(re.compile(r'baci_test_restartonly\s*\(*([a-zA-Z0-9_\.\-]+)\s+(?:[a-zA-Z0-9_\.\-]+)\s+(\d+)'), "baci_test_restartonly", mpirank_group=1),
+      TestMacro(re.compile(r'baci_test_Nested_Par\s*\(\s*([a-zA-Z0-9_\.\-]+)\s+([a-zA-Z0-9_\.\-]+)\s*'), "Nested_Par", test_names_groups=[0, 1]),
+      TestMacro(re.compile(r'baci_test_Nested_Par_CopyDat\s*\(\s*([a-zA-Z0-9_\.\-]+)\s+(\d+)'), "Nested_Par_CopyDat", mpirank_group=1),
+      TestMacro(re.compile(r'baci_test_Nested_Par_CopyDat_prepost\s*\(\s*([a-zA-Z0-9_\.\-]+)\s+([a-zA-Z0-9_\.\-]+)\s+([a-zA-Z0-9_\.\-\"\"]+)\s+(\d+)'), "Nested_Par_CopyDat_prepost", test_names_groups=[0, 1, 2], mpirank_group=3),
     ]
 
-    # list of test categories as one test can be run in different scenarios using differnt mpi-ranks
-    test_categories = ['', '', '', 'restartonly', 'Nested_Par', 'Nested_Par_MultipleInvana', 'Nested_Par_CopyDat','Nested_Par_CopyDat_prepost']
 
-    # Sanity check:
-    if (len(entry_regex) != len(test_categories)):
-      raise Exception('Length of lists \'entry_regex\' and \'test_categories\' does not match. Correspondence of these lists is mandatory, though.')
+    for test_macro in test_macros:
+      # search for tests of this macro
+      for test in test_macro.pattern.findall(all_lines):
+        # get list of test names defined in this macro (ignore empty test names)
+        my_names = [test[i] for i in test_macro.test_names_groups if len(test[i].strip()) > 0 and test[i].strip() != '""']
+        list_of_all_testnames.extend(my_names)
 
-    # go through all lines in the TestingFrameworkListOfTests.cmake file
-    for line in cmakefile:
-      # split comments
-      line = line.split('#', 1)[0]
-      line_entries = []
-      line_categories = []
+        # check mpi rank
+        if test_macro.mpirank_group is not None:
+          mpi_rank = int(test[test_macro.mpirank_group])
 
-      # check if the regex expressions for our test cases are matched
-      for regex, category in zip(entry_regex, test_categories):
-        for item in regex.findall(line):
-          if isinstance(item, tuple):
-            new_list = list(item)
+          if mpi_rank > 3:
+            # check if tests are allowed to run with more than 4 procs
+            for name in my_names:
+              if not check_mpirank_against_whitelist(name, test_macro.category, mpi_rank, mpirank_whitelist):
+                mpi_non_compliant_tests.append(name)
 
-            # get the name of the tests and the mpi rank
-            try:
-                mpirank = new_list[-1].split(None,1)[1]
-                new_list[:-1] = [list_item + ' ' + mpirank for list_item in new_list[:-1]]
-            except IndexError:  # Ignore baci_test_Nested_Par as it uses a prefixed mpi rank
-                pass
-
-            # append list of tests and their category
-            line_entries.extend(new_list)
-            line_categories.extend([category]*len(list(item)))
-          else:
-            line_entries.append(item)
-            line_categories.append(category)
-
-      # get test cases, names and their mpi rank
-      for entry,category in zip(line_entries,line_categories):
-
-        # some options could be optional or empty so exclude them
-        if entry.split(None, 1)[0] != '""':
-            entries.append(entry.split(None, 1)[0])
-            categories.append(category)
-
-            # check for mpi ranks
-            try:
-                mpi_ranks.append(float(entry.split(None, 1)[1]))
-            except IndexError:  # Ignore baci_test_Nested_Par as it uses a prefixed mpi rank
-                mpi_ranks.append(None)
-
-  # boolean array of all test with mpi rank > 3
-  mpi_bool = [mpi is not None and mpi > 3 for mpi in mpi_ranks]
-
-  from itertools import compress
-  high_mpi_tests = list(compress(entries, mpi_bool))
-  high_mpi_categories = list(compress(categories, mpi_bool))
-  high_mpi = list(compress(mpi_ranks, mpi_bool))
-
-  # get data from our whitelist for mpi ranks > 3
-  with open(os.path.join(sys.path[0],'whitelist_mpi_ranks.json')) as whitelist_file:
-      whitelist = json.load(whitelist_file)
-  whitelist_name = [ ele['test_name'] for ele in whitelist]
-  whitelist_category = [ ele['test_category'] for ele in whitelist]
-  whitelist_rank = [ ele['mpi_rank'] for ele in whitelist]
-  whitelist_justification = [ ele['justification'] for ele in whitelist]
-
-  # write out error for mpi rank > 3 and not on whitelist
-  non_compliant_tests_name = []
-  for test_name, category, mpi in zip(high_mpi_tests, high_mpi_categories, high_mpi):
-      if (test_name,category) not in zip(whitelist_name,whitelist_category):
-          non_compliant_tests_name.append(test_name)
-      if (test_name,category) in zip(whitelist_name,whitelist_category):
-          if whitelist_justification[whitelist_name.index(test_name)] == "":
-              non_compliant_tests_name.append(test_name)
-
-  if len(non_compliant_tests_name) > 0:
+  if len(mpi_non_compliant_tests) > 0:
     errors += 1
     allerrors.append('The following tests use an unjustified high mpi rank:')
     allerrors.append('')
-    allerrors.extend(non_compliant_tests_name)
+    allerrors.extend(mpi_non_compliant_tests)
 
   # check if some input tests are missing
   missing_input_tests = []
   for input_test in input_tests:
     # check, whether this input file is in TestingFrameworkListOfTests.cmake
-    found = False
 
-    for entry in entries:
-      if entry == os.path.splitext(os.path.split(input_test)[1])[0]:
-        found = True
-
-    if not found:
+    expected_test_name = os.path.splitext(os.path.basename(input_test))[0]
+    if expected_test_name not in list_of_all_testnames:
       missing_input_tests.append(input_test)
 
   if len(missing_input_tests) > 0:

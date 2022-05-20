@@ -34,11 +34,11 @@ ens_reader1.UpdatePipelineInformation()
 converter1 = sm.filters.ExtractAttributes(Input=ens_reader1, FieldAssociation="Points", AddMetaData=1)
 
 csvWriter1 = sm.writers.CSVWriter(Input=converter1)
-csvWriter1.FileName = './xxx_par.csv'
+csvWriter1.FileName = sys.argv[4] + '/xxx_par.csv'
 csvWriter1.UpdatePipeline()
 
 
-csv_reader1 = csv.reader(open('./xxx_par0.csv','r'), delimiter = ',')
+csv_reader1 = csv.reader(open(sys.argv[4] + '/xxx_par0.csv','r'), delimiter = ',')
 head1   = csv_reader1.next()
 index1  = head1.index('Points:0')
 
@@ -55,10 +55,10 @@ ens_reader2.UpdatePipelineInformation()
 converter2 = sm.filters.ExtractAttributes(Input=ens_reader2, FieldAssociation="Points", AddMetaData=1)
 
 csvWriter2 = sm.writers.CSVWriter(Input=converter2)
-csvWriter2.FileName = './xxx_ser.csv'
+csvWriter2.FileName = sys.argv[4] + '/xxx_ser.csv'
 csvWriter2.UpdatePipeline()
 
-csv_reader2 = csv.reader(open('./xxx_ser0.csv', 'r'), delimiter = ',')
+csv_reader2 = csv.reader(open(sys.argv[4] + '/xxx_ser0.csv', 'r'), delimiter = ',')
 head2   = csv_reader2.next()
 index2  = head2.index('Points:0')
 

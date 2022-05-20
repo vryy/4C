@@ -136,5 +136,5 @@ nodeset 39 vertex 16
 nodeset 39 name "lid vertex back left"
 
 $======================= export mesh
-export mesh "xxx_tutorial_fsi_3d.e" block all dimension 3 overwrite
+export mesh "framework_test_output/tutorial_fsi_3d/xxx_tutorial_fsi_3d.e" block all dimension 3 overwrite
 
