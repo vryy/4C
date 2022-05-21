@@ -1,12 +1,11 @@
 #!/bin/bash
 
-# ln -s /usr/lib/blitz/include/blitz/gnu /usr/include/blitz
-
 BACI_HOME=`dirname $0`
 
-#default options
+#default options which may be modified through command line arguments
 BUILD_TYPE="RELEASE"
 TRILINOS_BUILD_TYPE="release"
+GENERATOR="Unix Makefiles"
 COVERAGE=0
 DEBUG_OPTIMIZED=0
 USE_ACML=0
@@ -36,11 +35,11 @@ IGNORE_UNSTABLE_CUTTEST=OFF
 # testing is achieved by setting '--debug-optimized'
 # Note: Use only one of them! No checks in place if both are specified.
 
-OPTIONS=`getopt -o hc:daef -l help,config:,debug,debug-optimized,trilinos-debug,profiling,coverage,useACML,forceBuild,no-ccache,uselld,ide: -- "$@"`
+OPTIONS=`getopt -o hc:daef -l help,config:,debug,debug-optimized,trilinos-debug,generator:,profiling,coverage,useACML,forceBuild,no-ccache,uselld,ide: -- "$@"`
 
 [ $? -ne 0 ] && exit 1
 
-USAGEINFO="usage: do-configure --config=configurationfile [--debug] [--debug-optimized] [--trilinos-debug] [--profiling] [--coverage] [--useACML] [--forceBuild] [--ide=clion/eclipse/vscode] [--no-ccache] [--uselld]"
+USAGEINFO="usage: do-configure --config=configurationfile [--debug] [--debug-optimized] [--trilinos-debug] [--generator=make/ninja] [--profiling] [--coverage] [--useACML] [--forceBuild] [--ide=clion/eclipse/vscode] [--no-ccache] [--uselld]"
 
 eval set -- $OPTIONS
 
@@ -69,6 +68,14 @@ while true; do
       ;;
     --trilinos-debug)
       TRILINOS_BUILD_TYPE="dbg"
+      ;;
+    --generator)
+      case "$2" in
+        "make") GENERATOR="Unix Makefiles";;
+        "ninja") GENERATOR="Ninja";;
+        *) echo "Wrong option for --generator. See possible options via 'do-configure --help'."; exit 1 ;;
+      esac
+      shift
       ;;
     -a|--useACML)
       USE_ACML=1
@@ -234,6 +241,7 @@ echo $Trilinos_DIR
 
 # all arguments for cmake as array
 CMAKE_FULL_ARGS=(--no-warn-unused-cli \
+  -G "$GENERATOR" \
   -D CMAKE_BUILD_TYPE:STRING="$BUILD_TYPE" \
   -D CMAKE_CXX_COMPILER:FILEPATH="$CXXCOMPILER" \
   -D CMAKE_C_COMPILER:FILEPATH="$CCOMPILER" \
