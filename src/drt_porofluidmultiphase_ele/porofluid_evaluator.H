@@ -27,7 +27,7 @@ namespace DRT
   namespace UTILS
   {
     // forward declaration
-    template <int dim>
+    template <int>
     class VariableExprFunction;
   }  // namespace UTILS
   namespace ELEMENTS
@@ -2052,17 +2052,7 @@ namespace DRT
         );
 
         //! cast to VarExp-function
-        template <int dim>
-        inline DRT::UTILS::VariableExprFunction<dim>& Function(int functnum) const;
-
-        //! templated internal EvaluateVectorAndAssemble implementation
-        template <int dim>
-        void EvaluateVectorAndAssembleInternal(std::vector<Epetra_SerialDenseVector*>& elevec,
-            const LINALG::Matrix<nen, 1>& funct, const LINALG::Matrix<nsd, nen>& derxy,
-            const LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager,
-            double rhsfac, double fac, bool inittimederiv);
+        inline DRT::UTILS::VariableExprFunction<nsd>& Function(int functnum) const;
 
         //! vector holding the functions to be integrated
         std::vector<int> domainint_funct_;
