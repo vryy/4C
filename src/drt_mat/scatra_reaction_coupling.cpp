@@ -561,11 +561,32 @@ void MAT::PAR::REACTIONCOUPLING::MichaelisMenten::CalcReaBodyForceDeriv(
  * **********************************************************************
  *----------------------------------------------------------------------*/
 
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void MAT::PAR::REACTIONCOUPLING::ByFunction::Initialize(int numscal,  //!< number of scalars
     const std::vector<double>& couprole                               //!< coupling role vector
+)
+{
+  switch (DRT::Problem::Instance()->NDim())
+  {
+    case 1:
+      return InitializeInternal<1>(numscal, couprole);
+    case 2:
+      return InitializeInternal<2>(numscal, couprole);
+
+    case 3:
+      return InitializeInternal<3>(numscal, couprole);
+
+    default:
+      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <int dim>
+void MAT::PAR::REACTIONCOUPLING::ByFunction::InitializeInternal(int numscal,  //!< number of scalars
+    const std::vector<double>& couprole  //!< coupling role vector
 )
 {
   if (not IsInit())
@@ -577,7 +598,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::Initialize(int numscal,  //!< numbe
       const int functID = round(couprole[ii]);
       if (functID != 0)
       {
-        if (Function(functID - 1).NumberComponents() != 1)
+        if (Function<dim>(functID - 1).NumberComponents() != 1)
           dserror("expected only one component for the reaction evaluation");
 
         for (int k = 0; k < numscal; k++)
@@ -588,9 +609,9 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::Initialize(int numscal,  //!< numbe
           std::string name = "phi" + temp.str();
 
           // add the variable name to the parser
-          if (not Function(functID - 1).IsVariable(0, name))
+          if (not Function<dim>(functID - 1).IsVariable(0, name))
           {
-            Function(functID - 1).AddVariable(0, name, 0.0);
+            Function<dim>(functID - 1).AddVariable(0, name, 0.0);
 
             // save the phi values with correct name
             variables_.push_back(std::pair<std::string, double>(name, 0.0));
@@ -598,16 +619,16 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::Initialize(int numscal,  //!< numbe
         }
 
         // add possible time dependency
-        if (not Function(functID - 1).IsVariable(0, "t"))
-          Function(functID - 1).AddVariable(0, "t", 0.0);
+        if (not Function<dim>(functID - 1).IsVariable(0, "t"))
+          Function<dim>(functID - 1).AddVariable(0, "t", 0.0);
 
         // add possible spatial dependency
-        if (not Function(functID - 1).IsVariable(0, "x"))
-          Function(functID - 1).AddVariable(0, "x", 0.0);
-        if (not Function(functID - 1).IsVariable(0, "y"))
-          Function(functID - 1).AddVariable(0, "y", 0.0);
-        if (not Function(functID - 1).IsVariable(0, "z"))
-          Function(functID - 1).AddVariable(0, "z", 0.0);
+        if (not Function<dim>(functID - 1).IsVariable(0, "x"))
+          Function<dim>(functID - 1).AddVariable(0, "x", 0.0);
+        if (not Function<dim>(functID - 1).IsVariable(0, "y"))
+          Function<dim>(functID - 1).AddVariable(0, "y", 0.0);
+        if (not Function<dim>(functID - 1).IsVariable(0, "z"))
+          Function<dim>(functID - 1).AddVariable(0, "z", 0.0);
       }
     }
   }
@@ -616,12 +637,42 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::Initialize(int numscal,  //!< numbe
   ReactionBase::Initialize(numscal, couprole);
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceTerm(
+    const int k,                       //!< current scalar id
+    int numscal,                       //!< number of scalars
+    const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
+    const std::vector<std::pair<std::string, double>>&
+        constants,  //!< vector containing values which are independent of the scalars (e.g.
+                    //!< t,x,y,z)
+    const std::vector<double>& couprole,  //!< coupling role vector
+    double scale_reac  //!< scaling factor for reaction term (= reaction coefficient *
+                       //!< stoichometry)
+)
+{
+  switch (DRT::Problem::Instance()->NDim())
+  {
+    case 1:
+      return CalcReaBodyForceTermInternal<1>(k, numscal, phinp, constants, couprole, scale_reac);
+    case 2:
+      return CalcReaBodyForceTermInternal<2>(k, numscal, phinp, constants, couprole, scale_reac);
+
+    case 3:
+      return CalcReaBodyForceTermInternal<3>(k, numscal, phinp, constants, couprole, scale_reac);
+
+    default:
+      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+      return 0.0;
+  }
+}
 
 /*----------------------------------------------------------------------*
- |  helper for calculating advanced reaction terms           vuong 09/16 |
  *----------------------------------------------------------------------*/
-double MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceTerm(int k,  //!< current scalar id
-    int numscal,                                                            //!< number of scalars
+template <int dim>
+double MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceTermInternal(
+    int k,                             //!< current scalar id
+    int numscal,                       //!< number of scalars
     const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
     const std::vector<std::pair<std::string, double>>&
         constants,  //!< vector containing values which are independent of the scalars (e.g.
@@ -633,16 +684,48 @@ double MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceTerm(int k,  //!<
   // copy phi vector in different format to be read by the function
   BuildPhiVectorForFunction(phinp, numscal);
   // evaluate reaction term
-  double bftfac = Function(round(couprole[k]) - 1).Evaluate(0, variables_, constants);
+  double bftfac = Function<dim>(round(couprole[k]) - 1).Evaluate(0, variables_, constants);
 
   return scale_reac * bftfac;
 }
 
-/*--------------------------------------------------------------------------------*
- |  helper for calculating advanced reaction term derivatives          vuong 09/16 |
- *--------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDeriv(int k,  //!< current scalar id
     int numscal,                                                           //!< number of scalars
+    std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
+    const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
+    const std::vector<std::pair<std::string, double>>&
+        constants,  //!< vector containing values which are independent of the scalars (e.g.
+                    //!< t,x,y,z)
+    const std::vector<double>& couprole,  //!< coupling role vector
+    double scale_reac  //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+)
+{
+  switch (DRT::Problem::Instance()->NDim())
+  {
+    case 1:
+      return CalcReaBodyForceDerivInternal<1>(
+          k, numscal, derivs, phinp, constants, couprole, scale_reac);
+    case 2:
+      return CalcReaBodyForceDerivInternal<2>(
+          k, numscal, derivs, phinp, constants, couprole, scale_reac);
+      ;
+    case 3:
+      return CalcReaBodyForceDerivInternal<3>(
+          k, numscal, derivs, phinp, constants, couprole, scale_reac);
+      ;
+    default:
+      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <int dim>
+void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivInternal(
+    int k,                             //!< current scalar id
+    int numscal,                       //!< number of scalars
     std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
     const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
     const std::vector<std::pair<std::string, double>>&
@@ -656,7 +739,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDeriv(int k,  //!< 
   BuildPhiVectorForFunction(phinp, numscal);
   // evaluate the derivatives of the reaction term
   std::vector<double> myderivs =
-      Function(round(couprole[k]) - 1).EvaluateDerivative(0, variables_, constants);
+      Function<dim>(round(couprole[k]) - 1).EvaluateDerivative(0, variables_, constants);
 
   // add it to derivs
   for (int toderive = 0; toderive < numscal; toderive++)
@@ -665,11 +748,40 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDeriv(int k,  //!< 
   return;
 }
 
-/*--------------------------------------------------------------------------------*
- |  helper for calculating advanced reaction term derivatives after additional    |
- |  variables (e.g. for monolithic coupling)                     kremheller 07/17 |
- *--------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivAddVariables(
+    const int k,                  //!< current scalar id
+    std::vector<double>& derivs,  //!< vector with derivatives (to be filled)
+    const std::vector<std::pair<std::string, double>>& variables,  //!< variables
+    const std::vector<std::pair<std::string, double>>&
+        constants,                        //!< constants (including scalar values phinp)
+    const std::vector<double>& couprole,  //!< coupling role vector
+    double scale_reac  //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+)
+{
+  switch (DRT::Problem::Instance()->NDim())
+  {
+    case 1:
+      return CalcReaBodyForceDerivAddVariablesInternal<1>(
+          k, derivs, variables, constants, couprole, scale_reac);
+    case 2:
+      return CalcReaBodyForceDerivAddVariablesInternal<2>(
+          k, derivs, variables, constants, couprole, scale_reac);
+      ;
+    case 3:
+      return CalcReaBodyForceDerivAddVariablesInternal<3>(
+          k, derivs, variables, constants, couprole, scale_reac);
+      ;
+    default:
+      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <int dim>
+void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivAddVariablesInternal(
     const int k,                  //!< current scalar id
     std::vector<double>& derivs,  //!< vector with derivatives (to be filled)
     const std::vector<std::pair<std::string, double>>& variables,  //!< variables
@@ -681,7 +793,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivAddVariables(
 {
   // evaluate the derivatives of the reaction term
   std::vector<double> myderivs =
-      Function(round(couprole[k]) - 1).EvaluateDerivative(0, variables, constants);
+      Function<dim>(round(couprole[k]) - 1).EvaluateDerivative(0, variables, constants);
 
   if (myderivs.size() != derivs.size())
   {
@@ -695,10 +807,33 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivAddVariables(
   return;
 }
 
-/*--------------------------------------------------------------------------------*
- |  helper for adding variables to the function                  kremheller 07/17 |
- *--------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void MAT::PAR::REACTIONCOUPLING::ByFunction::AddAdditionalVariables(
+    const int k,                                                   //!< current scalar id
+    const std::vector<std::pair<std::string, double>>& variables,  //!< variables
+    const std::vector<double>& couprole                            //!< coupling role vector
+)
+{
+  switch (DRT::Problem::Instance()->NDim())
+  {
+    case 1:
+      return AddAdditionalVariablesInternal<1>(k, variables, couprole);
+    case 2:
+      return AddAdditionalVariablesInternal<2>(k, variables, couprole);
+      ;
+    case 3:
+      return AddAdditionalVariablesInternal<3>(k, variables, couprole);
+      ;
+    default:
+      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <int dim>
+void MAT::PAR::REACTIONCOUPLING::ByFunction::AddAdditionalVariablesInternal(
     const int k,                                                   //!< current scalar id
     const std::vector<std::pair<std::string, double>>& variables,  //!< variables
     const std::vector<double>& couprole                            //!< coupling role vector
@@ -707,9 +842,9 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::AddAdditionalVariables(
   // add the variables
   for (unsigned j = 0; j < variables.size(); j++)
   {
-    if (not Function(round(couprole[k]) - 1).IsVariable(0, variables[j].first))
+    if (not Function<dim>(round(couprole[k]) - 1).IsVariable(0, variables[j].first))
     {
-      Function(round(couprole[k]) - 1).AddVariable(0, variables[j].first, 0.0);
+      Function<dim>(round(couprole[k]) - 1).AddVariable(0, variables[j].first, 0.0);
     }
   }
 
@@ -735,15 +870,17 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::BuildPhiVectorForFunction(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-inline DRT::UTILS::VariableExprFunction& MAT::PAR::REACTIONCOUPLING::ByFunction::Function(
+template <int dim>
+inline DRT::UTILS::VariableExprFunction<dim>& MAT::PAR::REACTIONCOUPLING::ByFunction::Function(
     int functnum) const
 {
   // try to cast to variable expression function for phi evaluation
   // try-catch because of cast of references
   try
   {
-    DRT::UTILS::VariableExprFunction& funct =
-        dynamic_cast<DRT::UTILS::VariableExprFunction&>(DRT::Problem::Instance()->Funct(functnum));
+    DRT::UTILS::VariableExprFunction<dim>& funct =
+        dynamic_cast<DRT::UTILS::VariableExprFunction<dim>&>(
+            DRT::Problem::Instance()->Funct(functnum));
 
     return funct;
   }
@@ -753,7 +890,7 @@ inline DRT::UTILS::VariableExprFunction& MAT::PAR::REACTIONCOUPLING::ByFunction:
         "Cast to VarExp Function failed! For phase law definition only 'VARFUNCTION' functions are "
         "allowed!\n"
         "Check your input file!");
-    return dynamic_cast<DRT::UTILS::VariableExprFunction&>(
+    return dynamic_cast<DRT::UTILS::VariableExprFunction<dim>&>(
         DRT::Problem::Instance()->Funct(functnum));
   }
 }

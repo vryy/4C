@@ -12,7 +12,10 @@ Approximate reading time 10 mins.**
 1. Create a new .cpp file in the new directory `unittests` in a subdirectory that matches the
    relative location of the tested file in the `src` directory. You may need to create it.
 2. Add the new file to the `CMakeLists.txt` inside the directory (again you may need to create it).
-   Consider the existing test directories as a template.
+   Consider the existing test directories as a template. In case you have problems listing all necessary
+   libraries for your test, you can use
+   `BACI_LINK_GOOGLE_TEST_NECESSARY_LIBRARIES(${TESTNAME} -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group ${LIBRARIES})`
+   as a temporary solution to include all libraries in the correct order.
 3. Include the gtest header.
 4. Open an anonymous namespace inside the file.
 5. Copy the content from the old file into the anonymous namespace

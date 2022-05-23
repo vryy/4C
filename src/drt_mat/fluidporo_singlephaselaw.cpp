@@ -303,17 +303,35 @@ MAT::PAR::FluidPoroPhaseLawByFunction::FluidPoroPhaseLawByFunction(
  *----------------------------------------------------------------------*/
 void MAT::PAR::FluidPoroPhaseLawByFunction::Initialize()
 {
-  if (Function(functionID_saturation_ - 1).NumberComponents() != 1)
+  switch (DRT::Problem::Instance()->NDim())
+  {
+    case 1:
+      return InitializeInternal<1>();
+    case 2:
+      return InitializeInternal<2>();
+    case 3:
+      return InitializeInternal<3>();
+    default:
+      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <int dim>
+void MAT::PAR::FluidPoroPhaseLawByFunction::InitializeInternal()
+{
+  if (Function<dim>(functionID_saturation_ - 1).NumberComponents() != 1)
     dserror("expected only one component for the saturation evaluation");
-  if (Function(functionID_pressure_ - 1).NumberComponents() != 1)
+  if (Function<dim>(functionID_pressure_ - 1).NumberComponents() != 1)
     dserror("expected only one component for the pressure evaluation");
 
   // define saturation variable
-  if (not Function(functionID_pressure_ - 1).IsVariable(0, "S"))
-    Function(functionID_pressure_ - 1).AddVariable(0, "S", 0.0);
+  if (not Function<dim>(functionID_pressure_ - 1).IsVariable(0, "S"))
+    Function<dim>(functionID_pressure_ - 1).AddVariable(0, "S", 0.0);
   // define pressure variable
-  if (not Function(functionID_saturation_ - 1).IsVariable(0, "dp"))
-    Function(functionID_saturation_ - 1).AddVariable(0, "dp", 0.0);
+  if (not Function<dim>(functionID_saturation_ - 1).IsVariable(0, "dp"))
+    Function<dim>(functionID_saturation_ - 1).AddVariable(0, "dp", 0.0);
 
   // initialize pressure vector for function evaluation
   dp_.clear();
@@ -326,15 +344,18 @@ void MAT::PAR::FluidPoroPhaseLawByFunction::Initialize()
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-inline DRT::UTILS::VariableExprFunction& MAT::PAR::FluidPoroPhaseLawByFunction::Function(
+template <int dim>
+inline DRT::UTILS::VariableExprFunction<dim>& MAT::PAR::FluidPoroPhaseLawByFunction::Function(
     int functnum) const
 {
   try
   {
-    DRT::UTILS::VariableExprFunction& funct =
-        dynamic_cast<DRT::UTILS::VariableExprFunction&>(DRT::Problem::Instance()->Funct(functnum));
+    DRT::UTILS::VariableExprFunction<dim>& funct =
+        dynamic_cast<DRT::UTILS::VariableExprFunction<dim>&>(
+            DRT::Problem::Instance()->Funct(functnum));
 
     return funct;
   }
@@ -344,7 +365,7 @@ inline DRT::UTILS::VariableExprFunction& MAT::PAR::FluidPoroPhaseLawByFunction::
         "Cast to VarExp Function failed! For phase law definition only 'VARFUNCTION' functions are "
         "allowed!\n"
         "Check your input file!");
-    return dynamic_cast<DRT::UTILS::VariableExprFunction&>(
+    return dynamic_cast<DRT::UTILS::VariableExprFunction<dim>&>(
         DRT::Problem::Instance()->Funct(functnum));
   }
 }
@@ -352,6 +373,26 @@ inline DRT::UTILS::VariableExprFunction& MAT::PAR::FluidPoroPhaseLawByFunction::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateSaturation(
+    const std::vector<double>& pressure)
+{
+  switch (DRT::Problem::Instance()->NDim())
+  {
+    case 1:
+      return EvaluateSaturationInternal<1>(pressure);
+    case 2:
+      return EvaluateSaturationInternal<2>(pressure);
+    case 3:
+      return EvaluateSaturationInternal<3>(pressure);
+    default:
+      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+      return 0.0;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <int dim>
+double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateSaturationInternal(
     const std::vector<double>& pressure)
 {
   // check if sizes fit
@@ -364,12 +405,32 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateSaturation(
   // directly write into entry without checking the name for performance reasons
   dp_[0].second = presval;
 
-  return Function(functionID_saturation_ - 1).Evaluate(0, dp_);
+  return Function<dim>(functionID_saturation_ - 1).Evaluate(0, dp_);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfSaturationWrtPressure(
+    int doftoderive, const std::vector<double>& pressure)
+{
+  switch (DRT::Problem::Instance()->NDim())
+  {
+    case 1:
+      return EvaluateDerivOfSaturationWrtPressureInternal<1>(doftoderive, pressure);
+    case 2:
+      return EvaluateDerivOfSaturationWrtPressureInternal<2>(doftoderive, pressure);
+    case 3:
+      return EvaluateDerivOfSaturationWrtPressureInternal<3>(doftoderive, pressure);
+    default:
+      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+      return 0.0;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <int dim>
+double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfSaturationWrtPressureInternal(
     int doftoderive, const std::vector<double>& pressure)
 {
   // check if sizes fit
@@ -383,7 +444,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfSaturationWrtPressu
   // directly write into entry without checking the name for performance reasons
   dp_[0].second = presval;
 
-  std::vector<double> deriv = Function(functionID_saturation_ - 1).EvaluateDerivative(0, dp_);
+  std::vector<double> deriv = Function<dim>(functionID_saturation_ - 1).EvaluateDerivative(0, dp_);
 
   return deriv[0] * (*presids_)[doftoderive];
 }
@@ -407,12 +468,33 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateSecondDerivOfSaturationWrt
 double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfPressureWrtSaturation(
     int doftoderive, double saturation)
 {
+  switch (DRT::Problem::Instance()->NDim())
+  {
+    case 1:
+      return EvaluateDerivOfPressureWrtSaturationInternal<1>(doftoderive, saturation);
+    case 2:
+      return EvaluateDerivOfPressureWrtSaturationInternal<2>(doftoderive, saturation);
+    case 3:
+      return EvaluateDerivOfPressureWrtSaturationInternal<3>(doftoderive, saturation);
+    default:
+      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+      return 0.0;
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <int dim>
+double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfPressureWrtSaturationInternal(
+    int doftoderive, double saturation)
+{
   if ((*presids_)[doftoderive] == 0) return 0.0;
 
   // directly write into entry without checking the name for performance reasons
   S_[0].second = saturation;
 
-  std::vector<double> deriv = Function(functionID_pressure_ - 1).EvaluateDerivative(0, S_);
+  std::vector<double> deriv = Function<dim>(functionID_pressure_ - 1).EvaluateDerivative(0, S_);
 
   return deriv[0] * (*presids_)[doftoderive];
 }
@@ -421,8 +503,27 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfPressureWrtSaturati
  *----------------------------------------------------------------------*/
 double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateGenPressure(double saturation)
 {
+  switch (DRT::Problem::Instance()->NDim())
+  {
+    case 1:
+      return EvaluateGenPressureInternal<1>(saturation);
+    case 2:
+      return EvaluateGenPressureInternal<2>(saturation);
+    case 3:
+      return EvaluateGenPressureInternal<3>(saturation);
+    default:
+      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+      return 0.0;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <int dim>
+double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateGenPressureInternal(double saturation)
+{
   // directly write into entry without checking the name for performance reasons
   S_[0].second = saturation;
 
-  return Function(functionID_pressure_ - 1).Evaluate(0, S_);
+  return Function<dim>(functionID_pressure_ - 1).Evaluate(0, S_);
 }

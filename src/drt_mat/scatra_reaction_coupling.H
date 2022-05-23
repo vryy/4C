@@ -18,6 +18,7 @@ namespace DRT
 {
   namespace UTILS
   {
+    template <int dim>
     class VariableExprFunction;
   }
 }  // namespace DRT
@@ -636,7 +637,60 @@ namespace MAT
         );
 
         /// helper method for accessing variable expression function
-        inline DRT::UTILS::VariableExprFunction& Function(int functnum) const;
+        template <int dim>
+        inline DRT::UTILS::VariableExprFunction<dim>& Function(int functnum) const;
+
+        //! templated internal AddAdditionalVariables implementation
+        template <int dim>
+        void AddAdditionalVariablesInternal(const int k,                   //!< current scalar id
+            const std::vector<std::pair<std::string, double>>& variables,  //!< variables
+            const std::vector<double>& couprole                            //!< coupling role vector
+        );
+
+        //! templated internal CalcReaBodyForceDerivAddVariables implementation
+        template <int dim>
+        void CalcReaBodyForceDerivAddVariablesInternal(const int k,  //!< current scalar id
+            std::vector<double>& derivs,  //!< vector with derivatives (to be filled)
+            const std::vector<std::pair<std::string, double>>& variables,  //!< variables
+            const std::vector<std::pair<std::string, double>>&
+                constants,                        //!< constants (including scalar values phinp)
+            const std::vector<double>& couprole,  //!< coupling role vector
+            double scale_reac  //!< scaling factor for reaction term (= reaction coefficient *
+                               //!< stoichometry)
+        );
+
+        //! templated internal CalcReaBodyForceDeriv implementation
+        template <int dim>
+        void CalcReaBodyForceDerivInternal(int k,  //!< current scalar id
+            int numscal,                           //!< number of scalars
+            std::vector<double>& derivs,           //!< vector with derivatives (to be filled)
+            const std::vector<double>& phinp,      //!< scalar values at t_(n+1)
+            const std::vector<std::pair<std::string, double>>&
+                constants,  //!< vector containing values which are independent of the scalars (e.g.
+                            //!< t,x,y,z)
+            const std::vector<double>& couprole,  //!< coupling role vector
+            double scale_reac  //!< scaling factor for reaction term (= reaction coefficient *
+                               //!< stoichometry)
+        );
+
+        //! templated internal CalcReaBodyForceTerm implementation
+        template <int dim>
+        double CalcReaBodyForceTermInternal(int k,  //!< current scalar id
+            int numscal,                            //!< number of scalars
+            const std::vector<double>& phinp,       //!< scalar values at t_(n+1)
+            const std::vector<std::pair<std::string, double>>&
+                constants,  //!< vector containing values which are independent of the scalars (e.g.
+                            //!< t,x,y,z)
+            const std::vector<double>& couprole,  //!< coupling role vector
+            double scale_reac  //!< scaling factor for reaction term (= reaction coefficient *
+                               //!< stoichometry)
+        );
+
+        //! templated internal Initialize implementation
+        template <int dim>
+        void InitializeInternal(int numscal,     //!< number of scalars
+            const std::vector<double>& couprole  //!< coupling role vector
+        );
 
         /// variable vector for function evaluation
         std::vector<std::pair<std::string, double>> variables_;

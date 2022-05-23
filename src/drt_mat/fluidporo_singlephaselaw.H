@@ -16,6 +16,7 @@ namespace DRT
 {
   namespace UTILS
   {
+    template <int dim>
     class VariableExprFunction;
   }
 }  // namespace DRT
@@ -275,7 +276,30 @@ namespace MAT
 
      private:
       //! helper method for function access
-      inline DRT::UTILS::VariableExprFunction& Function(int functnum) const;
+      template <int dim>
+      inline DRT::UTILS::VariableExprFunction<dim>& Function(int functnum) const;
+
+      //! templated internal Initialize implementation
+      template <int dim>
+      void InitializeInternal();
+
+      //! templated internal EvaluateSaturation implementation
+      template <int dim>
+      double EvaluateSaturationInternal(const std::vector<double>& pressure);
+
+      //! templated internal EvaluateDerivOfSaturationWrtPressure implementation
+      template <int dim>
+      double EvaluateDerivOfSaturationWrtPressureInternal(
+          int doftoderive, const std::vector<double>& pressure);
+
+      //! templated internal EvaluateDerivOfPressureWrtSaturation implementation
+      template <int dim>
+      double EvaluateDerivOfPressureWrtSaturationInternal(int doftoderive, double saturation);
+
+      //! templated internal EvaluateGenPressure implementation
+      template <int dim>
+      double EvaluateGenPressureInternal(double saturation);
+
 
       //! vector for input of differential pressure to function
       std::vector<std::pair<std::string, double>> dp_;

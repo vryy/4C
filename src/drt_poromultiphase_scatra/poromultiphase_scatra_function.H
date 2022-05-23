@@ -23,7 +23,8 @@ namespace POROMULTIPHASESCATRA
    * @brief abstract class derived from VariableExprFunction since reaction functions are cast to
    * VariableExprFunction in scatra_reaction_coupling and fluidporo_multiphase_singlereaction
    */
-  class PoroMultiPhaseScaTraFunction : public DRT::UTILS::VariableExprFunction
+  template <int dim>
+  class PoroMultiPhaseScaTraFunction : public DRT::UTILS::VariableExprFunction<dim>
   {
    public:
     PoroMultiPhaseScaTraFunction();
@@ -182,9 +183,14 @@ namespace POROMULTIPHASESCATRA
   void AddValidPoroFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
 
   /// try to create poro-specific functions from a given line definition
-  Teuchos::RCP<PoroMultiPhaseScaTraFunction> TryCreatePoroFunction(
+  Teuchos::RCP<DRT::UTILS::Function> TryCreatePoroFunction(
       Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
       DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
+
+  //! create poro-specific functions from a given line definition
+  template <int dim>
+  Teuchos::RCP<DRT::UTILS::Function> CreatePoroFunction(
+      const std::string& type, const std::vector<std::pair<std::string, double>>& params);
 
   /*!
    * @brief standard growth law for tumor cells <--> IF (with lysis) and pressure dependency:
@@ -199,7 +205,8 @@ namespace POROMULTIPHASESCATRA
    * (possible) INPUT DEFINITION: POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE NUMPARAMS
    * 5 PARAMS gamma_T_growth 9.6e-6 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
    */
-  class TumorGrowthLawHeaviside : public PoroMultiPhaseScaTraFunction
+  template <int dim>
+  class TumorGrowthLawHeaviside : public PoroMultiPhaseScaTraFunction<dim>
   {
    public:
     /*!
@@ -261,7 +268,8 @@ namespace POROMULTIPHASESCATRA
    * POROMULTIPHASESCATRA_FUNCTION NECROSIS_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_t_necr 9.6e-6
    * w_nl_crit 2.0e-6 w_nl_env 4.2e-6 delta_a_t 0.0 p_t_crit 1.0e9
    */
-  class NecrosisLawHeaviside : public PoroMultiPhaseScaTraFunction
+  template <int dim>
+  class NecrosisLawHeaviside : public PoroMultiPhaseScaTraFunction<dim>
   {
    public:
     /*!
@@ -323,7 +331,8 @@ namespace POROMULTIPHASESCATRA
    * POROMULTIPHASESCATRA_FUNCTION OXYGEN_CONSUMPTION_LAW_HEAVISIDE NUMPARAMS 5 PARAMS
    * gamma_nl_growth 2.4e-7 gamma_0_nl 6e-7 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 p_t_crit 1.0e9
    */
-  class OxygenConsumptionLawHeaviside : public PoroMultiPhaseScaTraFunction
+  template <int dim>
+  class OxygenConsumptionLawHeaviside : public PoroMultiPhaseScaTraFunction<dim>
   {
    public:
     /*!
@@ -384,7 +393,8 @@ namespace POROMULTIPHASESCATRA
    * POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_OXY NUMPARAMS 5 PARAMS
    * gamma_T_growth 9.6e-6 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
    */
-  class TumorGrowthLawHeavisideOxy : public PoroMultiPhaseScaTraFunction
+  template <int dim>
+  class TumorGrowthLawHeavisideOxy : public PoroMultiPhaseScaTraFunction<dim>
   {
    public:
     /*!
@@ -446,7 +456,8 @@ namespace POROMULTIPHASESCATRA
    * POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_NECRO NUMPARAMS 5 PARAMS
    * gamma_T_growth 9.6e-6 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9 |
    */
-  class TumorGrowthLawHeavisideNecro : public PoroMultiPhaseScaTraFunction
+  template <int dim>
+  class TumorGrowthLawHeavisideNecro : public PoroMultiPhaseScaTraFunction<dim>
   {
    public:
     /*!
@@ -504,7 +515,8 @@ namespace POROMULTIPHASESCATRA
    * S/V*gamma*rho*(P_nv-P_if)*heaviside(P_nv-P_if)*VF1 with partial pressures of oxygen in
    * neovasculature P_nv and in IF P_if
    */
-  class OxygenTransvascularExchangeLawCont : public PoroMultiPhaseScaTraFunction
+  template <int dim>
+  class OxygenTransvascularExchangeLawCont : public PoroMultiPhaseScaTraFunction<dim>
   {
    public:
     /*!
@@ -562,7 +574,8 @@ namespace POROMULTIPHASESCATRA
    * pi*D*gamma*rho*(P_v-P_if)*VF1*heaviside(S2_max-S2) with partial pressures of oxygen in
    * vasculature P_v and in IF P_if
    */
-  class OxygenTransvascularExchangeLawDisc : public PoroMultiPhaseScaTraFunction
+  template <int dim>
+  class OxygenTransvascularExchangeLawDisc : public PoroMultiPhaseScaTraFunction<dim>
   {
    public:
     /*!
@@ -611,6 +624,68 @@ namespace POROMULTIPHASESCATRA
    private:
     int pos_oxy_art_;
     int pos_diam_;
+  };
+
+  /*!
+   * @brief exchange of oxygen between air (phase in multiphase pore space) and blood (additional
+   * porous network) in the lung: LUNG_OXYGEN_EXCHANGE_LAW
+   *
+   * rho_oxy*alpha_oxy*Diff_oxy*(1/d)*(A/V_TLC)*(P_oA - P_oB)
+   *
+   * with P_oA: partial pressures of oxygen in air, P_oB: partial pressures of oxygen in blood
+   *
+   * (possible) INPUT DEFINITION:
+   * POROMULTIPHASESCATRA_FUNCTION LUNG_OXYGEN_EXCHANGE_LAW NUMPARAMS 9 PARAMS rho_oxy 1.429e-9
+   * DiffAdVTLC 5.36 alpha_oxy 2.1e-4 rho_air 1.0e-9 rho_bl 1.03e-6 n 3 P_oB50 3.6 NC_Hb 0.25
+   * P_atmospheric 101.3
+   */
+  template <int dim>
+  class LungOxygenExchangeLaw : public PoroMultiPhaseScaTraFunction<dim>
+  {
+   public:
+    /*!
+     * \brief Constructor creating empty object. Add the function parameters (read from the
+     * input file) to the function
+     */
+    LungOxygenExchangeLaw(const std::vector<std::pair<std::string, double>>& funct_params);
+
+    /*!
+     * \brief evaluate function for a given set of variables
+     *
+     * \param[in] index For vector-valued functions, index defines the function-component which
+     * should be evaluated
+     * \param[in] variables A vector containing a pair (variablename, value) for
+     * each variable
+     * \param[in] constants A vector containing a pair (variablename, value) for each
+     * constant
+     */
+    double Evaluate(const int index, const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants);
+
+    /*!
+     * \brief evaluate derivative at given position in space for a given set of variables and
+     * constants
+     *
+     * \param[in] index For vector-valued functions, index defines the function-component which
+     * should be evaluated
+     * \param[in] variables A vector containing a pair (variablename, value) for
+     * each variable
+     * \param[in] constants A vector containing a pair (variablename, value) for each
+     * constant
+     */
+    std::vector<double> EvaluateDerivative(int index,
+        const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants);
+
+    /*!
+     * \brief check for correct order of input parameters variables and constants this check is
+     * performed only once
+     *
+     * \param[in] variables A vector containing a pair (variablename, value) for each variable
+     * \param[in] constants A vector containing a pair (variablename, value) for each constant
+     */
+    void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants);
   };
 
 }  // namespace POROMULTIPHASESCATRA

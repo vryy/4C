@@ -116,7 +116,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       // below
       std::vector<std::function<Teuchos::RCP<Function>(
           Teuchos::RCP<DRT::INPUT::LineDefinition>, DRT::UTILS::FunctionManager&, const int)>>
-          try_create_function_vector{DRT::UTILS::TryCreateFunctionFunction,
+          try_create_function_vector{DRT::UTILS::TryCreateVariableExprFunction,
               POROMULTIPHASESCATRA::TryCreatePoroFunction, STR::TryCreateStructureFunction,
               FLD::TryCreateFluidFunction, DRT::UTILS::TryCreateCombustFunction,
               DRT::UTILS::TryCreateXfluidFunction, DRT::UTILS::TryCreateLibraryFunction};

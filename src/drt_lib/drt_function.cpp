@@ -227,16 +227,13 @@ namespace
   }
 }  // namespace
 
-Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateFunctionFunction(
+Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateVariableExprFunction(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager)
 {
   (void)index_current_funct_in_manager;
   if (function_lin_def->HaveNamed("VARFUNCTION"))
   {
-    Teuchos::RCP<DRT::UTILS::VariableExprFunction> vecfunc =
-        Teuchos::rcp(new DRT::UTILS::VariableExprFunction());
-
     std::string component;
     function_lin_def->ExtractString("VARFUNCTION", component);
 
@@ -246,13 +243,32 @@ Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateFunctionFunction(
       function_lin_def->ExtractPairOfStringAndDoubleVector("CONSTANTS", constants);
     }
 
-    vecfunc->AddExpr(component, constants);
-    return vecfunc;
+    switch (DRT::Problem::Instance()->NDim())
+    {
+      case 1:
+        return CreateVariableExprFunction<1>(component, constants);
+      case 2:
+        return CreateVariableExprFunction<2>(component, constants);
+      case 3:
+        return CreateVariableExprFunction<3>(component, constants);
+      default:
+        dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+        return Teuchos::null;
+    }
   }
   else
   {
     return Teuchos::null;
   }
+}
+
+template <int dim>
+Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::CreateVariableExprFunction(
+    const std::string& component, const std::vector<std::pair<std::string, double>>& constants)
+{
+  auto vecfunc = Teuchos::rcp(new VariableExprFunction<dim>());
+  vecfunc->AddExpr(component, constants);
+  return vecfunc;
 }
 
 Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateExprFunction(
@@ -577,10 +593,8 @@ std::vector<double> DRT::UTILS::ExprFunction<dim>::EvaluateTimeDerivative(
 }
 
 
-DRT::UTILS::VariableExprFunction::VariableExprFunction() : dim_(DRT::Problem::Instance()->NDim()) {}
-
-
-void DRT::UTILS::VariableExprFunction::AddExpr(
+template <int dim>
+void DRT::UTILS::VariableExprFunction<dim>::AddExpr(
     const std::string& buf, const std::vector<std::pair<std::string, double>>& constants)
 {
   // do the almost same as the expression function (base class) but do not yet parse!
@@ -602,14 +616,16 @@ void DRT::UTILS::VariableExprFunction::AddExpr(
   isparsed_ = false;
 }
 
-bool DRT::UTILS::VariableExprFunction::IsVariable(int index, const std::string& varname) const
+template <int dim>
+bool DRT::UTILS::VariableExprFunction<dim>::IsVariable(int index, const std::string& varname) const
 {
   AssertVariableIndexInDimensionOfExpression(index, expr_, varname);
 
   return expr_[index]->IsVariable(varname);
 }
 
-void DRT::UTILS::VariableExprFunction::AddVariable(
+template <int dim>
+void DRT::UTILS::VariableExprFunction<dim>::AddVariable(
     int index, const std::string& varname, double varvalue)
 {
   AssertVariableIndexInDimensionOfExpression(index, expr_, varname);
@@ -620,7 +636,8 @@ void DRT::UTILS::VariableExprFunction::AddVariable(
   exprd_[index]->AddVariable(varname, varvalue);
 }
 
-void DRT::UTILS::VariableExprFunction::ParseExpressions()
+template <int dim>
+void DRT::UTILS::VariableExprFunction<dim>::ParseExpressions()
 {
   // loop over expressions and parse them
   for (auto& parser : expr_) parser->ParseFunction();
@@ -631,7 +648,9 @@ void DRT::UTILS::VariableExprFunction::ParseExpressions()
   isparsed_ = true;
 }
 
-double DRT::UTILS::VariableExprFunction::Evaluate(const int index, const double* x, const double t)
+template <int dim>
+double DRT::UTILS::VariableExprFunction<dim>::Evaluate(
+    const int index, const double* x, const double t)
 {
   std::vector<std::pair<std::string, double>> variables;
   variables.reserve(dim_);
@@ -648,7 +667,8 @@ double DRT::UTILS::VariableExprFunction::Evaluate(const int index, const double*
   return Evaluate(index, variables);
 }
 
-std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateSpatialDerivative(
+template <int dim>
+std::vector<double> DRT::UTILS::VariableExprFunction<dim>::EvaluateSpatialDerivative(
     int index, const double* x, const double t)
 {
   // arguments are: x, y, z, and t
@@ -663,7 +683,8 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateSpatialDerivative(
   return EvaluateDerivative(index, variables);
 }
 
-double DRT::UTILS::VariableExprFunction::Evaluate(
+template <int dim>
+double DRT::UTILS::VariableExprFunction<dim>::Evaluate(
     const int index, const std::vector<std::pair<std::string, double>>& variables)
 {
   if (not isparsed_) ParseExpressions();
@@ -674,7 +695,8 @@ double DRT::UTILS::VariableExprFunction::Evaluate(
   return expr_[index]->Evaluate();
 }
 
-double DRT::UTILS::VariableExprFunction::Evaluate(const int index,
+template <int dim>
+double DRT::UTILS::VariableExprFunction<dim>::Evaluate(const int index,
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
@@ -688,7 +710,8 @@ double DRT::UTILS::VariableExprFunction::Evaluate(const int index,
   return expr_[index]->Evaluate();
 }
 
-std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(
+template <int dim>
+std::vector<double> DRT::UTILS::VariableExprFunction<dim>::EvaluateDerivative(
     const int index, const std::vector<std::pair<std::string, double>>& variables)
 {
   if (not isparsed_) ParseExpressions();
@@ -699,7 +722,8 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(
   return EvaluateAndAssembleExpressionToResultVector(variables, index, exprd_);
 }
 
-std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(int index,
+template <int dim>
+std::vector<double> DRT::UTILS::VariableExprFunction<dim>::EvaluateDerivative(int index,
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
@@ -718,3 +742,7 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(int ind
 template class DRT::UTILS::ExprFunction<1>;
 template class DRT::UTILS::ExprFunction<2>;
 template class DRT::UTILS::ExprFunction<3>;
+
+template class DRT::UTILS::VariableExprFunction<1>;
+template class DRT::UTILS::VariableExprFunction<2>;
+template class DRT::UTILS::VariableExprFunction<3>;

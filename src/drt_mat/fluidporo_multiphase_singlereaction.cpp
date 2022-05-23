@@ -36,16 +36,32 @@ MAT::PAR::FluidPoroSingleReaction::FluidPoroSingleReaction(Teuchos::RCP<MAT::PAR
 {
 }
 
-
 /*----------------------------------------------------------------------*
- *  Create Material (public)                             vuong 08/16      |
  *----------------------------------------------------------------------*/
 void MAT::PAR::FluidPoroSingleReaction::Initialize()
+{
+  switch (DRT::Problem::Instance()->NDim())
+  {
+    case 1:
+      return InitializeInternal<1>();
+    case 2:
+      return InitializeInternal<2>();
+    case 3:
+      return InitializeInternal<3>();
+    default:
+      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <int dim>
+void MAT::PAR::FluidPoroSingleReaction::InitializeInternal()
 {
   if (not isinit_)
   {
     // safety check
-    if (Function(functID_ - 1).NumberComponents() != 1)
+    if (Function<dim>(functID_ - 1).NumberComponents() != 1)
       dserror("expected only one component for single phase reaction!");
 
     for (int k = 0; k < numscal_; k++)
@@ -56,8 +72,8 @@ void MAT::PAR::FluidPoroSingleReaction::Initialize()
         temp << k + 1;
         scalarnames_[k] = "phi" + temp.str();
 
-        if (not Function(functID_ - 1).IsVariable(0, scalarnames_[k]))
-          Function(functID_ - 1).AddVariable(0, scalarnames_[k], 0.0);
+        if (not Function<dim>(functID_ - 1).IsVariable(0, scalarnames_[k]))
+          Function<dim>(functID_ - 1).AddVariable(0, scalarnames_[k], 0.0);
       }
     }
 
@@ -69,8 +85,8 @@ void MAT::PAR::FluidPoroSingleReaction::Initialize()
         temp << k + 1;
         pressurenames_[k] = "p" + temp.str();
 
-        if (not Function(functID_ - 1).IsVariable(0, pressurenames_[k]))
-          Function(functID_ - 1).AddVariable(0, pressurenames_[k], 0.0);
+        if (not Function<dim>(functID_ - 1).IsVariable(0, pressurenames_[k]))
+          Function<dim>(functID_ - 1).AddVariable(0, pressurenames_[k], 0.0);
       }
 
       // add saturation names
@@ -79,15 +95,15 @@ void MAT::PAR::FluidPoroSingleReaction::Initialize()
         temp << k + 1;
         saturationnames_[k] = "S" + temp.str();
 
-        if (not Function(functID_ - 1).IsVariable(0, saturationnames_[k]))
-          Function(functID_ - 1).AddVariable(0, saturationnames_[k], 0.0);
+        if (not Function<dim>(functID_ - 1).IsVariable(0, saturationnames_[k]))
+          Function<dim>(functID_ - 1).AddVariable(0, saturationnames_[k], 0.0);
       }
     }
 
     // add porosity
     {
-      if (not Function(functID_ - 1).IsVariable(0, porosityname_))
-        Function(functID_ - 1).AddVariable(0, porosityname_, 0.0);
+      if (not Function<dim>(functID_ - 1).IsVariable(0, porosityname_))
+        Function<dim>(functID_ - 1).AddVariable(0, porosityname_, 0.0);
     }
 
     // add additional volume fractions
@@ -99,8 +115,8 @@ void MAT::PAR::FluidPoroSingleReaction::Initialize()
         temp << k + 1;
         volfracnames_[k] = "VF" + temp.str();
 
-        if (not Function(functID_ - 1).IsVariable(0, volfracnames_[k]))
-          Function(functID_ - 1).AddVariable(0, volfracnames_[k], 0.0);
+        if (not Function<dim>(functID_ - 1).IsVariable(0, volfracnames_[k]))
+          Function<dim>(functID_ - 1).AddVariable(0, volfracnames_[k], 0.0);
       }
       // add volume fraction pressure names
       {
@@ -108,8 +124,8 @@ void MAT::PAR::FluidPoroSingleReaction::Initialize()
         temp << k + 1;
         volfracpressurenames_[k] = "VFP" + temp.str();
 
-        if (not Function(functID_ - 1).IsVariable(0, volfracpressurenames_[k]))
-          Function(functID_ - 1).AddVariable(0, volfracpressurenames_[k], 0.0);
+        if (not Function<dim>(functID_ - 1).IsVariable(0, volfracpressurenames_[k]))
+          Function<dim>(functID_ - 1).AddVariable(0, volfracpressurenames_[k], 0.0);
       }
     }
 
@@ -119,9 +135,41 @@ void MAT::PAR::FluidPoroSingleReaction::Initialize()
 }
 
 /*----------------------------------------------------------------------*
- *  set values in function                                 vuong 08/16 |
  *----------------------------------------------------------------------*/
 void MAT::PAR::FluidPoroSingleReaction::EvaluateFunction(std::vector<double>& reacval,
+    std::vector<std::vector<double>>& reacderivspressure,
+    std::vector<std::vector<double>>& reacderivssaturation, std::vector<double>& reacderivsporosity,
+    std::vector<std::vector<double>>& reacderivsvolfrac,
+    std::vector<std::vector<double>>& reacderivsvolfracpressure,
+    std::vector<std::vector<double>>& reacderivsscalar, const std::vector<double>& pressure,
+    const std::vector<double>& saturation, const double& porosity,
+    const std::vector<double>& volfracs, const std::vector<double>& volfracpressures,
+    const std::vector<double>& scalar)
+{
+  switch (DRT::Problem::Instance()->NDim())
+  {
+    case 1:
+      return EvaluateFunctionInternal<1>(reacval, reacderivspressure, reacderivssaturation,
+          reacderivsporosity, reacderivsvolfrac, reacderivsvolfracpressure, reacderivsscalar,
+          pressure, saturation, porosity, volfracs, volfracpressures, scalar);
+    case 2:
+      return EvaluateFunctionInternal<2>(reacval, reacderivspressure, reacderivssaturation,
+          reacderivsporosity, reacderivsvolfrac, reacderivsvolfracpressure, reacderivsscalar,
+          pressure, saturation, porosity, volfracs, volfracpressures, scalar);
+    case 3:
+      return EvaluateFunctionInternal<3>(reacval, reacderivspressure, reacderivssaturation,
+          reacderivsporosity, reacderivsvolfrac, reacderivsvolfracpressure, reacderivsscalar,
+          pressure, saturation, porosity, volfracs, volfracpressures, scalar);
+    default:
+      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <int dim>
+void MAT::PAR::FluidPoroSingleReaction::EvaluateFunctionInternal(std::vector<double>& reacval,
     std::vector<std::vector<double>>& reacderivspressure,
     std::vector<std::vector<double>>& reacderivssaturation, std::vector<double>& reacderivsporosity,
     std::vector<std::vector<double>>& reacderivsvolfrac,
@@ -167,9 +215,10 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunction(std::vector<double>& re
         std::pair<std::string, double>(volfracpressurenames_[k], volfracpressures[k]));
 
   // evaluate the reaction term
-  double curval = Function(functID_ - 1).Evaluate(0, variables, constants);
+  double curval = Function<dim>(functID_ - 1).Evaluate(0, variables, constants);
   // evaluate derivatives
-  std::vector<double> curderivs(Function(functID_ - 1).EvaluateDerivative(0, variables, constants));
+  std::vector<double> curderivs(
+      Function<dim>(functID_ - 1).EvaluateDerivative(0, variables, constants));
 
   // fill the output vector
   for (int k = 0; k < totalnummultiphasedof_; k++)
@@ -294,13 +343,15 @@ void MAT::PAR::FluidPoroSingleReaction::CheckSizes(std::vector<double>& reacval,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-inline DRT::UTILS::VariableExprFunction& MAT::PAR::FluidPoroSingleReaction::Function(
+template <int dim>
+inline DRT::UTILS::VariableExprFunction<dim>& MAT::PAR::FluidPoroSingleReaction::Function(
     int functnum) const
 {
   try
   {
-    DRT::UTILS::VariableExprFunction& funct =
-        dynamic_cast<DRT::UTILS::VariableExprFunction&>(DRT::Problem::Instance()->Funct(functnum));
+    DRT::UTILS::VariableExprFunction<dim>& funct =
+        dynamic_cast<DRT::UTILS::VariableExprFunction<dim>&>(
+            DRT::Problem::Instance()->Funct(functnum));
     return funct;
   }
   catch (std::bad_cast& exp)
@@ -309,7 +360,7 @@ inline DRT::UTILS::VariableExprFunction& MAT::PAR::FluidPoroSingleReaction::Func
         "Cast to VarExp Function failed! For phase law definition only 'VARFUNCTION' functions are "
         "allowed!\n"
         "Check your input file!");
-    return dynamic_cast<DRT::UTILS::VariableExprFunction&>(
+    return dynamic_cast<DRT::UTILS::VariableExprFunction<dim>&>(
         DRT::Problem::Instance()->Funct(functnum));
   }
 }
