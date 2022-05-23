@@ -1,6 +1,6 @@
 # check for advanced features that give rise to extra preprocessor flags
 
-CHECK_CXX_SOURCE_RUNS(
+check_cxx_source_runs(
   "
   #include <cxxabi.h>
   #include <stdio.h>
@@ -54,7 +54,8 @@ CHECK_CXX_SOURCE_RUNS(
   return f<1>();
   }
   "
-  ADVANCED_STACKTR)
+  ADVANCED_STACKTR
+  )
 
 if(ADVANCED_STACKTR)
   add_definitions("-DENABLE_ADVANCED_STACKTR")
