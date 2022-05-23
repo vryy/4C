@@ -5167,16 +5167,18 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeSpatialReactionTerms(
       Teuchos::rcp_static_cast<const MAT::FluidPoro>(material);
 
   // Acquire anisotropic permeability coefficients at the GP in case of a nodal orthotropic material
-  const std::vector<double> anisotropic_permeability_coeffs = std::invoke([&]() {
-    if (actmat->IsNodalOrthotropic())
-    {
-      return ComputeAnisotropicPermeabilityCoeffsAtGP();
-    }
-    else
-    {
-      return std::vector<double>();
-    }
-  });
+  const std::vector<double> anisotropic_permeability_coeffs = std::invoke(
+      [&]()
+      {
+        if (actmat->IsNodalOrthotropic())
+        {
+          return ComputeAnisotropicPermeabilityCoeffsAtGP();
+        }
+        else
+        {
+          return std::vector<double>();
+        }
+      });
 
   // material reaction tensor = inverse material permeability
   actmat->ComputeReactionTensor(mat_reac_tensor_, J_, porosity_,
