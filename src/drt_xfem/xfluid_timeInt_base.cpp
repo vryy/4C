@@ -130,7 +130,7 @@ bool XFEM::XFLUID_TIMEINT_BASE::changedSideSameTime(
     LINALG::Matrix<3, 1>& x1,  /// global coordinates of point x1
     DRT::Element* ele2,        /// second element where x2 lies in
     LINALG::Matrix<3, 1>& x2   /// global coordinates of point x2
-    ) const
+) const
 {
 #ifdef DEBUG_TIMINT_STD
   IO::cout << "\n\t\t\t check if point changed the side ";
@@ -396,7 +396,7 @@ bool XFEM::XFLUID_TIMEINT_BASE::callSideEdgeIntersection(GEO::CUT::SideHandle* s
     int sid,                                                                        /// side id
     LINALG::Matrix<3, 1>& x1,  /// coordinates of edge's start point
     LINALG::Matrix<3, 1>& x2   /// coordinates of edge's end point
-    ) const
+) const
 {
   switch (sh->Shape())
   {
@@ -434,7 +434,7 @@ bool XFEM::XFLUID_TIMEINT_BASE::callSideEdgeIntersectionT(GEO::CUT::SideHandle* 
     int sid,                                                                         /// side id
     LINALG::Matrix<3, 1>& x1,  /// coordinates of edge's start point
     LINALG::Matrix<3, 1>& x2   /// coordinates of edge's end point
-    ) const
+) const
 {
   const int nsd = 3;
   const int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement;
@@ -476,7 +476,7 @@ void XFEM::XFLUID_TIMEINT_BASE::callXToXiCoords(const DRT::Element* ele,  /// po
     LINALG::Matrix<3, 1>& xi,  /// determined local coordinates w.r.t ele
     const std::string state,   ///< state dispn or dispnp?
     bool& pointInDomain        /// lies point in element ?
-    ) const
+) const
 {
   LINALG::SerialDenseMatrix xyz(3, ele->NumNode(), true);
   GEO::fillInitialPositionArray(ele, xyz);
@@ -529,7 +529,7 @@ void XFEM::XFLUID_TIMEINT_BASE::callXToXiCoords(
     LINALG::Matrix<3, 1>& x,                   /// global coordinates of point
     LINALG::Matrix<3, 1>& xi,                  /// determined local coordinates w.r.t ele
     bool& pointInDomain                        /// lies point in element ?
-    ) const
+) const
 {
   switch (DISTYPE)
   {
@@ -558,7 +558,7 @@ void XFEM::XFLUID_TIMEINT_BASE::XToXiCoords(
     LINALG::Matrix<3, 1>& x,         /// global coordinates of point
     LINALG::Matrix<3, 1>& xi,        /// determined local coordinates w.r.t ele
     bool& pointInCell                /// lies point in element?
-    ) const
+) const
 {
   const int nsd = 3;  // dimension
   const int numnode =
@@ -584,7 +584,7 @@ void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv(DRT::Element* element,  /// po
     LINALG::Matrix<3, numnode>&
         shapeFcnDerivXY,  /// derivatives of shape function w.r.t global coordiantes xyz
     bool compute_deriv    /// shall derivatives and jacobian be computed
-    ) const
+) const
 {
   const int* elenodeids = element->NodeIds();  // nodeids of element
   const int nsd = 3;                           // dimension
@@ -754,7 +754,7 @@ void XFEM::XFLUID_TIMEINT_BASE::resetState(
  * clear the data of all nodes having a special state                                schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_TIMEINT_BASE::clearState(TimeIntData::state state  /// state of time int to clear
-    ) const
+) const
 {
   std::vector<TimeIntData>::iterator data;
   while (true)  // while loop over data to be cleared
@@ -1026,7 +1026,7 @@ void XFEM::XFLUID_STD::elementSearch(
     LINALG::Matrix<3, 1>& x,   /// global coordiantes of point
     LINALG::Matrix<3, 1>& xi,  /// determined local coordinates w.r.t ele
     bool& found                /// is element found?
-    ) const
+) const
 {
   // REMARK: if ele!= NULL, then check that element first, before loop all row elements
 
@@ -1078,7 +1078,7 @@ void XFEM::XFLUID_STD::getGPValues(DRT::Element* ele,  ///< pointer to element
     LINALG::Matrix<1, 3>& pres_deriv,           ///< pressure gradient
     Teuchos::RCP<const Epetra_Vector> vel_vec,  ///< vector used for interpolating at gp
     bool compute_deriv                          ///< shall derivatives be computed?
-    ) const
+) const
 {
   switch (ele->Shape())
   {
@@ -1115,7 +1115,7 @@ void XFEM::XFLUID_STD::getGPValuesT(DRT::Element* ele,  ///< pointer to element
     LINALG::Matrix<1, 3>& pres_deriv,           ///< pressure gradient
     Teuchos::RCP<const Epetra_Vector> vel_vec,  ///< vector used for interpolating at gp
     bool compute_deriv                          ///< shall derivatives be computed?
-    ) const
+) const
 {
   if (vel_vec == Teuchos::null) dserror("vector is not filled");
 

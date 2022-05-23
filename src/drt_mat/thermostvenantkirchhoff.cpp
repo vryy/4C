@@ -385,7 +385,7 @@ void MAT::ThermoStVenantKirchhoff::FillCthermo(LINALG::Matrix<6, 1>& ctemp, doub
 double MAT::ThermoStVenantKirchhoff::GetMatParameterAtTempnp(
     const std::vector<double>* paramvector,  // (i) given parameter is a vector
     const double& tempnp                     // tmpr (i) current temperature
-    ) const
+) const
 {
   // polynomial type
 
@@ -416,7 +416,7 @@ double MAT::ThermoStVenantKirchhoff::GetMatParameterAtTempnp(
 double MAT::ThermoStVenantKirchhoff::GetMatParameterAtTempnp_T(
     const std::vector<double>* paramvector,  // (i) given parameter is a vector
     const double& tempnp                     // tmpr (i) current temperature
-    ) const
+) const
 {
   // polynomial type
 

@@ -39,10 +39,12 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcPoro<distype>* DRT::ELEMENTS::FluidEleCalcPoro<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcPoro<distype>> singleton_owner([]() {
-    return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcPoro<distype>>(
-        new DRT::ELEMENTS::FluidEleCalcPoro<distype>());
-  });
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcPoro<distype>> singleton_owner(
+      []()
+      {
+        return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcPoro<distype>>(
+            new DRT::ELEMENTS::FluidEleCalcPoro<distype>());
+      });
 
   return singleton_owner.Instance(action);
 }

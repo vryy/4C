@@ -258,7 +258,7 @@ namespace XFEM
         int& dest,                            //!< destination proc
         int& source,                          //!< source proc
         std::vector<char>& dataRecv           //!< received data
-        ) const;
+    ) const;
 
     const bool is_newton_increment_transfer_;  /// monolithic newton increment transfer or time step
                                                /// transfer?

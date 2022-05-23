@@ -144,7 +144,7 @@ namespace MAT
     //!  identify the exact class on the receiving processor.
     virtual void Pack(
         DRT::PackBuffer& data  //!<  data (i/o): char vector to store class information
-        ) const;
+    ) const;
 
     //!  \brief Unpack data from a char vector into this class
     //!
@@ -251,7 +251,7 @@ namespace MAT
     //! return scalar-valued accumulated strain at Gauss points
     //! use method to return values at END of time step
     double AccumulatedStrain(int gp  //!< current Gauss point
-        ) const
+    ) const
     {
       //! use the old vector (last_) for postprocessing
       //! Output is called after(!!) Update, so that newest values are included in
@@ -262,7 +262,7 @@ namespace MAT
 
     // return current scalar-valued accumulated strain
     double AccumulatedStrainCurr(int gp  //!< current Gauss point
-        ) const
+    ) const
     {
       return (strainbarplcurr_->at(gp));
     }

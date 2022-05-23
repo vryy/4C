@@ -2719,17 +2719,17 @@ bool FLD::XFluid::ConvergenceCheck(int itnum, int itemax, const double velrestol
       }
     }
     else  // if not yet converged
-        if (myrank_ == 0)
-    {
-      printf("|  %3d/%3d   | %10.3E  | %10.3E  | %10.3E  | %10.3E  |", itnum, itemax, vresnorm_,
-          presnorm_, incvelnorm_L2_ / velnorm_L2_, incprenorm_L2_ / prenorm_L2_);
-      printf(" (ts=%10.3E,te=%10.3E", dtsolve_, dtele_);
-      if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
+      if (myrank_ == 0)
       {
-        printf(",tf=%10.3E", dtfilter_);
+        printf("|  %3d/%3d   | %10.3E  | %10.3E  | %10.3E  | %10.3E  |", itnum, itemax, vresnorm_,
+            presnorm_, incvelnorm_L2_ / velnorm_L2_, incprenorm_L2_ / prenorm_L2_);
+        printf(" (ts=%10.3E,te=%10.3E", dtsolve_, dtele_);
+        if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
+        {
+          printf(",tf=%10.3E", dtfilter_);
+        }
+        printf(")\n");
       }
-      printf(")\n");
-    }
   }
 
   // warn if itemax is reached without convergence, but proceed to

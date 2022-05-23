@@ -854,7 +854,9 @@ void GEO::CUT::Point::Replace(Point* p)
     std::set<std::set<Point*>>& parallel_cut_surfaces = s->GetParallelCutSurfaces();
     std::set<std::set<Point*>> new_surfaces;
     std::transform(parallel_cut_surfaces.begin(), parallel_cut_surfaces.end(),
-        std::inserter(new_surfaces, new_surfaces.begin()), [&](std::set<Point*> surface) {
+        std::inserter(new_surfaces, new_surfaces.begin()),
+        [&](std::set<Point*> surface)
+        {
           surface.erase(this);
           surface.insert(p);
           return surface;

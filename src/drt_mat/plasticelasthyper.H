@@ -65,7 +65,7 @@ namespace MAT
       /// provide access to material/summand by its ID
       Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(
           const int id  ///< ID to look for in collection of summands
-          ) const;
+      ) const;
 
       // elasthyper needs this for stat inverse analysis
       virtual void OptParams(std::map<std::string, int>* pnames)

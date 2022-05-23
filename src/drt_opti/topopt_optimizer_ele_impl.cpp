@@ -82,10 +82,12 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::TopOptImpl<distype>* DRT::ELEMENTS::TopOptImpl<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::TopOptImpl<distype>> singleton_owner([]() {
-    return std::unique_ptr<DRT::ELEMENTS::TopOptImpl<distype>>(
-        new DRT::ELEMENTS::TopOptImpl<distype>());
-  });
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::TopOptImpl<distype>> singleton_owner(
+      []()
+      {
+        return std::unique_ptr<DRT::ELEMENTS::TopOptImpl<distype>>(
+            new DRT::ELEMENTS::TopOptImpl<distype>());
+      });
 
   return singleton_owner.Instance(action);
 }
@@ -1303,7 +1305,7 @@ void DRT::ELEMENTS::TopOptImpl<distype>::ExtractValuesFromGlobalVector(
     LINALG::Matrix<nsd_, nen_>* matrixtofill,  ///< vector field
     LINALG::Matrix<nen_, 1>* vectortofill,     ///< scalar field
     Teuchos::RCP<Epetra_Vector>& globalvector  ///< global vector
-    ) const
+) const
 {
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());
@@ -1376,10 +1378,12 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::TopOptBoundaryImpl<distype>* DRT::ELEMENTS::TopOptBoundaryImpl<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::TopOptBoundaryImpl<distype>> singleton_owner([]() {
-    return std::unique_ptr<DRT::ELEMENTS::TopOptBoundaryImpl<distype>>(
-        new DRT::ELEMENTS::TopOptBoundaryImpl<distype>());
-  });
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::TopOptBoundaryImpl<distype>> singleton_owner(
+      []()
+      {
+        return std::unique_ptr<DRT::ELEMENTS::TopOptBoundaryImpl<distype>>(
+            new DRT::ELEMENTS::TopOptBoundaryImpl<distype>());
+      });
 
   return singleton_owner.Instance(action);
 }
@@ -1448,7 +1452,7 @@ void DRT::ELEMENTS::TopOptBoundaryImpl<distype>::ExtractValuesFromGlobalVector(
     LINALG::Matrix<nsd_, nen_>* matrixtofill,  ///< vector field
     LINALG::Matrix<nen_, 1>* vectortofill,     ///< scalar field
     Teuchos::RCP<Epetra_Vector>& globalvector  ///< global vector
-    ) const
+) const
 {
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());

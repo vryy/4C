@@ -78,7 +78,7 @@ namespace SCATRA
         const Teuchos::RCP<Epetra_Vector>& phinp,                  //!< state vector at time n+1
         const int& iteration,  //!< number of current Newton-Raphson iteration
         const Teuchos::RCP<LINALG::KrylovProjector>& projector  //!< Krylov projector
-        ) const;
+    ) const;
 
     //! return linear solver for global system of linear equations
     const LINALG::Solver& Solver() const;

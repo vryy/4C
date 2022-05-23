@@ -195,9 +195,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::SolveBloodAirTransport(
     RedAirBloodScatraLine3* ele, Epetra_SerialDenseVector& dscatra, Epetra_SerialDenseVector& dvo2,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material> material)
-{
-}
+    Teuchos::RCP<MAT::Material> material){}
 #if 0
 {
   const int   myrank  = discretization.Comm().MyPID();

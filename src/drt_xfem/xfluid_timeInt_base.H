@@ -424,7 +424,7 @@ namespace XFEM
 
     //! clear all data having some state
     void clearState(TimeIntData::state state  /// state of time int to clear
-        ) const;
+    ) const;
 
 
     /*========================================================================*/
@@ -438,7 +438,7 @@ namespace XFEM
         DRT::Element* ele2,               /// second element where x2 lies in
         LINALG::Matrix<3, 1>& x2,         /// global coordinates of point x2
         bool newTimeStep2                 /// new/old timestep for point x2
-        ) const
+    ) const
     {
       if (newTimeStep1 != newTimeStep2)
       {
@@ -459,7 +459,7 @@ namespace XFEM
         LINALG::Matrix<3, 1>& x1,                     /// global coordinates of point x1
         DRT::Element* ele2,                           /// second element where x2 lies in
         LINALG::Matrix<3, 1>& x2                      /// global coordinates of point x2
-        ) const;
+    ) const;
 
 
     //! check if both element are neighbors sharing at least one common node and get the common
@@ -472,7 +472,7 @@ namespace XFEM
         int sid,                                             /// side id
         LINALG::Matrix<3, 1>& x1,                            /// coordinates of edge's start point
         LINALG::Matrix<3, 1>& x2                             /// coordinates of edge's end point
-        ) const;
+    ) const;
 
 
     //! check if edge between x1 and x2 cuts the side
@@ -481,7 +481,7 @@ namespace XFEM
         int sid,                                              /// side id
         LINALG::Matrix<3, 1>& x1,                             /// coordinates of edge's start point
         LINALG::Matrix<3, 1>& x2                              /// coordinates of edge's end point
-        ) const;
+    ) const;
 
 
     /*========================================================================*/
@@ -522,7 +522,7 @@ namespace XFEM
         LINALG::Matrix<3, 1>& xi,                  /// determined local coordinates w.r.t ele
         const std::string state,                   ///< state n or np?
         bool& pointInDomain                        /// lies point in element ?
-        ) const;
+    ) const;
 
     //! call the computation of local coordinates for a polytop with corners given by the
     //! coordinates
@@ -531,7 +531,7 @@ namespace XFEM
         LINALG::Matrix<3, 1>& x,                                 /// global coordinates of element
         LINALG::Matrix<3, 1>& xi,  /// determined local coordinates w.r.t ele
         bool& pointInDomain        /// lies point in element ?
-        ) const;
+    ) const;
 
     //! compute local element coordinates and check whether the according point is inside the
     //! element
@@ -540,7 +540,7 @@ namespace XFEM
         LINALG::Matrix<3, 1>& x,                      /// global coordinates of point
         LINALG::Matrix<3, 1>& xi,                     /// determined local coordinates w.r.t ele
         bool& pointInCell                             /// lies point in element?
-        ) const;
+    ) const;
 
     //! data at an arbitrary point lying in an element
     template <const int numnode, DRT::Element::DiscretizationType DISTYPE>
@@ -551,7 +551,7 @@ namespace XFEM
         LINALG::Matrix<3, numnode>&
             shapeFcnDerivXY,  /// derivatives of shape function w.r.t global coordiantes xyz
         bool compute_deriv    /// shall derivatives and jacobian be computed
-        ) const;
+    ) const;
 
     /*========================================================================*/
     //! @name  data w.r.t old and new interface position
@@ -654,7 +654,7 @@ namespace XFEM
         LINALG::Matrix<3, 1>& x,            ///< global coordiantes of point
         LINALG::Matrix<3, 1>& xi,           ///< determined local coordinates w.r.t ele
         bool& found                         ///< is element found?
-        ) const;
+    ) const;
 
     //! interpolate velocity and derivatives for a point in an element
     void getGPValues(DRT::Element* ele,             ///< pointer to element
@@ -667,7 +667,7 @@ namespace XFEM
         LINALG::Matrix<1, 3>& pres_deriv,           ///< pressure gradient
         Teuchos::RCP<const Epetra_Vector> vel_vec,  ///< vector used for interpolating at gp
         bool compute_deriv = true                   ///< shall derivatives be computed?
-        ) const;
+    ) const;
 
     //! interpolate velocity and derivatives for a point in an element
     template <DRT::Element::DiscretizationType DISTYPE>
@@ -681,7 +681,7 @@ namespace XFEM
         LINALG::Matrix<1, 3>& pres_deriv,           ///< pressure gradient
         Teuchos::RCP<const Epetra_Vector> vel_vec,  ///< vector used for interpolating at gp
         bool compute_deriv = true                   ///< shall derivatives be computed?
-        ) const;
+    ) const;
 
     //!  back-tracking of data at final Lagrangian origin of a point                       schott
     //!  04/12 *

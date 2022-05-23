@@ -61,16 +61,16 @@ namespace POROFLUIDMULTIPHASE
     //! get nodal result to be tested
     double ResultNode(const std::string quantity,  //! name of quantity to be tested
         DRT::Node* node                            //! node carrying the result to be tested
-        ) const;
+    ) const;
 
     //! get element result to be tested
     double ResultElement(const std::string quantity,  //! name of quantity to be tested
         const DRT::Element* element                   //! element carrying the result to be tested
-        ) const;
+    ) const;
 
     //! get special result to be tested
     virtual double ResultSpecial(const std::string quantity  //! name of quantity to be tested
-        ) const;
+    ) const;
 
    private:
     //! time integrator

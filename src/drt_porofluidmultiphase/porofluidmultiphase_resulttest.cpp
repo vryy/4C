@@ -258,7 +258,7 @@ void POROFLUIDMULTIPHASE::ResultTest::TestSpecial(
  *----------------------------------------------------------------------*/
 double POROFLUIDMULTIPHASE::ResultTest::ResultSpecial(
     const std::string quantity  //! name of quantity to be tested
-    ) const
+) const
 {
   // initialize variable for result
   double result(0.);

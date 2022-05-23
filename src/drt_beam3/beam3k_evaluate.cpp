@@ -3973,12 +3973,12 @@ template void DRT::ELEMENTS::Beam3k::EvaluateAnalyticStiffmatContributionsFromRo
     const std::vector<LINALG::Matrix<3, 3 * 2 * 2 + BEAM3K_COLLOCATION_POINTS, double>>&,
     const LINALG::Matrix<3, 1, double>, double, double, double, double) const;
 
-template void DRT::ELEMENTS::Beam3k::
-    PreComputeTermsAtCPForAnalyticStiffmatContributionsFromRotationalDamping<2, 2, 3>(
-        LINALG::Matrix<3, 3 * 2 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
-        const LINALG::Matrix<1, 3 * 2 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
-        const LINALG::Matrix<3, 3 * 2 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
-        const LINALG::Matrix<3, 1, double>&, double, const LINALG::Matrix<4, 1, double>&) const;
+template void
+DRT::ELEMENTS::Beam3k::PreComputeTermsAtCPForAnalyticStiffmatContributionsFromRotationalDamping<2,
+    2, 3>(LINALG::Matrix<3, 3 * 2 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<1, 3 * 2 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 3 * 2 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 1, double>&, double, const LINALG::Matrix<4, 1, double>&) const;
 
 template void DRT::ELEMENTS::Beam3k::AssembleShapefunctionsL<double, double>(
     LINALG::Matrix<1, BEAM3K_COLLOCATION_POINTS, double>&,

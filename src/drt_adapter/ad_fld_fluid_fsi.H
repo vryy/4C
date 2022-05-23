@@ -274,7 +274,7 @@ namespace ADAPTER
     void ExplicitEuler(const Epetra_Vector& veln,  ///< velocity at \f$t_n\f$
         const Epetra_Vector& accn,                 ///< acceleration at \f$t_n\f$
         Epetra_Vector& velnp                       ///< velocity at \f$t_{n+1}\f$
-        ) const;
+    ) const;
 
     /*! \brief Do a single Adams-Bashforth 2 step as auxiliary time integrator
      *
@@ -310,12 +310,12 @@ namespace ADAPTER
         const Epetra_Vector& accn,                   ///< acceleration at \f$t_n\f$
         const Epetra_Vector& accnm,                  ///< acceleration at \f$t_{n-1}\f$
         Epetra_Vector& velnp                         ///< velocity at \f$t_{n+1}\f$
-        ) const;
+    ) const;
 
     //! Compute length-scaled L2-norm of a vector
     virtual double CalculateErrorNorm(const Epetra_Vector& vec,  ///< vector to compute norm of
         const int numneglect = 0  ///< number of DOFs that have to be neglected for length scaling
-        ) const;
+    ) const;
 
     //! return order of accuracy of auxiliary integrator
     int AuxMethodOrderOfAccuracy() const;

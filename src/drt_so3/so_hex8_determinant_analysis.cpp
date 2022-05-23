@@ -490,25 +490,26 @@ void DRT::ELEMENTS::So_Hex8_Determinant_Analysis::compute20Tet4Volumes(
   // --------------------------------------------------------------------------
   // corner TET4s from 0 to 3
   unsigned offset = 0;
-  offset = computeTet4VolAtCorners(tet4_volumes, x_curr,
-      [](unsigned i) -> unsigned { return i; },                   // 0, 1, 2, 3
-      [](unsigned i) -> unsigned { return fast_mod(i + 1, 4); },  // 1, 2, 3, 0
-      [](unsigned i) -> unsigned { return fast_mod(i + 3, 4); },  // 3, 0, 1, 2
-      [](unsigned i) -> unsigned { return (i + 4); },             // 4, 5, 6, 7
+  offset = computeTet4VolAtCorners(
+      tet4_volumes, x_curr, [](unsigned i) -> unsigned { return i; },  // 0, 1, 2, 3
+      [](unsigned i) -> unsigned { return fast_mod(i + 1, 4); },       // 1, 2, 3, 0
+      [](unsigned i) -> unsigned { return fast_mod(i + 3, 4); },       // 3, 0, 1, 2
+      [](unsigned i) -> unsigned { return (i + 4); },                  // 4, 5, 6, 7
       offset);
 
   // --------------------------------------------------------------------------
   // corner TET4s from 4 to 7
-  offset = computeTet4VolAtCorners(tet4_volumes, x_curr,
-      [](unsigned i) -> unsigned { return i; },                       // 0, 1, 2, 3
-      [](unsigned i) -> unsigned { return fast_mod(i + 1, 4) + 4; },  // 5, 6, 7, 4
-      [](unsigned i) -> unsigned { return fast_mod(i + 3, 4) + 4; },  // 7, 4, 5, 6
-      [](unsigned i) -> unsigned { return i + 4; },                   // 4, 5, 6, 7
+  offset = computeTet4VolAtCorners(
+      tet4_volumes, x_curr, [](unsigned i) -> unsigned { return i; },  // 0, 1, 2, 3
+      [](unsigned i) -> unsigned { return fast_mod(i + 1, 4) + 4; },   // 5, 6, 7, 4
+      [](unsigned i) -> unsigned { return fast_mod(i + 3, 4) + 4; },   // 7, 4, 5, 6
+      [](unsigned i) -> unsigned { return i + 4; },                    // 4, 5, 6, 7
       offset);
 
   // --------------------------------------------------------------------------
   // edge TET4s from 8 to 11
-  offset = computeTet4VolAtEdges(tet4_volumes, x_curr,
+  offset = computeTet4VolAtEdges(
+      tet4_volumes, x_curr,
       [](unsigned i) -> unsigned { return fast_mod(i + 1, 4); },      // 1, 2, 3, 0
       [](unsigned i) -> unsigned { return i; },                       // 0, 1, 2, 3
       [](unsigned i) -> unsigned { return i + 4; },                   // 4, 5, 6, 7
@@ -519,24 +520,24 @@ void DRT::ELEMENTS::So_Hex8_Determinant_Analysis::compute20Tet4Volumes(
 
   // --------------------------------------------------------------------------
   // edge TET4s from 12 to 15
-  offset = computeTet4VolAtEdges(tet4_volumes, x_curr,
-      [](unsigned i) -> unsigned { return i; },                       // 0, 1, 2, 3
-      [](unsigned i) -> unsigned { return (i + 4); },                 // 4, 5, 6, 7
-      [](unsigned i) -> unsigned { return fast_mod(i + 1, 4); },      // 1, 2, 3, 0
-      [](unsigned i) -> unsigned { return fast_mod(i + 1, 4) + 4; },  // 5, 6, 7, 4
-      [](unsigned i) -> unsigned { return fast_mod(i + 3, 4); },      // 3, 0, 1, 2
-      [](unsigned i) -> unsigned { return fast_mod(i + 3, 4) + 4; },  // 7, 4, 5, 6
+  offset = computeTet4VolAtEdges(
+      tet4_volumes, x_curr, [](unsigned i) -> unsigned { return i; },  // 0, 1, 2, 3
+      [](unsigned i) -> unsigned { return (i + 4); },                  // 4, 5, 6, 7
+      [](unsigned i) -> unsigned { return fast_mod(i + 1, 4); },       // 1, 2, 3, 0
+      [](unsigned i) -> unsigned { return fast_mod(i + 1, 4) + 4; },   // 5, 6, 7, 4
+      [](unsigned i) -> unsigned { return fast_mod(i + 3, 4); },       // 3, 0, 1, 2
+      [](unsigned i) -> unsigned { return fast_mod(i + 3, 4) + 4; },   // 7, 4, 5, 6
       offset);
 
   // --------------------------------------------------------------------------
   // edge TET4s from 16 to 19
-  offset = computeTet4VolAtEdges(tet4_volumes, x_curr,
-      [](unsigned i) -> unsigned { return i + 4; },                   // 4, 5, 6, 7
-      [](unsigned i) -> unsigned { return fast_mod(i + 1, 4) + 4; },  // 5, 6, 7, 4
-      [](unsigned i) -> unsigned { return i; },                       // 0, 1, 2, 3
-      [](unsigned i) -> unsigned { return fast_mod(i + 1, 4); },      // 1, 2, 3, 0
-      [](unsigned i) -> unsigned { return fast_mod(i + 2, 4) + 4; },  // 6, 7, 4, 5
-      [](unsigned i) -> unsigned { return fast_mod(i + 3, 4) + 4; },  // 7, 4, 5, 6
+  offset = computeTet4VolAtEdges(
+      tet4_volumes, x_curr, [](unsigned i) -> unsigned { return i + 4; },  // 4, 5, 6, 7
+      [](unsigned i) -> unsigned { return fast_mod(i + 1, 4) + 4; },       // 5, 6, 7, 4
+      [](unsigned i) -> unsigned { return i; },                            // 0, 1, 2, 3
+      [](unsigned i) -> unsigned { return fast_mod(i + 1, 4); },           // 1, 2, 3, 0
+      [](unsigned i) -> unsigned { return fast_mod(i + 2, 4) + 4; },       // 6, 7, 4, 5
+      [](unsigned i) -> unsigned { return fast_mod(i + 3, 4) + 4; },       // 7, 4, 5, 6
       offset);
 }
 

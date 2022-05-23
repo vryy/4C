@@ -159,7 +159,7 @@ namespace XFEM
             velDeriv_avg,  ///< velocity/acc component derivatives for several vectors
         std::vector<LINALG::Matrix<1, 3>>&
             preDeriv_avg  ///< pressure-component derivatives for several vectors
-        ) const;
+    ) const;
 
 
     /*========================================================================*/

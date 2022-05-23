@@ -536,7 +536,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcConvConsODMesh(
     const double timefacfac,         //!< time-integration factor times domain-integration factor
     const double densnp,             //!< density
     const double J  //!< Jacobian determinant of mapping between spatial and parameter coordinates
-    ) const
+) const
 {
   if (not scatraparatimint_->IsStationary())
   {

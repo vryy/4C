@@ -81,13 +81,13 @@ namespace INVANA
     virtual void WriteNamedVector(const std::string name,  ///< [in] a name for the vector
         Teuchos::RCP<const Epetra_MultiVector> vector,     ///< [in] the vector to write
         IO::VectorType type = IO::elementvector            ///<[in] vector type
-        ) const;
+    ) const;
 
     //! Write named vectors (each vector in MV with a number)
     virtual void WriteNamedVectors(const std::string name,  ///< [in] a name for the vector
         Teuchos::RCP<const Epetra_MultiVector> vector,      ///< [in] the vector to write
         IO::VectorType type = IO::elementvector             ///<[in] vector type
-        ) const;
+    ) const;
 
     //! Write mesh
     virtual void WriteMesh(int step, double time);

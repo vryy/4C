@@ -1526,10 +1526,12 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ElemagDiffEleCalc<distype>* DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::ElemagDiffEleCalc<distype>> singleton_owner([]() {
-    return std::unique_ptr<DRT::ELEMENTS::ElemagDiffEleCalc<distype>>(
-        new DRT::ELEMENTS::ElemagDiffEleCalc<distype>());
-  });
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::ElemagDiffEleCalc<distype>> singleton_owner(
+      []()
+      {
+        return std::unique_ptr<DRT::ELEMENTS::ElemagDiffEleCalc<distype>>(
+            new DRT::ELEMENTS::ElemagDiffEleCalc<distype>());
+      });
 
   return singleton_owner.Instance(action);
 }

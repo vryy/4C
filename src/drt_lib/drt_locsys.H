@@ -199,7 +199,7 @@ namespace DRT
       void RotateGlobalToLocal(
           Teuchos::RCP<LINALG::SparseMatrix> sysmat,  ///< systemmatrix, will be transformed
           Teuchos::RCP<Epetra_Vector> rhs  ///< right-hand-side vector, will be transformed
-          ) const;
+      ) const;
 
       /*!
        * \brief Apply forward transformation of a single matrix

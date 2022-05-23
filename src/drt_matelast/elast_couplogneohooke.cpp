@@ -47,7 +47,7 @@ MAT::ELASTIC::CoupLogNeoHooke::CoupLogNeoHooke(MAT::ELASTIC::PAR::CoupLogNeoHook
 void MAT::ELASTIC::CoupLogNeoHooke::AddShearMod(
     bool& haveshearmod,  ///< non-zero shear modulus was added
     double& shearmod     ///< variable to add upon
-    ) const
+) const
 {
   haveshearmod = true;
 

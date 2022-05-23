@@ -1113,10 +1113,12 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ElemagEleCalc<distype>* DRT::ELEMENTS::ElemagEleCalc<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::ElemagEleCalc<distype>> singleton_owner([]() {
-    return std::unique_ptr<DRT::ELEMENTS::ElemagEleCalc<distype>>(
-        new DRT::ELEMENTS::ElemagEleCalc<distype>());
-  });
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::ElemagEleCalc<distype>> singleton_owner(
+      []()
+      {
+        return std::unique_ptr<DRT::ELEMENTS::ElemagEleCalc<distype>>(
+            new DRT::ELEMENTS::ElemagEleCalc<distype>());
+      });
 
   return singleton_owner.Instance(action);
 }

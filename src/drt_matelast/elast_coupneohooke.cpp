@@ -50,7 +50,7 @@ void MAT::ELASTIC::CoupNeoHooke::AddElastOptParams(std::map<std::string, int>* p
 void MAT::ELASTIC::CoupNeoHooke::AddShearMod(
     bool& haveshearmod,  ///< non-zero shear modulus was added
     double& shearmod     ///< variable to add upon
-    ) const
+) const
 {
   haveshearmod = true;
 

@@ -76,7 +76,8 @@ DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>*
 DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::Instance(::UTILS::SingletonAction action)
 {
   static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>> singleton_owner(
-      []() {
+      []()
+      {
         return std::unique_ptr<DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>>(
             new DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>());
       });
@@ -387,7 +388,7 @@ void DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::ExtractValuesFromGlobalV
     LINALG::Matrix<nsd_, nen_>* matrixtofill,   ///< vector field
     LINALG::Matrix<nen_, 1>* vectortofill,      ///< scalar field
     const std::string state                     ///< state of the global vector
-    ) const
+) const
 {
   // get state of the global vector
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(state);

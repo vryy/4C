@@ -78,10 +78,12 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ElemagBoundaryImpl<distype>* DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::ElemagBoundaryImpl<distype>> singleton_owner([]() {
-    return std::unique_ptr<DRT::ELEMENTS::ElemagBoundaryImpl<distype>>(
-        new DRT::ELEMENTS::ElemagBoundaryImpl<distype>());
-  });
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::ElemagBoundaryImpl<distype>> singleton_owner(
+      []()
+      {
+        return std::unique_ptr<DRT::ELEMENTS::ElemagBoundaryImpl<distype>>(
+            new DRT::ELEMENTS::ElemagBoundaryImpl<distype>());
+      });
 
   return singleton_owner.Instance(action);
 }

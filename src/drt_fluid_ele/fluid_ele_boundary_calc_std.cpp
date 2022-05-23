@@ -18,7 +18,8 @@ DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>*
 DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::Instance(::UTILS::SingletonAction action)
 {
   static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>> singleton_owner(
-      []() {
+      []()
+      {
         return std::unique_ptr<DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>>(
             new DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>());
       });

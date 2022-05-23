@@ -15,10 +15,12 @@
 DRT::ELEMENTS::FluidEleParameterXFEM* DRT::ELEMENTS::FluidEleParameterXFEM::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleParameterXFEM> singleton_owner([]() {
-    return std::unique_ptr<DRT::ELEMENTS::FluidEleParameterXFEM>(
-        new DRT::ELEMENTS::FluidEleParameterXFEM());
-  });
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleParameterXFEM> singleton_owner(
+      []()
+      {
+        return std::unique_ptr<DRT::ELEMENTS::FluidEleParameterXFEM>(
+            new DRT::ELEMENTS::FluidEleParameterXFEM());
+      });
 
   return singleton_owner.Instance(action);
 }

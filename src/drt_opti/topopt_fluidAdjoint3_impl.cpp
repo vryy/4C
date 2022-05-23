@@ -74,10 +74,12 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidAdjoint3Impl<distype>* DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidAdjoint3Impl<distype>> singleton_owner([]() {
-    return std::unique_ptr<DRT::ELEMENTS::FluidAdjoint3Impl<distype>>(
-        new DRT::ELEMENTS::FluidAdjoint3Impl<distype>());
-  });
+  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidAdjoint3Impl<distype>> singleton_owner(
+      []()
+      {
+        return std::unique_ptr<DRT::ELEMENTS::FluidAdjoint3Impl<distype>>(
+            new DRT::ELEMENTS::FluidAdjoint3Impl<distype>());
+      });
 
   return singleton_owner.Instance(action);
 }
@@ -3144,7 +3146,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ExtractValuesFromGlobalVector(
     LINALG::Matrix<nsd_, nen_>* matrixtofill,   ///< vector field
     LINALG::Matrix<nen_, 1>* vectortofill,      ///< scalar field
     const std::string state                     ///< state of the global vector
-    ) const
+) const
 {
   // get state of the global vector
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(state);

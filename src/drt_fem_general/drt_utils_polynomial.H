@@ -616,10 +616,10 @@ namespace DRT
           : polyspace_((getNumberOfElementFaces(distype) == 1 + nsd_ && nsd_ > 1)
                            ? static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_> *>(
                                  new DRT::UTILS::LagrangeBasisTet<nsd_>(degree))
-                           : completeSpace ? static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_> *>(
-                                                 new DRT::UTILS::LegendreBasis<nsd_>(degree))
-                                           : static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_> *>(
-                                                 new DRT::UTILS::LagrangeBasis<nsd_>(degree)))
+                       : completeSpace ? static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_> *>(
+                                             new DRT::UTILS::LegendreBasis<nsd_>(degree))
+                                       : static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_> *>(
+                                             new DRT::UTILS::LagrangeBasis<nsd_>(degree)))
       {
         if (nsd_ != getDimension(distype))
           dserror("Dimension of shape does not match template argument nsd_ in PolynomialSpace");
@@ -629,11 +629,11 @@ namespace DRT
           : polyspace_((getNumberOfElementFaces(params.distype_) == 1 + nsd_ && nsd_ > 1)
                            ? static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_> *>(
                                  new DRT::UTILS::LagrangeBasisTet<nsd_>(params.degree_))
-                           : params.completeSpace_
-                                 ? static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_> *>(
-                                       new DRT::UTILS::LegendreBasis<nsd_>(params.degree_))
-                                 : static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_> *>(
-                                       new DRT::UTILS::LagrangeBasis<nsd_>(params.degree_)))
+                       : params.completeSpace_
+                           ? static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_> *>(
+                                 new DRT::UTILS::LegendreBasis<nsd_>(params.degree_))
+                           : static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_> *>(
+                                 new DRT::UTILS::LagrangeBasis<nsd_>(params.degree_)))
       {
       }
 

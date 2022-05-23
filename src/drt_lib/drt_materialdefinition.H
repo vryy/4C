@@ -354,7 +354,7 @@ namespace DRT
       /// transcribe Boolean to Yes/No
       void PrintYesNo(std::ostream& stream,  ///< stream to add output
           const bool value                   ///< the Boolean value to transcribe
-          ) const;
+      ) const;
 
       /// string constant which is identified with 'true'
       static const std::string lineTrue_;

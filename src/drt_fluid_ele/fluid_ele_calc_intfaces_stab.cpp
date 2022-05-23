@@ -228,11 +228,13 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Instance(
 {
   static ::UTILS::SingletonOwner<
       DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>>
-      singleton_owner([]() {
-        return std::unique_ptr<
-            DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>>(
-            new DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>());
-      });
+      singleton_owner(
+          []()
+          {
+            return std::unique_ptr<
+                DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>>(
+                new DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>());
+          });
 
   return singleton_owner.Instance(action);
 }

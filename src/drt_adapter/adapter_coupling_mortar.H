@@ -194,7 +194,7 @@ namespace ADAPTER
      */
     Teuchos::RCP<Epetra_Vector> MasterToSlave(
         Teuchos::RCP<Epetra_Vector> mv  ///< [in] master vector (to be transferred)
-        ) const;
+    ) const;
 
     /*! \brief Transfer a dof vector from master to slave
      *
@@ -202,7 +202,7 @@ namespace ADAPTER
      */
     Teuchos::RCP<Epetra_MultiVector> MasterToSlave(
         Teuchos::RCP<Epetra_MultiVector> mv  ///< [in] master vector (to be transferred)
-        ) const;
+    ) const;
 
     /*! \brief Transfer a dof vector from master to slave (const version)
      *
@@ -210,7 +210,7 @@ namespace ADAPTER
      */
     Teuchos::RCP<Epetra_Vector> MasterToSlave(
         Teuchos::RCP<const Epetra_Vector> mv  ///< [in] master vector (to be transferred)
-        ) const;
+    ) const;
 
     /*! \brief Transfer a dof vector from master to slave (const version)
      *
@@ -218,7 +218,7 @@ namespace ADAPTER
      */
     Teuchos::RCP<Epetra_MultiVector> MasterToSlave(
         Teuchos::RCP<const Epetra_MultiVector> mv  ///< [in] master vector (to be transferred)
-        ) const;
+    ) const;
 
     /*! \brief Transfer a dof vector from slave to master
      *
@@ -226,7 +226,7 @@ namespace ADAPTER
      */
     Teuchos::RCP<Epetra_Vector> SlaveToMaster(
         Teuchos::RCP<Epetra_Vector> sv  ///< [in] slave vector (to be transferred)
-        ) const;
+    ) const;
 
     /*! \brief Transfer a dof vector from slave to master
      *
@@ -234,7 +234,7 @@ namespace ADAPTER
      */
     Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(
         Teuchos::RCP<Epetra_MultiVector> sv  ///< [in] slave vector (to be transferred)
-        ) const;
+    ) const;
 
     /*! \brief Transfer a dof vector from slave to master (const version)
      *
@@ -242,7 +242,7 @@ namespace ADAPTER
      */
     Teuchos::RCP<Epetra_Vector> SlaveToMaster(
         Teuchos::RCP<const Epetra_Vector> sv  ///< [in] slave vector (to be transferred)
-        ) const;
+    ) const;
 
     /*! \brief Transfer a dof vector from slave to master (const version)
      *
@@ -250,19 +250,19 @@ namespace ADAPTER
      */
     Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(
         Teuchos::RCP<const Epetra_MultiVector> sv  ///< [in] slave vector (to be transferred)
-        ) const;
+    ) const;
 
     /// transfer a dof vector from master to slave
     void MasterToSlave(
         Teuchos::RCP<const Epetra_MultiVector> mv,  ///< [in] master vector (to be transferred)
         Teuchos::RCP<Epetra_MultiVector> sv         ///< [out] slave vector (containing result)
-        ) const;
+    ) const;
 
     /// transfer a dof vector from slave to master
     void SlaveToMaster(
         Teuchos::RCP<const Epetra_MultiVector> sv,  ///< [in] slave vector (to be transferred)
         Teuchos::RCP<Epetra_MultiVector> mv         ///< [out] master vector (containing result)
-        ) const;
+    ) const;
 
     //@}
 
@@ -286,13 +286,13 @@ namespace ADAPTER
                                                 ///< out: tangent matrix w/  condensation
         Teuchos::RCP<Epetra_Vector>& rhs        ///< in:  rhs vector     w/o condensation
                                                 ///< out: rhs vector     w/  condensation
-        ) const;
+    ) const;
 
     /// recover slave-sided dofs
     void MortarRecover(Teuchos::RCP<LINALG::SparseMatrix>& k,  ///< in: tangent matrix
         Teuchos::RCP<Epetra_Vector>& inc  ///< in:  solution vector     w/o condensation
                                           ///< out: solution vector     w/  condensation
-        ) const;
+    ) const;
 
     //@}
 

@@ -82,7 +82,7 @@ void LUBRICATION::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& ner
 double LUBRICATION::ResultTest::ResultNode(
     const std::string quantity,  //! name of quantity to be tested
     DRT::Node* node              //! node carrying the result to be tested
-    ) const
+) const
 {
   // initialize variable for result
   double result(0.);
@@ -132,7 +132,7 @@ void LUBRICATION::ResultTest::TestSpecial(
  *----------------------------------------------------------------------*/
 double LUBRICATION::ResultTest::ResultSpecial(
     const std::string quantity  //! name of quantity to be tested
-    ) const
+) const
 {
   // initialize variable for result
   double result(0.);

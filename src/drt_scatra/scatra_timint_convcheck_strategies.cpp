@@ -42,7 +42,7 @@ SCATRA::ConvCheckStrategyBase::ConvCheckStrategyBase(
 bool SCATRA::ConvCheckStrategyStd::AbortNonlinIter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
-    ) const
+) const
 {
   // extract processor ID
   const int mypid = scatratimint.Discretization()->Comm().MyPID();
@@ -169,7 +169,7 @@ bool SCATRA::ConvCheckStrategyStd::AbortNonlinIter(
  *--------------------------------------------------------------------------------------------*/
 bool SCATRA::ConvCheckStrategyStd::AbortOuterIter(
     const ScaTraTimIntImpl& scatratimint  //!< scalar transport time integrator
-    ) const
+) const
 {
   // extract processor ID
   const int mypid = scatratimint.Discretization()->Comm().MyPID();
@@ -247,7 +247,7 @@ bool SCATRA::ConvCheckStrategyStd::AbortOuterIter(
 bool SCATRA::ConvCheckStrategyStdMicroScale::AbortNonlinIter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
-    ) const
+) const
 {
   // extract current Newton-Raphson iteration step
   const int itnum = scatratimint.IterNum();
@@ -299,7 +299,7 @@ bool SCATRA::ConvCheckStrategyStdMicroScale::AbortNonlinIter(
 bool SCATRA::ConvCheckStrategyStdElch::AbortNonlinIter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
-    ) const
+) const
 {
   // extract processor ID
   const int mypid = scatratimint.Discretization()->Comm().MyPID();
@@ -458,7 +458,7 @@ bool SCATRA::ConvCheckStrategyStdElch::AbortNonlinIter(
 bool SCATRA::ConvCheckStrategyS2ILM::AbortNonlinIter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
-    ) const
+) const
 {
   // extract processor ID
   const int mypid = scatratimint.Discretization()->Comm().MyPID();
@@ -616,7 +616,7 @@ bool SCATRA::ConvCheckStrategyS2ILM::AbortNonlinIter(
 bool SCATRA::ConvCheckStrategyS2ILMElch::AbortNonlinIter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
-    ) const
+) const
 {
   // extract processor ID
   const int mypid = scatratimint.Discretization()->Comm().MyPID();
@@ -807,7 +807,7 @@ bool SCATRA::ConvCheckStrategyS2ILMElch::AbortNonlinIter(
 bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortNonlinIter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
-    ) const
+) const
 {
   // cast scalar transport time integrator
   const ScaTraTimIntElch* const elchtimint = dynamic_cast<const ScaTraTimIntElch*>(&scatratimint);
@@ -1000,7 +1000,7 @@ bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortNonlinIter(
  *--------------------------------------------------------------------------------------------*/
 bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortOuterIter(
     const ScaTraTimIntImpl& scatratimint  //!< scalar transport time integrator
-    ) const
+) const
 {
   // cast scalar transport time integrator
   const ScaTraTimIntElch* const elchtimint = dynamic_cast<const ScaTraTimIntElch*>(&scatratimint);
@@ -1107,7 +1107,7 @@ bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortOuterIter(
 bool SCATRA::ConvCheckStrategyPoroMultiphaseScatra::AbortNonlinIter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
-    ) const
+) const
 {
   // extract processor ID
   const int mypid = scatratimint.Discretization()->Comm().MyPID();
@@ -1231,7 +1231,7 @@ bool SCATRA::ConvCheckStrategyPoroMultiphaseScatra::AbortNonlinIter(
 bool SCATRA::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::AbortNonlinIter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
-    ) const
+) const
 {
   // extract processor ID
   const int mypid = scatratimint.Discretization()->Comm().MyPID();

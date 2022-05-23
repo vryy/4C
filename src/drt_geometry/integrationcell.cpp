@@ -449,8 +449,9 @@ GEO::ConcreteBoundaryIntCell<probDim, cellType, dim, numNodePerEle>::ConcreteBou
  *----------------------------------------------------------------------*/
 template <unsigned probDim, DRT::Element::DiscretizationType cellType, unsigned dim,
     unsigned numNodePerEle>
-GEO::BoundaryIntCell& GEO::ConcreteBoundaryIntCell<probDim, cellType, dim, numNodePerEle>::
-operator=(const GEO::BoundaryIntCell& boundaryintcell)
+GEO::BoundaryIntCell&
+GEO::ConcreteBoundaryIntCell<probDim, cellType, dim, numNodePerEle>::operator=(
+    const GEO::BoundaryIntCell& boundaryintcell)
 {
   return operator=(
       dynamic_cast<const ConcreteBoundaryIntCell<probDim, cellType, dim, numNodePerEle>&>(
@@ -461,8 +462,8 @@ operator=(const GEO::BoundaryIntCell& boundaryintcell)
  *----------------------------------------------------------------------*/
 template <unsigned probDim, DRT::Element::DiscretizationType cellType, unsigned dim,
     unsigned numNodePerEle>
-GEO::BoundaryIntCell& GEO::ConcreteBoundaryIntCell<probDim, cellType, dim, numNodePerEle>::
-operator=(
+GEO::BoundaryIntCell&
+GEO::ConcreteBoundaryIntCell<probDim, cellType, dim, numNodePerEle>::operator=(
     const GEO::ConcreteBoundaryIntCell<probDim, cellType, dim, numNodePerEle>& boundaryintcell)
 {
   this->GEO::BoundaryIntCell::operator=(boundaryintcell);

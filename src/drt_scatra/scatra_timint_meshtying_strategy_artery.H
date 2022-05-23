@@ -106,11 +106,11 @@ namespace SCATRA
         const Teuchos::RCP<Epetra_Vector>& phinp,                  //!< state vector at time n+1
         const int& iteration,  //!< number of current Newton-Raphson iteration
         const Teuchos::RCP<LINALG::KrylovProjector>& projector  //!< Krylov projector
-        ) const override;
+    ) const override;
 
     void SetupSystem(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
         const Teuchos::RCP<Epetra_Vector>& residual                             //!< residual vector
-        ) const;
+    ) const;
 
     //! init the convergence check
     void SetArteryScatraTimeIntegrator(Teuchos::RCP<SCATRA::ScaTraTimIntImpl> artscatratimint);

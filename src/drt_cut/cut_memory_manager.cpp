@@ -150,12 +150,11 @@ void GEO::CUT::GenericMemoryPool::DeleteMissing()
   // this could be in the separate function and done only in the beginning
   std::sort(sorted_mem_pools.begin(), sorted_mem_pools.end(),
       [](const std::pair<std::pair<size_t, size_t>, ConstMemoryPool*>& a,
-          const std::pair<std::pair<size_t, size_t>, ConstMemoryPool*>& b) {
-        return (a.first.first < b.first.first);
-      });
-  std::sort(free_queue_.begin(), free_queue_.end(), [](const void* a, const void* b) {
-    return (reinterpret_cast<size_t>(a) < reinterpret_cast<size_t>(b));
-  });
+          const std::pair<std::pair<size_t, size_t>, ConstMemoryPool*>& b)
+      { return (a.first.first < b.first.first); });
+  std::sort(free_queue_.begin(), free_queue_.end(),
+      [](const void* a, const void* b)
+      { return (reinterpret_cast<size_t>(a) < reinterpret_cast<size_t>(b)); });
 
   int deleted = 0;
 
@@ -330,9 +329,8 @@ void GEO::CUT::GenericMemoryPool::AllInOneAllocation(
   }
 
   std::sort(mem_pattern_vec.begin(), mem_pattern_vec.end(),
-      [](const std::pair<size_t, int>& a, const std::pair<size_t, int>& b) {
-        return (a.first > b.first);
-      });
+      [](const std::pair<size_t, int>& a, const std::pair<size_t, int>& b)
+      { return (a.first > b.first); });
 
   size_t offset = 0;
   const size_t char_pointer_size = 8;

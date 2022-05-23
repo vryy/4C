@@ -94,7 +94,7 @@ namespace INVANA
     virtual void PrintInfo(const int& iter,  /// [int] iteration
         const double& t,                     ///[in] current time
         const double& ess                    /// [in] effective sample size
-        ) const;
+    ) const;
 
     //! @name Restarts
     //@{

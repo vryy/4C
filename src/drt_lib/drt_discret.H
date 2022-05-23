@@ -1757,7 +1757,7 @@ namespace DRT
    */
     Teuchos::RCP<std::vector<char>> PackCondition(const std::string
             condname  ///< name of condition as it is used in GetCondition() or SetCondition()
-        ) const;
+    ) const;
 
     /*!
       \brief Unpack element buffer and create local elements.

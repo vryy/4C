@@ -48,7 +48,7 @@ namespace STI
    private:
     //! get special result to be tested
     double ResultSpecial(const std::string& quantity  //! name of quantity to be tested
-        ) const;
+    ) const;
 
     //! return time integrator for monolithic scatra-thermo interaction
     const STI::Monolithic& STIMonolithic() const;

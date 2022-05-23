@@ -48,37 +48,37 @@ namespace DRT
 
     /// Get number of dofs for given node
     virtual int NumDof(const Node* node  ///< node, for which you want to know the number of dofs
-        ) const = 0;
+    ) const = 0;
 
     /// Get number of dofs for given element
     virtual int NumDof(
         const Element* element  ///< element, for which you want to know the number of dofs
-        ) const = 0;
+    ) const = 0;
 
     /// get number of nodal dofs
     virtual int NumDofPerNode(
         const Node& node  ///< node, for which you want to know the number of dofs
-        ) const = 0;
+    ) const = 0;
 
     /// Get the gid of a dof for given node
     virtual int Dof(const Node* node,  ///< node, for which you want the dof positions
         int dof                        ///< number of dof for which you want the dof position
-        ) const = 0;
+    ) const = 0;
 
     /// Get the gid of a dof for given element
     virtual int Dof(const Element* element,  ///< element, for which you want the dof positions
         int dof                              ///< number dof for which you want the dof position
-        ) const = 0;
+    ) const = 0;
 
     /// Get the gid of all dofs of a node
     virtual std::vector<int> Dof(const Node* node  ///< node, for which you want the dof positions
-        ) const = 0;
+    ) const = 0;
 
     /// Get the gid of all dofs of a node
     virtual void Dof(std::vector<int>& dof,  ///< vector of dof gids (to be filled)
         const Node* node,                    ///< node, for which you want the dof positions
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
-        ) const = 0;
+    ) const = 0;
 
     /// Get the gid of all dofs of a element
     virtual std::vector<int> Dof(const Element* element) const = 0;
@@ -90,7 +90,7 @@ namespace DRT
     virtual void Dof(const Node* node,  ///< node, for which you want the dof positions
         const unsigned startindex,      ///< first index of vector at which will be written to end
         std::vector<int>& lm  ///< already allocated vector to be filled with dof positions
-        ) const = 0;
+    ) const = 0;
 
     /// Get the gid of all dofs of a element and the location matrix
     virtual void Dof(const Element* element, std::vector<int>& lm) const = 0;
@@ -100,7 +100,7 @@ namespace DRT
         const Element* element,  ///< element which provides its expected number of DOFs per node
         const Node* node,        ///< node, for which you want the DOF positions
         std::vector<int>& lm     ///< already allocated vector to be filled with DOF positions
-        ) const = 0;
+    ) const = 0;
 
     //@}
 

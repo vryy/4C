@@ -356,7 +356,7 @@ namespace DRT
        */
       bool isHigherOrderElement(
           const DRT::Element::DiscretizationType distype  ///< discretization type
-          ) const;
+      ) const;
 
 
     };  // class Artery

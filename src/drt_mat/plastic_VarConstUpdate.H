@@ -51,7 +51,7 @@ namespace MAT
       /// provide access to material/summand by its ID
       Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(
           const int id  ///< ID to look for in collection of summands
-          ) const;
+      ) const;
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();

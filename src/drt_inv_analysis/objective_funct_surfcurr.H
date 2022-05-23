@@ -122,16 +122,16 @@ namespace INVANA
   //@{
 
   //! Kokkos::View to hold data of type centers and normals
-  typedef Kokkos::View<double * [3]> currents_type;
+  typedef Kokkos::View<double* [3]> currents_type;
   typedef currents_type::HostMirror currents_host_type;
 
   //! Kokkos::View to hold data of type points (and associated data) of a triangulation
-  typedef Kokkos::View<double * [9]> trimesh_type;
+  typedef Kokkos::View<double* [9]> trimesh_type;
   typedef trimesh_type::HostMirror trimesh_host_type;
-  typedef Kokkos::View<double * [9], Kokkos::MemoryTraits<Kokkos::Atomic>> trimesh_atomic_type;
+  typedef Kokkos::View<double* [9], Kokkos::MemoryTraits<Kokkos::Atomic>> trimesh_atomic_type;
 
   //! Kokkos::View to hold data of type derivative of currents_type wrt nodal dofs
-  typedef Kokkos::View<double * [27]> trimesh_vecdata_type;
+  typedef Kokkos::View<double* [27]> trimesh_vecdata_type;
 
   //! Strided Layout to let Kokkos process only blocks of data
   typedef Kokkos::View<double**, Kokkos::LayoutStride> ViewStride;

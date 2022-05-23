@@ -52,7 +52,7 @@ namespace STR
           const Teuchos::ParameterList& xparams,       //!< extra flags
           const Teuchos::ParameterList& taflags,       //!< adaptive input flags
           Teuchos::RCP<STR::TIMINT::Base> ti_strategy  //!< marching time integrator
-          ) const;
+      ) const;
 
       //! Build the structural dynamics data container
       Teuchos::RCP<STR::TIMINT::BaseDataSDyn> BuildDataSDyn(

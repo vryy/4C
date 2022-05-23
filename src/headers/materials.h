@@ -26,7 +26,8 @@ typedef struct _MATERIAL
 
   enum _MATERIAL_TYP mattyp; /* type of material */
 
-  union {
+  union
+  {
     struct _STVENANT *stvenant;     /* St. Venant-Kirchhoff material */
     struct _NEO_HOOKE *neohooke;    /* Neo-Hooke material */
     struct _COMPOGDEN *compogden;   /* compressible ogden hyperelastic material */

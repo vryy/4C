@@ -113,7 +113,7 @@ namespace XFEM
           Teuchos::RCP<DRT::Discretization> targetdis,  //< initially empty
           std::vector<DRT::Condition*>& conditions,  //< conditioned nodes to be shifted to target
           const std::vector<std::string>& conditions_to_copy  //< conditions to copy to target
-          ) const;
+      ) const;
 
       /*! split the discretization by removing the given elements and nodes in
        *  the source discretization and adding them to the target discretization */

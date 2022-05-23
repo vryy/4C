@@ -44,7 +44,7 @@ Teuchos::RCP<STR::TimAda> STR::TIMINT::Factory::BuildAdaptiveWrapper(
     const Teuchos::ParameterList& xparams,       //!< extra flags
     const Teuchos::ParameterList& taflags,       //!< adaptive input flags
     Teuchos::RCP<STR::TIMINT::Base> ti_strategy  //!< marching time integrator
-    ) const
+) const
 {
   Teuchos::RCP<STR::TimAda> adaintegrator = Teuchos::null;
 

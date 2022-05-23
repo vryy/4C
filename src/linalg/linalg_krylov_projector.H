@@ -114,7 +114,7 @@ namespace LINALG
         const Teuchos::RCP<Epetra_MultiVector>& mv2,  //! second MultiVector
         const int id = 1,  //! id of MultiVector form which sparsity of output matrix is estimated
         const bool fill = true  //! bool for completing matrix after computation
-        ) const;
+    ) const;
 
     /*
       (Modified) ApplyInverse call

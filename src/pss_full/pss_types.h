@@ -82,7 +82,8 @@ typedef enum _SYMBOL_TYPES
 typedef struct _SYMBOL
 {
   /* put the union first to have the double value properly aligned */
-  union {
+  union
+  {
     CHAR* string;
     INT integer;
     DOUBLE real;

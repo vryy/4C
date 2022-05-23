@@ -126,7 +126,7 @@ namespace MAT
       identify the exact class on the receiving processor.
     */
     void Pack(DRT::PackBuffer& data  //!< (i/o): char vector to store class information
-        ) const override;
+    ) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -248,13 +248,13 @@ namespace MAT
     double GetMatParameterAtTempnp(
         const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
         const double& tempnp                     // tmpr (i) current temperature
-        ) const;
+    ) const;
 
     //! calculate temperature dependent material parameter and return value
     double GetMatParameterAtTempnp_T(
         const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
         const double& tempnp                     // tmpr (i) current temperature
-        ) const;
+    ) const;
 
     //! create thermo material object if specified in input (!= -1)
     void CreateThermoMaterialIfSet();

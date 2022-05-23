@@ -563,7 +563,7 @@ namespace STR
         Teuchos::RCP<const Epetra_Vector> vel,           ///< velocities
         Teuchos::RCP<const Epetra_Vector> acc,           ///< accelerations
         const Teuchos::ParameterList* sdynparams = NULL  ///< structural dynamics parameter list
-        ) const;
+    ) const;
 
     //@}
 

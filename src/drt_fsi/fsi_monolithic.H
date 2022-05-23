@@ -852,7 +852,7 @@ namespace FSI
         const double errnorm,  ///< length-scaled L2-norm of local discretization error
         const double errtol,   ///< user given error tolerance
         const double estorder  ///< order of accuracy of time integration scheme
-        ) const;
+    ) const;
 
     /*! \brief Select new time step size \f$\Delta t\f$ from all suggestions
      *

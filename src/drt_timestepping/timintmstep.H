@@ -59,7 +59,7 @@ namespace TIMINT
 
     //! Access state object by time step index (read-only)
     const STATE& operator[](const int step  //!< inquiry step
-        ) const
+    ) const
     {
       if (not StepExists(step)) dserror("Step %d is not admissible", step);
       return state_[IndexByStep(step)];
@@ -132,14 +132,14 @@ namespace TIMINT
 
     //! Determine whether step lies in given bounds
     bool StepExists(const int step  //!< inquired step
-        ) const
+    ) const
     {
       return ((step >= steppast_) and (step <= stepfuture_));
     }
 
     //! determine whether index lies in given bounds
     bool IndexExists(const int index  //!< inquired index
-        ) const
+    ) const
     {
       return ((index >= 0) and (index < (int)state_.size()));
     }
@@ -153,7 +153,7 @@ namespace TIMINT
 
     //! Map vector index to step
     int IndexByStep(const int step  //!< step number
-        ) const
+    ) const
     {
       int index = step - steppast_;
       dsassert(IndexExists(index), "step is not permissible!");

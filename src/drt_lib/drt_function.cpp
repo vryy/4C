@@ -318,7 +318,8 @@ Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateExprFunction(
     line->ExtractInt("VARIABLE", varid);
 
 
-    const auto variable = [&line]() -> Teuchos::RCP<DRT::UTILS::FunctionVariable> {
+    const auto variable = [&line]() -> Teuchos::RCP<DRT::UTILS::FunctionVariable>
+    {
       // read the name of the variable
       std::string varname;
       line->ExtractString("NAME", varname);
@@ -438,7 +439,8 @@ DRT::UTILS::ExprFunction<dim>::ExprFunction(const std::vector<std::string>& expr
     std::vector<Teuchos::RCP<FunctionVariable>> variables)
     : variables_(std::move(variables))
 {
-  const auto addVariablesToParser = [this](auto& parser) {
+  const auto addVariablesToParser = [this](auto& parser)
+  {
     parser->AddVariable("x", 0);
     parser->AddVariable("y", 0);
     parser->AddVariable("z", 0);

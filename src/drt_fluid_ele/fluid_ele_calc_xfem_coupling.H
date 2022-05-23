@@ -123,7 +123,7 @@ namespace DRT
          */
         virtual void GetInterfaceVelnp(
             LINALG::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
-            ) const
+        ) const
         {
           ivelint = LINALG::Matrix<nsd_, 1>(true);
         };
@@ -135,21 +135,21 @@ namespace DRT
          */
         virtual void GetInterfaceVeln(
             LINALG::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
-            ) const
+        ) const
         {
           ivelint = LINALG::Matrix<nsd_, 1>(true);
         };
 
         //! get interface pressure
         virtual void GetInterfacePresnp(double& ipres  ///< interface pressure
-            ) const
+        ) const
         {
           dserror("There is no concrete slave element available.");
         };
 
         //! get interface pressure
         virtual void GetInterfacePresn(double& ipres  ///< interface pressure
-            ) const
+        ) const
         {
           dserror("There is no concrete slave element available.");
         };
@@ -157,7 +157,7 @@ namespace DRT
         //! get interface velocity gradient
         virtual void GetInterfaceVelGradnp(LINALG::Matrix<nsd_, nsd_>&
                 velgradint  ///< interface velocity gradients at coupling slave side
-            ) const
+        ) const
         {
           dserror("There is no concrete slave element available.");
         };
@@ -165,7 +165,7 @@ namespace DRT
         //! get interface velocity gradient
         virtual void GetInterfaceVelGradn(LINALG::Matrix<nsd_, nsd_>&
                 velgradint  ///< interface velocity gradients at coupling slave side
-            ) const
+        ) const
         {
           dserror("There is no concrete slave element available.");
         };
@@ -194,7 +194,7 @@ namespace DRT
         virtual void GetInterfaceJumpVelnp(
             LINALG::Matrix<nsd_, 1>& ivelint_jump  ///< cutter element interface velocity jump or
                                                    ///< prescribed DBC at Gaussian point
-            ) const
+        ) const
         {
           dserror("There is no concrete slave element available.");
         };
@@ -203,7 +203,7 @@ namespace DRT
         virtual void GetInterfaceJumpVeln(
             LINALG::Matrix<nsd_, 1>& ivelintn_jump  ///< cutter element interface velocity jump or
                                                     ///< prescribed DBC at Gaussian point
-            ) const
+        ) const
         {
           dserror("There is no concrete slave element available.");
         };

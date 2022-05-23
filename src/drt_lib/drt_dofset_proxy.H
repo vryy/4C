@@ -84,7 +84,7 @@ namespace DRT
 
     /// Get number of dofs for given node
     virtual int NumDof(const Node* node  ///< node, for which you want to know the number of dofs
-        ) const
+    ) const
     {
       CheckIsAssigned();
       return dofset_->NumDof(node);
@@ -93,7 +93,7 @@ namespace DRT
     /// Get number of dofs for given element
     virtual int NumDof(
         const Element* element  ///< element, for which you want to know the number of dofs
-        ) const
+    ) const
     {
       CheckIsAssigned();
       return dofset_->NumDof(element);
@@ -102,7 +102,7 @@ namespace DRT
     /// get number of nodal dofs
     virtual int NumDofPerNode(
         const Node& node  ///< node, for which you want to know the number of dofs
-        ) const
+    ) const
     {
       CheckIsAssigned();
       return dofset_->NumDofPerNode(node);
@@ -125,7 +125,7 @@ namespace DRT
 
     /// Get the gid of all dofs of a node
     virtual std::vector<int> Dof(const Node* node  ///< node, for which you want the dof positions
-        ) const
+    ) const
     {
       CheckIsAssigned();
       return dofset_->Dof(node);
@@ -135,7 +135,7 @@ namespace DRT
     virtual void Dof(std::vector<int>& dof,  ///< vector of dof gids (to be filled)
         const Node* node,                    ///< node, for which you want the dof positions
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
-        ) const
+    ) const
     {
       CheckIsAssigned();
       dofset_->Dof(dof, node, nodaldofset);
@@ -159,7 +159,7 @@ namespace DRT
     virtual void Dof(const Node* node,  ///< node, for which you want the dof positions
         const unsigned startindex,      ///< first index of vector at which will be written to end
         std::vector<int>& lm  ///< already allocated vector to be filled with dof positions
-        ) const
+    ) const
     {
       CheckIsAssigned();
       dofset_->Dof(node, startindex, lm);
@@ -177,7 +177,7 @@ namespace DRT
         const Element* element,  ///< element which provides its expected number of DOFs per node
         const Node* node,        ///< node, for which you want the DOF positions
         std::vector<int>& lm     ///< already allocated vector to be filled with DOF positions
-        ) const
+    ) const
     {
       CheckIsAssigned();
       dofset_->Dof(element, node, lm);

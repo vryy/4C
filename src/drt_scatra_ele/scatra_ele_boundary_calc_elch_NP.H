@@ -80,7 +80,7 @@ namespace DRT
       //! extract valence of species k from element material
       double GetValence(const Teuchos::RCP<const MAT::Material>& material,  //! element material
           const int k                                                       //! species number
-          ) const;
+      ) const;
     };  // class ScaTraEleBoundaryCalcElchNP
   }     // namespace ELEMENTS
 }  // namespace DRT

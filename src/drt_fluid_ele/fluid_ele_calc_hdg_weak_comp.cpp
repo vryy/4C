@@ -866,7 +866,8 @@ DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>*
 DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Instance(::UTILS::SingletonAction action)
 {
   static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>> singleton_owner(
-      []() {
+      []()
+      {
         return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>>(
             new DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>());
       });

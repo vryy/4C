@@ -55,7 +55,7 @@ namespace STR
     //! Map STR::TimInt::NameEnum to STR::TimAda::NameEnum
     enum INPAR::STR::TimAdaKind MapNameTimIntToTimAda(
         const enum INPAR::STR::DynamicType term  //!< input enum term
-        ) const
+    ) const
     {
       switch (term)
       {

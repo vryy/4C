@@ -109,7 +109,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
     const double
         scalar,  ///< scaling factor for element matrix and right-hand side vector contributions
     const int k  ///< index of evaluated scalar
-    ) const
+) const
 {
   // for pre-multiplication of i0 with 1/(F z_k)
   const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
@@ -742,7 +742,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
     const double fac,      ///< integration factor
     const double scalar,   ///< scaling factor for current related quantities
     const int k            ///< index of evaluated scalar
-    ) const
+) const
 {
   // get Faraday constant
   const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();

@@ -83,7 +83,7 @@ namespace MAT
       /// add shear modulus equivalent
       void AddShearMod(bool& haveshearmod,  ///< non-zero shear modulus was added
           double& shearmod                  ///< variable to add upon
-          ) const override;
+      ) const override;
 
       //@}
 

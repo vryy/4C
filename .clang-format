@@ -14,5 +14,5 @@ MaxEmptyLinesToKeep: 3              # Max. number of emtpy lines
 NamespaceIndentation: All           # Add one level of indentation per namespace nesting
 SortIncludes: false                 # Do not sort includes as ordering matters in Baci
 SpacesInContainerLiterals: false    # Do not insert spaces after and before parenthesis, here []
-Standard: Cpp11                     # Use the Cpp11 code style
+Standard: c++17                     # Use the Cpp17 code style
 TabWidth: 2                         # Make sure we use our desired tab width

@@ -86,11 +86,11 @@ namespace MAT
 
       /// return materials by ID
       Teuchos::RCP<MAT::PAR::Material> ById(const int num  ///< request is made for this material ID
-          ) const;
+      ) const;
 
       /// return material parameters
       MAT::PAR::Parameter* ParameterById(const int num  ///< request is made for this material ID
-          ) const
+      ) const
       {
         return ById(num)->Parameter();
       }
