@@ -11,13 +11,21 @@ source "${PYTHON_VENV}"/bin/activate
 IFS=$'\n'
 
 echo "Run clang-format on all source files in the repository."
-for line in $(find ./ -type f)
+for line in $(git ls-files)
 do
 # check if the file is a c or cpp file
 if [[ $line == *.cpp || $line == *.cc || $line == *.cp || $line == *.cxx || $line == *.H || $line == *.h || $line == *.hpp || $line == *.hh || $line == *.hxx ]]
 then
-    # Check if clang would format the file
+    # Format file using clang-format
     clang-format -i -style=file $(pwd)/${line}
 fi
+
+# check if the file is a cmake file
+if [[ $line == *.cmake || $line == *CMakeLists.txt ]]
+then
+    # format file using cmake-format
+    cmake-format -c $(pwd)/utilities/code_checks/.cmake-format.yaml -i $(pwd)/${line}
+fi
+
 done
 echo "Done."

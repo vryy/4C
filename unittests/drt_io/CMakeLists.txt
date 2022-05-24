@@ -2,6 +2,6 @@ set(TESTNAME unittests_drt_io)
 
 set(SOURCE_LIST unit_csv_reader.cpp)
 
-BACI_ADD_GOOGLE_TEST_EXECUTABLE(${TESTNAME} ${SOURCE_LIST})
+baci_add_google_test_executable(${TESTNAME} ${SOURCE_LIST})
 
-BACI_LINK_GOOGLE_TEST_NECESSARY_LIBRARIES(${TESTNAME} drt_lib_io)
+baci_link_google_test_necessary_libraries(${TESTNAME} drt_lib_io)

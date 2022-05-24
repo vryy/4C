@@ -48,6 +48,16 @@ then
     uncompliant_files+="$(pwd)/${line}\n"
     fi
 fi
+
+# check if the file is a cmake file
+if [[ $line == *.cmake || $line == *CMakeLists.txt ]]
+then
+    # Check if cmake-format would format the file
+    if ! cmake-format -c $(pwd)/utilities/code_checks/.cmake-format.yaml --check $(pwd)/${line} 2> /dev/null
+    then
+    uncompliant_files+="$(pwd)/${line}\n"
+    fi
+fi
 done
 
 if [ ! -z "$uncompliant_files" ]
@@ -59,12 +69,13 @@ echo "########################################################################"
 printf "$uncompliant_files"
 echo "########################################################################"
 printf "\n"
-echo "--> Please run clang-format manually for those files using:"
-echo "./utilities/baci-python-venv/bin/clang-format -i -style=file <path/to/file>"
+echo "--> Please run clang-format/cmake-format manually for those files using:"
+echo ".H/.cpp: ./utilities/baci-python-venv/bin/clang-format -i -style=file <path/to/file>"
+echo ".cmake:  ./utilities/baci-python-venv/bin/cmake-format -c ./utilities/code_checks/.cmake-format.py -i <path/to/file>"
 echo "(Run this from BACI's top-level directory)"
 printf "\n"
 echo "--> Alternatively you can use the following script to format ALL source files:"
-echo "./utilities/run_clang_on_everything"
+echo "./utilities/code_format_everything"
 echo "(Run this from BACI's top-level directory)"
 printf "\n"
 echo "--> Afterwards, please add all formatted files to the Git staging area using: git add <path/to/file>"

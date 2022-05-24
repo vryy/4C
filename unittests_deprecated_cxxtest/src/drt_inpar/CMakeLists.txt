@@ -1,3 +1,1 @@
-set_property(GLOBAL APPEND PROPERTY unit_files
-${CMAKE_CURRENT_SOURCE_DIR}/unit_inpar_structure.H
-)
+set_property(GLOBAL APPEND PROPERTY unit_files ${CMAKE_CURRENT_SOURCE_DIR}/unit_inpar_structure.H)

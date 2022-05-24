@@ -1,3 +1,5 @@
+# cmake-format: off
+# Switch off cmake-format so that each test specification can be one a single line.
 ###------------------------------------------------------------------ List of tests
 baci_test(aaa_mat_input 2 "")
 baci_test(ale2d_laplace_material 2 1)
@@ -2018,3 +2020,4 @@ baci_test(beam3r_line2_backweuler_browndyn_rve_and_node_dirich 2 "50")
 baci_test(beam3r_rigidsphere_activecrosslinking_truss_browndyn_truss 3 60)
 baci_test(beam3r_rigidsphere_activecrosslinking_truss_browndyn_truss_catchslipbond 3 "")
 baci_test(beam3r_rigidsphere_activecrosslinking_truss_browndyn_truss_forcedependetoffrate 3 "")
+# cmake-format: on

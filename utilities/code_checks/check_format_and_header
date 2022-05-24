@@ -62,6 +62,16 @@ then
     uncompliant_files+="$(pwd)/${line}\n"
     fi
 fi
+
+# check if the file is a cmake file
+if [[ $line == *.cmake || $line == *CMakeLists.txt ]]
+then
+    # Check if cmake-format would format the file
+    if [[  $(cmake-format -c $(pwd)/utilities/code_checks/.cmake-format.yaml --check $(pwd)/${line}) ]]
+    then
+    uncompliant_files+="$(pwd)/${line}\n"
+    fi
+fi
 done
 
 if [ ! -z "$uncompliant_files" ]
