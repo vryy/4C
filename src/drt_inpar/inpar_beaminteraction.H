@@ -12,7 +12,6 @@
 #define INPAR_BEAMINTERACTION_H
 
 #include "inpar_parameterlist_utils.H"
-#include <boost/algorithm/string/predicate.hpp>
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -102,11 +101,11 @@ namespace INPAR
     inline enum JointType String2JointType(const std::string& name)
     {
       JointType type = beam3r_line2_rigid;
-      if (boost::iequals(name, "beam3rline2rigid"))
+      if (name == "beam3rline2rigid")
         type = beam3r_line2_rigid;
-      else if (boost::iequals(name, "beam3rline2pin"))
+      else if (name == "beam3rline2pin")
         type = beam3r_line2_pin;
-      else if (boost::iequals(name, "truss"))
+      else if (name == "truss")
         type = truss;
       else
         dserror("invalid filament type std::string ");
@@ -118,11 +117,11 @@ namespace INPAR
     inline enum FilamentType String2FilamentType(const std::string& name)
     {
       FilamentType type = filtype_arbitrary;
-      if (boost::iequals(name, "arbitrary"))
+      if (name == "arbitrary")
         type = filtype_arbitrary;
-      else if (boost::iequals(name, "actin"))
+      else if (name == "actin")
         type = filtype_actin;
-      else if (boost::iequals(name, "collagen"))
+      else if (name == "collagen")
         type = filtype_collagen;
       else
         dserror("invalid filament type std::string ");
@@ -134,16 +133,21 @@ namespace INPAR
     inline enum CrosslinkerType String2CrosslinkerType(const std::string& name)
     {
       CrosslinkerType type = linkertype_arbitrary;
-      if (boost::iequals(name, "arbitrary"))
+      if (name == "arbitrary")
         type = linkertype_arbitrary;
-      else if (boost::iequals(name, "actin"))
+      else if (name == "actin")
         type = linkertype_actin;
-      else if (boost::iequals(name, "collagen"))
+      else if (name == "collagen")
         type = linkertype_collagen;
-      else if (boost::iequals(name, "integrin"))
+      else if (name == "integrin")
         type = linkertype_integrin;
       else
-        dserror("invalid crosslinker type std::string ");
+      {
+        dserror(
+            "invalid crosslinker type %s. Possible values are arbitrary, actin, collagen and "
+            "integrin.",
+            name.c_str());
+      }
 
       return type;
     };
@@ -154,13 +158,13 @@ namespace INPAR
       switch (type)
       {
         case linkertype_arbitrary:
-          return "Arbitrary";
+          return "arbitrary";
         case linkertype_actin:
-          return "Actin";
+          return "actin";
         case linkertype_collagen:
-          return "Collagen";
+          return "collagen";
         case linkertype_integrin:
-          return "Integrin";
+          return "integrin";
         default:
           return "unknown";
       }

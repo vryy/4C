@@ -22,7 +22,7 @@
         </ParameterList>
         <!-- NormF - Quantity 1: Check the right-hand-side norm of the cardiovascular0d quantities -->
         <ParameterList name="Quantity 1">
-          <Parameter name="Quantity Type"  type="string" value="cardiovascular0d" />
+          <Parameter name="Quantity Type"  type="string" value="Cardiovascular0D" />
           <Parameter name="Tolerance Type" type="string" value="Absolute" />
           <Parameter name="Tolerance"      type="double" value="1.0e-6" />
           <Parameter name="Norm Type"      type="string" value="Two Norm" />
@@ -45,7 +45,7 @@
         </ParameterList>
         <!-- NormUpdate - Quantity 1: Check the L2-norm of the cardiovascular0d increment -->
         <ParameterList name="Quantity 1">
-          <Parameter name="Quantity Type"    type="string" value="cardiovascular0d" />
+          <Parameter name="Quantity Type"    type="string" value="Cardiovascular0D" />
           <Parameter name="Tolerance Type"   type="string" value="Absolute" />
           <Parameter name="Tolerance"        type="double" value="1.0e-6" />
           <Parameter name="Norm Type"        type="string" value="Two Norm" />

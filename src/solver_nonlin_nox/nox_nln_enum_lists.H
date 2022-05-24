@@ -16,7 +16,6 @@
 #define SRC_SOLVER_NONLIN_NOX_NOX_NLN_ENUM_LISTS_H_
 
 #include <string>
-#include <boost/algorithm/string/predicate.hpp>
 #include <NOX_StatusTest_Generic.H>
 
 namespace NOX
@@ -63,17 +62,17 @@ namespace NOX
     inline enum SolutionType String2SolutionType(const std::string& name)
     {
       SolutionType type = sol_unknown;
-      if (boost::iequals(name, "structure"))
+      if (name == "Structure")
         type = sol_structure;
-      else if (boost::iequals(name, "contact"))
+      else if (name == "Contact")
         type = sol_contact;
-      else if (boost::iequals(name, "meshtying"))
+      else if (name == "Meshtying")
         type = sol_meshtying;
-      else if (boost::iequals(name, "cardiovascular0d"))
+      else if (name == "Cardiovascular0D")
         type = sol_cardiovascular0d;
-      else if (boost::iequals(name, "lag-pen-constraint"))
+      else if (name == "Lag-Pen-Constraint")
         type = sol_lag_pen_constraint;
-      else if (boost::iequals(name, "scatra"))
+      else if (name == "ScaTra")
         type = sol_scatra;
 
       return type;
@@ -333,25 +332,25 @@ namespace NOX
         switch (type)
         {
           case quantity_structure:
-            return "STRUCTURE";
+            return "Structure";
           case quantity_contact_normal:
-            return "CONTACT-NORMAL";
+            return "Contact-Normal";
           case quantity_contact_friction:
-            return "CONTACT-FRICTION";
+            return "Contact-Friction";
           case quantity_meshtying:
-            return "MESHTYING";
+            return "Meshtying";
           case quantity_cardiovascular0d:
-            return "CARDIOVASCULAR0D";
+            return "Cardiovascular0D";
           case quantity_lag_pen_constraint:
-            return "LAG-PEN-CONSTRAINT";
+            return "Lag-Pen-Constraint";
           case quantity_plasticity:
-            return "PLASTICITY";
+            return "Plasticity";
           case quantity_pressure:
-            return "PRESSURE";
+            return "Pressure";
           case quantity_eas:
             return "EAS";
           case quantity_levelset_reinit:
-            return "LEVELSET-REINIT";
+            return "LevelSet-Reinit";
           case quantity_unknown:
           default:
             return "unknown quantity type";
@@ -364,26 +363,25 @@ namespace NOX
       {
         QuantityType type = quantity_unknown;
 
-        // -- case insensitive comparison --
-        if (boost::iequals(name, "structure"))
+        if (name == "Structure")
           type = quantity_structure;
-        else if (boost::iequals(name, "contact-normal"))
+        else if (name == "Contact-Normal")
           type = quantity_contact_normal;
-        else if (boost::iequals(name, "contact-friction"))
+        else if (name == "Contact-Friction")
           type = quantity_contact_friction;
-        else if (boost::iequals(name, "meshtying"))
+        else if (name == "Meshtying")
           type = quantity_meshtying;
-        else if (boost::iequals(name, "cardiovascular0d"))
+        else if (name == "Cardiovascular0D")
           type = quantity_cardiovascular0d;
-        else if (boost::iequals(name, "lag-pen-constraint"))
+        else if (name == "Lag-Pen-Constraint")
           type = quantity_lag_pen_constraint;
-        else if (boost::iequals(name, "plasticity"))
+        else if (name == "Plasticity")
           type = quantity_plasticity;
-        else if (boost::iequals(name, "pressure"))
+        else if (name == "Pressure")
           type = quantity_pressure;
-        else if (boost::iequals(name, "eas"))
+        else if (name == "EAS")
           type = quantity_eas;
-        else if (boost::iequals(name, "levelset-reinit"))
+        else if (name == "LevelSet-Reinit")
           type = quantity_levelset_reinit;
 
         return type;

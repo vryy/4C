@@ -17,7 +17,6 @@
 
 #include "nox_nln_solver_linesearchbased.H"  // base class of NOX::NLN::Solver::PseudoTransient
 #include "nox_nln_abstract_prepostoperator.H"  // base class of NOX::NLN::LinSystem::PrePostOp::PseudoTransient
-#include <boost/algorithm/string/predicate.hpp>  // case insensitive string compare
 
 #include <NOX_Abstract_Vector.H>
 
@@ -78,11 +77,11 @@ namespace NOX
         inline enum TSCType String2TSCType(const std::string& name)
         {
           TSCType type = tsc_ser;
-          if (boost::iequals(name, "ser") or boost::iequals(name, "switched evolution relaxation"))
+          if (name == "SER" || name == "Switched Evolution Relaxation")
             type = tsc_ser;
-          else if (boost::iequals(name, "tte") or boost::iequals(name, "temporal truncation error"))
+          else if (name == "TTE" || name == "Temporal Truncation Error")
             type = tsc_tte;
-          else if (boost::iequals(name, "mrr") or boost::iequals(name, "model reduction ratio"))
+          else if (name == "MRR" || name == "Model Reduction Ratio")
             type = tsc_mrr;
           else
           {
@@ -116,9 +115,9 @@ namespace NOX
         inline enum BuildOpType String2BuildOpType(const std::string& name)
         {
           BuildOpType type = build_op_everyiter;
-          if (boost::iequals(name, "every iter"))
+          if (name == "every iter")
             type = build_op_everyiter;
-          else if (boost::iequals(name, "every timestep"))
+          else if (name == "every timestep")
             type = build_op_everytimestep;
           else
           {
@@ -135,13 +134,13 @@ namespace NOX
         inline enum ScaleOpType String2ScaleOpType(const std::string& name)
         {
           ScaleOpType type = scale_op_identity;
-          if (boost::iequals(name, "identity"))
+          if (name == "Identity")
             type = scale_op_identity;
-          else if (boost::iequals(name, "cfl diagonal"))
+          else if (name == "CFL diagonal")
             type = scale_op_cfl_diagonal;
-          else if (boost::iequals(name, "lumped mass"))
+          else if (name == "Lumped Mass")
             type = scale_op_lumped_mass;
-          else if (boost::iequals(name, "element based"))
+          else if (name == "Element based")
             type = scale_op_element_based;
           else
           {
