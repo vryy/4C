@@ -13,6 +13,7 @@
 #include "beam_to_solid_vtu_output_writer_visualization.H"
 #include "beam_to_solid_surface_vtk_output_params.H"
 #include "beam_to_solid_mortar_manager.H"
+#include "beam_to_solid_utils.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_surface.H"
 #include "../drt_geometry_pair/geometry_pair_element_functions.H"
 
@@ -25,7 +26,7 @@
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, beam, surface,
     mortar>::BeamToSolidSurfaceMeshtyingPairMortarBase()
-    : base_class()
+    : base_class(), n_mortar_rot_(0)
 {
   // Empty constructor.
 }
@@ -78,8 +79,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
 
     // Get the lambda GIDs of this pair.
     std::vector<int> lambda_row;
+    GetMortarGID(
+        mortar_manager.get(), this, mortar::n_dof_, this->n_mortar_rot_, &lambda_row, nullptr);
     std::vector<double> lambda_pair;
-    mortar_manager->LocationVector(this, lambda_row);
     DRT::UTILS::ExtractMyValues(*lambda, lambda_pair, lambda_row);
     for (unsigned int i_dof = 0; i_dof < mortar::n_dof_; i_dof++)
       q_lambda(i_dof) = lambda_pair[i_dof];

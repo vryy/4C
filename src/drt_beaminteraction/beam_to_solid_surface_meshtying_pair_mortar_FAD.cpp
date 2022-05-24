@@ -30,7 +30,7 @@ evaluated with FAD.
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, surface,
     mortar>::BeamToSolidSurfaceMeshtyingPairMortarFAD()
-    : base_class(), n_mortar_rot_(0)
+    : base_class()
 {
   // Empty constructor.
 }
@@ -60,7 +60,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
 
   // Get the positional Lagrange multipliers for this pair.
   std::vector<int> lambda_gid_pos;
-  GetMortarGID(mortar_manager, this, mortar::n_dof_, n_mortar_rot_, &lambda_gid_pos, nullptr);
+  GetMortarGID(mortar_manager, this, mortar::n_dof_, this->n_mortar_rot_, &lambda_gid_pos, nullptr);
   std::vector<double> local_lambda_pos;
   DRT::UTILS::ExtractMyValues(global_lambda, local_lambda_pos, lambda_gid_pos);
   LINALG::Matrix<mortar::n_dof_, 1, double> q_lambda(local_lambda_pos.data());
@@ -210,7 +210,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
 
   // Get the Lagrange multiplier GIDs.
   std::vector<int> lambda_gid_pos;
-  GetMortarGID(mortar_manager, this, mortar::n_dof_, n_mortar_rot_, &lambda_gid_pos, nullptr);
+  GetMortarGID(mortar_manager, this, mortar::n_dof_, this->n_mortar_rot_, &lambda_gid_pos, nullptr);
 
   // Assemble into the matrices related to beam DOFs.
   for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
