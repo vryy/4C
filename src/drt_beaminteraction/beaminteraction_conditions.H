@@ -84,7 +84,7 @@ namespace BEAMINTERACTION
      * \brief Build the ID sets for this condition. The ID sets will be used to check if an element
      * is in this condition.
      */
-    virtual void BuildIdSets();
+    virtual void BuildIdSets(const Teuchos::RCP<const DRT::Discretization>& discretization);
 
     /**
      * \brief Set the displacement state.
@@ -166,7 +166,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Build the ID sets on all contained beam interaction conditions.
      */
-    void BuildIdSets();
+    void BuildIdSets(Teuchos::RCP<DRT::Discretization> discretization);
 
     /**
      * \brief Set the displacement state.

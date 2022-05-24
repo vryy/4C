@@ -244,7 +244,6 @@ namespace BEAMINTERACTION
 
       //! @}
 
-     private:
       //! data container holding all beam contact related parameters
       Teuchos::RCP<BEAMINTERACTION::BeamContactParams> beam_contact_params_ptr_;
 

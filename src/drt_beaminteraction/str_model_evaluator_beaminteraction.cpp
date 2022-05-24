@@ -249,6 +249,16 @@ void STR::MODELEVALUATOR::BeamInteraction::SetSubModelTypes()
     submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_crosslinking);
 
   // ---------------------------------------------------------------------------
+  // check for point to point penalty coupling conditions
+  // ---------------------------------------------------------------------------
+
+  // conditions for beam penalty point coupling
+  std::vector<DRT::Condition*> beampenaltycouplingconditions(0);
+  discret_ptr_->GetCondition("PenaltyPointCouplingCondition", beampenaltycouplingconditions);
+  if (beampenaltycouplingconditions.size() > 0)
+    submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_beamcontact);
+
+  // ---------------------------------------------------------------------------
   // check for beam contact
   // ---------------------------------------------------------------------------
   if (DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
@@ -278,6 +288,16 @@ void STR::MODELEVALUATOR::BeamInteraction::SetSubModelTypes()
   Discret().GetCondition("BeamPotentialLineCharge", beampotconditions);
   if (beampotconditions.size() > 0)
     submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_potential);
+
+  // Check if all all combinations of submodel evaluators work
+  if (DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
+          DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO BEAM CONTACT"),
+          "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none and
+      beampenaltycouplingconditions.size() > 0)
+    dserror(
+        "It is not yet possible to use beam-to-beam contact in combination with beam-to-beam point "
+        "coupling because every coupling point is also interpreted as a point of contact between 2 "
+        "beams.");
 }
 
 /*----------------------------------------------------------------------------*

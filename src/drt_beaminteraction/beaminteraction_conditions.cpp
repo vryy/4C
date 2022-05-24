@@ -10,6 +10,8 @@
 #include "beaminteraction_conditions.H"
 
 #include "beam_to_beam_contact_condition.H"
+#include "beam_to_beam_point_coupling_pair.H"
+#include "beam_to_beam_point_coupling_pair_condition.H"
 #include "beam_to_solid_conditions.H"
 #include "beam_contact_params.H"
 #include "beam_contact_pair.H"
@@ -37,7 +39,8 @@ BEAMINTERACTION::BeamInteractionConditionBase::BeamInteractionConditionBase(
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditionBase::BuildIdSets()
+void BEAMINTERACTION::BeamInteractionConditionBase::BuildIdSets(
+    const Teuchos::RCP<const DRT::Discretization>& discretization)
 {
   // Set the IDs of the line elements.
   std::vector<int> line_ids;
@@ -201,6 +204,27 @@ void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
         dserror("There are multiple definitions of the same COUPLING_ID for %s and %s",
             condition_names[0].c_str(), condition_names[1].c_str());
     }
+    else if (interaction_type ==
+             INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_beam_point_coupling)
+    {
+      std::vector<Teuchos::RCP<BeamInteractionConditionBase>>& interaction_vector =
+          condition_map_[interaction_type];
+
+      // Get the conditions from the discretization.
+      std::vector<Teuchos::RCP<DRT::Condition>> coupling_conditions;
+      discret->GetCondition("PenaltyPointCouplingCondition", coupling_conditions);
+      for (const auto& condition : coupling_conditions)
+      {
+        // We found the matching conditions, now create the beam-to-beam coupling condition object
+        Teuchos::RCP<BeamInteractionConditionBase> new_condition;
+
+        new_condition = Teuchos::rcp(new BEAMINTERACTION::BeamToBeamPointCouplingCondition(
+            condition, condition->GetDouble("POSITIONAL_PENALTY_PARAMETER"),
+            condition->GetDouble("ROTATIONAL_PENALTY_PARAMETER")));
+
+        interaction_vector.push_back(new_condition);
+      }
+    }
     else
       dserror("Got unexpected interaction type.");
   }
@@ -209,10 +233,11 @@ void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditions::BuildIdSets()
+void BEAMINTERACTION::BeamInteractionConditions::BuildIdSets(
+    Teuchos::RCP<DRT::Discretization> discretization)
 {
   for (auto const& map_pair : condition_map_)
-    for (auto const& condition : map_pair.second) condition->BuildIdSets();
+    for (auto const& condition : map_pair.second) condition->BuildIdSets(discretization);
 }
 
 /**

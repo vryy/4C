@@ -171,7 +171,6 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
   {
     dserror("Unknown type of second element in creation of beam contact pair.");
   }
-
   return Teuchos::null;
 }
 

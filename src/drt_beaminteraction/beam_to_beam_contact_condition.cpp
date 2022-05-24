@@ -34,10 +34,11 @@ BEAMINTERACTION::BeamToBeamContactCondition::BeamToBeamContactCondition(
 /**
  *
  */
-void BEAMINTERACTION::BeamToBeamContactCondition::BuildIdSets()
+void BEAMINTERACTION::BeamToBeamContactCondition::BuildIdSets(
+    const Teuchos::RCP<const DRT::Discretization>& discretization)
 {
   // Call the parent method to build the line maps.
-  BeamInteractionConditionBase::BuildIdSets();
+  BeamInteractionConditionBase::BuildIdSets(discretization);
 
   // Build the other line map.
   std::vector<int> line_ids;

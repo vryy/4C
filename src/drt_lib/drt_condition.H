@@ -180,6 +180,7 @@ namespace DRT
       ElectroRepulsion_Potential_Surface,
       ElectroRepulsion_Potential_Line,
       RigidspherePotential_PointCharge,
+      PenaltyPointCouplingCondition,
       FilamentBeamLineCondition,
       BeamPotential_LineChargeDensity,
       BeamToBeamContact,

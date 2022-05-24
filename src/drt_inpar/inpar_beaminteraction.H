@@ -93,6 +93,8 @@ namespace INPAR
       beam_to_solid_volume_meshtying,
       //! Beam-to-solid surface mesh tying.
       beam_to_solid_surface_meshtying,
+      //! beam-to-beam penalty point coupling.
+      beam_to_beam_point_coupling,
       //! Beam-to-solid surface contact.
       beam_to_solid_surface_contact
     };
