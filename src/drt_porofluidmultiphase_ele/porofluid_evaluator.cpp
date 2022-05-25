@@ -2832,36 +2832,6 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
     const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
-  switch (DRT::Problem::Instance()->NDim())
-  {
-    case 1:
-      return EvaluateVectorAndAssembleInternal<1>(elevec, funct, derxy, xyze, curphase, phasetoadd,
-          numdofpernode, phasemanager, variablemanager, rhsfac, fac, inittimederiv);
-    case 2:
-      return EvaluateVectorAndAssembleInternal<2>(elevec, funct, derxy, xyze, curphase, phasetoadd,
-          numdofpernode, phasemanager, variablemanager, rhsfac, fac, inittimederiv);
-    case 3:
-      return EvaluateVectorAndAssembleInternal<3>(elevec, funct, derxy, xyze, curphase, phasetoadd,
-          numdofpernode, phasemanager, variablemanager, rhsfac, fac, inittimederiv);
-    default:
-      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
-  }
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <int nsd, int nen>
-template <int dim>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
-    nen>::EvaluateVectorAndAssembleInternal(std::vector<Epetra_SerialDenseVector*>& elevec,
-    const LINALG::Matrix<nen, 1>& funct, const LINALG::Matrix<nsd, nen>& derxy,
-    const LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
-    double fac, bool inittimederiv)
-
-{
   // get vector to fill
   Epetra_SerialDenseVector& myvec = *elevec[0];
 
@@ -2931,23 +2901,22 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
   // call the functions and integrate value (multiply with fac)
   for (unsigned int i = 0; i < domainint_funct_.size(); i++)
   {
-    myvec[i] += Function<dim>(domainint_funct_[i] - 1).Evaluate(0, variables, constants) * fac;
+    // NOLINTNEXTLINE (bugprone-narrowing-conversions)
+    myvec[i] += Function(domainint_funct_[i] - 1).Evaluate(0, variables, constants) * fac;
   }
-};
+}
 
 /*----------------------------------------------------------------------*
  | cast to VarExp-function                                              |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-template <int dim>
-inline DRT::UTILS::VariableExprFunction<dim>&
+inline DRT::UTILS::VariableExprFunction<nsd>&
 DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd, nen>::Function(int functnum) const
 {
   try
   {
-    DRT::UTILS::VariableExprFunction<dim>& funct =
-        dynamic_cast<DRT::UTILS::VariableExprFunction<dim>&>(
-            DRT::Problem::Instance()->Funct(functnum));
+    auto& funct = dynamic_cast<DRT::UTILS::VariableExprFunction<nsd>&>(
+        DRT::Problem::Instance()->Funct(functnum));
     if (funct.NumberComponents() != 1)
       dserror("only one component allowed for domain integral functions");
     return funct;
@@ -2958,7 +2927,7 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd, nen>::Function(
         "Cast to VarExp Function failed! For domain integrals only 'VARFUNCTION' functions are "
         "allowed!\n"
         "Check your input file!");
-    return dynamic_cast<DRT::UTILS::VariableExprFunction<dim>&>(
+    return dynamic_cast<DRT::UTILS::VariableExprFunction<nsd>&>(
         DRT::Problem::Instance()->Funct(functnum));
   }
 };
