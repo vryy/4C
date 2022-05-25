@@ -158,7 +158,7 @@ namespace SCATRA
   template <>
   struct DisTypeToOptGaussRule<DRT::Element::tet10>
   {
-    static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule_tet_5point;
+    static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule_tet_11point;
   };
   template <>
   struct DisTypeToOptGaussRule<DRT::Element::wedge6>
