@@ -231,6 +231,14 @@ void SCATRA::ScaTraTimIntElch::Setup()
     // cell cycling intended
     case 1:
     {
+      // check if cell voltage condition is given
+      std::vector<DRT::Condition*> cell_voltage_conditions, cell_voltage_point_conditions;
+      discret_->GetCondition("CellVoltage", cell_voltage_conditions);
+      discret_->GetCondition("CellVoltagePoint", cell_voltage_point_conditions);
+      if (cell_voltage_conditions.size() == 0 and cell_voltage_point_conditions.size() == 0)
+        dserror(
+            "Definition of 'cell voltage' condition required for 'CCCV cell cycling' condition.");
+
       // extract constant-current constant-voltage (CCCV) cell cycling boundary condition
       const DRT::Condition& cccvcyclingcondition = *cccvcyclingconditions[0];
 
