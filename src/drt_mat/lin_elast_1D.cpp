@@ -269,9 +269,8 @@ double MAT::LinElast1DGrowth::GetGrowthFactorAoSProp(const double conc, const do
 double MAT::LinElast1DGrowth::GetGrowthFactorAoSPropDeriv(
     const double conc, const double def_grad) const
 {
-  LINALG::Matrix<2, 1> derivs(false);
-  DRT::UTILS::Polynomial(growth_params_->poly_params_)
-      .Evaluate(conc * def_grad - growth_params_->c0_, derivs);
+  const double first_deriv = DRT::UTILS::Polynomial(growth_params_->poly_params_)
+                                 .EvaluateDerivative(conc * def_grad - growth_params_->c0_, 1);
 
-  return derivs(1) * conc;
+  return first_deriv * conc;
 }

@@ -10,6 +10,9 @@
 #ifndef DRT_UTILS_POLYNOMIAL
 #define DRT_UTILS_POLYNOMIAL
 
+#include <numeric>
+#include <utility>
+
 #include "drt_utils_local_connectivity_matrices.H"
 
 #include "Epetra_SerialDenseSolver.h"
@@ -35,24 +38,8 @@ namespace DRT
 
       bool operator<(const PolynomialSpaceParams &otherparams) const
       {
-        if (degree_ < otherparams.degree_)
-          return true;
-        else if (degree_ == otherparams.degree_)
-        {
-          if ((int)distype_ < (int)(otherparams.distype_))
-            return true;
-          else if ((int)distype_ == (int)(otherparams.distype_))
-          {
-            if (completeSpace_ < otherparams.completeSpace_)
-              return true;
-            else
-              return false;
-          }
-          else
-            return false;
-        }
-        else
-          return false;
+        return std::tie(distype_, degree_, completeSpace_) <
+               std::tie(otherparams.distype_, otherparams.degree_, otherparams.completeSpace_);
       }
     };
 
@@ -69,8 +56,7 @@ namespace DRT
           : supportPoints_(supportPoints), nodePoint_(nodePoint)
       {
         long double weight = 1.;
-        for (unsigned int i = 0; i < supportPoints.size(); ++i)
-          weight *= nodePoint - supportPoints[i];
+        for (double supportPoint : supportPoints) weight *= nodePoint - supportPoint;
         dsassert((std::abs(weight) > std::numeric_limits<double>::min() &&
                      std::abs(weight) < std::numeric_limits<double>::max()),
             "Error in evaluation of polynomial");
@@ -101,10 +87,10 @@ namespace DRT
       /*!
        \brief Evaluates the polynomial on a given point on the unit interval [-1, 1].
        */
-      double Evaluate(const double point) const
+      [[nodiscard]] double Evaluate(const double point) const
       {
         double value = weight_;
-        for (unsigned int i = 0; i < supportPoints_.size(); ++i) value *= point - supportPoints_[i];
+        for (double supportPoint : supportPoints_) value *= point - supportPoint;
         return value;
       }
 
@@ -125,9 +111,9 @@ namespace DRT
         // compute the value and derivatives by expanding the derivatives
         derivatives(0) = weight_;
         for (unsigned int k = 1; k < derivatives.Rows(); ++k) derivatives(k) = 0;
-        for (unsigned int i = 0; i < supportPoints_.size(); ++i)
+        for (double supportPoint : supportPoints_)
         {
-          const double v = point - supportPoints_[i];
+          const double v = point - supportPoint;
           for (int k = derivatives.Rows() - 1; k > 0; --k)
             derivatives(k) = v * derivatives(k) + derivatives(k - 1);
           derivatives(0) *= v;
@@ -140,7 +126,7 @@ namespace DRT
         }
       }
 
-      double NodePoint() const { return nodePoint_; }
+      [[nodiscard]] double NodePoint() const { return nodePoint_; }
 
      private:
       std::vector<double> supportPoints_;
@@ -154,7 +140,7 @@ namespace DRT
      \brief A class of polynomials based on monomial coefficients
 
      This class takes a vector of coefficients of the monomials and evaluates a
-     polynomial from these coefficients. The evaluation is done by the Horner scheme.
+     polynomial from these coefficients. The evaluation is done by the Horner's method.
      */
     class Polynomial
     {
@@ -162,7 +148,7 @@ namespace DRT
       /*!
        \brief Constructor.
        */
-      Polynomial(const std::vector<double> &coefficients) : coefficients_(coefficients) {}
+      Polynomial(std::vector<double> coefficients) : coefficients_(std::move(coefficients)) {}
 
       /*!
        \brief Copy constructor
@@ -170,8 +156,8 @@ namespace DRT
       Polynomial(const Polynomial &other) : coefficients_(other.coefficients_) {}
 
       /*!
-\brief Assignment operator
-*/
+      \brief Assignment operator
+      */
       Polynomial &operator=(const Polynomial &other)
       {
         coefficients_ = other.coefficients_;
@@ -181,13 +167,11 @@ namespace DRT
       /*!
        \brief Evaluates the polynomial on a given point
        */
-      double Evaluate(const double point) const
+      [[nodiscard]] double Evaluate(const double point) const
       {
-        // classical Horner scheme
-        const int length = coefficients_.size() - 1;
-        double value = coefficients_[length];
-        for (int i = length - 1; i >= 0; --i) value = value * point + coefficients_[i];
-        return value;
+        // classical Horner's method
+        return std::accumulate(coefficients_.rbegin(), coefficients_.rend(), 0.0,
+            [point](const double &acc, const double &coeff) { return acc * point + coeff; });
       }
 
       /*!
@@ -220,8 +204,41 @@ namespace DRT
         for (int k = maxder; k < nderivs; ++k) derivatives(k) = 0;
       }
 
+      /*!
+       \brief Evaluates the polynomial or its derivative (of the given order) on the given point
+       */
+      [[nodiscard]] double EvaluateDerivative(const double point, const int deriv_order) const
+      {
+        switch (deriv_order)
+        {
+          case 1:
+          {
+            LINALG::Matrix<2, 1> derivatives(false);
+            Evaluate(point, derivatives);
+            return derivatives(1, 0);
+          }
+          case 2:
+          {
+            LINALG::Matrix<3, 1> derivatives(false);
+            Evaluate(point, derivatives);
+            return derivatives(2, 0);
+          }
+          case 3:
+          {
+            LINALG::Matrix<4, 1> derivatives(false);
+            Evaluate(point, derivatives);
+            return derivatives(3, 0);
+          }
+          default:
+          {
+            dserror("Only derivatives up to order 2 supported");
+            return 0;
+          }
+        }
+      }
+
       // Here, we do not know about nodes, so put the center of the 1d element
-      double NodePoint() const { return 0.; }
+      [[nodiscard]] double NodePoint() const { return 0.; }
 
 
      private:
@@ -260,7 +277,7 @@ namespace DRT
       /*
        \brief Return the number of polynomials (over all dimensions)
        */
-      virtual std::size_t Size() const = 0;
+      [[nodiscard]] virtual std::size_t Size() const = 0;
 
       /*
        \brief Evaluates the values of all polynomials on the given point
@@ -313,7 +330,7 @@ namespace DRT
         for (unsigned int i = 0; i < renumbering_.size(); ++i) renumbering_[i] = i;
       }
 
-      virtual ~PolynomialSpaceTensor() {}
+      ~PolynomialSpaceTensor() override {}
 
       /*
        \brief Return the number of polynomials (over all dimensions)

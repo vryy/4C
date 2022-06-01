@@ -94,9 +94,7 @@ double DRT::UTILS::FastPolynomialFunction::Evaluate(const double argument) const
 
 double DRT::UTILS::FastPolynomialFunction::EvaluateDerivative(const double argument) const
 {
-  LINALG::Matrix<2, 1> derivs(false);
-  mypoly_->Evaluate(argument, derivs);
-  return derivs(1);
+  return mypoly_->EvaluateDerivative(argument, 1);
 }
 
 
