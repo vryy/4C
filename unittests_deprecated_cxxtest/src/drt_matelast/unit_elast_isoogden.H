@@ -13,7 +13,9 @@
 #define BACI_UNIT_ELAST_ISOOGDEN_H
 
 #include "src/common/unit_cxx_test_wrapper.H"
+
 #include "src/drt_matelast/elast_isoogden.H"
+#include "src/drt_mat/matpar_material.H"
 
 // declaration
 namespace MAT

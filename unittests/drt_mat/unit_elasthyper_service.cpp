@@ -1,49 +1,40 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-
 \brief Testcases for the ElastHyper service functions
-
 \level 2
 
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_UNIT_ELASTHYPER_SERVICE_H
-#define BACI_UNIT_ELASTHYPER_SERVICE_H
+#include "gtest/gtest.h"
 
-#include "src/common/unit_cxx_test_wrapper.H"
-#include <Teuchos_RCPDecl.hpp>
+#include "src/drt_mat/elasthyper_service.H"
+#include "src/drt_mat/material_service.H"
+#include "src/drt_mat/matpar_material.H"
 
-#include "src/common/special_assertions.H"
+#include "src/drt_matelast/elast_coupanisoexpo.H"
+#include "src/drt_matelast/elast_isoneohooke.H"
 
-#include <src/drt_mat/elasthyper_service.H>
-#include <src/drt_matelast/elast_isoneohooke.H>
-#include <src/drt_matelast/elast_coupneohooke.H>
-#include <src/drt_matelast/elast_coupanisoexpo.H>
-#include <src/drt_matelast/elast_coupanisoneohooke.H>
-#include <src/drt_mat/matpar_material.H>
-#include <src/drt_mat/material_service.H>
+#include "src/linalg/linalg_fixedsizematrix.H"
 
-#include <src/linalg/linalg_fixedsizematrix.H>
+#include "unittests/common/assertions.h"
 
-namespace MAT
+namespace
 {
-  class ElastHyperService_TestSuite;
-}
-
-// class implementation
-class MAT::ElastHyperService_TestSuite : public BACICxxTestWrapper
-{
- public:
-  /// Setup Testsuite
-  void Setup() override
+  class ElastHyperServiceTest : public ::testing::Test
   {
-    prinv_(0) = 3.1;
-    prinv_(1) = 3.2;
-    prinv_(2) = 1.05;
-  }
+   protected:
+    void SetUp() override
+    {
+      prinv_(0) = 3.1;
+      prinv_(1) = 3.2;
+      prinv_(2) = 1.05;
+    }
 
-  void TestCalculateGammaDelta()
+    LINALG::Matrix<3, 1> prinv_;
+  };
+
+  TEST_F(ElastHyperServiceTest, TestCalculateGammaDelta)
   {
     // required inputs to test the method
     // first derivative of strain energy function w.r.t. principle invariants
@@ -86,11 +77,11 @@ class MAT::ElastHyperService_TestSuite : public BACICxxTestWrapper
 
     MAT::CalculateGammaDelta(gamma, delta, prinv_, dPI, ddPII);
 
-    TESTING::AssertDelta(gamma, gamma_ref, 1.0e-10);
-    TESTING::AssertDelta(delta, delta_ref, 1.0e-10);
+    BACI_EXPECT_NEAR(gamma, gamma_ref, 1.0e-10);
+    BACI_EXPECT_NEAR(delta, delta_ref, 1.0e-10);
   }
 
-  void TestEvaluateRightCauchyGreenStrainLikeVoigt()
+  TEST_F(ElastHyperServiceTest, TestEvaluateRightCauchyGreenStrainLikeVoigt)
   {
     // Green-Lagrange tensor in strain-like voigt notation as input
     LINALG::Matrix<6, 1> E_VoigtStrain;
@@ -113,10 +104,10 @@ class MAT::ElastHyperService_TestSuite : public BACICxxTestWrapper
 
     MAT::EvaluateRightCauchyGreenStrainLikeVoigt(E_VoigtStrain, C_VoigtStrain);
 
-    TESTING::AssertDelta(C_VoigtStrain, C_VoigtStrain_ref, 1.0e-10);
+    BACI_EXPECT_NEAR(C_VoigtStrain, C_VoigtStrain_ref, 1.0e-10);
   }
 
-  void TestEvaluateInvariantDerivatives()
+  TEST_F(ElastHyperServiceTest, TestEvaluateInvariantDerivatives)
   {
     // Create summands to test the elast hyper functions
     // Currently, only an isotropic summand is supported. Anisotropic summands are not easy to be
@@ -134,7 +125,7 @@ class MAT::ElastHyperService_TestSuite : public BACICxxTestWrapper
     potsum.emplace_back(Teuchos::rcp(new MAT::ELASTIC::IsoNeoHooke(isoNeoHookeParams2)));
 
     // Read summand properties
-    SummandProperties properties;
+    MAT::SummandProperties properties;
     MAT::ElastHyperProperties(potsum, properties);
 
     // first derivative of strain energy function w.r.t. principle invariants
@@ -158,14 +149,9 @@ class MAT::ElastHyperService_TestSuite : public BACICxxTestWrapper
 
     // Compute derivatives of the strain energy function w.r.t. the principal invariants of the
     // strain energy function
-    ElastHyperEvaluateInvariantDerivatives(prinv_, dPI, ddPII, potsum, properties, 0, 0);
+    MAT::ElastHyperEvaluateInvariantDerivatives(prinv_, dPI, ddPII, potsum, properties, 0, 0);
 
-    TESTING::AssertDelta(dPI, dPI_ref, 1.0e-4);
-    TESTING::AssertDelta(ddPII, ddPII_ref, 1.0e-4);
+    BACI_EXPECT_NEAR(dPI, dPI_ref, 1.0e-4);
+    BACI_EXPECT_NEAR(ddPII, ddPII_ref, 1.0e-4);
   }
-
- private:
-  LINALG::Matrix<3, 1> prinv_;
-};
-
-#endif  // BACI_UNIT_ELASTHYPER_SERVICE_H
+}  // namespace
