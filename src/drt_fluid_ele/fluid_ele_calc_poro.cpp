@@ -5297,10 +5297,12 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinSpatialReactionTerms(
                 const double defgrd_inv_k_idim = defgrd_inv(k, idim);
                 for (int l = 0; l < Base::nsd_; ++l)
                 {
-                  val_reatensorlinODvel += J_ * porosity_ * velint_j * defgrd_inv_k_idim *
-                                           mat_reac_tensor_linporosity_(k, l) * dphi_dus_gid;
-                  val_reatensorlinODgridvel += J_ * porosity_ * gridvelint_j * defgrd_inv_k_idim *
-                                               mat_reac_tensor_linporosity_(k, l) * dphi_dus_gid;
+                  val_reatensorlinODvel += J_ * porosity_ * defgrd_inv_k_idim *
+                                           mat_reac_tensor_linporosity_(k, l) * defgrd_inv(l, j) *
+                                           velint_j * dphi_dus_gid;
+                  val_reatensorlinODgridvel += J_ * porosity_ * defgrd_inv_k_idim *
+                                               mat_reac_tensor_linporosity_(k, l) *
+                                               defgrd_inv(l, j) * gridvelint_j * dphi_dus_gid;
                 }
               }
             }
@@ -5315,13 +5317,15 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinSpatialReactionTerms(
               const double gridvelint_j = Base::gridvelint_(j);
               for (int k = 0; k < Base::nsd_; ++k)
               {
+                const double defgrd_inv_k_idim = defgrd_inv(k, idim);
                 for (int l = 0; l < Base::nsd_; ++l)
                 {
-                  val_reatensorlinODvel += J_ * porosity_ * velint_j * mat_reac_tensor_linJ_(k, l) *
-                                           dJ_dus_gid * defgrd_inv(l, j);
-                  val_reatensorlinODgridvel += J_ * porosity_ * gridvelint_j *
-                                               mat_reac_tensor_linJ_(k, l) * dJ_dus_gid *
-                                               defgrd_inv(l, j);
+                  val_reatensorlinODvel += J_ * porosity_ * defgrd_inv_k_idim *
+                                           mat_reac_tensor_linJ_(k, l) * defgrd_inv(l, j) *
+                                           velint_j * dJ_dus_gid;
+                  val_reatensorlinODgridvel += J_ * porosity_ * defgrd_inv_k_idim *
+                                               mat_reac_tensor_linJ_(k, l) * defgrd_inv(l, j) *
+                                               gridvelint_j * dJ_dus_gid;
                 }
               }
             }
