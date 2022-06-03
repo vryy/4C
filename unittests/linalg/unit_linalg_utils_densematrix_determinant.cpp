@@ -1,39 +1,26 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Unit tests for linalg routines.
+
+\brief Unit test for linalg dense determinant calculation routines.
 
 \level 0
-*/
 
+*----------------------------------------------------------------------*/
+#include <gtest/gtest.h>
 
-#ifndef UNIT_LINALG_UTILS_DENSEMATRIX_DETERMINANT_H
-#define UNIT_LINALG_UTILS_DENSEMATRIX_DETERMINANT_H
-
-
-#include "src/common/unit_cxx_test_wrapper.H"
-
+#include "src/linalg/linalg_serialdensematrix.H"
 #include "src/linalg/linalg_utils_densematrix_determinant.H"
 
-
-// Forward declaration.
-namespace LINALG
-{
-  class Linalg_Determinant_TestSuite;
-}
-
-
-/**
- * \brief Class to test linalg routines.
- *
+/*
  * \note The values for the matrix used in tests below are generated with Mathematica:
  *       > SeedRandom[666];
  *       > A = Table[RandomReal[WorkingPrecision->50], {i, n}, {j, n}];
  *       where n needs do be replace by the dimension, e.g., n=2, n=3, or n=4
  */
-class LINALG::Linalg_Determinant_TestSuite : public BACICxxTestWrapper
+
+namespace
 {
- public:
-  void TestDeterminant2x2()
+  TEST(LinalgDenseMatrixDeterminantTest, 2x2Determinant)
   {
     LINALG::Matrix<2, 2, double> A;
     A(0, 0) = 0.72903241936703114203;
@@ -41,10 +28,10 @@ class LINALG::Linalg_Determinant_TestSuite : public BACICxxTestWrapper
     A(0, 1) = 0.32707405507901372465;
     A(1, 1) = 0.0052737129228371719370;
 
-    TS_ASSERT_DELTA(LINALG::Determinant(A), -0.2639054076334587, 1e-14);
+    EXPECT_NEAR(LINALG::Determinant(A), -0.2639054076334587, 1e-14);
   }
 
-  void TestDeterminant3x3()
+  TEST(LinalgDenseMatrixDeterminantTest, 3x3Determinant)
   {
     LINALG::Matrix<3, 3, double> A;
     A(0, 0) = 0.72903241936703114203;
@@ -57,10 +44,10 @@ class LINALG::Linalg_Determinant_TestSuite : public BACICxxTestWrapper
     A(1, 2) = 0.64019842179333806573;
     A(2, 2) = 0.69378923027976465858;
 
-    TS_ASSERT_DELTA(LINALG::Determinant(A), -0.1008304741716571, 1e-14);
+    EXPECT_NEAR(LINALG::Determinant(A), -0.1008304741716571, 1e-14);
   }
 
-  void TestDeterminant4x4()
+  TEST(LinalgDenseMatrixDeterminantTest, 4x4Determinant)
   {
     LINALG::Matrix<4, 4, double> A;
     A(0, 0) = 0.72903241936703114203;
@@ -80,10 +67,10 @@ class LINALG::Linalg_Determinant_TestSuite : public BACICxxTestWrapper
     A(2, 3) = 0.024003735765356129168;
     A(3, 3) = 0.27465069811053651449;
 
-    TS_ASSERT_DELTA(LINALG::Determinant(A), -0.01620776397174742, 1e-14);
+    EXPECT_NEAR(LINALG::Determinant(A), -0.01620776397174742, 1e-14);
   }
 
-  void TestDeterminantLU2x2()
+  TEST(LinalgDenseMatrixDeterminantTest, 2x2DeterminantLU)
   {
     LINALG::SerialDenseMatrix A(2, 2, true);
     A(0, 0) = 0.72903241936703114203;
@@ -91,10 +78,10 @@ class LINALG::Linalg_Determinant_TestSuite : public BACICxxTestWrapper
     A(0, 1) = 0.32707405507901372465;
     A(1, 1) = 0.0052737129228371719370;
 
-    TS_ASSERT_DELTA(LINALG::DeterminantLU(A), -0.2639054076334587, 1e-14);
+    EXPECT_NEAR(LINALG::DeterminantLU(A), -0.2639054076334587, 1e-14);
   }
 
-  void TestDeterminantLU3x3()
+  TEST(LinalgDenseMatrixDeterminantTest, 3x3DeterminantLU)
   {
     LINALG::SerialDenseMatrix A(3, 3, true);
     A(0, 0) = 0.72903241936703114203;
@@ -107,10 +94,10 @@ class LINALG::Linalg_Determinant_TestSuite : public BACICxxTestWrapper
     A(1, 2) = 0.64019842179333806573;
     A(2, 2) = 0.69378923027976465858;
 
-    TS_ASSERT_DELTA(LINALG::DeterminantLU(A), -0.1008304741716571, 1e-14);
+    EXPECT_NEAR(LINALG::DeterminantLU(A), -0.1008304741716571, 1e-14);
   }
 
-  void TestDeterminantLU4x4()
+  TEST(LinalgDenseMatrixDeterminantTest, 4x4DeterminantLU)
   {
     LINALG::SerialDenseMatrix A(4, 4, true);
     A(0, 0) = 0.72903241936703114203;
@@ -130,8 +117,6 @@ class LINALG::Linalg_Determinant_TestSuite : public BACICxxTestWrapper
     A(2, 3) = 0.024003735765356129168;
     A(3, 3) = 0.27465069811053651449;
 
-    TS_ASSERT_DELTA(LINALG::DeterminantLU(A), -0.01620776397174742, 1e-14);
+    EXPECT_NEAR(LINALG::DeterminantLU(A), -0.01620776397174742, 1e-14);
   }
-};
-
-#endif
+}  // namespace
