@@ -17,9 +17,9 @@ functions for the traction.
 
 
 // Forward declarations.
-namespace BEAMINTERACTION
+namespace
 {
-  class BeamToSolidVolumeMeshtyingPairMortar_TestSuite;
+  class BeamToSolidVolumeMeshtyingPairMortarTest;
 }
 
 
@@ -38,7 +38,7 @@ namespace BEAMINTERACTION
       : public BeamToSolidVolumeMeshtyingPairBase<beam, solid>
   {
     //! Define the unit test class as friend so it can set up a valid pair state for the test cases.
-    friend BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite;
+    friend BeamToSolidVolumeMeshtyingPairMortarTest;
 
    protected:
     //! Shortcut to the base class.
