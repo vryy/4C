@@ -14,6 +14,7 @@
 #include "src/common/unit_cxx_test_wrapper.H"
 
 #include "src/drt_inpar/inpar_elch.H"
+#include "src/drt_lib/drt_globalproblem.H"
 
 #include "src/drt_mat/electrode.H"
 #include "src/drt_mat/matpar_material.H"

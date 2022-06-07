@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                  cschmidt 11/2018 |
  *---------------------------------------------------------------------------*/
+#include <Epetra_SerialComm.h>
 #include "src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_lib/drt_utils_reference_configuration.H"
 #include "src/drt_so3/so_tet4.H"

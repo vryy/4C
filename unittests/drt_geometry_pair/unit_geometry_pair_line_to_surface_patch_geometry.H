@@ -18,10 +18,11 @@
 
 #include "src/drt_lib/drt_discret.H"
 #include "src/drt_so3/so_hex8.H"
+#include "src/drt_so3/so_surface.H"
 #include "src/drt_geometry_pair/geometry_pair_element_faces.H"
 
 
-namespace GEOMETRYPAIR
+namespace
 {
   /**
    * \brief Fill a discretization with the geometry for the unit test.
@@ -151,7 +152,7 @@ namespace GEOMETRYPAIR
       }
     }
   }
-}  // namespace GEOMETRYPAIR
+}  // namespace
 
 
 

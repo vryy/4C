@@ -11,10 +11,8 @@
 #ifndef UNIT_GEOMETRY_PAIR_LINE_TO_VOLUME_SEGMENTATION_LINE_ALONG_ELEMENT_SURFACE_H_
 #define UNIT_GEOMETRY_PAIR_LINE_TO_VOLUME_SEGMENTATION_LINE_ALONG_ELEMENT_SURFACE_H_
 
-#include "unit_geometry_pair_line_to_volume_segmentation.H"
 
-
-namespace GEOMETRYPAIR
+namespace
 {
   /**
    * \brief The following code part is generated with meshpy. The function defines element
@@ -609,7 +607,7 @@ namespace GEOMETRYPAIR
     volume_elements.back()->BuildNodalPointers(nodes_map);
   }
 
-}  // namespace GEOMETRYPAIR
+}  // namespace
 
 
 #endif
