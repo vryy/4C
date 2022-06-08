@@ -34,22 +34,13 @@ namespace
     /**
      * \brief Set up the testing environment.
      */
-    void SetUp() override
+    BeamToSolidVolumeMeshtyingPairMortarTest()
     {
       // Set up the evaluation data container for the geometry pairs.
       Teuchos::ParameterList line_to_volume_params_list;
       INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
       evaluation_data_ =
           Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
-    }
-
-    /**
-     * \brief Delete pointers and other class variables.
-     */
-    void TearDown() override
-    {
-      // Dereference the pointers.
-      evaluation_data_ = Teuchos::null;
     }
 
     /**
