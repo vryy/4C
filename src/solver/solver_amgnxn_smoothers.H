@@ -80,8 +80,8 @@ namespace LINALG
        public:
         BgsSmoother(Teuchos::RCP<BlockedMatrix> A,
             std::vector<Teuchos::RCP<GenericSmoother>> smoothers,
-            std::vector<std::vector<int>> superblocks, int iter, double omega,
-            std::vector<int> iters, std::vector<double> omegas)
+            std::vector<std::vector<int>> superblocks, unsigned iter, double omega,
+            std::vector<unsigned> iters, std::vector<double> omegas)
             : A_(A),
               smoothers_(smoothers),
               superblocks_(superblocks),
@@ -99,9 +99,9 @@ namespace LINALG
         Teuchos::RCP<BlockedMatrix> A_;
         std::vector<Teuchos::RCP<GenericSmoother>> smoothers_;
         std::vector<std::vector<int>> superblocks_;
-        int iter_;
+        unsigned iter_;
         double omega_;
-        std::vector<int> iters_;
+        std::vector<unsigned> iters_;
         std::vector<double> omegas_;
       };
 
@@ -111,7 +111,7 @@ namespace LINALG
         SimpleSmoother(Teuchos::RCP<BlockedMatrix> A, Teuchos::RCP<BlockedMatrix> invApp,
             Teuchos::RCP<BlockedMatrix> Schur, Teuchos::RCP<GenericSmoother> SmooApp,
             Teuchos::RCP<GenericSmoother> SmooSchur, std::vector<int> BlocksPred,
-            std::vector<int> BlocksSchur, int iter, double alpha)
+            std::vector<int> BlocksSchur, unsigned iter, double alpha)
             : A_(A),
               invApp_(invApp),
               Schur_(Schur),
@@ -135,7 +135,7 @@ namespace LINALG
         Teuchos::RCP<GenericSmoother> SmooSchur_;
         std::vector<int> BlocksPred_;
         std::vector<int> BlocksSchur_;
-        int iter_;
+        unsigned iter_;
         double alpha_;
         mutable Teuchos::RCP<BlockedVector> Xp_tmp_;
         mutable Teuchos::RCP<BlockedVector> Xs_tmp_;
@@ -247,7 +247,8 @@ namespace LINALG
       {
        public:
         MueluAMGWrapper(Teuchos::RCP<SparseMatrix> A, int num_pde, int null_space_dim,
-            Teuchos::RCP<std::vector<double>> null_space_data, Teuchos::ParameterList muelu_list);
+            Teuchos::RCP<std::vector<double>> null_space_data,
+            const Teuchos::ParameterList& muelu_list);
         virtual void Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y,
             bool InitialGuessIsZero = false) const;
         void Setup();
@@ -269,8 +270,9 @@ namespace LINALG
       {
        public:
         SingleFieldAMG(Teuchos::RCP<SparseMatrix> A, int num_pde, int null_space_dim,
-            Teuchos::RCP<std::vector<double>> null_space_data, Teuchos::ParameterList muelu_list,
-            Teuchos::ParameterList fine_smoother_list);
+            Teuchos::RCP<std::vector<double>> null_space_data,
+            const Teuchos::ParameterList& muelu_list,
+            const Teuchos::ParameterList& fine_smoother_list);
         virtual void Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y,
             bool InitialGuessIsZero = false) const;
 
@@ -451,7 +453,7 @@ namespace LINALG
 
        private:
         Teuchos::RCP<SparseMatrix> ApproximateInverse(
-            const SparseMatrixBase& A, std::string method);
+            const SparseMatrixBase& A, const std::string& method);
         Teuchos::RCP<BlockedMatrix> ComputeSchurComplement(const BlockedMatrix& invApp,
             const BlockedMatrix& Aps, const BlockedMatrix& Asp, const BlockedMatrix& Ass);
       };
