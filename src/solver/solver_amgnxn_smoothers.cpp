@@ -760,7 +760,8 @@ LINALG::SOLVER::AMGNXN::DirectSolverWrapper::DirectSolverWrapper()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void LINALG::SOLVER::AMGNXN::DirectSolverWrapper::Setup(Teuchos::RCP<LINALG::SparseMatrix> matrix)
+void LINALG::SOLVER::AMGNXN::DirectSolverWrapper::Setup(
+    Teuchos::RCP<LINALG::SparseMatrix> matrix, Teuchos::RCP<Teuchos::ParameterList> params)
 {
   // Set matrix
   A_ = Teuchos::rcp_dynamic_cast<Epetra_Operator>(matrix->EpetraMatrix());
@@ -771,10 +772,13 @@ void LINALG::SOLVER::AMGNXN::DirectSolverWrapper::Setup(Teuchos::RCP<LINALG::Spa
   x_ = Teuchos::rcp(new Epetra_MultiVector(A_->OperatorDomainMap(), 1));
   b_ = Teuchos::rcp(new Epetra_MultiVector(A_->OperatorRangeMap(), 1));
 
-  // Create linear solver
-  Teuchos::RCP<Teuchos::ParameterList> solvparams = Teuchos::rcp(new Teuchos::ParameterList);
-  solvparams->set("solver", "klu");
-  solver_ = Teuchos::rcp(new LINALG::Solver(solvparams, A_->Comm(), NULL));
+  // Create linear solver. Default solver: KLU
+  const auto solvertype = params->get<std::string>("solver", "klu");
+  if (solvertype != "klu" and solvertype != "umfpack" and solvertype != "superlu" and
+      solvertype != "lapack")
+    dserror("Solver type not supported as direct solver in AMGNXN framework");
+
+  solver_ = Teuchos::rcp(new LINALG::Solver(params, A_->Comm(), NULL));
 
   // Set up solver
   solver_->Setup(A_, x_, b_, true, true);
@@ -2234,7 +2238,7 @@ LINALG::SOLVER::AMGNXN::DirectSolverWrapperFactory::Create()
   if (not GetOperator()->HasOnlyOneBlock()) dserror("We spect here a matrix with only one block");
   Teuchos::RCP<SparseMatrix> matrix = GetOperator()->GetMatrix(0, 0);
   if (matrix == Teuchos::null) dserror("We expect here a sparse matrix");
-  S->Setup(matrix);
+  S->Setup(matrix, Teuchos::rcp(new Teuchos::ParameterList(GetParams())));
 
 
   return S;

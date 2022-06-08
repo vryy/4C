@@ -302,7 +302,8 @@ namespace LINALG
       {
        public:
         DirectSolverWrapper();
-        void Setup(Teuchos::RCP<LINALG::SparseMatrix> matrix);
+        void Setup(
+            Teuchos::RCP<LINALG::SparseMatrix> matrix, Teuchos::RCP<Teuchos::ParameterList> params);
         virtual void Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y,
             bool InitialGuessIsZero = false) const;
 
