@@ -87,10 +87,6 @@ namespace BEAMINTERACTION
         LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
         Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
-
-   protected:
-    //! Number of rotational Lagrange multipliers.
-    unsigned int n_mortar_rot_;
   };
 
 

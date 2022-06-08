@@ -1,0 +1,49 @@
+<?xml version="1.0" ?> 
+<!-- 
+# vtk DataFile Version 3.0
+-->
+<VTKFile type="UnstructuredGrid" version="0.1" compressor="vtkZLibDataCompressor" byte_order="LittleEndian">
+  <UnstructuredGrid>
+    <FieldData>
+      <DataArray type="Float64" Name="TIME" NumberOfTuples="1" format="ascii">
+3.000000000000000e+00 
+      </DataArray>
+    </FieldData>
+
+    <Piece NumberOfPoints="3" NumberOfCells="0" >
+      <Points>
+        <DataArray type="Float64" NumberOfComponents="3" format="ascii">
+-2.500000000000000e+00 0.000000000000000e+00 6.000000000000000e-01
+2.500000000000000e+00 0.000000000000000e+00 6.000000000000000e-01
+0.000000000000000e+00 0.000000000000000e+00 6.000000000000000e-01
+        </DataArray>
+      </Points>
+
+      <Cells>
+        <DataArray type="Int32" Name="connectivity" format="ascii">
+0 1 2 
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii">
+
+        </DataArray>
+        <DataArray type="UInt8" Name="types" format="ascii">
+
+        </DataArray>
+      </Cells>
+
+  <PointData>
+        <DataArray type="Float64" Name="displacement" NumberOfComponents="3" format="ascii">
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+-4.431940551647973e-03 -1.118101195919750e-01 -1.356714734911315e-01
+3.657611583189890e-04 -9.152516552212719e-02 -2.457034853643225e-02
+        </DataArray>
+        <DataArray type="Float64" Name="lambda" NumberOfComponents="3" format="ascii">
+-8.047916455067331e-05 1.002494160598484e-02 2.770229703276208e-03
+-5.969048341237061e-04 1.020956227268035e-02 8.618729106964410e-03
+-4.911074276827342e-04 -6.693458818261571e-06 -3.298745689753102e-03
+        </DataArray>
+      </PointData>
+
+    </Piece>
+  </UnstructuredGrid>
+</VTKFile>

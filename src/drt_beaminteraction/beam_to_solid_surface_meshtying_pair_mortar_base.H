@@ -71,6 +71,10 @@ namespace BEAMINTERACTION
      * \brief The mortar energy contribution will be calculated globally in the mortar manager.
      */
     double GetEnergy() const override { return 0.0; }
+
+   protected:
+    //! Number of rotational Lagrange multipliers.
+    unsigned int n_mortar_rot_;
   };
 }  // namespace BEAMINTERACTION
 
