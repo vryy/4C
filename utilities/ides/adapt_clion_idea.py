@@ -1,14 +1,7 @@
 #! ./utilities/baci-python-venv/bin/python
 import sys
 import os.path
-
-try:
-    from lxml import etree
-except ImportError:
-    print("\n Error: python-lxml is not installed. For installation type as root:")
-    print("   yum install python-lxml ")
-    print(" exiting now...\n")
-    sys.exit(1)
+from lxml import etree
 
 def adapt(cmake_cmd_line,build_type,path_to_settings):
     """update CLion's .idea/workspace.xml settings if existing"""
@@ -29,7 +22,8 @@ def adapt(cmake_cmd_line,build_type,path_to_settings):
                 currentConfiguration.set("GENERATION_OPTIONS", cmake_cmd_line)
     
     if not found:
-        print("Warning: Could not find build config "+build_type+" in "+path_to_settings)
+        print("Warning: Could not find build config "+build_type+" in "+path_to_settings+"."
+              "Create it manually in CLion's project settings and rerun do-configure to adapt the CMake options.")
         return
 
     with open(path_to_settings, "wb") as fo:
