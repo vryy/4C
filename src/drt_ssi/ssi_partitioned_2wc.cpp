@@ -110,16 +110,6 @@ void SSI::SSIPart2WC::Setup()
 }
 
 /*----------------------------------------------------------------------*
- | Setup the discretizations                                rauch 08/16 |
- *----------------------------------------------------------------------*/
-void SSI::SSIPart2WC::InitDiscretizations(
-    const Epetra_Comm& comm, const std::string& struct_disname, const std::string& scatra_disname)
-{
-  // call init in base class
-  SSI::SSIBase::InitDiscretizations(comm, struct_disname, scatra_disname);
-}
-
-/*----------------------------------------------------------------------*
  | Timeloop for 2WC SSI problems                             Thon 12/14 |
  *----------------------------------------------------------------------*/
 void SSI::SSIPart2WC::Timeloop()

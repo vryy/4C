@@ -91,6 +91,11 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   // Adaptive time stepping
   BoolParameter("ADAPTIVE_TIMESTEPPING", "no", "flag for adaptive time stepping", &ssidyn);
 
+  // do redistribution by binning of solid mechanics discretization (scatra dis is cloned from solid
+  // dis for volume_matching and volumeboundary_matching)
+  BoolParameter("REDISTRIBUTE_SOLID", "No",
+      "redistribution by binning of solid mechanics discretization", &ssidyn);
+
   /*----------------------------------------------------------------------*/
   /* parameters for partitioned SSI */
   /*----------------------------------------------------------------------*/

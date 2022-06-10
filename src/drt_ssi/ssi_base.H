@@ -156,7 +156,7 @@ namespace SSI
     \date 08/16
     \author rauch  */
     virtual void InitDiscretizations(const Epetra_Comm& comm, const std::string& struct_disname,
-        const std::string& scatra_disname);
+        const std::string& scatra_disname, const bool redistribute_struct_dis);
 
     /// setup
     virtual void SetupSystem();
