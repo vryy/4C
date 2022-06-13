@@ -1,18 +1,13 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*! \file
+\brief This header provides the interface for all FE simulations
 
-\brief Unit tests for the beam to volume meshtying mortar pair.
-
-\level 3
+\level 2
 */
-// End doxygen header.
+/*----------------------------------------------------------------------------*/
 
 
-#ifndef UNIT_BEAMINTERACTION_BEAM_TO_SOLIV_VOLUME_MESHTYING_MORTAR_H_
-#define UNIT_BEAMINTERACTION_BEAM_TO_SOLIV_VOLUME_MESHTYING_MORTAR_H_
-
-
-#include "src/common/unit_cxx_test_wrapper.H"
+#include <gtest/gtest.h>
 
 #include "src/drt_beam3/beam3r.H"
 #include "src/drt_so3/so_hex8.H"
@@ -26,42 +21,110 @@
 #include "src/linalg/linalg_serialdensevector.H"
 
 
-namespace BEAMINTERACTION
-{
-  class BeamToSolidVolumeMeshtyingPairMortar_TestSuite;
-}
 
-/**
- * Class to test the local mortar matrices calculated by the beam to volume mesh tying mortar pair.
- */
-class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public BACICxxTestWrapper
+namespace
 {
- public:
   /**
-   * \brief Set up the testing environment.
+   * Class to test the local mortar matrices calculated by the beam to volume mesh tying mortar
+   * pair.
    */
-  void Setup() override
+  class BeamToSolidVolumeMeshtyingPairMortarTest : public ::testing::Test
   {
-    // Set up the evaluation data container for the geometry pairs.
-    Teuchos::ParameterList line_to_volume_params_list;
-    INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
-    evaluation_data_ =
-        Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
-  }
+   protected:
+    /**
+     * \brief Set up the testing environment.
+     */
+    BeamToSolidVolumeMeshtyingPairMortarTest()
+    {
+      // Set up the evaluation data container for the geometry pairs.
+      Teuchos::ParameterList line_to_volume_params_list;
+      INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
+      evaluation_data_ =
+          Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
+    }
 
-  /**
-   * \brief Delete pointers and other class variables.
-   */
-  void TearDown() override
-  {
-    // Dereference the pointers.
-    evaluation_data_ = Teuchos::null;
-  }
+    /**
+     * \brief Set up the contact pair so it can be evaluated and compare the results.
+     */
+    template <typename beam_type, typename solid_type, typename lambda_type>
+    void PerformMortarPairUnitTest(
+        BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>&
+            contact_pair,
+        const LINALG::Matrix<beam_type::n_dof_, 1, double>& q_beam,
+        const LINALG::Matrix<9, 1, double>& q_beam_rot,
+        const LINALG::Matrix<solid_type::n_dof_, 1, double>& q_solid,
+        const LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double>& result_local_D,
+        const LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double>& result_local_M,
+        const LINALG::Matrix<lambda_type::n_dof_, 1, double>& result_local_kappa)
+    {
+      // Create the elements.
+      const int dummy_node_ids[2] = {0, 1};
+      Teuchos::RCP<DRT::Element> beam_element = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
+      beam_element->SetNodeIds(2, dummy_node_ids);
+      Teuchos::RCP<DRT::Element> solid_element = Teuchos::rcp(new DRT::ELEMENTS::So_hex8(1, 0));
+
+      // Set up the beam element.
+      std::vector<double> xrefe(6);
+      for (unsigned int j = 0; j < 2; j++)
+        for (unsigned int i = 0; i < 3; i++) xrefe[i + 3 * j] = q_beam(i + j * 6);
+
+      // Get the rotational vector.
+      std::vector<double> rotrefe(9);
+      for (unsigned int i = 0; i < 9; i++) rotrefe[i] = q_beam_rot(i);
+
+      // Cast beam element and set the hermitian interpolation.
+      Teuchos::RCP<DRT::ELEMENTS::Beam3r> beam_element_cast =
+          Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Beam3r>(beam_element, true);
+      beam_element_cast->SetCenterlineHermite(true);
+      beam_element_cast->SetUpReferenceGeometry<3, 2, 2>(xrefe, rotrefe);
+
+      // Call Init on the beam contact pair.
+      std::vector<const DRT::Element*> pair_elements;
+      pair_elements.push_back(&(*beam_element));
+      pair_elements.push_back(&(*solid_element));
+      contact_pair.CreateGeometryPair(evaluation_data_);
+      contact_pair.Init(Teuchos::null, pair_elements);
+
+      // Evaluate the local matrices.
+      LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> local_D(false);
+      LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> local_M(false);
+      LINALG::Matrix<lambda_type::n_dof_, 1, double> local_kappa(false);
+      LINALG::Matrix<lambda_type::n_dof_, 1, double> local_constraint(false);
+      contact_pair.CastGeometryPair()->Setup();
+      contact_pair.ele1posref_ = q_beam;
+      contact_pair.ele2posref_ = q_solid;
+      contact_pair.CastGeometryPair()->Evaluate(
+          contact_pair.ele1posref_, contact_pair.ele2posref_, contact_pair.line_to_3D_segments_);
+      contact_pair.EvaluateDM(local_D, local_M, local_kappa, local_constraint);
+
+      // Check the results for D.
+      for (unsigned int i_row = 0; i_row < lambda_type::n_dof_; i_row++)
+        for (unsigned int i_col = 0; i_col < beam_type::n_dof_; i_col++)
+          EXPECT_NEAR(local_D(i_row, i_col), result_local_D(i_row, i_col), 1e-11);
+
+      // Check the results for M.
+      for (unsigned int i_row = 0; i_row < lambda_type::n_dof_; i_row++)
+        for (unsigned int i_col = 0; i_col < solid_type::n_dof_; i_col++)
+          EXPECT_NEAR(local_M(i_row, i_col), result_local_M(i_row, i_col), 1e-11);
+
+      // Check the results for kappa.
+      for (unsigned int i_row = 0; i_row < lambda_type::n_dof_; i_row++)
+        EXPECT_NEAR(local_kappa(i_row), result_local_kappa(i_row), 1e-11);
+
+      // Check the results for the local constraint offset vector.
+      for (unsigned int i_row = 0; i_row < lambda_type::n_dof_; i_row++)
+        EXPECT_NEAR(local_constraint(i_row), 0.0, 1e-11);
+    }
+
+
+    //! Evaluation data container for geometry pairs.
+    Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> evaluation_data_;
+  };
 
   /**
    * \brief Test a non straight beam in a hex8 element, with line2 mortar shape functions.
    */
-  void TestBeamToSolidMeshtyingMortarHermite3Hex8Line2()
+  TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite3Hex8Line2)
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -228,7 +291,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public B
   /**
    * \brief Test a non straight beam in a hex8 element, with line3 mortar shape functions.
    */
-  void TestBeamToSolidMeshtyingMortarHermite3Hex8Line3()
+  TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite3Hex8Line3)
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -434,7 +497,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public B
   /**
    * \brief Test a non straight beam in a hex8 element, with line4 mortar shape functions.
    */
-  void TestBeamToSolidMeshtyingMortarHermite3Hex8Line4()
+  TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite3Hex8Line4)
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -679,7 +742,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public B
   /**
    * \brief Test a non straight beam in a hex20 element, with line2 mortar shape functions.
    */
-  void TestBeamToSolidMeshtyingMortarHermite3Hex20Line2()
+  TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite3Hex20Line2)
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -954,7 +1017,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public B
   /**
    * \brief Test a non straight beam in a hex20 element, with line3 mortar shape functions.
    */
-  void TestBeamToSolidMeshtyingMortarHermite3Hex20Line3()
+  TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite3Hex20Line3)
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -1304,7 +1367,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public B
   /**
    * \brief Test a non straight beam in a hex20 element, with line4 mortar shape functions.
    */
-  void TestBeamToSolidMeshtyingMortarHermite3Hex20Line4()
+  TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite3Hex20Line4)
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -1729,7 +1792,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public B
   /**
    * \brief Test a non straight beam in a hex27 element, with line2 mortar shape functions.
    */
-  void TestBeamToSolidMeshtyingMortarHermite3Hex27Line2()
+  TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite3Hex27Line2)
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -2067,7 +2130,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public B
   /**
    * \brief Test a non straight beam in a hex27 element, with line3 mortar shape functions.
    */
-  void TestBeamToSolidMeshtyingMortarHermite3Hex27Line3()
+  TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite3Hex27Line3)
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -2501,7 +2564,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public B
   /**
    * \brief Test a non straight beam in a hex27 element, with line4 mortar shape functions.
    */
-  void TestBeamToSolidMeshtyingMortarHermite3Hex27Line4()
+  TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite3Hex27Line4)
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -3031,7 +3094,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public B
   /**
    * \brief Test a non straight beam in a tet4 element, with line2 mortar shape functions.
    */
-  void TestBeamToSolidMeshtyingMortarHermite3Tet4Line2()
+  TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite3Tet4Line2)
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -3162,7 +3225,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public B
   /**
    * \brief Test a non straight beam in a tet4 element, with line3 mortar shape functions.
    */
-  void TestBeamToSolidMeshtyingMortarHermite3Tet4Line3()
+  TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite3Tet4Line3)
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -3320,7 +3383,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public B
   /**
    * \brief Test a non straight beam in a tet4 element, with line4 mortar shape functions.
    */
-  void TestBeamToSolidMeshtyingMortarHermite3Tet4Line4()
+  TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite3Tet4Line4)
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -3505,7 +3568,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public B
   /**
    * \brief Test a non straight beam in a tet10 element, with line2 mortar shape functions.
    */
-  void TestBeamToSolidMeshtyingMortarHermite3Tet10Line2()
+  TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite3Tet10Line2)
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -3690,7 +3753,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public B
   /**
    * \brief Test a non straight beam in a tet10 element, with line3 mortar shape functions.
    */
-  void TestBeamToSolidMeshtyingMortarHermite3Tet10Line3()
+  TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite3Tet10Line3)
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -3920,7 +3983,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public B
   /**
    * \brief Test a non straight beam in a tet10 element, with line4 mortar shape functions.
    */
-  void TestBeamToSolidMeshtyingMortarHermite3Tet10Line4()
+  TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite3Tet10Line4)
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -4192,84 +4255,4 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public B
         result_local_M, result_local_kappa);
   }
 
- private:
-  /**
-   * \brief Set up the contact pair so it can be evaluated and compare the results.
-   */
-  template <typename beam_type, typename solid_type, typename lambda_type>
-  void PerformMortarPairUnitTest(
-      BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>&
-          contact_pair,
-      const LINALG::Matrix<beam_type::n_dof_, 1, double>& q_beam,
-      const LINALG::Matrix<9, 1, double>& q_beam_rot,
-      const LINALG::Matrix<solid_type::n_dof_, 1, double>& q_solid,
-      const LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double>& result_local_D,
-      const LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double>& result_local_M,
-      const LINALG::Matrix<lambda_type::n_dof_, 1, double>& result_local_kappa)
-  {
-    // Create the elements.
-    const int dummy_node_ids[2] = {0, 1};
-    Teuchos::RCP<DRT::Element> beam_element = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
-    beam_element->SetNodeIds(2, dummy_node_ids);
-    Teuchos::RCP<DRT::Element> solid_element = Teuchos::rcp(new DRT::ELEMENTS::So_hex8(1, 0));
-
-    // Set up the beam element.
-    std::vector<double> xrefe(6);
-    for (unsigned int j = 0; j < 2; j++)
-      for (unsigned int i = 0; i < 3; i++) xrefe[i + 3 * j] = q_beam(i + j * 6);
-
-    // Get the rotational vector.
-    std::vector<double> rotrefe(9);
-    for (unsigned int i = 0; i < 9; i++) rotrefe[i] = q_beam_rot(i);
-
-    // Cast beam element and set the hermitian interpolation.
-    Teuchos::RCP<DRT::ELEMENTS::Beam3r> beam_element_cast =
-        Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Beam3r>(beam_element, true);
-    beam_element_cast->SetCenterlineHermite(true);
-    beam_element_cast->SetUpReferenceGeometry<3, 2, 2>(xrefe, rotrefe);
-
-    // Call Init on the beam contact pair.
-    std::vector<const DRT::Element*> pair_elements;
-    pair_elements.push_back(&(*beam_element));
-    pair_elements.push_back(&(*solid_element));
-    contact_pair.CreateGeometryPair(evaluation_data_);
-    contact_pair.Init(Teuchos::null, pair_elements);
-
-    // Evaluate the local matrices.
-    LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> local_D(false);
-    LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> local_M(false);
-    LINALG::Matrix<lambda_type::n_dof_, 1, double> local_kappa(false);
-    LINALG::Matrix<lambda_type::n_dof_, 1, double> local_constraint(false);
-    contact_pair.CastGeometryPair()->Setup();
-    contact_pair.ele1posref_ = q_beam;
-    contact_pair.ele2posref_ = q_solid;
-    contact_pair.CastGeometryPair()->Evaluate(
-        contact_pair.ele1posref_, contact_pair.ele2posref_, contact_pair.line_to_3D_segments_);
-    contact_pair.EvaluateDM(local_D, local_M, local_kappa, local_constraint);
-
-    // Check the results for D.
-    for (unsigned int i_row = 0; i_row < lambda_type::n_dof_; i_row++)
-      for (unsigned int i_col = 0; i_col < beam_type::n_dof_; i_col++)
-        TS_ASSERT_DELTA(local_D(i_row, i_col), result_local_D(i_row, i_col), 1e-11);
-
-    // Check the results for M.
-    for (unsigned int i_row = 0; i_row < lambda_type::n_dof_; i_row++)
-      for (unsigned int i_col = 0; i_col < solid_type::n_dof_; i_col++)
-        TS_ASSERT_DELTA(local_M(i_row, i_col), result_local_M(i_row, i_col), 1e-11);
-
-    // Check the results for kappa.
-    for (unsigned int i_row = 0; i_row < lambda_type::n_dof_; i_row++)
-      TS_ASSERT_DELTA(local_kappa(i_row), result_local_kappa(i_row), 1e-11);
-
-    // Check the results for the local constraint offset vector.
-    for (unsigned int i_row = 0; i_row < lambda_type::n_dof_; i_row++)
-      TS_ASSERT_DELTA(local_constraint(i_row), 0.0, 1e-11);
-  }
-
-
- private:
-  //! Evaluation data container for geometry pairs.
-  Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> evaluation_data_;
-};
-
-#endif
+}  // namespace

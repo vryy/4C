@@ -1,5 +1,4 @@
 add_subdirectory(common)
-add_subdirectory(drt_beaminteraction)
 add_subdirectory(drt_contact_constitutivelaw)
 add_subdirectory(drt_fbi)
 add_subdirectory(drt_geometry_pair)
