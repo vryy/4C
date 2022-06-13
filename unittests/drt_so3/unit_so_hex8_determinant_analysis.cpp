@@ -6,48 +6,23 @@
 \level 3
 
 *-----------------------------------------------------------------------*/
-
-#ifndef UNITTESTS_SRC_DRT_SO3_UNIT_SO_HEX8_DETERMINANT_ANALYSIS_H_
-#define UNITTESTS_SRC_DRT_SO3_UNIT_SO_HEX8_DETERMINANT_ANALYSIS_H_
-
-#include "src/common/unit_cxx_test_wrapper.H"
+#include <gtest/gtest.h>
 #include "src/drt_so3/so_hex8_determinant_analysis.H"
 
-namespace DRT
+namespace
 {
-  namespace ELEMENTS
+  class SoHex8DetermAnalys : public ::testing::Test
   {
-    class So_hex8_DetAnalysis_TestSuite;
-  }
-}  // namespace DRT
+   protected:
+    Teuchos::RCP<DRT::ELEMENTS::So_Hex8_Determinant_Analysis> analyser_;
+    // Set up testing environment.
+    void SetUp() override { analyser_ = DRT::ELEMENTS::So_Hex8_Determinant_Analysis::create(); }
+    // Delete pointers.
+    void TearDown() override { analyser_ = Teuchos::null; }
+  };
 
-/**
- * Class to test determinant check of hex8 element
- */
-class DRT::ELEMENTS::So_hex8_DetAnalysis_TestSuite : public BACICxxTestWrapper
-{
-  Teuchos::RCP<DRT::ELEMENTS::So_Hex8_Determinant_Analysis> analyser_;
-
- public:
-  /**
-   * Set up the testing environment.
-   */
-  void Setup() override { analyser_ = DRT::ELEMENTS::So_Hex8_Determinant_Analysis::create(); }
-
-  /**
-   * Delete pointers.
-   */
-  void TearDown() override { analyser_ = Teuchos::null; }
-
-  /** Test coordinates of an undeformed element (sanity check)
-   *  Expected result = VALID */
-  void TestElementUndeformed()
+  TEST_F(SoHex8DetermAnalys, TestElementUndeformed)
   {
-#ifdef DEBUG_SO_HEX8_DET_ANALYSIS
-    std::cout << "\n\n" << std::string(80, '*') << "\n" << __PRETTY_FUNCTION__;
-    std::cout << "\n" << std::string(80, '*') << "\n\n";
-#endif
-
     LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> x_test;
     x_test(0, 0) = 0.0;
     x_test(0, 1) = 1.0;
@@ -76,19 +51,14 @@ class DRT::ELEMENTS::So_hex8_DetAnalysis_TestSuite : public BACICxxTestWrapper
     x_test(2, 7) = 1.0;
 
     unsigned rc = 0;
-    TS_ASSERT_EQUALS(analyser_->isValid(x_test, &rc), true);
-    TS_ASSERT_EQUALS(rc, 0);
+    EXPECT_EQ(analyser_->isValid(x_test, &rc), true);
+    EXPECT_EQ(rc, 0);
   }
 
   /** Test coordinates following Fig. 5 in Johnen2017
    *  Expected result = INVALID */
-  void TestElementFig5Johnen2017()
+  TEST_F(SoHex8DetermAnalys, TestElementFig5Johnen2017)
   {
-#ifdef DEBUG_SO_HEX8_DET_ANALYSIS
-    std::cout << "\n\n" << std::string(80, '*') << "\n" << __PRETTY_FUNCTION__;
-    std::cout << "\n" << std::string(80, '*') << "\n\n";
-#endif
-
     LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> x_test;
     x_test(0, 0) = 0.0;
     x_test(0, 1) = 1.0;
@@ -117,19 +87,14 @@ class DRT::ELEMENTS::So_hex8_DetAnalysis_TestSuite : public BACICxxTestWrapper
     x_test(2, 7) = 1.45521546591891;
 
     unsigned rc = 0;
-    TS_ASSERT_EQUALS(analyser_->isValid(x_test, &rc), false);
-    TS_ASSERT_EQUALS(rc, 3);
+    EXPECT_EQ(analyser_->isValid(x_test, &rc), false);
+    EXPECT_EQ(rc, 3);
   }
 
   /** Test coordinates following Fig. 6 in Johnen2017
    *  Expected result = VALID */
-  void TestElementFig6Johnen2017()
+  TEST_F(SoHex8DetermAnalys, TestElementFig6Johnen2017)
   {
-#ifdef DEBUG_SO_HEX8_DET_ANALYSIS
-    std::cout << "\n\n" << std::string(80, '*') << "\n" << __PRETTY_FUNCTION__;
-    std::cout << "\n" << std::string(80, '*') << "\n\n";
-#endif
-
     LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> x_test;
     x_test(0, 0) = 0.0;
     x_test(0, 1) = 1.0;
@@ -158,19 +123,14 @@ class DRT::ELEMENTS::So_hex8_DetAnalysis_TestSuite : public BACICxxTestWrapper
     x_test(2, 7) = 1.93234;
 
     unsigned rc = 0;
-    TS_ASSERT_EQUALS(analyser_->isValid(x_test, &rc), true);
-    TS_ASSERT_EQUALS(rc, 1);
+    EXPECT_EQ(analyser_->isValid(x_test, &rc), true);
+    EXPECT_EQ(rc, 1);
   }
 
   /** Test coordinates following Fig. 7 in Johnen2017
    *  Expected result = INVALID */
-  void TestElementFig7Johnen2017()
+  TEST_F(SoHex8DetermAnalys, TestElementFig7Johnen2017)
   {
-#ifdef DEBUG_SO_HEX8_DET_ANALYSIS
-    std::cout << "\n\n" << std::string(80, '*') << "\n" << __PRETTY_FUNCTION__;
-    std::cout << "\n" << std::string(80, '*') << "\n\n";
-#endif
-
     LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> x_test;
     x_test(0, 0) = 0.464949491866817;
     x_test(0, 1) = 0.481795709097567;
@@ -199,10 +159,7 @@ class DRT::ELEMENTS::So_hex8_DetAnalysis_TestSuite : public BACICxxTestWrapper
     x_test(2, 7) = 0.0115054780724508;
 
     unsigned rc = 0;
-    TS_ASSERT_EQUALS(analyser_->isValid(x_test, &rc), false);
-    TS_ASSERT_EQUALS(rc, 0);
+    EXPECT_EQ(analyser_->isValid(x_test, &rc), false);
+    EXPECT_EQ(rc, 0);
   }
-};
-
-
-#endif /* UNITTESTS_SRC_DRT_SO3_UNIT_SO_HEX8_DETERMINANT_ANALYSIS_H_ */
+}  // namespace
