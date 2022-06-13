@@ -108,8 +108,11 @@ namespace
 
       ASSERT_EQ(state_reference.size(), state.size());
 
-      for (int i = 0; i < (int)state_reference.size(); ++i)
-        EXPECT_NEAR(state_reference[i], state[i], 1e-14);
+      for (int j = 0; j < (int)state_reference.size(); ++j)
+        EXPECT_NEAR(state_reference[j], state[j], 1e-14)
+            << "state '"
+            << PARTICLEENGINE::EnumToStateName(static_cast<PARTICLEENGINE::ParticleState>(i))
+            << "' j = " << j;
     }
   }
 
@@ -228,6 +231,7 @@ namespace
 
     for (int index = 0; index < 3; ++index)
     {
+      SCOPED_TRACE("Particle " + std::to_string(index));
       if (index == 0)
       {
         globalid_reference = 1;
@@ -291,6 +295,7 @@ namespace
 
     for (int index = 0; index < 2; ++index)
     {
+      SCOPED_TRACE("Particle " + std::to_string(index));
       if (index == 0)
       {
         globalid_reference = 3;
@@ -474,6 +479,7 @@ namespace
 
     for (int index = 0; index < 3; ++index)
     {
+      SCOPED_TRACE("Particle " + std::to_string(index));
       if (index == 0)
       {
         pos[0] = 1.8;
@@ -532,6 +538,7 @@ namespace
 
     for (int index = 0; index < 3; ++index)
     {
+      SCOPED_TRACE("Particle " + std::to_string(index));
       if (index == 0)
       {
         pos[0] = 1.315;
