@@ -3,44 +3,44 @@
 
 \brief unittests for utils of poromultiphase_scatra-framework
 
-\level 3
-*/
 
-// definitions
-#ifndef UNITTESTS_POROMULTIPHASE_SCATRA_UTILS_H_
-#define UNITTESTS_POROMULTIPHASE_SCATRA_UTILS_H_
+\level 1
 
-// headers
-#include "src/common/unit_cxx_test_wrapper.H"
+*-----------------------------------------------------------------------*/
+#include <gtest/gtest.h>
+
 #include "src/drt_poromultiphase_scatra/poromultiphase_scatra_utils.H"
 
-// forward declarations
-namespace POROMULTIPHASESCATRA
+namespace
 {
-  namespace UTILS
+  class TestCalculationOxyPartialPressure : public ::testing::Test
   {
-    class OxygenPartialPressure_TestSuite;
-  }
-}  // namespace POROMULTIPHASESCATRA
+   protected:
+    /**
+     * helper function to get oxygen concentration from oxygen partial pressure, this is the known
+     * forward relation
+     *
+     * @param Pb [in]: oxygen partial pressure
+     * @param CaO2_max [in]: maximum oxygen concentration
+     * @param Pb50 [in]: partial pressure at 50% maximum oxygen concentration
+     * @param n [in]: exponent in Hill equation
+     * @param alpha_eff [in]: effective solubility of oxygen in blood
+     * @return CaO2: oxygen concentration
+     */
+    double GetOxyConcentrationFromPartialPressure(const double& Pb, const double& CaO2_max,
+        const double& Pb50, const double& n, const double& alpha_eff)
+    {
+      // Hill equation for saturation
+      const double saturation_hill = std::pow(Pb, n) / (std::pow(Pb, n) + std::pow(Pb50, n));
+      // oxygen dissolved in plasma + bound to hemoglobin
+      const double CaO2 = alpha_eff * Pb + CaO2_max * saturation_hill;
 
-/**
- * \brief: oxygen partial pressure test suite
- *
- * Test if calculation of oxygen partial pressure is correctly done. This calculation involves
- * numerical inversion of a known function, so we can test if the inversion gives correct results
- * for a known forward relation.
- */
-class POROMULTIPHASESCATRA::UTILS::OxygenPartialPressure_TestSuite : public BACICxxTestWrapper
-{
- public:
-  //! set up
-  void Setup() override {}
-
-  //! tear down
-  void TearDown() override {}
+      return CaO2;
+    }
+  };
 
   //! test corner value Pb = 0 mmHg
-  void TestGetOxyPartialPressurePb0()
+  TEST_F(TestCalculationOxyPartialPressure, Pb0)
   {
     // Parameters
     const double n = 2.7;
@@ -54,11 +54,11 @@ class POROMULTIPHASESCATRA::UTILS::OxygenPartialPressure_TestSuite : public BACI
         inverted_Pb, 0.0, CaO2_max, Pb50, n, alpha_eff);
 
     // check if partial pressure and numerically inverted partial pressure are equal
-    TS_ASSERT_DELTA(0.0, inverted_Pb, 1e-14);
+    EXPECT_NEAR(0.0, inverted_Pb, 1e-14);
   }
 
   //! test value Pb = 25 mmHg
-  void TestGetOxyPartialPressurePb25()
+  TEST_F(TestCalculationOxyPartialPressure, Pb25)
   {
     // Parameters
     const double n = 2.5;
@@ -76,11 +76,11 @@ class POROMULTIPHASESCATRA::UTILS::OxygenPartialPressure_TestSuite : public BACI
         inverted_Pb, CaO2, CaO2_max, Pb50, n, alpha_eff);
 
     // check if partial pressure and numerically inverted partial pressure are equal
-    TS_ASSERT_DELTA(Pb, inverted_Pb, 1e-14);
+    EXPECT_NEAR(Pb, inverted_Pb, 1e-14);
   }
 
   //! test value Pb = 50 mmHg
-  void TestGetOxyPartialPressurePb50()
+  TEST_F(TestCalculationOxyPartialPressure, Pb50)
   {
     // Parameters
     const double n = 2.7;
@@ -98,11 +98,11 @@ class POROMULTIPHASESCATRA::UTILS::OxygenPartialPressure_TestSuite : public BACI
         inverted_Pb, CaO2, CaO2_max, Pb50, n, alpha_eff);
 
     // check if partial pressure and numerically inverted partial pressure are equal
-    TS_ASSERT_DELTA(Pb, inverted_Pb, 1e-14);
+    EXPECT_NEAR(Pb, inverted_Pb, 1e-14);
   }
 
   //! test value Pb = 100 mmHg
-  void TestGetOxyPartialPressurePb100()
+  TEST_F(TestCalculationOxyPartialPressure, Pb100)
   {
     // Parameters
     const double n = 2.2;
@@ -120,31 +120,7 @@ class POROMULTIPHASESCATRA::UTILS::OxygenPartialPressure_TestSuite : public BACI
         inverted_Pb, CaO2, CaO2_max, Pb50, n, alpha_eff);
 
     // check if partial pressure and numerically inverted partial pressure are equal
-    TS_ASSERT_DELTA(Pb, inverted_Pb, 1e-14);
+    EXPECT_NEAR(Pb, inverted_Pb, 1e-14);
   }
 
- private:
-  /**
-   * helper function to get oxygen concentration from oxygen partial pressure, this is the known
-   * forward relation
-   *
-   * @param Pb [in]: oxygen partial pressure
-   * @param CaO2_max [in]: maximum oxygen concentration
-   * @param Pb50 [in]: partial pressure at 50% maximum oxygen concentration
-   * @param n [in]: exponent in Hill equation
-   * @param alpha_eff [in]: effective solubility of oxygen in blood
-   * @return CaO2: oxygen concentration
-   */
-  double GetOxyConcentrationFromPartialPressure(const double& Pb, const double& CaO2_max,
-      const double& Pb50, const double& n, const double& alpha_eff)
-  {
-    // Hill equation for saturation
-    const double saturation_hill = std::pow(Pb, n) / (std::pow(Pb, n) + std::pow(Pb50, n));
-    // oxygen dissolved in plasma + bound to hemoglobin
-    const double CaO2 = alpha_eff * Pb + CaO2_max * saturation_hill;
-
-    return CaO2;
-  }
-};
-
-#endif /* UNITTESTS_POROMULTIPHASE_SCATRA_UTILS_H_ */
+}  // namespace
