@@ -71,13 +71,6 @@ namespace SSI
     \author rauch  */
     void Setup() override;
 
-    /*! \brief Initialize discretizations
-
-    \date 08/16
-    \author rauch  */
-    void InitDiscretizations(const Epetra_Comm& comm, const std::string& struct_disname,
-        const std::string& scatra_disname) override;
-
     //! full time loop
     void Timeloop() override;
 

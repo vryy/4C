@@ -98,7 +98,8 @@ void SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
   SetIsSetup(false);
 
   // do discretization specific setup (e.g. clone discr. scatra from structure)
-  InitDiscretizations(comm, struct_disname, scatra_disname);
+  InitDiscretizations(comm, struct_disname, scatra_disname,
+      DRT::INPUT::IntegralValue<bool>(globaltimeparams, "REDISTRIBUTE_SOLID"));
 
   InitTimeIntegrators(
       globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
@@ -228,13 +229,15 @@ void SSI::SSIBase::Setup()
 /*----------------------------------------------------------------------*
  | Setup the discretizations                                rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIBase::InitDiscretizations(
-    const Epetra_Comm& comm, const std::string& struct_disname, const std::string& scatra_disname)
+void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::string& struct_disname,
+    const std::string& scatra_disname, bool redistribute_struct_dis)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
   auto structdis = problem->GetDis(struct_disname);
   auto scatradis = problem->GetDis(scatra_disname);
+
+  if (redistribute_struct_dis) DRT::UTILS::RedistributeDiscretizationsByBinning({structdis}, false);
 
   if (scatradis->NumGlobalNodes() == 0)
   {
