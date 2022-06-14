@@ -12,10 +12,17 @@
 #ifndef BACI_UNIT_ELAST_COUPANISOEXPOBASE_H
 #define BACI_UNIT_ELAST_COUPANISOEXPOBASE_H
 
-#include "src/common/unit_cxx_test_wrapper.H"
 #include <Teuchos_RCPDecl.hpp>
-#include "src/linalg/linalg_fixedsizematrix.H"
+
+#include "src/common/unit_cxx_test_wrapper.H"
+
+#include "src/drt_lib/voigt_notation.H"
+
+#include "src/drt_mat/material_service.H"
 #include "src/drt_matelast/elast_coupanisoexpo.H"
+
+#include "src/linalg/linalg_fixedsizematrix.H"
+
 
 namespace MAT
 {
