@@ -61,7 +61,6 @@ namespace CONTACT
 namespace DRT
 {
   class Discretization;
-  class SingletonDestruction;
 
   namespace INPUT
   {
@@ -167,9 +166,6 @@ namespace DRT
       require proper cleanup. Make sure we always do it.
      */
     static void Done();
-
-    /// register singleton objects that need explicit destruction
-    void Register(DRT::SingletonDestruction* sd) { sds_.push_back(sd); }
 
     //@}
 
@@ -663,9 +659,6 @@ namespace DRT
 
     /// discretizations of this problem
     std::map<std::string, Teuchos::RCP<Discretization>> discretizationmap_;
-
-    /// keep a list of all active element implementations
-    std::vector<DRT::SingletonDestruction*> sds_;
 
     /// material bundle
     Teuchos::RCP<MAT::PAR::Bundle> materials_;

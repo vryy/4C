@@ -35,13 +35,14 @@ namespace DRT
     //!  versions of TemperImpl. The only function
     //!  this class actually defines is Impl, which returns a pointer to
     //!  the appropriate version of TemperImpl.
-    class TemperImplInterface : SingletonDestruction
+    class TemperImplInterface
     {
      public:
       //! Empty constructor
       TemperImplInterface() = default;
-      //! Empty destructor
-      ~TemperImplInterface() override = default;
+
+      //! Virtual destructor.
+      virtual ~TemperImplInterface() = default;
 
       //! Evaluate the element
       //!  This class does not provide a definition for this function, it
@@ -116,9 +117,6 @@ namespace DRT
       //! Singleton access method
       static TemperImpl<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
-
-      //! called upon destruction
-      void Done() override;
 
       //! number of nodes
       static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;

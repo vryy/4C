@@ -30,21 +30,6 @@ DRT::ELEMENTS::ScaTraEleParameterElchManifold::Instance(const std::string& disna
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterElchManifold::Done()
-{
-  for (const auto& instance : instances_)
-  {
-    if (instance.second.get() == this)
-    {
-      instances_.erase(instance.first);
-      break;
-    }
-  }
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterElchManifold::ScaTraEleParameterElchManifold(
     const std::string& disname)
     : evaluate_conc_flux_(false),

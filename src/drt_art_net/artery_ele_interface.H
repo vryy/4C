@@ -15,7 +15,6 @@
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialDenseMatrix.h"
-#include "../drt_lib/drt_singletondestruction.H"
 #include "../drt_lib/drt_element.H"
 #include "artery.H"
 #include "artery_ele_action.H"
@@ -32,7 +31,7 @@ namespace DRT
       This class exists to provide a common interface for all template
       versions of ArteryEleCalc.
      */
-    class ArteryEleInterface : public DRT::SingletonDestruction
+    class ArteryEleInterface
     {
      public:
       /// Empty constructor

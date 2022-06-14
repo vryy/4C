@@ -42,7 +42,7 @@ namespace DRT
       this class actually defines is Impl, which returns a pointer to
       the appropriate version of ElemagIntFaceImpl.
      */
-    class ElemagIntFaceImplInterface : DRT::SingletonDestruction
+    class ElemagIntFaceImplInterface
     {
      public:
       /// Empty constructor

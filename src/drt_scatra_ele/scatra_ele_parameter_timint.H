@@ -34,9 +34,6 @@ namespace DRT
           const ScaTraEleParameterTimInt* delete_me = nullptr  //!< creation/destruction indication
       );
 
-      //! Singleton destruction method called from global problem
-      void Done() override;
-
       //! set parameters
       void SetParameters(Teuchos::ParameterList& parameters) override;
 

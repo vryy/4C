@@ -476,14 +476,6 @@ CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Instance(
   return instance;
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Done()
-{
-  Instance(NULL, NULL, true);
-}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

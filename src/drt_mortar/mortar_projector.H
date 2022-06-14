@@ -27,7 +27,7 @@ namespace MORTAR
 
   */
 
-  class MortarProjector : DRT::SingletonDestruction
+  class MortarProjector
   {
    public:
     MortarProjector(){};

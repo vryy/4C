@@ -10,6 +10,7 @@
 #include "drt_utils_boundary_integration.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_fluid_ele/fluid_ele.H"
+#include "../headers/singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
@@ -539,25 +540,15 @@ void DRT::UTILS::ShapeValuesFace<distype>::ComputeFaceReferenceSystem(
 }
 
 
-
-template <DRT::Element::DiscretizationType distype>
-DRT::UTILS::ShapeValuesFaceCache<distype>* DRT::UTILS::ShapeValuesFaceCache<distype>::instance_;
-
 template <DRT::Element::DiscretizationType distype>
 DRT::UTILS::ShapeValuesFaceCache<distype>& DRT::UTILS::ShapeValuesFaceCache<distype>::Instance()
 {
-  if (instance_ == NULL)
-  {
-    instance_ = new ShapeValuesFaceCache<distype>;
-  }
-  return *instance_;
-}
+  static ::UTILS::SingletonOwner<DRT::UTILS::ShapeValuesFaceCache<distype>> owner(
+      []() {
+        return std::unique_ptr<ShapeValuesFaceCache<distype>>(new ShapeValuesFaceCache<distype>);
+      });
 
-template <DRT::Element::DiscretizationType distype>
-void DRT::UTILS::ShapeValuesFaceCache<distype>::Done()
-{
-  if (instance_ != NULL) delete instance_;
-  instance_ = NULL;
+  return *owner.Instance(::UTILS::SingletonAction::create);
 }
 
 template <DRT::Element::DiscretizationType distype>
@@ -583,26 +574,19 @@ DRT::UTILS::ShapeValuesFaceCache<distype>::Create(ShapeValuesFaceParams params)
 
 
 template <DRT::Element::DiscretizationType distype>
-DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>*
-    DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::instance_;
-
-template <DRT::Element::DiscretizationType distype>
 DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>&
 DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Instance()
 {
-  if (instance_ == NULL)
-  {
-    instance_ = new ShapeValuesInteriorOnFaceCache;
-  }
-  return *instance_;
+  static ::UTILS::SingletonOwner<DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>> owner(
+      []()
+      {
+        return std::unique_ptr<ShapeValuesInteriorOnFaceCache<distype>>(
+            new ShapeValuesInteriorOnFaceCache<distype>);
+      });
+
+  return *owner.Instance(::UTILS::SingletonAction::create);
 }
 
-template <DRT::Element::DiscretizationType distype>
-void DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Done()
-{
-  if (instance_ != NULL) delete instance_;
-  instance_ = NULL;
-}
 
 template <DRT::Element::DiscretizationType distype>
 Teuchos::RCP<DRT::UTILS::ShapeValuesInteriorOnFace>

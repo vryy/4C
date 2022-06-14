@@ -371,7 +371,6 @@ set(OBJS_DRT_LIB
     src/drt_lib/drt_dofset_independent.cpp
     src/drt_lib/drt_dofset_independent_pbc.cpp
     src/drt_lib/drt_element.cpp
-    src/drt_lib/drt_singletondestruction.cpp
     src/drt_lib/drt_function.cpp
     src/drt_lib/drt_functionvariables.cpp
     src/drt_lib/drt_function_library.cpp
@@ -2329,9 +2328,7 @@ set(OBJS_CUT_TEST
     tests/cut_test/cut_test_shadan_6.cpp
     tests/cut_test/cut_test_volume.cpp
     tests/cut_test/drt_dserror.cpp
-    tests/cut_test/drt_singletondestruction.cpp
     tests/cut_test/cut_test_intersection.cpp
-    tests/cut_test/drt_singletondestruction.cpp
     tests/cut_test/cut_test_bacigenerated_1890.cpp
     tests/cut_test/cut_test_bacigenerated_6890.cpp
     tests/cut_test/cut_test_bacigenerated_1858.cpp

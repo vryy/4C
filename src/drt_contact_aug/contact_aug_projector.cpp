@@ -147,15 +147,6 @@ CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::Instance(bool
  *----------------------------------------------------------------------------*/
 template <class DebugPolicy, unsigned probdim, DRT::Element::DiscretizationType ref_type,
     DRT::Element::DiscretizationType tar_type>
-void CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::Done()
-{
-  Instance(true);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-template <class DebugPolicy, unsigned probdim, DRT::Element::DiscretizationType ref_type,
-    DRT::Element::DiscretizationType tar_type>
 void CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::Setup()
 {
   ref_val_.Scale(0.0);

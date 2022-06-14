@@ -392,7 +392,7 @@ namespace DRT
     //=======================================================================
     //=======================================================================
 
-    class Ale3_Impl_Interface : SingletonDestruction
+    class Ale3_Impl_Interface
     {
      public:
       /// Empty constructor
@@ -767,7 +767,7 @@ namespace DRT
 
     };  // class Ale3Surface
 
-    class Ale3Surface_Impl_Interface : SingletonDestruction
+    class Ale3Surface_Impl_Interface
     {
      public:
       /// Empty constructor

@@ -39,7 +39,7 @@ namespace MORTAR
   \brief A class to implement MortarIntegratorCalc
 
   */
-  class MortarIntegrator : DRT::SingletonDestruction
+  class MortarIntegrator
   {
    public:
     MortarIntegrator(){};

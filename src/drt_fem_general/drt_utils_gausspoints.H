@@ -179,7 +179,7 @@ namespace DRT
     };
 
     /// remember calculated gauss points so we do not need to calculate again
-    class GaussPointCache : public DRT::SingletonDestruction
+    class GaussPointCache
     {
      public:
       static GaussPointCache& Instance();

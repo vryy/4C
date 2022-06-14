@@ -25,8 +25,6 @@ namespace DRT
       //! \param delete_me     creation/destruction indication
       static ScaTraEleParameterElchManifold* Instance(const std::string& disname);
 
-      void Done() override;
-
       void SetParameters(Teuchos::ParameterList& parameters) override;
 
       //! return read-only parameters

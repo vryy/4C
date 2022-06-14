@@ -27,8 +27,6 @@ namespace DRT
       static ScaTraEleParameterBoundary* Instance(
           const std::string& disname, const ScaTraEleParameterBoundary* delete_me = nullptr);
 
-      void Done() override;
-
       //! set parameters for specific kintetic model
       void SetParameters(Teuchos::ParameterList& parameters) override;
 

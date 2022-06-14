@@ -55,13 +55,6 @@ DRT::ELEMENTS::ScaTraEleParameterTimInt* DRT::ELEMENTS::ScaTraEleParameterTimInt
   return instances[disname];
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterTimInt::Done()
-{
-  // delete singleton
-  Instance("", this);
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

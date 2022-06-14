@@ -17,7 +17,6 @@
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialDenseMatrix.h"
 
-#include "../drt_lib/drt_singletondestruction.H"
 
 namespace DRT
 {
@@ -33,8 +32,8 @@ namespace DRT
       This class exists to provide a common interface for all template
       versions of FluidBoundaryCalc.
      */
-    //  class FluidBoundaryImplInterface : DRT::SingletonDestruction
-    class FluidBoundaryInterface : DRT::SingletonDestruction
+    //  class FluidBoundaryImplInterface
+    class FluidBoundaryInterface
     {
      public:
       /// Empty constructor

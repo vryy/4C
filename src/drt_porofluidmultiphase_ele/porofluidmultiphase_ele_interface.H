@@ -16,7 +16,6 @@
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialDenseMatrix.h"
-#include "../drt_lib/drt_singletondestruction.H"
 #include "../drt_lib/drt_element.H"
 
 namespace DRT
@@ -31,7 +30,7 @@ namespace DRT
       This class exists to provide a common interface for all template
       versions of PoroFluidMultiPhaseEleCalc.
      */
-    class PoroFluidMultiPhaseEleInterface : public DRT::SingletonDestruction
+    class PoroFluidMultiPhaseEleInterface
     {
      public:
       /// Empty constructor

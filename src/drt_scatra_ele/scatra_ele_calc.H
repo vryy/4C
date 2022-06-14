@@ -85,9 +85,6 @@ namespace DRT
       ScaTraEleCalc(const int numdofpernode, const int numscal, const std::string& disname);
 
      public:
-      /// called upon destruction
-      void Done() override = 0;
-
       /// In this class we do not define a static ScaTraEle...* Instance
       /// since only derived child classes are free to be allocated!!
 

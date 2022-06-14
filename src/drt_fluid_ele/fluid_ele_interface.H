@@ -20,7 +20,6 @@
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialDenseMatrix.h"
 
-#include "../drt_lib/drt_singletondestruction.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
 #include "../drt_cut/cut_utils.H"
@@ -59,7 +58,7 @@ namespace DRT
       versions of FluidEleCalc. The only function this class actually defines
       is Ele, which returns a pointer to the appropriate version of FluidEleCalc.
      */
-    class FluidEleInterface : public DRT::SingletonDestruction
+    class FluidEleInterface
     {
      public:
       /// Empty constructor

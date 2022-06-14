@@ -113,14 +113,6 @@ DRT::ELEMENTS::TemperImpl<distype>* DRT::ELEMENTS::TemperImpl<distype>::Instance
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct);
-}
-
-template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::TemperImpl<distype>::TemperImpl()
     : etempn_(false),
       xyze_(true),

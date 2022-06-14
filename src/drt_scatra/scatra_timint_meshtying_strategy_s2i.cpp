@@ -3955,56 +3955,25 @@ SCATRA::MortarCellInterface::MortarCellInterface(const INPAR::S2I::CouplingType&
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 SCATRA::MortarCellCalc<distypeS, distypeM>* SCATRA::MortarCellCalc<distypeS, distypeM>::Instance(
     const INPAR::S2I::CouplingType& couplingtype, const INPAR::S2I::InterfaceSides& lmside,
-    const int& numdofpernode_slave, const int& numdofpernode_master, const std::string& disname,
-    const MortarCellCalc* delete_me)
+    const int& numdofpernode_slave, const int& numdofpernode_master, const std::string& disname)
 {
   // static map assigning mortar discretization names to class instances
-  static std::map<std::string, MortarCellCalc<distypeS, distypeM>*> instances;
+  static std::map<std::string, ::UTILS::SingletonOwner<MortarCellCalc<distypeS, distypeM>>> owners;
 
-  // create new instance or return existing one
-  if (!delete_me)
+  // add an owner for the given disname if not already present
+  if (owners.find(disname) == owners.end())
   {
-    // create new instance if not yet available
-    if (instances.find(disname) == instances.end())
-      instances[disname] = new MortarCellCalc<distypeS, distypeM>(
-          couplingtype, lmside, numdofpernode_slave, numdofpernode_master);
+    owners.template emplace(
+        disname, ::UTILS::SingletonOwner<MortarCellCalc<distypeS, distypeM>>(
+                     [&]()
+                     {
+                       return std::unique_ptr<MortarCellCalc<distypeS, distypeM>>(
+                           new MortarCellCalc<distypeS, distypeM>(
+                               couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
+                     }));
   }
 
-  // delete existing instance
-  else
-  {
-    // loop over all existing instances
-    for (auto i = instances.begin(); i != instances.end(); ++i)
-    {
-      // check whether current instance should be deleted
-      if (i->second == delete_me)
-      {
-        // delete current instance
-        delete i->second;
-
-        // remove deleted instance from map
-        instances.erase(i);
-
-        // return null pointer
-        return nullptr;
-      }
-    }
-
-    // catch internal error
-    dserror("Instance to be deleted couldn't be found in static map!");
-  }
-
-  // return existing instance
-  return instances[disname];
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void SCATRA::MortarCellCalc<distypeS, distypeM>::Done()
-{
-  // delete singleton
-  Instance(INPAR::S2I::coupling_undefined, INPAR::S2I::side_undefined, 0, 0, "", this);
+  return owners.find(disname)->second.Instance(::UTILS::SingletonAction::create);
 }
 
 /*----------------------------------------------------------------------*

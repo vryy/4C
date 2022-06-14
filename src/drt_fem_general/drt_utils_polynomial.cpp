@@ -15,6 +15,7 @@
 #include <Intrepid_Types.hpp>
 #include <Shards_CellTopology.hpp>
 
+#include "../headers/singleton_owner.H"
 
 namespace DRT
 {
@@ -684,27 +685,17 @@ namespace DRT
         for (int j = 0; j < feketePoints_.M(); ++j) matrix(j, i) = feketePoints_(j, i);
     }
 
-
-
-    template <int nsd_>
-    DRT::UTILS::PolynomialSpaceCache<nsd_> *DRT::UTILS::PolynomialSpaceCache<nsd_>::instance_;
-
     template <int nsd_>
     DRT::UTILS::PolynomialSpaceCache<nsd_> &DRT::UTILS::PolynomialSpaceCache<nsd_>::Instance()
     {
-      if (instance_ == NULL)
-      {
-        instance_ = new PolynomialSpaceCache<nsd_>;
-      }
-      return *instance_;
-    }
+      static ::UTILS::SingletonOwner<DRT::UTILS::PolynomialSpaceCache<nsd_>> owner(
+          []()
+          {
+            return std::unique_ptr<DRT::UTILS::PolynomialSpaceCache<nsd_>>(
+                new PolynomialSpaceCache<nsd_>);
+          });
 
-    template <int nsd_>
-    void DRT::UTILS::PolynomialSpaceCache<nsd_>::Done()
-    {
-      ps_cache_.clear();
-      delete instance_;
-      instance_ = NULL;
+      return *owner.Instance(::UTILS::SingletonAction::create);
     }
 
     template <int nsd_>

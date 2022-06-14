@@ -710,18 +710,15 @@ namespace DRT
      Author: schoeder 06/14
      */
     template <int nsd_>
-    class PolynomialSpaceCache : public DRT::SingletonDestruction
+    class PolynomialSpaceCache
     {
      public:
       static PolynomialSpaceCache<nsd_> &Instance();
 
-      /// cleanup
-      virtual void Done();
-
       Teuchos::RCP<PolynomialSpace<nsd_>> Create(PolynomialSpaceParams params);
 
      private:
-      static PolynomialSpaceCache<nsd_> *instance_;
+      PolynomialSpaceCache() = default;
 
       /// cache of already created polynomial spaces
       std::map<PolynomialSpaceParams, Teuchos::RCP<PolynomialSpace<nsd_>>> ps_cache_;

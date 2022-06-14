@@ -36,7 +36,7 @@ namespace DRT
       this class actually defines is Impl, which returns a pointer to
       the appropriate version of ElemagBoundaryImpl.
      */
-    class ElemagBoundaryImplInterface : DRT::SingletonDestruction
+    class ElemagBoundaryImplInterface
     {
      public:
       /// Empty constructor

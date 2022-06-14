@@ -38,7 +38,7 @@ namespace DRT
       (correctly delete allocated TopOptImplInterface instances)
 
      */
-    class TopOptImplInterface : public DRT::SingletonDestruction
+    class TopOptImplInterface
     {
      public:
       //! Empty constructor
@@ -281,7 +281,7 @@ namespace DRT
       this class actually defines is Impl, which returns a pointer to
       the appropriate version of ScaTraImpl.
      */
-    class TopOptBoundaryImplInterface : public DRT::SingletonDestruction
+    class TopOptBoundaryImplInterface
     {
      public:
       /// Empty constructor

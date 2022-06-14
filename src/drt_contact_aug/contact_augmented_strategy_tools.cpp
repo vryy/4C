@@ -17,6 +17,7 @@
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 #include "../linalg/linalg_matrixtransform.H"
+#include "../headers/singleton_owner.H"
 
 //#define CONTACTFD_DLMGAPLINMATRIX      /* flag for global FD-check of the weighted gap gradient
 // w.r.t. displ. */ #define CONTACTFD_DGLMLINMATRIX        /* flag for global FD-check of the
@@ -114,29 +115,18 @@ void CONTACT::AUG::Strategy::AugFDCheckGlobal(CONTACT::ParamsInterface& cparams)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::Strategy::FD_Debug* CONTACT::AUG::Strategy::FD_Debug::Instance(
-    Strategy* strat, const double delta, const bool delete_me)
+    Strategy* strat, const double delta, ::UTILS::SingletonAction action)
 {
-  static FD_Debug* instance = NULL;
+  static ::UTILS::SingletonOwner<CONTACT::AUG::Strategy::FD_Debug> owner(
+      [=]()
+      {
+        std::unique_ptr<CONTACT::AUG::Strategy::FD_Debug> instance(new FD_Debug);
+        instance->Init(strat, delta);
+        return instance;
+      });
 
-  if (delete_me)
-  {
-    if (instance) delete instance;
-
-    return NULL;
-  }
-
-  if (not instance)
-  {
-    instance = new FD_Debug();
-    instance->Init(strat, delta);
-  }
-
-  return instance;
+  return owner.Instance(action);
 }
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::FD_Debug::Done() { Instance(NULL, 0.0, true); }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

@@ -53,7 +53,7 @@ namespace DRT
 
 
     -----------------------------------------------------------------*/
-    class FluidIntFaceStab : DRT::SingletonDestruction
+    class FluidIntFaceStab
     {
      public:
       //! Empty constructor

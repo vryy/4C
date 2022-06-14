@@ -11,7 +11,6 @@
 
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../drt_lib/drt_singletondestruction.H"
 #include <vector>
 
 namespace DRT
@@ -19,7 +18,7 @@ namespace DRT
   namespace ELEMENTS
   {
     /// Evaluation of general parameters (constant over time)
-    class PoroFluidMultiPhaseEleParameter : public DRT::SingletonDestruction
+    class PoroFluidMultiPhaseEleParameter
     {
      public:
       //! singleton access method

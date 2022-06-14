@@ -195,7 +195,7 @@ namespace NTS
 
   \author farah
   */
-  class MTInterpolator : DRT::SingletonDestruction
+  class MTInterpolator
   {
    public:
     MTInterpolator(){};

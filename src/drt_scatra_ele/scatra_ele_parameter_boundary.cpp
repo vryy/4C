@@ -46,13 +46,6 @@ DRT::ELEMENTS::ScaTraEleParameterBoundary* DRT::ELEMENTS::ScaTraEleParameterBoun
   return instances[disname];
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterBoundary::Done()
-{
-  // delete singleton
-  Instance("", this);
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

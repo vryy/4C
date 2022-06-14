@@ -27,7 +27,7 @@ namespace DRT
 
 
 
-    class FluidAdjoint3BoundaryImplInterface : public DRT::SingletonDestruction
+    class FluidAdjoint3BoundaryImplInterface
     {
      public:
       /// Empty constructor
