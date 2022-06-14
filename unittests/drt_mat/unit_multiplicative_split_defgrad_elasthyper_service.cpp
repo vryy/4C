@@ -1,94 +1,88 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-
 \brief Testcases for the multiplicative_split_defgrad_elasthyper_service functions
-
 \level 3
-
 
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_UNIT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_H
-#define BACI_UNIT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_H
+#include "gtest/gtest.h"
 
-#include "src/common/unit_cxx_test_wrapper.H"
-#include <src/linalg/linalg_fixedsizematrix.H>
+#include "src/drt_mat/matpar_material.H"
 #include "src/drt_mat/multiplicative_split_defgrad_elasthyper_service.H"
 
-#include "src/common/special_assertions.H"
+#include "src/drt_matelast/elast_isoneohooke.H"
 
-namespace MAT
+#include "src/linalg/linalg_fixedsizematrix.H"
+
+#include "unittests/common/assertions.h"
+
+namespace
 {
-  class MultiplicativeSplitDefgrad_ElastHyperService;
-}
-
-// class implementation
-class MAT::MultiplicativeSplitDefgrad_ElastHyperService : public BACICxxTestWrapper
-{
- public:
-  /// Setup Testsuite
-  void Setup() override
+  class MultiplicativeSplitDefgradElastHyperServiceTest : public ::testing::Test
   {
-    FM_(0, 0) = 1.1;
-    FM_(1, 1) = 1.2;
-    FM_(2, 2) = 1.3;
-    FM_(0, 1) = FM_(1, 0) = 0.01;
-    FM_(1, 2) = FM_(2, 1) = 0.02;
-    FM_(0, 2) = FM_(2, 0) = 0.03;
+   protected:
+    void SetUp() override
+    {
+      FM_(0, 0) = 1.1;
+      FM_(1, 1) = 1.2;
+      FM_(2, 2) = 1.3;
+      FM_(0, 1) = FM_(1, 0) = 0.01;
+      FM_(1, 2) = FM_(2, 1) = 0.02;
+      FM_(0, 2) = FM_(2, 0) = 0.03;
 
-    iFinM_(0, 0) = 1.04;
-    iFinM_(1, 1) = 1.03;
-    iFinM_(2, 2) = 1.02;
-    iFinM_(0, 1) = iFinM_(1, 0) = 0.003;
-    iFinM_(1, 2) = iFinM_(2, 1) = 0.001;
-    iFinM_(0, 2) = iFinM_(2, 0) = 0.005;
+      iFinM_(0, 0) = 1.04;
+      iFinM_(1, 1) = 1.03;
+      iFinM_(2, 2) = 1.02;
+      iFinM_(0, 1) = iFinM_(1, 0) = 0.003;
+      iFinM_(1, 2) = iFinM_(2, 1) = 0.001;
+      iFinM_(0, 2) = iFinM_(2, 0) = 0.005;
 
-    CM_.MultiplyTN(FM_, FM_);
-    iCinM_.MultiplyNT(iFinM_, iFinM_);
-  }
-  /// Tear down test suite
-  void TearDown() override {}
+      CM_.MultiplyTN(FM_, FM_);
+      iCinM_.MultiplyNT(iFinM_, iFinM_);
+    }
 
-  void TestEvaluateCe()
+    LINALG::Matrix<3, 3> FM_;
+    LINALG::Matrix<3, 3> iFinM_;
+
+    LINALG::Matrix<3, 3> CM_;
+    LINALG::Matrix<3, 3> iCinM_;
+  };
+
+  TEST_F(MultiplicativeSplitDefgradElastHyperServiceTest, TestEvaluateCe)
   {
+    LINALG::Matrix<3, 3> CeM_target(false);
+    CeM_target(0, 0) = 1.3107725000000006;
+    CeM_target(1, 1) = 1.5284889394999996;
+    CeM_target(2, 2) = 1.7604995235000003;
+    CeM_target(0, 1) = CeM_target(1, 0) = 0.03385382080000001;
+    CeM_target(0, 2) = CeM_target(2, 0) = 0.091697784;
+    CeM_target(1, 2) = CeM_target(2, 1) = 0.0564151401;
+
     LINALG::Matrix<3, 3> CeM(false);
     MAT::EvaluateCe(FM_, iFinM_, CeM);
 
-    TS_ASSERT_DELTA(CeM(0, 0), 1.3107725000000006, 1e-10);
-    TS_ASSERT_DELTA(CeM(1, 1), 1.5284889394999996, 1e-10);
-    TS_ASSERT_DELTA(CeM(2, 2), 1.7604995235000003, 1e-10);
-
-    TS_ASSERT_DELTA(CeM(0, 1), 0.03385382080000001, 1e-10);
-    TS_ASSERT_DELTA(CeM(1, 0), 0.03385382080000001, 1e-10);
-
-    TS_ASSERT_DELTA(CeM(0, 2), 0.091697784, 1e-10);
-    TS_ASSERT_DELTA(CeM(2, 0), 0.091697784, 1e-10);
-
-    TS_ASSERT_DELTA(CeM(1, 2), 0.0564151401, 1e-10);
-    TS_ASSERT_DELTA(CeM(2, 1), 0.0564151401, 1e-10);
+    BACI_EXPECT_NEAR(CeM, CeM_target, 1.0e-10);
   }
 
-  void TestEvaluateiCinCiCin()
+  TEST_F(MultiplicativeSplitDefgradElastHyperServiceTest, TestEvaluateiCinCiCin)
   {
+    LINALG::Matrix<3, 3> iCinCiCinM_target(false);
+    iCinCiCinM_target(0, 0) = 1.418955902138138;
+    iCinCiCinM_target(1, 1) = 1.6219134553554275;
+    iCinCiCinM_target(2, 2) = 1.832708744871652;
+    iCinCiCinM_target(0, 1) = iCinCiCinM_target(1, 0) = 0.045473409425074995;
+    iCinCiCinM_target(0, 2) = iCinCiCinM_target(2, 0) = 0.113283079933819;
+    iCinCiCinM_target(1, 2) = iCinCiCinM_target(2, 1) = 0.0631150197598975;
+
     LINALG::Matrix<3, 3> iCinCiCinM(false);
     MAT::EvaluateiCinCiCin(CM_, iCinM_, iCinCiCinM);
 
-    TS_ASSERT_DELTA(iCinCiCinM(0, 0), 1.418955902138138, 1e-10);
-    TS_ASSERT_DELTA(iCinCiCinM(1, 1), 1.6219134553554275, 1e-10);
-    TS_ASSERT_DELTA(iCinCiCinM(2, 2), 1.832708744871652, 1e-10);
-
-    TS_ASSERT_DELTA(iCinCiCinM(0, 1), 0.045473409425074995, 1e-10);
-    TS_ASSERT_DELTA(iCinCiCinM(1, 0), 0.045473409425074995, 1e-10);
-
-    TS_ASSERT_DELTA(iCinCiCinM(0, 2), 0.113283079933819, 1e-10);
-    TS_ASSERT_DELTA(iCinCiCinM(2, 0), 0.113283079933819, 1e-10);
-
-    TS_ASSERT_DELTA(iCinCiCinM(1, 2), 0.0631150197598975, 1e-10);
-    TS_ASSERT_DELTA(iCinCiCinM(2, 1), 0.0631150197598975, 1e-10);
+    BACI_EXPECT_NEAR(iCinCiCinM, iCinCiCinM_target, 1.0e-10);
   }
 
-  void TestElastHyperEvaluateElasticPart()
+
+  TEST_F(MultiplicativeSplitDefgradElastHyperServiceTest, TestElastHyperEvaluateElasticPart)
   {
     LINALG::Matrix<6, 1> S_stress;
     LINALG::Matrix<6, 6> cmat;
@@ -105,7 +99,7 @@ class MAT::MultiplicativeSplitDefgrad_ElastHyperService : public BACICxxTestWrap
     potsum.emplace_back(Teuchos::rcp(new MAT::ELASTIC::IsoNeoHooke(isoNeoHookeParams2)));
 
     // Read summand properties
-    SummandProperties properties;
+    MAT::SummandProperties properties;
     MAT::ElastHyperProperties(potsum, properties);
 
     // Evaluate method to test
@@ -158,16 +152,7 @@ class MAT::MultiplicativeSplitDefgrad_ElastHyperService : public BACICxxTestWrap
     cmat_target(5, 4) = -0.0079082879496605533;
     cmat_target(5, 5) = 0.64761600029220823;
 
-    TESTING::AssertDelta(S_stress, S_stress_target, 1.0e-9);
-    TESTING::AssertDelta(cmat, cmat_target, 1.0e-9);
+    BACI_EXPECT_NEAR(S_stress, S_stress_target, 1.0e-9);
+    BACI_EXPECT_NEAR(cmat, cmat_target, 1.0e-9);
   }
-
- private:
-  LINALG::Matrix<3, 3> FM_;
-  LINALG::Matrix<3, 3> iFinM_;
-
-  LINALG::Matrix<3, 3> CM_;
-  LINALG::Matrix<3, 3> iCinM_;
-};
-
-#endif  // BACI_UNIT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_H
+}  // namespace
