@@ -120,6 +120,45 @@ namespace TESTING::INTERNAL
   }
 
   /**
+   * Compare a LINALG::Matrix with a std::array for double equality up to a tolerance. The entries
+   * in std::array row-major. The signature is mandated by GoogleTest's
+   * EXPECT_PRED_FORMAT3 macro.
+   *
+   * @note This function is not intended to be used directly. Use BACI_EXPECT_NEAR.
+   */
+  template <unsigned int M, unsigned int N, typename T>
+  inline ::testing::AssertionResult AssertNear(const char* mat1Expr,
+      const char* mat2Expr,  // NOLINT
+      const char* toleranceExpr, const LINALG::Matrix<M, N, T>& mat,
+      const std::array<T, static_cast<std::size_t>(M) * N>& array, T tolerance)
+  {
+    // argument is required for the EXPECT_PRED_FORMAT3 macro of GoogleTest for pretty printing
+    (void)toleranceExpr;
+
+    const std::string nonMatchingEntries = std::invoke(
+        [&]()
+        {
+          std::stringstream ss;
+          ss << std::fixed << std::setprecision(PrecisionForPrinting(tolerance));
+          for (unsigned i = 0; i < M; ++i)
+          {
+            for (unsigned j = 0; j < N; ++j)
+            {
+              const std::size_t arr_index = i * N + j;
+              if (std::fabs(mat(i, j) - array[arr_index]) > tolerance)
+              {
+                ss << "(" << i << "," << j << ") vs. [" << arr_index << "]: " << mat(i, j)
+                   << " vs. " << array[arr_index] << std::endl;
+              }
+            }
+          }
+          return ss.str();
+        });
+
+    return ResultBasedOnNonMatchingEntries(nonMatchingEntries, tolerance, mat1Expr, mat2Expr);
+  }
+
+  /**
    * Compare two LINALG::SerialDenseMatrix objects for double equality up to a tolerance. The
    * signature is mandated by GoogleTest's EXPECT_PRED_FORMAT3 macro.
    *

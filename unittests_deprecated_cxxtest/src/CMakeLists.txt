@@ -4,8 +4,6 @@ add_subdirectory(drt_fbi)
 add_subdirectory(drt_geometry_pair)
 add_subdirectory(drt_inpar)
 add_subdirectory(drt_lib)
-add_subdirectory(drt_matelast)
 add_subdirectory(drt_particle_engine)
 add_subdirectory(drt_particle_interaction)
 add_subdirectory(drt_particle_rigidbody)
-
