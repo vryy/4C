@@ -35,11 +35,8 @@ namespace DRT
     class ScaTraBoundaryInterface
     {
      public:
-      /// Empty constructor
-      ScaTraBoundaryInterface() { return; };
-
-      /// Empty destructor
-      virtual ~ScaTraBoundaryInterface() { return; };
+      /// Virtual destructor.
+      virtual ~ScaTraBoundaryInterface() = default;
 
       virtual int Evaluate(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,

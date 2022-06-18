@@ -30,9 +30,6 @@ namespace DRT
       static FluidEleParameterXFEM* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
-      /// called upon destruction
-      virtual void Done();
-
       /// set all the XFEM specific parameters
       void SetElementXFEMParameter(Teuchos::ParameterList& params,  ///< parameter list
           int myrank                                                ///< pid (for output purpose)

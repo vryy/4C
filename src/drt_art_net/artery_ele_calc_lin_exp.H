@@ -45,15 +45,9 @@ namespace DRT
       ArteryEleCalcLinExp(const int numdofpernode, const std::string& disname);
 
      public:
-      /// virtual destructor
-      virtual ~ArteryEleCalcLinExp(){};
-
       //! Singleton access method
       static ArteryEleCalcLinExp<distype>* Instance(const int numdofpernode,
           const std::string& disname, const ArteryEleCalcLinExp* delete_me = NULL);
-
-      /// called upon destruction
-      virtual void Done();
 
       int Evaluate(Artery* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
           DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,

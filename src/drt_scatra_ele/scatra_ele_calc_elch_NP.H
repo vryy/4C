@@ -31,9 +31,6 @@ namespace DRT
       static ScaTraEleCalcElchNP<distype>* Instance(const int numdofpernode, const int numscal,
           const std::string& disname, const ScaTraEleCalcElchNP* delete_me = NULL);
 
-      /// called upon destruction
-      virtual void Done();
-
      private:
       using my = ScaTraEleCalc<distype>;
       using myelch = ScaTraEleCalcElch<distype>;

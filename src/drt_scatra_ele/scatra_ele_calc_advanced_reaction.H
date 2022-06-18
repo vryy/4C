@@ -52,9 +52,6 @@ namespace DRT
           const ScaTraEleCalcAdvReac* delete_me = NULL  //!< creation/destruction indication
       );
 
-      /// called upon destruction
-      virtual void Done();
-
      protected:
       //! set internal variables
       virtual void SetInternalVariablesForMatAndRHS();

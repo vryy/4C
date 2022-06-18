@@ -44,9 +44,6 @@ namespace DRT
           const ScaTraEleParameterLsReinit* delete_me = NULL  //!< creation/destruction indication
       );
 
-      /// called upon destruction
-      virtual void Done();
-
       /*========================================================================*/
       //! @name set-routines
       /*========================================================================*/

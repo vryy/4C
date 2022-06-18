@@ -109,18 +109,6 @@ DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Instance(
 
 
 /*----------------------------------------------------------------------*
- | singleton destruction                                    wirtz 10/15 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Done()
-{
-  // delete instance
-  Instance("", this);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  * Action type: Evaluate                                    wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>

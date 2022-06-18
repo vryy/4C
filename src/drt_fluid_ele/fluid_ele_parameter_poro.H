@@ -30,9 +30,6 @@ namespace DRT
       static FluidEleParameterPoro* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
-      /// called upon destruction
-      virtual void Done();
-
       void SetElementPoroParameter(Teuchos::ParameterList& params, int myrank);
 
       //! print parameter to screen

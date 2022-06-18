@@ -40,8 +40,7 @@ namespace DRT
           const ScaTraEleParameterTurbulence* delete_me = NULL  //!< creation/destruction indication
       );
 
-      //! singleton destruction
-      virtual void Done();
+
 
       //! set parameters
       void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list

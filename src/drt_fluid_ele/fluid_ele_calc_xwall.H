@@ -40,9 +40,6 @@ namespace DRT
       static FluidEleCalcXWall<distype, enrtype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
-      /// called upon destruction
-      virtual void Done();
-
       virtual int EvaluateService(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,

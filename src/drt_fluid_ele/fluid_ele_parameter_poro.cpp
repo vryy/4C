@@ -28,16 +28,6 @@ DRT::ELEMENTS::FluidEleParameterPoro* DRT::ELEMENTS::FluidEleParameterPoro::Inst
 }
 
 //----------------------------------------------------------------------*/
-//    destruction method
-//----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameterPoro::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct);
-}
-
-//----------------------------------------------------------------------*/
 //    constructor
 //----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidEleParameterPoro::FluidEleParameterPoro()

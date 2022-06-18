@@ -36,12 +36,7 @@ namespace DRT
       static FluidEleParameterIntFace* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
-      //! called upon destruction
-      void Done();
-
-
-      ~FluidEleParameterIntFace() {}
-
+      virtual ~FluidEleParameterIntFace() = default;
 
 
       /*========================================================================*/

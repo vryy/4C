@@ -225,12 +225,6 @@ namespace NTS
    public:
     MTInterpolatorCalc();
 
-    // destructor
-    virtual ~MTInterpolatorCalc(){};
-
-    /// called upon destruction
-    virtual void Done();
-
     /// Singleton access method
     static MTInterpolatorCalc<distypeM>* Instance(::UTILS::SingletonAction action);
     ;

@@ -35,11 +35,6 @@ namespace DRT
           const int numscal, const std::string& disname,
           const ScaTraEleBoundaryCalcElchElectrodeSTIThermo* delete_me = NULL);
 
-      //! destructor
-      ~ScaTraEleBoundaryCalcElchElectrodeSTIThermo() override = default;
-
-      //! singleton destruction
-      virtual void Done();
 
       /*!
        * \brief evaluate off-diagonal system matrix contributions associated with scatra-scatra

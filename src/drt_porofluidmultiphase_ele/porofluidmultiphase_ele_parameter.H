@@ -28,12 +28,6 @@ namespace DRT
               NULL  //!< creation/destruction indication
       );
 
-      //! Singleton destruction method called from global problem
-      void Done();
-
-      //! dtor
-      ~PoroFluidMultiPhaseEleParameter() {}
-
       //! set parameters
       void SetTimeStepParameters(Teuchos::ParameterList& parameters  //!< parameter list
       );

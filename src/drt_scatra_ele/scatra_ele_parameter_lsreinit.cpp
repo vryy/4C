@@ -56,16 +56,6 @@ DRT::ELEMENTS::ScaTraEleParameterLsReinit* DRT::ELEMENTS::ScaTraEleParameterLsRe
 }
 
 //----------------------------------------------------------------------*/
-//    destruction method
-//----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterLsReinit::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance("", this);
-}
-
-//----------------------------------------------------------------------*/
 //    constructor
 //----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterLsReinit::ScaTraEleParameterLsReinit(

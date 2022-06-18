@@ -64,14 +64,8 @@ namespace DRT
       ArteryEleCalc(const int numdofpernode, const std::string& disname);
 
      public:
-      /// virtual destructor
-      virtual ~ArteryEleCalc(){};
-
       //! number of nodes
       static const int iel_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-
-      /// called upon destruction
-      virtual void Done() = 0;
 
       /*!
        * \brief  calculate element length

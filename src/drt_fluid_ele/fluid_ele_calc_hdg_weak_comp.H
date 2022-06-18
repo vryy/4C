@@ -244,9 +244,6 @@ namespace DRT
       static FluidEleCalcHDGWeakComp<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
-      /// called upon destruction
-      virtual void Done();
-
      private:
       /// private Constructor since we are a Singleton.
       FluidEleCalcHDGWeakComp();

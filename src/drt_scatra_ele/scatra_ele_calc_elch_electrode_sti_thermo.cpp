@@ -48,17 +48,6 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::Instance(const int 
 
 
 /*----------------------------------------------------------------------*
- | singleton destruction                                     fang 11/15 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::Done()
-{
-  // delete singleton
-  Instance(0, 0, "", this);
-}
-
-
-/*----------------------------------------------------------------------*
  | extract quantities for element evaluation                 fang 11/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>

@@ -239,18 +239,6 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Instance(
   return singleton_owner.Instance(action);
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
-void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct);
-}
-
 //-----------------------------------------------------------------
 //-----------------------------------------------------------------
 //

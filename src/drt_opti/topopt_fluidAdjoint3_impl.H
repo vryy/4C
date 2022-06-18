@@ -89,9 +89,6 @@ namespace DRT
       /// number of degrees of freedom per node
       static const int numdofpernode_ = nsd_ + 1;
 
-      /// called upon destruction
-      virtual void Done();
-
       /// Evaluate the element
       /*!
           Generic virtual interface function. Called via base pointer.

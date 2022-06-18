@@ -52,17 +52,6 @@ DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(const int numdofpe
   return instances[disname];
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Done()
-{
-  // delete singleton
-  Instance(0, 0, "", this);
-}
-
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>

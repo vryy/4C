@@ -35,8 +35,7 @@ namespace DRT
           const ScaTraEleUtilsElchElectrode* delete_me = NULL  ///< creation/destruction indication
       );
 
-      //! singleton destruction
-      virtual void Done();
+
 
       //! evaluate electrode material
       void MatElectrode(const Teuchos::RCP<const MAT::Material> material,  //!< electrode material

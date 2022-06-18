@@ -69,16 +69,6 @@ DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Instance(const int numdofp
 }
 
 /*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(0, 0, "", this);
-}
-
-/*----------------------------------------------------------------------*
  | setup element evaluation                            kremheller 03/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>

@@ -36,9 +36,6 @@ namespace DRT
           const int numscal, const std::string& disname,
           const ScaTraEleCalcElchElectrodeSTIThermo* delete_me = NULL);
 
-      //! singleton destruction
-      void Done();
-
      private:
       //! abbreviations
       using my = ScaTraEleCalc<distype>;

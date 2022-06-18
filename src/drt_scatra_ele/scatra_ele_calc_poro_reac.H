@@ -39,9 +39,6 @@ namespace DRT
       static ScaTraEleCalcPoroReac<distype>* Instance(const int numdofpernode, const int numscal,
           const std::string& disname, const ScaTraEleCalcPoroReac* delete_me = NULL);
 
-      /// called upon destruction
-      virtual void Done();
-
 
      protected:
       //! evaluate material

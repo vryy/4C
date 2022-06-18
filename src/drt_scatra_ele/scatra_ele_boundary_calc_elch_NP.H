@@ -29,11 +29,6 @@ namespace DRT
           const int numscal, const std::string& disname,
           const ScaTraEleBoundaryCalcElchNP* delete_me = NULL);
 
-      //! destructor
-      virtual ~ScaTraEleBoundaryCalcElchNP() { return; };
-
-      //! singleton destruction
-      virtual void Done();
 
      private:
       //! private constructor for singletons

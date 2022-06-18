@@ -59,18 +59,6 @@ DRT::ELEMENTS::ScaTraEleParameterElch* DRT::ELEMENTS::ScaTraEleParameterElch::In
 
 
 /*----------------------------------------------------------------------*
- | singleton destruction                                     fang 02/15 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterElch::Done()
-{
-  // delete singleton
-  Instance("", this);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  | protected constructor for singletons                      fang 02/15 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterElch::ScaTraEleParameterElch(

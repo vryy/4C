@@ -43,8 +43,6 @@ namespace DRT
           const std::string& disname,
           const ScaTraEleBoundaryCalcElchElectrode* delete_me = nullptr);
 
-      //! singleton destruction
-      virtual void Done();
 
       /*!
        * \brief evaluate scatra-scatra interface coupling condition at integration point

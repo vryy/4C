@@ -69,17 +69,6 @@ DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::Instance(const int numdofpe
 
 
 /*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(0, 0, "", this);
-}
-
-
-/*----------------------------------------------------------------------*
  *  constructor---------------------------                              |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>

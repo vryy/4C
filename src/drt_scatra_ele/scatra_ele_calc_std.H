@@ -31,9 +31,6 @@ namespace DRT
       static ScaTraEleCalcStd<distype, probdim>* Instance(const int numdofpernode,
           const int numscal, const std::string& disname, const ScaTraEleCalcStd* delete_me = NULL);
 
-      //! called upon destruction
-      virtual void Done();
-
      protected:
       //! protected constructor for singletons
       ScaTraEleCalcStd(const int numdofpernode, const int numscal, const std::string& disname);

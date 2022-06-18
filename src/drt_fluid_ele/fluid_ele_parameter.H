@@ -33,10 +33,7 @@ namespace DRT
     class FluidEleParameter
     {
      public:
-      virtual ~FluidEleParameter() {}
-
-      /// called upon destruction
-      virtual void Done() = 0;
+      virtual ~FluidEleParameter() = default;
 
       /*========================================================================*/
       //! @name set-routines

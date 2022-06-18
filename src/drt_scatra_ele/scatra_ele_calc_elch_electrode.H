@@ -37,8 +37,7 @@ namespace DRT
           const int numscal, const std::string& disname,
           const ScaTraEleCalcElchElectrode* delete_me = NULL);
 
-      //! singleton destruction
-      virtual void Done();
+
 
       //! evaluate action
       virtual int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,

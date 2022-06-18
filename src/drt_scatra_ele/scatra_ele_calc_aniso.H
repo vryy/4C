@@ -43,9 +43,6 @@ namespace DRT
           const int numscal, const std::string& disname,
           const ScaTraEleCalcAniso* delete_me = NULL);
 
-      /// called upon destruction
-      virtual void Done();
-
      protected:
       /*========================================================================*/
       //! @name material and related and related functions

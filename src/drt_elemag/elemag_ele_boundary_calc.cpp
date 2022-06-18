@@ -92,17 +92,6 @@ DRT::ELEMENTS::ElemagBoundaryImpl<distype>* DRT::ELEMENTS::ElemagBoundaryImpl<di
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ElemagBoundaryImpl<distype>::ElemagBoundaryImpl()
     : xyze_(true),
       funct_(true),

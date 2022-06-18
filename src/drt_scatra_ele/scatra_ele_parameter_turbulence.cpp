@@ -59,17 +59,6 @@ DRT::ELEMENTS::ScaTraEleParameterTurbulence* DRT::ELEMENTS::ScaTraEleParameterTu
 
 
 /*----------------------------------------------------------------------*
- | singleton destruction                                     fang 08/15 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterTurbulence::Done()
-{
-  // delete singleton
-  Instance("", this);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 08/15 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterTurbulence::ScaTraEleParameterTurbulence(

@@ -64,19 +64,6 @@ DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance(
   return instances[disname];
 }
 
-
-/*----------------------------------------------------------------------*
- | singleton destruction                                     fang 02/15 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Done()
-{
-  // delete singleton
-  Instance("", this);
-
-  return;
-}
-
-
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/

@@ -26,16 +26,6 @@ DRT::ELEMENTS::FluidEleParameterXFEM* DRT::ELEMENTS::FluidEleParameterXFEM::Inst
 }
 
 //----------------------------------------------------------------------*/
-//    destruction method
-//----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameterXFEM::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct);
-}
-
-//----------------------------------------------------------------------*/
 //    constructor
 //----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidEleParameterXFEM::FluidEleParameterXFEM()

@@ -30,17 +30,6 @@ DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::Instance(::UTILS::SingletonActi
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::FluidEleBoundaryCalcStd()
     : DRT::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
 {

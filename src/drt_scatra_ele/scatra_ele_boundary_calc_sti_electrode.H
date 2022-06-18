@@ -43,8 +43,7 @@ namespace DRT
       //! destructor
       virtual ~ScaTraEleBoundaryCalcSTIElectrode() { return; };
 
-      //! singleton destruction
-      virtual void Done();
+
 
       /*!
        * \brief evaluate scatra-scatra interface coupling condition at integration point

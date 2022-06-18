@@ -32,16 +32,6 @@ DRT::ELEMENTS::FluidEleParameterTimInt* DRT::ELEMENTS::FluidEleParameterTimInt::
 }
 
 //----------------------------------------------------------------------*/
-//    destruction method
-//----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameterTimInt::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct);
-}
-
-//----------------------------------------------------------------------*/
 // private constructor of FluidEleParameterTimInt
 //----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidEleParameterTimInt::FluidEleParameterTimInt()

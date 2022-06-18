@@ -82,9 +82,6 @@ namespace MORTAR
     // constructor
     MortarProjectorCalc();
 
-    /// called upon destruction
-    virtual void Done();
-
     /// Singleton access method
     static MortarProjectorCalc<distype>* Instance(
         ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
@@ -287,9 +284,6 @@ namespace MORTAR
    public:
     // constructor
     MortarProjectorCalc_EleBased();
-
-    /// called upon destruction
-    virtual void Done();
 
     /// Singleton access method
     static MortarProjectorCalc_EleBased<distypeS, distypeM>* Instance(

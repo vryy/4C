@@ -116,9 +116,6 @@ namespace DRT
       static ScaTraHDGIntFaceImpl<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
-      //! called upon destruction
-      virtual void Done();
-
       //! Constructor
       ScaTraHDGIntFaceImpl();
 

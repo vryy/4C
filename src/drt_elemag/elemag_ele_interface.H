@@ -36,8 +36,8 @@ namespace DRT
     class ElemagEleInterface
     {
      public:
-      /// Empty Constructor
-      ElemagEleInterface() {}
+      /// Virtual destructor
+      virtual ~ElemagEleInterface() = default;
 
       /// Evaluate the element
       /*!

@@ -83,9 +83,6 @@ namespace DRT
       static LubricationEleCalc<distype, probdim>* Instance(
           const std::string& disname, const LubricationEleCalc* delete_me = NULL);
 
-      /// called upon destruction
-      virtual void Done();
-
       /// In this class we do not define a static LubricationEle...* Instance
       /// since only derived child classes are free to be allocated!!
 

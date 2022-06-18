@@ -33,12 +33,6 @@ namespace DRT
       static FluidEleParameterTimInt* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
-      //! Singleton destruction method called from global problem
-      void Done();
-
-      //! dtor
-      ~FluidEleParameterTimInt() {}
-
       //! time parameter are set
       void SetElementTimeParameter(Teuchos::ParameterList& params  //> parameter list
       );

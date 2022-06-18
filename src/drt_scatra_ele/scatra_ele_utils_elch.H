@@ -41,8 +41,7 @@ namespace DRT
           const ScaTraEleUtilsElch* delete_me = NULL  ///< creation/destruction indication
       );
 
-      //! singleton destruction
-      virtual void Done();
+
 
       //! evaluation of electrochemistry kinetics at integration point on domain or boundary element
       void EvaluateElchKineticsAtIntegrationPoint(const DRT::Element* ele,  ///< current element

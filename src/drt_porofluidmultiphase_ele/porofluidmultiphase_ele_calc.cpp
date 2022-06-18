@@ -90,18 +90,6 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Instance(const int numdofper
   return instances[key];
 }
 
-/*----------------------------------------------------------------------*
- | singleton destruction                                     vuong 08/16 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Done()
-{
-  // delete instance
-  Instance(0, "", this);
-
-  return;
-}
-
 
 /*----------------------------------------------------------------------*
  | evaluate  routine                                         vuong 08/16 |

@@ -52,16 +52,6 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::Instance(const int nu
   return instances[disname];
 }
 
-/*----------------------------------------------------------------------*
- | singleton destruction                                     fang 02/15 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::Done()
-{
-  // delete singleton
-  Instance(0, 0, "", this);
-}
-
 
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 02/15 |

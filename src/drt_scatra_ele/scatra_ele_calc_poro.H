@@ -44,9 +44,6 @@ namespace DRT
       static ScaTraEleCalcPoro<distype>* Instance(const int numdofpernode, const int numscal,
           const std::string& disname, const ScaTraEleCalcPoro* delete_me = NULL);
 
-      /// called upon destruction
-      virtual void Done();
-
       /// Evaluate the element
       /*!
         Generic virtual interface function. Called via base pointer.

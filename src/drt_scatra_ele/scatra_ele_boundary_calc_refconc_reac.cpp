@@ -50,18 +50,6 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::Instance(const int num
 
 
 /*----------------------------------------------------------------------*
- |  Clean up                                                 thon 02/16 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(0, 0, "", this);
-}
-
-
-/*----------------------------------------------------------------------*
  |  Private constructor                                      thon 02/16 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>

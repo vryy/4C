@@ -77,15 +77,6 @@ DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::Instance(const int numdofper
   return instances[disname];
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(0, 0, "", this);
-}
 
 /*----------------------------------------------------------------------*
  | setup element evaluation                                 vuong 08/16 |

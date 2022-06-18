@@ -65,9 +65,6 @@ namespace DRT
       virtual ~FluidEleBoundaryCalcPoro() = default;
       ;
 
-      /// called upon destruction
-      virtual void Done();
-
       /// determines which boundary integral is to be evaluated
       void EvaluateAction(DRT::ELEMENTS::FluidBoundary* ele1, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
@@ -394,9 +391,6 @@ namespace DRT
       /// Empty destructor
       virtual ~FluidEleBoundaryCalcPoroP1() = default;
       ;
-
-      /// called upon destruction
-      virtual void Done();
 
      protected:
       /*!

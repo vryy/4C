@@ -121,9 +121,6 @@ namespace DRT
       static FluidIntFaceImpl<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
-      /// called upon destruction
-      virtual void Done();
-
       /// Constructor
       FluidIntFaceImpl();
 

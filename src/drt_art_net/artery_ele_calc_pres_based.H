@@ -51,9 +51,6 @@ namespace DRT
       static ArteryEleCalcPresBased<distype>* Instance(const int numdofpernode,
           const std::string& disname, const ArteryEleCalcPresBased* delete_me = NULL);
 
-      /// called upon destruction
-      virtual void Done();
-
       int Evaluate(Artery* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
           DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
           Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,

@@ -38,8 +38,7 @@ namespace DRT
           const ScaTraEleParameterElch* delete_me = NULL  //!< creation/destruction indication
       );
 
-      //! singleton destruction
-      virtual void Done();
+
 
       //! return flag for coupling of lithium-ion flux density and electric current density at
       //! Dirichlet and Neumann boundaries

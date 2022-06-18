@@ -49,17 +49,6 @@ DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Instance(const int numdofpern
 }
 
 
-/*----------------------------------------------------------------------*
- | singleton destruction                                     fang 11/15 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Done()
-{
-  // delete singleton
-  Instance(0, 0, "", this);
-}
-
-
 /*--------------------------------------------------------------------------*
  | calculate element matrix and element right-hand side vector   fang 11/15 |
  *--------------------------------------------------------------------------*/

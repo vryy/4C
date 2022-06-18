@@ -44,9 +44,6 @@ namespace DRT
           const int numscal, const std::string& disname,
           const ScaTraEleCalcCardiacMonodomain* delete_me = NULL);
 
-      /// called upon destruction
-      virtual void Done();
-
       //! evaluate the element
       int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,

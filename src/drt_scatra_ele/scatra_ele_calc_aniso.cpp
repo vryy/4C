@@ -66,18 +66,6 @@ DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Instance(const int numdofpe
   return instances[disname];
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(0, 0, "", this);
-}
-
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>

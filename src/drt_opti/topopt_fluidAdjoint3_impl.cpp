@@ -88,17 +88,6 @@ DRT::ELEMENTS::FluidAdjoint3Impl<distype>* DRT::ELEMENTS::FluidAdjoint3Impl<dist
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidAdjoint3Impl<distype>::FluidAdjoint3Impl()
     : xyze_(true),
       funct_(true),

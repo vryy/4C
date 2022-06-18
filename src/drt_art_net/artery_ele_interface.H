@@ -34,11 +34,8 @@ namespace DRT
     class ArteryEleInterface
     {
      public:
-      /// Empty constructor
-      ArteryEleInterface() { return; };
-
-      /// Empty destructor
-      virtual ~ArteryEleInterface() { return; };
+      /// Virtual destructor
+      virtual ~ArteryEleInterface() = default;
 
       //! evaluate the element
       virtual int Evaluate(Artery* ele, Teuchos::ParameterList& params,

@@ -33,9 +33,6 @@ namespace DRT
       static ScaTraEleCalcLS<distype>* Instance(const int numdofpernode, const int numscal,
           const std::string& disname, const ScaTraEleCalcLS* delete_me = NULL);
 
-      /// called upon destruction
-      virtual void Done();
-
       int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
           DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,

@@ -44,9 +44,6 @@ namespace DRT
           const int numscal, const std::string& disname,
           const ScaTraEleCalcElchDiffCond* delete_me = NULL);
 
-      /// called upon destruction
-      virtual void Done();
-
      protected:
       /*========================================================================*/
       //! @name general framework

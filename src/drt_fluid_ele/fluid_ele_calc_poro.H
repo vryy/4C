@@ -57,14 +57,9 @@ namespace DRT
       FluidEleCalcPoro();
 
      public:
-      virtual ~FluidEleCalcPoro() = default;
-
       //! Singleton access method
       static FluidEleCalcPoro<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
-
-      //! called upon destruction
-      virtual void Done();
 
       /*!
         \brief calculate element matrix and rhs for porous flow

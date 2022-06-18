@@ -59,19 +59,6 @@ DRT::ELEMENTS::ScaTraEleCalcPoro<distype>* DRT::ELEMENTS::ScaTraEleCalcPoro<dist
   return instances[disname];
 }
 
-
-/*----------------------------------------------------------------------*
- |                                                           vuong 07/14 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(0, 0, "", this);
-}
-
-
 /*----------------------------------------------------------------------*
  |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/

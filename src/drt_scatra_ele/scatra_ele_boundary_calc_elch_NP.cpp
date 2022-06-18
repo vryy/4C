@@ -49,19 +49,6 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::Instance(const int numdofpe
 }
 
 /*----------------------------------------------------------------------*
- | singleton destruction                                     fang 02/15 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::Done()
-{
-  // delete singleton
-  Instance(0, 0, "", this);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>

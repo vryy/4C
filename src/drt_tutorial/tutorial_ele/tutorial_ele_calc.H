@@ -41,9 +41,6 @@ namespace TUTORIAL
       /// Empty destructor
       virtual ~TutorialEleCalc(){};
 
-      /// called upon destruction
-      virtual void Done();
-
       /// evaluates the desired matrix and/or vector
       void Evaluate(TutorialElement* element, LINALG::Matrix<7, 1>* state,
           LINALG::Matrix<2, 2>* elematrix, LINALG::Matrix<2, 1>* elevector)

@@ -344,18 +344,6 @@ MORTAR::MortarIntegratorCalc<distypeS, distypeM>::Instance(
 
 
 /*----------------------------------------------------------------------*
- |  Done (public)                                             farah 01/14|
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct, imortar_);
-}
-
-
-/*----------------------------------------------------------------------*
  |  Initialize gauss points                                   popp 06/09|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>

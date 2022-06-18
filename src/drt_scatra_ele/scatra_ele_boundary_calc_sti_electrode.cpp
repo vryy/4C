@@ -60,19 +60,6 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::Instance(const int nu
 
 
 /*----------------------------------------------------------------------*
- | singleton destruction                                     fang 11/15 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::Done()
-{
-  // delete singleton
-  Instance(0, 0, "", this);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 11/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>

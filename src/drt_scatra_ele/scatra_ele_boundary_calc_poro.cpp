@@ -55,17 +55,6 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::Instance(const int numdofpern
   return instances[disname];
 }
 
-/*----------------------------------------------------------------------*
- |  Clean up                                              hemmler 07/14 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(0, 0, "", this);
-}
-
 
 /*----------------------------------------------------------------------*
  |  Private constructor                                   hemmler 07/14 |

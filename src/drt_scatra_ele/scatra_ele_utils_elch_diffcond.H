@@ -40,8 +40,7 @@ namespace DRT
           const ScaTraEleUtilsElchDiffCond* delete_me = NULL  ///< creation/destruction indication
       );
 
-      //! singleton destruction
-      virtual void Done();
+
 
       //! evaluate electrolyte material
       void MatElchMat(const Teuchos::RCP<const MAT::Material>& material,  //!< electrolyte material

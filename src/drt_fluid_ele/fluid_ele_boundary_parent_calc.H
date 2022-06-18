@@ -90,9 +90,6 @@ namespace DRT
       static FluidBoundaryParentInterface* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
-      /// called upon destruction
-      virtual void Done();
-
       /// Constructor with number of nodes
       FluidBoundaryParent();
 

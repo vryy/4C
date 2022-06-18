@@ -38,8 +38,6 @@ namespace DRT
       static ScaTraEleCalcSTIDiffCond<distype>* Instance(const int numdofpernode, const int numscal,
           const std::string& disname, const ScaTraEleCalcSTIDiffCond* delete_me = NULL);
 
-      //! singleton destruction
-      virtual void Done();
 
      private:
       //! abbreviations

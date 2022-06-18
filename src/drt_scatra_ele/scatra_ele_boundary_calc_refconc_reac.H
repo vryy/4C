@@ -27,12 +27,6 @@ namespace DRT
           const int numscal, const std::string& disname,
           const ScaTraEleBoundaryCalcRefConcReac* delete_me = NULL);
 
-      /// Empty destructor
-      virtual ~ScaTraEleBoundaryCalcRefConcReac(){};
-
-      /// called upon destruction
-      void Done();
-
      protected:
       //! Factor needed for the calculation of reference concentrations
       virtual double FacForRefConc(const int iquad,  ///< current boundary integration point

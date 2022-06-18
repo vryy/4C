@@ -106,8 +106,6 @@ namespace MORTAR
     // destructor
     virtual ~MortarIntegratorCalc(){};
 
-    /// called upon destruction
-    virtual void Done();
 
     /// Singleton access method
     static MortarIntegratorCalc<distypeS, distypeM>* Instance(

@@ -44,9 +44,6 @@ namespace DRT
           const int numscal, const std::string& disname,
           const ScaTraEleCalcChemoReac* delete_me = NULL);
 
-      //! called upon destruction
-      virtual void Done();
-
      protected:
       //! get the material parameters
       virtual void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with

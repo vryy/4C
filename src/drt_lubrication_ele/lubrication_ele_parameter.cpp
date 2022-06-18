@@ -57,16 +57,6 @@ DRT::ELEMENTS::LubricationEleParameter* DRT::ELEMENTS::LubricationEleParameter::
   return instances[disname];
 }
 
-/*----------------------------------------------------------------------*
- | singleton destruction                                    wirtz 10/15 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::LubricationEleParameter::Done()
-{
-  // delete singleton
-  Instance("", this);
-
-  return;
-}
 
 /*----------------------------------------------------------------------*
  | private constructor for singletons                       wirtz 10/15 |

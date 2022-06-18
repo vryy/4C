@@ -30,9 +30,6 @@ namespace DRT
       /// Empty destructor
       virtual ~ScaTraEleBoundaryCalcStd() { return; };
 
-      /// called upon destruction
-      virtual void Done();
-
      private:
       /// private constructor since we are singleton
       ScaTraEleBoundaryCalcStd(

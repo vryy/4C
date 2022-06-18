@@ -184,9 +184,6 @@ namespace DRT
      public:
       static GaussPointCache& Instance();
 
-      /// cleanup
-      void Done();
-
       Teuchos::RCP<GaussPoints> Create(DRT::Element::DiscretizationType distype, int degree);
 
      private:

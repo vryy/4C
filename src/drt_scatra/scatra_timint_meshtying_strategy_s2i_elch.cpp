@@ -592,17 +592,6 @@ SCATRA::MortarCellCalcElch<distypeS, distypeM>::Instance(
 
 
 /*----------------------------------------------------------------------*
- | singleton destruction                                     fang 01/16 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void SCATRA::MortarCellCalcElch<distypeS, distypeM>::Done()
-{
-  // delete singleton
-  Instance(INPAR::S2I::coupling_undefined, INPAR::S2I::side_undefined, 0, 0, "", this);
-}
-
-
-/*----------------------------------------------------------------------*
  | protected constructor for singletons                      fang 01/16 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
@@ -795,16 +784,6 @@ SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Instance(
 
   // return existing instance
   return instances[disname];
-}
-
-/*----------------------------------------------------------------------*
- | singleton destruction                                     fang 01/17 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Done()
-{
-  // delete singleton
-  Instance(INPAR::S2I::coupling_undefined, INPAR::S2I::side_undefined, 0, 0, "", this);
 }
 
 
@@ -1039,17 +1018,6 @@ SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Instance(
 
   // return existing instance
   return instances[disname];
-}
-
-
-/*----------------------------------------------------------------------*
- | singleton destruction                                     fang 01/17 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Done()
-{
-  // delete singleton
-  Instance(INPAR::S2I::coupling_undefined, INPAR::S2I::side_undefined, 0, 0, "", this);
 }
 
 

@@ -50,17 +50,6 @@ DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Instance(const int numdofperno
 }
 
 
-/*----------------------------------------------------------------------*
- | singleton destruction                                     fang 11/15 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Done()
-{
-  // delete singleton
-  Instance(0, 0, "", this);
-}
-
-
 /*--------------------------------------------------------------------------*
  | calculate element matrix and element right-hand side vector   fang 11/15 |
  *--------------------------------------------------------------------------*/

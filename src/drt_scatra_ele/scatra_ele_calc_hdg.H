@@ -51,9 +51,6 @@ namespace DRT
       static ScaTraEleCalcHDG<distype, probdim>* Instance(const int numdofpernode,
           const int numscal, const std::string& disname, bool create = true);
 
-      //! called upon destruction
-      virtual void Done();
-
       //! evaluate service routine
       virtual int EvaluateService(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,

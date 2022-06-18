@@ -36,9 +36,6 @@ namespace DRT
       static ScaTraEleCalcRefConcReac<distype>* Instance(const int numdofpernode, const int numscal,
           const std::string& disname, const ScaTraEleCalcRefConcReac* delete_me = NULL);
 
-      /// called upon destruction
-      virtual void Done();
-
      protected:
       //! Set reac. body force, reaction coefficient and derivatives
       virtual void SetAdvancedReactionTerms(const int k,          //!< index of current scalar

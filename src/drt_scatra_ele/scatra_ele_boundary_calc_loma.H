@@ -28,11 +28,6 @@ namespace DRT
           const int numscal, const std::string& disname,
           const ScaTraEleBoundaryCalcLoma* delete_me = NULL);
 
-      //! destructor
-      virtual ~ScaTraEleBoundaryCalcLoma() { return; };
-
-      //! singleton destruction
-      virtual void Done();
 
       //! evaluate action
       int EvaluateAction(DRT::FaceElement* ele, Teuchos::ParameterList& params,

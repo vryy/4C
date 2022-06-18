@@ -34,8 +34,6 @@ namespace DRT
           const LubricationEleParameter* delete_me = NULL  //!< creation/destruction indication
       );
 
-      //! Singleton destruction method called from global problem
-      void Done();
 
       //! dtor
       ~LubricationEleParameter() {}

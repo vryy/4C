@@ -59,16 +59,6 @@ DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::Instance(const int numdofper
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::Done()
-{
-  // delete singleton
-  Instance(0, 0, "", this);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::ScaTraEleUtilsElchDiffCond(
     const int numdofpernode, const int numscal, const std::string& disname)
     : myelectrode::ScaTraEleUtilsElchElectrode(numdofpernode, numscal, disname)

@@ -44,9 +44,6 @@ namespace DRT
       /// Empty destructor
       virtual ~PoroFluidMultiPhaseEleBoundaryCalc() { return; };
 
-      /// called upon destruction
-      virtual void Done();
-
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
       static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 

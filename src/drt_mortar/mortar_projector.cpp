@@ -464,28 +464,6 @@ MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::Instance(::UTILS::Sing
   return singleton_owner.Instance(action);
 }
 
-/*----------------------------------------------------------------------*
- |  Done (public)                                             farah 01/14|
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void MORTAR::MortarProjectorCalc<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct);
-}
-
-/*----------------------------------------------------------------------*
- |  Done ele-based (public)                                  farah 04/14|
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct);
-}
-
 
 /*----------------------------------------------------------------------*
  |  Project a node along its nodal normal (public)            popp 01/08|

@@ -40,8 +40,7 @@ namespace DRT
           const int numscal, const std::string& disname,
           const ScaTraEleCalcSTIElectrode* delete_me = NULL);
 
-      //! singleton destruction
-      virtual void Done();
+
 
      private:
       //! abbreviations

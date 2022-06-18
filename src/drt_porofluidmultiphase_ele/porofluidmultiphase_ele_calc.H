@@ -61,9 +61,6 @@ namespace DRT
       /// virtual destructor
       virtual ~PoroFluidMultiPhaseEleCalc(){};
 
-      /// called upon destruction
-      virtual void Done();
-
       //! Singleton access method
       static PoroFluidMultiPhaseEleCalc<distype>* Instance(const int numdofpernode,
           const std::string& disname, const PoroFluidMultiPhaseEleCalc* delete_me = NULL);

@@ -59,17 +59,6 @@ DRT::ELEMENTS::ScaTraEleUtilsElch<distype>* DRT::ELEMENTS::ScaTraEleUtilsElch<di
 
 
 /*----------------------------------------------------------------------*
- | singleton destruction                                     fang 07/15 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::Done()
-{
-  // delete singleton
-  Instance(0, 0, "", this);
-}
-
-
-/*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 07/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>

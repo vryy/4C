@@ -57,17 +57,6 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::Instance(
 
 
 /*----------------------------------------------------------------------*
- | singleton destruction                                     fang 08/15 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::Done()
-{
-  // delete singleton
-  Instance(0, 0, "", this);
-}
-
-
-/*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 08/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>

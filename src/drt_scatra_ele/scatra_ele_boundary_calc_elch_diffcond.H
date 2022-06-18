@@ -34,8 +34,7 @@ namespace DRT
           const int numscal, const std::string& disname,
           const ScaTraEleBoundaryCalcElchDiffCond* delete_me = NULL);
 
-      //! singleton destruction
-      virtual void Done();
+
 
      private:
       //! private constructor for singletons

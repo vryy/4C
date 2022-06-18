@@ -33,16 +33,6 @@ DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Instance(::UTILS::SingletonAction 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcImmersed<distype>::FluidEleCalcImmersed()
     : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(), immersedele_(NULL), gp_iquad_(0)
 {

@@ -53,17 +53,6 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Instance(const int n
   return instances[disname];
 }
 
-/*----------------------------------------------------------------------*
- | singleton destruction                                     vuong 08/16 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(0, "", this);
-}
-
 
 /*----------------------------------------------------------------------*
  | protected constructor for singletons                      vuong 08/16 |

@@ -37,9 +37,6 @@ namespace DRT
           const int numscal, const std::string& disname,
           const ScaTraEleCalcChemo* delete_me = NULL);
 
-      //! called upon destruction
-      virtual void Done();
-
      protected:
       //! calculation of chemotactic element matrix
       virtual void CalcMatChemo(Epetra_SerialDenseMatrix& emat, const int k,

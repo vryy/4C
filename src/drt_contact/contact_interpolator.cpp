@@ -1797,17 +1797,6 @@ NTS::MTInterpolatorCalc<distypeM>* NTS::MTInterpolatorCalc<distypeM>::Instance(
 
 
 /*----------------------------------------------------------------------*
- |  Done (public)                                             farah 10/14|
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeM>
-void NTS::MTInterpolatorCalc<distypeM>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct);
-}
-
-/*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 10/14|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeM>

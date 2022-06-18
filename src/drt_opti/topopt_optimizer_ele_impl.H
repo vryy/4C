@@ -108,9 +108,6 @@ namespace DRT
       static TopOptImpl<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
-      //! called upon destruction
-      virtual void Done();
-
       //! Evaluate objective value
       virtual int EvaluateValues(DRT::Element* ele,  //!< the element we are dealing with
           Teuchos::ParameterList& params,            //!< the parameter list
@@ -349,9 +346,6 @@ namespace DRT
       /// Singleton access method
       static TopOptBoundaryImpl<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
-
-      //! called upon destruction
-      virtual void Done();
 
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
       static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;

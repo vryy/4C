@@ -96,17 +96,6 @@ DRT::ELEMENTS::TopOptImpl<distype>* DRT::ELEMENTS::TopOptImpl<distype>::Instance
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TopOptImpl<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::TopOptImpl<distype>::TopOptImpl()
     : xyze_(true),
       funct_(true),
@@ -1386,17 +1375,6 @@ DRT::ELEMENTS::TopOptBoundaryImpl<distype>* DRT::ELEMENTS::TopOptBoundaryImpl<di
       });
 
   return singleton_owner.Instance(action);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TopOptBoundaryImpl<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct);
 }
 
 

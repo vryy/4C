@@ -50,16 +50,6 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(
   return instances[disname];
 }
 
-/*----------------------------------------------------------------------*
- | singleton destruction                                    vuong 08/16 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Done()
-{
-  // delete singleton
-  Instance("", this);
-
-  return;
-}
 
 /*----------------------------------------------------------------------*
  | private constructor for singletons                       vuong 08/16 |

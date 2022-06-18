@@ -34,8 +34,6 @@ namespace DRT
       //! destructor
       virtual ~ScaTraEleBoundaryCalcElch() { return; };
 
-      //! singleton destruction
-      virtual void Done() = 0;
 
      protected:
       //! protected constructor for singletons

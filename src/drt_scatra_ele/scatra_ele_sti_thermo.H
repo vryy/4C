@@ -25,8 +25,7 @@ namespace DRT
     class ScaTraEleSTIThermo
     {
      public:
-      //! singleton destruction
-      virtual void Done() = 0;
+      virtual ~ScaTraEleSTIThermo() = default;
 
      protected:
       using my = ScaTraEleCalc<distype>;

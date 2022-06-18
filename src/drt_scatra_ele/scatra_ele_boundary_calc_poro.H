@@ -28,12 +28,6 @@ namespace DRT
           const int numscal, const std::string& disname,
           const ScaTraEleBoundaryCalcPoro* delete_me = NULL);
 
-      /// Empty destructor
-      virtual ~ScaTraEleBoundaryCalcPoro(){};
-
-      /// called upon destruction
-      void Done();
-
       //! evaluate action
       int EvaluateAction(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, SCATRA::BoundaryAction action,

@@ -51,14 +51,6 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Instance(
   return instances[disname];
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Done()
-{
-  // delete singleton
-  Instance(0, 0, "", this);
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

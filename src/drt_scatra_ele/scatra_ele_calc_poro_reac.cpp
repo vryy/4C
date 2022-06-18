@@ -69,16 +69,6 @@ DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Instance(const int numdofpernode,
 
 
 /*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(0, 0, "", this);
-}
-
-/*----------------------------------------------------------------------*
  |  evaluate single material  (protected)                    vuong 10/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>

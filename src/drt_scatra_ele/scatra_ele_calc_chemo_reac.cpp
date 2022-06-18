@@ -68,16 +68,6 @@ DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::Instance(const int numd
 
 
 /*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(0, 0, "", this);
-}
-
-/*----------------------------------------------------------------------*
  |  get the material constants  (private)                    thon 06/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>

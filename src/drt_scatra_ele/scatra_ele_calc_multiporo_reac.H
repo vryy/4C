@@ -62,9 +62,6 @@ namespace DRT
           const int numscal, const std::string& disname,
           const ScaTraEleCalcMultiPoroReac* delete_me = NULL);
 
-      /// called upon destruction
-      virtual void Done();
-
       /// Setup element evaluation
       virtual int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization);
 

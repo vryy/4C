@@ -43,9 +43,6 @@ namespace DRT
           const int numscal, const std::string& disname,
           const ScaTraEleCalcLsReinit* delete_me = NULL);
 
-      //! called upon destruction
-      virtual void Done();
-
       /*========================================================================*/
       //! @name access routines
       /*========================================================================*/

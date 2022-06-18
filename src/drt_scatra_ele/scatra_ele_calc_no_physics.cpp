@@ -54,17 +54,6 @@ DRT::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::Instance(const int numd
 
 
 /*----------------------------------------------------------------------*
- | singleton destruction                                  gebauer 06/19 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::Done()
-{
-  // delete instance
-  Instance(0, 0, "", this);
-}
-
-
-/*----------------------------------------------------------------------*
  | private constructor for singletons                     gebauer 06/19 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>

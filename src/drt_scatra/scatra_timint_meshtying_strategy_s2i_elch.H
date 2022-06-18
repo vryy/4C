@@ -93,8 +93,6 @@ namespace SCATRA
         const MortarCellCalcElch* delete_me = NULL  //!< pointer to instance to be deleted
     );
 
-    //! singleton destruction
-    virtual void Done();
 
    protected:
     //! protected constructor for singletons
@@ -176,8 +174,6 @@ namespace SCATRA
         const MortarCellCalcElchSTIThermo* delete_me = NULL  //!< pointer to instance to be deleted
     );
 
-    //! singleton destruction
-    virtual void Done();
 
     //! evaluate single mortar integration cell of particular slave-side and master-side
     //! discretization types
@@ -255,9 +251,6 @@ namespace SCATRA
         const std::string& disname,       //!< name of mortar discretization
         const MortarCellCalcSTIElch* delete_me = NULL  //!< pointer to instance to be deleted
     );
-
-    //! singleton destruction
-    virtual void Done();
 
     //! evaluate single mortar integration cell of particular slave-side and master-side
     //! discretization types

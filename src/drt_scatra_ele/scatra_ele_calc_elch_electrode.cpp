@@ -50,14 +50,6 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::Instance(const int 
   return instances[disname];
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::Done()
-{
-  // delete singleton
-  Instance(0, 0, "", this);
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

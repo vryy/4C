@@ -32,9 +32,6 @@ namespace DRT
     class ScaTraEleInterface
     {
      public:
-      /// Empty constructor
-      ScaTraEleInterface() { return; };
-
       /// Virtual destructor.
       virtual ~ScaTraEleInterface() = default;
 

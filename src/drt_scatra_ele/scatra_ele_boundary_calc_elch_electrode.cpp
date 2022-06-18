@@ -52,16 +52,6 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::Instance(const int n
 }
 
 
-/*----------------------------------------------------------------------*
- | singleton destruction                                     fang 02/15 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::Done()
-{
-  // delete singleton
-  Instance(0, 0, "", this);
-}
-
 
 /*----------------------------------------------------------------------*
  | protected constructor for singletons                      fang 02/15 |

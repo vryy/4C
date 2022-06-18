@@ -60,18 +60,6 @@ DRT::ELEMENTS::ScaTraEleParameterStd* DRT::ELEMENTS::ScaTraEleParameterStd::Inst
   return instances[disname];
 }
 
-
-/*----------------------------------------------------------------------*
- | singleton destruction                                     fang 08/15 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterStd::Done()
-{
-  // delete singleton
-  Instance("", this);
-
-  return;
-}
-
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 08/15 |
  *----------------------------------------------------------------------*/

@@ -51,19 +51,6 @@ DRT::ELEMENTS::ScaTraEleCalcStd<distype, probdim>::Instance(const int numdofpern
 
 
 /*----------------------------------------------------------------------*
- | singleton destruction                                     fang 02/15 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcStd<distype, probdim>::Done()
-{
-  // delete instance
-  Instance(0, 0, "", this);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
