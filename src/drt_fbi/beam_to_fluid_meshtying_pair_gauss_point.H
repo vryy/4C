@@ -13,14 +13,17 @@ projection.
 
 #include "beam_to_fluid_meshtying_pair_base.H"
 
+namespace
+{
+  class BeamToFluidMeshtyingPairGPTSTest;
+}
+
 namespace FBI
 {
   class PairFactory;
 }
 namespace BEAMINTERACTION
 {
-  class BeamToFluidMeshtyingPairGPTS_TestSuite;
-
   /**
    * \brief Class for beam to fluid meshtying using Gauss point projection.
    *
@@ -30,7 +33,8 @@ namespace BEAMINTERACTION
   template <typename beam, typename fluid>
   class BeamToFluidMeshtyingPairGaussPoint : public BeamToFluidMeshtyingPairBase<beam, fluid>
   {
-    friend class FBI::PairFactory;
+    friend FBI::PairFactory;
+    friend BeamToFluidMeshtyingPairGPTSTest;
 
    public:
     /**
@@ -55,18 +59,17 @@ namespace BEAMINTERACTION
         LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22) override;
 
    protected:
-    //! Shortcut to base class.
-    using base_class = BeamToFluidMeshtyingPairBase<beam, fluid>;
-
-    //! Scalar type for FAD variables.
-    using scalar_type = typename base_class::scalar_type;
-
-   protected:
     /** \brief You will have to use the FBI::PairFactory
      *
      */
 
     BeamToFluidMeshtyingPairGaussPoint();
+
+    //! Shortcut to base class.
+    using base_class = BeamToFluidMeshtyingPairBase<beam, fluid>;
+
+    //! Scalar type for FAD variables.
+    using scalar_type = typename base_class::scalar_type;
   };
 }  // namespace BEAMINTERACTION
 
