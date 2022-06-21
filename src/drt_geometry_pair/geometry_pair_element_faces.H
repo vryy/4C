@@ -20,10 +20,13 @@
 
 
 // Forward declarations.
+namespace
+{
+  class GeometryPairLineToSurfacePatchTest;
+}
 namespace GEOMETRYPAIR
 {
   struct ConnectedFace;
-  class GeometryPairLineToSurfacePatch_TestSuite;
 }  // namespace GEOMETRYPAIR
 namespace INPAR
 {
@@ -80,7 +83,7 @@ namespace GEOMETRYPAIR
    */
   class FaceElement
   {
-    friend GEOMETRYPAIR::GeometryPairLineToSurfacePatch_TestSuite;
+    friend GeometryPairLineToSurfacePatchTest;
 
    public:
     /**
@@ -295,7 +298,7 @@ namespace GEOMETRYPAIR
   template <typename surface, typename scalar_type>
   class FaceElementPatchTemplate : public FaceElementTemplate<surface, scalar_type>
   {
-    friend GEOMETRYPAIR::GeometryPairLineToSurfacePatch_TestSuite;
+    friend GeometryPairLineToSurfacePatchTest;
 
    public:
     //! Shortcut to the type of this templated object.

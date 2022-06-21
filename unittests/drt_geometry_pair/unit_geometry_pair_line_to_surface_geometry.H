@@ -11,10 +11,8 @@
 #ifndef UNIT_GEOMETRY_PAIR_LINE_TO_SURFACE_GEOMETRY_H_
 #define UNIT_GEOMETRY_PAIR_LINE_TO_SURFACE_GEOMETRY_H_
 
-#include "unit_geometry_pair_line_to_surface.H"
 
-
-namespace GEOMETRYPAIR
+namespace
 {
   /**
    * Setup the surface geometry for the tri4 tests.
@@ -301,7 +299,7 @@ namespace GEOMETRYPAIR
     q_beam(11) = 0.0975900072948533;
   }
 
-}  // namespace GEOMETRYPAIR
+}  // namespace
 
 
 

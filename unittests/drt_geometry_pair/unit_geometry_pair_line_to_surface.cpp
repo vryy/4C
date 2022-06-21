@@ -8,11 +8,7 @@
 // End doxygen header.
 
 
-#ifndef UNIT_GEOMETRY_PAIR_LINE_TO_SURFACE_H_
-#define UNIT_GEOMETRY_PAIR_LINE_TO_SURFACE_H_
-
-
-#include "src/common/unit_cxx_test_wrapper.H"
+#include <gtest/gtest.h>
 
 #include "src/drt_geometry_pair/geometry_pair_line_to_surface.H"
 #include "src/drt_geometry_pair/geometry_pair_line_to_surface_evaluation_data.H"
@@ -22,52 +18,56 @@
 #include "src/drt_beam3/beam3r.H"
 #include "src/drt_inpar/inpar_beam_to_solid.H"
 
-#include "src/drt_geometry_pair/unit_geometry_pair_line_to_surface_geometry.H"
+#include "unit_geometry_pair_line_to_surface_geometry.H"
 
+using namespace GEOMETRYPAIR;
 
-namespace GEOMETRYPAIR
+namespace
 {
-  class GeometryPairLineToSurface_TestSuite;
-}
-
-/**
- * Class to test the line to volume geometry pair segmentation algorithm.
- */
-class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrapper
-{
- public:
   /**
-   * Set up the testing environment.
+   * Class to test the line to volume geometry pair segmentation algorithm.
    */
-  void Setup() override
+  class GeometryPairLineToSurfaceTest : public ::testing::Test
   {
-    // Set up the evaluation data container for the geometry pairs.
-    Teuchos::ParameterList line_to_surface_params_list;
-    INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_surface_params_list);
-    INPAR::GEOMETRYPAIR::SetValidParametersLineToSurface(line_to_surface_params_list);
-    evaluation_data_ =
-        Teuchos::rcp(new GEOMETRYPAIR::LineToSurfaceEvaluationData(line_to_surface_params_list));
-  }
+   protected:
+    /**
+     * Set up the testing environment.
+     */
+    GeometryPairLineToSurfaceTest()
+    {
+      // Set up the evaluation data container for the geometry pairs.
+      Teuchos::ParameterList line_to_surface_params_list;
+      INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_surface_params_list);
+      INPAR::GEOMETRYPAIR::SetValidParametersLineToSurface(line_to_surface_params_list);
+      evaluation_data_ =
+          Teuchos::rcp(new GEOMETRYPAIR::LineToSurfaceEvaluationData(line_to_surface_params_list));
+    }
 
-  /**
-   * Delete pointers and other class variables.
-   */
-  void TearDown() override
-  {
-    // Dereference the pointers.
-    evaluation_data_ = Teuchos::null;
-  }
+    /**
+     * Set that the pair is a unit test pair. This has to be done here sine otherwise a gtest
+     * specific macro has to be used to define the friend class.
+     */
+    template <typename A, typename B>
+    void SetIsUnitTest(
+        GEOMETRYPAIR::GeometryPairLineToSurface<double, A, B>& pair, const int is_unit_test)
+    {
+      pair.is_unit_test_ = is_unit_test;
+    }
+
+    //! Evaluation data container for geometry pairs.
+    Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData> evaluation_data_;
+  };  // namespace
 
   /**
    * Test the projection of a point to a tri3 surface, with default normals on the surface.
    */
-  void TestPointToSurfaceProjectionTri3()
+  TEST_F(GeometryPairLineToSurfaceTest, TestPointToSurfaceProjectionTri3)
   {
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(evaluation_data_);
-    pair.is_unit_test_ = true;
+    SetIsUnitTest(pair, true);
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -92,19 +92,19 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     xi_result(1) = 0.2877784467188441;
     xi_result(2) = 0.03189763881277458;
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-      TS_ASSERT_DELTA(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+      EXPECT_NEAR(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
   }
 
   /**
    * Test the projection of a point to a tri3 surface, with given normals on the nodes.
    */
-  void TestPointToSurfaceProjectionNormalInterpolationTri3()
+  TEST_F(GeometryPairLineToSurfaceTest, TestPointToSurfaceProjectionNormalInterpolationTri3)
   {
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(evaluation_data_);
-    pair.is_unit_test_ = true;
+    SetIsUnitTest(pair, true);
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -130,19 +130,19 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     xi_result(1) = 0.2853120425437799;
     xi_result(2) = 0.03218342274405913;
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-      TS_ASSERT_DELTA(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+      EXPECT_NEAR(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
   }
 
   /**
    * Test the projection of a point to a tri6 surface, with default normals on the surface.
    */
-  void TestPointToSurfaceProjectionTri6()
+  TEST_F(GeometryPairLineToSurfaceTest, TestPointToSurfaceProjectionTri6)
   {
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(evaluation_data_);
-    pair.is_unit_test_ = true;
+    SetIsUnitTest(pair, true);
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -167,19 +167,19 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     xi_result(1) = 0.1678155116663445;
     xi_result(2) = 0.236826220497202;
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-      TS_ASSERT_DELTA(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+      EXPECT_NEAR(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
   }
 
   /**
    * Test the projection of a point to a tri3 surface, with given normals on the nodes.
    */
-  void TestPointToSurfaceProjectionNormalInterpolationTri6()
+  TEST_F(GeometryPairLineToSurfaceTest, TestPointToSurfaceProjectionNormalInterpolationTri6)
   {
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(evaluation_data_);
-    pair.is_unit_test_ = true;
+    SetIsUnitTest(pair, true);
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -205,19 +205,19 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     xi_result(1) = 0.1649919700896869;
     xi_result(2) = 0.2749865824042791;
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-      TS_ASSERT_DELTA(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+      EXPECT_NEAR(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
   }
 
   /**
    * Test the projection of a point to a quad4 surface, with default normals on the surface.
    */
-  void TestPointToSurfaceProjectionQuad4()
+  TEST_F(GeometryPairLineToSurfaceTest, TestPointToSurfaceProjectionQuad4)
   {
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(evaluation_data_);
-    pair.is_unit_test_ = true;
+    SetIsUnitTest(pair, true);
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -243,19 +243,19 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     xi_result(1) = -0.2330351551569786;
     xi_result(2) = 0.1132886291998745;
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-      TS_ASSERT_DELTA(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+      EXPECT_NEAR(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
   }
 
   /**
    * Test the projection of a point to a quad4 surface, with given normals on the nodes.
    */
-  void TestPointToSurfaceProjectionNormalInterpolationQuad4()
+  TEST_F(GeometryPairLineToSurfaceTest, TestPointToSurfaceProjectionNormalInterpolationQuad4)
   {
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(evaluation_data_);
-    pair.is_unit_test_ = true;
+    SetIsUnitTest(pair, true);
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -281,19 +281,19 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     xi_result(1) = -0.2391123963538002;
     xi_result(2) = 0.1168739495183324;
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-      TS_ASSERT_DELTA(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+      EXPECT_NEAR(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
   }
 
   /**
    * Test the projection of a point to a quad8 surface, with default normals on the surface.
    */
-  void TestPointToSurfaceProjectionQuad8()
+  TEST_F(GeometryPairLineToSurfaceTest, TestPointToSurfaceProjectionQuad8)
   {
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(evaluation_data_);
-    pair.is_unit_test_ = true;
+    SetIsUnitTest(pair, true);
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -318,19 +318,19 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     xi_result(1) = -0.6545313748232923;
     xi_result(2) = 0.4772682324027889;
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-      TS_ASSERT_DELTA(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+      EXPECT_NEAR(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
   }
 
   /**
    * Test the projection of a point to a quad8 surface, with given normals on the nodes.
    */
-  void TestPointToSurfaceProjectionNormalInterpolationQuad8()
+  TEST_F(GeometryPairLineToSurfaceTest, TestPointToSurfaceProjectionNormalInterpolationQuad8)
   {
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(evaluation_data_);
-    pair.is_unit_test_ = true;
+    SetIsUnitTest(pair, true);
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -356,19 +356,19 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     xi_result(1) = 0.1593451990533972;
     xi_result(2) = 0.6729448863050194;
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-      TS_ASSERT_DELTA(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+      EXPECT_NEAR(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
   }
 
   /**
    * Test the projection of a point to a quad9 surface, with default normals on the surface.
    */
-  void TestPointToSurfaceProjectionQuad9()
+  TEST_F(GeometryPairLineToSurfaceTest, TestPointToSurfaceProjectionQuad9)
   {
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(evaluation_data_);
-    pair.is_unit_test_ = true;
+    SetIsUnitTest(pair, true);
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -393,19 +393,19 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     xi_result(1) = -0.4006486973745378;
     xi_result(2) = 0.2412946023554158;
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-      TS_ASSERT_DELTA(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+      EXPECT_NEAR(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
   }
 
   /**
    * Test the projection of a point to a quad9 surface, with given normals on the nodes.
    */
-  void TestPointToSurfaceProjectionNormalInterpolationQuad9()
+  TEST_F(GeometryPairLineToSurfaceTest, TestPointToSurfaceProjectionNormalInterpolationQuad9)
   {
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(evaluation_data_);
-    pair.is_unit_test_ = true;
+    SetIsUnitTest(pair, true);
     pair.Init(beam.get(), NULL);
     pair.Setup();
 
@@ -432,13 +432,13 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     xi_result(1) = -0.436333510864013;
     xi_result(2) = 0.2483249147920992;
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-      TS_ASSERT_DELTA(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+      EXPECT_NEAR(xi(i_dim), xi_result(i_dim), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
   }
 
   /**
    * Test the intersection of a line with a tri3 surface, with default normals on the surface.
    */
-  void TestLineToSurfaceIntersectionTri3()
+  TEST_F(GeometryPairLineToSurfaceTest, TestLineToSurfaceIntersectionTri3)
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
@@ -448,7 +448,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(evaluation_data_);
-    pair.is_unit_test_ = true;
+    SetIsUnitTest(pair, true);
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -462,7 +462,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
 
     // Check the results.
-    TS_ASSERT_EQUALS(intersection_points.size(), 2);
+    EXPECT_EQ(intersection_points.size(), 2);
 
     LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = 0.0;
@@ -478,11 +478,11 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
-      TS_ASSERT_DELTA(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+      EXPECT_NEAR(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
 
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-        TS_ASSERT_DELTA(intersection_points[i_intersection].GetXi()(i_dir),
+        EXPECT_NEAR(intersection_points[i_intersection].GetXi()(i_dir),
             xi_result(i_dir, i_intersection), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
     }
   }
@@ -490,7 +490,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the intersection of a line with a tri3 surface, with given normals on the nodes.
    */
-  void TestLineToSurfaceIntersectionNormalInterpolationTri3()
+  TEST_F(GeometryPairLineToSurfaceTest, TestLineToSurfaceIntersectionNormalInterpolationTri3)
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
@@ -500,7 +500,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(evaluation_data_);
-    pair.is_unit_test_ = true;
+    SetIsUnitTest(pair, true);
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -515,7 +515,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
 
     // Check the results.
-    TS_ASSERT_EQUALS(intersection_points.size(), 2);
+    EXPECT_EQ(intersection_points.size(), 2);
 
     LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = 0.;
@@ -531,11 +531,11 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
-      TS_ASSERT_DELTA(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+      EXPECT_NEAR(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
 
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-        TS_ASSERT_DELTA(intersection_points[i_intersection].GetXi()(i_dir),
+        EXPECT_NEAR(intersection_points[i_intersection].GetXi()(i_dir),
             xi_result(i_dir, i_intersection), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
     }
   }
@@ -543,7 +543,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the intersection of a line with a tri6 surface, with default normals on the surface.
    */
-  void TestLineToSurfaceIntersectionTri6()
+  TEST_F(GeometryPairLineToSurfaceTest, TestLineToSurfaceIntersectionTri6)
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
@@ -553,7 +553,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(evaluation_data_);
-    pair.is_unit_test_ = true;
+    SetIsUnitTest(pair, true);
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -567,7 +567,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
 
     // Check the results.
-    TS_ASSERT_EQUALS(intersection_points.size(), 2);
+    EXPECT_EQ(intersection_points.size(), 2);
 
     LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = 0.0;
@@ -583,11 +583,11 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
-      TS_ASSERT_DELTA(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+      EXPECT_NEAR(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
 
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-        TS_ASSERT_DELTA(intersection_points[i_intersection].GetXi()(i_dir),
+        EXPECT_NEAR(intersection_points[i_intersection].GetXi()(i_dir),
             xi_result(i_dir, i_intersection), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
     }
   }
@@ -595,7 +595,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the intersection of a line with a tri6 surface, with given normals on the nodes.
    */
-  void TestLineToSurfaceIntersectionNormalInterpolationTri6()
+  TEST_F(GeometryPairLineToSurfaceTest, TestLineToSurfaceIntersectionNormalInterpolationTri6)
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
@@ -605,7 +605,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(evaluation_data_);
-    pair.is_unit_test_ = true;
+    SetIsUnitTest(pair, true);
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -620,7 +620,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
 
     // Check the results.
-    TS_ASSERT_EQUALS(intersection_points.size(), 2);
+    EXPECT_EQ(intersection_points.size(), 2);
 
     LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = 0.;
@@ -636,11 +636,11 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
-      TS_ASSERT_DELTA(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+      EXPECT_NEAR(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
 
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-        TS_ASSERT_DELTA(intersection_points[i_intersection].GetXi()(i_dir),
+        EXPECT_NEAR(intersection_points[i_intersection].GetXi()(i_dir),
             xi_result(i_dir, i_intersection), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
     }
   }
@@ -648,7 +648,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the intersection of a line with a quad4 surface, with default normals on the surface.
    */
-  void TestLineToSurfaceIntersectionQuad4()
+  TEST_F(GeometryPairLineToSurfaceTest, TestLineToSurfaceIntersectionQuad4)
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
@@ -658,7 +658,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(evaluation_data_);
-    pair.is_unit_test_ = true;
+    SetIsUnitTest(pair, true);
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -672,7 +672,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
 
     // Check the results.
-    TS_ASSERT_EQUALS(intersection_points.size(), 2);
+    EXPECT_EQ(intersection_points.size(), 2);
 
     LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = -1.;
@@ -688,11 +688,11 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
-      TS_ASSERT_DELTA(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+      EXPECT_NEAR(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
 
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-        TS_ASSERT_DELTA(intersection_points[i_intersection].GetXi()(i_dir),
+        EXPECT_NEAR(intersection_points[i_intersection].GetXi()(i_dir),
             xi_result(i_dir, i_intersection), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
     }
   }
@@ -700,7 +700,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the intersection of a line with a quad4 surface, with given normals on the nodes.
    */
-  void TestLineToSurfaceIntersectionNormalInterpolationQuad4()
+  TEST_F(GeometryPairLineToSurfaceTest, TestLineToSurfaceIntersectionNormalInterpolationQuad4)
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
@@ -710,7 +710,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(evaluation_data_);
-    pair.is_unit_test_ = true;
+    SetIsUnitTest(pair, true);
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -725,7 +725,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
 
     // Check the results.
-    TS_ASSERT_EQUALS(intersection_points.size(), 2);
+    EXPECT_EQ(intersection_points.size(), 2);
 
     LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = -1.;
@@ -741,11 +741,11 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
-      TS_ASSERT_DELTA(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+      EXPECT_NEAR(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
 
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-        TS_ASSERT_DELTA(intersection_points[i_intersection].GetXi()(i_dir),
+        EXPECT_NEAR(intersection_points[i_intersection].GetXi()(i_dir),
             xi_result(i_dir, i_intersection), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
     }
   }
@@ -753,7 +753,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the intersection of a line with a quad8 surface, with default normals on the surface.
    */
-  void TestLineToSurfaceIntersectionQuad8()
+  TEST_F(GeometryPairLineToSurfaceTest, TestLineToSurfaceIntersectionQuad8)
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
@@ -763,7 +763,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(evaluation_data_);
-    pair.is_unit_test_ = true;
+    SetIsUnitTest(pair, true);
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -777,7 +777,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
 
     // Check the results.
-    TS_ASSERT_EQUALS(intersection_points.size(), 2);
+    EXPECT_EQ(intersection_points.size(), 2);
 
     LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = -1.;
@@ -793,11 +793,11 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
-      TS_ASSERT_DELTA(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+      EXPECT_NEAR(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
 
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-        TS_ASSERT_DELTA(intersection_points[i_intersection].GetXi()(i_dir),
+        EXPECT_NEAR(intersection_points[i_intersection].GetXi()(i_dir),
             xi_result(i_dir, i_intersection), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
     }
   }
@@ -805,7 +805,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the intersection of a line with a quad8 surface, with given normals on the nodes.
    */
-  void TestLineToSurfaceIntersectionNormalInterpolationQuad8()
+  TEST_F(GeometryPairLineToSurfaceTest, TestLineToSurfaceIntersectionNormalInterpolationQuad8)
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
@@ -815,7 +815,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(evaluation_data_);
-    pair.is_unit_test_ = true;
+    SetIsUnitTest(pair, true);
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -830,7 +830,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
 
     // Check the results.
-    TS_ASSERT_EQUALS(intersection_points.size(), 2);
+    EXPECT_EQ(intersection_points.size(), 2);
 
     LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = -1.;
@@ -846,11 +846,11 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
-      TS_ASSERT_DELTA(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+      EXPECT_NEAR(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
 
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-        TS_ASSERT_DELTA(intersection_points[i_intersection].GetXi()(i_dir),
+        EXPECT_NEAR(intersection_points[i_intersection].GetXi()(i_dir),
             xi_result(i_dir, i_intersection), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
     }
   }
@@ -858,7 +858,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the intersection of a line with a quad9 surface, with default normals on the surface.
    */
-  void TestLineToSurfaceIntersectionQuad9()
+  TEST_F(GeometryPairLineToSurfaceTest, TestLineToSurfaceIntersectionQuad9)
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
@@ -868,7 +868,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(evaluation_data_);
-    pair.is_unit_test_ = true;
+    SetIsUnitTest(pair, true);
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -882,7 +882,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
 
     // Check the results.
-    TS_ASSERT_EQUALS(intersection_points.size(), 2);
+    EXPECT_EQ(intersection_points.size(), 2);
 
     LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = -1.;
@@ -898,11 +898,11 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
-      TS_ASSERT_DELTA(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+      EXPECT_NEAR(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
 
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-        TS_ASSERT_DELTA(intersection_points[i_intersection].GetXi()(i_dir),
+        EXPECT_NEAR(intersection_points[i_intersection].GetXi()(i_dir),
             xi_result(i_dir, i_intersection), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
     }
   }
@@ -910,7 +910,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the intersection of a line with a quad9 surface, with given normals on the nodes.
    */
-  void TestLineToSurfaceIntersectionNormalInterpolationQuad9()
+  TEST_F(GeometryPairLineToSurfaceTest, TestLineToSurfaceIntersectionNormalInterpolationQuad9)
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
@@ -920,7 +920,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(evaluation_data_);
-    pair.is_unit_test_ = true;
+    SetIsUnitTest(pair, true);
     pair.Init(element_1.get(), NULL);
     pair.Setup();
 
@@ -935,7 +935,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
 
     // Check the results.
-    TS_ASSERT_EQUALS(intersection_points.size(), 2);
+    EXPECT_EQ(intersection_points.size(), 2);
 
     LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = -1.;
@@ -951,18 +951,13 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
-      TS_ASSERT_DELTA(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+      EXPECT_NEAR(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
 
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-        TS_ASSERT_DELTA(intersection_points[i_intersection].GetXi()(i_dir),
+        EXPECT_NEAR(intersection_points[i_intersection].GetXi()(i_dir),
             xi_result(i_dir, i_intersection), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
     }
   }
 
- private:
-  //! Evaluation data container for geometry pairs.
-  Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData> evaluation_data_;
-};
-
-#endif
+}  // namespace

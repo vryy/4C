@@ -20,9 +20,12 @@
 
 
 // Forward declarations.
+namespace
+{
+  class GeometryPairLineToSurfaceTest;
+}
 namespace GEOMETRYPAIR
 {
-  class GeometryPairLineToSurface_TestSuite;
   enum class ProjectionResult;
 
   template <typename scalar_type>
@@ -56,7 +59,7 @@ namespace GEOMETRYPAIR
   class GeometryPairLineToSurface : public GeometryPair
   {
     //! Declare the unit test class as a fried class, so private and protected methods can be used.
-    friend GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite;
+    friend GeometryPairLineToSurfaceTest;
 
    public:
     /**

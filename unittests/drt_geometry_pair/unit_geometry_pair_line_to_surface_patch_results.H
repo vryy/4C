@@ -15,7 +15,7 @@
 #include <vector>
 
 
-namespace GEOMETRYPAIR
+namespace
 {
   /**
    * \brief Fill arrays with the results for the unit tests.
@@ -3796,6 +3796,6 @@ namespace GEOMETRYPAIR
     position_derivative_2[2][26][25] = -0.01082510524897312e0;
     position_derivative_2[2][26][26] = 0.04473111635224589e0;
   }
-}  // namespace GEOMETRYPAIR
+}  // namespace
 
 #endif
