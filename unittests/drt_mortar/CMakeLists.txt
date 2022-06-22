@@ -1,4 +1,4 @@
-set(TESTNAME unittest_mortar_interface_utils)
+set(TESTNAME unittests_mortar_interface_utils)
 
 set(SOURCE_LIST unit_mortar_interface_utils.cpp)
 
