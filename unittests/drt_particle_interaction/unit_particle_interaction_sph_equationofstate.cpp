@@ -18,17 +18,17 @@ namespace
     std::unique_ptr<PARTICLEINTERACTION::SPHEquationOfStateGenTait> equationofstate_;
     std::unique_ptr<PARTICLEINTERACTION::SPHEquationOfStateGenTait> equationofstate_special_;
 
-    void SetUp() override
+    SPHEquationOfStateGenTaitTest()
     {
       const double speedofsound = 3.5;
       const double refdensfac = 0.9;
       const double exponent = 7;
 
       // create equation of state handler
-      equationofstate_ = std::unique_ptr<PARTICLEINTERACTION::SPHEquationOfStateGenTait>(
-          new PARTICLEINTERACTION::SPHEquationOfStateGenTait(speedofsound, refdensfac, exponent));
-      equationofstate_special_ = std::unique_ptr<PARTICLEINTERACTION::SPHEquationOfStateGenTait>(
-          new PARTICLEINTERACTION::SPHEquationOfStateGenTait(speedofsound, refdensfac, 1.0));
+      equationofstate_ = std::make_unique<PARTICLEINTERACTION::SPHEquationOfStateGenTait>(
+          speedofsound, refdensfac, exponent);
+      equationofstate_special_ = std::make_unique<PARTICLEINTERACTION::SPHEquationOfStateGenTait>(
+          speedofsound, refdensfac, 1.0);
 
       // init equation of state handler
       equationofstate_->Init();
@@ -78,7 +78,7 @@ namespace
    protected:
     std::unique_ptr<PARTICLEINTERACTION::SPHEquationOfStateIdealGas> equationofstate_;
 
-    void SetUp() override
+    SPHEquationOfStateIdealGasTest()
     {
       const double speedofsound = 3.5;
 

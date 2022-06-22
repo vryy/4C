@@ -7,6 +7,7 @@ interactions
 /*---------------------------------------------------------------------------*/
 
 #include "gtest/gtest.h"
+#include "unittests/common/assertions.h"
 #include "src/drt_particle_interaction/particle_interaction_sph_artificialviscosity.H"
 #include "src/drt_particle_interaction/particle_interaction_utils.H"
 
@@ -17,11 +18,10 @@ namespace
    protected:
     std::unique_ptr<PARTICLEINTERACTION::SPHArtificialViscosity> artificialviscosity_;
 
-    void SetUp() override
+    SPHArtificialViscosityTest()
     {
       // create artificial viscosity handler
-      artificialviscosity_ = std::unique_ptr<PARTICLEINTERACTION::SPHArtificialViscosity>(
-          new PARTICLEINTERACTION::SPHArtificialViscosity());
+      artificialviscosity_ = std::make_unique<PARTICLEINTERACTION::SPHArtificialViscosity>();
 
       // init artificial viscosity handler
       artificialviscosity_->Init();
@@ -87,7 +87,7 @@ namespace
         dWdrij, dWdrji, dens_ij, h_ij, c_ij, abs_rij, e_ij, acc_i, acc_j);
 
     // compare results
-    for (int i = 0; i < 3; ++i) EXPECT_NEAR(acc_i[i], acc_i_ref[i], 1.0e-14);
-    for (int i = 0; i < 3; ++i) EXPECT_NEAR(acc_j[i], acc_j_ref[i], 1.0e-14);
+    BACI_EXPECT_RAW_ARRAY_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
+    BACI_EXPECT_RAW_ARRAY_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
   }
 }  // namespace

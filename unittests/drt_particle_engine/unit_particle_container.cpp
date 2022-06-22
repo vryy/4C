@@ -6,6 +6,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "gtest/gtest.h"
+#include "unittests/common/assertions.h"
 #include "src/drt_particle_engine/particle_container.H"
 
 
@@ -18,82 +19,65 @@ namespace
 
     int statesvectorsize_;
 
-    void SetUp() override
+    ParticleContainerTest()
     {
       int size = 7;
       std::set<PARTICLEENGINE::StateEnum> stateEnumSet = {
           PARTICLEENGINE::Position, PARTICLEENGINE::Velocity, PARTICLEENGINE::Mass};
 
       // create, init and setup container
-      container_ = std::unique_ptr<PARTICLEENGINE::ParticleContainer>(
-          new PARTICLEENGINE::ParticleContainer());
+      container_ = std::make_unique<PARTICLEENGINE::ParticleContainer>();
       container_->Init();
       container_->Setup(size, stateEnumSet);
 
-      statesvectorsize_ = *(--stateEnumSet.end()) + 1;
+      const auto GetMaximumStoredStateEnumSetValue = [&stateEnumSet]()
+      { return *(--stateEnumSet.end()); };
+      statesvectorsize_ = GetMaximumStoredStateEnumSetValue() + 1;
 
       // init some particles
       int index(0);
       int globalid(0);
 
       PARTICLEENGINE::ParticleStates particle;
-      particle.assign(statesvectorsize_, std::vector<double>(0));
-
-      std::vector<double> pos(3);
-      std::vector<double> vel(3);
-      std::vector<double> mass(1);
+      particle.assign(statesvectorsize_, std::vector<double>{});
 
       // first particle
       {
         globalid = 1;
-        pos[0] = 1.20;
-        pos[1] = 0.70;
-        pos[2] = 2.10;
-        vel[0] = 0.23;
-        vel[1] = 1.76;
-        vel[2] = 3.89;
-        mass[0] = 0.12;
-        particle[PARTICLEENGINE::Position] = pos;
-        particle[PARTICLEENGINE::Velocity] = vel;
-        particle[PARTICLEENGINE::Mass] = mass;
+        particle = createTestParticle({1.20, 0.70, 2.10}, {0.23, 1.76, 3.89}, {0.12});
         container_->AddParticle(index, globalid, particle);
       }
 
       // second particle
       {
         globalid = 2;
-        pos[0] = -1.05;
-        pos[1] = 12.6;
-        pos[2] = -8.54;
-        vel[0] = 0.25;
-        vel[1] = -21.5;
-        vel[2] = 1.0;
-        mass[0] = 12.34;
-        particle[PARTICLEENGINE::Position] = pos;
-        particle[PARTICLEENGINE::Velocity] = vel;
-        particle[PARTICLEENGINE::Mass] = mass;
+        particle = createTestParticle({-1.05, 12.6, -8.54}, {0.25, -21.5, 1.0}, {12.34});
         container_->AddParticle(index, globalid, particle);
       }
 
       // third particle
       {
         globalid = 3;
-        pos[0] = 61.0;
-        pos[1] = -2.63;
-        pos[2] = 0.11;
-        vel[0] = -7.35;
-        vel[1] = -5.98;
-        vel[2] = 1.11;
-        mass[0] = 0.5;
-        particle[PARTICLEENGINE::Position] = pos;
-        particle[PARTICLEENGINE::Velocity] = vel;
-        particle[PARTICLEENGINE::Mass] = mass;
+        particle = createTestParticle({61.0, -2.63, 0.11}, {-7.35, -5.98, 1.11}, {0.5});
         container_->AddParticle(index, globalid, particle);
       }
     }
 
+    PARTICLEENGINE::ParticleStates createTestParticle(
+        std::vector<double> pos, std::vector<double> vel, std::vector<double> mass)
+    {
+      PARTICLEENGINE::ParticleStates particle;
+      particle.assign(statesvectorsize_, std::vector<double>{});
+
+      particle[PARTICLEENGINE::Position] = pos;
+      particle[PARTICLEENGINE::Velocity] = vel;
+      particle[PARTICLEENGINE::Mass] = mass;
+
+      return particle;
+    }
+
     // note: the public functions Init(), Setup() and AddParticle() of class ParticleContainer are
-    // called in SetUp() and thus implicitly tested by all following unittests
+    // called in the constructor and thus implicitly tested by all following unittests
   };
 
   void compareParticleStates(
@@ -101,14 +85,14 @@ namespace
   {
     ASSERT_EQ(particle_reference.size(), particle.size());
 
-    for (int i = 0; i < (int)particle.size(); ++i)
+    for (std::size_t i = 0; i < particle.size(); ++i)
     {
       std::vector<double>& state_reference = particle_reference[i];
       std::vector<double>& state = particle[i];
 
       ASSERT_EQ(state_reference.size(), state.size());
 
-      for (int j = 0; j < (int)state_reference.size(); ++j)
+      for (std::size_t j = 0; j < state_reference.size(); ++j)
         EXPECT_NEAR(state_reference[j], state[j], 1e-14)
             << "state '"
             << PARTICLEENGINE::EnumToStateName(static_cast<PARTICLEENGINE::ParticleState>(i))
@@ -149,23 +133,10 @@ namespace
     int globalid(0);
 
     PARTICLEENGINE::ParticleStates particle;
-    particle.assign(statesvectorsize_, std::vector<double>(0));
-
-    std::vector<double> pos(3);
-    std::vector<double> vel(3);
-    std::vector<double> mass(1);
+    particle.assign(statesvectorsize_, std::vector<double>{});
 
     globalid = 4;
-    pos[0] = -1.23;
-    pos[1] = 1.70;
-    pos[2] = 9.10;
-    vel[0] = 6.23;
-    vel[1] = 2.3;
-    vel[2] = 6.9;
-    mass[0] = 5.12;
-    particle[PARTICLEENGINE::Position] = pos;
-    particle[PARTICLEENGINE::Velocity] = vel;
-    particle[PARTICLEENGINE::Mass] = mass;
+    particle = createTestParticle({-1.23, 1.70, 9.10}, {6.23, 2.3, 6.9}, {5.12});
 
     int index(0);
     container_->AddParticle(index, globalid, particle);
@@ -179,24 +150,11 @@ namespace
     int globalid(0);
 
     PARTICLEENGINE::ParticleStates particle;
-    particle.assign(statesvectorsize_, std::vector<double>(0));
+    particle.assign(statesvectorsize_, std::vector<double>{});
     PARTICLEENGINE::ParticleStates particle_reference;
-    particle_reference.assign(statesvectorsize_, std::vector<double>(0));
+    particle_reference.assign(statesvectorsize_, std::vector<double>{});
 
-    std::vector<double> pos(3);
-    std::vector<double> vel(3);
-    std::vector<double> mass(1);
-
-    pos[0] = -1.23;
-    pos[1] = 1.70;
-    pos[2] = 9.10;
-    vel[0] = 6.23;
-    vel[1] = 2.3;
-    vel[2] = 6.9;
-    mass[0] = 5.12;
-    particle_reference[PARTICLEENGINE::Position] = pos;
-    particle_reference[PARTICLEENGINE::Velocity] = vel;
-    particle_reference[PARTICLEENGINE::Mass] = mass;
+    particle_reference = createTestParticle({-1.23, 1.70, 9.10}, {6.23, 2.3, 6.9}, {5.12});
 
     int index = 0;
 
@@ -221,13 +179,9 @@ namespace
     int globalid_reference(0);
 
     PARTICLEENGINE::ParticleStates particle;
-    particle.assign(statesvectorsize_, std::vector<double>(0));
+    particle.assign(statesvectorsize_, std::vector<double>{});
     PARTICLEENGINE::ParticleStates particle_reference;
-    particle_reference.assign(statesvectorsize_, std::vector<double>(0));
-
-    std::vector<double> pos(3);
-    std::vector<double> vel(3);
-    std::vector<double> mass(1);
+    particle_reference.assign(statesvectorsize_, std::vector<double>{});
 
     for (int index = 0; index < 3; ++index)
     {
@@ -235,40 +189,18 @@ namespace
       if (index == 0)
       {
         globalid_reference = 1;
-        pos[0] = 1.20;
-        pos[1] = 0.70;
-        pos[2] = 2.10;
-        vel[0] = 0.23;
-        vel[1] = 1.76;
-        vel[2] = 3.89;
-        mass[0] = 0.12;
+        particle_reference = createTestParticle({1.20, 0.70, 2.10}, {0.23, 1.76, 3.89}, {0.12});
       }
       else if (index == 1)
       {
         globalid_reference = 2;
-        pos[0] = -1.05;
-        pos[1] = 12.6;
-        pos[2] = -8.54;
-        vel[0] = 0.25;
-        vel[1] = -21.5;
-        vel[2] = 1.0;
-        mass[0] = 12.34;
+        particle_reference = createTestParticle({-1.05, 12.6, -8.54}, {0.25, -21.5, 1.0}, {12.34});
       }
       else if (index == 2)
       {
         globalid_reference = 3;
-        pos[0] = 61.0;
-        pos[1] = -2.63;
-        pos[2] = 0.11;
-        vel[0] = -7.35;
-        vel[1] = -5.98;
-        vel[2] = 1.11;
-        mass[0] = 0.5;
+        particle_reference = createTestParticle({61.0, -2.63, 0.11}, {-7.35, -5.98, 1.11}, {0.5});
       }
-
-      particle_reference[PARTICLEENGINE::Position] = pos;
-      particle_reference[PARTICLEENGINE::Velocity] = vel;
-      particle_reference[PARTICLEENGINE::Mass] = mass;
 
       container_->GetParticle(index, globalid, particle);
       EXPECT_EQ(globalid_reference, globalid);
@@ -282,13 +214,9 @@ namespace
     int globalid_reference(0);
 
     PARTICLEENGINE::ParticleStates particle;
-    particle.assign(statesvectorsize_, std::vector<double>(0));
+    particle.assign(statesvectorsize_, std::vector<double>{});
     PARTICLEENGINE::ParticleStates particle_reference;
-    particle_reference.assign(statesvectorsize_, std::vector<double>(0));
-
-    std::vector<double> pos(3);
-    std::vector<double> vel(3);
-    std::vector<double> mass(1);
+    particle_reference.assign(statesvectorsize_, std::vector<double>{});
 
     container_->RemoveParticle(0);
     EXPECT_EQ(container_->ParticlesStored(), 2);
@@ -299,29 +227,13 @@ namespace
       if (index == 0)
       {
         globalid_reference = 3;
-        pos[0] = 61.0;
-        pos[1] = -2.63;
-        pos[2] = 0.11;
-        vel[0] = -7.35;
-        vel[1] = -5.98;
-        vel[2] = 1.11;
-        mass[0] = 0.5;
+        particle_reference = createTestParticle({61.0, -2.63, 0.11}, {-7.35, -5.98, 1.11}, {0.5});
       }
       else if (index == 1)
       {
         globalid_reference = 2;
-        pos[0] = -1.05;
-        pos[1] = 12.6;
-        pos[2] = -8.54;
-        vel[0] = 0.25;
-        vel[1] = -21.5;
-        vel[2] = 1.0;
-        mass[0] = 12.34;
+        particle_reference = createTestParticle({-1.05, 12.6, -8.54}, {0.25, -21.5, 1.0}, {12.34});
       }
-
-      particle_reference[PARTICLEENGINE::Position] = pos;
-      particle_reference[PARTICLEENGINE::Velocity] = vel;
-      particle_reference[PARTICLEENGINE::Mass] = mass;
 
       container_->GetParticle(index, globalid, particle);
       EXPECT_EQ(globalid_reference, globalid);
@@ -338,9 +250,9 @@ namespace
 
   TEST_F(ParticleContainerTest, GetPtrToState)
   {
-    std::vector<double> pos(3);
-    std::vector<double> vel(3);
-    std::vector<double> mass(1);
+    double pos[3] = {0.0};
+    double vel[3] = {0.0};
+    double mass[1] = {0.0};
 
     for (int index = 0; index < 3; ++index)
     {
@@ -376,10 +288,10 @@ namespace
       }
 
       double* currpos = container_->GetPtrToState(PARTICLEENGINE::Position, index);
-      for (int i = 0; i < (int)pos.size(); ++i) EXPECT_NEAR(currpos[i], pos[i], 1e-14);
+      BACI_EXPECT_RAW_ARRAY_NEAR(currpos, pos, 3, 1e-14);
 
       double* currvel = container_->GetPtrToState(PARTICLEENGINE::Velocity, index);
-      for (int i = 0; i < (int)pos.size(); ++i) EXPECT_NEAR(currvel[i], vel[i], 1e-14);
+      BACI_EXPECT_RAW_ARRAY_NEAR(currvel, vel, 3, 1e-14);
 
       double* currmass = container_->GetPtrToState(PARTICLEENGINE::Mass, index);
       EXPECT_NEAR(currmass[0], mass[0], 1e-14);
@@ -388,9 +300,9 @@ namespace
 
   TEST_F(ParticleContainerTest, CondGetPtrToState)
   {
-    std::vector<double> pos(3);
-    std::vector<double> vel(3);
-    std::vector<double> mass(1);
+    double pos[3] = {0.0};
+    double vel[3] = {0.0};
+    double mass[1] = {0.0};
 
     for (int index = 0; index < 3; ++index)
     {
@@ -426,10 +338,10 @@ namespace
       }
 
       double* currpos = container_->CondGetPtrToState(PARTICLEENGINE::Position, index);
-      for (int i = 0; i < (int)pos.size(); ++i) EXPECT_NEAR(currpos[i], pos[i], 1e-14);
+      BACI_EXPECT_RAW_ARRAY_NEAR(currpos, pos, 3, 1.0e-14);
 
       double* currvel = container_->CondGetPtrToState(PARTICLEENGINE::Velocity, index);
-      for (int i = 0; i < (int)pos.size(); ++i) EXPECT_NEAR(currvel[i], vel[i], 1e-14);
+      BACI_EXPECT_RAW_ARRAY_NEAR(currvel, vel, 3, 1.0e-14);
 
       double* currmass = container_->CondGetPtrToState(PARTICLEENGINE::Mass, index);
       EXPECT_NEAR(currmass[0], mass[0], 1e-14);
@@ -465,13 +377,9 @@ namespace
     int globalid(0);
 
     PARTICLEENGINE::ParticleStates particle;
-    particle.assign(statesvectorsize_, std::vector<double>(0));
+    particle.assign(statesvectorsize_, std::vector<double>{});
     PARTICLEENGINE::ParticleStates particle_reference;
-    particle_reference.assign(statesvectorsize_, std::vector<double>(0));
-
-    std::vector<double> pos(3);
-    std::vector<double> vel(3);
-    std::vector<double> mass(1);
+    particle_reference.assign(statesvectorsize_, std::vector<double>{});
 
     container_->ScaleState(1.5, PARTICLEENGINE::Position);
     container_->ScaleState(3.25, PARTICLEENGINE::Velocity);
@@ -482,38 +390,19 @@ namespace
       SCOPED_TRACE("Particle " + std::to_string(index));
       if (index == 0)
       {
-        pos[0] = 1.8;
-        pos[1] = 1.05;
-        pos[2] = 3.15;
-        vel[0] = 0.7475;
-        vel[1] = 5.72;
-        vel[2] = 12.6425;
-        mass[0] = 0.114;
+        particle_reference =
+            createTestParticle({1.8, 1.05, 3.15}, {0.7475, 5.72, 12.6425}, {0.114});
       }
       else if (index == 1)
       {
-        pos[0] = -1.575;
-        pos[1] = 18.9;
-        pos[2] = -12.81;
-        vel[0] = 0.8125;
-        vel[1] = -69.875;
-        vel[2] = 3.25;
-        mass[0] = 11.723;
+        particle_reference =
+            createTestParticle({-1.575, 18.9, -12.81}, {0.8125, -69.875, 3.25}, {11.723});
       }
       else if (index == 2)
       {
-        pos[0] = 91.5;
-        pos[1] = -3.945;
-        pos[2] = 0.165;
-        vel[0] = -23.8875;
-        vel[1] = -19.435;
-        vel[2] = 3.6075;
-        mass[0] = 0.475;
+        particle_reference =
+            createTestParticle({91.5, -3.945, 0.165}, {-23.8875, -19.435, 3.6075}, {0.475});
       }
-
-      particle_reference[PARTICLEENGINE::Position] = pos;
-      particle_reference[PARTICLEENGINE::Velocity] = vel;
-      particle_reference[PARTICLEENGINE::Mass] = mass;
 
       container_->GetParticle(index, globalid, particle);
 
@@ -526,13 +415,9 @@ namespace
     int globalid(0);
 
     PARTICLEENGINE::ParticleStates particle;
-    particle.assign(statesvectorsize_, std::vector<double>(0));
+    particle.assign(statesvectorsize_, std::vector<double>{});
     PARTICLEENGINE::ParticleStates particle_reference;
-    particle_reference.assign(statesvectorsize_, std::vector<double>(0));
-
-    std::vector<double> pos(3);
-    std::vector<double> vel(3);
-    std::vector<double> mass(1);
+    particle_reference.assign(statesvectorsize_, std::vector<double>{});
 
     container_->UpdateState(1.0, PARTICLEENGINE::Position, 0.5, PARTICLEENGINE::Velocity);
 
@@ -541,38 +426,17 @@ namespace
       SCOPED_TRACE("Particle " + std::to_string(index));
       if (index == 0)
       {
-        pos[0] = 1.315;
-        pos[1] = 1.58;
-        pos[2] = 4.045;
-        vel[0] = 0.23;
-        vel[1] = 1.76;
-        vel[2] = 3.89;
-        mass[0] = 0.12;
+        particle_reference = createTestParticle({1.315, 1.58, 4.045}, {0.23, 1.76, 3.89}, {0.12});
       }
       else if (index == 1)
       {
-        pos[0] = -0.925;
-        pos[1] = 1.85;
-        pos[2] = -8.04;
-        vel[0] = 0.25;
-        vel[1] = -21.5;
-        vel[2] = 1.0;
-        mass[0] = 12.34;
+        particle_reference = createTestParticle({-0.925, 1.85, -8.04}, {0.25, -21.5, 1.0}, {12.34});
       }
       else if (index == 2)
       {
-        pos[0] = 57.325;
-        pos[1] = -5.62;
-        pos[2] = 0.665;
-        vel[0] = -7.35;
-        vel[1] = -5.98;
-        vel[2] = 1.11;
-        mass[0] = 0.5;
+        particle_reference =
+            createTestParticle({57.325, -5.62, 0.665}, {-7.35, -5.98, 1.11}, {0.5});
       }
-
-      particle_reference[PARTICLEENGINE::Position] = pos;
-      particle_reference[PARTICLEENGINE::Velocity] = vel;
-      particle_reference[PARTICLEENGINE::Mass] = mass;
 
       container_->GetParticle(index, globalid, particle);
 
@@ -585,9 +449,9 @@ namespace
     int globalid(0);
 
     PARTICLEENGINE::ParticleStates particle;
-    particle.assign(statesvectorsize_, std::vector<double>(0));
+    particle.assign(statesvectorsize_, std::vector<double>{});
     PARTICLEENGINE::ParticleStates particle_reference;
-    particle_reference.assign(statesvectorsize_, std::vector<double>(0));
+    particle_reference.assign(statesvectorsize_, std::vector<double>{});
 
     std::vector<double> pos(3);
     std::vector<double> vel(3);
@@ -601,9 +465,7 @@ namespace
     vel[2] = 0.933;
     mass[0] = 1.234;
 
-    particle_reference[PARTICLEENGINE::Position] = pos;
-    particle_reference[PARTICLEENGINE::Velocity] = vel;
-    particle_reference[PARTICLEENGINE::Mass] = mass;
+    particle_reference = createTestParticle(pos, vel, mass);
 
     container_->SetState(pos, PARTICLEENGINE::Position);
     container_->SetState(vel, PARTICLEENGINE::Velocity);
@@ -621,17 +483,11 @@ namespace
     int globalid(0);
 
     PARTICLEENGINE::ParticleStates particle;
-    particle.assign(statesvectorsize_, std::vector<double>(0));
+    particle.assign(statesvectorsize_, std::vector<double>{});
     PARTICLEENGINE::ParticleStates particle_reference;
-    particle_reference.assign(statesvectorsize_, std::vector<double>(0));
+    particle_reference.assign(statesvectorsize_, std::vector<double>{});
 
-    std::vector<double> pos(3, 0.0);
-    std::vector<double> vel(3, 0.0);
-    std::vector<double> mass(1, 0.0);
-
-    particle_reference[PARTICLEENGINE::Position] = pos;
-    particle_reference[PARTICLEENGINE::Velocity] = vel;
-    particle_reference[PARTICLEENGINE::Mass] = mass;
+    particle_reference = createTestParticle({0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0});
 
     container_->ClearState(PARTICLEENGINE::Position);
     container_->ClearState(PARTICLEENGINE::Velocity);

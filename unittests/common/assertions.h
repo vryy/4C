@@ -202,6 +202,35 @@ namespace TESTING::INTERNAL
 
     return ResultBasedOnNonMatchingEntries(nonMatchingEntries, tolerance, mat1Expr, mat2Expr);
   }
+
+  /**
+   * Compare two raw array objects for double equality up to a tolerance. The signature is
+   * mandated by GoogleTest's EXPECT_PRED_FORMAT4 macro.
+   *
+   * @note This function is not intended to be used directly. Use BACI_EXPECT_RAW_ARRAY_NEAR.
+   */
+  template <typename T>
+  inline ::testing::AssertionResult AssertNear(const char* vec1Expr, const char* vec2Expr,
+      const char* /*arraysizeExpr*/, const char* /*toleranceExpr*/, const T* arr1, const T* arr2,
+      std::size_t array_size, T tolerance)
+  {
+    const std::string nonMatchingEntries = std::invoke(
+        [&]()
+        {
+          std::stringstream ss;
+          ss << std::fixed << std::setprecision(PrecisionForPrinting(tolerance));
+          for (std::size_t i = 0; i < array_size; ++i)
+          {
+            if (std::fabs(arr1[i] - arr2[i]) > tolerance)
+            {
+              ss << "[" << i << "]: " << arr1[i] << " vs. " << arr2[i] << std::endl;
+            }
+          }
+          return ss.str();
+        });
+
+    return ResultBasedOnNonMatchingEntries(nonMatchingEntries, tolerance, vec1Expr, vec2Expr);
+  }
 }  // namespace TESTING::INTERNAL
 
 /**
@@ -219,6 +248,19 @@ namespace TESTING::INTERNAL
  */
 #define BACI_EXPECT_NEAR(actual, expected, tolerance) \
   EXPECT_PRED_FORMAT3(TESTING::INTERNAL::AssertNear, actual, expected, tolerance)
+
+/**
+ * @brief Custom assertion to test for equality up to a tolerance.
+ *
+ * This macro tests two raw arrays @p actual and @p expected with length @p array_size for
+ * entry-wise equality up to an absolute @p tolerance.
+ *
+ * @note Implementation details: this and similar macros are defined to avoid writing asserts in the
+ * unexpressive EXPECT_PRED_FORMATn syntax by gtest. They are all prefixed with `BACI_` to easily
+ * distinguish them from gtest asserts.
+ */
+#define BACI_EXPECT_RAW_ARRAY_NEAR(actual, expected, array_size, tolerance) \
+  EXPECT_PRED_FORMAT4(TESTING::INTERNAL::AssertNear, actual, expected, array_size, tolerance)
 
 /*!
  * Extension of EXPECT_THROW which also checks for a substring in the what() expression.

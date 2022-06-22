@@ -24,7 +24,7 @@ namespace
 
     const double dens_max_ = 1.0;
 
-    void SetUp() override
+    DEMContactNormalLinearSpringTest()
     {
       // create a parameter list
       Teuchos::ParameterList params_dem;
@@ -34,8 +34,8 @@ namespace
       params_dem.set("NORMAL_STIFF", -1.0);
 
       // create normal contact handler
-      contactnormal_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalLinearSpring>(
-          new PARTICLEINTERACTION::DEMContactNormalLinearSpring(params_dem));
+      contactnormal_ =
+          std::make_unique<PARTICLEINTERACTION::DEMContactNormalLinearSpring>(params_dem);
 
       // init normal contact handler
       contactnormal_->Init();
@@ -45,7 +45,7 @@ namespace
     }
 
     // note: the public functions Init() and Setup() of class DEMContactNormalLinearSpring are
-    // called in SetUp() and thus implicitly tested by all following unittests
+    // called in the constructor and thus implicitly tested by all following unittests
   };
 
   TEST_F(DEMContactNormalLinearSpringTest, GetNormalContactStiffness)
@@ -112,7 +112,7 @@ namespace
 
     const double dens_max_ = 1.0;
 
-    void SetUp() override
+    DEMContactNormalLinearSpringDampTest()
     {
       // create a parameter list
       Teuchos::ParameterList params_dem;
@@ -124,12 +124,12 @@ namespace
       params_dem.set("DAMP_REG_FAC", -1.0);
 
       // create normal contact handler
-      contactnormal_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp>(
-          new PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp(params_dem));
+      contactnormal_ =
+          std::make_unique<PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp>(params_dem);
 
       params_dem.set("COEFF_RESTITUTION", 0.0);
-      contactnormal_ezero_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp>(
-          new PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp(params_dem));
+      contactnormal_ezero_ =
+          std::make_unique<PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp>(params_dem);
 
       // init normal contact handler
       contactnormal_->Init();
@@ -140,7 +140,7 @@ namespace
       contactnormal_ezero_->Setup(dens_max_);
     }
     // note: the public functions Init() and Setup() of class DEMContactNormalLinearSpringDamp are
-    // called in Setup() and thus implicitly tested by all following unittests
+    // called in the constructor and thus implicitly tested by all following unittests
   };
 
   TEST_F(DEMContactNormalLinearSpringDampTest, GetNormalContactStiffness)
@@ -208,7 +208,7 @@ namespace
 
     const double dens_max_ = 1.0;
 
-    void SetUp() override
+    DEMContactNormalHertzTest()
     {
       // create a parameter list
       Teuchos::ParameterList params_dem;
@@ -218,8 +218,7 @@ namespace
       params_dem.set("NORMAL_STIFF", -1.0);
 
       // create normal contact handler
-      contactnormal_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalHertz>(
-          new PARTICLEINTERACTION::DEMContactNormalHertz(params_dem));
+      contactnormal_ = std::make_unique<PARTICLEINTERACTION::DEMContactNormalHertz>(params_dem);
 
       // init normal contact handler
       contactnormal_->Init();
@@ -294,7 +293,7 @@ namespace
 
     const double dens_max_ = 1.0;
 
-    void SetUp() override
+    DEMContactNormalLeeHerrmannTest()
     {
       // create a parameter list
       Teuchos::ParameterList params_dem;
@@ -305,8 +304,8 @@ namespace
       params_dem.set("NORMAL_DAMP", d_normal_);
 
       // create normal contact handler
-      contactnormal_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalLeeHerrmann>(
-          new PARTICLEINTERACTION::DEMContactNormalLeeHerrmann(params_dem));
+      contactnormal_ =
+          std::make_unique<PARTICLEINTERACTION::DEMContactNormalLeeHerrmann>(params_dem);
 
       // init normal contact handler
       contactnormal_->Init();
@@ -367,7 +366,7 @@ namespace
 
     const double dens_max_ = 1.0;
 
-    void SetUp() override
+    DEMContactNormalKuwabaraKonoTest()
     {
       // create a parameter list
       Teuchos::ParameterList params_dem;
@@ -378,8 +377,8 @@ namespace
       params_dem.set("NORMAL_DAMP", d_normal_);
 
       // create normal contact handler
-      contactnormal_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalKuwabaraKono>(
-          new PARTICLEINTERACTION::DEMContactNormalKuwabaraKono(params_dem));
+      contactnormal_ =
+          std::make_unique<PARTICLEINTERACTION::DEMContactNormalKuwabaraKono>(params_dem);
 
       // init normal contact handler
       contactnormal_->Init();
@@ -388,7 +387,7 @@ namespace
       contactnormal_->Setup(dens_max_);
     }
     // note: the public functions Init() and Setup() of class DEMContactNormalKuwabaraKono are
-    // called in Setup() and thus implicitly tested by all following unittests
+    // called in the constructor and thus implicitly tested by all following unittests
   };
 
   TEST_F(DEMContactNormalKuwabaraKonoTest, GetNormalContactStiffness)
@@ -440,7 +439,7 @@ namespace
 
     const double dens_max_ = 1.0;
 
-    void SetUp() override
+    DEMContactNormalTsujiTest()
     {
       // create a parameter list
       Teuchos::ParameterList params_dem;
@@ -451,8 +450,7 @@ namespace
       params_dem.set("NORMAL_DAMP", d_normal_);
 
       // create normal contact handler
-      contactnormal_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalTsuji>(
-          new PARTICLEINTERACTION::DEMContactNormalTsuji(params_dem));
+      contactnormal_ = std::make_unique<PARTICLEINTERACTION::DEMContactNormalTsuji>(params_dem);
 
       // init normal contact handler
       contactnormal_->Init();

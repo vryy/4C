@@ -6,6 +6,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "gtest/gtest.h"
+#include "unittests/common/assertions.h"
 #include "src/drt_particle_interaction/particle_interaction_dem_contact_tangential.H"
 #include "src/drt_particle_interaction/particle_interaction_utils.H"
 
@@ -24,7 +25,7 @@ namespace
 
     const double k_normal_ = 4.0;
 
-    void SetUp() override
+    DEMContactTangentialLinearSpringDampTest()
     {
       // create a parameter list
       Teuchos::ParameterList params_dem;
@@ -44,7 +45,7 @@ namespace
       contacttangential_->Setup(k_normal_);
     }
     // note: the public functions Init() and Setup() of class DEMContactTangentialLinearSpringDamp
-    // are called in SetUp() and thus implicitly tested by all following unittests
+    // are called in the constructor and thus implicitly tested by all following unittests
   };
 
   TEST_F(DEMContactTangentialLinearSpringDampTest, TangentialContactForceStick)
@@ -76,7 +77,7 @@ namespace
     double gap_tangential_ref[3] = {0.17923102017884, 0.16378007016342, -0.12669779012642};
     double tangentialcontactforce_ref[3] = {-0.52425016124507, -0.53614987479507, 0.32632177321349};
 
-    for (int i = 0; i < 3; ++i) EXPECT_NEAR(gap_tangential[i], gap_tangential_ref[i], 1.0e-14);
+    BACI_EXPECT_RAW_ARRAY_NEAR(gap_tangential, gap_tangential_ref, 3, 1.0e-14);
 
     for (int i = 0; i < 3; ++i)
       EXPECT_NEAR(tangentialcontactforce[i], tangentialcontactforce_ref[i], 1.0e-14);
@@ -113,7 +114,7 @@ namespace
     double gap_tangential_ref[3] = {0.068586669580933, 0.050624254285441, -0.057826737044788};
     double tangentialcontactforce_ref[3] = {-0.19231710945136, -0.19668242716113, 0.11970861396859};
 
-    for (int i = 0; i < 3; ++i) EXPECT_NEAR(gap_tangential[i], gap_tangential_ref[i], 1.0e-14);
+    BACI_EXPECT_RAW_ARRAY_NEAR(gap_tangential, gap_tangential_ref, 3, 1.0e-14);
 
     for (int i = 0; i < 3; ++i)
       EXPECT_NEAR(tangentialcontactforce[i], tangentialcontactforce_ref[i], 1.0e-14);

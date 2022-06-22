@@ -11,7 +11,6 @@
 
 namespace
 {
-  // class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public BACICxxTestWrapper
   class ParticleContainerBundleTest : public ::testing::Test
   {
    protected:
@@ -19,11 +18,10 @@ namespace
 
     int statesvectorsize_;
 
-    void SetUp() override
+    ParticleContainerBundleTest()
     {
       // create and init particle container bundle
-      particlecontainerbundle_ = std::unique_ptr<PARTICLEENGINE::ParticleContainerBundle>(
-          new PARTICLEENGINE::ParticleContainerBundle());
+      particlecontainerbundle_ = std::make_unique<PARTICLEENGINE::ParticleContainerBundle>();
       particlecontainerbundle_->Init();
 
       // init two phases with different particle states
@@ -36,18 +34,16 @@ namespace
       // setup particle container bundle
       particlecontainerbundle_->Setup(particlestatestotypes);
 
-      statesvectorsize_ = *(--stateEnumSet.end()) + 1;
+      const auto GetMaximumStoredStateEnumSetValue = [&stateEnumSet]()
+      { return *(--stateEnumSet.end()); };
+      statesvectorsize_ = GetMaximumStoredStateEnumSetValue() + 1;
 
       // init some particles
       int index(0);
       int globalid(0);
 
       PARTICLEENGINE::ParticleStates particle;
-      particle.assign(statesvectorsize_, std::vector<double>(0));
-
-      std::vector<double> pos(3);
-      std::vector<double> mass(1);
-      std::vector<double> rad(1);
+      particle.assign(statesvectorsize_, std::vector<double>{});
 
       // owned particles for phase 1
       {
@@ -57,38 +53,17 @@ namespace
 
         // first particle
         globalid = 1;
-        pos[0] = 1.20;
-        pos[1] = 0.70;
-        pos[2] = 2.10;
-        mass[0] = 0.1;
-        rad[0] = 0.12;
-        particle[PARTICLEENGINE::Position] = pos;
-        particle[PARTICLEENGINE::Mass] = mass;
-        particle[PARTICLEENGINE::Radius] = rad;
+        particle = createTestParticle({1.20, 0.70, 2.10}, {0.1}, {0.12});
         container->AddParticle(index, globalid, particle);
 
         // second particle
         globalid = 2;
-        pos[0] = -1.05;
-        pos[1] = 12.6;
-        pos[2] = -8.54;
-        mass[0] = 0.5;
-        rad[0] = 12.34;
-        particle[PARTICLEENGINE::Position] = pos;
-        particle[PARTICLEENGINE::Mass] = mass;
-        particle[PARTICLEENGINE::Radius] = rad;
+        particle = createTestParticle({-1.05, 12.6, -8.54}, {0.5}, {12.34});
         container->AddParticle(index, globalid, particle);
 
         // third particle
         globalid = 3;
-        pos[0] = -5.02;
-        pos[1] = 2.26;
-        pos[2] = -7.4;
-        mass[0] = 0.2;
-        rad[0] = 2.9;
-        particle[PARTICLEENGINE::Position] = pos;
-        particle[PARTICLEENGINE::Mass] = mass;
-        particle[PARTICLEENGINE::Radius] = rad;
+        particle = createTestParticle({-5.02, 2.26, -7.4}, {0.2}, {2.9});
         container->AddParticle(index, globalid, particle);
       }
 
@@ -100,26 +75,12 @@ namespace
 
         // first particle
         globalid = 4;
-        pos[0] = 2.20;
-        pos[1] = -0.52;
-        pos[2] = 1.10;
-        mass[0] = 0.8;
-        rad[0] = 3.12;
-        particle[PARTICLEENGINE::Position] = pos;
-        particle[PARTICLEENGINE::Mass] = mass;
-        particle[PARTICLEENGINE::Radius] = rad;
+        particle = createTestParticle({2.20, -0.52, 1.10}, {0.8}, {3.12});
         container->AddParticle(index, globalid, particle);
 
         // second particle
         globalid = 5;
-        pos[0] = -16.08;
-        pos[1] = 1.46;
-        pos[2] = -3.54;
-        mass[0] = 1.4;
-        rad[0] = 1.4;
-        particle[PARTICLEENGINE::Position] = pos;
-        particle[PARTICLEENGINE::Mass] = mass;
-        particle[PARTICLEENGINE::Radius] = rad;
+        particle = createTestParticle({-16.08, 1.46, -3.54}, {1.4}, {1.4});
         container->AddParticle(index, globalid, particle);
       }
 
@@ -131,44 +92,37 @@ namespace
 
         // first particle
         globalid = 6;
-        pos[0] = 0.24;
-        pos[1] = -1.71;
-        pos[2] = -2.15;
-        mass[0] = 1.91;
-        rad[0] = 2.2;
-        particle[PARTICLEENGINE::Position] = pos;
-        particle[PARTICLEENGINE::Mass] = mass;
-        particle[PARTICLEENGINE::Radius] = rad;
+        particle = createTestParticle({0.24, -1.71, -2.15}, {1.91}, {2.2});
         container->AddParticle(index, globalid, particle);
 
         // second particle
         globalid = 7;
-        pos[0] = -1.15;
-        pos[1] = 2.6;
-        pos[2] = 7.24;
-        mass[0] = 0.4;
-        rad[0] = 1.2;
-        particle[PARTICLEENGINE::Position] = pos;
-        particle[PARTICLEENGINE::Mass] = mass;
-        particle[PARTICLEENGINE::Radius] = rad;
+        particle = createTestParticle({-1.15, 2.6, 7.24}, {0.4}, {1.2});
         container->AddParticle(index, globalid, particle);
 
         // third particle
         globalid = 8;
-        pos[0] = 5.12;
-        pos[1] = 4.26;
-        pos[2] = -3.4;
-        mass[0] = 1.1;
-        rad[0] = 0.2;
-        particle[PARTICLEENGINE::Position] = pos;
-        particle[PARTICLEENGINE::Mass] = mass;
-        particle[PARTICLEENGINE::Radius] = rad;
+        particle = createTestParticle({5.12, 4.26, -3.4}, {1.1}, {0.2});
         container->AddParticle(index, globalid, particle);
       }
     }
+
+    PARTICLEENGINE::ParticleStates createTestParticle(
+        std::vector<double> pos, std::vector<double> mass, std::vector<double> rad)
+    {
+      PARTICLEENGINE::ParticleStates particle;
+      particle.assign(statesvectorsize_, std::vector<double>{});
+
+      particle[PARTICLEENGINE::Position] = pos;
+      particle[PARTICLEENGINE::Mass] = mass;
+      particle[PARTICLEENGINE::Radius] = rad;
+
+      return particle;
+    }
+
     // note: the public functions Init(), Setup() and GetSpecificContainer() of class
-    // ParticleContainerBundle are called in SetUp() and thus implicitly tested by all following
-    // unittests
+    // ParticleContainerBundle are called in the constructor and thus implicitly tested by all
+    // following unittests
   };
 
   void compareParticleStates(
@@ -176,14 +130,14 @@ namespace
   {
     ASSERT_EQ(particle_reference.size(), particle.size());
 
-    for (int i = 0; i < (int)particle.size(); ++i)
+    for (std::size_t i = 0; i < particle.size(); ++i)
     {
       std::vector<double>& state_reference = particle_reference[i];
       std::vector<double>& state = particle[i];
 
       ASSERT_EQ(state_reference.size(), state.size());
 
-      for (int j = 0; j < (int)state_reference.size(); ++j)
+      for (std::size_t j = 0; j < state_reference.size(); ++j)
         EXPECT_NEAR(state_reference[j], state[j], 1e-14)
             << "state '"
             << PARTICLEENGINE::EnumToStateName(static_cast<PARTICLEENGINE::ParticleState>(i))
@@ -204,9 +158,9 @@ namespace
     int globalid(0);
 
     PARTICLEENGINE::ParticleStates particle;
-    particle.assign(statesvectorsize_, std::vector<double>(0));
+    particle.assign(statesvectorsize_, std::vector<double>{});
     PARTICLEENGINE::ParticleStates particle_reference;
-    particle_reference.assign(statesvectorsize_, std::vector<double>(0));
+    particle_reference.assign(statesvectorsize_, std::vector<double>{});
 
     std::vector<double> pos(3);
     std::vector<double> mass(1);
@@ -217,32 +171,16 @@ namespace
       SCOPED_TRACE("Particle " + std::to_string(index));
       if (index == 0)
       {
-        pos[0] = 1.20;
-        pos[1] = 0.70;
-        pos[2] = 2.10;
-        mass[0] = 0.1;
-        rad[0] = 0.24;
+        particle_reference = createTestParticle({1.20, 0.70, 2.10}, {0.1}, {0.24});
       }
       else if (index == 1)
       {
-        pos[0] = -1.05;
-        pos[1] = 12.6;
-        pos[2] = -8.54;
-        mass[0] = 0.5;
-        rad[0] = 24.68;
+        particle_reference = createTestParticle({-1.05, 12.6, -8.54}, {0.5}, {24.68});
       }
       else if (index == 2)
       {
-        pos[0] = -5.02;
-        pos[1] = 2.26;
-        pos[2] = -7.4;
-        mass[0] = 0.2;
-        rad[0] = 5.8;
+        particle_reference = createTestParticle({-5.02, 2.26, -7.4}, {0.2}, {5.8});
       }
-
-      particle_reference[PARTICLEENGINE::Position] = pos;
-      particle_reference[PARTICLEENGINE::Mass] = mass;
-      particle_reference[PARTICLEENGINE::Radius] = rad;
 
       container->GetParticle(index, globalid, particle);
 
@@ -263,45 +201,25 @@ namespace
     int globalid(0);
 
     PARTICLEENGINE::ParticleStates particle;
-    particle.assign(statesvectorsize_, std::vector<double>(0));
+    particle.assign(statesvectorsize_, std::vector<double>{});
     PARTICLEENGINE::ParticleStates particle_reference;
-    particle_reference.assign(statesvectorsize_, std::vector<double>(0));
-
-    std::vector<double> pos(3);
-    std::vector<double> mass(1);
-    std::vector<double> rad(1);
+    particle_reference.assign(statesvectorsize_, std::vector<double>{});
 
     for (int index = 0; index < 3; ++index)
     {
       SCOPED_TRACE("Particle " + std::to_string(index));
       if (index == 0)
       {
-        pos[0] = 1.20;
-        pos[1] = 0.70;
-        pos[2] = 2.10;
-        mass[0] = 0.1;
-        rad[0] = 0.34;
+        particle_reference = createTestParticle({1.20, 0.70, 2.10}, {0.1}, {0.34});
       }
       else if (index == 1)
       {
-        pos[0] = -1.05;
-        pos[1] = 12.6;
-        pos[2] = -8.54;
-        mass[0] = 0.5;
-        rad[0] = 25.18;
+        particle_reference = createTestParticle({-1.05, 12.6, -8.54}, {0.5}, {25.18});
       }
       else if (index == 2)
       {
-        pos[0] = -5.02;
-        pos[1] = 2.26;
-        pos[2] = -7.4;
-        mass[0] = 0.2;
-        rad[0] = 6.0;
+        particle_reference = createTestParticle({-5.02, 2.26, -7.4}, {0.2}, {6.0});
       }
-
-      particle_reference[PARTICLEENGINE::Position] = pos;
-      particle_reference[PARTICLEENGINE::Mass] = mass;
-      particle_reference[PARTICLEENGINE::Radius] = rad;
 
       container->GetParticle(index, globalid, particle);
 
@@ -325,41 +243,25 @@ namespace
     int globalid(0);
 
     PARTICLEENGINE::ParticleStates particle;
-    particle.assign(statesvectorsize_, std::vector<double>(0));
+    particle.assign(statesvectorsize_, std::vector<double>{});
     PARTICLEENGINE::ParticleStates particle_reference;
-    particle_reference.assign(statesvectorsize_, std::vector<double>(0));
-
-    std::vector<double> pos(3);
-    std::vector<double> rad(1);
+    particle_reference.assign(statesvectorsize_, std::vector<double>{});
 
     for (int index = 0; index < 3; ++index)
     {
       SCOPED_TRACE("Particle " + std::to_string(index));
       if (index == 0)
       {
-        pos[0] = 0.24;
-        pos[1] = -1.71;
-        pos[2] = -2.15;
-        rad[0] = 2.2;
+        particle_reference = createTestParticle({0.24, -1.71, -2.15}, mass, {2.2});
       }
       else if (index == 1)
       {
-        pos[0] = -1.15;
-        pos[1] = 2.6;
-        pos[2] = 7.24;
-        rad[0] = 1.2;
+        particle_reference = createTestParticle({-1.15, 2.6, 7.24}, mass, {1.2});
       }
       else if (index == 2)
       {
-        pos[0] = 5.12;
-        pos[1] = 4.26;
-        pos[2] = -3.4;
-        rad[0] = 0.2;
+        particle_reference = createTestParticle({5.12, 4.26, -3.4}, mass, {0.2});
       }
-
-      particle_reference[PARTICLEENGINE::Position] = pos;
-      particle_reference[PARTICLEENGINE::Mass] = mass;
-      particle_reference[PARTICLEENGINE::Radius] = rad;
 
       container->GetParticle(index, globalid, particle);
 
@@ -383,41 +285,25 @@ namespace
     int globalid(0);
 
     PARTICLEENGINE::ParticleStates particle;
-    particle.assign(statesvectorsize_, std::vector<double>(0));
+    particle.assign(statesvectorsize_, std::vector<double>{});
     PARTICLEENGINE::ParticleStates particle_reference;
-    particle_reference.assign(statesvectorsize_, std::vector<double>(0));
-
-    std::vector<double> pos(3);
-    std::vector<double> rad(1);
+    particle_reference.assign(statesvectorsize_, std::vector<double>{});
 
     for (int index = 0; index < 3; ++index)
     {
       SCOPED_TRACE("Particle " + std::to_string(index));
       if (index == 0)
       {
-        pos[0] = 0.24;
-        pos[1] = -1.71;
-        pos[2] = -2.15;
-        rad[0] = 2.2;
+        particle_reference = createTestParticle({0.24, -1.71, -2.15}, mass, {2.2});
       }
       else if (index == 1)
       {
-        pos[0] = -1.15;
-        pos[1] = 2.6;
-        pos[2] = 7.24;
-        rad[0] = 1.2;
+        particle_reference = createTestParticle({-1.15, 2.6, 7.24}, mass, {1.2});
       }
       else if (index == 2)
       {
-        pos[0] = 5.12;
-        pos[1] = 4.26;
-        pos[2] = -3.4;
-        rad[0] = 0.2;
+        particle_reference = createTestParticle({5.12, 4.26, -3.4}, mass, {0.2});
       }
-
-      particle_reference[PARTICLEENGINE::Position] = pos;
-      particle_reference[PARTICLEENGINE::Mass] = mass;
-      particle_reference[PARTICLEENGINE::Radius] = rad;
 
       container->GetParticle(index, globalid, particle);
 
@@ -433,13 +319,9 @@ namespace
     int globalid(0);
 
     PARTICLEENGINE::ParticleStates particle;
-    particle.assign(statesvectorsize_, std::vector<double>(0));
+    particle.assign(statesvectorsize_, std::vector<double>{});
     PARTICLEENGINE::ParticleStates particle_reference;
-    particle_reference.assign(statesvectorsize_, std::vector<double>(0));
-
-    std::vector<double> pos(3);
-    std::vector<double> mass(1);
-    std::vector<double> rad(1);
+    particle_reference.assign(statesvectorsize_, std::vector<double>{});
 
     container = particlecontainerbundle_->GetSpecificContainer(
         PARTICLEENGINE::Phase1, PARTICLEENGINE::Owned);
@@ -451,32 +333,16 @@ namespace
       SCOPED_TRACE("Phase1, Particle " + std::to_string(index));
       if (index == 0)
       {
-        pos[0] = 1.20;
-        pos[1] = 0.70;
-        pos[2] = 2.10;
-        mass[0] = 0.2;
-        rad[0] = 0.12;
+        particle_reference = createTestParticle({1.20, 0.70, 2.10}, {0.2}, {0.12});
       }
       else if (index == 1)
       {
-        pos[0] = -1.05;
-        pos[1] = 12.6;
-        pos[2] = -8.54;
-        mass[0] = 1.0;
-        rad[0] = 12.34;
+        particle_reference = createTestParticle({-1.05, 12.6, -8.54}, {1.0}, {12.34});
       }
       else if (index == 2)
       {
-        pos[0] = -5.02;
-        pos[1] = 2.26;
-        pos[2] = -7.4;
-        mass[0] = 0.4;
-        rad[0] = 2.9;
+        particle_reference = createTestParticle({-5.02, 2.26, -7.4}, {0.4}, {2.9});
       }
-
-      particle_reference[PARTICLEENGINE::Position] = pos;
-      particle_reference[PARTICLEENGINE::Mass] = mass;
-      particle_reference[PARTICLEENGINE::Radius] = rad;
 
       container->GetParticle(index, globalid, particle);
 
@@ -493,32 +359,16 @@ namespace
       SCOPED_TRACE("Phase2, Particle " + std::to_string(index));
       if (index == 0)
       {
-        pos[0] = 0.24;
-        pos[1] = -1.71;
-        pos[2] = -2.15;
-        mass[0] = 3.82;
-        rad[0] = 2.2;
+        particle_reference = createTestParticle({0.24, -1.71, -2.15}, {3.82}, {2.2});
       }
       else if (index == 1)
       {
-        pos[0] = -1.15;
-        pos[1] = 2.6;
-        pos[2] = 7.24;
-        mass[0] = 0.8;
-        rad[0] = 1.2;
+        particle_reference = createTestParticle({-1.15, 2.6, 7.24}, {0.8}, {1.2});
       }
       else if (index == 2)
       {
-        pos[0] = 5.12;
-        pos[1] = 4.26;
-        pos[2] = -3.4;
-        mass[0] = 2.2;
-        rad[0] = 0.2;
+        particle_reference = createTestParticle({5.12, 4.26, -3.4}, {2.2}, {0.2});
       }
-
-      particle_reference[PARTICLEENGINE::Position] = pos;
-      particle_reference[PARTICLEENGINE::Mass] = mass;
-      particle_reference[PARTICLEENGINE::Radius] = rad;
 
       container->GetParticle(index, globalid, particle);
 
@@ -535,13 +385,9 @@ namespace
     int globalid(0);
 
     PARTICLEENGINE::ParticleStates particle;
-    particle.assign(statesvectorsize_, std::vector<double>(0));
+    particle.assign(statesvectorsize_, std::vector<double>{});
     PARTICLEENGINE::ParticleStates particle_reference;
-    particle_reference.assign(statesvectorsize_, std::vector<double>(0));
-
-    std::vector<double> pos(3);
-    std::vector<double> mass(1);
-    std::vector<double> rad(1);
+    particle_reference.assign(statesvectorsize_, std::vector<double>{});
 
     container = particlecontainerbundle_->GetSpecificContainer(
         PARTICLEENGINE::Phase1, PARTICLEENGINE::Owned);
@@ -553,32 +399,16 @@ namespace
       SCOPED_TRACE("Phase1, Particle " + std::to_string(index));
       if (index == 0)
       {
-        pos[0] = 1.20;
-        pos[1] = 0.70;
-        pos[2] = 2.10;
-        mass[0] = 0.32;
-        rad[0] = 0.12;
+        particle_reference = createTestParticle({1.20, 0.70, 2.10}, {0.32}, {0.12});
       }
       else if (index == 1)
       {
-        pos[0] = -1.05;
-        pos[1] = 12.6;
-        pos[2] = -8.54;
-        mass[0] = 13.34;
-        rad[0] = 12.34;
+        particle_reference = createTestParticle({-1.05, 12.6, -8.54}, {13.34}, {12.34});
       }
       else if (index == 2)
       {
-        pos[0] = -5.02;
-        pos[1] = 2.26;
-        pos[2] = -7.4;
-        mass[0] = 3.3;
-        rad[0] = 2.9;
+        particle_reference = createTestParticle({-5.02, 2.26, -7.4}, {3.3}, {2.9});
       }
-
-      particle_reference[PARTICLEENGINE::Position] = pos;
-      particle_reference[PARTICLEENGINE::Mass] = mass;
-      particle_reference[PARTICLEENGINE::Radius] = rad;
 
       container->GetParticle(index, globalid, particle);
 
@@ -595,32 +425,16 @@ namespace
       SCOPED_TRACE("Phase2, Particle " + std::to_string(index));
       if (index == 0)
       {
-        pos[0] = 0.24;
-        pos[1] = -1.71;
-        pos[2] = -2.15;
-        mass[0] = 6.02;
-        rad[0] = 2.2;
+        particle_reference = createTestParticle({0.24, -1.71, -2.15}, {6.02}, {2.2});
       }
       else if (index == 1)
       {
-        pos[0] = -1.15;
-        pos[1] = 2.6;
-        pos[2] = 7.24;
-        mass[0] = 2.0;
-        rad[0] = 1.2;
+        particle_reference = createTestParticle({-1.15, 2.6, 7.24}, {2.0}, {1.2});
       }
       else if (index == 2)
       {
-        pos[0] = 5.12;
-        pos[1] = 4.26;
-        pos[2] = -3.4;
-        mass[0] = 2.4;
-        rad[0] = 0.2;
+        particle_reference = createTestParticle({5.12, 4.26, -3.4}, {2.4}, {0.2});
       }
-
-      particle_reference[PARTICLEENGINE::Position] = pos;
-      particle_reference[PARTICLEENGINE::Mass] = mass;
-      particle_reference[PARTICLEENGINE::Radius] = rad;
 
       container->GetParticle(index, globalid, particle);
 
@@ -639,12 +453,9 @@ namespace
     int globalid(0);
 
     PARTICLEENGINE::ParticleStates particle;
-    particle.assign(statesvectorsize_, std::vector<double>(0));
+    particle.assign(statesvectorsize_, std::vector<double>{});
     PARTICLEENGINE::ParticleStates particle_reference;
-    particle_reference.assign(statesvectorsize_, std::vector<double>(0));
-
-    std::vector<double> pos(3);
-    std::vector<double> rad(1);
+    particle_reference.assign(statesvectorsize_, std::vector<double>{});
 
     container = particlecontainerbundle_->GetSpecificContainer(
         PARTICLEENGINE::Phase1, PARTICLEENGINE::Owned);
@@ -656,29 +467,16 @@ namespace
       SCOPED_TRACE("Phase1, Particle " + std::to_string(index));
       if (index == 0)
       {
-        pos[0] = 1.20;
-        pos[1] = 0.70;
-        pos[2] = 2.10;
-        rad[0] = 0.12;
+        particle_reference = createTestParticle({1.20, 0.70, 2.10}, mass, {0.12});
       }
       else if (index == 1)
       {
-        pos[0] = -1.05;
-        pos[1] = 12.6;
-        pos[2] = -8.54;
-        rad[0] = 12.34;
+        particle_reference = createTestParticle({-1.05, 12.6, -8.54}, mass, {12.34});
       }
       else if (index == 2)
       {
-        pos[0] = -5.02;
-        pos[1] = 2.26;
-        pos[2] = -7.4;
-        rad[0] = 2.9;
+        particle_reference = createTestParticle({-5.02, 2.26, -7.4}, mass, {2.9});
       }
-
-      particle_reference[PARTICLEENGINE::Position] = pos;
-      particle_reference[PARTICLEENGINE::Mass] = mass;
-      particle_reference[PARTICLEENGINE::Radius] = rad;
 
       container->GetParticle(index, globalid, particle);
 
@@ -695,29 +493,16 @@ namespace
       SCOPED_TRACE("Phase2, Particle " + std::to_string(index));
       if (index == 0)
       {
-        pos[0] = 0.24;
-        pos[1] = -1.71;
-        pos[2] = -2.15;
-        rad[0] = 2.2;
+        particle_reference = createTestParticle({0.24, -1.71, -2.15}, mass, {2.2});
       }
       else if (index == 1)
       {
-        pos[0] = -1.15;
-        pos[1] = 2.6;
-        pos[2] = 7.24;
-        rad[0] = 1.2;
+        particle_reference = createTestParticle({-1.15, 2.6, 7.24}, mass, {1.2});
       }
       else if (index == 2)
       {
-        pos[0] = 5.12;
-        pos[1] = 4.26;
-        pos[2] = -3.4;
-        rad[0] = 0.2;
+        particle_reference = createTestParticle({5.12, 4.26, -3.4}, mass, {0.2});
       }
-
-      particle_reference[PARTICLEENGINE::Position] = pos;
-      particle_reference[PARTICLEENGINE::Mass] = mass;
-      particle_reference[PARTICLEENGINE::Radius] = rad;
 
       container->GetParticle(index, globalid, particle);
 
@@ -736,12 +521,9 @@ namespace
     int globalid(0);
 
     PARTICLEENGINE::ParticleStates particle;
-    particle.assign(statesvectorsize_, std::vector<double>(0));
+    particle.assign(statesvectorsize_, std::vector<double>{});
     PARTICLEENGINE::ParticleStates particle_reference;
-    particle_reference.assign(statesvectorsize_, std::vector<double>(0));
-
-    std::vector<double> pos(3);
-    std::vector<double> rad(1);
+    particle_reference.assign(statesvectorsize_, std::vector<double>{});
 
     container = particlecontainerbundle_->GetSpecificContainer(
         PARTICLEENGINE::Phase1, PARTICLEENGINE::Owned);
@@ -753,29 +535,16 @@ namespace
       SCOPED_TRACE("Phase1, Particle " + std::to_string(index));
       if (index == 0)
       {
-        pos[0] = 1.20;
-        pos[1] = 0.70;
-        pos[2] = 2.10;
-        rad[0] = 0.12;
+        particle_reference = createTestParticle({1.20, 0.70, 2.10}, mass, {0.12});
       }
       else if (index == 1)
       {
-        pos[0] = -1.05;
-        pos[1] = 12.6;
-        pos[2] = -8.54;
-        rad[0] = 12.34;
+        particle_reference = createTestParticle({-1.05, 12.6, -8.54}, mass, {12.34});
       }
       else if (index == 2)
       {
-        pos[0] = -5.02;
-        pos[1] = 2.26;
-        pos[2] = -7.4;
-        rad[0] = 2.9;
+        particle_reference = createTestParticle({-5.02, 2.26, -7.4}, mass, {2.9});
       }
-
-      particle_reference[PARTICLEENGINE::Position] = pos;
-      particle_reference[PARTICLEENGINE::Mass] = mass;
-      particle_reference[PARTICLEENGINE::Radius] = rad;
 
       container->GetParticle(index, globalid, particle);
 
@@ -792,29 +561,16 @@ namespace
       SCOPED_TRACE("Phase2, Particle " + std::to_string(index));
       if (index == 0)
       {
-        pos[0] = 0.24;
-        pos[1] = -1.71;
-        pos[2] = -2.15;
-        rad[0] = 2.2;
+        particle_reference = createTestParticle({0.24, -1.71, -2.15}, mass, {2.2});
       }
       else if (index == 1)
       {
-        pos[0] = -1.15;
-        pos[1] = 2.6;
-        pos[2] = 7.24;
-        rad[0] = 1.2;
+        particle_reference = createTestParticle({-1.15, 2.6, 7.24}, mass, {1.2});
       }
       else if (index == 2)
       {
-        pos[0] = 5.12;
-        pos[1] = 4.26;
-        pos[2] = -3.4;
-        rad[0] = 0.2;
+        particle_reference = createTestParticle({5.12, 4.26, -3.4}, mass, {0.2});
       }
-
-      particle_reference[PARTICLEENGINE::Position] = pos;
-      particle_reference[PARTICLEENGINE::Mass] = mass;
-      particle_reference[PARTICLEENGINE::Radius] = rad;
 
       container->GetParticle(index, globalid, particle);
 

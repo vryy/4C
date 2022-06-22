@@ -16,11 +16,10 @@ namespace
     std::unique_ptr<PARTICLEINTERACTION::SPHDensityCorrectionInterior> densitycorrection_;
 
    public:
-    void SetUp() override
+    SPHDensityCorrectionInteriorTest()
     {
       // create density correction handler
-      densitycorrection_ = std::unique_ptr<PARTICLEINTERACTION::SPHDensityCorrectionInterior>(
-          new PARTICLEINTERACTION::SPHDensityCorrectionInterior());
+      densitycorrection_ = std::make_unique<PARTICLEINTERACTION::SPHDensityCorrectionInterior>();
 
       // init density correction handler
       densitycorrection_->Init();
@@ -67,11 +66,10 @@ namespace
    protected:
     std::unique_ptr<PARTICLEINTERACTION::SPHDensityCorrectionNormalized> densitycorrection_;
 
-    void SetUp() override
+    SPHDensityCorrectionNormalizedTest()
     {
       // create density correction handler
-      densitycorrection_ = std::unique_ptr<PARTICLEINTERACTION::SPHDensityCorrectionNormalized>(
-          new PARTICLEINTERACTION::SPHDensityCorrectionNormalized());
+      densitycorrection_ = std::make_unique<PARTICLEINTERACTION::SPHDensityCorrectionNormalized>();
 
       // init density correction handler
       densitycorrection_->Init();
@@ -117,11 +115,10 @@ namespace
    protected:
     std::unique_ptr<PARTICLEINTERACTION::SPHDensityCorrectionRandles> densitycorrection_;
 
-    void SetUp() override
+    SPHDensityCorrectionRandlesTest()
     {
       // create density correction handler
-      densitycorrection_ = std::unique_ptr<PARTICLEINTERACTION::SPHDensityCorrectionRandles>(
-          new PARTICLEINTERACTION::SPHDensityCorrectionRandles());
+      densitycorrection_ = std::make_unique<PARTICLEINTERACTION::SPHDensityCorrectionRandles>();
 
       // init density correction handler
       densitycorrection_->Init();

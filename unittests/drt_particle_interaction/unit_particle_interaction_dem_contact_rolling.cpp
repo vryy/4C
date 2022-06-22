@@ -6,6 +6,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "gtest/gtest.h"
+#include "unittests/common/assertions.h"
 #include "src/drt_particle_interaction/particle_interaction_dem_contact_rolling.H"
 #include "src/drt_particle_interaction/particle_interaction_utils.H"
 
@@ -27,7 +28,7 @@ namespace
 
     const double k_normal_ = 4.0;
 
-    void SetUp() override
+    DEMContactRollingViscousTest()
     {
       // create a parameter list
       Teuchos::ParameterList params_dem;
@@ -39,8 +40,7 @@ namespace
       params_dem.set("MAX_VELOCITY", v_max_);
 
       // create rolling contact handler
-      contactrolling_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactRollingViscous>(
-          new PARTICLEINTERACTION::DEMContactRollingViscous(params_dem));
+      contactrolling_ = std::make_unique<PARTICLEINTERACTION::DEMContactRollingViscous>(params_dem);
 
       // init rolling contact handler
       contactrolling_->Init();
@@ -49,7 +49,7 @@ namespace
       contactrolling_->Setup(k_normal_);
     }
     // note: the public functions Init() and Setup() of class DEMContactRollingViscous are
-    // called in Setup() and thus implicitly tested by all following unittests
+    // called in the constructor and thus implicitly tested by all following unittests
   };
 
   TEST_F(DEMContactRollingViscousTest, EffectiveRadiusParticle)
@@ -105,7 +105,7 @@ namespace
     PARTICLEINTERACTION::UTILS::VecSetCross(v_rel_rolling_ref, angvel_i, e_ji);
     PARTICLEINTERACTION::UTILS::VecAddCross(v_rel_rolling_ref, e_ji, angvel_j);
 
-    for (int i = 0; i < 3; ++i) EXPECT_NEAR(v_rel_rolling[i], v_rel_rolling_ref[i], 1.0e-12);
+    BACI_EXPECT_RAW_ARRAY_NEAR(v_rel_rolling, v_rel_rolling_ref, 3, 1.0e-12);
   }
 
   TEST_F(DEMContactRollingViscousTest, RelativeRollingVelocityNullptrAngvelJ)
@@ -128,7 +128,7 @@ namespace
     double v_rel_rolling_ref[3] = {0.0};
     PARTICLEINTERACTION::UTILS::VecSetCross(v_rel_rolling_ref, angvel_i, e_ji);
 
-    for (int i = 0; i < 3; ++i) EXPECT_NEAR(v_rel_rolling[i], v_rel_rolling_ref[i], 1.0e-12);
+    BACI_EXPECT_RAW_ARRAY_NEAR(v_rel_rolling, v_rel_rolling_ref, 3, 1.0e-12);
   }
 
   TEST_F(DEMContactRollingViscousTest, RollingContactMoment)
@@ -199,7 +199,7 @@ namespace
 
     const double k_normal_ = 4.0;
 
-    void SetUp() override
+    DEMContactRollingCoulombTest()
     {
       // create a parameter list
       Teuchos::ParameterList params_dem;
@@ -208,8 +208,7 @@ namespace
       params_dem.set("FRICT_COEFF_ROLL", mu_rolling_);
 
       // create rolling contact handler
-      contactrolling_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactRollingCoulomb>(
-          new PARTICLEINTERACTION::DEMContactRollingCoulomb(params_dem));
+      contactrolling_ = std::make_unique<PARTICLEINTERACTION::DEMContactRollingCoulomb>(params_dem);
 
       // init rolling contact handler
       contactrolling_->Init();
@@ -218,7 +217,7 @@ namespace
       contactrolling_->Setup(k_normal_);
     }
     // note: the public functions Init() and Setup() of class DEMContactRollingViscous are
-    // called in Setup() and thus implicitly tested by all following unittests
+    // called in the constructor and thus implicitly tested by all following unittests
   };
 
   TEST_F(DEMContactRollingCoulombTest, EffectiveRadiusParticle)
@@ -275,7 +274,7 @@ namespace
     PARTICLEINTERACTION::UTILS::VecAddCross(v_rel_rolling_ref, angvel_j, e_ji);
     PARTICLEINTERACTION::UTILS::VecScale(v_rel_rolling_ref, r_eff);
 
-    for (int i = 0; i < 3; ++i) EXPECT_NEAR(v_rel_rolling[i], v_rel_rolling_ref[i], 1.0e-12);
+    BACI_EXPECT_RAW_ARRAY_NEAR(v_rel_rolling, v_rel_rolling_ref, 3, 1.0e-12);
   }
 
   TEST_F(DEMContactRollingCoulombTest, RelativeRollingVelocityNullptrAngvelJ)
@@ -299,7 +298,7 @@ namespace
     PARTICLEINTERACTION::UTILS::VecSetCross(v_rel_rolling_ref, e_ji, angvel_i);
     PARTICLEINTERACTION::UTILS::VecScale(v_rel_rolling_ref, r_eff);
 
-    for (int i = 0; i < 3; ++i) EXPECT_NEAR(v_rel_rolling[i], v_rel_rolling_ref[i], 1.0e-12);
+    BACI_EXPECT_RAW_ARRAY_NEAR(v_rel_rolling, v_rel_rolling_ref, 3, 1.0e-12);
   }
 
   TEST_F(DEMContactRollingCoulombTest, RollingContactMomentStick)
@@ -333,7 +332,7 @@ namespace
     double rollingcontactmoment_ref[3] = {
         -0.1119618097864935, 0.09699534835316952, -0.02050722172996138};
 
-    for (int i = 0; i < 3; ++i) EXPECT_NEAR(gap_rolling[i], gap_rolling_ref[i], 1.0e-12);
+    BACI_EXPECT_RAW_ARRAY_NEAR(gap_rolling, gap_rolling_ref, 3, 1.0e-12);
 
     for (int i = 0; i < 3; ++i)
       EXPECT_NEAR(rollingcontactmoment[i], rollingcontactmoment_ref[i], 1.0e-12);
@@ -372,7 +371,7 @@ namespace
     double rollingcontactmoment_ref[3] = {
         -0.1119618097864935, 0.09699534835316952, -0.02050722172996138};
 
-    for (int i = 0; i < 3; ++i) EXPECT_NEAR(gap_rolling[i], gap_rolling_ref[i], 1.0e-12);
+    BACI_EXPECT_RAW_ARRAY_NEAR(gap_rolling, gap_rolling_ref, 3, 1.0e-12);
 
     for (int i = 0; i < 3; ++i)
       EXPECT_NEAR(rollingcontactmoment[i], rollingcontactmoment_ref[i], 1.0e-12);

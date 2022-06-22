@@ -6,6 +6,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "gtest/gtest.h"
+#include "unittests/common/assertions.h"
 #include "src/drt_particle_interaction/particle_interaction_sph_kernel.H"
 #include "src/drt_particle_interaction/particle_interaction_utils.H"
 
@@ -22,7 +23,7 @@ namespace
     std::unique_ptr<PARTICLEINTERACTION::SPHKernelCubicSpline> kernel_2D_;
     std::unique_ptr<PARTICLEINTERACTION::SPHKernelCubicSpline> kernel_3D_;
 
-    void SetUp() override
+    SPHKernelCubicSplineTest()
     {
       // create a parameter list
       Teuchos::ParameterList params_sph_1D;
@@ -41,12 +42,9 @@ namespace
           Teuchos::tuple<int>(INPAR::PARTICLE::Kernel3D), &params_sph_3D);
 
       // create kernel handler
-      kernel_1D_ = std::unique_ptr<PARTICLEINTERACTION::SPHKernelCubicSpline>(
-          new PARTICLEINTERACTION::SPHKernelCubicSpline(params_sph_1D));
-      kernel_2D_ = std::unique_ptr<PARTICLEINTERACTION::SPHKernelCubicSpline>(
-          new PARTICLEINTERACTION::SPHKernelCubicSpline(params_sph_2D));
-      kernel_3D_ = std::unique_ptr<PARTICLEINTERACTION::SPHKernelCubicSpline>(
-          new PARTICLEINTERACTION::SPHKernelCubicSpline(params_sph_3D));
+      kernel_1D_ = std::make_unique<PARTICLEINTERACTION::SPHKernelCubicSpline>(params_sph_1D);
+      kernel_2D_ = std::make_unique<PARTICLEINTERACTION::SPHKernelCubicSpline>(params_sph_2D);
+      kernel_3D_ = std::make_unique<PARTICLEINTERACTION::SPHKernelCubicSpline>(params_sph_3D);
 
       // init kernel handler
       kernel_1D_->Init();
@@ -282,7 +280,7 @@ namespace
     double gradWij[3];
     kernel_3D_->GradWij(rij, support, eij, gradWij);
 
-    for (int i = 0; i < 3; ++i) EXPECT_NEAR(gradWij[i], gradWij_reference[i], 1.0e-10);
+    BACI_EXPECT_RAW_ARRAY_NEAR(gradWij, gradWij_reference, 3, 1.0e-10);
   }
 
 
@@ -293,7 +291,7 @@ namespace
     std::unique_ptr<PARTICLEINTERACTION::SPHKernelQuinticSpline> kernel_2D_;
     std::unique_ptr<PARTICLEINTERACTION::SPHKernelQuinticSpline> kernel_3D_;
 
-    void SetUp() override
+    SPHKernelQuinticSplineTest()
     {
       // create a parameter list
       Teuchos::ParameterList params_sph_1D;
@@ -312,12 +310,9 @@ namespace
           Teuchos::tuple<int>(INPAR::PARTICLE::Kernel3D), &params_sph_3D);
 
       // create kernel handler
-      kernel_1D_ = std::unique_ptr<PARTICLEINTERACTION::SPHKernelQuinticSpline>(
-          new PARTICLEINTERACTION::SPHKernelQuinticSpline(params_sph_1D));
-      kernel_2D_ = std::unique_ptr<PARTICLEINTERACTION::SPHKernelQuinticSpline>(
-          new PARTICLEINTERACTION::SPHKernelQuinticSpline(params_sph_2D));
-      kernel_3D_ = std::unique_ptr<PARTICLEINTERACTION::SPHKernelQuinticSpline>(
-          new PARTICLEINTERACTION::SPHKernelQuinticSpline(params_sph_3D));
+      kernel_1D_ = std::make_unique<PARTICLEINTERACTION::SPHKernelQuinticSpline>(params_sph_1D);
+      kernel_2D_ = std::make_unique<PARTICLEINTERACTION::SPHKernelQuinticSpline>(params_sph_2D);
+      kernel_3D_ = std::make_unique<PARTICLEINTERACTION::SPHKernelQuinticSpline>(params_sph_3D);
 
       // init kernel handler
       kernel_1D_->Init();
@@ -601,6 +596,6 @@ namespace
     double gradWij[3];
     kernel_3D_->GradWij(rij, support, eij, gradWij);
 
-    for (int i = 0; i < 3; ++i) EXPECT_NEAR(gradWij[i], gradWij_reference[i], 1.0e-10);
+    BACI_EXPECT_RAW_ARRAY_NEAR(gradWij, gradWij_reference, 3, 1.0e-10);
   }
 }  // namespace
