@@ -250,9 +250,9 @@ namespace
 
   TEST_F(ParticleContainerTest, GetPtrToState)
   {
-    double pos[3] = {0.0};
-    double vel[3] = {0.0};
-    double mass[1] = {0.0};
+    std::array<double, 3> pos = {0.0};
+    std::array<double, 3> vel = {0.0};
+    std::array<double, 1> mass = {0.0};
 
     for (int index = 0; index < 3; ++index)
     {
@@ -288,10 +288,10 @@ namespace
       }
 
       double* currpos = container_->GetPtrToState(PARTICLEENGINE::Position, index);
-      BACI_EXPECT_RAW_ARRAY_NEAR(currpos, pos, 3, 1e-14);
+      BACI_EXPECT_ITERABLE_NEAR(currpos, pos.begin(), 3, 1e-14);
 
       double* currvel = container_->GetPtrToState(PARTICLEENGINE::Velocity, index);
-      BACI_EXPECT_RAW_ARRAY_NEAR(currvel, vel, 3, 1e-14);
+      BACI_EXPECT_ITERABLE_NEAR(currvel, vel.begin(), 3, 1e-14);
 
       double* currmass = container_->GetPtrToState(PARTICLEENGINE::Mass, index);
       EXPECT_NEAR(currmass[0], mass[0], 1e-14);
@@ -300,9 +300,9 @@ namespace
 
   TEST_F(ParticleContainerTest, CondGetPtrToState)
   {
-    double pos[3] = {0.0};
-    double vel[3] = {0.0};
-    double mass[1] = {0.0};
+    std::array<double, 3> pos = {0.0};
+    std::array<double, 3> vel = {0.0};
+    std::array<double, 1> mass = {0.0};
 
     for (int index = 0; index < 3; ++index)
     {
@@ -338,10 +338,10 @@ namespace
       }
 
       double* currpos = container_->CondGetPtrToState(PARTICLEENGINE::Position, index);
-      BACI_EXPECT_RAW_ARRAY_NEAR(currpos, pos, 3, 1.0e-14);
+      BACI_EXPECT_ITERABLE_NEAR(currpos, pos.begin(), 3, 1.0e-14);
 
       double* currvel = container_->CondGetPtrToState(PARTICLEENGINE::Velocity, index);
-      BACI_EXPECT_RAW_ARRAY_NEAR(currvel, vel, 3, 1.0e-14);
+      BACI_EXPECT_ITERABLE_NEAR(currvel, vel.begin(), 3, 1.0e-14);
 
       double* currmass = container_->CondGetPtrToState(PARTICLEENGINE::Mass, index);
       EXPECT_NEAR(currmass[0], mass[0], 1e-14);
