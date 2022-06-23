@@ -1,5 +1,4 @@
 add_subdirectory(common)
-add_subdirectory(drt_contact_constitutivelaw)
 add_subdirectory(drt_fbi)
 add_subdirectory(drt_particle_engine)
 add_subdirectory(drt_particle_interaction)
