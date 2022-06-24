@@ -1,0 +1,46 @@
+#!/bin/bash
+
+############################################################
+#
+# Bash script that executes xmlformat with baci-specific options.
+#
+# Options applied to xmlformat:
+#   two whitespace indents achieved by --indent 2 --indent-char " " 
+#   collapse <element></element> to <element/> by --selfclose
+#   overwrite the existing file by --overwrite
+#
+# Usage of bacixmlformat: 
+#   bacixmlformat <inputfile>
+#   bacixmlformat --nooverride <inputfile>: disables --overwrite option for xmlformat
+#
+############################################################
+
+# load the python virtual environment, which provides xmlformat.
+PYTHON_VENV="`dirname "$0"`/baci-python-venv"
+source "${PYTHON_VENV}"/bin/activate
+
+# call xmlformat with --nooverride as possible option
+# note: long option is implemented as argument to getopts, see (https://stackoverflow.com/a/28466267)
+# --nooverride is seen by getopts as - with the argument nooverride
+# true argument xmlfile is harvested via shell parameter expansion, updating $OPT and $OPTARG
+while getopts ":-:" option
+do
+    case "$option" in
+        -) case "$OPTARG" in # call xmlformat without overwrite option
+            nooverride)
+                xmlfile="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                # run xmlformat on $xmlfile without overrride
+                xmlformat --indent 2 --indent-char " " --selfclose --infile $xmlfile
+                exit
+            esac;;
+        \?) # invalid option
+            echo "Error: Invalid option"
+            exit;;
+    esac
+done
+
+# call xmlformat with overwrite option
+echo "Run xmlformat on $1."
+xmlformat --indent 2 --indent-char " " --selfclose --overwrite --infile $1
+
+echo "Done."
