@@ -267,12 +267,6 @@ int main(int argc, char *argv[])
         "*                fast version                *\n"
 #endif
         "*                                            *\n"
-        "*     Lehrstuhl fuer Numerische Mechanik     *\n"
-        "*                    LNM                     *\n"
-        "*      Technische Universitaet Muenchen      *\n"
-        "*                                            *\n"
-        "*       (c) 2010 All Rights Reserved.        *\n"
-        "*                                            *\n"
         "**********************************************\n\n",
         BaciGitHash.c_str());
     printf("Trilinos Version %s (git SHA1 %s)\n", TrilinosVersion.c_str(), TrilinosGitHash.c_str());
