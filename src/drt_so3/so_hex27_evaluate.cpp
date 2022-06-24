@@ -63,7 +63,7 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
     act = So_hex27::calc_struct_internalforce;
   else if (IsParamsInterface() &&
            ParamsInterface().GetActionType() == ELEMENTS::struct_calc_internalinertiaforce)
-    act = So_hex27::struct_calc_internalinertiaforce;
+    act = So_hex27::calc_struct_internalinertiaforce;
   else if (action == "calc_struct_linstiffmass")
     act = So_hex27::calc_struct_linstiffmass;
   else if (action == "calc_struct_nlnstiffmass")
@@ -196,7 +196,7 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
     // nonlinear stiffness, internal force vector, and consistent mass matrix
     case calc_struct_nlnstiffmass:
     case calc_struct_nlnstifflmass:
-    case struct_calc_internalinertiaforce:
+    case calc_struct_internalinertiaforce:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -220,12 +220,12 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
 
 
       LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27> mass_matrix_evaluate;
-      if (act != So_hex27::struct_calc_internalinertiaforce) mass_matrix_evaluate.SetView(elemat2);
+      if (act != So_hex27::calc_struct_internalinertiaforce) mass_matrix_evaluate.SetView(elemat2);
 
 
       std::vector<double> mydispmat(lm.size(), 0.0);
 
-      if (act == So_hex27::struct_calc_internalinertiaforce)
+      if (act == So_hex27::calc_struct_internalinertiaforce)
       {
         soh27_nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, nullptr,
             &mass_matrix_evaluate, &elevec1, &elevec2, nullptr, nullptr, nullptr, nullptr, params,
