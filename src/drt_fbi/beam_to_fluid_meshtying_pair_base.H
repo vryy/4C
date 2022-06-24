@@ -36,9 +36,7 @@ namespace BEAMINTERACTION
    * \param[in] fluid Type from GEOMETRYPAIR::ElementDiscretization representing the fluid.
    */
   template <typename beam, typename fluid>
-  class BeamToFluidMeshtyingPairBase
-      : public BeamToSolidVolumeMeshtyingPairBase<beam,
-            fluid>  // todo can i just derice from beamtosolidmeshtyingpairbase?
+  class BeamToFluidMeshtyingPairBase : public BeamToSolidVolumeMeshtyingPairBase<beam, fluid>
   {
    protected:
     //! Shortcut to base class.
