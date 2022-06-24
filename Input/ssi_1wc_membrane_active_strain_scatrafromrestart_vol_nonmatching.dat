@@ -61,7 +61,7 @@ ITEMAX                          5
 FIELDCOUPLING                   volume_nonmatching
 SCATRATIMINTTYPE                Standard
 SCATRA_FROM_RESTART_FILE        yes
-SCATRA_FILENAME                 framework_test_output/ssi_1wc_membrane_active_strain_scatra_only/xxx
+SCATRA_FILENAME                 framework_test_output/ssi_1wc_membrane_active_strain_scatra_only_p2/xxx
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 EXPLPREDICT                     yes
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION

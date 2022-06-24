@@ -51,7 +51,13 @@ macro(baci_test name_of_input_file num_proc restart_step)
     NAME ${name_of_input_file}-p${num_proc}
     COMMAND
       bash -c
-      "mkdir -p ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file} && ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} -np ${num_proc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat framework_test_output/${name_of_input_file}/xxx"
+      "mkdir -p ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc} && ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} -np ${num_proc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat framework_test_output/${name_of_input_file}_p${num_proc}/xxx"
+    )
+  set_tests_properties(
+    ${name_of_input_file}-p${num_proc} PROPERTIES FIXTURES_SETUP ${name_of_input_file}-p${num_proc}
+    )
+  set_tests_properties(
+    ${name_of_input_file}-p${num_proc} PROPERTIES FIXTURES_REQUIRED "test_cleanup"
     )
   if("${ARGN}" STREQUAL "")
     set_tests_properties(
@@ -69,10 +75,14 @@ macro(baci_test name_of_input_file num_proc restart_step)
       NAME ${name_of_input_file}-p${num_proc}-restart
       COMMAND
         bash -c
-        "${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} -np ${num_proc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat framework_test_output/${name_of_input_file}/xxx restart=${restart_step}"
+        "${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} -np ${num_proc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat framework_test_output/${name_of_input_file}_p${num_proc}/xxx restart=${restart_step}"
       )
     set_tests_properties(
       ${name_of_input_file}-p${num_proc}-restart PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED}
+      )
+    set_tests_properties(
+      ${name_of_input_file}-p${num_proc}-restart
+      PROPERTIES FIXTURES_REQUIRED "${name_of_input_file}-p${num_proc};test_cleanup"
       )
   endif(${restart_step})
 endmacro(baci_test)
@@ -97,19 +107,27 @@ macro(
     NAME ${name_of_input_file}-p${num_proc}
     COMMAND
       bash -c
-      "mkdir -p ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file} && ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} -np ${num_proc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat framework_test_output/${name_of_input_file}/xxx"
+      "mkdir -p ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc} && ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} -np ${num_proc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat framework_test_output/${name_of_input_file}_p${num_proc}/xxx"
     )
   set_tests_properties(${name_of_input_file}-p${num_proc} PROPERTIES TIMEOUT ${actualtesttimeout})
+  set_tests_properties(
+    ${name_of_input_file}-p${num_proc} PROPERTIES FIXTURES_SETUP ${name_of_input_file}-p${num_proc}
+    )
+  set_tests_properties(${name_of_input_file}-p${num_proc} PROPERTIES FIXTURES_REQUIRED test_cleanup)
 
   if(${restart_step})
     add_test(
       NAME ${name_of_input_file}-p${num_proc}-restart
       COMMAND
         bash -c
-        "${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} -np ${num_proc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat framework_test_output/${name_of_input_file}/xxx restart=${restart_step}"
+        "${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} -np ${num_proc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat framework_test_output/${name_of_input_file}_p${num_proc}/xxx restart=${restart_step}"
       )
     set_tests_properties(
       ${name_of_input_file}-p${num_proc}-restart PROPERTIES TIMEOUT ${actualtesttimeout}
+      )
+    set_tests_properties(
+      ${name_of_input_file}-p${num_proc}-restart
+      PROPERTIES FIXTURES_REQUIRED "${name_of_input_file}-p${num_proc};test_cleanup"
       )
   endif(${restart_step})
 endmacro(baci_test_extended_timeout)
@@ -130,34 +148,42 @@ macro(baci_test_and_post_ensight_test name_of_input_file num_proc restart_step)
 
   # additionally run postprocessing in serial mode
   set(RUNPOSTFILTER_SER
-      ./post_drt_ensight\ --file=framework_test_output/${name_of_input_file}/xxx\ --output=framework_test_output/${name_of_input_file}/xxx_SER\ --outputtype=bin\ --stress=ndxyz
+      ./post_drt_ensight\ --file=framework_test_output/${name_of_input_file}_p${num_proc}/xxx\ --output=framework_test_output/${name_of_input_file}_p${num_proc}/xxx_SER\ --outputtype=bin\ --stress=ndxyz
       )
 
   add_test(
     NAME ${name_of_input_file}-p${num_proc}-post_ensight-ser
     COMMAND
       sh -c
-      " ${RUNPOSTFILTER_SER} && ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat framework_test_output/${name_of_input_file}/xxx_SER_structure.case"
+      " ${RUNPOSTFILTER_SER} && ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat framework_test_output/${name_of_input_file}_p${num_proc}/xxx_SER_structure.case"
     )
   set_tests_properties(
     ${name_of_input_file}-p${num_proc}-post_ensight-ser
     PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED}
     )
+  set_tests_properties(
+    ${name_of_input_file}-p${num_proc}-post_ensight-ser
+    PROPERTIES FIXTURES_REQUIRED "${name_of_input_file}-p${num_proc};test_cleanup"
+    )
 
   # additionally run postprocessing in parallel mode
   set(RUNPOSTFILTER_PAR
-      ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS}\ -np\ ${num_proc}\ ./post_drt_ensight\ --file=framework_test_output/${name_of_input_file}/xxx\ --output=framework_test_output/${name_of_input_file}/xxx_PAR\ --outputtype=bin\ --stress=ndxyz
+      ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS}\ -np\ ${num_proc}\ ./post_drt_ensight\ --file=framework_test_output/${name_of_input_file}_p${num_proc}/xxx\ --output=framework_test_output/${name_of_input_file}_p${num_proc}/xxx_PAR\ --outputtype=bin\ --stress=ndxyz
       )
 
   add_test(
     NAME ${name_of_input_file}-p${num_proc}-post_ensight-par
     COMMAND
       sh -c
-      " ${RUNPOSTFILTER_PAR} && ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat framework_test_output/${name_of_input_file}/xxx_PAR_structure.case"
+      " ${RUNPOSTFILTER_PAR} && ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat framework_test_output/${name_of_input_file}_p${num_proc}/xxx_PAR_structure.case"
     )
   set_tests_properties(
     ${name_of_input_file}-p${num_proc}-post_ensight-par
     PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED}
+    )
+  set_tests_properties(
+    ${name_of_input_file}-p${num_proc}-post_ensight-par
+    PROPERTIES FIXTURES_REQUIRED "${name_of_input_file}-p${num_proc};test_cleanup"
     )
 endmacro(baci_test_and_post_ensight_test)
 
@@ -168,6 +194,7 @@ endmacro(baci_test_and_post_ensight_test)
 # <name_of_input_file>: must equal the name of a .dat file in directory Input; without ".dat"
 # <name_of_input_file_restart>: the name of an input file the current restart can base on
 # <num_proc>: number of processors the test should use
+# <num_proc_base_run>: number of processors of precursor base run
 # <restart_step>: number of restart step; <""> indicates no restart
 # <optional: identifier>: add an identifier to the file results are read from
 macro(
@@ -175,11 +202,12 @@ macro(
   name_of_input_file
   name_of_input_file_restart
   num_proc
+  num_proc_base_run
   restart_step
   )
   # set additional output prefix identifier to empty string "" in default claase or to specific string if specified as optional input argument
-  if(${ARGC} GREATER 4)
-    set(IDENTIFIER ${ARGV4})
+  if(${ARGC} GREATER 5)
+    set(IDENTIFIER ${ARGV5})
   else()
     set(IDENTIFIER "")
   endif()
@@ -188,12 +216,18 @@ macro(
     NAME ${name_of_input_file}-p${num_proc}-restart
     COMMAND
       bash -c
-      "${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} -np ${num_proc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat framework_test_output/${name_of_input_file_restart}/xxx${IDENTIFIER} restart=${restart_step}"
+      "${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} -np ${num_proc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat framework_test_output/${name_of_input_file_restart}_p${num_proc_base_run}/xxx${IDENTIFIER} restart=${restart_step}"
     )
 
   set_tests_properties(
     ${name_of_input_file}-p${num_proc}-restart PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED}
     )
+  set_tests_properties(
+    ${name_of_input_file}-p${num_proc}-restart
+    PROPERTIES FIXTURES_REQUIRED "${name_of_input_file_restart}-p${num_proc_base_run};test_cleanup"
+    )
+  # Set "RUN_SERIAL TRUE" because result files can only be read by one process.
+  set_tests_properties(${name_of_input_file}-p${num_proc}-restart PROPERTIES RUN_SERIAL TRUE)
 endmacro(baci_test_restartonly)
 
 ###########
@@ -209,13 +243,23 @@ macro(baci_test_Nested_Par name_of_input_file_1 name_of_input_file_2 restart_ste
       bash -c
       "mkdir -p ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file_1} &&  ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file_1}.dat framework_test_output/${name_of_input_file_1}/xxx ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file_2}.dat framework_test_output/${name_of_input_file_1}/xxxAdditional"
     )
-
+  set_tests_properties(
+    ${name_of_input_file_1}-nestedPar
+    PROPERTIES FIXTURES_SETUP ${name_of_input_file_1}-p${num_proc}
+    )
+  set_tests_properties(
+    ${name_of_input_file_1}-nestedPar PROPERTIES FIXTURES_REQUIRED "test_cleanup"
+    )
   if(${restart_step})
     add_test(
       NAME ${name_of_input_file_1}-nestedPar-restart
       COMMAND
         bash -c
         "${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file_1}.dat framework_test_output/${name_of_input_file_1}/xxx restart=${restart_step} ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file_2}.dat framework_test_output/${name_of_input_file_1}/xxxAdditional restart=${restart_step}"
+      )
+    set_tests_properties(
+      ${name_of_input_file_1}-nestedPar-restart
+      PROPERTIES FIXTURES_REQUIRED "${name_of_input_file_1}-p${num_proc};test_cleanup"
       )
   endif(${restart_step})
 
@@ -236,7 +280,11 @@ macro(baci_test_Nested_Par_CopyDat name_of_input_file num_proc num_groups)
     NAME ${name_of_input_file}-nestedPar_CopyDat-p${num_proc}
     COMMAND
       bash -c
-      "mkdir -p ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file} &&  ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} -np ${num_proc} $<TARGET_FILE:${baciname}> -ngroup=${num_groups} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat framework_test_output/${name_of_input_file}/xxx"
+      "mkdir -p ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc} &&  ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} -np ${num_proc} $<TARGET_FILE:${baciname}> -ngroup=${num_groups} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat framework_test_output/${name_of_input_file}_p${num_proc}/xxx"
+    )
+  set_tests_properties(
+    ${name_of_input_file}-nestedPar_CopyDat-p${num_proc}
+    PROPERTIES FIXTURES_REQUIRED "test_cleanup"
     )
   if("${ARGN}" STREQUAL "")
     set_tests_properties(
@@ -275,24 +323,42 @@ macro(
     NAME ${name_of_input_file}_precursor-p${num_proc}
     COMMAND
       bash -c
-      "mkdir -p ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file} &&  ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} -np ${num_proc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file_precursor}.dat framework_test_output/${name_of_input_file}/xxx"
+      "mkdir -p ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc} &&  ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} -np ${num_proc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file_precursor}.dat framework_test_output/${name_of_input_file}_p${num_proc}/xxx"
+    )
+  set_tests_properties(
+    ${name_of_input_file}_precursor-p${num_proc}
+    PROPERTIES FIXTURES_SETUP ${name_of_input_file}_precursor
+    )
+  set_tests_properties(
+    ${name_of_input_file}_precursor-p${num_proc} PROPERTIES FIXTURES_REQUIRED "test_cleanup"
     )
   # restart from precursor output
   add_test(
     NAME ${name_of_input_file}-p${num_proc}
     COMMAND
       bash -c
-      "${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} -np ${num_proc} $<TARGET_FILE:${baciname}> -ngroup=${num_groups} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat framework_test_output/${name_of_input_file}/xxx"
+      "${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} -np ${num_proc} $<TARGET_FILE:${baciname}> -ngroup=${num_groups} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat framework_test_output/${name_of_input_file}_p${num_proc}/xxx"
+    )
+  set_tests_properties(
+    ${name_of_input_file}-p${num_proc}
+    PROPERTIES FIXTURES_REQUIRED "${name_of_input_file}_precursor;test_cleanup"
+    )
+  set_tests_properties(
+    ${name_of_input_file}-p${num_proc} PROPERTIES FIXTURES_SETUP "${name_of_input_file}"
     )
 
-  # add postprocessing simulation in case
+  # add postprocessing simulation in case it is required
   if(NOT ${name_of_input_file_post} STREQUAL "")
     add_test(
       NAME ${name_of_input_file}_postprocess-p${num_proc}
       COMMAND
       COMMAND
         bash -c
-        "${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} -np ${num_proc} $<TARGET_FILE:${baciname}> -ngroup=${num_groups} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file_post}.dat framework_test_output/${name_of_input_file}/xxx restart=${restart_step}"
+        "${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} -np ${num_proc} $<TARGET_FILE:${baciname}> -ngroup=${num_groups} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file_post}.dat framework_test_output/${name_of_input_file}_p${num_proc}/xxx restart=${restart_step}"
+      )
+    set_tests_properties(
+      ${name_of_input_file}_postprocess-p${num_proc}
+      PROPERTIES FIXTURES_REQUIRED "${name_of_input_file};test_cleanup"
       )
   endif(NOT ${name_of_input_file_post} STREQUAL "")
   if("${ARGN}" STREQUAL "")
@@ -342,7 +408,7 @@ macro(baci_framework_test name_of_input_file num_proc xml_filename)
   if(NOT ${xml_filename} STREQUAL "")
     file(
       COPY ${PROJECT_SOURCE_DIR}/Input/${xml_filename}
-      DESTINATION ./framework_test_output/${name_of_input_file}
+      DESTINATION ./framework_test_output/${name_of_input_file}/
       )
     # if a XML file name is given, it is copied from the baci input directory to the build directory
   endif(NOT ${xml_filename} STREQUAL "")
@@ -357,6 +423,9 @@ macro(baci_framework_test name_of_input_file num_proc xml_filename)
     COMMAND
       bash -c
       "mkdir -p ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file} && ${RUNCUBIT} && ${RUNPREEXODUS} && ${RUNBACI} && ${RUNPOSTFILTER}"
+    )
+  set_tests_properties(
+    ${name_of_input_file}-p${num_proc}-fw PROPERTIES FIXTURES_REQUIRED "test_cleanup"
     )
 
   # note: for the clean-up job in the end, every generated intermediate file has to start with "xxx"
@@ -383,8 +452,9 @@ macro(cut_test num_proc)
     NAME test-p${num_proc}-cut
     COMMAND
       bash -c
-      "mkdir -p ${PROJECT_BINARY_DIR}/framework_test_output/cut_test && cd ${PROJECT_BINARY_DIR}/framework_test_output/cut_test && ${RUNTESTS}"
+      "mkdir -p ${PROJECT_BINARY_DIR}/framework_test_output/cut_test_p${num_proc} && cd ${PROJECT_BINARY_DIR}/framework_test_output/cut_test_p${num_proc} && ${RUNTESTS}"
     )
+  set_tests_properties(test-p${num_proc}-cut PROPERTIES FIXTURES_REQUIRED "test_cleanup")
   set_tests_properties(test-p${num_proc}-cut PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED})
   set_tests_properties(test-p${num_proc}-cut PROPERTIES FAIL_REGULAR_EXPRESSION "ERROR:; ERROR ")
 endmacro(cut_test)
@@ -399,13 +469,16 @@ macro(pre_processing name_of_input_file num_proc)
       ./pre_exodus\ --exo=${PROJECT_SOURCE_DIR}/tests/pre_processing_test/${name_of_input_file}.e
       ) # run pre_exodus to generate default head and bc file
   set(RUNPREEXODUS_DEFAULTHEAD
-      ./pre_exodus\ --exo=${PROJECT_SOURCE_DIR}/tests/pre_processing_test/${name_of_input_file}.e\ --bc=${PROJECT_SOURCE_DIR}/tests/pre_processing_test/${name_of_input_file}.bc\ --head=default.head\ --dat=framework_test_output/${name_of_input_file}/xxx.dat
+      ./pre_exodus\ --exo=${PROJECT_SOURCE_DIR}/tests/pre_processing_test/${name_of_input_file}.e\ --bc=${PROJECT_SOURCE_DIR}/tests/pre_processing_test/${name_of_input_file}.bc\ --head=default.head\ --dat=framework_test_output/${name_of_input_file}_p${num_proc}/xxx.dat
       ) # run pre_exodus to generate dat file using the default head file
   add_test(
     NAME ${name_of_input_file}-p${num_proc}-pre_processing
     COMMAND
       bash -c
-      "mkdir -p ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file} && ${RUNPREEXODUS_NOHEAD} && ${RUNPREEXODUS_DEFAULTHEAD}"
+      "mkdir -p ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc} && ${RUNPREEXODUS_NOHEAD} && ${RUNPREEXODUS_DEFAULTHEAD}"
+    )
+  set_tests_properties(
+    ${name_of_input_file}-p${num_proc}-pre_processing PROPERTIES FIXTURES_REQUIRED "test_cleanup"
     )
   set_tests_properties(
     ${name_of_input_file}-p${num_proc}-pre_processing
@@ -426,6 +499,7 @@ endmacro(pre_processing)
 # Usage in TestingFrameworkListOfTests.cmake: "post_processing(<name_of_input_file> <num_proc> <stresstype> <straintype> <startstep> <optional: identifier> <optional: field>"
 # <name_of_input_file>: must equal the name of a .dat file from a previous tests
 # <num_proc>: number of processors the test should use
+# <num_proc_base_run>: number of processors of precursor base run
 # <stresstype>: use post processor with this stresstype
 # <straintype>: use post processot with this straintype
 # <startstep>: start post processing at this step
@@ -435,30 +509,31 @@ macro(
   post_processing
   name_of_input_file
   num_proc
+  num_proc_base_run
   stresstype
   straintype
   startstep
   )
   # set additional output prefix identifier to empty string "" in default case or to specific string if specified as optional input argument
-  if(${ARGC} GREATER 6)
-    set(IDENTIFIER ${ARGV6})
+  if(${ARGC} GREATER 7)
+    set(IDENTIFIER ${ARGV7})
   else()
     set(IDENTIFIER "")
   endif()
 
   # set field name to empty string "" in default case or to specific string if specified as optional input argument
-  if(${ARGC} GREATER 5)
-    set(FIELD ${ARGV5})
+  if(${ARGC} GREATER 6)
+    set(FIELD ${ARGV6})
   else()
     set(FIELD "")
   endif()
 
   # define macros for serial and parallel runs
   set(RUNPOSTFILTER_SER
-      ./post_drt_ensight\ --file=framework_test_output/${name_of_input_file}/xxx${IDENTIFIER}\ --output=framework_test_output/${name_of_input_file}/xxx${IDENTIFIER}_SER_${name_of_input_file}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep}
+      ./post_drt_ensight\ --file=framework_test_output/${name_of_input_file}_p${num_proc_base_run}/xxx${IDENTIFIER}\ --output=framework_test_output/${name_of_input_file}_p${num_proc_base_run}/xxx${IDENTIFIER}_SER_${name_of_input_file}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep}
       )
   set(RUNPOSTFILTER_PAR
-      ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS}\ -np\ ${num_proc}\ ./post_drt_ensight\ --file=framework_test_output/${name_of_input_file}/xxx${IDENTIFIER}\ --output=framework_test_output/${name_of_input_file}/xxx${IDENTIFIER}_PAR_${name_of_input_file}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep}
+      ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS}\ -np\ ${num_proc}\ ./post_drt_ensight\ --file=framework_test_output/${name_of_input_file}_p${num_proc_base_run}/xxx${IDENTIFIER}\ --output=framework_test_output/${name_of_input_file}_p${num_proc_base_run}/xxx${IDENTIFIER}_PAR_${name_of_input_file}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep}
       )
 
   # specify test case
@@ -466,7 +541,11 @@ macro(
     NAME ${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp
     COMMAND
       sh -c
-      " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && ${PVPYTHON} ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py framework_test_output/${name_of_input_file}/xxx${IDENTIFIER}_PAR_${name_of_input_file}${FIELD}*.case framework_test_output/${name_of_input_file}/xxx${IDENTIFIER}_SER_${name_of_input_file}${FIELD}*.case ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}${IDENTIFIER}${FIELD}.csv framework_test_output/${name_of_input_file}"
+      " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && ${PVPYTHON} ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py framework_test_output/${name_of_input_file}_p${num_proc_base_run}/xxx${IDENTIFIER}_PAR_${name_of_input_file}${FIELD}*.case framework_test_output/${name_of_input_file}_p${num_proc_base_run}/xxx${IDENTIFIER}_SER_${name_of_input_file}${FIELD}*.case ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}${IDENTIFIER}${FIELD}.csv framework_test_output/${name_of_input_file}_p${num_proc_base_run}"
+    )
+  set_tests_properties(
+    ${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp
+    PROPERTIES FIXTURES_REQUIRED "${name_of_input_file}-p${num_proc_base_run};test_cleanup"
     )
   set_tests_properties(
     ${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp
@@ -475,6 +554,10 @@ macro(
   set_tests_properties(
     ${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp
     PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}"
+    )
+  # Set "RUN_SERIAL TRUE" because result files can only be read by one process.
+  set_tests_properties(
+    ${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp PROPERTIES RUN_SERIAL TRUE
     )
 endmacro(post_processing)
 
@@ -485,6 +568,7 @@ endmacro(post_processing)
 # Usage in TestingFrameworkListOfTests.cmake: "result_file_abs(<name_of_input_file> <num_proc> <filetag> <resultfilename> <referencefilename> <tolerance>)"
 # <name_of_input_file>: must equal the name of a .dat file in directory Input; without ".dat"
 # <num_proc>: number of processors the test should use
+# <num_proc_base_run>: number of processors of precursor base run
 # <filetag>: add tag to test name
 # <resultfilename>: file that should be compared
 # <referencefilename>: file to compare with
@@ -493,6 +577,7 @@ macro(
   result_file_abs
   name_of_input_file
   num_proc
+  num_proc_base_run
   filetag
   resultfilename
   referencefilename
@@ -504,8 +589,12 @@ macro(
     COMMAND
       ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3
       ${PROJECT_SOURCE_DIR}/utilities/diff_with_tolerance.py ${tolerance}
-      ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}/${resultfilename}
+      ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc_base_run}/${resultfilename}
       ${PROJECT_SOURCE_DIR}/Input/${referencefilename} abs_tol 0.0
+    )
+  set_tests_properties(
+    ${name_of_input_file}-p${num_proc}-${filetag}
+    PROPERTIES FIXTURES_REQUIRED "${name_of_input_file}-p${num_proc_base_run};test_cleanup"
     )
 
   # set maximum test runtime
@@ -521,6 +610,7 @@ endmacro(result_file_abs)
 # Usage in TestingFrameworkListOfTests.cmake: "result_file_rel(<name_of_input_file> <num_proc> <filetag> <resultfilename> <referencefilename> <tolerance>)"
 # <name_of_input_file>: must equal the name of a .dat file in directory Input; without ".dat"
 # <num_proc>: number of processors the test should use
+# <num_proc_base_run>: number of processors of precursor base run
 # <filetag>: add tag to test name
 # <resultfilename>: file that should be compared
 # <referencefilename>: file to compare with
@@ -530,6 +620,7 @@ macro(
   result_file_rel
   name_of_input_file
   num_proc
+  num_proc_base_run
   filetag
   resultfilename
   referencefilename
@@ -542,8 +633,12 @@ macro(
     COMMAND
       ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3
       ${PROJECT_SOURCE_DIR}/utilities/diff_with_tolerance.py ${tolerance}
-      ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}/${resultfilename}
+      ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc_base_run}/${resultfilename}
       ${PROJECT_SOURCE_DIR}/Input/${referencefilename} rel_tol ${min_val}
+    )
+  set_tests_properties(
+    ${name_of_input_file}-p${num_proc}-${filetag}
+    PROPERTIES FIXTURES_REQUIRED "${name_of_input_file}-p${num_proc_base_run};test_cleanup"
     )
 
   # set maximum test runtime
@@ -560,6 +655,7 @@ endmacro(result_file_rel)
 # <name_of_test>: name of this test
 # <name_of_input_file>: must equal the name of a .dat file from a previous test
 # <num_proc>: number of processors the test should use
+# <num_proc_base_run>: number of processors of precursor base run
 # <pvd_referencefilename>: file to compare with
 # <tolerance>: difference the values may have
 # <optional: time_steps>: time steps when to compare
@@ -568,6 +664,7 @@ macro(
   name_of_test
   name_of_input_file
   num_proc
+  num_proc_base_run
   pvd_resultfilename
   pvd_referencefilename
   tolerance
@@ -586,9 +683,13 @@ macro(
     COMMAND
       ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3
       ${PROJECT_SOURCE_DIR}/tests/output_test/vtk_compare.py
-      ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}/${pvd_resultfilename}
+      ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc_base_run}/${pvd_resultfilename}
       ${PROJECT_SOURCE_DIR}/Input/${pvd_referencefilename} ${tolerance} ${num_extra_args}
       ${extra_macro_args}
+    )
+  set_tests_properties(
+    ${name_of_test}-p${num_proc}
+    PROPERTIES FIXTURES_REQUIRED "${name_of_input_file}-p${num_proc_base_run};test_cleanup"
     )
 
   # set maximum test runtime
@@ -610,3 +711,4 @@ add_test(
     sh -c
     "if [ -f *_CUTFAIL.pos ]; then mkdir -p ../cut-debug ; cp *_CUTFAIL.pos ../cut-debug/ ; fi ; rm -vfr xxx* framework_test_output* core.* amesos-failure.dat default.bc default.head"
   )
+set_tests_properties(test_cleanup PROPERTIES FIXTURES_CLEANUP test_cleanup)

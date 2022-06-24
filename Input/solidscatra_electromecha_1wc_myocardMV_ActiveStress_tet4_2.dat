@@ -74,7 +74,7 @@ COUPALGO                        ssi_OneWay_ScatraToSolid //IterStagg //   ssi_It
 ITEMAX                          10
 SCATRATIMINTTYPE                Cardiac_Monodomain
 SCATRA_FROM_RESTART_FILE        yes
-SCATRA_FILENAME                 framework_test_output/solidscatra_electromecha_1wc_myocardMV_ActiveStress_tet4_1/xxx
+SCATRA_FILENAME                 framework_test_output/solidscatra_electromecha_1wc_myocardMV_ActiveStress_tet4_1_p3/xxx
 --------------------------------------------------------SSI CONTROL/PARTITIONED
 CONVTOL                         1e-08
 --------------------------------------------------------CLONING MATERIAL MAP

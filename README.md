@@ -162,10 +162,12 @@ To verify that the build was successful, run the minimal set of tests via
 ctest -L minimal
 ```
 
-or all tests via
 ```bash
-ctest
+ctest -j <num_parallel_tests>
 ```
+
+where `<num_parallel_tests>` is the number of test that will be executed in parallel.
+or all tests via
 
 [↑ Contents](#contents)
 
