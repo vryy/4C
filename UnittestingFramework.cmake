@@ -1,24 +1,12 @@
-# Define a convenience target for all unit tests and add it to 'full'
-# All unit test executables should add themselves as a dependency to 'unittests'
-add_custom_target(unittests)
-add_dependencies(full unittests)
-
-# Deprecated CxxTest setup
-find_package(CxxTest 4)
-if(CXXTEST_FOUND)
-  enable_testing()
-  add_subdirectory(unittests_deprecated_cxxtest)
-else()
-  message("WW *************************************************************")
-  message("WW Warning: CxxTest not found. Unittests not available in BACI.")
-  message("WW Warning: To enable unit tests, install 'cxxtest'.")
-  message("WW ************************************************************")
-endif(CXXTEST_FOUND)
-
 # Fetch GoogleTest and setup the unit tests if option is enabled
 option(BACI_WITH_GOOGLETEST "Use GoogleTest for unit testing" ON)
 if(BACI_WITH_GOOGLETEST)
   message(STATUS "Unit tests with GoogleTest: enabled")
+
+  # Define a convenience target for all unit tests and add it to 'full'
+  # All unit test executables should add themselves as a dependency to 'unittests'
+  add_custom_target(unittests)
+  add_dependencies(full unittests)
 
   if(TARGET gtest)
     message(
