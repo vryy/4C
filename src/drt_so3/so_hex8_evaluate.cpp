@@ -197,6 +197,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
 
+      // This matrix is used in the evaluation functions to store the mass matrix. If the action
+      // type is ELEMENTS::struct_calc_internalinertiaforce we do not want to actually populate the
+      // elemat2 variable, since the inertia terms will be directly added to the right hand side.
+      // Therefore, a view is only set in cases where the evaluated mass matrix should also be
+      // exported in elemat2.
       LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> mass_matrix_evaluate;
       if (act != ELEMENTS::struct_calc_internalinertiaforce) mass_matrix_evaluate.SetView(elemat2);
 
@@ -205,7 +210,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.GetState("material_displacement");
-        ;
         DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
