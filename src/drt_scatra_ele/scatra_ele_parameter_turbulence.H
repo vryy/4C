@@ -36,8 +36,7 @@ namespace DRT
      public:
       //! singleton access method
       static ScaTraEleParameterTurbulence* Instance(
-          const std::string& disname,                           //!< name of discretization
-          const ScaTraEleParameterTurbulence* delete_me = NULL  //!< creation/destruction indication
+          const std::string& disname  //!< name of discretization
       );
 
 
@@ -90,9 +89,6 @@ namespace DRT
       //! private constructor for singletons
       ScaTraEleParameterTurbulence(const std::string& disname  //!< name of discretization
       );
-
-      //! private destructor for singletons
-      virtual ~ScaTraEleParameterTurbulence() { return; };
 
       //! @name turbulence parameters
       //! @{

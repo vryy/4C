@@ -12,6 +12,7 @@
 #include "contact_aug_element_utils.H"
 #include "../linalg/linalg_gauss.H"
 #include "../drt_mortar/mortar_defines.H"
+#include "../headers/singleton_owner.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -127,20 +128,16 @@ CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get3D(
 template <class DebugPolicy, unsigned probdim, DRT::Element::DiscretizationType ref_type,
     DRT::Element::DiscretizationType tar_type>
 CONTACT::AUG::ProjectorBase*
-CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::Instance(bool delete_me)
+CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::Instance()
 {
-  static ProjectorBase* instance = NULL;
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+      []()
+      {
+        return std::unique_ptr<Projector<DebugPolicy, probdim, ref_type, tar_type>>(
+            new Projector<DebugPolicy, probdim, ref_type, tar_type>);
+      });
 
-  if (delete_me)
-  {
-    if (instance) delete instance;
-
-    return NULL;
-  }
-
-  if (not instance) instance = new Projector<DebugPolicy, probdim, ref_type, tar_type>;
-
-  return instance;
+  return singleton_owner.Instance(::UTILS::SingletonAction::create);
 }
 
 /*----------------------------------------------------------------------------*

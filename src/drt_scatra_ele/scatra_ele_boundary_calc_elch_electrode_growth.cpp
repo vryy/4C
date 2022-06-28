@@ -19,38 +19,24 @@ growth, e.g., lithium plating
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 
 #include "../drt_mat/electrode.H"
+#include "../headers/singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>*
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::Instance(const int numdofpernode,
-    const int numscal, const std::string& disname,
-    const ScaTraEleBoundaryCalcElchElectrodeGrowth* delete_me)
+DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::Instance(
+    const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static std::map<std::string, ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>*> instances;
-
-  if (delete_me == nullptr)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] =
-          new ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>(numdofpernode, numscal, disname);
-  }
-
-  else
-  {
-    for (auto i = instances.begin(); i != instances.end(); ++i)
-    {
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](int numdofpernode, int numscal, const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return nullptr;
-      }
-    }
-  }
+        return std::unique_ptr<ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>>(
+            new ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>(numdofpernode, numscal, disname));
+      });
 
-  return instances[disname];
+  return singleton_map[disname].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 /*----------------------------------------------------------------------*

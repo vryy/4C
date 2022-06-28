@@ -439,7 +439,7 @@ template <DRT::Element::DiscretizationType distype>
 MORTAR::MortarProjectorCalc<distype>* MORTAR::MortarProjectorCalc<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<MORTAR::MortarProjectorCalc<distype>> singleton_owner(
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<MORTAR::MortarProjectorCalc<distype>>(

@@ -30,8 +30,7 @@ namespace DRT
      public:
       //! singleton access method
       static LubricationEleParameter* Instance(
-          const std::string& disname,                      //!< name of discretization
-          const LubricationEleParameter* delete_me = NULL  //!< creation/destruction indication
+          const std::string& disname  //!< name of discretization
       );
 
 

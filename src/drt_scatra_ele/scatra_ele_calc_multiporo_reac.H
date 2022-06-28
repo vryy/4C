@@ -58,9 +58,8 @@ namespace DRT
       virtual ~ScaTraEleCalcMultiPoroReac() {}
 
       /// Singleton access method
-      static ScaTraEleCalcMultiPoroReac<distype>* Instance(const int numdofpernode,
-          const int numscal, const std::string& disname,
-          const ScaTraEleCalcMultiPoroReac* delete_me = NULL);
+      static ScaTraEleCalcMultiPoroReac<distype>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
       /// Setup element evaluation
       virtual int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization);

@@ -18,6 +18,7 @@
 #include "../drt_mat/matlist_chemotaxis.H"
 #include "../drt_mat/scatra_mat.H"
 #include "../drt_mat/matlist.H"
+#include "../headers/singleton_owner.H"
 
 //! note for chemotaxis in BACI:
 //! assume the following situation: scalar A does follow the gradient of scalar B (i.e. B is the
@@ -38,33 +39,18 @@
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>*
-DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::Instance(const int numdofpernode,
-    const int numscal, const std::string& disname, const ScaTraEleCalcChemo* delete_me)
+DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::Instance(
+    const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static std::map<std::string, ScaTraEleCalcChemo<distype, probdim>*> instances;
-
-  if (delete_me == NULL)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] =
-          new ScaTraEleCalcChemo<distype, probdim>(numdofpernode, numscal, disname);
-  }
-
-  else
-  {
-    for (typename std::map<std::string, ScaTraEleCalcChemo<distype, probdim>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
+        return std::unique_ptr<ScaTraEleCalcChemo<distype, probdim>>(
+            new ScaTraEleCalcChemo<distype, probdim>(numdofpernode, numscal, disname));
+      });
 
-  return instances[disname];
+  return singleton_map[disname].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 

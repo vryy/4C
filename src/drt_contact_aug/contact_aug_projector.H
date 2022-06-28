@@ -92,11 +92,9 @@ namespace CONTACT
           DRT::UTILS::DisTypeToNumNodePerEle<tar_type>::numNodePerElement;
 
      public:
-      static ProjectorBase* Instance(bool delete_me = false);
+      static ProjectorBase* Instance();
 
      protected:
-      ~Projector() override{};
-
       /// derived
       bool operator()(MORTAR::MortarElement& ref_ele, const double* ref_xi,
           MORTAR::MortarElement& target_ele, double* target_xi, double& alpha) override;

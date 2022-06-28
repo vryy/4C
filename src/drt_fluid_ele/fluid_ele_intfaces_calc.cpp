@@ -70,7 +70,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidIntFaceImpl<distype>* DRT::ELEMENTS::FluidIntFaceImpl<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidIntFaceImpl<distype>> singleton_owner(
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::FluidIntFaceImpl<distype>>(

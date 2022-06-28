@@ -17,7 +17,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcStd<distype>* DRT::ELEMENTS::FluidEleCalcStd<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcStd<distype>> singleton_owner(
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcStd<distype>>(

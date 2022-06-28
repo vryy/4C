@@ -30,39 +30,35 @@ namespace DRT
      public:
       static ParObjectPreRegister* Instance()
       {
-        if (instance_ == NULL)
+        if (instance_ == nullptr)
         {
-          instance_ = new ParObjectPreRegister;
+          instance_ = std::make_unique<ParObjectPreRegister>();
         }
-        return instance_;
+        return instance_.get();
       }
 
       void Register(ParObjectType* parobjecttype) { types_.push_back(parobjecttype); }
 
       static void Finalize()
       {
-        if (instance_ != NULL)
+        if (instance_)
         {
-          std::vector<ParObjectType*>& types = instance_->types_;
-          for (std::vector<ParObjectType*>::iterator i = types.begin(); i != types.end(); ++i)
+          for (auto& parobjecttype : instance_->types_)
           {
-            ParObjectType* parobjecttype = *i;
-            // DRT::ParObjectFactory::Instance().Register( parobjecttype );
             parobjecttype->UniqueParObjectId();
           }
-          delete instance_;
-          instance_ = NULL;
+          instance_.reset();
         }
       }
 
      private:
-      static ParObjectPreRegister* instance_;
+      static std::unique_ptr<ParObjectPreRegister> instance_;
 
       /// preregistered types
       std::vector<ParObjectType*> types_;
     };
 
-    ParObjectPreRegister* ParObjectPreRegister::instance_;
+    std::unique_ptr<ParObjectPreRegister> ParObjectPreRegister::instance_;
   }  // namespace
 }  // namespace DRT
 
@@ -89,36 +85,18 @@ int DRT::ParObjectType::UniqueParObjectId()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::ParObjectFactory* DRT::ParObjectFactory::instance_;
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-DRT::ParObjectFactory::ParObjectFactory() {}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 DRT::ParObjectFactory& DRT::ParObjectFactory::Instance()
 {
-  if (instance_ == NULL)
+  static std::unique_ptr<DRT::ParObjectFactory> instance;
+  if (instance == nullptr)
   {
     // Create on demand. This is required since the instance will be accessed
     // by ParObjectType constructors. ParObjectType are singletons as
     // well. The singleton creation order is undefined.
-    instance_ = new ParObjectFactory;
+    instance = std::unique_ptr<DRT::ParObjectFactory>(new ParObjectFactory);
   }
-  return *instance_;
+  return *instance;
 }
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ParObjectFactory::Done()
-{
-  if (instance_ != NULL) delete instance_;
-  instance_ = NULL;
-};
 
 
 /*----------------------------------------------------------------------*/

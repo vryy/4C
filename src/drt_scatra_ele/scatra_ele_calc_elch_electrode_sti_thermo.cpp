@@ -11,39 +11,25 @@ within thermodynamic electrodes
 #include "scatra_ele_calc_elch_electrode_sti_thermo.H"
 
 #include "scatra_ele_parameter_timint.H"
+#include "../headers/singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 11/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>*
-DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::Instance(const int numdofpernode,
-    const int numscal, const std::string& disname,
-    const ScaTraEleCalcElchElectrodeSTIThermo* delete_me)
+DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::Instance(
+    const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static std::map<std::string, ScaTraEleCalcElchElectrodeSTIThermo<distype>*> instances;
-
-  if (delete_me == NULL)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] =
-          new ScaTraEleCalcElchElectrodeSTIThermo<distype>(numdofpernode, numscal, disname);
-  }
-
-  else
-  {
-    for (typename std::map<std::string, ScaTraEleCalcElchElectrodeSTIThermo<distype>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-  }
+        return std::unique_ptr<ScaTraEleCalcElchElectrodeSTIThermo<distype>>(
+            new ScaTraEleCalcElchElectrodeSTIThermo<distype>(numdofpernode, numscal, disname));
+      });
 
-  return instances[disname];
+  return singleton_map[disname].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 

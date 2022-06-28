@@ -30,8 +30,8 @@ namespace DRT
       virtual ~ScaTraEleCalcLS() {}
 
       /// Singleton access method
-      static ScaTraEleCalcLS<distype>* Instance(const int numdofpernode, const int numscal,
-          const std::string& disname, const ScaTraEleCalcLS* delete_me = NULL);
+      static ScaTraEleCalcLS<distype>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
       int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,

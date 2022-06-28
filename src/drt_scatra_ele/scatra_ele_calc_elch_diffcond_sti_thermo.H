@@ -30,9 +30,8 @@ namespace DRT
     {
      public:
       //! singleton access method
-      static ScaTraEleCalcElchDiffCondSTIThermo<distype>* Instance(const int numdofpernode,
-          const int numscal, const std::string& disname,
-          const ScaTraEleCalcElchDiffCondSTIThermo* delete_me = NULL);
+      static ScaTraEleCalcElchDiffCondSTIThermo<distype>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
 
      private:

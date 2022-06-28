@@ -19,7 +19,7 @@
 TUTORIAL::ELEMENTS::TutorialEleCalc* TUTORIAL::ELEMENTS::TutorialEleCalc::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<TUTORIAL::ELEMENTS::TutorialEleCalc> singleton_owner(
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<TUTORIAL::ELEMENTS::TutorialEleCalc>(

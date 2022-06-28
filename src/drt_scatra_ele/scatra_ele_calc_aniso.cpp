@@ -32,38 +32,24 @@
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/scatra_mat_aniso.H"
+#include "../headers/singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>*
-DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Instance(const int numdofpernode,
-    const int numscal, const std::string& disname, const ScaTraEleCalcAniso* delete_me)
+DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Instance(
+    const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static std::map<std::string, ScaTraEleCalcAniso<distype, probdim>*> instances;
-
-  if (delete_me == NULL)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] =
-          new ScaTraEleCalcAniso<distype, probdim>(numdofpernode, numscal, disname);
-  }
-
-  else
-  {
-    for (typename std::map<std::string, ScaTraEleCalcAniso<distype, probdim>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
+        return std::unique_ptr<ScaTraEleCalcAniso<distype, probdim>>(
+            new ScaTraEleCalcAniso<distype, probdim>(numdofpernode, numscal, disname));
+      });
 
-  return instances[disname];
+  return singleton_map[disname].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 /*----------------------------------------------------------------------*

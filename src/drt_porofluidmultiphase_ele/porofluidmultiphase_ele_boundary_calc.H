@@ -38,8 +38,8 @@ namespace DRT
     {
      public:
       /// Singleton access method
-      static PoroFluidMultiPhaseEleBoundaryCalc<distype>* Instance(const int numdofpernode,
-          const std::string& disname, const PoroFluidMultiPhaseEleBoundaryCalc* delete_me = NULL);
+      static PoroFluidMultiPhaseEleBoundaryCalc<distype>* Instance(
+          const int numdofpernode, const std::string& disname);
 
       /// Empty destructor
       virtual ~PoroFluidMultiPhaseEleBoundaryCalc() { return; };

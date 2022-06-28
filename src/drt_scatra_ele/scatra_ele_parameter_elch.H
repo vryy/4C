@@ -34,11 +34,8 @@ namespace DRT
 
       //! singleton access method
       static ScaTraEleParameterElch* Instance(
-          const std::string& disname,                     //!< name of discretization
-          const ScaTraEleParameterElch* delete_me = NULL  //!< creation/destruction indication
+          const std::string& disname  //!< name of discretization
       );
-
-
 
       //! return flag for coupling of lithium-ion flux density and electric current density at
       //! Dirichlet and Neumann boundaries

@@ -63,7 +63,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ElemagIntFaceImpl<distype>* DRT::ELEMENTS::ElemagIntFaceImpl<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::ElemagIntFaceImpl<distype>> singleton_owner(
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::ElemagIntFaceImpl<distype>>(

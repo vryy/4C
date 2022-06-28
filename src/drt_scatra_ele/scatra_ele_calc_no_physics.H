@@ -38,8 +38,8 @@ namespace DRT
       typedef ScaTraEleCalc<distype, probdim> my;
 
       //! singleton access method
-      static ScaTraEleCalcNoPhysics<distype, probdim>* Instance(int numdofpernode, int numscal,
-          const std::string& disname, const ScaTraEleCalcNoPhysics* delete_me = NULL);
+      static ScaTraEleCalcNoPhysics<distype, probdim>* Instance(
+          int numdofpernode, int numscal, const std::string& disname);
 
       //! evaluate the element
       int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,

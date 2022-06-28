@@ -211,15 +211,11 @@ namespace CONTACT
        *
        *  \author hiermeier \date 06/17 */
       static Integrator<probdim, slavetype, mastertype, IntPolicy>* Instance(
-          CONTACT::ParamsInterface* cparams, CONTACT::CoIntegrator* wrapper,
-          const bool delete_me = false);
+          CONTACT::ParamsInterface* cparams, CONTACT::CoIntegrator* wrapper);
 
      public:
       //! Default constructor without active set information
       Integrator(CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator& wrapper);
-
-      //! Destructor
-      virtual ~Integrator() = default;
 
       // don't want = operator and cctor
       Integrator operator=(const Integrator& old) = delete;

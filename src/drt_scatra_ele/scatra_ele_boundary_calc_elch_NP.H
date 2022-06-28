@@ -25,9 +25,8 @@ namespace DRT
 
      public:
       //! singleton access method
-      static ScaTraEleBoundaryCalcElchNP<distype>* Instance(const int numdofpernode,
-          const int numscal, const std::string& disname,
-          const ScaTraEleBoundaryCalcElchNP* delete_me = NULL);
+      static ScaTraEleBoundaryCalcElchNP<distype>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
 
      private:

@@ -16,40 +16,25 @@
 #include "../drt_mat/elchphase.H"
 #include "../drt_mat/ion.H"
 #include "../drt_mat/newman.H"
+#include "../headers/singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>*
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::Instance(const int numdofpernode,
-    const int numscal, const std::string& disname,
-    const ScaTraEleBoundaryCalcElchDiffCond* delete_me)
+DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::Instance(
+    const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static std::map<std::string, ScaTraEleBoundaryCalcElchDiffCond<distype>*> instances;
-
-  if (delete_me == NULL)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] =
-          new ScaTraEleBoundaryCalcElchDiffCond<distype>(numdofpernode, numscal, disname);
-  }
-
-  else
-  {
-    for (typename std::map<std::string, ScaTraEleBoundaryCalcElchDiffCond<distype>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
+        return std::unique_ptr<ScaTraEleBoundaryCalcElchDiffCond<distype>>(
+            new ScaTraEleBoundaryCalcElchDiffCond<distype>(numdofpernode, numscal, disname));
+      });
 
-  return instances[disname];
+  return singleton_map[disname].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 

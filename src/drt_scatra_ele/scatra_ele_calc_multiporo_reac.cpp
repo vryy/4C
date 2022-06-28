@@ -24,6 +24,7 @@
 #include "../drt_mat/structporo.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/matlist_reactions.H"
+#include "../headers/singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -49,32 +50,18 @@ DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ScaTraEleCalcMultiPoroReac(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>*
-DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::Instance(const int numdofpernode,
-    const int numscal, const std::string& disname, const ScaTraEleCalcMultiPoroReac* delete_me)
+DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::Instance(
+    const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static std::map<std::string, ScaTraEleCalcMultiPoroReac<distype>*> instances;
-
-  if (delete_me == NULL)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleCalcMultiPoroReac<distype>(numdofpernode, numscal, disname);
-  }
-
-  else
-  {
-    for (typename std::map<std::string, ScaTraEleCalcMultiPoroReac<distype>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
+        return std::unique_ptr<ScaTraEleCalcMultiPoroReac<distype>>(
+            new ScaTraEleCalcMultiPoroReac<distype>(numdofpernode, numscal, disname));
+      });
 
-  return instances[disname];
+  return singleton_map[disname].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 

@@ -46,8 +46,8 @@ namespace DRT
 
      public:
       //! Singleton access method
-      static ArteryEleCalcLinExp<distype>* Instance(const int numdofpernode,
-          const std::string& disname, const ArteryEleCalcLinExp* delete_me = NULL);
+      static ArteryEleCalcLinExp<distype>* Instance(
+          const int numdofpernode, const std::string& disname);
 
       int Evaluate(Artery* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
           DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,

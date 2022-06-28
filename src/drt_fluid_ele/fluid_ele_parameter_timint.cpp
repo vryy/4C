@@ -21,7 +21,7 @@ with different parameters in more than one fluid field is not yet supported.
 DRT::ELEMENTS::FluidEleParameterTimInt* DRT::ELEMENTS::FluidEleParameterTimInt::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleParameterTimInt> singleton_owner(
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::FluidEleParameterTimInt>(

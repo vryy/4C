@@ -24,44 +24,24 @@ additional static parameters required for scalar transport element evaluation.
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
 #include "../drt_lib/drt_dserror.H"
+#include "../headers/singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterElchDiffCond*
 DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance(
-    const std::string& disname,                      //!< name of discretization
-    const ScaTraEleParameterElchDiffCond* delete_me  //!< creation/destruction indication
+    const std::string& disname  //!< name of discretization
 )
 {
-  // each discretization is associated with exactly one instance of this class according to a static
-  // map
-  static std::map<std::string, ScaTraEleParameterElchDiffCond*> instances;
-
-  // check whether instance already exists for current discretization, and perform instantiation if
-  // not
-  if (delete_me == NULL)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleParameterElchDiffCond(disname);
-  }
-
-  // destruct instance
-  else
-  {
-    for (std::map<std::string, ScaTraEleParameterElchDiffCond*>::iterator i = instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
+        return std::unique_ptr<ScaTraEleParameterElchDiffCond>(
+            new ScaTraEleParameterElchDiffCond(disname));
+      });
 
-  // return existing or newly created instance
-  return instances[disname];
+  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, disname);
 }
 
 /*----------------------------------------------------------------------*

@@ -702,6 +702,9 @@ namespace SCATRA
   class MortarCellInterface
   {
    public:
+    //! Virtual destructor.
+    virtual ~MortarCellInterface() = default;
+
     //! evaluate single mortar integration cell of particular slave-side and master-side
     //! discretization types
     virtual void Evaluate(const DRT::Discretization& idiscret,  //!< interface discretization

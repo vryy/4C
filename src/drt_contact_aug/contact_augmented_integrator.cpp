@@ -450,26 +450,16 @@ template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
     DRT::Element::DiscretizationType mastertype, class IntPolicy>
 CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>*
 CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Instance(
-    CONTACT::ParamsInterface* cparams, CONTACT::CoIntegrator* wrapper, const bool delete_me)
+    CONTACT::ParamsInterface* cparams, CONTACT::CoIntegrator* wrapper)
 {
-  static Integrator<probdim, slavetype, mastertype, IntPolicy>* instance = NULL;
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+      []()
+      {
+        return std::unique_ptr<Integrator<probdim, slavetype, mastertype, IntPolicy>>(
+            new Integrator<probdim, slavetype, mastertype, IntPolicy>);
+      });
 
-  if (delete_me)
-  {
-    if (instance)
-    {
-      instance->IntPolicy::timer_.write(std::cout);
-      delete instance;
-    }
-
-    return NULL;
-  }
-
-  if (not instance)
-  {
-    instance = new Integrator<probdim, slavetype, mastertype, IntPolicy>();
-  }
-
+  auto instance = singleton_owner.Instance(::UTILS::SingletonAction::create);
   instance->Init(cparams, wrapper);
   instance->IntPolicy::timer_.setComm(&wrapper->Comm());
 

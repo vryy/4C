@@ -82,7 +82,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::TopOptImpl<distype>* DRT::ELEMENTS::TopOptImpl<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::TopOptImpl<distype>> singleton_owner(
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::TopOptImpl<distype>>(
@@ -1367,7 +1367,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::TopOptBoundaryImpl<distype>* DRT::ELEMENTS::TopOptBoundaryImpl<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::TopOptBoundaryImpl<distype>> singleton_owner(
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::TopOptBoundaryImpl<distype>>(

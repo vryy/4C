@@ -18,39 +18,24 @@
 
 #include "../drt_lib/drt_globalproblem.H"  // for curves and functions
 #include "../drt_lib/standardtypes_cpp.H"  // for EPS12 and so on
+#include "../headers/singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>*
-DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Instance(const int numdofpernode,
-    const std::string& disname, const PoroFluidMultiPhaseEleBoundaryCalc* delete_me)
+DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Instance(
+    const int numdofpernode, const std::string& disname)
 {
-  static std::map<std::string, PoroFluidMultiPhaseEleBoundaryCalc<distype>*> instances;
-
-  // create a new instance
-  if (delete_me == NULL)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] = new PoroFluidMultiPhaseEleBoundaryCalc<distype>(numdofpernode, disname);
-  }
-
-  // this is the clean up
-  else
-  {
-    for (typename std::map<std::string, PoroFluidMultiPhaseEleBoundaryCalc<distype>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const int numdofpernode, const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-  }
+        return std::unique_ptr<PoroFluidMultiPhaseEleBoundaryCalc<distype>>(
+            new PoroFluidMultiPhaseEleBoundaryCalc<distype>(numdofpernode, disname));
+      });
 
-  return instances[disname];
+  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, numdofpernode, disname);
 }
 
 

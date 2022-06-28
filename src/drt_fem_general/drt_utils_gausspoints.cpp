@@ -237,15 +237,14 @@ DRT::UTILS::GaussIntegration::GaussIntegration(DRT::Element::DiscretizationType 
   gp_ = GaussPointCache::Instance().Create(distype, degree);
 }
 
-DRT::UTILS::GaussPointCache* DRT::UTILS::GaussPointCache::instance_;
-
 DRT::UTILS::GaussPointCache& DRT::UTILS::GaussPointCache::Instance()
 {
-  if (instance_ == NULL)
+  static std::unique_ptr<GaussPointCache> instance;
+  if (instance == nullptr)
   {
-    instance_ = new GaussPointCache;
+    instance = std::unique_ptr<GaussPointCache>(new GaussPointCache);
   }
-  return *instance_;
+  return *instance;
 }
 
 

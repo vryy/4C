@@ -15,37 +15,25 @@
 #include "scatra_ele_sti_thermo.H"
 
 #include "../drt_mat/soret.H"
+#include "../headers/singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 11/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>*
-DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Instance(const int numdofpernode,
-    const int numscal, const std::string& disname, const ScaTraEleCalcSTIElectrode* delete_me)
+DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Instance(
+    const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static std::map<std::string, ScaTraEleCalcSTIElectrode<distype>*> instances;
-
-  if (delete_me == nullptr)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleCalcSTIElectrode<distype>(numdofpernode, numscal, disname);
-  }
-
-  else
-  {
-    for (auto instance = instances.begin(); instance != instances.end(); ++instance)
-    {
-      if (instance->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        delete instance->second;
-        instances.erase(instance);
-        return nullptr;
-      }
-    }
-  }
+        return std::unique_ptr<ScaTraEleCalcSTIElectrode<distype>>(
+            new ScaTraEleCalcSTIElectrode<distype>(numdofpernode, numscal, disname));
+      });
 
-  return instances[disname];
+  return singleton_map[disname].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 

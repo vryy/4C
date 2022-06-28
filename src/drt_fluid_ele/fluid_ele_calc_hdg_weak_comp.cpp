@@ -865,7 +865,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>*
 DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Instance(::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>> singleton_owner(
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>>(

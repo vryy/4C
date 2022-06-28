@@ -47,9 +47,8 @@ namespace DRT
       virtual ~ScaTraEleCalcAdvReac() { return; };
 
       /// Singleton access method
-      static ScaTraEleCalcAdvReac<distype, probdim>* Instance(
-          const int numdofpernode, const int numscal, const std::string& disname,
-          const ScaTraEleCalcAdvReac* delete_me = NULL  //!< creation/destruction indication
+      static ScaTraEleCalcAdvReac<distype, probdim>* Instance(const int numdofpernode,
+          const int numscal, const std::string& disname  //!< creation/destruction indication
       );
 
      protected:

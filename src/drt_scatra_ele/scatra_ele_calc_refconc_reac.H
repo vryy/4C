@@ -33,8 +33,8 @@ namespace DRT
       virtual ~ScaTraEleCalcRefConcReac() {}
 
       /// Singleton access method
-      static ScaTraEleCalcRefConcReac<distype>* Instance(const int numdofpernode, const int numscal,
-          const std::string& disname, const ScaTraEleCalcRefConcReac* delete_me = NULL);
+      static ScaTraEleCalcRefConcReac<distype>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
      protected:
       //! Set reac. body force, reaction coefficient and derivatives

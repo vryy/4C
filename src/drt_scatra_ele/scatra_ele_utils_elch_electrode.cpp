@@ -11,45 +11,25 @@
 #include "scatra_ele_calc_elch_electrode.H"
 
 #include "../drt_mat/electrode.H"
+#include "../headers/singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>*
-DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(const int numdofpernode,
-    const int numscal, const std::string& disname, const ScaTraEleUtilsElchElectrode* delete_me)
+DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(
+    const int numdofpernode, const int numscal, const std::string& disname)
 {
-  // each discretization is associated with exactly one instance of this class according to a static
-  // map
-  static std::map<std::string, ScaTraEleUtilsElchElectrode<distype>*> instances;
-
-  // check whether instance already exists for current discretization, and perform instantiation if
-  // not
-  if (delete_me == nullptr)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] =
-          new ScaTraEleUtilsElchElectrode<distype>(numdofpernode, numscal, disname);
-  }
-
-  // destruct instance
-  else
-  {
-    for (auto i = instances.begin(); i != instances.end(); ++i)
-    {
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return nullptr;
-      }
-    }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
+        return std::unique_ptr<ScaTraEleUtilsElchElectrode<distype>>(
+            new ScaTraEleUtilsElchElectrode<distype>(numdofpernode, numscal, disname));
+      });
 
-  // return existing or newly created instance
-  return instances[disname];
+  return singleton_map[disname].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 /*----------------------------------------------------------------------*

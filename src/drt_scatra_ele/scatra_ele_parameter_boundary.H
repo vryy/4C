@@ -24,8 +24,7 @@ namespace DRT
     {
      public:
       //! singleton access method
-      static ScaTraEleParameterBoundary* Instance(
-          const std::string& disname, const ScaTraEleParameterBoundary* delete_me = nullptr);
+      static ScaTraEleParameterBoundary* Instance(const std::string& disname = nullptr);
 
       //! set parameters for specific kintetic model
       void SetParameters(Teuchos::ParameterList& parameters) override;

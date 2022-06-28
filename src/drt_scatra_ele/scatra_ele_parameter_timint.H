@@ -29,10 +29,7 @@ namespace DRT
     {
      public:
       //! singleton access method
-      static ScaTraEleParameterTimInt* Instance(
-          const std::string& disname,                          //!< name of discretization
-          const ScaTraEleParameterTimInt* delete_me = nullptr  //!< creation/destruction indication
-      );
+      static ScaTraEleParameterTimInt* Instance(const std::string& disname);
 
       //! set parameters
       void SetParameters(Teuchos::ParameterList& parameters) override;

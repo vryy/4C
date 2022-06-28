@@ -20,6 +20,7 @@
 #include "../drt_scatra_ele/scatra_ele_parameter_elch.H"
 #include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
 #include "../drt_scatra_ele/scatra_ele_parameter_boundary.H"
+#include "../headers/singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 08/15 |
@@ -27,32 +28,18 @@
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>*
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::Instance(
-    const int numdofpernode, const int numscal, const std::string& disname,
-    const ScaTraEleBoundaryCalcElchElectrodeSTIThermo* delete_me)
+    const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static std::map<std::string, ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>*> instances;
-
-  if (delete_me == nullptr)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] =
-          new ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>(numdofpernode, numscal, disname);
-  }
-
-  else
-  {
-    for (auto i = instances.begin(); i != instances.end(); ++i)
-    {
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return nullptr;
-      }
-    }
-  }
+        return std::unique_ptr<ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>>(
+            new ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>(
+                numdofpernode, numscal, disname));
+      });
 
-  return instances[disname];
+  return singleton_map[disname].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 

@@ -33,9 +33,8 @@ namespace DRT
       virtual ~ScaTraEleCalcChemo() {}
 
       //! Singleton access method
-      static ScaTraEleCalcChemo<distype, probdim>* Instance(const int numdofpernode,
-          const int numscal, const std::string& disname,
-          const ScaTraEleCalcChemo* delete_me = NULL);
+      static ScaTraEleCalcChemo<distype, probdim>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
      protected:
       //! calculation of chemotactic element matrix

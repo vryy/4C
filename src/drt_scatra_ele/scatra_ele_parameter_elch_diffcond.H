@@ -37,9 +37,7 @@ namespace DRT
 
       //! singleton access method
       static ScaTraEleParameterElchDiffCond* Instance(
-          const std::string& disname,  //!< name of discretization
-          const ScaTraEleParameterElchDiffCond* delete_me =
-              NULL  //!< creation/destruction indication
+          const std::string& disname  //!< name of discretization
       );
 
 

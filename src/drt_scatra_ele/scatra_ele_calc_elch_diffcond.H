@@ -40,9 +40,8 @@ namespace DRT
 
      public:
       /// Singleton access method
-      static ScaTraEleCalcElchDiffCond<distype, probdim>* Instance(const int numdofpernode,
-          const int numscal, const std::string& disname,
-          const ScaTraEleCalcElchDiffCond* delete_me = NULL);
+      static ScaTraEleCalcElchDiffCond<distype, probdim>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
      protected:
       /*========================================================================*/

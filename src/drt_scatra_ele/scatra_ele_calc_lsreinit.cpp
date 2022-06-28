@@ -22,6 +22,7 @@
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"
+#include "../headers/singleton_owner.H"
 
 //#define XCONTACT_OUTPUT
 
@@ -32,32 +33,18 @@
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>*
-DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::Instance(const int numdofpernode,
-    const int numscal, const std::string& disname, const ScaTraEleCalcLsReinit* delete_me)
+DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::Instance(
+    const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static std::map<std::string, ScaTraEleCalcLsReinit<distype, probDim>*> instances;
-
-  if (delete_me == NULL)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] =
-          new ScaTraEleCalcLsReinit<distype, probDim>(numdofpernode, numscal, disname);
-  }
-
-  else
-  {
-    typename std::map<std::string, ScaTraEleCalcLsReinit<distype, probDim>*>::iterator i;
-    for (i = instances.begin(); i != instances.end(); ++i)
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
+        return std::unique_ptr<ScaTraEleCalcLsReinit<distype, probDim>>(
+            new ScaTraEleCalcLsReinit<distype, probDim>(numdofpernode, numscal, disname));
+      });
 
-  return instances[disname];
+  return singleton_map[disname].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 /*----------------------------------------------------------------------*

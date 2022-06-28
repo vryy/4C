@@ -29,6 +29,7 @@
 #include "../drt_lib/standardtypes_cpp.H"
 
 #include "../drt_mat/lubrication_mat.H"
+#include "../headers/singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
@@ -76,35 +77,16 @@ DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::LubricationEleCalc(const st
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 DRT::ELEMENTS::LubricationEleCalc<distype, probdim>*
-DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Instance(
-    const std::string& disname, const LubricationEleCalc* delete_me)
+DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Instance(const std::string& disname)
 {
-  static std::map<std::string, LubricationEleCalc<distype, probdim>*> instances;
-
-  if (delete_me == NULL)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] = new LubricationEleCalc<distype, probdim>(disname);
-  }
-  else
-  {
-    // since we keep several instances around in the general case, we need to
-    // find which of the instances to delete with this call. This is done by
-    // letting the object to be deleted hand over the 'this' pointer, which is
-    // located in the map and deleted
-    for (typename std::map<std::string, LubricationEleCalc<distype, probdim>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
+        return std::unique_ptr<LubricationEleCalc<distype, probdim>>(
+            new LubricationEleCalc<distype, probdim>(disname));
+      });
 
-  return instances[disname];
+  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, disname);
 }
 
 

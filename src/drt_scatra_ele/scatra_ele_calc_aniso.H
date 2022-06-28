@@ -39,9 +39,8 @@ namespace DRT
 
 
       /// Singleton access method
-      static ScaTraEleCalcAniso<distype, probdim>* Instance(const int numdofpernode,
-          const int numscal, const std::string& disname,
-          const ScaTraEleCalcAniso* delete_me = NULL);
+      static ScaTraEleCalcAniso<distype, probdim>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
      protected:
       /*========================================================================*/

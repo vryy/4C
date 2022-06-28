@@ -74,7 +74,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidAdjoint3Impl<distype>* DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidAdjoint3Impl<distype>> singleton_owner(
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::FluidAdjoint3Impl<distype>>(

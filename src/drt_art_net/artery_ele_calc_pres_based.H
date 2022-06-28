@@ -48,8 +48,8 @@ namespace DRT
       virtual ~ArteryEleCalcPresBased(){};
 
       //! Singleton access method
-      static ArteryEleCalcPresBased<distype>* Instance(const int numdofpernode,
-          const std::string& disname, const ArteryEleCalcPresBased* delete_me = NULL);
+      static ArteryEleCalcPresBased<distype>* Instance(
+          const int numdofpernode, const std::string& disname);
 
       int Evaluate(Artery* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
           DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,

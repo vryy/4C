@@ -35,7 +35,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>*
 DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::Instance(::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>> singleton_owner(
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>>(

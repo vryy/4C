@@ -41,8 +41,8 @@ namespace DRT
       virtual ~ScaTraEleCalcPoroReacECM() {}
 
       /// Singleton access method
-      static ScaTraEleCalcPoroReacECM<distype>* Instance(const int numdofpernode, const int numscal,
-          const std::string& disname, const ScaTraEleCalcPoroReacECM* delete_me = NULL);
+      static ScaTraEleCalcPoroReacECM<distype>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
       //! get the material parameters
       virtual void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with

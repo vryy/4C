@@ -16,43 +16,21 @@ general static parameters required for scalar transport element evaluation.
 /*----------------------------------------------------------------------*/
 #include "scatra_ele_parameter_lsreinit.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../headers/singleton_owner.H"
 
 //----------------------------------------------------------------------*/
 //    definition of the instance
 //----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterLsReinit* DRT::ELEMENTS::ScaTraEleParameterLsReinit::Instance(
-    const std::string& disname,                  //!< name of discretization
-    const ScaTraEleParameterLsReinit* delete_me  //!< creation/destruction indication
+    const std::string& disname  //!< name of discretization
 )
 {
-  // each discretization is associated with exactly one instance of this class according to a static
-  // map
-  static std::map<std::string, ScaTraEleParameterLsReinit*> instances;
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const std::string& disname) {
+        return std::unique_ptr<ScaTraEleParameterLsReinit>(new ScaTraEleParameterLsReinit(disname));
+      });
 
-  // check whether instance already exists for current discretization, and perform instantiation if
-  // not
-  if (delete_me == NULL)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleParameterLsReinit(disname);
-  }
-
-  // destruct instance
-  else
-  {
-    for (std::map<std::string, ScaTraEleParameterLsReinit*>::iterator i = instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
-      {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
-
-  // return existing or newly created instance
-  return instances[disname];
+  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, disname);
 }
 
 //----------------------------------------------------------------------*/

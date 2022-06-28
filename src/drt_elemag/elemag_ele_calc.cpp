@@ -1113,7 +1113,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ElemagEleCalc<distype>* DRT::ELEMENTS::ElemagEleCalc<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::ElemagEleCalc<distype>> singleton_owner(
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::ElemagEleCalc<distype>>(

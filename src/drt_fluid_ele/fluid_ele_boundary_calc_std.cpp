@@ -17,7 +17,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>*
 DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::Instance(::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>> singleton_owner(
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>>(

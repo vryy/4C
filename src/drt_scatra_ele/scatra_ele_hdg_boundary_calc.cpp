@@ -78,7 +78,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>*
 DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::Instance(::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>> singleton_owner(
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>>(

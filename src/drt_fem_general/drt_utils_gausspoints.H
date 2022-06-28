@@ -187,8 +187,6 @@ namespace DRT
       Teuchos::RCP<GaussPoints> Create(DRT::Element::DiscretizationType distype, int degree);
 
      private:
-      static GaussPointCache* instance_;
-
       /// cache of already created gauss rules
       std::map<std::pair<DRT::Element::DiscretizationType, int>, Teuchos::RCP<GaussPoints>>
           gp_cache_;

@@ -120,18 +120,12 @@ namespace DRT
     void SetupElementDefinition(
         std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-    //! called upon destruction (free memory of parobject factory instance)
-    virtual void Done();
-
    private:
     void Register(ParObjectType* object_type);
 
     void FinalizeRegistration();
 
-    /// singleton.
-    static ParObjectFactory* instance_;
-
-    ParObjectFactory();
+    ParObjectFactory() = default;
 
     /// list of parobject types
 

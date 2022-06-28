@@ -36,8 +36,8 @@ namespace DRT
       virtual ~ScaTraEleCalcPoroReac() {}
 
       /// Singleton access method
-      static ScaTraEleCalcPoroReac<distype>* Instance(const int numdofpernode, const int numscal,
-          const std::string& disname, const ScaTraEleCalcPoroReac* delete_me = NULL);
+      static ScaTraEleCalcPoroReac<distype>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
 
      protected:

@@ -36,9 +36,8 @@ namespace DRT
 
      public:
       //! singleton access method
-      static ScaTraEleBoundaryCalcSTIElectrode<distype>* Instance(const int numdofpernode,
-          const int numscal, const std::string& disname,
-          const ScaTraEleBoundaryCalcSTIElectrode* delete_me = NULL);
+      static ScaTraEleBoundaryCalcSTIElectrode<distype>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
       //! destructor
       virtual ~ScaTraEleBoundaryCalcSTIElectrode() { return; };

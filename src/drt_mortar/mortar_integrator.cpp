@@ -332,14 +332,14 @@ MORTAR::MortarIntegratorCalc<distypeS, distypeM>*
 MORTAR::MortarIntegratorCalc<distypeS, distypeM>::Instance(
     ::UTILS::SingletonAction action, const Teuchos::ParameterList& params)
 {
-  static ::UTILS::SingletonOwner<MORTAR::MortarIntegratorCalc<distypeS, distypeM>> singleton_owner(
-      [=]()
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+      [](const Teuchos::ParameterList& p)
       {
         return std::unique_ptr<MORTAR::MortarIntegratorCalc<distypeS, distypeM>>(
-            new MORTAR::MortarIntegratorCalc<distypeS, distypeM>(params));
+            new MORTAR::MortarIntegratorCalc<distypeS, distypeM>(p));
       });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.Instance(action, params);
 }
 
 

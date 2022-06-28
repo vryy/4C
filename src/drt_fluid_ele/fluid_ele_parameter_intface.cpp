@@ -26,7 +26,7 @@ be set in problem specific parameter lists derived from this class.
 DRT::ELEMENTS::FluidEleParameterIntFace* DRT::ELEMENTS::FluidEleParameterIntFace::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleParameterIntFace> singleton_owner(
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::FluidEleParameterIntFace>(

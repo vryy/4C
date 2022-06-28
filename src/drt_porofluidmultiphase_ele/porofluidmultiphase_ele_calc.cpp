@@ -22,6 +22,7 @@
 #include "../drt_lib/drt_utils.H"
 
 #include "../drt_mat/material.H"
+#include "../headers/singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
@@ -56,38 +57,18 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::PoroFluidMultiPhaseEleCalc(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>*
-DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Instance(const int numdofpernode,
-    const std::string& disname, const PoroFluidMultiPhaseEleCalc* delete_me)
+DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Instance(
+    const int numdofpernode, const std::string& disname)
 {
-  static std::map<std::pair<std::string, int>, PoroFluidMultiPhaseEleCalc<distype>*> instances;
-
-  std::pair<std::string, int> key(disname, numdofpernode);
-
-  if (delete_me == NULL)
-  {
-    if (instances.find(key) == instances.end())
-      instances[key] = new PoroFluidMultiPhaseEleCalc<distype>(numdofpernode, disname);
-  }
-
-  else
-  {
-    // since we keep several instances around in the general case, we need to
-    // find which of the instances to delete with this call. This is done by
-    // letting the object to be deleted hand over the 'this' pointer, which is
-    // located in the map and deleted
-    for (typename std::map<std::pair<std::string, int>,
-             PoroFluidMultiPhaseEleCalc<distype>*>::iterator i = instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::pair<std::string, int>>(
+      [](const int numdofpernode, const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
+        return std::unique_ptr<PoroFluidMultiPhaseEleCalc<distype>>(
+            new PoroFluidMultiPhaseEleCalc<distype>(numdofpernode, disname));
+      });
 
-  return instances[key];
+  return singleton_map[std::make_pair(disname, numdofpernode)].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, disname);
 }
 
 

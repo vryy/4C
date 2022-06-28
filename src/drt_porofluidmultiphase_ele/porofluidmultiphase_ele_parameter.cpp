@@ -10,44 +10,24 @@
 #include "porofluidmultiphase_ele_parameter.H"
 
 #include "../drt_lib/drt_dserror.H"
+#include "../headers/singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter*
 DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(
-    const std::string& disname,                       //!< name of discretization
-    const PoroFluidMultiPhaseEleParameter* delete_me  //!< creation/destruction indication
+    const std::string& disname  //!< name of discretization
 )
 {
-  // each discretization is associated with exactly one instance of this class according to a static
-  // map
-  static std::map<std::string, PoroFluidMultiPhaseEleParameter*> instances;
-
-  // check whether instance already exists for current discretization, and perform instantiation if
-  // not
-  if (delete_me == NULL)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] = new PoroFluidMultiPhaseEleParameter(disname);
-  }
-
-  // destruct instance given to the destructor
-  else
-  {
-    for (std::map<std::string, PoroFluidMultiPhaseEleParameter*>::iterator i = instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
+        return std::unique_ptr<PoroFluidMultiPhaseEleParameter>(
+            new PoroFluidMultiPhaseEleParameter(disname));
+      });
 
-  // return existing or newly created instance
-  return instances[disname];
+  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, disname);
 }
 
 

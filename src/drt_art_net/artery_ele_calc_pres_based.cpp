@@ -20,6 +20,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "art_junction.H"
 #include "art_terminal_bc.H"
+#include "../headers/singleton_owner.H"
 #include <fstream>
 #include <iomanip>
 
@@ -39,37 +40,19 @@ DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::ArteryEleCalcPresBased(
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ArteryEleCalcPresBased<distype>*
 DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Instance(
-    const int numdofpernode, const std::string& disname, const ArteryEleCalcPresBased* delete_me)
+    const int numdofpernode, const std::string& disname)
 {
-  static std::map<std::pair<std::string, int>, ArteryEleCalcPresBased<distype>*> instances;
+  using Key = std::pair<std::string, int>;
+  static auto singleton_map = ::UTILS::MakeSingletonMap<Key>(
+      [](const int numdofpernode, const std::string& disname)
+      {
+        return std::unique_ptr<ArteryEleCalcPresBased<distype>>(
+            new ArteryEleCalcPresBased<distype>(numdofpernode, disname));
+      });
 
   std::pair<std::string, int> key(disname, numdofpernode);
 
-  if (delete_me == NULL)
-  {
-    if (instances.find(key) == instances.end())
-      instances[key] = new ArteryEleCalcPresBased<distype>(numdofpernode, disname);
-  }
-
-  else
-  {
-    // since we keep several instances around in the general case, we need to
-    // find which of the instances to delete with this call. This is done by
-    // letting the object to be deleted hand over the 'this' pointer, which is
-    // located in the map and deleted
-    for (typename std::map<std::pair<std::string, int>, ArteryEleCalcPresBased<distype>*>::iterator
-             i = instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
-      {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
-
-  return instances[key];
+  return singleton_map[key].Instance(::UTILS::SingletonAction::create, numdofpernode, disname);
 }
 
 /*----------------------------------------------------------------------*

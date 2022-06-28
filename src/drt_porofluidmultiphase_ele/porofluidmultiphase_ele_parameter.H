@@ -23,9 +23,7 @@ namespace DRT
      public:
       //! singleton access method
       static PoroFluidMultiPhaseEleParameter* Instance(
-          const std::string& disname,  //!< name of discretization
-          const PoroFluidMultiPhaseEleParameter* delete_me =
-              NULL  //!< creation/destruction indication
+          const std::string& disname  //!< name of discretization
       );
 
       //! set parameters

@@ -62,8 +62,8 @@ namespace DRT
       virtual ~PoroFluidMultiPhaseEleCalc(){};
 
       //! Singleton access method
-      static PoroFluidMultiPhaseEleCalc<distype>* Instance(const int numdofpernode,
-          const std::string& disname, const PoroFluidMultiPhaseEleCalc* delete_me = NULL);
+      static PoroFluidMultiPhaseEleCalc<distype>* Instance(
+          const int numdofpernode, const std::string& disname);
 
       /*========================================================================*/
       //! @name static member variables

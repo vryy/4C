@@ -79,7 +79,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Ale3_Impl<distype>* DRT::ELEMENTS::Ale3_Impl<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::Ale3_Impl<distype>> singleton_owner(
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::Ale3_Impl<distype>>(

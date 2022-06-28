@@ -10,6 +10,7 @@ concentrations and with advanced reaction terms
 
 #include "scatra_ele_calc_refconc_reac.H"
 #include "../drt_mat/matlist_reactions.H"
+#include "../headers/singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -30,32 +31,18 @@ DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::ScaTraEleCalcRefConcReac(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>*
-DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::Instance(const int numdofpernode,
-    const int numscal, const std::string& disname, const ScaTraEleCalcRefConcReac* delete_me)
+DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::Instance(
+    const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static std::map<std::string, ScaTraEleCalcRefConcReac<distype>*> instances;
-
-  if (delete_me == NULL)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleCalcRefConcReac<distype>(numdofpernode, numscal, disname);
-  }
-
-  else
-  {
-    for (typename std::map<std::string, ScaTraEleCalcRefConcReac<distype>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
+        return std::unique_ptr<ScaTraEleCalcRefConcReac<distype>>(
+            new ScaTraEleCalcRefConcReac<distype>(numdofpernode, numscal, disname));
+      });
 
-  return instances[disname];
+  return singleton_map[disname].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 //!
