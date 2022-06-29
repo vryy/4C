@@ -183,6 +183,7 @@ namespace POROMULTIPHASESCATRA
   void AddValidPoroFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
 
   /// try to create poro-specific functions from a given line definition
+  template <int dim>
   Teuchos::RCP<DRT::UTILS::Function> TryCreatePoroFunction(
       Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
       DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);

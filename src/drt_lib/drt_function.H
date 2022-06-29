@@ -317,16 +317,13 @@ namespace DRT
 
 
     /// try to create VariableExprFunction from a given line definition
+    template <int dim>
     Teuchos::RCP<Function> TryCreateVariableExprFunction(
         Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
         DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
 
-    //! create VariableExprFunction from a given line definition
-    template <int dim>
-    Teuchos::RCP<DRT::UTILS::Function> CreateVariableExprFunction(
-        const std::string& component, const std::vector<std::pair<std::string, double>>& constants);
-
     /// create a vector function from multiple expressions
+    template <int dim>
     Teuchos::RCP<Function> TryCreateExprFunction(
         std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs);
   }  // namespace UTILS

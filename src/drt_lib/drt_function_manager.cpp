@@ -17,6 +17,7 @@
 #include "../drt_poromultiphase_scatra/poromultiphase_scatra_function.H"
 #include "drt_function_library.H"
 #include "../drt_io/io.H"
+#include "drt_globalproblem.H"
 
 void PrintFunctionDatHeader()
 {
@@ -90,11 +91,12 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   return lines;
 }
 
-void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
+template <int dim>
+void FillFunctions(DRT::INPUT::DatFileReader& reader,
+    std::vector<Teuchos::RCP<DRT::UTILS::Function>>& functions,
+    DRT::UTILS::FunctionManager& functionManager)
 {
-  functions_.clear();
-
-  Teuchos::RCP<DRT::INPUT::Lines> lines = ValidFunctionLines();
+  Teuchos::RCP<DRT::INPUT::Lines> lines = DRT::UTILS::FunctionManager::ValidFunctionLines();
 
   // test for as many functions as there are
   for (int i = 1;; ++i)
@@ -114,19 +116,19 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
       // list all known TryCreate functions in a vector so they can be called with a unified syntax
       // below
-      std::vector<std::function<Teuchos::RCP<Function>(
+      std::vector<std::function<Teuchos::RCP<DRT::UTILS::Function>(
           Teuchos::RCP<DRT::INPUT::LineDefinition>, DRT::UTILS::FunctionManager&, const int)>>
-          try_create_function_vector{DRT::UTILS::TryCreateVariableExprFunction,
-              POROMULTIPHASESCATRA::TryCreatePoroFunction, STR::TryCreateStructureFunction,
+          try_create_function_vector{DRT::UTILS::TryCreateVariableExprFunction<dim>,
+              POROMULTIPHASESCATRA::TryCreatePoroFunction<dim>, STR::TryCreateStructureFunction,
               FLD::TryCreateFluidFunction, DRT::UTILS::TryCreateCombustFunction,
               DRT::UTILS::TryCreateXfluidFunction, DRT::UTILS::TryCreateLibraryFunction};
 
       for (const auto& try_create_function : try_create_function_vector)
       {
-        auto special_funct = try_create_function(function_lin_def, *this, i);
+        auto special_funct = try_create_function(function_lin_def, functionManager, i);
         if (special_funct != Teuchos::null)
         {
-          functions_.emplace_back(special_funct);
+          functions.emplace_back(special_funct);
           found_function = true;
           break;  // jumps out of for statement
         }
@@ -134,10 +136,10 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
       if (!found_function)
       {
-        auto basic_funct = DRT::UTILS::TryCreateExprFunction(functions_lin_defs);
+        auto basic_funct = DRT::UTILS::TryCreateExprFunction<dim>(functions_lin_defs);
         if (basic_funct != Teuchos::null)
         {
-          functions_.emplace_back(basic_funct);
+          functions.emplace_back(basic_funct);
         }
         else
         {
@@ -145,6 +147,26 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         }
       }
     }
+  }
+}
+
+void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
+{
+  functions_.clear();
+
+  switch (DRT::Problem::Instance()->NDim())
+  {
+    case 1:
+      FillFunctions<1>(reader, functions_, *this);
+      break;
+    case 2:
+      FillFunctions<2>(reader, functions_, *this);
+      break;
+    case 3:
+      FillFunctions<3>(reader, functions_, *this);
+      break;
+    default:
+      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
   }
 }
 
