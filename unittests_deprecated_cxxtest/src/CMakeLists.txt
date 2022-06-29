@@ -1,4 +1,0 @@
-add_subdirectory(common)
-add_subdirectory(drt_particle_engine)
-add_subdirectory(drt_particle_interaction)
-add_subdirectory(drt_particle_rigidbody)

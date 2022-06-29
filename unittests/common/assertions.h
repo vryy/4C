@@ -11,6 +11,8 @@
 #include "src/linalg/linalg_fixedsizematrix.H"
 #include "src/linalg/linalg_serialdensematrix.H"
 
+#include <type_traits>
+
 namespace TESTING::INTERNAL
 {
   namespace
@@ -43,6 +45,42 @@ namespace TESTING::INTERNAL
   }  // namespace
 
   /**
+   * Compare two iterable objects for double equality up to a tolerance. The iterables must have the
+   * same underlying data types. The signature is mandated by GoogleTest's EXPECT_PRED_FORMAT4
+   * macro.
+   *
+   * @note This function is not intended to be used directly. Use BACI_EXPECT_ITERABLE_NEAR.
+   */
+  template <typename Iterator1, typename Iterator2>
+  inline ::testing::AssertionResult AssertNear(const char* vec1Expr, const char* vec2Expr,
+      const char* /*lengthExpr*/, const char* /*toleranceExpr*/, const Iterator1 iter1,
+      const Iterator2 iter2, std::size_t length,
+      std::decay_t<decltype(*std::declval<Iterator1>())> tolerance)
+  {
+    static_assert(std::is_same_v<std::decay_t<decltype(*iter1)>, std::decay_t<decltype(*iter2)>>,
+        "Underlying data types are not the same.");
+
+    const std::string nonMatchingEntries = std::invoke(
+        [&]()
+        {
+          std::stringstream ss;
+          ss << std::fixed << std::setprecision(PrecisionForPrinting(tolerance));
+          for (std::size_t i = 0; i < length; ++i)
+          {
+            const auto value1 = *(iter1 + i);
+            const auto value2 = *(iter2 + i);
+            if (std::fabs(value1 - value2) > tolerance)
+            {
+              ss << "[" << i << "]: " << value1 << " vs. " << value2 << std::endl;
+            }
+          }
+          return ss.str();
+        });
+
+    return ResultBasedOnNonMatchingEntries(nonMatchingEntries, tolerance, vec1Expr, vec2Expr);
+  }
+
+  /**
    * Compare two std::vector<T> objects for double equality up to a tolerance. The signature is
    * mandated by GoogleTest's EXPECT_PRED_FORMAT3 macro.
    *
@@ -64,22 +102,8 @@ namespace TESTING::INTERNAL
              << " has dimension " << vec2.size() << std::endl;
     }
 
-    const std::string nonMatchingEntries = std::invoke(
-        [&]()
-        {
-          std::stringstream ss;
-          ss << std::fixed << std::setprecision(PrecisionForPrinting(tolerance));
-          for (std::size_t i = 0; i < vec1.size(); ++i)
-          {
-            if (std::fabs(vec1[i] - vec2[i]) > tolerance)
-            {
-              ss << "[" << i << "]: " << vec1[i] << " vs. " << vec2[i] << std::endl;
-            }
-          }
-          return ss.str();
-        });
-
-    return ResultBasedOnNonMatchingEntries(nonMatchingEntries, tolerance, vec1Expr, vec2Expr);
+    return AssertNear(vec1Expr, vec2Expr, "" /*lengthExpr*/, toleranceExpr, vec1.begin(),
+        vec2.begin(), vec1.size(), tolerance);
   }
 
   /**
@@ -202,6 +226,7 @@ namespace TESTING::INTERNAL
 
     return ResultBasedOnNonMatchingEntries(nonMatchingEntries, tolerance, mat1Expr, mat2Expr);
   }
+
 }  // namespace TESTING::INTERNAL
 
 /**
@@ -219,6 +244,22 @@ namespace TESTING::INTERNAL
  */
 #define BACI_EXPECT_NEAR(actual, expected, tolerance) \
   EXPECT_PRED_FORMAT3(TESTING::INTERNAL::AssertNear, actual, expected, tolerance)
+
+/**
+ * @brief Custom assertion to test for equality up to a tolerance.
+ *
+ * This macro tests two iterables @p actual and @p expected with length @p length for entry-wise
+ * equality up to an absolute @p tolerance. This works for any Iterator and also raw arrays or
+ * pointers. Also, different iterables can be compared e.g., std::vector with raw array. The
+ * underlying data type must be the same.
+ * When testing containers you need to pass an iterator e.g. my_vector.begin()
+ *
+ * @note Implementation details: this and similar macros are defined to avoid writing asserts in the
+ * unexpressive EXPECT_PRED_FORMATn syntax by gtest. They are all prefixed with `BACI_` to easily
+ * distinguish them from gtest asserts.
+ */
+#define BACI_EXPECT_ITERABLE_NEAR(actual, expected, length, tolerance) \
+  EXPECT_PRED_FORMAT4(TESTING::INTERNAL::AssertNear, actual, expected, length, tolerance)
 
 /*!
  * Extension of EXPECT_THROW which also checks for a substring in the what() expression.
