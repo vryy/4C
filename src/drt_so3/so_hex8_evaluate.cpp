@@ -50,6 +50,7 @@
 #include "../drt_fluid_ele/fluid_ele_parameter_timint.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 #include "../drt_structure_new/str_enum_lists.H"
+#include "../drt_structure_new/str_model_evaluator_data.H"
 
 #include "so3_defines.H"
 #include "so_hex8_determinant_analysis.H"
@@ -174,6 +175,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_nlnstiffmass:
     case ELEMENTS::struct_calc_nlnstifflmass:
     case ELEMENTS::struct_calc_linstiffmass:
+    case ELEMENTS::struct_calc_internalinertiaforce:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -195,12 +197,19 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
 
+      // This matrix is used in the evaluation functions to store the mass matrix. If the action
+      // type is ELEMENTS::struct_calc_internalinertiaforce we do not want to actually populate the
+      // elemat2 variable, since the inertia terms will be directly added to the right hand side.
+      // Therefore, a view is only set in cases where the evaluated mass matrix should also be
+      // exported in elemat2.
+      LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> mass_matrix_evaluate;
+      if (act != ELEMENTS::struct_calc_internalinertiaforce) mass_matrix_evaluate.SetView(elemat2);
+
       std::vector<double> mydispmat(lm.size(), 0.0);
       if (structale_)
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.GetState("material_displacement");
-        ;
         DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
@@ -208,12 +217,37 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
               time_, pstype_, pstime_))  // inverse design analysis
         invdesign_->soh8_nlnstiffmass(this, lm, mydisp, myres, &elemat1, &elemat2, &elevec1,
             nullptr, nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
-      else  // standard analysis
-        nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, &elemat1, &elemat2, &elevec1,
-            &elevec2, &elevec3, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
+      else if (act == ELEMENTS::struct_calc_internalinertiaforce)
+      {
+        nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, nullptr, &mass_matrix_evaluate,
+            &elevec1, &elevec2, nullptr, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
             INPAR::STR::strain_none, INPAR::STR::strain_none);
-
+      }
+      else  // standard analysis
+      {
+        nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, &elemat1, &mass_matrix_evaluate,
+            &elevec1, &elevec2, &elevec3, nullptr, nullptr, nullptr, params,
+            INPAR::STR::stress_none, INPAR::STR::strain_none, INPAR::STR::strain_none);
+      }
       if (act == ELEMENTS::struct_calc_nlnstifflmass) soh8_lumpmass(&elemat2);
+
+      INPAR::STR::MassLin mass_lin = INPAR::STR::MassLin::ml_none;
+      auto modelevaluator_data =
+          Teuchos::rcp_dynamic_cast<STR::MODELEVALUATOR::Data>(ParamsInterfacePtr());
+      if (modelevaluator_data != Teuchos::null)
+        mass_lin = modelevaluator_data->SDyn().GetMassLinType();
+      if (mass_lin == INPAR::STR::MassLin::ml_rotations)
+      {
+        // In case of Lie group time integration, we need to explicitly add the inertia terms to the
+        // force vector, as the global mass matrix is never multiplied with the global acceleration
+        // vector.
+        LINALG::Matrix<NUMDOF_SOH8, 1> acceleration(true);
+        for (unsigned int i_dof = 0; i_dof < NUMDOF_SOH8; i_dof++)
+          acceleration(i_dof) = myacc[i_dof];
+        LINALG::Matrix<NUMDOF_SOH8, 1> internal_inertia(true);
+        internal_inertia.Multiply(mass_matrix_evaluate, acceleration);
+        elevec2 += internal_inertia;
+      }
 
       break;
     }

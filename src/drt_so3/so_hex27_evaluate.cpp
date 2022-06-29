@@ -25,6 +25,7 @@
 #include "prestress.H"
 
 #include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "../drt_structure_new/str_model_evaluator_data.H"
 #include "so_utils.H"
 
 /*----------------------------------------------------------------------*
@@ -60,6 +61,9 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
     act = So_hex27::calc_struct_nlnstiff;
   else if (action == "calc_struct_internalforce")
     act = So_hex27::calc_struct_internalforce;
+  else if (IsParamsInterface() &&
+           ParamsInterface().GetActionType() == ELEMENTS::struct_calc_internalinertiaforce)
+    act = So_hex27::calc_struct_internalinertiaforce;
   else if (action == "calc_struct_linstiffmass")
     act = So_hex27::calc_struct_linstiffmass;
   else if (action == "calc_struct_nlnstiffmass")
@@ -192,6 +196,7 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
     // nonlinear stiffness, internal force vector, and consistent mass matrix
     case calc_struct_nlnstiffmass:
     case calc_struct_nlnstifflmass:
+    case calc_struct_internalinertiaforce:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -213,26 +218,61 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
 
+      // This matrix is used in the evaluation functions to store the mass matrix. If the action
+      // type is ELEMENTS::struct_calc_internalinertiaforce we do not want to actually populate the
+      // elemat2 variable, since the inertia terms will be directly added to the right hand side.
+      // Therefore, a view is only set in cases where the evaluated mass matrix should also be
+      // exported in elemat2.
+      LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27> mass_matrix_evaluate;
+      if (act != So_hex27::calc_struct_internalinertiaforce) mass_matrix_evaluate.SetView(elemat2);
+
       std::vector<double> mydispmat(lm.size(), 0.0);
 
-      // special case: geometrically linear
-      if (kintype_ == INPAR::STR::kinem_linear)
+      if (act == So_hex27::calc_struct_internalinertiaforce)
       {
-        soh27_linstiffmass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, nullptr, nullptr,
-            nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none,
-            INPAR::STR::strain_none);
-      }
-      // standard is: geometrically non-linear with Total Lagrangean approach
-      else if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
-      {
-        soh27_nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, &elemat1, &elemat2,
-            &elevec1, &elevec2, &elevec3, nullptr, nullptr, nullptr, params,
+        soh27_nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, nullptr,
+            &mass_matrix_evaluate, &elevec1, &elevec2, nullptr, nullptr, nullptr, nullptr, params,
             INPAR::STR::stress_none, INPAR::STR::strain_none, INPAR::STR::strain_none);
       }
       else
-        dserror("unknown kinematic type");
+      {
+        // special case: geometrically linear
+        if (kintype_ == INPAR::STR::kinem_linear)
+        {
+          soh27_linstiffmass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, nullptr, nullptr,
+              nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none,
+              INPAR::STR::strain_none);
+        }
+        // standard is: geometrically non-linear with Total Lagrangean approach
+        else if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+        {
+          soh27_nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, &elemat1, &elemat2,
+              &elevec1, &elevec2, &elevec3, nullptr, nullptr, nullptr, params,
+              INPAR::STR::stress_none, INPAR::STR::strain_none, INPAR::STR::strain_none);
+        }
+        else
+          dserror("unknown kinematic type");
+      }
 
       if (act == calc_struct_nlnstifflmass) soh27_lumpmass(&elemat2);
+
+      INPAR::STR::MassLin mass_lin = INPAR::STR::MassLin::ml_none;
+      auto modelevaluator_data =
+          Teuchos::rcp_dynamic_cast<STR::MODELEVALUATOR::Data>(ParamsInterfacePtr());
+      if (modelevaluator_data != Teuchos::null)
+        mass_lin = modelevaluator_data->SDyn().GetMassLinType();
+      if (mass_lin == INPAR::STR::MassLin::ml_rotations)
+      {
+        // In case of Lie group time integration, we need to explicitly add the inertia terms to the
+        // force vector, as the global mass matrix is never multiplied with the global acceleration
+        // vector.
+        LINALG::Matrix<NUMDOF_SOH27, 1> acceleration(true);
+        for (unsigned int i_dof = 0; i_dof < NUMDOF_SOH27; i_dof++)
+          acceleration(i_dof) = myacc[i_dof];
+        LINALG::Matrix<NUMDOF_SOH27, 1> internal_inertia(true);
+        internal_inertia.Multiply(mass_matrix_evaluate, acceleration);
+        elevec2 += internal_inertia;
+      }
     }
     break;
 
