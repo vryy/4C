@@ -35,8 +35,7 @@ namespace
 
       // create tangential contact handler
       contacttangential_ =
-          std::unique_ptr<PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp>(
-              new PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp(params_dem));
+          std::make_unique<PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp>(params_dem);
 
       // init tangential contact handler
       contacttangential_->Init();

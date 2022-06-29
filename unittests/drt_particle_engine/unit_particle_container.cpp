@@ -21,7 +21,7 @@ namespace
 
     ParticleContainerTest()
     {
-      int size = 7;
+      const int size = 7;
       std::set<PARTICLEENGINE::StateEnum> stateEnumSet = {
           PARTICLEENGINE::Position, PARTICLEENGINE::Velocity, PARTICLEENGINE::Mass};
 
@@ -30,9 +30,8 @@ namespace
       container_->Init();
       container_->Setup(size, stateEnumSet);
 
-      const auto GetMaximumStoredStateEnumSetValue = [&stateEnumSet]()
-      { return *(--stateEnumSet.end()); };
-      statesvectorsize_ = GetMaximumStoredStateEnumSetValue() + 1;
+      const int maximum_stored_state_enum_set_value{*(--stateEnumSet.end())};
+      statesvectorsize_ = maximum_stored_state_enum_set_value + 1;
 
       // init some particles
       int index(0);
@@ -287,13 +286,13 @@ namespace
         mass[0] = 0.5;
       }
 
-      double* currpos = container_->GetPtrToState(PARTICLEENGINE::Position, index);
+      const double* currpos = container_->GetPtrToState(PARTICLEENGINE::Position, index);
       BACI_EXPECT_ITERABLE_NEAR(currpos, pos.begin(), 3, 1e-14);
 
-      double* currvel = container_->GetPtrToState(PARTICLEENGINE::Velocity, index);
+      const double* currvel = container_->GetPtrToState(PARTICLEENGINE::Velocity, index);
       BACI_EXPECT_ITERABLE_NEAR(currvel, vel.begin(), 3, 1e-14);
 
-      double* currmass = container_->GetPtrToState(PARTICLEENGINE::Mass, index);
+      const double* currmass = container_->GetPtrToState(PARTICLEENGINE::Mass, index);
       EXPECT_NEAR(currmass[0], mass[0], 1e-14);
     }
   }

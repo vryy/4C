@@ -162,10 +162,6 @@ namespace
     PARTICLEENGINE::ParticleStates particle_reference;
     particle_reference.assign(statesvectorsize_, std::vector<double>{});
 
-    std::vector<double> pos(3);
-    std::vector<double> mass(1);
-    std::vector<double> rad(1);
-
     for (int index = 0; index < 3; ++index)
     {
       SCOPED_TRACE("Particle " + std::to_string(index));
@@ -229,8 +225,7 @@ namespace
 
   TEST_F(ParticleContainerBundleTest, SetStateSpecificContainer)
   {
-    std::vector<double> mass(1);
-    mass[0] = 1.1;
+    std::vector<double> mass{1.1};
 
     particlecontainerbundle_->SetStateSpecificContainer(
         mass, PARTICLEENGINE::Mass, PARTICLEENGINE::Phase2);
@@ -271,8 +266,7 @@ namespace
 
   TEST_F(ParticleContainerBundleTest, ClearStateSpecificContainer)
   {
-    std::vector<double> mass(1);
-    mass[0] = 0.0;
+    std::vector<double> mass{0.0};
 
     particlecontainerbundle_->ClearStateSpecificContainer(
         PARTICLEENGINE::Mass, PARTICLEENGINE::Phase2);
@@ -444,8 +438,7 @@ namespace
 
   TEST_F(ParticleContainerBundleTest, SetStateAllContainers)
   {
-    std::vector<double> mass(1);
-    mass[0] = 1.1;
+    std::vector<double> mass{1.1};
 
     particlecontainerbundle_->SetStateAllContainers(mass, PARTICLEENGINE::Mass);
 
@@ -512,8 +505,7 @@ namespace
 
   TEST_F(ParticleContainerBundleTest, ClearStateAllContainers)
   {
-    std::vector<double> mass(1);
-    mass[0] = 0.0;
+    std::vector<double> mass{0.0};
 
     particlecontainerbundle_->ClearStateAllContainers(PARTICLEENGINE::Mass);
 

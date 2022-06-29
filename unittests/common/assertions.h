@@ -57,7 +57,7 @@ namespace TESTING::INTERNAL
       const Iterator2 iter2, std::size_t length,
       std::decay_t<decltype(*std::declval<Iterator1>())> tolerance)
   {
-    static_assert(std::is_same<decltype(*iter1), decltype(*iter2)>::value,
+    static_assert(std::is_same_v<std::decay_t<decltype(*iter1)>, std::decay_t<decltype(*iter2)>>,
         "Underlying data types are not the same.");
 
     const std::string nonMatchingEntries = std::invoke(

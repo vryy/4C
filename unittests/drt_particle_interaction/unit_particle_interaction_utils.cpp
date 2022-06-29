@@ -6,6 +6,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "gtest/gtest.h"
+#include "unittests/common/assertions.h"
 #include "src/drt_particle_interaction/particle_interaction_utils.H"
 
 namespace
@@ -19,101 +20,101 @@ namespace
 
   TEST(PowHelperTest, VecClear)
   {
+    const double c_ref[3] = {0.0, 0.0, 0.0};
+
     double c[3] = {2.5, 7.5, -1.8};
     PARTICLEINTERACTION::UTILS::VecClear(c);
 
-    EXPECT_NEAR(c[0], 0.0, 1.0e-14);
-    EXPECT_NEAR(c[1], 0.0, 1.0e-14);
-    EXPECT_NEAR(c[2], 0.0, 1.0e-14);
+    BACI_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
   }
 
   TEST(PowHelperTest, VecSet)
   {
+    const double c_ref[3] = {1.0, -2.0, 4.25};
+
     const double a[3] = {1.0, -2.0, 4.25};
     double c[3] = {2.5, 7.5, -1.8};
     PARTICLEINTERACTION::UTILS::VecSet(c, a);
 
-    EXPECT_NEAR(c[0], 1.0, 1.0e-14);
-    EXPECT_NEAR(c[1], -2.0, 1.0e-14);
-    EXPECT_NEAR(c[2], 4.25, 1.0e-14);
+    BACI_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
   }
 
   TEST(PowHelperTest, VecAdd)
   {
+    const double c_ref[3] = {3.5, 5.5, 2.45};
+
     const double a[3] = {1.0, -2.0, 4.25};
     double c[3] = {2.5, 7.5, -1.8};
     PARTICLEINTERACTION::UTILS::VecAdd(c, a);
 
-    EXPECT_NEAR(c[0], 3.5, 1.0e-14);
-    EXPECT_NEAR(c[1], 5.5, 1.0e-14);
-    EXPECT_NEAR(c[2], 2.45, 1.0e-14);
+    BACI_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
   }
 
   TEST(PowHelperTest, VecSub)
   {
+    const double c_ref[3] = {1.5, 9.5, -6.05};
+
     const double a[3] = {1.0, -2.0, 4.25};
     double c[3] = {2.5, 7.5, -1.8};
     PARTICLEINTERACTION::UTILS::VecSub(c, a);
 
-    EXPECT_NEAR(c[0], 1.5, 1.0e-14);
-    EXPECT_NEAR(c[1], 9.5, 1.0e-14);
-    EXPECT_NEAR(c[2], -6.05, 1.0e-14);
+    BACI_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
   }
 
   TEST(PowHelperTest, VecScale)
   {
+    const double c_ref[3] = {4.5, 13.5, -3.24};
+
     double c[3] = {2.5, 7.5, -1.8};
     PARTICLEINTERACTION::UTILS::VecScale(c, 1.8);
 
-    EXPECT_NEAR(c[0], 4.5, 1.0e-14);
-    EXPECT_NEAR(c[1], 13.5, 1.0e-14);
-    EXPECT_NEAR(c[2], -3.24, 1.0e-14);
+    BACI_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
   }
 
   TEST(PowHelperTest, VecSetScale)
   {
+    const double c_ref[3] = {1.8, -3.6, 7.65};
+
     const double a[3] = {1.0, -2.0, 4.25};
     double c[3] = {2.5, 7.5, -1.8};
     PARTICLEINTERACTION::UTILS::VecSetScale(c, 1.8, a);
 
-    EXPECT_NEAR(c[0], 1.8, 1.0e-14);
-    EXPECT_NEAR(c[1], -3.6, 1.0e-14);
-    EXPECT_NEAR(c[2], 7.65, 1.0e-14);
+    BACI_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
   }
 
   TEST(PowHelperTest, VecAddScale)
   {
+    const double c_ref[3] = {4.3, 3.9, 5.85};
+
     const double a[3] = {1.0, -2.0, 4.25};
     double c[3] = {2.5, 7.5, -1.8};
     PARTICLEINTERACTION::UTILS::VecAddScale(c, 1.8, a);
 
-    EXPECT_NEAR(c[0], 4.3, 1.0e-14);
-    EXPECT_NEAR(c[1], 3.9, 1.0e-14);
-    EXPECT_NEAR(c[2], 5.85, 1.0e-14);
+    BACI_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
   }
 
   TEST(PowHelperTest, VecSetCross)
   {
+    const double c_ref[3] = {14.4750, -2.325, -4.5};
+
     const double a[3] = {1.0, -2.0, 4.25};
     const double b[3] = {-0.5, -3.5, 0.2};
     double c[3] = {2.5, 7.5, -1.8};
     PARTICLEINTERACTION::UTILS::VecSetCross(c, a, b);
 
-    EXPECT_NEAR(c[0], 14.4750, 1.0e-14);
-    EXPECT_NEAR(c[1], -2.325, 1.0e-14);
-    EXPECT_NEAR(c[2], -4.5, 1.0e-14);
+    BACI_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
   }
 
   TEST(PowHelperTest, VecAddCross)
   {
+    const double c_ref[3] = {16.9750, 5.175, -6.3};
+
     const double a[3] = {1.0, -2.0, 4.25};
     const double b[3] = {-0.5, -3.5, 0.2};
     double c[3] = {2.5, 7.5, -1.8};
     PARTICLEINTERACTION::UTILS::VecAddCross(c, a, b);
 
-    EXPECT_NEAR(c[0], 16.9750, 1.0e-14);
-    EXPECT_NEAR(c[1], 5.175, 1.0e-14);
-    EXPECT_NEAR(c[2], -6.3, 1.0e-14);
+    BACI_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
   }
 
   TEST(PowHelperTest, VecDot)
@@ -155,9 +156,7 @@ namespace
     double n_ref[3] = {0.0};
     PARTICLEINTERACTION::UTILS::VecSetCross(n_ref, t1, t2);
 
-    EXPECT_NEAR(n_ref[0], n[0], 1.0e-14);
-    EXPECT_NEAR(n_ref[1], n[1], 1.0e-14);
-    EXPECT_NEAR(n_ref[2], n[2], 1.0e-14);
+    BACI_EXPECT_ITERABLE_NEAR(n, n_ref, 3, 1.0e-14);
   }
 
   TEST(PowHelperTest, LinTransLower)

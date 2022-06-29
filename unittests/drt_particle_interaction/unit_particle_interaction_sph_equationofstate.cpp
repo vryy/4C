@@ -83,8 +83,8 @@ namespace
       const double speedofsound = 3.5;
 
       // create equation of state handler
-      equationofstate_ = std::unique_ptr<PARTICLEINTERACTION::SPHEquationOfStateIdealGas>(
-          new PARTICLEINTERACTION::SPHEquationOfStateIdealGas(speedofsound));
+      equationofstate_ =
+          std::make_unique<PARTICLEINTERACTION::SPHEquationOfStateIdealGas>(speedofsound);
 
       // init equation of state handler
       equationofstate_->Init();
