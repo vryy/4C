@@ -258,26 +258,37 @@ void SSI::ScatraStructureCloneStrategy::SetElementData(
 void SSI::ScatraStructureCloneStrategyManifold::SetElementData(
     Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbsdis)
 {
-  // note: SetMaterial() was reimplemented by the transport element!
-  auto* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
-  if (trans != nullptr and oldele->ElementType().Name() == "StructuralSurfaceType")
+  // determine impl type from manifold condition by identifying the condition for this element
+  auto struct_dis = DRT::Problem::Instance()->GetDis("structure");
+
+  std::vector<DRT::Condition*> conditions;
+  struct_dis->GetCondition("SSISurfaceManifold", conditions);
+
+  auto impltype = INPAR::SCATRA::impltype_undefined;
+  for (auto* condition : conditions)
   {
-    // set material
-    trans->SetMaterial(matid, oldele);
-    // set distype as well
-    trans->SetDisType(oldele->Shape());
-    // set impltype according to SCATRATIMINTTYPE
-    const auto scatratype = Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(
-        DRT::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE");
-    if (scatratype == INPAR::SSI::ScaTraTimIntType::elch)
-      trans->SetImplType(INPAR::SCATRA::impltype_elch_electrode);
-    else if (scatratype == INPAR::SSI::ScaTraTimIntType::standard)
-      trans->SetImplType(INPAR::SCATRA::impltype_std);
-    else
-      dserror("Unknown time integration type for scatra field");
+    auto cond_eles = condition->Geometry();
+    if (cond_eles.find(oldele->Id()) != cond_eles.end())
+    {
+      impltype = static_cast<INPAR::SCATRA::ImplType>(condition->GetInt("ImplType"));
+      continue;
+    }
   }
-  else
-    dserror("unsupported element type");
+
+  if (impltype != INPAR::SCATRA::impltype_elch_electrode and
+      impltype != INPAR::SCATRA::impltype_elch_diffcond and impltype != INPAR::SCATRA::impltype_std)
+    dserror("Scatra Impltype not supported for SSI with transport on manifolds");
+
+  auto* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
+  if (trans == nullptr or oldele->ElementType().Name() != "StructuralSurfaceType")
+    dserror("element type not supported");
+
+  // set material
+  trans->SetMaterial(matid, oldele);
+  // set distype
+  trans->SetDisType(oldele->Shape());
+  // set impltype
+  trans->SetImplType(impltype);
 }
 
 

@@ -285,7 +285,8 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
         problem != INPAR::SCATRA::impltype_lsreinit and
         problem != INPAR::SCATRA::impltype_one_d_artery and
         problem != INPAR::SCATRA::impltype_no_physics and
-        problem != INPAR::SCATRA::impltype_elch_electrode)
+        problem != INPAR::SCATRA::impltype_elch_electrode and
+        problem != INPAR::SCATRA::impltype_elch_diffcond)
       dserror("ImplType '%s' not implemented for transport on manifolds!",
           SCATRA::ImplTypeToString(problem).c_str());
   }
