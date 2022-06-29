@@ -48,7 +48,7 @@ MATRIXTYPE                      sparse
 ------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
 -----------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          MueLu
 AZSUB                           100
 MUELU_XML_FILE                  sti_mono_2D_quad4_elch_s2i_butlervolmerpeltier_diabatic_AMG_pointbased.xml
