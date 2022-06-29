@@ -48,7 +48,7 @@
 template <class MatrixType, class VectorType>
 LINALG::SOLVER::BelosSolver<MatrixType, VectorType>::BelosSolver(
     const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile)
-    : KrylovSolver<MatrixType, VectorType>(comm, params, outfile)
+    : KrylovSolver<MatrixType, VectorType>(comm, params, outfile), numiters_(-1)
 {
   this->ncall_ = 0;
   this->preconditioner_ = Teuchos::null;
@@ -203,6 +203,9 @@ int LINALG::SOLVER::BelosSolver<MatrixType, VectorType>::Solve()
   // Perform solve
   //
   Belos::ReturnType ret = newSolver->solve();
+
+  // store number of iterations
+  numiters_ = newSolver->getNumIters();
 
   // TODO: check me -> access solution x from linear problem???
   if (this->preconditioner_ != Teuchos::null)
