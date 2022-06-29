@@ -362,7 +362,7 @@ namespace STR
         return restartstep_;
       }
 
-      /// Get the number of non-linear iterations of the %step
+      /// Get the last number of linear iterations of the %step
       int GetLastLinIterationNumber(const unsigned step) const;
 
       /// Get the number of non-linear iterations of the %step
