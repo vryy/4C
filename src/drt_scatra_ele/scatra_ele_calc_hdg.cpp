@@ -87,21 +87,6 @@ DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::Instance(
   return instances[disname];
 }
 
-
-/*----------------------------------------------------------------------*
- | singleton destruction                                 hoermann 09/15 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(0, 0, "", false);
-
-  return;
-}
-
-
 /*----------------------------------------------------------------------*
  | Initialize Shapes                                     hoermann 09/15 |
  *----------------------------------------------------------------------*/

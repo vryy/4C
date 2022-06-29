@@ -179,19 +179,14 @@ namespace DRT
     };
 
     /// remember calculated gauss points so we do not need to calculate again
-    class GaussPointCache : public DRT::SingletonDestruction
+    class GaussPointCache
     {
      public:
       static GaussPointCache& Instance();
 
-      /// cleanup
-      void Done();
-
       Teuchos::RCP<GaussPoints> Create(DRT::Element::DiscretizationType distype, int degree);
 
      private:
-      static GaussPointCache* instance_;
-
       /// cache of already created gauss rules
       std::map<std::pair<DRT::Element::DiscretizationType, int>, Teuchos::RCP<GaussPoints>>
           gp_cache_;

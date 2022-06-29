@@ -32,9 +32,6 @@ namespace DRT
       static FluidEleCalcStd<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
-      /// called upon destruction
-      virtual void Done();
-
      private:
       /// private constructor, since we are a Singleton.
       FluidEleCalcStd();

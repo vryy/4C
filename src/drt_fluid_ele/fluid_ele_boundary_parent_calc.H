@@ -35,7 +35,7 @@ namespace DRT
       this class actually defines is Impl, which returns a pointer to
       the appropriate version of FluidBoundaryImpl.
     */
-    class FluidBoundaryParentInterface : DRT::SingletonDestruction
+    class FluidBoundaryParentInterface
     {
      public:
       //! empty constructor
@@ -89,9 +89,6 @@ namespace DRT
       //! Singleton access method
       static FluidBoundaryParentInterface* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
-
-      /// called upon destruction
-      virtual void Done();
 
       /// Constructor with number of nodes
       FluidBoundaryParent();

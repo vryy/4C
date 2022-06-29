@@ -18,6 +18,7 @@ reactive scalars
 #include "../drt_mat/matlist_reactions.H"
 #include "../drt_mat/scatra_mat.H"
 #include "../drt_mat/matlist.H"
+#include "../headers/singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
@@ -38,44 +39,20 @@ DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::ScaTraEleCalcChemoReac(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>*
-DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::Instance(const int numdofpernode,
-    const int numscal, const std::string& disname, const ScaTraEleCalcChemoReac* delete_me)
+DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::Instance(
+    const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static std::map<std::string, ScaTraEleCalcChemoReac<distype>*> instances;
-
-  if (delete_me == NULL)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleCalcChemoReac<distype>(numdofpernode, numscal, disname);
-  }
-
-  else
-  {
-    for (typename std::map<std::string, ScaTraEleCalcChemoReac<distype>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
+        return std::unique_ptr<ScaTraEleCalcChemoReac<distype, probdim>>(
+            new ScaTraEleCalcChemoReac<distype, probdim>(numdofpernode, numscal, disname));
+      });
 
-  return instances[disname];
+  return singleton_map[disname].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(0, 0, "", this);
-}
 
 /*----------------------------------------------------------------------*
  |  get the material constants  (private)                    thon 06/15 |

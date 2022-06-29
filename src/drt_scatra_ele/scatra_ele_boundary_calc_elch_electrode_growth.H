@@ -38,15 +38,13 @@ namespace DRT
 
      public:
       //! singleton access method
-      static ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>* Instance(const int numdofpernode,
-          const int numscal, const std::string& disname,
-          const ScaTraEleBoundaryCalcElchElectrodeGrowth* delete_me = NULL);
+      static ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
       //! destructor
       virtual ~ScaTraEleBoundaryCalcElchElectrodeGrowth() { return; };
 
-      //! singleton destruction
-      virtual void Done();
+
 
      private:
       //! private constructor for singletons

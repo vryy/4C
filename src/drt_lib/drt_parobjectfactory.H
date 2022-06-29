@@ -20,7 +20,6 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
 
-#include "drt_singletondestruction.H"
 
 namespace LINALG
 {
@@ -90,12 +89,15 @@ namespace DRT
     \author u.kue
     \date 06/10
    */
-  class ParObjectFactory : public SingletonDestruction
+  class ParObjectFactory
   {
     friend class ParObjectType;
 
    public:
     static ParObjectFactory& Instance();
+
+    /// Virtual destructor.
+    virtual ~ParObjectFactory() = default;
 
     /// create a parobject from its data stream
     ParObject* Create(const std::vector<char>& data);
@@ -118,18 +120,12 @@ namespace DRT
     void SetupElementDefinition(
         std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-    //! called upon destruction (free memory of parobject factory instance)
-    virtual void Done();
-
    private:
     void Register(ParObjectType* object_type);
 
     void FinalizeRegistration();
 
-    /// singleton.
-    static ParObjectFactory* instance_;
-
-    ParObjectFactory();
+    ParObjectFactory() = default;
 
     /// list of parobject types
 

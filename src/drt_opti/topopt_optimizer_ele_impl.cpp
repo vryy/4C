@@ -82,7 +82,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::TopOptImpl<distype>* DRT::ELEMENTS::TopOptImpl<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::TopOptImpl<distype>> singleton_owner(
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::TopOptImpl<distype>>(
@@ -90,17 +90,6 @@ DRT::ELEMENTS::TopOptImpl<distype>* DRT::ELEMENTS::TopOptImpl<distype>::Instance
       });
 
   return singleton_owner.Instance(action);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TopOptImpl<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct);
 }
 
 
@@ -1378,7 +1367,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::TopOptBoundaryImpl<distype>* DRT::ELEMENTS::TopOptBoundaryImpl<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::TopOptBoundaryImpl<distype>> singleton_owner(
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::TopOptBoundaryImpl<distype>>(
@@ -1386,17 +1375,6 @@ DRT::ELEMENTS::TopOptBoundaryImpl<distype>* DRT::ELEMENTS::TopOptBoundaryImpl<di
       });
 
   return singleton_owner.Instance(action);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TopOptBoundaryImpl<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct);
 }
 
 

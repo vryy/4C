@@ -34,14 +34,12 @@ namespace DRT
      public:
       //! singleton access method
       static ScaTraEleUtilsElchDiffCond<distype>* Instance(
-          const int numdofpernode,     ///< number of degrees of freedom per node
-          const int numscal,           ///< number of transported scalars per node
-          const std::string& disname,  ///< name of discretization
-          const ScaTraEleUtilsElchDiffCond* delete_me = NULL  ///< creation/destruction indication
+          const int numdofpernode,    ///< number of degrees of freedom per node
+          const int numscal,          ///< number of transported scalars per node
+          const std::string& disname  ///< name of discretization
       );
 
-      //! singleton destruction
-      virtual void Done();
+
 
       //! evaluate electrolyte material
       void MatElchMat(const Teuchos::RCP<const MAT::Material>& material,  //!< electrolyte material
@@ -86,8 +84,6 @@ namespace DRT
           const std::string& disname  ///< name of discretization
       );
 
-      //! destructor
-      virtual ~ScaTraEleUtilsElchDiffCond() { return; };
     };  // class ScaTraEleUtilsElchDiffCond
   }     // namespace ELEMENTS
 }  // namespace DRT

@@ -36,12 +36,10 @@ namespace DRT
     {
      public:
       //! singleton access method
-      static ScaTraEleCalcSTIElectrode<distype>* Instance(const int numdofpernode,
-          const int numscal, const std::string& disname,
-          const ScaTraEleCalcSTIElectrode* delete_me = NULL);
+      static ScaTraEleCalcSTIElectrode<distype>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
-      //! singleton destruction
-      virtual void Done();
+
 
      private:
       //! abbreviations

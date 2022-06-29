@@ -17,7 +17,6 @@ be set in problem specific parameter lists derived from this class.
 #define FLUID_ELE_PARAMETER_INTFACE_H
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../drt_lib/drt_singletondestruction.H"
 //#include "../drt_fluid_ele/fluid_ele_parameter_std.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_xfem.H"
@@ -30,19 +29,14 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    class FluidEleParameterIntFace : public SingletonDestruction
+    class FluidEleParameterIntFace
     {
      public:
       //! Singleton access method
       static FluidEleParameterIntFace* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
-      //! called upon destruction
-      void Done();
-
-
-      ~FluidEleParameterIntFace() {}
-
+      virtual ~FluidEleParameterIntFace() = default;
 
 
       /*========================================================================*/

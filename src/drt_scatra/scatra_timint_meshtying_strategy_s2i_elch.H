@@ -89,12 +89,9 @@ namespace SCATRA
             lmside,  //!< flag for interface side underlying Lagrange multiplier definition
         const int& numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
         const int& numdofpernode_master,  //!< number of master-side degrees of freedom per node
-        const std::string& disname,       //!< name of mortar discretization
-        const MortarCellCalcElch* delete_me = NULL  //!< pointer to instance to be deleted
+        const std::string& disname        //!< name of mortar discretization
     );
 
-    //! singleton destruction
-    virtual void Done();
 
    protected:
     //! protected constructor for singletons
@@ -104,9 +101,6 @@ namespace SCATRA
         const int& numdofpernode_slave,  //!< number of slave-side degrees of freedom per node
         const int& numdofpernode_master  //!< number of master-side degrees of freedom per node
     );
-
-    //! protected destructor for singletons
-    virtual ~MortarCellCalcElch() { return; };
 
    private:
     //! abbreviation
@@ -172,12 +166,9 @@ namespace SCATRA
             lmside,  //!< flag for interface side underlying Lagrange multiplier definition
         const int& numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
         const int& numdofpernode_master,  //!< number of master-side degrees of freedom per node
-        const std::string& disname,       //!< name of mortar discretization
-        const MortarCellCalcElchSTIThermo* delete_me = NULL  //!< pointer to instance to be deleted
+        const std::string& disname        //!< name of mortar discretization
     );
 
-    //! singleton destruction
-    virtual void Done();
 
     //! evaluate single mortar integration cell of particular slave-side and master-side
     //! discretization types
@@ -209,9 +200,6 @@ namespace SCATRA
         const int& numdofpernode_slave,  //!< number of slave-side degrees of freedom per node
         const int& numdofpernode_master  //!< number of master-side degrees of freedom per node
     );
-
-    //! private destructor for singletons
-    virtual ~MortarCellCalcElchSTIThermo() { return; };
 
     //! evaluate and assemble off-diagonal interface linearizations
     void EvaluateConditionOD(const DRT::Discretization& idiscret,  //!< interface discretization
@@ -252,12 +240,8 @@ namespace SCATRA
             lmside,  //!< flag for interface side underlying Lagrange multiplier definition
         const int& numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
         const int& numdofpernode_master,  //!< number of master-side degrees of freedom per node
-        const std::string& disname,       //!< name of mortar discretization
-        const MortarCellCalcSTIElch* delete_me = NULL  //!< pointer to instance to be deleted
+        const std::string& disname        //!< name of mortar discretization
     );
-
-    //! singleton destruction
-    virtual void Done();
 
     //! evaluate single mortar integration cell of particular slave-side and master-side
     //! discretization types
@@ -288,9 +272,6 @@ namespace SCATRA
         const int& numdofpernode_slave,  //!< number of slave-side degrees of freedom per node
         const int& numdofpernode_master  //!< number of master-side degrees of freedom per node
     );
-
-    //! private destructor for singletons
-    virtual ~MortarCellCalcSTIElch() { return; };
 
     //! evaluate and assemble interface linearizations and residuals
     void EvaluateCondition(const DRT::Discretization& idiscret,  //!< interface discretization

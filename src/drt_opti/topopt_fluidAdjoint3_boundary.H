@@ -27,7 +27,7 @@ namespace DRT
 
 
 
-    class FluidAdjoint3BoundaryImplInterface : public DRT::SingletonDestruction
+    class FluidAdjoint3BoundaryImplInterface
     {
      public:
       /// Empty constructor
@@ -68,9 +68,6 @@ namespace DRT
       /// Singleton access method
       static FluidAdjoint3BoundaryImpl<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
-
-      /// called upon destruction
-      virtual void Done();
 
       /// Constructor
       FluidAdjoint3BoundaryImpl();

@@ -39,12 +39,9 @@ namespace DRT
 
      public:
       //! singleton access method
-      static ScaTraEleBoundaryCalcElchElectrode<distype>* Instance(int numdofpernode, int numscal,
-          const std::string& disname,
-          const ScaTraEleBoundaryCalcElchElectrode* delete_me = nullptr);
+      static ScaTraEleBoundaryCalcElchElectrode<distype>* Instance(
+          int numdofpernode, int numscal, const std::string& disname);
 
-      //! singleton destruction
-      virtual void Done();
 
       /*!
        * \brief evaluate scatra-scatra interface coupling condition at integration point

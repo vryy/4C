@@ -21,6 +21,7 @@
 
 #include "../drt_inpar/inpar_cardiac_monodomain.H"
 #include "scatra_ele_parameter_std.H"
+#include "../headers/singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
@@ -41,44 +42,18 @@ DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::ScaTraEleCalcCa
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>*
-DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Instance(const int numdofpernode,
-    const int numscal, const std::string& disname, const ScaTraEleCalcCardiacMonodomain* delete_me)
+DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Instance(
+    const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static std::map<std::string, ScaTraEleCalcCardiacMonodomain<distype, probdim>*> instances;
-
-  if (delete_me == NULL)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] =
-          new ScaTraEleCalcCardiacMonodomain<distype, probdim>(numdofpernode, numscal, disname);
-  }
-
-  else
-  {
-    for (typename std::map<std::string, ScaTraEleCalcCardiacMonodomain<distype, probdim>*>::iterator
-             i = instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
+        return std::unique_ptr<ScaTraEleCalcCardiacMonodomain<distype, probdim>>(
+            new ScaTraEleCalcCardiacMonodomain<distype, probdim>(numdofpernode, numscal, disname));
+      });
 
-  return instances[disname];
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(0, 0, "", this);
+  return singleton_map[disname].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 

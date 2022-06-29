@@ -74,16 +74,6 @@ DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Instance(::UTILS::SingletonA
   return singleton_owner.Instance(action);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct);
-}
-
 /*-----------------------------------------------------------------------------*
  | Entry supporting methods of the element                          bk 06/2014 |
  *-----------------------------------------------------------------------------*/

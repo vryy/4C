@@ -12,6 +12,7 @@ concentrations and with advanced reaction terms
 #include "../drt_geometry/position_array.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "../headers/singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
@@ -19,45 +20,18 @@ concentrations and with advanced reaction terms
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>*
-DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::Instance(const int numdofpernode,
-    const int numscal, const std::string& disname,
-    const ScaTraEleBoundaryCalcRefConcReac* delete_me)
+DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::Instance(
+    const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static std::map<std::string, ScaTraEleBoundaryCalcRefConcReac<distype>*> instances;
-
-  if (delete_me == NULL)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] =
-          new ScaTraEleBoundaryCalcRefConcReac<distype>(numdofpernode, numscal, disname);
-  }
-
-  else
-  {
-    for (typename std::map<std::string, ScaTraEleBoundaryCalcRefConcReac<distype>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-  }
+        return std::unique_ptr<ScaTraEleBoundaryCalcRefConcReac<distype>>(
+            new ScaTraEleBoundaryCalcRefConcReac<distype>(numdofpernode, numscal, disname));
+      });
 
-  return instances[disname];
-}
-
-
-/*----------------------------------------------------------------------*
- |  Clean up                                                 thon 02/16 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(0, 0, "", this);
+  return singleton_map[disname].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 

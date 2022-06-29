@@ -23,15 +23,8 @@ namespace DRT
 
      public:
       /// Singleton access method
-      static ScaTraEleBoundaryCalcRefConcReac<distype>* Instance(const int numdofpernode,
-          const int numscal, const std::string& disname,
-          const ScaTraEleBoundaryCalcRefConcReac* delete_me = NULL);
-
-      /// Empty destructor
-      virtual ~ScaTraEleBoundaryCalcRefConcReac(){};
-
-      /// called upon destruction
-      void Done();
+      static ScaTraEleBoundaryCalcRefConcReac<distype>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
      protected:
       //! Factor needed for the calculation of reference concentrations

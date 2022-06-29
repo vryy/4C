@@ -379,7 +379,7 @@ namespace EHL
   };  // Monolithic
 
 
-  //  class MortarCellInterface : public DRT::SingletonDestruction
+  //  class MortarCellInterface
   //  {
   //    public:
   //

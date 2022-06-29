@@ -38,7 +38,7 @@ namespace DRT
       (correctly delete allocated TopOptImplInterface instances)
 
      */
-    class TopOptImplInterface : public DRT::SingletonDestruction
+    class TopOptImplInterface
     {
      public:
       //! Empty constructor
@@ -107,9 +107,6 @@ namespace DRT
       //! Singleton access method
       static TopOptImpl<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
-
-      //! called upon destruction
-      virtual void Done();
 
       //! Evaluate objective value
       virtual int EvaluateValues(DRT::Element* ele,  //!< the element we are dealing with
@@ -281,7 +278,7 @@ namespace DRT
       this class actually defines is Impl, which returns a pointer to
       the appropriate version of ScaTraImpl.
      */
-    class TopOptBoundaryImplInterface : public DRT::SingletonDestruction
+    class TopOptBoundaryImplInterface
     {
      public:
       /// Empty constructor
@@ -349,9 +346,6 @@ namespace DRT
       /// Singleton access method
       static TopOptBoundaryImpl<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
-
-      //! called upon destruction
-      virtual void Done();
 
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
       static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;

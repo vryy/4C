@@ -19,24 +19,20 @@ parameters required for Lubrication element evaluation.
 #define SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_PARAMETER_H_
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../drt_lib/drt_singletondestruction.H"
 
 namespace DRT
 {
   namespace ELEMENTS
   {
     /// Evaluation of general parameters (constant over time)
-    class LubricationEleParameter : public DRT::SingletonDestruction
+    class LubricationEleParameter
     {
      public:
       //! singleton access method
       static LubricationEleParameter* Instance(
-          const std::string& disname,                      //!< name of discretization
-          const LubricationEleParameter* delete_me = NULL  //!< creation/destruction indication
+          const std::string& disname  //!< name of discretization
       );
 
-      //! Singleton destruction method called from global problem
-      void Done();
 
       //! dtor
       ~LubricationEleParameter() {}

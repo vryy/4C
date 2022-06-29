@@ -81,7 +81,7 @@ namespace CONTACT
     /*--------------------------------------------------------------------------*/
     template <class DebugPolicy, unsigned probdim, DRT::Element::DiscretizationType ref_type,
         DRT::Element::DiscretizationType tar_type>
-    class Projector : public ProjectorBase, public DRT::SingletonDestruction, public DebugPolicy
+    class Projector : public ProjectorBase, public DebugPolicy
     {
       static const unsigned REF_DIM = DRT::UTILS::DisTypeToDim<ref_type>::dim;
       static const unsigned REF_NUMNODES =
@@ -92,13 +92,9 @@ namespace CONTACT
           DRT::UTILS::DisTypeToNumNodePerEle<tar_type>::numNodePerElement;
 
      public:
-      static ProjectorBase* Instance(bool delete_me = false);
+      static ProjectorBase* Instance();
 
      protected:
-      ~Projector() override{};
-
-      void Done() override;
-
       /// derived
       bool operator()(MORTAR::MortarElement& ref_ele, const double* ref_xi,
           MORTAR::MortarElement& target_ele, double* target_xi, double& alpha) override;

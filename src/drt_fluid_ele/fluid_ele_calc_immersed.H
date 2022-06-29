@@ -38,9 +38,6 @@ namespace DRT
       static FluidEleCalcImmersed<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
-      /// called upon destruction
-      virtual void Done();
-
 
      protected:
       /*!

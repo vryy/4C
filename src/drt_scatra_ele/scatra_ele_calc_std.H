@@ -28,11 +28,8 @@ namespace DRT
       virtual ~ScaTraEleCalcStd() { return; };
 
       //! singleton access method
-      static ScaTraEleCalcStd<distype, probdim>* Instance(const int numdofpernode,
-          const int numscal, const std::string& disname, const ScaTraEleCalcStd* delete_me = NULL);
-
-      //! called upon destruction
-      virtual void Done();
+      static ScaTraEleCalcStd<distype, probdim>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
      protected:
       //! protected constructor for singletons

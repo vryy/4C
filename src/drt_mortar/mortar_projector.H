@@ -27,7 +27,7 @@ namespace MORTAR
 
   */
 
-  class MortarProjector : DRT::SingletonDestruction
+  class MortarProjector
   {
    public:
     MortarProjector(){};
@@ -81,9 +81,6 @@ namespace MORTAR
    public:
     // constructor
     MortarProjectorCalc();
-
-    /// called upon destruction
-    virtual void Done();
 
     /// Singleton access method
     static MortarProjectorCalc<distype>* Instance(
@@ -287,9 +284,6 @@ namespace MORTAR
    public:
     // constructor
     MortarProjectorCalc_EleBased();
-
-    /// called upon destruction
-    virtual void Done();
 
     /// Singleton access method
     static MortarProjectorCalc_EleBased<distypeS, distypeM>* Instance(

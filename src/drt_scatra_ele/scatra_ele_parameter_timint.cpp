@@ -16,52 +16,19 @@ general static parameters required for scalar transport element evaluation.
 /*----------------------------------------------------------------------*/
 #include "../drt_lib/drt_dserror.H"
 #include "scatra_ele_parameter_timint.H"
+#include "../headers/singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterTimInt* DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(
-    const std::string& disname,                //!< name of discretization
-    const ScaTraEleParameterTimInt* delete_me  //!< creation/destruction indication
-)
+    const std::string& disname)
 {
-  // each discretization is associated with exactly one instance of this class according to a static
-  // map
-  static std::map<std::string, ScaTraEleParameterTimInt*> instances;
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>([](const std::string& disname)
+      { return std::unique_ptr<ScaTraEleParameterTimInt>(new ScaTraEleParameterTimInt); });
 
-  // check whether instance already exists for current discretization, and perform instantiation if
-  // not
-  if (delete_me == nullptr)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleParameterTimInt();
-  }
-
-  // destruct instance
-  else
-  {
-    for (auto i = instances.begin(); i != instances.end(); ++i)
-    {
-      if (i->second == delete_me)
-      {
-        delete i->second;
-        instances.erase(i);
-        return nullptr;
-      }
-    }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
-
-  // return existing or newly created instance
-  return instances[disname];
+  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, disname);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterTimInt::Done()
-{
-  // delete singleton
-  Instance("", this);
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

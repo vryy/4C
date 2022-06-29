@@ -22,48 +22,25 @@
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
+#include "../headers/singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  |  Singleton access method                               hemmler 07/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>*
-DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::Instance(const int numdofpernode,
-    const int numscal, const std::string& disname, const ScaTraEleBoundaryCalcPoro* delete_me)
+DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::Instance(
+    const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static std::map<std::string, ScaTraEleBoundaryCalcPoro<distype>*> instances;
-
-  if (delete_me == NULL)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleBoundaryCalcPoro<distype>(numdofpernode, numscal, disname);
-  }
-
-  else
-  {
-    for (typename std::map<std::string, ScaTraEleBoundaryCalcPoro<distype>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-  }
+        return std::unique_ptr<ScaTraEleBoundaryCalcPoro<distype>>(
+            new ScaTraEleBoundaryCalcPoro<distype>(numdofpernode, numscal, disname));
+      });
 
-  return instances[disname];
-}
-
-/*----------------------------------------------------------------------*
- |  Clean up                                              hemmler 07/14 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(0, 0, "", this);
+  return singleton_map[disname].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 

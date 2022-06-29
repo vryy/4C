@@ -19,7 +19,7 @@
 TUTORIAL::ELEMENTS::TutorialEleCalc* TUTORIAL::ELEMENTS::TutorialEleCalc::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<TUTORIAL::ELEMENTS::TutorialEleCalc> singleton_owner(
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<TUTORIAL::ELEMENTS::TutorialEleCalc>(
@@ -27,17 +27,6 @@ TUTORIAL::ELEMENTS::TutorialEleCalc* TUTORIAL::ELEMENTS::TutorialEleCalc::Instan
       });
 
   return singleton_owner.Instance(action);
-}
-
-
-/*----------------------------------------------------------------------*
- * clean up function to destroy instance in the end                     |
- *----------------------------------------------------------------------*/
-void TUTORIAL::ELEMENTS::TutorialEleCalc::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct);
 }
 
 

@@ -25,52 +25,25 @@
 #include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
 
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
+#include "../headers/singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcPoro<distype>* DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Instance(
-    const int numdofpernode, const int numscal, const std::string& disname,
-    const ScaTraEleCalcPoro* delete_me)
+    const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static std::map<std::string, ScaTraEleCalcPoro<distype>*> instances;
-
-  if (delete_me == NULL)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleCalcPoro<distype>(numdofpernode, numscal, disname);
-  }
-
-  else
-  {
-    for (typename std::map<std::string, ScaTraEleCalcPoro<distype>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
+        return std::unique_ptr<ScaTraEleCalcPoro<distype>>(
+            new ScaTraEleCalcPoro<distype>(numdofpernode, numscal, disname));
+      });
 
-  return instances[disname];
+  return singleton_map[disname].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
-
-
-/*----------------------------------------------------------------------*
- |                                                           vuong 07/14 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(0, 0, "", this);
-}
-
 
 /*----------------------------------------------------------------------*
  |                                                           vuong 07/14 |

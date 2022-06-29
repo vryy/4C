@@ -39,12 +39,8 @@ namespace DRT
       virtual ~ScaTraEleCalcArtery() {}
 
       //! Singleton access method
-      static ScaTraEleCalcArtery<distype, probdim>* Instance(const int numdofpernode,
-          const int numscal, const std::string& disname,
-          const ScaTraEleCalcArtery* delete_me = NULL);
-
-      //! called upon destruction
-      virtual void Done();
+      static ScaTraEleCalcArtery<distype, probdim>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
       /// Setup element evaluation
       virtual int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization);

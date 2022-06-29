@@ -37,15 +37,9 @@ namespace DRT
       //! abbreviation
       typedef ScaTraEleCalc<distype, probdim> my;
 
-      //! destructor
-      virtual ~ScaTraEleCalcNoPhysics() = default;
-
       //! singleton access method
-      static ScaTraEleCalcNoPhysics<distype, probdim>* Instance(int numdofpernode, int numscal,
-          const std::string& disname, const ScaTraEleCalcNoPhysics* delete_me = NULL);
-
-      //! called upon destruction
-      virtual void Done();
+      static ScaTraEleCalcNoPhysics<distype, probdim>* Instance(
+          int numdofpernode, int numscal, const std::string& disname);
 
       //! evaluate the element
       int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,

@@ -77,12 +77,6 @@ void DRT::Problem::Done()
   {
     // skip null pointers arising from non-consecutive numbering of problem instances
     if (!instance) continue;
-
-    for (auto* singleton_destruction : instance->sds_)
-    {
-      singleton_destruction->Done();
-    }
-    instance->sds_.clear();
   }
 
   // This is called at the very end of a baci run.

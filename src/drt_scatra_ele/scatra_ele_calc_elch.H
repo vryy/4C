@@ -39,9 +39,6 @@ namespace DRT
       using my = ScaTraEleCalc<distype, probdim>;
 
      public:
-      /// called upon destruction
-      virtual void Done() = 0;
-
       /// In this class we do not define a static ScaTraEle...* Instance
       /// since only derived child classes are free to be allocated!!
 

@@ -42,7 +42,7 @@ namespace DRT
       this class actually defines is Impl, which returns a pointer to
       the appropriate version of ScaTraHDGIntFaceImpl.
      */
-    class ScaTraHDGIntFaceImplInterface : DRT::SingletonDestruction
+    class ScaTraHDGIntFaceImplInterface
     {
      public:
       //! Empty constructor
@@ -115,9 +115,6 @@ namespace DRT
       //! Singleton access method
       static ScaTraHDGIntFaceImpl<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
-
-      //! called upon destruction
-      virtual void Done();
 
       //! Constructor
       ScaTraHDGIntFaceImpl();

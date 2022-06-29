@@ -1296,7 +1296,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcHDG<distype>* DRT::ELEMENTS::FluidEleCalcHDG<distype>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcHDG<distype>> singleton_owner(
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcHDG<distype>>(
@@ -1304,18 +1304,6 @@ DRT::ELEMENTS::FluidEleCalcHDG<distype>* DRT::ELEMENTS::FluidEleCalcHDG<distype>
       });
 
   return singleton_owner.Instance(action);
-}
-
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct);
 }
 
 

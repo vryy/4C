@@ -1785,7 +1785,7 @@ template <DRT::Element::DiscretizationType distypeM>
 NTS::MTInterpolatorCalc<distypeM>* NTS::MTInterpolatorCalc<distypeM>::Instance(
     ::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<NTS::MTInterpolatorCalc<distypeM>> singleton_owner(
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<NTS::MTInterpolatorCalc<distypeM>>(
@@ -1795,17 +1795,6 @@ NTS::MTInterpolatorCalc<distypeM>* NTS::MTInterpolatorCalc<distypeM>::Instance(
   return singleton_owner.Instance(action);
 }
 
-
-/*----------------------------------------------------------------------*
- |  Done (public)                                             farah 10/14|
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeM>
-void NTS::MTInterpolatorCalc<distypeM>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct);
-}
 
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 10/14|

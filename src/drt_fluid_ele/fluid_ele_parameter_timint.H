@@ -17,7 +17,6 @@ with different parameters in more than one fluid field is not yet supported.
 #define FLUID_ELE_PARAMETER_TIMINT_H
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../drt_lib/drt_singletondestruction.H"
 #include "../drt_inpar/inpar_fluid.H"
 
 #include "../headers/singleton_owner.H"
@@ -27,18 +26,12 @@ namespace DRT
   namespace ELEMENTS
   {
     /// Evaluation of general parameters (constant over time)
-    class FluidEleParameterTimInt : public DRT::SingletonDestruction
+    class FluidEleParameterTimInt
     {
      public:
       //! Singleton access method
       static FluidEleParameterTimInt* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
-
-      //! Singleton destruction method called from global problem
-      void Done();
-
-      //! dtor
-      ~FluidEleParameterTimInt() {}
 
       //! time parameter are set
       void SetElementTimeParameter(Teuchos::ParameterList& params  //> parameter list

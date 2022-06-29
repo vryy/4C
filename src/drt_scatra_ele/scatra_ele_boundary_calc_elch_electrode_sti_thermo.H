@@ -31,15 +31,9 @@ namespace DRT
 
      public:
       //! singleton access method
-      static ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>* Instance(const int numdofpernode,
-          const int numscal, const std::string& disname,
-          const ScaTraEleBoundaryCalcElchElectrodeSTIThermo* delete_me = NULL);
+      static ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
-      //! destructor
-      ~ScaTraEleBoundaryCalcElchElectrodeSTIThermo() override = default;
-
-      //! singleton destruction
-      virtual void Done();
 
       /*!
        * \brief evaluate off-diagonal system matrix contributions associated with scatra-scatra

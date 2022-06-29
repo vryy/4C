@@ -24,15 +24,8 @@ namespace DRT
 
      public:
       /// Singleton access method
-      static ScaTraEleBoundaryCalcPoro<distype>* Instance(const int numdofpernode,
-          const int numscal, const std::string& disname,
-          const ScaTraEleBoundaryCalcPoro* delete_me = NULL);
-
-      /// Empty destructor
-      virtual ~ScaTraEleBoundaryCalcPoro(){};
-
-      /// called upon destruction
-      void Done();
+      static ScaTraEleBoundaryCalcPoro<distype>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate action
       int EvaluateAction(DRT::FaceElement* ele, Teuchos::ParameterList& params,

@@ -22,8 +22,8 @@ namespace DRT
     class ScaTraEleSTIElch
     {
      public:
-      //! singleton destruction
-      virtual void Done() = 0;
+      //! Virtual destructor.
+      virtual ~ScaTraEleSTIElch() = default;
 
      protected:
       //! number of element nodes
@@ -31,9 +31,6 @@ namespace DRT
 
       //! protected constructor for singletons
       ScaTraEleSTIElch(const int numdofpernode, const int numscal, const std::string& disname);
-
-      //! destructor
-      virtual ~ScaTraEleSTIElch() { return; };
 
       //! element matrix and right-hand side vector contributions arising from thermal source terms
       //! in discrete thermo residuals
@@ -128,9 +125,6 @@ namespace DRT
       {
         return;
       };
-
-      //! destructor
-      virtual ~ScaTraEleInternalVariableManagerSTIElch() { return; };
 
       //! set internal variables for element evaluation
       void SetInternalVariablesSTIElch(const LINALG::Matrix<NEN, 1>& funct,  //!< shape functions

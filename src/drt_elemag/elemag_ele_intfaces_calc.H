@@ -42,7 +42,7 @@ namespace DRT
       this class actually defines is Impl, which returns a pointer to
       the appropriate version of ElemagIntFaceImpl.
      */
-    class ElemagIntFaceImplInterface : DRT::SingletonDestruction
+    class ElemagIntFaceImplInterface
     {
      public:
       /// Empty constructor
@@ -115,9 +115,6 @@ namespace DRT
       /// Singleton access method
       static ElemagIntFaceImpl<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
-
-      /// called upon destruction
-      virtual void Done();
 
       /// Constructor
       ElemagIntFaceImpl();

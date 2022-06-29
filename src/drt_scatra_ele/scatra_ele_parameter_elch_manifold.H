@@ -22,10 +22,7 @@ namespace DRT
      public:
       //!  singleton access method
       //! \param disname       name of discretization
-      //! \param delete_me     creation/destruction indication
       static ScaTraEleParameterElchManifold* Instance(const std::string& disname);
-
-      void Done() override;
 
       void SetParameters(Teuchos::ParameterList& parameters) override;
 

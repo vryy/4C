@@ -9,50 +9,21 @@
 
 #include "../drt_lib/drt_dserror.H"
 #include "scatra_ele_parameter_boundary.H"
+#include "../headers/singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterBoundary* DRT::ELEMENTS::ScaTraEleParameterBoundary::Instance(
-    const std::string& disname, const ScaTraEleParameterBoundary* delete_me)
+    const std::string& disname)
 {
-  // each discretization is associated with exactly one instance of this class according to a static
-  // map
-  static std::map<std::string, ScaTraEleParameterBoundary*> instances;
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const std::string& disname) {
+        return std::unique_ptr<ScaTraEleParameterBoundary>(new ScaTraEleParameterBoundary(disname));
+      });
 
-  // check whether instance already exists for current discretization, and perform instantiation if
-  // not
-  if (delete_me == nullptr)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleParameterBoundary(disname);
-  }
-
-  // destruct instance
-  else
-  {
-    for (auto i = instances.begin(); i != instances.end(); ++i)
-    {
-      if (i->second == delete_me)
-      {
-        delete i->second;
-        instances.erase(i);
-        return nullptr;
-      }
-    }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
-
-  // return existing or newly created instance
-  return instances[disname];
+  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, disname);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterBoundary::Done()
-{
-  // delete singleton
-  Instance("", this);
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

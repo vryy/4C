@@ -392,13 +392,10 @@ namespace DRT
     //=======================================================================
     //=======================================================================
 
-    class Ale3_Impl_Interface : SingletonDestruction
+    class Ale3_Impl_Interface
     {
      public:
-      /// Empty constructor
-      Ale3_Impl_Interface() {}
-
-      virtual ~Ale3_Impl_Interface() {}
+      virtual ~Ale3_Impl_Interface() = default;
 
       /// Internal implementation class for fluid element
       static Ale3_Impl_Interface* Impl(DRT::ELEMENTS::Ale3* ele);
@@ -439,17 +436,10 @@ namespace DRT
     template <DRT::Element::DiscretizationType distype>
     class Ale3_Impl : public Ale3_Impl_Interface
     {
-      Ale3_Impl() {}
-
      public:
-      ~Ale3_Impl() {}
-
       /// Singleton access method
       static Ale3_Impl<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
-
-      /// called upon destruction
-      virtual void Done();
 
       void static_ke_laplace(Ale3* ele,          ///< pointer to element
           DRT::Discretization& dis,              ///< discretization
@@ -491,6 +481,7 @@ namespace DRT
       );
 
      private:
+      Ale3_Impl() = default;
       static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
       static const int numcnd = DisTypeToNumCornerNodes<distype>::numCornerNodes;
 
@@ -767,7 +758,7 @@ namespace DRT
 
     };  // class Ale3Surface
 
-    class Ale3Surface_Impl_Interface : SingletonDestruction
+    class Ale3Surface_Impl_Interface
     {
      public:
       /// Empty constructor
@@ -794,9 +785,6 @@ namespace DRT
       /// Singleton access method
       static Ale3Surface_Impl<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
-
-      /// called upon destruction
-      virtual void Done();
 
       //! number of element nodes
       static const int bdrynen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;

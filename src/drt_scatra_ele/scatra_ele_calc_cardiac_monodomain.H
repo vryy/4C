@@ -40,12 +40,8 @@ namespace DRT
 
 
       /// Singleton access method
-      static ScaTraEleCalcCardiacMonodomain<distype, probdim>* Instance(const int numdofpernode,
-          const int numscal, const std::string& disname,
-          const ScaTraEleCalcCardiacMonodomain* delete_me = NULL);
-
-      /// called upon destruction
-      virtual void Done();
+      static ScaTraEleCalcCardiacMonodomain<distype, probdim>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate the element
       int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,

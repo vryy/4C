@@ -35,14 +35,13 @@ namespace DRT
      public:
       //! singleton access method
       static ScaTraEleUtilsElch<distype>* Instance(
-          const int numdofpernode,                    ///< number of degrees of freedom per node
-          const int numscal,                          ///< number of transported scalars per node
-          const std::string& disname,                 ///< name of discretization
-          const ScaTraEleUtilsElch* delete_me = NULL  ///< creation/destruction indication
+          const int numdofpernode,    ///< number of degrees of freedom per node
+          const int numscal,          ///< number of transported scalars per node
+          const std::string& disname  ///< name of discretization
       );
 
-      //! singleton destruction
-      virtual void Done();
+      //! destructor
+      virtual ~ScaTraEleUtilsElch() = default;
 
       //! evaluation of electrochemistry kinetics at integration point on domain or boundary element
       void EvaluateElchKineticsAtIntegrationPoint(const DRT::Element* ele,  ///< current element
@@ -102,9 +101,6 @@ namespace DRT
           const int numscal,                       ///< number of transported scalars per node
           const std::string& disname               ///< name of discretization
       );
-
-      //! destructor
-      virtual ~ScaTraEleUtilsElch() { return; };
 
      private:
       //! number of degrees of freedom per node

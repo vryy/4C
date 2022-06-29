@@ -40,12 +40,8 @@ namespace DRT
       virtual ~ScaTraEleCalcChemoReac() {}
 
       //! Singleton access method
-      static ScaTraEleCalcChemoReac<distype, probdim>* Instance(const int numdofpernode,
-          const int numscal, const std::string& disname,
-          const ScaTraEleCalcChemoReac* delete_me = NULL);
-
-      //! called upon destruction
-      virtual void Done();
+      static ScaTraEleCalcChemoReac<distype, probdim>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
      protected:
       //! get the material parameters

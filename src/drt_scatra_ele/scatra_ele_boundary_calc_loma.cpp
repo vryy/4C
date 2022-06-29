@@ -25,6 +25,7 @@
 #include "scatra_ele_boundary_calc_loma.H"
 
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
+#include "../headers/singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
@@ -32,44 +33,18 @@
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>*
-DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::Instance(const int numdofpernode,
-    const int numscal, const std::string& disname, const ScaTraEleBoundaryCalcLoma* delete_me)
+DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::Instance(
+    const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static std::map<std::string, ScaTraEleBoundaryCalcLoma<distype>*> instances;
-
-  if (delete_me == NULL)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleBoundaryCalcLoma<distype>(numdofpernode, numscal, disname);
-  }
-
-  else
-  {
-    for (typename std::map<std::string, ScaTraEleBoundaryCalcLoma<distype>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-  }
+        return std::unique_ptr<ScaTraEleBoundaryCalcLoma<distype>>(
+            new ScaTraEleBoundaryCalcLoma<distype>(numdofpernode, numscal, disname));
+      });
 
-  return instances[disname];
-}
-
-
-/*----------------------------------------------------------------------*
- | singleton destruction                                     fang 02/15 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::Done()
-{
-  // delete singleton
-  Instance(0, 0, "", this);
-
-  return;
+  return singleton_map[disname].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 

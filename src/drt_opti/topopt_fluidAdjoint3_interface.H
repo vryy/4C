@@ -46,7 +46,7 @@ namespace DRT
 
       \author winklmaier
      */
-    class FluidAdjoint3ImplInterface : public DRT::SingletonDestruction
+    class FluidAdjoint3ImplInterface
     {
      public:
       /// Empty constructor

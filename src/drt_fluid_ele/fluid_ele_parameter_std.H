@@ -23,14 +23,9 @@ namespace DRT
     class FluidEleParameterStd : public FluidEleParameter
     {
      public:
-      virtual ~FluidEleParameterStd() {}
-
       /// Singleton access method
       static FluidEleParameterStd* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
-
-      /// called upon destruction
-      virtual void Done();
 
      private:
      protected:

@@ -38,14 +38,11 @@ namespace DRT
     {
      public:
       /// Singleton access method
-      static PoroFluidMultiPhaseEleBoundaryCalc<distype>* Instance(const int numdofpernode,
-          const std::string& disname, const PoroFluidMultiPhaseEleBoundaryCalc* delete_me = NULL);
+      static PoroFluidMultiPhaseEleBoundaryCalc<distype>* Instance(
+          const int numdofpernode, const std::string& disname);
 
       /// Empty destructor
       virtual ~PoroFluidMultiPhaseEleBoundaryCalc() { return; };
-
-      /// called upon destruction
-      virtual void Done();
 
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
       static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;

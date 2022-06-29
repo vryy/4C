@@ -733,7 +733,6 @@ int main(int argc, char** argv)
 
   SetProblemDimension(functable);
   int result = runtests(argv, functable, testname);
-  DRT::UTILS::GaussPointCache::Instance().Done();
   DRT::Problem::Done();
   MPI_Finalize();
   return result;

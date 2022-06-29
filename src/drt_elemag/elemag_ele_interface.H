@@ -17,7 +17,6 @@
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialDenseMatrix.h"
 
-#include "../drt_lib/drt_singletondestruction.H"
 
 #include "../drt_cut/cut_utils.H"
 
@@ -34,11 +33,11 @@ namespace DRT
   {
     class Elemag;
 
-    class ElemagEleInterface : public DRT::SingletonDestruction
+    class ElemagEleInterface
     {
      public:
-      /// Empty Constructor
-      ElemagEleInterface() {}
+      /// Virtual destructor
+      virtual ~ElemagEleInterface() = default;
 
       /// Evaluate the element
       /*!

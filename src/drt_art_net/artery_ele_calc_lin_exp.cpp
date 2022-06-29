@@ -19,6 +19,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "art_junction.H"
 #include "art_terminal_bc.H"
+#include "../headers/singleton_owner.H"
 #include <fstream>
 #include <iomanip>
 
@@ -43,47 +44,19 @@ DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::ArteryEleCalcLinExp(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ArteryEleCalcLinExp<distype>* DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Instance(
-    const int numdofpernode, const std::string& disname, const ArteryEleCalcLinExp* delete_me)
+    const int numdofpernode, const std::string& disname)
 {
-  static std::map<std::pair<std::string, int>, ArteryEleCalcLinExp<distype>*> instances;
+  using Key = std::pair<std::string, int>;
+  static auto singleton_map = ::UTILS::MakeSingletonMap<Key>(
+      [](const int numdofpernode, const std::string& disname)
+      {
+        return std::unique_ptr<ArteryEleCalcLinExp<distype>>(
+            new ArteryEleCalcLinExp<distype>(numdofpernode, disname));
+      });
 
   std::pair<std::string, int> key(disname, numdofpernode);
 
-  if (delete_me == NULL)
-  {
-    if (instances.find(key) == instances.end())
-      instances[key] = new ArteryEleCalcLinExp<distype>(numdofpernode, disname);
-  }
-
-  else
-  {
-    // since we keep several instances around in the general case, we need to
-    // find which of the instances to delete with this call. This is done by
-    // letting the object to be deleted hand over the 'this' pointer, which is
-    // located in the map and deleted
-    for (typename std::map<std::pair<std::string, int>, ArteryEleCalcLinExp<distype>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
-      {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
-
-  return instances[key];
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(0, "", this);
+  return singleton_map[key].Instance(::UTILS::SingletonAction::create, numdofpernode, disname);
 }
 
 

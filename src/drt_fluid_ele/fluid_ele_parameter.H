@@ -17,7 +17,6 @@ be set in problem specific parameter lists derived from this class.
 #define FLUID_ELE_PARAMETER_H
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../drt_lib/drt_singletondestruction.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_twophase.H"
 #include "../drt_inpar/inpar_turbulence.H"
@@ -31,13 +30,10 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    class FluidEleParameter : public DRT::SingletonDestruction
+    class FluidEleParameter
     {
      public:
-      virtual ~FluidEleParameter() {}
-
-      /// called upon destruction
-      virtual void Done() = 0;
+      virtual ~FluidEleParameter() = default;
 
       /*========================================================================*/
       //! @name set-routines

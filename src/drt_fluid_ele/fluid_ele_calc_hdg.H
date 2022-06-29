@@ -258,9 +258,6 @@ namespace DRT
       static FluidEleCalcHDG<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
-      /// called upon destruction
-      virtual void Done();
-
       /// Print local residuals
       void PrintLocalResiduals(DRT::ELEMENTS::Fluid* ele);
 

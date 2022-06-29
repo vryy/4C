@@ -15,7 +15,6 @@
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialDenseMatrix.h"
-#include "../drt_lib/drt_singletondestruction.H"
 #include "../drt_lib/drt_element.H"
 
 namespace DRT
@@ -30,11 +29,11 @@ namespace DRT
       This class exists to provide a common interface for all template
       versions of ScaTraEleCalc.
      */
-    class ScaTraEleInterface : public DRT::SingletonDestruction
+    class ScaTraEleInterface
     {
      public:
-      /// Empty constructor
-      ScaTraEleInterface() { return; };
+      /// Virtual destructor.
+      virtual ~ScaTraEleInterface() = default;
 
       /// Setup element evaluation
       virtual int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization) = 0;

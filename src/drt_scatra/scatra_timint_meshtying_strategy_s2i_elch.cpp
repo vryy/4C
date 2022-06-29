@@ -30,6 +30,7 @@
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_solver.H"
+#include "../headers/singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |
@@ -544,61 +545,22 @@ SCATRA::MortarCellCalcElch<distypeS, distypeM>::Instance(
     const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
     const INPAR::S2I::InterfaceSides&
         lmside,  //!< flag for interface side underlying Lagrange multiplier definition
-    const int& numdofpernode_slave,      //!< number of slave-side degrees of freedom per node
-    const int& numdofpernode_master,     //!< number of master-side degrees of freedom per node
-    const std::string& disname,          //!< name of mortar discretization
-    const MortarCellCalcElch* delete_me  //!< pointer to instance to be deleted
+    const int& numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
+    const int& numdofpernode_master,  //!< number of master-side degrees of freedom per node
+    const std::string& disname        //!< name of mortar discretization
 )
 {
-  // static map assigning mortar discretization names to class instances
-  static std::map<std::string, MortarCellCalcElch<distypeS, distypeM>*> instances;
-
-  // create new instance or return existing one
-  if (!delete_me)
-  {
-    // create new instance if not yet available
-    if (instances.find(disname) == instances.end())
-      instances[disname] = new MortarCellCalcElch<distypeS, distypeM>(
-          couplingtype, lmside, numdofpernode_slave, numdofpernode_master);
-  }
-
-  // delete existing instance
-  else
-  {
-    // loop over all existing instances
-    for (auto i = instances.begin(); i != instances.end(); ++i)
-    {
-      // check whether current instance should be deleted
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const INPAR::S2I::CouplingType& couplingtype, const INPAR::S2I::InterfaceSides& lmside,
+          const int& numdofpernode_slave, const int& numdofpernode_master)
       {
-        // delete current instance
-        delete i->second;
+        return std::unique_ptr<MortarCellCalcElch<distypeS, distypeM>>(
+            new MortarCellCalcElch<distypeS, distypeM>(
+                couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
+      });
 
-        // remove deleted instance from map
-        instances.erase(i);
-
-        // return null pointer
-        return nullptr;
-      }
-    }
-
-    // catch internal error
-    dserror("Instance to be deleted couldn't be found in static map!");
-  }
-
-  // return existing instance
-  return instances[disname];
-}
-
-
-/*----------------------------------------------------------------------*
- | singleton destruction                                     fang 01/16 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void SCATRA::MortarCellCalcElch<distypeS, distypeM>::Done()
-{
-  // delete singleton
-  Instance(INPAR::S2I::coupling_undefined, INPAR::S2I::side_undefined, 0, 0, "", this);
+  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, couplingtype, lmside,
+      numdofpernode_slave, numdofpernode_master);
 }
 
 
@@ -753,58 +715,20 @@ SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Instance(
         lmside,  //!< flag for interface side underlying Lagrange multiplier definition
     const int& numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
     const int& numdofpernode_master,  //!< number of master-side degrees of freedom per node
-    const std::string& disname,       //!< name of mortar discretization
-    const MortarCellCalcElchSTIThermo* delete_me  //!< pointer to instance to be deleted
+    const std::string& disname        //!< name of mortar discretization
 )
 {
-  // static map assigning mortar discretization names to class instances
-  static std::map<std::string, MortarCellCalcElchSTIThermo<distypeS, distypeM>*> instances;
-
-  // create new instance or return existing one
-  if (!delete_me)
-  {
-    // create new instance if not yet available
-    if (instances.find(disname) == instances.end())
-      instances[disname] = new MortarCellCalcElchSTIThermo<distypeS, distypeM>(
-          couplingtype, lmside, numdofpernode_slave, numdofpernode_master);
-  }
-
-  // delete existing instance
-  else
-  {
-    // loop over all existing instances
-    for (auto i = instances.begin(); i != instances.end(); ++i)
-    {
-      // check whether current instance should be deleted
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const INPAR::S2I::CouplingType& couplingtype, const INPAR::S2I::InterfaceSides& lmside,
+          const int& numdofpernode_slave, const int& numdofpernode_master)
       {
-        // delete current instance
-        delete i->second;
+        return std::unique_ptr<MortarCellCalcElchSTIThermo<distypeS, distypeM>>(
+            new MortarCellCalcElchSTIThermo<distypeS, distypeM>(
+                couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
+      });
 
-        // remove deleted instance from map
-        instances.erase(i);
-
-        // return null pointer
-        return nullptr;
-      }
-    }
-
-    // catch internal error
-    dserror("Instance to be deleted couldn't be found in static map!");
-  }
-
-  // return existing instance
-  return instances[disname];
-}
-
-/*----------------------------------------------------------------------*
- | singleton destruction                                     fang 01/17 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Done()
-{
-  // delete singleton
-  Instance(INPAR::S2I::coupling_undefined, INPAR::S2I::side_undefined, 0, 0, "", this);
+  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, couplingtype, lmside,
+      numdofpernode_slave, numdofpernode_master);
 }
 
 
@@ -995,61 +919,22 @@ SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Instance(
     const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
     const INPAR::S2I::InterfaceSides&
         lmside,  //!< flag for interface side underlying Lagrange multiplier definition
-    const int& numdofpernode_slave,         //!< number of slave-side degrees of freedom per node
-    const int& numdofpernode_master,        //!< number of master-side degrees of freedom per node
-    const std::string& disname,             //!< name of mortar discretization
-    const MortarCellCalcSTIElch* delete_me  //!< pointer to instance to be deleted
+    const int& numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
+    const int& numdofpernode_master,  //!< number of master-side degrees of freedom per node
+    const std::string& disname        //!< name of mortar discretization
 )
 {
-  // static map assigning mortar discretization names to class instances
-  static std::map<std::string, MortarCellCalcSTIElch<distypeS, distypeM>*> instances;
-
-  // create new instance or return existing one
-  if (!delete_me)
-  {
-    // create new instance if not yet available
-    if (instances.find(disname) == instances.end())
-      instances[disname] = new MortarCellCalcSTIElch<distypeS, distypeM>(
-          couplingtype, lmside, numdofpernode_slave, numdofpernode_master);
-  }
-
-  // delete existing instance
-  else
-  {
-    // loop over all existing instances
-    for (auto i = instances.begin(); i != instances.end(); ++i)
-    {
-      // check whether current instance should be deleted
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const INPAR::S2I::CouplingType& couplingtype, const INPAR::S2I::InterfaceSides& lmside,
+          const int& numdofpernode_slave, const int& numdofpernode_master)
       {
-        // delete current instance
-        delete i->second;
+        return std::unique_ptr<MortarCellCalcSTIElch<distypeS, distypeM>>(
+            new MortarCellCalcSTIElch<distypeS, distypeM>(
+                couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
+      });
 
-        // remove deleted instance from map
-        instances.erase(i);
-
-        // return null pointer
-        return nullptr;
-      }
-    }
-
-    // catch internal error
-    dserror("Instance to be deleted couldn't be found in static map!");
-  }
-
-  // return existing instance
-  return instances[disname];
-}
-
-
-/*----------------------------------------------------------------------*
- | singleton destruction                                     fang 01/17 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Done()
-{
-  // delete singleton
-  Instance(INPAR::S2I::coupling_undefined, INPAR::S2I::side_undefined, 0, 0, "", this);
+  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, couplingtype, lmside,
+      numdofpernode_slave, numdofpernode_master);
 }
 
 

@@ -15,8 +15,8 @@
 #include "contact_aug_utils.H"
 #include "contact_aug_enum_lists.H"
 #include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_lib/drt_singletondestruction.H"
 #include "contact_aug_timemonitor.H"
+#include "../headers/singleton_owner.H"
 
 // forward declaration
 namespace DRT
@@ -1092,15 +1092,12 @@ namespace CONTACT
        *
        *  This function is only suitable for the augmented Lagrange formulation due to
        *  the special structure of the EvaluateContact implementation! */
-      class FD_Debug : public DRT::SingletonDestruction
+      class FD_Debug
       {
        public:
         /// singleton creation
-        static FD_Debug* Instance(
-            Strategy* strat, const double delta = 1.0e-8, const bool delete_me = false);
-
-        /// delete singleton pointer
-        virtual void Done();
+        static FD_Debug* Instance(Strategy* strat, const double delta = 1.0e-8,
+            ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
         /// perform the FD evaluate calls
         void Evaluate(const Teuchos::RCP<LINALG::SparseMatrix>& derivMatrixPtr,
@@ -1111,9 +1108,6 @@ namespace CONTACT
         FD_Debug() : strat_(NULL), delta_(0.0), is_fd_check_(false)
         { /*empty*/
         }
-
-        /// destructor
-        ~FD_Debug(){};
 
         /// initialize this object
         void Init(Strategy* strat, const double delta = 1.0e-8);
@@ -1126,7 +1120,6 @@ namespace CONTACT
 
         DRT::Node* FindINode(const int gid) const;
 
-       private:
         /// call back to the wrapping strategy
         Strategy* strat_;
 

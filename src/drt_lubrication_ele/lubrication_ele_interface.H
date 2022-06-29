@@ -15,7 +15,6 @@
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialDenseMatrix.h"
-#include "../drt_lib/drt_singletondestruction.H"
 #include "../drt_lib/drt_element.H"
 
 namespace DRT
@@ -30,7 +29,7 @@ namespace DRT
       This class exists to provide a common interface for all template
       versions of LubricationEleCalc.
      */
-    class LubricationEleInterface : public DRT::SingletonDestruction
+    class LubricationEleInterface
     {
      public:
       /// Empty constructor

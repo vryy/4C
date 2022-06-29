@@ -11,7 +11,6 @@
 
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../drt_lib/drt_singletondestruction.H"
 #include <vector>
 
 namespace DRT
@@ -19,21 +18,13 @@ namespace DRT
   namespace ELEMENTS
   {
     /// Evaluation of general parameters (constant over time)
-    class PoroFluidMultiPhaseEleParameter : public DRT::SingletonDestruction
+    class PoroFluidMultiPhaseEleParameter
     {
      public:
       //! singleton access method
       static PoroFluidMultiPhaseEleParameter* Instance(
-          const std::string& disname,  //!< name of discretization
-          const PoroFluidMultiPhaseEleParameter* delete_me =
-              NULL  //!< creation/destruction indication
+          const std::string& disname  //!< name of discretization
       );
-
-      //! Singleton destruction method called from global problem
-      void Done();
-
-      //! dtor
-      ~PoroFluidMultiPhaseEleParameter() {}
 
       //! set parameters
       void SetTimeStepParameters(Teuchos::ParameterList& parameters  //!< parameter list

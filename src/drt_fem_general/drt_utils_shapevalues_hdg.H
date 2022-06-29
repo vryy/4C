@@ -290,21 +290,17 @@ namespace DRT
      Author: schoeder 08/14
     */
     template <DRT::Element::DiscretizationType distype>
-    class ShapeValuesFaceCache : public SingletonDestruction
+    class ShapeValuesFaceCache
     {
      public:
       /// return instance
       static ShapeValuesFaceCache<distype> &Instance();
 
-      /// cleanup
-      virtual void Done();
-
       /// give pointer to corresponding shape values face
       Teuchos::RCP<ShapeValuesFace<distype>> Create(ShapeValuesFaceParams params);
 
      private:
-      /// instance
-      static ShapeValuesFaceCache<distype> *instance_;
+      ShapeValuesFaceCache() = default;
 
       /// the actual cache; contains all pairs
       std::map<std::size_t, Teuchos::RCP<ShapeValuesFace<distype>>> svf_cache_;
@@ -316,21 +312,17 @@ namespace DRT
      Author: kronbichler 09/14
     */
     template <DRT::Element::DiscretizationType distype>
-    class ShapeValuesInteriorOnFaceCache : public SingletonDestruction
+    class ShapeValuesInteriorOnFaceCache
     {
      public:
       /// return instance
       static ShapeValuesInteriorOnFaceCache &Instance();
 
-      /// cleanup
-      virtual void Done();
-
       /// give pointer to corresponding shape values face
       Teuchos::RCP<ShapeValuesInteriorOnFace> Create(ShapeValuesFaceParams params);
 
      private:
-      /// instance
-      static ShapeValuesInteriorOnFaceCache *instance_;
+      ShapeValuesInteriorOnFaceCache() = default;
 
       /// the actual cache; contains all pairs
       std::map<std::size_t, Teuchos::RCP<ShapeValuesInteriorOnFace>> cache_;

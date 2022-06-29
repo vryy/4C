@@ -45,7 +45,7 @@ namespace DRT
       this class actually defines is Impl, which returns a pointer to
       the appropriate version of FluidIntFaceImpl.
      */
-    class FluidIntFaceImplInterface : DRT::SingletonDestruction
+    class FluidIntFaceImplInterface
     {
      public:
       /// Empty constructor
@@ -120,9 +120,6 @@ namespace DRT
       /// Singleton access method
       static FluidIntFaceImpl<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
-
-      /// called upon destruction
-      virtual void Done();
 
       /// Constructor
       FluidIntFaceImpl();

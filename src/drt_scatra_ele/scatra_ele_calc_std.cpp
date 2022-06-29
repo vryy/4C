@@ -8,6 +8,7 @@
 */
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_calc_std.H"
+#include "../headers/singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
@@ -15,51 +16,18 @@
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcStd<distype, probdim>*
-DRT::ELEMENTS::ScaTraEleCalcStd<distype, probdim>::Instance(const int numdofpernode,
-    const int numscal, const std::string& disname, const ScaTraEleCalcStd* delete_me)
+DRT::ELEMENTS::ScaTraEleCalcStd<distype, probdim>::Instance(
+    const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static std::map<std::pair<std::string, int>, ScaTraEleCalcStd<distype, probdim>*> instances;
-
-  std::pair<std::string, int> key(disname, numdofpernode);
-
-  if (delete_me == NULL)
-  {
-    if (instances.find(key) == instances.end())
-      instances[key] = new ScaTraEleCalcStd<distype, probdim>(numdofpernode, numscal, disname);
-  }
-
-  else
-  {
-    // since we keep several instances around in the general case, we need to
-    // find which of the instances to delete with this call. This is done by
-    // letting the object to be deleted hand over the 'this' pointer, which is
-    // located in the map and deleted
-    for (typename std::map<std::pair<std::string, int>,
-             ScaTraEleCalcStd<distype, probdim>*>::iterator i = instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::pair<std::string, int>>(
+      [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
+        return std::unique_ptr<ScaTraEleCalcStd<distype, probdim>>(
+            new ScaTraEleCalcStd<distype, probdim>(numdofpernode, numscal, disname));
+      });
 
-  return instances[key];
-}
-
-
-/*----------------------------------------------------------------------*
- | singleton destruction                                     fang 02/15 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcStd<distype, probdim>::Done()
-{
-  // delete instance
-  Instance(0, 0, "", this);
-
-  return;
+  return singleton_map[std::make_pair(disname, numdofpernode)].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 

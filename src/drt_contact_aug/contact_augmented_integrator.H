@@ -15,7 +15,6 @@
 #include "../drt_contact/contact_integrator.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "contact_aug_integrator_policy.H"
-#include "../drt_lib/drt_singletondestruction.H"
 
 namespace MORTAR
 {
@@ -198,9 +197,7 @@ namespace CONTACT
     /*--------------------------------------------------------------------------*/
     template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
         DRT::Element::DiscretizationType mastertype, class IntPolicy>
-    class Integrator : public IntegratorGeneric,
-                       public IntPolicy,
-                       public ::DRT::SingletonDestruction
+    class Integrator : public IntegratorGeneric, public IntPolicy
     {
       // used for static const declarations
       typedef IntPolicy my;
@@ -214,20 +211,11 @@ namespace CONTACT
        *
        *  \author hiermeier \date 06/17 */
       static Integrator<probdim, slavetype, mastertype, IntPolicy>* Instance(
-          CONTACT::ParamsInterface* cparams, CONTACT::CoIntegrator* wrapper,
-          const bool delete_me = false);
-
-      /** \brief Delete all created instances at the end of a simulation run
-       *
-       *  \author hiermeier \date 06/17 */
-      void Done() override;
+          CONTACT::ParamsInterface* cparams, CONTACT::CoIntegrator* wrapper);
 
      public:
       //! Default constructor without active set information
       Integrator(CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator& wrapper);
-
-      //! Destructor
-      virtual ~Integrator() = default;
 
       // don't want = operator and cctor
       Integrator operator=(const Integrator& old) = delete;

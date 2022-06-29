@@ -16,49 +16,27 @@ multi-scale framework
 #include "../drt_mat/elchmat.H"
 #include "../drt_mat/elchphase.H"
 #include "../drt_mat/newman_multiscale.H"
+#include "../headers/singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Instance(
-    const int numdofpernode, const int numscal, const std::string& disname,
-    const ScaTraEleCalcElchDiffCondMultiScale* delete_me)
+    const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static std::map<std::string, ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>*> instances;
-
-  if (delete_me == nullptr)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>(
-          numdofpernode, numscal, disname);
-  }
-
-  else
-  {
-    for (auto i = instances.begin(); i != instances.end(); ++i)
-    {
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return nullptr;
-      }
-    }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
+        return std::unique_ptr<ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>>(
+            new ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>(
+                numdofpernode, numscal, disname));
+      });
 
-  return instances[disname];
+  return singleton_map[disname].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Done()
-{
-  // delete singleton
-  Instance(0, 0, "", this);
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

@@ -35,12 +35,6 @@ namespace DRT
       static FluidEleBoundaryCalcStd<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
-      /// Empty destructor
-      virtual ~FluidEleBoundaryCalcStd(){};
-
-      /// called upon destruction
-      void Done();
-
      private:
       /// private constructor since we are singleton
       FluidEleBoundaryCalcStd();

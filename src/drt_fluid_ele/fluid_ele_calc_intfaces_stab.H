@@ -53,7 +53,7 @@ namespace DRT
 
 
     -----------------------------------------------------------------*/
-    class FluidIntFaceStab : DRT::SingletonDestruction
+    class FluidIntFaceStab
     {
      public:
       //! Empty constructor
@@ -127,9 +127,6 @@ namespace DRT
       /// Singleton access method
       static FluidInternalSurfaceStab<distype, pdistype, ndistype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
-
-      /// called upon destruction
-      virtual void Done();
 
       /// Constructor with number of nodes
       FluidInternalSurfaceStab();

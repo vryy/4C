@@ -332,26 +332,14 @@ MORTAR::MortarIntegratorCalc<distypeS, distypeM>*
 MORTAR::MortarIntegratorCalc<distypeS, distypeM>::Instance(
     ::UTILS::SingletonAction action, const Teuchos::ParameterList& params)
 {
-  static ::UTILS::SingletonOwner<MORTAR::MortarIntegratorCalc<distypeS, distypeM>> singleton_owner(
-      [=]()
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+      [](const Teuchos::ParameterList& p)
       {
         return std::unique_ptr<MORTAR::MortarIntegratorCalc<distypeS, distypeM>>(
-            new MORTAR::MortarIntegratorCalc<distypeS, distypeM>(params));
+            new MORTAR::MortarIntegratorCalc<distypeS, distypeM>(p));
       });
 
-  return singleton_owner.Instance(action);
-}
-
-
-/*----------------------------------------------------------------------*
- |  Done (public)                                             farah 01/14|
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(::UTILS::SingletonAction::destruct, imortar_);
+  return singleton_owner.Instance(action, params);
 }
 
 

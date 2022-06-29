@@ -82,9 +82,6 @@ namespace DRT
       static ElemagEleCalc<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
-      /// Called upon destruction.
-      virtual void Done();
-
       /// Used to print the trace values as debugging utility.
       void PrintTrace(DRT::Element* ele);
 

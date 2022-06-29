@@ -33,7 +33,7 @@ namespace DRT
       this class actually defines is Impl, which returns a pointer to
       the appropriate version of ScaTraHDGBoundaryImpl.
      */
-    class ScaTraHDGBoundaryImplInterface : DRT::SingletonDestruction
+    class ScaTraHDGBoundaryImplInterface
     {
      public:
       //! Empty constructor
@@ -64,9 +64,6 @@ namespace DRT
       //! Singleton access method
       static ScaTraHDGBoundaryImpl<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
-
-      //! called upon destruction
-      virtual void Done();
 
       //! Constructor
       ScaTraHDGBoundaryImpl();

@@ -15,49 +15,27 @@ within isothermal electrodes
 #include "scatra_ele_utils_elch_electrode.H"
 
 #include "../drt_mat/material.H"
+#include "../headers/singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>*
-DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::Instance(const int numdofpernode,
-    const int numscal, const std::string& disname, const ScaTraEleCalcElchElectrode* delete_me)
+DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::Instance(
+    const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static std::map<std::string, ScaTraEleCalcElchElectrode<distype, probdim>*> instances;
-
-  if (delete_me == nullptr)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] =
-          new ScaTraEleCalcElchElectrode<distype, probdim>(numdofpernode, numscal, disname);
-  }
-
-  else
-  {
-    for (auto instance = instances.begin(); instance != instances.end(); ++instance)
-    {
-      if (instance->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        delete instance->second;
-        instances.erase(instance);
-        return nullptr;
-      }
-    }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
+        return std::unique_ptr<ScaTraEleCalcElchElectrode<distype, probdim>>(
+            new ScaTraEleCalcElchElectrode<distype, probdim>(numdofpernode, numscal, disname));
+      });
 
-  return instances[disname];
+  return singleton_map[disname].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::Done()
-{
-  // delete singleton
-  Instance(0, 0, "", this);
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

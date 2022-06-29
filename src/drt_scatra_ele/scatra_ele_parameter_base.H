@@ -16,7 +16,6 @@ of the global time integrator, and then never touched again throughout the simul
 #ifndef SCATRA_ELE_PARAMETER_BASE_H
 #define SCATRA_ELE_PARAMETER_BASE_H
 
-#include "../drt_lib/drt_singletondestruction.H"
 
 #include <memory>
 
@@ -30,11 +29,11 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    class ScaTraEleParameterBase : public DRT::SingletonDestruction
+    class ScaTraEleParameterBase
     {
      public:
-      //! singleton destruction
-      virtual void Done() = 0;
+      /// Virtual destructor.
+      virtual ~ScaTraEleParameterBase() = default;
 
       //! set parameters
       virtual void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list

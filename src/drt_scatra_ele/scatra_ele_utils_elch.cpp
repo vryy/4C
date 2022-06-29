@@ -13,6 +13,7 @@
 #include "../drt_mat/ion.H"
 
 #include "../headers/definitions.h"
+#include "../headers/singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
@@ -20,52 +21,20 @@
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleUtilsElch<distype>* DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::Instance(
-    const int numdofpernode,             ///< number of degrees of freedom per node
-    const int numscal,                   ///< number of transported scalars per node
-    const std::string& disname,          ///< name of discretization
-    const ScaTraEleUtilsElch* delete_me  ///< creation/destruction flag
+    const int numdofpernode,    ///< number of degrees of freedom per node
+    const int numscal,          ///< number of transported scalars per node
+    const std::string& disname  ///< name of discretization
 )
 {
-  // each discretization is associated with exactly one instance of this class according to a static
-  // map
-  static std::map<std::string, ScaTraEleUtilsElch<distype>*> instances;
-
-  // check whether instance already exists for current discretization, and perform instantiation if
-  // not
-  if (delete_me == NULL)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleUtilsElch<distype>(numdofpernode, numscal, disname);
-  }
-
-  // destruct instance
-  else
-  {
-    for (typename std::map<std::string, ScaTraEleUtilsElch<distype>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+      [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
-      }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
+        return std::unique_ptr<ScaTraEleUtilsElch<distype>>(
+            new ScaTraEleUtilsElch<distype>(numdofpernode, numscal, disname));
+      });
 
-  // return existing or newly created instance
-  return instances[disname];
-}
-
-
-/*----------------------------------------------------------------------*
- | singleton destruction                                     fang 07/15 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::Done()
-{
-  // delete singleton
-  Instance(0, 0, "", this);
+  return singleton_map[disname].Instance(
+      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 

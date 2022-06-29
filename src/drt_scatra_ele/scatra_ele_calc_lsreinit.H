@@ -39,12 +39,8 @@ namespace DRT
       virtual ~ScaTraEleCalcLsReinit() {}
 
       //! Singleton access method
-      static ScaTraEleCalcLsReinit<distype, probDim>* Instance(const int numdofpernode,
-          const int numscal, const std::string& disname,
-          const ScaTraEleCalcLsReinit* delete_me = NULL);
-
-      //! called upon destruction
-      virtual void Done();
+      static ScaTraEleCalcLsReinit<distype, probDim>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
       /*========================================================================*/
       //! @name access routines

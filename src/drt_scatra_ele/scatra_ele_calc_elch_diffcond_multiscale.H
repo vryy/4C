@@ -28,11 +28,9 @@ namespace DRT
      public:
       //! singleton access method
       static ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>* Instance(
-          const int numdofpernode, const int numscal, const std::string& disname,
-          const ScaTraEleCalcElchDiffCondMultiScale* delete_me = NULL);
+          const int numdofpernode, const int numscal, const std::string& disname);
 
-      //! singleton destruction
-      virtual void Done();
+
 
      private:
       //! abbreviation
