@@ -23,6 +23,7 @@
 #include "../drt_structure_new/str_utils.H"
 #include "../drt_contact/meshtying_abstract_strategy.H"
 
+#include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
@@ -1105,6 +1106,41 @@ Teuchos::RCP<const LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::GetJa
   if (jac_.is_null()) dserror("The jacobian is not initialized!");
 
   return ExtractModelBlock(*jac_, mt, bt);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int STR::TIMINT::BaseDataGlobalState::GetLastLinIterationNumber(const unsigned step) const
+{
+  CheckInitSetup();
+  if (step < 1) dserror("The given step number must be larger than 1. (step=%d)", step);
+
+  auto linsolvers = datasdyn_->GetLinSolvers();
+  int iter = -1;
+
+  for (auto& linsolver : linsolvers)
+  {
+    switch (linsolver.first)
+    {
+      // has only one field solver per default
+      case INPAR::STR::model_structure:
+      case INPAR::STR::model_springdashpot:
+      case INPAR::STR::model_browniandyn:
+      case INPAR::STR::model_beaminteraction:
+      case INPAR::STR::model_monolithic_coupling:
+      case INPAR::STR::model_partitioned_coupling:
+      case INPAR::STR::model_beam_interaction_old:
+      {
+        iter = linsolvers[linsolver.first]->getNumIters();
+        break;
+      }
+      default:
+        dserror("The given model type '%s' is not supported for linear iteration output right now.",
+            INPAR::STR::model_structure);
+    }
+  }
+
+  return iter;
 }
 
 /*----------------------------------------------------------------------------*

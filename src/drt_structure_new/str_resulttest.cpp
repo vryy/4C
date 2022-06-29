@@ -259,6 +259,10 @@ double STR::ResultTest::GetSpecialResult(const std::string& quantity, Status& sp
   {
     return GetNlnIterationNumber(quantity, special_status);
   }
+  else if (quantity.find("lin_iter_step_") != quantity.npos)
+  {
+    return GetLastLinIterationNumber(quantity, special_status);
+  }
   else if (quantity == "internal_energy" or quantity == "kinetic_energy" or
            quantity == "total_energy" or quantity == "beam_contact_penalty_potential" or
            quantity == "beam_interaction_potential" or
@@ -276,6 +280,20 @@ double STR::ResultTest::GetSpecialResult(const std::string& quantity, Status& sp
         quantity.c_str());
 
   exit(EXIT_FAILURE);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int STR::ResultTest::GetLastLinIterationNumber(
+    const std::string& quantity, Status& special_status) const
+{
+  const int stepn = GetIntegerNumberAtLastPositionOfName(quantity);
+
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (stepn <= restart) return -1;
+
+  special_status = Status::evaluated;
+  return static_cast<double>(gstate_->GetLastLinIterationNumber(stepn));
 }
 
 /*----------------------------------------------------------------------------*

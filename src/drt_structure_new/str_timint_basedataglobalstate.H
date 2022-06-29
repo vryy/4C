@@ -363,6 +363,9 @@ namespace STR
       }
 
       /// Get the number of non-linear iterations of the %step
+      int GetLastLinIterationNumber(const unsigned step) const;
+
+      /// Get the number of non-linear iterations of the %step
       int GetNlnIterationNumber(const unsigned step) const;
 
       /// Return time for lin solver
