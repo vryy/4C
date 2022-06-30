@@ -383,11 +383,6 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
   // number of iterations performed by linear solver during last Newton-Raphson iteration
   else if (quantity == "numiterlastsolve")
   {
-    // safety check
-    if (scatratimint_->Strategy()->Solver().Params().get("solver", "none") != "aztec")
-      dserror(
-          "Must have Aztec solver for result test involving number of solver iterations during "
-          "last Newton-Raphson iteration!");
     result = (double)scatratimint_->Strategy()->Solver().getNumIters();
   }
 

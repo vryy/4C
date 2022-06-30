@@ -126,6 +126,25 @@ namespace STR
      *  \author hiermeier \date 11/17 */
     double GetSpecialResult(const std::string& quantity, Status& special_status) const;
 
+    /** \brief Get the last number of linear iterations
+     *
+     * If the number of iterations for the desired step is accessible, it will
+     *  be returned and the special_status flag is set to evaluated. Note that
+     *  the step number is part of the quantity name and will be automatically
+     *  extracted. The used format is
+     *
+     *                       lin_iter_step_<INT>
+     *
+     *  The integer <INT> must be at the very last position separated by an
+     *  underscore.
+     *
+     *  \param[in]  quantity        name of the special quantity
+     *  \param[out] special_status  status of the special result test
+     *  \return  The number of linear iterations, if possible. Otherwise -1.
+     *
+     */
+    int GetLastLinIterationNumber(const std::string& quantity, Status& special_status) const;
+
     /** \brief Get the number of nonlinear iterations
      *
      *  If the number of iterations for the desired step is accessible, it will

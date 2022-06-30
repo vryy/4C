@@ -1143,10 +1143,6 @@ void SCATRA::ScaTraTimIntImpl::OutputLinSolverStats(
     const int& size                //!< size of linear system
 )
 {
-  // safety check
-  if (solver.Params().get("solver", "none") != "aztec")
-    dserror("Performance statistics only available for Aztec solvers!");
-
   // extract communicator
   const Epetra_Comm& comm = solver.Comm();
 

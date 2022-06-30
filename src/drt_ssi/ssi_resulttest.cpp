@@ -45,13 +45,6 @@ double SSI::SSIResultTest::ResultSpecial(const std::string& quantity) const
   // (monolithic SSI only)
   else if (quantity == "numiterlastlinearsolve")
   {
-    // safety check
-    if (SSIMono().Solver().Params().get("solver", "none") != "aztec")
-    {
-      dserror(
-          "Must have Aztec solver for result test involving number of solver iterations during "
-          "last Newton-Raphson iteration!");
-    }
     result = static_cast<double>(SSIMono().Solver().getNumIters());
   }
 

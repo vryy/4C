@@ -75,14 +75,7 @@ double STI::STIResultTest::ResultSpecial(
 
   // number of iterations performed by linear solver during last Newton-Raphson iteration
   else if (quantity == "numiterlastlinearsolve")
-  {
-    // safety check
-    if (STIMonolithic().Solver().Params().get("solver", "none") != "aztec")
-      dserror(
-          "Must have Aztec solver for result test involving number of solver iterations during "
-          "last Newton-Raphson iteration!");
     result = (double)STIMonolithic().Solver().getNumIters();
-  }
 
   // catch unknown quantity strings
   else

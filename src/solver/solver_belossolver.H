@@ -41,6 +41,13 @@ namespace LINALG::SOLVER
 
     //! Actual call to the underlying Belos solver
     virtual int Solve();
+
+    //! return number of iterations
+    int getNumIters() const { return numiters_; };
+
+   private:
+    //! number of iterations
+    int numiters_;
   };
 }  // namespace LINALG::SOLVER
 

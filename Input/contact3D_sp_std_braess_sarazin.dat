@@ -94,7 +94,7 @@ NAME                            Solid_Solver
 SOLVER                          Superlu
 -----------------------------------------------------------SOLVER 2
 NAME                            Contact_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZSOLVE                         GMRES
 AZPREC                          MueLu_contactSP
 MUELU_XML_FILE                  contact3D_sp_braess_sarazin.xml
