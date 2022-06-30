@@ -106,6 +106,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
     beam_contact_params_ptr_->BuildBeamToBeamContactParams();
   }
 
+  // conditions for beam penalty point coupling
+  std::vector<DRT::Condition*> beampenaltycouplingconditions(0);
+  Discret().GetCondition("PenaltyPointCouplingCondition", beampenaltycouplingconditions);
+  if (beampenaltycouplingconditions.size() > 0)
+  {
+    contactelementtypes_.push_back(BINSTRATEGY::UTILS::Beam);
+  }
+
   if (DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none)
@@ -774,7 +782,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
   CheckInit();
 
   // Build the ids of the elements for the beam-to-solid conditions.
-  beam_interaction_conditions_ptr_->BuildIdSets();
+  beam_interaction_conditions_ptr_->BuildIdSets(DiscretPtr());
 
   // loop over all row beam elements
   // note: like this we ensure that first element of pair is always a beam element, also only

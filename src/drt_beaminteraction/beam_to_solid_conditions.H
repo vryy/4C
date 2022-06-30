@@ -160,7 +160,7 @@ namespace BEAMINTERACTION
      *
      * The BuildIdSets method from the base class is called to build the beam IDs.
      */
-    void BuildIdSets() override;
+    void BuildIdSets(const Teuchos::RCP<const DRT::Discretization>& discretization) override;
 
    protected:
     /**
@@ -207,7 +207,7 @@ namespace BEAMINTERACTION
      * \brief Build the surface ID sets for this condition. The BuildIdSets method from the base
      * class is called to build the beam IDs.
      */
-    void BuildIdSets() override;
+    void BuildIdSets(const Teuchos::RCP<const DRT::Discretization>& discretization) override;
 
     /**
      * \brief Here we get all face elements that are needed for the created pairs. This includes

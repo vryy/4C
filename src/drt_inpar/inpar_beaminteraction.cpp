@@ -21,6 +21,7 @@ void INPAR::BEAMINTERACTION::BeamInteractionConditionsGetAll(
     std::vector<INPAR::BEAMINTERACTION::BeamInteractionConditions>& interactions)
 {
   interactions = {INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_beam_contact,
+      INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_beam_point_coupling,
       INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_volume_meshtying,
       INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_meshtying,
       INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_contact};
@@ -183,6 +184,17 @@ void INPAR::BEAMINTERACTION::SetValidConditions(
           true)));
 
   condlist.push_back(beam_filament_condition);
+
+  /*-------------------------------------------------------------------*/
+  Teuchos::RCP<ConditionDefinition> penalty_coupling_condition =
+      Teuchos::rcp(new ConditionDefinition("DESIGN POINT PENALTY COUPLING CONDITIONS",
+          "PenaltyPointCouplingCondition", "Couples beam nodes that lie on the same position",
+          DRT::Condition::PenaltyPointCouplingCondition, false, DRT::Condition::Point));
+
+  AddNamedReal(penalty_coupling_condition, "POSITIONAL_PENALTY_PARAMETER");
+  AddNamedReal(penalty_coupling_condition, "ROTATIONAL_PENALTY_PARAMETER");
+
+  condlist.push_back(penalty_coupling_condition);
 
   // beam-to-beam interactions
   INPAR::BEAMCONTACT::SetValidConditions(condlist);

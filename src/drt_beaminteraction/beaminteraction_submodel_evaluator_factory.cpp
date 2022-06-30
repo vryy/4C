@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------*/
 /*! \file
 
-\brief Factory to create the desired subemodel evaluators.
+\brief Factory to create the desired submodel evaluators.
 
 
 \level 3
@@ -15,13 +15,13 @@
 #include "../drt_inpar/inpar_beaminteraction.H"
 
 // supported submodel evaluators
-#include "../drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact.H"
-
-// problem types
-#include "../drt_lib/drt_globalproblem.H"
+#include "beaminteraction_submodel_evaluator_beamcontact.H"
 #include "beaminteraction_submodel_evaluator_crosslinking.H"
 #include "beaminteraction_submodel_evaluator_potential.H"
 #include "beaminteraction_submodel_evaluator_spherebeamlinking.H"
+
+// problem types
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

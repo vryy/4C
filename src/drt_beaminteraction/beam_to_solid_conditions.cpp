@@ -138,10 +138,11 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BeamToSolidConditionVolume
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BuildIdSets()
+void BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BuildIdSets(
+    const Teuchos::RCP<const DRT::Discretization>& discretization)
 {
   // Call the parent method to build the line maps.
-  BeamToSolidCondition::BuildIdSets();
+  BeamToSolidCondition::BuildIdSets(discretization);
 
   // Build the volume map.
   std::vector<int> volume_ids;
@@ -338,10 +339,11 @@ BEAMINTERACTION::BeamToSolidConditionSurface::BeamToSolidConditionSurface(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidConditionSurface::BuildIdSets()
+void BEAMINTERACTION::BeamToSolidConditionSurface::BuildIdSets(
+    const Teuchos::RCP<const DRT::Discretization>& discretization)
 {
   // Call the parent method to build the line maps.
-  BeamToSolidCondition::BuildIdSets();
+  BeamToSolidCondition::BuildIdSets(discretization);
 
   // Build the surface map.
   surface_ids_.clear();

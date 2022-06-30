@@ -470,7 +470,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   // ---------------------------------------------------------------------------
   // check for beam interactions (either contact or potential-based)
   // ---------------------------------------------------------------------------
-  // get beam contact strategy since there are no conditions for beam contact
+  // get beam contact strategy
   const Teuchos::ParameterList& beamcontact = DRT::Problem::Instance()->BeamContactParams();
   INPAR::BEAMCONTACT::Strategy strategy =
       DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcontact, "BEAMS_STRATEGY");
@@ -481,6 +481,11 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   // conditions for potential-based beam interaction
   std::vector<DRT::Condition*> beampotconditions(0);
   actdis_->GetCondition("BeamPotentialLineCharge", beampotconditions);
+
+  // conditions for beam penalty point coupling
+  std::vector<DRT::Condition*> beampenaltycouplingconditions(0);
+  actdis_->GetCondition("PenaltyPointCouplingCondition", beampenaltycouplingconditions);
+
 
   if (strategy != INPAR::BEAMCONTACT::bstr_none and modelevaluator == INPAR::BEAMCONTACT::bstr_old)
     modeltypes.insert(INPAR::STR::model_beam_interaction_old);
@@ -519,7 +524,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
           DRT::Problem::Instance()->BeamInteractionParams().sublist(
               "BEAM TO SOLID SURFACE CONTACT"),
           "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none or
-      beampotconditions.size() > 0)
+      beampotconditions.size() > 0 or beampenaltycouplingconditions.size() > 0)
     modeltypes.insert(INPAR::STR::model_beaminteraction);
 
   // hopefully we haven't forgotten anything

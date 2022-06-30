@@ -142,39 +142,6 @@ namespace BEAMINTERACTION
       return geometry_pair_;
     }
 
-    //  /*!
-    //  \brief Get number of contact points on this element pair
-    //  */
-    //  virtual int GetNumCps()=0;
-    //  virtual int GetNumGps()=0;
-    //  virtual int GetNumEps()=0;
-    //
-    //  /*!
-    //  \brief Get vector of type declarations (0=closest point contact, 1=gauss point contact, 2=
-    //  end point contact) of all contact pairs
-    //  */
-    //  virtual std::vector<int> GetContactType()=0;
-    //
-    //  /*!
-    //  \brief Get vector of all contact angles of this contact pair
-    //  */
-    //  virtual std::vector<double> GetContactAngle()=0;
-    //
-    //  /*!
-    //  \brief Get vector of all closest points of this contact pair
-    //  */
-    //  virtual std::vector<std::pair<double,double> > GetClosestPoint()=0;
-    //
-    //  /*!
-    //  \brief Return number of individual contact segments on element pair
-    //  */
-    //  virtual std::pair<int,int> GetNumSegments()=0;
-    //
-    //  /*!
-    //  \brief Return ids of active segments
-    //  */
-    //  virtual std::vector<std::pair<int,int> > GetSegmentIds()=0;
-
     /*!
     \brief Get flag indicating whether contact is active (true) or inactive (false)
     */

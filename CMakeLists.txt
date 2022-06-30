@@ -819,6 +819,8 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
     src/drt_beaminteraction/beam_to_beam_contact_params.cpp
     src/drt_beaminteraction/beam_to_beam_contact_variables.cpp
     src/drt_beaminteraction/beam_to_beam_contact_condition.cpp
+    src/drt_beaminteraction/beam_to_beam_point_coupling_pair.cpp
+    src/drt_beaminteraction/beam_to_beam_point_coupling_pair_condition.cpp
     src/drt_beaminteraction/beam_to_solid_utils.cpp
     src/drt_beaminteraction/beam_to_solid_conditions.cpp
     src/drt_beaminteraction/beam_to_solid_mortar_manager.cpp
