@@ -1,8 +1,8 @@
 <ParameterList name="Status Test">
-<!-- Outer Status Test: Global stopping criteria -->
-<ParameterList name="Outer Status Test">
+  <!-- Outer Status Test: Global stopping criteria -->
+  <ParameterList name="Outer Status Test">
     <!-- Skip the non-linear solver -->
-    <Parameter name="Test Type"  type="string" value="NStep" />
-    <Parameter name="Number of Nonlinear Iterations" type="int" value="0" />
-</ParameterList>
+    <Parameter name="Test Type" type="string" value="NStep"/>
+    <Parameter name="Number of Nonlinear Iterations" type="int" value="0"/>
+  </ParameterList>
 </ParameterList>

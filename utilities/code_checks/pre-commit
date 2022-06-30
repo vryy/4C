@@ -1,14 +1,12 @@
 #!/bin/bash
 
-#####################################################
-########## DESCRIPTION ##############################
-#####################################################
-
+############################################################
+#
 # This pre - commit hook will be executed by Git before every new commit and consists of the following stages:
 #
 # Stage 1: Style format check
-# In the version at hand, clang-format will only write out non-compliant files to the shell output and will not perfom any formatting automatically
-# In the case that the script detects files that are not compliant with the current clang-format BACI style, the commit will be rejected (script exits 1)
+# In the version at hand, clang-format and xmlformat will only write out non-compliant files to the shell output and will not perfom any formatting automatically
+# In the case that the script detects files that are not compliant with the current clang-format/xmlformat BACI style, the commit will be rejected (script exits 1)
 #
 # Stage 2: Header check
 # A set of Python scripts checks the staged files for compliance with the BACI header requirements
@@ -25,15 +23,12 @@
 #
 # The commit will be accepted if the script exits with 0
 #
-# Author:    Jonas Nitzler
-#            Maximilian Grill
-# Date:      26.08.2019
-# Version:   1.5
+############################################################
 
 # Load the python virtual environment, which provides clang-format.
 source utilities/baci-python-venv/bin/activate
 
-### Style format check ##############################
+### Stage 1: Style format check ##############################
 # set the field separator to new line
 IFS=$'\n'
 
@@ -58,8 +53,19 @@ then
     uncompliant_files+="$(pwd)/${line}\n"
     fi
 fi
+
+# check if the file is an xml file
+if [[ $line == *.xml ]]
+then
+    # Check if xmlformat would format the file by calling bacixmlformat without override
+    if [[  $(diff -u <($(pwd)/utilities/bacixmlformat --nooverride $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
+    then
+    uncompliant_xml_files+="$(pwd)/${line}\n"
+    fi
+fi
 done
 
+# printout for uncompliant c, cpp or cmake files
 if [ ! -z "$uncompliant_files" ]
 then
 printf "\n"
@@ -80,14 +86,43 @@ echo "(Run this from BACI's top-level directory)"
 printf "\n"
 echo "--> Afterwards, please add all formatted files to the Git staging area using: git add <path/to/file>"
 printf "\n"
+fi
+
+# printout for uncompliant xml files
+if [ ! -z "$uncompliant_xml_files" ]
+then
+printf "\n"
+printf "The following file(s) are not compliant with BACI's coding style:\n"
+printf "\n"
+echo "########################################################################"
+printf "$uncompliant_xml_files"
+echo "########################################################################"
+printf "\n"
+echo "--> Please run xmlformat manually for those files using:"
+echo "./utilities/bacixmlformat <path/to/file>"
+echo "(Run this from BACI's top-level directory)"
+printf "\n"
+echo "--> Alternatively you can use the following script to format ALL source files:"
+echo "./utilities/code_format_everything"
+echo "(Run this from BACI's top-level directory)"
+printf "\n"
+echo "--> Afterwards, please add all formatted files to the Git staging area using: git add <path/to/file>"
+printf "\n"
+fi
+
+# exit if any files are uncompliant
+if [[ ! -z "$uncompliant_files" || ! -z "$uncompliant_xml_files" ]]
+then
 exit 1
 fi
 
-### Header check ####################################
+### Stage 2: Header check ####################################
 python ./utilities/code_checks/header_check.py --diff_only || exit 1
+
+### Stage 3: Framework check ####################################
 python ./utilities/code_checks/testing_frameworks_check.py --diff_only || exit 1
 
-### Check commit on master ##########################
+### Stage 4: Check commit on master ##########################
 branch="$(git rev-parse --abbrev-ref HEAD)"
 if [ "$branch" = "master" ]
 then
