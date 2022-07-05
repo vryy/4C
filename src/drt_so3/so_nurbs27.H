@@ -295,6 +295,23 @@ namespace DRT
             const int stc_layer, std::vector<int>& lm, DRT::Discretization& discretization,
             bool do_inverse);
 
+        /**
+         * \brief Add the element geometry visualization to the vtu data vectors (derived)
+         */
+        unsigned int AppendVisualizationGeometry(const DRT::Discretization& discret,
+            std::vector<uint8_t>& cell_types,
+            std::vector<double>& point_coordinates) const override;
+
+        /**
+         * \brief Add dof based results to point data vector, such that the data matches the
+         * geometry created in AppendVisualizationGeometry.  (derived)
+         */
+        unsigned int AppendVisualizationDofBasedResultDataVector(const DRT::Discretization& discret,
+            const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
+            unsigned int& result_num_dofs_per_node,
+            const unsigned int read_result_data_from_dofindex,
+            std::vector<double>& vtu_point_result_data) const override;
+
        protected:
         //! action parameters recognized by So_nurbs27
         enum ActionType

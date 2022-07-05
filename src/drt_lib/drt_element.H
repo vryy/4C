@@ -1237,6 +1237,40 @@ namespace DRT
           "necessary.");
       return Teuchos::null;
     }
+
+    /**
+     * \brief Add the element geometry visualization to the vtu data vectors
+     *
+     * For standard Lagrangian elements, each element node is added as a vtu point. A vtu cell
+     * corresponding to the element type connects the added nodes and represents the element in
+     * the output. Note that each cell adds all of its geometry information independently of other
+     * cells. This implies that nodes shared by multiple elements are duplicated in the output.
+     *
+     * @param discret (in) Discretization
+     * @param cell_types (in/out) cell type data vector
+     * @param point_coordinates (in/out) point coordinates for the representation of this element
+     * @return Number of added points
+     */
+    virtual unsigned int AppendVisualizationGeometry(const DRT::Discretization& discret,
+        std::vector<uint8_t>& cell_types, std::vector<double>& point_coordinates) const;
+
+    /**
+     * \brief Add dof based results to point data vector, such that the data matches the geometry
+     * created in AppendVisualizationGeometry.
+     *
+     * @param discret (in) Discretization
+     * @param result_data_dofbased (in) Global vector with results
+     * @param result_num_dofs_per_node (in/out) Number of scalar values per point.
+     * @param read_result_data_from_dofindex (in) Starting DOF index for the nodal DOFs. This is
+     * used if not all nodal DOFs should be output, e.g., velocity or pressure in fluid.
+     * @param vtu_point_result_data (in/out) Result data vector.
+     * @return Number of points added by this element.
+     */
+    virtual unsigned int AppendVisualizationDofBasedResultDataVector(
+        const DRT::Discretization& discret, const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
+        unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
+        std::vector<double>& vtu_point_result_data) const;
+
     /// @}
 
    private:

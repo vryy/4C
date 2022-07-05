@@ -22,6 +22,10 @@
 #include "../drt_lib/drt_elements_paramsinterface.H"
 #include "so_utils.H"
 
+#include "../drt_lib/drt_element_vtk_cell_type_register.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "../drt_nurbs_discret/drt_nurbs_utils.H"
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
@@ -1201,4 +1205,132 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::lumpmass(
       (*emass)(c, c) = d;  // apply sum of row entries on diagonal
     }
   }
+}
+
+/**
+ * \brief Helper function to evaluate the NURBS interpolation inside the element.
+ */
+template <unsigned int n_points, unsigned int n_val>
+void EvalNurbs3DInterpolation(LINALG::Matrix<n_val, 1, double>& r,
+    const LINALG::Matrix<n_points * n_val, 1, double>& q, const LINALG::Matrix<3, 1, double>& xi,
+    const LINALG::Matrix<n_points, 1, double>& weights,
+    const std::vector<Epetra_SerialDenseVector>& myknots,
+    const DRT::Element::DiscretizationType& distype)
+{
+  // Get the shape functions.
+  LINALG::Matrix<n_points, 1, double> N;
+  DRT::NURBS::UTILS::nurbs_get_3D_funct(N, xi, myknots, weights, distype);
+
+  // Multiply the shape functions with the control point values.
+  r.Clear();
+  for (unsigned int i_node_nurbs = 0; i_node_nurbs < n_points; i_node_nurbs++)
+  {
+    for (unsigned int i_dim = 0; i_dim < n_val; i_dim++)
+    {
+      r(i_dim) += N(i_node_nurbs) * q(i_node_nurbs * 3 + i_dim);
+    }
+  }
+}
+
+/**
+ *
+ */
+unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationGeometry(
+    const DRT::Discretization& discret, std::vector<uint8_t>& cell_types,
+    std::vector<double>& point_coordinates) const
+{
+  // This NURBS element will be displayed like a hex27 element in the vtk output.
+  const int number_of_ouput_points = 27;
+  const auto vtk_cell_info =
+      DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(DRT::Element::hex27);
+  const std::vector<int>& numbering = vtk_cell_info.second;
+
+  // Add the cell type to the output.
+  cell_types.push_back(vtk_cell_info.first);
+
+  // Create the "nodes" for the hex27 visualization.
+  {
+    // Get the knots and weights for this element.
+    LINALG::Matrix<27, 1, double> weights(true);
+    std::vector<Epetra_SerialDenseVector> myknots(true);
+    const bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discret, this, myknots, weights);
+    if (zero_size) dserror("GetMyNurbsKnotsAndWeights has to return a non zero size.");
+
+    // Get the control points position in the reference configuration.
+    LINALG::Matrix<27 * 3, 1, double> q;
+    for (unsigned int i_node = 0; i_node < (unsigned int)this->NumNode(); ++i_node)
+    {
+      const DRT::Node* node = this->Nodes()[i_node];
+      for (int i_dim = 0; i_dim < 3; ++i_dim) q(3 * i_node + i_dim) = node->X()[i_dim];
+    }
+
+    // Loop over the "nodes" of the hex27 element.
+    LINALG::Matrix<3, 1, double> r;
+    LINALG::Matrix<3, 1, double> xi;
+    for (unsigned int i_node_hex = 0; i_node_hex < number_of_ouput_points; i_node_hex++)
+    {
+      for (unsigned int i = 0; i < 3; i++)
+        xi(i) = DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[numbering[i_node_hex]][i];
+
+      // Get the reference position at the parameter coordinate.
+      EvalNurbs3DInterpolation(r, q, xi, weights, myknots, this->Shape());
+
+      for (unsigned int i_dim = 0; i_dim < 3; i_dim++) point_coordinates.push_back(r(i_dim));
+    }
+  }
+
+  return number_of_ouput_points;
+}
+
+/**
+ *
+ */
+unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationDofBasedResultDataVector(
+    const DRT::Discretization& discret, const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
+    unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
+    std::vector<double>& vtu_point_result_data) const
+{
+  if (read_result_data_from_dofindex != 0)
+    dserror("Nurbs output is only implemented for read_result_data_from_dofindex == 0");
+
+  if (result_num_dofs_per_node != 3)
+    dserror("The nurbs elements can only output nodal data with dimension 3, e.g., displacements");
+
+  // This NURBS element will be displayed like a hex27 element in the vtk output.
+  const int number_of_ouput_points = 27;
+  const std::vector<int>& numbering =
+      DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(DRT::Element::hex27).second;
+
+  // Add the data at the "nodes" of the hex27 visualization.
+  {
+    // Get the knots and weights for this element.
+    LINALG::Matrix<27, 1, double> weights(true);
+    std::vector<Epetra_SerialDenseVector> myknots(true);
+    const bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discret, this, myknots, weights);
+    if (zero_size) dserror("GetMyNurbsKnotsAndWeights has to return a non zero size.");
+
+    // Get the element result vector.
+    LINALG::Matrix<27 * 3, 1, double> q;
+    std::vector<double> eledisp;
+    std::vector<int> lm, lmowner, lmstride;
+    this->LocationVector(discret, lm, lmowner, lmstride);
+    DRT::UTILS::ExtractMyValues(*result_data_dofbased, eledisp, lm);
+    q.SetView(eledisp.data());
+
+    // Loop over the "nodes" of the hex27 element.
+    LINALG::Matrix<3, 1, double> r;
+    LINALG::Matrix<3, 1, double> xi;
+    for (unsigned int i_node_hex = 0; i_node_hex < number_of_ouput_points; i_node_hex++)
+    {
+      for (unsigned int i = 0; i < 3; i++)
+        xi(i) = DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[numbering[i_node_hex]][i];
+
+      // Get the reference position at the parameter coordinate.
+      EvalNurbs3DInterpolation(r, q, xi, weights, myknots, this->Shape());
+
+      for (unsigned int i_dim = 0; i_dim < 3; i_dim++) vtu_point_result_data.push_back(r(i_dim));
+    }
+  }
+
+  return number_of_ouput_points;
 }

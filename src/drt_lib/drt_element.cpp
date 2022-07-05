@@ -19,6 +19,8 @@
 
 #include "../drt_mat/material.H"
 
+#include "../drt_lib/drt_element_vtk_cell_type_register.H"
+
 #include <Shards_BasicTopologies.hpp>
 #include <utility>
 
@@ -1107,7 +1109,67 @@ bool DRT::Element::HasOnlyGhostNodes(const int mypid) const
   return allghostnodes;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+unsigned int DRT::Element::AppendVisualizationGeometry(const DRT::Discretization& discret,
+    std::vector<uint8_t>& cell_types, std::vector<double>& point_coordinates) const
+{
+  const unsigned int num_spatial_dimensions = 3;
+  auto vtk_cell_info = DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(this->Shape());
+  const std::vector<int>& numbering = vtk_cell_info.second;
 
+  // Add the cell type to the output.
+  cell_types.push_back(vtk_cell_info.first);
+
+  // Add each node to the output.
+  const DRT::Node* const* nodes = this->Nodes();
+
+  for (int inode = 0; inode < this->NumNode(); ++inode)
+    for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
+      point_coordinates.push_back(nodes[numbering[inode]]->X()[idim]);
+
+  // Return the number of added points.
+  return this->NumNode();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+unsigned int DRT::Element::AppendVisualizationDofBasedResultDataVector(
+    const DRT::Discretization& discret, const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
+    unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
+    std::vector<double>& vtu_point_result_data) const
+{
+  const std::vector<int>& numbering =
+      DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(this->Shape()).second;
+
+  for (unsigned int inode = 0; inode < (unsigned int)this->NumNode(); ++inode)
+  {
+    std::vector<int> nodedofs;
+    nodedofs.clear();
+
+    // local storage position of desired dof gid
+    discret.Dof(this->Nodes()[numbering[inode]], nodedofs);
+
+    // adjust resultdofs according to elements dof
+    if (nodedofs.size() < result_num_dofs_per_node)
+    {
+      result_num_dofs_per_node = nodedofs.size();
+    }
+
+    for (unsigned int idof = 0; idof < result_num_dofs_per_node; ++idof)
+    {
+      const int lid =
+          result_data_dofbased->Map().LID(nodedofs[idof + read_result_data_from_dofindex]);
+
+      if (lid > -1)
+        vtu_point_result_data.push_back((*result_data_dofbased)[lid]);
+      else
+        dserror("received illegal dof local id: %d", lid);
+    }
+  }
+
+  return this->NumNode();
+}
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                               kronbichler 03/15|
