@@ -39,7 +39,8 @@ namespace DRT
     class FunctionManager
     {
      public:
-      Teuchos::RCP<DRT::INPUT::Lines> ValidFunctionLines();
+      /// Return all known input lines that define a DRT::Function.
+      static Teuchos::RCP<DRT::INPUT::Lines> ValidFunctionLines();
 
       /// read the baci input file and set up all functions
       void ReadInput(DRT::INPUT::DatFileReader& reader);

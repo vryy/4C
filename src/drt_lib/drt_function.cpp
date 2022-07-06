@@ -12,7 +12,6 @@
 #include "drt_function.H"
 #include "drt_function_manager.H"
 #include "drt_functionvariables.H"
-#include "drt_globalproblem.H"
 #include "drt_linedefinition.H"
 #include "../drt_io/io.H"
 
@@ -225,8 +224,18 @@ namespace
 
     return index_mod;
   }
+
+  template <int dim>
+  Teuchos::RCP<DRT::UTILS::Function> CreateVariableExprFunction(
+      const std::string& component, const std::vector<std::pair<std::string, double>>& constants)
+  {
+    auto vecfunc = Teuchos::rcp(new DRT::UTILS::VariableExprFunction<dim>());
+    vecfunc->AddExpr(component, constants);
+    return vecfunc;
+  }
 }  // namespace
 
+template <int dim>
 Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateVariableExprFunction(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager)
@@ -243,18 +252,7 @@ Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateVariableExprFunction(
       function_lin_def->ExtractPairOfStringAndDoubleVector("CONSTANTS", constants);
     }
 
-    switch (DRT::Problem::Instance()->NDim())
-    {
-      case 1:
-        return CreateVariableExprFunction<1>(component, constants);
-      case 2:
-        return CreateVariableExprFunction<2>(component, constants);
-      case 3:
-        return CreateVariableExprFunction<3>(component, constants);
-      default:
-        dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
-        return Teuchos::null;
-    }
+    return CreateVariableExprFunction<dim>(component, constants);
   }
   else
   {
@@ -262,15 +260,8 @@ Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateVariableExprFunction(
   }
 }
 
-template <int dim>
-Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::CreateVariableExprFunction(
-    const std::string& component, const std::vector<std::pair<std::string, double>>& constants)
-{
-  auto vecfunc = Teuchos::rcp(new VariableExprFunction<dim>());
-  vecfunc->AddExpr(component, constants);
-  return vecfunc;
-}
 
+template <int dim>
 Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateExprFunction(
     std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs)
 {
@@ -420,18 +411,7 @@ Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateExprFunction(
     }
   }
 
-  switch (DRT::Problem::Instance()->NDim())
-  {
-    case 1:
-      return Teuchos::rcp(new ExprFunction<1>(functstring, functvarvector));
-    case 2:
-      return Teuchos::rcp(new ExprFunction<2>(functstring, functvarvector));
-    case 3:
-      return Teuchos::rcp(new ExprFunction<3>(functstring, functvarvector));
-    default:
-      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
-      return Teuchos::null;
-  }
+  return Teuchos::rcp(new ExprFunction<dim>(functstring, functvarvector));
 }
 
 template <int dim>
@@ -748,3 +728,20 @@ template class DRT::UTILS::ExprFunction<3>;
 template class DRT::UTILS::VariableExprFunction<1>;
 template class DRT::UTILS::VariableExprFunction<2>;
 template class DRT::UTILS::VariableExprFunction<3>;
+
+template Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateExprFunction<1>(
+    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs);
+template Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateExprFunction<2>(
+    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs);
+template Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateExprFunction<3>(
+    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs);
+
+template Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateVariableExprFunction<1>(
+    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
+    const int index_current_funct_in_manager);
+template Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateVariableExprFunction<2>(
+    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
+    const int index_current_funct_in_manager);
+template Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateVariableExprFunction<3>(
+    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
+    const int index_current_funct_in_manager);
