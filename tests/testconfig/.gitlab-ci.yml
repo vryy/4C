@@ -23,6 +23,9 @@ variables:
     # Postfix for do-configure.
     CTEST_CONFIGURE_POSTFIX: ""
 
+    # Number of parallel tests executed by ctest.
+    CTEST_NUMBER_OF_PARALLEL_TESTS: "1"
+
     # Select specific test by regular expressen (".": all)
     TEST_TAG: "."
 
@@ -103,7 +106,7 @@ variables:
         # Clear eventual ccache cache.
         - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
         # Output to log because it is too much for the gitlab console.
-        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_${CTEST_BUILD_TYPE_GITLAB}.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" -j 2 | tee ../buildtest_full.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_${CTEST_BUILD_TYPE_GITLAB}.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" -j "$CTEST_NUMBER_OF_PARALLEL_TESTS" | tee ../buildtest_full.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         # Output 200 lines for any failing test
@@ -245,7 +248,7 @@ variables:
         # Clear eventual ccache cache.
         - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
         # Output to log because it is too much for the gitlab console.
-        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" -j 2 | tee ../buildtest_daily.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"'
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" -j "$CTEST_NUMBER_OF_PARALLEL_TESTS" | tee ../buildtest_daily.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"'
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         # Output 200 lines for any failing test
@@ -283,7 +286,7 @@ variables:
         # Clear eventual ccache cache.
         - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
         # Output to log because it is too much for the gitlab console.
-        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_debug.cmake -VV -E "$CTEST_EXCLUDE_STRING" -j 2 | tee ../buildtest_daily_debug.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"'
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_debug.cmake -VV -E "$CTEST_EXCLUDE_STRING" -j "$CTEST_NUMBER_OF_PARALLEL_TESTS" | tee ../buildtest_daily_debug.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"'
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         # Output 200 lines for any failing test
@@ -528,6 +531,7 @@ lnm-buildtest_minimal:
     <<: *buildtest_minimal
     variables:
         CTEST_MAKE: "make full -j3"
+        CTEST_NUMBER_OF_PARALLEL_TESTS: "2"
         CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-minimal-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
@@ -540,6 +544,7 @@ lnm-buildtest_full:
     <<: *buildtest_full
     variables:
         CTEST_MAKE: "make full -j3"
+        CTEST_NUMBER_OF_PARALLEL_TESTS: "2"
         CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-$TEST_TAG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
     tags:
@@ -629,6 +634,7 @@ lnm-buildtest_daily:
     <<: *buildtest_daily
     variables:
         CTEST_MAKE: "make full -j3"
+        CTEST_NUMBER_OF_PARALLEL_TESTS: "2"
         CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
@@ -643,6 +649,7 @@ lnm-buildtest_daily_bruteforce:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
         CTEST_MAKE: "make full -j3"
+        CTEST_NUMBER_OF_PARALLEL_TESTS: "2"
         CTEST_BUILD_NAME_GITLAB: "CentOS-baci-BruteForce-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_bruteforce.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
@@ -679,6 +686,7 @@ lnm-buildtest_daily_deep:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
         CTEST_MAKE: "make full -j3"
+        CTEST_NUMBER_OF_PARALLEL_TESTS: "2"
         CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Deep-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_deep.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
@@ -715,6 +723,7 @@ lnm-buildtest_daily_schmarrn:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
         CTEST_MAKE: "make -j3 baci-release post_processor"
+        CTEST_NUMBER_OF_PARALLEL_TESTS: "2"
         CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Schmarrn-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_schmarrn.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
@@ -749,6 +758,7 @@ lnm-buildtest_daily_debug:
     <<: *buildtest_daily_debug
     variables:
         CTEST_MAKE: "make full -j3"
+        CTEST_NUMBER_OF_PARALLEL_TESTS: "2"
         CTEST_BUILD_NAME_GITLAB: "LnM-Workstation DEBUG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
