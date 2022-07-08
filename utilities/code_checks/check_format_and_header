@@ -76,7 +76,7 @@ fi
 if [[ $line == *.cmake || $line == *CMakeLists.txt ]]
 then
     # Check if cmake-format would format the file
-    if [[  $(cmake-format -c $(pwd)/utilities/code_checks/.cmake-format.yaml --check $(pwd)/${line}) ]]
+    if ! cmake-format -c $(pwd)/utilities/code_checks/.cmake-format.yaml --check $(pwd)/${line} 2> /dev/null
     then
     uncompliant_files+="$(pwd)/${line}\n"
     fi
