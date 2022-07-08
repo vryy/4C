@@ -158,16 +158,19 @@ where `<numProcs>` is the number of processors you want to use.
 #### Run the Tests
 
 To verify that the build was successful, run the minimal set of tests via
+
 ```bash
 ctest -L minimal
 ```
 
+or all tests via
+
 ```bash
-ctest -j <num_parallel_tests>
+ctest
 ```
 
-where `<num_parallel_tests>` is the number of test that will be executed in parallel.
-or all tests via
+You can use the option `-j <num_threads>` to specify the number of threads to be used for parallel
+execution.
 
 [↑ Contents](#contents)
 
