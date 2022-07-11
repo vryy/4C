@@ -9,8 +9,8 @@ function(BACI_LINK_GOOGLE_TEST_NECESSARY_LIBRARIES TESTNAME)
     ${TESTNAME}
     gtest
     gmock
-    ${LIBRARIES}
     ${ARGN}
+    ${LIBRARIES}
     )
 
   # Link to a special version of dserror which throws a std::runtime_exception
