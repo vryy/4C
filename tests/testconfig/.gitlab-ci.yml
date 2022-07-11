@@ -610,6 +610,7 @@ pages: # job name needs to be pages
         - anybadge -l doxygen -v ok --color=green -f public/doxygen.svg
         # Create website badge
         - anybadge -l website -v ok --color=green -f public/website.svg
+    coverage: '/lines\.*:\s+\d+\.\d+/'
     cache:
         key: cache-weekly-coverage-report
         paths:
