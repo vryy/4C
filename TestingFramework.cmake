@@ -59,6 +59,8 @@ macro(baci_test name_of_input_file num_proc restart_step)
   set_tests_properties(
     ${name_of_input_file}-p${num_proc} PROPERTIES FIXTURES_REQUIRED "test_cleanup"
     )
+  set_tests_properties(${name_of_input_file}-p${num_proc} PROPERTIES PROCESSORS ${num_proc})
+
   if("${ARGN}" STREQUAL "")
     set_tests_properties(
       ${name_of_input_file}-p${num_proc} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED}
@@ -83,6 +85,9 @@ macro(baci_test name_of_input_file num_proc restart_step)
     set_tests_properties(
       ${name_of_input_file}-p${num_proc}-restart
       PROPERTIES FIXTURES_REQUIRED "${name_of_input_file}-p${num_proc};test_cleanup"
+      )
+    set_tests_properties(
+      ${name_of_input_file}-p${num_proc}-restart PROPERTIES PROCESSORS ${num_proc}
       )
   endif(${restart_step})
 endmacro(baci_test)
@@ -114,6 +119,7 @@ macro(
     ${name_of_input_file}-p${num_proc} PROPERTIES FIXTURES_SETUP ${name_of_input_file}-p${num_proc}
     )
   set_tests_properties(${name_of_input_file}-p${num_proc} PROPERTIES FIXTURES_REQUIRED test_cleanup)
+  set_tests_properties(${name_of_input_file}-p${num_proc} PROPERTIES PROCESSORS ${num_proc})
 
   if(${restart_step})
     add_test(
@@ -128,6 +134,9 @@ macro(
     set_tests_properties(
       ${name_of_input_file}-p${num_proc}-restart
       PROPERTIES FIXTURES_REQUIRED "${name_of_input_file}-p${num_proc};test_cleanup"
+      )
+    set_tests_properties(
+      ${name_of_input_file}-p${num_proc}-restart PROPERTIES PROCESSORS ${num_proc}
       )
   endif(${restart_step})
 endmacro(baci_test_extended_timeout)
@@ -165,6 +174,7 @@ macro(baci_test_and_post_ensight_test name_of_input_file num_proc restart_step)
     ${name_of_input_file}-p${num_proc}-post_ensight-ser
     PROPERTIES FIXTURES_REQUIRED "${name_of_input_file}-p${num_proc};test_cleanup"
     )
+  set_tests_properties(${name_of_input_file}-p${num_proc}-post_ensight-ser PROPERTIES PROCESSORS 1)
 
   # additionally run postprocessing in parallel mode
   set(RUNPOSTFILTER_PAR
@@ -184,6 +194,9 @@ macro(baci_test_and_post_ensight_test name_of_input_file num_proc restart_step)
   set_tests_properties(
     ${name_of_input_file}-p${num_proc}-post_ensight-par
     PROPERTIES FIXTURES_REQUIRED "${name_of_input_file}-p${num_proc};test_cleanup"
+    )
+  set_tests_properties(
+    ${name_of_input_file}-p${num_proc}-post_ensight-par PROPERTIES PROCESSORS ${num_proc}
     )
 endmacro(baci_test_and_post_ensight_test)
 
@@ -226,6 +239,8 @@ macro(
     ${name_of_input_file}-p${num_proc}-restart
     PROPERTIES FIXTURES_REQUIRED "${name_of_input_file_restart}-p${num_proc_base_run};test_cleanup"
     )
+  set_tests_properties(${name_of_input_file}-p${num_proc}-restart PROPERTIES PROCESSORS ${num_proc})
+
   # Set "RUN_SERIAL TRUE" because result files can only be read by one process.
   set_tests_properties(${name_of_input_file}-p${num_proc}-restart PROPERTIES RUN_SERIAL TRUE)
 endmacro(baci_test_restartonly)
@@ -233,8 +248,8 @@ endmacro(baci_test_restartonly)
 ###########
 # NESTED PARALLELISM
 # Usage in TestingFrameworkListOfTests.cmake: "baci_test_Nested_Par(<name_of_input_file_1> <name_of_input_file_2> <restart_step>)"
-# <name_of_input_file_1>: must equal the name of a .dat file in directory Input for the first test; without ".dat"
-# <name_of_input_file_2>: must equal the name of a .dat file in directory Input for the second test; without ".dat"
+# <name_of_input_file_1>: must equal the name of a .dat file in directory Input for the first test; without ".dat". This test will be executed using 1 process.
+# <name_of_input_file_2>: must equal the name of a .dat file in directory Input for the second test; without ".dat". This test will be executed using 2 processes.
 # <restart_step>: number of restart step; <""> indicates no restart
 macro(baci_test_Nested_Par name_of_input_file_1 name_of_input_file_2 restart_step)
   add_test(
@@ -245,11 +260,13 @@ macro(baci_test_Nested_Par name_of_input_file_1 name_of_input_file_2 restart_ste
     )
   set_tests_properties(
     ${name_of_input_file_1}-nestedPar
-    PROPERTIES FIXTURES_SETUP ${name_of_input_file_1}-p${num_proc}
+    PROPERTIES FIXTURES_SETUP ${name_of_input_file_1}-nestedPar-p3
     )
   set_tests_properties(
     ${name_of_input_file_1}-nestedPar PROPERTIES FIXTURES_REQUIRED "test_cleanup"
     )
+  set_tests_properties(${name_of_input_file_1}-nestedPar PROPERTIES PROCESSORS 3)
+
   if(${restart_step})
     add_test(
       NAME ${name_of_input_file_1}-nestedPar-restart
@@ -259,8 +276,9 @@ macro(baci_test_Nested_Par name_of_input_file_1 name_of_input_file_2 restart_ste
       )
     set_tests_properties(
       ${name_of_input_file_1}-nestedPar-restart
-      PROPERTIES FIXTURES_REQUIRED "${name_of_input_file_1}-p${num_proc};test_cleanup"
+      PROPERTIES FIXTURES_REQUIRED "${name_of_input_file_1}-nestedPar-p3;test_cleanup"
       )
+    set_tests_properties(${name_of_input_file_1}-nestedPar-restart PROPERTIES PROCESSORS 3)
   endif(${restart_step})
 
   set_tests_properties(
@@ -286,6 +304,10 @@ macro(baci_test_Nested_Par_CopyDat name_of_input_file num_proc num_groups)
     ${name_of_input_file}-nestedPar_CopyDat-p${num_proc}
     PROPERTIES FIXTURES_REQUIRED "test_cleanup"
     )
+  set_tests_properties(
+    ${name_of_input_file}-nestedPar_CopyDat-p${num_proc} PROPERTIES PROCESSORS ${num_proc}
+    )
+
   if("${ARGN}" STREQUAL "")
     set_tests_properties(
       ${name_of_input_file}-nestedPar_CopyDat-p${num_proc}
@@ -332,6 +354,10 @@ macro(
   set_tests_properties(
     ${name_of_input_file}_precursor-p${num_proc} PROPERTIES FIXTURES_REQUIRED "test_cleanup"
     )
+  set_tests_properties(
+    ${name_of_input_file}_precursor-p${num_proc} PROPERTIES PROCESSORS ${num_proc}
+    )
+
   # restart from precursor output
   add_test(
     NAME ${name_of_input_file}-p${num_proc}
@@ -346,6 +372,7 @@ macro(
   set_tests_properties(
     ${name_of_input_file}-p${num_proc} PROPERTIES FIXTURES_SETUP "${name_of_input_file}"
     )
+  set_tests_properties(${name_of_input_file}-p${num_proc} PROPERTIES PROCESSORS ${num_proc})
 
   # add postprocessing simulation in case it is required
   if(NOT ${name_of_input_file_post} STREQUAL "")
@@ -360,7 +387,11 @@ macro(
       ${name_of_input_file}_postprocess-p${num_proc}
       PROPERTIES FIXTURES_REQUIRED "${name_of_input_file};test_cleanup"
       )
+    set_tests_properties(
+      ${name_of_input_file}_postprocess-p${num_proc} PROPERTIES PROCESSORS ${num_proc}
+      )
   endif(NOT ${name_of_input_file_post} STREQUAL "")
+
   if("${ARGN}" STREQUAL "")
     set_tests_properties(
       ${name_of_input_file}_precursor-p${num_proc} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED}
@@ -368,6 +399,7 @@ macro(
     set_tests_properties(
       ${name_of_input_file}-p${num_proc} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED}
       )
+
     if(NOT ${name_of_input_file_post} STREQUAL "")
       set_tests_properties(
         ${name_of_input_file}_postprocess-p${num_proc}
@@ -383,6 +415,7 @@ macro(
       ${name_of_input_file}-p${num_proc}
       PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED} LABELS ${ARGN}
       )
+
     if(NOT ${name_of_input_file_post} STREQUAL "")
       set_tests_properties(
         ${name_of_input_file}_postprocess-p${num_proc}
@@ -405,13 +438,16 @@ macro(baci_framework_test name_of_input_file num_proc xml_filename)
   set(RUNPREEXODUS
       ./pre_exodus\ --exo=framework_test_output/${name_of_input_file}/xxx_${name_of_input_file}.e\ --bc=${PROJECT_SOURCE_DIR}/tests/framework-test/${name_of_input_file}.bc\ --head=${PROJECT_SOURCE_DIR}/tests/framework-test/${name_of_input_file}.head\ --dat=framework_test_output/${name_of_input_file}/xxx.dat
       ) # pre_exodus is run to generate a Dat file
+
   if(NOT ${xml_filename} STREQUAL "")
     file(
       COPY ${PROJECT_SOURCE_DIR}/Input/${xml_filename}
       DESTINATION ./framework_test_output/${name_of_input_file}/
       )
+
     # if a XML file name is given, it is copied from the baci input directory to the build directory
   endif(NOT ${xml_filename} STREQUAL "")
+
   set(RUNBACI
       ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS}\ -np\ ${num_proc}\ $<TARGET_FILE:${baciname}>\ framework_test_output/${name_of_input_file}/xxx.dat\ framework_test_output/${name_of_input_file}/xxx
       ) # baci is run using the generated dat file
@@ -427,9 +463,9 @@ macro(baci_framework_test name_of_input_file num_proc xml_filename)
   set_tests_properties(
     ${name_of_input_file}-p${num_proc}-fw PROPERTIES FIXTURES_REQUIRED "test_cleanup"
     )
+  set_tests_properties(${name_of_input_file}-p${num_proc}-fw PROPERTIES PROCESSORS ${num_proc})
 
   # note: for the clean-up job in the end, every generated intermediate file has to start with "xxx"
-
   set_tests_properties(
     ${name_of_input_file}-p${num_proc}-fw PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED}
     )
@@ -457,6 +493,7 @@ macro(cut_test num_proc)
   set_tests_properties(test-p${num_proc}-cut PROPERTIES FIXTURES_REQUIRED "test_cleanup")
   set_tests_properties(test-p${num_proc}-cut PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED})
   set_tests_properties(test-p${num_proc}-cut PROPERTIES FAIL_REGULAR_EXPRESSION "ERROR:; ERROR ")
+  set_tests_properties(test-p${num_proc}-cut PROPERTIES PROCESSORS ${num_proc})
 endmacro(cut_test)
 
 ###########
@@ -490,6 +527,9 @@ macro(pre_processing name_of_input_file num_proc)
     )
   set_tests_properties(
     ${name_of_input_file}-p${num_proc}-pre_processing PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}"
+    )
+  set_tests_properties(
+    ${name_of_input_file}-p${num_proc}-pre_processing PROPERTIES PROCESSORS ${num_proc}
     )
 endmacro(pre_processing)
 
@@ -555,6 +595,10 @@ macro(
     ${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp
     PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}"
     )
+  set_tests_properties(
+    ${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp PROPERTIES PROCESSORS ${num_proc}
+    )
+
   # Set "RUN_SERIAL TRUE" because result files can only be read by one process.
   set_tests_properties(
     ${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp PROPERTIES RUN_SERIAL TRUE
@@ -601,6 +645,7 @@ macro(
   set_tests_properties(
     ${name_of_input_file}-p${num_proc}-${filetag} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED}
     )
+  set_tests_properties(${name_of_input_file}-p${num_proc}-${filetag} PROPERTIES PROCESSORS 1)
 endmacro(result_file_abs)
 
 ###########
@@ -645,6 +690,7 @@ macro(
   set_tests_properties(
     ${name_of_input_file}-p${num_proc}-${filetag} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED}
     )
+  set_tests_properties(${name_of_input_file}-p${num_proc}-${filetag} PROPERTIES PROCESSORS 1)
 endmacro(result_file_rel)
 
 ###########
@@ -672,11 +718,14 @@ macro(
   # this test takes a list of times as extra arguments to check results at those timesteps
   # if no extra arguments are given test checks every timestep
   set(extra_macro_args ${ARGN})
+
   # Did we get any optional args?
   list(LENGTH extra_macro_args num_extra_args)
+
   if(${num_extra_args} GREATER 0)
     list(GET extra_macro_args 0 optional_arg)
   endif()
+
   # add test to testing framework
   add_test(
     NAME ${name_of_test}-p${num_proc}
@@ -696,6 +745,7 @@ macro(
   set_tests_properties(
     ${name_of_test}-p${num_proc} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED}
     )
+  set_tests_properties(${name_of_test}-p${num_proc} PROPERTIES PROCESSORS 1)
 endmacro(vtk_test)
 
 ###------------------------------------------------------------------ List of tests
@@ -712,3 +762,4 @@ add_test(
     "if [ -f *_CUTFAIL.pos ]; then mkdir -p ../cut-debug ; cp *_CUTFAIL.pos ../cut-debug/ ; fi ; rm -vfr xxx* framework_test_output* core.* amesos-failure.dat default.bc default.head"
   )
 set_tests_properties(test_cleanup PROPERTIES FIXTURES_CLEANUP test_cleanup)
+set_tests_properties(test_cleanup PROPERTIES PROCESSORS 1)

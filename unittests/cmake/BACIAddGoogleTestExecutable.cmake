@@ -8,6 +8,7 @@ function(BACI_ADD_GOOGLE_TEST_EXECUTABLE TESTNAME)
 
   add_test(${TESTNAME} ${TESTNAME} --gtest_output=xml:unittest_reports/${TESTNAME}_report.xml)
   set_tests_properties(${TESTNAME} PROPERTIES TIMEOUT ${UNITTEST_TIMEOUT} LABELS minimal)
+  set_tests_properties(${TESTNAME} PROPERTIES PROCESSORS 1)
 
   add_dependencies(unittests ${TESTNAME})
 endfunction()

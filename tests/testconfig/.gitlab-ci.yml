@@ -23,8 +23,11 @@ variables:
     # Postfix for do-configure.
     CTEST_CONFIGURE_POSTFIX: ""
 
-    # Number of parallel tests executed by ctest.
-    CTEST_NUMBER_OF_PARALLEL_TESTS: "1"
+    # Number of threads to be used during build
+    CTEST_NUMBER_OF_BUILD_THREADS: "3"
+
+    # Number of threads to be used during testing
+    CTEST_NUMBER_OF_TEST_THREADS: "1"
 
     # Select specific test by regular expressen (".": all)
     TEST_TAG: "."
@@ -70,7 +73,7 @@ variables:
         - rm -rf ../baci-build/
         # Clear eventual ccache cache.
         - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
-        - ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -L minimal | tee ../buildtest_minimal.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"
+        - ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -L minimal -j "$CTEST_NUMBER_OF_TEST_THREADS" | tee ../buildtest_minimal.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"
     after_script:
         # Move the log file to the source folder, so it can be found by artifacts.
         - mv ../buildtest_minimal.log buildtest_minimal.log
@@ -106,7 +109,7 @@ variables:
         # Clear eventual ccache cache.
         - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
         # Output to log because it is too much for the gitlab console.
-        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_${CTEST_BUILD_TYPE_GITLAB}.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" -j "$CTEST_NUMBER_OF_PARALLEL_TESTS" | tee ../buildtest_full.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_${CTEST_BUILD_TYPE_GITLAB}.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" -j "$CTEST_NUMBER_OF_TEST_THREADS" | tee ../buildtest_full.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         # Output 200 lines for any failing test
@@ -186,7 +189,7 @@ variables:
         # Clear eventual ccache cache.
         - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
         # Output to log because it is too much for the gitlab console.
-        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" | tee buildtest_weekly_coverage.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" -j "$CTEST_NUMBER_OF_TEST_THREADS" | tee buildtest_weekly_coverage.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
         # generate the baci_coverage_base.info: the "baseline" coverage data file that contains zero coverage for every instrumented line.
         - lcov --capture --initial --no-external --directory ../baci-build/ --base-directory . --output-file baci_coverage_base.info > baci_coverage_base.log
         # generate the baci_coverage_tests.info based on tests run above
@@ -248,7 +251,7 @@ variables:
         # Clear eventual ccache cache.
         - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
         # Output to log because it is too much for the gitlab console.
-        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" -j "$CTEST_NUMBER_OF_PARALLEL_TESTS" | tee ../buildtest_daily.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"'
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" -j "$CTEST_NUMBER_OF_TEST_THREADS" | tee ../buildtest_daily.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"'
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         # Output 200 lines for any failing test
@@ -286,7 +289,7 @@ variables:
         # Clear eventual ccache cache.
         - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
         # Output to log because it is too much for the gitlab console.
-        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_debug.cmake -VV -E "$CTEST_EXCLUDE_STRING" -j "$CTEST_NUMBER_OF_PARALLEL_TESTS" | tee ../buildtest_daily_debug.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"'
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_debug.cmake -VV -E "$CTEST_EXCLUDE_STRING" -j "$CTEST_NUMBER_OF_TEST_THREADS" | tee ../buildtest_daily_debug.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"'
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         # Output 200 lines for any failing test
@@ -327,7 +330,7 @@ variables:
         - cd $CI_PROJECT_DIR/../Trilinos-develop-build
         # Configure Trilinos and build it
         - source $CI_PROJECT_DIR/trilinos/$TRILINOS_DEVELOP_CONFIG |& tee ../buildtest_release_trilinos_develop.log
-        - make -j3 install |& tee -a ../buildtest_release_trilinos_develop.log
+        - make -j${CTEST_NUMBER_OF_BUILD_THREADS} install |& tee -a ../buildtest_release_trilinos_develop.log
         # Specify which configuration is tested by this pipeline
         - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
         - "echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]"
@@ -337,7 +340,7 @@ variables:
         # Clear eventual ccache cache.
         - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
         # Output to log because it is too much for the gitlab console.
-        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_${CTEST_BUILD_TYPE_GITLAB}.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" | tee -a ../buildtest_release_trilinos_develop.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_${CTEST_BUILD_TYPE_GITLAB}.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" -j "$CTEST_NUMBER_OF_TEST_THREADS" | tee -a ../buildtest_release_trilinos_develop.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         # Output 200 lines for any failing test
@@ -426,7 +429,7 @@ checkcode:
 imcs-buildtest_minimal_ubuntu20:
     <<: *buildtest_minimal
     variables:
-        CTEST_MAKE: "make full -j3"
+        CTEST_MAKE: "make full -j${CTEST_NUMBER_OF_BUILD_THREADS}"
         CTEST_BUILD_NAME_GITLAB: "imcs-workstation-ubuntu20-minimal-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation_ubuntu20-04.config"
     tags:
@@ -436,7 +439,7 @@ imcs-buildtest_minimal_ubuntu20:
 imcs-buildtest_full_ubuntu20:
     <<: *buildtest_full
     variables:
-        CTEST_MAKE: "make full -j3"
+        CTEST_MAKE: "make full -j${CTEST_NUMBER_OF_BUILD_THREADS}"
         CTEST_BUILD_NAME_GITLAB: "imcs-workstation-ubuntu20-full-$TEST_TAG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation_ubuntu20-04.config"
     tags:
@@ -447,7 +450,7 @@ imcs-buildtest_interactive_ubuntu20:
     <<: *buildtest_interactive
     variables:
         TEST_TAG: ""
-        CTEST_MAKE: "make full -j3"
+        CTEST_MAKE: "make full -j${CTEST_NUMBER_OF_BUILD_THREADS}"
         CTEST_BUILD_NAME_GITLAB: "imcs-workstation-ubuntu20-interactive-$TEST_TAG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation_ubuntu20-04.config"
         GIT_STRATEGY: fetch
@@ -460,7 +463,7 @@ imcs-buildtest_interactive_ubuntu20:
 imcs-buildtest_daily_ubuntu20:
     <<: *buildtest_daily
     variables:
-        CTEST_MAKE: "make full -j3"
+        CTEST_MAKE: "make full -j${CTEST_NUMBER_OF_BUILD_THREADS}"
         CTEST_BUILD_NAME_GITLAB: "imcs-workstation-ubuntu20-nightly-full-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation_ubuntu20-04.config"
     tags:
@@ -470,7 +473,7 @@ imcs-buildtest_daily_ubuntu20:
 imcs-buildtest_daily_debug_ubuntu20:
     <<: *buildtest_daily_debug
     variables:
-        CTEST_MAKE: "make full -j3"
+        CTEST_MAKE: "make full -j${CTEST_NUMBER_OF_BUILD_THREADS}"
         CTEST_BUILD_NAME_GITLAB: "imcs-workstation-ubuntu20-baci-DEBUG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation_ubuntu20-04.config"
     tags:
@@ -480,7 +483,7 @@ imcs-buildtest_daily_debug_ubuntu20:
 imcs-buildtest_release_trilinos_develop:
     <<: *buildtest_release_trilinos_develop
     variables:
-        CTEST_MAKE: "make full -j3"
+        CTEST_MAKE: "make full -j${CTEST_NUMBER_OF_BUILD_THREADS}"
         CTEST_BUILD_NAME_GITLAB: "imcs-workstation-ubuntu20-trilinos-develop-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation_ubuntu20-04_develop.config"
         TRILINOS_ROOT: "$CI_PROJECT_DIR/../Trilinos-develop-build"
@@ -530,8 +533,9 @@ lnm-codeclimate:
 lnm-buildtest_minimal:
     <<: *buildtest_minimal
     variables:
-        CTEST_MAKE: "make full -j3"
-        CTEST_NUMBER_OF_PARALLEL_TESTS: "2"
+        CTEST_NUMBER_OF_TEST_THREADS: "10"
+        CTEST_NUMBER_OF_BUILD_THREADS: "10"
+        CTEST_MAKE: "make full -j${CTEST_NUMBER_OF_BUILD_THREADS}"
         CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-minimal-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
@@ -543,8 +547,9 @@ lnm-buildtest_minimal:
 lnm-buildtest_full:
     <<: *buildtest_full
     variables:
-        CTEST_MAKE: "make full -j3"
-        CTEST_NUMBER_OF_PARALLEL_TESTS: "2"
+        CTEST_NUMBER_OF_TEST_THREADS: "10"
+        CTEST_NUMBER_OF_BUILD_THREADS: "10"
+        CTEST_MAKE: "make full -j${CTEST_NUMBER_OF_BUILD_THREADS}"
         CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-$TEST_TAG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
     tags:
@@ -556,7 +561,7 @@ lnm-workstation-buildtest_interactive:
     <<: *buildtest_interactive
     variables:
         TEST_TAG: ""
-        CTEST_MAKE: "make full -j3"
+        CTEST_MAKE: "make full -j${CTEST_NUMBER_OF_BUILD_THREADS}"
         CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-interactive-$TEST_TAG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
         GIT_STRATEGY: fetch
@@ -575,8 +580,10 @@ lnm-buildtest_coverage_weekly:
         # increase the unit test timeout
         UNITTEST_TIMEOUT: "50"
         # enable coverage option of ctest
+        CTEST_NUMBER_OF_TEST_THREADS: "10"
+        CTEST_NUMBER_OF_BUILD_THREADS: "10"
         CTEST_CONFIGURE_POSTFIX: "--coverage"
-        CTEST_MAKE: "make full -j4"
+        CTEST_MAKE: "make full -j${CTEST_NUMBER_OF_BUILD_THREADS}"
         CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-coverage-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
     tags:
@@ -634,8 +641,9 @@ pages: # job name needs to be pages
 lnm-buildtest_daily:
     <<: *buildtest_daily
     variables:
-        CTEST_MAKE: "make full -j3"
-        CTEST_NUMBER_OF_PARALLEL_TESTS: "2"
+        CTEST_NUMBER_OF_TEST_THREADS: "10"
+        CTEST_NUMBER_OF_BUILD_THREADS: "10"
+        CTEST_MAKE: "make full -j${CTEST_NUMBER_OF_BUILD_THREADS}"
         CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
@@ -649,7 +657,7 @@ lnm-buildtest_daily_bruteforce:
     variables:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
-        CTEST_MAKE: "make full -j3"
+        CTEST_MAKE: "make full -j${CTEST_NUMBER_OF_BUILD_THREADS}"
         CTEST_BUILD_NAME_GITLAB: "CentOS-baci-BruteForce-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_bruteforce.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
@@ -667,7 +675,7 @@ lnm-buildtest-bruteforce_interactive:
     variables:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
-        CTEST_MAKE: "make full -j3"
+        CTEST_MAKE: "make full -j${CTEST_NUMBER_OF_BUILD_THREADS}"
         CTEST_BUILD_NAME_GITLAB: "CentOS-interactive-baci-BruteForce-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_bruteforce.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
@@ -685,7 +693,7 @@ lnm-buildtest_daily_deep:
     variables:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
-        CTEST_MAKE: "make full -j3"
+        CTEST_MAKE: "make full -j${CTEST_NUMBER_OF_BUILD_THREADS}"
         CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Deep-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_deep.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
@@ -703,7 +711,7 @@ lnm-buildtest-deep_interactive:
     variables:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
-        CTEST_MAKE: "make full -j3"
+        CTEST_MAKE: "make full -j${CTEST_NUMBER_OF_BUILD_THREADS}"
         CTEST_BUILD_NAME_GITLAB: "CentOS-interactive-baci-Deep-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_deep.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
@@ -721,7 +729,7 @@ lnm-buildtest_daily_schmarrn:
     variables:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
-        CTEST_MAKE: "make -j3 baci-release post_processor"
+        CTEST_MAKE: "make -j${CTEST_NUMBER_OF_BUILD_THREADS} baci-release post_processor"
         CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Schmarrn-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_schmarrn.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
@@ -739,7 +747,7 @@ lnm-buildtest-schmarrn_interactive:
     variables:
         TEST_TAG: ""
         CTEST_FAIL_ON_WARNING: "0"
-        CTEST_MAKE: "make -j3 baci-release post_processor"
+        CTEST_MAKE: "make -j${CTEST_NUMBER_OF_BUILD_THREADS} baci-release post_processor"
         CTEST_BUILD_NAME_GITLAB: "CentOS-interactive-baci-Schmarrn-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_schmarrn.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
@@ -755,8 +763,9 @@ lnm-buildtest-schmarrn_interactive:
 lnm-buildtest_daily_debug:
     <<: *buildtest_daily_debug
     variables:
-        CTEST_MAKE: "make full -j3"
-        CTEST_NUMBER_OF_PARALLEL_TESTS: "2"
+        CTEST_NUMBER_OF_TEST_THREADS: "10"
+        CTEST_NUMBER_OF_BUILD_THREADS: "10"
+        CTEST_MAKE: "make full -j${CTEST_NUMBER_OF_BUILD_THREADS}"
         CTEST_BUILD_NAME_GITLAB: "LnM-Workstation DEBUG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
