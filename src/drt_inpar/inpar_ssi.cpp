@@ -360,6 +360,13 @@ void INPAR::SSI::SetValidConditions(
 
   ssisurfacemanifold->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
 
+  ssisurfacemanifold->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("ImplType")));
+  ssisurfacemanifold->AddComponent(
+      Teuchos::rcp(new StringConditionComponent("ImplType", "Undefined",
+          Teuchos::tuple<std::string>("Undefined", "Standard", "ElchElectrode", "ElchDiffCond"),
+          Teuchos::tuple<int>(INPAR::SCATRA::impltype_undefined, INPAR::SCATRA::impltype_std,
+              INPAR::SCATRA::impltype_elch_electrode, INPAR::SCATRA::impltype_elch_diffcond))));
+
   condlist.emplace_back(ssisurfacemanifold);
 
   /*--------------------------------------------------------------------*/
