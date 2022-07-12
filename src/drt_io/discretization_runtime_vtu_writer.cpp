@@ -69,19 +69,6 @@ void DiscretizationRuntimeVtuWriter::Initialize(
  *-----------------------------------------------------------------------------------------------*/
 void DiscretizationRuntimeVtuWriter::SetGeometryFromDiscretizationStandard()
 {
-  /*  Note:
-   *
-   *  this will only work for 'standard' elements, whose discretization can directly be
-   *  represented by one of the VTK cell types
-   *  (see e.g. http://www.vtk.org/doc/nightly/html/vtkCellType_8h.html)
-   *
-   *  examples where it does not work:
-   *    - beam elements using cubic Hermite polynomials for centerline interpolation
-   *    - elements using NURBS
-   *
-   *  see method SetGeometryFromDiscretizationNonStandard() for how to handle these cases
-   */
-
   // Todo assume 3D for now
   const unsigned int num_spatial_dimensions = 3;
 
@@ -116,30 +103,23 @@ void DiscretizationRuntimeVtuWriter::SetGeometryFromDiscretizationStandard()
   {
     const DRT::Element* ele = discretization_->lRowElement(iele);
 
-    // check for beam element that potentially needs special treatment due to Hermite interpolation
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    // Currently this method only works for elements which represent the same differential equation.
+    // In structure problems, 1D beam and 3D solid elements are contained in the same simulation but
+    // require fundamentally different output structures. Therefore, as long as 1D beam and 3D
+    // solids are not split, beam output is done with the BeamDiscretizationRuntimeVtuWriter class.
+    const auto beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
-    // simply skip beam elements here (handled by BeamDiscretizationRuntimeVtuWriter)
-    if (beamele != NULL)
+    if (beamele != nullptr)
     {
       ++num_skipped_eles;
       continue;
     }
-
-    cell_types.push_back(DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(ele->Shape()).first);
-
-    const std::vector<int>& numbering =
-        DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(ele->Shape()).second;
-
-    const DRT::Node* const* nodes = ele->Nodes();
-
-    for (int inode = 0; inode < ele->NumNode(); ++inode)
-      for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
-        point_coordinates.push_back(nodes[numbering[inode]]->X()[idim]);
-
-    pointcounter += ele->NumNode();
-
-    cell_offsets.push_back(pointcounter);
+    else
+    {
+      pointcounter +=
+          ele->AppendVisualizationGeometry(*discretization_, cell_types, point_coordinates);
+      cell_offsets.push_back(pointcounter);
+    }
   }
 
 
@@ -211,7 +191,6 @@ void DiscretizationRuntimeVtuWriter::AppendDofBasedResultDataVector(
   std::vector<double> vtu_point_result_data;
   vtu_point_result_data.reserve(result_num_dofs_per_node * num_nodes);
 
-  std::vector<int> nodedofs;
   unsigned int pointcounter = 0;
 
   for (unsigned int iele = 0; iele < num_row_elements; ++iele)
@@ -222,38 +201,14 @@ void DiscretizationRuntimeVtuWriter::AppendDofBasedResultDataVector(
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
     // simply skip beam elements here (handled by BeamDiscretizationRuntimeVtuWriter)
-    if (beamele != NULL) continue;
-
-
-    const std::vector<int>& numbering =
-        DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(ele->Shape()).second;
-
-    for (unsigned int inode = 0; inode < (unsigned int)ele->NumNode(); ++inode)
+    if (beamele != NULL)
+      continue;
+    else
     {
-      nodedofs.clear();
-
-      // local storage position of desired dof gid
-      discretization_->Dof(ele->Nodes()[numbering[inode]], nodedofs);
-
-      // adjust resultdofs according to elements dof
-      if (nodedofs.size() < result_num_dofs_per_node)
-      {
-        result_num_dofs_per_node = nodedofs.size();
-      }
-
-      for (unsigned int idof = 0; idof < result_num_dofs_per_node; ++idof)
-      {
-        const int lid =
-            result_data_dofbased->Map().LID(nodedofs[idof + read_result_data_from_dofindex]);
-
-        if (lid > -1)
-          vtu_point_result_data.push_back((*result_data_dofbased)[lid]);
-        else
-          dserror("received illegal dof local id: %d", lid);
-      }
+      pointcounter +=
+          ele->AppendVisualizationDofBasedResultDataVector(*discretization_, result_data_dofbased,
+              result_num_dofs_per_node, read_result_data_from_dofindex, vtu_point_result_data);
     }
-
-    pointcounter += ele->NumNode();
   }
 
   // sanity check
