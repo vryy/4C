@@ -439,6 +439,8 @@ imcs-buildtest_minimal_ubuntu20:
 imcs-buildtest_full_ubuntu20:
     <<: *buildtest_full
     variables:
+        CTEST_NUMBER_OF_TEST_THREADS: "12"
+        CTEST_NUMBER_OF_BUILD_THREADS: "12"
         CTEST_MAKE: "make full -j${CTEST_NUMBER_OF_BUILD_THREADS}"
         CTEST_BUILD_NAME_GITLAB: "imcs-workstation-ubuntu20-full-$TEST_TAG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation_ubuntu20-04.config"
@@ -463,6 +465,8 @@ imcs-buildtest_interactive_ubuntu20:
 imcs-buildtest_daily_ubuntu20:
     <<: *buildtest_daily
     variables:
+        CTEST_NUMBER_OF_TEST_THREADS: "12"
+        CTEST_NUMBER_OF_BUILD_THREADS: "12"
         CTEST_MAKE: "make full -j${CTEST_NUMBER_OF_BUILD_THREADS}"
         CTEST_BUILD_NAME_GITLAB: "imcs-workstation-ubuntu20-nightly-full-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation_ubuntu20-04.config"
@@ -473,6 +477,8 @@ imcs-buildtest_daily_ubuntu20:
 imcs-buildtest_daily_debug_ubuntu20:
     <<: *buildtest_daily_debug
     variables:
+        CTEST_NUMBER_OF_TEST_THREADS: "12"
+        CTEST_NUMBER_OF_BUILD_THREADS: "12"
         CTEST_MAKE: "make full -j${CTEST_NUMBER_OF_BUILD_THREADS}"
         CTEST_BUILD_NAME_GITLAB: "imcs-workstation-ubuntu20-baci-DEBUG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation_ubuntu20-04.config"
@@ -483,6 +489,8 @@ imcs-buildtest_daily_debug_ubuntu20:
 imcs-buildtest_release_trilinos_develop:
     <<: *buildtest_release_trilinos_develop
     variables:
+        CTEST_NUMBER_OF_TEST_THREADS: "12"
+        CTEST_NUMBER_OF_BUILD_THREADS: "12"
         CTEST_MAKE: "make full -j${CTEST_NUMBER_OF_BUILD_THREADS}"
         CTEST_BUILD_NAME_GITLAB: "imcs-workstation-ubuntu20-trilinos-develop-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation_ubuntu20-04_develop.config"
