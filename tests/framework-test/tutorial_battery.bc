@@ -120,7 +120,7 @@ sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
 description="0 Slave S2IKineticsID 0"
 *ns2="CONDITION"
 sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
-description="0 Slave KineticModel ConstantInterfaceResistance resistance 1.0e-5"
+description="0 Slave KineticModel ConstantInterfaceResistance ONOFF 0 1 resistance 1.0e-5 e- 1"
 
 Node Set, named: an-side_(ma)_of_an-cc_interface
 Property Name: none
@@ -190,7 +190,7 @@ sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
 description="3 Slave S2IKineticsID 3"
 *ns9="CONDITION"
 sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
-description="3 Slave KineticModel ConstantInterfaceResistance resistance 1.0e-5"
+description="3 Slave KineticModel ConstantInterfaceResistance ONOFF 0 1 resistance 1.0e-5 e- 1"
 
 Node Set, named: sol-el-side_(ma)_of_comp_cat-cc_
 Property Name: none

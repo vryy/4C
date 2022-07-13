@@ -530,10 +530,17 @@ void INPAR::S2I::SetValidConditions(
             {
               // constant interface resistance
               std::vector<Teuchos::RCP<ConditionComponent>> constantinterfaceresistance;
+
+              constantinterfaceresistance.emplace_back(
+                  Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+              constantinterfaceresistance.emplace_back(
+                  Teuchos::rcp(new IntVectorConditionComponent("onoff", 2)));
               constantinterfaceresistance.emplace_back(
                   Teuchos::rcp(new SeparatorConditionComponent("resistance")));
               constantinterfaceresistance.emplace_back(
                   Teuchos::rcp(new RealConditionComponent("resistance")));
+              constantinterfaceresistance.emplace_back(new SeparatorConditionComponent("e-"));
+              constantinterfaceresistance.emplace_back(new IntConditionComponent("e-"));
 
               kineticmodels.emplace_back(Teuchos::rcp(
                   new CondCompBundle("ConstantInterfaceResistance", constantinterfaceresistance,

@@ -202,7 +202,7 @@ E 1 - 0 Slave KineticModel NoInterfaceFlux
 // master-side_cc-el
 E 2 - 0 Master
 // slave-side_cc-cath
-E 3 - 1 Slave KineticModel ConstantInterfaceResistance resistance 2.0e-5
+E 3 - 1 Slave KineticModel ConstantInterfaceResistance ONOFF 0 1 resistance 2.0e-5 e- 1
 // master-side_cc-cath
 E 4 - 1 Master
 // master-side_el-cath

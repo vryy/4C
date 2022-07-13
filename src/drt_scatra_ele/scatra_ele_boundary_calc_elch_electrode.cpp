@@ -159,6 +159,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
   const double resistance = scatra_parameter_boundary->Resistance();
   const double itemaxmimplicitBV = scatra_parameter_boundary->ItemaximplicitBV();
   const double convtolimplicitBV = scatra_parameter_boundary->ConvtolimplicitBV();
+  const std::vector<bool>* onoff = scatra_parameter_boundary->OnOff();
 
   // number of nodes of master-side mortar element
   const int nen_master = DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement;
@@ -336,23 +337,43 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
       {
         for (int vi = 0; vi < my::nen_; ++vi)
         {
+          const int row_conc = vi * 2;
           const int row_pot = vi * 2 + 1;
 
           for (int ui = 0; ui < my::nen_; ++ui)
           {
             const int col_pot = ui * 2 + 1;
 
-            k_ss(row_pot, col_pot) += test_slave(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
+            if ((*onoff)[0])
+            {
+              k_ss(row_conc, col_pot) +=
+                  test_slave(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
+            }
+            if ((*onoff)[1])
+            {
+              k_ss(row_pot, col_pot) +=
+                  numelectrons * test_slave(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
+            }
           }
 
           for (int ui = 0; ui < nen_master; ++ui)
           {
             const int col_pot = ui * 2 + 1;
 
-            k_sm(row_pot, col_pot) += test_slave(vi) * dj_dpot_master_timefacfac * funct_master(ui);
+            if ((*onoff)[0])
+            {
+              k_sm(row_conc, col_pot) +=
+                  test_slave(vi) * dj_dpot_master_timefacfac * funct_master(ui);
+            }
+            if ((*onoff)[1])
+            {
+              k_sm(row_pot, col_pot) +=
+                  numelectrons * test_slave(vi) * dj_dpot_master_timefacfac * funct_master(ui);
+            }
           }
 
-          r_s[row_pot] -= test_slave(vi) * jtimefacrhsfac;
+          if ((*onoff)[0]) r_s[row_conc] -= test_slave(vi) * jtimefacrhsfac;
+          if ((*onoff)[1]) r_s[row_pot] -= numelectrons * test_slave(vi) * jtimefacrhsfac;
         }
       }
       else if (k_ss.M() or k_sm.M() or r_s.Length())
@@ -362,24 +383,42 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
       {
         for (int vi = 0; vi < nen_master; ++vi)
         {
+          const int row_conc = vi * 2;
           const int row_pot = vi * 2 + 1;
 
           for (int ui = 0; ui < my::nen_; ++ui)
           {
             const int col_pot = ui * 2 + 1;
 
-            k_ms(row_pot, col_pot) -= test_master(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
+            if ((*onoff)[0])
+            {
+              k_ms(row_conc, col_pot) -=
+                  numelectrons * test_master(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
+            }
+            if ((*onoff)[1])
+            {
+              k_ms(row_pot, col_pot) -=
+                  numelectrons * test_master(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
+            }
           }
 
           for (int ui = 0; ui < nen_master; ++ui)
           {
             const int col_pot = ui * 2 + 1;
 
-            k_mm(row_pot, col_pot) -=
-                test_master(vi) * dj_dpot_master_timefacfac * funct_master(ui);
+            if ((*onoff)[0])
+            {
+              k_mm(row_conc, col_pot) -=
+                  test_master(vi) * dj_dpot_master_timefacfac * funct_master(ui);
+            }
+            if ((*onoff)[1])
+            {
+              k_mm(row_pot, col_pot) -=
+                  numelectrons * test_master(vi) * dj_dpot_master_timefacfac * funct_master(ui);
+            }
           }
-
-          r_m[row_pot] += test_master(vi) * jtimefacrhsfac;
+          if ((*onoff)[0]) r_m[row_conc] += test_master(vi) * jtimefacrhsfac;
+          if ((*onoff)[1]) r_m[row_pot] += numelectrons * test_master(vi) * jtimefacrhsfac;
         }
       }
       else if (k_ms.M() or k_mm.M() or r_m.Length())
@@ -670,6 +709,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
         {
           case static_cast<int>(SCATRA::DifferentiationType::disp):
           {
+            const std::vector<bool>* onoff = my::scatraparamsboundary_->OnOff();
+
             // calculate linearizations
             const double inv_massfluxresistance =
                 1.0 / (my::scatraparamsboundary_->Resistance() * myelch::elchparams_->Faraday());
@@ -684,6 +725,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
               // loop over matrix rows
               for (int vi = 0; vi < my::nen_; ++vi)
               {
+                const int row_conc = vi * 2;
                 const int row_pot = vi * 2 + 1;
                 const double vi_dj_dd_slave = my::funct_(vi) * dj_dd_slave_timefacwgt;
 
@@ -691,7 +733,15 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
                 for (int dim = 0; dim < 3; ++dim)
                 {
                   // finalize linearizations w.r.t. slave-side structural displacements
-                  eslavematrix(row_pot, fui + dim) += vi_dj_dd_slave * shapederivatives(dim, ui);
+                  if ((*onoff)[0])
+                  {
+                    eslavematrix(row_conc, fui + dim) += vi_dj_dd_slave * shapederivatives(dim, ui);
+                  }
+                  if ((*onoff)[1])
+                  {
+                    eslavematrix(row_pot, fui + dim) += my::scatraparamsboundary_->NumElectrons() *
+                                                        vi_dj_dd_slave * shapederivatives(dim, ui);
+                  }
                 }
               }
             }
