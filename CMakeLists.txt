@@ -2892,12 +2892,5 @@ target_link_libraries(
   ${LIBRARIES}
   )
 
-add_test(
-  NAME run_cut_test
-  COMMAND
-    bash -c
-    "mkdir -p ${PROJECT_BINARY_DIR}/framework_test_output/cut_test && cd ${PROJECT_BINARY_DIR}/framework_test_output/cut_test && ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS} $<TARGET_FILE:cut_test>"
-  )
-
 include(TestingFramework.cmake)
 include(UnittestingFramework.cmake)
