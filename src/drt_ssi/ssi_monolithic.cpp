@@ -865,12 +865,9 @@ void SSI::SSIMono::SetSSIManifoldStates(Teuchos::RCP<const Epetra_Vector> phi) c
 
   for (const auto& coup : manifoldscatraflux_->ScaTraManifoldCouplings())
   {
-    if (coup->EvaluateMasterSide())
-    {
-      auto imasterphinp_scatra = coup->ScaTraMapExtractor()->ExtractCondVector(*phi);
-      auto imasterphinp_manifold = coup->CouplingAdapter()->MasterToSlave(imasterphinp_scatra);
-      coup->ManifoldMapExtractor()->AddCondVector(imasterphinp_manifold, imasterphinp_on_manifold);
-    }
+    auto imasterphinp_scatra = coup->ScaTraMapExtractor()->ExtractCondVector(*phi);
+    auto imasterphinp_manifold = coup->CouplingAdapter()->MasterToSlave(imasterphinp_scatra);
+    coup->ManifoldMapExtractor()->AddCondVector(imasterphinp_manifold, imasterphinp_on_manifold);
   }
   ScaTraManifold()->Discretization()->SetState(3, "imasterscatra", imasterphinp_on_manifold);
 }
@@ -1187,7 +1184,10 @@ void SSI::SSIMono::PrepareOutput()
 
   // prepare output of coupling sctra manifold - scatra
   if (IsScaTraManifold() and manifoldscatraflux_->DoOutput())
+  {
+    DistributeSolutionAllFields();
     manifoldscatraflux_->EvaluateScaTraManifoldInflow();
+  }
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -1675,4 +1675,23 @@ void SSI::SSIMono::PrintSystemMatrixRHSToMatLabFormat()
         DRT::Problem::Instance()->OutputControlFile()->FileName() + "_full_map.csv";
     LINALG::PrintMapInMatlabFormat(filename, *ssi_maps_->MapSystemMatrix(), true);
   }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSIMono::SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> phi)
+{
+  SSI::SSIBase::SetScatraManifoldSolution(phi);
+
+  // scatra values on master side copied to manifold
+  auto manifold_on_scatra =
+      LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(), true);
+
+  for (const auto& coup : manifoldscatraflux_->ScaTraManifoldCouplings())
+  {
+    auto manifold_cond = coup->ManifoldMapExtractor()->ExtractCondVector(*phi);
+    auto manifold_on_scatra_cond = coup->CouplingAdapter()->SlaveToMaster(manifold_cond);
+    coup->ScaTraMapExtractor()->AddCondVector(manifold_on_scatra_cond, manifold_on_scatra);
+  }
+  ScaTraField()->Discretization()->SetState(3, "manifold_on_scatra", manifold_on_scatra);
 }

@@ -214,7 +214,7 @@ namespace SSI
     virtual void SetMicroScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const;
 
     /// set scatra on manifold solution on other fields
-    void SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> phi);
+    virtual void SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> phi);
 
     /// set temperature field  by evaluating time dependent function
     void EvaluateAndSetTemperatureField();

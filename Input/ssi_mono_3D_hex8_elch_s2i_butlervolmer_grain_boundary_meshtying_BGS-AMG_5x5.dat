@@ -234,17 +234,17 @@ E 6 - 3 ImplType ElchElectrode
 ----------------------DESIGN SSI MANIFOLD KINETICS SURF CONDITIONS
 DSURF  6
 // slave-side_cc-el
-E 1 - ONOFF 1 1 ManifoldConditionID 1 KineticModel NoFlux
+E 1 - 1 ManifoldConditionID 1 KineticModel NoInterfaceFlux
 // master-side_cc-el
-E 2 - ONOFF 1 1 ManifoldConditionID 1 KineticModel NoFlux
+E 2 - 2 ManifoldConditionID 1 KineticModel NoInterfaceFlux
 // slave-side_cc-cath
-E 3 - ONOFF 1 1 ManifoldConditionID 2 KineticModel NoFlux
+E 3 - 3 ManifoldConditionID 2 KineticModel NoInterfaceFlux
 // master-side_cc-cath
-E 4 - ONOFF 1 1 ManifoldConditionID 2 KineticModel NoFlux
+E 4 - 4 ManifoldConditionID 2 KineticModel NoInterfaceFlux
 // master-side_el-cath
-E 5 - ONOFF 1 1 ManifoldConditionID 3 KineticModel NoFlux
+E 5 - 5 ManifoldConditionID 3 KineticModel NoInterfaceFlux
 // slave-side_el-cath
-E 6 - ONOFF 1 1 ManifoldConditionID 3 KineticModel NoFlux
+E 6 - 6 ManifoldConditionID 3 KineticModel NoInterfaceFlux
 ----------------------------DESIGN SURF MANIFOLD DIRICH CONDITIONS
 DSURF  3
 // slave-side_cc-el

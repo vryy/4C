@@ -24,7 +24,6 @@ namespace DRT
     class ScaTraEleInternalVariableManagerElchElectrode;
     template <DRT::Element::DiscretizationType distype>
     class ScaTraEleUtilsElchElectrode;
-    class ScaTraEleParameterElchManifold;
 
     // class implementation
     template <DRT::Element::DiscretizationType distype,
@@ -229,16 +228,6 @@ namespace DRT
         return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchElectrode>(my::diffmanager_);
       };
 
-      //! calculate flux scatra <-> scatra manifold incl. linearizations
-      void CalcScaTraScaTraManifoldFlux(const DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix,
-          Epetra_SerialDenseVector& eslaveresidual);
-
-      //! Integrate all positive fluxes (inflow) into manifold domain from scatra-manifold coupling
-      void CalcManifoldInflow(const DRT::Element* ele, DRT::Discretization& discretization,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseVector& scalars);
-
      private:
       //! get internal variable manager for electrodes
       Teuchos::RCP<ScaTraEleInternalVariableManagerElchElectrode<my::nsd_, my::nen_>> VarManager()
@@ -247,9 +236,6 @@ namespace DRT
             ScaTraEleInternalVariableManagerElchElectrode<my::nsd_, my::nen_>>(
             my::scatravarmanager_);
       };
-
-      //! parameters related to elch field on manifold (incl. coupling kinetics)
-      const ScaTraEleParameterElchManifold* elchmanifoldparams_;
     };
 
 

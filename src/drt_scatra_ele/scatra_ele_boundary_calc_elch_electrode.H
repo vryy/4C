@@ -255,6 +255,10 @@ namespace DRT
 
       double GetValence(const Teuchos::RCP<const MAT::Material>& material, int k) const override;
 
+      void CalcS2ICouplingFlux(const DRT::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          Epetra_SerialDenseVector& scalars) override;
+
       //! evaluate factor F/RT
       virtual double GetFRT() const;
     };  // class ScaTraEleBoundaryCalcElchElectrode

@@ -378,6 +378,11 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(DRT::FaceEleme
       CalcRobinBoundary(ele, params, discretization, la, elemat1_epetra, elevec1_epetra, 1.);
       break;
     }
+    case SCATRA::bd_calc_s2icoupling_flux:
+    {
+      CalcS2ICouplingFlux(ele, params, discretization, la, elevec1_epetra);
+      break;
+    }
     default:
     {
       dserror("Not acting on this boundary action. Forgot implementation?");

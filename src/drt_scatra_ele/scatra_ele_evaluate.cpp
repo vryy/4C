@@ -16,7 +16,6 @@
 
 #include "scatra_ele_parameter_elch.H"
 #include "scatra_ele_parameter_elch_diffcond.H"
-#include "scatra_ele_parameter_elch_manifold.H"
 #include "scatra_ele_parameter_lsreinit.H"
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
@@ -87,13 +86,6 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization& dis, Teuchos
 
       // set additional, problem-dependent parameters
       ScaTraEleParameterElch::Instance(dis.Name())->SetParameters(p);
-
-      break;
-    }
-
-    case SCATRA::set_elch_scatra_manifold_parameter:
-    {
-      ScaTraEleParameterElchManifold::Instance(dis.Name())->SetParameters(p);
 
       break;
     }
@@ -284,8 +276,6 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case SCATRA::calc_mass_matrix:
     case SCATRA::transform_real_to_reference_point:
     case SCATRA::evaluate_field_in_point:
-    case SCATRA::calc_scatra_manifold_flux:
-    case SCATRA::calc_manifold_inflow:
     {
       return ScaTraFactory::ProvideImpl(
           Shape(), impltype_, numdofpernode, numscal, discretization.Name())
@@ -299,7 +289,6 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case SCATRA::set_mean_Cai:
     case SCATRA::set_lsreinit_scatra_parameter:
     case SCATRA::set_elch_scatra_parameter:
-    case SCATRA::set_elch_scatra_manifold_parameter:
     case SCATRA::set_scatra_ele_boundary_parameter:
     case SCATRA::set_diffcond_scatra_parameter:
       // these actions have already been evaluated during element pre-evaluate

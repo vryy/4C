@@ -515,11 +515,13 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
     if (scatra_manifold_dis->AddDofSet(proxy_scatra_scatramanifold) != 2)
       dserror("unexpected dof sets in scatra manifold field");
 
+    if (scatra_manifold_dis->AddDofSet(manifolddofset) != 3)
+      dserror("unexpected dof sets in scatra manifold field");
+
     if (scatradis->AddDofSet(proxy_scatramanifold_scatra) != 2)
       dserror("unexpected dof sets in scatra field");
 
-    if (scatra_manifold_dis->AddDofSet(manifolddofset) != 3)
-      dserror("unexpected dof sets in scatra manifold field");
+    if (scatradis->AddDofSet(scatradofset) != 3) dserror("unexpected dof sets in scatra field");
   }
 
   if (DRT::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT") != -1)

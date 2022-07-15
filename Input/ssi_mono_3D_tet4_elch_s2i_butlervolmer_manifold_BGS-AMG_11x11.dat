@@ -215,13 +215,13 @@ E 5 - 2 ImplType ElchElectrode
 ----------------------DESIGN SSI MANIFOLD KINETICS SURF CONDITIONS
 DSURF  4
 // electrode side
-E 2 - ONOFF 1 1 ManifoldConditionID 1 KineticModel NoFlux
+E 2 - 1 ManifoldConditionID 1 KineticModel NoInterfaceFlux
 // electrolyte side
-E 3 - ONOFF 1 1 ManifoldConditionID 1 KineticModel NoFlux
+E 3 - 2 ManifoldConditionID 1 KineticModel NoInterfaceFlux
 // electrode side
-E 4 - ONOFF 1 1 ManifoldConditionID 2 KineticModel NoFlux
+E 4 - 3 ManifoldConditionID 2 KineticModel NoInterfaceFlux
 // electrolyte side
-E 5 - ONOFF 1 1 ManifoldConditionID 2 KineticModel NoFlux
+E 5 - 4 ManifoldConditionID 2 KineticModel NoInterfaceFlux
 ---------------------------DESIGN POINT MANIFOLD DIRICH CONDITIONS
 DPOINT 2
 E 3 - NUMDOF 2 ONOFF 0 1 VAL 0.0 1.0 FUNCT 0 0

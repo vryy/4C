@@ -79,7 +79,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
   this->ExtractNodeValues(discretization, la);
   std::vector<LINALG::Matrix<my::nen_, 1>> emasterphinp(
       my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
-  my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
+  if (params.isParameter("evaluate_manifold_coupling"))
+    my::ExtractNodeValues(emasterphinp, discretization, la, "manifold_on_scatra", 3);
+  else
+    my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
   LINALG::Matrix<my::nen_, 1> eslavetempnp(true);
   LINALG::Matrix<my::nen_, 1> emastertempnp(true);
@@ -584,7 +587,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
   this->ExtractNodeValues(discretization, la);
   std::vector<LINALG::Matrix<my::nen_, 1>> emasterphinp(
       my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
-  my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
+  if (params.isParameter("evaluate_manifold_coupling"))
+    my::ExtractNodeValues(emasterphinp, discretization, la, "manifold_on_scatra", 3);
+  else
+    my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
@@ -1084,6 +1090,80 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::
   }
   else if (k_ss.M() or k_ms.M() or r_s.Length() or r_m.Length())
     dserror("You did not provide the correct set of matrices and vectors!");
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::CalcS2ICouplingFlux(
+    const DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, Epetra_SerialDenseVector& scalars)
+{
+  // get condition specific parameters
+  const int kineticmodel = my::scatraparamsboundary_->KineticModel();
+  const std::vector<bool>* onoff = my::scatraparamsboundary_->OnOff();
+  const double resistance = my::scatraparamsboundary_->Resistance();
+  const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+
+  // extract local nodal values on present and opposite side of scatra-scatra interface
+  this->ExtractNodeValues(discretization, la);
+  std::vector<LINALG::Matrix<my::nen_, 1>> emasterphinp(
+      my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
+  if (params.isParameter("evaluate_manifold_coupling"))
+    my::ExtractNodeValues(emasterphinp, discretization, la, "manifold_on_scatra", 3);
+  else
+    my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
+
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
+      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
+  {
+    // evaluate values of shape functions and domain integration factor at current integration point
+    const double fac = my::EvalShapeFuncAndIntFac(intpoints, gpid);
+
+    const double eslavepotint = my::funct_.Dot(my::ephinp_[1]);
+    const double emasterpotint = my::funct_.Dot(emasterphinp[1]);
+
+    switch (kineticmodel)
+    {
+      case INPAR::S2I::kinetics_constantinterfaceresistance:
+      {
+        const double inv_massfluxresistance = 1.0 / (resistance * faraday);
+        const int num_electrons = my::scatraparamsboundary_->NumElectrons();
+
+        const double j = (eslavepotint - emasterpotint) * inv_massfluxresistance;
+
+        // only add positive fluxes
+        if (j > 0.0)
+        {
+          const double jfac = fac * j;
+
+          for (int vi = 0; vi < my::nen_; ++vi)
+          {
+            const double jfac_funct = jfac * my::funct_(vi);
+
+            if ((*onoff)[0]) scalars[0] += jfac_funct;
+            if ((*onoff)[1]) scalars[1] += num_electrons * jfac_funct;
+          }
+        }
+      }
+
+      break;
+
+      case INPAR::S2I::kinetics_nointerfaceflux:
+      {
+        // do nothing
+        break;
+      }
+      default:
+      {
+        dserror("kinetic model not implemented.");
+        break;
+      }
+    }
+  }
 }
 
 // template classes
