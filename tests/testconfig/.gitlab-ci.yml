@@ -584,13 +584,13 @@ lnm-buildtest_coverage_weekly:
     <<: *buildtest_coverage_weekly
     variables:
         # increase the global test timeout
-        GLOBAL_TEST_TIMEOUT_SCALE: "22"
+        GLOBAL_TEST_TIMEOUT_SCALE: "25"
         # increase the unit test timeout
         UNITTEST_TIMEOUT: "50"
         # enable coverage option of ctest
         CTEST_NUMBER_OF_TEST_THREADS: "10"
         CTEST_NUMBER_OF_BUILD_THREADS: "10"
-        CTEST_CONFIGURE_POSTFIX: "--coverage"
+        CTEST_CONFIGURE_POSTFIX: "--coverage --uselld"
         CTEST_MAKE: "make full -j${CTEST_NUMBER_OF_BUILD_THREADS}"
         CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-coverage-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
