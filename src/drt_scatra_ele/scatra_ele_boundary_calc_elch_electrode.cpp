@@ -79,7 +79,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
   this->ExtractNodeValues(discretization, la);
   std::vector<LINALG::Matrix<my::nen_, 1>> emasterphinp(
       my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
-  my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
+  if (params.isParameter("evaluate_manifold_coupling"))
+    my::ExtractNodeValues(emasterphinp, discretization, la, "manifold_on_scatra", 3);
+  else
+    my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
   LINALG::Matrix<my::nen_, 1> eslavetempnp(true);
   LINALG::Matrix<my::nen_, 1> emastertempnp(true);
@@ -159,6 +162,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
   const double resistance = scatra_parameter_boundary->Resistance();
   const double itemaxmimplicitBV = scatra_parameter_boundary->ItemaximplicitBV();
   const double convtolimplicitBV = scatra_parameter_boundary->ConvtolimplicitBV();
+  const std::vector<bool>* onoff = scatra_parameter_boundary->OnOff();
 
   // number of nodes of master-side mortar element
   const int nen_master = DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement;
@@ -336,23 +340,43 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
       {
         for (int vi = 0; vi < my::nen_; ++vi)
         {
+          const int row_conc = vi * 2;
           const int row_pot = vi * 2 + 1;
 
           for (int ui = 0; ui < my::nen_; ++ui)
           {
             const int col_pot = ui * 2 + 1;
 
-            k_ss(row_pot, col_pot) += test_slave(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
+            if ((*onoff)[0])
+            {
+              k_ss(row_conc, col_pot) +=
+                  test_slave(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
+            }
+            if ((*onoff)[1])
+            {
+              k_ss(row_pot, col_pot) +=
+                  numelectrons * test_slave(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
+            }
           }
 
           for (int ui = 0; ui < nen_master; ++ui)
           {
             const int col_pot = ui * 2 + 1;
 
-            k_sm(row_pot, col_pot) += test_slave(vi) * dj_dpot_master_timefacfac * funct_master(ui);
+            if ((*onoff)[0])
+            {
+              k_sm(row_conc, col_pot) +=
+                  test_slave(vi) * dj_dpot_master_timefacfac * funct_master(ui);
+            }
+            if ((*onoff)[1])
+            {
+              k_sm(row_pot, col_pot) +=
+                  numelectrons * test_slave(vi) * dj_dpot_master_timefacfac * funct_master(ui);
+            }
           }
 
-          r_s[row_pot] -= test_slave(vi) * jtimefacrhsfac;
+          if ((*onoff)[0]) r_s[row_conc] -= test_slave(vi) * jtimefacrhsfac;
+          if ((*onoff)[1]) r_s[row_pot] -= numelectrons * test_slave(vi) * jtimefacrhsfac;
         }
       }
       else if (k_ss.M() or k_sm.M() or r_s.Length())
@@ -362,24 +386,42 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
       {
         for (int vi = 0; vi < nen_master; ++vi)
         {
+          const int row_conc = vi * 2;
           const int row_pot = vi * 2 + 1;
 
           for (int ui = 0; ui < my::nen_; ++ui)
           {
             const int col_pot = ui * 2 + 1;
 
-            k_ms(row_pot, col_pot) -= test_master(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
+            if ((*onoff)[0])
+            {
+              k_ms(row_conc, col_pot) -=
+                  numelectrons * test_master(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
+            }
+            if ((*onoff)[1])
+            {
+              k_ms(row_pot, col_pot) -=
+                  numelectrons * test_master(vi) * dj_dpot_slave_timefacfac * funct_slave(ui);
+            }
           }
 
           for (int ui = 0; ui < nen_master; ++ui)
           {
             const int col_pot = ui * 2 + 1;
 
-            k_mm(row_pot, col_pot) -=
-                test_master(vi) * dj_dpot_master_timefacfac * funct_master(ui);
+            if ((*onoff)[0])
+            {
+              k_mm(row_conc, col_pot) -=
+                  test_master(vi) * dj_dpot_master_timefacfac * funct_master(ui);
+            }
+            if ((*onoff)[1])
+            {
+              k_mm(row_pot, col_pot) -=
+                  numelectrons * test_master(vi) * dj_dpot_master_timefacfac * funct_master(ui);
+            }
           }
-
-          r_m[row_pot] += test_master(vi) * jtimefacrhsfac;
+          if ((*onoff)[0]) r_m[row_conc] += test_master(vi) * jtimefacrhsfac;
+          if ((*onoff)[1]) r_m[row_pot] += numelectrons * test_master(vi) * jtimefacrhsfac;
         }
       }
       else if (k_ms.M() or k_mm.M() or r_m.Length())
@@ -545,7 +587,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
   this->ExtractNodeValues(discretization, la);
   std::vector<LINALG::Matrix<my::nen_, 1>> emasterphinp(
       my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
-  my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
+  if (params.isParameter("evaluate_manifold_coupling"))
+    my::ExtractNodeValues(emasterphinp, discretization, la, "manifold_on_scatra", 3);
+  else
+    my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
@@ -670,6 +715,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
         {
           case static_cast<int>(SCATRA::DifferentiationType::disp):
           {
+            const std::vector<bool>* onoff = my::scatraparamsboundary_->OnOff();
+
             // calculate linearizations
             const double inv_massfluxresistance =
                 1.0 / (my::scatraparamsboundary_->Resistance() * myelch::elchparams_->Faraday());
@@ -684,6 +731,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
               // loop over matrix rows
               for (int vi = 0; vi < my::nen_; ++vi)
               {
+                const int row_conc = vi * 2;
                 const int row_pot = vi * 2 + 1;
                 const double vi_dj_dd_slave = my::funct_(vi) * dj_dd_slave_timefacwgt;
 
@@ -691,7 +739,15 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
                 for (int dim = 0; dim < 3; ++dim)
                 {
                   // finalize linearizations w.r.t. slave-side structural displacements
-                  eslavematrix(row_pot, fui + dim) += vi_dj_dd_slave * shapederivatives(dim, ui);
+                  if ((*onoff)[0])
+                  {
+                    eslavematrix(row_conc, fui + dim) += vi_dj_dd_slave * shapederivatives(dim, ui);
+                  }
+                  if ((*onoff)[1])
+                  {
+                    eslavematrix(row_pot, fui + dim) += my::scatraparamsboundary_->NumElectrons() *
+                                                        vi_dj_dd_slave * shapederivatives(dim, ui);
+                  }
                 }
               }
             }
@@ -1034,6 +1090,80 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::
   }
   else if (k_ss.M() or k_ms.M() or r_s.Length() or r_m.Length())
     dserror("You did not provide the correct set of matrices and vectors!");
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::CalcS2ICouplingFlux(
+    const DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, Epetra_SerialDenseVector& scalars)
+{
+  // get condition specific parameters
+  const int kineticmodel = my::scatraparamsboundary_->KineticModel();
+  const std::vector<bool>* onoff = my::scatraparamsboundary_->OnOff();
+  const double resistance = my::scatraparamsboundary_->Resistance();
+  const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+
+  // extract local nodal values on present and opposite side of scatra-scatra interface
+  this->ExtractNodeValues(discretization, la);
+  std::vector<LINALG::Matrix<my::nen_, 1>> emasterphinp(
+      my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
+  if (params.isParameter("evaluate_manifold_coupling"))
+    my::ExtractNodeValues(emasterphinp, discretization, la, "manifold_on_scatra", 3);
+  else
+    my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
+
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
+      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
+  {
+    // evaluate values of shape functions and domain integration factor at current integration point
+    const double fac = my::EvalShapeFuncAndIntFac(intpoints, gpid);
+
+    const double eslavepotint = my::funct_.Dot(my::ephinp_[1]);
+    const double emasterpotint = my::funct_.Dot(emasterphinp[1]);
+
+    switch (kineticmodel)
+    {
+      case INPAR::S2I::kinetics_constantinterfaceresistance:
+      {
+        const double inv_massfluxresistance = 1.0 / (resistance * faraday);
+        const int num_electrons = my::scatraparamsboundary_->NumElectrons();
+
+        const double j = (eslavepotint - emasterpotint) * inv_massfluxresistance;
+
+        // only add positive fluxes
+        if (j > 0.0)
+        {
+          const double jfac = fac * j;
+
+          for (int vi = 0; vi < my::nen_; ++vi)
+          {
+            const double jfac_funct = jfac * my::funct_(vi);
+
+            if ((*onoff)[0]) scalars[0] += jfac_funct;
+            if ((*onoff)[1]) scalars[1] += num_electrons * jfac_funct;
+          }
+        }
+      }
+
+      break;
+
+      case INPAR::S2I::kinetics_nointerfaceflux:
+      {
+        // do nothing
+        break;
+      }
+      default:
+      {
+        dserror("kinetic model not implemented.");
+        break;
+      }
+    }
+  }
 }
 
 // template classes

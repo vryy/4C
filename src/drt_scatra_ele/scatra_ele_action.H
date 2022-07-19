@@ -40,7 +40,6 @@ namespace SCATRA
                                    ///< immersed discretizaton
     calc_initial_time_deriv,       ///< calc_initial_time_deriv,
     calc_integr_reaction,          ///< calculate integral reaction
-    calc_manifold_inflow,          ///< integral of all positive fluxes into manifold
     calc_mass_center_smoothingfunct,  ///< calculate mass center of minus domain, using the
                                       ///< smoothing function. (Interface thickness required)
     calc_mass_matrix,                 ///< calculate mass matrix
@@ -56,7 +55,6 @@ namespace SCATRA
     calc_padaptivity,                   ///< calc error and set p-adativity on element
     calc_rhs,                           ///< calc_condif_residual
     calc_scatra_box_filter,             ///< calc_scatra_box_filter,
-    calc_scatra_manifold_flux,          ///< flux scatra <-> scatra on manifold
 
     calc_scatra_mono_odblock_fluid,  ///< calculate off diagonal matrix block for coupling with
                                      ///< fluid
@@ -93,22 +91,20 @@ namespace SCATRA
     recon_curvature_at_nodes,       ///< reconstruct curvature at node points through L2-projection
     recon_gradients_at_nodes,       ///< reconstruct gradients at node points through L2-projection
     set_diffcond_scatra_parameter,  ///< set diffusion-conduction parameters for element evaluation
-    set_elch_scatra_manifold_parameter,  ///< set parameters to evaluate kinetics model scatra <->
-                                         ///< scatra manifold
-    set_elch_scatra_parameter,           ///< set elch parameters for element evaluation
-    set_general_scatra_parameter,        ///< set general parameters for element evaluation
-    set_initial_field,                   ///< set initial field for hdg
-    set_lsreinit_scatra_parameter,       ///< set reinitialization parameters for element evaluation
-    set_material_internal_state,         ///< set material internal state (for restart for example),
-    set_mean_Cai,                        ///< special action for mfs
-    set_scatra_ele_boundary_parameter,   ///< set scatra boundary parameter for interface
-    set_time_parameter,                  ///< set time-integration parameters for element evaluation
-    set_turbulence_scatra_parameter,     ///< set turbulence parameters for element evaluation
-    time_update_material,                ///< time update for materials
-    transform_real_to_reference_point,   ///< gets a point in real coordinates and returns reference
-                                         ///< coordinates
-    update_interior_variables            ///< update interior variables for hdg
-  };                                     // enum Action
+    set_elch_scatra_parameter,      ///< set elch parameters for element evaluation
+    set_general_scatra_parameter,   ///< set general parameters for element evaluation
+    set_initial_field,              ///< set initial field for hdg
+    set_lsreinit_scatra_parameter,  ///< set reinitialization parameters for element evaluation
+    set_material_internal_state,    ///< set material internal state (for restart for example),
+    set_mean_Cai,                   ///< special action for mfs
+    set_scatra_ele_boundary_parameter,  ///< set scatra boundary parameter for interface
+    set_time_parameter,                 ///< set time-integration parameters for element evaluation
+    set_turbulence_scatra_parameter,    ///< set turbulence parameters for element evaluation
+    time_update_material,               ///< time update for materials
+    transform_real_to_reference_point,  ///< gets a point in real coordinates and returns reference
+                                        ///< coordinates
+    update_interior_variables           ///< update interior variables for hdg
+  };                                    // enum Action
 
 
   /*--------------------------------------------------------------------------*/
@@ -134,6 +130,7 @@ namespace SCATRA
     bd_calc_normal_vectors,
     bd_calc_Robin,                       ///< Robin boundary condition
     bd_calc_s2icoupling,                 ///< evaluate scatra-scatra interface coupling conditions
+    bd_calc_s2icoupling_flux,            ///< integral of all positive fluxes on s2i interface
     bd_calc_s2icoupling_capacitance,     ///< evaluate capacitance part of scatra-scatra interface
                                          ///< coupling conditions
     bd_calc_s2icoupling_capacitance_od,  ///< evaluate derivatives of scatra-scatra interface

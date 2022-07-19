@@ -391,8 +391,7 @@ void INPAR::SSI::SetValidConditions(
           DRT::Condition::SSISurfaceManifoldKinetics, true, DRT::Condition::Surface));
 
   {
-    surfmanifoldkinetics->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
-    surfmanifoldkinetics->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("ONOFF", 2)));
+    surfmanifoldkinetics->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
 
     surfmanifoldkinetics->AddComponent(
         Teuchos::rcp(new SeparatorConditionComponent("ManifoldConditionID")));
@@ -404,6 +403,11 @@ void INPAR::SSI::SetValidConditions(
       {
         std::vector<Teuchos::RCP<ConditionComponent>> constantinterfaceresistance;
         constantinterfaceresistance.emplace_back(
+            Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+        constantinterfaceresistance.emplace_back(
+            Teuchos::rcp(new IntVectorConditionComponent("onoff", 2)));
+
+        constantinterfaceresistance.emplace_back(
             Teuchos::rcp(new SeparatorConditionComponent("resistance")));
         constantinterfaceresistance.emplace_back(
             Teuchos::rcp(new RealConditionComponent("resistance")));
@@ -411,21 +415,53 @@ void INPAR::SSI::SetValidConditions(
         constantinterfaceresistance.emplace_back(new IntConditionComponent("e-"));
 
         kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle("ConstantInterfaceResistance",
-            constantinterfaceresistance, INPAR::SSI::kinetics_constantinterfaceresistance)));
+            constantinterfaceresistance, INPAR::S2I::kinetics_constantinterfaceresistance)));
+      }
+
+      {
+        // Butler-Volmer-reduced
+        std::vector<Teuchos::RCP<ConditionComponent>> butlervolmerreduced;
+        // total number of existing scalars
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("numscal")));
+        // string separator in front of integer stoichiometry vector in input file line
+        std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepcomp;
+        intsepcomp.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("stoichiometries")));
+        // integer vector of stoichiometric coefficients
+        std::vector<Teuchos::RCP<IntVectorConditionComponent>> intvectcomp;
+        intvectcomp.emplace_back(
+            Teuchos::rcp(new IntVectorConditionComponent("stoichiometries", 0)));
+        // empty vector --> no separators for real vectors needed
+        std::vector<Teuchos::RCP<SeparatorConditionComponent>> realsepcomp;
+        // empty vector --> no real vectors needed
+        std::vector<Teuchos::RCP<RealVectorConditionComponent>> realvectcomp;
+        butlervolmerreduced.emplace_back(Teuchos::rcp(
+            new IntRealBundle("stoichiometries", Teuchos::rcp(new IntConditionComponent("numscal")),
+                intsepcomp, intvectcomp, realsepcomp, realvectcomp)));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("e-")));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new IntConditionComponent("e-")));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("k_r")));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new RealConditionComponent("k_r")));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
+
+        kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle("Butler-VolmerReduced",
+            butlervolmerreduced, INPAR::S2I::kinetics_butlervolmerreduced)));
       }
 
       {
         std::vector<Teuchos::RCP<ConditionComponent>> noflux;
 
-        kineticmodels.emplace_back(
-            Teuchos::rcp(new CondCompBundle("NoFlux", noflux, INPAR::SSI::kinetics_noflux)));
+        kineticmodels.emplace_back(Teuchos::rcp(
+            new CondCompBundle("NoInterfaceFlux", noflux, INPAR::S2I::kinetics_nointerfaceflux)));
       }
     }
 
     surfmanifoldkinetics->AddComponent(
         Teuchos::rcp(new SeparatorConditionComponent("KineticModel")));
     surfmanifoldkinetics->AddComponent(
-        Teuchos::rcp(new CondCompBundleSelector("KineticModel", kineticmodels)));
+        Teuchos::rcp(new CondCompBundleSelector("kinetic model", kineticmodels)));
   }
 
   condlist.emplace_back(surfmanifoldkinetics);

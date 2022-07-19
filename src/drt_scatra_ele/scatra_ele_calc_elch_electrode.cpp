@@ -9,7 +9,6 @@ within isothermal electrodes
 */
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_calc_elch_electrode.H"
-#include "scatra_ele_parameter_elch_manifold.H"
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_utils_elch_electrode.H"
@@ -42,8 +41,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::Instance(
 template <DRT::Element::DiscretizationType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::ScaTraEleCalcElchElectrode(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : myelch::ScaTraEleCalcElch(numdofpernode, numscal, disname),
-      elchmanifoldparams_(DRT::ELEMENTS::ScaTraEleParameterElchManifold::Instance(disname))
+    : myelch::ScaTraEleCalcElch(numdofpernode, numscal, disname)
 {
   // replace elch diffusion manager by diffusion manager for electrodes
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerElchElectrode(my::numscal_));

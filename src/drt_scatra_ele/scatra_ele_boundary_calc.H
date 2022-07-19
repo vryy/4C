@@ -442,6 +442,14 @@ namespace DRT
           Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseVector& elevec1_epetra,
           const double scalar);
 
+      //! evaluate integral of all positive fluxes on s2i condition
+      virtual void CalcS2ICouplingFlux(const DRT::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          Epetra_SerialDenseVector& scalars)
+      {
+        dserror("Evaluation of coupling flux not implemented in base class.");
+      }
+
       //! pointer to parameter list for time integration
       DRT::ELEMENTS::ScaTraEleParameterTimInt* scatraparamstimint_;
       //! pointer to parameter list

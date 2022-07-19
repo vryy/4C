@@ -62,12 +62,6 @@ namespace INPAR
       elch
     };
 
-    enum ManifoldCouplingKinetics
-    {
-      kinetics_constantinterfaceresistance,
-      kinetics_noflux
-    };
-
     /// set the ssi parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

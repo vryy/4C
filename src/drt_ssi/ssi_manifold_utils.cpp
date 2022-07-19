@@ -43,13 +43,12 @@ SSI::ManifoldScaTraCoupling::ManifoldScaTraCoupling(Teuchos::RCP<DRT::Discretiza
     : condition_kinetics_(condition_kinetics),
       condition_manifold_(condition_manifold),
       coupling_adapter_(Teuchos::rcp(new ADAPTER::Coupling())),
-      evaluate_master_side_(
-          !(DRT::UTILS::HaveSameNodes(condition_manifold, condition_kinetics, false))),
       manifold_conditionID_(condition_manifold->GetInt("ConditionID")),
+      kinetics_conditionID_(condition_kinetics->GetInt("ConditionID")),
       manifold_map_extractor_(Teuchos::null),
       scatra_map_extractor_(Teuchos::null),
       size_matrix_graph_(),
-      slave_converter_(Teuchos::null)
+      master_converter_(Teuchos::null)
 {
   std::vector<int> inodegidvec_manifold;
   DRT::UTILS::AddOwnedNodeGIDVector(
@@ -60,7 +59,7 @@ SSI::ManifoldScaTraCoupling::ManifoldScaTraCoupling(Teuchos::RCP<DRT::Discretiza
 
   coupling_adapter_->SetupCoupling(*scatradis, *manifolddis, inodegidvec_scatra,
       inodegidvec_manifold, ndof_per_node, true, 1.0e-8);
-  slave_converter_ = Teuchos::rcp(new ADAPTER::CouplingSlaveConverter(*coupling_adapter_));
+  master_converter_ = Teuchos::rcp(new ADAPTER::CouplingMasterConverter(*coupling_adapter_));
 
   scatra_map_extractor_ = Teuchos::rcp(
       new LINALG::MapExtractor(*scatradis->DofRowMap(), coupling_adapter_->MasterDofMap(), true));
@@ -99,7 +98,7 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
       block_map_scatra_manifold_(ssi_mono.BlockMapScaTraManifold()),
       block_map_structure_(ssi_mono.BlockMapStructure()),
       do_output_(DRT::INPUT::IntegralValue<bool>(
-          DRT::Problem::Instance()->SSIControlParams().sublist("MANIFOLD"), "ADD_MANIFOLD")),
+          DRT::Problem::Instance()->SSIControlParams().sublist("MANIFOLD"), "OUTPUT_INFLOW")),
       full_map_manifold_(ssi_mono.MapsSubProblems()->Map(
           UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold))),
       full_map_scatra_(ssi_mono.MapsSubProblems()->Map(
@@ -120,7 +119,7 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
       systemmatrix_manifold_(Teuchos::null),
       systemmatrix_scatra_(Teuchos::null)
 {
-  // safety check befor setup of coupling
+  // safety check before setup of coupling
   if (ssi_mono.ScaTraField()->NumDofPerNode() != ssi_mono.ScaTraManifold()->NumDofPerNode())
     dserror("Number of dofs per node of scatra field and scatra manifold field must be equal");
 
@@ -377,9 +376,9 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::Evaluate()
     rhs_manifold_cond_->PutScalar(0.0);
     rhs_scatra_cond_->PutScalar(0.0);
 
-    EvaluateManifoldSide(scatra_manifold_coupling);
+    EvaluateBulkSide(scatra_manifold_coupling);
 
-    CopyScaTraManifoldScaTraMasterSide(scatra_manifold_coupling);
+    CopyScaTraScaTraManifoldSide(scatra_manifold_coupling);
 
     // This is needed because the graph of the matrices could change from step to step in case we
     // have zero flux (and then zero entries in the matrices)
@@ -391,74 +390,78 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::Evaluate()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateManifoldSide(
+void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateBulkSide(
     Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling)
 {
   // First: Set parameters to elements
   PreEvaluate(scatra_manifold_coupling);
 
+  scatra_->ScaTraField()->Discretization()->ClearState();
+  scatra_->ScaTraField()->Discretization()->SetState("phinp", scatra_->ScaTraField()->Phinp());
+
   // Second: Evaluate condition
   {
-    // manifold-scatra coupling matrix evaluated on manifold side
-    auto matrix_manifold_scatra_manifold_side =
-        Teuchos::rcp(new LINALG::SparseMatrix(*full_map_manifold_, 27, false, true));
+    // manifold-scatra coupling matrix evaluated on scatra side
+    auto matrix_scatra_manifold_cond_on_scatra_side =
+        Teuchos::rcp(new LINALG::SparseMatrix(*full_map_scatra_, 27, false, true));
 
     Teuchos::ParameterList condparams;
-
-    condparams.set<int>("action", SCATRA::calc_scatra_manifold_flux);
-
+    condparams.set<int>("action", SCATRA::bd_calc_s2icoupling);
     condparams.set<int>("ndsdisp", 1);
+    condparams.set<int>("evaluate_manifold_coupling", 1);
 
-    scatra_manifold_->ScaTraField()->Discretization()->ClearState();
-
-    scatra_manifold_->ScaTraField()->AddTimeIntegrationSpecificVectors();
+    scatra_->ScaTraField()->AddTimeIntegrationSpecificVectors();
 
     // Evaluation of RHS and scatra-manifold coupling matrices
     {
       condparams.set<int>(
           "differentiationtype", static_cast<int>(SCATRA::DifferentiationType::elch));
 
-      DRT::AssembleStrategy strategymanifold(0, 0, systemmatrix_manifold_cond_,
-          matrix_manifold_scatra_manifold_side, rhs_manifold_cond_, Teuchos::null, Teuchos::null);
+      // dscatra_dscatra, dscatra_dmanifold (on scatra side)
+      DRT::AssembleStrategy strategyscatra(0, 0, systemmatrix_scatra_cond_,
+          matrix_scatra_manifold_cond_on_scatra_side, rhs_scatra_cond_, Teuchos::null,
+          Teuchos::null);
 
-      scatra_manifold_->ScaTraField()->Discretization()->EvaluateCondition(condparams,
-          strategymanifold, "SSISurfaceManifold", scatra_manifold_coupling->ManifoldConditionID());
+      scatra_->ScaTraField()->Discretization()->EvaluateCondition(condparams, strategyscatra,
+          "SSISurfaceManifoldKinetics", scatra_manifold_coupling->KineticsConditionID());
 
-      systemmatrix_manifold_cond_->Complete();
-      matrix_manifold_scatra_manifold_side->Complete();
+      systemmatrix_scatra_cond_->Complete();
+      matrix_scatra_manifold_cond_on_scatra_side->Complete();
 
-      // column dofs are so far on manifold dis. They are transformed to scatra dis
-      LINALG::MatrixLogicalSplitAndTransform()(*matrix_manifold_scatra_manifold_side,
-          *full_map_manifold_, *full_map_scatra_, 1.0, nullptr,
-          &*scatra_manifold_coupling->SlaveConverter(), *matrix_manifold_scatra_cond_, true, true);
-
-      matrix_manifold_scatra_cond_->Complete(*full_map_scatra_, *full_map_manifold_);
+      // dscatra_dmanifold (on scatra side) -> dscatra_dmanifold
+      LINALG::MatrixLogicalSplitAndTransform()(*matrix_scatra_manifold_cond_on_scatra_side,
+          *full_map_scatra_, *full_map_scatra_, 1.0, nullptr,
+          &*scatra_manifold_coupling->MasterConverter(), *matrix_scatra_manifold_cond_, true, true);
+      matrix_scatra_manifold_cond_->Complete(*full_map_manifold_, *full_map_scatra_);
     }
 
     // Evaluation of linearization w.r.t. displacement
     {
+      condparams.set<int>("action", SCATRA::bd_calc_s2icoupling_od);
+
       condparams.set<int>(
           "differentiationtype", static_cast<int>(SCATRA::DifferentiationType::disp));
 
-      auto flux_manifold_scatra_md_cond_slave_side_disp_evaluate =
-          Teuchos::rcp(new LINALG::SparseMatrix(*full_map_manifold_, 27, false, true));
+      // dscatra_dstructure
+      auto matrix_scatra_structure_cond_slave_side_disp_evaluate =
+          Teuchos::rcp(new LINALG::SparseMatrix(*full_map_scatra_, 27, false, true));
 
-      DRT::AssembleStrategy strategymanifold(0, 1,
-          flux_manifold_scatra_md_cond_slave_side_disp_evaluate, Teuchos::null, Teuchos::null,
+      DRT::AssembleStrategy strategyscatra(0, 1,
+          matrix_scatra_structure_cond_slave_side_disp_evaluate, Teuchos::null, Teuchos::null,
           Teuchos::null, Teuchos::null);
 
-      scatra_manifold_->ScaTraField()->Discretization()->EvaluateCondition(condparams,
-          strategymanifold, "SSISurfaceManifold", scatra_manifold_coupling->ManifoldConditionID());
+      scatra_->ScaTraField()->Discretization()->EvaluateCondition(condparams, strategyscatra,
+          "SSISurfaceManifoldKinetics", scatra_manifold_coupling->KineticsConditionID());
 
       scatra_manifold_->ScaTraField()->Discretization()->ClearState();
 
-      flux_manifold_scatra_md_cond_slave_side_disp_evaluate->Complete(
-          *full_map_structure_, *full_map_manifold_);
+      matrix_scatra_structure_cond_slave_side_disp_evaluate->Complete(
+          *full_map_structure_, *full_map_scatra_);
 
       // "slave side" from manifold and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed
-      auto flux_manifold_scatra_md_cond_slave_side_disp =
-          Teuchos::rcp(new LINALG::SparseMatrix(*full_map_manifold_, 27, false, true));
+      auto matrix_scatra_structure_cond_slave_side_disp =
+          Teuchos::rcp(new LINALG::SparseMatrix(*full_map_scatra_, 27, false, true));
       for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
       {
         auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
@@ -470,16 +473,16 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateManifoldSide(
         auto slave_map = slave_slave_transformation->SlaveDofMap();
 
         LINALG::MatrixLogicalSplitAndTransform()(
-            *flux_manifold_scatra_md_cond_slave_side_disp_evaluate, *full_map_manifold_, *slave_map,
-            1.0, nullptr, &slave_slave_converter, *flux_manifold_scatra_md_cond_slave_side_disp,
+            *matrix_scatra_structure_cond_slave_side_disp_evaluate, *full_map_scatra_, *slave_map,
+            1.0, nullptr, &slave_slave_converter, *matrix_scatra_structure_cond_slave_side_disp,
             true, true);
       }
-      flux_manifold_scatra_md_cond_slave_side_disp->Complete(
-          *full_map_structure_, *full_map_manifold_);
+      matrix_scatra_structure_cond_slave_side_disp->Complete(
+          *full_map_structure_, *full_map_scatra_);
 
       // Add slave side disp. contributions
-      matrix_manifold_structure_cond_->Add(
-          *flux_manifold_scatra_md_cond_slave_side_disp, false, 1.0, 0.0);
+      matrix_scatra_structure_cond_->Add(
+          *matrix_scatra_structure_cond_slave_side_disp, false, 1.0, 0.0);
 
       // Add master side disp. contributions
       for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
@@ -488,52 +491,52 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateManifoldSide(
         auto converter = meshtying->SlaveSideConverter();
 
         // assemble derivatives of x w.r.t. structure slave dofs
-        LINALG::MatrixLogicalSplitAndTransform()(*flux_manifold_scatra_md_cond_slave_side_disp,
-            flux_manifold_scatra_md_cond_slave_side_disp->RangeMap(), *cond_slave_dof_map, 1.0,
-            nullptr, &(*converter), *matrix_manifold_structure_cond_, true, true);
+        LINALG::MatrixLogicalSplitAndTransform()(*matrix_scatra_structure_cond_slave_side_disp,
+            matrix_scatra_structure_cond_slave_side_disp->RangeMap(), *cond_slave_dof_map, 1.0,
+            nullptr, &(*converter), *matrix_scatra_structure_cond_, true, true);
       }
-      matrix_manifold_structure_cond_->Complete(*full_map_structure_, *full_map_manifold_);
+      matrix_scatra_structure_cond_->Complete(*full_map_structure_, *full_map_scatra_);
     }
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::ScaTraManifoldScaTraFluxEvaluator::CopyScaTraManifoldScaTraMasterSide(
+void SSI::ScaTraManifoldScaTraFluxEvaluator::CopyScaTraScaTraManifoldSide(
     Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling)
 {
   {
-    auto flux_manifold_scatra_m_cond_extract =
-        scatra_manifold_coupling->ManifoldMapExtractor()->ExtractCondVector(rhs_manifold_cond_);
+    auto rhs_scatra_cond_extract =
+        scatra_manifold_coupling->ScaTraMapExtractor()->ExtractCondVector(rhs_scatra_cond_);
 
-    auto flux_manifold_domain_RHS_m_cond_to_s =
-        scatra_manifold_coupling->CouplingAdapter()->SlaveToMaster(
-            flux_manifold_scatra_m_cond_extract);
+    auto rhs_manifold_cond_extract =
+        scatra_manifold_coupling->CouplingAdapter()->MasterToSlave(rhs_scatra_cond_extract);
 
-    scatra_manifold_coupling->ScaTraMapExtractor()->AddCondVector(
-        flux_manifold_domain_RHS_m_cond_to_s, rhs_scatra_cond_);
-    rhs_scatra_cond_->Scale(-1.0);
+    scatra_manifold_coupling->ManifoldMapExtractor()->AddCondVector(
+        rhs_manifold_cond_extract, rhs_manifold_cond_);
+    rhs_manifold_cond_->Scale(-1.0);
   }
 
-  // dscatra_dmanifold: manifold rows are transformed to scatra side (flux is scaled by -1.0)
-  LINALG::MatrixLogicalSplitAndTransform()(*systemmatrix_manifold_cond_, *full_map_scatra_,
-      *full_map_manifold_, -1.0, &*scatra_manifold_coupling->SlaveConverter(), nullptr,
-      *matrix_scatra_manifold_cond_, true, true);
+  // dmanifold_dscatra: scatra rows are transformed to manifold side (flux is scaled by -1.0)
+  LINALG::MatrixLogicalSplitAndTransform()(*systemmatrix_scatra_cond_, *full_map_scatra_,
+      *full_map_scatra_, -1.0, &*scatra_manifold_coupling->MasterConverter(), nullptr,
+      *matrix_manifold_scatra_cond_, true, true);
 
-  // dscatra_dscatra: manifold rows are transformed to scatra side (flux is scaled by -1.0)
-  LINALG::MatrixLogicalSplitAndTransform()(*matrix_manifold_scatra_cond_, *full_map_scatra_,
-      *full_map_scatra_, -1.0, &*scatra_manifold_coupling->SlaveConverter(), nullptr,
-      *systemmatrix_scatra_cond_, true, true);
+  matrix_manifold_scatra_cond_->Complete(*full_map_scatra_, *full_map_manifold_);
 
-  matrix_scatra_manifold_cond_->Complete(*full_map_manifold_, *full_map_scatra_);
-  systemmatrix_scatra_cond_->Complete();
+  // dmanifold_dmanifold: scatra rows are transformed to manifold side (flux is scaled by -1.0)
+  LINALG::MatrixLogicalSplitAndTransform()(*matrix_scatra_manifold_cond_, *full_map_scatra_,
+      *full_map_manifold_, -1.0, &*scatra_manifold_coupling->MasterConverter(), nullptr,
+      *systemmatrix_manifold_cond_, true, true);
 
-  // dscatra_dstructure: manifold rows are transformed to scatra side (flux is scaled by -1.0)
-  LINALG::MatrixLogicalSplitAndTransform()(*matrix_manifold_structure_cond_, *full_map_scatra_,
-      *full_map_structure_, -1.0, &*scatra_manifold_coupling->SlaveConverter(), nullptr,
-      *matrix_scatra_structure_cond_, true, true);
+  systemmatrix_manifold_cond_->Complete();
 
-  matrix_scatra_structure_cond_->Complete(*full_map_structure_, *full_map_scatra_);
+  // dmanifold_dstructure: scatra rows are transformed to manifold side (flux is scaled by -1.0)
+  LINALG::MatrixLogicalSplitAndTransform()(*matrix_scatra_structure_cond_, *full_map_scatra_,
+      *full_map_structure_, -1.0, &*scatra_manifold_coupling->MasterConverter(), nullptr,
+      *matrix_manifold_structure_cond_, true, true);
+
+  matrix_manifold_structure_cond_->Complete(*full_map_structure_, *full_map_manifold_);
 }
 
 /*----------------------------------------------------------------------*
@@ -550,6 +553,11 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::AddConditionContribution()
     {
       auto blockmaps_manifold = scatra_manifold_->ScaTraField()->BlockMaps();
 
+      /*
+       * m: manifold
+       * s: scatra
+       * d: structure/displacements
+       */
       auto flux_manifold_scatra_mm_block =
           systemmatrix_manifold_cond_->Split<LINALG::DefaultBlockMatrixStrategy>(
               blockmaps_manifold, blockmaps_manifold);
@@ -611,15 +619,14 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldInflow()
   inflow_.clear();
   domainintegral_.clear();
 
-  scatra_manifold_->ScaTraField()->Discretization()->SetState(
-      "phinp", scatra_manifold_->ScaTraField()->Phinp());
+  scatra_->ScaTraField()->Discretization()->SetState("phinp", scatra_->ScaTraField()->Phinp());
 
   for (const auto& scatra_manifold_coupling : scatra_manifold_couplings_)
   {
-    const int manifoldID = scatra_manifold_coupling->ManifoldConditionID();
+    const int kineticsID = scatra_manifold_coupling->KineticsConditionID();
 
-    std::vector<double> zero_scalar_vector(scatra_manifold_->ScaTraField()->NumDofPerNode(), 0.0);
-    inflow_.insert(std::make_pair(manifoldID, zero_scalar_vector));
+    std::vector<double> zero_scalar_vector(scatra_->ScaTraField()->NumDofPerNode(), 0.0);
+    inflow_.insert(std::make_pair(kineticsID, zero_scalar_vector));
 
     // First: set parameters to elements
     PreEvaluate(scatra_manifold_coupling);
@@ -630,7 +637,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldInflow()
     // Third: evaluate domain integral
     EvaluateScaTraManifoldDomainIntegral(scatra_manifold_coupling);
   }
-  scatra_manifold_->ScaTraField()->Discretization()->ClearState();
+  scatra_->ScaTraField()->Discretization()->ClearState();
 }
 
 /*----------------------------------------------------------------------*
@@ -638,10 +645,10 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldInflow()
 void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldDomainIntegral(
     Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling)
 {
-  const int manifoldID = scatra_manifold_coupling->ManifoldConditionID();
+  const int kineticsID = scatra_manifold_coupling->KineticsConditionID();
 
   // integrate only if not done so far
-  if (domainintegral_.find(manifoldID) == domainintegral_.end())
+  if (domainintegral_.find(kineticsID) == domainintegral_.end())
   {
     Teuchos::ParameterList condparams;
 
@@ -652,10 +659,10 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldDomainIntegra
     // integrated domain of this condition
     auto domainintegral_cond = Teuchos::rcp(new Epetra_SerialDenseVector(1));
 
-    scatra_manifold_->ScaTraField()->Discretization()->EvaluateScalars(
-        condparams, domainintegral_cond, "SSISurfaceManifold", manifoldID);
+    scatra_->ScaTraField()->Discretization()->EvaluateScalars(
+        condparams, domainintegral_cond, "SSISurfaceManifold", kineticsID);
 
-    domainintegral_.insert(std::make_pair(manifoldID, domainintegral_cond->Values()[0]));
+    domainintegral_.insert(std::make_pair(kineticsID, domainintegral_cond->Values()[0]));
   }
 }
 
@@ -664,23 +671,27 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldDomainIntegra
 void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldInflowIntegral(
     Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling)
 {
-  const int manifoldID = scatra_manifold_coupling->ManifoldConditionID();
+  const int kineticsID = scatra_manifold_coupling->KineticsConditionID();
 
   Teuchos::ParameterList condparams;
 
-  condparams.set<int>("action", SCATRA::calc_manifold_inflow);
+  condparams.set<int>("action", SCATRA::bd_calc_s2icoupling_flux);
 
   condparams.set<int>("ndsdisp", 1);
 
+  condparams.set<int>("evaluate_manifold_coupling", 1);
+
   // integrated scalars of this condition
   auto inflow_cond =
-      Teuchos::rcp(new Epetra_SerialDenseVector(scatra_manifold_->ScaTraField()->NumDofPerNode()));
+      Teuchos::rcp(new Epetra_SerialDenseVector(scatra_->ScaTraField()->NumDofPerNode()));
 
-  scatra_manifold_->ScaTraField()->Discretization()->EvaluateScalars(
-      condparams, inflow_cond, "SSISurfaceManifold", manifoldID);
+  scatra_->ScaTraField()->Discretization()->EvaluateScalars(
+      condparams, inflow_cond, "SSISurfaceManifold", kineticsID);
+
+  inflow_cond->Print(std::cout << std::scientific << std::setprecision(16));
 
   for (int i = 0; i < inflow_cond->Length(); ++i)
-    inflow_.at(scatra_manifold_coupling->ManifoldConditionID()).at(i) += inflow_cond->Values()[i];
+    inflow_.at(kineticsID).at(i) += inflow_cond->Values()[i];
 }
 
 /*----------------------------------------------------------------------*
@@ -690,34 +701,52 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::PreEvaluate(
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", SCATRA::set_elch_scatra_manifold_parameter);
+  eleparams.set<int>("action", SCATRA::set_scatra_ele_boundary_parameter);
 
-  eleparams.set<bool>("evaluate_master_side", scatra_manifold_coupling->EvaluateMasterSide());
+  eleparams.set<DRT::Condition::ConditionType>(
+      "condition type", DRT::Condition::ConditionType::S2IKinetics);
 
-  eleparams.set<int>(
-      "kinetic_model", scatra_manifold_coupling->ConditionKinetics()->GetInt("KineticModel"));
-
-  if (scatra_manifold_coupling->ConditionKinetics()->GetInt("KineticModel") ==
-      INPAR::SSI::kinetics_constantinterfaceresistance)
+  switch (scatra_manifold_coupling->ConditionKinetics()->GetInt("kinetic model"))
   {
-    eleparams.set<int>(
-        "num_electrons", scatra_manifold_coupling->ConditionKinetics()->GetInt("e-"));
-    eleparams.set<double>(
-        "resistance", scatra_manifold_coupling->ConditionKinetics()->GetDouble("resistance"));
-
-    const auto onoff =
-        *scatra_manifold_coupling->ConditionKinetics()->Get<std::vector<int>>("ONOFF");
-
-    if (onoff.size() != 2)
-      dserror("exactly two dofs are required for this manifold interface law.");
-
-    if (onoff[0] != 0 and onoff[0] != 1) dserror("'conc_flux' must be '0' or '1'");
-    eleparams.set<bool>("conc_flux", static_cast<bool>(onoff[0]));
-
-    if (onoff[1] != 0 and onoff[1] != 1) dserror("'pot_flux' must be '0' or '1'");
-    eleparams.set<bool>("pot_flux", static_cast<bool>(onoff[1]));
+    case INPAR::S2I::kinetics_constantinterfaceresistance:
+    {
+      eleparams.set<int>("kinetic model", INPAR::S2I::kinetics_constantinterfaceresistance);
+      eleparams.set<double>(
+          "resistance", scatra_manifold_coupling->ConditionKinetics()->GetDouble("resistance"));
+      eleparams.set<std::vector<int>*>("onoff",
+          scatra_manifold_coupling->ConditionKinetics()->GetMutable<std::vector<int>>("onoff"));
+      eleparams.set<int>(
+          "numelectrons", scatra_manifold_coupling->ConditionKinetics()->GetInt("e-"));
+      break;
+    }
+    case INPAR::S2I::kinetics_butlervolmerreduced:
+    {
+      eleparams.set<int>("kinetic model", INPAR::S2I::kinetics_butlervolmerreduced);
+      eleparams.set<int>(
+          "numscal", scatra_manifold_coupling->ConditionKinetics()->GetInt("numscal"));
+      eleparams.set<std::vector<int>*>("stoichiometries",
+          scatra_manifold_coupling->ConditionKinetics()->GetMutable<std::vector<int>>(
+              "stoichiometries"));
+      eleparams.set<int>(
+          "numelectrons", scatra_manifold_coupling->ConditionKinetics()->GetInt("e-"));
+      eleparams.set<double>("k_r", scatra_manifold_coupling->ConditionKinetics()->GetDouble("k_r"));
+      eleparams.set<double>(
+          "alpha_a", scatra_manifold_coupling->ConditionKinetics()->GetDouble("alpha_a"));
+      eleparams.set<double>(
+          "alpha_c", scatra_manifold_coupling->ConditionKinetics()->GetDouble("alpha_c"));
+      break;
+    }
+    case INPAR::S2I::kinetics_nointerfaceflux:
+    {
+      eleparams.set<int>("kinetic model", INPAR::S2I::kinetics_nointerfaceflux);
+      break;
+    }
+    default:
+    {
+      dserror("Unknown kinetics type for manifold couplign");
+      break;
+    }
   }
-
   scatra_manifold_->ScaTraField()->Discretization()->Evaluate(
       eleparams, Teuchos::null, Teuchos::null);
 }

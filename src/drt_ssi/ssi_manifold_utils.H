@@ -22,6 +22,7 @@ namespace ADAPTER
 {
   class Coupling;
   class CouplingSlaveConverter;
+  class CouplingMasterConverter;
   class ScaTraBaseAlgorithm;
 }  // namespace ADAPTER
 
@@ -82,11 +83,14 @@ namespace SSI
     //! manifold condition
     DRT::Condition* ConditionManifold() const { return condition_manifold_; }
 
-    //! coupling adapter between manifold (master) and scatra (slave)
+    //! coupling adapter between manifold (slave) and scatra (master)
     Teuchos::RCP<ADAPTER::Coupling> CouplingAdapter() const { return coupling_adapter_; }
 
     //! condition ID of manifold condition
     int ManifoldConditionID() const { return manifold_conditionID_; }
+
+    //! condition ID of kinetics condition
+    int KineticsConditionID() const { return kinetics_conditionID_; }
 
     //! Map exctractor for dofs in this manifold condition
     Teuchos::RCP<LINALG::MapExtractor> ManifoldMapExtractor() const
@@ -97,14 +101,11 @@ namespace SSI
     //! Map exctractor for dofs in this kinetics condition
     Teuchos::RCP<LINALG::MapExtractor> ScaTraMapExtractor() const { return scatra_map_extractor_; }
 
-    //! Slave converter for scatra - manifold coupling
-    Teuchos::RCP<ADAPTER::CouplingSlaveConverter> SlaveConverter() const
+    //! from master to slave side
+    Teuchos::RCP<ADAPTER::CouplingMasterConverter> MasterConverter() const
     {
-      return slave_converter_;
+      return master_converter_;
     }
-
-    //! Evaluate coupling on slave side of scatra-scatra interface (false) or on master side (true)
-    bool EvaluateMasterSide() const { return evaluate_master_side_; }
 
    private:
     //! Kinetics condition on scatra dis
@@ -116,11 +117,11 @@ namespace SSI
     //! coupling adapter between manifold (slave) and scatra (master)
     Teuchos::RCP<ADAPTER::Coupling> coupling_adapter_;
 
-    //! Evaluate coupling on slave side of scatra-scatra interface (false) or on master side (true)
-    const bool evaluate_master_side_;
-
     //! condition ID of manifold condition
     const int manifold_conditionID_;
+
+    //! condition ID of kinetics condition
+    const int kinetics_conditionID_;
 
     //! Map exctractor for dofs in this manifold condition
     Teuchos::RCP<LINALG::MapExtractor> manifold_map_extractor_;
@@ -131,8 +132,8 @@ namespace SSI
     //! map with the size of the graph of each matrix
     std::map<BlockMatrixType, int> size_matrix_graph_;
 
-    //! Slave converter for scatra - manifold coupling
-    Teuchos::RCP<ADAPTER::CouplingSlaveConverter> slave_converter_;
+    //! Master converter for scatra - manifold coupling
+    Teuchos::RCP<ADAPTER::CouplingMasterConverter> master_converter_;
   };
 
   /*---------------------------------------------------------------------------------*
@@ -198,12 +199,12 @@ namespace SSI
     //! Add to global matrices and rhs
     void AddConditionContribution();
 
-    //! Copy and scale (-1.0) to scatra side
-    void CopyScaTraManifoldScaTraMasterSide(
+    //! Copy and scale (-1.0) to manifold side
+    void CopyScaTraScaTraManifoldSide(
         Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
-    //! Evaluate flux and linearizations on manifold side
-    void EvaluateManifoldSide(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
+    //! Evaluate flux and linearizations on bulk side
+    void EvaluateBulkSide(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! Evaluate integral on scatra manifold over 1.0
     void EvaluateScaTraManifoldDomainIntegral(

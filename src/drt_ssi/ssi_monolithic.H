@@ -110,6 +110,8 @@ namespace SSI
 
     void ReadRestartfromTime(double restarttime) override;
 
+    void SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> phi) override;
+
     void Setup() override;
 
     void SetupSystem() override;

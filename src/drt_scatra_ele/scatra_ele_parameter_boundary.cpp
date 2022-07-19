@@ -40,6 +40,7 @@ DRT::ELEMENTS::ScaTraEleParameterBoundary::ScaTraEleParameterBoundary(const std:
       molarmass_(-1.0),
       numelectrons_(0),
       numscal_(-1),
+      onoff_(new std::vector<bool>(2, false)),
       peltier_(0.0),
       permeabilities_(nullptr),
       regularizationparameter_(-1.0),
@@ -78,6 +79,8 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
         case INPAR::S2I::kinetics_constantinterfaceresistance:
         {
           SetResistance(parameters);
+          SetNumElectrons(parameters);
+          SetOnOff(parameters);
           break;
         }
 
@@ -319,4 +322,16 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetThermoPerm(Teuchos::Parameter
 {
   thermoperm_ = parameters.get<double>("thermoperm", std::numeric_limits<double>::infinity());
   if (thermoperm_ <= 0.0) dserror("Thermo permeability must be posititve!");
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetOnOff(Teuchos::ParameterList& parameters)
+{
+  std::vector<int>* onoff_int = parameters.get<std::vector<int>*>("onoff");
+  if (onoff_int == nullptr) dserror("Cannot get vector 'onoff' from parameter list");
+  if (onoff_int->size() != 2) dserror("Only two dofs are supported");
+
+  for (unsigned i = 0; i < onoff_int->size(); ++i)
+    (*onoff_)[i] = static_cast<bool>((*onoff_int)[i]);
 }

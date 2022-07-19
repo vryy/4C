@@ -2951,6 +2951,9 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
         case INPAR::S2I::kinetics_constantinterfaceresistance:
         {
           s2icouplingparameters.set<double>("resistance", s2ikinetics_cond.GetDouble("resistance"));
+          s2icouplingparameters.set<std::vector<int>*>(
+              "onoff", s2ikinetics_cond.GetMutable<std::vector<int>>("onoff"));
+          s2icouplingparameters.set<int>("numelectrons", s2ikinetics_cond.GetInt("e-"));
           break;
         }
 
