@@ -226,7 +226,9 @@ rather than having to look at the entire change set at once.
 #### Feedback, Review, and Approval
 
 At this point you'll enter into a stage where you and various BACI developers will iterate back and forth until your changes are in an acceptable state and can be merged in.
-If you need to make changes to your merge request, make additional commits on your `<branchName>` branch and push them up to the remote. If the changes are minor changes (typos, renames, etc.) compared to the original commits, please add them to the respective commits, to keep the commit log meaningful. This can be achieved with `git rebase` and `git commit --amend`. Make sure you don't delete your remote feature branch before your merge request has been merged.
+If you need to make changes to your merge request, make additional commits on your `<branchName>` branch and push them up to the remote.
+If the changes are minor changes (typos, renames, etc.) compared to the original commits, you can add them to the respective commits, to keep the commit log meaningful.
+Make sure you don't delete your remote feature branch before your merge request has been merged.
 
 > Independent of your level of expertise, experience with BACI, employment status, or whatsoever, you are encouraged to actively participate in this process _in the best interest of collaborative code development_. **Every contribution is valuable!**
 
@@ -255,7 +257,8 @@ To merge changes into `master`, a feature branch needs to satisfy the following 
 * All tests are passing.
 * Approval of the changes by at least one respective code owner (cf. `<path/to/baci-source-code>/.gitlab/CODEOWNERS.md`)
 
-Before the merge is performed, please rebase your branch into a final clean state. For instance, if you added small
+Before the merge is performed, consider a rebase of your branch into a final clean state.
+For instance, if you added small
 modifications during review these should be squashed into the appropriate commits, as the exact history of these changes is not of interest in the long run and pollutes the log.
 
 When these conditions are met,
