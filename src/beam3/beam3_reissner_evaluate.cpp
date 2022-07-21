@@ -892,7 +892,6 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
   /*************************** update/compute quantities valid for entire element
    ***********************
    *****************************************************************************************************/
-
   // setup constitutive matrices
   GetTemplatedBeamMaterial<T>().ComputeConstitutiveParameter(CN, CM);
 
@@ -961,8 +960,8 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     // compute material strains Gamma and Cur
     computeGamma<T>(r_s, Lambda, GammarefGP_[numgp], Gamma);
 
-    GetTemplatedBeamMaterial<T>().EvaluateForceContributionsToStress(stressN, CN, Gamma);
-    GetTemplatedBeamMaterial<T>().GetStiffnessMatrixOfForces(stiffness_contribution, CN);
+    GetTemplatedBeamMaterial<T>().EvaluateForceContributionsToStress(stressN, CN, Gamma, numgp);
+    GetTemplatedBeamMaterial<T>().GetStiffnessMatrixOfForces(stiffness_contribution, CN, numgp);
 
     pushforward<T>(Lambda, stressN, stiffness_contribution, stressn, cn);
 
@@ -1082,8 +1081,8 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
                             FADUTILS::CastToDouble(Cur(2)) * FADUTILS::CastToDouble(Cur(2)));
     if (Kmax > Kmax_) Kmax_ = Kmax;
 
-    GetTemplatedBeamMaterial<T>().EvaluateMomentContributionsToStress(stressM, CM, Cur);
-    GetTemplatedBeamMaterial<T>().GetStiffnessMatrixOfMoments(stiffness_contribution, CM);
+    GetTemplatedBeamMaterial<T>().EvaluateMomentContributionsToStress(stressM, CM, Cur, numgp);
+    GetTemplatedBeamMaterial<T>().GetStiffnessMatrixOfMoments(stiffness_contribution, CM, numgp);
 
     pushforward<T>(Lambda, stressM, stiffness_contribution, stressm, cm);
 

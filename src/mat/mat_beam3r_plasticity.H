@@ -128,6 +128,12 @@ namespace MAT
     //! construct the material object from given material parameters
     explicit BeamPlasticMaterial(MAT::PAR::BeamReissnerElastPlasticMaterialParams* params);
 
+    /**
+     * \brief Initialize and setup element specific variables
+     *
+     */
+    void Setup(int numgp_force, int numgp_moment) override;
+
     //! @name Packing and Unpacking
     //@{
 
@@ -177,7 +183,8 @@ namespace MAT
      *\param[in] Gamma strain
      */
     void EvaluateForceContributionsToStress(LINALG::Matrix<3, 1, T>& stressN,
-        const LINALG::Matrix<3, 3, T>& CN, const LINALG::Matrix<3, 1, T>& Gamma) override;
+        const LINALG::Matrix<3, 3, T>& CN, const LINALG::Matrix<3, 1, T>& Gamma,
+        const unsigned int gp) override;
 
     /*!
      * \brief Compute moment stress contributions
@@ -187,7 +194,8 @@ namespace MAT
      *\param[in] Cur curvature
      */
     void EvaluateMomentContributionsToStress(LINALG::Matrix<3, 1, T>& stressM,
-        const LINALG::Matrix<3, 3, T>& CM, const LINALG::Matrix<3, 1, T>& Cur) override;
+        const LINALG::Matrix<3, 3, T>& CM, const LINALG::Matrix<3, 1, T>& Cur,
+        const unsigned int gp) override;
 
     /** \brief return copy of this material object
      */
@@ -227,12 +235,12 @@ namespace MAT
     /** \brief compute stiffness matrix of moments for plastic regime
      */
     void GetStiffnessMatrixOfMoments(
-        LINALG::Matrix<3, 3, T>& stiffM, const LINALG::Matrix<3, 3, T>& C_M) override;
+        LINALG::Matrix<3, 3, T>& stiffM, const LINALG::Matrix<3, 3, T>& C_M, const int gp) override;
 
     /** \brief compute stiffness matrix of forces for plastic regime
      */
     void GetStiffnessMatrixOfForces(
-        LINALG::Matrix<3, 3, T>& stiffN, const LINALG::Matrix<3, 3, T>& C_N) override;
+        LINALG::Matrix<3, 3, T>& stiffN, const LINALG::Matrix<3, 3, T>& C_N, const int gp) override;
 
     /** \brief update the plastic strain and curvature vectors
      */
@@ -260,62 +268,64 @@ namespace MAT
 
     /** \brief returns current effective yield stress of forces depending on plastic deformation
      */
-    void GetEffectiveYieldStressN(T& eff_yieldN, T init_yieldN, T CN_0, T CN_eff_0) const;
+    void GetEffectiveYieldStressN(
+        T& eff_yieldN, T init_yieldN, T CN_0, T CN_eff_0, const unsigned int gp) const;
 
     /** \brief returns current effective yield stress of moments depending on plastic deformation
      */
-    void GetEffectiveYieldStressM(T& eff_yieldM, T init_yieldM, T CM_1, T CM_eff_1) const;
+    void GetEffectiveYieldStressM(
+        T& eff_yieldM, T init_yieldM, T CM_1, T CM_eff_1, const unsigned int gp) const;
 
    private:
     //! effective constitutive matrices forces
-    LINALG::Matrix<3, 3, T> cN_eff_{true};
+    std::vector<LINALG::Matrix<3, 3, T>> cN_eff_;
     //! effective constitutive matrices moments
-    LINALG::Matrix<3, 3, T> cM_eff_{true};
+    std::vector<LINALG::Matrix<3, 3, T>> cM_eff_;
 
     //! converged plastic strain vectors at GPs
-    LINALG::Matrix<3, 1, T> gammaplastconv_{true};
+    std::vector<LINALG::Matrix<3, 1, T>> gammaplastconv_;
     //! new plastic strain vectors at GPs
-    LINALG::Matrix<3, 1, T> gammaplastnew_{true};
+    std::vector<LINALG::Matrix<3, 1, T>> gammaplastnew_;
     //! accumulated plastic strain vectors at GPs
-    T gammaplastaccum_{0};
+    std::vector<T> gammaplastaccum_;
 
     //! converged plastic curvature vectors at GPs
-    LINALG::Matrix<3, 1, T> kappaplastconv_{true};
+    std::vector<LINALG::Matrix<3, 1, T>> kappaplastconv_;
     //! new plastic curvature vectors at GPs
-    LINALG::Matrix<3, 1, T> kappaplastnew_{true};
+    std::vector<LINALG::Matrix<3, 1, T>> kappaplastnew_;
     //! accumulated plastic curvature vectors at GPs
-    T kappaplastaccum_{0};
+    std::vector<T> kappaplastaccum_;
 
     //! effective yield force depending on accumulated plastic strain
-    T effyieldstressN_{0};
+    std::vector<T> effyieldstressN_;
     //! effective yield moment depending on accumulated plastic curvature
-    T effyieldstressM_{0};
+    std::vector<T> effyieldstressM_;
 
     //! norm of material plastic curvature increment
-    T deltaKappaplast_{0};
+    std::vector<T> deltaKappaplast_;
     //! norm of the moment vector
-    T normstressM_{0};
+    std::vector<T> normstressM_;
     //! fraction of the norm of the moment vector exceeding the current yield moment
-    T deltastressM_{0};
+    std::vector<T> deltastressM_;
 
-    //! copy of material curvature K (but first entry is 0 if torsional plasticity is turned off)
-    LINALG::Matrix<3, 1, T> kappa_{true};
     //! material elastic curvature
-    LINALG::Matrix<3, 1, T> kappaelast_{true};
+    std::vector<LINALG::Matrix<3, 1, T>> kappaelast_;
     /** copy of material elastic curvature needed to determine flow direction when computing the
      * stiffness matrix (first entry is 0 if torsional plasticity is turned off)
      */
-    LINALG::Matrix<3, 1, T> kappaelastflow_{true};
+    std::vector<LINALG::Matrix<3, 1, T>> kappaelastflow_;
     //! unit vector in the direction of the elastic curvature
-    LINALG::Matrix<3, 1, T> elastic_curvature_{true};
+    std::vector<LINALG::Matrix<3, 1, T>> elastic_curvature_;
     //! material plastic strain increment
-    LINALG::Matrix<3, 1, T> deltaGammaplast_{true};
+    std::vector<LINALG::Matrix<3, 1, T>> deltaGammaplast_;
     //! fraction of the stress exceeding the current yield force
-    LINALG::Matrix<3, 1, T> deltastressN_{true};
+    std::vector<LINALG::Matrix<3, 1, T>> deltastressN_;
 
     //! axial stress
-    T stressN_{0};
+    std::vector<T> stressN_;
 
+    unsigned int numgp_force_;
+    unsigned int numgp_moment_;
     //@}
   };
 }  // namespace MAT

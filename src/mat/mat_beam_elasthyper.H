@@ -65,6 +65,12 @@ namespace MAT
     /// construct the material object from given material parameters
     explicit BeamElastHyperMaterial(MAT::PAR::BeamElastHyperMaterialParameterGeneric* params);
 
+    /**
+     * \brief Initialize and setup element specific variables
+     *
+     */
+    void Setup(int numgp_force, int numgp_moment) override {}
+
     //! @name Packing and Unpacking
     //@{
 
@@ -155,7 +161,8 @@ namespace MAT
      *\param[in] Cur curvature
      */
     void EvaluateMomentContributionsToStress(LINALG::Matrix<3, 1, T>& stressM,
-        const LINALG::Matrix<3, 3, T>& CM, const LINALG::Matrix<3, 1, T>& Cur) override;
+        const LINALG::Matrix<3, 3, T>& CM, const LINALG::Matrix<3, 1, T>& Cur,
+        const unsigned int gp) override;
 
     /*
      * \brief Compute axial stress contributions
@@ -168,7 +175,8 @@ namespace MAT
      */
 
     void EvaluateForceContributionsToStress(LINALG::Matrix<3, 1, T>& stressN,
-        const LINALG::Matrix<3, 3, T>& CN, const LINALG::Matrix<3, 1, T>& Gamma) override;
+        const LINALG::Matrix<3, 3, T>& CN, const LINALG::Matrix<3, 1, T>& Gamma,
+        const unsigned int gp) override;
 
     /*
      * \brief Update material-dependent variables
@@ -211,11 +219,11 @@ namespace MAT
      */
     double GetInteractionRadius() const;
 
-    void GetStiffnessMatrixOfMoments(
-        LINALG::Matrix<3, 3, T>& stiffness_matrix, const LINALG::Matrix<3, 3, T>& C_M) override;
+    void GetStiffnessMatrixOfMoments(LINALG::Matrix<3, 3, T>& stiffness_matrix,
+        const LINALG::Matrix<3, 3, T>& C_M, const int gp) override;
 
-    void GetStiffnessMatrixOfForces(
-        LINALG::Matrix<3, 3, T>& stiffness_matrix, const LINALG::Matrix<3, 3, T>& C_N) override;
+    void GetStiffnessMatrixOfForces(LINALG::Matrix<3, 3, T>& stiffness_matrix,
+        const LINALG::Matrix<3, 3, T>& C_N, const int gp) override;
 
     void Update() override{};
 
