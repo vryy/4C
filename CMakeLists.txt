@@ -17,7 +17,7 @@ set(baci_VERSION_MAJOR 1)
 set(baci_VERSION_MINOR 0)
 
 # configure a header file to pass some of the CMake settings
-# # to the source code
+# to the source code
 configure_file(
   "${PROJECT_SOURCE_DIR}/src/headers/compile_settings.h.in"
   "${PROJECT_BINARY_DIR}/src/headers/compile_settings.h"
@@ -96,7 +96,7 @@ if(ENABLE_STACKTR)
   add_definitions("-DENABLE_STACKTR")
 endif(ENABLE_STACKTR)
 
-#   additional features
+# additional features
 
 if(${CMAKE_VERSION} VERSION_GREATER "3.10.0")
   set(HDF5_PREFER_PARALLEL true)
@@ -140,7 +140,7 @@ if(IGNORE_UNSTABLE_CUTTEST)
   add_definitions("-DIGNORE_UNSTABLE_CUTTEST")
 endif(IGNORE_UNSTABLE_CUTTEST)
 
-#   fancy stuff
+# fancy stuff
 
 option(COLOROUTPUT "use colored output to the terminal" OFF)
 if(COLOROUTPUT)
