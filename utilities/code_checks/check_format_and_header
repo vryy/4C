@@ -7,12 +7,13 @@
 # The test will fail if code is found that 
 #   is not compliant with the BACI clang format style,
 #   if our header requirements for input files and source files are violated, or
-#   if xml files are found that are not compliant with our xml format style.
+#   if xml or yaml files are found that are not compliant with our respective format style.
 #
 # In the event of failure, an error message is written to stdout and to the files
 #   "wrong_clang_format.txt",
-#   "wrong_format.txt", respectively
-#   "wrong_xml_format.txt".
+#   "wrong_format.txt",
+#   "wrong_xml_format.txt",
+#   "wrong_yaml_format.txt", respectively.
 #
 ############################################################
 
@@ -20,6 +21,7 @@
 [ -e wrong_format.txt ] && rm wrong_format.txt
 [ -e wrong_clang_format.txt ] && rm wrong_clang_format.txt
 [ -e wrong_xml_format.txt ] && rm wrong_xml_format.txt
+[ -e wrong_yaml_format.txt ] && rm wrong_yaml_format.txt
 
 # Load the python virtual environment, which provides clang-format.
 source ./utilities/baci-python-venv/bin/activate
@@ -54,6 +56,7 @@ fi
 ### Style Format check #########################################
 #   1) Execute clang-format with style file settings (taken from https://github.com/sheredom/git-hooks) 
 #   2) Execute xmlformat without overwrite and the options declared in bacixmlformat
+#   3) Execute yamlfmt without overwrite and the options declared in baciyamlformat
 
 # set the field separator to new line
 IFS=$'\n'
@@ -92,8 +95,10 @@ then
     uncompliant_xml_files+="$(pwd)/${line}\n"
     fi
 fi
+# 3) check if the file is a python file
+# 4) check if the file is a yaml file
 
-# check if the file is a python file
+# 3) check if the file is a python file
 if [[ $line == *.py ]]
 then
     # Check if black would format the file
@@ -103,6 +108,16 @@ then
     fi
 fi
 
+
+# 4) check if the file is a yaml file
+if [[ $line == *.yaml || $line == *.yml ]]
+then
+    # Check if yamlfmt would format the file by calling baciyamlformat without overwrite
+    if [[ $(diff -u <($(pwd)/utilities/baciyamlformat --nooverwrite $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
+    then
+    uncompliant_yaml_files+="$(pwd)/${line}\n"
+    fi
+fi
 done
 
 # write uncompliant c, cpp or cmake files to txt file
@@ -121,8 +136,16 @@ echo "Failed. Non-compliant files have been reported in wrong_xml_format.txt."
 cat wrong_xml_format.txt
 fi
 
+# write uncompliant yaml files to txt file
+if [ ! -z "$uncompliant_yaml_files" ]
+then
+(printf "$uncompliant_yaml_files")>>wrong_yaml_format.txt
+echo "Failed. Non-compliant files have been reported in wrong_yaml_format.txt."
+cat wrong_yaml_format.txt
+fi
+
 # exit if there are any uncompliant files
-if [[ ! -z "$uncompliant_files" || ! -z "$uncompliant_xml_files" ]]
+if [[ ! -z "$uncompliant_files" || ! -z "$uncompliant_xml_files" || ! -z "$uncompliant_yaml_files" ]]
 then
 exit 1
 fi

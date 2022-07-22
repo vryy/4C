@@ -5,8 +5,8 @@
 # This pre - commit hook will be executed by Git before every new commit and consists of the following stages:
 #
 # Stage 1: Style format check
-# In the version at hand, clang-format and xmlformat will only write out non-compliant files to the shell output and will not perfom any formatting automatically
-# In the case that the script detects files that are not compliant with the current clang-format/xmlformat BACI style, the commit will be rejected (script exits 1)
+# In the version at hand, clang-format, xmlformat and yamlfmt will only write out non-compliant files to the shell output and will not perfom any formatting automatically
+# In the case that the script detects files that are not compliant with the current clang-format/xmlformat/yamlfmt BACI style, the commit will be rejected (script exits 1)
 #
 # Stage 2: Header check
 # A set of Python scripts checks the staged files for compliance with the BACI header requirements
@@ -75,6 +75,17 @@ then
     fi
 fi
 
+
+# check if the file is a yaml file
+if [[ $line == *.yaml || $line == *.yml ]]
+then
+    # Check if yamlfmt would format the file by calling baciyamlformat without overwrite
+    if [[ $(diff -u <($(pwd)/utilities/baciyamlformat --nooverwrite $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
+    then
+    uncompliant_files+="$(pwd)/${line}\n"
+    fi
+fi
+
 done
 
 # printout for uncompliant c, cpp or cmake files
@@ -92,6 +103,7 @@ echo ".H/.cpp: ./utilities/baci-python-venv/bin/clang-format -i -style=file <pat
 echo ".cmake:  ./utilities/baci-python-venv/bin/cmake-format -c ./utilities/code_checks/.cmake-format.yaml -i <path/to/file>"
 echo ".py:  ./utilities/baci-python-venv/bin/black <path/to/file>"
 echo ".xml: ./utilities/bacixmlformat <path/to/file>"
+echo ".yaml/.yml: ./utilities/baciyamlformat <path/to/file>"
 echo "(Run this from BACI's top-level directory)"
 printf "\n"
 echo "--> Alternatively you can use the following script to format staged source files:"
