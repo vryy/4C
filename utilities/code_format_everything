@@ -2,11 +2,46 @@
 
 ############################################################
 #
-# This script formats C++ source files and xml files
-#   1) searches for all C++ source files in baci and applies clang-format to them.
-#   2) searches for all xml files and applies xmlformat according to the options declared in bacixmlformat to them.
+# This script formats C++ source files, cmake files, python source files and xml
+# files
+#
+# code_format_everything [--staged]
 #
 ############################################################
+
+STAGED_ONLY=0
+
+OPTIONS=`getopt -o hc:daef -l help,staged -- "$@"`
+
+[ $? -ne 0 ] && exit 1
+
+USAGEINFO="usage: code_format_everything [--staged]"
+
+
+eval set -- $OPTIONS
+
+while true; do
+  case "$1" in
+    -h|--help)
+      echo $USAGEINFO
+      exit 1
+      ;;
+    -d|--staged)
+      STAGED_ONLY=1
+      ;;
+    --) shift ;
+      break
+      ;;
+    *) echo "unknown option: '$1'" ; exit 1 ;;
+  esac
+  shift
+done
+
+if [ $# -ne 0 ]; then
+  echo "unknown option(s): $@"
+  echo $USAGEINFO
+  exit 1
+fi
 
 # Load the python virtual environment, which provides clang-format.
 PYTHON_VENV="`dirname "$0"`/baci-python-venv"
@@ -15,9 +50,16 @@ source "${PYTHON_VENV}"/bin/activate
 # set the field separator to new line
 IFS=$'\n'
 
-# 1) clang-format
-echo "Run clang-format on all source files in the repository."
-for line in $(git ls-files)
+if [[ $STAGED_ONLY ]]
+then
+  FILES_TO_CHECK=$(git diff --name-only --staged)
+  echo "Run clang-format on all staged source files in the repository."
+else
+  FILES_TO_CHECK=$(git ls-files)
+  echo "Run clang-format on all source files in the repository."
+fi
+
+for line in $FILES_TO_CHECK
 do
 
 # check if the file is a c or cpp file
@@ -34,13 +76,12 @@ then
     cmake-format -c $(pwd)/utilities/code_checks/.cmake-format.yaml -i $(pwd)/${line}
 fi
 
-done
-echo "Done."
-
-# 2) xmlformat with the options declared in bacixmlformat
-echo "Run xmlformat on all xml files in the repository."
-for line in $(git ls-files)
-do
+# check if the file is a python file
+if [[ $line == *.py ]]
+then
+    # format file using black
+    black --quiet $(pwd)/${line}
+fi
 
 # check if the file is an xml file
 if [[ $line == *.xml ]]
