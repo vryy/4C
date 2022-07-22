@@ -7,43 +7,44 @@ def read_result_description(datfile):
     sections = read_sections(datfile)
 
     # extract result description
-    if 'RESULT DESCRIPTION' not in sections:
+    if "RESULT DESCRIPTION" not in sections:
         return []
 
-    result_descriptions = sections['RESULT DESCRIPTION']
+    result_descriptions = sections["RESULT DESCRIPTION"]
 
     results = []
 
     for r in result_descriptions:
-        if r.strip().startswith('//'):
+        if r.strip().startswith("//"):
             continue
         try:
             this_result = {}
-            this_result['dis'] = read_option_item(r, 'DIS', 1)[0]
-            node = read_option_item(r, 'NODE', 1)[0]
+            this_result["dis"] = read_option_item(r, "DIS", 1)[0]
+            node = read_option_item(r, "NODE", 1)[0]
             if node is not None:
-                this_result['node'] = int(node)
-            element = read_option_item(r, 'ELEMENT', 1)[0]
+                this_result["node"] = int(node)
+            element = read_option_item(r, "ELEMENT", 1)[0]
             if element is not None:
-                this_result['element'] = int(element)
-            this_result['quantity'] = read_option_item(r, 'QUANTITY', 1)[0]
-            value = read_option_item(r, 'VALUE', 1)[0]
+                this_result["element"] = int(element)
+            this_result["quantity"] = read_option_item(r, "QUANTITY", 1)[0]
+            value = read_option_item(r, "VALUE", 1)[0]
             if value is not None:
-                this_result['value'] = float(value)
-            tol = read_option_item(r, 'TOLERANCE', 1)[0]
+                this_result["value"] = float(value)
+            tol = read_option_item(r, "TOLERANCE", 1)[0]
             if tol is not None:
-                this_result['tolerance'] = float(tol)
+                this_result["tolerance"] = float(tol)
 
-            this_result['special_quantity'] = read_option_item(
-                r, 'SPECIAL QUANTITY', 1)[0]
+            this_result["special_quantity"] = read_option_item(
+                r, "SPECIAL QUANTITY", 1
+            )[0]
 
-            this_result['enabled'] = True
-            if '//' in r:
-                comment = r.split('//')[1]
+            this_result["enabled"] = True
+            if "//" in r:
+                comment = r.split("//")[1]
 
-                if comment.strip() == 'disable post ensight test':
+                if comment.strip() == "disable post ensight test":
                     # this quantity is manually disabled for testing
-                    this_result['enabled'] = False
+                    this_result["enabled"] = False
 
             results.append(this_result)
         except:
@@ -95,8 +96,7 @@ def read_sections(filename):
                 # this is a section title
                 current_section = match_title.group(1)
                 if current_section in content:
-                    raise ValueError(
-                        "{0} is dublicate!".format(current_section))
+                    raise ValueError("{0} is dublicate!".format(current_section))
 
                 content[current_section] = []
             else:

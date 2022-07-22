@@ -15,6 +15,7 @@ from vtk_data_compare import compare_vtk_data
 # link_to_python link_to_this_script input_pvd_file reference_pvd_file tolerance_for_data_comparison number_of_timesteps[optional] list_of_points_in_time[optional]
 # /home/user/anaconda3/envs/vtk-test/bin/python /home/user/sim/vtk-tests/python/vtk_compare.py /home/user/sim/vtk-tests/sohex8/xxx-structure.pvd /home/user/sim/vtk-tests/sohex8/sohex8fbar_cooks_nl_new_struc-structure.pvd 1e-8 3 10.0 35.0 100.0
 
+
 def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
     """
     Compare the vtk files at path1 and path2.
@@ -33,7 +34,7 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
 
     # Check that both arguments are paths and .pvd files exist.
     if not (os.path.isfile(path1) and os.path.isfile(path2)):
-        raise ValueError('The .pvd paths given are not OK!')
+        raise ValueError("The .pvd paths given are not OK!")
 
     def compare_pvd(path_comp, path_ref):
         """
@@ -46,36 +47,45 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
         ref_root = ref_data.getroot()
 
         # remove file attrib to compare the rest
-        for collection in comp_root.findall('Collection'):
-            for dataset in collection.findall('DataSet'):
-                dataset.attrib.pop('file')
+        for collection in comp_root.findall("Collection"):
+            for dataset in collection.findall("DataSet"):
+                dataset.attrib.pop("file")
 
-        for collection in ref_root.findall('Collection'):
-            for dataset in collection.findall('DataSet'):
-                dataset.attrib.pop('file')
+        for collection in ref_root.findall("Collection"):
+            for dataset in collection.findall("DataSet"):
+                dataset.attrib.pop("file")
 
         # Check that both etrees are the same except from file links
         if not (ET.tostring(comp_root) == ET.tostring(ref_root)):
-            raise ValueError('XML structures in PVD files differ!')
+            raise ValueError("XML structures in PVD files differ!")
 
-    def find_pvtk(pvdpath,points_in_time):
+    def find_pvtk(pvdpath, points_in_time):
         """
         Find list of pvtk files in proximity of given timesteps
         """
-        mydata=ET.parse(pvdpath)
+        mydata = ET.parse(pvdpath)
 
         filearray = []
 
         # find relative paths to pvtk files
-        for type_tag in mydata.findall('Collection/DataSet'):
-            stepfile=type_tag.get('file')
+        for type_tag in mydata.findall("Collection/DataSet"):
+            stepfile = type_tag.get("file")
             # only use timestep if it is close to values in given list or all are used
-            if (np.isclose(float(type_tag.get('timestep')),points_in_time,atol=1e-10,rtol=0.0).any()) or (points_in_time==[]):
+            if (
+                np.isclose(
+                    float(type_tag.get("timestep")),
+                    points_in_time,
+                    atol=1e-10,
+                    rtol=0.0,
+                ).any()
+            ) or (points_in_time == []):
                 filearray.append(stepfile)
 
         # if something did not go as intended
-        if (len(points_in_time) != len(filearray)) and not (points_in_time==[]):
-            raise ValueError('Number of time steps given does not match number of files found! Check input or adjust tolerance.')
+        if (len(points_in_time) != len(filearray)) and not (points_in_time == []):
+            raise ValueError(
+                "Number of time steps given does not match number of files found! Check input or adjust tolerance."
+            )
 
         return filearray
 
@@ -85,7 +95,7 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
         """
         # Check that both .pvtk files exist
         if not (os.path.isfile(pvtkpath_comp) and os.path.isfile(pvtkpath_ref)):
-            raise ValueError('The .pvtk paths given are not OK!')
+            raise ValueError("The .pvtk paths given are not OK!")
 
         comp_data = ET.parse(pvtkpath_comp)
         ref_data = ET.parse(pvtkpath_ref)
@@ -95,17 +105,16 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
 
         # remove piece elements (links) to compare the rest
         for child in comp_root:
-            for grandchild in child.findall('Piece'):
+            for grandchild in child.findall("Piece"):
                 child.remove(grandchild)
 
         for child in ref_root:
-            for grandchild in child.findall('Piece'):
+            for grandchild in child.findall("Piece"):
                 child.remove(grandchild)
 
         # Check that both etrees are the same except from file links
         if not (ET.tostring(comp_root) == ET.tostring(ref_root)):
-            raise ValueError('XML structures in PVTK files differ!')
-
+            raise ValueError("XML structures in PVTK files differ!")
 
     def merge_vtk(pvtkpath):
         """
@@ -119,7 +128,7 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
 
         # examplarily read the first vtk file to get its type
         reader = vtkXMLGenericDataObjectReader()
-        reader.SetFileName(os.path.join(dir,vtkfiles[0]))
+        reader.SetFileName(os.path.join(dir, vtkfiles[0]))
         reader.Update()
         type = reader.GetOutput().GetDataObjectType()
 
@@ -128,12 +137,14 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
             preader = vtkXMLPUnstructuredGridReader()
             preader.SetFileName(pvtkpath)
             preader.Update()
-        elif type ==0 :
+        elif type == 0:
             preader = vtkXMLPPolyDataReader()
             preader.SetFileName(pvtkpath)
             preader.Update()
         else:
-            raise ValueError('Unknown VTK result type. known types: UnstructuredGrid, PolyData')
+            raise ValueError(
+                "Unknown VTK result type. known types: UnstructuredGrid, PolyData"
+            )
 
         # A matching sorting could be introduced here to get rid of dependency on number of processors
 
@@ -144,15 +155,15 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
         get list of every vtk file from every processor
         """
 
-        mydata=ET.parse(pvtkpath)
+        mydata = ET.parse(pvtkpath)
 
         filearray = []
 
-        for type_attrib in mydata.findall('*/Piece'):
-            procfile=type_attrib.get('Source')
+        for type_attrib in mydata.findall("*/Piece"):
+            procfile = type_attrib.get("Source")
             # check if file exists
-            if not (os.path.isfile(os.path.join(os.path.dirname(pvtkpath),procfile))):
-                raise ValueError('The .vtk paths given are not OK!')
+            if not (os.path.isfile(os.path.join(os.path.dirname(pvtkpath), procfile))):
+                raise ValueError("The .vtk paths given are not OK!")
             filearray.append(procfile)
 
         return filearray
@@ -160,7 +171,7 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
     # Perform all checks, catch errors.
     try:
         # compare content of .pvd files excluding filepaths
-        compare_pvd(path_comp=path1,path_ref=path2)
+        compare_pvd(path_comp=path1, path_ref=path2)
 
         dir1 = os.path.dirname(path1)
         dir2 = os.path.dirname(path2)
@@ -175,14 +186,16 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
 
         # pvtkpaths representing timestep files
         for i in range(0, len(pvtkpaths1)):
-            compare_pvtk(pvtkpath_comp=os.path.join(dir1,pvtkpaths1[i]),
-                pvtkpath_ref=os.path.join(dir2,pvtkpaths2[i]))
+            compare_pvtk(
+                pvtkpath_comp=os.path.join(dir1, pvtkpaths1[i]),
+                pvtkpath_ref=os.path.join(dir2, pvtkpaths2[i]),
+            )
 
         for iter in enumerate(pvtkpaths1):
-            data1array.append(merge_vtk(os.path.join(dir1,iter[1])))
+            data1array.append(merge_vtk(os.path.join(dir1, iter[1])))
 
         for iter in enumerate(pvtkpaths2):
-            data2array.append(merge_vtk(os.path.join(dir2,iter[1])))
+            data2array.append(merge_vtk(os.path.join(dir2, iter[1])))
 
         for i in range(0, len(data1array)):
             compare_vtk_data(data1array[i], data2array[i], tol_float=tol_float)
@@ -194,26 +207,36 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
 
     return True
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # Read arguments.
     file_comp = sys.argv[1]
     file_ref = sys.argv[2]
     try:
         tolerance = float(sys.argv[3])
     except ValueError:
-        print('Given tolerance is no float! Check your arguments!')
+        print("Given tolerance is no float! Check your arguments!")
     tolerance = float(sys.argv[3])
 
-    points_in_time=[]
+    points_in_time = []
     # if timesteps are not given and variable remains empty, all timesteps are used
 
-    if len(sys.argv)>4:
+    if len(sys.argv) > 4:
         num_timesteps = int(sys.argv[4])
-        if len(sys.argv)-5 != num_timesteps:
-            raise ValueError('You did not list as many timesteps as you specified! Check your arguments!')
+        if len(sys.argv) - 5 != num_timesteps:
+            raise ValueError(
+                "You did not list as many timesteps as you specified! Check your arguments!"
+            )
         # if 0 is given as number of files this should still work
         if num_timesteps != 0:
-            points_in_time = np.array(sys.argv[5:5 + num_timesteps],dtype=float)
-    compare_vtk(path1 = file_comp, path2 = file_ref, points_in_time=points_in_time, tol_float = tolerance)
+            points_in_time = np.array(sys.argv[5 : 5 + num_timesteps], dtype=float)
+    compare_vtk(
+        path1=file_comp,
+        path2=file_ref,
+        points_in_time=points_in_time,
+        tol_float=tolerance,
+    )
 
-    print('SUCCESS: VTK results match for given .pvd files, points in time and tolerance')
+    print(
+        "SUCCESS: VTK results match for given .pvd files, points in time and tolerance"
+    )

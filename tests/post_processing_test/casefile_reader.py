@@ -10,11 +10,11 @@ CURRENT_SECTION_FILE = 4
 
 def read_case(file):
     case = {}
-    case['timesets'] = {}
-    case['filesets'] = {}
-    case['geometries'] = []
-    case['variables'] = {}
-    with open(file, 'r') as f:
+    case["timesets"] = {}
+    case["filesets"] = {}
+    case["geometries"] = []
+    case["variables"] = {}
+    with open(file, "r") as f:
         current_section = None
         current_index = None
 
@@ -25,36 +25,38 @@ def read_case(file):
 
             if case_line == None:
                 continue
-            elif line.strip() == 'TIME':
+            elif line.strip() == "TIME":
                 current_section = CURRENT_SECTION_TIME
-            elif line.strip() == 'FILE':
+            elif line.strip() == "FILE":
                 current_section = CURRENT_SECTION_FILE
-            elif line.strip() == 'FORMAT':
+            elif line.strip() == "FORMAT":
                 current_section = CURRENT_SECTION_FORMAT
-            elif line.strip() == 'GEOMETRY':
+            elif line.strip() == "GEOMETRY":
                 current_section = CURRENT_SECTION_GEOMETRY
-            elif line.strip() == 'VARIABLE':
+            elif line.strip() == "VARIABLE":
                 current_section = CURRENT_SECTION_VARIABLE
             elif current_section == CURRENT_SECTION_TIME:
 
-                if case_line['name'] == 'time set':
-                    current_index = int(case_line['values'][0])
-                    case['timesets'][current_index] = None
-                elif case_line['name'] == 'time values':
-                    case['timesets'][current_index] = np.asarray(
-                        [float(i) for i in case_line['values']])
-                elif case_line['name'] == None:
-                    case['timesets'][current_index] = np.append(case['timesets'][current_index], np.asarray([
-                        float(i) for i in case_line['values']]))
+                if case_line["name"] == "time set":
+                    current_index = int(case_line["values"][0])
+                    case["timesets"][current_index] = None
+                elif case_line["name"] == "time values":
+                    case["timesets"][current_index] = np.asarray(
+                        [float(i) for i in case_line["values"]]
+                    )
+                elif case_line["name"] == None:
+                    case["timesets"][current_index] = np.append(
+                        case["timesets"][current_index],
+                        np.asarray([float(i) for i in case_line["values"]]),
+                    )
 
             elif current_section == CURRENT_SECTION_FILE:
 
-                if case_line['name'] == 'file set':
-                    current_index = int(case_line['values'][0])
-                    case['filesets'][current_index] = 0
-                elif case_line['name'] == 'number of steps':
-                    case['filesets'][current_index] = int(
-                        case_line['values'][0])
+                if case_line["name"] == "file set":
+                    current_index = int(case_line["values"][0])
+                    case["filesets"][current_index] = 0
+                elif case_line["name"] == "number of steps":
+                    case["filesets"][current_index] = int(case_line["values"][0])
 
         # now read geometry and variable
         for line in lines:
@@ -62,29 +64,31 @@ def read_case(file):
 
             if case_line == None:
                 continue
-            elif line.strip() == 'TIME':
+            elif line.strip() == "TIME":
                 current_section = CURRENT_SECTION_TIME
-            elif line.strip() == 'FILE':
+            elif line.strip() == "FILE":
                 current_section = CURRENT_SECTION_FILE
-            elif line.strip() == 'FORMAT':
+            elif line.strip() == "FORMAT":
                 current_section = CURRENT_SECTION_FORMAT
-            elif line.strip() == 'GEOMETRY':
+            elif line.strip() == "GEOMETRY":
                 current_section = CURRENT_SECTION_GEOMETRY
-            elif line.strip() == 'VARIABLE':
+            elif line.strip() == "VARIABLE":
                 current_section = CURRENT_SECTION_VARIABLE
             elif current_section == CURRENT_SECTION_GEOMETRY:
-                if case_line['name'] == 'model':
-                    case['geometries'].append({
-                        'timeset': int(case_line['values'][0]),
-                        'fileset': int(case_line['values'][0]),
-                        'geofile': case_line['values'][2]
-                    })
+                if case_line["name"] == "model":
+                    case["geometries"].append(
+                        {
+                            "timeset": int(case_line["values"][0]),
+                            "fileset": int(case_line["values"][0]),
+                            "geofile": case_line["values"][2],
+                        }
+                    )
             elif current_section == CURRENT_SECTION_VARIABLE:
-                case['variables'][case_line['values'][2]] = {
-                    'timeset': int(case_line['values'][0]),
-                    'fileset': int(case_line['values'][1]),
-                    'type': case_line['name'],
-                    'file': case_line['values'][3]
+                case["variables"][case_line["values"][2]] = {
+                    "timeset": int(case_line["values"][0]),
+                    "fileset": int(case_line["values"][1]),
+                    "type": case_line["name"],
+                    "file": case_line["values"][3],
                 }
         return case
 
@@ -97,21 +101,21 @@ def _read_case_line(line):
 
     result = {}
 
-    if stripped_line == '':
+    if stripped_line == "":
         return None
 
-    if ':' in stripped_line:
+    if ":" in stripped_line:
         # this is a name with values
-        stripped_line_part = stripped_line.partition(':')
-        result['name'] = stripped_line_part[0]
-        result['values'] = _read_case_values(stripped_line_part[2])
+        stripped_line_part = stripped_line.partition(":")
+        result["name"] = stripped_line_part[0]
+        result["values"] = _read_case_values(stripped_line_part[2])
     else:
         # that are just values
-        result['name'] = None
-        result['values'] = _read_case_values(stripped_line)
+        result["name"] = None
+        result["values"] = _read_case_values(stripped_line)
 
     return result
 
 
 def _read_case_values(line_part):
-    return re.sub('( |\t)+', ' ', line_part.strip()).split(' ')
+    return re.sub("( |\t)+", " ", line_part.strip()).split(" ")

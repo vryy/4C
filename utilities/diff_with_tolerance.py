@@ -16,8 +16,8 @@ def convert_line_to_array(line):
     """
 
     # Split up the line.
-    if ',' in line:
-        line = line.split(',')
+    if "," in line:
+        line = line.split(",")
     else:
         line = line.split()
     line = [item.strip() for item in line]
@@ -42,10 +42,10 @@ def read_csv(path):
     Load a csv file as a numpy array.
     """
     if not os.path.isfile(path):
-        raise ValueError('The file {} does not exist.'.format(path))
+        raise ValueError("The file {} does not exist.".format(path))
 
     # Load the lines in the file.
-    with open(path, 'r') as f:
+    with open(path, "r") as f:
         lines = f.readlines()
 
     # Go through each line an try to convert it to float.
@@ -58,27 +58,40 @@ def read_csv(path):
     return np.array(data)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     """
     Execution part of script.
     """
 
     # Read arguments.
     if not len(sys.argv) == 6:
-        raise ValueError(('Wrong number of input arguments. Got {} instead '
-            + 'of 6!').format(len(sys.argv)))
+        raise ValueError(
+            ("Wrong number of input arguments. Got {} instead " + "of 6!").format(
+                len(sys.argv)
+            )
+        )
     eps = float(sys.argv[1])
     file_ref = sys.argv[2]
     file_comp = sys.argv[3]
     tolerance_type = sys.argv[4]
     min_value = float(sys.argv[5])
 
-    if tolerance_type == 'abs_tol':
-        print('\n\nCompare files with absolute tolerance {}:\n{}\n{}'.format(eps, file_ref, file_comp))
-    elif tolerance_type == 'rel_tol':
-        print('\n\nCompare files with relative tolerance {}:\n{}\n{}'.format(eps, file_ref, file_comp))
+    if tolerance_type == "abs_tol":
+        print(
+            "\n\nCompare files with absolute tolerance {}:\n{}\n{}".format(
+                eps, file_ref, file_comp
+            )
+        )
+    elif tolerance_type == "rel_tol":
+        print(
+            "\n\nCompare files with relative tolerance {}:\n{}\n{}".format(
+                eps, file_ref, file_comp
+            )
+        )
     else:
-        raise ValueError('received illegal tolerance type. Must either be "rel_tol" or "abs_tol"')
+        raise ValueError(
+            'received illegal tolerance type. Must either be "rel_tol" or "abs_tol"'
+        )
 
     # Load each file as a real array.
     data_ref = read_csv(file_ref)
@@ -86,13 +99,16 @@ if __name__ == '__main__':
 
     # Calculate the error in the data entries.
     diff = 0.0
-    if tolerance_type == 'abs_tol':
+    if tolerance_type == "abs_tol":
         diff = np.abs(data_comp - data_ref)
     else:
-        diff = np.abs((data_comp - data_ref) / np.where(np.abs(data_ref) < min_value, min_value, data_ref))
+        diff = np.abs(
+            (data_comp - data_ref)
+            / np.where(np.abs(data_ref) < min_value, min_value, data_ref)
+        )
 
     if eps > np.max(diff):
-        print('CSV comparison successful!')
+        print("CSV comparison successful!")
     else:
-        print('Largest error is {}'.format(np.max(diff)))
-        raise ValueError('CSV comparison failed!')
+        print("Largest error is {}".format(np.max(diff)))
+        raise ValueError("CSV comparison failed!")
