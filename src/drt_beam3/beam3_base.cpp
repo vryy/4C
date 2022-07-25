@@ -186,7 +186,7 @@ void DRT::ELEMENTS::Beam3Base::GetRefPosAtXi(LINALG::Matrix<3, 1>& refpos, const
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-const MAT::BeamMaterial& DRT::ELEMENTS::Beam3Base::GetBeamMaterial() const
+MAT::BeamMaterial& DRT::ELEMENTS::Beam3Base::GetBeamMaterial() const
 {
   // get the material law
   Teuchos::RCP<MAT::Material> material_ptr = Material();
@@ -201,7 +201,7 @@ const MAT::BeamMaterial& DRT::ELEMENTS::Beam3Base::GetBeamMaterial() const
  *-----------------------------------------------------------------------------------------------*/
 
 template <typename T>
-const MAT::BeamMaterialTemplated<T>& DRT::ELEMENTS::Beam3Base::GetTemplatedBeamMaterial() const
+MAT::BeamMaterialTemplated<T>& DRT::ELEMENTS::Beam3Base::GetTemplatedBeamMaterial() const
 {
   return *Teuchos::rcp_dynamic_cast<MAT::BeamMaterialTemplated<T>>(Material(), true);
 };
@@ -439,7 +439,7 @@ template void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity<3, Sacado::Fad::DF
     LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
     LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
 
-template const MAT::BeamMaterialTemplated<double>&
+template MAT::BeamMaterialTemplated<double>&
 DRT::ELEMENTS::Beam3Base::GetTemplatedBeamMaterial<double>() const;
-template const MAT::BeamMaterialTemplated<Sacado::Fad::DFad<double>>&
+template MAT::BeamMaterialTemplated<Sacado::Fad::DFad<double>>&
 DRT::ELEMENTS::Beam3Base::GetTemplatedBeamMaterial<Sacado::Fad::DFad<double>>() const;

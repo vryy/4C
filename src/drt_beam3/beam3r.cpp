@@ -346,7 +346,6 @@ DRT::ELEMENTS::Beam3r::Beam3r(const DRT::ELEMENTS::Beam3r& old)
       Ekintrans_(old.Ekintrans_),
       L_(old.L_),
       P_(old.P_),
-      Kmax_(old.Kmax_),
       axial_strain_GP_elastf_(old.axial_strain_GP_elastf_),
       shear_strain_2_GP_elastf_(old.shear_strain_2_GP_elastf_),
       shear_strain_3_GP_elastf_(old.shear_strain_3_GP_elastf_),

@@ -37,14 +37,15 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(
   SetMaterial(material);
 
   if (Material()->Parameter()->Name() != "MAT_BeamReissnerElastHyper" and
-      Material()->Parameter()->Name() != "MAT_BeamReissnerElastHyper_ByModes")
+      Material()->Parameter()->Name() != "MAT_BeamReissnerElastHyper_ByModes" and
+      Material()->Parameter()->Name() != "MAT_BeamReissnerElastPlastic")
   {
     dserror(
         "The material parameter definition '%s' is not supported by Beam3r element! "
-        "Choose MAT_BeamReissnerElastHyper or MAT_BeamReissnerElastHyper_ByModes!",
+        "Choose MAT_BeamReissnerElastHyper, MAT_BeamReissnerElastHyper_ByModes or "
+        "MAT_BeamReissnerElastPlastic!",
         Material()->Parameter()->Name().c_str());
   }
-
 
   if (linedef->HaveNamed("HERM2LINE2") or linedef->HaveNamed("HERM2LINE3") or
       linedef->HaveNamed("HERM2LINE4") or linedef->HaveNamed("HERM2LINE5"))

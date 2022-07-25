@@ -62,7 +62,7 @@ MAT::BeamElastHyperMaterial<T>::BeamElastHyperMaterial(
 template <typename T>
 void MAT::BeamElastHyperMaterial<T>::EvaluateForceContributionsToStress(
     LINALG::Matrix<3, 1, T>& stressN, const LINALG::Matrix<3, 3, T>& CN,
-    const LINALG::Matrix<3, 1, T>& Gamma) const
+    const LINALG::Matrix<3, 1, T>& Gamma)
 {
   // compute material stresses by multiplying strains with constitutive matrix
   stressN.Multiply(CN, Gamma);
@@ -73,17 +73,17 @@ void MAT::BeamElastHyperMaterial<T>::EvaluateForceContributionsToStress(
 template <typename T>
 void MAT::BeamElastHyperMaterial<T>::EvaluateMomentContributionsToStress(
     LINALG::Matrix<3, 1, T>& stressM, const LINALG::Matrix<3, 3, T>& CM,
-    const LINALG::Matrix<3, 1, T>& K) const
+    const LINALG::Matrix<3, 1, T>& Cur)
 {
   // compute material stresses by multiplying curvature with constitutive matrix
-  stressM.Multiply(CM, K);
+  stressM.Multiply(CM, Cur);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void MAT::BeamElastHyperMaterial<T>::ComputeConstitutiveParameter(
-    LINALG::Matrix<3, 3, T>& C_N, LINALG::Matrix<3, 3, T>& C_M) const
+    LINALG::Matrix<3, 3, T>& C_N, LINALG::Matrix<3, 3, T>& C_M)
 {
   // setup constitutive matrices
   MAT::BeamElastHyperMaterial<T>::GetConstitutiveMatrixOfForcesMaterialFrame(C_N);
@@ -137,6 +137,7 @@ void MAT::BeamElastHyperMaterial<T>::Unpack(const std::vector<char>& data)
       if (mat->Type() == INPAR::MAT::m_beam_reissner_elast_hyper or
           mat->Type() == INPAR::MAT::m_beam_reissner_elast_hyper_bymodes or
           mat->Type() == INPAR::MAT::m_beam_kirchhoff_elast_hyper or
+          mat->Type() == INPAR::MAT::m_beam_reissner_elast_plastic or
           mat->Type() == INPAR::MAT::m_beam_kirchhoff_elast_hyper_bymodes or
           mat->Type() == INPAR::MAT::m_beam_kirchhoff_torsionfree_elast_hyper or
           mat->Type() == INPAR::MAT::m_beam_kirchhoff_torsionfree_elast_hyper_bymodes)
@@ -154,8 +155,6 @@ void MAT::BeamElastHyperMaterial<T>::Unpack(const std::vector<char>& data)
 template <typename T>
 MAT::PAR::Parameter* MAT::BeamElastHyperMaterial<T>::Parameter() const
 {
-  if (params_ == NULL) dserror("pointer to parameter class is not set!");
-
   return params_;
 }
 
@@ -247,7 +246,7 @@ double MAT::BeamElastHyperMaterial<T>::GetInteractionRadius() const
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void MAT::BeamElastHyperMaterial<T>::GetStiffnessMatrixOfMoments(
-    LINALG::Matrix<3, 3, T>& stiffness_matrix, const LINALG::Matrix<3, 3, T>& C_M) const
+    LINALG::Matrix<3, 3, T>& stiffness_matrix, const LINALG::Matrix<3, 3, T>& C_M)
 {
   stiffness_matrix = C_M;
 }
@@ -256,7 +255,7 @@ void MAT::BeamElastHyperMaterial<T>::GetStiffnessMatrixOfMoments(
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void MAT::BeamElastHyperMaterial<T>::GetStiffnessMatrixOfForces(
-    LINALG::Matrix<3, 3, T>& stiffness_matrix, const LINALG::Matrix<3, 3, T>& C_N) const
+    LINALG::Matrix<3, 3, T>& stiffness_matrix, const LINALG::Matrix<3, 3, T>& C_N)
 {
   stiffness_matrix = C_N;
 }

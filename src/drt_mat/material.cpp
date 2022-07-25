@@ -79,6 +79,7 @@
 #include "matlist_chemoreac.H"
 #include "constraintmixture.H"
 #include "beam_elasthyper_parameter.H"
+#include "beam3r_plasticity.H"
 #include "crosslinkermat.H"
 #include "optimization_density.H"
 #include "fluid_murnaghantait.H"
@@ -993,6 +994,14 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::BeamReissnerElastHyperMaterialParams(curmat));
       auto* params =
           static_cast<MAT::PAR::BeamReissnerElastHyperMaterialParams*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_beam_reissner_elast_plastic:
+    {
+      if (curmat->Parameter() == nullptr)
+        curmat->SetParameter(new MAT::PAR::BeamReissnerElastPlasticMaterialParams(curmat));
+      auto* params =
+          static_cast<MAT::PAR::BeamReissnerElastPlasticMaterialParams*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_beam_reissner_elast_hyper_bymodes:

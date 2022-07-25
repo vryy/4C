@@ -3151,7 +3151,59 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AppendMaterialDefinition(matlist, matdef);
   }
+  /*--------------------------------------------------------------------*/
+  // material parameter definition for a Simo-Reissner type elasto-plastic beam element
+  {
+    auto matdef = Teuchos::rcp(new MaterialDefinition("MAT_BeamReissnerElastPlastic",
+        "material parameters for a Simo-Reissner type beam element based on "
+        "hyperelastic stored energy function",
+        INPAR::MAT::m_beam_reissner_elast_plastic));
 
+
+    AddNamedReal(matdef, "YOUNG", "Young's modulus");
+
+    // optional parameters for plasticity
+    AddNamedReal(matdef, "YIELDN", "initial yield stress N", -1.0, true);
+    AddNamedReal(matdef, "YIELDM", "initial yield stress M", -1.0, true);
+    AddNamedReal(matdef, "ISOHARDN", "isotropic hardening modulus of forces", -1.0, true);
+    AddNamedReal(matdef, "ISOHARDM", "isotropic hardening modulus of moments", -1.0, true);
+    AddNamedReal(matdef, "TORSIONPLAST",
+        "defines whether torsional moment contributes to plasticity", 0, true);
+
+    /* note: we define both of the two following (redundant) parameters to be optional.
+     *       upon initialization of the material, we assure that one of them is
+     *       properly defined. */
+    AddNamedReal(matdef, "SHEARMOD", "shear modulus", -1.0, true);
+    AddNamedReal(matdef, "POISSONRATIO", "Poisson's ratio", -1.0, true);
+
+    AddNamedReal(matdef, "DENS", "mass density");
+
+    AddNamedReal(matdef, "CROSSAREA", "cross-section area");
+    AddNamedReal(matdef, "SHEARCORR", "shear correction factor");
+
+    AddNamedReal(matdef, "MOMINPOL", "polar/axial area moment of inertia");
+    AddNamedReal(matdef, "MOMIN2",
+        "area moment of inertia w.r.t. first principal "
+        "axis of inertia (i.e. second base vector)");
+    AddNamedReal(matdef, "MOMIN3",
+        "area moment of inertia w.r.t. second principal "
+        "axis of inertia (i.e. third base vector)");
+    AddNamedBool(matdef, "FAD", "Does automatic differentiation have to be used", false, true);
+
+
+    /* The following is optional because it is only required if we evaluate interactions
+     * between beams such as contact, potential-based and whatever more to come.
+     * For now, we always assume a circular cross-section if interactions are considered.
+     *
+     * This should be generalized to a type of cross-section shape (circular, rectangular,
+     * elliptic, ...) and corresponding necessary dimensions (radius, sizes, ...) if needed. */
+    AddNamedReal(matdef, "INTERACTIONRADIUS",
+        "radius of a circular cross-section which "
+        "is EXCLUSIVELY used to evaluate interactions such as contact, potentials, ...",
+        -1.0, true);
+
+    AppendMaterialDefinition(matlist, matdef);
+  }
   /*--------------------------------------------------------------------*/
   // material parameter definition for a Simo-Reissner type beam element,
   // specified via 'modal' constitutive parameters (see comment above)
