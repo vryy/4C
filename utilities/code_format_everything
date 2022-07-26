@@ -2,7 +2,7 @@
 
 ############################################################
 #
-# This script formats C++ source files, cmake files, python source files and xml
+# This script formats C++ source files, cmake files, python source files, yaml, and xml
 # files
 #
 # code_format_everything [--staged]
@@ -88,6 +88,13 @@ if [[ $line == *.xml ]]
 then
     # format file using xmlformat
     $(pwd)/utilities/bacixmlformat $(pwd)/${line}
+fi
+
+# check if the file is a yaml file
+if [[ $line == *.yaml || $line == *.yml ]]
+then
+    # format file using yamlfmt
+    $(pwd)/utilities/baciyamlformat $(pwd)/${line}
 fi
 
 done

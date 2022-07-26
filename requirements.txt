@@ -7,3 +7,4 @@ lxml
 numpy
 vtk
 xmlformatter==0.2.4
+yamlfmt==1.1.0
