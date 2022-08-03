@@ -247,23 +247,22 @@ if(Trilinos_FOUND)
     set(_libraries "")
     foreach(_library ${Trilinos_LIBRARIES})
       find_library(
-              TRILINOS_LIBRARY_${_library}
-              NAMES ${_library}
-              HINTS ${Trilinos_LIBRARY_DIRS}
-              NO_DEFAULT_PATH
-              NO_CMAKE_ENVIRONMENT_PATH
-              NO_CMAKE_PATH
-              NO_SYSTEM_ENVIRONMENT_PATH
-              NO_CMAKE_SYSTEM_PATH
-              NO_CMAKE_FIND_ROOT_PATH
-      )
+        TRILINOS_LIBRARY_${_library}
+        NAMES ${_library}
+        HINTS ${Trilinos_LIBRARY_DIRS}
+        NO_DEFAULT_PATH
+        NO_CMAKE_ENVIRONMENT_PATH
+        NO_CMAKE_PATH
+        NO_SYSTEM_ENVIRONMENT_PATH
+        NO_CMAKE_SYSTEM_PATH
+        NO_CMAKE_FIND_ROOT_PATH
+        )
       list(APPEND _libraries ${TRILINOS_LIBRARY_${_library}})
     endforeach()
 
     include_directories(SYSTEM ${Trilinos_INCLUDE_DIRS})
     include_directories(SYSTEM ${Trilinos_TPL_INCLUDE_DIRS})
     link_directories(${Trilinos_LIBRARY_DIRS})
-
     set(LIBRARIES ${_libraries} ${Trilinos_TPL_LIBRARIES} ${LIBRARIES})
   endif()
 endif(Trilinos_FOUND)
