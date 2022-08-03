@@ -233,33 +233,38 @@ endif()
 # trilinos libraries
 # Choose trilinos libraries explicitly.
 if(Trilinos_FOUND)
-  remove_duplicates(Trilinos_LIBRARIES)
-  remove_duplicates(Trilinos_TPL_LIBRARIES)
-  remove_duplicates(Trilinos_INCLUDE_DIRS)
-  remove_duplicates(Trilinos_TPL_INCLUDE_DIRS)
+  if(TRILINOS_DEVELOP)
+    include_directories(SYSTEM ${Trilinos_INCLUDE_DIRS})
+    link_directories(${Trilinos_LIBRARY_DIRS})
+    set(LIBRARIES ${LIBRARIES} Trilinos::all_selected_libs)
+  else()
+    remove_duplicates(Trilinos_LIBRARIES)
+    remove_duplicates(Trilinos_TPL_LIBRARIES)
+    remove_duplicates(Trilinos_INCLUDE_DIRS)
+    remove_duplicates(Trilinos_TPL_INCLUDE_DIRS)
 
-  # convert list of trilinos libraries to full path for consistency with other libraries
-  set(_libraries "")
-  foreach(_library ${Trilinos_LIBRARIES})
-    find_library(
-      TRILINOS_LIBRARY_${_library}
-      NAMES ${_library}
-      HINTS ${Trilinos_LIBRARY_DIRS}
-      NO_DEFAULT_PATH
-      NO_CMAKE_ENVIRONMENT_PATH
-      NO_CMAKE_PATH
-      NO_SYSTEM_ENVIRONMENT_PATH
-      NO_CMAKE_SYSTEM_PATH
-      NO_CMAKE_FIND_ROOT_PATH
-      )
-    list(APPEND _libraries ${TRILINOS_LIBRARY_${_library}})
-  endforeach()
+    # convert list of trilinos libraries to full path for consistency with other libraries
+    set(_libraries "")
+    foreach(_library ${Trilinos_LIBRARIES})
+      find_library(
+        TRILINOS_LIBRARY_${_library}
+        NAMES ${_library}
+        HINTS ${Trilinos_LIBRARY_DIRS}
+        NO_DEFAULT_PATH
+        NO_CMAKE_ENVIRONMENT_PATH
+        NO_CMAKE_PATH
+        NO_SYSTEM_ENVIRONMENT_PATH
+        NO_CMAKE_SYSTEM_PATH
+        NO_CMAKE_FIND_ROOT_PATH
+        )
+      list(APPEND _libraries ${TRILINOS_LIBRARY_${_library}})
+    endforeach()
 
-  include_directories(SYSTEM ${Trilinos_INCLUDE_DIRS})
-  include_directories(SYSTEM ${Trilinos_TPL_INCLUDE_DIRS})
-  link_directories(${Trilinos_LIBRARY_DIRS})
-
-  set(LIBRARIES ${_libraries} ${Trilinos_TPL_LIBRARIES} ${LIBRARIES})
+    include_directories(SYSTEM ${Trilinos_INCLUDE_DIRS})
+    include_directories(SYSTEM ${Trilinos_TPL_INCLUDE_DIRS})
+    link_directories(${Trilinos_LIBRARY_DIRS})
+    set(LIBRARIES ${_libraries} ${Trilinos_TPL_LIBRARIES} ${LIBRARIES})
+  endif()
 endif(Trilinos_FOUND)
 
 find_package(Netcdf REQUIRED)

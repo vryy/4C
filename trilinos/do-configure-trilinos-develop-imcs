@@ -27,6 +27,7 @@ $CMAKE_COMMAND \
   -D Trilinos_ENABLE_TESTS:BOOL=OFF \
   -D Trilinos_ENABLE_EXAMPLES:BOOL=OFF \
   \
+  -D Trilinos_ENABLE_Gtest:BOOL=OFF \
   -D Trilinos_ENABLE_Amesos:BOOL=ON \
   -D Trilinos_ENABLE_Amesos2:BOOL=OFF \
   -D Trilinos_ENABLE_Anasazi:BOOL=ON \
@@ -76,8 +77,6 @@ $CMAKE_COMMAND \
     -D SuperLUDist_INCLUDE_DIRS:PATH="$TPLDIR/include" \
     -D SuperLUDist_LIBRARY_DIRS:PATH="$TPLDIR/lib" \
     -D SuperLUDist_LIBRARY_NAMES:STRING="superlu_dist_2.5" \
-  \
-  -D Gtest_SKIP_INSTALL:BOOL=TRUE \
 $EXTRA_ARGS \
 ${TRILINOS_HOME}
 
