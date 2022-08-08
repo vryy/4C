@@ -24,8 +24,6 @@
 #include "../drt_geometry/integrationcell_coordtrafo.H"
 #include "../headers/singleton_owner.H"
 
-//#define XCONTACT_OUTPUT
-
 #define USE_PHIN_FOR_VEL
 //#define MODIFIED_EQ
 
@@ -182,35 +180,6 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
       {
         std::fill(el2sysmat_diag_inv.A(), el2sysmat_diag_inv.A() + my::nen_, 1.0);
       }
-
-#ifdef XCONTACT_OUTPUT
-      /// DEBUGGING - OUTPUT
-      std::cout << "\n--- DEBUGGING : EvalReinitializationEmbedded ( ele = " << my::eid_
-                << " ) ---\n";
-      for (GEO::BoundaryIntCellPtrs::const_iterator cell = boundaryIntCells.begin();
-           cell != boundaryIntCells.end(); ++cell)
-      {
-        const LINALG::Matrix<my::nsd_ele_, 1> posXiDomain(
-            (*cell)->CellNodalPosXiDomain().A(), true);
-        my::funct_.Clear();
-        DRT::UTILS::shape_function<distype>(posXiDomain, my::funct_);
-        std::cout << "function value @ posXiDomain = " << my::ephinp_[0].Dot(my::funct_)
-                  << std::endl;
-      }
-
-      LINALG::Matrix<my::nsd_, 1> gradphinp(true);
-      std::cout << "*** l2-projection = " << (lsreinitparams_->Project() ? "TRUE" : "FALSE")
-                << "\n";
-      gradphinp.Multiply(my::econvelnp_, my::funct_);
-      double normgradphi = gradphinp.Norm2();
-      std::cout << "gradphinp = " << gradphinp;
-      std::cout << "norm of gradphinp = " << normgradphi << std::endl;
-      std::cout << "*** w/o l2-projection\n";
-      gradphinp.Multiply(my::derxy_, my::ephinp_[0]);
-      normgradphi = gradphinp.Norm2();
-      std::cout << "gradphinp = " << gradphinp;
-      std::cout << "norm of gradphinp = " << normgradphi << std::endl;
-#endif
 
       // get action
       const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params, "action");

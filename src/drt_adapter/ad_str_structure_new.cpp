@@ -21,7 +21,6 @@
 #include "ad_str_fsiwrapper_immersed.H"
 #include "ad_str_structalewrapper.H"
 #include "ad_str_invana.H"
-#include "ad_str_xcontact.H"
 #include "ad_str_ssiwrapper.H"
 #include "ad_str_pasiwrapper.H"
 
@@ -1010,9 +1009,6 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
     }
     case prb_invana:
       str_wrapper_ = (Teuchos::rcp(new StructureInvana(ti_strategy)));
-      break;
-    case prb_xcontact:
-      str_wrapper_ = (Teuchos::rcp(new StructureXContact(ti_strategy)));
       break;
     default:
       /// wrap time loop for pure structure problems

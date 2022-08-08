@@ -69,7 +69,6 @@
 #include "inpar_binningstrategy.H"
 #include "inpar_browniandyn.H"
 #include "inpar_cardiovascular0d.H"
-#include "inpar_contact_xcontact.H"
 #include "inpar_plasticity.H"
 #include "inpar_mor.H"
 #include "inpar_io.H"
@@ -421,7 +420,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::INVANA::SetValidParameters(list);
   INPAR::MORTAR::SetValidParameters(list);
   INPAR::CONTACT::SetValidParameters(list);
-  INPAR::XCONTACT::SetValidParameters(list);
   INPAR::VOLMORTAR::SetValidParameters(list);
   INPAR::WEAR::SetValidParameters(list);
   INPAR::IO_RUNTIME_VTK::FLUID::SetValidParameters(list);

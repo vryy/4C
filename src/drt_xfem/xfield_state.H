@@ -42,7 +42,7 @@ namespace XFEM
 
     /** \brief initialize member variables for xfield<-->field couplings
      *
-     *  Examples are the XFluidFluid problem and the XContact problem. */
+     *  An examples is the XFluidFluid problem. */
     void Init(const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
         const Teuchos::RCP<GEO::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& xdofset,
         const Teuchos::RCP<DRT::DiscretizationInterface>& xfielddiscret,

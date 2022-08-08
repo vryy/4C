@@ -132,7 +132,7 @@ namespace XFEM
        *
        *  Split a volume source discretization into one part which is directly
        *  connected to the boundary condition face elements and the other. Currently
-       *  only tested for the XCONTACT implementation.
+       *  not tested.
        *
        *  \date 06/16
        *  \author hiermeier  */

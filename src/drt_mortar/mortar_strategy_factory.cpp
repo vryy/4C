@@ -341,14 +341,6 @@ void MORTAR::STRATEGY::Factory::PrintStrategyBanner(
           IO::cout << "===== (Condensed formulation) ==================================\n";
           IO::cout << "================================================================\n\n";
         }
-        else if (soltype == INPAR::CONTACT::solution_xcontact &&
-                 shapefcn == INPAR::MORTAR::shape_standard)
-        {
-          IO::cout << "================================================================\n";
-          IO::cout << "===== Extended contact strategy ================================\n";
-          IO::cout << "===== (Saddle point formulation) ===============================\n";
-          IO::cout << "================================================================\n\n";
-        }
         else
           dserror("Invalid strategy or shape function type for contact/meshtying");
       }

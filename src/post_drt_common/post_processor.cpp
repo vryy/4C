@@ -197,30 +197,6 @@ void runEnsightVtuFilter(PostProblem& problem)
       }
       break;
     }
-    case prb_xcontact:
-    {
-      //        StructureFilter writer(field, problem.outname(), problem.stresstype(),
-      //        problem.straintype()); writer.WriteFiles();
-      for (int i = 0; i < problem.num_discr(); ++i)
-      {
-        PostField* field = problem.get_discretization(i);
-        DRT::Element* ele = field->discretization()->lRowElement(0);
-        if (dynamic_cast<DRT::ELEMENTS::So_base*>(ele))
-        {
-          StructureFilter writer(
-              field, problem.outname(), problem.stresstype(), problem.straintype());
-          writer.WriteFiles();
-        }
-        // ToDo add the ScaTra output
-        //          else
-        //          {
-        //            ScaTraFilter scatrawriter(field, problem.outname());
-        //            scatrawriter.WriteFiles();
-        //          }
-      }
-
-      break;
-    }
     case prb_fluid:
     {
       if (problem.num_discr() == 2)

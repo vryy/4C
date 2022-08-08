@@ -50,11 +50,11 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       "Type of employed solving strategy",
       tuple<std::string>("LagrangianMultipliers", "lagrange", "Lagrange", "penalty", "Penalty",
           "Uzawa", "Augmented", "SteepestAscent", "SteepestAscent_SP", "StdLagrange", "Combo",
-          "XContact", "Nitsche", "Ehl", "MultiScale"),
+          "Nitsche", "Ehl", "MultiScale"),
       tuple<int>(solution_lagmult, solution_lagmult, solution_lagmult, solution_penalty,
           solution_penalty, solution_uzawa, solution_augmented, solution_steepest_ascent,
-          solution_steepest_ascent_sp, solution_std_lagrange, solution_combo, solution_xcontact,
-          solution_nitsche, solution_ehl, solution_multiscale),
+          solution_steepest_ascent_sp, solution_std_lagrange, solution_combo, solution_nitsche,
+          solution_ehl, solution_multiscale),
       &scontact);
 
   setStringToIntegralParameter<int>("SYSTEM", "Condensed", "Type of linear system setup / solution",
@@ -378,19 +378,6 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       tuple<PlotReferenceType>(PlotReferenceType::vague, PlotReferenceType::current_solution,
           PlotReferenceType::previous_solution),
       &plot_contact);
-
-  // --------------------------------------------------------------------------
-  // sub-list "eXtended contact formulation"
-  Teuchos::ParameterList& xcontact = scontact.sublist("XCONTACT");
-  // TODO
-  BoolParameter("CONST_CPP_NORMAL", "No",
-      "If chosen, closest point normal on master is assumed to be constant during"
-      " variation and linearization.",
-      &xcontact);
-
-  // TODO
-  BoolParameter("H1_DUALITY_PAIRING", "Yes",
-      "If chosen, H1 duality pairing for contact potential is used.", &xcontact);
 
   // --------------------------------------------------------------------------
   DoubleParameter(

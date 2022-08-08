@@ -73,8 +73,7 @@ namespace CONTACT
       static Teuchos::RCP<::CONTACT::CoInterface> CreateInterface(const int id,
           const Epetra_Comm& comm, const int dim, Teuchos::ParameterList& icparams,
           const bool selfcontact,
-          const Teuchos::RCP<std::pair<enum XFEM::FieldName,
-              Teuchos::RCP<const DRT::DiscretizationInterface>>>& parent_dis_pair,
+          const Teuchos::RCP<const DRT::DiscretizationInterface>& parent_dis,
           Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr = Teuchos::null,
           const int contactconstitutivelaw_id = -1);
 
@@ -84,8 +83,7 @@ namespace CONTACT
       static Teuchos::RCP<::CONTACT::CoInterface> CreateInterface(
           const enum INPAR::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
           const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
-          const Teuchos::RCP<std::pair<enum XFEM::FieldName,
-              Teuchos::RCP<const DRT::DiscretizationInterface>>>& parent_dis_pair,
+          const Teuchos::RCP<const DRT::DiscretizationInterface>& parent_dis,
           Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr,
           const int contactconstitutivelaw_id = -1);
 
@@ -149,21 +147,6 @@ namespace CONTACT
           enum MORTAR::MortarElement::PhysicalType& mastertype) const;
 
       //!@}
-
-      /*! \brief Extract the discretization belonging to the given contact
-       *   condition pair/group
-       *
-       *  \param full_discret (in) : full structural discretization
-       *  \param given_cgroup (in) : given contact condition group/pair
-       *  \param parent_dis_pair (out) : pair of enumerator and discretization interface
-       *                                 belonging to the given contact condition group/pair
-       *
-       *  \author hiermeier
-       *  \date 10/16 */
-      void ExtractParentDiscretization(const DRT::DiscretizationInterface& full_discret,
-          const std::vector<DRT::Condition*>& given_ccgroup,
-          std::pair<enum XFEM::FieldName, Teuchos::RCP<const DRT::DiscretizationInterface>>&
-              parent_dis_pair) const;
 
       void FullyOverlappingInterfaces(
           std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces) const;

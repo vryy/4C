@@ -1572,15 +1572,6 @@ namespace CONTACT
     //! @Internal evaluate routines
     //!@{
 
-    /*! \brief Evaluate only the weighted gap values
-     *
-     * \param cparams (in): parameter interface between the contact objects and the structural time
-     * integration
-     *
-     *  \date 03/2016
-     *  \author hiermeier */
-    virtual void EvalWeightedGap(CONTACT::ParamsInterface& cparams);
-
     /*! \brief Compute force and stiffness terms
      *
      * \param cparams (in): parameter interface between the contact objects and the structural time

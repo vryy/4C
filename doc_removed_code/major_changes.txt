@@ -1,5 +1,11 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+Xcontact (contact simulations based on CutFEM/XFEM)
+- removed in commit 56f63a325f47ab35bab697a30a0a54a6e23e51c8
+- reasons: - code implementation incomplete
+           - content not of current/future interest
+- removed by Carolin Geitner
+
 ControlledRotationFunction and AccelerationProfileFunction in src/drt_lib
 - removed in b1788c78144a47b90ba42b53a424092f5ebdd58f
 - reasons: unused and untested

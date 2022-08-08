@@ -344,10 +344,6 @@ namespace DRT
     {
       return getParameterList()->sublist("CONTACT DYNAMIC");
     }
-    const Teuchos::ParameterList& XContactDynamicParams() const
-    {
-      return getParameterList()->sublist("XCONTACT DYNAMIC");
-    }
     const Teuchos::ParameterList& BeamInteractionParams() const
     {
       return getParameterList()->sublist("BEAM INTERACTION");

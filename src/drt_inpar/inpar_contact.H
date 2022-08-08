@@ -51,7 +51,6 @@ namespace INPAR
       solution_steepest_ascent_sp, /**< steepest ascent approach as saddlepoint formulation
                                     *   (based on the augmented formulation) */
       solution_std_lagrange,       ///< lagrange strategy (based on the augmented formulation)
-      solution_xcontact,           ///< eXtended contact approach
       solution_nitsche,            ///< Nitsche contact solution method
       solution_ehl,                ///< method for elasto-hydrodynamic lubrication
       solution_multiscale  ///< method for contact of rough surfaces with a multi scale approach
@@ -79,8 +78,6 @@ namespace INPAR
           return "solution_steepest_ascent_sp";
         case solution_std_lagrange:
           return "solution_std_lagrange";
-        case solution_xcontact:
-          return "solution_xcontact";
         case solution_nitsche:
           return "solution_nitsche";
         default:

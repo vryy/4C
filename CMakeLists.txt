@@ -639,8 +639,6 @@ set(OBJS_DRT_ADAPT
     src/drt_adapter/ad_str_fsi_timint_adaptive.cpp
     src/drt_adapter/ad_str_poro_wrapper.cpp
     src/drt_adapter/ad_str_timeloop.cpp
-    src/drt_adapter/ad_str_xcontact.cpp
-    src/drt_adapter/ad_str_xstructure_algorithm.cpp
     src/drt_adapter/ad_str_invana.cpp
     src/drt_adapter/adapter_thermo.cpp
     src/drt_adapter/ad_ale.cpp
@@ -744,7 +742,6 @@ set(OBJS_DRT_INPAR
     src/drt_inpar/inpar_twophase.cpp
     src/drt_inpar/inpar_volmortar.cpp
     src/drt_inpar/inpar_wear.cpp
-    src/drt_inpar/inpar_contact_xcontact.cpp
     src/drt_inpar/inpar_xfem.cpp
     src/drt_tutorial/inpar_tutorial.cpp
     )
@@ -765,7 +762,6 @@ set(OBJS_DRT_XFEM
     src/drt_xfem/xfem_neumann.cpp
     src/drt_xfem/xfem_interface_utils.cpp
     src/drt_xfem/xfem_utils.cpp
-    src/drt_xfem/xfem_state_creator.cpp
     src/drt_xfem/xfield_state.cpp
     src/drt_xfem/xfield_field_coupling_dofset.cpp
     src/drt_xfem/xfield_field_coupling.cpp
@@ -1131,7 +1127,6 @@ set(OBJS_DRT_SCATRA
     src/drt_scatra/scatra_timint_hdg.cpp
     src/drt_scatra/scatra_timint_stat_hdg.cpp
     src/drt_scatra/scatra_timint_cardiac_monodomain_scheme_hdg.cpp
-    src/drt_contact_xcontact/xcontact_levelset_timint_ost.cpp
     )
 set(OBJS_DRT_TSI
     src/drt_tsi/tsi_algorithm.cpp
@@ -1538,18 +1533,6 @@ set(OBJS_DRT_TWO_PHASE
     src/drt_two_phase_flow/two_phase_algorithm.cpp src/drt_two_phase_flow/two_phase_dyn.cpp
     )
 
-set(OBJS_DRT_CONTACT_XCONTACT
-    src/drt_contact_xcontact/xcontact_algorithm_base.cpp
-    src/drt_contact_xcontact/xcontact_algorithm_partitioned.cpp
-    src/drt_contact_xcontact/xcontact_dyn.cpp
-    src/drt_contact_xcontact/xcontact_multi_discretization_wrapper.cpp
-    src/drt_contact_xcontact/xcontact_levelset_algorithm.cpp
-    src/drt_contact_xcontact/xcontact_levelset_intersection.cpp
-    src/drt_contact_xcontact/xcontact_levelset_reinit_generic.cpp
-    src/drt_contact_xcontact/xcontact_levelset_reinit_elliptic.cpp
-    src/drt_contact_xcontact/xcontact_levelset_reinit_elliptic_nox_interface.cpp
-    )
-
 set(OBJS_POST_DRT_COMMON src/post_drt_common/post_drt_common.cpp)
 set(OBJS_POST_PROCESSOR_MAIN
     src/post_drt_common/post_processor.cpp
@@ -1712,7 +1695,6 @@ set(OBJS_DRT_STRUCTURE
     src/drt_structure_new/str_model_evaluator_springdashpot.cpp
     src/drt_structure_new/str_model_evaluator_contact.cpp
     src/drt_structure_new/str_model_evaluator_meshtying.cpp
-    src/drt_contact_xcontact/str_model_evaluator_xcontact.cpp
     src/drt_struct_ale/struct_ale_str_model_evaluator.cpp
     src/drt_structure_new/str_model_evaluator_multiphysics.cpp
     src/drt_structure_new/str_nln_solver_factory.cpp
@@ -1751,9 +1733,6 @@ set(OBJS_DRT_STRUCTURE_XSTRUCTURE
     src/drt_structure_xstructure/xstr_xstructure_structure_state.cpp
     src/drt_structure_xstructure/xstr_multi_discretization_wrapper.cpp
     src/drt_structure_xstructure/xstr_multi_io.cpp
-    src/drt_contact_xcontact/xcontact_cutwizard.cpp
-    src/drt_contact_xcontact/xcontact_cutwizard_debug.cpp
-    src/drt_contact_xcontact/xcontact_state_creator.cpp
     )
 set(OBJS_POST_DRT_S8CONVERT src/post_s8convert/post_drt_s8convert.cpp)
 set(OBJS_DRT_PARTICLE_ALGORITHM
@@ -2230,9 +2209,6 @@ set(OBJS_DRT_CONTACT_AUG
     src/drt_contact_aug/contact_aug_interface_assembly.cpp
     src/drt_contact_aug/contact_aug_timemonitor.cpp
     src/drt_contact_aug/contact_aug_parallel_distribution_controller.cpp
-    src/drt_contact_xcontact/xcontact_strategy.cpp
-    src/drt_contact_xcontact/xcontact_interface.cpp
-    src/drt_contact_xcontact/xcontact_integrator.cpp
     )
 set(OBJS_DRT_CUT
     src/drt_cut/cut_options.cpp
@@ -2611,7 +2587,6 @@ add_library(alg_immersed_problem ${OBJS_DRT_IMMERSED_PROBLEM})
 add_library(alg_fsi_xfem ${OBJS_DRT_FSI_XFEM})
 add_library(alg_loma ${OBJS_DRT_LOMA})
 add_library(alg_two_phase ${OBJS_DRT_TWO_PHASE})
-add_library(alg_contact_xfem ${OBJS_DRT_CONTACT_XCONTACT})
 add_library(alg_tsi ${OBJS_DRT_TSI})
 add_library(alg_sti ${OBJS_DRT_STI})
 add_library(alg_wear ${OBJS_DRT_WEAR})
@@ -2632,7 +2607,6 @@ set(MULTIFIELD_LIBRARIES
     alg_fsi_xfem
     alg_loma
     alg_two_phase
-    alg_contact_xfem
     alg_tsi
     alg_sti
     alg_wear

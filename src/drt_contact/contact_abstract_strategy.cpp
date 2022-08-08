@@ -2989,14 +2989,6 @@ void CONTACT::CoAbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
   switch (act)
   {
     // -------------------------------------------------------------------
-    // evaluate only the weighted gap
-    // -------------------------------------------------------------------
-    case MORTAR::eval_weighted_gap:
-    {
-      EvalWeightedGap(cparams);
-      break;
-    }
-    // -------------------------------------------------------------------
     // evaluate only the contact forces / contact right hand side
     // -------------------------------------------------------------------
     case MORTAR::eval_force:
@@ -3179,15 +3171,6 @@ void CONTACT::CoAbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
   PostEvaluate(cparams);
 
   return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::EvalWeightedGap(CONTACT::ParamsInterface& cparams)
-{
-  dserror(
-      "Not yet implemented! See the XCONTACT::Strategy for an "
-      "example.");
 }
 
 /*----------------------------------------------------------------------*

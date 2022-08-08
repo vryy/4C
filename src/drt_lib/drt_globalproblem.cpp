@@ -213,8 +213,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--CONTACT DYNAMIC/AUGMENTED/STEEPESTASCENT", *list);
   reader.ReadGidSection("--CONTACT DYNAMIC/AUGMENTED/LAGRANGE_MULTIPLIER_FUNCTION", *list);
   reader.ReadGidSection("--CONTACT DYNAMIC/AUGMENTED/PLOT", *list);
-  reader.ReadGidSection("--CONTACT DYNAMIC/XCONTACT", *list);
-  reader.ReadGidSection("--XCONTACT DYNAMIC", *list);
   reader.ReadGidSection("--CARDIOVASCULAR 0D-STRUCTURE COUPLING", *list);
   reader.ReadGidSection(
       "--CARDIOVASCULAR 0D-STRUCTURE COUPLING/SYS-PUL CIRCULATION PARAMETERS", *list);
@@ -1545,30 +1543,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
           DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(), "GEOMETRY"),
           nullptr);
 
-      break;
-    }
-
-    case prb_xcontact:
-    {
-      // create a discretization for the structure
-      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
-      // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-
-      AddDis("structure", structdis);
-
-      nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
-          DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(), "GEOMETRY"),
-          nullptr);
-
-      // This is moved to XCONTACT::ALGORITHM::Base::Setup()
-      //    scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
-      //    scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
-      //    AddDis("scatra", scatradis);
-      // seems unnecessary, since we do not read the scatra mesh from the dat file
-      //    scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
-      //    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis,
-      //    reader, "--TRANSPORT ELEMENTS")));
       break;
     }
 
