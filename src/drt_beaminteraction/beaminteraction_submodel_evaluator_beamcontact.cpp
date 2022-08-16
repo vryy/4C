@@ -246,9 +246,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Reset()
           element_posdofvec_absolutevalues[ielement]);
     }
 
-    // update the Dof values in the interaction element pair object
+    // update positional Dof values in the interaction element pair object
     elepairptr->ResetState(
         element_posdofvec_absolutevalues[0], element_posdofvec_absolutevalues[1]);
+
+    // update rotational Dof values in the interaction pair object
+    elepairptr->ResetRotationState(Discret(), BeamInteractionDataStatePtr()->GetMutableDisColNp());
   }
 
   // Set restart displacements in the pairs.

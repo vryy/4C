@@ -71,7 +71,7 @@ namespace GEOMETRYPAIR
   }
 
   /**
-   * \brief Get the shape function matrix of the element.
+   * \brief Get the shape function matrix of the element at xi.
    *
    * Multiplying this shape function matrix with the element DOF vector results in the field
    * variable evaluated at xi.
@@ -158,76 +158,6 @@ namespace GEOMETRYPAIR
   }
 
   /**
-   * \brief Get the spatial position in a volume defined by a centerline and a cross section.
-   *
-   * The parameter coordinates in the cross section are from -1 t 1 in eta2 and eta3 direction. The
-   * radius is taken from the element pointer. The current implementation does not take rotations
-   * along the centerline into account. Therefore following triad along the centerline is assumed:
-   *   - director 1: Tangent along the centerline.
-   *   - director 2: Normal to director 1 in x-y plane.
-   *   - director 3: Normal to director 1 and director 2.
-   * This works fine as long as the line only deforms in the x-y plane. Other deformations will
-   * cause a runtime error.
-   *
-   * @param eta (in) Parameter coordinate along the centerline.
-   * @param eta_cross_section (in) Parameter coordinates in the cross section. They will be
-   * multiplied with the radius of the cylindrical surface on the centerline.
-   * @param q (in) DOF for of the line.
-   * @param r (out) Spatial position in the cross section.
-   * @param element (in) Pointer to the line element.
-   * @param triad (in) Pointer to the cross section triad. If this parameter is given, this triad
-   * will be used not the one described above.
-   */
-  template <typename element_type, typename T1, typename T2, typename V, typename scalar_type>
-  void EvaluatePositionLineCrossSection(const T1& eta, const T2& eta_cross_section, const V& q,
-      LINALG::Matrix<3, 1, scalar_type>& r, const DRT::Element* element = nullptr,
-      const LINALG::Matrix<3, 3, scalar_type>* triad = nullptr)
-  {
-    // Get the radius from the beam element.
-    const double radius = (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element))
-                              ->GetCircularCrossSectionRadiusForInteractions();
-
-    // Get the position along the centerline.
-    EvaluatePosition<element_type>(eta, q, r, element);
-
-    if (triad == nullptr)
-    {
-      LINALG::Matrix<3, 1, scalar_type> tangent, cross_section_director_2, cross_section_director_3;
-      EvaluatePositionDerivative1<element_type>(eta, q, tangent, element);
-
-      // The current implementation only allows tangential vectors in the x-y plane.
-      if (abs(tangent(2)) > CONSTANTS::pos_tol)
-        dserror("The tangent vector can not have a component in z direction! The component is %f!",
-            FADUTILS::CastToDouble(tangent(2)));
-
-      // Create the director vectors in the cross section.
-      // Director 2 is the one in the y-axis (reference configuration).
-      // Director 3 is the one in the z-axis (reference configuration).
-      tangent.Scale(1. / FADUTILS::VectorNorm(tangent));
-      cross_section_director_2.Clear();
-      cross_section_director_2(0) = -tangent(1);
-      cross_section_director_2(1) = tangent(0);
-      cross_section_director_3.Clear();
-      cross_section_director_3(2) = 1.;
-
-      // Add the in cross section components of the position.
-      for (unsigned int dir = 0; dir < 3; dir++)
-        r(dir) += radius * (eta_cross_section(0) * cross_section_director_2(dir) +
-                               eta_cross_section(1) * cross_section_director_3(dir));
-    }
-    else
-    {
-      // Use the given triad.
-      LINALG::Matrix<3, 1, scalar_type> cross_section_coordinates(true);
-      cross_section_coordinates(1) = radius * eta_cross_section(0);
-      cross_section_coordinates(2) = radius * eta_cross_section(1);
-      LINALG::Matrix<3, 1, scalar_type> cross_section_position;
-      cross_section_position.Multiply(*triad, cross_section_coordinates);
-      r += cross_section_position;
-    }
-  }
-
-  /**
    * \brief Evaluate the normal at a position on the surface.
    *
    * @param xi (in) Parameter coordinates on the surface (the first two are in the surface
@@ -299,6 +229,53 @@ namespace GEOMETRYPAIR
     // Add the normal part to the position.
     normal.Scale(xi(2));
     r += normal;
+  }
+
+  /**
+   * \brief Evaluate a triad on a plane curde.
+   *
+   * The curve has to lie in the x-y plane. The first basis vector of the triad is the tangent along
+   * the curve, the second basis vector is the tangent rotated clockwise around the z axis by pi/2.
+   * The third basis vector is the Cartesian e_z basis vector.
+   *
+   * @param xi (in) Parameter coordinate on the line
+   * @param q_line (in) DOFs of the beam
+   * @param triad (out) Beam cross section triad
+   * @param element (in) Pointer to the element object.
+   */
+  template <typename line, typename scalar_type_xi, typename scalar_type_dof,
+      typename scalar_type_result>
+  void EvaluateTriadAtPlaneCurve(const scalar_type_xi xi,
+      const LINALG::Matrix<line::n_dof_, 1, scalar_type_dof>& q_line,
+      LINALG::Matrix<3, 3, scalar_type_result>& triad, const DRT::Element* element)
+  {
+    LINALG::Matrix<3, 1, scalar_type_result> tangent, cross_section_director_2,
+        cross_section_director_3;
+    EvaluatePositionDerivative1<line>(xi, q_line, tangent, element);
+
+    if (std::abs(tangent(2)) > CONSTANTS::pos_tol)
+      dserror(
+          "EvaluateTriadAtPlaneCurve: The tangent vector can not have a component in z direction! "
+          "The component is %f!",
+          FADUTILS::CastToDouble(tangent(2)));
+
+    // Create the director vectors in the cross section.
+    // Director 2 is the one in the y-axis (reference configuration).
+    // Director 3 is the one in the z-axis (reference configuration).
+    tangent.Scale(1. / FADUTILS::VectorNorm(tangent));
+    cross_section_director_2.Clear();
+    cross_section_director_2(0) = -tangent(1);
+    cross_section_director_2(1) = tangent(0);
+    cross_section_director_3.Clear();
+    cross_section_director_3(2) = 1.;
+
+    // Set the triad.
+    for (unsigned int dir = 0; dir < 3; dir++)
+    {
+      triad(dir, 0) = tangent(dir);
+      triad(dir, 1) = cross_section_director_2(dir);
+      triad(dir, 2) = cross_section_director_3(dir);
+    }
   }
 
   /**

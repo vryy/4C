@@ -13,15 +13,7 @@ on the surface of the (circular) beam cross section.
 #define BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_GAUSS_POINT_CROSS_SECTION_H_
 
 
-#include "beam_to_solid_volume_meshtying_pair_base.H"
-
-
-// Forward declaration.
-namespace GEOMETRYPAIR
-{
-  template <typename scalar_type, typename line, typename volume>
-  class GeometryPairLineToVolumeGaussPointProjectionCrossSection;
-}  // namespace GEOMETRYPAIR
+#include "beam_to_solid_volume_meshtying_pair_gauss_point_cross_section_base.H"
 
 
 namespace BEAMINTERACTION
@@ -34,11 +26,11 @@ namespace BEAMINTERACTION
    */
   template <typename beam, typename solid>
   class BeamToSolidVolumeMeshtyingPairGaussPointCrossSection
-      : public BeamToSolidVolumeMeshtyingPairBase<beam, solid>
+      : public BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase<beam, solid>
   {
    private:
     //! Shortcut to the base class.
-    using base_class = BeamToSolidVolumeMeshtyingPairBase<beam, solid>;
+    using base_class = BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase<beam, solid>;
 
     //! Type to be used for scalar AD variables. This can not be inherited from the base class.
     using scalar_type = typename base_class::scalar_type;
@@ -54,6 +46,12 @@ namespace BEAMINTERACTION
      */
     virtual ~BeamToSolidVolumeMeshtyingPairGaussPointCrossSection(){};
 
+    /*!
+     *\brief things that need to be done in a separate loop before the actual evaluation loop
+     *      over all contact pairs
+     */
+    virtual void PreEvaluate() override;
+
     /**
      * \brief Evaluate this contact element pair.
      * @param forcevec1 (out) Force vector on element 1.
@@ -68,26 +66,12 @@ namespace BEAMINTERACTION
         LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
         LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22) override;
 
-    /**
-     * \brief Create the geometry pair for this contact pair. We overload that function because this
-     * pair requires explicitly that a cross section projection pair is created.
-     * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
-     */
-    void CreateGeometryPair(
-        const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
-        override;
-
    protected:
     /**
-     * \brief Calculate the position on the beam, also taking into account parameter coordinates on
-     * the cross section.
-     * @param integration_point (in) Integration where the position should be evaluated.
-     * @param r_beam (out) Position on the beam.
-     * @param reference (in) True -> the reference position is calculated, False -> the current
-     * position is calculated.
+     * \brief Get the triad of the beam at the parameter coordinate xi (derived)
      */
-    void EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
-        LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const override;
+    void GetTriadAtXiDouble(
+        const double xi, LINALG::Matrix<3, 3, double>& triad, const bool reference) const override;
   };
 }  // namespace BEAMINTERACTION
 

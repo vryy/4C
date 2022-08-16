@@ -19,6 +19,7 @@ on the surface of the (circular) beam cross section.
 #include "../drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection_cross_section.H"
 #include "beam_to_solid_volume_meshtying_pair_gauss_point_cross_section.H"
+#include "../drt_beam3/triad_interpolation_local_rotation_vectors.H"
 
 
 /**
@@ -27,9 +28,27 @@ on the surface of the (circular) beam cross section.
 template <typename beam, typename solid>
 BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
     solid>::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection()
-    : BeamToSolidVolumeMeshtyingPairBase<beam, solid>()
+    : base_class()
 {
   // Empty constructor.
+}
+
+/**
+ *
+ */
+template <typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
+    solid>::PreEvaluate()
+{
+  // Call PreEvaluate on the geometry Pair.
+  if (!this->meshtying_is_evaluated_)
+  {
+    LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
+    LINALG::Matrix<solid::n_dof_, 1, double> solid_coupling_ref;
+    this->GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
+    this->CastGeometryPair()->PreEvaluate(
+        beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
+  }
 }
 
 /**
@@ -69,6 +88,9 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
   // Initialize variables for position and force vectors.
   LINALG::Matrix<3, 1, double> dr_beam_ref;
   LINALG::Matrix<3, 1, scalar_type> r_beam;
+  LINALG::Matrix<3, 3, scalar_type> triad;
+  LINALG::Matrix<3, 1, scalar_type> r_cross_section_ref;
+  LINALG::Matrix<3, 1, scalar_type> r_cross_section;
   LINALG::Matrix<3, 1, scalar_type> r_solid;
   LINALG::Matrix<3, 1, scalar_type> force;
   LINALG::Matrix<beam::n_dof_, 1, scalar_type> force_element_1(true);
@@ -94,8 +116,15 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
     beam_jacobian = 0.5 * dr_beam_ref.Norm2();
 
     // Get the current positions on beam and solid.
-    GEOMETRYPAIR::EvaluatePositionLineCrossSection<beam>(projected_gauss_point.GetEta(),
-        projected_gauss_point.GetEtaCrossSection(), this->ele1pos_, r_beam, this->Element1());
+    GEOMETRYPAIR::EvaluatePosition<beam>(
+        projected_gauss_point.GetEta(), this->ele1pos_, r_beam, this->Element1());
+    GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<beam>(
+        projected_gauss_point.GetEta(), this->ele1pos_, triad, this->Element1());
+    r_cross_section_ref(0) = 0.0;
+    r_cross_section_ref(1) = projected_gauss_point.GetEtaCrossSection()(0);
+    r_cross_section_ref(2) = projected_gauss_point.GetEtaCrossSection()(1);
+    r_cross_section.Multiply(triad, r_cross_section_ref);
+    r_beam += r_cross_section;
     GEOMETRYPAIR::EvaluatePosition<solid>(projected_gauss_point.GetXi(), this->ele2pos_, r_solid);
 
     // Calculate the force in this Gauss point. The sign of the force calculated here is the one
@@ -166,55 +195,30 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
     }
   }
 
-  // Return true as there are meshtying contributions.
+  // Return true as there are mesh tying contributions.
   return true;
 }
 
-
 /**
  *
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
-    solid>::CreateGeometryPair(const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>&
-        geometry_evaluation_data_ptr)
-{
-  // Call the method of the base class.
-  BeamContactPair::CreateGeometryPair(geometry_evaluation_data_ptr);
-
-  // Cast the geometry evaluation data to the correct format.
-  auto line_to_3d_evaluation_data = Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::LineTo3DEvaluationData>(
-      geometry_evaluation_data_ptr, true);
-
-  // Check that the cylinder strategy is given in the input file.
-  INPAR::GEOMETRYPAIR::LineTo3DStrategy strategy = line_to_3d_evaluation_data->GetStrategy();
-  if (strategy != INPAR::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_cross_section)
-    dserror(
-        "The cross section projection only works with cross section projection in the geometry "
-        "pairs.");
-
-  // Explicitly create the cylinder pair here, as this contact pair only works with this kind of
-  // geometry pair.
-  this->geometry_pair_ = Teuchos::rcp(
-      new GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double, beam,
-          solid>(line_to_3d_evaluation_data));
-}
-
-/**
- *
- */
-template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
-    solid>::EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
-                                     integration_point,
-    LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const
+    solid>::GetTriadAtXiDouble(const double xi, LINALG::Matrix<3, 3, double>& triad,
+    const bool reference) const
 {
   if (reference)
-    GEOMETRYPAIR::EvaluatePositionLineCrossSection<beam>(integration_point.GetEta(),
-        integration_point.GetEtaCrossSection(), this->ele1posref_, r_beam, this->Element1());
+  {
+    LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
+    LINALG::Matrix<solid::n_dof_, 1, double> dummy;
+    this->GetCouplingReferencePosition(beam_coupling_ref, dummy);
+    GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<beam>(xi, beam_coupling_ref, triad, this->Element1());
+  }
   else
-    GEOMETRYPAIR::EvaluatePositionLineCrossSection<beam>(integration_point.GetEta(),
-        integration_point.GetEtaCrossSection(), this->ele1pos_, r_beam, this->Element1());
+  {
+    GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<beam>(
+        xi, FADUTILS::CastToDouble(this->ele1pos_), triad, this->Element1());
+  }
 }
 
 

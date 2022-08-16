@@ -12,15 +12,7 @@
 #define BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_GAUSS_POINT_CROSS_SECTION_ROTAION_H_
 
 
-#include "beam_to_solid_volume_meshtying_pair_base.H"
-
-
-// Forward declaration.
-namespace GEOMETRYPAIR
-{
-  template <typename scalar_type, typename line, typename volume>
-  class GeometryPairLineToVolumeGaussPointProjectionCrossSection;
-}  // namespace GEOMETRYPAIR
+#include "beam_to_solid_volume_meshtying_pair_gauss_point_cross_section_base.H"
 
 
 namespace BEAMINTERACTION
@@ -33,29 +25,38 @@ namespace BEAMINTERACTION
    */
   template <typename beam, typename solid>
   class BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation
-      : public BeamToSolidVolumeMeshtyingPairBase<beam, solid>
+      : public BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase<beam, solid>
   {
    private:
     //! Shortcut to the base class.
-    using base_class = BeamToSolidVolumeMeshtyingPairBase<beam, solid>;
+    using base_class = BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase<beam, solid>;
 
     //! Type to be used for scalar AD variables. This can not be inherited from the base class.
     using scalar_type = typename base_class::scalar_type;
 
-    //! Number of rotational DOF for the Simo--Reissner beams;
-    static const unsigned int n_dof_rot_ = 3;
-    static const unsigned int n_dof_pair_ = n_dof_rot_ + beam::n_dof_ + solid::n_dof_;
+    //! Rotation representation.
+    static const unsigned int n_nodes_rot_ = 3;
+    static const unsigned int n_dof_rot_ = n_nodes_rot_ * 3;
 
-    //! FAD type to evaluate the rotational coupling terms. The first 3 entries are the values of
-    //! psi_beam, the following entries are the discrete solid DOFs.
-    using scalar_type_rot_1st = typename Sacado::Fad::SLFad<double, n_dof_pair_>;
-    using scalar_type_rot_2nd = typename FADUTILS::HigherOrderFadType<2, scalar_type_rot_1st>::type;
+    //! Number of dependent DOFs for the pair.
+    static const unsigned int n_dof_pair_ = beam::n_dof_ + solid::n_dof_ + n_dof_rot_;
+    static const unsigned int n_dof_fad_ = 3 + beam::n_dof_ + solid::n_dof_ + n_dof_rot_;
+
+    //! FAD type to evaluate the rotational coupling terms. The first ordering is as follows: beam
+    //! DOFs, solid DOFs, 3 components of the rotation vector psi.
+    using scalar_type_pair = typename Sacado::Fad::SLFad<double, n_dof_fad_>;
 
    public:
     /**
      * \brief Standard Constructor
      */
     BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation();
+
+    /*!
+     *\brief things that need to be done in a separate loop before the actual evaluation loop
+     *      over all contact pairs
+     */
+    virtual void PreEvaluate() override;
 
     /**
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
@@ -69,25 +70,25 @@ namespace BEAMINTERACTION
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
 
     /**
-     * \brief Create the geometry pair for this contact pair. We overload that function because this
-     * pair requires explicitly that a cross section projection pair is created.
-     * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
+     * \brief Update state of rotational DoFs of both elements
      */
-    void CreateGeometryPair(
-        const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
-        override;
+    void ResetRotationState(const DRT::Discretization& discret,
+        const Teuchos::RCP<const Epetra_Vector>& ia_discolnp) override;
 
    protected:
     /**
-     * \brief Calculate the position on the beam, also taking into account parameter coordinates on
-     * the cross section.
-     * @param integration_point (in) Integration where the position should be evaluated.
-     * @param r_beam (out) Position on the beam.
-     * @param reference (in) True -> the reference position is calculated, False -> the current
-     * position is calculated.
+     * \brief Get the triad of the beam at the parameter coordinate xi (derived)
      */
-    void EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
-        LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const override;
+    void GetTriadAtXiDouble(
+        const double xi, LINALG::Matrix<3, 3, double>& triad, const bool reference) const override;
+
+   private:
+    //! Reference triad interpolation in the beam element
+    LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>
+        triad_interpolation_scheme_ref_;
+
+    //! Current triad interpolation in the beam element
+    LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme_;
   };
 }  // namespace BEAMINTERACTION
 

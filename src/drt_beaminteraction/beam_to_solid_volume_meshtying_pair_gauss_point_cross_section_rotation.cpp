@@ -15,6 +15,7 @@
 
 #include "beam_contact_params.H"
 #include "beam_to_solid_volume_meshtying_params.H"
+#include "beam_to_solid_utils.H"
 #include "../drt_geometry_pair/geometry_pair_element_functions.H"
 #include "../drt_geometry_pair/geometry_pair_utility_classes.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
@@ -33,9 +34,24 @@
 template <typename beam, typename solid>
 BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation<beam,
     solid>::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation()
-    : BeamToSolidVolumeMeshtyingPairBase<beam, solid>()
+    : base_class()
 {
   // Empty constructor.
+}
+
+/**
+ *
+ */
+template <typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation<beam,
+    solid>::PreEvaluate()
+{
+  // Call PreEvaluate on the geometry Pair.
+  if (!this->meshtying_is_evaluated_)
+  {
+    this->CastGeometryPair()->PreEvaluate(this->ele1posref_, this->ele2posref_,
+        this->line_to_3D_segments_, &triad_interpolation_scheme_ref_);
+  }
 }
 
 /**
@@ -48,7 +64,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotati
     const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
-  // Call Evaluate on the geometry Pair. Only do this once for meshtying.
+  // Call Evaluate on the geometry Pair. Only do this once for mesh tying.
   if (!this->meshtying_is_evaluated_)
   {
     this->CastGeometryPair()->Evaluate(
@@ -63,6 +79,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotati
   else if (this->line_to_3D_segments_.size() > 1)
     dserror("There can be a maximum of one segment!");
 
+  // Check that the beam element is a Simo--Reissner beam.
+  auto beam_ele = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(this->Element1());
+  if (beam_ele == nullptr)
+    dserror("GetBeamTriadInterpolationScheme is only implemented for SR beams.");
+
   // Get the vector with the projection points for this pair.
   const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& projection_points =
       this->line_to_3D_segments_[0].GetProjectionPoints();
@@ -70,69 +91,57 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotati
   // If there are no projection points, return no contact status.
   if (projection_points.size() == 0) return;
 
-  // Set the FAD variables for the beam DOFs.
-  LINALG::Matrix<beam::n_dof_, 1, scalar_type_rot_2nd> q_beam(true);
-  for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
-    q_beam(i_beam) = FADUTILS::HigherOrderFadValue<scalar_type_rot_2nd>::apply(
-        n_dof_pair_, i_beam, FADUTILS::CastToDouble(this->ele1pos_(i_beam)));
-
-  // Check that the beam element is a Simo--Reissner beam.
-  auto beam_ele = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(this->Element1());
-  if (beam_ele == nullptr)
-    dserror("GetBeamTriadInterpolationScheme is only implemented for SR beams.");
-
-  // Get the rotations of the beam rotation nodes.
-  std::vector<double> beam_displacement_vector_full_double;
-  BEAMINTERACTION::UTILS::GetCurrentElementDis(
-      *discret, beam_ele, displacement_vector, beam_displacement_vector_full_double);
-  unsigned int rot_dof_indices[n_dof_rot_] = {3, 12, 18};
-  LINALG::Matrix<n_dof_rot_, 1, scalar_type_rot_2nd> q_rot(true);
-  for (unsigned int i_rot = 0; i_rot < n_dof_rot_; i_rot++)
-    q_rot(i_rot) = FADUTILS::HigherOrderFadValue<scalar_type_rot_2nd>::apply(n_dof_pair_,
-        beam::n_dof_ + i_rot, beam_displacement_vector_full_double[rot_dof_indices[i_rot]]);
-
+  // Set the FAD variables for the beam and solid DOFs.
+  auto set_q_fad = [](const auto& q_original, auto& q_fad, unsigned int fad_offset = 0)
   {
-    // Check that the out of plane rotations are 0.
+    for (unsigned int i_dof = 0; i_dof < q_original.Rows(); i_dof++)
+      q_fad(i_dof) = FADUTILS::HigherOrderFadValue<scalar_type_pair>::apply(
+          n_dof_fad_, fad_offset + i_dof, FADUTILS::CastToDouble(q_original(i_dof)));
+  };
+  LINALG::Matrix<beam::n_dof_, 1, scalar_type_pair> q_beam;
+  LINALG::Matrix<solid::n_dof_, 1, scalar_type_pair> q_solid;
+  set_q_fad(this->ele1pos_, q_beam);
+  set_q_fad(this->ele2pos_, q_solid, beam::n_dof_);
 
-    // Local indices of out of plane rotational DOFs.
-    const unsigned int other_rot_dof_indices[] = {4, 5, 13, 14, 19, 20};
-    const double tol = 1e-10;
-    double other_values = 0.0;
-    for (unsigned int i_dim = 1; i_dim < 6; i_dim++)
-      other_values += pow(beam_displacement_vector_full_double[other_rot_dof_indices[i_dim]], 2.0);
-    if (sqrt(other_values) > tol)
-      dserror(
-          "The rotation values for y and z rotations habe to be 0. Other values: %f, tolerance: "
-          "%f",
-          FADUTILS::sqrt(other_values), tol);
-  }
+  // Initialize pair wise vectors and matrices.
+  LINALG::Matrix<n_dof_pair_, 1, double> force_pair(true);
+  LINALG::Matrix<n_dof_pair_, n_dof_pair_, double> stiff_pair(true);
+  LINALG::Matrix<n_dof_pair_, 1, scalar_type_pair> force_pair_local;
+  LINALG::Matrix<n_dof_pair_, 3, double> d_force_d_psi;
+  LINALG::Matrix<n_dof_pair_, n_dof_rot_, double> local_stiffness_rot;
 
-  // Set the FAD variables for the solid DOFs.
-  LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd> q_solid;
-  for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
-    q_solid(i_solid) = FADUTILS::HigherOrderFadValue<scalar_type_rot_2nd>::apply(n_dof_pair_,
-        n_dof_rot_ + beam::n_dof_ + i_solid, FADUTILS::CastToDouble(this->ele2pos_(i_solid)));
+  // Shape function matrices.
+  LINALG::Matrix<3, solid::n_dof_, scalar_type_pair> N;
+  LINALG::Matrix<3, beam::n_dof_, scalar_type_pair> H;
+  LINALG::Matrix<3, n_dof_rot_, scalar_type_pair> L;
+  std::vector<LINALG::Matrix<3, 3, double>> I_tilde_vector;
+  LINALG::Matrix<3, n_dof_rot_, double> I_tilde;
 
-  // Initialize local matrices.
-  LINALG::Matrix<n_dof_pair_, 1, double> local_force;
-  LINALG::Matrix<n_dof_pair_, n_dof_pair_, double> local_stiff;
-
-  // Initialize variables for position and force vectors.
+  // Initialize vector and matrix variables for the Gauss integration.
   LINALG::Matrix<3, 1, double> dr_beam_ref;
-  LINALG::Matrix<3, 1, scalar_type_rot_2nd> dr_beam;
-  LINALG::Matrix<3, 3, scalar_type_rot_2nd> beam_triad;
-  LINALG::Matrix<1, 1, scalar_type_rot_2nd> phi_beam;
-  LINALG::Matrix<3, 1, scalar_type_rot_2nd> r_beam;
-  LINALG::Matrix<3, 1, scalar_type_rot_2nd> r_solid;
-  LINALG::Matrix<3, 1, scalar_type_rot_2nd> coupling_vector;
-  scalar_type_rot_2nd penalty_potential = 0.0;
+  LINALG::Matrix<3, 1, scalar_type_pair> cross_section_vector_ref;
+  LINALG::Matrix<3, 1, scalar_type_pair> cross_section_vector_current;
+  LINALG::Matrix<3, 1, scalar_type_pair> pos_beam;
+  LINALG::Matrix<3, 1, scalar_type_pair> pos_solid;
+  LINALG::Matrix<4, 1, double> quaternion_double;
+  LINALG::Matrix<3, 1, double> rotation_vector_double;
+  LINALG::Matrix<4, 1, scalar_type_pair> quaternion_fad;
+  LINALG::Matrix<3, 1, scalar_type_pair> rotation_vector_fad;
+  LINALG::Matrix<3, 3, scalar_type_pair> triad_fad;
+  LINALG::Matrix<3, 3, double> T_beam_double;
+  LINALG::Matrix<3, n_dof_rot_, double> T_times_I_tilde;
+  LINALG::Matrix<solid::n_dof_, 1, scalar_type_pair> temp_solid_force;
+  LINALG::Matrix<beam::n_dof_, 1, scalar_type_pair> temp_beam_force;
+  LINALG::Matrix<n_dof_rot_, 1, scalar_type_pair> temp_beam_force_rot;
 
   // Initialize scalar variables.
+  double eta = 1e10;
+  double eta_last_gauss_point = 1e10;
   double beam_jacobian = 0.0;
   const double penalty_parameter =
       this->Params()->BeamToSolidVolumeMeshtyingParams()->GetPenaltyParameter();
 
-  // Calculate the meshtying forces.
+  // Calculate the mesh tying forces.
   // Loop over segments.
   for (unsigned int i_integration_point = 0; i_integration_point < projection_points.size();
        i_integration_point++)
@@ -140,109 +149,154 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotati
     // Get the current Gauss point.
     const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
         projection_points[i_integration_point];
+    eta = projected_gauss_point.GetEta();
 
-    // Get the jacobian in the reference configuration.
-    GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
-        projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref, this->Element1());
-    beam_jacobian = 0.5 * dr_beam_ref.Norm2();
+    // Evaluate all beam specific terms. This only has to be done if the Gauss point position on the
+    // beam has changed compared to the last Gauss point.
+    if (std::abs(eta - eta_last_gauss_point) > 1e-10)
+    {
+      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
+          eta, this->ele1posref_, dr_beam_ref, this->Element1());
+      beam_jacobian = 0.5 * dr_beam_ref.Norm2();
 
-    // Reference tangent has to be in x direction.
-    const double tol = 1e-10;
-    double out_of_plane_values = 0.0;
-    for (unsigned int i_dim = 1; i_dim < 3; i_dim++)
-      out_of_plane_values += pow(dr_beam_ref(i_dim), 2.0);
-    if (sqrt(out_of_plane_values) > tol)
-      dserror(
-          "The reference beam tangent has to be in x-direction. Out of plane value: %f, tolerance: "
-          "%f",
-          FADUTILS::sqrt(out_of_plane_values), tol);
+      GEOMETRYPAIR::EvaluateShapeFunctionMatrix<beam>(eta, H, this->Element1());
+      pos_beam.Multiply(H, q_beam);
 
-    // Get the beam triad.
-    GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
-        projected_gauss_point.GetEta(), q_beam, dr_beam, this->Element1());
-    dr_beam.Scale(1.0 / FADUTILS::VectorNorm(dr_beam));
-    for (unsigned int i_dim = 0; i_dim < 3; i_dim++) beam_triad(i_dim, 0) = dr_beam(i_dim);
-    GEOMETRYPAIR::EvaluatePosition<GEOMETRYPAIR::t_line3>(
-        projected_gauss_point.GetEta(), q_rot, phi_beam);
-    beam_triad(1, 1) = cos(phi_beam(0));
-    beam_triad(2, 1) = sin(phi_beam(0));
-    beam_triad(1, 2) = -sin(phi_beam(0));
-    beam_triad(2, 2) = cos(phi_beam(0));
+      GEOMETRYPAIR::EvaluateShapeFunctionMatrix<GEOMETRYPAIR::t_line3>(eta, L);
 
-    // Get the current positions on beam and solid as well as the beam rotation.
-    GEOMETRYPAIR::EvaluatePositionLineCrossSection<beam>(projected_gauss_point.GetEta(),
-        projected_gauss_point.GetEtaCrossSection(), q_beam, r_beam, this->Element1(), &beam_triad);
-    GEOMETRYPAIR::EvaluatePosition<solid>(projected_gauss_point.GetXi(), q_solid, r_solid);
+      triad_interpolation_scheme_.GetNodalGeneralizedRotationInterpolationMatricesAtXi(
+          I_tilde_vector, eta);
+      for (unsigned int i_node = 0; i_node < n_nodes_rot_; i_node++)
+        for (unsigned int i_dim_0 = 0; i_dim_0 < 3; i_dim_0++)
+          for (unsigned int i_dim_1 = 0; i_dim_1 < 3; i_dim_1++)
+            I_tilde(i_dim_0, i_node * 3 + i_dim_1) = I_tilde_vector[i_node](i_dim_0, i_dim_1);
 
-    // Calculate the force in this Gauss point. The sign of the force calculated here is the one
-    // that acts on the beam.
-    coupling_vector = r_solid;
-    coupling_vector -= r_beam;
+      // Get the rotation vector at this Gauss point.
+      triad_interpolation_scheme_.GetInterpolatedQuaternionAtXi(quaternion_double, eta);
+      LARGEROTATIONS::quaterniontoangle(quaternion_double, rotation_vector_double);
+      T_beam_double = LARGEROTATIONS::Tmatrix(rotation_vector_double);
+      set_q_fad(rotation_vector_double, rotation_vector_fad, beam::n_dof_ + solid::n_dof_);
+      LARGEROTATIONS::angletoquaternion(rotation_vector_fad, quaternion_fad);
+      LARGEROTATIONS::quaterniontotriad(quaternion_fad, triad_fad);
+    }
 
-    // Add to penalty potential.
-    penalty_potential += projected_gauss_point.GetGaussWeight() * beam_jacobian *
-                         coupling_vector.Dot(coupling_vector) * penalty_parameter * 0.5;
+    // Get the shape function matrices.
+    GEOMETRYPAIR::EvaluateShapeFunctionMatrix<solid>(
+        projected_gauss_point.GetXi(), N, this->Element2());
+    pos_solid.Multiply(N, q_solid);
+
+    // Get the cross section vector.
+    cross_section_vector_ref(0) = 0.0;
+    cross_section_vector_ref(1) = projected_gauss_point.GetEtaCrossSection()(0);
+    cross_section_vector_ref(2) = projected_gauss_point.GetEtaCrossSection()(1);
+    cross_section_vector_current.Multiply(triad_fad, cross_section_vector_ref);
+
+    // Reset the local force vector for this Gauss point.
+    force_pair_local.PutScalar(0.0);
+
+    // Numerical integration factor for this Gauss point.
+    const double integration_factor =
+        projected_gauss_point.GetGaussWeight() * beam_jacobian * penalty_parameter;
+
+    // The following calculations are based on Steinbrecher, Popp, Meier: "Consistent coupling of
+    // positions and rotations for embedding 1D Cosserat beams into 3D solid volumes", eq. 97-98. Be
+    // aware, that there is a typo in eq. 98 where the derivative is taken with respect to the
+    // rotation angle and not the rotational DOFs.
+    auto r_diff = pos_beam;
+    r_diff += cross_section_vector_current;
+    r_diff -= pos_solid;
+
+    // Evaluate the force on the solid DOFs.
+    temp_solid_force.MultiplyTN(N, r_diff);
+    temp_solid_force.Scale(-1.0);
+    for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
+      force_pair_local(i_dof + beam::n_dof_) += temp_solid_force(i_dof);
+
+    // Evaluate the force on the positional beam DOFs.
+    temp_beam_force.MultiplyTN(H, r_diff);
+    for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
+      force_pair_local(i_dof) += temp_beam_force(i_dof);
+
+    // Evaluate the force on the rotational beam DOFs.
+    // In comparison to the mentioned paper, the relative cross section vector is also contained
+    // here, but it cancels out in the cross product with itself.
+    LINALG::Matrix<3, 1, scalar_type_pair> temp_beam_rot_cross;
+    temp_beam_rot_cross.CrossProduct(cross_section_vector_current, r_diff);
+    temp_beam_force_rot.MultiplyTN(L, temp_beam_rot_cross);
+    for (unsigned int i_dof = 0; i_dof < n_dof_rot_; i_dof++)
+      force_pair_local(i_dof + beam::n_dof_ + solid::n_dof_) += temp_beam_force_rot(i_dof);
+
+    // Add to pair force contributions.
+    force_pair_local.Scale(integration_factor);
+    force_pair += FADUTILS::CastToDouble(force_pair_local);
+
+    // The rotational stiffness contributions have to be handled separately due to the non-addidive
+    // nature of the rotational DOFs.
+    for (unsigned int i_dof = 0; i_dof < n_dof_pair_; i_dof++)
+      for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
+        d_force_d_psi(i_dof, i_dir) =
+            force_pair_local(i_dof).dx(beam::n_dof_ + solid::n_dof_ + i_dir);
+    T_times_I_tilde.Multiply(T_beam_double, I_tilde);
+    local_stiffness_rot.MultiplyNN(d_force_d_psi, T_times_I_tilde);
+
+    // Add the full stiffness contribution from this Gauss point.
+    for (unsigned int i_dof = 0; i_dof < n_dof_pair_; i_dof++)
+    {
+      for (unsigned int j_dof = 0; j_dof < n_dof_pair_; j_dof++)
+      {
+        if (j_dof < beam::n_dof_ + solid::n_dof_)
+          stiff_pair(i_dof, j_dof) += force_pair_local(i_dof).dx(j_dof);
+        else
+          stiff_pair(i_dof, j_dof) +=
+              local_stiffness_rot(i_dof, j_dof - beam::n_dof_ - solid::n_dof_);
+      }
+    }
+
+    // Set the eta value for this Gauss point.
+    eta_last_gauss_point = eta;
   }
 
   // Get the GIDs of this pair.
-  std::vector<int> lm_beam, lm_solid, lmowner, lmstride;
-  this->Element1()->LocationVector(*discret, lm_beam, lmowner, lmstride);
-  this->Element2()->LocationVector(*discret, lm_solid, lmowner, lmstride);
-
-  // Locla indices of the positional DOFs in the Simo--Reissner beam element.
-  const int pos_dof_indices[] = {0, 1, 2, 6, 7, 8, 9, 10, 11, 15, 16, 17};
   LINALG::Matrix<n_dof_pair_, 1, int> gid_pair;
-  for (unsigned int i = 0; i < beam::n_dof_; i++) gid_pair(i) = lm_beam[pos_dof_indices[i]];
+
+  // Beam centerline GIDs.
+  LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
+  UTILS::GetElementCenterlineGIDIndices(*discret, this->Element1(), beam_centerline_gid);
+  for (unsigned int i_dof_beam = 0; i_dof_beam < beam::n_dof_; i_dof_beam++)
+    gid_pair(i_dof_beam) = beam_centerline_gid(i_dof_beam);
+
+  // Solid GIDs.
+  std::vector<int> lm, lmowner, lmstride;
+  this->Element2()->LocationVector(*discret, lm, lmowner, lmstride);
+  for (unsigned int i = 0; i < solid::n_dof_; i++) gid_pair(i + beam::n_dof_) = lm[i];
+
+  // Beam rot GIDs.
+  this->Element1()->LocationVector(*discret, lm, lmowner, lmstride);
+  int rot_dof_indices[] = {3, 4, 5, 12, 13, 14, 18, 19, 20};
   for (unsigned int i = 0; i < n_dof_rot_; i++)
-    gid_pair(beam::n_dof_ + i) = lm_beam[rot_dof_indices[i]];
-  for (unsigned int i = 0; i < solid::n_dof_; i++)
-    gid_pair(beam::n_dof_ + n_dof_rot_ + i) = lm_solid[i];
+    gid_pair(i + beam::n_dof_ + solid::n_dof_) = lm[rot_dof_indices[i]];
 
   // If given, assemble force terms into the global force vector.
   if (force_vector != Teuchos::null)
-  {
-    LINALG::Matrix<n_dof_pair_, 1> force_vector_double;
-    for (unsigned int i_dof = 0; i_dof < n_dof_pair_; i_dof++)
-      force_vector_double(i_dof) = FADUTILS::CastToDouble(penalty_potential.dx(i_dof));
-    force_vector->SumIntoGlobalValues(n_dof_pair_, gid_pair.A(), force_vector_double.A());
-  }
+    force_vector->SumIntoGlobalValues(gid_pair.M(), gid_pair.A(), force_pair.A());
 
   // If given, assemble force terms into the global stiffness matrix.
   if (stiffness_matrix != Teuchos::null)
     for (unsigned int i_dof = 0; i_dof < n_dof_pair_; i_dof++)
       for (unsigned int j_dof = 0; j_dof < n_dof_pair_; j_dof++)
-        stiffness_matrix->FEAssemble(FADUTILS::CastToDouble(penalty_potential.dx(i_dof).dx(j_dof)),
-            gid_pair(i_dof), gid_pair(j_dof));
+        stiffness_matrix->FEAssemble(stiff_pair(i_dof, j_dof), gid_pair(i_dof), gid_pair(j_dof));
 }
-
 
 /**
  *
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation<beam,
-    solid>::CreateGeometryPair(const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>&
-        geometry_evaluation_data_ptr)
+    solid>::ResetRotationState(const DRT::Discretization& discret,
+    const Teuchos::RCP<const Epetra_Vector>& ia_discolnp)
 {
-  // Call the method of the base class.
-  BeamContactPair::CreateGeometryPair(geometry_evaluation_data_ptr);
-
-  // Cast the geometry evaluation data to the correct format.
-  auto line_to_3d_evaluation_data = Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::LineTo3DEvaluationData>(
-      geometry_evaluation_data_ptr, true);
-
-  // Check that the cylinder strategy is given in the input file.
-  INPAR::GEOMETRYPAIR::LineTo3DStrategy strategy = line_to_3d_evaluation_data->GetStrategy();
-  if (strategy != INPAR::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_cross_section)
-    dserror(
-        "The cross section projection only works with cross section projection in the geometry "
-        "pairs.");
-
-  // Explicitly create the cylinder pair here, as this beam-to-solid mesh tying pair only works with
-  // this kind of geometry pair.
-  this->geometry_pair_ = Teuchos::rcp(
-      new GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double, beam,
-          solid>(line_to_3d_evaluation_data));
+  GetBeamTriadInterpolationScheme(discret, ia_discolnp, this->Element1(),
+      triad_interpolation_scheme_, this->triad_interpolation_scheme_ref_);
 }
 
 /**
@@ -250,16 +304,17 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotati
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation<beam,
-    solid>::EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
-                                     integration_point,
-    LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const
+    solid>::GetTriadAtXiDouble(const double xi, LINALG::Matrix<3, 3, double>& triad,
+    const bool reference) const
 {
   if (reference)
-    GEOMETRYPAIR::EvaluatePositionLineCrossSection<beam>(integration_point.GetEta(),
-        integration_point.GetEtaCrossSection(), this->ele1posref_, r_beam, this->Element1());
+  {
+    this->triad_interpolation_scheme_ref_.GetInterpolatedTriadAtXi(triad, xi);
+  }
   else
-    GEOMETRYPAIR::EvaluatePositionLineCrossSection<beam>(integration_point.GetEta(),
-        integration_point.GetEtaCrossSection(), this->ele1pos_, r_beam, this->Element1());
+  {
+    this->triad_interpolation_scheme_.GetInterpolatedTriadAtXi(triad, xi);
+  }
 }
 
 

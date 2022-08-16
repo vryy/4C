@@ -171,16 +171,16 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
  */
 template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam,
-    solid>::EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
-                                     integration_point,
-    LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const
+    solid>::EvaluateBeamPositionDouble(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
+                                           integration_point,
+    LINALG::Matrix<3, 1, double>& r_beam, bool reference) const
 {
   if (reference)
     GEOMETRYPAIR::EvaluatePosition<beam>(
         integration_point.GetEta(), ele1posref_, r_beam, this->Element1());
   else
     GEOMETRYPAIR::EvaluatePosition<beam>(
-        integration_point.GetEta(), ele1pos_, r_beam, this->Element1());
+        integration_point.GetEta(), FADUTILS::CastToDouble(ele1pos_), r_beam, this->Element1());
 }
 
 

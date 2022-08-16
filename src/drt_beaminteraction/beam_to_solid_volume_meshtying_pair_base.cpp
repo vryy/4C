@@ -216,11 +216,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
   if (visualization_integration_points != Teuchos::null)
   {
     // Setup variables.
-    LINALG::Matrix<3, 1, scalar_type> X;
-    LINALG::Matrix<3, 1, scalar_type> u;
-    LINALG::Matrix<3, 1, scalar_type> r;
-    LINALG::Matrix<3, 1, scalar_type> r_solid;
-    LINALG::Matrix<3, 1, scalar_type> force_integration_point;
+    LINALG::Matrix<3, 1, double> X;
+    LINALG::Matrix<3, 1, double> u;
+    LINALG::Matrix<3, 1, double> r;
+    LINALG::Matrix<3, 1, double> r_solid;
+    LINALG::Matrix<3, 1, double> force_integration_point;
 
     // Get the visualization vectors.
     std::vector<double>& point_coordinates =
@@ -246,18 +246,18 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
       // Add the integration points.
       for (const auto& projection_point : segment.GetProjectionPoints())
       {
-        this->EvaluateBeamPosition(projection_point, X, true);
-        this->EvaluateBeamPosition(projection_point, r, false);
+        this->EvaluateBeamPositionDouble(projection_point, X, true);
+        this->EvaluateBeamPositionDouble(projection_point, r, false);
         u = r;
         u -= X;
-        GEOMETRYPAIR::EvaluatePosition<solid>(
-            projection_point.GetXi(), this->ele2pos_, r_solid, this->Element2());
-        EvaluatePenaltyForce(r, r_solid, force_integration_point);
+        GEOMETRYPAIR::EvaluatePosition<solid>(projection_point.GetXi(),
+            FADUTILS::CastToDouble(this->ele2pos_), r_solid, this->Element2());
+        EvaluatePenaltyForceDouble(r, r_solid, force_integration_point);
         for (unsigned int dim = 0; dim < 3; dim++)
         {
-          point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
-          displacement.push_back(FADUTILS::CastToDouble(u(dim)));
-          force.push_back(FADUTILS::CastToDouble(force_integration_point(dim)));
+          point_coordinates.push_back(X(dim));
+          displacement.push_back(u(dim));
+          force.push_back(force_integration_point(dim));
         }
 
         if (write_unique_ids)
@@ -274,12 +274,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::EvaluatePenaltyForce(
-    const LINALG::Matrix<3, 1, scalar_type>& r_beam,
-    const LINALG::Matrix<3, 1, scalar_type>& r_solid,
-    LINALG::Matrix<3, 1, scalar_type>& force) const
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::EvaluatePenaltyForceDouble(
+    const LINALG::Matrix<3, 1, double>& r_beam, const LINALG::Matrix<3, 1, double>& r_solid,
+    LINALG::Matrix<3, 1, double>& force) const
 {
-  // TODO: call this function also in the Evaluate methods.
   // The base implementation of the force is a simple linear penalty law.
   force = r_solid;
   force -= r_beam;
