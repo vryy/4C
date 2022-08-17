@@ -70,6 +70,36 @@ namespace GEOMETRYPAIR
     return 0.0;
   }
 
+  /**
+   * \brief Get the shape function matrix of the element.
+   *
+   * Multiplying this shape function matrix with the element DOF vector results in the field
+   * variable evaluated at xi.
+   *
+   * @param xi (in) Parameter coordinate on the element.
+   * @param N (out) shape function matrix.
+   * @param element (in) Pointer to the element, needed for beam elements.
+   */
+  template <typename element_type, typename T, typename scalar_type, unsigned int n_dim>
+  inline void EvaluateShapeFunctionMatrix(const T& xi,
+      LINALG::Matrix<n_dim, element_type::n_dof_, scalar_type>& N,
+      const DRT::Element* element = nullptr)
+  {
+    // Matrix for shape function values.
+    LINALG::Matrix<1, element_type::n_nodes_ * element_type::n_val_, scalar_type> N_flat(true);
+
+    // Evaluate the shape function values.
+    element_type::EvaluateShapeFunction(
+        N_flat, xi, std::integral_constant<unsigned int, element_type::dim_>{}, element);
+
+    // Fill up the full shape function matrix.
+    N.Clear();
+    for (unsigned int node = 0; node < element_type::n_nodes_; node++)
+      for (unsigned int dim = 0; dim < n_dim; dim++)
+        for (unsigned int val = 0; val < element_type::n_val_; val++)
+          N(dim, n_dim * element_type::n_val_ * node + n_dim * val + dim) =
+              N_flat(element_type::n_val_ * node + val);
+  }
 
   /**
    * \brief Get the position in the element.
