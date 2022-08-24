@@ -13,17 +13,15 @@
 #include <MueLu_PermutationFactory_fwd.hpp>
 #include <MueLu_FactoryBase_fwd.hpp>
 #include <MueLu_Level_fwd.hpp>
+#include <MueLu_UseDefaultTypes.hpp>
 
-// header files for default types, must be included after all other MueLu/Xpetra headers
-#include <MueLu_UseDefaultTypes.hpp>  // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
+#include <AztecOO_StatusTest.h>
+#include <AztecOO_StatusTestCombo.h>
+#include <AztecOO_StatusTestMaxIters.h>
+#include <AztecOO_StatusTestResNorm.h>
 
+#include "solver_aztecsolver_projectedresidual.H"
 #include "solver_krylovsolver.H"
-
-// Aztec forward declarations
-class AztecOO_StatusTestResNorm;
-class AztecOO_StatusTestProjResNorm;
-class AztecOO_StatusTestCombo;
-class AztecOO_StatusTestMaxIters;
 
 namespace LINALG::SOLVER
 {
@@ -68,4 +66,4 @@ namespace LINALG::SOLVER
   };
 }  // namespace LINALG::SOLVER
 
-#endif /* SOLVER_AZTECSOLVER_H_ */
+#endif

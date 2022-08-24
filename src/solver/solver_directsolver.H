@@ -2,20 +2,20 @@
 /*! \file
 
 \brief Description
+
 \level 0
-Created on: Jul 4, 2011
-*----------------------------------------------------------------------*/
+
+*/
+/*----------------------------------------------------------------------*/
 #ifndef SOLVER_DIRECTSOLVER_H_
 #define SOLVER_DIRECTSOLVER_H_
 
-#include "solver_solvertype.H"
+#include <Amesos_BaseSolver.h>
 
-// forward declarations
-class Amesos_BaseSolver;
-namespace EpetraExt
-{
-  class LinearProblem_Reindex2;
-}
+#include <Epetra_CrsMatrix.h>
+#include <EpetraExt_Reindex_LinearProblem2.h>
+
+#include "solver_solvertype.H"
 
 namespace LINALG::SOLVER
 {
@@ -77,4 +77,4 @@ namespace LINALG::SOLVER
   };
 }  // namespace LINALG::SOLVER
 
-#endif /* SOLVER_DIRECTSOLVER_H_ */
+#endif

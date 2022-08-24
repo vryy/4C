@@ -4,10 +4,11 @@
 \brief Interface class to ML preconditoner
 
 \brief Declaration
-\level 0
-*/
 
-#include "../drt_lib/drt_dserror.H"
+\level 0
+
+*/
+/*----------------------------------------------------------------------*/
 
 #include "ml_common.h"
 #include "ml_include.h"
@@ -17,8 +18,8 @@
 #include "ml_MultiLevelPreconditioner.h"
 
 #include "../linalg/linalg_mlapi_operator.H"  // Michael's MLAPI based ML preconditioner
-
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "../drt_lib/drt_dserror.H"
 
 #include "solver_mlpreconditioner.H"
 

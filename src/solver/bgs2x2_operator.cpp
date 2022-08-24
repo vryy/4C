@@ -2,18 +2,18 @@
 /*! \file
 
 \brief Declaration
+
 \level 1
 
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include "ml_MultiLevelPreconditioner.h"
 
-#include "../linalg/linalg_precond.H"
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../linalg/linalg_solver.H"
 
 #include "bgs2x2_operator.H"
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

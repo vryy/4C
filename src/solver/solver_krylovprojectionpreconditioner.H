@@ -2,76 +2,70 @@
 /*! \file
 
 \brief Declaration
-\level 1
-Created on: Jul 4, 2011
-*----------------------------------------------------------------------*/
+
+ \level 1
+
+*/
+/*----------------------------------------------------------------------*/
 #ifndef SOLVER_KRYLOVPROJECTIONPRECONDITIONER_H_
 #define SOLVER_KRYLOVPROJECTIONPRECONDITIONER_H_
 
+#include <Epetra_Operator.h>
+#include <Epetra_MultiVector.h>
+
+#include "../linalg/linalg_krylov_projector.H"
+#include "../linalg/linalg_projected_operator.H"
+
 #include "solver_preconditionertype.H"
 
-// forward declarations
-class Epetra_Operator;
-class Epetra_MultiVector;
-
-namespace LINALG
+namespace LINALG::SOLVER
 {
-  class LinalgProjectedOperator;
-  class KrylovProjector;
-
-  namespace SOLVER
+  /// krylov projection for undefined pressure value in incompressible fluids
+  /*!
+    This is not a preconditioner in a mathematical sense, but it fits the
+    software framework nicely. A "real" preconditioner is wrapped.
+  */
+  class KrylovProjectionPreconditioner : public PreconditionerType
   {
-    /// krylov projection for undefined pressure value in incompressible fluids
-    /*!
-      This is not a preconditioner in a mathematical sense, but it fits the
-      software framework nicely.
+   public:
+    KrylovProjectionPreconditioner(FILE* outfile, Teuchos::RCP<PreconditionerType> preconditioner,
+        Teuchos::RCP<LINALG::KrylovProjector> projector);
 
-      A "real" preconditioner is wrapped.
-     */
-    class KrylovProjectionPreconditioner : public PreconditionerType
+    // virtual Epetra_LinearProblem & LinearProblem() { return preconditioner_->LinearProblem(); }
+
+    virtual void Setup(
+        bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
+
+    virtual void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
+
+    /// return the projecting operator
+    virtual Epetra_Operator* PrecOperator() const { return &*P_; }
+
+    /// linear operator used for preconditioning
+    virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const { return P_; }
+
+    virtual void Print(std::ostream& stream)
     {
-     public:
-      KrylovProjectionPreconditioner(FILE* outfile, Teuchos::RCP<PreconditionerType> preconditioner,
-          Teuchos::RCP<LINALG::KrylovProjector> projector);
+      stream << "krylov projection(";
+      preconditioner_->Print(stream);
+      stream << ")";
+    }
 
-      // virtual Epetra_LinearProblem & LinearProblem() { return preconditioner_->LinearProblem(); }
+    /// return name of sublist in paramterlist which contains parameters for preconditioner
+    virtual const std::string getParameterListName() const { return "unknown"; }
 
-      virtual void Setup(
-          bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
+   private:
+    Teuchos::RCP<PreconditionerType> preconditioner_;
 
-      virtual void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
+    /// Peter's projector object that does the actual work
+    Teuchos::RCP<LINALG::KrylovProjector> projector_;
 
-      /// return the projecting operator
-      virtual Epetra_Operator* PrecOperator() const { return &*P_; }
+    /// linear operator that calls a "real" preconditioning operator and does
+    /// a projection afterwards.
+    Teuchos::RCP<LINALG::LinalgProjectedOperator> A_;
 
-      /// linear operator used for preconditioning
-      virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const { return P_; }
+    Teuchos::RCP<Epetra_Operator> P_;
+  };
+}  // namespace LINALG::SOLVER
 
-      virtual void Print(std::ostream& stream)
-      {
-        stream << "krylov projection(";
-        preconditioner_->Print(stream);
-        stream << ")";
-      }
-
-      /// return name of sublist in paramterlist which contains parameters for preconditioner
-      virtual const std::string getParameterListName() const { return "unknown"; }
-
-     private:
-      Teuchos::RCP<PreconditionerType> preconditioner_;
-
-      /// Peter's projector object that does the actual work
-      Teuchos::RCP<LINALG::KrylovProjector> projector_;
-
-      /// linear operator that calls a "real" preconditioning operator and does
-      /// a projection afterwards.
-      Teuchos::RCP<LINALG::LinalgProjectedOperator> A_;
-
-      Teuchos::RCP<Epetra_Operator> P_;
-    };
-
-  }  // namespace SOLVER
-}  // namespace LINALG
-
-
-#endif /* SOLVER_KRYLOVPROJECTIONPRECONDITIONER_H_ */
+#endif

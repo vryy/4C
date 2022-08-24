@@ -2,8 +2,9 @@
 /*! \file
 
 \brief Declaration
+
 \level 1
-Created on: Jul 4, 2011
+
 */
 /*----------------------------------------------------------------------*/
 #ifndef SOLVER_POINTPRECONDITIONER_H_
@@ -14,118 +15,113 @@ Created on: Jul 4, 2011
 
 #include "solver_preconditionertype.H"
 
-namespace LINALG
+namespace LINALG::SOLVER
 {
-  namespace SOLVER
+  class NonePreconditioner : public PreconditionerType
   {
-    class NonePreconditioner : public PreconditionerType
+   public:
+    NonePreconditioner(FILE* outfile, Teuchos::ParameterList& list);
+
+    void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
+        Epetra_MultiVector* b) override;
+
+    Epetra_Operator* PrecOperator() const override { return &*prec_; }
+
+    /// linear operator used for preconditioning
+    Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override { return prec_; }
+
+    void Print(std::ostream& stream) override { stream << "None"; }
+
+    /// return name of sublist in paramterlist which contains parameters for preconditioner
+    const std::string getParameterListName() const override { return "unknown"; }
+
+   private:
+    Teuchos::RCP<LINALG::NoneOperator> prec_;
+  };
+
+  /// inf-norm scaling fits the preconditioner framework perfecty
+  /*!
+   Modifies the underlying matrix and needs to unscale the result
+   afterwards. Can be combined with any single-matrix preconditioner.
+  */
+  class InfNormPreconditioner : public PreconditionerType
+  {
+   public:
+    InfNormPreconditioner(Teuchos::RCP<PreconditionerType> preconditioner);
+
+    Epetra_LinearProblem& LinearProblem() override { return preconditioner_->LinearProblem(); }
+
+    void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
+        Epetra_MultiVector* b) override;
+
+    void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) override;
+
+    Epetra_Operator* PrecOperator() const override { return preconditioner_->PrecOperator(); }
+
+    /// linear operator used for preconditioning
+    Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override
     {
-     public:
-      NonePreconditioner(FILE* outfile, Teuchos::ParameterList& list);
+      return preconditioner_->PrecOperatorRCP();
+    }
 
-      virtual void Setup(
-          bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
-
-      virtual Epetra_Operator* PrecOperator() const { return &*prec_; }
-
-      /// linear operator used for preconditioning
-      virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const { return prec_; }
-
-      virtual void Print(std::ostream& stream) { stream << "None"; }
-
-      /// return name of sublist in paramterlist which contains parameters for preconditioner
-      virtual const std::string getParameterListName() const { return "unknown"; }
-
-     private:
-      Teuchos::RCP<LINALG::NoneOperator> prec_;
-    };
-
-    /// inf-norm scaling fits the preconditioner framework perfecty
-    /*!
-    Modifies the underlying matrix and needs to unscale the result
-    afterwards. Can be combined with any single-matrix preconditioner.
-     */
-    class InfNormPreconditioner : public PreconditionerType
+    void Print(std::ostream& stream) override
     {
-     public:
-      InfNormPreconditioner(Teuchos::RCP<PreconditionerType> preconditioner);
+      stream << "InfNorm(";
+      preconditioner_->Print(stream);
+      stream << ")";
+    }
 
-      virtual Epetra_LinearProblem& LinearProblem() { return preconditioner_->LinearProblem(); }
+    /// return name of sublist in paramterlist which contains parameters for preconditioner
+    const std::string getParameterListName() const override { return "unknown"; }
 
-      virtual void Setup(
-          bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
+   private:
+    Teuchos::RCP<PreconditionerType> preconditioner_;
+    Teuchos::RCP<Epetra_Vector> rowsum_;
+    Teuchos::RCP<Epetra_Vector> colsum_;
+  };
 
-      virtual void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
+  /// diagonal scaling fits the preconditioner framework perfecty
+  /*!
+   Modifies the underlying matrix and needs to unscale the result
+   afterwards. Can be combined with any single-matrix preconditioner.
+  */
+  class SymDiagPreconditioner : public PreconditionerType
+  {
+   public:
+    SymDiagPreconditioner(Teuchos::RCP<PreconditionerType> preconditioner);
 
-      virtual Epetra_Operator* PrecOperator() const { return preconditioner_->PrecOperator(); }
+    Epetra_LinearProblem& LinearProblem() override { return preconditioner_->LinearProblem(); }
 
-      /// linear operator used for preconditioning
-      virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const
-      {
-        return preconditioner_->PrecOperatorRCP();
-      }
+    void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
+        Epetra_MultiVector* b) override;
 
-      virtual void Print(std::ostream& stream)
-      {
-        stream << "InfNorm(";
-        preconditioner_->Print(stream);
-        stream << ")";
-      }
+    void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) override;
 
-      /// return name of sublist in paramterlist which contains parameters for preconditioner
-      virtual const std::string getParameterListName() const { return "unknown"; }
+    Epetra_Operator* PrecOperator() const override { return preconditioner_->PrecOperator(); }
 
-     private:
-      Teuchos::RCP<PreconditionerType> preconditioner_;
-      Teuchos::RCP<Epetra_Vector> rowsum_;
-      Teuchos::RCP<Epetra_Vector> colsum_;
-    };
-
-    /// diagonal scaling fits the preconditioner framework perfecty
-    /*!
-    Modifies the underlying matrix and needs to unscale the result
-    afterwards. Can be combined with any single-matrix preconditioner.
-     */
-    class SymDiagPreconditioner : public PreconditionerType
+    /// linear operator used for preconditioning
+    Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override
     {
-     public:
-      SymDiagPreconditioner(Teuchos::RCP<PreconditionerType> preconditioner);
+      return preconditioner_->PrecOperatorRCP();
+    }
 
-      virtual Epetra_LinearProblem& LinearProblem() { return preconditioner_->LinearProblem(); }
+    void Print(std::ostream& stream) override
+    {
+      stream << "SymDiag(";
+      preconditioner_->Print(stream);
+      stream << ")";
+    }
 
-      virtual void Setup(
-          bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
+    /// return name of sublist in paramterlist which contains parameters for preconditioner
+    const std::string getParameterListName() const override { return "unknown"; }
 
-      virtual void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
+   private:
+    /// embedded preconditioner
+    Teuchos::RCP<SOLVER::PreconditionerType> preconditioner_;
 
-      virtual Epetra_Operator* PrecOperator() const { return preconditioner_->PrecOperator(); }
+    /// matrix diagonal
+    Teuchos::RCP<Epetra_Vector> diag_;
+  };
+}  // namespace LINALG::SOLVER
 
-      /// linear operator used for preconditioning
-      virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const
-      {
-        return preconditioner_->PrecOperatorRCP();
-      }
-
-      virtual void Print(std::ostream& stream)
-      {
-        stream << "SymDiag(";
-        preconditioner_->Print(stream);
-        stream << ")";
-      }
-
-      /// return name of sublist in paramterlist which contains parameters for preconditioner
-      virtual const std::string getParameterListName() const { return "unknown"; }
-
-     private:
-      /// embedded preconditioner
-      Teuchos::RCP<SOLVER::PreconditionerType> preconditioner_;
-
-      /// matrix diagonal
-      Teuchos::RCP<Epetra_Vector> diag_;
-    };
-
-  }  // namespace SOLVER
-}  // namespace LINALG
-
-
-#endif /* SOLVER_POINTPRECONDITIONER_H_ */
+#endif

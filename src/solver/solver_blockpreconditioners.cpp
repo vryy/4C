@@ -5,28 +5,15 @@
 
 \level 1
 
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
+
+#include <Xpetra_MultiVectorFactory.hpp>
 
 #include "../drt_lib/drt_dserror.H"
-
-#include <Xpetra_StridedMap.hpp>
-#include <Xpetra_MapExtractor.hpp>
-#include <Xpetra_MapExtractorFactory.hpp>
-#include <Xpetra_MultiVectorFactory.hpp>
-#include <Xpetra_CrsMatrix.hpp>
-#include <Xpetra_EpetraCrsMatrix.hpp>
-#include <Xpetra_BlockedCrsMatrix.hpp>
-
-#include <MueLu_ParameterListInterpreter.hpp>
-#include <MueLu_EpetraOperator.hpp>  // Aztec interface
-
-// header files for default types, must be included after all other MueLu/Xpetra headers
-#include <MueLu_UseDefaultTypes.hpp>  // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
-
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "solver_blockpreconditioners.H"
 
-// include header files for concrete implementation
+#include "solver_blockpreconditioners.H"
 #include "bgs2x2_operator.H"                   // Lena's BGS implementation
 #include "solver_cheapsimplepreconditioner.H"  // Tobias' CheapSIMPLE
 

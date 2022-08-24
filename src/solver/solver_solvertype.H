@@ -49,4 +49,4 @@ namespace LINALG::SOLVER
   };
 }  // namespace LINALG::SOLVER
 
-#endif /* SOLVER_SOLVERTYPE_H_ */
+#endif

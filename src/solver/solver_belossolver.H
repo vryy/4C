@@ -51,4 +51,4 @@ namespace LINALG::SOLVER
   };
 }  // namespace LINALG::SOLVER
 
-#endif /* SOLVER_BELOSSOLVER_H_ */
+#endif

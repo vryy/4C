@@ -1,13 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Declaration
 
 \brief Declaration
+
 \level 0
 
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
-// Amesos headers
 #include <Amesos_Klu.h>
 #include <Amesos_Lapack.h>
 #ifdef HAVE_AMESOS_UMFPACK
@@ -17,15 +17,10 @@
 #include <Amesos_Superludist.h>
 #endif
 
-// EpetraExt headers
-#include <EpetraExt_Reindex_LinearProblem2.h>
-#include <Epetra_CrsMatrix.h>
-
-// BACI headers
-#include "solver_directsolver.H"
-
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../linalg/linalg_krylov_projector.H"
+
+#include "solver_directsolver.H"
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------

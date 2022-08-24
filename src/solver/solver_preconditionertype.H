@@ -2,8 +2,9 @@
 /*! \file
 
 \brief Declaration
+
 \level 1
-Created on: Jul 4, 2011
+
 */
 /*----------------------------------------------------------------------*/
 #ifndef SOLVER_PRECONDITIONERTYPE_H_
@@ -20,92 +21,88 @@ Created on: Jul 4, 2011
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 
-namespace LINALG
+namespace LINALG::SOLVER
 {
-  namespace SOLVER
+  /// preconditioner base class
+  /*!
+     A KrylovSolver object needs one (or more) preconditioner objects. There
+     are many possible preconditioners. A unified framework simplifies the
+     solution process.
+  */
+  class PreconditionerType
   {
-    /// preconditioner base class
+   public:
+    /// construction with output on proc 0 (might be NULL)
     /*!
+       No setup is done upon construction, only the preconditioner object is
+       created.
+    */
+    explicit PreconditionerType(FILE* outfile) : outfile_(outfile) {}
 
-      A KrylovSolver object needs one (or more) preconditioner objects. There
-      are many possible preconditioners. A unified framework simplifies the
-      solution process.
+    /// virtual destruction
+    virtual ~PreconditionerType() = default;
 
-      \author u.kue
-      \date 04/11
+    /// linear problem created (managed) by this preconditioner
+    /*!
+       This is how aztec sees the linear problem that needs to be solved.
+    */
+    virtual Epetra_LinearProblem& LinearProblem() { return lp_; }
+
+    /*! \brief Support routine for setup
+     *
+     * Pass the components of the linear system on to the Epetra_LinearProblem.
+     *
+     * @param matrix Matrix of the linear problem
+     * @param x Solution vector of the linear problem
+     * @param b Right-hand side of the linear problem
      */
-    class PreconditionerType
+    void SetupLinearProblem(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
     {
-     public:
-      /// construction with output on proc 0 (might be NULL)
-      /*!
-        No setup is done upon construction, only the preconditioner object is
-        created.
-       */
-      explicit PreconditionerType(FILE* outfile);
+      lp_.SetOperator(matrix);
+      lp_.SetLHS(x);
+      lp_.SetRHS(b);
+    }
 
-      /// virtual destruction
-      virtual ~PreconditionerType() {}
+    /// Setup preconditioner with a given linear system.
+    virtual void Setup(
+        bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) = 0;
 
-      /// linear problem created (managed) by this preconditioner
-      /*!
-        This is how aztec sees the linear problem that needs to be solved.
-       */
-      virtual Epetra_LinearProblem& LinearProblem() { return lp_; }
+    /// Finish calculation after linear solve.
+    /*!
+      This is empty in most cases, however some preconditioners might want to
+      scale the solution.
+    */
+    virtual void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) {}
 
-      /*! \brief Support routine for setup
-       *
-       * Pass the components of the linear system on to the Epetra_LinearProblem.
-       *
-       * @param matrix Matrix of the linear problem
-       * @param x Solution vector of the linear problem
-       * @param b Right-hand side of the linear problem
-       */
-      void SetupLinearProblem(
-          Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
+    /// linear operator used for preconditioning
+    /*!
+      This is how aztec sees the linear operator to be used for preconditioning.
+    */
+    virtual Epetra_Operator* PrecOperator() const = 0;
 
-      /// Setup preconditioner with a given linear system.
-      virtual void Setup(
-          bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) = 0;
+    /// linear operator used for preconditioning
+    virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const = 0;
 
-      /// Finish calculation after linear solve.
-      /*!
-        This is empty in most cases, however some preconditioners might want to
-        scale the solution.
-       */
-      virtual void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) {}
+    /// Apply inverse of the preconditioner
+    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+    {
+      return PrecOperator()->ApplyInverse(X, Y);
+    }
 
-      /// linear operator used for preconditioning
-      /*!
-        This is how aztec sees the linear operator to be used for preconditioning.
-       */
-      virtual Epetra_Operator* PrecOperator() const = 0;
+    /// debug output
+    virtual void Print(std::ostream& stream) = 0;
 
-      /// linear operator used for preconditioning
-      virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const = 0;
+    /// return name of sublist in paramterlist which contains parameters for preconditioner
+    /// e.g. "IFPACK parameters" for an Ifpack preconditioner
+    virtual const std::string getParameterListName() const { return "unknown"; }
 
-      /// Apply inverse of the preconditioner
-      int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
-      {
-        return PrecOperator()->ApplyInverse(X, Y);
-      }
+   protected:
+    //! a linear problem wrapper class used by Trilinos and for scaling of the system
+    Epetra_LinearProblem lp_;
 
-      /// debug output
-      virtual void Print(std::ostream& stream) = 0;
+    //! file to write output to (proc 0 only, can be NULL on input)
+    FILE* outfile_;
+  };
+}  // namespace LINALG::SOLVER
 
-      /// return name of sublist in paramterlist which contains parameters for preconditioner
-      /// e.g. "IFPACK parameters" for an Ifpack preconditioner
-      virtual const std::string getParameterListName() const { return "unknown"; }
-
-     protected:
-      //! a linear problem wrapper class used by Trilinos and for scaling of the system
-      Epetra_LinearProblem lp_;
-
-      //! file to write output to (proc 0 only, can be NULL on input)
-      FILE* outfile_;
-    };
-  }  // namespace SOLVER
-}  // namespace LINALG
-
-
-#endif /* SOLVER_PRECONDITIONERTYPE_H_ */
+#endif

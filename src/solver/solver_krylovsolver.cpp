@@ -8,41 +8,21 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include <MueLu_ConfigDefs.hpp>
+#include <Teuchos_TimeMonitor.hpp>
+
 #include <Xpetra_Matrix.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <Xpetra_MapFactory.hpp>
 #include <Xpetra_CrsMatrixWrap.hpp>
+
 #include <MueLu.hpp>
 #include <MueLu_FactoryBase.hpp>
 #include <MueLu_PermutationFactory.hpp>
 #include <MueLu_SmootherPrototype.hpp>
 #include <MueLu_SmootherFactory.hpp>
-#include <MueLu_DirectSolver.hpp>
 #include <MueLu_HierarchyUtils.hpp>
 #include <MueLu_VerboseObject.hpp>
-
-// header files for default types, must be included after all other MueLu/Xpetra headers
-#include <MueLu_UseDefaultTypes.hpp>  // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
-
-typedef Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node> Map;
-typedef Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> Matrix;
-typedef Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> CrsMatrix;
-typedef Xpetra::CrsMatrixWrap<Scalar, LocalOrdinal, GlobalOrdinal, Node> CrsMatrixWrap;
-typedef Xpetra::Vector<Scalar, LocalOrdinal, GlobalOrdinal, Node> Vector;
-typedef Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node> MultiVector;
-typedef Xpetra::VectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node> VectorFactory;
-typedef Xpetra::MapFactory<LocalOrdinal, GlobalOrdinal, Node> MapFactory;
-
-using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
-
-typedef MueLu::FactoryManager<Scalar, LocalOrdinal, GlobalOrdinal, Node> FactoryManager;
-typedef MueLu::FactoryBase FactoryBase;
-
-typedef Scalar SC;
-typedef LocalOrdinal LO;
-typedef GlobalOrdinal GO;
-typedef Node NO;
+#include <MueLu_UseDefaultTypes.hpp>
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
@@ -50,8 +30,8 @@ typedef Node NO;
 #include <az_aztec_defs.h>  // for AZ_none (provokes compiler warning due to redeclaration of HAVE_SYS_TIME_H in mpi.h and AztecOO_config.h -> AztecOO problem)
 
 #include "../drt_lib/drt_dserror.H"
-#include "solver_krylovsolver.H"
 
+#include "solver_krylovsolver.H"
 #include "solver_pointpreconditioner.H"
 #include "solver_blockpreconditioners.H"
 #include "solver_krylovprojectionpreconditioner.H"
@@ -60,7 +40,24 @@ typedef Node NO;
 #include "solver_muelupreconditioner.H"
 #include "solver_amgnxn_preconditioner.H"
 
-#include <Teuchos_TimeMonitor.hpp>
+using Map = Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>;
+using Matrix = Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>;
+using CrsMatrix = Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>;
+using CrsMatrixWrap = Xpetra::CrsMatrixWrap<Scalar, LocalOrdinal, GlobalOrdinal, Node>;
+using Vector = Xpetra::Vector<Scalar, LocalOrdinal, GlobalOrdinal, Node>;
+using MultiVector = Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>;
+using VectorFactory = Xpetra::VectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>;
+using MapFactory = Xpetra::MapFactory<LocalOrdinal, GlobalOrdinal, Node>;
+
+using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
+
+using FactoryManager = MueLu::FactoryManager<Scalar, LocalOrdinal, GlobalOrdinal, Node>;
+using FactoryBase = MueLu::FactoryBase;
+
+using SC = Scalar;
+using LO = LocalOrdinal;
+using GO = GlobalOrdinal;
+using NO = Node;
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------

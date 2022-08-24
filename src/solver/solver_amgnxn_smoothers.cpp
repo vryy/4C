@@ -2,22 +2,29 @@
 /*! \file
 
 \brief Declaration
+
 \level 1
-Created on: Feb 27, 2014
-*----------------------------------------------------------------------*/
+
+*/
+/*----------------------------------------------------------------------*/
 
 #include <iostream>
 
 #include <Teuchos_PtrDecl.hpp>
-#include <Epetra_Time.h>
 #include <Teuchos_XMLParameterListHelpers.hpp>
+
+#include <Epetra_Time.h>
+#include <EpetraExt_RowMatrixOut.h>
+
 #include <Xpetra_MultiVectorFactory.hpp>
+
 #include <MueLu_MLParameterListInterpreter_decl.hpp>
 #include <MueLu_ParameterListInterpreter.hpp>
 #include <MueLu_EpetraOperator.hpp>
-#include "EpetraExt_RowMatrixOut.h"
+
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_multiply.H"
+
 #include "solver_amgnxn_smoothers.H"
 #include "solver_amgnxn_hierarchies.H"
 #include "solver_amgnxn_vcycle.H"
