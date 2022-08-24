@@ -2,13 +2,13 @@
 /*! \file
 
 \brief Declaration
-\level 1
-Created on: Jul 4, 2011
-*----------------------------------------------------------------------*/
 
-#include "../linalg/linalg_krylov_projector.H"
-#include "../linalg/linalg_projected_operator.H"  // for LINALG::LinalgProjectedOperator
-#include "../linalg/linalg_projected_precond.H"   // for LINALG::LinalgPrecondOperator
+ \level 1
+
+*/
+/*----------------------------------------------------------------------*/
+
+#include "../linalg/linalg_projected_precond.H"
 
 #include "solver_krylovprojectionpreconditioner.H"
 

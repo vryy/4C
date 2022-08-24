@@ -2,12 +2,12 @@
 /*! \file
 
 \brief Declaration
-\level 1
-Created on: Jul 4, 2011
-*----------------------------------------------------------------------*/
 
-#include <Epetra_Comm.h>
-#include <Epetra_Map.h>
+\level 1
+
+*/
+/*----------------------------------------------------------------------*/
+
 #include <Epetra_CrsMatrix.h>
 
 #include "../drt_lib/drt_dserror.H"

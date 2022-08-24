@@ -2,26 +2,25 @@
 /*! \file
 
 \brief Declaration
+
 \level 1
+
 */
 /*----------------------------------------------------------------------*/
 #ifndef BGS2X2_OPERATOR_H
 #define BGS2X2_OPERATOR_H
 
-// Trilinos includes
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 
-// BACI headers
 #include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_mapextractor.H"       // for mmex_ ( mmex is a reference by intention)
-#include "../linalg/linalg_blocksparsematrix.H"  // TODO remove me
+#include "../linalg/linalg_precond.H"
+#include "../linalg/linalg_mapextractor.H"
+
+#include "solver_preconditionertype.H"
 
 namespace LINALG
 {
-  // forward declaration
-  class Preconditioner;
-
   /// Block Gauss-Seidel preconditioner for a 2x2 system
   class BGS2x2_Operator : public Epetra_Operator
   {
@@ -128,9 +127,8 @@ namespace LINALG
 
     int firstind_;  /// index of block "0" in Gauss-Seidel procedure
     int secind_;    /// index of block "1" in Gauss-Seidel procedure
-
-  };  // class  BGS2x2_Operator : public virtual Epetra_Operator
+  };
 }  // namespace LINALG
 
 
-#endif  // BGS2x2_OPERATOR_H
+#endif

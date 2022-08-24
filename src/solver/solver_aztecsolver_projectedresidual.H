@@ -1,23 +1,21 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-
 \brief Declaration
+
 \level 1
 
-Created on: Mar 4, 2013
 */
 /*---------------------------------------------------------------------------*/
 #ifndef SOLVER_AZTECSOLVER_PROJECTEDRESIDUAL_H_
 #define SOLVER_AZTECSOLVER_PROJECTEDRESIDUAL_H_
 
-#include "AztecOO_StatusTestResNorm.h"
 #include "Teuchos_RCP.hpp"
 
-namespace LINALG
-{
-  class KrylovProjector;
-}
+#include "AztecOO_StatusTestResNorm.h"
+
+#include "../linalg/linalg_krylov_projector.H"
+
 
 //! AztecOO_StatusTestProjResNorm: An implementation of AztecOO_StatusTestResNorm
 //  applying a projection on the residual prior to convergence check
@@ -91,4 +89,4 @@ class AztecOO_StatusTestProjResNorm : public AztecOO_StatusTestResNorm
   Teuchos::RCP<LINALG::KrylovProjector> projector_;
 };
 
-#endif  // SOLVER_AZTECSOLVER_PROJECTEDRESIDUAL_h_
+#endif

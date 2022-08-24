@@ -2,16 +2,20 @@
 /*! \file
 
 \brief Declaration
-\level 1
-*/
 
-// Trilinos headers
+\level 1
+
+*/
+/*----------------------------------------------------------------------*/
+
 #include <EpetraExt_OperatorOut.h>
+
 #include <Ifpack.h>
+
 #include <ml_MultiLevelPreconditioner.h>
 
-#include <MueLu.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
+
 #include <MueLu_RAPFactory.hpp>
 #include <MueLu_TrilinosSmoother.hpp>
 #include <MueLu_CoalesceDropFactory.hpp>
@@ -22,21 +26,11 @@
 #include <MueLu_ParameterListInterpreter.hpp>
 #include <MueLu_AggregationExportFactory.hpp>
 #include <MueLu_MLParameterListInterpreter_decl.hpp>
-#include <MueLu_UseDefaultTypes.hpp>  // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
-#include <MueLu_EpetraOperator.hpp>   // Aztec interface
+#include <MueLu_UseDefaultTypes.hpp>
+#include <MueLu_EpetraOperator.hpp>
 
-// some typedefs
-typedef Scalar SC;
-typedef LocalOrdinal LO;
-typedef GlobalOrdinal GO;
-typedef Node NO;
-
-// BACI headers
 #include "../linalg/linalg_ana.H"
-#include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_blocksparsematrix.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"  // helper functions (linear Algebra related)
 #include "../linalg/linalg_downwindmatrix.H"
 #include "../linalg/linalg_multiply.H"
 
@@ -47,8 +41,13 @@ typedef Node NO;
 #define SIMPLER_ALGORITHM 0      // 1: triple solve 0: double solve
 #define SIMPLER_ALPHA 0.8        // simple pressure damping parameter
 #define SIMPLER_TIMING 0         // printout timing of setup
+
+using SC = Scalar;
+using LO = LocalOrdinal;
+using GO = GlobalOrdinal;
+using NO = Node;
+
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 02/08|
  *----------------------------------------------------------------------*/
 LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::CheapSIMPLE_BlockPreconditioner(
     Teuchos::RCP<Epetra_Operator> A, const Teuchos::ParameterList& predict_list,
@@ -77,13 +76,10 @@ LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::CheapSIMPLE_BlockPreconditioner
   //  if (!myrank && cstr) cout << "\n**********\nCONSTRAINT SIMPLER\n**********\n\n";
 
   Setup(A, predict_list, correct_list);
-
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
- |  (private)                                                mwgee 02/08|
  *----------------------------------------------------------------------*/
 void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_Operator> A,
     const Teuchos::ParameterList& origvlist, const Teuchos::ParameterList& origplist)
@@ -382,13 +378,10 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
   if (!myrank && SIMPLER_TIMING) printf("--- Time to do allocate mem %10.3E\n", time.ElapsedTime());
   if (!myrank && SIMPLER_TIMING)
     printf("=== Total simpler setup === %10.3E\n", totaltime.ElapsedTime());
-
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
- |  apply const operator (public)                            mwgee 02/08|
  *----------------------------------------------------------------------*/
 int LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::ApplyInverse(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
@@ -419,9 +412,8 @@ int LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::ApplyInverse(
   return 0;
 }
 
+
 /*----------------------------------------------------------------------*
- |  (private)                                                mwgee 02/08|
- | taken from:                                                          |
  | Pernice, M., Tocci, M.D.:                                            |
  | A Multigrid Preconditioned Newton-Krylov method for the incomp.      |
  | Navier-Stokes equations, Siam, J. Sci. Comp. 23, pp. 398-418 (2001)  |
@@ -449,13 +441,10 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Simpler(LINALG::ANA::Vecto
   *vwork2_ = diagAinv * A01 * (inverse(S, *psolver_, false) * (A10 * vx));
 
   vx -= vwork2_;
-
-  return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  (private)                                                mwgee 02/08|
- | taken from:                                                          |
  | Elman, H., Howle, V.E., Shadid, J., Shuttleworth, R., Tuminaro, R.:  |
  | A taxonomy and comparison of parallel block multi-level              |
  | preconditioners for the incomp. Navier-Stokes equations.             |
@@ -484,12 +473,10 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Simple(LINALG::ANA::Vector
   if (alpha_ != 1.0) px *= alpha_;
 
   vx = vwork1_ - diagAinv * (A01 * px);
-
-  return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  (private)                                                mwgee 02/08|
  | is a cheaper variation from:                                         |
  | Elman, H., Howle, V.E., Shadid, J., Shuttleworth, R., Tuminaro, R.:  |
  | A taxonomy and comparison of parallel block multi-level              |
@@ -532,6 +519,4 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::CheapSimple(LINALG::ANA::V
   if (alpha_ != 1.0) px *= alpha_;
 
   vx = vwork1_ - diagAinv * (A01 * px);
-
-  return;
 }

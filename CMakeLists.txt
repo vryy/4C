@@ -1863,7 +1863,6 @@ set(OBJS_SOLVER
     src/linalg/linalg_solver.cpp
     src/solver/bgs2x2_operator.cpp
     src/solver/solver_cheapsimplepreconditioner.cpp
-    src/solver/solver_preconditionertype.cpp
     src/solver/solver_directsolver.cpp
     src/solver/solver_krylovsolver.cpp
     src/solver/solver_pointpreconditioner.cpp

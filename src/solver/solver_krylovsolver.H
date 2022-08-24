@@ -7,7 +7,6 @@
 
 */
 /*----------------------------------------------------------------------*/
-
 #ifndef SOLVER_KRYLOVSOLVER_H_
 #define SOLVER_KRYLOVSOLVER_H_
 
@@ -22,9 +21,7 @@
 #include <MueLu_PermutationFactory_fwd.hpp>
 #include <MueLu_FactoryBase_fwd.hpp>
 #include <MueLu_Level_fwd.hpp>
-
-// header files for default types, must be included after all other MueLu/Xpetra headers
-#include <MueLu_UseDefaultTypes.hpp>  // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
+#include <MueLu_UseDefaultTypes.hpp>
 
 #include "solver_solvertype.H"
 #include "solver_preconditionertype.H"
@@ -291,4 +288,4 @@ namespace LINALG::SOLVER
   };
 }  // namespace LINALG::SOLVER
 
-#endif /* SOLVER_KRYLOVSOLVER_H_ */
+#endif
