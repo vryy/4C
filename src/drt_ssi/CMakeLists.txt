@@ -16,6 +16,7 @@ set(OBJS_DRT_SSI
     ssi_partitioned_2wc.cpp
     ssi_resulttest.cpp
     ssi_utils.cpp
+    ssi_str_model_evaluator_base.cpp
     ssi_str_model_evaluator_partitioned.cpp
     )
 

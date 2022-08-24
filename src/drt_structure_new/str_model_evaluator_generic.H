@@ -425,6 +425,12 @@ namespace STR
       /// access the current external load increment
       Teuchos::RCP<Epetra_Vector> GetFextIncr() const;
 
+      //! Get the mechanical stress state vector (read access)
+      [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> GetMechanicalStressState() const
+      {
+        return Teuchos::null;
+      }
+
       //! @}
 
      protected:

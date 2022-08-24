@@ -86,8 +86,10 @@ namespace INPAR
       model_partitioned_coupling = 7,  ///< evaluate any partitioned coupling contributions
       model_beam_interaction_old =
           8,  ///< evaluate the model for contact/potential/... interactions of beams
-      model_browniandyn = 9,      ///< evaluate the brownian dynamics model
-      model_beaminteraction = 10  ///< evaluate beaminteraction model
+      model_browniandyn = 9,       ///< evaluate the brownian dynamics model
+      model_beaminteraction = 10,  ///< evaluate beaminteraction model
+      model_basic_couping = 11     ///< evaluate coupling contributions that are independent of
+                                   ///< monolithic or partitioned coupling
     };
 
     /// Map model type to string
@@ -129,6 +131,9 @@ namespace INPAR
         case model_beaminteraction:
           return "BeamInteraction";
           break;
+        case model_basic_couping:
+          return "Basic-Coupling";
+          break;
         default:
           dserror("Cannot make std::string for model type %d", name);
           return "";
@@ -151,6 +156,8 @@ namespace INPAR
         type = model_springdashpot;
       else if (name == "Lag-Pen-Constraint")
         type = model_lag_pen_constraint;
+      else if (name == "Monolithic-Coupling")
+        type = model_monolithic_coupling;
       else if (name == "Partitioned-Coupling")
         type = model_partitioned_coupling;
       else if (name == "BeamInteractionOld")
@@ -159,6 +166,8 @@ namespace INPAR
         type = model_browniandyn;
       else if (name == "BeamInteraction")
         type = model_beaminteraction;
+      else if (name == "Basic-Coupling")
+        type = model_basic_couping;
       else
         dserror("Unkonwn INPAR::STR::ModelType with name '%s'.", name.c_str());
 

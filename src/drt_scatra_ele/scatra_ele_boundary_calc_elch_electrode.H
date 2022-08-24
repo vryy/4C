@@ -54,6 +54,9 @@ namespace DRT
        * @param[in] emasterphinp     state variables at master-side nodes
        * @param[in] eslavetempnp     temperature at slave side of interface
        * @param[in] emastertempnp    temperature at master side of interface
+       * @param[in] pseudo_contact_fac  factor, modeling pseudo contact by considering the
+       *                                mechanical stress state at the interface (1.0 if under
+       *                                compressive stresses, 0.0 if under tensile stresses)
        * @param[in] funct_slave      slave-side shape function values
        * @param[in] funct_master     master-side shape function values
        * @param[in] test_slave                 slave-side test function values
@@ -85,7 +88,7 @@ namespace DRT
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               emastertempnp,
-          const LINALG::Matrix<my::nen_, 1>& funct_slave,
+          double pseudo_contact_fac, const LINALG::Matrix<my::nen_, 1>& funct_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
@@ -109,6 +112,9 @@ namespace DRT
        *                           n+1
        * @param[in] eslavephinp    state variables at slave-side nodes at time n+1
        * @param[in] emasterphinp   state variables at master-side nodes at time n+1
+       * @param[in] pseudo_contact_fac  factor, modeling pseudo contact by considering the
+       *                                mechanical stress state at the interface (1.0 if under
+       *                                compressive stresses, 0.0 if under tensile stresses)
        * @param[in] funct_slave    slave-side shape function values
        * @param[in] funct_master   master-side shape function values
        * @param[in] test_slave                 slave-side test function values
@@ -135,7 +141,7 @@ namespace DRT
           const std::vector<LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
-          const LINALG::Matrix<my::nen_, 1>& funct_slave,
+          double pseudo_contact_fac, const LINALG::Matrix<my::nen_, 1>& funct_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
@@ -158,6 +164,9 @@ namespace DRT
        * @param[in] funct_master     master-side shape function values
        * @param[in] test_slave       slave-side test function values
        * @param[in] test_master      master-side test function values
+       * @param[in] pseudo_contact_fac  factor, modeling pseudo contact by considering the
+       *                                mechanical stress state at the interface (1.0 if under
+       *                                compressive stresses, 0.0 if under tensile stresses)
        * @param[in] numelectrons     number of electrons involved in charge transfer at
        *                             electrode-electrolyte interface
        * @param[in] nen_master       number of nodes of master-side mortar element
@@ -190,12 +199,12 @@ namespace DRT
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
-          double numelectrons, int nen_master, double timefacfac, double timefacrhsfac,
-          double dj_dc_slave, double dj_dc_master, double dj_dpot_slave, double dj_dpot_master,
-          double j, Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm,
-          Epetra_SerialDenseMatrix& k_ms, Epetra_SerialDenseMatrix& k_mm,
-          Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m);
-
+          double pseudo_contact_fac, double numelectrons, int nen_master, double timefacfac,
+          double timefacrhsfac, double dj_dc_slave, double dj_dc_master, double dj_dpot_slave,
+          double dj_dpot_master, double j, Epetra_SerialDenseMatrix& k_ss,
+          Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
+          Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s,
+          Epetra_SerialDenseVector& r_m);
 
       /*!
        * @brief calculate residual vectors and linearizations of residuals due to capacitive flux at
@@ -204,6 +213,9 @@ namespace DRT
        * @param[in] funct_slave     slave-side shape function values
        * @param[in] test_slave      slave-side test function values
        * @param[in] test_master     master-side test function values
+       * @param[in] pseudo_contact_fac  factor, modeling pseudo contact by considering the
+       *                                mechanical stress state at the interface (1.0 if under
+       *                                compressive stresses, 0.0 if under tensile stresses)
        * @param[in] numelectrons    number of electrons involved in charge transfer
        * @param[in] timefacfac      time-integration factor times domain-integration factor
        * @param[in] timefacrhsfac   time-integration factor for right-hand side times
@@ -226,9 +238,10 @@ namespace DRT
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
-          int numelectrons, double timefacfac, double timefacrhsfac, int nen_master, double jC,
-          double djC_dpot_slave, Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_ms,
-          Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m);
+          double pseudo_contact_fac, int numelectrons, double timefacfac, double timefacrhsfac,
+          int nen_master, double jC, double djC_dpot_slave, Epetra_SerialDenseMatrix& k_ss,
+          Epetra_SerialDenseMatrix& k_ms, Epetra_SerialDenseVector& r_s,
+          Epetra_SerialDenseVector& r_m);
 
      protected:
       //! protected constructor for singletons

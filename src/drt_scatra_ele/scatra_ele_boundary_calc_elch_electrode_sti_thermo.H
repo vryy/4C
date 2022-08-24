@@ -45,8 +45,11 @@ namespace DRT
        * @param[in] matelectrode     electrode material
        * @param[in] eslavephinp      scatra state variables at slave-side nodes
        * @param[in] eslavetempnp     thermo state variables at slave-side nodes
-       * @param[in] eslavetempnp     thermo state variables at master-side nodes
+       * @param[in] emastertempnp    thermo state variables at master-side nodes
        * @param[in] emasterphinp     scatra state variables at master-side nodes
+       * @param[in] pseudo_contact_fac  factor, modeling pseudo contact by considering the
+       *                                mechanical stress state at the interface (1.0 if under
+       *                                compressive stresses, 0.0 if under tensile stresses)
        * @param[in] funct_slave      slave-side shape function values
        * @param[in] funct_master     master-side shape function values
        * @param[in] test_slave       slave-side test function values
@@ -73,7 +76,7 @@ namespace DRT
           const std::vector<LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
-          const LINALG::Matrix<my::nen_, 1>& funct_slave,
+          double pseudo_contact_fac, const LINALG::Matrix<my::nen_, 1>& funct_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,

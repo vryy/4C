@@ -12,6 +12,7 @@
 
 #include "drt_discret.H"
 #include "scatra_timint_implicit.H"
+#include "ssi_base.H"
 
 
 namespace ADAPTER
@@ -34,13 +35,12 @@ namespace SSI
     virtual ~SSICouplingBase() = default;
 
     //! \brief init this class
+    //!
     //! \param ndim                        dimension of the problem
     //! \param structdis                   underlying structure discretization
-    //! \param scatra_integrator           underlying scatra time integrator
-    //! \param scatra_manifold_integrator  underlying scatra manifold time integrator
+    //! \param ssi_base                    underlying scatra-structure time integrator
     virtual void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
-        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_integrator,
-        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold_integrator) = 0;
+        Teuchos::RCP<SSI::SSIBase> ssi_base) = 0;
 
     //! \brief setup this class
     virtual void Setup() = 0;
@@ -52,6 +52,13 @@ namespace SSI
     //! \param scatradis   underlying scatra discretization
     virtual void AssignMaterialPointers(Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<DRT::Discretization> scatradis) = 0;
+
+    //!
+    //! \param scatradis      underlying scatra discretization
+    //! \param stress_state   mechanical stress state vector to set
+    //! \param nds            number of dofset to write state on
+    virtual void SetMechanicalStressState(DRT::Discretization& scatradis,
+        Teuchos::RCP<const Epetra_Vector> stress_state, unsigned nds) = 0;
 
     //! \brief set structure mesh displacement on other field
     //!
@@ -98,13 +105,15 @@ namespace SSI
     ~SSICouplingMatchingVolume() override = default;
 
     void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
-        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_integrator,
-        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold_integrator) override;
+        Teuchos::RCP<SSI::SSIBase> ssi_base) override;
 
     void Setup() override;
 
     void AssignMaterialPointers(Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<DRT::Discretization> scatradis) override;
+
+    void SetMechanicalStressState(DRT::Discretization& scatradis,
+        Teuchos::RCP<const Epetra_Vector> stress_statetemp, unsigned nds) override;
 
     void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> disp) override;
@@ -168,13 +177,18 @@ namespace SSI
     ~SSICouplingNonMatchingBoundary() override = default;
 
     void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
-        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_integrator,
-        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold_integrator) override;
+        Teuchos::RCP<SSI::SSIBase> ssi_base) override;
 
     void Setup() override;
 
     void AssignMaterialPointers(Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<DRT::Discretization> scatradis) override;
+
+    void SetMechanicalStressState(DRT::Discretization& scatradis,
+        Teuchos::RCP<const Epetra_Vector> stress_state, unsigned nds) override
+    {
+      dserror("only implemented for 'SSICouplingMatchingVolume'");
+    }
 
     void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> disp) override;
@@ -254,13 +268,18 @@ namespace SSI
     ~SSICouplingNonMatchingVolume() override = default;
 
     void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
-        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_integrator,
-        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold_integrator) override;
+        Teuchos::RCP<SSI::SSIBase> ssi_base) override;
 
     void Setup() override;
 
     void AssignMaterialPointers(Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<DRT::Discretization> scatradis) override;
+
+    void SetMechanicalStressState(DRT::Discretization& scatradis,
+        Teuchos::RCP<const Epetra_Vector> stress_state, unsigned nds) override
+    {
+      dserror("only implemented for 'SSICouplingMatchingVolume'");
+    }
 
     void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> disp) override;
@@ -327,14 +346,19 @@ namespace SSI
     ~SSICouplingMatchingVolumeAndBoundary() override = default;
 
     void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
-        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_integrator,
-        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold_integrator) override;
+        Teuchos::RCP<SSI::SSIBase> ssi_base) override;
 
     void Setup() override;
 
 
     void AssignMaterialPointers(Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<DRT::Discretization> scatradis) override;
+
+    void SetMechanicalStressState(DRT::Discretization& scatradis,
+        Teuchos::RCP<const Epetra_Vector> stress_state, unsigned nds) override
+    {
+      dserror("only implemented for 'SSICouplingMatchingVolume'");
+    }
 
     void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> disp) override;

@@ -2939,6 +2939,8 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
           s2icouplingparameters.set<int>("numscal", s2ikinetics_cond.GetInt("numscal"));
           s2icouplingparameters.set<std::vector<double>*>(
               "permeabilities", s2ikinetics_cond.GetMutable<std::vector<double>>("permeabilities"));
+          s2icouplingparameters.set<int>(
+              "is_pseudo_contact", s2ikinetics_cond.GetInt("is_pseudo_contact"));
           break;
         }
 
@@ -2948,6 +2950,8 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
           s2icouplingparameters.set<std::vector<int>*>(
               "onoff", s2ikinetics_cond.GetMutable<std::vector<int>>("onoff"));
           s2icouplingparameters.set<int>("numelectrons", s2ikinetics_cond.GetInt("e-"));
+          s2icouplingparameters.set<int>(
+              "is_pseudo_contact", s2ikinetics_cond.GetInt("is_pseudo_contact"));
           break;
         }
 
@@ -2974,6 +2978,8 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
           s2icouplingparameters.set<double>("k_r", s2ikinetics_cond.GetDouble("k_r"));
           s2icouplingparameters.set<double>("alpha_a", s2ikinetics_cond.GetDouble("alpha_a"));
           s2icouplingparameters.set<double>("alpha_c", s2ikinetics_cond.GetDouble("alpha_c"));
+          s2icouplingparameters.set<int>(
+              "is_pseudo_contact", s2ikinetics_cond.GetInt("is_pseudo_contact"));
 
           if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedcapacitance)
             s2icouplingparameters.set<double>(
@@ -4475,6 +4481,9 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateCondition(
         "than one degree of freedom per node, but not yet tested!");
   }
 
+  // always in contact
+  const double pseudo_contact_fac = 1.0;
+
   // determine quadrature rule
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::GaussRule2D::tri_7point);
 
@@ -4493,9 +4502,9 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateCondition(
     if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
 
     DRT::ELEMENTS::ScaTraEleBoundaryCalc<distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<
-        distypeM>(ephinp_slave_, ephinp_master_, funct_slave_, funct_master_, test_lm_slave_,
-        test_lm_master_, numdofpernode_slave_, scatraparamsboundary_, timefacfac, timefacrhsfac,
-        k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+        distypeM>(ephinp_slave_, ephinp_master_, pseudo_contact_fac, funct_slave_, funct_master_,
+        test_lm_slave_, test_lm_master_, numdofpernode_slave_, scatraparamsboundary_, timefacfac,
+        timefacrhsfac, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
   }
 }
 
@@ -4521,6 +4530,9 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateConditionNTS(DRT::Condi
   // evaluate shape functions at position of slave-side node
   EvalShapeFuncAtSlaveNode(slavenode, slaveelement, masterelement);
 
+  // always in contact
+  const double pseudo_contact_fac = 1.0;
+
   // overall integration factors
   const double timefacfac =
       DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac() * lumpedarea;
@@ -4529,9 +4541,9 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateConditionNTS(DRT::Condi
   if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
 
   DRT::ELEMENTS::ScaTraEleBoundaryCalc<distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<
-      distypeM>(ephinp_slave, ephinp_master, funct_slave_, funct_master_, funct_slave_,
-      funct_master_, numdofpernode_slave_, scatraparamsboundary_, timefacfac, timefacrhsfac, k_ss,
-      k_sm, k_ms, k_mm, r_s, r_m);
+      distypeM>(ephinp_slave, ephinp_master, pseudo_contact_fac, funct_slave_, funct_master_,
+      funct_slave_, funct_master_, numdofpernode_slave_, scatraparamsboundary_, timefacfac,
+      timefacrhsfac, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
 }
 
 /*----------------------------------------------------------------------*

@@ -61,6 +61,7 @@ Teuchos::RCP<STR::SOLVER::Factory::LinSolMap> STR::SOLVER::Factory::BuildLinSolv
       case INPAR::STR::model_springdashpot:
       case INPAR::STR::model_browniandyn:
       case INPAR::STR::model_beaminteraction:
+      case INPAR::STR::model_basic_couping:
       case INPAR::STR::model_monolithic_coupling:
       case INPAR::STR::model_partitioned_coupling:
       case INPAR::STR::model_beam_interaction_old:

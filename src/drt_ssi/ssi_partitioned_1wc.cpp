@@ -165,7 +165,9 @@ void SSI::SSIPart1WCSolidToScatra::PrepareTimeStep(bool printheader)
 
   if (StructureField()->Step() % diffsteps == 0)
   {
-    SetStructSolution(StructureField()->Dispn(), StructureField()->Veln());
+    if (IsS2IKineticsWithPseudoContact()) StructureField()->DetermineStressStrain();
+    SetStructSolution(
+        StructureField()->Dispn(), StructureField()->Veln(), IsS2IKineticsWithPseudoContact());
     ScaTraField()->PrepareTimeStep();
   }
 }
@@ -233,7 +235,9 @@ void SSI::SSIPart1WCSolidToScatra::Timeloop()
                      // itself.
     if (StructureField()->Step() % diffsteps == 0)
     {
-      SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
+      if (IsS2IKineticsWithPseudoContact()) StructureField()->DetermineStressStrain();
+      SetStructSolution(
+          StructureField()->Dispnp(), StructureField()->Velnp(), IsS2IKineticsWithPseudoContact());
       DoScatraStep();  // It has its own time and timestep variables, and it increments them by
                        // itself.
     }
@@ -283,7 +287,7 @@ void SSI::SSIPart1WCScatraToSolid::Timeloop()
 
   // set zero velocity and displacement field for scatra
   auto zeros_structure = LINALG::CreateVector(*StructureField()->DofRowMap(), true);
-  SetStructSolution(zeros_structure, zeros_structure);
+  SetStructSolution(zeros_structure, zeros_structure, false);
 
   ScaTraField()->PrepareTimeLoop();
 

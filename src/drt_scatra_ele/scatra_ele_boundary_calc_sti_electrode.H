@@ -50,6 +50,9 @@ namespace DRT
        * @param[in] emastertempnp  thermo state variables at master-side nodes
        * @param[in] eslavephinp    scatra state variables at slave-side nodes
        * @param[in] emasterphinp   scatra state variables at master-side nodes
+       * @param[in] pseudo_contact_fac  factor, modeling pseudo contact by considering the
+       *                                mechanical stress state at the interface (1.0 if under
+       *                                compressive stresses, 0.0 if under tensile stresses)
        * @param[in] funct_slave                slave-side shape function values
        * @param[in] funct_master               master-side shape function values
        * @param[in] scatra_parameter_boundary  interface parameter class
@@ -74,14 +77,13 @@ namespace DRT
           const std::vector<LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
-          const LINALG::Matrix<my::nen_, 1>& funct_slave,
+          double pseudo_contact_fac, const LINALG::Matrix<my::nen_, 1>& funct_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
-          const double timefacfac, const double timefacrhsfac, const double detF,
-          Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm,
-          Epetra_SerialDenseVector& r_s);
+          double timefacfac, double timefacrhsfac, double detF, Epetra_SerialDenseMatrix& k_ss,
+          Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseVector& r_s);
 
       /*!
        * \brief evaluate off-diagonal system matrix contributions associated with scatra-scatra
@@ -91,6 +93,9 @@ namespace DRT
        * @param[in] emastertempnp thermo state variables at master-side nodes
        * @param[in] eslavephinp   scatra state variables at slave-side nodes
        * @param[in] emasterphinp  scatra state variables at master-side nodes
+       * @param[in] pseudo_contact_fac  factor, modeling pseudo contact by considering the
+       *                                mechanical stress state at the interface (1.0 if under
+       *                                compressive stresses, 0.0 if under tensile stresses)
        * @param[in] funct_slave                slave-side shape function values
        * @param[in] funct_master               master-side shape function values
        * @param[in] scatra_parameter_boundary  interface parameter class
@@ -115,7 +120,7 @@ namespace DRT
           const std::vector<LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
-          const LINALG::Matrix<my::nen_, 1>& funct_slave,
+          double pseudo_contact_fac, const LINALG::Matrix<my::nen_, 1>& funct_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,

@@ -53,6 +53,7 @@ DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
       nds_disp_(-1),
       nds_micro_(-1),
       nds_pres_(-1),
+      nds_two_tensor_quantitiy_(-1),
       nds_vel_(-1),
       nds_wss_(-1),
       probnum_(0),
@@ -83,6 +84,7 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetNodesetParameters(Teuchos::Paramet
 {
   nds_disp_ = parameters.get<int>("ndsdisp", -1);
   nds_pres_ = parameters.get<int>("ndspres", -1);
+  nds_two_tensor_quantitiy_ = parameters.get<int>("ndsTwoTensorQuantity", -1);
   nds_vel_ = parameters.get<int>("ndsvel", -1);
   nds_wss_ = parameters.get<int>("ndswss", -1);
 }
@@ -255,6 +257,15 @@ int DRT::ELEMENTS::ScaTraEleParameterStd::NdsPres() const
       "set it!");
   return nds_pres_;
 }
+
+int DRT::ELEMENTS::ScaTraEleParameterStd::NdsTwoTensorQuantity() const
+{
+  dsassert(nds_two_tensor_quantitiy_ != -1,
+      "You try to access the number of dofset associated with two-tensor quantity dofs without "
+      "having set it!");
+  return nds_two_tensor_quantitiy_;
+}
+
 
 int DRT::ELEMENTS::ScaTraEleParameterStd::NdsVel() const
 {

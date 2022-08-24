@@ -433,7 +433,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
         if (prbdyn_->INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
                 "Monolithic Coupling Model"))
           dserror("Cannot have both partitioned and monolithic coupling at the same time!");
-        const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr =
+        const auto coupling_model_ptr =
             prbdyn_->INVALID_TEMPLATE_QUALIFIER get<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
                 "Partitioned Coupling Model");
         if (coupling_model_ptr.is_null())
@@ -448,7 +448,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
       else if (prbdyn_->INVALID_TEMPLATE_QUALIFIER
                    isType<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>("Monolithic Coupling Model"))
       {
-        const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr =
+        const auto coupling_model_ptr =
             prbdyn_->INVALID_TEMPLATE_QUALIFIER get<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
                 "Monolithic Coupling Model");
         if (coupling_model_ptr.is_null())
@@ -458,6 +458,21 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
         // copy the coupling model object pointer into the (temporal) sdyn parameter list
         sdyn_->set<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
             "Monolithic Coupling Model", coupling_model_ptr);
+      }
+
+      else if (prbdyn_->INVALID_TEMPLATE_QUALIFIER
+                   isType<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>("Basic Coupling Model"))
+      {
+        const auto coupling_model_ptr =
+            prbdyn_->INVALID_TEMPLATE_QUALIFIER get<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
+                "Basic Coupling Model");
+        if (coupling_model_ptr.is_null())
+          dserror("The basic coupling model pointer is not allowed to be Teuchos::null!");
+        // set the model type
+        modeltypes.insert(INPAR::STR::model_basic_couping);
+        // copy the coupling model object pointer into the (temporal) sdyn parameter list
+        sdyn_->set<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
+            "Basic Coupling Model", coupling_model_ptr);
       }
       break;
     }

@@ -263,6 +263,12 @@ namespace SCATRA
     //! set number of dofset to write pressure values on
     void SetNumberOfDofSetPressure(int nds_pressure) { nds_pres_ = nds_pressure; }
 
+    //! set number of dofset to write two-tensor quantities on, e.g. stresses, strains
+    void SetNumberOfDofSetTwoTensorQuantity(int nds_two_tensor_quantitiy)
+    {
+      nds_two_tensor_quantitiy_ = nds_two_tensor_quantitiy;
+    }
+
     //! set number of dofset to write vbelocity values on
     void SetNumberOfDofSetVelocity(int nds_velocity) { nds_vel_ = nds_velocity; }
 
@@ -426,6 +432,9 @@ namespace SCATRA
 
     //! return number of dofset associated with pressure dofs
     int NdsPressure() const { return nds_pres_; }
+
+    //! return number of dofset associated with two-tensor quantity dofs, e.g. stresses, strains
+    int NdsTwoTensorQuantity() const { return nds_two_tensor_quantitiy_; }
 
     //! return number of dofset associated with velocity dofs
     int NdsVel() const { return nds_vel_; }
@@ -1301,6 +1310,9 @@ namespace SCATRA
 
     //! number of dofset associated with pressure dofs
     int nds_pres_;
+
+    //! number of dofset associated with two-tensor quantity dofs, e.g. stresses, strains
+    int nds_two_tensor_quantitiy_;
 
     //! number of dofset associated with velocity related dofs
     int nds_vel_;

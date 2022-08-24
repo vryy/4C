@@ -156,6 +156,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<DRT::Discretization> act
       nds_disp_(-1),
       nds_micro_(-1),
       nds_pres_(-1),
+      nds_two_tensor_quantitiy_(-1),
       nds_vel_(-1),
       nds_wss_(-1),
       densific_(0, 0.0),
@@ -915,6 +916,7 @@ void SCATRA::ScaTraTimIntImpl::SetElementNodesetParameters() const
 
   eleparams.set<int>("ndsdisp", NdsDisp());
   eleparams.set<int>("ndspres", NdsPressure());
+  eleparams.set<int>("ndsTwoTensorQuantity", NdsTwoTensorQuantity());
   eleparams.set<int>("ndsvel", NdsVel());
   eleparams.set<int>("ndswss", NdsWallShearStress());
 

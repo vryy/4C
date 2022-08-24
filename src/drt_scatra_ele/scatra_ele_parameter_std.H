@@ -68,6 +68,8 @@ namespace DRT
       int NdsMicro() const;
       //! number of dofset associated with pressure dofs
       int NdsPres() const;
+      //! number of dofset associated with two-tensor quantity dofs, e.g. stresses, strains
+      int NdsTwoTensorQuantity() const;
       //! number of dofset associated with velocity related dofs
       int NdsVel() const;
       //! number of dofset associated with wall shear stress dofs
@@ -128,6 +130,9 @@ namespace DRT
 
       //! number of dofset associated with pressure dofs
       int nds_pres_;
+
+      //! number of dofset associated with two-tensor quantity dofs, e.g. stresses, strains
+      int nds_two_tensor_quantitiy_;
 
       //! number of dofset associated with velocity related dofs
       int nds_vel_;

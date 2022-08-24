@@ -11,10 +11,9 @@
 #define SSI_BASE_H_
 
 #include "adapter_algorithmbase.H"
-
 #include "drt_discret.H"
-
-#include <Epetra_Vector.h>
+#include "Epetra_Vector.h"
+#include "ssi_str_model_evaluator_base.H"
 
 // forward declarations
 namespace ADAPTER
@@ -27,14 +26,10 @@ namespace ADAPTER
   class StructureBaseAlgorithmNew;
 }  // namespace ADAPTER
 
-namespace INPAR
+namespace INPAR::SSI
 {
-  namespace SSI
-  {
-    enum class FieldCoupling;
-  }
-
-}  // namespace INPAR
+  enum class FieldCoupling;
+}  // namespace INPAR::SSI
 
 namespace LINALG
 {
@@ -139,6 +134,11 @@ namespace SSI
      */
     bool IsRestart() const;
 
+    [[nodiscard]] bool IsS2IKineticsWithPseudoContact() const
+    {
+      return is_s2i_kinetic_with_pseudo_contact_;
+    }
+
     /*! \brief Setup discretizations and dofsets
 
      Init coupling object \ref ssicoupling_ and
@@ -203,8 +203,8 @@ namespace SSI
     const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraManifold() const;
 
     /// set structure solution on other fields
-    void SetStructSolution(
-        Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel);
+    void SetStructSolution(Teuchos::RCP<const Epetra_Vector> disp,
+        Teuchos::RCP<const Epetra_Vector> vel, bool set_mechanical_stress);
 
     /// set scatra solution on other fields
     virtual void SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const;
@@ -273,6 +273,15 @@ namespace SSI
     //! copy modified time step from scatra to structure field
     void SetDtFromScaTraToStructure();
 
+    //! set structure stress state on scatra field
+    void SetMechanicalStressState(Teuchos::RCP<const Epetra_Vector> mechanical_stress_state) const;
+
+    void SetModelevaluatorBaseSSI(
+        Teuchos::RCP<STR::MODELEVALUATOR::Generic> modelevaluator_ssi_base)
+    {
+      modelevaluator_ssi_base_ = modelevaluator_ssi_base;
+    }
+
     //! set flag true after setup or false if setup became invalid
     void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; }
 
@@ -280,7 +289,7 @@ namespace SSI
     void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; }
 
     //! set up structural model evaluator for scalar-structure interaction
-    virtual void SetupModelEvaluator() const {};
+    virtual void SetupModelEvaluator();
 
     //! macro-micro scatra problem?
     bool MacroScale() const { return macro_scale_; }
@@ -312,6 +321,15 @@ namespace SSI
     void InitTimeIntegrators(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, const bool isAle);
+
+    /*!
+     * @brief check whether pseudo contact is activated for at least one of the s2i kinetics
+     * conditions
+     *
+     * @param[in] struct_disname  name of structure discretization
+     */
+    [[nodiscard]] bool CheckS2IKineticsConditionForPseudoContact(
+        const std::string& struct_disname) const;
 
     //! check whether scatra-structure interaction flags are set correctly
     void CheckSSIFlags() const;
@@ -350,6 +368,9 @@ namespace SSI
     //! activate mesh tying between overlapping manifold fields
     const bool is_manifold_meshtying_;
 
+    //! flag indicating if an s2i kinetic condition with activated pseudo contact is available
+    bool is_s2i_kinetic_with_pseudo_contact_;
+
     //! counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
     //! iterations (partitioned algorithm)
     int iter_;
@@ -359,6 +380,9 @@ namespace SSI
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i_;
+
+    //! structure model evaluator for ssi problems
+    Teuchos::RCP<STR::MODELEVALUATOR::Generic> modelevaluator_ssi_base_;
 
     //! underlying scatra problem base algorithm
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_base_algorithm_;

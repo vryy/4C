@@ -57,12 +57,14 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
           DRT::INPUT::IntegralValue<bool>(globaltimeparams.sublist("MANIFOLD"), "ADD_MANIFOLD")),
       is_manifold_meshtying_(DRT::INPUT::IntegralValue<bool>(
           globaltimeparams.sublist("MANIFOLD"), "MESHTYING_MANIFOLD")),
+      is_s2i_kinetic_with_pseudo_contact_(false),
       iter_(0),
       macro_scale_(DRT::Problem::Instance()->Materials()->FirstIdByType(
                        INPAR::MAT::m_scatra_multiscale) != -1 or
                    DRT::Problem::Instance()->Materials()->FirstIdByType(
                        INPAR::MAT::m_newman_multiscale) != -1),
       meshtying_strategy_s2i_(Teuchos::null),
+      modelevaluator_ssi_base_(Teuchos::null),
       scatra_base_algorithm_(Teuchos::null),
       scatra_manifold_base_algorithm_(Teuchos::null),
       ssi_structure_meshtying_(Teuchos::null),
@@ -159,7 +161,6 @@ void SSI::SSIBase::Setup()
           *DRT::Problem::Instance()->GetDis("structure"), ScaTraField()->PhinpMicro(), 2);
     }
 
-
     //   temperature is non primary variable. Only set, if function for temperature is given
     if (temperature_funct_num_ != -1)
     {
@@ -195,6 +196,14 @@ void SSI::SSIBase::Setup()
   // for old structural time integration
   else if (use_old_structure_)
     structure_->Setup();
+
+  if (IsS2IKineticsWithPseudoContact())
+  {
+    auto dummy_stress_state =
+        Teuchos::rcp(new Epetra_Vector(*StructureField()->Discretization()->DofRowMap(2), true));
+    ssicoupling_->SetMechanicalStressState(*ScaTraField()->Discretization(), dummy_stress_state,
+        ScaTraField()->NdsTwoTensorQuantity());
+  }
 
   // check maps from scalar transport and structure discretizations
   if (ScaTraField()->DofRowMap()->NumGlobalElements() == 0)
@@ -383,8 +392,6 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
   RedistributionType redistribution_required = SSI::RedistributionType::none;
 
   auto scatra_integrator = ScaTraBaseAlgorithm()->ScaTraField();
-  Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold_integrator(Teuchos::null);
-  if (IsScaTraManifold()) scatra_manifold_integrator = ScaTraManifoldBaseAlgorithm()->ScaTraField();
 
   // safety check
   {
@@ -415,6 +422,8 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
     }
     if (IsScaTraManifold() and fieldcoupling_ != INPAR::SSI::FieldCoupling::volumeboundary_match)
       dserror("Solving manifolds only in combination with matching volumes and boundaries");
+
+    is_s2i_kinetic_with_pseudo_contact_ = CheckS2IKineticsConditionForPseudoContact(struct_disname);
   }
 
   // build SSI coupling class
@@ -442,8 +451,7 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
 
   // initialize coupling objects including dof sets
   DRT::Problem* problem = DRT::Problem::Instance();
-  ssicoupling_->Init(problem->NDim(), problem->GetDis(struct_disname), scatra_integrator,
-      scatra_manifold_integrator);
+  ssicoupling_->Init(problem->NDim(), problem->GetDis(struct_disname), Teuchos::rcp(this, false));
 
   return redistribution_required;
 }
@@ -541,8 +549,8 @@ void SSI::SSIBase::TestResults(const Epetra_Comm& comm) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::SetStructSolution(
-    Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel)
+void SSI::SSIBase::SetStructSolution(Teuchos::RCP<const Epetra_Vector> disp,
+    Teuchos::RCP<const Epetra_Vector> vel, const bool set_mechanical_stress)
 {
   // safety checks
   CheckIsInit();
@@ -550,6 +558,9 @@ void SSI::SSIBase::SetStructSolution(
 
   SetMeshDisp(disp);
   SetVelocityFields(vel);
+
+  if (set_mechanical_stress)
+    SetMechanicalStressState(modelevaluator_ssi_base_->GetMechanicalStressState());
 }
 
 /*----------------------------------------------------------------------*/
@@ -604,6 +615,18 @@ void SSI::SSIBase::SetVelocityFields(Teuchos::RCP<const Epetra_Vector> vel)
   ssicoupling_->SetVelocityFields(ScaTraBaseAlgorithm(), zeros_structure_, vel);
   if (IsScaTraManifold())
     ssicoupling_->SetVelocityFields(ScaTraManifoldBaseAlgorithm(), zeros_structure_, vel);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSIBase::SetMechanicalStressState(
+    Teuchos::RCP<const Epetra_Vector> mechanical_stress_state) const
+{
+  CheckIsInit();
+  CheckIsSetup();
+
+  ssicoupling_->SetMechanicalStressState(*ScaTraField()->Discretization(), mechanical_stress_state,
+      ScaTraField()->NdsTwoTensorQuantity());
 }
 
 /*----------------------------------------------------------------------*/
@@ -854,6 +877,56 @@ void SSI::SSIBase::CheckAdaptiveTimeStepping(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+bool SSI::SSIBase::CheckS2IKineticsConditionForPseudoContact(
+    const std::string& struct_disname) const
+{
+  bool is_s2i_kinetic_with_pseudo_contact = false;
+
+  auto structdis = DRT::Problem::Instance()->GetDis(struct_disname);
+  // get all s2i kinetics conditions
+  std::vector<DRT::Condition*> s2ikinetics_conditons(0, nullptr);
+  structdis->GetCondition("S2IKinetics", s2ikinetics_conditons);
+  // get all ssi contact conditions
+  std::vector<DRT::Condition*> ssi_contact_conditions;
+  structdis->GetCondition("SSIInterfaceContact", ssi_contact_conditions);
+  for (auto* s2ikinetics_cond : s2ikinetics_conditons)
+  {
+    if ((s2ikinetics_cond->GetInt("interface side") == INPAR::S2I::side_slave) and
+        (s2ikinetics_cond->GetInt("kinetic model") != INPAR::S2I::kinetics_nointerfaceflux) and
+        (s2ikinetics_cond->GetInt("is_pseudo_contact") == 1))
+    {
+      is_s2i_kinetic_with_pseudo_contact = true;
+      const int s2i_kinetics_condition_id = s2ikinetics_cond->GetInt("ConditionID");
+
+      for (auto* contact_condition : ssi_contact_conditions)
+      {
+        if (contact_condition->GetInt("ConditionID") == s2i_kinetics_condition_id)
+        {
+          dserror(
+              "Pseudo contact formulation of s2i kinetics conditions does not make sense in "
+              "combination with resolved contact formulation. Set the respective is_pseudo_contact "
+              "flag to '0'");
+        }
+      }
+    }
+  }
+
+  const bool do_output_cauchy_stress =
+      DRT::INPUT::IntegralValue<INPAR::STR::StressType>(
+          DRT::Problem::Instance()->IOParams(), "STRUCT_STRESS") == INPAR::STR::stress_cauchy;
+
+  if (is_s2i_kinetic_with_pseudo_contact and !do_output_cauchy_stress)
+  {
+    dserror(
+        "Consideration fo pseudo contact with 'S2IKinetics' condition only possible when Cauchy "
+        "stress output is written.");
+  }
+
+  return is_s2i_kinetic_with_pseudo_contact;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void SSI::SSIBase::CheckSSIInterfaceConditions(const std::string& struct_disname) const
 {
   // access the structural discretization
@@ -880,4 +953,17 @@ void SSI::SSIBase::SetupSystem()
   if (ssiinterfacemeshtying_)
     SSIStructureMeshTying()->CheckSlaveSideHasDirichletConditions(
         StructureField()->GetDBCMapExtractor()->CondMap());
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::SSIBase::SetupModelEvaluator()
+{
+  // register the model evaluator if s2i condition with pseudo contact is available
+  if (IsS2IKineticsWithPseudoContact())
+  {
+    modelevaluator_ssi_base_ = Teuchos::rcp(new STR::MODELEVALUATOR::BaseSSI());
+    StructureBaseAlgorithm()->RegisterModelEvaluator(
+        "Basic Coupling Model", modelevaluator_ssi_base_);
+  }
 }

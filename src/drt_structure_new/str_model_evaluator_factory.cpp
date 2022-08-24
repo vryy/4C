@@ -92,6 +92,13 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::BuildModelE
         (*model_map)[*mt_iter] = coupling_model_ptr;
         break;
       }
+      case INPAR::STR::model_basic_couping:
+      {
+        if (coupling_model_ptr.is_null())
+          dserror("The basic coupling model evaluator is not defined.");
+        (*model_map)[*mt_iter] = coupling_model_ptr;
+        break;
+      }
       case INPAR::STR::model_meshtying:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Meshtying());
         break;
