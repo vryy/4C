@@ -132,7 +132,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::StringConditionComponent::Read(
 
     dserror(error_message.str());
   }
-  unsigned pos = &*i - &datfilevalues_[0];
+  const unsigned pos = std::distance(datfilevalues_.begin(), i);
   // choose, if we have an array based on std::string or int
   if (stringtostring_)
     condition->Add(Name(), stringcondvalues_[pos]);
