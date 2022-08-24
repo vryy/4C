@@ -104,7 +104,7 @@ BACI heavily relies on the [Trilinos project](www.trilinos.org).
 
 Some further third party libraries (TPLs) are mandatory, e.g.
 - ParMETIS (recommended version: 4.0.3)
-- SuiteSparse (recommended version: 3.3.0)
+- SuiteSparse (recommended version: 5.4.0)
 - SuperLUDist (mandatory version: 2.5 (due to Trilinos/Amesos))
 - Qhull (recommended version: 2012.1)
 - CLN (recommened version: 1.3.4)
@@ -114,6 +114,8 @@ and some are optional, e.g.
 
 Often, a pre-compiled version of Trilinos and set of TPLs is available at your institute.
 Look into the build configuration files in ```buildconfig/``` or ask your colleagues for further information.
+
+Additional information can be found [here](https://gitlab.lrz.de/baci/baci/-/wikis/External-dependencies).
 
 [↑ Contents](#contents)
 
