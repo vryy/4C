@@ -119,10 +119,20 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::StringConditionComponent::Read(
   auto i = std::find(datfilevalues_.begin(), datfilevalues_.end(), value);
   if (i == datfilevalues_.end())
   {
-    dserror("unrecognized std::string '%s' while reading variable '%s' in '%s'", value.c_str(),
-        Name().c_str(), def->SectionName().c_str());
+    std::stringstream error_message;
+    error_message << "\n \nUnrecognized std::string '" << value.c_str()
+                  << "' while reading variable '" << Name().c_str() << "' in '"
+                  << def->SectionName().c_str() << "'.\n"
+                  << "Possible values are: \n";
+
+    for (const auto& datfilevalue : datfilevalues_)
+    {
+      error_message << std::string(23, ' ') << datfilevalue << "\n";
+    }
+
+    dserror(error_message.str());
   }
-  unsigned pos = &*i - &datfilevalues_[0];
+  const unsigned pos = std::distance(datfilevalues_.begin(), i);
   // choose, if we have an array based on std::string or int
   if (stringtostring_)
     condition->Add(Name(), stringcondvalues_[pos]);
