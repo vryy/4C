@@ -652,7 +652,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldDomainIntegra
   {
     Teuchos::ParameterList condparams;
 
-    condparams.set<int>("action", SCATRA::calc_domain_integral);
+    condparams.set<int>("action", SCATRA::bd_calc_boundary_integral);
 
     condparams.set<int>("ndsdisp", 1);
 
