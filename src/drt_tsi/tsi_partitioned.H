@@ -83,7 +83,7 @@ namespace TSI
     virtual void PrepareTimeStep();
 
     //! calculate stresses, strains, energies
-    virtual void PrepareOutput();
+    void PrepareOutput() override;
     //@}
 
     //! @name Solve

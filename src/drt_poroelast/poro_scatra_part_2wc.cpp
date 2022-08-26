@@ -162,7 +162,11 @@ void POROELAST::PoroScatraPart2WC::PrepareTimeStep(bool printheader)
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |
  *----------------------------------------------------------------------*/
-void POROELAST::PoroScatraPart2WC::PrepareOutput() { PoroField()->PrepareOutput(); }
+void POROELAST::PoroScatraPart2WC::PrepareOutput()
+{
+  constexpr bool force_prepare = false;
+  PoroField()->PrepareOutput(force_prepare);
+}
 
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |

@@ -215,7 +215,7 @@ namespace EHL
     virtual void PrepareTimeStep();
 
     //! calculate stresses, strains, energies
-    virtual void PrepareOutput();
+    virtual void PrepareOutput(bool force_prepare);
     //@}
 
     //! convergence check for Newton solver

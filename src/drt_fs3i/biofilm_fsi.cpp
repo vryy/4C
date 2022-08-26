@@ -382,7 +382,9 @@ void FS3I::BiofilmFSI::InnerTimeloop()
 
     fsi_->PrepareTimeStep();
     fsi_->TimeStep(fsi_);
-    fsi_->PrepareOutput();
+
+    constexpr bool force_prepare = false;
+    fsi_->PrepareOutput(force_prepare);
     fsi_->Update();
 
     SetFSISolution();

@@ -88,7 +88,7 @@ namespace FPSI
     virtual void Update();
 
     //! calculate stresses, strains, energies
-    virtual void PrepareOutput();
+    virtual void PrepareOutput(bool force_prepare);
 
     //! Output routine accounting for Lagrange multiplier at the interface
     virtual void Output();

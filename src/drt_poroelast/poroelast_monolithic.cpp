@@ -158,7 +158,8 @@ void POROELAST::Monolithic::DoTimeStep()
   Solve();
 
   // calculate stresses, strains, energies
-  PrepareOutput();
+  constexpr bool force_prepare = false;
+  PrepareOutput(force_prepare);
 
   // update all single field solvers
   Update();

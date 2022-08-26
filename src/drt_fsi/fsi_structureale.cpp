@@ -81,7 +81,8 @@ void FSI::StructureALE::Timeloop()
   {
     PrepareTimeStep();
     Solve();
-    PrepareOutput();
+    constexpr bool force_prepare = false;
+    PrepareOutput(force_prepare);
     Update();
     Output();
   }

@@ -205,7 +205,8 @@ void SSI::SSIPart2WC::PreOperator1()
 void SSI::SSIPart2WC::PrepareTimeLoop()
 {
   // initial output
-  StructureField()->PrepareOutput();
+  constexpr bool force_prepare = true;
+  StructureField()->PrepareOutput(force_prepare);
   StructureField()->Output();
   SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
   ScaTraField()->PrepareTimeLoop();
@@ -238,7 +239,8 @@ void SSI::SSIPart2WC::PrepareTimeStep(bool printheader)
 /*----------------------------------------------------------------------*/
 void SSI::SSIPart2WC::UpdateAndOutput()
 {
-  StructureField()->PrepareOutput();
+  constexpr bool force_prepare = false;
+  StructureField()->PrepareOutput(force_prepare);
 
   StructureField()->Update();
   ScaTraField()->Update();

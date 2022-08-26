@@ -1982,7 +1982,7 @@ void STR::TimInt::ReadRestartMultiScale()
 
 /*----------------------------------------------------------------------*/
 /* Calculate all output quantities that depend on a potential material history */
-void STR::TimInt::PrepareOutput()
+void STR::TimInt::PrepareOutput(bool force_prepare_timestep)
 {
   DetermineStressStrain();
   DetermineEnergy();

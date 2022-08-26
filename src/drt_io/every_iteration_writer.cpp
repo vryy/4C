@@ -223,7 +223,8 @@ void IO::EveryIterationWriter::InitNewtonIteration()
 
   every_iter_writer_->NewStep(0, 0.0);
 
-  interface_->PrepareOutput();
+  constexpr bool force_prepare = false;
+  interface_->PrepareOutput(force_prepare);
   interface_->OutputDebugState(*every_iter_writer_, true);
 
   isnewton_initialized_ = true;
@@ -243,7 +244,8 @@ void IO::EveryIterationWriter::AddNewtonIteration(const int newton_iteration)
   every_iter_writer_->WriteMesh(counter, counter);
   every_iter_writer_->NewStep(counter, counter);
 
-  interface_->PrepareOutput();
+  constexpr bool force_prepare = false;
+  interface_->PrepareOutput(force_prepare);
   interface_->OutputDebugState(*every_iter_writer_, write_owner_each_newton_iteration_);
 }
 
@@ -268,7 +270,8 @@ void IO::EveryIterationWriter::AddLineSearchIteration(
   every_iter_writer_->WriteMesh(counter, counter);
   every_iter_writer_->NewStep(counter, counter);
 
-  interface_->PrepareOutput();
+  constexpr bool force_prepare = false;
+  interface_->PrepareOutput(force_prepare);
   interface_->OutputDebugState(*every_iter_writer_, write_owner_each_newton_iteration_);
 }
 

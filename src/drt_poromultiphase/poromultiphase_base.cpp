@@ -161,7 +161,8 @@ void POROMULTIPHASE::PoroMultiPhaseBase::PrepareTimeLoop()
   // initial output
   if (solve_structure_)
   {
-    StructureField()->PrepareOutput();
+    constexpr bool force_prepare = true;
+    StructureField()->PrepareOutput(force_prepare);
     StructureField()->Output();
     SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
   }
@@ -251,7 +252,8 @@ void POROMULTIPHASE::PoroMultiPhaseBase::SetMeshDisp(Teuchos::RCP<const Epetra_V
 void POROMULTIPHASE::PoroMultiPhaseBase::UpdateAndOutput()
 {
   // prepare the output
-  StructureField()->PrepareOutput();
+  constexpr bool force_prepare = false;
+  StructureField()->PrepareOutput(force_prepare);
 
   // update single fields
   StructureField()->Update();

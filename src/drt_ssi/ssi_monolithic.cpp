@@ -1180,7 +1180,8 @@ void SSI::SSIMono::EvaluateScaTraManifold()
  *--------------------------------------------------------------------------------------*/
 void SSI::SSIMono::PrepareOutput()
 {
-  StructureField()->PrepareOutput();
+  constexpr bool force_prepare = false;
+  StructureField()->PrepareOutput(force_prepare);
 
   // prepare output of coupling sctra manifold - scatra
   if (IsScaTraManifold() and manifoldscatraflux_->DoOutput())

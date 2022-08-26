@@ -192,7 +192,7 @@ namespace POROELAST
     void Update() override;
 
     //! calculate stresses, strains, energies
-    void PrepareOutput() override;
+    void PrepareOutput(bool force_prepare_timestep) override;
 
     //! output
     void Output(bool forced_writerestart = false) override;

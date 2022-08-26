@@ -515,7 +515,7 @@ namespace STR
 
       /// Calculate all output quantities depending on the constitutive model
       /// (and, hence, on a potential material history)
-      virtual void PrepareOutput();
+      void PrepareOutput(bool force_prepare_timestep) override;
 
       /// output results (implicit and explicit)
       virtual void Output() { Output(false); };

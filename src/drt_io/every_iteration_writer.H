@@ -42,7 +42,7 @@ namespace IO
     virtual ~EveryIterationWriterInterface(){};
 
     /// Prepare the output before it is accessed via OutputState.
-    virtual void PrepareOutput() = 0;
+    virtual void PrepareOutput(bool force_prepare) = 0;
 
     /** @brief Access the entire output state
      *

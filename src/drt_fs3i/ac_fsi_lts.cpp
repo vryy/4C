@@ -244,7 +244,9 @@ void FS3I::ACFSI::FinishLargeTimeScaleLoop()
   output_writer->WriteMesh(0, 0.0);
 
   // write outputs in new file
-  fsi_->PrepareOutput();
+  constexpr bool force_prepare = false;
+  fsi_->PrepareOutput(force_prepare);
+
   FsiOutput();
   ScatraOutput();
 }
@@ -660,7 +662,8 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   //----------------------------------------------------------------------
   // write fsi output. Scatra outputs are done later
   // fsi output
-  fsi_->PrepareOutput();
+  constexpr bool force_prepare = false;
+  fsi_->PrepareOutput(force_prepare);
   // NOTE: we have to call this functions, otherwise the structure displacements are not applied
   fsi_->Update();
   FsiOutput();

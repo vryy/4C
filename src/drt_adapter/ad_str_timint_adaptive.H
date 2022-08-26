@@ -50,7 +50,7 @@ namespace ADAPTER
     virtual int Integrate();
 
     /// prepare output (i.e. calculate stresses, strains, energies)
-    virtual void PrepareOutput();
+    void PrepareOutput(bool force_prepare) override;
 
     /// output results
     virtual void Output();

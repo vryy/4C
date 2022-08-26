@@ -41,7 +41,6 @@ STR::TIMINT::BaseDataIO::BaseDataIO()
       printerrfile_(false),
       printiter_(false),
       outputeveryiter_(false),
-      writeinitialstate_(true),
       writesurfactant_(false),
       writestate_(false),
       writevelacc_(false),
@@ -86,7 +85,6 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
     p_io_every_iteration_ =
         Teuchos::rcp(new Teuchos::ParameterList(ioparams.sublist("EVERY ITERATION")));
     outputeveryiter_ = DRT::INPUT::IntegralValue<bool>(*p_io_every_iteration_, "OUTPUT_EVERY_ITER");
-    writeinitialstate_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "WRITE_INITIAL_STATE");
     writerestartevery_ = sdynparams.get<int>("RESTARTEVRY");
     writestate_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_DISP");
     writevelacc_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_VEL_ACC");
@@ -203,8 +201,12 @@ void STR::TIMINT::BaseDataIO::SetupEnergyOutputFile()
 bool STR::TIMINT::BaseDataIO::WriteResultsForThisStep(const int step) const
 {
   if (step < 0) dserror("The variable step is not allowed to be negative.");
-  return ((GetWriteResultsEveryNStep() and step % GetWriteResultsEveryNStep() == 0) or
-          GetInitialStateIsToBeWritten());
+  return IsWriteResultsEnabled() and step % GetWriteResultsEveryNStep() == 0;
+}
+
+bool STR::TIMINT::BaseDataIO::IsWriteResultsEnabled() const
+{
+  return GetWriteResultsEveryNStep() > 0;
 }
 
 /*----------------------------------------------------------------------------*
@@ -212,8 +214,13 @@ bool STR::TIMINT::BaseDataIO::WriteResultsForThisStep(const int step) const
 bool STR::TIMINT::BaseDataIO::WriteRuntimeVtkResultsForThisStep(const int step) const
 {
   if (step < 0) dserror("The variable step is not allowed to be negative.");
-  return (GetRuntimeVtkOutputParams() != Teuchos::null and
+  return (IsRuntimeVtkOutputEnabled() and
           step % GetRuntimeVtkOutputParams()->OutputIntervalInSteps() == 0);
+}
+
+bool STR::TIMINT::BaseDataIO::IsRuntimeVtkOutputEnabled() const
+{
+  return GetRuntimeVtkOutputParams() != Teuchos::null;
 }
 
 /*----------------------------------------------------------------------------*

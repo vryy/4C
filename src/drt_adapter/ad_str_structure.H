@@ -362,7 +362,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() = 0;
 
     /// prepare output (i.e. calculate stresses, strains, energies)
-    virtual void PrepareOutput() = 0;
+    void PrepareOutput(bool force_prepare_timestep) override = 0;
 
     // Get restart data
     virtual void GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<double> time,

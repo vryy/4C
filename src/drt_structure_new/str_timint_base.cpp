@@ -421,11 +421,12 @@ void STR::TIMINT::Base::GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<doub
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::PrepareOutput()
+void STR::TIMINT::Base::PrepareOutput(bool force_prepare_timestep)
 {
   CheckInitSetup();
   // --- stress, strain and optional quantity calculation ---------------------
-  if (dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepNp()))
+  if ((dataio_->IsWriteResultsEnabled() && force_prepare_timestep) ||
+      dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepNp()))
   {
     int_ptr_->DetermineStressStrain();
     int_ptr_->DetermineOptionalQuantity();
@@ -439,14 +440,16 @@ void STR::TIMINT::Base::PrepareOutput()
       int_ptr_->EvalData().SetElementVolumeData(elevolumes);
     }
   }
-  if (dataio_->WriteRuntimeVtkResultsForThisStep(dataglobalstate_->GetStepNp()) or
+  if ((dataio_->IsRuntimeVtkOutputEnabled() && force_prepare_timestep) ||
+      dataio_->WriteRuntimeVtkResultsForThisStep(dataglobalstate_->GetStepNp()) ||
       dataio_->WriteRuntimeVtpResultsForThisStep(dataglobalstate_->GetStepNp()))
   {
     int_ptr_->RuntimePreOutputStepState();
   }
   // --- energy calculation ---------------------------------------------------
-  if (dataio_->GetWriteEnergyEveryNStep() and
-      (dataglobalstate_->GetStepNp() % dataio_->GetWriteEnergyEveryNStep() == 0))
+  if ((dataio_->GetWriteEnergyEveryNStep() and
+          (force_prepare_timestep ||
+              dataglobalstate_->GetStepNp() % dataio_->GetWriteEnergyEveryNStep() == 0)))
   {
     STR::MODELEVALUATOR::Data& evaldata = int_ptr_->EvalData();
     evaldata.ClearValuesForAllEnergyTypes();
@@ -478,9 +481,6 @@ void STR::TIMINT::Base::Output(bool forced_writerestart)
   // write Gmsh output
   writeGmshStrucOutputStep();
   int_ptr_->PostOutput();
-
-  // Set the InitialStateIsToBeWritten to false after writing the initial state
-  if (dataio_->GetInitialStateIsToBeWritten()) dataio_->SetInitialStateIsToBeWritten(false);
 }
 
 /*----------------------------------------------------------------------------*

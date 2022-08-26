@@ -204,7 +204,8 @@ int STR::TimAda::Integrate()
     sti_->dt_->UpdateSteps(stepsize_);
 
     // printing and output
-    PrepareOutputPeriod();
+    constexpr bool force_prepare = false;
+    PrepareOutputPeriod(force_prepare);
     sti_->PreUpdate();
     sti_->UpdateStepState();
     sti_->UpdateStepElement();
@@ -389,7 +390,7 @@ void STR::TimAda::SizeForOutput()
 
 /*----------------------------------------------------------------------*/
 /* Prepare output to file(s)                                            */
-void STR::TimAda::PrepareOutputPeriod() { sti_->PrepareOutput(); }
+void STR::TimAda::PrepareOutputPeriod(bool force_prepare) { sti_->PrepareOutput(force_prepare); }
 
 /*----------------------------------------------------------------------*/
 /* Output to file(s) */

@@ -217,7 +217,8 @@ void PASI::PartitionedAlgo::SetInterfaceStates(Teuchos::RCP<const Epetra_Vector>
 void PASI::PartitionedAlgo::StructOutput()
 {
   // calculate stresses, strains, energies
-  structurefield_->PrepareOutput();
+  constexpr bool force_prepare = false;
+  structurefield_->PrepareOutput(force_prepare);
 
   // update all single field solvers
   structurefield_->Update();

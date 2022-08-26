@@ -83,7 +83,8 @@ void FS3I::PartFS3I_2WC::Timeloop()
   }
 
   // output of initial state
-  fsi_->PrepareOutput();
+  constexpr bool force_prepare = true;
+  fsi_->PrepareOutput(force_prepare);
   fsi_->Output();
   ScatraOutput();
 
@@ -395,7 +396,8 @@ bool FS3I::PartFS3I_2WC::ScatraConvergenceCheck(int itnum)
 void FS3I::PartFS3I_2WC::TimeUpdateAndOutput()
 {
   // prepare output for FSI
-  fsi_->PrepareOutput();
+  constexpr bool force_prepare = false;
+  fsi_->PrepareOutput(force_prepare);
 
   // update fluid- and structure-based scalar transport
   UpdateScatraFields();

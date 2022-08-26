@@ -33,7 +33,10 @@ int ADAPTER::StructureTimIntAda::Integrate() { return structure_->Integrate(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimIntAda::PrepareOutput() { structure_->PrepareOutputPeriod(); }
+void ADAPTER::StructureTimIntAda::PrepareOutput(bool force_prepare)
+{
+  structure_->PrepareOutputPeriod(force_prepare);
+}
 
 
 /*----------------------------------------------------------------------*/

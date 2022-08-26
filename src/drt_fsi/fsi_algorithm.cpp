@@ -158,7 +158,10 @@ void FSI::Algorithm::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Algorithm::PrepareOutput() { StructureField()->PrepareOutput(); }
+void FSI::Algorithm::PrepareOutput(bool force_prepare)
+{
+  StructureField()->PrepareOutput(force_prepare);
+}
 
 
 /*----------------------------------------------------------------------*/

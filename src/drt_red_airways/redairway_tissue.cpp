@@ -433,7 +433,8 @@ void AIRWAY::RedAirwayTissue::OutputIteration(Teuchos::RCP<Epetra_Vector> pres_i
  *----------------------------------------------------------------------*/
 void AIRWAY::RedAirwayTissue::UpdateAndOutput()
 {
-  structure_->PrepareOutput();
+  constexpr bool force_prepare = false;
+  structure_->PrepareOutput(force_prepare);
   structure_->Update();
   structure_->Output();
 

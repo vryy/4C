@@ -134,7 +134,8 @@ void EHL::Partitioned::OuterLoop()
  *----------------------------------------------------------------------*/
 void EHL::Partitioned::UpdateAndOutput()
 {
-  structure_->PrepareOutput();
+  constexpr bool force_prepare = false;
+  structure_->PrepareOutput(force_prepare);
 
   structure_->Update();
   lubrication_->LubricationField()->Update();
