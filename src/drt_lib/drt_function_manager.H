@@ -17,11 +17,10 @@
 #include "drt_function.H"
 #include "drt_dserror.H"
 #include "drt_parser.H"
+#include "function_interface_temporary.h"
 
 namespace DRT
 {
-  // class Condition;
-  // class Problem;
 
   namespace INPUT
   {
@@ -50,7 +49,7 @@ namespace DRT
 
      private:
       /// all functions defined. The functions may be vector valued!
-      std::vector<Teuchos::RCP<Function>> functions_;
+      std::vector<Teuchos::RCP<TemporaryFunctionInterface>> functions_;
     };
 
     /// add valid function lines
