@@ -34,7 +34,7 @@
 #include "../drt_mat/robinson.H"
 #include "so_utils.H"
 
-//#define PRINT_DEBUG
+// #define PRINT_DEBUG
 #ifdef PRINT_DEBUG
 #include <string>
 #include <sstream>
@@ -1163,9 +1163,10 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(Teuchos::ParameterList& params,
         // function evaluation
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
-            (functnum > 0)
-                ? DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(dim, xrefegp.A(), time)
-                : 1.0;
+            (functnum > 0) ? DRT::Problem::Instance()
+                                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                 .Evaluate(dim, xrefegp.A(), time)
+                           : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
         for (int nodid = 0; nodid < NUMNOD_SOTET4; ++nodid)
         {

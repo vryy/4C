@@ -206,7 +206,9 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
         double functfac = 1.0;
         if (tmp_funct) functnum = (*tmp_funct)[j];
         if (functnum > 0)
-          functfac = DRT::Problem::Instance()->Funct(functnum - 1).EvaluateTime(time);
+          functfac = DRT::Problem::Instance()
+                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                         .EvaluateTime(time);
 
         value *= functfac;
         const int lid = systemvector.Map().LID(gid);
@@ -390,7 +392,10 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
         int curvenum = -1;
         if (curve) curvenum = (*curve)[0];
         double curvefac = 1.0;
-        if (curvenum >= 0) curvefac = Problem::Instance()->Funct(curvenum).EvaluateTime(time);
+        if (curvenum >= 0)
+          curvefac = Problem::Instance()
+                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
+                         .EvaluateTime(time);
 
         // Get ConditionID of current condition if defined and write value in parameter list
         const std::vector<int>* CondIDVec = cond.Get<std::vector<int>>("ConditionID");

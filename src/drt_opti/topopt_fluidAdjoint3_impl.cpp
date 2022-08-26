@@ -1621,7 +1621,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::FluidBodyForce(
           // based element bodyforce vector for prescribed pressure gradients
           // in some fancy turbulance stuff.
           functionfac = DRT::Problem::Instance()
-                            ->Funct(functnum - 1)
+                            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
                             .Evaluate(isd, (ele_->Nodes()[jnode])->X(), time);
         }
         else

@@ -22,7 +22,7 @@ namespace DRT
     void AddValidLibraryFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
 
     /// try to create functions from a given line definition
-    Teuchos::RCP<Function> TryCreateLibraryFunction(
+    Teuchos::RCP<FunctionOfSpaceTime> TryCreateLibraryFunction(
         Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
         DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
 
@@ -40,7 +40,7 @@ namespace DRT
      *
      * Thus, \f$ g(x) \f$ is required to have three components for the three spatial dimensions.
      */
-    class TranslatedFunction : public Function
+    class TranslatedFunction : public FunctionOfSpaceTime
     {
      public:
       /**
@@ -49,7 +49,8 @@ namespace DRT
        * @param origin function describing the position of the local origin
        * @param local function to evaluate in the translated coordinate system
        */
-      TranslatedFunction(Teuchos::RCP<Function> origin, Teuchos::RCP<Function> local);
+      TranslatedFunction(
+          Teuchos::RCP<FunctionOfSpaceTime> origin, Teuchos::RCP<FunctionOfSpaceTime> local);
 
       double Evaluate(int index, const double* x, double t) override;
 
@@ -74,9 +75,9 @@ namespace DRT
 
      private:
       //! function describing the position of the local origin
-      Teuchos::RCP<Function> originFunction_;
+      Teuchos::RCP<FunctionOfSpaceTime> originFunction_;
       //! function to evaluate in the translated coordinate system
-      Teuchos::RCP<Function> localFunction_;
+      Teuchos::RCP<FunctionOfSpaceTime> localFunction_;
     };
 
     /**
@@ -90,7 +91,7 @@ namespace DRT
      * In particular, evaluating the derivative is faster for this function compared to
      * a VariableExprFunction representing the same polynomial.
      */
-    class FastPolynomialFunction : public Function
+    class FastPolynomialFunction : public FunctionOfSpaceTime
     {
      public:
       /**

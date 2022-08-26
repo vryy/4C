@@ -218,9 +218,10 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::Update(
     dserror("Parameter 'total time' could not be read!");
   }
 
-  current_reference_growth_[gp] = DRT::Problem::Instance()
-                                      ->Funct(params_->damage_function_id_ - 1)
-                                      .Evaluate(0, gprefecoord.A(), totaltime);
+  current_reference_growth_[gp] =
+      DRT::Problem::Instance()
+          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(params_->damage_function_id_ - 1)
+          .Evaluate(0, gprefecoord.A(), totaltime);
 
   MixtureConstituent_ElastHyperBase::Update(defgrd, params, gp, eleGID);
 

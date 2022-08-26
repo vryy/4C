@@ -156,7 +156,7 @@ void FLD::AddValidFluidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
   lines->Add(kimmoinstress);
 }
 
-Teuchos::RCP<DRT::UTILS::Function> FLD::TryCreateFluidFunction(
+Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> FLD::TryCreateFluidFunction(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager)
 {
@@ -459,13 +459,13 @@ Teuchos::RCP<DRT::UTILS::Function> FLD::TryCreateFluidFunction(
   }
   else
   {
-    return Teuchos::RCP<DRT::UTILS::Function>(NULL);
+    return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(NULL);
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::BeltramiFunction::BeltramiFunction(double c1) : Function(), c1_(c1) {}
+FLD::BeltramiFunction::BeltramiFunction(double c1) : c1_(c1) {}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::BeltramiFunction::Evaluate(const int index, const double* xp, double t)
@@ -1015,8 +1015,7 @@ std::vector<double> FLD::CorrectionTermChannelWeaklyCompressibleFunction::Evalua
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressiblePoiseuilleFunction::WeaklyCompressiblePoiseuilleFunction(
     const MAT::PAR::WeaklyCompressibleFluid& fparams, double L, double R, double U)
-    : Function(),
-      length_(L),
+    : length_(L),
       halfheight_(R),
       meanvelocityexit_(U),
       viscosity_(fparams.viscosity_),
@@ -1122,8 +1121,7 @@ std::vector<double> FLD::WeaklyCompressiblePoiseuilleFunction::EvaluateTimeDeriv
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressiblePoiseuilleForceFunction::WeaklyCompressiblePoiseuilleForceFunction(
     const MAT::PAR::WeaklyCompressibleFluid& fparams, double L, double R, double U)
-    : Function(),
-      length_(L),
+    : length_(L),
       halfheight_(R),
       meanvelocityexit_(U),
       viscosity_(fparams.viscosity_),
@@ -1214,8 +1212,7 @@ std::vector<double> FLD::WeaklyCompressiblePoiseuilleForceFunction::EvaluateTime
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleManufacturedFlowFunction::WeaklyCompressibleManufacturedFlowFunction(
     const MAT::PAR::WeaklyCompressibleFluid& fparams)
-    : Function(),
-      viscosity_(fparams.viscosity_),
+    : viscosity_(fparams.viscosity_),
       refdensity_(fparams.refdensity_),
       refpressure_(fparams.refpressure_),
       comprcoeff_(fparams.comprcoeff_)
@@ -1359,8 +1356,7 @@ std::vector<double> FLD::WeaklyCompressibleManufacturedFlowFunction::EvaluateTim
 FLD::WeaklyCompressibleManufacturedFlowForceFunction::
     WeaklyCompressibleManufacturedFlowForceFunction(
         const MAT::PAR::WeaklyCompressibleFluid& fparams)
-    : Function(),
-      viscosity_(fparams.viscosity_),
+    : viscosity_(fparams.viscosity_),
       refdensity_(fparams.refdensity_),
       refpressure_(fparams.refpressure_),
       comprcoeff_(fparams.comprcoeff_)
@@ -1624,8 +1620,7 @@ std::vector<double> FLD::WeaklyCompressibleManufacturedFlowForceFunction::Evalua
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneCFDFunction::WeaklyCompressibleEtienneCFDFunction(
     const MAT::PAR::WeaklyCompressibleFluid& fparams)
-    : Function(),
-      refdensity_(fparams.refdensity_),
+    : refdensity_(fparams.refdensity_),
       refpressure_(fparams.refpressure_),
       comprcoeff_(fparams.comprcoeff_)
 {
@@ -1778,8 +1773,7 @@ std::vector<double> FLD::WeaklyCompressibleEtienneCFDFunction::EvaluateTimeDeriv
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneCFDForceFunction::WeaklyCompressibleEtienneCFDForceFunction(
     const MAT::PAR::WeaklyCompressibleFluid& fparams)
-    : Function(),
-      refdensity_(fparams.refdensity_),
+    : refdensity_(fparams.refdensity_),
       refpressure_(fparams.refpressure_),
       comprcoeff_(fparams.comprcoeff_)
 {
@@ -2197,8 +2191,7 @@ std::vector<double> FLD::WeaklyCompressibleEtienneCFDForceFunction::EvaluateTime
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneCFDViscosityFunction::WeaklyCompressibleEtienneCFDViscosityFunction(
     const MAT::PAR::WeaklyCompressibleFluid& fparams)
-    : Function(),
-      refdensity_(fparams.refdensity_),
+    : refdensity_(fparams.refdensity_),
       refpressure_(fparams.refpressure_),
       comprcoeff_(fparams.comprcoeff_)
 {
@@ -2264,8 +2257,7 @@ std::vector<double> FLD::WeaklyCompressibleEtienneCFDViscosityFunction::Evaluate
 FLD::WeaklyCompressibleEtienneFSIFluidFunction::WeaklyCompressibleEtienneFSIFluidFunction(
     const MAT::PAR::WeaklyCompressibleFluid& fparams_fluid,
     const MAT::PAR::StVenantKirchhoff& fparams_struc)
-    : Function(),
-      refdensity_(0.0),
+    : refdensity_(0.0),
       refpressure_(0.0),
       comprcoeff_(0.0),
       youngmodulus_(0.0),
@@ -2592,8 +2584,7 @@ std::vector<double> FLD::WeaklyCompressibleEtienneFSIFluidFunction::EvaluateTime
 FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::WeaklyCompressibleEtienneFSIFluidForceFunction(
     const MAT::PAR::WeaklyCompressibleFluid& fparams_fluid,
     const MAT::PAR::StVenantKirchhoff& fparams_struc)
-    : Function(),
-      refdensity_(0.0),
+    : refdensity_(0.0),
       refpressure_(0.0),
       comprcoeff_(0.0),
       youngmodulus_(0.0),
@@ -6159,8 +6150,7 @@ FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::
     WeaklyCompressibleEtienneFSIFluidViscosityFunction(
         const MAT::PAR::WeaklyCompressibleFluid& fparams_fluid,
         const MAT::PAR::StVenantKirchhoff& fparams_struc)
-    : Function(),
-      refdensity_(0.0),
+    : refdensity_(0.0),
       refpressure_(0.0),
       comprcoeff_(0.0),
       youngmodulus_(0.0),
@@ -6348,7 +6338,7 @@ std::vector<double> FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::Eva
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::BeltramiUP::BeltramiUP(const MAT::PAR::NewtonianFluid& fparams)
-    : Function(), density_(fparams.density_), kinviscosity_(fparams.viscosity_ / fparams.density_)
+    : density_(fparams.density_), kinviscosity_(fparams.viscosity_ / fparams.density_)
 {
 }
 /*----------------------------------------------------------------------*/
@@ -6446,7 +6436,7 @@ std::vector<double> FLD::BeltramiUP::EvaluateTimeDerivative(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::BeltramiGradU::BeltramiGradU(const MAT::PAR::NewtonianFluid& fparams)
-    : Function(), kinviscosity_(fparams.viscosity_ / fparams.density_)
+    : kinviscosity_(fparams.viscosity_ / fparams.density_)
 {
 }
 /*----------------------------------------------------------------------*/
@@ -6573,7 +6563,7 @@ std::vector<double> FLD::BeltramiGradU::EvaluateTimeDerivative(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::BeltramiRHS::BeltramiRHS(const MAT::PAR::NewtonianFluid& fparams, bool is_stokes)
-    : Function(), kinviscosity_(fparams.viscosity_ / fparams.density_), is_stokes_(is_stokes)
+    : kinviscosity_(fparams.viscosity_ / fparams.density_), is_stokes_(is_stokes)
 {
 }
 /*----------------------------------------------------------------------*/
@@ -6684,8 +6674,7 @@ std::vector<double> FLD::BeltramiRHS::EvaluateTimeDerivative(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::KimMoinUP::KimMoinUP(const MAT::PAR::NewtonianFluid& fparams, bool is_stationary)
-    : Function(),
-      density_(fparams.density_),
+    : density_(fparams.density_),
       kinviscosity_(fparams.viscosity_ / fparams.density_),
       is_stationary_(is_stationary)
 {
@@ -6824,9 +6813,7 @@ std::vector<double> FLD::KimMoinUP::EvaluateTimeDerivative(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::KimMoinGradU::KimMoinGradU(const MAT::PAR::NewtonianFluid& fparams, bool is_stationary)
-    : Function(),
-      kinviscosity_(fparams.viscosity_ / fparams.density_),
-      is_stationary_(is_stationary)
+    : kinviscosity_(fparams.viscosity_ / fparams.density_), is_stationary_(is_stationary)
 {
 }
 /*----------------------------------------------------------------------*/
@@ -6991,8 +6978,7 @@ std::vector<double> FLD::KimMoinGradU::EvaluateTimeDerivative(
 /*----------------------------------------------------------------------*/
 FLD::KimMoinRHS::KimMoinRHS(
     const MAT::PAR::NewtonianFluid& fparams, bool is_stationary, bool is_stokes)
-    : Function(),
-      kinviscosity_(fparams.viscosity_ / fparams.density_),
+    : kinviscosity_(fparams.viscosity_ / fparams.density_),
       is_stationary_(is_stationary),
       is_stokes_(is_stokes)
 {
@@ -7177,8 +7163,7 @@ std::vector<double> FLD::KimMoinRHS::EvaluateTimeDerivative(
 /*----------------------------------------------------------------------*/
 FLD::KimMoinStress::KimMoinStress(
     const MAT::PAR::NewtonianFluid& fparams, bool is_stationary, double amplitude)
-    : Function(),
-      kinviscosity_(fparams.viscosity_ / fparams.density_),
+    : kinviscosity_(fparams.viscosity_ / fparams.density_),
       density_(fparams.density_),
       is_stationary_(is_stationary),
       amplitude_(amplitude)

@@ -380,10 +380,10 @@ namespace DRT
             dserror("invalid nsd %d", my::nsd_);
 
           // evaluate velocity and pressure
-          Teuchos::RCP<DRT::UTILS::Function> function = Teuchos::null;
+          Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> function = Teuchos::null;
 
           // evaluate the velocity gradient
-          Teuchos::RCP<DRT::UTILS::Function> function_grad = Teuchos::null;
+          Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> function_grad = Teuchos::null;
 
           // get material
           MAT::PAR::Parameter* params = mat->Parameter();
@@ -507,10 +507,10 @@ namespace DRT
             dserror("invalid nsd %d", my::nsd_);
 
           // evaluate velocity and pressure
-          Teuchos::RCP<DRT::UTILS::Function> function = Teuchos::null;
+          Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> function = Teuchos::null;
 
           // evaluate the velocity gradient
-          Teuchos::RCP<DRT::UTILS::Function> function_grad = Teuchos::null;
+          Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> function_grad = Teuchos::null;
 
           bool is_stationary = false;
 
@@ -656,25 +656,33 @@ namespace DRT
           if (my::nsd_ == 2)
           {
             const double u_exact_x =
-                DRT::Problem::Instance()->Funct(calcerrfunctno - 1).Evaluate(0, position, t);
+                DRT::Problem::Instance()
+                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    .Evaluate(0, position, t);
             const double u_exact_y =
-                DRT::Problem::Instance()->Funct(calcerrfunctno - 1).Evaluate(1, position, t);
+                DRT::Problem::Instance()
+                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    .Evaluate(1, position, t);
             const double p_exact =
-                DRT::Problem::Instance()->Funct(calcerrfunctno - 1).Evaluate(2, position, t);
+                DRT::Problem::Instance()
+                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    .Evaluate(2, position, t);
 
             u(0) = u_exact_x;
             u(1) = u_exact_y;
             p = p_exact;
 
 
-            std::vector<double> uder_exact_x = DRT::Problem::Instance()
-                                                   ->Funct(calcerrfunctno - 1)
-                                                   .EvaluateSpatialDerivative(0, position, t);
-            std::vector<double> uder_exact_y = DRT::Problem::Instance()
-                                                   ->Funct(calcerrfunctno - 1)
-                                                   .EvaluateSpatialDerivative(1, position, t);
+            std::vector<double> uder_exact_x =
+                DRT::Problem::Instance()
+                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    .EvaluateSpatialDerivative(0, position, t);
+            std::vector<double> uder_exact_y =
+                DRT::Problem::Instance()
+                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    .EvaluateSpatialDerivative(1, position, t);
             // std::vector<double> pder_exact   =
-            // DRT::Problem::Instance()->Funct(func_no-1).EvaluateSpatialDerivative(2,position,t,1);
+            // DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(func_no-1).EvaluateSpatialDerivative(2,position,t,1);
 
             if (uder_exact_x.size())
             {
@@ -691,28 +699,39 @@ namespace DRT
           else if (my::nsd_ == 3)
           {
             const double u_exact_x =
-                DRT::Problem::Instance()->Funct(calcerrfunctno - 1).Evaluate(0, position, t);
+                DRT::Problem::Instance()
+                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    .Evaluate(0, position, t);
             const double u_exact_y =
-                DRT::Problem::Instance()->Funct(calcerrfunctno - 1).Evaluate(1, position, t);
+                DRT::Problem::Instance()
+                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    .Evaluate(1, position, t);
             const double u_exact_z =
-                DRT::Problem::Instance()->Funct(calcerrfunctno - 1).Evaluate(2, position, t);
+                DRT::Problem::Instance()
+                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    .Evaluate(2, position, t);
             const double p_exact =
-                DRT::Problem::Instance()->Funct(calcerrfunctno - 1).Evaluate(3, position, t);
+                DRT::Problem::Instance()
+                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    .Evaluate(3, position, t);
 
             u(0) = u_exact_x;
             u(1) = u_exact_y;
             u(2) = u_exact_z;
             p = p_exact;
 
-            std::vector<double> uder_exact_x = DRT::Problem::Instance()
-                                                   ->Funct(calcerrfunctno - 1)
-                                                   .EvaluateSpatialDerivative(0, position, t);
-            std::vector<double> uder_exact_y = DRT::Problem::Instance()
-                                                   ->Funct(calcerrfunctno - 1)
-                                                   .EvaluateSpatialDerivative(1, position, t);
-            std::vector<double> uder_exact_z = DRT::Problem::Instance()
-                                                   ->Funct(calcerrfunctno - 1)
-                                                   .EvaluateSpatialDerivative(2, position, t);
+            std::vector<double> uder_exact_x =
+                DRT::Problem::Instance()
+                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    .EvaluateSpatialDerivative(0, position, t);
+            std::vector<double> uder_exact_y =
+                DRT::Problem::Instance()
+                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    .EvaluateSpatialDerivative(1, position, t);
+            std::vector<double> uder_exact_z =
+                DRT::Problem::Instance()
+                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    .EvaluateSpatialDerivative(2, position, t);
 
             if (uder_exact_x.size())
             {

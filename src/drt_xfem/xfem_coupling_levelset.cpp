@@ -404,7 +404,9 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
     if (func_no < 0)
       value = FunctImplementation(func_no, lnode->X(), time);
     else if (func_no >= 1)
-      value = DRT::Problem::Instance()->Funct(func_no - 1).Evaluate(0, lnode->X(), time);
+      value = DRT::Problem::Instance()
+                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(func_no - 1)
+                  .Evaluate(0, lnode->X(), time);
     else
       dserror("invalid function no. to set level-set field!");
 

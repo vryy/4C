@@ -2889,10 +2889,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
 
     // function evaluation
     const int functnum = (funct) ? (*funct)[0] : -1;
-    const double functfac =
-        (functnum > 0)
-            ? DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(0, xrefegp.A(), time)
-            : 1.0;
+    const double functfac = (functnum > 0)
+                                ? DRT::Problem::Instance()
+                                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                      .Evaluate(0, xrefegp.A(), time)
+                                : 1.0;
 
     // get values and switches from the condition
     const auto* onoff = myneumcond[0]->Get<std::vector<int>>("onoff");
@@ -3424,14 +3425,16 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
 
         for (int dim = 0; dim < nsd_; ++dim) position[dim] = xyzint(dim);
 
-        const double T_exact =
-            DRT::Problem::Instance()->Funct(errorfunctno - 1).Evaluate(0, position, t);
+        const double T_exact = DRT::Problem::Instance()
+                                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+                                   .Evaluate(0, position, t);
 
         T_analytical(0, 0) = T_exact;
 
-        std::vector<double> Tder_exact = DRT::Problem::Instance()
-                                             ->Funct(errorfunctno - 1)
-                                             .EvaluateSpatialDerivative(0, position, t);
+        std::vector<double> Tder_exact =
+            DRT::Problem::Instance()
+                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+                .EvaluateSpatialDerivative(0, position, t);
 
         if (Tder_exact.size())
         {

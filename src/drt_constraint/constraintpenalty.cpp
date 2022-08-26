@@ -216,7 +216,10 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& params
       int curvenum = -1;
       if (curve) curvenum = (*curve)[0];
       double curvefac = 1.0;
-      if (curvenum >= 0) curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
+      if (curvenum >= 0)
+        curvefac = DRT::Problem::Instance()
+                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
+                       .EvaluateTime(time);
 
       double diff = (curvefac * (*initerror_)[condID - 1] - (*acterror_)[condID - 1]);
 

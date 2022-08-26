@@ -31,9 +31,6 @@ namespace DRT
 
   namespace UTILS
   {
-    // forward declaration
-    class Function;
-
     /// class that manages all defined spatial functions
     class FunctionManager
     {
@@ -44,8 +41,15 @@ namespace DRT
       /// read the baci input file and set up all functions
       void ReadInput(DRT::INPUT::DatFileReader& reader);
 
-      /// return a specified function
-      DRT::UTILS::Function& Funct(int num);
+      template <typename T>
+      T& FunctionById(int num)
+      {
+        // ensure that desired function is available (prevents segmentation fault)
+        if (functions_.size() < (unsigned int)(num + 1) || num < 0)
+          dserror("function %d not available", num + 1);
+
+        return dynamic_cast<T&>(*functions_[num]);
+      }
 
      private:
       /// all functions defined. The functions may be vector valued!

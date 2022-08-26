@@ -227,14 +227,18 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
                   for (int dim = 0; dim < Dim(); ++dim) currPos[dim] = xp[dim] + currDisp[dim];
 
                   // Evaluate function with current node position
-                  functfac = (DRT::Problem::Instance()->Funct((*funct)[j] - 1))
-                                 .Evaluate(j, &currPos[0], time);
+                  functfac =
+                      (DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                           (*funct)[j] - 1))
+                          .Evaluate(j, &currPos[0], time);
                 }
                 else
                 {
                   // Evaluate function with reference node position
-                  functfac = (DRT::Problem::Instance()->Funct((*funct)[j] - 1))
-                                 .Evaluate(j, node->X(), time);
+                  functfac =
+                      (DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                           (*funct)[j] - 1))
+                          .Evaluate(j, node->X(), time);
                 }
               }
               currotangle(j) = (*rotangle)[j] * functfac;

@@ -211,7 +211,9 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
       // time factor for the intermediate step
       if (time >= 0.0)
       {
-        curvefac = DRT::Problem::Instance()->Funct(curve_).EvaluateTime(time);
+        curvefac = DRT::Problem::Instance()
+                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curve_)
+                       .EvaluateTime(time);
       }
       else
       {
@@ -754,7 +756,9 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
       // time factor for the intermediate step
       if (time >= 0.0)
       {
-        curvefac = DRT::Problem::Instance()->Funct(curve_).EvaluateTime(time);
+        curvefac = DRT::Problem::Instance()
+                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curve_)
+                       .EvaluateTime(time);
       }
       else
       {

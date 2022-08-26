@@ -211,7 +211,9 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
     double curvefac = 1.0;
     if (curvenum >= 0)
     {
-      curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
+      curvefac = DRT::Problem::Instance()
+                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
+                     .EvaluateTime(time);
     }
     // multiply heat convection coefficient with the timecurve factor
     coeff *= curvefac;
@@ -222,7 +224,9 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
     // find out whether we shall use a time curve for T_oo and get the factor
     if (surtempcurvenum >= 0)
     {
-      surtempcurvefac = DRT::Problem::Instance()->Funct(surtempcurvenum).EvaluateTime(time);
+      surtempcurvefac = DRT::Problem::Instance()
+                            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(surtempcurvenum)
+                            .EvaluateTime(time);
     }
     // complete surrounding temperatures T_oo: multiply with the timecurve factor
     surtemp *= surtempcurvefac;
@@ -420,7 +424,9 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         double curvefac = 1.0;
         if (curvenum >= 0)
         {
-          curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
+          curvefac = DRT::Problem::Instance()
+                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
+                         .EvaluateTime(time);
         }
         // multiply heat convection coefficient with the timecurve factor
         coeff *= curvefac;
@@ -431,7 +437,9 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         // find out whether we shall use a time curve for T_oo and get the factor
         if (surtempcurvenum >= 0)
         {
-          surtempcurvefac = DRT::Problem::Instance()->Funct(surtempcurvenum).EvaluateTime(time);
+          surtempcurvefac = DRT::Problem::Instance()
+                                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(surtempcurvenum)
+                                .EvaluateTime(time);
         }
         // complete surrounding temperatures T_oo: multiply with the timecurve factor
         surtemp *= surtempcurvefac;
@@ -613,8 +621,9 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(DRT::Element* el
           if (functnum > 0)
           {
             // evaluate function at current gauss point
-            functfac =
-                DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(dof, coordgpref, time);
+            functfac = DRT::Problem::Instance()
+                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                           .Evaluate(dof, coordgpref, time);
           }
           else
             functfac = 1.0;

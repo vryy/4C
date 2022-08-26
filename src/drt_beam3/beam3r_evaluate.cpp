@@ -659,7 +659,9 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
 
       // evaluate function at the position of the current GP
       if (functnum > 0)
-        functionfac = DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(dof, &X_ref[0], time);
+        functionfac = DRT::Problem::Instance()
+                          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                          .Evaluate(dof, &X_ref[0], time);
       else
         functionfac = 1.0;
 

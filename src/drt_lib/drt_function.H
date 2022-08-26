@@ -44,11 +44,11 @@ namespace DRT
      *
      * Spatial function based on parsed expressions are provided as well.
      */
-    class Function : public TemporaryFunctionInterface
+    class FunctionOfSpaceTime : public TemporaryFunctionInterface
     {
      public:
       //! Virtual destructor.
-      virtual ~Function() = default;
+      virtual ~FunctionOfSpaceTime() = default;
 
       /*!
        * @brief Evaluation of time and space dependent FUNCT
@@ -162,7 +162,7 @@ namespace DRT
      * a_k(t) \f$ are time-dependent FunctionVariable objects.
      */
     template <int dim>
-    class ExprFunction : public Function
+    class ExprFunction : public FunctionOfSpaceTime
     {
      public:
       /**
@@ -202,7 +202,7 @@ namespace DRT
 
     /// vector-valued spatial function based on parsed expression
     template <int dim>
-    class VariableExprFunction : public Function
+    class VariableExprFunction : public FunctionOfSpaceTime
     {
      public:
       /*!
@@ -319,13 +319,13 @@ namespace DRT
 
     /// try to create VariableExprFunction from a given line definition
     template <int dim>
-    Teuchos::RCP<Function> TryCreateVariableExprFunction(
+    Teuchos::RCP<FunctionOfSpaceTime> TryCreateVariableExprFunction(
         Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
         DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
 
     /// create a vector function from multiple expressions
     template <int dim>
-    Teuchos::RCP<Function> TryCreateExprFunction(
+    Teuchos::RCP<FunctionOfSpaceTime> TryCreateExprFunction(
         std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs);
   }  // namespace UTILS
 

@@ -410,7 +410,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
   // this feature can be also used for stationary "pseudo time loops"
   if (functnum >= 0)
   {
-    const double functfac = DRT::Problem::Instance()->Funct(functnum).EvaluateTime(time);
+    const double functfac = DRT::Problem::Instance()
+                                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum)
+                                .EvaluateTime(time);
 
     // adjust potential at metal side accordingly
     pot0 *= functfac;

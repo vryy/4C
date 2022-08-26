@@ -31,12 +31,12 @@ namespace STR
   void AddValidStructureFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
 
   /// try to create structure-specific functions from a given line definition
-  Teuchos::RCP<DRT::UTILS::Function> TryCreateStructureFunction(
+  Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> TryCreateStructureFunction(
       Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
       DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
 
   /// special implementation for weakly compressible flow - Etienne FSI problem
-  class WeaklyCompressibleEtienneFSIStructureFunction : public DRT::UTILS::Function
+  class WeaklyCompressibleEtienneFSIStructureFunction : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleEtienneFSIStructureFunction(const MAT::PAR::StVenantKirchhoff& fparams);
@@ -73,7 +73,7 @@ namespace STR
   };
 
   /// special implementation for weakly compressible flow - Etienne FSI problem (force)
-  class WeaklyCompressibleEtienneFSIStructureForceFunction : public DRT::UTILS::Function
+  class WeaklyCompressibleEtienneFSIStructureForceFunction : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleEtienneFSIStructureForceFunction(const MAT::PAR::StVenantKirchhoff& fparams);

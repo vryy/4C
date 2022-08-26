@@ -187,7 +187,8 @@ double MAT::FourierVar::HeatIntegrationCapacity() const
   for (unsigned i = 0; i < 2; i++)
   {
     returnval += 0.5 * (dynamic_cast<DRT::UTILS::FastPolynomialFunction&>(
-                            DRT::Problem::Instance()->Funct(functions[i] - 1)))
+                            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                functions[i] - 1)))
                            .Evaluate(Tm);
   }
   return returnval;

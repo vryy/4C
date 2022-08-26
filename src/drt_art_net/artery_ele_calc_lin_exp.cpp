@@ -1582,7 +1582,9 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateScatraBC(Artery* ele,
       if (curve) curvenum = (*curve)[0];
       if (curvenum > 0)
       {
-        curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
+        curvefac = DRT::Problem::Instance()
+                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
+                       .EvaluateTime(time);
       }
 
 

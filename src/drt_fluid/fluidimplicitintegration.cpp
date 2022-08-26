@@ -2551,8 +2551,10 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
           // Calculate node normal components
           for (int i = 0; i < numdim_; i++)
           {
-            (*nodeNormals)[dofsLocalInd[i]] = (DRT::Problem::Instance()->Funct(nodeNormalFunct - 1))
-                                                  .Evaluate(i, &currPos[0], 0.0);
+            (*nodeNormals)[dofsLocalInd[i]] =
+                (DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                     nodeNormalFunct - 1))
+                    .Evaluate(i, &currPos[0], 0.0);
           }
         }
       }
@@ -3549,8 +3551,8 @@ void FLD::FluidImplicitTimeInt::Output()
     OutputExternalForces();
   }
 
-//#define PRINTALEDEFORMEDNODECOORDS // flag for printing all ALE nodes and xspatial in current
-// configuration - only works for 1 processor  devaal 02.2011
+// #define PRINTALEDEFORMEDNODECOORDS // flag for printing all ALE nodes and xspatial in current
+//  configuration - only works for 1 processor  devaal 02.2011
 
 // output ALE nodes and xspatial in current configuration - devaal 02.2011
 #ifdef PRINTALEDEFORMEDNODECOORDS
@@ -4152,8 +4154,9 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       {
         int gid = nodedofset[index];
 
-        double initialval =
-            DRT::Problem::Instance()->Funct(startfuncno - 1).Evaluate(index, lnode->X(), time_);
+        double initialval = DRT::Problem::Instance()
+                                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                                .Evaluate(index, lnode->X(), time_);
 
         velnp_->ReplaceGlobalValues(1, &initialval, &gid);
       }

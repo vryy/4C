@@ -47,7 +47,10 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(Teuchos::ParameterList& params,
   int functnum = -1;
   if (tmp_funct) functnum = (*tmp_funct)[0];
   double functfac = 1.0;
-  if (functnum >= 0) functfac = DRT::Problem::Instance()->Funct(functnum - 1).EvaluateTime(time);
+  if (functnum >= 0)
+    functfac = DRT::Problem::Instance()
+                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                   .EvaluateTime(time);
 
   // init gaussian points of parent element
   S8_DATA s8data;

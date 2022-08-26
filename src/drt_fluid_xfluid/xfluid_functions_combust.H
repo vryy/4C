@@ -28,12 +28,12 @@ namespace DRT
     void AddValidCombustFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
 
     /// try to create combustion-specific functions from a given line definition
-    Teuchos::RCP<DRT::UTILS::Function> TryCreateCombustFunction(
+    Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> TryCreateCombustFunction(
         Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
         DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
 
     /// special implementation for a level set test function "Zalesak's disk"
-    class ZalesaksDiskFunction : public DRT::UTILS::Function
+    class ZalesaksDiskFunction : public DRT::UTILS::FunctionOfSpaceTime
     {
      public:
       /// ctor
@@ -44,7 +44,7 @@ namespace DRT
     };
 
     /// special implementation two-phase flow test case
-    class CollapsingWaterColumnFunction : public DRT::UTILS::Function
+    class CollapsingWaterColumnFunction : public DRT::UTILS::FunctionOfSpaceTime
     {
      public:
       /// ctor

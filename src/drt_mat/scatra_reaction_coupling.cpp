@@ -880,7 +880,7 @@ inline DRT::UTILS::VariableExprFunction<dim>& MAT::PAR::REACTIONCOUPLING::ByFunc
   {
     DRT::UTILS::VariableExprFunction<dim>& funct =
         dynamic_cast<DRT::UTILS::VariableExprFunction<dim>&>(
-            DRT::Problem::Instance()->Funct(functnum));
+            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum));
 
     return funct;
   }
@@ -891,6 +891,6 @@ inline DRT::UTILS::VariableExprFunction<dim>& MAT::PAR::REACTIONCOUPLING::ByFunc
         "allowed!\n"
         "Check your input file!");
     return dynamic_cast<DRT::UTILS::VariableExprFunction<dim>&>(
-        DRT::Problem::Instance()->Funct(functnum));
+        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum));
   }
 }

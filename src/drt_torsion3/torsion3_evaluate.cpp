@@ -647,7 +647,7 @@ inline void DRT::ELEMENTS::Torsion3::NodeShift(Teuchos::ParameterList& params,  
   //          if(shearflow && dof == 2 && curvenumber >=  0 && time>starttime &&
   //          fabs(time-starttime)>dt/1e4)
   //            disp[numdof*i+dbcdispdir] +=
-  //            shearamplitude*DRT::Problem::Instance()->Funct(curvenumber).EvaluateTimeDerivative(time);
+  //            shearamplitude*DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenumber).EvaluateTimeDerivative(time);
   //        }
   //
   //        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - periodlength->at(dof) -
@@ -665,7 +665,7 @@ inline void DRT::ELEMENTS::Torsion3::NodeShift(Teuchos::ParameterList& params,  
   //          if(shearflow && dof == 2 && curvenumber >=  0 && time>starttime &&
   //          fabs(time-starttime)>dt/1e4)
   //            disp[numdof*i+dbcdispdir] -=
-  //            shearamplitude*DRT::Problem::Instance()->Funct(curvenumber).EvaluateTimeDerivative(time);
+  //            shearamplitude*DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenumber).EvaluateTimeDerivative(time);
   //        }
   //      }
   //    }

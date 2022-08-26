@@ -351,7 +351,7 @@ inline DRT::UTILS::VariableExprFunction<dim>& MAT::PAR::FluidPoroSingleReaction:
   {
     DRT::UTILS::VariableExprFunction<dim>& funct =
         dynamic_cast<DRT::UTILS::VariableExprFunction<dim>&>(
-            DRT::Problem::Instance()->Funct(functnum));
+            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum));
     return funct;
   }
   catch (std::bad_cast& exp)
@@ -361,7 +361,7 @@ inline DRT::UTILS::VariableExprFunction<dim>& MAT::PAR::FluidPoroSingleReaction:
         "allowed!\n"
         "Check your input file!");
     return dynamic_cast<DRT::UTILS::VariableExprFunction<dim>&>(
-        DRT::Problem::Instance()->Funct(functnum));
+        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum));
   }
 }
 

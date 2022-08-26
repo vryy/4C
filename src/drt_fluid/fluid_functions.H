@@ -33,12 +33,12 @@ namespace FLD
   void AddValidFluidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
 
   /// try to create fluid-specific functions from a given line definition
-  Teuchos::RCP<DRT::UTILS::Function> TryCreateFluidFunction(
+  Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> TryCreateFluidFunction(
       Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
       DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
 
   /// special implementation for beltrami flow (velocity, pressure)
-  class BeltramiUP : public DRT::UTILS::Function
+  class BeltramiUP : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     BeltramiUP(const MAT::PAR::NewtonianFluid& fparams);
@@ -77,7 +77,7 @@ namespace FLD
   };
 
   /// special implementation beltrami flow (gradient of velocity)
-  class BeltramiGradU : public DRT::UTILS::Function
+  class BeltramiGradU : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     BeltramiGradU(const MAT::PAR::NewtonianFluid& fparams);
@@ -115,7 +115,7 @@ namespace FLD
 
   /// special implementation for 2d (implemented for 3D) stationary kim-moin flow (velocity,
   /// pressure)
-  class KimMoinUP : public DRT::UTILS::Function
+  class KimMoinUP : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     KimMoinUP(const MAT::PAR::NewtonianFluid& fparams, bool is_stationary);
@@ -155,7 +155,7 @@ namespace FLD
 
   /// special implementation for 2d (implemented for 3D) stationary kim-moin flow (gradient of
   /// velocity)
-  class KimMoinGradU : public DRT::UTILS::Function
+  class KimMoinGradU : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     KimMoinGradU(const MAT::PAR::NewtonianFluid& fparams, bool is_stationary);
@@ -194,7 +194,7 @@ namespace FLD
   };
 
   /// special implementation for 3d Beltrami flow
-  class BeltramiFunction : public DRT::UTILS::Function
+  class BeltramiFunction : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     BeltramiFunction(double c1);
@@ -231,7 +231,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow in a channel
-  class ChannelWeaklyCompressibleFunction : public DRT::UTILS::Function
+  class ChannelWeaklyCompressibleFunction : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     /*!
@@ -263,7 +263,7 @@ namespace FLD
   };
 
   /// correction term for weakly compressible flow in a channel
-  class CorrectionTermChannelWeaklyCompressibleFunction : public DRT::UTILS::Function
+  class CorrectionTermChannelWeaklyCompressibleFunction : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     /*!
@@ -295,7 +295,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible Poiseuille flow
-  class WeaklyCompressiblePoiseuilleFunction : public DRT::UTILS::Function
+  class WeaklyCompressiblePoiseuilleFunction : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressiblePoiseuilleFunction(
@@ -339,7 +339,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible Poiseuille flow (force)
-  class WeaklyCompressiblePoiseuilleForceFunction : public DRT::UTILS::Function
+  class WeaklyCompressiblePoiseuilleForceFunction : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressiblePoiseuilleForceFunction(
@@ -383,7 +383,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow with manufactured solution
-  class WeaklyCompressibleManufacturedFlowFunction : public DRT::UTILS::Function
+  class WeaklyCompressibleManufacturedFlowFunction : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleManufacturedFlowFunction(const MAT::PAR::WeaklyCompressibleFluid& fparams);
@@ -423,7 +423,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow with manufactured solution (force)
-  class WeaklyCompressibleManufacturedFlowForceFunction : public DRT::UTILS::Function
+  class WeaklyCompressibleManufacturedFlowForceFunction : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleManufacturedFlowForceFunction(
@@ -464,7 +464,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow - Etienne CFD problem
-  class WeaklyCompressibleEtienneCFDFunction : public DRT::UTILS::Function
+  class WeaklyCompressibleEtienneCFDFunction : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleEtienneCFDFunction(const MAT::PAR::WeaklyCompressibleFluid& fparams);
@@ -503,7 +503,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow - Etienne CFD problem (force)
-  class WeaklyCompressibleEtienneCFDForceFunction : public DRT::UTILS::Function
+  class WeaklyCompressibleEtienneCFDForceFunction : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleEtienneCFDForceFunction(const MAT::PAR::WeaklyCompressibleFluid& fparams);
@@ -542,7 +542,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow - Etienne CFD problem (viscosity)
-  class WeaklyCompressibleEtienneCFDViscosityFunction : public DRT::UTILS::Function
+  class WeaklyCompressibleEtienneCFDViscosityFunction : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleEtienneCFDViscosityFunction(const MAT::PAR::WeaklyCompressibleFluid& fparams);
@@ -581,7 +581,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow - Etienne FSI problem
-  class WeaklyCompressibleEtienneFSIFluidFunction : public DRT::UTILS::Function
+  class WeaklyCompressibleEtienneFSIFluidFunction : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleEtienneFSIFluidFunction(
@@ -625,7 +625,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow - Etienne FSI problem (force)
-  class WeaklyCompressibleEtienneFSIFluidForceFunction : public DRT::UTILS::Function
+  class WeaklyCompressibleEtienneFSIFluidForceFunction : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleEtienneFSIFluidForceFunction(
@@ -669,7 +669,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow - Etienne FSI problem (viscosity)
-  class WeaklyCompressibleEtienneFSIFluidViscosityFunction : public DRT::UTILS::Function
+  class WeaklyCompressibleEtienneFSIFluidViscosityFunction : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleEtienneFSIFluidViscosityFunction(
@@ -713,7 +713,7 @@ namespace FLD
   };
 
   /// special implementation for beltrami flow (rhs)
-  class BeltramiRHS : public DRT::UTILS::Function
+  class BeltramiRHS : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     BeltramiRHS(const MAT::PAR::NewtonianFluid& fparams, bool is_stokes);
@@ -752,7 +752,7 @@ namespace FLD
   };
 
   /// special implementation for 2d(3D) stationary kim-moin flow (rhs) for pure stokes equation
-  class KimMoinRHS : public DRT::UTILS::Function
+  class KimMoinRHS : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     KimMoinRHS(const MAT::PAR::NewtonianFluid& fparams, bool is_stationary, bool is_stokes);
@@ -793,7 +793,7 @@ namespace FLD
 
   /// special implementation for 2d (implemented for 3D) stationary kim-moin flow (analytical
   /// stress)
-  class KimMoinStress : public DRT::UTILS::Function
+  class KimMoinStress : public DRT::UTILS::FunctionOfSpaceTime
   {
    public:
     KimMoinStress(

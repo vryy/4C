@@ -329,14 +329,15 @@ double MAT::ScatraReactionMat::ReacCoeff(const std::vector<std::pair<std::string
     gpcoord[1] = constants[size - 2].second;
     gpcoord[2] = constants[size - 1].second;
 
-    reaccoeff *=
-        (DRT::Problem::Instance()->Funct(DisFunctReacCoeffID() - 1).Evaluate(0, gpcoord, time));
+    reaccoeff *= (DRT::Problem::Instance()
+                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(DisFunctReacCoeffID() - 1)
+                      .Evaluate(0, gpcoord, time));
 
     // TODO:(thon) the following is nicer but works only for VARFUNCTION Function :(
     //    try
     //    {
     //      DRT::UTILS::VariableExprFunction& funct =
-    //      dynamic_cast<DRT::UTILS::VariableExprFunction&>(DRT::Problem::Instance()->Funct(DisFunctReacCoeffID()-1));
+    //      dynamic_cast<DRT::UTILS::VariableExprFunction&>(DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(DisFunctReacCoeffID()-1));
     //      reaccoeff *= (funct.Evaluate(0,constants));
     //    }
     //    catch(std::bad_cast & exp)

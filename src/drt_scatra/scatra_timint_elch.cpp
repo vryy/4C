@@ -2247,7 +2247,8 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       // Otherwise you modify your output to file called during Output()
       ComputeTimeDerivative();
 
-      double targetcurrent = problem_->Funct(curvenum - 1).EvaluateTime(time_);
+      double targetcurrent =
+          problem_->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum - 1).EvaluateTime(time_);
       double timefacrhs = 1.0 / ResidualScaling();
 
       double currtangent_anode(0.0);
@@ -3420,7 +3421,8 @@ void SCATRA::ScaTraTimIntElch::ReduceDimensionNullSpaceBlocks(
  *-----------------------------------------------------------------------------*/
 double SCATRA::ScaTraTimIntElch::ComputeTemperatureFromFunction() const
 {
-  return problem_->Funct(temperature_funct_num_ - 1).EvaluateTime(time_);
+  return problem_->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(temperature_funct_num_ - 1)
+      .EvaluateTime(time_);
 }
 
 /*-----------------------------------------------------------------------------*

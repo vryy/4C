@@ -838,11 +838,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::BodyForce(const DRT::Elemen
       const int functnum = (funct) ? (*funct)[idof] : -1;
       for (unsigned jnode = 0; jnode < nen_; jnode++)
       {
-        const double functfac = (functnum > 0) ? DRT::Problem::Instance()
-                                                     ->Funct(functnum - 1)
-                                                     .Evaluate(idof, (ele->Nodes()[jnode])->X(),
-                                                         scatraparatimint_->Time())
-                                               : 1.0;
+        const double functfac =
+            (functnum > 0)
+                ? DRT::Problem::Instance()
+                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                      .Evaluate(idof, (ele->Nodes()[jnode])->X(), scatraparatimint_->Time())
+                : 1.0;
         (bodyforce_[idof])(jnode) = (*onoff)[idof] * (*val)[idof] * functfac;
       }
     }
@@ -2060,7 +2061,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSEMD(
     {
       current[d] +=
           funct_(jnode) * DRT::Problem::Instance()
-                              ->Funct(functno - 1)
+                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functno - 1)
                               .Evaluate(d, (ele->Nodes()[jnode])->X(), scatraparatimint_->Time());
     }
   }

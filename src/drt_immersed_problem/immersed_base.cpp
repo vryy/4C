@@ -462,7 +462,9 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition(
         if (curve) curvenum = (*curve)[0];
         double curvefac = 1.0;
         if (curvenum >= 0 && usetime)
-          curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
+          curvefac = DRT::Problem::Instance()
+                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
+                         .EvaluateTime(time);
 
         // Get ConditionID of current condition if defined and write value in parameterlist
         const std::vector<int>* CondIDVec = cond.Get<std::vector<int>>("ConditionID");

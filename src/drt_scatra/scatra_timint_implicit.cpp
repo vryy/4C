@@ -1204,7 +1204,8 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(const int nds)
 
         for (int index = 0; index < nsd_; ++index)
         {
-          double value = problem_->Funct(velfuncno - 1).Evaluate(index, lnode->X(), time_);
+          double value = problem_->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
+                             .Evaluate(index, lnode->X(), time_);
 
           // get global and local dof IDs
           const int gid = nodedofs[index];
@@ -1707,7 +1708,9 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
           const int dofgid = nodedofset[k];
           int doflid = dofrowmap->LID(dofgid);
           // evaluate component k of spatial function
-          double initialval = problem_->Funct(startfuncno - 1).Evaluate(k, lnode->X(), time_);
+          double initialval =
+              problem_->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                  .Evaluate(k, lnode->X(), time_);
           int err = phin_->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) dserror("dof not on proc");
         }

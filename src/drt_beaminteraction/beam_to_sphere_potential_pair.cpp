@@ -259,12 +259,16 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
   int function_number = chargeconds_[0]->GetInt("funct");
 
   if (function_number != -1)
-    q1 *= DRT::Problem::Instance()->Funct(function_number - 1).EvaluateTime(time_);
+    q1 *= DRT::Problem::Instance()
+              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(function_number - 1)
+              .EvaluateTime(time_);
 
   function_number = chargeconds_[1]->GetInt("funct");
 
   if (function_number != -1)
-    q2 *= DRT::Problem::Instance()->Funct(function_number - 1).EvaluateTime(time_);
+    q2 *= DRT::Problem::Instance()
+              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(function_number - 1)
+              .EvaluateTime(time_);
 
 
   // auxiliary variable

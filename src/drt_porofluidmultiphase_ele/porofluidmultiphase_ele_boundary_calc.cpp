@@ -219,7 +219,9 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(
         if (functnum > 0)
         {
           // evaluate function at current Gauss point (provide always 3D coordinates!)
-          functfac = DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(dof, coordgpref, time);
+          functfac = DRT::Problem::Instance()
+                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                         .Evaluate(dof, coordgpref, time);
         }
         else
           functfac = 1.;

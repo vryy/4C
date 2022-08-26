@@ -25,7 +25,7 @@ For a detailed description see:
 #include "constraintmixture.H"
 #include "constraintmixture_history.H"
 #include "../drt_lib/drt_globalproblem.H"
-//#include "../drt_lib/standardtypes_cpp.H" // for PI, not needed here?
+// #include "../drt_lib/standardtypes_cpp.H" // for PI, not needed here?
 #include "matpar_bundle.H"
 #include "../drt_mat/material_service.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -996,7 +996,10 @@ void MAT::ConstraintMixture::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
       int curvenum = params_->timecurve_;
       double curvefac = 1.0;
       // numbering starts from zero here, thus use curvenum-1
-      if (curvenum) curvefac = DRT::Problem::Instance()->Funct(curvenum - 1).EvaluateTime(time);
+      if (curvenum)
+        curvefac = DRT::Problem::Instance()
+                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum - 1)
+                       .EvaluateTime(time);
       if (curvefac > (1.0 + eps) || curvefac < (0.0 - eps))
         dserror("correct your time curve for prestretch, just values in [0,1] are allowed %f",
             curvefac);
@@ -1475,7 +1478,10 @@ void MAT::ConstraintMixture::EvaluateElastin(const LINALG::Matrix<NUM_STRESS_3D,
     int curvenum = params_->timecurve_;
     double curvefac = 1.0;
     // numbering starts from zero here, thus use curvenum-1
-    if (curvenum) curvefac = DRT::Problem::Instance()->Funct(curvenum - 1).EvaluateTime(time);
+    if (curvenum)
+      curvefac = DRT::Problem::Instance()
+                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum - 1)
+                     .EvaluateTime(time);
     if (curvefac > 1.0 || curvefac < 0.0)
       dserror(
           "correct your time curve for prestretch, just values in [0,1] are allowed %f", curvefac);

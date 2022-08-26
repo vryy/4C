@@ -2916,7 +2916,7 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd, nen>::Function(
   try
   {
     auto& funct = dynamic_cast<DRT::UTILS::VariableExprFunction<nsd>&>(
-        DRT::Problem::Instance()->Funct(functnum));
+        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum));
     if (funct.NumberComponents() != 1)
       dserror("only one component allowed for domain integral functions");
     return funct;
@@ -2928,7 +2928,7 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd, nen>::Function(
         "allowed!\n"
         "Check your input file!");
     return dynamic_cast<DRT::UTILS::VariableExprFunction<nsd>&>(
-        DRT::Problem::Instance()->Funct(functnum));
+        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum));
   }
 };
 

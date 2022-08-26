@@ -226,7 +226,7 @@ namespace
   }
 
   template <int dim>
-  Teuchos::RCP<DRT::UTILS::Function> CreateVariableExprFunction(
+  Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> CreateVariableExprFunction(
       const std::string& component, const std::vector<std::pair<std::string, double>>& constants)
   {
     auto vecfunc = Teuchos::rcp(new DRT::UTILS::VariableExprFunction<dim>());
@@ -236,7 +236,7 @@ namespace
 }  // namespace
 
 template <int dim>
-Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateVariableExprFunction(
+Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateVariableExprFunction(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager)
 {
@@ -262,7 +262,7 @@ Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateVariableExprFunction(
 
 
 template <int dim>
-Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateExprFunction(
+Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateExprFunction(
     std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs)
 {
   // evaluate the maximum component and the number of variables
@@ -729,19 +729,19 @@ template class DRT::UTILS::VariableExprFunction<1>;
 template class DRT::UTILS::VariableExprFunction<2>;
 template class DRT::UTILS::VariableExprFunction<3>;
 
-template Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateExprFunction<1>(
+template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateExprFunction<1>(
     std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs);
-template Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateExprFunction<2>(
+template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateExprFunction<2>(
     std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs);
-template Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateExprFunction<3>(
+template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateExprFunction<3>(
     std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs);
 
-template Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateVariableExprFunction<1>(
+template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateVariableExprFunction<1>(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager);
-template Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateVariableExprFunction<2>(
+template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateVariableExprFunction<2>(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager);
-template Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateVariableExprFunction<3>(
+template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateVariableExprFunction<3>(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager);

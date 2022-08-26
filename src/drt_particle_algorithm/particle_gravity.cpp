@@ -46,7 +46,9 @@ void PARTICLEALGORITHM::GravityHandler::GetGravityAcceleration(
   if (gravityrampfctnumber_ > 0)
   {
     const double fac =
-        DRT::Problem::Instance()->Funct(gravityrampfctnumber_ - 1).EvaluateTime(time);
+        DRT::Problem::Instance()
+            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(gravityrampfctnumber_ - 1)
+            .EvaluateTime(time);
 
     for (int dim = 0; dim < 3; ++dim) scaled_gravity[dim] *= fac;
   }
