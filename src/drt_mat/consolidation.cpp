@@ -387,9 +387,8 @@ void MAT::Consolidation::EvaluateCFracnpAtGp(const double temperature, const int
 /*-----------------------------------------------------------------------*/
 double MAT::Consolidation::FunctionValue(const double temperature, const int function)
 {
-  return (
-      dynamic_cast<DRT::UTILS::FastPolynomialFunction&>(
-          DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(function - 1)))
+  return DRT::Problem::Instance()
+      ->FunctionById<DRT::UTILS::FunctionOfScalar>(function - 1)
       .Evaluate(temperature);
 }
 
@@ -397,9 +396,8 @@ double MAT::Consolidation::FunctionValue(const double temperature, const int fun
 /*-----------------------------------------------------------------------*/
 double MAT::Consolidation::FunctionDerivative(const double temperature, const int function)
 {
-  return (
-      dynamic_cast<DRT::UTILS::FastPolynomialFunction&>(
-          DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(function - 1)))
+  return DRT::Problem::Instance()
+      ->FunctionById<DRT::UTILS::FunctionOfScalar>(function - 1)
       .EvaluateDerivative(temperature);
 }
 

@@ -42,14 +42,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateLibraryFuncti
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager)
 {
-  if (function_lin_def->HaveNamed("FASTPOLYNOMIAL"))
-  {
-    std::vector<double> coefficients;
-    function_lin_def->ExtractDoubleVector("COEFF", coefficients);
-
-    return Teuchos::rcp(new FastPolynomialFunction(&coefficients));
-  }
-  else if (function_lin_def->HaveNamed("TRANSLATEDFUNCTION"))
+  if (function_lin_def->HaveNamed("TRANSLATEDFUNCTION"))
   {
     int origin, local;
     function_lin_def->ExtractInt("ORIGIN", origin);
@@ -79,24 +72,39 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateLibraryFuncti
   }
   else
   {
-    return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(NULL);
+    return {Teuchos::null};
   }
 }
 
+Teuchos::RCP<DRT::UTILS::FunctionOfScalar> DRT::UTILS::TryCreateLibraryFunctionScalar(
+    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
+    const int /*index_current_funct_in_manager*/)
+{
+  if (function_lin_def->HaveNamed("FASTPOLYNOMIAL"))
+  {
+    std::vector<double> coefficients;
+    function_lin_def->ExtractDoubleVector("COEFF", coefficients);
 
-DRT::UTILS::FastPolynomialFunction::FastPolynomialFunction(std::vector<double>* coefficients)
-    : mypoly_(new Polynomial(*coefficients))
+    return Teuchos::rcp(new FastPolynomialFunction(std::move(coefficients)));
+  }
+  else
+    return {Teuchos::null};
+}
+
+
+DRT::UTILS::FastPolynomialFunction::FastPolynomialFunction(std::vector<double> coefficients)
+    : mypoly_(std::move(coefficients))
 {
 }
 
 double DRT::UTILS::FastPolynomialFunction::Evaluate(const double argument) const
 {
-  return mypoly_->Evaluate(argument);
+  return mypoly_.Evaluate(argument);
 }
 
 double DRT::UTILS::FastPolynomialFunction::EvaluateDerivative(const double argument) const
 {
-  return mypoly_->EvaluateDerivative(argument, 1);
+  return mypoly_.EvaluateDerivative(argument, 1);
 }
 
 

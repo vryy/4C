@@ -13,6 +13,7 @@ The functions in this file are not problem-specific and may be useful for a numb
 
 
 #include "drt_function.H"
+#include "function_of_scalar.H"
 
 namespace DRT
 {
@@ -23,6 +24,11 @@ namespace DRT
 
     /// try to create functions from a given line definition
     Teuchos::RCP<FunctionOfSpaceTime> TryCreateLibraryFunction(
+        Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
+        DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
+
+    /// try to create functions from a given line definition
+    Teuchos::RCP<FunctionOfScalar> TryCreateLibraryFunctionScalar(
         Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
         DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
 
@@ -91,7 +97,7 @@ namespace DRT
      * In particular, evaluating the derivative is faster for this function compared to
      * a VariableExprFunction representing the same polynomial.
      */
-    class FastPolynomialFunction : public FunctionOfSpaceTime
+    class FastPolynomialFunction : public FunctionOfScalar
     {
      public:
       /**
@@ -99,7 +105,7 @@ namespace DRT
        *
        * @param coefficients the coefficients of the monomials in ascending order
        */
-      FastPolynomialFunction(std::vector<double>* coefficients);
+      FastPolynomialFunction(std::vector<double> coefficients);
 
       /**
        * @brief Evaluate the polynomial.
@@ -119,27 +125,9 @@ namespace DRT
        */
       double EvaluateDerivative(const double argument) const;
 
-      /*!
-      \brief evaluate function at given time and position
-
-      \param index (i) For vector-valued functions, index defines the
-                       function-component which should be evaluated
-                       For scalar functions, index is always set to 0
-      \param t     (i) The point in time in which the
-                       function will be evaluated
-      \param x     (i) The point in 3-dimensional space in which the
-                       function will be evaluated
-      \throws dserror
-      */
-      double Evaluate(const int index, const double* x, double t) override
-      {
-        dserror("FastPolynomialFunction does not support this call.");
-        return 0;
-      }
-
      private:
       //! internal polynomial representation
-      const DRT::UTILS::Polynomial* const mypoly_;
+      const DRT::UTILS::Polynomial mypoly_;
     };
   }  // namespace UTILS
 }  // namespace DRT
