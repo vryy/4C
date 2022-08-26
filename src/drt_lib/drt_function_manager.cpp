@@ -93,7 +93,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
 
 template <int dim>
 void FillFunctions(DRT::INPUT::DatFileReader& reader,
-    std::vector<Teuchos::RCP<DRT::UTILS::Function>>& functions,
+    std::vector<Teuchos::RCP<DRT::UTILS::TemporaryFunctionInterface>>& functions,
     DRT::UTILS::FunctionManager& functionManager)
 {
   Teuchos::RCP<DRT::INPUT::Lines> lines = DRT::UTILS::FunctionManager::ValidFunctionLines();
@@ -176,5 +176,5 @@ DRT::UTILS::Function& DRT::UTILS::FunctionManager::Funct(int num)
   if (functions_.size() < (unsigned int)(num + 1) || num < 0)
     dserror("function %d not available", num + 1);
 
-  return *(functions_[num]);
+  return dynamic_cast<Function&>(*(functions_[num]));
 }

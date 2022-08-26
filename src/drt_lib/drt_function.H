@@ -24,6 +24,7 @@
 #include "drt_functionvariables.H"
 #include "../drt_fem_general/drt_utils_polynomial.H"
 #include "drt_function_manager.H"
+#include "function_interface_temporary.h"
 
 
 namespace DRT
@@ -43,7 +44,7 @@ namespace DRT
      *
      * Spatial function based on parsed expressions are provided as well.
      */
-    class Function
+    class Function : public TemporaryFunctionInterface
     {
      public:
       //! Virtual destructor.
