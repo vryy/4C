@@ -235,19 +235,22 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<LINALG::SparseMatrix> stif
           const double dof_stiffness =
               (*numfuncstiff)[dof] != 0
                   ? (*springstiff)[dof] * DRT::Problem::Instance()
-                                              ->Funct((*numfuncstiff)[dof] - 1)
+                                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                                  (*numfuncstiff)[dof] - 1)
                                               .EvaluateTime(total_time)
                   : (*springstiff)[dof];
           const double dof_viscosity =
               (*numfuncvisco)[dof] != 0
                   ? (*dashpotvisc)[dof] * DRT::Problem::Instance()
-                                              ->Funct((*numfuncvisco)[dof] - 1)
+                                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                                  (*numfuncvisco)[dof] - 1)
                                               .EvaluateTime(total_time)
                   : (*dashpotvisc)[dof];
           const double dof_disploffset =
               (*numfuncdisploffset)[dof] != 0
                   ? (*disploffset)[dof] * DRT::Problem::Instance()
-                                              ->Funct((*numfuncdisploffset)[dof] - 1)
+                                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                                  (*numfuncdisploffset)[dof] - 1)
                                               .EvaluateTime(total_time)
                   : (*disploffset)[dof];
 
@@ -262,12 +265,14 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<LINALG::SparseMatrix> stif
           else
           {
             std::array<double, 3> displ = {(*disp)[0], (*disp)[1], (*disp)[2]};
-            force_disp = DRT::Problem::Instance()
-                             ->Funct((*numfuncnonlinstiff)[dof] - 1)
-                             .Evaluate(0, displ.data(), total_time);
+            force_disp =
+                DRT::Problem::Instance()
+                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*numfuncnonlinstiff)[dof] - 1)
+                    .Evaluate(0, displ.data(), total_time);
 
             force_disp_deriv = (DRT::Problem::Instance()
-                                    ->Funct((*numfuncnonlinstiff)[dof] - 1)
+                                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                        (*numfuncnonlinstiff)[dof] - 1)
                                     .EvaluateSpatialDerivative(0, displ.data(), total_time))[dof];
           }
 

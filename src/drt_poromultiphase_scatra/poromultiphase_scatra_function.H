@@ -184,13 +184,13 @@ namespace POROMULTIPHASESCATRA
 
   /// try to create poro-specific functions from a given line definition
   template <int dim>
-  Teuchos::RCP<DRT::UTILS::Function> TryCreatePoroFunction(
+  Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> TryCreatePoroFunction(
       Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
       DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
 
   //! create poro-specific functions from a given line definition
   template <int dim>
-  Teuchos::RCP<DRT::UTILS::Function> CreatePoroFunction(
+  Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> CreatePoroFunction(
       const std::string& type, const std::vector<std::pair<std::string, double>>& params);
 
   /*!

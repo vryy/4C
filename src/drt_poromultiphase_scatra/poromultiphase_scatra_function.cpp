@@ -36,7 +36,7 @@ void POROMULTIPHASESCATRA::AddValidPoroFunctionLines(Teuchos::RCP<DRT::INPUT::Li
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-Teuchos::RCP<DRT::UTILS::Function> POROMULTIPHASESCATRA::TryCreatePoroFunction(
+Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> POROMULTIPHASESCATRA::TryCreatePoroFunction(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager)
 {
@@ -53,14 +53,14 @@ Teuchos::RCP<DRT::UTILS::Function> POROMULTIPHASESCATRA::TryCreatePoroFunction(
   }
   else
   {
-    return Teuchos::RCP<DRT::UTILS::Function>(nullptr);
+    return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(nullptr);
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-Teuchos::RCP<DRT::UTILS::Function> POROMULTIPHASESCATRA::CreatePoroFunction(
+Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> POROMULTIPHASESCATRA::CreatePoroFunction(
     const std::string& type, const std::vector<std::pair<std::string, double>>& params)
 {
   if (type == "TUMOR_GROWTH_LAW_HEAVISIDE")
@@ -88,7 +88,7 @@ Teuchos::RCP<DRT::UTILS::Function> POROMULTIPHASESCATRA::CreatePoroFunction(
   else
   {
     dserror("Wrong type of POROMULTIPHASESCATRA_FUNCTION");
-    return Teuchos::RCP<DRT::UTILS::Function>(nullptr);
+    return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(nullptr);
   }
 }
 
@@ -1610,12 +1610,15 @@ template class POROMULTIPHASESCATRA::LungOxygenExchangeLaw<1>;
 template class POROMULTIPHASESCATRA::LungOxygenExchangeLaw<2>;
 template class POROMULTIPHASESCATRA::LungOxygenExchangeLaw<3>;
 
-template Teuchos::RCP<DRT::UTILS::Function> POROMULTIPHASESCATRA::TryCreatePoroFunction<1>(
+template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>
+POROMULTIPHASESCATRA::TryCreatePoroFunction<1>(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager);
-template Teuchos::RCP<DRT::UTILS::Function> POROMULTIPHASESCATRA::TryCreatePoroFunction<2>(
+template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>
+POROMULTIPHASESCATRA::TryCreatePoroFunction<2>(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager);
-template Teuchos::RCP<DRT::UTILS::Function> POROMULTIPHASESCATRA::TryCreatePoroFunction<3>(
+template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>
+POROMULTIPHASESCATRA::TryCreatePoroFunction<3>(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager);

@@ -454,7 +454,7 @@ double MIXTURE::MixtureConstituent_RemodelFiber::EvaluateCurrentDepositionStretc
   }
 
   return DRT::Problem::Instance()
-      ->Funct(params_->deposition_stretch_funct_ - 1)
+      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(params_->deposition_stretch_funct_ - 1)
       .EvaluateTime(current_time);
 }
 

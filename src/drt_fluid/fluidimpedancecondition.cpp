@@ -355,7 +355,9 @@ void FLD::UTILS::FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualA
   }
   else if (treetype_ == "pressure_by_funct")
   {
-    pressure = DRT::Problem::Instance()->Funct(functnum_ - 1).EvaluateTime(time);
+    pressure = DRT::Problem::Instance()
+                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum_ - 1)
+                   .EvaluateTime(time);
     Q_np_fac = 0.0;
   }
   else

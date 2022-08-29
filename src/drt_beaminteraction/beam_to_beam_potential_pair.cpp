@@ -243,12 +243,16 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   int function_number = linechargeconds_[0]->GetInt("funct");
 
   if (function_number != -1)
-    q1 *= DRT::Problem::Instance()->Funct(function_number - 1).EvaluateTime(time_);
+    q1 *= DRT::Problem::Instance()
+              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(function_number - 1)
+              .EvaluateTime(time_);
 
   function_number = linechargeconds_[1]->GetInt("funct");
 
   if (function_number != -1)
-    q2 *= DRT::Problem::Instance()->Funct(function_number - 1).EvaluateTime(time_);
+    q2 *= DRT::Problem::Instance()
+              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(function_number - 1)
+              .EvaluateTime(time_);
 
 
   // auxiliary variable
@@ -618,12 +622,16 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   int function_number = linechargeconds_[0]->GetInt("funct");
 
   if (function_number != -1)
-    q1 *= DRT::Problem::Instance()->Funct(function_number - 1).EvaluateTime(time_);
+    q1 *= DRT::Problem::Instance()
+              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(function_number - 1)
+              .EvaluateTime(time_);
 
   function_number = linechargeconds_[1]->GetInt("funct");
 
   if (function_number != -1)
-    q2 *= DRT::Problem::Instance()->Funct(function_number - 1).EvaluateTime(time_);
+    q2 *= DRT::Problem::Instance()
+              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(function_number - 1)
+              .EvaluateTime(time_);
 
 
   // Evaluation of the Gamma-Function term:
@@ -1220,12 +1228,16 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   int function_number = linechargeconds_[0]->GetInt("funct");
 
   if (function_number != -1)
-    rho1 *= DRT::Problem::Instance()->Funct(function_number - 1).EvaluateTime(time_);
+    rho1 *= DRT::Problem::Instance()
+                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(function_number - 1)
+                .EvaluateTime(time_);
 
   function_number = linechargeconds_[1]->GetInt("funct");
 
   if (function_number != -1)
-    rho2 *= DRT::Problem::Instance()->Funct(function_number - 1).EvaluateTime(time_);
+    rho2 *= DRT::Problem::Instance()
+                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(function_number - 1)
+                .EvaluateTime(time_);
 
 
   // constant prefactor of the disk-cylinder interaction potential

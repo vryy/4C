@@ -1090,7 +1090,9 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateFlowrate(
 
   if (functnum > 0)
   {
-    functfac = DRT::Problem::Instance()->Funct(functnum - 1).EvaluateTime(time);
+    functfac = DRT::Problem::Instance()
+                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                   .EvaluateTime(time);
     flowrate = val * functfac;
   }
 

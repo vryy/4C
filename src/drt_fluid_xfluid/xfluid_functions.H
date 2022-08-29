@@ -28,12 +28,12 @@ namespace DRT
     void AddValidXfluidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
 
     /// try to create xfluid-specific functions from a given line definition
-    Teuchos::RCP<DRT::UTILS::Function> TryCreateXfluidFunction(
+    Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> TryCreateXfluidFunction(
         Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
         DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
 
     /// special implementation level set cut utilizing xfluid
-    class GerstenbergerForwardfacingStep : public Function
+    class GerstenbergerForwardfacingStep : public FunctionOfSpaceTime
     {
      public:
       /// ctor
@@ -52,7 +52,7 @@ namespace DRT
      *   at the time t_dist = n*PI/2   n=0,1,2,3,...
      *   and maximum velocity at t_max  = n*PI/4   n=1,2,3,4,...
      */
-    class MovingLevelSetCylinder : public Function
+    class MovingLevelSetCylinder : public FunctionOfSpaceTime
     {
      public:
       /// ctor
@@ -116,7 +116,7 @@ namespace DRT
      *   0)
      *   1) Increasing sliplength in shape of sphere.
      */
-    class MovingLSTorus : public Function
+    class MovingLSTorus : public FunctionOfSpaceTime
     {
      public:
       /// ctor
@@ -220,7 +220,7 @@ namespace DRT
      * @brief Stationary Taylor-Couette flow with Navier-Slip type boundary condition at inner
      * cylinder.
      */
-    class TaylorCouetteFlow : public Function
+    class TaylorCouetteFlow : public FunctionOfSpaceTime
     {
      public:
       /// ctor (for NavSlip at both boundaries)
@@ -251,7 +251,7 @@ namespace DRT
      * Oseen test case (can be solved with Nav-Stokes as well as the advective velocity.
      * is chosen as the analytic solution to the Nav-Stokes equations).
      */
-    class UrquizaBoxFlow : public Function
+    class UrquizaBoxFlow : public FunctionOfSpaceTime
     {
      public:
       /// ctor

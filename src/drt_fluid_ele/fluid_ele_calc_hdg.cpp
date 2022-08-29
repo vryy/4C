@@ -597,7 +597,9 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
           // for each component of the velocity field
           const int funct_num = (*functno)[d];
           if (funct_num > 0)
-            u(d) = DRT::Problem::Instance()->Funct(funct_num - 1).Evaluate(d, xyz.A(), *time);
+            u(d) = DRT::Problem::Instance()
+                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funct_num - 1)
+                       .Evaluate(d, xyz.A(), *time);
         }
       }
 
@@ -1281,8 +1283,12 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateAll(const int startfunc,
     case INPAR::FLUID::initfield_disturbed_field_from_function:
     {
       for (unsigned int index = 0; index < nsd_; ++index)
-        u(index) = DRT::Problem::Instance()->Funct(startfunc - 1).Evaluate(index, xyz.A(), 0);
-      p = DRT::Problem::Instance()->Funct(startfunc - 1).Evaluate(nsd_, xyz.A(), 0);
+        u(index) = DRT::Problem::Instance()
+                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfunc - 1)
+                       .Evaluate(index, xyz.A(), 0);
+      p = DRT::Problem::Instance()
+              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfunc - 1)
+              .Evaluate(nsd_, xyz.A(), 0);
     }
     break;
 
@@ -2473,7 +2479,9 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeCorrectionTerm
     for (unsigned int d = 0; d < nsd_; ++d) x[d] = shapes_.nodexyzreal[i][d];
 
     interiorecorrectionterm[i] =
-        DRT::Problem::Instance()->Funct(corrtermfuncnum - 1).Evaluate(0, x, 0.0);
+        DRT::Problem::Instance()
+            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(corrtermfuncnum - 1)
+            .Evaluate(0, x, 0.0);
   }
 }
 
@@ -2488,7 +2496,9 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeBodyForce(
 
     for (unsigned int d = 0; d < nsd_; ++d)
       interiorebodyforce[d * ndofs_ + i] =
-          DRT::Problem::Instance()->Funct(bodyforcefuncnum - 1).Evaluate(d, x, 0.0);
+          DRT::Problem::Instance()
+              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(bodyforcefuncnum - 1)
+              .Evaluate(d, x, 0.0);
   }
 }
 

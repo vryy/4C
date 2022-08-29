@@ -820,8 +820,9 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetInitialAdjointField(
         for (int index = 0; index < numdim_ + 1; ++index)
         {
           int gid = nodedofset[index];
-          double initialval =
-              DRT::Problem::Instance()->Funct(startfuncno - 1).Evaluate(index, lnode->X(), time_);
+          double initialval = DRT::Problem::Instance()
+                                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                                  .Evaluate(index, lnode->X(), time_);
           veln_->ReplaceGlobalValues(1, &initialval, &gid);
         }
       }

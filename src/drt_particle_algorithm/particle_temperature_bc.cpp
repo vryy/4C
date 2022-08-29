@@ -108,7 +108,8 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::EvaluateTemperature
     const int functid = typeIt.second;
 
     // get reference to function
-    DRT::UTILS::Function& function = DRT::Problem::Instance()->Funct(functid - 1);
+    DRT::UTILS::FunctionOfSpaceTime& function =
+        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functid - 1);
 
     // get pointer to particle states
     const double* refpos = container->GetPtrToState(PARTICLEENGINE::ReferencePosition, 0);

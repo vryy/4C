@@ -592,8 +592,16 @@ namespace DRT
 
     /// @name Spatial Functions
 
-    /// return a specified function
-    DRT::UTILS::Function& Funct(int num);
+    /**
+     * Get a function read from the input file by its ID @p num.
+     *
+     * @tparam T The type of function interface.
+     */
+    template <typename T>
+    T& FunctionById(int num)
+    {
+      return functionmanager_.template FunctionById<T>(num);
+    }
 
     //@}
 

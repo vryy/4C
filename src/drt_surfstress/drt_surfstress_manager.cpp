@@ -265,7 +265,10 @@ void UTILS::SurfStressManager::StiffnessAndInternalForces(const int curvenum, co
   double curvefac = 1.;
 
   /*------------gradual application of surface stresses via time curve*/
-  if (time <= t_end) curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
+  if (time <= t_end)
+    curvefac = DRT::Problem::Instance()
+                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
+                   .EvaluateTime(time);
 
   double ndof = Adiff->Length();
 

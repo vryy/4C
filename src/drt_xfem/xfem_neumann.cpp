@@ -143,7 +143,10 @@ void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& 
     int functnum = -1;
     if (funct) functnum = (*funct)[0];
     double functfac = 1.0;
-    if (functnum >= 0) functfac = DRT::Problem::Instance()->Funct(functnum).EvaluateTime(time);
+    if (functnum >= 0)
+      functfac = DRT::Problem::Instance()
+                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum)
+                     .EvaluateTime(time);
     for (int i = 0; i < nnode; ++i)
     {
       // do only nodes in my row map

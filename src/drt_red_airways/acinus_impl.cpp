@@ -418,7 +418,9 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           double curvefac = 1.0;
           if ((*curve)[0] >= 0)
           {
-            curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(time);
+            curvefac = DRT::Problem::Instance()
+                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*curve)[0])
+                           .EvaluateTime(time);
             BCin = (*vals)[0] * curvefac;
           }
           else
@@ -438,7 +440,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           if (functnum > 0)
           {
             functionfac = DRT::Problem::Instance()
-                              ->Funct(functnum - 1)
+                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
                               .Evaluate(0, (ele->Nodes()[i])->X(), time);
           }
 
@@ -447,7 +449,9 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           double curve2fac = 1.0;
           if (curve) curve2num = (*curve)[1];
           if (curve2num >= 0)
-            curve2fac = DRT::Problem::Instance()->Funct(curve2num).EvaluateTime(time);
+            curve2fac = DRT::Problem::Instance()
+                            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curve2num)
+                            .EvaluateTime(time);
 
           // Add first_CURVE + FUNCTION * second_CURVE
           BCin += functionfac * curve2fac;
@@ -555,7 +559,9 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           // Read in the value of the applied BC
           if ((*curve)[phase_number] >= 0)
           {
-            curvefac = DRT::Problem::Instance()->Funct((*curve)[phase_number]).EvaluateTime(time);
+            curvefac = DRT::Problem::Instance()
+                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*curve)[phase_number])
+                           .EvaluateTime(time);
             BCin = (*vals)[phase_number] * curvefac;
           }
           else
@@ -605,7 +611,9 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
               // Read in the value of the applied BC
               if ((*curve)[0] >= 0)
               {
-                curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(time);
+                curvefac = DRT::Problem::Instance()
+                               ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*curve)[0])
+                               .EvaluateTime(time);
               }
 
               // Get parameters for VolumeDependentPleuralPressure condition
@@ -1184,7 +1192,10 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
       // -----------------------------------------------------------------
       int curvenum = -1;
       if (curve) curvenum = (*curve)[0];
-      if (curvenum >= 0) curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
+      if (curvenum >= 0)
+        curvefac = DRT::Problem::Instance()
+                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
+                       .EvaluateTime(time);
 
       scnp = (*vals)[0] * curvefac;
 
@@ -1198,8 +1209,9 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
       double functionfac = 0.0;
       if (functnum > 0)
       {
-        functionfac =
-            DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(0, (ele->Nodes()[i])->X(), time);
+        functionfac = DRT::Problem::Instance()
+                          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                          .Evaluate(0, (ele->Nodes()[i])->X(), time);
       }
       scnp += functionfac;
 

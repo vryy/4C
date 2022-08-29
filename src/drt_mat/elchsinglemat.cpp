@@ -255,7 +255,8 @@ double MAT::ElchSingleMat::ComputeDiffusionCoefficientConcentrationDependent(
   else
   {
     diffusionCoefficient = DRT::Problem::Instance()
-                               ->Funct(DiffusionCoefficientConcentrationDependenceFunctNum() - 1)
+                               ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                   DiffusionCoefficientConcentrationDependenceFunctNum() - 1)
                                .EvaluateTime(concentration);
   }
 
@@ -281,7 +282,9 @@ double MAT::ElchSingleMat::ComputeTemperatureDependentScaleFactor(const double t
   else if (functionNumber > 0)
   {
     temperatureDependentScaleFactor =
-        DRT::Problem::Instance()->Funct(functionNumber - 1).EvaluateTime(temperature);
+        DRT::Problem::Instance()
+            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functionNumber - 1)
+            .EvaluateTime(temperature);
   }
   else
   {
@@ -321,10 +324,10 @@ double MAT::ElchSingleMat::ComputeConcentrationDerivativeOfDiffusionCoefficient(
   // concentration as defined in the input file
   else
   {
-    diffusion_coeff_conc_deriv =
-        (DRT::Problem::Instance()
-                ->Funct(DiffusionCoefficientConcentrationDependenceFunctNum() - 1)
-                .EvaluateTimeDerivative(concentration, 1))[1];
+    diffusion_coeff_conc_deriv = (DRT::Problem::Instance()
+                                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                          DiffusionCoefficientConcentrationDependenceFunctNum() - 1)
+                                      .EvaluateTimeDerivative(concentration, 1))[1];
   }
 
   // do the temperature dependent scaling
@@ -370,9 +373,10 @@ double MAT::ElchSingleMat::ComputeTemperatureDependentScaleFactorDeriv(const dou
   }
   else if (functionNumber > 0)
   {
-    temperatureDependentScaleFactorDeriv = DRT::Problem::Instance()
-                                               ->Funct(functionNumber - 1)
-                                               .EvaluateTimeDerivative(temperature, 1)[1];
+    temperatureDependentScaleFactorDeriv =
+        DRT::Problem::Instance()
+            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functionNumber - 1)
+            .EvaluateTimeDerivative(temperature, 1)[1];
   }
   else
   {
@@ -422,7 +426,8 @@ double MAT::ElchSingleMat::ComputeConductivityConcentrationDependent(
   else
   {
     conductivity = DRT::Problem::Instance()
-                       ->Funct(ConductivityConcentrationDependenceFunctNum() - 1)
+                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                           ConductivityConcentrationDependenceFunctNum() - 1)
                        .EvaluateTime(concentration);
   }
 
@@ -455,7 +460,8 @@ double MAT::ElchSingleMat::ComputeConcentrationDerivativeOfConductivity(
   else
   {
     conductivity_conc_deriv = (DRT::Problem::Instance()
-                                   ->Funct(ConductivityConcentrationDependenceFunctNum() - 1)
+                                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                       ConductivityConcentrationDependenceFunctNum() - 1)
                                    .EvaluateTimeDerivative(concentration, 1))[1];
   }
 

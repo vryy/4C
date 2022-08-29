@@ -626,7 +626,9 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(Teuchos::ParameterList& params,
       if (functnum > 0)
       {
         // evaluate function at the position of the current node       --> dof here correct?
-        functionfac = DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(dof, &X_ref[0], time);
+        functionfac = DRT::Problem::Instance()
+                          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                          .Evaluate(dof, &X_ref[0], time);
       }
       else
         functionfac = 1.0;
@@ -1737,7 +1739,7 @@ void DRT::ELEMENTS::Beam3::MyBackgroundVelocity(Teuchos::ParameterList& params, 
   //    if(shearflow  && curvenumber >=  0 && dbcdispdir >= 0 )
   //    {
   //      uppervel = shearamplitude *
-  //      (DRT::Problem::Instance()->Funct(curvenumber).EvaluateTimeDerivative(time,1))[1];
+  //      (DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenumber).EvaluateTimeDerivative(time,1))[1];
   //
   //      //compute background velocity
   //      velbackground(dbcdispdir) = (evaluationpoint(ndim-1) / periodlength->at(ndim-1)) *

@@ -2115,7 +2115,9 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
       if (funct) functnum = (*funct)[i];
 
       if (functnum > 0)
-        functtimefac[i] = DRT::Problem::Instance()->Funct(functnum - 1).EvaluateTime(time);
+        functtimefac[i] = DRT::Problem::Instance()
+                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                              .EvaluateTime(time);
 
       load_vector_neumann(i) *= functtimefac[i];
     }
@@ -2572,9 +2574,10 @@ void DRT::ELEMENTS::Beam3k::EvaluateLineNeumannForces(
     {
       if (function_numbers != NULL and (*function_numbers)[idof] > 0)
       {
-        functionfac = DRT::Problem::Instance()
-                          ->Funct((*function_numbers)[idof] - 1)
-                          .Evaluate(idof, &X_ref[0], time);
+        functionfac =
+            DRT::Problem::Instance()
+                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*function_numbers)[idof] - 1)
+                .Evaluate(idof, &X_ref[0], time);
       }
       else
         functionfac = 1.0;

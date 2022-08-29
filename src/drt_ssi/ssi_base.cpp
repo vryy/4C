@@ -167,7 +167,9 @@ void SSI::SSIBase::Setup()
           new Epetra_Vector(*DRT::Problem::Instance()->GetDis("structure")->DofRowMap(2), true));
 
       temperature_vector_->PutScalar(
-          DRT::Problem::Instance()->Funct(temperature_funct_num_ - 1).EvaluateTime(Time()));
+          DRT::Problem::Instance()
+              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(temperature_funct_num_ - 1)
+              .EvaluateTime(Time()));
 
       ssicoupling_->SetTemperatureField(
           *DRT::Problem::Instance()->GetDis("structure"), temperature_vector_);
@@ -593,7 +595,9 @@ void SSI::SSIBase::EvaluateAndSetTemperatureField()
   {
     // evaluate temperature at current time and put to scalar
     const double temperature =
-        DRT::Problem::Instance()->Funct(temperature_funct_num_ - 1).EvaluateTime(Time());
+        DRT::Problem::Instance()
+            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(temperature_funct_num_ - 1)
+            .EvaluateTime(Time());
     temperature_vector_->PutScalar(temperature);
 
     // set temperature vector to structure discretization

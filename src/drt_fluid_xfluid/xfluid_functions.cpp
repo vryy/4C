@@ -121,7 +121,7 @@ void DRT::UTILS::AddValidXfluidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lin
   lines->Add(urquizaboxflowtraction);
 }
 
-Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateXfluidFunction(
+Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateXfluidFunction(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager)
 {
@@ -200,7 +200,7 @@ Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateXfluidFunction(
     else
     {
       dserror("How did you end up here :)?");
-      return Teuchos::RCP<DRT::UTILS::Function>(NULL);
+      return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(NULL);
     }
   }
   else if (function_lin_def->HaveNamed("TAYLORCOUETTEFLOW"))
@@ -319,12 +319,12 @@ Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateXfluidFunction(
   }
   else
   {
-    return Teuchos::RCP<DRT::UTILS::Function>(NULL);
+    return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(NULL);
   }
 }
 
 
-DRT::UTILS::GerstenbergerForwardfacingStep::GerstenbergerForwardfacingStep() : Function() {}
+DRT::UTILS::GerstenbergerForwardfacingStep::GerstenbergerForwardfacingStep() {}
 
 double DRT::UTILS::GerstenbergerForwardfacingStep::Evaluate(int index, const double* xp, double t)
 {
@@ -394,7 +394,6 @@ double DRT::UTILS::GerstenbergerForwardfacingStep::Evaluate(int index, const dou
 
 DRT::UTILS::MovingLevelSetCylinder::MovingLevelSetCylinder(std::vector<double>* origin,
     double radius, std::vector<double>* direction, double distance, double maxspeed)
-    : Function()
 {
   // Origin of the geometry
   origin_ = *origin;
@@ -457,8 +456,7 @@ DRT::UTILS::MovingLSTorus::MovingLSTorus(std::vector<double>* origin,
     std::vector<double>* orientationvec_torus, double radius, double radius_tube,
     std::vector<double>* direction, double distance, double maxspeed,
     std::vector<double>* rotvector, double rotspeed, double rotramptime)
-    : Function(),
-      eye_(3, std::vector<double>(3, 0.0)),
+    : eye_(3, std::vector<double>(3, 0.0)),
       rot_joint_(3, std::vector<double>(3, 0.0)),
       rot_cross_(3, std::vector<double>(3, 0.0))
 {
@@ -939,7 +937,6 @@ DRT::UTILS::TaylorCouetteFlow::TaylorCouetteFlow(double radius_inner, double rad
     double vel_theta_inner, double vel_theta_outer, double sliplength_inner,
     double sliplength_outer, double traction_theta_inner, double traction_theta_outer,
     double viscosity)
-    : Function()
 {
   radius_inner_ = radius_inner;
   radius_outer_ = radius_outer;
@@ -1076,8 +1073,7 @@ std::vector<double> DRT::UTILS::TaylorCouetteFlow::EvaluateSpatialDerivative(
 
 DRT::UTILS::UrquizaBoxFlow::UrquizaBoxFlow(double lengthx, double lengthy, double rotation,
     double viscosity, double density, int functno, std::vector<double> lincomb)
-    : Function(),
-      lengthx_(lengthx),
+    : lengthx_(lengthx),
       lengthy_(lengthy),
       rotation_(rotation),
       rotvector_(2, std::vector<double>(2, 0.0)),

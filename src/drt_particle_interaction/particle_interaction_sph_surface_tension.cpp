@@ -784,7 +784,9 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeSurfaceTensionContribution()
   // evaluate surface tension time ramp function
   double timefac = 1.0;
   if (timerampfct_ > 0)
-    timefac = DRT::Problem::Instance()->Funct(timerampfct_ - 1).EvaluateTime(time_);
+    timefac = DRT::Problem::Instance()
+                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(timerampfct_ - 1)
+                  .EvaluateTime(time_);
 
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
@@ -833,7 +835,9 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeTempGradDrivenContribution()
   // evaluate surface tension time ramp function
   double timefac = 1.0;
   if (timerampfct_ > 0)
-    timefac = DRT::Problem::Instance()->Funct(timerampfct_ - 1).EvaluateTime(time_);
+    timefac = DRT::Problem::Instance()
+                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(timerampfct_ - 1)
+                  .EvaluateTime(time_);
 
   // temperature in transition from linear to constant regime of surface tension coefficient
   const double transitiontemp = surf_ref_temp_ + (alphamin_ - alpha0_) / alphaT_;

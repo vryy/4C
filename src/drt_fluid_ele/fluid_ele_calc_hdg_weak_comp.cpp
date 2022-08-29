@@ -838,13 +838,19 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateAll(const int func
     const LINALG::Matrix<nsd_, 1>& xyz, const double t, LINALG::Matrix<msd_, 1>& L, double& r,
     LINALG::Matrix<nsd_, 1>& w) const
 {
-  r = DRT::Problem::Instance()->Funct(funcnum - 1).Evaluate(0, xyz.A(), t);
+  r = DRT::Problem::Instance()
+          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+          .Evaluate(0, xyz.A(), t);
 
   for (unsigned int d = 0; d < nsd_; ++d)
-    w(d) = DRT::Problem::Instance()->Funct(funcnum - 1).Evaluate(1 + d, xyz.A(), t);
+    w(d) = DRT::Problem::Instance()
+               ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+               .Evaluate(1 + d, xyz.A(), t);
 
   for (unsigned int m = 0; m < msd_; ++m)
-    L(m) = DRT::Problem::Instance()->Funct(funcnum - 1).Evaluate(1 + nsd_ + m, xyz.A(), t);
+    L(m) = DRT::Problem::Instance()
+               ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+               .Evaluate(1 + nsd_ + m, xyz.A(), t);
 }
 
 
@@ -853,10 +859,14 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateDensityMomentum(const int funcnum,
     const LINALG::Matrix<nsd_, 1>& xyz, const double t, double& r, LINALG::Matrix<nsd_, 1>& w) const
 {
-  r = DRT::Problem::Instance()->Funct(funcnum - 1).Evaluate(0, xyz.A(), t);
+  r = DRT::Problem::Instance()
+          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+          .Evaluate(0, xyz.A(), t);
 
   for (unsigned int d = 0; d < nsd_; ++d)
-    w(d) = DRT::Problem::Instance()->Funct(funcnum - 1).Evaluate(1 + d, xyz.A(), t);
+    w(d) = DRT::Problem::Instance()
+               ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+               .Evaluate(1 + d, xyz.A(), t);
 }
 
 
@@ -1067,7 +1077,9 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeMateri
     const double time = fldparatimint_->Time();
 
     // get viscosity
-    double mu = DRT::Problem::Instance()->Funct(varviscfuncnum - 1).Evaluate(0, xyz.A(), time);
+    double mu = DRT::Problem::Instance()
+                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(varviscfuncnum - 1)
+                    .Evaluate(0, xyz.A(), time);
 
     // evaluate Dw
     for (unsigned int d = 0; d < nsd_; ++d) Dw(d, d) = 2.0 * mu;
@@ -1182,8 +1194,9 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteri
 
       if (forcefuncnum > 0)
         for (unsigned int dmod = 0; dmod < (1 + nsd_); ++dmod)
-          feg(dmod, q) =
-              DRT::Problem::Instance()->Funct(forcefuncnum - 1).Evaluate(dmod, xyzeg.A(), time);
+          feg(dmod, q) = DRT::Problem::Instance()
+                             ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(forcefuncnum - 1)
+                             .Evaluate(dmod, xyzeg.A(), time);
 
       drdteg(q) += N(i, q) * drdte(i);
 

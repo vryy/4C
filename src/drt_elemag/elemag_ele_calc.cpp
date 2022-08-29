@@ -907,31 +907,41 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::EvaluateAll(const int start_func,
     const double t, const LINALG::Matrix<nsd_, 1>& xyz, Epetra_SerialDenseVector& v) const
 {
-  int numComp = DRT::Problem::Instance()->Funct(start_func - 1).NumberComponents();
+  int numComp = DRT::Problem::Instance()
+                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                    .NumberComponents();
 
   // If there is on component for each entry of the vector use une for each
   if (numComp == v.M())
   {
     for (int d = 0; d < v.M(); ++d)
-      v[d] = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(d, xyz.A(), t);
+      v[d] = DRT::Problem::Instance()
+                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                 .Evaluate(d, xyz.A(), t);
   }
   // If the vector is half the number of the component only use the firt half
   else if (numComp == 2 * v.M())
   {
     for (int d = 0; d < v.M(); ++d)
-      v[d] = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(d, xyz.A(), t);
+      v[d] = DRT::Problem::Instance()
+                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                 .Evaluate(d, xyz.A(), t);
   }
   // If the number of component is half of the vector, repeat the first half twice
   else if (numComp == v.M() / 2)
   {
     for (int d = 0; d < v.M(); ++d)
-      v[d] = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(d % numComp, xyz.A(), t);
+      v[d] = DRT::Problem::Instance()
+                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                 .Evaluate(d % numComp, xyz.A(), t);
   }
   // If there is only one component always use it
   else if (numComp == 1)
   {
     for (int d = 0; d < v.M(); ++d)
-      v[d] = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(0, xyz.A(), t);
+      v[d] = DRT::Problem::Instance()
+                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                 .Evaluate(0, xyz.A(), t);
   }
   // If the number is not recognised throw an error
   else

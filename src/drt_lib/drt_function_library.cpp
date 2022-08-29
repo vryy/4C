@@ -38,7 +38,7 @@ void DRT::UTILS::AddValidLibraryFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> li
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateLibraryFunction(
+Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateLibraryFunction(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager)
 {
@@ -70,20 +70,22 @@ Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateLibraryFunction(
           local, index_current_funct_in_manager);
     }
 
-    Teuchos::RCP<Function> origin_funct = Teuchos::rcpFromRef(manager.Funct(origin - 1));
-    Teuchos::RCP<Function> local_funct = Teuchos::rcpFromRef(manager.Funct(local - 1));
+    Teuchos::RCP<FunctionOfSpaceTime> origin_funct =
+        Teuchos::rcpFromRef(manager.FunctionById<FunctionOfSpaceTime>(origin - 1));
+    Teuchos::RCP<FunctionOfSpaceTime> local_funct =
+        Teuchos::rcpFromRef(manager.FunctionById<FunctionOfSpaceTime>(local - 1));
 
     return Teuchos::rcp(new TranslatedFunction(origin_funct, local_funct));
   }
   else
   {
-    return Teuchos::RCP<DRT::UTILS::Function>(NULL);
+    return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(NULL);
   }
 }
 
 
 DRT::UTILS::FastPolynomialFunction::FastPolynomialFunction(std::vector<double>* coefficients)
-    : Function(), mypoly_(new Polynomial(*coefficients))
+    : mypoly_(new Polynomial(*coefficients))
 {
 }
 
@@ -99,7 +101,7 @@ double DRT::UTILS::FastPolynomialFunction::EvaluateDerivative(const double argum
 
 
 DRT::UTILS::TranslatedFunction::TranslatedFunction(
-    Teuchos::RCP<Function> origin, Teuchos::RCP<Function> local)
+    Teuchos::RCP<FunctionOfSpaceTime> origin, Teuchos::RCP<FunctionOfSpaceTime> local)
     : originFunction_(std::move(origin)), localFunction_(std::move(local))
 {
   if (originFunction_->NumberComponents() != nsd_originTranslation)

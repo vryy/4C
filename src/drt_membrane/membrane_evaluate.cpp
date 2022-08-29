@@ -574,7 +574,9 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
   {
     const int functnum = (tmp_funct) ? (*tmp_funct)[i] : -1;
     if (functnum > 0)
-      functfacs[i] = DRT::Problem::Instance()->Funct(functnum - 1).EvaluateTime(time);
+      functfacs[i] = DRT::Problem::Instance()
+                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                         .EvaluateTime(time);
   }
 
   // determine current pressure

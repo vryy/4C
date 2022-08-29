@@ -161,8 +161,9 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
         {
           if (functnum > 0)
             // evaluate function at current gauss point (3D position vector required!)
-            functionfac =
-                DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(dim, coordgpref, time);
+            functionfac = DRT::Problem::Instance()
+                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                              .Evaluate(dim, coordgpref, time);
           else
             functionfac = 1.0;
         }

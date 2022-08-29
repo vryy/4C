@@ -454,11 +454,12 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
           if (functnum > 0)
           {
             // evaluate function at current gauss point
-            functfac =
-                DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(idim, coordgpref, time);
+            functfac = DRT::Problem::Instance()
+                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                           .Evaluate(idim, coordgpref, time);
             if (fldparatimint_->IsNewOSTImplementation())
               functfacn = DRT::Problem::Instance()
-                              ->Funct(functnum - 1)
+                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
                               .Evaluate(idim, coordgpref, time - fldparatimint_->Dt());
           }
           else
@@ -492,11 +493,12 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
           if (functnum > 0)
           {
             // evaluate function at current gauss point
-            functfac =
-                DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(idim, coordgpref, time);
+            functfac = DRT::Problem::Instance()
+                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                           .Evaluate(idim, coordgpref, time);
             if (fldparatimint_->IsNewOSTImplementation())
               functfacn = DRT::Problem::Instance()
-                              ->Funct(functnum - 1)
+                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
                               .Evaluate(idim, coordgpref, time - fldparatimint_->Dt());
           }
           else

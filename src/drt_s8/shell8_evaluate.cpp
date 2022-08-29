@@ -988,10 +988,12 @@ int DRT::ELEMENTS::Shell8::EvaluateNeumann(Teuchos::ParameterList& params,
           {
             // spatial function evaluation
             const int sp_functnum = (sp_funct) ? (*sp_funct)[dim] : -1;
-            sp_functfacs[dim] = (sp_functnum > 0) ? DRT::Problem::Instance()
-                                                        ->Funct(sp_functnum - 1)
-                                                        .Evaluate(dim, xrefegp.A(), time)
-                                                  : 1.0;
+            sp_functfacs[dim] =
+                (sp_functnum > 0)
+                    ? DRT::Problem::Instance()
+                          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(sp_functnum - 1)
+                          .Evaluate(dim, xrefegp.A(), time)
+                    : 1.0;
           }
         }
       }
@@ -4084,7 +4086,7 @@ int DRT::ELEMENTS::Shell8Type::Initialize(DRT::Discretization& dis)
  |  average director (public)                                mwgee 12/06|
  *----------------------------------------------------------------------*/
 #define DSQR(a) ((a) * (a))
-//#define ABS(x)  ((x) <  0  ? (-x) : (x))
+// #define ABS(x)  ((x) <  0  ? (-x) : (x))
 void s8_averagedirector(Epetra_SerialDenseMatrix& dir_list, const int numa3, double a3[])
 {
   double davn[3];

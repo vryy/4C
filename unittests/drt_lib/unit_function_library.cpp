@@ -26,9 +26,9 @@ namespace
    protected:
     constexpr static double A_CONSTANT = 1.0;
 
-    Teuchos::RCP<DRT::UTILS::Function> constant_;
-    Teuchos::RCP<DRT::UTILS::Function> scalarField_;
-    Teuchos::RCP<DRT::UTILS::Function> linearTime_;
+    Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> constant_;
+    Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> scalarField_;
+    Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> linearTime_;
 
     const std::array<double, 3> at000_ = {0.0, 0.0, 0.0};
     const std::array<double, 3> at111_ = {1.0, 1.0, 1.0};
@@ -50,7 +50,7 @@ namespace
     inline const double* WithOrigin(const double* at) { return at; }
 
    private:
-    class ConstantVectorFunctionStub : public DRT::UTILS::Function
+    class ConstantVectorFunctionStub : public DRT::UTILS::FunctionOfSpaceTime
     {
      public:
       double Evaluate(const int index, const double* x, double t) override { return A_CONSTANT; }
@@ -68,7 +68,7 @@ namespace
     };
 
     /// a scalar field f(x) = x_1^2+2*x_2^2+4*x_3^2
-    class ScalarFieldFunctionStub : public DRT::UTILS::Function
+    class ScalarFieldFunctionStub : public DRT::UTILS::FunctionOfSpaceTime
     {
      public:
       double Evaluate(const int index, const double* x, double t) override
@@ -91,7 +91,7 @@ namespace
     };
 
     /// a time dependent vector function f(t) = [t, t, t]
-    class LinearTimeVectorFunctionStub : public DRT::UTILS::Function
+    class LinearTimeVectorFunctionStub : public DRT::UTILS::FunctionOfSpaceTime
     {
      public:
       double Evaluate(const int index, const double* x, double t) override { return t; }
@@ -115,7 +115,7 @@ namespace
 
   TEST_F(TranslatedFunctionTest, EvaluateConstantOriginConstantLocal)
   {
-    Teuchos::RCP<DRT::UTILS::Function> testFunction =
+    Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> testFunction =
         Teuchos::rcp(new DRT::UTILS::TranslatedFunction(constant_, constant_));
     // the whole function is a constant in all components
     EXPECT_NEAR(testFunction->Evaluate(0, at111_.data(), 0), A_CONSTANT, 1.0e-15);
@@ -126,7 +126,7 @@ namespace
 
   TEST_F(TranslatedFunctionTest, EvaluateConstantOriginSpaceDependentLocal)
   {
-    Teuchos::RCP<DRT::UTILS::Function> testFunction =
+    Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> testFunction =
         Teuchos::rcp(new DRT::UTILS::TranslatedFunction(constant_, scalarField_));
     // the local origin is fixed at 1,1,1 and does not move
     EXPECT_NEAR(testFunction->Evaluate(0, at111_.data(), 0), 0, 1.0e-15);
@@ -139,7 +139,7 @@ namespace
 
   TEST_F(TranslatedFunctionTest, EvaluateMovingOriginConstantLocal)
   {
-    Teuchos::RCP<DRT::UTILS::Function> testFunction =
+    Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> testFunction =
         Teuchos::rcp(new DRT::UTILS::TranslatedFunction(linearTime_, constant_));
     // local function is a constant and origin does not matter
     EXPECT_NEAR(testFunction->Evaluate(0, at111_.data(), 0), A_CONSTANT, 1.0e-15);
@@ -150,7 +150,7 @@ namespace
 
   TEST_F(TranslatedFunctionTest, EvaluateMovingOriginSpaceDependentLocal)
   {
-    Teuchos::RCP<DRT::UTILS::Function> testFunction =
+    Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> testFunction =
         Teuchos::rcp(new DRT::UTILS::TranslatedFunction(linearTime_, scalarField_));
     EXPECT_NEAR(testFunction->Evaluate(0, at111_.data(), 0),
         Expected(at111_.data(), WithOrigin(at000_.data())), 1.0e-15);
@@ -160,14 +160,14 @@ namespace
 
   TEST_F(TranslatedFunctionTest, EvaluateTimeDerivativeConstantOriginConstantLocal)
   {
-    Teuchos::RCP<DRT::UTILS::Function> testFunction =
+    Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> testFunction =
         Teuchos::rcp(new DRT::UTILS::TranslatedFunction(constant_, constant_));
     EXPECT_NEAR(testFunction->EvaluateTimeDerivative(0, at111_.data(), 0, 1)[1], 0, 1.0e-15);
   }
 
   TEST_F(TranslatedFunctionTest, EvaluateTimeDerivativeConstantOriginSpaceDependentLocal)
   {
-    Teuchos::RCP<DRT::UTILS::Function> testFunction =
+    Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> testFunction =
         Teuchos::rcp(new DRT::UTILS::TranslatedFunction(constant_, scalarField_));
     EXPECT_NEAR(testFunction->EvaluateTimeDerivative(0, at111_.data(), 0, 1)[1], 0, 1.0e-15);
     EXPECT_NEAR(testFunction->EvaluateTimeDerivative(0, at123_.data(), 0, 1)[1], 0, 1.0e-15);
@@ -175,7 +175,7 @@ namespace
 
   TEST_F(TranslatedFunctionTest, EvaluateTimeDerivativeMovingOriginConstantLocal)
   {
-    Teuchos::RCP<DRT::UTILS::Function> testFunction =
+    Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> testFunction =
         Teuchos::rcp(new DRT::UTILS::TranslatedFunction(linearTime_, constant_));
     EXPECT_NEAR(testFunction->EvaluateTimeDerivative(0, at111_.data(), 0, 1)[1], 0, 1.0e-15);
     EXPECT_NEAR(testFunction->EvaluateTimeDerivative(0, at123_.data(), 1, 1)[1], 0, 1.0e-15);
@@ -183,7 +183,7 @@ namespace
 
   TEST_F(TranslatedFunctionTest, EvaluateTimeDerivativeMovingOriginSpaceDependentLocal)
   {
-    Teuchos::RCP<DRT::UTILS::Function> testFunction =
+    Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> testFunction =
         Teuchos::rcp(new DRT::UTILS::TranslatedFunction(linearTime_, scalarField_));
     EXPECT_NEAR(testFunction->EvaluateTimeDerivative(0, at111_.data(), 0, 1)[1],
         ExpectedTimeDerivative(at111_.data(), 0), 1.0e-15);
@@ -197,7 +197,7 @@ namespace
 
   TEST_F(TranslatedFunctionTest, EvaluateTimeDerivativeDegree0)
   {
-    Teuchos::RCP<DRT::UTILS::Function> testFunction =
+    Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> testFunction =
         Teuchos::rcp(new DRT::UTILS::TranslatedFunction(linearTime_, scalarField_));
     EXPECT_NEAR(testFunction->EvaluateTimeDerivative(0, at123_.data(), 1, 0)[0],
         Expected(at123_.data(), WithOrigin(at111_.data())), 1.0e-15);
@@ -205,21 +205,21 @@ namespace
 
   TEST_F(TranslatedFunctionTest, ShouldThrowWhenEvaluateTimeDerivativeDegreeGreater1)
   {
-    Teuchos::RCP<DRT::UTILS::Function> testFunction =
+    Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> testFunction =
         Teuchos::rcp(new DRT::UTILS::TranslatedFunction(linearTime_, scalarField_));
     EXPECT_ANY_THROW(testFunction->EvaluateTimeDerivative(0, at111_.data(), 0, 2));
   }
 
   TEST_F(TranslatedFunctionTest, ShouldThrowWhenEvaluatedComponentNegative)
   {
-    Teuchos::RCP<DRT::UTILS::Function> testFunction =
+    Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> testFunction =
         Teuchos::rcp(new DRT::UTILS::TranslatedFunction(linearTime_, scalarField_));
     EXPECT_ANY_THROW(testFunction->Evaluate(-1, at111_.data(), 0));
   }
 
   TEST_F(TranslatedFunctionTest, ShouldThrowWhenEvaluatedComponentTooLarge)
   {
-    Teuchos::RCP<DRT::UTILS::Function> testFunction =
+    Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> testFunction =
         Teuchos::rcp(new DRT::UTILS::TranslatedFunction(linearTime_, scalarField_));
     EXPECT_ANY_THROW(testFunction->Evaluate(2, at111_.data(), 0));
   }

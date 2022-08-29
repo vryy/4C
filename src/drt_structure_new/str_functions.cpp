@@ -49,7 +49,7 @@ void STR::AddValidStructureFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::UTILS::Function> STR::TryCreateStructureFunction(
+Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> STR::TryCreateStructureFunction(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager)
 {
@@ -89,7 +89,7 @@ Teuchos::RCP<DRT::UTILS::Function> STR::TryCreateStructureFunction(
   }
   else
   {
-    return Teuchos::RCP<DRT::UTILS::Function>(NULL);
+    return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(NULL);
   }
 }
 
@@ -98,7 +98,7 @@ Teuchos::RCP<DRT::UTILS::Function> STR::TryCreateStructureFunction(
 /*----------------------------------------------------------------------*/
 STR::WeaklyCompressibleEtienneFSIStructureFunction::WeaklyCompressibleEtienneFSIStructureFunction(
     const MAT::PAR::StVenantKirchhoff& fparams)
-    : Function(), poissonratio_(fparams.poissonratio_)
+    : poissonratio_(fparams.poissonratio_)
 {
 }
 
@@ -190,8 +190,7 @@ std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureFunction::Evaluate
 /*----------------------------------------------------------------------*/
 STR::WeaklyCompressibleEtienneFSIStructureForceFunction::
     WeaklyCompressibleEtienneFSIStructureForceFunction(const MAT::PAR::StVenantKirchhoff& fparams)
-    : Function(),
-      youngmodulus_(fparams.youngs_),
+    : youngmodulus_(fparams.youngs_),
       poissonratio_(fparams.poissonratio_),
       strucdensity_(fparams.density_)
 {

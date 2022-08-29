@@ -535,7 +535,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
   if (curve) curvenum = curve;
   double curvefac = 1.0;
   if (curvenum >= 0 and usetime)
-    curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
+    curvefac = DRT::Problem::Instance()
+                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
+                   .EvaluateTime(time);
 
   // (temporarily) switch off any flow-dependent pressure condition in case of zero
   // time-curve factor
@@ -2231,8 +2233,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
         {
           // evaluate function at current gauss point
           // (important: requires 3D position vector)
-          functionfac(idim) =
-              DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(idim, coordgp.A(), time);
+          functionfac(idim) = DRT::Problem::Instance()
+                                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                  .Evaluate(idim, coordgp.A(), time);
         }
         else
           functionfac(idim) = 1.0;
@@ -4909,8 +4912,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
             if (functnum > 0)
             {
               // evaluate function at current gauss point (important: requires 3D position vector)
-              functionfac(dim) =
-                  DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(dim, coordgp.A(), time);
+              functionfac(dim) = DRT::Problem::Instance()
+                                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                     .Evaluate(dim, coordgp.A(), time);
             }
             else
             {
@@ -5277,8 +5281,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
           if (functnum > 0)
           {
             // evaluate function at current gauss point (important: requires 3D position vector)
-            functionfac(dim) =
-                DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(dim, coordgp.A(), time);
+            functionfac(dim) = DRT::Problem::Instance()
+                                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                   .Evaluate(dim, coordgp.A(), time);
           }
           else
           {

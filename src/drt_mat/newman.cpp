@@ -133,7 +133,9 @@ double MAT::Newman::ComputeTransferenceNumber(const double cint) const
   else if (TransNrCurve() == 0)
     trans = EvalPreDefinedFunct(-1, cint, TransNrParams());
   else
-    trans = DRT::Problem::Instance()->Funct(TransNrCurve() - 1).EvaluateTime(cint);
+    trans = DRT::Problem::Instance()
+                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(TransNrCurve() - 1)
+                .EvaluateTime(cint);
 
   return trans;
 }
@@ -149,8 +151,9 @@ double MAT::Newman::ComputeFirstDerivTrans(const double cint) const
   else if (TransNrCurve() == 0)
     firstderiv = EvalFirstDerivPreDefinedFunct(-1, cint, TransNrParams());
   else
-    firstderiv =
-        (DRT::Problem::Instance()->Funct(TransNrCurve() - 1).EvaluateTimeDerivative(cint, 1))[1];
+    firstderiv = (DRT::Problem::Instance()
+                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(TransNrCurve() - 1)
+                      .EvaluateTimeDerivative(cint, 1))[1];
 
   return firstderiv;
 }
@@ -167,7 +170,9 @@ double MAT::Newman::ComputeThermFac(const double cint) const
     // thermodynamic factor has to be one if not defined
     therm = 1.0;
   else
-    therm = DRT::Problem::Instance()->Funct(ThermFacCurve() - 1).EvaluateTime(cint);
+    therm = DRT::Problem::Instance()
+                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(ThermFacCurve() - 1)
+                .EvaluateTime(cint);
 
   return therm;
 }
@@ -185,8 +190,9 @@ double MAT::Newman::ComputeFirstDerivThermFac(const double cint) const
     // -> first derivative = 0.0
     firstderiv = 0.0;
   else
-    firstderiv =
-        (DRT::Problem::Instance()->Funct(ThermFacCurve() - 1).EvaluateTimeDerivative(cint, 1))[1];
+    firstderiv = (DRT::Problem::Instance()
+                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(ThermFacCurve() - 1)
+                      .EvaluateTimeDerivative(cint, 1))[1];
 
   return firstderiv;
 }

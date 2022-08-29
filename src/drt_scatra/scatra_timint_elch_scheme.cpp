@@ -282,7 +282,8 @@ void SCATRA::ScaTraTimIntElchOST::ComputeTimeDerivPot0(const bool init)
       // compute time derivative of applied potential
       if (functnum >= 0)
       {
-        const double functfac = problem_->Funct(functnum).EvaluateTime(time_);
+        const double functfac =
+            problem_->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum).EvaluateTime(time_);
 
         // adjust potential at metal side accordingly
         pot0np *= functfac;
@@ -846,7 +847,8 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ComputeTimeDerivPot0(const bool init)
       // compute time derivative of applied potential
       if (functnum >= 0)
       {
-        const double functfac = problem_->Funct(functnum).EvaluateTime(time_);
+        const double functfac =
+            problem_->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum).EvaluateTime(time_);
         // adjust potential at metal side accordingly
 
         pot0np *= functfac;

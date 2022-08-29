@@ -1266,7 +1266,9 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::EvaluateAll(const int start_func,
     const double t, const LINALG::Matrix<nsd_, 1>& xyz, Epetra_SerialDenseVector& v) const
 {
-  int numComp = DRT::Problem::Instance()->Funct(start_func - 1).NumberComponents();
+  int numComp = DRT::Problem::Instance()
+                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                    .NumberComponents();
 
   // If the number is not recognised throw an error
   if (not(numComp == v.M() || numComp == 2 * v.M() || numComp == v.M() / 2 || numComp == 1))
@@ -1280,7 +1282,9 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::EvaluateAll(const i
   // If the number of component is half of the vector, repeat the first half twice
   // If there is only one component always use it
   for (int d = 0; d < v.M(); ++d)
-    v[d] = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(d % numComp, xyz.A(), t);
+    v[d] = DRT::Problem::Instance()
+               ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
+               .Evaluate(d % numComp, xyz.A(), t);
 
   return;
 }
@@ -1293,7 +1297,9 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionGrad
     const int start_func, const double t, const LINALG::Matrix<nsd_, 1>& xyz,
     Epetra_SerialDenseMatrix& v) const
 {
-  int numComp = DRT::Problem::Instance()->Funct(start_func - 1).NumberComponents();
+  int numComp = DRT::Problem::Instance()
+                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                    .NumberComponents();
 
   // If the number is not recognised throw an error
   if (not(numComp == v.M() || numComp == 2 * v.M() || numComp == v.M() / 2 || numComp == 1))
@@ -1308,7 +1314,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionGrad
   for (int d = 0; d < v.M(); ++d)
   {
     std::vector<double> deriv = DRT::Problem::Instance()
-                                    ->Funct(start_func - 1)
+                                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
                                     .EvaluateSpatialDerivative(d % numComp, xyz.A(), t);
     for (unsigned int d_der = 0; d_der < nsd_; ++d_der) v(d, d_der) = deriv[d_der];
   }
@@ -1324,7 +1330,9 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionTime
     const int start_func, const double t, const double dt, const LINALG::Matrix<nsd_, 1>& xyz,
     Epetra_SerialDenseVector& v) const
 {
-  int numComp = DRT::Problem::Instance()->Funct(start_func - 1).NumberComponents();
+  int numComp = DRT::Problem::Instance()
+                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                    .NumberComponents();
 
   // If the number is not recognised throw an error
   if (not(numComp == v.M() || numComp == 2 * v.M() || numComp == v.M() / 2 || numComp == 1))
@@ -1339,10 +1347,10 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionTime
   // If there is only one component always use it
   for (int d = 0; d < v.M(); ++d)
     v[d] = (DRT::Problem::Instance()
-                   ->Funct(start_func - 1)
+                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
                    .Evaluate(d % numComp, xyz.A(), t + (0.5 * dt)) -
                DRT::Problem::Instance()
-                   ->Funct(start_func - 1)
+                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
                    .Evaluate(d % numComp, xyz.A(), t - (0.5 * dt))) /
            dt;
 

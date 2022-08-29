@@ -166,7 +166,7 @@ void STR::IMPLICIT::GenAlpha::SetInitialDisplacement(
 
           // evaluate component k of spatial function
           double initialval = DRT::Problem::Instance()
-                                  ->Funct(startfuncno - 1)
+                                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                                   .Evaluate(d, lnode->X(), GlobalState().GetTimeN());
 
           int err = GlobalState().GetMutableDisN()->ReplaceMyValues(1, &initialval, &doflid);

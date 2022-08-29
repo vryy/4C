@@ -25,7 +25,7 @@ void DRT::UTILS::AddValidCombustFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> li
   lines->Add(collapsingwatercolumn);
 }
 
-Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateCombustFunction(
+Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateCombustFunction(
     Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
     const int index_current_funct_in_manager)
 {
@@ -39,12 +39,12 @@ Teuchos::RCP<DRT::UTILS::Function> DRT::UTILS::TryCreateCombustFunction(
   }
   else
   {
-    return Teuchos::RCP<DRT::UTILS::Function>(NULL);
+    return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(NULL);
   }
 }
 
 
-DRT::UTILS::ZalesaksDiskFunction::ZalesaksDiskFunction() : Function() {}
+DRT::UTILS::ZalesaksDiskFunction::ZalesaksDiskFunction() {}
 
 double DRT::UTILS::ZalesaksDiskFunction::Evaluate(int index, const double* xp, double t)
 {
@@ -114,7 +114,7 @@ double DRT::UTILS::ZalesaksDiskFunction::Evaluate(int index, const double* xp, d
 }
 
 
-DRT::UTILS::CollapsingWaterColumnFunction::CollapsingWaterColumnFunction() : Function() {}
+DRT::UTILS::CollapsingWaterColumnFunction::CollapsingWaterColumnFunction() {}
 
 double DRT::UTILS::CollapsingWaterColumnFunction::Evaluate(int index, const double* xp, double t)
 {

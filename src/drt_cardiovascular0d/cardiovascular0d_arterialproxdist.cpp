@@ -115,7 +115,9 @@ void UTILS::Cardiovascular0DArterialProxDist::Evaluate(Teuchos::ParameterList& p
 
     if (curvenum >= 0 && usetime)
     {
-      curvefac_np = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(tim);
+      curvefac_np = DRT::Problem::Instance()
+                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
+                        .EvaluateTime(tim);
     }
 
     // Cardiovascular0D stiffness

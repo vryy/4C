@@ -1337,11 +1337,14 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalErrorComparedToAnal
         // spatial gradient of current pressure value
         gradpre.Multiply(derxy_, eprenp_);
 
-        pre_exact = DRT::Problem::Instance()->Funct(errorfunctno - 1).Evaluate(0, position, t);
+        pre_exact = DRT::Problem::Instance()
+                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+                        .Evaluate(0, position, t);
 
-        std::vector<double> gradpre_exact_vec = DRT::Problem::Instance()
-                                                    ->Funct(errorfunctno - 1)
-                                                    .EvaluateSpatialDerivative(0, position, t);
+        std::vector<double> gradpre_exact_vec =
+            DRT::Problem::Instance()
+                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+                .EvaluateSpatialDerivative(0, position, t);
 
         if (gradpre_exact_vec.size())
         {

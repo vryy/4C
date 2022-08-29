@@ -345,7 +345,9 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
       if (tmp_funct) functnum = (*tmp_funct)[i];
 
       if (functnum >= 0)
-        functfac[i] = DRT::Problem::Instance()->Funct(functnum - 1).EvaluateTime(time);
+        functfac[i] = DRT::Problem::Instance()
+                          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                          .EvaluateTime(time);
     }
 
 
@@ -544,8 +546,9 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
         if (functnum > 0)
         {
           // evaluate function at the position of the current node       --> dof here correct?
-          functionfac =
-              DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(dof, &X_ref[0], time);
+          functionfac = DRT::Problem::Instance()
+                            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                            .Evaluate(dof, &X_ref[0], time);
         }
         else
           functionfac = 1.0;
@@ -3112,7 +3115,9 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
     if (tmp_funct) functnum = (*tmp_funct)[i];
 
     if (functnum >= 0)
-      functfac[i] = DRT::Problem::Instance()->Funct(functnum - 1).EvaluateTime(time);
+      functfac[i] = DRT::Problem::Instance()
+                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                        .EvaluateTime(time);
   }
 
   // get values and switches from the condition

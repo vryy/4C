@@ -212,7 +212,9 @@ int DRT::ELEMENTS::Truss3CL::EvaluateNeumann(Teuchos::ParameterList& params,
   // amplitude of load curve at current time called
   double functfac = 1.0;
   if (functnum >= 0)  // notation for this function similar to Crisfield, Volume 1;
-    functfac = DRT::Problem::Instance()->Funct(functnum).EvaluateTime(time);
+    functfac = DRT::Problem::Instance()
+                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum)
+                   .EvaluateTime(time);
 
   // jacobian determinant
   double det = lrefe_ / 2;
@@ -1169,7 +1171,7 @@ inline void DRT::ELEMENTS::Truss3CL::NodeShift(Teuchos::ParameterList& params,  
   //          if(shearflow && dof == 2 && curvenumber >= 0 && time>starttime &&
   //          fabs(time-starttime)>dt/1e4)
   //            disp[numdof*i+dbcdispdir] +=
-  //            shearamplitude*DRT::Problem::Instance()->Funct(curvenumber).EvaluateTimeDerivative(time);
+  //            shearamplitude*DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenumber).EvaluateTimeDerivative(time);
   //        }
   //
   //        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - periodlength->at(dof) -
@@ -1187,7 +1189,7 @@ inline void DRT::ELEMENTS::Truss3CL::NodeShift(Teuchos::ParameterList& params,  
   //          if(shearflow && dof == 2 && curvenumber >= 0 && time>starttime &&
   //          fabs(time-starttime)>dt/1e4)
   //            disp[numdof*i+dbcdispdir] -=
-  //            shearamplitude*DRT::Problem::Instance()->Funct(curvenumber).EvaluateTimeDerivative(time);
+  //            shearamplitude*DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenumber).EvaluateTimeDerivative(time);
   //        }
   //      }
   //    }

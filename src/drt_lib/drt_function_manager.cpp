@@ -116,7 +116,7 @@ void FillFunctions(DRT::INPUT::DatFileReader& reader,
 
       // list all known TryCreate functions in a vector so they can be called with a unified syntax
       // below
-      std::vector<std::function<Teuchos::RCP<DRT::UTILS::Function>(
+      std::vector<std::function<Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(
           Teuchos::RCP<DRT::INPUT::LineDefinition>, DRT::UTILS::FunctionManager&, const int)>>
           try_create_function_vector{DRT::UTILS::TryCreateVariableExprFunction<dim>,
               POROMULTIPHASESCATRA::TryCreatePoroFunction<dim>, STR::TryCreateStructureFunction,
@@ -168,13 +168,4 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
     default:
       dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
   }
-}
-
-DRT::UTILS::Function& DRT::UTILS::FunctionManager::Funct(int num)
-{
-  // ensure that desired function is available (prevents segmentation fault)
-  if (functions_.size() < (unsigned int)(num + 1) || num < 0)
-    dserror("function %d not available", num + 1);
-
-  return dynamic_cast<Function&>(*(functions_[num]));
 }

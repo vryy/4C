@@ -64,7 +64,7 @@ interface
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/matpar_bundle.H"
 
-//#include "../drt_xfem/xfem_coupling_mesh.H"
+// #include "../drt_xfem/xfem_coupling_mesh.H"
 
 #include <Epetra_Time.h>
 
@@ -2497,16 +2497,16 @@ void FLD::XFluid::Solve()
         state_->Zeros(), *(state_->DBCMapExtractor()->CondMap()));
 
 
-    //#if 1
-    //    const double cond_number =
-    //    LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*state_->sysmat_),Ifpack_Cheap, 1000);
-    //    // computation of significant digits might be completely bogus, so don't take it serious
-    //    const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
-    //    const int sign_digits = (int)floor(tmp);
-    //    if (!myrank_)
-    //      IO::cout << " cond est: " << std::scientific << cond_number << ", max.sign.digits: " <<
-    //      sign_digits;
-    //#endif
+    // #if 1
+    //     const double cond_number =
+    //     LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*state_->sysmat_),Ifpack_Cheap, 1000);
+    //     // computation of significant digits might be completely bogus, so don't take it serious
+    //     const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
+    //     const int sign_digits = (int)floor(tmp);
+    //     if (!myrank_)
+    //       IO::cout << " cond est: " << std::scientific << cond_number << ", max.sign.digits: " <<
+    //       sign_digits;
+    // #endif
 
 
     //-------solve for residual displacements to correct incremental displacements
@@ -4527,8 +4527,9 @@ void FLD::XFluid::SetInitialFlowField(
         {
           int gid = nodedofset[dof];
 
-          double initialval =
-              DRT::Problem::Instance()->Funct(startfuncno - 1).Evaluate(dof % 4, lnode->X(), time_);
+          double initialval = DRT::Problem::Instance()
+                                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                                  .Evaluate(dof % 4, lnode->X(), time_);
           state_->velnp_->ReplaceGlobalValues(1, &initialval, &gid);
         }
       }
