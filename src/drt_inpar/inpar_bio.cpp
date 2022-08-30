@@ -503,8 +503,11 @@ void INPAR::REDAIRWAYS::SetValidConditions(
           DRT::Condition::RedAirwayPrescribedCond, true, DRT::Condition::Point));
 
   raw_in_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("boundarycond", "flow",
-      Teuchos::tuple<std::string>("flow", "pressure", "VolumeDependentPleuralPressure"),
-      Teuchos::tuple<std::string>("flow", "pressure", "VolumeDependentPleuralPressure"), true)));
+      Teuchos::tuple<std::string>(
+          "flow", "pressure", "switchFlowPressure", "VolumeDependentPleuralPressure"),
+      Teuchos::tuple<std::string>(
+          "flow", "pressure", "switchFlowPressure", "VolumeDependentPleuralPressure"),
+      true)));
 
   std::vector<Teuchos::RCP<ConditionComponent>> redairwayinletcomponents;
   redairwayinletcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
@@ -517,6 +520,20 @@ void INPAR::REDAIRWAYS::SetValidConditions(
 
   condlist.push_back(raw_in_bc);
 
+  /*--------------------------------------------------------------------*/
+  // Prescribed BC for reduced dimensional airways switching between different types of boundary
+  // conditions
+
+  Teuchos::RCP<ConditionDefinition> raw_in_switch_bc = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN NODE Reduced D AIRWAYS SWITCH FLOW PRESSURE CONDITIONS",
+      "RedAirwaySwitchFlowPressureCond", "Reduced d airway switch flow pressure boundary condition",
+      DRT::Condition::RedAirwayPrescribedSwitchCond, true, DRT::Condition::Point));
+
+  AddNamedInt(raw_in_switch_bc, "FUNCT_ID_FLOW");
+  AddNamedInt(raw_in_switch_bc, "FUNCT_ID_PRESSURE");
+  AddNamedInt(raw_in_switch_bc, "FUNCT_ID_PRESSURE_ACTIVE");
+
+  condlist.push_back(raw_in_switch_bc);
 
   /*--------------------------------------------------------------------*/
   // Prescribed BC for reduced dimensional airways external pressure
