@@ -222,6 +222,7 @@ namespace DRT
       Art3DToRedCouplingCond,
       WindkesselOptimCond,
       RedAirwayPrescribedCond,
+      RedAirwayPrescribedSwitchCond,
       RedAirwayPrescribedExternalPressure,
       PatientSpecificData,
       VolumetricSurfaceFlowCond,

@@ -965,51 +965,90 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           // Get the type of prescribed bc
           Bc = *(condition->Get<std::string>("boundarycond"));
 
-
-          const std::vector<int>* curve = condition->Get<std::vector<int>>("curve");
-          double curvefac = 1.0;
-          const std::vector<double>* vals = condition->Get<std::vector<double>>("val");
-
-          // -----------------------------------------------------------------
-          // Read in the value of the applied BC
-          //  Val = curve1*val1 + curve2*func
-          // -----------------------------------------------------------------
-          // get curve1 and val1
-          int curvenum = -1;
-          if (curve) curvenum = (*curve)[0];
-          if (curvenum >= 0)
-            curvefac = DRT::Problem::Instance()
-                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
-                           .EvaluateTime(time);
-
-          BCin = (*vals)[0] * curvefac;
-
-          // get funct 1
-          const std::vector<int>* functions = condition->Get<std::vector<int>>("funct");
-          int functnum = -1;
-          if (functions)
-            functnum = (*functions)[0];
-          else
-            functnum = -1;
-
-          double functionfac = 0.0;
-          if (functnum > 0)
+          if (Bc == "switchFlowPressure")
           {
-            functionfac = DRT::Problem::Instance()
-                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                              .Evaluate(0, (ele->Nodes()[i])->X(), time);
+            // get switch condition variables
+            DRT::Condition* switchCondition =
+                ele->Nodes()[i]->GetCondition("RedAirwaySwitchFlowPressureCond");
+
+            const int funct_id_flow = switchCondition->GetInt("FUNCT_ID_FLOW");
+            const int funct_id_pressure = switchCondition->GetInt("FUNCT_ID_PRESSURE");
+            const int funct_id_switch = switchCondition->GetInt("FUNCT_ID_PRESSURE_ACTIVE");
+
+            const double pressure_active =
+                DRT::Problem::Instance()
+                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funct_id_switch - 1)
+                    .EvaluateTime(time);
+
+            int funct_id_current = 0;
+            if (std::abs(pressure_active - 1.0) < 10e-8)
+            {
+              // phase with pressure bc
+              Bc = "pressure";
+              funct_id_current = funct_id_pressure;
+            }
+            else if (std::abs(pressure_active) < 10e-8)
+            {
+              // phase with flow bc
+              Bc = "flow";
+              funct_id_current = funct_id_flow;
+            }
+            else
+            {
+              dserror(
+                  "FUNCTION %i has to take either value 0.0 or 1.0. Not clear if flow or pressure "
+                  "boundary condition should be active.",
+                  (funct_id_switch - 1));
+              exit(1);
+            }
+
+            BCin = DRT::Problem::Instance()
+                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funct_id_current - 1)
+                       .EvaluateTime(time);
           }
-          // get curve2
-          int curve2num = -1;
-          double curve2fac = 1.0;
-          if (curve) curve2num = (*curve)[1];
-          if (curve2num >= 0)
-            curve2fac = DRT::Problem::Instance()
-                            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curve2num)
-                            .EvaluateTime(time);
+          else
+          {
+            // -----------------------------------------------------------------
+            // Read in the value of the applied BC
+            //  Val = curve1*val1 + curve2*func
+            // -----------------------------------------------------------------
+            const std::vector<int>* curve = condition->Get<std::vector<int>>("curve");
+            const std::vector<double>* vals = condition->Get<std::vector<double>>("val");
 
-          BCin += functionfac * curve2fac;
+            // get factor of curve1 or curve2
+            const auto curvefac = [&](unsigned id)
+            {
+              int curvenum = -1;
+              if (curve)
+                if ((curvenum = (*curve)[id]) >= 0)
+                  return DRT::Problem::Instance()
+                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
+                      .EvaluateTime(time);
+                else
+                  return 1.0;
+              else
+                return 1.0;
+            };
 
+            // get factor of func
+            const double functfac = std::invoke(
+                [&]()
+                {
+                  int functnum = -1;
+                  const std::vector<int>* functions = condition->Get<std::vector<int>>("funct");
+                  if (functions)
+                    if ((functnum = (*functions)[0]) > 0)
+                      return DRT::Problem::Instance()
+                          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                          .Evaluate(0, (ele->Nodes()[i])->X(), time);
+                    else
+                      return 0.0;
+                  else
+                    return 0.0;
+                });
+
+            BCin = (*vals)[0] * curvefac(0) + functfac * curvefac(1);
+          }
           // -----------------------------------------------------------------------------
           // get the local id of the node to whome the bc is prescribed
           // -----------------------------------------------------------------------------
