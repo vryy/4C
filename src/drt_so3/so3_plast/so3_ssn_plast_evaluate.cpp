@@ -17,15 +17,14 @@
 #include "../../drt_lib/drt_globalproblem.H"
 #include "../../drt_lib/voigt_notation.H"
 #include "../../drt_mat/plasticelasthyper.H"
-#include "../../linalg/linalg_utils_densematrix_inverse.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../../drt_mat/material_service.H"
-#include "../../drt_inpar/inpar_structure.H"
 #include "../../drt_structure_new/str_elements_paramsinterface.H"
-#include "../../linalg/linalg_serialdensematrix.H"
+#include "../../drt_structure_new/gauss_point_data_output_manager.H"
 #include "../../drt_nurbs_discret/drt_nurbs_discret.H"
 
 #include "../../drt_mat/fourieriso.H"
+#include "../so_element_service.H"
 
 using VoigtMapping = UTILS::VOIGT::IndexMappings;
 
@@ -42,17 +41,26 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
   // Check whether the solid material PostSetup() routine has already been called and call it if not
   EnsureMaterialPostSetup(params);
 
+  SetParamsInterfacePtr(params);
+
   InvalidEleData();
   if (distype == DRT::Element::nurbs27) GetNurbsEleInfo(&discretization);
-
-  SetParamsInterfacePtr(params);
 
   dsassert(kintype_ == INPAR::STR::kinem_nonlinearTotLag,
       "only geometricallly nonlinear formluation for plasticity!");
 
   // start with "none"
   ELEMENTS::ActionType act = ELEMENTS::none;
-  act = ParamsInterface().GetActionType();
+  if (IsParamsInterface())
+  {
+    act = ParamsInterface().GetActionType();
+  }
+  else
+  {
+    // get the required action
+    std::string action = params.get<std::string>("action", "none");
+    act = ELEMENTS::String2ActionType(action);
+  }
 
   // what should the element do
   switch (act)
@@ -265,11 +273,28 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       if (discretization.Comm().MyPID() == Owner())
       {
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
-        if ((disp == Teuchos::null)) dserror("Cannot get state vectors 'displacement'");
-        Teuchos::RCP<std::vector<char>> stressdata =
-            params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
-        Teuchos::RCP<std::vector<char>> straindata =
-            params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
+        Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
+        Teuchos::RCP<std::vector<char>> straindata = Teuchos::null;
+        INPAR::STR::StressType iostress = INPAR::STR::stress_none;
+        INPAR::STR::StrainType iostrain = INPAR::STR::strain_none;
+        if (IsParamsInterface())
+        {
+          stressdata = StrParamsInterface().MutableStressDataPtr();
+          straindata = StrParamsInterface().MutableStrainDataPtr();
+
+          iostress = StrParamsInterface().GetStressOutputType();
+          iostrain = StrParamsInterface().GetStrainOutputType();
+        }
+        else
+        {
+          stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
+          straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
+          iostress =
+              DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+          iostrain =
+              DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+        }
+        if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
         if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
 
@@ -314,10 +339,6 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
 
         LINALG::Matrix<numgpt_post, numstr_> stress;
         LINALG::Matrix<numgpt_post, numstr_> strain;
-        auto iostress =
-            DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        auto iostrain =
-            DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
         // default: geometrically non-linear analysis with Total Lagrangean approach
         nln_stiffmass(mydisp, myvel, mytempnp, nullptr, nullptr, nullptr, &stress, &strain, params,
@@ -449,7 +470,17 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
       }
 
-      elevec1_epetra(0) = CalcIntEnergy(mydisp, mytempnp, params);
+      double intenergy = CalcIntEnergy(mydisp, mytempnp, params);
+
+      if (IsParamsInterface())  // new structural time integration
+      {
+        StrParamsInterface().AddContributionToEnergyType(intenergy, STR::internal_energy);
+      }
+      else  // old structural time integration
+      {
+        dsassert(elevec1_epetra.Length() < 1, "The given result vector is too short.");
+        elevec1_epetra(0) = intenergy;
+      }
     }
     break;
 
@@ -505,6 +536,110 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
               (*alpha_eas_)(i) =
                   0. + (*alpha_eas_last_timestep_)(i) + (*alpha_eas_delta_over_last_timestep_)(i);
           break;
+      }
+    }
+    break;
+
+    case DRT::ELEMENTS::struct_init_gauss_point_data_output:
+    {
+      dsassert(IsParamsInterface(),
+          "This action type should only be called from the new time integration framework!");
+      // Save number of Gauss of the element for gauss point data output
+      StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->AddElementNumberOfGaussPoints(
+          numgpt_post);
+      // holder for output quantity names and their size
+      std::unordered_map<std::string, int> quantities_map{};
+      // Ask material for the output quantity names and sizes
+      SolidMaterial()->RegisterVtkOutputDataNames(quantities_map);
+      // Add quantities to the Gauss point output data manager (if they do not already exist)
+      StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->MergeQuantities(quantities_map);
+    }
+    break;
+
+    case ELEMENTS::struct_gauss_point_data_output:
+    {
+      dsassert(IsParamsInterface(),
+          "This action type should only be called from the new time integration framework!");
+
+      // Collection and assembly of gauss point data
+      for (const auto& [quantity_name, quantity_size] :
+          StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->GetQuantities())
+      {
+        // Step 1: Collect the data for each Gauss point for the material
+        LINALG::SerialDenseMatrix gp_data(numgpt_post, quantity_size, true);
+        bool data_available = SolidMaterial()->EvaluateVtkOutputData(quantity_name, gp_data);
+
+        // Step 2: Assemble data based on output type (elecenter, postprocessed to nodes, Gauss
+        // point)
+        if (data_available)
+        {
+          switch (StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->GetOutputType())
+          {
+            case INPAR::STR::GaussPointDataOutputType::element_center:
+            {
+              // compute average of the quantities
+              Teuchos::RCP<Epetra_MultiVector> global_data =
+                  StrParamsInterface()
+                      .MutableGaussPointDataOutputManagerPtr()
+                      ->GetMutableElementCenterData()
+                      .at(quantity_name);
+              DRT::ELEMENTS::AssembleAveragedElementValues<LINALG::SerialDenseMatrix>(
+                  *global_data, gp_data, this);
+              break;
+            }
+            case INPAR::STR::GaussPointDataOutputType::nodes:
+            {
+              Teuchos::RCP<Epetra_MultiVector> global_data =
+                  StrParamsInterface()
+                      .MutableGaussPointDataOutputManagerPtr()
+                      ->GetMutableNodalData()
+                      .at(quantity_name);
+
+              Epetra_IntVector& global_nodal_element_count =
+                  *StrParamsInterface()
+                       .MutableGaussPointDataOutputManagerPtr()
+                       ->GetMutableNodalDataCount()
+                       .at(quantity_name);
+
+              if (distype == DRT::Element::hex8)
+              {
+                if (quantity_size == 1)
+                {
+                  LINALG::Matrix<numgpt_post, 1> gp_data_view(gp_data, true);
+                  soh8_expol(gp_data_view, *global_data);
+                }
+                else if (quantity_size == 9)
+                {
+                  LINALG::Matrix<numgpt_post, 9> gp_data_view(gp_data, true);
+                  soh8_expol(gp_data_view, *global_data);
+                }
+              }
+              else
+                dserror(
+                    "only element centered and Gauss point material internal variables for "
+                    "so3_plast");
+
+              DRT::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, this);
+              break;
+            }
+            case INPAR::STR::GaussPointDataOutputType::gauss_points:
+            {
+              std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
+                  StrParamsInterface()
+                      .MutableGaussPointDataOutputManagerPtr()
+                      ->GetMutableGaussPointData()
+                      .at(quantity_name);
+              DRT::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, this);
+              break;
+            }
+            case INPAR::STR::GaussPointDataOutputType::none:
+              dserror(
+                  "You specified a Gauss point data output type of none, so you should not end up "
+                  "here.");
+            default:
+              dserror("Unknown Gauss point data output type.");
+          }
+        }
       }
     }
     break;
@@ -607,7 +742,11 @@ int DRT::ELEMENTS::So3_Plast<distype>::EvaluateNeumann(Teuchos::ParameterList& p
   **    TIME CURVE BUSINESS
   */
   // find out whether we will use a time curve
-  const double time = params.get("total time", -1.0);
+  double time = -1.0;
+  if (IsParamsInterface())
+    time = ParamsInterface().GetTotalTime();
+  else
+    time = params.get("total time", -1.0);
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < nsd_)
@@ -625,7 +764,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::EvaluateNeumann(Teuchos::ParameterList& p
   bool havefunct = false;
   if (funct)
     for (int dim = 0; dim < nsd_; dim++)
-      if ((*funct)[dim] > 0) havefunct = havefunct or true;
+      if ((*funct)[dim] > 0) havefunct = havefunct;
 
   // update element geometry
   LINALG::Matrix<nen_, nsd_> xrefe;  // material coord. of element
@@ -692,8 +831,6 @@ int DRT::ELEMENTS::So3_Plast<distype>::EvaluateNeumann(Teuchos::ParameterList& p
   return 0;
 }
 
-
-
 /*----------------------------------------------------------------------*
  | initialise Jacobian                                      seitz 07/13 |
  | is called once in Initialize() in so3_ssn_plast_eletypes.cpp         |
@@ -743,7 +880,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     plmat = static_cast<MAT::PlasticElastHyper*>(Material().get());
   else
   {
-    if (tsi_ == true) dserror("TSI with so3Plast elements only with PlasticElastHyper material");
+    if (tsi_) dserror("TSI with so3Plast elements only with PlasticElastHyper material");
   }
 
   // EAS matrix block
@@ -993,6 +1130,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_kdT_tsi(
   }
   return;
 }
+
 /*----------------------------------------------------------------------*
  |  condense plastic degrees of freedom                     seitz 05/14 |
  *----------------------------------------------------------------------*/
@@ -1030,7 +1168,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(const LINALG::Matrix<
   LINALG::Matrix<numstr_, 9>* d_cauchy_dF_ptr = nullptr;
   LINALG::Matrix<numstr_, 1>
       d_cauchy_dT;  // todo: continue with this one; plmat->EvaluatePlast(...) should give you this;
-                    // however not tested yet
+  // however not tested yet
   LINALG::Matrix<numstr_, 1>* d_cauchy_dT_ptr = nullptr;
   if (is_nitsche_contact_)
   {
@@ -1618,8 +1756,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(const LINALG::Matrix<
   return;
 }
 
-
-
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::BuildDeltaLp(const int gp)
 {
@@ -1791,8 +1927,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverEAS(
   return;
 }
 
-
-
 /*----------------------------------------------------------------------*
  |  recover plastic degrees of freedom                      seitz 05/14 |
  *----------------------------------------------------------------------*/
@@ -1896,6 +2030,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::ReduceEasStep(
   StrParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas, neas_,
       alpha_eas_inc_->A(), alpha_eas_->A(), new_step_length, Owner());
 }
+
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::ReducePlasticityStep(
     const double new_step_length, const double old_step_length, const int gp)
@@ -2852,7 +2987,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::IntegrateThermoGp(
       LINALG::DENSEFUNCTIONS::update<double, numdofperelement_, 1>(
           plmat->dHepDissDd(gp).A(), dHedd.A());
     }
-
     else
     {
       LINALG::Matrix<3, 3> defgrd_rate;
