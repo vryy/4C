@@ -66,10 +66,8 @@ namespace INPAR
       none,
       //! Gauss point to segment approach.
       gauss_point_to_segment,
-      //! Gauss point on cross section method.
+      //! Gauss point on cross section method (2d-3d coupling).
       gauss_point_cross_section,
-      //! Rotation Gauss point on cross section method.
-      gauss_point_cross_section_rotation,
       //! Mortar type coupling.
       mortar
     };

@@ -34,6 +34,8 @@
 #include "../drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_surface_evaluation_data.H"
 #include "../drt_so3/so_base.H"
+#include "../drt_beam3/beam3r.H"
+#include "../drt_beam3/beam3eb.H"
 
 
 /**
@@ -295,16 +297,18 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
   else if (contact_discretization ==
            INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::gauss_point_cross_section)
   {
-    // Create the positional cross section projection pairs.
-    return CreateBeamToSolidVolumePairShapeNoNurbs<
-        BeamToSolidVolumeMeshtyingPairGaussPointCrossSection>(shape);
-  }
-  else if (contact_discretization ==
-           INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::gauss_point_cross_section_rotation)
-  {
-    // Create the rotational cross section projection pairs.
-    return CreateBeamToSolidVolumePairShapeNoNurbs<
-        BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation>(shape);
+    // Depending on the type of beam element we create the correct beam-to-solid pair here.
+    const auto sr_beam = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(ele_ptrs[0]);
+    const auto eb_beam = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(ele_ptrs[0]);
+    if (sr_beam != nullptr)
+      return CreateBeamToSolidVolumePairShapeNoNurbs<
+          BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation>(shape);
+    else if (eb_beam != nullptr)
+      return CreateBeamToSolidVolumePairShapeNoNurbs<
+          BeamToSolidVolumeMeshtyingPairGaussPointCrossSection>(shape);
+    else
+      dserror(
+          "2D-3D coupling is only implemented for Simo-Reissner and torsion free beam elements.");
   }
 
   // Default return value.
