@@ -24,6 +24,7 @@
 <!-- Team members can add items to the agenda before the meeting.          -->
 
 1. Review **Action Items** from the previous meeting <!-- Link to previous meeting -->
+1. Update from the maintainer meeting
 1. TO BE ADDED
 
 ## Action Items
