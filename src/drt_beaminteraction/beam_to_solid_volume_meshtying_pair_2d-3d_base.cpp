@@ -29,15 +29,13 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam, solid>::Creat
   auto line_to_3d_evaluation_data = Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::LineTo3DEvaluationData>(
       geometry_evaluation_data_ptr, true);
 
-  // Check that the cylinder strategy is given in the input file.
+  // Explicitly create the cross section projection geometry pair here and check that the correct
+  // parameter is set in the input file.
   INPAR::GEOMETRYPAIR::LineTo3DStrategy strategy = line_to_3d_evaluation_data->GetStrategy();
   if (strategy != INPAR::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_cross_section)
     dserror(
-        "The cross section projection only works with cross section projection in the geometry "
-        "pairs.");
-
-  // Explicitly create the cylinder pair here, as this contact pair only works with this kind of
-  // geometry pair.
+        "The 2D-3D beam-to-volume mesh tying pair only works with the cross section projection "
+        "geometry pair. This has to be specified in the input file.");
   this->geometry_pair_ = Teuchos::rcp(
       new GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double, beam,
           solid>(line_to_3d_evaluation_data));
