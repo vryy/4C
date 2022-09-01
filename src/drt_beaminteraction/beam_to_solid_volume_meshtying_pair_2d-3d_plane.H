@@ -1,36 +1,36 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Meshtying element for meshtying between a beam and a 3D solid element using Gauss points
-on the surface of the (circular) beam cross section.
+\brief Class for 2D-3D beam-to-solid volume mesh tying based on a plane beam element. This
+simplifies the triad construction and torsion free beam elements can be used.
 
 \level 3
 */
 // End doxygen header.
 
 
-#ifndef BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_GAUSS_POINT_CROSS_SECTION_H_
-#define BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_GAUSS_POINT_CROSS_SECTION_H_
+#ifndef BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_2D_3D_PLANE_H_
+#define BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_2D_3D_PLANE_H_
 
 
-#include "beam_to_solid_volume_meshtying_pair_gauss_point_cross_section_base.H"
+#include "beam_to_solid_volume_meshtying_pair_2d-3d_base.H"
 
 
 namespace BEAMINTERACTION
 {
   /**
-   * \brief Class for beam to solid meshtying using Gauss point projection on the (circular) beam
-   * cross section.
+   * \brief Class for 2D-3D beam-to-solid volume mesh tying based on a plane beam element. This
+   * simplifies the triad construction and torsion free beam elements can be used.
    * @param beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @param solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
    */
   template <typename beam, typename solid>
-  class BeamToSolidVolumeMeshtyingPairGaussPointCrossSection
-      : public BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase<beam, solid>
+  class BeamToSolidVolumeMeshtyingPair2D3DPlane
+      : public BeamToSolidVolumeMeshtyingPair2D3DBase<beam, solid>
   {
    private:
     //! Shortcut to the base class.
-    using base_class = BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase<beam, solid>;
+    using base_class = BeamToSolidVolumeMeshtyingPair2D3DBase<beam, solid>;
 
     //! Type to be used for scalar AD variables. This can not be inherited from the base class.
     using scalar_type = typename base_class::scalar_type;
@@ -39,12 +39,12 @@ namespace BEAMINTERACTION
     /**
      * \brief Standard Constructor
      */
-    BeamToSolidVolumeMeshtyingPairGaussPointCrossSection();
+    BeamToSolidVolumeMeshtyingPair2D3DPlane();
 
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidVolumeMeshtyingPairGaussPointCrossSection(){};
+    virtual ~BeamToSolidVolumeMeshtyingPair2D3DPlane(){};
 
     /*!
      *\brief things that need to be done in a separate loop before the actual evaluation loop

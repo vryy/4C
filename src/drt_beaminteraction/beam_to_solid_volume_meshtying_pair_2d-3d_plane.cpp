@@ -1,12 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Meshtying element for meshtying between a beam and a 3D solid element using Gauss points
-on the surface of the (circular) beam cross section.
+\brief Class for 2D-3D beam-to-solid volume mesh tying based on a plane beam element. This
+simplifies the triad construction and torsion free beam elements can be used.
 
 \level 3
 */
 
+
+#include "beam_to_solid_volume_meshtying_pair_2d-3d_plane.H"
 
 #include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -18,7 +20,6 @@ on the surface of the (circular) beam cross section.
 #include "../drt_geometry_pair/geometry_pair_utility_classes.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection_cross_section.H"
-#include "beam_to_solid_volume_meshtying_pair_gauss_point_cross_section.H"
 #include "../drt_beam3/triad_interpolation_local_rotation_vectors.H"
 
 
@@ -26,8 +27,8 @@ on the surface of the (circular) beam cross section.
  *
  */
 template <typename beam, typename solid>
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
-    solid>::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection()
+BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam,
+    solid>::BeamToSolidVolumeMeshtyingPair2D3DPlane()
     : base_class()
 {
   // Empty constructor.
@@ -37,8 +38,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
-    solid>::PreEvaluate()
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::PreEvaluate()
 {
   // Call PreEvaluate on the geometry Pair.
   if (!this->meshtying_is_evaluated_)
@@ -55,7 +55,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
  *
  */
 template <typename beam, typename solid>
-bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam, solid>::Evaluate(
+bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::Evaluate(
     LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
     LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
     LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22)
@@ -203,9 +203,8 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
-    solid>::GetTriadAtXiDouble(const double xi, LINALG::Matrix<3, 3, double>& triad,
-    const bool reference) const
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::GetTriadAtXiDouble(
+    const double xi, LINALG::Matrix<3, 3, double>& triad, const bool reference) const
 {
   if (reference)
   {
@@ -229,9 +228,9 @@ namespace BEAMINTERACTION
 {
   using namespace GEOMETRYPAIR;
 
-  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<t_hermite, t_hex8>;
-  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<t_hermite, t_hex20>;
-  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<t_hermite, t_hex27>;
-  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<t_hermite, t_tet4>;
-  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<t_hermite, t_tet10>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DPlane<t_hermite, t_hex8>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DPlane<t_hermite, t_hex20>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DPlane<t_hermite, t_hex27>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DPlane<t_hermite, t_tet4>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DPlane<t_hermite, t_tet10>;
 }  // namespace BEAMINTERACTION

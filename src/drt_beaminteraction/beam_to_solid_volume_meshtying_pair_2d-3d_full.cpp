@@ -1,13 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Mesh tying for 2D rotational coupling examples with integration over the beam surface.
+\brief Class for full 2D-3D beam-to-solid volume mesh tying based on a Simo-Reissner beam element.
 
 \level 3
 */
 
 
-#include "beam_to_solid_volume_meshtying_pair_gauss_point_cross_section_rotation.H"
+#include "beam_to_solid_volume_meshtying_pair_2d-3d_full.H"
 
 #include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -32,8 +32,8 @@
  *
  */
 template <typename beam, typename solid>
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation<beam,
-    solid>::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation()
+BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam,
+    solid>::BeamToSolidVolumeMeshtyingPair2D3DFull()
     : base_class()
 {
   // Empty constructor.
@@ -43,8 +43,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation<be
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation<beam,
-    solid>::PreEvaluate()
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::PreEvaluate()
 {
   // Call PreEvaluate on the geometry Pair.
   if (!this->meshtying_is_evaluated_)
@@ -58,8 +57,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotati
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation<beam,
-    solid>::EvaluateAndAssemble(const Teuchos::RCP<const DRT::Discretization>& discret,
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::EvaluateAndAssemble(
+    const Teuchos::RCP<const DRT::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
@@ -291,9 +290,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotati
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation<beam,
-    solid>::ResetRotationState(const DRT::Discretization& discret,
-    const Teuchos::RCP<const Epetra_Vector>& ia_discolnp)
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::ResetRotationState(
+    const DRT::Discretization& discret, const Teuchos::RCP<const Epetra_Vector>& ia_discolnp)
 {
   GetBeamTriadInterpolationScheme(discret, ia_discolnp, this->Element1(),
       triad_interpolation_scheme_, this->triad_interpolation_scheme_ref_);
@@ -303,9 +301,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotati
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation<beam,
-    solid>::GetTriadAtXiDouble(const double xi, LINALG::Matrix<3, 3, double>& triad,
-    const bool reference) const
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::GetTriadAtXiDouble(
+    const double xi, LINALG::Matrix<3, 3, double>& triad, const bool reference) const
 {
   if (reference)
   {
@@ -325,9 +322,9 @@ namespace BEAMINTERACTION
 {
   using namespace GEOMETRYPAIR;
 
-  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation<t_hermite, t_hex8>;
-  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation<t_hermite, t_hex20>;
-  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation<t_hermite, t_hex27>;
-  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation<t_hermite, t_tet4>;
-  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation<t_hermite, t_tet10>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DFull<t_hermite, t_hex8>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DFull<t_hermite, t_hex20>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DFull<t_hermite, t_hex27>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DFull<t_hermite, t_tet4>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DFull<t_hermite, t_tet10>;
 }  // namespace BEAMINTERACTION

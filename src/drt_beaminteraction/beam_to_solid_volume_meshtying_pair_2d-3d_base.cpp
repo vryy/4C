@@ -1,14 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Mesh tying element for 2D-3D meshtying between a beam and a 3D solid element using Gauss
-points on the surface of the (circular) beam cross section.
+\brief Base class for 2D-3D beam-to-solid volume mesh tying.
 
 \level 3
 */
 
 
-#include "beam_to_solid_volume_meshtying_pair_gauss_point_cross_section_base.H"
+#include "beam_to_solid_volume_meshtying_pair_2d-3d_base.H"
 
 #include "../drt_geometry_pair/geometry_pair_element_functions.H"
 #include "../drt_geometry_pair/geometry_pair_utility_classes.H"
@@ -20,9 +19,9 @@ points on the surface of the (circular) beam cross section.
  *
  */
 template <typename beam, typename solid>
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase<beam,
-    solid>::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase()
-    : BeamToSolidVolumeMeshtyingPairBase<beam, solid>()
+BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam,
+    solid>::BeamToSolidVolumeMeshtyingPair2D3DBase()
+    : base_class()
 {
   // Empty constructor.
 }
@@ -31,9 +30,8 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase<beam,
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase<beam,
-    solid>::CreateGeometryPair(const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>&
-        geometry_evaluation_data_ptr)
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam, solid>::CreateGeometryPair(
+    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
   // Call the method of the base class.
   BeamContactPair::CreateGeometryPair(geometry_evaluation_data_ptr);
@@ -60,7 +58,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase<b
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase<beam,
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam,
     solid>::EvaluateBeamPositionDouble(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
                                            integration_point,
     LINALG::Matrix<3, 1, double>& r_beam, bool reference) const
@@ -93,9 +91,9 @@ namespace BEAMINTERACTION
 {
   using namespace GEOMETRYPAIR;
 
-  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase<t_hermite, t_hex8>;
-  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase<t_hermite, t_hex20>;
-  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase<t_hermite, t_hex27>;
-  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase<t_hermite, t_tet4>;
-  template class BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase<t_hermite, t_tet10>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DBase<t_hermite, t_hex8>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DBase<t_hermite, t_hex20>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DBase<t_hermite, t_hex27>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DBase<t_hermite, t_tet4>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DBase<t_hermite, t_tet10>;
 }  // namespace BEAMINTERACTION

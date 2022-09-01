@@ -1,16 +1,15 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Mesh tying element for 2D-3D meshtying between a beam and a 3D solid element using Gauss
-points on the surface of the (circular) beam cross section.
+\brief Base class for 2D-3D beam-to-solid volume mesh tying.
 
 \level 3
 */
 // End doxygen header.
 
 
-#ifndef BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_GAUSS_POINT_CROSS_SECTION_BASE_H_
-#define BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_GAUSS_POINT_CROSS_SECTION_BASE_H_
+#ifndef BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_2D_3D_BASE_H_
+#define BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_2D_3D_BASE_H_
 
 
 #include "beam_to_solid_volume_meshtying_pair_base.H"
@@ -33,7 +32,7 @@ namespace BEAMINTERACTION
    * @tparam solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
    */
   template <typename beam, typename solid>
-  class BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase
+  class BeamToSolidVolumeMeshtyingPair2D3DBase
       : public BeamToSolidVolumeMeshtyingPairBase<beam, solid>
   {
    protected:
@@ -47,12 +46,12 @@ namespace BEAMINTERACTION
     /**
      * \brief Standard Constructor
      */
-    BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase();
+    BeamToSolidVolumeMeshtyingPair2D3DBase();
 
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase(){};
+    virtual ~BeamToSolidVolumeMeshtyingPair2D3DBase(){};
 
     /**
      * \brief Create the geometry pair for this contact pair. We overload that function because this

@@ -1,35 +1,35 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Mesh tying for 2D rotational coupling examples with integration over the beam surface.
+\brief Class for full 2D-3D beam-to-solid volume mesh tying based on a Simo-Reissner beam element.
 
 \level 3
 */
 // End doxygen header.
 
 
-#ifndef BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_GAUSS_POINT_CROSS_SECTION_ROTAION_H_
-#define BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_GAUSS_POINT_CROSS_SECTION_ROTAION_H_
+#ifndef BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_2D_3D_FULL_H_
+#define BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_2D_3D_FULL_H_
 
 
-#include "beam_to_solid_volume_meshtying_pair_gauss_point_cross_section_base.H"
+#include "beam_to_solid_volume_meshtying_pair_2d-3d_base.H"
 
 
 namespace BEAMINTERACTION
 {
   /**
-   * \brief Class for rotational beam to solid mesh tying using Gauss point projection on the
-   * (circular) beam cross section.
+   * \brief Class for full 2D-3D beam-to-solid volume mesh tying based on a Simo-Reissner beam
+   * element.
    * @param beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @param solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
    */
   template <typename beam, typename solid>
-  class BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation
-      : public BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase<beam, solid>
+  class BeamToSolidVolumeMeshtyingPair2D3DFull
+      : public BeamToSolidVolumeMeshtyingPair2D3DBase<beam, solid>
   {
    private:
     //! Shortcut to the base class.
-    using base_class = BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionBase<beam, solid>;
+    using base_class = BeamToSolidVolumeMeshtyingPair2D3DBase<beam, solid>;
 
     //! Type to be used for scalar AD variables. This can not be inherited from the base class.
     using scalar_type = typename base_class::scalar_type;
@@ -50,7 +50,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Standard Constructor
      */
-    BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation();
+    BeamToSolidVolumeMeshtyingPair2D3DFull();
 
     /*!
      *\brief things that need to be done in a separate loop before the actual evaluation loop
