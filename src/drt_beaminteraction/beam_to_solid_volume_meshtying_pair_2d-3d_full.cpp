@@ -32,17 +32,6 @@
  *
  */
 template <typename beam, typename solid>
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam,
-    solid>::BeamToSolidVolumeMeshtyingPair2D3DFull()
-    : base_class()
-{
-  // Empty constructor.
-}
-
-/**
- *
- */
-template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::PreEvaluate()
 {
   // Call PreEvaluate on the geometry Pair.

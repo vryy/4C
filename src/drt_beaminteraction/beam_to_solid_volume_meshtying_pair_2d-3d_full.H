@@ -50,7 +50,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Standard Constructor
      */
-    BeamToSolidVolumeMeshtyingPair2D3DFull();
+    BeamToSolidVolumeMeshtyingPair2D3DFull() = default;
 
     /*!
      *\brief things that need to be done in a separate loop before the actual evaluation loop

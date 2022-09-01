@@ -39,7 +39,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Standard Constructor
      */
-    BeamToSolidVolumeMeshtyingPair2D3DPlane();
+    BeamToSolidVolumeMeshtyingPair2D3DPlane() = default;
 
     /**
      * \brief Destructor.

@@ -27,17 +27,6 @@ simplifies the triad construction and torsion free beam elements can be used.
  *
  */
 template <typename beam, typename solid>
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam,
-    solid>::BeamToSolidVolumeMeshtyingPair2D3DPlane()
-    : base_class()
-{
-  // Empty constructor.
-}
-
-/**
- *
- */
-template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::PreEvaluate()
 {
   // Call PreEvaluate on the geometry Pair.

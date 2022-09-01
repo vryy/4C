@@ -19,17 +19,6 @@
  *
  */
 template <typename beam, typename solid>
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam,
-    solid>::BeamToSolidVolumeMeshtyingPair2D3DBase()
-    : base_class()
-{
-  // Empty constructor.
-}
-
-/**
- *
- */
-template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam, solid>::CreateGeometryPair(
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
