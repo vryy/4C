@@ -34,13 +34,16 @@ namespace BEAMINTERACTION
     //! Type to be used for scalar AD variables. This can not be inherited from the base class.
     using scalar_type = typename base_class::scalar_type;
 
-    //! Rotation representation.
+    //! Rotation representation. Each node has a rotation vector with 3 components.
     static const unsigned int n_nodes_rot_ = 3;
     static const unsigned int n_dof_rot_ = n_nodes_rot_ * 3;
 
-    //! Number of dependent DOFs for the pair.
+    //! Number of DOFs for the pair.
     static const unsigned int n_dof_pair_ = beam::n_dof_ + solid::n_dof_ + n_dof_rot_;
-    static const unsigned int n_dof_fad_ = 3 + beam::n_dof_ + solid::n_dof_ + n_dof_rot_;
+
+    //! Number of dependent variables for the pair. The ordering is as follows: first the beam DOFs,
+    //! then the solid DOFs, then the components of the cross section rotation vector.
+    static const unsigned int n_dof_fad_ = beam::n_dof_ + solid::n_dof_ + n_dof_rot_ + 3;
 
     //! FAD type to evaluate the rotational coupling terms. The first ordering is as follows: beam
     //! DOFs, solid DOFs, 3 components of the rotation vector psi.
