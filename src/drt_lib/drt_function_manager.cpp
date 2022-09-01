@@ -116,12 +116,13 @@ void FillFunctions(DRT::INPUT::DatFileReader& reader,
 
       // list all known TryCreate functions in a vector so they can be called with a unified syntax
       // below
-      std::vector<std::function<Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(
+      std::vector<std::function<Teuchos::RCP<DRT::UTILS::TemporaryFunctionInterface>(
           Teuchos::RCP<DRT::INPUT::LineDefinition>, DRT::UTILS::FunctionManager&, const int)>>
           try_create_function_vector{DRT::UTILS::TryCreateVariableExprFunction<dim>,
               POROMULTIPHASESCATRA::TryCreatePoroFunction<dim>, STR::TryCreateStructureFunction,
               FLD::TryCreateFluidFunction, DRT::UTILS::TryCreateCombustFunction,
-              DRT::UTILS::TryCreateXfluidFunction, DRT::UTILS::TryCreateLibraryFunction};
+              DRT::UTILS::TryCreateXfluidFunction, DRT::UTILS::TryCreateLibraryFunction,
+              DRT::UTILS::TryCreateLibraryFunctionScalar};
 
       for (const auto& try_create_function : try_create_function_vector)
       {

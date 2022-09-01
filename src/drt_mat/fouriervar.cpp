@@ -186,9 +186,8 @@ double MAT::FourierVar::HeatIntegrationCapacity() const
   // evaluate solid and melt function and add together weigthed
   for (unsigned i = 0; i < 2; i++)
   {
-    returnval += 0.5 * (dynamic_cast<DRT::UTILS::FastPolynomialFunction&>(
-                            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
-                                functions[i] - 1)))
+    returnval += 0.5 * DRT::Problem::Instance()
+                           ->FunctionById<DRT::UTILS::FunctionOfScalar>(functions[i] - 1)
                            .Evaluate(Tm);
   }
   return returnval;
