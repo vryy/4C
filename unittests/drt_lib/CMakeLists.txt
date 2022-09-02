@@ -2,6 +2,7 @@ set(TESTNAME unittests_drt_lib)
 
 set(SOURCE_LIST
     unit_cubic_spline_interpolation.cpp
+    unit_demangle.cpp
     unit_domainreader.cpp
     unit_filesystem_utils.cpp
     unit_function_library.cpp
