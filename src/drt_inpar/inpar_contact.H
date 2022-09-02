@@ -100,7 +100,9 @@ namespace INPAR
       system_condensed,          ///< condensed system
       system_condensed_lagmult,  ///< system with condensed lagrange multiplier (differs just in
                                  ///< meshtying case)
-      system_saddlepoint         ///< saddle point system
+      system_saddlepoint,        ///< saddle point system
+      system_no_additional_dofs  ///< system without introducing new DOFs, not even ones that are
+                                 ///< condensed
     };
 
     /// Type of energy and momentum output

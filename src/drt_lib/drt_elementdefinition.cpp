@@ -50,6 +50,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   // PrintElementLines(stream,"NSTET5SCATRA");
   PrintElementLines(stream, "SHELL8");
   PrintElementLines(stream, "SHELL8SCATRA");
+  PrintElementLines(stream, "SOLID");
   PrintElementLines(stream, "SOLIDH18");
   PrintElementLines(stream, "SOLIDH20");
   PrintElementLines(stream, "SOLIDH27");

@@ -91,6 +91,18 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params, DRT::Assemble
       if (err) dserror("Proc %d: Element %d returned err=%d", Comm().MyPID(), actele->Id(), err);
     }
 
+    // call the element's register class postevaluation method
+    // for each type of element
+    // for most element types, just the base class dummy is called
+    // that does nothing
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate PostEvaluate");
+      int err =
+          actele->PostEvaluate(params, *this, la, strategy.Elematrix1(), strategy.Elematrix2(),
+              strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
+      if (err) dserror("Proc %d: Element %d returned err=%d", Comm().MyPID(), actele->Id(), err);
+    }
+
     {
       TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate assemble");
       int eid = actele->Id();

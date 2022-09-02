@@ -60,6 +60,7 @@
 #include "so3_ssn_plast_sosh18.H"
 #include "so_hex8fbar.H"
 #include "shell8.H"
+#include "solid_ele.H"
 
 #include "beam3r.H"
 #include "beam3k.H"
@@ -71,9 +72,9 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-ADAPTER::StructureBaseAlgorithmNew::StructureBaseAlgorithmNew()
+    /*----------------------------------------------------------------------------*
+     *----------------------------------------------------------------------------*/
+    ADAPTER::StructureBaseAlgorithmNew::StructureBaseAlgorithmNew()
     : str_wrapper_(Teuchos::null),
       prbdyn_(Teuchos::null),
       sdyn_(Teuchos::null),
@@ -579,6 +580,10 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
       if (shell8_ele != NULL)
         if (shell8_ele->HaveEAS()) iseas_local = 1;
     }
+
+    DRT::ELEMENTS::Solid* solid = dynamic_cast<DRT::ELEMENTS::Solid*>(actele);
+    if (solid)
+      if (solid->HaveEAS()) iseas_local = 1;
 
     // Detect additional pressure dofs -----------------------------------------
     if (actele->ElementType() == DRT::ELEMENTS::So_sh8p8Type::Instance()) ispressure_local = 1;

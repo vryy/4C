@@ -39,7 +39,9 @@ namespace INPAR
       eletech_fbar,        ///< FBAR detected
       eletech_plasticity,  ///< plasticity detected
       eletech_pressure,    ///< additional pressure degree of freedom
-      eletech_rotvec       ///< non-additive rotation (pseudo-)vector DOFs
+      eletech_rotvec,      ///< non-additive rotation (pseudo-)vector DOFs
+      eletech_ps_mulf,     ///< prestressing: mulf
+      eletech_ps_id        ///< prestressing: inverse design
     };
 
     /// Map element technology to string
