@@ -14,6 +14,27 @@
 
 
 #include "drt_parser.H"
+#include <algorithm>
+
+namespace
+{
+  const std::array<std::string, 7> valid_operators = {"+", "-", "*", "/", "^", ".", ","};
+
+  const std::array<std::string, 18> valid_functions = {"acos", "asin", "atan", "cos", "sin", "tan",
+      "cosh", "sinh", "tanh", "exp", "log", "log10", "sqrt", "ceil", "heaviside", "fabs", "floor",
+      "atan2"};
+
+  const std::array<std::string, 2> valid_brackets = {"(", ")"};
+
+  const std::array<std::string, 6> reserved_words = {"pi", "e", "E", "\t", "\n", " "};
+
+  template <std::size_t n>
+  [[nodiscard]] bool Contains(const std::array<std::string, n>& array, const std::string& element)
+  {
+    return std::find(array.begin(), array.end(), element) != array.end();
+  }
+
+}  // namespace
 
 /*======================================================================*/
 /* Lexer methods */
@@ -195,32 +216,6 @@ void DRT::PARSER::Lexer::Lexan()
   }
 }
 
-// list of all valid operators
-const std::string DRT::PARSER::Lexer::operator_list_[] = {"+", "-", "*", "/", "^", ".", ","};
-// number of all valid operators
-const std::size_t DRT::PARSER::Lexer::operator_list_size_ =
-    sizeof(DRT::PARSER::Lexer::operator_list_) / sizeof(std::string);
-
-// list of all valid function names
-const std::string DRT::PARSER::Lexer::function_list_[] = {"acos", "asin", "atan", "cos", "sin",
-    "tan", "cosh", "sinh", "tanh", "exp", "log", "log10", "sqrt", "ceil", "heaviside", "fabs",
-    "floor", "atan2"};
-// number of all valid function names
-const std::size_t DRT::PARSER::Lexer::function_list_size_ =
-    sizeof(DRT::PARSER::Lexer::function_list_) / sizeof(std::string);
-
-// list of all valid brackets
-const std::string DRT::PARSER::Lexer::bracket_list_[] = {"(", ")"};
-// number of all valid brackets
-const std::size_t DRT::PARSER::Lexer::bracket_list_size_ =
-    sizeof(DRT::PARSER::Lexer::bracket_list_) / sizeof(std::string);
-
-// list of all reserved 'words'
-const std::string DRT::PARSER::Lexer::reserved_words_list_[] = {"pi", "e", "E", "\t", "\n", " "};
-// number of all reserved 'words'
-const std::size_t DRT::PARSER::Lexer::reserved_words_list_size_ =
-    sizeof(DRT::PARSER::Lexer::reserved_words_list_) / sizeof(std::string);
-
 /*----------------------------------------------------------------------*/
 /*!
 \brief check if given string is an operator
@@ -229,9 +224,7 @@ const std::size_t DRT::PARSER::Lexer::reserved_words_list_size_ =
 */
 bool DRT::PARSER::Lexer::IsOperator(const std::string& s) const
 {
-  for (std::size_t i = 0; i < operator_list_size_; i++)
-    if (operator_list_[i] == s) return true;
-  return false;
+  return Contains(valid_operators, s);
 }
 
 /*----------------------------------------------------------------------*/
@@ -242,9 +235,7 @@ bool DRT::PARSER::Lexer::IsOperator(const std::string& s) const
 */
 bool DRT::PARSER::Lexer::IsFunction(const std::string& s) const
 {
-  for (std::size_t i = 0; i < function_list_size_; i++)
-    if (function_list_[i] == s) return true;
-  return false;
+  return Contains(valid_functions, s);
 }
 
 /*----------------------------------------------------------------------*/
@@ -255,9 +246,7 @@ bool DRT::PARSER::Lexer::IsFunction(const std::string& s) const
 */
 bool DRT::PARSER::Lexer::IsBracket(const std::string& s) const
 {
-  for (std::size_t i = 0; i < bracket_list_size_; i++)
-    if (bracket_list_[i] == s) return true;
-  return false;
+  return Contains(valid_brackets, s);
 }
 
 /*----------------------------------------------------------------------*/
@@ -268,7 +257,5 @@ bool DRT::PARSER::Lexer::IsBracket(const std::string& s) const
 */
 bool DRT::PARSER::Lexer::IsReservedWord(const std::string& s) const
 {
-  for (std::size_t i = 0; i < reserved_words_list_size_; i++)
-    if (reserved_words_list_[i] == s) return true;
-  return false;
+  return Contains(reserved_words, s);
 }

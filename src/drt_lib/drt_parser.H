@@ -21,6 +21,8 @@
 #include <string>
 #include <cstring>
 #include <cstdlib>
+#include <memory>
+#include <utility>
 
 #include "drt_dserror.H"
 
@@ -38,26 +40,20 @@ namespace DRT
     class SyntaxTreeNode
     {
      public:
+      using NodePtr = std::unique_ptr<SyntaxTreeNode<T>>;
+
       enum NodeType
       {
-        lt_none,
-        lt_variable,  // independent variabel: 't', 'x', ...
+        lt_variable,  // independent variable: 't', 'x', ...
         lt_number,    // number (literal)
         lt_function,
         lt_operator
       };
 
-      //! constructor
-      SyntaxTreeNode(NodeType type, SyntaxTreeNode* lhs = NULL, SyntaxTreeNode* rhs = NULL)
-          : type_(type), lhs_(lhs), rhs_(rhs)
+      //! Construct a SyntaxTreeNode with content @p type and a @p lhs and  @p rhs operand.
+      SyntaxTreeNode(NodeType type, NodePtr lhs, NodePtr rhs)
+          : type_(type), lhs_(std::move(lhs)), rhs_(std::move(rhs))
       {
-      }
-
-      //! destructor
-      ~SyntaxTreeNode()
-      {
-        delete lhs_;
-        delete rhs_;
       }
 
       //! type of the node, ie operator, literal, ...
@@ -75,8 +71,8 @@ namespace DRT
       //! input string expressing the function
       std::string function_;
 
-      SyntaxTreeNode<T>* lhs_;  // left hand side node
-      SyntaxTreeNode<T>* rhs_;  // right hand side node
+      NodePtr lhs_;  // left hand side node
+      NodePtr rhs_;  // right hand side node
     };
 
 
@@ -91,7 +87,7 @@ namespace DRT
     {
      protected:
       //! constructor
-      Lexer(std::string funct) : funct_(funct), pos_(0) {}
+      Lexer(std::string funct) : funct_(std::move(funct)), pos_(0) {}
 
       //! delivers funct_ character at position pos_++
       int GetNext();
@@ -100,10 +96,10 @@ namespace DRT
       void Lexan();
 
       //! helper methods
-      bool IsOperator(const std::string& s) const;
-      bool IsFunction(const std::string& s) const;
-      bool IsBracket(const std::string& s) const;
-      bool IsReservedWord(const std::string& s) const;
+      [[nodiscard]] bool IsOperator(const std::string& s) const;
+      [[nodiscard]] bool IsFunction(const std::string& s) const;
+      [[nodiscard]] bool IsBracket(const std::string& s) const;
+      [[nodiscard]] bool IsReservedWord(const std::string& s) const;
 
       //! type of identifiable tokens in string funct_
       enum TokenType
@@ -117,7 +113,6 @@ namespace DRT
         tok_sub,   // subtraction and negation '-'
         tok_mul,   // multiplication '*'
         tok_div,   // division '/'
-        tok_mod,   // modulus ??? (NOT AVAILABLE)
         tok_pow,   // power '^'
         tok_lpar,  // left parenthesis '('
         tok_rpar,  // right parenthesis ')'
@@ -130,18 +125,6 @@ namespace DRT
       char* str_;          // pointer to current character in funct_
       int integer_;        // translated integer number or length of operator word
       double real_;        // translated real number
-
-      static const std::string operator_list_[];     // list of all valid operators
-      static const std::size_t operator_list_size_;  // number of all valid operators
-
-      static const std::string function_list_[];     // list of all valid functions
-      static const std::size_t function_list_size_;  // number of all valid functions
-
-      static const std::string bracket_list_[];     // list of all valid brackets
-      static const std::size_t bracket_list_size_;  // number of all valid brackets
-
-      static const std::string reserved_words_list_[];     // list of all special words
-      static const std::size_t reserved_words_list_size_;  // number of all special words
     };
 
     /*----------------------------------------------------------------------*/
@@ -154,10 +137,9 @@ namespace DRT
     class Parser : public Lexer
     {
      public:
+      using NodePtr = typename SyntaxTreeNode<T>::NodePtr;
       //! constructor
       Parser(std::string funct);
-      //! destructor
-      ~Parser();
 
       //! parse the function
       void ParseFunction();
@@ -170,22 +152,22 @@ namespace DRT
       //! Set value of an existing variable to parser object
       void SetValue(const std::string& varname, const T& value);
       //! Check if a variable with name 'varname' exists
-      bool IsVariable(const std::string& varname) const;
+      [[nodiscard]] bool IsVariable(const std::string& varname) const;
       //! Check if variable name is valid
-      bool IsValidVariableName(const std::string& varname) const;
+      [[nodiscard]] bool IsValidVariableName(const std::string& varname) const;
 
      private:
-      SyntaxTreeNode<T>* ParsePrimary();
-      SyntaxTreeNode<T>* ParsePow();
-      SyntaxTreeNode<T>* ParseTerm();
-      SyntaxTreeNode<T>* ParseExpr();
-      SyntaxTreeNode<T>* Parse();
+      NodePtr ParsePrimary();
+      NodePtr ParsePow();
+      NodePtr ParseTerm();
+      NodePtr ParseExpr();
+      NodePtr Parse();
 
       //! recursively extract corresponding number out of a syntax tree node
-      T Interpret(SyntaxTreeNode<T>* node);
+      T Interpret(const SyntaxTreeNode<T>& node);
 
       //! syntax tree root
-      SyntaxTreeNode<T>* expr_;
+      NodePtr expr_;
 
       //! map of all independent variables
       std::map<std::string, T> variable_list_;
@@ -202,22 +184,10 @@ namespace DRT
     \date 10/07
     */
     template <class T>
-    Parser<T>::Parser(std::string funct) : Lexer(funct), expr_(NULL)
+    Parser<T>::Parser(std::string funct) : Lexer(funct), expr_(nullptr)
     {
     }
 
-
-    /*----------------------------------------------------------------------*/
-    /*!
-    \brief Destructor of parser object
-    \author u.kue
-    \date 10/07
-    */
-    template <class T>
-    Parser<T>::~Parser()
-    {
-      delete expr_;
-    }
 
     /*----------------------------------------------------------------------*/
     /*!
@@ -245,8 +215,10 @@ namespace DRT
     {
       // check if variable is valid
       if (IsValidVariableName(varname))
+      {
         // set default value
         variable_list_[varname] = value;
+      }
       else
         dserror("Variable name '%s' already defined or invalid!", varname.c_str());
     }
@@ -262,7 +234,6 @@ namespace DRT
     {
       // check if variable exists
       if (IsVariable(varname))
-        // set value
         variable_list_[varname] = value;
       else
         dserror("Variable '%s' not defined or invalid!", varname.c_str());
@@ -311,9 +282,9 @@ namespace DRT
     template <class T>
     T Parser<T>::Evaluate()
     {
-      if (expr_ == NULL) dserror("Function has not been parsed! Call ParseFunction()!");
+      if (expr_ == nullptr) dserror("Function has not been parsed! Call ParseFunction()!");
       // evaluate syntax tree of function depending on set variables
-      return Interpret(expr_);
+      return Interpret(*expr_);
     }
 
     /*----------------------------------------------------------------------*/
@@ -324,9 +295,9 @@ namespace DRT
     \date 10/07
     */
     template <class T>
-    SyntaxTreeNode<T>* Parser<T>::ParsePrimary()
+    auto Parser<T>::ParsePrimary() -> NodePtr
     {
-      SyntaxTreeNode<T>* lhs = NULL;
+      NodePtr lhs = nullptr;
 
       switch (tok_)
       {
@@ -337,31 +308,33 @@ namespace DRT
           Lexan();
           break;
         case tok_int:
-          lhs = new SyntaxTreeNode<T>(SyntaxTreeNode<T>::lt_number, NULL, NULL);
+          lhs = std::make_unique<SyntaxTreeNode<T>>(SyntaxTreeNode<T>::lt_number, nullptr, nullptr);
           lhs->v_.number = integer_;
           Lexan();
           break;
         case tok_real:
-          lhs = new SyntaxTreeNode<T>(SyntaxTreeNode<T>::lt_number, NULL, NULL);
+          lhs = std::make_unique<SyntaxTreeNode<T>>(SyntaxTreeNode<T>::lt_number, nullptr, nullptr);
           lhs->v_.number = real_;
           Lexan();
           break;
         case tok_sub:
         {
-          SyntaxTreeNode<T>* rhs;
+          NodePtr rhs;
           Lexan();
           /*rhs = parse_primary();*/
           rhs = ParsePow();
           if (rhs->type_ == SyntaxTreeNode<T>::lt_number)
           {
             rhs->v_.number *= -1;
-            lhs = rhs;
+            lhs = std::move(rhs);
           }
           else
           {
-            lhs = new SyntaxTreeNode<T>(SyntaxTreeNode<T>::lt_number, NULL, NULL);
+            lhs =
+                std::make_unique<SyntaxTreeNode<T>>(SyntaxTreeNode<T>::lt_number, nullptr, nullptr);
             lhs->v_.number = -1;
-            lhs = new SyntaxTreeNode<T>(SyntaxTreeNode<T>::lt_operator, lhs, rhs);
+            lhs = std::make_unique<SyntaxTreeNode<T>>(
+                SyntaxTreeNode<T>::lt_operator, std::move(lhs), std::move(rhs));
             lhs->v_.op = '*';
           }
           break;
@@ -372,7 +345,8 @@ namespace DRT
           std::string name(str_, integer_);
           if (IsVariable(name))
           {
-            lhs = new SyntaxTreeNode<T>(SyntaxTreeNode<T>::lt_variable, NULL, NULL);
+            lhs = std::make_unique<SyntaxTreeNode<T>>(
+                SyntaxTreeNode<T>::lt_variable, nullptr, nullptr);
             lhs->variable_ = name;
             Lexan();
           }
@@ -380,7 +354,8 @@ namespace DRT
           {
             if ((integer_ == 2) && (std::strncmp("pi", str_, integer_) == 0))
             {
-              lhs = new SyntaxTreeNode<T>(SyntaxTreeNode<T>::lt_number, NULL, NULL);
+              lhs = std::make_unique<SyntaxTreeNode<T>>(
+                  SyntaxTreeNode<T>::lt_number, nullptr, nullptr);
               lhs->v_.number = M_PI;
               Lexan();
               break;
@@ -393,7 +368,8 @@ namespace DRT
                   name == "sqrt" or name == "ceil" or name == "heaviside" or name == "fabs" or
                   name == "floor")
               {
-                lhs = new SyntaxTreeNode<T>(SyntaxTreeNode<T>::lt_function, NULL, NULL);
+                lhs = std::make_unique<SyntaxTreeNode<T>>(
+                    SyntaxTreeNode<T>::lt_function, nullptr, nullptr);
                 lhs->function_ = name;
                 Lexan();
                 if (tok_ != tok_lpar)
@@ -406,7 +382,8 @@ namespace DRT
               }
               else if (name == "atan2")
               {
-                lhs = new SyntaxTreeNode<T>(SyntaxTreeNode<T>::lt_function, NULL, NULL);
+                lhs = std::make_unique<SyntaxTreeNode<T>>(
+                    SyntaxTreeNode<T>::lt_function, nullptr, nullptr);
                 lhs->function_ = name;
                 Lexan();
                 if (tok_ != tok_lpar)
@@ -445,10 +422,10 @@ namespace DRT
     \date 10/07
     */
     template <class T>
-    SyntaxTreeNode<T>* Parser<T>::ParsePow()
+    auto Parser<T>::ParsePow() -> NodePtr
     {
-      SyntaxTreeNode<T>* lhs;
-      SyntaxTreeNode<T>* rhs;
+      NodePtr lhs;
+      NodePtr rhs;
 
       lhs = ParsePrimary();
       for (;;)
@@ -457,7 +434,8 @@ namespace DRT
         {
           Lexan();
           rhs = ParsePrimary();
-          lhs = new SyntaxTreeNode<T>(SyntaxTreeNode<T>::lt_operator, lhs, rhs);
+          lhs = std::make_unique<SyntaxTreeNode<T>>(
+              SyntaxTreeNode<T>::lt_operator, std::move(lhs), std::move(rhs));
           lhs->v_.op = '^';
         }
         else
@@ -477,10 +455,10 @@ namespace DRT
     \date 10/07
     */
     template <class T>
-    SyntaxTreeNode<T>* Parser<T>::ParseTerm()
+    auto Parser<T>::ParseTerm() -> NodePtr
     {
-      SyntaxTreeNode<T>* lhs;
-      SyntaxTreeNode<T>* rhs;
+      NodePtr lhs;
+      NodePtr rhs;
 
       lhs = ParsePow();
       for (;;)
@@ -489,14 +467,16 @@ namespace DRT
         {
           Lexan();
           rhs = ParsePow();
-          lhs = new SyntaxTreeNode<T>(SyntaxTreeNode<T>::lt_operator, lhs, rhs);
+          lhs = std::make_unique<SyntaxTreeNode<T>>(
+              SyntaxTreeNode<T>::lt_operator, std::move(lhs), std::move(rhs));
           lhs->v_.op = '*';
         }
         else if (tok_ == tok_div)
         {
           Lexan();
           rhs = ParsePow();
-          lhs = new SyntaxTreeNode<T>(SyntaxTreeNode<T>::lt_operator, lhs, rhs);
+          lhs = std::make_unique<SyntaxTreeNode<T>>(
+              SyntaxTreeNode<T>::lt_operator, std::move(lhs), std::move(rhs));
           lhs->v_.op = '/';
         }
         else
@@ -515,18 +495,20 @@ namespace DRT
     \date 10/07
     */
     template <class T>
-    SyntaxTreeNode<T>* Parser<T>::Parse()
+    auto Parser<T>::Parse() -> NodePtr
     {
-      SyntaxTreeNode<T>* lhs;
+      NodePtr lhs;
 
       lhs = ParseExpr();
 
       // check for invalid tokens at the beginning of a parse entities
       if (tok_ == tok_comma or tok_ == tok_rpar)
+      {
         dserror(
             "unexpected token %d. Invalid syntax. Missing brackets or comma instead of decimal "
             "point?",
             tok_);
+      }
 
       return lhs;
     }
@@ -538,10 +520,10 @@ namespace DRT
     \date 10/07
     */
     template <class T>
-    SyntaxTreeNode<T>* Parser<T>::ParseExpr()
+    auto Parser<T>::ParseExpr() -> NodePtr
     {
-      SyntaxTreeNode<T>* lhs;
-      SyntaxTreeNode<T>* rhs;
+      typename SyntaxTreeNode<T>::NodePtr lhs;
+      typename SyntaxTreeNode<T>::NodePtr rhs;
 
       lhs = ParseTerm();
       for (;;)
@@ -550,14 +532,16 @@ namespace DRT
         {
           Lexan();
           rhs = ParseTerm();
-          lhs = new SyntaxTreeNode<T>(SyntaxTreeNode<T>::lt_operator, lhs, rhs);
+          lhs = std::make_unique<SyntaxTreeNode<T>>(
+              SyntaxTreeNode<T>::lt_operator, std::move(lhs), std::move(rhs));
           lhs->v_.op = '+';
         }
         else if (tok_ == tok_sub)
         {
           Lexan();
           rhs = ParseTerm();
-          lhs = new SyntaxTreeNode<T>(SyntaxTreeNode<T>::lt_operator, lhs, rhs);
+          lhs = std::make_unique<SyntaxTreeNode<T>>(
+              SyntaxTreeNode<T>::lt_operator, std::move(lhs), std::move(rhs));
           lhs->v_.op = '-';
         }
         else
@@ -577,15 +561,15 @@ namespace DRT
     \date 10/07
     */
     template <class T>
-    T Parser<T>::Interpret(SyntaxTreeNode<T>* node)
+    T Parser<T>::Interpret(const SyntaxTreeNode<T>& node)
     {
       T res = 0;  // the result
 
-      switch (node->type_)
+      switch (node.type_)
       {
         // literal numbers: leaf of syntax tree node
         case SyntaxTreeNode<T>::lt_number:
-          res = node->v_.number;
+          res = node.v_.number;
           break;
         // binary operators: bifurcating branch of syntax tree node
         case SyntaxTreeNode<T>::lt_operator:
@@ -594,11 +578,11 @@ namespace DRT
           T rhs;
 
           // recursively visit branches and obtain sub-results
-          lhs = Interpret(node->lhs_);
-          rhs = Interpret(node->rhs_);
+          lhs = Interpret(*node.lhs_);
+          rhs = Interpret(*node.rhs_);
 
           // evaluate the node operator
-          switch (node->v_.op)
+          switch (node.v_.op)
           {
             case '+':
               res = lhs + rhs;
@@ -617,63 +601,61 @@ namespace DRT
               res = std::pow(lhs, rhs);
               break;
             default:
-              dserror("unsupported operator '%c'", node->v_.op);
+              dserror("unsupported operator '%c'", node.v_.op);
           }
           break;
         }
         // independent variables: as set by user
         case SyntaxTreeNode<T>::lt_variable:
         {
-          typename std::map<std::string, T>::iterator iter = variable_list_.find(node->variable_);
+          typename std::map<std::string, T>::iterator iter = variable_list_.find(node.variable_);
           if (iter != variable_list_.end())
             res = iter->second;
           else
-            dserror("unknown variable '%s'", node->variable_.c_str());
+            dserror("unknown variable '%s'", node.variable_.c_str());
           break;
         }
         // unary operators
         case SyntaxTreeNode<T>::lt_function:
         {
           T arg;
-          arg = Interpret(node->lhs_);
-          if (node->function_ == "acos")
+          arg = Interpret(*node.lhs_);
+          if (node.function_ == "acos")
             res = acos(arg);
-          else if (node->function_ == "asin")
+          else if (node.function_ == "asin")
             res = asin(arg);
-          else if (node->function_ == "atan")
+          else if (node.function_ == "atan")
             res = atan(arg);
-          else if (node->function_ == "cos")
+          else if (node.function_ == "cos")
             res = cos(arg);
-          else if (node->function_ == "sin")
+          else if (node.function_ == "sin")
             res = sin(arg);
-          else if (node->function_ == "tan")
+          else if (node.function_ == "tan")
             res = tan(arg);
-          else if (node->function_ == "cosh")
+          else if (node.function_ == "cosh")
             res = cosh(arg);
-          else if (node->function_ == "sinh")
+          else if (node.function_ == "sinh")
             res = sinh(arg);
-          else if (node->function_ == "tanh")
+          else if (node.function_ == "tanh")
             res = tanh(arg);
-          else if (node->function_ == "exp")
+          else if (node.function_ == "exp")
             res = exp(arg);
-          else if (node->function_ == "log")
+          else if (node.function_ == "log")
             res = log(arg);
-          else if (node->function_ == "log10")
+          else if (node.function_ == "log10")
             res = log10(arg);
-          else if (node->function_ == "sqrt")
+          else if (node.function_ == "sqrt")
             res = sqrt(arg);
-          else if (node->function_ == "atan2")
+          else if (node.function_ == "atan2")
           {
             T arg2;
             // recursively visit branches and obtain sub-results
-            arg2 = Interpret(node->rhs_);
+            arg2 = Interpret(*node.rhs_);
             res = atan2(arg, arg2);
           }
-          // else if (node->function_=="ceil") res = ceil(arg);
-          else if (node->function_ == "fabs")
+          else if (node.function_ == "fabs")
             res = fabs(arg);
-          // else if (node->function_=="floor") res = floor(arg);
-          else if (node->function_ == "heaviside")
+          else if (node.function_ == "heaviside")
           {
             if (arg > 0)
             {
@@ -685,7 +667,7 @@ namespace DRT
             }
           }
           else
-            dserror("unknown function_ '%s'", node->function_.c_str());
+            dserror("unknown function_ '%s'", node.function_.c_str());
           break;
         }
         default:
