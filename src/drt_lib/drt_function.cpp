@@ -13,6 +13,7 @@
 #include "drt_function_manager.H"
 #include "drt_functionvariables.H"
 #include "drt_linedefinition.H"
+#include "drt_parser.H"
 #include "../drt_io/io.H"
 
 namespace

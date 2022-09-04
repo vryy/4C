@@ -16,7 +16,6 @@
 #include <vector>
 #include "drt_function.H"
 #include "drt_dserror.H"
-#include "drt_parser.H"
 #include "function_interface_temporary.h"
 
 namespace DRT
