@@ -19,6 +19,99 @@
 #include "../drt_io/io.H"
 #include "drt_globalproblem.H"
 
+
+namespace
+{
+  template <typename T>
+  using CreateFunctionType = Teuchos::RCP<T> (*)(
+      Teuchos::RCP<DRT::INPUT::LineDefinition>, DRT::UTILS::FunctionManager&, const int);
+
+  /**
+   * Utility function that takes a function object returning a Teuchos::RCP<T> and erases its return
+   * type via std::any. In addition, if the returned object would be Teuchos::null, discard it and
+   * return an empty std::any instead.
+   */
+  template <typename T>
+  std::function<std::any(
+      Teuchos::RCP<DRT::INPUT::LineDefinition>, DRT::UTILS::FunctionManager&, const int)>
+  WrapFunction(CreateFunctionType<T> fun)
+  {
+    return [fun](Teuchos::RCP<DRT::INPUT::LineDefinition> linedef, DRT::UTILS::FunctionManager& fm,
+               const int index) -> std::any
+    {
+      Teuchos::RCP<T> created = fun(linedef, fm, index);
+      if (created == Teuchos::null)
+        return {};
+      else
+        return created;
+    };
+  }
+
+  template <int dim>
+  void FillFunctions(DRT::INPUT::DatFileReader& reader, std::vector<std::any>& functions,
+      DRT::UTILS::FunctionManager& functionManager)
+  {
+    Teuchos::RCP<DRT::INPUT::Lines> lines = DRT::UTILS::FunctionManager::ValidFunctionLines();
+
+    // Read FUNCT sections starting from FUNCT1 until the first empty one is encountered.
+    // This implies that the FUNCT sections must form a contiguous range in the input file.
+    // Otherwise, the read fails later.
+    for (int funct_suffix = 1;; ++funct_suffix)
+    {
+      // Read lines belonging to section FUNCT<i> in the input file
+      std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> section_line_defs =
+          lines->Read(reader, funct_suffix);
+
+      // Stop reading as soon as the first FUNCT section in the input file is empty
+      if (section_line_defs.empty()) break;
+
+      Teuchos::RCP<DRT::INPUT::LineDefinition> first_line_in_section = section_line_defs.front();
+
+      // List all known TryCreate functions in a vector, so they can be called with a unified
+      // syntax below. Also, erase their exact return type, since we can only store std::any.
+      std::vector<std::function<std::any(
+          Teuchos::RCP<DRT::INPUT::LineDefinition>, DRT::UTILS::FunctionManager&, const int)>>
+          try_create_function_vector{WrapFunction(DRT::UTILS::TryCreateVariableExprFunction<dim>),
+              WrapFunction(POROMULTIPHASESCATRA::TryCreatePoroFunction<dim>),
+              WrapFunction(STR::TryCreateStructureFunction),
+              WrapFunction(FLD::TryCreateFluidFunction),
+              WrapFunction(DRT::UTILS::TryCreateCombustFunction),
+              WrapFunction(DRT::UTILS::TryCreateXfluidFunction),
+              WrapFunction(DRT::UTILS::TryCreateLibraryFunction),
+              WrapFunction(DRT::UTILS::TryCreateLibraryFunctionScalar)};
+
+      bool found_function = false;
+
+      // First, parse functions that read a single line
+      for (const auto& try_create_function : try_create_function_vector)
+      {
+        auto special_funct =
+            try_create_function(first_line_in_section, functionManager, funct_suffix);
+        if (special_funct.has_value())
+        {
+          functions.emplace_back(special_funct);
+          found_function = true;
+          break;
+        }
+      }
+
+      // If we haven't found the function by now, try to parse a multi-line function.
+      if (!found_function)
+      {
+        auto basic_funct = DRT::UTILS::TryCreateExprFunction<dim>(section_line_defs);
+        if (basic_funct != Teuchos::null)
+        {
+          functions.emplace_back(std::move(basic_funct));
+        }
+        else
+        {
+          dserror("Could not create any function from the given function line definition.");
+        }
+      }
+    }
+  }
+}  // namespace
+
 void PrintFunctionDatHeader()
 {
   DRT::UTILS::FunctionManager functionmanager;
@@ -91,65 +184,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   return lines;
 }
 
-template <int dim>
-void FillFunctions(DRT::INPUT::DatFileReader& reader,
-    std::vector<Teuchos::RCP<DRT::UTILS::TemporaryFunctionInterface>>& functions,
-    DRT::UTILS::FunctionManager& functionManager)
-{
-  Teuchos::RCP<DRT::INPUT::Lines> lines = DRT::UTILS::FunctionManager::ValidFunctionLines();
-
-  // test for as many functions as there are
-  for (int i = 1;; ++i)
-  {
-    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs =
-        lines->Read(reader, i);
-
-    if (functions_lin_defs.empty())
-    {
-      break;
-    }
-    else
-    {
-      Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def = functions_lin_defs[0];
-
-      bool found_function = false;
-
-      // list all known TryCreate functions in a vector so they can be called with a unified syntax
-      // below
-      std::vector<std::function<Teuchos::RCP<DRT::UTILS::TemporaryFunctionInterface>(
-          Teuchos::RCP<DRT::INPUT::LineDefinition>, DRT::UTILS::FunctionManager&, const int)>>
-          try_create_function_vector{DRT::UTILS::TryCreateVariableExprFunction<dim>,
-              POROMULTIPHASESCATRA::TryCreatePoroFunction<dim>, STR::TryCreateStructureFunction,
-              FLD::TryCreateFluidFunction, DRT::UTILS::TryCreateCombustFunction,
-              DRT::UTILS::TryCreateXfluidFunction, DRT::UTILS::TryCreateLibraryFunction,
-              DRT::UTILS::TryCreateLibraryFunctionScalar};
-
-      for (const auto& try_create_function : try_create_function_vector)
-      {
-        auto special_funct = try_create_function(function_lin_def, functionManager, i);
-        if (special_funct != Teuchos::null)
-        {
-          functions.emplace_back(special_funct);
-          found_function = true;
-          break;  // jumps out of for statement
-        }
-      }
-
-      if (!found_function)
-      {
-        auto basic_funct = DRT::UTILS::TryCreateExprFunction<dim>(functions_lin_defs);
-        if (basic_funct != Teuchos::null)
-        {
-          functions.emplace_back(basic_funct);
-        }
-        else
-        {
-          dserror("Could not create any function from the given function line definition.");
-        }
-      }
-    }
-  }
-}
 
 void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 {
