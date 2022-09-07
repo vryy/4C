@@ -144,9 +144,8 @@ namespace BEAMINTERACTION
      * @param r_solid (in) Position on the solid.
      * @param force (out) Force acting on the beam (the negative force acts on the solid).
      */
-    virtual void EvaluatePenaltyForce(const LINALG::Matrix<3, 1, scalar_type>& r_beam,
-        const LINALG::Matrix<3, 1, scalar_type>& r_solid,
-        LINALG::Matrix<3, 1, scalar_type>& force) const;
+    virtual void EvaluatePenaltyForceDouble(const LINALG::Matrix<3, 1, double>& r_beam,
+        const LINALG::Matrix<3, 1, double>& r_solid, LINALG::Matrix<3, 1, double>& force) const;
 
     /**
      * \brief Get the reference position to be used for the evaluation of the coupling terms.

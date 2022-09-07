@@ -102,6 +102,12 @@ namespace BEAMINTERACTION
     virtual void ResetState(const std::vector<double>& centerline_dofvec_ele1,
         const std::vector<double>& centerline_dofvec_ele2) = 0;
 
+    /**
+     * \brief Update state of rotational DoFs of both elements
+     */
+    virtual void ResetRotationState(
+        const DRT::Discretization& discret, const Teuchos::RCP<const Epetra_Vector>& ia_discolnp){};
+
     //@}
 
     //! @name Access methods

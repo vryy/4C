@@ -82,7 +82,7 @@ DOMAINBOUNDINGBOX -4.0 -0.8 -0.8 4.0 0.8 0.8
 CONSTRAINT_STRATEGY                   penalty
 PENALTY_PARAMETER                     100.0
 GAUSS_POINTS                          6
-CONTACT_DISCRETIZATION                gauss_point_cross_section_rotation
+CONTACT_DISCRETIZATION                gauss_point_cross_section
 GEOMETRY_PAIR_STRATEGY                gauss_point_projection_cross_section
 GEOMETRY_PAIR_SEARCH_POINTS           2
 INTEGRATION_POINTS_CIRCUMFERENCE      128

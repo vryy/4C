@@ -22,6 +22,11 @@ namespace GEOMETRYPAIR
   template <typename scalar_type>
   class ProjectionPointVolumeToVolume;
 }  // namespace GEOMETRYPAIR
+namespace LARGEROTATIONS
+{
+  template <unsigned int numnodes, typename T>
+  class TriadInterpolationLocalRotationVectors;
+}  // namespace LARGEROTATIONS
 
 
 namespace GEOMETRYPAIR
@@ -61,10 +66,13 @@ namespace GEOMETRYPAIR
      * @param q_line (in) Degrees of freedom for the line.
      * @param q_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
+     * @param line_triad_interpolation (in) Triad interpolation along the line.
      */
     void PreEvaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
-        std::vector<LineSegment<scalar_type>>& segments) const override;
+        std::vector<LineSegment<scalar_type>>& segments,
+        const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>*
+            line_triad_interpolation = nullptr) const;
 
     /**
      * \brief The only purpose of this method is to check that all points on this line element

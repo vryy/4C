@@ -173,9 +173,9 @@ namespace BEAMINTERACTION
      * @param reference (in) True -> the reference position is calculated, False -> the current
      * position is calculated.
      */
-    virtual void EvaluateBeamPosition(
+    virtual void EvaluateBeamPositionDouble(
         const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
-        LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const;
+        LINALG::Matrix<3, 1, double>& r_beam, bool reference) const;
 
    protected:
     //! Vector with the segments of the line to 3D pair.

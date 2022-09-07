@@ -16,6 +16,7 @@ line.
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_beam3/triad_interpolation_local_rotation_vectors.H"
 
 #include <math.h>
 
@@ -55,7 +56,9 @@ template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scalar_type, line,
     volume>::PreEvaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
     const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
-    std::vector<LineSegment<scalar_type>>& segments) const
+    std::vector<LineSegment<scalar_type>>& segments,
+    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>*
+        line_triad_interpolation) const
 {
   // Check if the element is initialized.
   this->CheckInitSetup();
@@ -73,17 +76,37 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
   // Initilaize variables for the projection.
   scalar_type eta;
   double alpha;
-  LINALG::Matrix<3, 1, scalar_type> r_line_cross_section;
-  LINALG::Matrix<2, 1, scalar_type> eta_cross_section;
+  LINALG::Matrix<3, 1, scalar_type> r_line;
+  LINALG::Matrix<3, 3, scalar_type> triad;
+  LINALG::Matrix<3, 1, scalar_type> r_cross_section;
+  LINALG::Matrix<3, 1, scalar_type> r_surface;
+  LINALG::Matrix<3, 1, scalar_type> eta_cross_section(true);
+  LINALG::Matrix<2, 1, scalar_type> eta_cross_section_2d;
   LINALG::Matrix<3, 1, scalar_type> xi_solid;
   ProjectionResult projection_result;
   segments.clear();
   bool one_projects = false;
   LineSegment<scalar_type> projection_point_segment;
 
+  // Get the radius from the beam element.
+  const double radius = (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(this->Element1()))
+                            ->GetCircularCrossSectionRadiusForInteractions();
+
   // Loop over Gauss points and check if they project to this volume.
   for (unsigned int index_gp_axis = 0; index_gp_axis < n_gauss_points_axis; index_gp_axis++)
   {
+    // Parameter coordinate along the line.
+    eta = gauss_points_axis.qxg[index_gp_axis][0];
+
+    // Get the triad on the line.
+    if (line_triad_interpolation != nullptr)
+      line_triad_interpolation->GetInterpolatedTriadAtXi(triad, eta);
+    else
+      GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<line>(eta, q_line, triad, this->Element1());
+
+    // Get the position on the line.
+    GEOMETRYPAIR::EvaluatePosition<line>(eta, q_line, r_line, this->Element1());
+
     for (unsigned int index_gp_circ = 0; index_gp_circ < n_integration_points_circ; index_gp_circ++)
     {
       // Index of the current Gauss point in the tracking vector.
@@ -92,24 +115,27 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
       // Only check points that do not already have a valid projection.
       if (line_projection_tracker[index_gp] == false)
       {
-        // Centerline coordinate and coodrinates in the cross section.
-        eta = gauss_points_axis.qxg[index_gp_axis][0];
-        alpha = 2. * M_PI / double(n_integration_points_circ) * index_gp_circ;
-        eta_cross_section(0) = cos(alpha);
-        eta_cross_section(1) = sin(alpha);
+        // Coordinates in the cross section.
+        alpha = 2.0 * M_PI / double(n_integration_points_circ) * index_gp_circ;
+        eta_cross_section(0) = 0;
+        eta_cross_section(1) = cos(alpha) * radius;
+        eta_cross_section(2) = sin(alpha) * radius;
 
-        // Position of point in the cross section.
-        GEOMETRYPAIR::EvaluatePositionLineCrossSection<line>(
-            eta, eta_cross_section, q_line, r_line_cross_section, this->Element1());
+        // Get the point on the beams surface.
+        r_cross_section.Multiply(triad, eta_cross_section);
+        r_surface = r_line;
+        r_surface += r_cross_section;
 
         // Project point to the volume.
-        this->ProjectPointToOther(r_line_cross_section, q_volume, xi_solid, projection_result);
+        this->ProjectPointToOther(r_surface, q_volume, xi_solid, projection_result);
         if (projection_result == ProjectionResult::projection_found_valid)
         {
           // Valid Gauss point was found, add to this segment and set tracking point to true.
           ProjectionPoint1DTo3D<scalar_type> new_point(eta, xi_solid,
-              gauss_points_axis.qwgt[index_gp_axis] * 2. / double(n_integration_points_circ));
-          new_point.SetEtaCrossSection(eta_cross_section);
+              gauss_points_axis.qwgt[index_gp_axis] * 2.0 / double(n_integration_points_circ));
+          for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
+            eta_cross_section_2d(i_dim) = eta_cross_section(i_dim + 1);
+          new_point.SetEtaCrossSection(eta_cross_section_2d);
           projection_point_segment.AddProjectionPoint(new_point);
           line_projection_tracker[index_gp] = true;
 

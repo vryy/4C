@@ -385,11 +385,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
  */
 template <typename beam, typename solid, typename mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
-    mortar>::EvaluatePenaltyForce(const LINALG::Matrix<3, 1, scalar_type>& r_beam,
-    const LINALG::Matrix<3, 1, scalar_type>& r_solid,
-    LINALG::Matrix<3, 1, scalar_type>& force) const
+    mortar>::EvaluatePenaltyForceDouble(const LINALG::Matrix<3, 1, double>& r_beam,
+    const LINALG::Matrix<3, 1, double>& r_solid, LINALG::Matrix<3, 1, double>& force) const
 {
-  force.PutScalar(0.);
+  force.PutScalar(0.0);
 }
 
 
