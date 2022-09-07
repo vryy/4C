@@ -325,7 +325,10 @@ void POROELAST::PoroBase::Update()
   }
 }
 
-void POROELAST::PoroBase::PrepareOutput() { StructureField()->PrepareOutput(); }
+void POROELAST::PoroBase::PrepareOutput(bool force_prepare_timestep)
+{
+  StructureField()->PrepareOutput(force_prepare_timestep);
+}
 
 void POROELAST::PoroBase::TestResults(const Epetra_Comm& comm)
 {

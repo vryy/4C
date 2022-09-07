@@ -44,7 +44,8 @@ int ADAPTER::StructureTimeLoop::Integrate()
       // calculate stresses, strains and energies
       // note: this has to be done before the update since otherwise a potential
       // material history is overwritten
-      PrepareOutput();
+      constexpr bool force_prepare = false;
+      PrepareOutput(force_prepare);
 
       // update displacements, velocities, accelerations
       // after this call we will have disn_==dis_, etc

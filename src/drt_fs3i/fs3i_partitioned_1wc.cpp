@@ -64,7 +64,8 @@ void FS3I::PartFS3I_1WC::Timeloop()
   }
 
   // output of initial state
-  fsi_->PrepareOutput();
+  constexpr bool force_prepare = true;
+  fsi_->PrepareOutput(force_prepare);
   fsi_->Output();
   ScatraOutput();
 
@@ -85,7 +86,8 @@ void FS3I::PartFS3I_1WC::DoFSIStep()
 {
   fsi_->PrepareTimeStep();
   fsi_->TimeStep(fsi_);
-  fsi_->PrepareOutput();
+  constexpr bool force_prepare = false;
+  fsi_->PrepareOutput(force_prepare);
   fsi_->Update();
   fsi_->Output();
 }

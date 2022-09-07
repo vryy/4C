@@ -157,4 +157,7 @@ void FSI::AlgorithmXFEM::Update()
 /*----------------------------------------------------------------------*
  | calculate stresses, strains, energies                   schott 08/14 |
  *----------------------------------------------------------------------*/
-void FSI::AlgorithmXFEM::PrepareOutput() { StructurePoro()->PrepareOutput(); }
+void FSI::AlgorithmXFEM::PrepareOutput(bool force_prepare)
+{
+  StructurePoro()->PrepareOutput(force_prepare);
+}

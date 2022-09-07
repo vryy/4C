@@ -227,7 +227,7 @@ namespace STR
     void SizeForOutput();
 
     //! Prepare output to file(s)
-    void PrepareOutputPeriod();
+    void PrepareOutputPeriod(bool force_prepare);
 
     //! Output to file(s)
     void OutputPeriod();

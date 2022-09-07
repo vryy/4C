@@ -490,7 +490,8 @@ void WEAR::Partitioned::UpdateSpatConf()
 void WEAR::Partitioned::Output()
 {
   // calculate stresses, strains, energies
-  StructureField()->PrepareOutput();
+  constexpr bool force_prepare = false;
+  StructureField()->PrepareOutput(force_prepare);
 
   // write strcture output to screen and files
   StructureField()->Output();

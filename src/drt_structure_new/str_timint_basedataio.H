@@ -119,8 +119,12 @@ namespace STR
       /// \brief return TRUE if the results shall be written for this load/time \c step
       bool WriteResultsForThisStep(const int step) const;
 
+      [[nodiscard]] bool IsWriteResultsEnabled() const;
+
       /// \brief return TRUE if runtime vtk results shall be written for this load/time \c step
       bool WriteRuntimeVtkResultsForThisStep(const int step) const;
+
+      [[nodiscard]] bool IsRuntimeVtkOutputEnabled() const;
 
       /// \brief return TRUE if runtime vtp results shall be written for this load/time \c step
       bool WriteRuntimeVtpResultsForThisStep(const int step) const;
@@ -186,20 +190,6 @@ namespace STR
       {
         CheckInitSetup();
         return outputeveryiter_;
-      };
-
-      /// Get whether initial state is yet to be written?
-      const bool& GetInitialStateIsToBeWritten() const
-      {
-        CheckInitSetup();
-        return writeinitialstate_;
-      };
-
-      /// Set whether initial state is yet to be written
-      void SetInitialStateIsToBeWritten(bool initialstateistobewritten)
-      {
-        CheckInitSetup();
-        writeinitialstate_ = initialstateistobewritten;
       };
 
       /// Shall we write surfactant output?
@@ -383,9 +373,6 @@ namespace STR
 
       /// write output every iteration (Newton, line search, load step, etc.)
       bool outputeveryiter_;
-
-      /// write initial state
-      bool writeinitialstate_;
 
       /// write surfactant output
       bool writesurfactant_;

@@ -185,7 +185,10 @@ void FSI::MonolithicBase::PrepareTimeStepFields()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::MonolithicBase::PrepareOutput() { StructureField()->PrepareOutput(); }
+void FSI::MonolithicBase::PrepareOutput(bool force_prepare)
+{
+  StructureField()->PrepareOutput(force_prepare);
+}
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -448,7 +451,8 @@ void FSI::Monolithic::TimeloopConstDt(
   {
     PrepareTimeStep();
     TimeStep(interface);
-    PrepareOutput();
+    constexpr bool force_prepare = false;
+    PrepareOutput(force_prepare);
     Update();
     Output();
   }

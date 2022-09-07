@@ -167,7 +167,11 @@ void POROELAST::PoroScatraMono::PrepareTimeStep(bool printheader)
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELAST::PoroScatraMono::PrepareOutput() { PoroField()->PrepareOutput(); }
+void POROELAST::PoroScatraMono::PrepareOutput()
+{
+  constexpr bool force_prepare = false;
+  PoroField()->PrepareOutput(force_prepare);
+}
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |

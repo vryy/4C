@@ -360,7 +360,8 @@ void EHL::Monolithic::Timeloop()
     Solve();
 
     // calculate stresses, strains, energies
-    PrepareOutput();
+    constexpr bool force_prepare = false;
+    PrepareOutput(force_prepare);
 
     // update all single field solvers
     Update();
@@ -1820,10 +1821,10 @@ void EHL::Monolithic::SetDefaultParameters()
 /*----------------------------------------------------------------------*
  | calculate stresses, strains, energies                    wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void EHL::Monolithic::PrepareOutput()
+void EHL::Monolithic::PrepareOutput(bool force_prepare)
 {
   // prepare output (i.e. calculate stresses, strains, energies)
-  StructureField()->PrepareOutput();
+  StructureField()->PrepareOutput(force_prepare);
 
   // reset states
   StructureField()->Discretization()->ClearState(true);

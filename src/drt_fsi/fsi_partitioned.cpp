@@ -519,7 +519,8 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
     }
 
     // calculate stresses, strains, energies
-    PrepareOutput();
+    constexpr bool force_prepare = false;
+    PrepareOutput(force_prepare);
 
     // prepare field variables for new time step
     Update();

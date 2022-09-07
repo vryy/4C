@@ -330,7 +330,9 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FSIOp(
   if (output_evry_nlniter_)
   {
     int iter = ((FSI::Partitioned::IterationCounter())[0]);
-    StructureField()->PrepareOutput();
+    constexpr bool force_prepare = false;
+    StructureField()->PrepareOutput(force_prepare);
+
     Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(StructureField())
         ->Output(false, (Step() * 100) + (iter - 1), Time() - Dt() * ((100 - iter) / 100.0));
   }

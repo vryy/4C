@@ -89,7 +89,7 @@ namespace ADAPTER
     virtual void Update() { field_->Update(); }
 
     /// prepare output (i.e. calculate stresses, strains, energies)
-    virtual void PrepareOutput() { return field_->PrepareOutput(); }
+    void PrepareOutput(bool force_prepare) override { return field_->PrepareOutput(force_prepare); }
 
     /// output results
     virtual void Output(bool forced_writerestart = false)

@@ -134,7 +134,7 @@ namespace FSI
     virtual void Update() = 0;
 
     /// calculate stresses, strains, energies
-    virtual void PrepareOutput();
+    virtual void PrepareOutput(bool force_prepare);
 
     /// write output
     virtual void Output();

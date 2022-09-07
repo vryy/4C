@@ -45,7 +45,8 @@ void POROELAST::Partitioned::SetupSystem() {}  // SetupSystem()
 
 void POROELAST::Partitioned::UpdateAndOutput()
 {
-  PrepareOutput();
+  constexpr bool force_prepare = false;
+  PrepareOutput(force_prepare);
 
   Update();
 

@@ -268,7 +268,8 @@ void FS3I::ACFSI::Timeloop()
   // output of initial state
   //  if (step_ == 0)
   {
-    fsi_->PrepareOutput();
+    constexpr bool force_prepare = true;
+    fsi_->PrepareOutput(force_prepare);
     FsiOutput();
     ScatraOutput();
   }
@@ -664,9 +665,10 @@ void FS3I::ACFSI::DoFSIStepSubcycled(const int subcyclingsteps)
 
     if (subcyclingiter != 1)  // for the first subcycling step we...
     {
-      fsi_->PrepareOutput();    //... will do this in UpdateAndOutput()
-      fsi_->Update();           //... will do this in UpdateAndOutput()
-      fsi_->PrepareTimeStep();  //... have already done this in PrepareTimeStep()
+      constexpr bool force_prepare = false;
+      fsi_->PrepareOutput(force_prepare);  //... will do this in UpdateAndOutput()
+      fsi_->Update();                      //... will do this in UpdateAndOutput()
+      fsi_->PrepareTimeStep();             //... have already done this in PrepareTimeStep()
       // now fix the step_ counter. When subcycling the fsi subproblem we do not want to proceed the
       // step_ AND the time_, but just the time_.
       SetTimeAndStepInFSI(fsi_->FluidField()->Time(), step_);
@@ -927,7 +929,8 @@ void FS3I::ACFSI::SmallTimeScaleUpdateAndOutput()
   // time update and BEFORE writing the output. So be careful with the order here!!
 
   // Update field variables
-  fsi_->PrepareOutput();
+  constexpr bool force_prepare = false;
+  fsi_->PrepareOutput(force_prepare);
   fsi_->Update();
   UpdateScatraFields();
 

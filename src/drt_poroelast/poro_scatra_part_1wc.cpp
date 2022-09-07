@@ -56,7 +56,11 @@ void POROELAST::PoroScatraPart1WC::DoScatraStep()
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |
  *----------------------------------------------------------------------*/
-void POROELAST::PoroScatraPart1WC::PrepareOutput() { PoroField()->PrepareOutput(); }
+void POROELAST::PoroScatraPart1WC::PrepareOutput()
+{
+  constexpr bool force_prepare = false;
+  PoroField()->PrepareOutput(force_prepare);
+}
 
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |

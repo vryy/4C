@@ -10,7 +10,7 @@ VERBOSITY                       Standard
 STRUCT_STRAIN                   gl
 STRUCT_STRESS                   cauchy
 OUTPUT_SPRING                   Yes
-WRITE_INITIAL_STATE             no
+WRITE_INITIAL_STATE             yes
 -----------------------------------------------------IO/RUNTIME VTK OUTPUT
 OUTPUT_DATA_FORMAT              ascii
 INTERVAL_STEPS                  5

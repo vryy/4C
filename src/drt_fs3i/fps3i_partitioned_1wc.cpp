@@ -130,7 +130,9 @@ void FS3I::PartFPS3I_1WC::DoFPSIStep()
   fpsi_->PrepareTimeStep();
   fpsi_->SetupNewton();
   fpsi_->TimeStep();
-  fpsi_->PrepareOutput();
+
+  constexpr bool force_prepare = false;
+  fpsi_->PrepareOutput(force_prepare);
   fpsi_->Update();
   fpsi_->Output();
 }

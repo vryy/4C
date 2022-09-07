@@ -379,7 +379,7 @@ namespace STR
     //@{
     //! Calculate all output quantities depending on the constitutive model
     //  (and, hence, on a potential material history)
-    void PrepareOutput();
+    void PrepareOutput(bool force_prepare_timestep);
 
     //! Calculate stresses, strains on micro-scale
     void PrepareOutputMicro();

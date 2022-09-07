@@ -139,7 +139,7 @@ namespace ADAPTER
     virtual void Update() = 0;
 
     /// prepare output (i.e. calculate stresses, strains, energies)
-    virtual void PrepareOutput() = 0;
+    virtual void PrepareOutput(bool force_prepare_timestep) = 0;
 
     /// output results
     virtual void Output(bool forced_writerestart = false) = 0;

@@ -438,7 +438,8 @@ void SSTI::SSTIMono::Timeloop()
 
     NewtonLoop();
 
-    StructureField()->PrepareOutput();
+    constexpr bool force_prepare = false;
+    StructureField()->PrepareOutput(force_prepare);
 
     Update();
 

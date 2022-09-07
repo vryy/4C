@@ -96,7 +96,7 @@ namespace FSI
     virtual void PrepareTimeStep() = 0;
 
     //! calculate stresses, strains, energies
-    virtual void PrepareOutput();
+    virtual void PrepareOutput(bool force_prepare);
 
     //! take current results for converged and save for next time step
     virtual void Update();

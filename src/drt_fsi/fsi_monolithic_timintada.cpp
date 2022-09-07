@@ -281,8 +281,8 @@ void FSI::Monolithic::TimeloopAdaDt(const Teuchos::RCP<NOX::Epetra::Interface::R
 
       PrintAdaptivitySummary();
     }
-
-    PrepareOutput();
+    constexpr bool force_prepare = false;
+    PrepareOutput(force_prepare);
     Update();            // Update in single fields
     UpdateDtPast(Dt());  // Update of adaptive time step sizes
     Output();

@@ -136,7 +136,8 @@ void dyn_nlnstructural_drt()
   {
     if (write_initial_state)
     {
-      structadapter->PrepareOutput();
+      constexpr bool force_prepare = true;
+      structadapter->PrepareOutput(force_prepare);
       structadapter->PreOutput();
       structadapter->Output();
       structadapter->PostOutput();
@@ -149,7 +150,8 @@ void dyn_nlnstructural_drt()
   if (write_final_state && !structadapter->HasFinalStateBeenWritten())
   {
     constexpr bool forceWriteRestart = true;
-    structadapter->PrepareOutput();
+    constexpr bool force_prepare = true;
+    structadapter->PrepareOutput(force_prepare);
     structadapter->PreOutput();
     structadapter->Output(forceWriteRestart);
     structadapter->PostOutput();

@@ -142,7 +142,8 @@ void FSI::MonolithicNoNOX::Timeloop()
   {
     PrepareTimeStep();
     Newton();
-    PrepareOutput();
+    constexpr bool force_prepare = false;
+    PrepareOutput(force_prepare);
     Update();
     Output();
   }

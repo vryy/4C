@@ -794,7 +794,8 @@ void FSI::MonolithicXFEM::Timeloop()
     // TODO: check this function
     // TODO: erst update und dann prepare output? oder anders rum?
     // calculate stresses, strains, energies
-    PrepareOutput();
+    constexpr bool force_prepare = false;
+    PrepareOutput(force_prepare);
 
     // update all single field solvers
     Update();

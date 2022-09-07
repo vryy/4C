@@ -140,7 +140,10 @@ void FPSI::MonolithicBase::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::MonolithicBase::PrepareOutput() { PoroField()->PrepareOutput(); }
+void FPSI::MonolithicBase::PrepareOutput(bool force_prepare)
+{
+  PoroField()->PrepareOutput(force_prepare);
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -337,7 +340,8 @@ void FPSI::Monolithic::Timeloop()
     PrepareTimeStep();
     SetupNewton();
     TimeStep();
-    PrepareOutput();
+    constexpr bool force_prepare = false;
+    PrepareOutput(force_prepare);
     Update();
     Output();
   }

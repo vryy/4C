@@ -54,7 +54,8 @@ void SSI::SSIPart1WC::DoStructStep()
   // Newton-Raphson iteration
   StructureField()->Solve();
   // calculate stresses, strains, energies
-  StructureField()->PrepareOutput();
+  constexpr bool force_prepare = false;
+  StructureField()->PrepareOutput(force_prepare);
   // update all single field solvers
   StructureField()->Update();
   // write output to files
