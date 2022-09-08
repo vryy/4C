@@ -28,13 +28,6 @@
 //  return instance;
 //}
 //
-// template<int n_cond, int n_ele>
-// void STR::ELEMENTS::Condensator<n_cond,n_ele>::Done()
-//{
-//  // delete this pointer! Afterwards we have to go! But since this is a
-//  // cleanup call, we can do it this way.
-//    Instance( false );
-//}
 //
 // STR::ELEMENTS::CondensatorBase* STR::ELEMENTS::CondensatorFactory::ProvideImpl(
 //    int n_cond,

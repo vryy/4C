@@ -21,46 +21,42 @@ namespace DRT::ELEMENTS
   class SolidEleCalcEas : public virtual SolidEleCalc<distype>
   {
    public:
-    /// Singleton access method
-    static SolidEleCalcEas<distype, neas>* Instance(bool create = true);
-
-    /// called upon destruction
-    virtual void Done();
-
+    /// private constructor, since we are a Singleton.
+    SolidEleCalcEas();
     /// evaluate element
-    virtual int nln_force_stiff_mass(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
+    int nln_force_stiff_mass(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
         const std::vector<int>& lm, Teuchos::ParameterList& params,
         Epetra_SerialDenseMatrix* elemat1_epetra, Epetra_SerialDenseMatrix* elemat2_epetra,
         Epetra_SerialDenseVector* elevec1_epetra, Epetra_SerialDenseVector* elevec2_epetra,
         Epetra_SerialDenseVector* elevec3_epetra,
-        DRT::UTILS::GaussIntegration* intpoints = nullptr);
+        DRT::UTILS::GaussIntegration* intpoints = nullptr) override;
 
     /// evaluate with GEMM time integration
-    virtual int nln_force_stiff_mass_gemm(DRT::ELEMENTS::Solid* ele,
-        DRT::Discretization& discretization, const std::vector<int>& lm,
-        Teuchos::ParameterList& params, Epetra_SerialDenseMatrix* elemat1_epetra,
-        Epetra_SerialDenseMatrix* elemat2_epetra, Epetra_SerialDenseVector* elevec1_epetra,
-        Epetra_SerialDenseVector* elevec2_epetra, Epetra_SerialDenseVector* elevec3_epetra,
-        DRT::UTILS::GaussIntegration* intpoints = nullptr);
-
-    /// Update the element at converged time step
-    virtual void UpdateElement(
-        DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization, const std::vector<int>& lm);
-
-    /// recover variables condensed at element level
-    virtual int RecoverCondensed(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
+    int nln_force_stiff_mass_gemm(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
         const std::vector<int>& lm, Teuchos::ParameterList& params,
         Epetra_SerialDenseMatrix* elemat1_epetra, Epetra_SerialDenseMatrix* elemat2_epetra,
         Epetra_SerialDenseVector* elevec1_epetra, Epetra_SerialDenseVector* elevec2_epetra,
-        Epetra_SerialDenseVector* elevec3_epetra);
+        Epetra_SerialDenseVector* elevec3_epetra,
+        DRT::UTILS::GaussIntegration* intpoints = nullptr) override;
+
+    /// Update the element at converged time step
+    int UpdateElement(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
+        const std::vector<int>& lm, Teuchos::ParameterList& params,
+        Epetra_SerialDenseMatrix* elemat1_epetra, Epetra_SerialDenseMatrix* elemat2_epetra,
+        Epetra_SerialDenseVector* elevec1_epetra, Epetra_SerialDenseVector* elevec2_epetra,
+        Epetra_SerialDenseVector* elevec3_epetra) override;
+
+    /// recover variables condensed at element level
+    int RecoverCondensed(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
+        const std::vector<int>& lm, Teuchos::ParameterList& params,
+        Epetra_SerialDenseMatrix* elemat1_epetra, Epetra_SerialDenseMatrix* elemat2_epetra,
+        Epetra_SerialDenseVector* elevec1_epetra, Epetra_SerialDenseVector* elevec2_epetra,
+        Epetra_SerialDenseVector* elevec3_epetra) override;
 
     /// setup element
     virtual void Setup(DRT::ELEMENTS::Solid* ele, DRT::INPUT::LineDefinition* linedef);
 
    protected:
-    /// private constructor, since we are a Singleton.
-    SolidEleCalcEas();
-
     /// Prepare terms for EAS evaluation at before GP loop
     void PrepareEAS(DRT::ELEMENTS::Solid* ele);
 

@@ -18,31 +18,6 @@
 #include "solid_ele_eas_utils.H"
 
 template <DRT::Element::DiscretizationType distype, int neas>
-DRT::ELEMENTS::SolidEleCalcEas<distype, neas>*
-DRT::ELEMENTS::SolidEleCalcEas<distype, neas>::Instance(bool create)
-{
-  static SolidEleCalcEas<distype, neas>* instance;
-  if (create)
-  {
-    if (!instance) instance = new SolidEleCalcEas<distype, neas>();
-  }
-  else
-  {
-    if (instance) delete instance;
-    instance = nullptr;
-  }
-  return instance;
-}
-
-template <DRT::Element::DiscretizationType distype, int neas>
-void DRT::ELEMENTS::SolidEleCalcEas<distype, neas>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(false);
-}
-
-template <DRT::Element::DiscretizationType distype, int neas>
 DRT::ELEMENTS::SolidEleCalcEas<distype, neas>::SolidEleCalcEas()
     : DRT::ELEMENTS::SolidEleInterface::SolidEleInterface(),
       DRT::ELEMENTS::SolidEleCalc<distype>::SolidEleCalc()
@@ -147,9 +122,13 @@ int DRT::ELEMENTS::SolidEleCalcEas<distype, neas>::nln_force_stiff_mass_gemm(
 }
 
 template <DRT::Element::DiscretizationType distype, int neas>
-void DRT::ELEMENTS::SolidEleCalcEas<distype, neas>::UpdateElement(
-    DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization, const std::vector<int>& lm)
+int DRT::ELEMENTS::SolidEleCalcEas<distype, neas>::UpdateElement(DRT::ELEMENTS::Solid* ele,
+    DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
+    Epetra_SerialDenseMatrix* elemat1_epetra, Epetra_SerialDenseMatrix* elemat2_epetra,
+    Epetra_SerialDenseVector* elevec1_epetra, Epetra_SerialDenseVector* elevec2_epetra,
+    Epetra_SerialDenseVector* elevec3_epetra)
 {
+  return 0;
 }
 
 template <DRT::Element::DiscretizationType distype, int neas>

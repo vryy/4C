@@ -212,17 +212,17 @@ enum INPAR::STR::ModelType STR::NLN::ConvertQuantityType2ModelType(
 enum INPAR::STR::EleTech STR::NLN::ConvertQuantityType2EleTech(
     const enum NOX::NLN::StatusTest::QuantityType& qtype)
 {
-  enum INPAR::STR::EleTech eletech = INPAR::STR::eletech_pressure;
+  enum INPAR::STR::EleTech eletech = INPAR::STR::EleTech::pressure;
   switch (qtype)
   {
     case NOX::NLN::StatusTest::quantity_pressure:
-      eletech = INPAR::STR::eletech_pressure;
+      eletech = INPAR::STR::EleTech::pressure;
       break;
     case NOX::NLN::StatusTest::quantity_plasticity:
-      eletech = INPAR::STR::eletech_plasticity;
+      eletech = INPAR::STR::EleTech::plasticity;
       break;
     case NOX::NLN::StatusTest::quantity_eas:
-      eletech = INPAR::STR::eletech_eas;
+      eletech = INPAR::STR::EleTech::eas;
       break;
     default:
       dserror("Cannot convert QuantityType %s to EleTech.",

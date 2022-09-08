@@ -12,6 +12,7 @@
 
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_serialdensematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 namespace STR
 {

@@ -30,18 +30,42 @@ namespace STR::UTILS
   {
     static const int ngp = 27;
   };
+  template <>
+  struct IntRuleToNquad<DRT::UTILS::intrule_hex_18point>
+  {
+    static const int ngp = 18;
+  };
+  template <>
+  struct IntRuleToNquad<DRT::UTILS::intrule_pyramid_1point>
+  {
+    static const int ngp = 1;
+  };
+  template <>
+  struct IntRuleToNquad<DRT::UTILS::intrule_pyramid_8point>
+  {
+    static const int ngp = 8;
+  };
+  template <>
+  struct IntRuleToNquad<DRT::UTILS::intrule_tet_1point>
+  {
+    static const int ngp = 1;
+  };
+  template <>
+  struct IntRuleToNquad<DRT::UTILS::intrule_tet_4point>
+  {
+    static const int ngp = 4;
+  };
+  template <>
+  struct IntRuleToNquad<DRT::UTILS::intrule_tet_11point>
+  {
+    static const int ngp = 11;
+  };
 
 
   int DisTypeToNgpOptGaussRule(DRT::Element::DiscretizationType distype);
 
   void Pk2ToCauchy(const LINALG::Matrix<6, 1>& pk2, const LINALG::Matrix<3, 3>& defgrd,
       LINALG::Matrix<6, 1>& cauchy);
-
-  void MatrixToVector(
-      const LINALG::Matrix<3, 3>& matrix, const bool strain_like, LINALG::Matrix<6, 1>& vector);
-
-  void VectorToMatrix(
-      const LINALG::Matrix<6, 1>& vector, const bool strain_like, LINALG::Matrix<3, 3>& matrix);
 
   template <unsigned dim>
   void CalcConsistentDefgrd(const LINALG::Matrix<dim, dim>& defgrd_disp,

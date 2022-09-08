@@ -354,6 +354,7 @@ int DRT::UTILS::getNumberOfElementLines(const DRT::Element::DiscretizationType& 
   switch (distype)
   {
     case DRT::Element::hex8:
+    case DRT::Element::hex18:
     case DRT::Element::hex20:
     case DRT::Element::hex27:
     case DRT::Element::nurbs8:
@@ -407,6 +408,7 @@ int DRT::UTILS::getNumberOfElementSurfaces(const DRT::Element::DiscretizationTyp
   {
     // 3D
     case DRT::Element::hex8:
+    case DRT::Element::hex18:
     case DRT::Element::hex20:
     case DRT::Element::hex27:
     case DRT::Element::nurbs8:
@@ -454,6 +456,7 @@ int DRT::UTILS::getNumberOfElementVolumes(const DRT::Element::DiscretizationType
   switch (distype)
   {
     case DRT::Element::hex8:
+    case DRT::Element::hex18:
     case DRT::Element::hex20:
     case DRT::Element::hex27:
     case DRT::Element::tet4:
@@ -546,6 +549,9 @@ DRT::Element::DiscretizationType DRT::UTILS::getEleFaceShapeType(
       break;
     case DRT::Element::hex8:
       type = DisTypeToFaceShapeType<DRT::Element::hex8>::shape;
+      break;
+    case DRT::Element::hex18:
+      type = DisTypeToFaceShapeType<DRT::Element::hex18>::shape;
       break;
     case DRT::Element::nurbs8:
       type = DisTypeToFaceShapeType<DRT::Element::nurbs8>::shape;

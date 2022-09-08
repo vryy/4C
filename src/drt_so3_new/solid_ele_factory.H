@@ -24,16 +24,12 @@ namespace DRT::ELEMENTS
    public:
     //! ctor
     SolidFactory() = default;
-    ;
 
-    //! dtor
-    ~SolidFactory() = default;
-    ;
 
-    static SolidEleInterface* ProvideImpl(DRT::ELEMENTS::Solid* ele);
+    static std::unique_ptr<SolidEleInterface> ProvideImpl(DRT::ELEMENTS::Solid* ele);
 
     template <DRT::Element::DiscretizationType distype>
-    static SolidEleInterface* ProvideImpl(DRT::ELEMENTS::Solid* ele);
+    static std::unique_ptr<SolidEleInterface> ProvideImpl(DRT::ELEMENTS::Solid* ele);
 
   };  // class SolidFactory
 }  // namespace DRT::ELEMENTS

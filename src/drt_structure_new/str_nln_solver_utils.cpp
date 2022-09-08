@@ -165,19 +165,19 @@ void STR::NLN::SOLVER::ConvertEleTech2QuantityType(
   switch (et)
   {
     // --- EAS case ------------------------------------------------------------
-    case INPAR::STR::eletech_eas:
+    case INPAR::STR::EleTech::eas:
     {
       qt.push_back(NOX::NLN::StatusTest::quantity_eas);
       break;
     }
     // --- Plasticity case -----------------------------------------------------
-    case INPAR::STR::eletech_plasticity:
+    case INPAR::STR::EleTech::plasticity:
     {
       qt.push_back(NOX::NLN::StatusTest::quantity_plasticity);
       break;
     }
     // --- Pressure case -------------------------------------------------------
-    case INPAR::STR::eletech_pressure:
+    case INPAR::STR::EleTech::pressure:
     {
       qt.push_back(NOX::NLN::StatusTest::quantity_pressure);
       break;

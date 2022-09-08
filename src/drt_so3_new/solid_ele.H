@@ -14,10 +14,12 @@ and Gauss point loop as well as some additional service routines.
 #ifndef SO_ELE_H
 #define SO_ELE_H
 
+#include <memory>
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "solid_ele_calc.H"
 #include "solid_ele_eas_utils.H"
 
 namespace MAT
@@ -26,6 +28,9 @@ namespace MAT
 }
 namespace DRT::ELEMENTS
 {
+  // forward declaration
+  class SolidEleInterface;
+
   class SolidType : public DRT::ElementType
   {
    public:
@@ -121,11 +126,6 @@ namespace DRT::ELEMENTS
     \brief Get shape type of element
     */
     [[nodiscard]] DRT::Element::DiscretizationType Shape() const override { return distype_; };
-
-    /*!
-    \brief set discretization type of element
-    */
-    virtual void SetDisType(DRT::Element::DiscretizationType shape) { distype_ = shape; };
 
     /*!
     \brief Get kinematic type of element
@@ -299,7 +299,7 @@ namespace DRT::ELEMENTS
 
     virtual ::STR::ELEMENTS::EASType GetEAStype() { return eastype_; }
     virtual const std::set<INPAR::STR::EleTech>& GetEleTech() { return eletech_; }
-    virtual bool HaveEAS() { return eletech_.find(INPAR::STR::eletech_eas) != eletech_.end(); }
+    virtual bool HaveEAS() { return eletech_.find(INPAR::STR::EleTech::eas) != eletech_.end(); }
     void VisNames(std::map<std::string, int>& names) override;
     bool VisData(const std::string& name, std::vector<double>& data) override;
 
@@ -337,7 +337,7 @@ namespace DRT::ELEMENTS
     //! element techonology
     std::set<INPAR::STR::EleTech> eletech_;
 
-    //! specify EAS type in case eletech_ contains EAS
+    //! specify EAS type in case  contains EAS
     ::STR::ELEMENTS::EASType eastype_;
 
     /** \brief interface ptr
@@ -350,6 +350,9 @@ namespace DRT::ELEMENTS
 
     //! manager for condensation at Gauss point level
     Teuchos::RCP<std::vector<STR::ELEMENTS::CondensatorBase>> gp_condensator_;
+
+    //! element calculation interface
+    std::unique_ptr<SolidEleInterface> solid_interface_ = nullptr;
   };  // class Solid
 
 }  // namespace DRT::ELEMENTS

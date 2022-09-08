@@ -25,12 +25,6 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
   // get ptr to interface to time integration
   SetParamsInterfacePtr(params);
 
-  // check for patient specific data
-  // TODO: do we really need to do this here ???
-  PATSPEC::GetILTDistance(Id(), params, discretization);
-  PATSPEC::GetLocalRadius(Id(), params, discretization);
-  PATSPEC::GetInnerRadius(Id(), params, discretization);
-
   // get the calculation class
   DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->Evaluate(
       this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
@@ -41,8 +35,6 @@ int DRT::ELEMENTS::Solid::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
 {
-  dserror("stop");
-  return 0;
-  //  return DRT::ELEMENTS::SolidFactory::ProvideImpl(Shape(),eletech_)->EvaluateNeumann(
-  //      this,params,discretization,condition,lm,NULL,elevec1,elemat1);
+  return DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->EvaluateNeumann(
+      this, params, discretization, condition, lm, nullptr, elevec1, elemat1);
 }

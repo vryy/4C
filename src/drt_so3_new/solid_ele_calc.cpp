@@ -10,6 +10,7 @@
 #include "solid_ele_calc.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/voigt_notation.H"
 #include "solid_ele.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_mat/so3_material.H"
@@ -30,14 +31,6 @@ DRT::ELEMENTS::SolidEleCalc<distype>* DRT::ELEMENTS::SolidEleCalc<distype>::Inst
     instance = nullptr;
   }
   return instance;
-}
-
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::SolidEleCalc<distype>::Done()
-{
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-  Instance(false);
 }
 
 template <DRT::Element::DiscretizationType distype>
@@ -404,7 +397,10 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::Material(LINALG::Matrix<nsd_, nsd_>* 
   // evaluate material
   params.set<int>("gp", gp);  // todo: don't use the params here but some other interface
 
-  ParamsInterfaceToList(ele->ParamsInterface(), params);
+  if (ele->IsParamsInterface())
+  {
+    ParamsInterfaceToList(ele->ParamsInterface(), params);
+  }
 
   ele->SolidMaterial()->Evaluate(defgrd, glstrain, params, &pk2_, &cmat_, gp, ele->Id());
 }
@@ -489,7 +485,10 @@ int DRT::ELEMENTS::SolidEleCalc<distype>::UpdateElement(DRT::ELEMENTS::Solid* el
 
     Strains();
 
-    ParamsInterfaceToList(ele->ParamsInterface(), params);
+    if (ele->IsParamsInterface())
+    {
+      ParamsInterfaceToList(ele->ParamsInterface(), params);
+    }
 
     ele->SolidMaterial()->Update(defgrd_, gp, params, ele->Id());
 
@@ -600,9 +599,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::SolidEleCalc<distype>::Setup(
     DRT::ELEMENTS::Solid* ele, DRT::INPUT::LineDefinition* linedef)
 {
-  ele->SolidMaterial()->Setup(
-      STR::UTILS::IntRuleToNquad<DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule>::ngp,
-      linedef);
+  ele->SolidMaterial()->Setup(default_integration_->NumPoints(), linedef);
 }
 
 template <DRT::Element::DiscretizationType distype>
@@ -637,7 +634,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::CalcStressStrainOutput(
       static LINALG::Matrix<numstr_, 1> ea;
       static LINALG::Matrix<nsd_, nsd_> ea_m;
       ea_m.MultiplyNT(defgrd_, defgrd_);
-      STR::UTILS::MatrixToVector(ea_m, true, ea);
+      ::UTILS::VOIGT::Strains::MatrixToVector(ea_m, ea);
       for (int i = 0; i < numstr_; ++i) strain_output_(gp, i) = ea(i);
       break;
     case INPAR::STR::strain_none:
@@ -673,4 +670,9 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::WriteStressStrainOutput(DRT::ELEMENTS
 
 // template classes
 template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::hex8>;
+template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::hex18>;
+template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::hex20>;
 template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::hex27>;
+template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::tet4>;
+template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::tet10>;
+template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::pyramid5>;

@@ -37,11 +37,11 @@ namespace DRT
     class SolidEleCalc : public virtual SolidEleInterface
     {
      public:
+      SolidEleCalc();
+
+      virtual ~SolidEleCalc() = default;
       /// Singleton access method
       static SolidEleCalc<distype>* Instance(bool create = true);
-
-      /// called upon destruction
-      virtual void Done();
 
       /// lump mass matrix
       void LumpMass(Epetra_SerialDenseMatrix* mass) override;
@@ -230,11 +230,6 @@ namespace DRT
 
       virtual void CalcStressStrainOutput(DRT::ELEMENTS::Solid* ele, const int gp);
       virtual void WriteStressStrainOutput(DRT::ELEMENTS::Solid* ele);
-
-      /// private constructor, since we are a Singleton.
-      SolidEleCalc();
-
-      virtual ~SolidEleCalc() = default;
 
       /// initialize default GP locations, shape functions and derivs
       // todo: replace this with template "distype to default rule"

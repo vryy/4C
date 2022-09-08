@@ -35,6 +35,7 @@ DRT::Element::DiscretizationType DRT::StringToDistype(const std::string& name)
   if (gid2distype.empty())
   {
     gid2distype["HEX8"] = DRT::Element::hex8;
+    gid2distype["HEX18"] = DRT::Element::hex18;
     gid2distype["HEX20"] = DRT::Element::hex20;
     gid2distype["HEX27"] = DRT::Element::hex27;
     gid2distype["TET4"] = DRT::Element::tet4;

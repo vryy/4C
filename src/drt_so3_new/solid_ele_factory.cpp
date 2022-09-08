@@ -8,13 +8,14 @@
 /*--------------------------------------------------------------------------*/
 
 #include "solid_ele_factory.H"
+#include <memory>
 #include "solid_ele_calc.H"
 #include "solid_ele_calc_eas.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "solid_ele.H"
 
 
-DRT::ELEMENTS::SolidEleInterface* DRT::ELEMENTS::SolidFactory::ProvideImpl(
+std::unique_ptr<DRT::ELEMENTS::SolidEleInterface> DRT::ELEMENTS::SolidFactory::ProvideImpl(
     DRT::ELEMENTS::Solid* ele)
 {
   switch (ele->Shape())
@@ -25,6 +26,21 @@ DRT::ELEMENTS::SolidEleInterface* DRT::ELEMENTS::SolidFactory::ProvideImpl(
     case DRT::Element::hex27:
       return ProvideImpl<DRT::Element::hex27>(ele);
       break;
+    case DRT::Element::hex20:
+      return ProvideImpl<DRT::Element::hex20>(ele);
+      break;
+    case DRT::Element::hex18:
+      return ProvideImpl<DRT::Element::hex18>(ele);
+      break;
+    case DRT::Element::pyramid5:
+      return ProvideImpl<DRT::Element::pyramid5>(ele);
+      break;
+    case DRT::Element::tet4:
+      return ProvideImpl<DRT::Element::tet4>(ele);
+      break;
+    case DRT::Element::tet10:
+      return ProvideImpl<DRT::Element::tet10>(ele);
+      break;
     default:
       dserror("unknown distype provided");
       break;
@@ -33,7 +49,7 @@ DRT::ELEMENTS::SolidEleInterface* DRT::ELEMENTS::SolidFactory::ProvideImpl(
 }
 
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::SolidEleInterface* DRT::ELEMENTS::SolidFactory::ProvideImpl(
+std::unique_ptr<DRT::ELEMENTS::SolidEleInterface> DRT::ELEMENTS::SolidFactory::ProvideImpl(
     DRT::ELEMENTS::Solid* ele)
 {
   // here we go into the different cases for element technology
@@ -41,15 +57,13 @@ DRT::ELEMENTS::SolidEleInterface* DRT::ELEMENTS::SolidFactory::ProvideImpl(
   {
     // no element technology
     case 0:
-      //    return DRT::ELEMENTS::SolidEleCalc<distype>::Instance();
-      return DRT::ELEMENTS::SolidEleCalc<DRT::Element::hex8>::Instance();
+      return std::make_unique<DRT::ELEMENTS::SolidEleCalc<distype>>();
       break;
     // simple: just one element technology
     case 1:
       switch (*ele->GetEleTech().begin())
       {
-        case INPAR::STR::eletech_eas:
-          //      dserror("not implemented");
+        case INPAR::STR::EleTech::eas:
           switch (ele->GetEAStype())
           {
             case ::STR::ELEMENTS::EASType::eastype_h8_9:
@@ -57,14 +71,14 @@ DRT::ELEMENTS::SolidEleInterface* DRT::ELEMENTS::SolidFactory::ProvideImpl(
               {
                 dserror("EAS type h8_9 is only for hex8 elements (you are using %s)", distype);
               }
-              return DRT::ELEMENTS::SolidEleCalcEas<DRT::Element::hex8, 9>::Instance();
+              return std::make_unique<DRT::ELEMENTS::SolidEleCalcEas<DRT::Element::hex8, 9>>();
               break;
             case ::STR::ELEMENTS::EASType::eastype_h8_21:
               if constexpr (distype != DRT::Element::hex8)
               {
                 dserror("EAS type h8_21 is only for hex8 elements (you are using %s)", distype);
               }
-              return DRT::ELEMENTS::SolidEleCalcEas<DRT::Element::hex8, 21>::Instance();
+              return std::make_unique<DRT::ELEMENTS::SolidEleCalcEas<DRT::Element::hex8, 21>>();
               break;
             default:
               dserror("eastype not implemented %d", (int)ele->GetEAStype());
@@ -79,8 +93,8 @@ DRT::ELEMENTS::SolidEleInterface* DRT::ELEMENTS::SolidFactory::ProvideImpl(
     default:
     {
       if (ele->GetEleTech().size() == 2 and
-          ele->GetEleTech().find(INPAR::STR::eletech_eas) != ele->GetEleTech().end() and
-          ele->GetEleTech().find(INPAR::STR::eletech_plasticity) != ele->GetEleTech().end())
+          ele->GetEleTech().find(INPAR::STR::EleTech::eas) != ele->GetEleTech().end() and
+          ele->GetEleTech().find(INPAR::STR::EleTech::plasticity) != ele->GetEleTech().end())
         //      return DRT::ELEMENTS::SolidEleCalcEasPlast<distype>::Instance();
         dserror("this combination of element technology is not implemented yet");
       else
@@ -88,7 +102,6 @@ DRT::ELEMENTS::SolidEleInterface* DRT::ELEMENTS::SolidFactory::ProvideImpl(
         dserror("unknown combination of element technologies");
       }
     }
-    break;
   }
   return nullptr;
 }

@@ -9,6 +9,7 @@
 #include "solid_utils.H"
 #include "../drt_lib/drt_element_integration_select.H"
 #include "../drt_lib/drt_element.H"
+#include "../drt_lib/voigt_notation.H"
 
 int STR::UTILS::DisTypeToNgpOptGaussRule(DRT::Element::DiscretizationType distype)
 {
@@ -110,29 +111,11 @@ void STR::UTILS::Pk2ToCauchy(const LINALG::Matrix<6, 1>& pk2, const LINALG::Matr
     LINALG::Matrix<6, 1>& cauchy)
 {
   static LINALG::Matrix<3, 3> pk2_matrix;
-  VectorToMatrix(pk2, false, pk2_matrix);
+  ::UTILS::VOIGT::Stresses::VectorToMatrix(pk2, pk2_matrix);
 
   static LINALG::Matrix<3, 3> cauchy_matrix;
   cauchy_matrix.Multiply(defgrd, pk2_matrix);
   pk2_matrix.MultiplyNT(defgrd.Determinant(), cauchy_matrix, defgrd, 0.);
 
-  MatrixToVector(pk2_matrix, false, cauchy);
-}
-
-void STR::UTILS::MatrixToVector(
-    const LINALG::Matrix<3, 3>& matrix, const bool strain_like, LINALG::Matrix<6, 1>& vector)
-{
-  for (int i = 0; i < 3; ++i) vector(i) = matrix(i, i);
-  vector(3) = matrix(0, 1) * (1. + strain_like);
-  vector(4) = matrix(2, 1) * (1. + strain_like);
-  vector(5) = matrix(0, 2) * (1. + strain_like);
-}
-
-void STR::UTILS::VectorToMatrix(
-    const LINALG::Matrix<6, 1>& vector, const bool strain_like, LINALG::Matrix<3, 3>& matrix)
-{
-  for (int i = 0; i < 3; ++i) matrix(i, i) = vector(i);
-  matrix(0, 1) = matrix(1, 0) = vector(3) / (1. + strain_like);
-  matrix(2, 1) = matrix(1, 2) = vector(4) / (1. + strain_like);
-  matrix(0, 2) = matrix(2, 0) = vector(5) / (1. + strain_like);
+  ::UTILS::VOIGT::Stresses::MatrixToVector(pk2_matrix, cauchy);
 }

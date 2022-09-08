@@ -72,9 +72,9 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-    /*----------------------------------------------------------------------------*
-     *----------------------------------------------------------------------------*/
-    ADAPTER::StructureBaseAlgorithmNew::StructureBaseAlgorithmNew()
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+ADAPTER::StructureBaseAlgorithmNew::StructureBaseAlgorithmNew()
     : str_wrapper_(Teuchos::null),
       prbdyn_(Teuchos::null),
       sdyn_(Teuchos::null),
@@ -279,7 +279,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // ---------------------------------------------------------------------------
   // in case of non-additive rotation (pseudo-)vector DOFs:
   // ---------------------------------------------------------------------------
-  if (eletechs->find(INPAR::STR::eletech_rotvec) != eletechs->end())
+  if (eletechs->find(INPAR::STR::EleTech::rotvec) != eletechs->end())
   {
     // -------------------------------------------------------------------------
     // set the RotVecUpdater as new precomputeX operator for the nox nln group
@@ -603,23 +603,23 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
 
   // plasticity - sum over all processors
   actdis_->Comm().SumAll(&isplasticity_local, &isplasticity_global, 1);
-  if (isplasticity_global > 0) eletechs.insert(INPAR::STR::eletech_plasticity);
+  if (isplasticity_global > 0) eletechs.insert(INPAR::STR::EleTech::plasticity);
 
   // eas - sum over all processors
   actdis_->Comm().SumAll(&iseas_local, &iseas_global, 1);
-  if (iseas_global > 0) eletechs.insert(INPAR::STR::eletech_eas);
+  if (iseas_global > 0) eletechs.insert(INPAR::STR::EleTech::eas);
 
   // pressure - sum over all processors
   actdis_->Comm().SumAll(&ispressure_local, &ispressure_global, 1);
-  if (ispressure_global > 0) eletechs.insert(INPAR::STR::eletech_pressure);
+  if (ispressure_global > 0) eletechs.insert(INPAR::STR::EleTech::pressure);
 
   // fbar - sum over all processors
   actdis_->Comm().SumAll(&isfbar_local, &isfbar_global, 1);
-  if (isfbar_global > 0) eletechs.insert(INPAR::STR::eletech_fbar);
+  if (isfbar_global > 0) eletechs.insert(INPAR::STR::EleTech::fbar);
 
   // rotation vector DOFs - sum over all processors
   actdis_->Comm().SumAll(&isrotvec_local, &isrotvec_global, 1);
-  if (isrotvec_global > 0) eletechs.insert(INPAR::STR::eletech_rotvec);
+  if (isrotvec_global > 0) eletechs.insert(INPAR::STR::EleTech::rotvec);
 
   return;
 }

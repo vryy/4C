@@ -6,6 +6,7 @@
 *----------------------------------------------------------------------*/
 
 #include "solid_ele.H"
+#include <memory>
 #include "solid_utils.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
@@ -33,27 +34,123 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
       .AddNamedInt("MAT")
       .AddNamedString("KINEM")
       .AddOptionalNamedString("EAS")
-      .AddOptionalNamedString("FBAR");
+      .AddOptionalNamedString("FBAR")
+      .AddOptionalNamedDoubleVector("RAD", 3)
+      .AddOptionalNamedDoubleVector("AXI", 3)
+      .AddOptionalNamedDoubleVector("CIR", 3)
+      .AddOptionalNamedDoubleVector("FIBER1", 3)
+      .AddOptionalNamedDoubleVector("FIBER2", 3)
+      .AddOptionalNamedDoubleVector("FIBER3", 3);
 
-  defsgeneral["HEX18"].AddIntVector("HEX18", 18).AddNamedInt("MAT").AddNamedString("KINEM");
+  defsgeneral["HEX18"]
+      .AddIntVector("HEX18", 18)
+      .AddNamedInt("MAT")
+      .AddNamedString("KINEM")
+      .AddOptionalNamedDoubleVector("RAD", 3)
+      .AddOptionalNamedDoubleVector("AXI", 3)
+      .AddOptionalNamedDoubleVector("CIR", 3)
+      .AddOptionalNamedDoubleVector("FIBER1", 3)
+      .AddOptionalNamedDoubleVector("FIBER2", 3)
+      .AddOptionalNamedDoubleVector("FIBER3", 3);
 
-  defsgeneral["HEX20"].AddIntVector("HEX20", 20).AddNamedInt("MAT").AddNamedString("KINEM");
+  defsgeneral["HEX20"]
+      .AddIntVector("HEX20", 20)
+      .AddNamedInt("MAT")
+      .AddNamedString("KINEM")
+      .AddOptionalNamedDoubleVector("RAD", 3)
+      .AddOptionalNamedDoubleVector("AXI", 3)
+      .AddOptionalNamedDoubleVector("CIR", 3)
+      .AddOptionalNamedDoubleVector("FIBER1", 3)
+      .AddOptionalNamedDoubleVector("FIBER2", 3)
+      .AddOptionalNamedDoubleVector("FIBER3", 3);
 
-  defsgeneral["HEX27"].AddIntVector("HEX27", 27).AddNamedInt("MAT").AddNamedString("KINEM");
+  defsgeneral["HEX27"]
+      .AddIntVector("HEX27", 27)
+      .AddNamedInt("MAT")
+      .AddNamedString("KINEM")
+      .AddOptionalNamedDoubleVector("RAD", 3)
+      .AddOptionalNamedDoubleVector("AXI", 3)
+      .AddOptionalNamedDoubleVector("CIR", 3)
+      .AddOptionalNamedDoubleVector("FIBER1", 3)
+      .AddOptionalNamedDoubleVector("FIBER2", 3)
+      .AddOptionalNamedDoubleVector("FIBER3", 3);
 
-  defsgeneral["TET4"].AddIntVector("TET4", 4).AddNamedInt("MAT").AddNamedString("KINEM");
+  defsgeneral["TET4"]
+      .AddIntVector("TET4", 4)
+      .AddNamedInt("MAT")
+      .AddNamedString("KINEM")
+      .AddOptionalNamedDoubleVector("RAD", 3)
+      .AddOptionalNamedDoubleVector("AXI", 3)
+      .AddOptionalNamedDoubleVector("CIR", 3)
+      .AddOptionalNamedDoubleVector("FIBER1", 3)
+      .AddOptionalNamedDoubleVector("FIBER2", 3)
+      .AddOptionalNamedDoubleVector("FIBER3", 3);
 
-  defsgeneral["TET10"].AddIntVector("TET10", 10).AddNamedInt("MAT").AddNamedString("KINEM");
+  defsgeneral["TET10"]
+      .AddIntVector("TET10", 10)
+      .AddNamedInt("MAT")
+      .AddNamedString("KINEM")
+      .AddOptionalNamedDoubleVector("RAD", 3)
+      .AddOptionalNamedDoubleVector("AXI", 3)
+      .AddOptionalNamedDoubleVector("CIR", 3)
+      .AddOptionalNamedDoubleVector("FIBER1", 3)
+      .AddOptionalNamedDoubleVector("FIBER2", 3)
+      .AddOptionalNamedDoubleVector("FIBER3", 3);
 
-  defsgeneral["WEDGE6"].AddIntVector("WEDGE6", 6).AddNamedInt("MAT").AddNamedString("KINEM");
+  defsgeneral["WEDGE6"]
+      .AddIntVector("WEDGE6", 6)
+      .AddNamedInt("MAT")
+      .AddNamedString("KINEM")
+      .AddOptionalNamedDoubleVector("RAD", 3)
+      .AddOptionalNamedDoubleVector("AXI", 3)
+      .AddOptionalNamedDoubleVector("CIR", 3)
+      .AddOptionalNamedDoubleVector("FIBER1", 3)
+      .AddOptionalNamedDoubleVector("FIBER2", 3)
+      .AddOptionalNamedDoubleVector("FIBER3", 3);
 
-  defsgeneral["WEDGE15"].AddIntVector("WEDGE15", 15).AddNamedInt("MAT").AddNamedString("KINEM");
+  defsgeneral["WEDGE15"]
+      .AddIntVector("WEDGE15", 15)
+      .AddNamedInt("MAT")
+      .AddNamedString("KINEM")
+      .AddOptionalNamedDoubleVector("RAD", 3)
+      .AddOptionalNamedDoubleVector("AXI", 3)
+      .AddOptionalNamedDoubleVector("CIR", 3)
+      .AddOptionalNamedDoubleVector("FIBER1", 3)
+      .AddOptionalNamedDoubleVector("FIBER2", 3)
+      .AddOptionalNamedDoubleVector("FIBER3", 3);
 
-  defsgeneral["PYRAMID5"].AddIntVector("PYRAMID5", 5).AddNamedInt("MAT").AddNamedString("KINEM");
+  defsgeneral["PYRAMID5"]
+      .AddIntVector("PYRAMID5", 5)
+      .AddNamedInt("MAT")
+      .AddNamedString("KINEM")
+      .AddOptionalNamedDoubleVector("RAD", 3)
+      .AddOptionalNamedDoubleVector("AXI", 3)
+      .AddOptionalNamedDoubleVector("CIR", 3)
+      .AddOptionalNamedDoubleVector("FIBER1", 3)
+      .AddOptionalNamedDoubleVector("FIBER2", 3)
+      .AddOptionalNamedDoubleVector("FIBER3", 3);
 
-  defsgeneral["NURBS8"].AddIntVector("NURBS8", 8).AddNamedInt("MAT").AddNamedString("KINEM");
+  defsgeneral["NURBS8"]
+      .AddIntVector("NURBS8", 8)
+      .AddNamedInt("MAT")
+      .AddNamedString("KINEM")
+      .AddOptionalNamedDoubleVector("RAD", 3)
+      .AddOptionalNamedDoubleVector("AXI", 3)
+      .AddOptionalNamedDoubleVector("CIR", 3)
+      .AddOptionalNamedDoubleVector("FIBER1", 3)
+      .AddOptionalNamedDoubleVector("FIBER2", 3)
+      .AddOptionalNamedDoubleVector("FIBER3", 3);
 
-  defsgeneral["NURBS27"].AddIntVector("NURBS27", 27).AddNamedInt("MAT").AddNamedString("KINEM");
+  defsgeneral["NURBS27"]
+      .AddIntVector("NURBS27", 27)
+      .AddNamedInt("MAT")
+      .AddNamedString("KINEM")
+      .AddOptionalNamedDoubleVector("RAD", 3)
+      .AddOptionalNamedDoubleVector("AXI", 3)
+      .AddOptionalNamedDoubleVector("CIR", 3)
+      .AddOptionalNamedDoubleVector("FIBER1", 3)
+      .AddOptionalNamedDoubleVector("FIBER2", 3)
+      .AddOptionalNamedDoubleVector("FIBER3", 3);
 }
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SolidType::Create(
@@ -81,7 +178,7 @@ void DRT::ELEMENTS::SolidType::NodalBlockInformation(
   // todo: to this combined for 2D and 3D
   numdf = 3;
   dimns = 6;
-  ;
+
   nv = 3;
 }
 
@@ -219,9 +316,8 @@ void DRT::ELEMENTS::Solid::Pack(DRT::PackBuffer& data) const
   // kinematic type
   AddtoPack(data, (int)kintype_);
 
-  // element technology
-  AddtoPack(data, (int)eletech_.size());
-  for (auto i : eletech_) AddtoPack(data, i);
+  // element technology7
+  AddtoPack(data, eletech_);
 
   // eas type
   AddtoPack(data, eastype_);
@@ -243,10 +339,7 @@ void DRT::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
   // kinematic type
   kintype_ = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
   // element technology
-  int num_ele_tech = ExtractInt(position, data);
-  eletech_.clear();
-  for (int i = 0; i < num_ele_tech; ++i)
-    eletech_.insert((INPAR::STR::EleTech)ExtractInt(position, data));
+  DRT::ParObject::ExtractfromPack(position, data, eletech_);
   // eas type
   eastype_ = static_cast<::STR::ELEMENTS::EASType>(ExtractInt(position, data));
 
@@ -272,7 +365,8 @@ bool DRT::ELEMENTS::Solid::ReadElement(
     const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
 {
   // set discretization type
-  SetDisType(DRT::StringToDistype(distype));
+  distype_ = DRT::StringToDistype(distype);
+  solid_interface_ = SolidFactory::ProvideImpl(this);
 
   // read number of material model
   int material = 0;
@@ -299,12 +393,12 @@ bool DRT::ELEMENTS::Solid::ReadElement(
       if (eastype == "mild")
       {
         eastype_ = ::STR::ELEMENTS::EASType::eastype_h8_9;
-        eletech_.insert(INPAR::STR::eletech_eas);
+        eletech_.insert(INPAR::STR::EleTech::eas);
       }
       else if (eastype == "full")
       {
         eastype_ = ::STR::ELEMENTS::EASType::eastype_h8_21;
-        eletech_.insert(INPAR::STR::eletech_eas);
+        eletech_.insert(INPAR::STR::EleTech::eas);
       }
       else if (eastype == "none")
       {
