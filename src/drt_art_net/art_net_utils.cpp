@@ -168,8 +168,8 @@ std::map<std::string, std::string> ART::ArteryScatraCloneStrategy::ConditionsToC
   conditions_to_copy.insert(
       std::pair<std::string, std::string>("TransportPointNeumann", "PointNeumann"));
   conditions_to_copy.insert(std::pair<std::string, std::string>("Initfield", "Initfield"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ArtScatraCouplCon", "ArtScatraCouplCon"));
+  conditions_to_copy.insert(std::pair<std::string, std::string>(
+      "ArtScatraCouplConNodebased", "ArtScatraCouplConNodebased"));
   conditions_to_copy.insert(std::pair<std::string, std::string>(
       "PoroMultiphaseScatraOxyPartPressCalcCond", "PoroMultiphaseScatraOxyPartPressCalcCond"));
 

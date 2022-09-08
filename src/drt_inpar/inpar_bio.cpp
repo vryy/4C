@@ -200,8 +200,8 @@ void INPAR::ARTNET::SetValidConditions(
 
   Teuchos::RCP<ConditionDefinition> artcoup =
       Teuchos::rcp(new ConditionDefinition("DESIGN NODE 1D ARTERY TO POROFLUID COUPLING CONDITIONS",
-          "ArtPorofluidCouplCon", "Artery coupling with porofluid",
-          DRT::Condition::ArtPorofluidCouplingCond, true, DRT::Condition::Point));
+          "ArtPorofluidCouplConNodebased", "Artery coupling with porofluid",
+          DRT::Condition::ArtPorofluidCouplingCondNodebased, true, DRT::Condition::Point));
 
   artcoupcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPID")));
   artcoupcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
@@ -219,8 +219,8 @@ void INPAR::ARTNET::SetValidConditions(
 
   Teuchos::RCP<ConditionDefinition> artscatracoup =
       Teuchos::rcp(new ConditionDefinition("DESIGN NODE 1D ARTERY TO SCATRA COUPLING CONDITIONS",
-          "ArtScatraCouplCon", "Artery coupling with porofluid",
-          DRT::Condition::ArtScatraCouplingCond, true, DRT::Condition::Point));
+          "ArtScatraCouplConNodebased", "Artery coupling with porofluid",
+          DRT::Condition::ArtScatraCouplingCondNodebased, true, DRT::Condition::Point));
 
   artscatracoupcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPID")));
   artscatracoupcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));

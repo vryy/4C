@@ -290,12 +290,12 @@ void DRT::Condition::Print(std::ostream& os) const
     os << "Artery write gnuplot format condition";
   else if (Type() == ArtPrescribedCond)
     os << "Artery prescribed boundary condition";
-  else if (Type() == ArtPorofluidCouplingCond)
-    os << "Artery-Porofluid coupling condition";
+  else if (Type() == ArtPorofluidCouplingCondNodebased)
+    os << "Artery-Porofluid nodebased coupling condition";
   else if (Type() == PoroMultiphaseScatraOxyPartPressCalcCond)
     os << "PoroMultiphaseScatra Oxygen Partial Pressure Calculation condition";
-  else if (Type() == ArtScatraCouplingCond)
-    os << "Artery-Scatra coupling condition";
+  else if (Type() == ArtScatraCouplingCondNodebased)
+    os << "Artery-Scatra nodebased coupling condition";
   else if (Type() == ArtRfCond)
     os << "Artery reflective boundary condition";
   else if (Type() == ArtWkCond)

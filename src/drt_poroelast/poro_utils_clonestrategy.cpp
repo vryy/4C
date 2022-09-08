@@ -400,8 +400,8 @@ std::map<std::string, std::string> POROELAST::UTILS::PoroScatraCloneStrategy::Co
   conditions_to_copy.insert(std::pair<std::string, std::string>("Initfield", "Initfield"));
 
   // artery to scatra coupling
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ArtScatraCouplCon", "ArtScatraCouplCon"));
+  conditions_to_copy.insert(std::pair<std::string, std::string>(
+      "ArtScatraCouplConNodebased", "ArtScatraCouplConNodebased"));
 
   // oxygen partial pressure calculation
   conditions_to_copy.insert(std::pair<std::string, std::string>(

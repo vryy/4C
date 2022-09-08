@@ -115,7 +115,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Setup()
 {
   // create the pairs
-  CreateCouplingPairs();
+    CreateCouplingPairsLineSurfBased();
 
   // check if varying diameter is used
   if (contdis_->Name() == "porofluid") SetVaryingDiamFlag();
@@ -180,7 +180,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSyste
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateCouplingPairs()
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
+    CreateCouplingPairsLineSurfBased()
 {
   const Teuchos::ParameterList& fluidcouplingparams =
       DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING");

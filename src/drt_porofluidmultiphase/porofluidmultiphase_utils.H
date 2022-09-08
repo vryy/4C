@@ -98,12 +98,12 @@ namespace POROFLUIDMULTIPHASE
     double GetMaxNodalDistance(DRT::Element* ele, Teuchos::RCP<DRT::Discretization> dis);
 
     /**
-     * \brief perform octtree search
      * @param[in] contdis       discretization of 2D/3D domain
      * @param[in] artdis        discretization of 1D domain
      * @param[in] artsearchdis  fully overlapping discretization of 1D domain on which search is
      * performed
      * @param[in] evaluate_on_lateral_surface   is coupling evaluated on lateral surface?
+     * @param[in] artEleGIDs   vector of artery coupling element Ids
      * @param[out] elecolset    additional elements that need to be ghosted are filled into this set
      * @param[out] nodecolset   additional nodes that need to be ghosted are filled into this set
      * @return                  set of nearby element pairs as seen from the artery discretization,
@@ -111,8 +111,8 @@ namespace POROFLUIDMULTIPHASE
      */
     std::map<int, std::set<int>> OctTreeSearch(Teuchos::RCP<DRT::Discretization> contdis,
         Teuchos::RCP<DRT::Discretization> artdis, Teuchos::RCP<DRT::Discretization> artsearchdis,
-        const bool evaluate_on_lateral_surface, std::set<int>* elecolset,
-        std::set<int>* nodecolset);
+        const bool evaluate_on_lateral_surface, const std::vector<int> artEleGIDs,
+        std::set<int>& elecolset, std::set<int>& nodecolset);
 
     /*!
      * \brief get nodal positions of discretization as std::map

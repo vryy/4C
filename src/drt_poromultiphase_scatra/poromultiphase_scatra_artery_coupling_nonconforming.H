@@ -142,8 +142,8 @@ namespace POROMULTIPHASESCATRA
     //! access to blood vessel volume fraction
     Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction() override;
 
-    //! create interaction pairs
-    void CreateCouplingPairs();
+    //! create interaction pairs for line- or surfacebased coupling (GPTS and MP)
+    void CreateCouplingPairsLineSurfBased();
 
     //! calculate the volume fraction occupied by blood vessels
     void CalculateBloodVesselVolumeFraction();

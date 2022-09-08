@@ -432,6 +432,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     PreEvaluateLateralSurfaceCoupling(gp_vector);
   else
     PreEvaluateCenterlineCoupling();
+  
 
   ispreevaluated_ = true;
 }

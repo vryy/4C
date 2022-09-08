@@ -188,9 +188,17 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
     nodecolset.insert(gid);
   }
 
+  // get artEleGIDs
+  std::vector<int> artEleGIDs;
+  artEleGIDs.reserve(artsearchdis->ElementColMap()->NumMyElements());
+  for (int iart = 0; iart < artsearchdis->ElementColMap()->NumMyElements(); ++iart)
+  {
+    artEleGIDs.push_back(artsearchdis->ElementColMap()->GID(iart));
+  }
+
   // search with the fully overlapping discretization
-  std::map<int, std::set<int>> nearbyelepairs = OctTreeSearch(
-      contdis, artdis, artsearchdis, evaluate_on_lateral_surface, &elecolset, &nodecolset);
+  std::map<int, std::set<int>> nearbyelepairs = OctTreeSearch(contdis, artdis, artsearchdis,
+      evaluate_on_lateral_surface, artEleGIDs, elecolset, nodecolset);
 
   // extended ghosting for elements
   std::vector<int> coleles(elecolset.begin(), elecolset.end());
@@ -241,12 +249,11 @@ POROFLUIDMULTIPHASE::UTILS::CreateFullyOverlappingArteryDiscretization(
 }
 
 /*----------------------------------------------------------------------*
- | octtree search for nearby elements                  kremheller 10/19 |
  *----------------------------------------------------------------------*/
 std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
     Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis,
     Teuchos::RCP<DRT::Discretization> artsearchdis, const bool evaluate_on_lateral_surface,
-    std::set<int>* elecolset, std::set<int>* nodecolset)
+    const std::vector<int> artEleGIDs, std::set<int>& elecolset, std::set<int>& nodecolset)
 {
   // this map will be filled
   std::map<int, std::set<int>> nearbyelepairs;
@@ -282,15 +289,15 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
       GetNodalPositions(artdis, artdis->NodeRowMap());
 
   // gather
-  int procs[contdis->Comm().NumProc()];
+  std::vector<int> procs(contdis->Comm().NumProc());
   for (int i = 0; i < contdis->Comm().NumProc(); i++) procs[i] = i;
   LINALG::Gather<int, LINALG::Matrix<3, 1>>(
       my_positions_artery, positions_artery, contdis->Comm().NumProc(), &procs[0], contdis->Comm());
 
   // do the actual search on fully overlapping artery discretization
-  for (int iart = 0; iart < artsearchdis->ElementColMap()->NumMyElements(); ++iart)
+  for (unsigned int iart = 0; iart < artEleGIDs.size(); ++iart)
   {
-    const int artelegid = artsearchdis->ElementColMap()->GID(iart);
+    const int artelegid = artEleGIDs[iart];
     DRT::Element* artele = artsearchdis->gElement(artelegid);
 
     // axis-aligned bounding box of artery
@@ -309,14 +316,15 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
       // add elements and nodes for extended ghosting of artery discretization
       if (not artdis->HaveGlobalElement(artelegid))
       {
-        elecolset->insert(artelegid);
+        elecolset.insert(artelegid);
         const int* nodeids = artele->NodeIds();
-        for (int inode = 0; inode < artele->NumNode(); ++inode) nodecolset->insert(nodeids[inode]);
+        for (int inode = 0; inode < artele->NumNode(); ++inode) nodecolset.insert(nodeids[inode]);
       }
     }
 
-    // estimate of duration for search
-    if (iart == (int)(0.05 * artsearchdis->ElementColMap()->NumMyElements()))
+    // estimate of duration for search (check how long the search took for 1/20 of all elements, the
+    // estimated total time of the search is then 20 times this time)
+    if (iart == static_cast<int>(0.05 * artEleGIDs.size()))
     {
       double mydtsearch = timersearch.WallTime() - dtcpu;
       double maxdtsearch = 0.0;
