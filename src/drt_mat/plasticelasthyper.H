@@ -434,10 +434,10 @@ namespace MAT
     };
 
     /// return accumulated plastic strain at GP
-    virtual double AccumulatedStrain(int gp) { return last_alpha_isotropic_[gp]; }
+    virtual double AccumulatedStrain(int gp) const { return last_alpha_isotropic_[gp]; }
 
     /// is this GP active
-    virtual bool Active(int gp) { return activity_state_[gp]; }
+    virtual bool Active(int gp) const { return activity_state_[gp]; }
 
     /// heating at this gp
     virtual double& HepDiss(int gp) { return (*HepDiss_)[gp]; }
@@ -456,10 +456,16 @@ namespace MAT
     }
 
     //! return names of visualization data
-    virtual void VisNames(std::map<std::string, int>& names);
+    virtual void VisNames(std::map<std::string, int>& names) const;
 
     //! return visualization data
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+
+    void RegisterVtkOutputDataNames(
+        std::unordered_map<std::string, int>& names_and_size) const override;
+
+    bool EvaluateVtkOutputData(
+        const std::string& name, Epetra_SerialDenseMatrix& data) const override;
 
     //! purely elastic material (input via negative initial yield stress
     bool AllElastic() { return Inityield() < 0.; }

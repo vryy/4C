@@ -370,12 +370,13 @@ namespace DRT
           const LINALG::Matrix<nsd_, nsd_>* defgrd, const LINALG::Matrix<nsd_, nen_>* N_XYZ,
           const int gp);
 
-      /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store results in elevectors
+      /// Extrapolate Gauss-point data to nodes and store results in elevectors
       /// todo: Unfortunately, there is no universal extrapolation function in all base elements,
       /// i.e. the hex8 elements would call soh8_expol, hex27 would call soh27_expol...
       /// For now, we copy the extrapolation function here and allow the use only for hex8 elements
-      void soh8_expol(LINALG::Matrix<numgpt_post, numstr_>& stresses,  ///< gp stresses
-          Epetra_MultiVector& expolstresses);                          ///< nodal stresses
+      template <unsigned int num_cols>
+      void soh8_expol(LINALG::Matrix<numgpt_post, num_cols>& data,  ///< gp data
+          Epetra_MultiVector& expolData);                           ///< nodal data
 
       // EAS element techonolgy *******************************************
       //! Initialize data for EAS (once)

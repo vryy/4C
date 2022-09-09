@@ -839,87 +839,93 @@ void DRT::ELEMENTS::So3_Plast<distype>::ReadParameterList(
 
 
 /*----------------------------------------------------------------------*
- | extrapolate stresses for hex8 elements (public)           seitz 12/13 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
+template <unsigned int num_cols>
 void DRT::ELEMENTS::So3_Plast<distype>::soh8_expol(
-    LINALG::Matrix<numgpt_post, numstr_>& stresses, Epetra_MultiVector& expolstresses)
+    LINALG::Matrix<numgpt_post, num_cols>& data, Epetra_MultiVector& expolData)
 {
   if (distype != DRT::Element::hex8) dserror("soh8_expol called from non-hex8 element");
 
   // static variables, that are the same for every element
-  static LINALG::Matrix<nen_, numgpt_post> expol;
+  static LINALG::Matrix<nen_, numgpt_post> expolOperator;
   static bool isfilled;
 
   if (isfilled == false)
   {
     double sq3 = sqrt(3.0);
 
-    expol(0, 0) = 1.25 + 0.75 * sq3;
-    expol(0, 1) = -0.25 - 0.25 * sq3;
-    expol(0, 2) = -0.25 + 0.25 * sq3;
-    expol(0, 3) = -0.25 - 0.25 * sq3;
-    expol(0, 4) = -0.25 - 0.25 * sq3;
-    expol(0, 5) = -0.25 + 0.25 * sq3;
-    expol(0, 6) = 1.25 - 0.75 * sq3;
-    expol(0, 7) = -0.25 + 0.25 * sq3;
-    expol(1, 1) = 1.25 + 0.75 * sq3;
-    expol(1, 2) = -0.25 - 0.25 * sq3;
-    expol(1, 3) = -0.25 + 0.25 * sq3;
-    expol(1, 4) = -0.25 + 0.25 * sq3;
-    expol(1, 5) = -0.25 - 0.25 * sq3;
-    expol(1, 6) = -0.25 + 0.25 * sq3;
-    expol(1, 7) = 1.25 - 0.75 * sq3;
-    expol(2, 2) = 1.25 + 0.75 * sq3;
-    expol(2, 3) = -0.25 - 0.25 * sq3;
-    expol(2, 4) = 1.25 - 0.75 * sq3;
-    expol(2, 5) = -0.25 + 0.25 * sq3;
-    expol(2, 6) = -0.25 - 0.25 * sq3;
-    expol(2, 7) = -0.25 + 0.25 * sq3;
-    expol(3, 3) = 1.25 + 0.75 * sq3;
-    expol(3, 4) = -0.25 + 0.25 * sq3;
-    expol(3, 5) = 1.25 - 0.75 * sq3;
-    expol(3, 6) = -0.25 + 0.25 * sq3;
-    expol(3, 7) = -0.25 - 0.25 * sq3;
-    expol(4, 4) = 1.25 + 0.75 * sq3;
-    expol(4, 5) = -0.25 - 0.25 * sq3;
-    expol(4, 6) = -0.25 + 0.25 * sq3;
-    expol(4, 7) = -0.25 - 0.25 * sq3;
-    expol(5, 5) = 1.25 + 0.75 * sq3;
-    expol(5, 6) = -0.25 - 0.25 * sq3;
-    expol(5, 7) = -0.25 + 0.25 * sq3;
-    expol(6, 6) = 1.25 + 0.75 * sq3;
-    expol(6, 7) = -0.25 - 0.25 * sq3;
-    expol(7, 7) = 1.25 + 0.75 * sq3;
+    expolOperator(0, 0) = 1.25 + 0.75 * sq3;
+    expolOperator(0, 1) = -0.25 - 0.25 * sq3;
+    expolOperator(0, 2) = -0.25 + 0.25 * sq3;
+    expolOperator(0, 3) = -0.25 - 0.25 * sq3;
+    expolOperator(0, 4) = -0.25 - 0.25 * sq3;
+    expolOperator(0, 5) = -0.25 + 0.25 * sq3;
+    expolOperator(0, 6) = 1.25 - 0.75 * sq3;
+    expolOperator(0, 7) = -0.25 + 0.25 * sq3;
+    expolOperator(1, 1) = 1.25 + 0.75 * sq3;
+    expolOperator(1, 2) = -0.25 - 0.25 * sq3;
+    expolOperator(1, 3) = -0.25 + 0.25 * sq3;
+    expolOperator(1, 4) = -0.25 + 0.25 * sq3;
+    expolOperator(1, 5) = -0.25 - 0.25 * sq3;
+    expolOperator(1, 6) = -0.25 + 0.25 * sq3;
+    expolOperator(1, 7) = 1.25 - 0.75 * sq3;
+    expolOperator(2, 2) = 1.25 + 0.75 * sq3;
+    expolOperator(2, 3) = -0.25 - 0.25 * sq3;
+    expolOperator(2, 4) = 1.25 - 0.75 * sq3;
+    expolOperator(2, 5) = -0.25 + 0.25 * sq3;
+    expolOperator(2, 6) = -0.25 - 0.25 * sq3;
+    expolOperator(2, 7) = -0.25 + 0.25 * sq3;
+    expolOperator(3, 3) = 1.25 + 0.75 * sq3;
+    expolOperator(3, 4) = -0.25 + 0.25 * sq3;
+    expolOperator(3, 5) = 1.25 - 0.75 * sq3;
+    expolOperator(3, 6) = -0.25 + 0.25 * sq3;
+    expolOperator(3, 7) = -0.25 - 0.25 * sq3;
+    expolOperator(4, 4) = 1.25 + 0.75 * sq3;
+    expolOperator(4, 5) = -0.25 - 0.25 * sq3;
+    expolOperator(4, 6) = -0.25 + 0.25 * sq3;
+    expolOperator(4, 7) = -0.25 - 0.25 * sq3;
+    expolOperator(5, 5) = 1.25 + 0.75 * sq3;
+    expolOperator(5, 6) = -0.25 - 0.25 * sq3;
+    expolOperator(5, 7) = -0.25 + 0.25 * sq3;
+    expolOperator(6, 6) = 1.25 + 0.75 * sq3;
+    expolOperator(6, 7) = -0.25 - 0.25 * sq3;
+    expolOperator(7, 7) = 1.25 + 0.75 * sq3;
 
     for (int i = 0; i < NUMNOD_SOH8; ++i)
     {
       for (int j = 0; j < i; ++j)
       {
-        expol(i, j) = expol(j, i);
+        expolOperator(i, j) = expolOperator(j, i);
       }
     }
 
     isfilled = true;
   }
 
-  LINALG::Matrix<nen_, numstr_> nodalstresses;
-  nodalstresses.Multiply(expol, stresses);
+  LINALG::Matrix<nen_, num_cols> nodalData;
+  nodalData.Multiply(expolOperator, data);
 
-  // "assembly" of extrapolated nodal stresses
+  // "assembly" of extrapolated nodal data
   for (int i = 0; i < nen_; ++i)
   {
-    const int lid = expolstresses.Map().LID(NodeIds()[i]);
+    const int lid = expolData.Map().LID(NodeIds()[i]);
     if (lid >= 0)  // rownode
     {
       const double invmyadjele = 1.0 / Nodes()[i]->NumElement();
-      for (int j = 0; j < MAT::NUM_STRESS_3D; ++j)
-        (*(expolstresses(j)))[lid] += nodalstresses(i, j) * invmyadjele;
+      for (unsigned int j = 0; j < num_cols; ++j)
+        (*(expolData(j)))[lid] += nodalData(i, j) * invmyadjele;
     }
   }
   return;
 }
 
+template void DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::soh8_expol(
+    LINALG::Matrix<numgpt_post, 1>&, Epetra_MultiVector&);
+template void DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::soh8_expol(
+    LINALG::Matrix<numgpt_post, numstr_>&, Epetra_MultiVector&);
+template void DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::soh8_expol(
+    LINALG::Matrix<numgpt_post, 9>&, Epetra_MultiVector&);
 
 /*----------------------------------------------------------------------*
  | Have plastic spin                                        seitz 05/14 |

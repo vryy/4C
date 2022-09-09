@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!--
+# vtk DataFile Version 3.0
+-->
+<VTKFile type="Collection" version="0.1" ByteOrder="LittleEndian">
+  <Collection>
+    <DataSet timestep="5.00000000000000e-01" group="" part="0" file="plastic_flange_ssn_hill-vtk-files/structure-000008.pvtu"/>
+    <DataSet timestep="1.00000000000000e+00" group="" part="0" file="plastic_flange_ssn_hill-vtk-files/structure-000016.pvtu"/>
+  </Collection>
+</VTKFile>

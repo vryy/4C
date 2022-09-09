@@ -18,10 +18,7 @@ rY_13 0.7
 
 #include "plasticelasthyper.H"
 #include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_matelast/elast_summand.H"
-#include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../linalg/linalg_utils_densematrix_eigen.H"
-#include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/material_service.H"
@@ -2297,7 +2294,7 @@ void MAT::PlasticElastHyper::EvaluateIsotropicPrincPlast(LINALG::Matrix<6, 9>& d
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)                         |
  *---------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::VisNames(std::map<std::string, int>& names)
+void MAT::PlasticElastHyper::VisNames(std::map<std::string, int>& names) const
 {
   std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1;  // scalar
@@ -2305,6 +2302,8 @@ void MAT::PlasticElastHyper::VisNames(std::map<std::string, int>& names)
   names[plastic_strain_incr] = 1;  // scalar
   std::string plastic_zone = "plastic_zone";
   names[plastic_zone] = 1;  // scalar
+  std::string kinematic_plastic_strain = "kinematic_plastic_strain";
+  names[kinematic_plastic_strain] = 9;  // tensor
 
 }  // VisNames()
 
@@ -2322,14 +2321,14 @@ bool MAT::PlasticElastHyper::VisData(
     for (unsigned gp = 0; gp < last_alpha_isotropic_.size(); gp++) tmp += AccumulatedStrain(gp);
     data[0] = tmp / last_alpha_isotropic_.size();
   }
-  if (name == "plastic_strain_incr")
+  else if (name == "plastic_strain_incr")
   {
     if ((int)data.size() != 1) dserror("size mismatch");
     double tmp = 0.;
     for (unsigned gp = 0; gp < delta_alpha_i_.size(); gp++) tmp += delta_alpha_i_.at(gp);
     data[0] = tmp / delta_alpha_i_.size();
   }
-  if (name == "plastic_zone")
+  else if (name == "plastic_zone")
   {
     bool plastic_history = false;
     bool curr_active = false;
@@ -2341,10 +2340,86 @@ bool MAT::PlasticElastHyper::VisData(
     }
     data[0] = plastic_history + curr_active;
   }
-  return false;
+  else if (name == "kinematic_plastic_strain")
+  {
+    if ((int)data.size() != 9) dserror("size mismatch");
+    std::vector<double> tmp(9, 0.);
+    for (std::size_t gp = 0; gp < last_alpha_kinematic_.size(); ++gp)
+    {
+      const double* values = last_alpha_kinematic_[gp].A();
+      for (std::size_t i = 0; i < 9; ++i)
+      {
+        tmp[i] += values[i];
+      }
+    }
+    for (std::size_t i = 0; i < 9; ++i) data[i] = tmp[i] / last_alpha_kinematic_.size();
+  }
+  else
+  {
+    return false;
+  }
+  return true;
 
 }  // VisData()
 
+/*---------------------------------------------------------------------*
+ *---------------------------------------------------------------------*/
+void MAT::PlasticElastHyper::RegisterVtkOutputDataNames(
+    std::unordered_map<std::string, int>& names_and_size) const
+{
+  names_and_size["accumulated_plastic_strain"] = 1;  // scalar
+  names_and_size["plastic_strain_incr"] = 1;         // scalar
+  names_and_size["plastic_zone"] = 1;                // scalar
+  names_and_size["kinematic_plastic_strain"] = 9;    // tensor
+}
+
+/*---------------------------------------------------------------------*
+ *---------------------------------------------------------------------*/
+bool MAT::PlasticElastHyper::EvaluateVtkOutputData(
+    const std::string& name, Epetra_SerialDenseMatrix& data) const
+{
+  if (name == "accumulated_plastic_strain")
+  {
+    for (std::size_t gp = 0; gp < last_alpha_isotropic_.size(); ++gp)
+    {
+      data(gp, 0) = last_alpha_isotropic_[gp];
+    }
+    return true;
+  }
+  if (name == "plastic_strain_incr")
+  {
+    for (std::size_t gp = 0; gp < delta_alpha_i_.size(); ++gp)
+    {
+      data(gp, 0) = delta_alpha_i_[gp];
+    }
+    return true;
+  }
+  if (name == "plastic_zone")
+  {
+    bool plastic_history = false;
+    bool curr_active = false;
+    for (std::size_t gp = 0; gp < last_alpha_isotropic_.size(); ++gp)
+    {
+      if (AccumulatedStrain(gp) != 0.) plastic_history = true;
+      if (Active(gp)) curr_active = true;
+      data(gp, 0) = plastic_history + curr_active;
+    }
+    return true;
+  }
+  if (name == "kinematic_plastic_strain")
+  {
+    for (std::size_t gp = 0; gp < last_alpha_kinematic_.size(); ++gp)
+    {
+      const double* values = last_alpha_kinematic_[gp].A();
+      for (std::size_t i = 0; i < 9; ++i)
+      {
+        data(gp, i) = values[i];
+      }
+    }
+    return true;
+  }
+  return false;
+}
 
 /*----------------------------------------------------------------------*
  |  matrix exponential                                      seitz 07/13 |
