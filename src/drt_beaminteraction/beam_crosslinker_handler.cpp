@@ -14,14 +14,11 @@
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
+
 #include <Teuchos_TimeMonitor.hpp>
-#include <Isorropia_Exception.hpp>
-#include <Isorropia_Epetra.hpp>
-#include <Isorropia_EpetraRedistributor.hpp>
-#include <Isorropia_EpetraPartitioner.hpp>
-#include <Isorropia_EpetraCostDescriber.hpp>
 
 #include <unordered_set>
+
 #include "beam_crosslinker_handler.H"
 
 
