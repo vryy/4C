@@ -181,9 +181,6 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-MueLu_REBALANCE                 No
-MueLu_REBALANCE_MINROWS         1000
-MueLu_REBALANCE_NONZEROIMBALANCE 1.2
 NON_DIAGDOMINANCE_RATIO         1
 PERMUTE_SYSTEM                  none
 SIMPLE_DAMPING                  1

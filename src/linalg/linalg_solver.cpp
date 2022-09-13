@@ -655,20 +655,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToMuelu(
   muelulist.set<bool>("LINALG::MueLu_Preconditioner", true);
 
   muelulist.set("aggregation: threshold", inparams.get<double>("ML_PROLONG_THRES"));
-
-  int doRepart = DRT::INPUT::IntegralValue<int>(inparams, "MueLu_REBALANCE");
-  if (doRepart > 2)
-  {
-    muelulist.set("repartition: enable", 1);
-  }
-  else
-  {
-    muelulist.set("repartition: enable", 0);
-  }
-  muelulist.set("repartition: partitioner", "ParMETIS");
-  muelulist.set(
-      "repartition: max min ratio", inparams.get<double>("MueLu_REBALANCE_NONZEROIMBALANCE"));
-  muelulist.set("repartition: min per proc", inparams.get<int>("MueLu_REBALANCE_MINROWS"));
   muelulist.set("aggregation: min nodes per aggregate", inparams.get<int>("MueLu_MIN_AGG_SIZE"));
 
   return muelulist;
