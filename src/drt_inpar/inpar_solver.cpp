@@ -237,15 +237,6 @@ namespace INPAR
         IntParameter("MueLu_MIN_AGG_SIZE", 6,
             "Minimal objective size of an aggregate (to influence the coarsening rate)", &list);
 
-        setStringToIntegralParameter<int>("MueLu_REBALANCE", "No",
-            "activate rebalancing using Zoltan/Isorropia",
-            tuple<std::string>("NO", "No", "no", "YES", "Yes", "yes"), tuple<int>(0, 1, 2, 3, 4, 5),
-            &list);
-        DoubleParameter("MueLu_REBALANCE_NONZEROIMBALANCE", 1.2,
-            "maximum allowed nonzero imbalance factor", &list);
-        IntParameter("MueLu_REBALANCE_MINROWS", 1000,
-            "minimum numbers of rows per processor before rebalancing is necessary", &list);
-
         StringParameter(
             "MUELU_XML_FILE", "none", "xml file defining any MueLu preconditioner", &list);
 

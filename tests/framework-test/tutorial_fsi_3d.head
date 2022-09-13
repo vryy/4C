@@ -1214,16 +1214,6 @@ SUB_SOLVER2                     -1
 // Minimal objective size of an aggregate (to influence the coarsening rate)
 MueLu_MIN_AGG_SIZE              6
 //
-// activate rebalancing using Zoltan/Isorropia
-//     NO,No,no,YES,Yes,yes
-MueLu_REBALANCE                 No
-//
-// maximum allowed nonzero imbalance factor
-MueLu_REBALANCE_NONZEROIMBALANCE 1.2
-//
-// minimum numbers of rows per processor before rebalancing is necessary
-MueLu_REBALANCE_MINROWS         1000
-//
 // BGS2x2 flip order parameter
 //     block0_block1_order,block1_block0_order
 BGS2X2_FLIPORDER                block0_block1_order
