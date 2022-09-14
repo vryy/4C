@@ -154,6 +154,15 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
   BoolParameter(
       "ARTERY_COUPLING", "No", "Coupling with 1D blood vessels.", &porofluidmultiphasedyn);
 
+  DoubleParameter("STARTING_DBC_TIME_END", -1.0, "End time for the starting Dirichlet BC.",
+      &porofluidmultiphasedyn);
+
+  setNumericStringParameter("STARTING_DBC_ONOFF", "0",
+      "Switching the starting Dirichlet BC on or off.", &porofluidmultiphasedyn);
+
+  setNumericStringParameter("STARTING_DBC_FUNCT", "0",
+      "Function prescribing the starting Dirichlet BC.", &porofluidmultiphasedyn);
+
   // ----------------------------------------------------------------------
   // artery mesh tying
   Teuchos::ParameterList& porofluidmultiphasemshtdyn =

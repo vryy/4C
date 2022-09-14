@@ -116,10 +116,14 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> ac
       zeros_(Teuchos::null),
       dbcmaps_(Teuchos::null),
       dbcmaps_with_volfracpress_(Teuchos::null),
+      dbcmaps_starting_condition_(Teuchos::null),
       neumann_loads_(Teuchos::null),
       residual_(Teuchos::null),
       trueresidual_(Teuchos::null),
-      increment_(Teuchos::null)
+      increment_(Teuchos::null),
+      starting_dbc_time_end_(poroparams_.get<double>("STARTING_DBC_TIME_END")),
+      starting_dbc_onoff_(std::vector<bool>()),
+      starting_dbc_funct_(std::vector<int>())
 {
   return;
 }
@@ -207,9 +211,19 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   zeros_ = LINALG::CreateVector(*dofrowmap, true);
 
+  int stream;
+  std::istringstream stream_dbc_onoff(
+      Teuchos::getNumericStringParameter(poroparams_, "STARTING_DBC_ONOFF"));
+  while (stream_dbc_onoff >> stream) starting_dbc_onoff_.push_back(static_cast<bool>(stream));
+
+  std::istringstream stream_dbc_funct(
+      Teuchos::getNumericStringParameter(poroparams_, "STARTING_DBC_FUNCT"));
+  while (stream_dbc_funct >> stream) starting_dbc_funct_.push_back(static_cast<int>(stream));
+
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
   dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
   dbcmaps_with_volfracpress_ = Teuchos::rcp(new LINALG::MapExtractor());
+  dbcmaps_starting_condition_ = Teuchos::rcp(new LINALG::MapExtractor());
   {
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
@@ -218,6 +232,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
         eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     discret_->EvaluateDirichlet(
         eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_with_volfracpress_);
+    discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null,
+        dbcmaps_starting_condition_);
     zeros_->PutScalar(0.0);  // just in case of change
   }
 
@@ -401,6 +417,11 @@ void POROFLUIDMULTIPHASE::TimIntImpl::PrepareTimeStep()
   // volume fraction pressure specific stuff
   EvaluateValidVolumeFracPressAndSpec();
   ApplyAdditionalDBCForVolFracPress();
+
+  if (time_ <= starting_dbc_time_end_)
+  {
+    ApplyStartingDBC();
+  }
 
   // do the same also for meshtying
   strategy_->PrepareTimeStep();
@@ -856,6 +877,61 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ApplyAdditionalDBCForVolFracPress()
   *dbcmaps_with_volfracpress_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
 
   return;
+}
+
+void POROFLUIDMULTIPHASE::TimIntImpl::ApplyStartingDBC()
+{
+  const auto& elecolmap = *discret_->ElementColMap();
+  std::vector<int> dirichlet_dofs(0);
+  const int num_poro_dofs = discret_->NumDof(0, discret_->lRowNode(0));
+
+  for (int ele_idx = 0; ele_idx < elecolmap.NumMyElements(); ++ele_idx)
+  {
+    const auto& current_element = *discret_->gElement(elecolmap.GID(ele_idx));
+    const auto* const nodes = current_element.Nodes();
+
+    for (int node_idx = 0; node_idx < (current_element.NumNode()); node_idx++)
+    {
+      const auto* const current_node = nodes[node_idx];
+      if (current_node->Owner() == myrank_)
+      {
+        const std::vector<int> gid_node_dofs = discret_->Dof(0, current_node);
+
+        for (int dof_idx = 0; dof_idx < num_poro_dofs; ++dof_idx)
+        {
+          if (starting_dbc_onoff_[dof_idx])
+          {
+            auto const gid = gid_node_dofs[dof_idx];
+            if (std::find(dirichlet_dofs.begin(), dirichlet_dofs.end(), gid) ==
+                dirichlet_dofs.end())
+            {
+              // LID returns -1 if not found in this map/on this processor
+              if (dbcmaps_with_volfracpress_->CondMap()->LID(gid) == -1)
+              {
+                dirichlet_dofs.push_back(gid);
+              }
+              const double dbc_value = DRT::Problem::Instance()
+                                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                               starting_dbc_funct_[dof_idx] - 1)
+                                           .Evaluate(0, current_node->X(), time_);
+              phinp_->ReplaceGlobalValue(gid, 0, dbc_value);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // build combined DBC map
+  Teuchos::RCP<Epetra_Map> additional_map = Teuchos::rcp(
+      new Epetra_Map(-1, dirichlet_dofs.size(), &(dirichlet_dofs[0]), 0, discret_->Comm()));
+
+  std::vector<Teuchos::RCP<const Epetra_Map>> condition_maps;
+  condition_maps.emplace_back(additional_map);
+  condition_maps.push_back(dbcmaps_with_volfracpress_->CondMap());
+
+  Teuchos::RCP<Epetra_Map> combined_map = LINALG::MultiMapExtractor::MergeMaps(condition_maps);
+  *dbcmaps_starting_condition_ = LINALG::MapExtractor(*(discret_->DofRowMap()), combined_map);
 }
 
 /*----------------------------------------------------------------------*
@@ -1743,12 +1819,17 @@ void POROFLUIDMULTIPHASE::TimIntImpl::PrepareSystemForNewtonSolve()
     // time measurement: application of DBC to system
     TEUCHOS_FUNC_TIME_MONITOR("POROFLUIDMULTIPHASE:       + apply DBC to system");
 
-    // apply combined map
-    LINALG::ApplyDirichlettoSystem(
-        sysmat_, increment_, residual_, zeros_, *(dbcmaps_with_volfracpress_->CondMap()));
+    if (time_ <= starting_dbc_time_end_)
+    {
+      LINALG::ApplyDirichlettoSystem(
+          sysmat_, increment_, residual_, zeros_, *(dbcmaps_starting_condition_->CondMap()));
+    }
+    else
+    {
+      LINALG::ApplyDirichlettoSystem(
+          sysmat_, increment_, residual_, zeros_, *(dbcmaps_with_volfracpress_->CondMap()));
+    }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
