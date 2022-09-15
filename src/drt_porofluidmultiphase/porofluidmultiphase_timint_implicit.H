@@ -356,6 +356,9 @@ namespace POROFLUIDMULTIPHASE
     //! apply the additional volume fraction pressures as DBC
     virtual void ApplyAdditionalDBCForVolFracPress();
 
+    //! apply the starting Dirichlet boundary condition
+    virtual void ApplyStartingDBC();
+
     //! call elements to calculate fluid coupling matrix with structure and assemble
     virtual void AssembleFluidStructCouplingMat(Teuchos::RCP<LINALG::SparseOperator> k_fs);
 
@@ -650,11 +653,14 @@ namespace POROFLUIDMULTIPHASE
     //! maps for extracting Dirichlet and free DOF sets
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
 
-    //! maps for extracting Dirichlet and free DOF sets, here the additional dofs which have to be
-    //! zeroed out for
-    //  the volume fraction pressure since it is not defined if the corresponding volume fraction is
-    //  equal to zero ( or smaller than minvolfrac) have been added
+    //! maps for extracting Dirichlet and free DOF sets, here the additional dofs have been added
+    //! which have to be zeroed out for the volume fraction pressure since it is not defined if the
+    //! corresponding volume fraction is equal to zero (or smaller than minvolfrac)
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps_with_volfracpress_;
+
+    //! maps for extracting Dirichlet and free DOF sets with additional starting Dirichlet boundary
+    //! condition
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_starting_condition_;
 
     //! the vector containing body and surface forces
     Teuchos::RCP<Epetra_Vector> neumann_loads_;
@@ -670,6 +676,15 @@ namespace POROFLUIDMULTIPHASE
 
     //! meshtying strategy (includes standard case without meshtying)
     Teuchos::RCP<POROFLUIDMULTIPHASE::MeshtyingStrategyBase> strategy_;
+
+    //! end time point when to switch off the starting Dirichlet boundary condition
+    double starting_dbc_time_end_;
+
+    //! switch the starting Dirichlet boundary condition on or off for the different DOFs
+    std::vector<bool> starting_dbc_onoff_;
+
+    //! function ID prescribing the starting Dirichlet boundary condition
+    std::vector<int> starting_dbc_funct_;
 
     /*========================================================================*/
 
