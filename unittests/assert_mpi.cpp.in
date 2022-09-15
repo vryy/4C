@@ -1,0 +1,29 @@
+/*----------------------------------------------------------------------*/
+/*! \file
+ \brief This template file asserts that mpirun is invoked with the correct number of processes in
+        googletest executables.
+ \level 0
+*/
+
+#include <gtest/gtest.h>
+
+#include <mpi.h>
+
+// GENERATED FILE! Make sure to edit the template in the source directory.
+
+// This test is automatically included inside every test executable created from the cmake function
+// BACI_ADD_GOOGLE_TEST_EXECUTABLE.
+TEST(BACIGoogleTest, RunningWithIntendedNumberOfProcesses)
+{
+  // clang-format off
+  const int intended_n_processes = @BACI_ADD_GOOGLE_TEST_EXECUTABLE_NP@;
+  // clang-format on
+
+  int n_processes;
+  const int ierr = MPI_Comm_size(MPI_COMM_WORLD, &n_processes);
+
+  ASSERT_EQ(ierr, 0);
+  ASSERT_EQ(n_processes, intended_n_processes)
+      << "This failure indicates that you ran a test executable with a different number of "
+         "processes than it is supposed to be run with.";
+}
