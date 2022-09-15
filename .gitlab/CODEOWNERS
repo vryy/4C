@@ -42,7 +42,7 @@
 /utilities/                        @baci/baci_maintainer @baci/team_infrastructure
 
 # infrastructure configuration files
-CMakeLists.txt                     @baci/team_infrastructure @baci/baci_maintainer
+*CMakeLists.txt                    @baci/baci_maintainer @baci/team_infrastructure
 do-configure                       @baci/team_infrastructure @baci/baci_maintainer
 
 # testing framework configuration files
