@@ -2,32 +2,26 @@
 
 For unit testing we use the [GoogleTest](https://github.com/google/googletest) library.
 
-## Migrating unit tests from CxxTest
-
 **Before starting, read the GoogleTest [primer](http://google.github.io/googletest/primer.html)
 sections up to section
 "Invoking the Tests".
 Approximate reading time 10 mins.**
 
-1. Create a new .cpp file in the new directory `unittests` in a subdirectory that matches the
-   relative location of the tested file in the `src` directory. You may need to create it.
+Writing a new unit test roughly works like this:
+
+1. Create a new .cpp file in the directory `unittests` in a subdirectory that matches the
+   relative location of the tested file in the `src` directory. You may need to create the
+   directory if it does not exist yet.
 2. Add the new file to the `CMakeLists.txt` inside the directory (again you may need to create it).
-   Consider the existing test directories as a template. In case you have problems listing all necessary
+   Consider the existing test directories as a template. In case you have problems listing all
+   necessary
    libraries for your test, you can use
-   `BACI_LINK_GOOGLE_TEST_NECESSARY_LIBRARIES(${TESTNAME} -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group ${LIBRARIES})`
+   `baci_link_google_test_necessary_libraries(${TESTNAME} -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group ${LIBRARIES})`
    as a temporary solution to include all libraries in the correct order.
 3. Include the gtest header.
 4. Open an anonymous namespace inside the file.
-5. Copy the content from the old file into the anonymous namespace
-6. CxxTest always required a test fixture class (the one we derived from BACICxxTestWrapper). If
-   the fixture doesn't contain any setup, you can remove it since GoogleTest doesn't need one.
-   Only use a fixture if there is some shared setup (see
-   the [primer](http://google.github.io/googletest/primer.html) in item 0.).
-7. Replace the functions `Test...` with the GoogleTest macro `TEST` or `TEST_F` if you need a
-   test fixture (see the [primer](http://google.github.io/googletest/primer.html)). Note that
-   the tests must reside _outside_ of the fixture class!
-8. Replace the `TS_` assertions with the respective expectations `EXPECT_` from GoogleTest. See
-   the [list of assertions](http://google.github.io/googletest/reference/assertions.html).
+5. Write your tests. Use existing tests and the GoogleTest documentation as a guideline and
+   inspiration.
 
 ## Special topics
 
@@ -39,6 +33,6 @@ Approximate reading time 10 mins.**
 
 ### Testing code that runs in parallel
 
-- This was not possible with the old CxxTest setup and should not be encountered when porting tests.
-- If you think a piece of code should run in parallel contact the BACI community and we can
-  provide an executable for it.
+You may execute a unit test executable in parallel by
+using `baci_add_google_test_executable(<name> NP <number of processes> SOURCE source1 [source2 ..
+.])`. The resulting test executable will then be called with the correct mpi flags by `ctest`.

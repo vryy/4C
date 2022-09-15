@@ -1,9 +1,9 @@
 #! Add a unit test executable
 #
 # This executable may be run in serial or with a given number of processes as the NP argument
-# Usage: BACI_ADD_GOOGLE_TEST_EXECUTABLE(<name> [NP <number of processes>] SOURCE source1 [source2 ...])
+# Usage: baci_add_google_test_executable(<name> [NP <number of processes>] SOURCE source1 [source2 ...])
 #
-function(BACI_ADD_GOOGLE_TEST_EXECUTABLE TESTNAME)
+function(baci_add_google_test_executable TESTNAME)
   set(options "")
   set(oneValueArgs NP)
   set(multiValueArgs SOURCE)
