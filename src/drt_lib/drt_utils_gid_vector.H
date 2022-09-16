@@ -12,15 +12,14 @@
 #ifndef UTILS_H_GID_VECTOR
 #define UTILS_H_GID_VECTOR
 
+#include "drt_dserror.H"
 #include <Epetra_Comm.h>
 #include <map>
 #include <Teuchos_RCPDecl.hpp>
 #include <vector>
-#include "drt_dserror.H"
 
 namespace DRT
 {
-  class Discretization;
   class DiscretizationInterface;
 
   namespace UTILS
@@ -33,7 +32,7 @@ namespace DRT
      * @param[out] my_gid_vec           vector with my node GIDs
      */
     void AddOwnedNodeGID(
-        Teuchos::RCP<DRT::Discretization> dis, int nodegid, std::vector<int>& my_gid_vec);
+        const DiscretizationInterface& dis, int nodegid, std::vector<int>& my_gid_vec);
 
     /*!
      * \brief Add nodal GIDs on this processor to existing vector from vector with global GIDs
@@ -42,17 +41,8 @@ namespace DRT
      * @param[in] gloabl_node_gid_vec   vector with all node GIDs
      * @param[out] my_gid_vec           vector with my node GIDs
      */
-    void AddOwnedNodeGIDVector(Teuchos::RCP<DRT::Discretization> dis,
+    void AddOwnedNodeGIDVector(const DiscretizationInterface& dis,
         const std::vector<int>& global_node_gid_vec, std::vector<int>& my_gid_vec);
-
-    /*!
-     * \brief check, whether node with GID is owned by this processor
-     *
-     * @param[in] dis                   discretization, that holds nodes with GIDs
-     * @param[in] node_gid              GID of node to be checked
-     * @return                          indicates, whether node is owned by this processor
-     */
-    bool IsNodeGIDOnThisProc(Teuchos::RCP<DRT::Discretization> dis, int node_gid);
 
     /*!
      * \brief check, whether node with GID is owned by this processor
@@ -70,7 +60,7 @@ namespace DRT
      * @param[in] node_gids_to_remove   vector with node GIDs to remove
      * @param[in/out] node_gid_vec      vector to remove GIDs from
      */
-    void RemoveNodeGIDsFromVector(Teuchos::RCP<DRT::Discretization> dis,
+    void RemoveNodeGIDsFromVector(const DiscretizationInterface& dis,
         const std::vector<int>& node_gids_to_remove, std::vector<int>& node_gid_vec);
 
     //! Merge map @p map_in (key of type @p T and value of type @p U) from all procs to a merged

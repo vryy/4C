@@ -998,8 +998,8 @@ void SSI::UTILS::SSIStructureMeshTying::SetupMeshTyingHandlers(
             num_created_adapters == iadapter)
         {
           const int slave_gid = pair.first;
-          DRT::UTILS::AddOwnedNodeGID(struct_dis, master_gid, inodegidvec_master);
-          DRT::UTILS::AddOwnedNodeGID(struct_dis, slave_gid, inodegidvec_slave);
+          DRT::UTILS::AddOwnedNodeGID(*struct_dis, master_gid, inodegidvec_master);
+          DRT::UTILS::AddOwnedNodeGID(*struct_dis, slave_gid, inodegidvec_slave);
 
           pair.second = -1;  // do not consider this pair in next iteration
           created_adapters[master_gid] = num_created_adapters + 1;
@@ -1035,7 +1035,7 @@ void SSI::UTILS::SSIStructureMeshTying::SetupMeshTyingHandlers(
 
     std::vector<int> my_coupled_original_slave_gids;
     for (const int& slave_gid : all_coupled_original_slave_gids)
-      DRT::UTILS::AddOwnedNodeGID(struct_dis, slave_gid, my_coupled_original_slave_gids);
+      DRT::UTILS::AddOwnedNodeGID(*struct_dis, slave_gid, my_coupled_original_slave_gids);
 
     auto slave_slave_transformation = Teuchos::rcp(new ADAPTER::Coupling());
     slave_slave_transformation->SetupCoupling(*struct_dis, *struct_dis, inodegidvec_slave,
@@ -1110,7 +1110,7 @@ void SSI::UTILS::SSIStructureMeshTying::FindMatchingNodePairs(
 
     // nodes of meshtying_condition_a owned by this proc
     std::vector<int> inodegidvec_a;
-    DRT::UTILS::AddOwnedNodeGIDVector(struct_dis, *meshtying_condition_a->Nodes(), inodegidvec_a);
+    DRT::UTILS::AddOwnedNodeGIDVector(*struct_dis, *meshtying_condition_a->Nodes(), inodegidvec_a);
 
     // init node matching octree with nodes from condition a
     DRT::UTILS::NodeMatchingOctree tree = DRT::UTILS::NodeMatchingOctree();
@@ -1124,7 +1124,8 @@ void SSI::UTILS::SSIStructureMeshTying::FindMatchingNodePairs(
 
       // nodes of meshtying_condition_b owned by this proc
       std::vector<int> inodegidvec_b;
-      DRT::UTILS::AddOwnedNodeGIDVector(struct_dis, *meshtying_condition_b->Nodes(), inodegidvec_b);
+      DRT::UTILS::AddOwnedNodeGIDVector(
+          *struct_dis, *meshtying_condition_b->Nodes(), inodegidvec_b);
 
       // key: master node gid, value: slave node gid and distance
       std::map<int, std::pair<int, double>> coupled_gid_nodes;
@@ -1346,7 +1347,7 @@ void SSI::UTILS::SSIStructureMeshTying::FindSlaveSlaveTransformationNodes(
     if (meshtying_conditon->GetInt("interface side") == INPAR::S2I::side_slave)
     {
       DRT::UTILS::AddOwnedNodeGIDVector(
-          struct_dis, *meshtying_conditon->Nodes(), original_slave_gids);
+          *struct_dis, *meshtying_conditon->Nodes(), original_slave_gids);
     }
   }
 
