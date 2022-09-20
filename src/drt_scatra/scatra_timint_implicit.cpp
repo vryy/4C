@@ -3728,9 +3728,9 @@ void SCATRA::ScaTraTimIntImpl::CalcMeanMicroConcentration()
         for (int inode = 0; inode < ele->NumNode(); ++inode)
         {
           if (num_dof_element == 3)
-            DRT::UTILS::AddOwnedNodeGID(Discretization(), nodes[inode]->Id(), multiscale_nodes);
+            DRT::UTILS::AddOwnedNodeGID(*Discretization(), nodes[inode]->Id(), multiscale_nodes);
           else if (num_dof_element == 2)
-            DRT::UTILS::AddOwnedNodeGID(Discretization(), nodes[inode]->Id(), other_nodes);
+            DRT::UTILS::AddOwnedNodeGID(*Discretization(), nodes[inode]->Id(), other_nodes);
           else
             dserror("Only 2 or 3 dofs per element supported");
         }

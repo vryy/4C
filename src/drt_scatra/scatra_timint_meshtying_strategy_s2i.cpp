@@ -2019,13 +2019,13 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
               static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
           {
             DRT::UTILS::AddOwnedNodeGIDVector(
-                scatratimint_->Discretization(), *kinetics_condition->Nodes(), islavenodegidvec);
+                *scatratimint_->Discretization(), *kinetics_condition->Nodes(), islavenodegidvec);
 
             auto mastercondition = master_conditions_.find(kineticsID);
             if (mastercondition == master_conditions_.end())
               dserror("Could not find master condition");
 
-            DRT::UTILS::AddOwnedNodeGIDVector(scatratimint_->Discretization(),
+            DRT::UTILS::AddOwnedNodeGIDVector(*scatratimint_->Discretization(),
                 *mastercondition->second->Nodes(), imasternodegidvec);
 
             islavenodegidvec_cond.push_back(islavenodegidvec);
@@ -2057,13 +2057,13 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
               static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
           {
             DRT::UTILS::AddOwnedNodeGIDVector(
-                scatratimint_->Discretization(), *kinetics_condition->Nodes(), islavenodegidvec);
+                *scatratimint_->Discretization(), *kinetics_condition->Nodes(), islavenodegidvec);
 
             auto mastercondition = master_conditions_.find(kineticsID);
             if (mastercondition == master_conditions_.end())
               dserror("Could not find master condition");
             else
-              DRT::UTILS::AddOwnedNodeGIDVector(scatratimint_->Discretization(),
+              DRT::UTILS::AddOwnedNodeGIDVector(*scatratimint_->Discretization(),
                   *mastercondition->second->Nodes(), imasternodegidvec);
           }
         }

@@ -998,8 +998,8 @@ void SSI::UTILS::SSIStructureMeshTying::SetupMeshTyingHandlers(
             num_created_adapters == iadapter)
         {
           const int slave_gid = pair.first;
-          DRT::UTILS::AddOwnedNodeGID(struct_dis, master_gid, inodegidvec_master);
-          DRT::UTILS::AddOwnedNodeGID(struct_dis, slave_gid, inodegidvec_slave);
+          DRT::UTILS::AddOwnedNodeGID(*struct_dis, master_gid, inodegidvec_master);
+          DRT::UTILS::AddOwnedNodeGID(*struct_dis, slave_gid, inodegidvec_slave);
 
           pair.second = -1;  // do not consider this pair in next iteration
           created_adapters[master_gid] = num_created_adapters + 1;
@@ -1035,7 +1035,7 @@ void SSI::UTILS::SSIStructureMeshTying::SetupMeshTyingHandlers(
 
     std::vector<int> my_coupled_original_slave_gids;
     for (const int& slave_gid : all_coupled_original_slave_gids)
-      DRT::UTILS::AddOwnedNodeGID(struct_dis, slave_gid, my_coupled_original_slave_gids);
+      DRT::UTILS::AddOwnedNodeGID(*struct_dis, slave_gid, my_coupled_original_slave_gids);
 
     auto slave_slave_transformation = Teuchos::rcp(new ADAPTER::Coupling());
     slave_slave_transformation->SetupCoupling(*struct_dis, *struct_dis, inodegidvec_slave,
@@ -1092,82 +1092,6 @@ int SSI::UTILS::SSIStructureMeshTying::HasGIDPartial(const int gid, const int st
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIStructureMeshTying::BroadcastVector(
-    const std::vector<int>& vec_in, std::vector<int>& vec_out) const
-{
-  for (int iproc = 0; iproc < num_proc_; ++iproc)
-  {
-    // communicate size of vector
-    int size = static_cast<int>(vec_in.size());
-    comm_.Broadcast(&size, 1, iproc);
-
-    // new vectors to be filled (by this proc, if MyPID == iproc or other procs by communication)
-    std::vector<int> vec_broadcast;
-    if (iproc == my_rank_) vec_broadcast = vec_in;
-
-    // communicate vector
-    vec_broadcast.resize(size);
-    comm_.Broadcast(&vec_broadcast[0], size, iproc);
-
-    // append communicated vector to vec_out
-    for (const int& item : vec_broadcast) vec_out.emplace_back(item);
-  }
-}
-
-/*---------------------------------------------------------------------------------*
- *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIStructureMeshTying::BroadcastPairVector(
-    const std::vector<std::pair<int, int>>& pairs_in,
-    std::vector<std::pair<int, int>>& pairs_out) const
-{
-  // split pair vector into two vectors
-  std::vector<int> my_gid_vec1, my_gid_vec2;
-  for (const auto& pair : pairs_in)
-  {
-    my_gid_vec1.emplace_back(pair.first);
-    my_gid_vec2.emplace_back(pair.second);
-  }
-
-  // communicate vectors
-  std::vector<int> vec1, vec2;
-  BroadcastVector(my_gid_vec1, vec1);
-  BroadcastVector(my_gid_vec2, vec2);
-
-#ifdef DEBUG
-  if (vec1.size() != vec2.size()) dserror("Vectors must have the same length.");
-#endif
-
-  // reconstruct pair vector
-  for (unsigned i = 0; i < vec1.size(); ++i)
-    pairs_out.emplace_back(std::make_pair(vec1[i], vec2[i]));
-}
-
-/*---------------------------------------------------------------------------------*
- *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIStructureMeshTying::BroadcastMap(
-    const std::map<int, int>& map_in, std::map<int, int>& map_out) const
-{
-  // split map into two vectors
-  std::vector<int> my_gid_vec1, my_gid_vec2;
-  for (const auto& pair : map_in)
-  {
-    my_gid_vec1.emplace_back(pair.first);
-    my_gid_vec2.emplace_back(pair.second);
-  }
-  std::vector<int> vec1, vec2;
-  BroadcastVector(my_gid_vec1, vec1);
-  BroadcastVector(my_gid_vec2, vec2);
-
-#ifdef DEBUG
-  if (vec1.size() != vec2.size()) dserror("Vectors must have the same length.");
-#endif
-
-  // reconstruct map
-  for (unsigned i = 0; i < vec1.size(); ++i) map_out.insert(std::make_pair(vec1[i], vec2[i]));
-}
-
-/*---------------------------------------------------------------------------------*
- *---------------------------------------------------------------------------------*/
 void SSI::UTILS::SSIStructureMeshTying::FindMatchingNodePairs(
     Teuchos::RCP<DRT::Discretization> struct_dis, const std::string& name_meshtying_condition,
     std::vector<std::pair<int, int>>& coupling_pairs) const
@@ -1186,7 +1110,7 @@ void SSI::UTILS::SSIStructureMeshTying::FindMatchingNodePairs(
 
     // nodes of meshtying_condition_a owned by this proc
     std::vector<int> inodegidvec_a;
-    DRT::UTILS::AddOwnedNodeGIDVector(struct_dis, *meshtying_condition_a->Nodes(), inodegidvec_a);
+    DRT::UTILS::AddOwnedNodeGIDVector(*struct_dis, *meshtying_condition_a->Nodes(), inodegidvec_a);
 
     // init node matching octree with nodes from condition a
     DRT::UTILS::NodeMatchingOctree tree = DRT::UTILS::NodeMatchingOctree();
@@ -1200,7 +1124,8 @@ void SSI::UTILS::SSIStructureMeshTying::FindMatchingNodePairs(
 
       // nodes of meshtying_condition_b owned by this proc
       std::vector<int> inodegidvec_b;
-      DRT::UTILS::AddOwnedNodeGIDVector(struct_dis, *meshtying_condition_b->Nodes(), inodegidvec_b);
+      DRT::UTILS::AddOwnedNodeGIDVector(
+          *struct_dis, *meshtying_condition_b->Nodes(), inodegidvec_b);
 
       // key: master node gid, value: slave node gid and distance
       std::map<int, std::pair<int, double>> coupled_gid_nodes;
@@ -1223,7 +1148,7 @@ void SSI::UTILS::SSIStructureMeshTying::FindMatchingNodePairs(
 
   // communicate to all other procs
   std::vector<std::pair<int, int>> all_coupling_pairs;
-  BroadcastPairVector(my_coupling_pairs, all_coupling_pairs);
+  DRT::UTILS::BroadcastPairVector(my_coupling_pairs, all_coupling_pairs, comm_);
 
   // remove duplicates (slave node = master node)
   for (const auto& pair : all_coupling_pairs)
@@ -1394,8 +1319,8 @@ void SSI::UTILS::SSIStructureMeshTying::DefineMasterSlavePairing(
       if (node != new_master_gid) my_slave_master_pair.insert(std::make_pair(node, new_master_gid));
   }
 
-  BroadcastVector(my_master_gids, master_gids);
-  BroadcastMap(my_slave_master_pair, slave_master_pair);
+  DRT::UTILS::BroadcastVector(my_master_gids, master_gids, comm_);
+  DRT::UTILS::BroadcastMap(my_slave_master_pair, slave_master_pair, comm_);
 
 #ifdef DEBUG
   // check if everything worked fine
@@ -1422,7 +1347,7 @@ void SSI::UTILS::SSIStructureMeshTying::FindSlaveSlaveTransformationNodes(
     if (meshtying_conditon->GetInt("interface side") == INPAR::S2I::side_slave)
     {
       DRT::UTILS::AddOwnedNodeGIDVector(
-          struct_dis, *meshtying_conditon->Nodes(), original_slave_gids);
+          *struct_dis, *meshtying_conditon->Nodes(), original_slave_gids);
     }
   }
 
@@ -1442,7 +1367,8 @@ void SSI::UTILS::SSIStructureMeshTying::FindSlaveSlaveTransformationNodes(
   }
 
   // distribute gids from original slave nodes to all procs (matching might be on different proc)
-  BroadcastVector(my_coupled_original_slave_gids, all_coupled_original_slave_gids);
+  DRT::UTILS::BroadcastVector(
+      my_coupled_original_slave_gids, all_coupled_original_slave_gids, comm_);
 }
 
 /*---------------------------------------------------------------------------------*

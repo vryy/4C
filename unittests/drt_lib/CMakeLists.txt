@@ -22,3 +22,23 @@ baci_link_google_test_necessary_libraries(
   -Wl,--end-group
   ${LIBRARIES}
   )
+
+set(TESTNAME unittests_drt_lib_np_3)
+
+set(SOURCE_LIST unit_gid_vector.cpp)
+
+baci_add_google_test_executable(
+  ${TESTNAME}
+  NP
+  3
+  SOURCE
+  ${SOURCE_LIST}
+  )
+
+baci_link_google_test_necessary_libraries(
+  ${TESTNAME}
+  -Wl,--start-group
+  ${BACI_LIBRARIES}
+  -Wl,--end-group
+  ${LIBRARIES}
+  )

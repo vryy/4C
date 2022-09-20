@@ -15,14 +15,14 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::AddOwnedNodeGID(
-    Teuchos::RCP<DRT::Discretization> dis, const int nodegid, std::vector<int>& my_gid_vec)
+    const DiscretizationInterface& dis, const int nodegid, std::vector<int>& my_gid_vec)
 {
   if (IsNodeGIDOnThisProc(dis, nodegid)) my_gid_vec.push_back(nodegid);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::AddOwnedNodeGIDVector(Teuchos::RCP<DRT::Discretization> dis,
+void DRT::UTILS::AddOwnedNodeGIDVector(const DiscretizationInterface& dis,
     const std::vector<int>& global_node_gid_vec, std::vector<int>& my_gid_vec)
 {
   for (const int nodegid : global_node_gid_vec) AddOwnedNodeGID(dis, nodegid, my_gid_vec);
@@ -30,7 +30,7 @@ void DRT::UTILS::AddOwnedNodeGIDVector(Teuchos::RCP<DRT::Discretization> dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::RemoveNodeGIDsFromVector(Teuchos::RCP<DRT::Discretization> dis,
+void DRT::UTILS::RemoveNodeGIDsFromVector(const DiscretizationInterface& dis,
     const std::vector<int>& node_gids_to_remove, std::vector<int>& node_gid_vec)
 {
   for (const int node_gid_to_remove : node_gids_to_remove)
@@ -45,14 +45,7 @@ void DRT::UTILS::RemoveNodeGIDsFromVector(Teuchos::RCP<DRT::Discretization> dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::UTILS::IsNodeGIDOnThisProc(Teuchos::RCP<DRT::Discretization> dis, int node_gid)
-{
-  return DRT::UTILS::IsNodeGIDOnThisProc(*dis, node_gid);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-bool DRT::UTILS::IsNodeGIDOnThisProc(const DRT::DiscretizationInterface& dis, int node_gid)
+bool DRT::UTILS::IsNodeGIDOnThisProc(const DRT::DiscretizationInterface& dis, const int node_gid)
 {
   return (dis.HaveGlobalNode(node_gid) and dis.gNode(node_gid)->Owner() == dis.Comm().MyPID());
 }

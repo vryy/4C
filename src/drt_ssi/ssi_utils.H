@@ -411,22 +411,6 @@ namespace SSI
       }
 
      private:
-      //! Communicate map to all procs
-      //! \param map_in       [in] map to be communicated
-      //! \param map_out      [out] global map
-      void BroadcastMap(const std::map<int, int>& map_in, std::map<int, int>& map_out) const;
-
-      //! Communicate pair vector to all procs
-      //! \param pairs_in     [in] pair vector to be communicated
-      //! \param pairs_out    [out] global pair vector
-      void BroadcastPairVector(const std::vector<std::pair<int, int>>& pairs_in,
-          std::vector<std::pair<int, int>>& pairs_out) const;
-
-      //! Communicate vector to all procs
-      //! \param vec_in      [in] vector to be communicated
-      //! \param vec_out     [out] global vector
-      void BroadcastVector(const std::vector<int>& vec_in, std::vector<int>& vec_out) const;
-
       //! Define master nodes and subsequently master slave pairs
       //! \param struct_dis               [in] structural discretization
       //! \param grouped_matching_nodes   [in] vector of vector of nodes at same position

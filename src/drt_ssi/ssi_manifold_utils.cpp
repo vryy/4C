@@ -52,10 +52,10 @@ SSI::ManifoldScaTraCoupling::ManifoldScaTraCoupling(Teuchos::RCP<DRT::Discretiza
 {
   std::vector<int> inodegidvec_manifold;
   DRT::UTILS::AddOwnedNodeGIDVector(
-      manifolddis, *condition_manifold->Nodes(), inodegidvec_manifold);
+      *manifolddis, *condition_manifold->Nodes(), inodegidvec_manifold);
 
   std::vector<int> inodegidvec_scatra;
-  DRT::UTILS::AddOwnedNodeGIDVector(scatradis, *condition_kinetics->Nodes(), inodegidvec_scatra);
+  DRT::UTILS::AddOwnedNodeGIDVector(*scatradis, *condition_kinetics->Nodes(), inodegidvec_scatra);
 
   coupling_adapter_->SetupCoupling(*scatradis, *manifolddis, inodegidvec_scatra,
       inodegidvec_manifold, ndof_per_node, true, 1.0e-8);
@@ -930,7 +930,7 @@ void SSI::ManifoldMeshTyingStrategyBase::SetupMeshTyingHandler(
         // check if this master node has iadapter + 1 slave nodes
         if (assigned_slave_to_master_nodes.at(master_gid) <= iadapter + 1)
         {
-          DRT::UTILS::AddOwnedNodeGID(scatra_manifold_dis, master_gid, inodegidvec_master);
+          DRT::UTILS::AddOwnedNodeGID(*scatra_manifold_dis, master_gid, inodegidvec_master);
 
           int counter = 0;
           for (auto pair : master_slave_pair)
@@ -942,7 +942,7 @@ void SSI::ManifoldMeshTyingStrategyBase::SetupMeshTyingHandler(
               const int slave_gid_coupling = pair.first;
 
               DRT::UTILS::AddOwnedNodeGID(
-                  scatra_manifold_dis, slave_gid_coupling, inodegidvec_slave);
+                  *scatra_manifold_dis, slave_gid_coupling, inodegidvec_slave);
 
               counter++;
             }
@@ -1000,7 +1000,7 @@ std::vector<std::pair<int, int>> SSI::ManifoldMeshTyingStrategyBase::ConstructCo
     // nodes of manifold_condition_a owned by this proc
     std::vector<int> inodegidvec_a;
     DRT::UTILS::AddOwnedNodeGIDVector(
-        scatra_manifold_dis, *manifold_condition_a->Nodes(), inodegidvec_a);
+        *scatra_manifold_dis, *manifold_condition_a->Nodes(), inodegidvec_a);
 
     DRT::UTILS::NodeMatchingOctree tree = DRT::UTILS::NodeMatchingOctree();
     tree.Init(*scatra_manifold_dis, inodegidvec_a, 150, 1.0e-8);
@@ -1013,7 +1013,7 @@ std::vector<std::pair<int, int>> SSI::ManifoldMeshTyingStrategyBase::ConstructCo
       // nodes of manifold_condition_b owned by this proc
       std::vector<int> inodegidvec_b;
       DRT::UTILS::AddOwnedNodeGIDVector(
-          scatra_manifold_dis, *manifold_condition_b->Nodes(), inodegidvec_b);
+          *scatra_manifold_dis, *manifold_condition_b->Nodes(), inodegidvec_b);
 
       coupled_gid_nodes_type coupled_gid_nodes;
       condition_pair_type condition_pair = std::make_pair(a, b);
