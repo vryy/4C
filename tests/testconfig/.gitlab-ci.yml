@@ -625,7 +625,7 @@ lnm-buildtest_coverage_weekly:
   <<: *buildtest_coverage_weekly
   variables:
         # increase the global test timeout
-    GLOBAL_TEST_TIMEOUT_SCALE: '25'
+    GLOBAL_TEST_TIMEOUT_SCALE: '30'
         # increase the unit test timeout
     UNITTEST_TIMEOUT: '50'
         # enable coverage option of ctest
