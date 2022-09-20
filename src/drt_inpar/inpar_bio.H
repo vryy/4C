@@ -104,7 +104,8 @@ namespace INPAR
       none,   // none
       nodal,  // nodal
       gpts,   // Gauss-Point-To-Segment
-      mp      // Mortar-Penalty
+      mp,     // Mortar-Penalty
+      ntp     // 1Dnode-to-point in 2D/3D
     };
 
     /// set the artnet parameters

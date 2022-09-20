@@ -210,7 +210,6 @@ void INPAR::ARTNET::SetValidConditions(
   {
     artcoup->AddComponent(artcoupcomponents[i]);
   }
-
   condlist.push_back(artcoup);
 
   /*--------------------------------------------------------------------*/
@@ -231,6 +230,33 @@ void INPAR::ARTNET::SetValidConditions(
   }
 
   condlist.push_back(artscatracoup);
+
+  /*--------------------------------------------------------------------*/
+  // 1D artery-to-porofluid coupling BC Node-To-Point
+  Teuchos::RCP<ConditionDefinition> artcoup_ntp = Teuchos::rcp(
+      new ConditionDefinition("DESIGN 1D ARTERY TO POROFLUID NONCONF COUPLING CONDITIONS",
+          "ArtPorofluidCouplConNodeToPoint", "Artery coupling with porofluid nonconf",
+          DRT::Condition::ArtPorofluidCouplingCondNodeToPoint, true, DRT::Condition::Point));
+
+  artcoup_ntp->AddComponent(Teuchos::rcp(new StringConditionComponent("coupling_type", "ARTERY",
+      Teuchos::tuple<std::string>("ARTERY", "AIRWAY"),
+      Teuchos::tuple<std::string>("ARTERY", "AIRWAY"), true)));
+
+
+  condlist.push_back(artcoup_ntp);
+
+  /*--------------------------------------------------------------------*/
+  // 1D artery-to-scatra coupling BC Node-To-Point
+  Teuchos::RCP<ConditionDefinition> artscatracoup_ntp =
+      Teuchos::rcp(new ConditionDefinition("DESIGN 1D ARTERY TO SCATRA NONCONF COUPLING CONDITIONS",
+          "ArtScatraCouplConNodeToPoint", "Artery coupling with scatra nonconf",
+          DRT::Condition::ArtScatraCouplingCondNodeToPoint, true, DRT::Condition::Point));
+
+  artscatracoup_ntp->AddComponent(Teuchos::rcp(new StringConditionComponent("coupling_type",
+      "ARTERY", Teuchos::tuple<std::string>("ARTERY", "AIRWAY"),
+      Teuchos::tuple<std::string>("ARTERY", "AIRWAY"), true)));
+
+  condlist.push_back(artscatracoup_ntp);
 }
 
 

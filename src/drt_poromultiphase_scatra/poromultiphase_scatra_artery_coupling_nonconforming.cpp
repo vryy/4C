@@ -36,6 +36,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
     : PoroMultiPhaseScaTraArtCouplBase(
           arterydis, contdis, couplingparams, condname, artcoupleddofname, contcoupleddofname),
       couplingparams_(couplingparams),
+      condname_(condname),
       porofluidmanagersset_(false),
       issetup_(false),
       porofluidprob_(false),
@@ -114,11 +115,50 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Setup()
 {
+  // get the coupling method
+  auto arterycoupl =
+      DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
+          DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
+          "ARTERY_COUPLING_METHOD");
+
   // create the pairs
+  if (arterycoupl == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp)
+  {
+    GetCouplingIdsfromInput();
+    if (couplingnodes_ntp_.size() == 0) dserror("No 1D Coupling Node Ids found for NTP Coupling");
+    CreateCouplingPairsNTP();
+  }
+  else
+  {
     CreateCouplingPairsLineSurfBased();
+  }
+
 
   // check if varying diameter is used
   if (contdis_->Name() == "porofluid") SetVaryingDiamFlag();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::GetCouplingIdsfromInput()
+{
+  // get 1D coupling IDs from Input
+  std::vector<DRT::Condition*> artCoupcond;
+
+  arterydis_->GetCondition(condname_, artCoupcond);
+
+  couplingnodes_ntp_.resize(artCoupcond.size());
+
+  for (unsigned iter = 0; iter < artCoupcond.size(); ++iter)
+  {
+    const std::vector<int>* ArteryNodeIds = (artCoupcond[iter])->Nodes();
+    for (auto couplingids : *ArteryNodeIds)
+    {
+      couplingnodes_ntp_[iter] = couplingids;
+      std::cout << "Artery Coupling Node Id " << iter
+                << " from Input = " << couplingnodes_ntp_[iter] << "\n";
+    }
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -215,7 +255,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
             POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
                 CreateNewArteryCouplingPair(ele_ptrs);
         newpair->Init(ele_ptrs, couplingparams_, fluidcouplingparams, coupleddofs_cont_,
-            coupleddofs_art_, scale_vec_, funct_vec_);
+            coupleddofs_art_, scale_vec_, funct_vec_, condname_);
 
         // add to list of current contact pairs
         coupl_elepairs_[mypair] = newpair;
@@ -230,13 +270,103 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
   numactive_pairs = static_cast<int>(coupl_elepairs_.size());
   Comm().SumAll(&numactive_pairs, &total_numactive_pairs, 1);
 
+
   if (myrank_ == 0)
+  {
     std::cout << "\nFound " << total_numactive_pairs
               << " Artery-to-PoroMultiphaseScatra coupling pairs (segments)" << std::endl;
+  }
 
   // not needed any more
   nearbyelepairs_.clear();
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateCouplingPairsNTP()
+{
+  const Teuchos::ParameterList& fluidcouplingparams =
+      DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING");
+
+  int numactive_pairs = std::accumulate(nearbyelepairs_.begin(), nearbyelepairs_.end(), 0,
+      [](int a, auto b) { return a + (static_cast<int>(b.second.size())); });
+
+  coupl_elepairs_.resize(numactive_pairs);
+
+  // loop over pairs found by search
+  int mypair = 0;
+  for (const auto& nearbyeleiter : nearbyelepairs_)
+  {
+    // create vector of active coupling pairs
+    std::vector<DRT::Element const*> ele_ptrs(2);
+    // assign artery element
+    ele_ptrs[0] = arterydis_->gElement(nearbyeleiter.first);
+
+    // get nodes of artery element
+    const DRT::Node* const* artnodes = ele_ptrs[0]->Nodes();
+
+    // loop over nodes of artery element
+    for (int i = 0; i < ele_ptrs[0]->NumNode(); i++)
+    {
+      // loop over prescribed couplings nodes from input
+      for (unsigned int j = 0; j < couplingnodes_ntp_.size(); j++)
+      {
+        // check if artery node is prescribed coupling node
+        if (artnodes[i]->Id() == couplingnodes_ntp_[j])
+        {
+          // get coupling type (ARTERY or AIRWAY ?)
+          std::vector<DRT::Condition*> artCoupcond;
+          arterydis_->GetCondition(condname_, artCoupcond);
+          std::string coupling_element_type_ = *(artCoupcond[j])->Get<std::string>("coupling_type");
+
+          // get eta (parameter coordinate of corresponding node)
+          const int eta_ntp = (i == 0) ? -1 : 1;
+
+          // loop over assigned 2D/3D elements
+          for (const auto continuouseleiter : nearbyeleiter.second)
+          {
+            // assign 2D/3D element
+            ele_ptrs[1] = contdis_->gElement(continuouseleiter);
+
+            // only those pairs, where the 3D element is owned by this proc actually evaluated by
+            // this proc
+            if (ele_ptrs[1]->Owner() == myrank_)
+            {
+              // construct, init and setup coupling pairs
+              Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>
+                  newpair = POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
+                      CreateNewArteryCouplingPair(ele_ptrs);
+              newpair->Init(ele_ptrs, couplingparams_, fluidcouplingparams, coupleddofs_cont_,
+                  coupleddofs_art_, scale_vec_, funct_vec_, condname_, coupling_element_type_,
+                  eta_ntp);
+
+              // add to list of current contact pairs
+              coupl_elepairs_[mypair] = newpair;
+              mypair++;
+            }
+          }
+        }
+      }
+    }
+  }
+  coupl_elepairs_.resize(mypair);
+
+  // output
+  int total_numactive_pairs = 0;
+  numactive_pairs = static_cast<int>(coupl_elepairs_.size());
+  Comm().SumAll(&numactive_pairs, &total_numactive_pairs, 1);
+
+
+  if (myrank_ == 0)
+  {
+    std::cout << "\nFound " << total_numactive_pairs
+              << " Artery-to-PoroMultiphaseScatra coupling pairs (segments)" << std::endl;
+  }
+
+  // not needed any more
+  nearbyelepairs_.clear();
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

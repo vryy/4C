@@ -18,6 +18,7 @@
 #include "../drt_poromultiphase_scatra/poromultiphase_scatra_artery_coupling_nodebased.H"
 #include "../drt_poromultiphase_scatra/poromultiphase_scatra_utils.H"
 
+#include "../drt_inpar/inpar_bio.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                         kremheller 04/18 |
@@ -82,8 +83,22 @@ void SCATRA::MeshtyingStrategyArtery::InitMeshtying()
       "LATERAL_SURFACE_COUPLING");
 
   // set coupling condition name
-  const std::string couplingcondname =
-          "ArtScatraCouplConNodebased";
+  const std::string couplingcondname = std::invoke(
+      [&]()
+      {
+        if (DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
+                DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist(
+                    "ARTERY COUPLING"),
+                "ARTERY_COUPLING_METHOD") ==
+            INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp)
+        {
+          return "ArtScatraCouplConNodeToPoint";
+        }
+        else
+        {
+          return "ArtScatraCouplConNodebased";
+        }
+      });
 
   // init the mesh tying object, which does all the work
   arttoscatracoupling_ = POROMULTIPHASESCATRA::UTILS::CreateAndInitArteryCouplingStrategy(

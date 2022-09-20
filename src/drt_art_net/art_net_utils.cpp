@@ -172,6 +172,8 @@ std::map<std::string, std::string> ART::ArteryScatraCloneStrategy::ConditionsToC
       "ArtScatraCouplConNodebased", "ArtScatraCouplConNodebased"));
   conditions_to_copy.insert(std::pair<std::string, std::string>(
       "PoroMultiphaseScatraOxyPartPressCalcCond", "PoroMultiphaseScatraOxyPartPressCalcCond"));
+  conditions_to_copy.insert(std::pair<std::string, std::string>(
+      "ArtScatraCouplConNodeToPoint", "ArtScatraCouplConNodeToPoint"));
 
   return conditions_to_copy;
 }

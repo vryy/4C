@@ -68,7 +68,22 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
   const bool evaluate_on_lateral_surface = DRT::INPUT::IntegralValue<int>(
       poroparams.sublist("ARTERY COUPLING"), "LATERAL_SURFACE_COUPLING");
 
-  const std::string couplingcondname = "ArtPorofluidCouplConNodebased";
+  const std::string couplingcondname = std::invoke(
+      [&]()
+      {
+        if (DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
+                DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist(
+                    "ARTERY COUPLING"),
+                "ARTERY_COUPLING_METHOD") ==
+            INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp)
+        {
+          return "ArtPorofluidCouplConNodeToPoint";
+        }
+        else
+        {
+          return "ArtPorofluidCouplConNodebased";
+        }
+      });
 
   // initialize mesh tying object
   arttoporofluidcoupling_ = POROMULTIPHASESCATRA::UTILS::CreateAndInitArteryCouplingStrategy(

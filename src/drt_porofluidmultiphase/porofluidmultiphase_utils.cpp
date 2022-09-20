@@ -26,6 +26,45 @@
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/intersection_service_templates.H"
 #include "../drt_geometry/intersection_service.H"
+#include "../drt_inpar/inpar_bio.H"
+
+
+
+namespace
+{
+  std::vector<int> GetCouplingArteriesNodeToPoint(
+      Teuchos::RCP<DRT::Discretization> artdis, Teuchos::RCP<DRT::Discretization> artsearchdis)
+  {
+    // this vector will be filled
+    std::vector<int> artEleGIDs_help;
+
+    // get 1D coupling IDs from Input
+    std::vector<DRT::Condition*> artCoupcond;
+
+    artdis->GetCondition("ArtPorofluidCouplConNodeToPoint", artCoupcond);
+
+    artEleGIDs_help.reserve(artCoupcond.size());
+
+    // get global element Ids from artery coupling nodes
+    for (const auto& iter : artCoupcond)
+    {
+      const std::vector<int>* ArteryNodeIds = iter->Nodes();
+
+      for (auto const nodeid : *ArteryNodeIds)
+      {
+        DRT::Node* artnode = artsearchdis->gNode(nodeid);
+        DRT::Element** artele = artnode->Elements();
+        // get Id of corresponding element; Note: in lung modeling only most distal nodes
+        // are coupled, so coupling nodes can only belong to one element
+        const int elementID = artele[0]->Id();
+        // safety check if assertion is true
+        dsassert(elementID >= 0, "It is not possible to have a negative element ID!");
+        artEleGIDs_help.push_back(elementID);
+      }
+    }
+    return artEleGIDs_help;
+  }
+}  // namespace
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -155,13 +194,16 @@ Teuchos::RCP<ADAPTER::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::CreateAlg
  *--------------------------------------------------------------------------*/
 std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryDiscretization(
     Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis,
-    const bool evaluate_on_lateral_surface)
+    const bool evaluate_on_lateral_surface,
+    const INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod couplingmethod)
 {
   // user output
   if (contdis->Comm().MyPID() == 0)
+  {
     std::cout
         << "\n<<<<<<<<<<<<<<< Starting extended ghosting of artery discretization >>>>>>>>>>>>>>>\n"
         << std::endl;
+  }
 
   artdis->FillComplete();
   if (!contdis->Filled()) contdis->FillComplete();
@@ -188,13 +230,25 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
     nodecolset.insert(gid);
   }
 
-  // get artEleGIDs
-  std::vector<int> artEleGIDs;
-  artEleGIDs.reserve(artsearchdis->ElementColMap()->NumMyElements());
-  for (int iart = 0; iart < artsearchdis->ElementColMap()->NumMyElements(); ++iart)
-  {
-    artEleGIDs.push_back(artsearchdis->ElementColMap()->GID(iart));
-  }
+  // get artEleGIDs depending on the coupling method
+  const std::vector<int> artEleGIDs = std::invoke(
+      [&]()
+      {
+        if (couplingmethod == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp)
+        {
+          return GetCouplingArteriesNodeToPoint(artdis, artsearchdis);
+        }
+        else
+        {
+          std::vector<int> artEleGIDs_help;
+          artEleGIDs_help.reserve(artsearchdis->ElementColMap()->NumMyElements());
+          for (int iart = 0; iart < artsearchdis->ElementColMap()->NumMyElements(); ++iart)
+          {
+            artEleGIDs_help.push_back(artsearchdis->ElementColMap()->GID(iart));
+          }
+          return artEleGIDs_help;
+        }
+      });
 
   // search with the fully overlapping discretization
   std::map<int, std::set<int>> nearbyelepairs = OctTreeSearch(contdis, artdis, artsearchdis,
@@ -220,9 +274,11 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
 
   // user output
   if (contdis->Comm().MyPID() == 0)
-    std::cout
-        << "<<<<<<<<<<<<<<< Finished extended ghosting of artery discretization >>>>>>>>>>>>>>>\n"
-        << std::endl;
+  {
+    std::cout << "<<<<<<<<<<<<<<< Finished extended ghosting of artery discretization "
+                 ">>>>>>>>>>>>>>>\n"
+              << std::endl;
+  }
 
   return nearbyelepairs;
 }

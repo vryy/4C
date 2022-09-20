@@ -411,5 +411,9 @@ std::map<std::string, std::string> POROELAST::UTILS::PoroScatraCloneStrategy::Co
   conditions_to_copy.insert(
       std::pair<std::string, std::string>("TransportRobin", "TransportRobin"));
 
+  // artery to scatra coupling node-to-point
+  conditions_to_copy.insert(std::pair<std::string, std::string>(
+      "ArtScatraCouplConNodeToPoint", "ArtScatraCouplConNodeToPoint"));
+
   return conditions_to_copy;
 }

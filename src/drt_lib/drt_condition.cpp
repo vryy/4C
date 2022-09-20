@@ -292,10 +292,14 @@ void DRT::Condition::Print(std::ostream& os) const
     os << "Artery prescribed boundary condition";
   else if (Type() == ArtPorofluidCouplingCondNodebased)
     os << "Artery-Porofluid nodebased coupling condition";
+  else if (Type() == ArtPorofluidCouplingCondNodeToPoint)
+    os << "Artery-Porofluid node-to-point coupling condition non-conforming";
   else if (Type() == PoroMultiphaseScatraOxyPartPressCalcCond)
     os << "PoroMultiphaseScatra Oxygen Partial Pressure Calculation condition";
   else if (Type() == ArtScatraCouplingCondNodebased)
     os << "Artery-Scatra nodebased coupling condition";
+  else if (Type() == ArtScatraCouplingCondNodeToPoint)
+    os << "Artery-Scatra node-to-point coupling condition non-conforming";
   else if (Type() == ArtRfCond)
     os << "Artery reflective boundary condition";
   else if (Type() == ArtWkCond)

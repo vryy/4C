@@ -65,7 +65,8 @@ namespace POROMULTIPHASESCATRA
         const Teuchos::ParameterList& couplingparams,
         const Teuchos::ParameterList& fluidcouplingparams, const std::vector<int>& coupleddofs_cont,
         const std::vector<int>& coupleddofs_art, const std::vector<std::vector<int>>& scale_vec,
-        const std::vector<std::vector<int>>& funct_vec) = 0;
+        const std::vector<std::vector<int>>& funct_vec, const std::string condnames,
+        const std::string couplingtype = "", const int eta_ntp = 0) = 0;
 
     //! query if pair active
     virtual bool IsActive() = 0;
@@ -164,7 +165,8 @@ namespace POROMULTIPHASESCATRA
         const Teuchos::ParameterList& couplingparams,
         const Teuchos::ParameterList& fluidcouplingparams, const std::vector<int>& coupleddofs_cont,
         const std::vector<int>& coupleddofs_art, const std::vector<std::vector<int>>& scale_vec,
-        const std::vector<std::vector<int>>& funct_vec) override;
+        const std::vector<std::vector<int>>& funct_vec, const std::string condname,
+        const std::string couplingtype = "", const int eta_ntp = 0) override;
 
     //! query if pair active
     bool IsActive() override { return isactive_; }
@@ -256,6 +258,9 @@ namespace POROMULTIPHASESCATRA
     //! pre-evaluate for centerline coupling
     void PreEvaluateCenterlineCoupling();
 
+    //! pre-evaluate for node-to-point coupling
+    void PreEvaluateNodeToPointCoupling();
+
     //! extract velocity of solid phase
     void ExtractSolidVel(Teuchos::RCP<DRT::Discretization> contdis);
 
@@ -336,6 +341,10 @@ namespace POROMULTIPHASESCATRA
     void EvaluateGPTSStiff(const double& w_gp, const LINALG::Matrix<1, numnodesart_>& N1,
         const LINALG::Matrix<1, numnodescont_>& N2, const double& jacobi, const double& pp);
 
+    //! evaluate stiffness for NTP case
+    void EvaluateNTPStiff(const LINALG::Matrix<1, numnodesart_>& N1,
+        const LINALG::Matrix<1, numnodescont_>& N2, const double& pp);
+
     //! evaluate mortar coupling matrices D and M
     void EvaluateDMKappa(const double& w_gp, const LINALG::Matrix<1, numnodesart_>& N1,
         const LINALG::Matrix<1, numnodescont_>& N2, const double& jacobi);
@@ -346,6 +355,12 @@ namespace POROMULTIPHASESCATRA
         LINALG::SerialDenseVector* forcevec2, LINALG::SerialDenseMatrix* stiffmat11,
         LINALG::SerialDenseMatrix* stiffmat12, LINALG::SerialDenseMatrix* stiffmat21,
         LINALG::SerialDenseMatrix* stiffmat22);
+
+    //! evalute NTP
+    void EvaluateNTP(const std::vector<double>& eta, const std::vector<std::vector<double>>& xi,
+        LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
+        LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
+        LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22);
 
     //! evaluate mortar coupling matrices D and M
     void EvaluateDMKappa(const std::vector<double>& eta, const std::vector<std::vector<double>>& xi,
@@ -423,14 +438,14 @@ namespace POROMULTIPHASESCATRA
     void EvaluateScalarDerivs(std::vector<double>& artderivs, std::vector<double>& contderivs,
         const std::vector<double>& functderivs);
 
-    //! evaluate force for GPTS case
-    void EvaluateGPTSForce(LINALG::SerialDenseVector& forcevec1,
+    //! evaluate force for GPTS  or NTP case
+    void EvaluateGPTSNTPForce(LINALG::SerialDenseVector& forcevec1,
         LINALG::SerialDenseVector& forcevec2, const LINALG::SerialDenseMatrix& stiffmat11,
         const LINALG::SerialDenseMatrix& stiffmat12, const LINALG::SerialDenseMatrix& stiffmat21,
         const LINALG::SerialDenseMatrix& stiffmat22);
 
-    //! update the stiffness for GPTS
-    void UpdateGPTSStiff(LINALG::SerialDenseMatrix& stiffmat11,
+    //! update the stiffness for GPTS or NTP
+    void UpdateGPTSNTPStiff(LINALG::SerialDenseMatrix& stiffmat11,
         LINALG::SerialDenseMatrix& stiffmat12, LINALG::SerialDenseMatrix& stiffmat21,
         LINALG::SerialDenseMatrix& stiffmat22);
 
@@ -460,6 +475,9 @@ namespace POROMULTIPHASESCATRA
 
     //! coupling method (either GPTS or MP)
     INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod couplmethod_;
+
+    //! name of the condition
+    std::string condname_;
 
     //! indicates if the Init() function has been called
     bool isinit_;
@@ -599,14 +617,17 @@ namespace POROMULTIPHASESCATRA
     //! in reference configuration is performed
     bool constant_part_evaluated_;
 
-    //! GPTS stiffness matrix (artery-artery contribution)
-    LINALG::SerialDenseMatrix GPTS_stiffmat11_;
-    //! GPTS stiffness matrix (artery-cont contribution)
-    LINALG::SerialDenseMatrix GPTS_stiffmat12_;
-    //! GPTS stiffness matrix (cont-artery contribution)
-    LINALG::SerialDenseMatrix GPTS_stiffmat21_;
-    //! GPTS stiffness matrix (cont-cont contribution)
-    LINALG::SerialDenseMatrix GPTS_stiffmat22_;
+    //! 1D Cooupling element type (can be ARTERY or AIRWAY)
+    std::string coupling_element_type_;
+
+    //! GPTS/NTP stiffness matrix (artery-artery contribution)
+    LINALG::SerialDenseMatrix GPTS_NTP_stiffmat11_;
+    //! GPTS/NTP stiffness matrix (artery-cont contribution)
+    LINALG::SerialDenseMatrix GPTS_NTP_stiffmat12_;
+    //! GPTS/NTP stiffness matrix (cont-artery contribution)
+    LINALG::SerialDenseMatrix GPTS_NTP_stiffmat21_;
+    //! GPTS/NTP stiffness matrix (cont-cont contribution)
+    LINALG::SerialDenseMatrix GPTS_NTP_stiffmat22_;
 
     //! (varying) diameter stiffness matrix (artery-artery contribution)
     LINALG::SerialDenseMatrix diam_stiffmat11_;

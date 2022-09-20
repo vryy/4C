@@ -51,7 +51,7 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
     arterydis = DRT::Problem::Instance()->GetDis("artery");
 
     // get coupling method
-    INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod arterycoupl =
+    auto arterycoupl =
         DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
             problem->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
             "ARTERY_COUPLING_METHOD");
@@ -76,10 +76,11 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
     {
       case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
       case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
+      case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp:
       {
         // perform extended ghosting on artery discretization
         nearbyelepairs = POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryDiscretization(
-            structdis, arterydis, evaluate_on_lateral_surface);
+            structdis, arterydis, evaluate_on_lateral_surface, arterycoupl);
         break;
       }
       default:

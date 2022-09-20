@@ -211,6 +211,8 @@ namespace DRT
       ArtPrescribedCond,
       ArtPorofluidCouplingCondNodebased,
       ArtScatraCouplingCondNodebased,
+      ArtPorofluidCouplingCondNodeToPoint,
+      ArtScatraCouplingCondNodeToPoint,
       ArtRfCond,
       ArtWkCond,
       StructAleCoupling,

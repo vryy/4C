@@ -15,6 +15,7 @@
 #include <Epetra_Vector.h>
 
 #include "../drt_inpar/inpar_porofluidmultiphase.H"
+#include "../drt_inpar/inpar_bio.H"
 #include "../drt_io/io.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
@@ -82,7 +83,8 @@ namespace POROFLUIDMULTIPHASE
      */
     std::map<int, std::set<int>> ExtendedGhostingArteryDiscretization(
         Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis,
-        const bool evaluate_on_lateral_surface);
+        const bool evaluate_on_lateral_surface,
+        const INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod couplingmethod);
 
     /**
      * \brief get axis-aligned bounding box of element
@@ -98,6 +100,7 @@ namespace POROFLUIDMULTIPHASE
     double GetMaxNodalDistance(DRT::Element* ele, Teuchos::RCP<DRT::Discretization> dis);
 
     /**
+     * \brief perform octtree search for NTP coupling
      * @param[in] contdis       discretization of 2D/3D domain
      * @param[in] artdis        discretization of 1D domain
      * @param[in] artsearchdis  fully overlapping discretization of 1D domain on which search is
