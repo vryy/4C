@@ -178,6 +178,13 @@ namespace STR
         return prestressDisplacementTolerance_;
       }
 
+      /// Returns the minimum number of load steps during prestressing
+      [[nodiscard]] int GetPreStressMinimumNumberOfLoadSteps() const
+      {
+        CheckInitSetup();
+        return prestressMinNumberOfLoadSteps_;
+      }
+
       /// Returns prestress type
       const enum INPAR::STR::PreStress& GetPreStressType() const
       {
@@ -469,6 +476,12 @@ namespace STR
         return prestressDisplacementTolerance_;
       }
 
+      [[nodiscard]] int& GetPreStressMinimumNumberOfLoadSteps()
+      {
+        CheckInitSetup();
+        return prestressMinNumberOfLoadSteps_;
+      }
+
       /// Returns prestress type
       enum INPAR::STR::PreStress& GetMutablePreStressType()
       {
@@ -739,6 +752,9 @@ namespace STR
 
       /// Tolerance for the residual displacements during prestressing
       double prestressDisplacementTolerance_;
+
+      /// Minimum number of load steps during prestressing
+      int prestressMinNumberOfLoadSteps_;
 
       /// type of pre-stressing
       enum INPAR::STR::PreStress prestresstype_;

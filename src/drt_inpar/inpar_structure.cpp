@@ -107,6 +107,8 @@ namespace INPAR
 
       DoubleParameter("PRESTRESSTOLDISP", 1e-9,
           "tolerance in the displacement norm during prestressing", &sdyn);
+      IntParameter(
+          "PRESTRESSMINLOADSTEPS", 0, "Minimum number of load steps during prestressing", &sdyn);
 
       // Output type
       IntParameter(

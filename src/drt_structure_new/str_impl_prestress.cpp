@@ -92,7 +92,8 @@ void STR::IMPLICIT::PreStress::PostUpdate()
 
 bool STR::IMPLICIT::PreStress::IsMaterialIterativePrestressConverged() const
 {
-  return ::UTILS::PRESTRESS::IsMaterialIterative() && GlobalState().GetStepN() > 0 &&
+  return ::UTILS::PRESTRESS::IsMaterialIterative() &&
+         GlobalState().GetStepN() >= SDyn().GetPreStressMinimumNumberOfLoadSteps() &&
          absoluteDisplacementNorm_ < SDyn().GetPreStressDisplacementTolerance();
 }
 
