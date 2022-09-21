@@ -88,20 +88,25 @@ void MIXTURE::GrowthRemodelMixtureRule::Update(
   // Update base mixture rule, which also updates the constituents.
   MixtureRule::Update(F, params, gp, eleGID);
 
-  const double dt = params.get<double>("delta time", -1.0);
-  if (dt < 0.0)
-  {
-    dserror("The element does not write the timestep, which is fatal.");
-  }
 
   // Evaluate inverse growth deformation gradient
-  static LINALG::Matrix<3, 3> iFg;
-  growthStrategy_->EvaluateInverseGrowthDeformationGradient(
-      iFg, *this, ComputeCurrentReferenceGrowthScalar(gp), gp);
-
-  for (const auto& constituent : Constituents())
+  if (growthStrategy_->HasInelasticGrowthDeformationGradient())
   {
-    constituent->UpdateElasticPart(F, iFg, params, dt, gp, eleGID);
+    const double dt = params.get<double>("delta time", -1.0);
+    if (dt < 0.0)
+    {
+      dserror("The element does not write the timestep, which is fatal.");
+    }
+
+    // Evaluate inverse growth deformation gradient
+    static LINALG::Matrix<3, 3> iFg;
+    growthStrategy_->EvaluateInverseGrowthDeformationGradient(
+        iFg, *this, ComputeCurrentReferenceGrowthScalar(gp), gp);
+
+    for (const auto& constituent : Constituents())
+    {
+      constituent->UpdateElasticPart(F, iFg, params, dt, gp, eleGID);
+    }
   }
 }
 
@@ -111,11 +116,14 @@ void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const LINALG::Matrix<3, 3>& F,
 {
   LINALG::Matrix<3, 3> iF_gM;  // growth deformation gradient
 
-  // Evaluate growth kinematics
-  double currentReferenceGrowthScalar = ComputeCurrentReferenceGrowthScalar(gp);
-  growthStrategy_->EvaluateInverseGrowthDeformationGradient(
-      iF_gM, *this, currentReferenceGrowthScalar, gp);
+  if (growthStrategy_->HasInelasticGrowthDeformationGradient())
+  {
+    // Evaluate growth kinematics
+    const double currentReferenceGrowthScalar = ComputeCurrentReferenceGrowthScalar(gp);
 
+    growthStrategy_->EvaluateInverseGrowthDeformationGradient(
+        iF_gM, *this, currentReferenceGrowthScalar, gp);
+  }
 
   // define temporary matrices
   static LINALG::Matrix<6, 1> cstress;
@@ -127,18 +135,53 @@ void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const LINALG::Matrix<3, 3>& F,
     MixtureConstituent& constituent = *Constituents()[i];
     cstress.Clear();
     ccmat.Clear();
-    constituent.EvaluateElasticPart(F, iF_gM, params, cstress, ccmat, gp, eleGID);
+    if (growthStrategy_->HasInelasticGrowthDeformationGradient())
+      constituent.EvaluateElasticPart(F, iF_gM, params, cstress, ccmat, gp, eleGID);
+    else
+      constituent.Evaluate(F, E_strain, params, cstress, ccmat, gp, eleGID);
+
 
     // Add stress contribution to global stress
     const double current_ref_constituent_density = params_->initial_reference_density_ *
                                                    params_->mass_fractions_[i] *
                                                    constituent.GetGrowthScalar(gp);
+
+    const LINALG::Matrix<1, 6> dGrowthScalarDC = constituent.GetDGrowthScalarDC(gp, eleGID);
+
     S_stress.Update(current_ref_constituent_density, cstress, 1.0);
     cmat.Update(current_ref_constituent_density, ccmat, 1.0);
+
+    cmat.MultiplyNN(2.0 * params_->initial_reference_density_ * params_->mass_fractions_[i],
+        cstress, dGrowthScalarDC, 1.0);
   }
 
-  growthStrategy_->AddGrowthStressCmat(
-      *this, currentReferenceGrowthScalar, F, E_strain, params, S_stress, cmat, gp, eleGID);
+  cstress.Clear();
+  ccmat.Clear();
+
+
+  const auto [currentReferenceGrowthScalar, dCurrentReferenceGrowthScalarDC] = std::invoke(
+      [&]()
+      {
+        double growthScalar = 0.0;
+        LINALG::Matrix<1, 6> dGrowthScalarDC(true);
+
+        for (std::size_t i = 0; i < Constituents().size(); ++i)
+        {
+          MixtureConstituent& constituent = *Constituents()[i];
+
+          growthScalar += params_->mass_fractions_[i] * constituent.GetGrowthScalar(gp);
+          dGrowthScalarDC.Update(
+              params_->mass_fractions_[i], constituent.GetDGrowthScalarDC(gp, eleGID), 1.0);
+        }
+
+        return std::make_tuple(growthScalar, dGrowthScalarDC);
+      });
+
+  growthStrategy_->EvaluateGrowthStressCmat(*this, currentReferenceGrowthScalar,
+      dCurrentReferenceGrowthScalarDC, F, E_strain, params, cstress, ccmat, gp, eleGID);
+
+  S_stress.Update(1.0, cstress, 1.0);
+  cmat.Update(1.0, ccmat, 1.0);
 }
 
 double MIXTURE::GrowthRemodelMixtureRule::ComputeCurrentReferenceGrowthScalar(int gp) const

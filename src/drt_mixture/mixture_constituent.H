@@ -216,7 +216,25 @@ namespace MIXTURE
      *
      * \return double
      */
-    virtual double GetGrowthScalar(int gp) const { return 1.0; }
+    [[nodiscard]] virtual double GetGrowthScalar(int gp) const { return 1.0; }
+
+
+    /*!
+     * @brief evaluates the derivative of the growth scalar w.r.t. Cauchy-Green deformation tensor
+     *
+     * @note This matrix is usually just a zero-matrix. It is non-zero if the growth scalar changes
+     * with the deformation.
+     *
+     * @param gp (in) : Gauss point id
+     * @param eleGID (in) : Global element id
+     * @return LINALG::Matrix<1, 6> Derivative of the growth scalar w.r.t. Cauchy-Green deformation
+     * tensor
+     */
+    [[nodiscard]] virtual LINALG::Matrix<1, 6> GetDGrowthScalarDC(int gp, int eleGID) const
+    {
+      const LINALG::Matrix<1, 6> dGrowthScalarDC(true);
+      return dGrowthScalarDC;
+    };
 
     /*!
      * @brief Evaluates the stress and material linearization of the constituents with an

@@ -2510,8 +2510,12 @@ set(OBJS_DRT_MIXTURE
     src/drt_mixture/mixture_constituent_elasthyper_damage.cpp
     src/drt_mixture/mixture_constituent_elasthyper_elastin_membrane.cpp
     src/drt_mixture/mixture_constituent_muscle_weickenmeier.cpp
-    src/drt_mixture/mixture_constituent_remodelfiber.cpp
     src/drt_mixture/mixture_constituent_remodelfiber_expl.cpp
+    src/drt_mixture/mixture_constituent_remodelfiber_impl.cpp
+    src/drt_mixture/mixture_constituent_remodelfiber_lib.cpp
+    src/drt_mixture/mixture_constituent_remodelfiber_material.cpp
+    src/drt_mixture/mixture_constituent_remodelfiber_material_exponential.cpp
+    src/drt_mixture/mixture_constituent_remodelfiber_material_exponential_active.cpp
     src/drt_mixture/mixture_growth_strategy.cpp
     src/drt_mixture/mixture_growth_strategy_anisotropic.cpp
     src/drt_mixture/mixture_growth_strategy_isotropic.cpp
@@ -2523,6 +2527,7 @@ set(OBJS_DRT_MIXTURE
     src/drt_mixture/mixture_prestress_strategy_constant.cpp
     src/drt_mixture/mixture_prestress_strategy_isocyl.cpp
     src/drt_mixture/mixture_prestress_strategy_iterative.cpp
+    src/drt_mixture/remodelfiber.cpp
     )
 
 ###------------------------------------------------------------------ Binaries

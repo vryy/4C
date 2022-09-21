@@ -66,6 +66,8 @@ namespace MIXTURE
       // do nothing in the default case
     }
 
+    [[nodiscard]] virtual bool HasInelasticGrowthDeformationGradient() const = 0;
+
     /*!
      * @brief Evaluates the inverse growth deformation gradient at the Gausspoint #gp
      *
@@ -82,7 +84,7 @@ namespace MIXTURE
         int gp) const = 0;
 
     /*!
-     * @brief Adds the contribution of the growth strategy to the stress tensor and the
+     * @brief Evaluates the contribution of the growth strategy to the stress tensor and the
      * linearization.
      *
      * This is meant for growth strategies that use some kind of penalty formulation to ensure
@@ -91,16 +93,19 @@ namespace MIXTURE
      * @param mixtureRule (in) : mixture rule
      * @param currentReferenceGrowthScalar (in) : current reference growth scalar (volume change in
      * percent)
+     * @param dCurrentReferenceGrowthScalarDC (in) : Derivative of the current reference growth
+     * scalar w.r.t. Cauchy green deformation tensor
      * @param F (in) : deformation gradient
      * @param E_strain (in) : Green-Langrange strain tensor
      * @param params (in) : Container for additional information
-     * @param S_stress (in/out) : 2nd Piola-Kirchhoff stress tensor in stress like Voigt notation
-     * @param cmat (in/out) : linearization of the 2nd Piola-Kirchhoff stress tensor
+     * @param S_stress (out) : 2nd Piola-Kirchhoff stress tensor in stress like Voigt notation
+     * @param cmat (out) : linearization of the 2nd Piola-Kirchhoff stress tensor
      * @param gp (in) : Gauss point
      * @param eleGID (in) : global element id
      */
-    virtual void AddGrowthStressCmat(const MIXTURE::MixtureRule& mixtureRule,
-        double currentReferenceGrowthScalar, const LINALG::Matrix<3, 3>& F,
+    virtual void EvaluateGrowthStressCmat(const MIXTURE::MixtureRule& mixtureRule,
+        double currentReferenceGrowthScalar,
+        const LINALG::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC, const LINALG::Matrix<3, 3>& F,
         const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
         LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, const int gp,
         const int eleGID) const = 0;

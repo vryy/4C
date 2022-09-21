@@ -307,8 +307,13 @@ namespace INPAR
       mix_muscle_weickenmeier,           ///< Weickenmeier muscle material for Constituents
       mix_remodelfiber_expl,  ///< Fiber that remodels with homogenized constrained mixture model
                               ///< with explicit solution of the growth and remodel equations
-      mix_remodelfiber_impl   ///< Fiber that remodels with homogenized constrained mixture model
+      mix_remodelfiber_impl,  ///< Fiber that remodels with homogenized constrained mixture model
                               ///< with implicit solution of the growth and remodel equations
+      mix_remodelfiber_material_exponential,  ///< material for a remodel fiber with exponential
+                                              ///< strain energy function
+      mix_remodelfiber_material_exponential_active  ///< material for a remodel fiber with
+                                                    ///< exponential strain energy and an active
+                                                    ///< contribution
     };
 
     /*----------------------------------------------------------------------*

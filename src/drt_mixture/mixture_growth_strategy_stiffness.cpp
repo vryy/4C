@@ -39,8 +39,9 @@ void MIXTURE::StiffnessGrowthStrategy::EvaluateInverseGrowthDeformationGradient(
   MAT::IdentityMatrix(iFgM);
 }
 
-void MIXTURE::StiffnessGrowthStrategy::AddGrowthStressCmat(const MIXTURE::MixtureRule& mixtureRule,
-    double currentReferenceGrowthScalar, const LINALG::Matrix<3, 3>& F,
+void MIXTURE::StiffnessGrowthStrategy::EvaluateGrowthStressCmat(
+    const MIXTURE::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
+    const LINALG::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC, const LINALG::Matrix<3, 3>& F,
     const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
     LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, const int gp,
     const int eleGID) const
@@ -59,15 +60,20 @@ void MIXTURE::StiffnessGrowthStrategy::AddGrowthStressCmat(const MIXTURE::Mixtur
   const double dPi = 0.5 * kappa * (1.0 - currentReferenceGrowthScalar / detF);
   const double ddPi = 0.25 * kappa * currentReferenceGrowthScalar / std::pow(detF, 3);
 
+  const double ddPiDGrowthScalar = -0.5 * kappa / detF;
+
   const double gamma2 = 2.0 * I3 * dPi;
+  const double dgamma2DGrowthScalar = 4.0 * I3 * ddPiDGrowthScalar;
   const double delta5 = 4. * (I3 * dPi + I3 * I3 * ddPi);
   const double delta6 = -4.0 * I3 * dPi;
 
 
-  S_stress.Update(gamma2, iC_stress, 1.0);
+  S_stress.Update(gamma2, iC_stress, 0.0);
 
   // contribution: Cinv \otimes Cinv
-  cmat.MultiplyNT(delta5, iC_stress, iC_stress, 1.0);
+  cmat.MultiplyNT(delta5, iC_stress, iC_stress, 0.0);
   // contribution: Cinv \odot Cinv
   MAT::AddtoCmatHolzapfelProduct(cmat, iC_stress, delta6);
+
+  cmat.MultiplyNN(dgamma2DGrowthScalar, iC_stress, dCurrentReferenceGrowthScalarDC, 1.0);
 }

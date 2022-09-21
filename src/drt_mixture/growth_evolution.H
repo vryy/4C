@@ -19,6 +19,7 @@ namespace MIXTURE
    * The discretization in time has been done with a simple FD method (rho_dot =
    * (rho_{n+1}-rho_{n})/dt
    */
+  template <typename T>
   class GrowthEvolution
   {
    public:
@@ -39,7 +40,17 @@ namespace MIXTURE
      *
      * @return The right hand side of the ode k ( \Delta \sigma )
      */
-    virtual double EvaluateRHS(double delta_sig) const = 0;
+    [[nodiscard]] virtual T EvaluateRHS(T delta_sig) const = 0;
+
+    /*!
+     * @brief Evaluates the derivative of right-hand side of the non-dimensionalized Growth ODE
+     * w.r.t. delta sig
+     *
+     * @param delta_sig Difference of the Cauchy fiber normal stress to the homeostatic stress
+     *
+     * @return The derivative of the right hand side of the ode k ( \Delta \sigma ) w.r.t. delta sig
+     */
+    [[nodiscard]] virtual T EvaluateRHSdsig(T delta_sig) const = 0;
   };
 }  // namespace MIXTURE
 #endif  // BACI_GROWTH_EVOLUTION_H

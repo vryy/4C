@@ -856,6 +856,8 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::mix_prestress_strategy_iterative:
     case INPAR::MAT::mix_remodelfiber_expl:
     case INPAR::MAT::mix_remodelfiber_impl:
+    case INPAR::MAT::mix_remodelfiber_material_exponential:
+    case INPAR::MAT::mix_remodelfiber_material_exponential_active:
     {
       return Teuchos::null;
     }

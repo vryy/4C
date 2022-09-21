@@ -3830,13 +3830,79 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     auto m = Teuchos::rcp(new MaterialDefinition("MIX_Constituent_ExplicitRemodelFiber",
         "A 1D constituent that remodels", INPAR::MAT::mix_remodelfiber_expl));
 
-    AddNamedInt(m, "MATID", "Id of the elasthyper summand");
+    AddNamedInt(m, "FIBER_ID", "Id of the fiber", 1, true);
+    AddNamedInt(m, "FIBER_MATERIAL_ID", "Id of fiber material");
+
+    AddNamedBool(m, "GROWTH_ENABLED", "Switch for the growth (default true)", true, true);
     AddNamedReal(m, "DECAY_TIME", "Decay time of deposited tissue");
     AddNamedReal(m, "GROWTH_CONSTANT", "Growth constant of the tissue");
     AddNamedReal(m, "DEPOSITION_STRETCH", "Stretch at with the fiber is deposited");
     AddNamedInt(m, "DEPOSITION_STRETCH_TIMEFUNCT",
         "Id of the time function to scale the deposition stretch (Default: 0=None)", 0, true);
+    AddNamedBool(
+        m, "INELASTIC_GROWTH", "Mixture rule has inelastic growth (default false)", false, true);
+    AddNamedInt(m, "INIT", "Initialization mode for fibers (1=element fibers, 2=nodal fibers)");
+    AddNamedReal(m, "GAMMA", "Angle of fiber alignment in degree (default = 0.0°)", 0.0, true);
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Mixture constituent for a remodel fiber
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MIX_Constituent_ImplicitRemodelFiber",
+        "A 1D constituent that remodels", INPAR::MAT::mix_remodelfiber_impl));
+
+    AddNamedInt(m, "FIBER_ID", "Id of the fiber");
+    AddNamedInt(m, "FIBER_MATERIAL_ID", "Id of fiber material");
+
     AddNamedBool(m, "GROWTH_ENABLED", "Switch for the growth (default true)", true, true);
+    AddNamedReal(m, "DECAY_TIME", "Decay time of deposited tissue");
+    AddNamedReal(m, "GROWTH_CONSTANT", "Growth constant of the tissue");
+    AddNamedReal(m, "DEPOSITION_STRETCH", "Stretch at with the fiber is deposited");
+    AddNamedInt(m, "DEPOSITION_STRETCH_TIMEFUNCT",
+        "Id of the time function to scale the deposition stretch (Default: 0=None)", 0, true);
+    AddNamedInt(m, "INIT", "Initialization mode for fibers (1=element fibers, 2=nodal fibers)");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Mixture constituent material for a remodel fiber with exponential strain energy function
+  {
+    auto m =
+        Teuchos::rcp(new MaterialDefinition("MIX_Constituent_RemodelFiber_Material_Exponential",
+            "An exponential strain energy function for the remodel fiber",
+            INPAR::MAT::mix_remodelfiber_material_exponential));
+
+
+    AddNamedReal(m, "K1", "First parameter of exponential strain energy function");
+    AddNamedReal(m, "K2", "Second parameter of exponential strain energy function");
+    AddNamedBool(
+        m, "COMPRESSION", "Bool, whether the fiber material also supports compressive forces.");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Mixture constituent material for a remodel fiber with exponential strain energy function and an
+  // active contribution
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition(
+        "MIX_Constituent_RemodelFiber_Material_Exponential_Active",
+        "An exponential strain energy function for the remodel fiber with an active contribution",
+        INPAR::MAT::mix_remodelfiber_material_exponential_active));
+
+
+    AddNamedReal(m, "K1", "First parameter of exponential strain energy function");
+    AddNamedReal(m, "K2", "Second parameter of exponential strain energy function");
+    AddNamedBool(
+        m, "COMPRESSION", "Bool, whether the fiber material also supports compressive forces.");
+    AddNamedReal(m, "SIGMA_MAX", "Maximum active Cauchy-stress");
+    AddNamedReal(m, "LAMBDAMAX", "Stretch at maximum active Cauchy-stress");
+    AddNamedReal(m, "LAMBDA0", "Stretch at zero active Cauchy-stress");
+    AddNamedReal(m, "LAMBDAACT", "Current stretch", 1.0, true);
+    AddNamedReal(m, "DENS", "Density of the whole mixture");
 
     AppendMaterialDefinition(matlist, m);
   }

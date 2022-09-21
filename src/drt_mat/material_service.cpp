@@ -19,6 +19,8 @@
 #include "../drt_mixture/mixture_growth_strategy_stiffness.H"
 #include "../drt_mixture/mixture_rule_growthremodel.H"
 #include "../drt_mixture/mixture_rule_simple.H"
+#include "../drt_mixture/mixture_constituent_remodelfiber_material_exponential.H"
+#include "../drt_mixture/mixture_constituent_remodelfiber_material_exponential_active.H"
 
 #include "../linalg/linalg_utils_densematrix_eigen.H"
 #include "../linalg/linalg_four_tensor.H"
@@ -1531,6 +1533,10 @@ template MIXTURE::PAR::AnisotropicGrowthStrategy* MAT::CreateMaterialParameterIn
     Teuchos::RCP<MAT::PAR::Material> curmat);
 template MIXTURE::PAR::StiffnessGrowthStrategy* MAT::CreateMaterialParameterInstance(
     Teuchos::RCP<MAT::PAR::Material> curmat);
+template MIXTURE::PAR::RemodelFiberMaterialExponential<double>*
+MAT::CreateMaterialParameterInstance(Teuchos::RCP<MAT::PAR::Material> curmat);
+template MIXTURE::PAR::RemodelFiberMaterialExponentialActive<double>*
+MAT::CreateMaterialParameterInstance(Teuchos::RCP<MAT::PAR::Material> curmat);
 
 template void MAT::ClearFourTensor<3>(LINALG::FourTensor<3>& fourTensor);
 

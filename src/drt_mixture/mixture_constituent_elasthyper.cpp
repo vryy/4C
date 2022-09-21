@@ -52,18 +52,17 @@ void MIXTURE::MixtureConstituent_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>
     const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
     LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, const int gp, const int eleGID)
 {
-  // 2nd Piola-Kirchhoff stress tensor in stress-like Voigt notation of the constituent
-  static LINALG::Matrix<6, 1> Sc_stress(false);
-  Sc_stress.Clear();
-  // Constitutive tensor of constituent
-  static LINALG::Matrix<6, 6> ccmat(false);
-  ccmat.Clear();
-  // Evaluate stresses using ElastHyper service functions
-  MAT::ElastHyperEvaluate(
-      F, E_strain, params, Sc_stress, ccmat, gp, eleGID, Summands(), SummandProperties(), false);
-
-  S_stress.Update(1.0, Sc_stress, 1.0);
-  cmat.Update(1.0, ccmat, 1.0);
+  if (PrestressStrategy() != nullptr)
+  {
+    MAT::ElastHyperEvaluateElasticPart(
+        F, PrestretchTensor(gp), S_stress, cmat, Summands(), SummandProperties(), gp, eleGID);
+  }
+  else
+  {
+    // Evaluate stresses using ElastHyper service functions
+    MAT::ElastHyperEvaluate(
+        F, E_strain, params, S_stress, cmat, gp, eleGID, Summands(), SummandProperties(), false);
+  }
 }
 
 // Compute the stress resultant with incorporating an elastic and inelastic part of the deformation
