@@ -32,8 +32,10 @@ POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::ConditionsToCopy()
   conditions_to_copy.insert(
       std::pair<std::string, std::string>("PoroVolumeNeumann", "VolumeNeumann"));
   conditions_to_copy.insert(std::pair<std::string, std::string>("Initfield", "Initfield"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ArtPorofluidCouplCon", "ArtPorofluidCouplCon"));
+  conditions_to_copy.insert(std::pair<std::string, std::string>(
+      "ArtPorofluidCouplConNodebased", "ArtPorofluidCouplConNodebased"));
+  conditions_to_copy.insert(std::pair<std::string, std::string>(
+      "ArtPorofluidCouplConNodeToPoint", "ArtPorofluidCouplConNodeToPoint"));
 
   return conditions_to_copy;
 }

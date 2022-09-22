@@ -178,14 +178,16 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
       "PENALTY", 1000.0, "Penalty parameter for line-based coupling", &porofluidmultiphasemshtdyn);
 
   setStringToIntegralParameter<int>("ARTERY_COUPLING_METHOD", "None",
-      "Coupling method for artery coupling.", tuple<std::string>("None", "Nodal", "GPTS", "MP"),
-      tuple<std::string>(
-          "none", "Nodal Coupling", "Gauss-Point-To-Segment Approach", "Mortar Penalty Approach"),
+      "Coupling method for artery coupling.",
+      tuple<std::string>("None", "Nodal", "GPTS", "MP", "NTP"),
+      tuple<std::string>("none", "Nodal Coupling", "Gauss-Point-To-Segment Approach",
+          "Mortar Penalty Approach", "1D node-to-point in 2D/3D Approach"),
       tuple<int>(INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::none,  // none
           INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::nodal,        // Nodal Coupling
           INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts,  // Gauss-Point-To-Segment
                                                                           // Approach
-          INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp     // Mortar Penalty Approach
+          INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp,    // Mortar Penalty Approach
+          INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp  // 1Dnode-to-point in 2D/3D
           ),
       &porofluidmultiphasemshtdyn);
 

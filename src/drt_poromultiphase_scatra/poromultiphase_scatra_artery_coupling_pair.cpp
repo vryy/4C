@@ -36,6 +36,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distype
     : PoroMultiPhaseScatraArteryCouplingPairBase(),
       coupltype_(CouplingType::type_undefined),
       couplmethod_(INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::none),
+      condname_(""),
       isinit_(false),
       ispreevaluated_(false),
       isactive_(false),
@@ -43,8 +44,8 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distype
       diam_funct_active_(false),
       evaluate_in_ref_config_(true),
       evaluate_on_lateral_surface_(true),
-      element1_(NULL),
-      element2_(NULL),
+      element1_(nullptr),
+      element2_(nullptr),
       arterydiamref_(0.0),
       arterydiamAtGP_(0.0),
       numdof_cont_(0),
@@ -67,7 +68,8 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distype
       eta_b_(0.0),
       curr_segment_length_(0.0),
       constant_part_evaluated_(false),
-      artdiam_funct_(0),
+      coupling_element_type_(""),
+      artdiam_funct_(nullptr),
       porosityname_("porosity"),
       artpressname_("p_art"),
       segmentid_(-1),
@@ -88,17 +90,23 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     dim>::Init(std::vector<DRT::Element const*> elements,
     const Teuchos::ParameterList& couplingparams, const Teuchos::ParameterList& fluidcouplingparams,
     const std::vector<int>& coupleddofs_cont, const std::vector<int>& coupleddofs_art,
-    const std::vector<std::vector<int>>& scale_vec, const std::vector<std::vector<int>>& funct_vec)
+    const std::vector<std::vector<int>>& scale_vec, const std::vector<std::vector<int>>& funct_vec,
+    const std::string condname, const std::string couplingtype, const int eta_ntp)
 {
   // init stuff
   couplmethod_ = DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
       couplingparams, "ARTERY_COUPLING_METHOD");
+
+
+  condname_ = condname;
 
   evaluate_in_ref_config_ =
       DRT::INPUT::IntegralValue<int>(fluidcouplingparams, "EVALUATE_IN_REF_CONFIG");
 
   evaluate_on_lateral_surface_ =
       DRT::INPUT::IntegralValue<int>(fluidcouplingparams, "LATERAL_SURFACE_COUPLING");
+
+  coupling_element_type_ = couplingtype;
 
   numpatch_axi_ = fluidcouplingparams.get<int>("NUMPATCH_AXI");
   numpatch_rad_ = fluidcouplingparams.get<int>("NUMPATCH_RAD");
@@ -120,9 +128,43 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     nds_porofluid_ = 2;
   }
   else
+  {
     dserror("Your selected coupling is not possible, type of element1: " +
             element1_->ElementType().Name() +
             ", type of element2: " + element2_->ElementType().Name());
+  }
+
+  if (couplmethod_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp)
+  {
+    // set eta
+    eta_.resize(1);
+    eta_[0] = eta_ntp;
+    // check couplingtype
+    if (couplingtype != "ARTERY")
+    {
+      if (coupltype_ == type_porofluid)
+      {
+        dserror(
+            "Wrong coupling type in DESIGN 1D ARTERY TO POROFLUID NONCONF COUPLING CONDITIONS. \n "
+            "So "
+            "far ntp-coupling is only possible for coupling type: "
+            "ARTERY. "
+            "Your coupling type "
+            "is: " +
+            couplingtype);
+      }
+      else
+      {
+        dserror(
+            "Wrong coupling type in DESIGN 1D ARTERY TO SCATRA NONCONF COUPLING CONDITIONS. \nSo "
+            "far ntp-coupling is only possible for coupling type: "
+            "ARTERY. "
+            "Your coupling type "
+            "is: " +
+            couplingtype);
+      }
+    }
+  }
 
   // get number of DOFs of artery or artery-scatra
   const DRT::Node* const* artnodes;
@@ -200,7 +242,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   dist.Update(-1.0, arterypos0, 1.0, arterypos1, 0.0);
   arteryelelengthref_ = dist.Norm2();
 
-  // get initial direction of artery elemetn
+  // get initial direction of artery element
   lambda0_.Update(1.0 / arteryelelengthref_, dist, 0.0);
 
   // Set reference nodal positions for continuous discretization element
@@ -428,10 +470,18 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 {
   if (!isinit_) dserror("MeshTying Pair has not yet been initialized");
 
-  if (evaluate_on_lateral_surface_)
-    PreEvaluateLateralSurfaceCoupling(gp_vector);
+  if (couplmethod_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp)
+  {
+    PreEvaluateNodeToPointCoupling();
+  }
   else
-    PreEvaluateCenterlineCoupling();
+  {
+    if (evaluate_on_lateral_surface_)
+      PreEvaluateLateralSurfaceCoupling(gp_vector);
+    else
+      PreEvaluateCenterlineCoupling();
+  }
+
 
   ispreevaluated_ = true;
 }
@@ -625,6 +675,40 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   }
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont,
+    int dim>
+void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
+    dim>::PreEvaluateNodeToPointCoupling()
+{
+  xi_.resize(1);
+  xi_[0].resize(numdim_);
+
+  static LINALG::Matrix<1, numnodescont_> N2(true);           // = N2
+  static LINALG::Matrix<numdim_, numnodescont_> N2_xi(true);  // = N2,xi1
+  // Vectors for shape functions and their derivatives
+  static LINALG::Matrix<1, numnodesart_, double> N1(true);      // = N1
+  static LINALG::Matrix<1, numnodesart_, double> N1_eta(true);  // = N1,eta
+  // Coords and derivatives of 1D and 2D/3D element
+  static LINALG::Matrix<numdim_, 1, double> r1(true);      // = r1
+  static LINALG::Matrix<numdim_, 1, double> r1_eta(true);  // = r1,eta
+
+  // Update coordinates and derivatives for 1D and 2D/3D element
+  Get1DShapeFunctions<double>(N1, N1_eta, eta_[0]);
+  ComputeArteryCoordsAndDerivsRef<double>(r1, r1_eta, N1, N1_eta);
+
+  bool projection_valid = false;
+  Projection<double>(r1, xi_[0], projection_valid);
+
+  // coupling pairs is only active if projection is valid
+  isactive_ = projection_valid;
+
+  // compute (dX/dxi)^-1
+  Get2D3DShapeFunctions<double>(N2, N2_xi, xi_[0]);
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont,
@@ -791,29 +875,48 @@ double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, 
 
   if (arterymat_->IsCollapsed()) return 0.0;
 
-  std::vector<double> myEta(n_gp_);
-  std::vector<std::vector<double>> myXi(n_gp_, std::vector<double>(numdim_, 0.0));
+  std::vector<double> myEta;
+  std::vector<std::vector<double>> myXi;
+
   double etaA = 0.0;
   double etaB = 0.0;
-
-  // recompute eta and xi --> see note in this function
-  RecomputeEtaAndXiInDeformedConfiguration(segmentlengths, myEta, myXi, etaA, etaB);
 
   switch (couplmethod_)
   {
     case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
     {
+      // initialize eta and xi
+      myEta.assign(n_gp_, double{});
+      myXi.assign(n_gp_, std::vector<double>(numdim_, double{}));
+      // recompute eta and xi --> see note in this function
+      RecomputeEtaAndXiInDeformedConfiguration(segmentlengths, myEta, myXi, etaA, etaB);
+      // actual evaluate
       EvaluateGPTS(myEta, myXi, segmentlengths, forcevec1, forcevec2, stiffmat11, stiffmat12,
           stiffmat21, stiffmat22);
       break;
     }
     case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
     {
+      // initialize eta and xi
+      myEta.assign(n_gp_, double{});
+      myXi.assign(n_gp_, std::vector<double>(numdim_, double{}));
+      // recompute eta and xi --> see note in this function
+      RecomputeEtaAndXiInDeformedConfiguration(segmentlengths, myEta, myXi, etaA, etaB);
+      // actual evaluate
       EvaluateDMKappa(myEta, myXi, segmentlengths, D_ele, M_ele, Kappa_ele);
       break;
     }
+    case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp:
+    {
+      // define eta and xi
+      myEta = eta_;
+      myXi = xi_;
+      // actual evaluate
+      EvaluateNTP(eta_, xi_, forcevec1, forcevec2, stiffmat11, stiffmat12, stiffmat21, stiffmat22);
+      break;
+    }
     default:
-      dserror("Unknown coupling type for line-based coupling");
+      dserror("Unknown coupling type for artery to poro coupling");
       break;
   }
 
@@ -1014,7 +1117,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     dim>::RecomputeEtaAndXiInDeformedConfiguration(const std::vector<double>& segmentlengths,
     std::vector<double>& myEta, std::vector<std::vector<double>>& myXi, double& etaA, double& etaB)
 {
-  // NOTE: we assume that the 1D artery element completely follows the deformation of the underlying
+  // NOTE: we assume that the 1D artery element completely follows the deformation of the
+  // underlying
   //       porous medium, so its length might change. Interaction between artery element and
   //       porous medium has to be evaluated in current/deformed configuration. However, Gauss
   //       points of the original projection (in reference configuration) cannot be used then
@@ -1029,7 +1133,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   //       F*t0 ||_2 ds where eta_s is the unknown. Linearization of this nonlinear equation
   //       within the Newton loop is done with FAD
 
-  // not necessary if we do not take into account mesh movement
+  // not necessary if we do not take into account mesh movement or ntp-coupling
   if (evaluate_in_ref_config_)
   {
     myEta = eta_;
@@ -1131,10 +1235,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   {
     if (!constant_part_evaluated_)
     {
-      GPTS_stiffmat11_ = new LINALG::SerialDenseMatrix();
-      GPTS_stiffmat12_ = new LINALG::SerialDenseMatrix();
-      GPTS_stiffmat21_ = new LINALG::SerialDenseMatrix();
-      GPTS_stiffmat22_ = new LINALG::SerialDenseMatrix();
+      GPTS_NTP_stiffmat11_ = new LINALG::SerialDenseMatrix();
+      GPTS_NTP_stiffmat12_ = new LINALG::SerialDenseMatrix();
+      GPTS_NTP_stiffmat21_ = new LINALG::SerialDenseMatrix();
+      GPTS_NTP_stiffmat22_ = new LINALG::SerialDenseMatrix();
     }
 
     // we only have to this once if evaluated in reference configuration
@@ -1147,10 +1251,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       static LINALG::Matrix<1, numnodescont_> N2(true);           // = N2
       static LINALG::Matrix<numdim_, numnodescont_> N2_xi(true);  // = N2,xi1
 
-      GPTS_stiffmat11_.Shape(dim1_, dim1_);
-      GPTS_stiffmat12_.Shape(dim1_, dim2_);
-      GPTS_stiffmat21_.Shape(dim2_, dim1_);
-      GPTS_stiffmat22_.Shape(dim2_, dim2_);
+      GPTS_NTP_stiffmat11_.Shape(dim1_, dim1_);
+      GPTS_NTP_stiffmat12_.Shape(dim1_, dim2_);
+      GPTS_NTP_stiffmat21_.Shape(dim2_, dim1_);
+      GPTS_NTP_stiffmat22_.Shape(dim2_, dim2_);
 
       const double curr_seg_length = segmentlengths[segmentid_];
 
@@ -1171,10 +1275,65 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       }
     }  //! constant_part_evaluated_ or !evaluate_in_ref_config_
 
-    UpdateGPTSStiff(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
-    EvaluateGPTSForce(*forcevec1, *forcevec2, *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
+    UpdateGPTSNTPStiff(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
+    EvaluateGPTSNTPForce(
+        *forcevec1, *forcevec2, *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
   }
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont,
+    int dim>
+void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
+    dim>::EvaluateNTP(const std::vector<double>& eta, const std::vector<std::vector<double>>& xi,
+    LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
+    LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
+    LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22)
+{
+  if (numcoupleddofs_ > 0)
+  {
+    if (!constant_part_evaluated_)
+    {
+      GPTS_NTP_stiffmat11_ = new LINALG::SerialDenseMatrix();
+      GPTS_NTP_stiffmat12_ = new LINALG::SerialDenseMatrix();
+      GPTS_NTP_stiffmat21_ = new LINALG::SerialDenseMatrix();
+      GPTS_NTP_stiffmat22_ = new LINALG::SerialDenseMatrix();
+    }
+
+    // we only have to this once if evaluated in reference configuration
+    if (!constant_part_evaluated_ or !evaluate_in_ref_config_)
+    {
+      // Vectors for shape functions and their derivatives
+      static LINALG::Matrix<1, numnodesart_> N1(true);      // = N1
+      static LINALG::Matrix<1, numnodesart_> N1_eta(true);  // = N1,eta
+
+      static LINALG::Matrix<1, numnodescont_> N2(true);           // = N2
+      static LINALG::Matrix<numdim_, numnodescont_> N2_xi(true);  // = N2,xi1
+
+      GPTS_NTP_stiffmat11_.Shape(dim1_, dim1_);
+      GPTS_NTP_stiffmat12_.Shape(dim1_, dim2_);
+      GPTS_NTP_stiffmat21_.Shape(dim2_, dim1_);
+      GPTS_NTP_stiffmat22_.Shape(dim2_, dim2_);
+
+
+      // Get constant values from projection
+      const double myeta = eta[0];
+      const std::vector<double> myxi = xi[0];
+
+      // Update shape functions and their derivatives for 1D and 2D/3D element
+      Get1DShapeFunctions<double>(N1, N1_eta, myeta);
+      Get2D3DShapeFunctions<double>(N2, N2_xi, myxi);
+
+      // evaluate
+      EvaluateNTPStiff(N1, N2, pp_);
+    }
+  }  //! constant_part_evaluated_ or !evaluate_in_ref_config_
+
+  UpdateGPTSNTPStiff(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
+  EvaluateGPTSNTPForce(*forcevec1, *forcevec2, *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1318,7 +1477,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     const std::vector<std::vector<double>>& xi, const std::vector<double>& segmentlengths,
     LINALG::SerialDenseVector& forcevec1, const double& etaA, const double& etaB)
 {
-  if (evaluate_in_ref_config_ || coupltype_ == type_scatra) return;
+  if (evaluate_in_ref_config_ || coupltype_ == type_scatra ||
+      couplmethod_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp)
+    return;
 
   // Vectors for shape functions and their derivatives
   static LINALG::Matrix<1, numnodesart_> N1(true);      // = N1
@@ -1398,7 +1559,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     {
       const double stiff = timefacrhs_art_ * pp * jacobi * w_gp * N1(i) * N1(j);
       for (int dof = 0; dof < numcoupleddofs_; dof++)
-        GPTS_stiffmat11_(i * numdof_art_ + coupleddofs_art_[dof],
+        GPTS_NTP_stiffmat11_(i * numdof_art_ + coupleddofs_art_[dof],
             j * numdof_art_ + coupleddofs_art_[dof]) += stiff;
     }
   }
@@ -1410,7 +1571,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     {
       const double stiff = timefacrhs_art_ * pp * jacobi * w_gp * N1(i) * (-N2(j));
       for (int dof = 0; dof < numcoupleddofs_; dof++)
-        GPTS_stiffmat12_(i * numdof_art_ + coupleddofs_art_[dof],
+        GPTS_NTP_stiffmat12_(i * numdof_art_ + coupleddofs_art_[dof],
             j * numdof_cont_ + coupleddofs_cont_[dof]) += stiff;
     }
   }
@@ -1422,7 +1583,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     {
       const double stiff = timefacrhs_cont_ * pp * jacobi * w_gp * N2(i) * (-N1(j));
       for (int dof = 0; dof < numcoupleddofs_; dof++)
-        GPTS_stiffmat21_(i * numdof_cont_ + coupleddofs_cont_[dof],
+        GPTS_NTP_stiffmat21_(i * numdof_cont_ + coupleddofs_cont_[dof],
             j * numdof_art_ + coupleddofs_art_[dof]) += stiff;
     }
   }
@@ -1434,7 +1595,66 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     {
       const double stiff = timefacrhs_cont_ * pp * jacobi * w_gp * N2(i) * N2(j);
       for (int dof = 0; dof < numcoupleddofs_; dof++)
-        GPTS_stiffmat22_(i * numdof_cont_ + coupleddofs_cont_[dof],
+        GPTS_NTP_stiffmat22_(i * numdof_cont_ + coupleddofs_cont_[dof],
+            j * numdof_cont_ + coupleddofs_cont_[dof]) += stiff;
+    }
+  }
+
+  constant_part_evaluated_ = true;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont,
+    int dim>
+void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
+    dim>::EvaluateNTPStiff(const LINALG::Matrix<1, numnodesart_>& N1,
+    const LINALG::Matrix<1, numnodescont_>& N2, const double& pp)
+{
+  // Evaluate meshtying stiffness for artery element N_1^T * N_1
+  for (unsigned int i = 0; i < numnodesart_; i++)
+  {
+    for (unsigned int j = 0; j < numnodesart_; j++)
+    {
+      const double stiff = timefacrhs_art_ * pp * N1(i) * N1(j);
+      for (int dof = 0; dof < numcoupleddofs_; dof++)
+        GPTS_NTP_stiffmat11_(i * numdof_art_ + coupleddofs_art_[dof],
+            j * numdof_art_ + coupleddofs_art_[dof]) += stiff;
+    }
+  }
+
+  // Evaluate meshtying stiffness for artery element "mixed" N_1^T * (-N_2)
+  for (unsigned int i = 0; i < numnodesart_; i++)
+  {
+    for (unsigned int j = 0; j < numnodescont_; j++)
+    {
+      const double stiff = timefacrhs_art_ * pp * N1(i) * (-N2(j));
+      for (int dof = 0; dof < numcoupleddofs_; dof++)
+        GPTS_NTP_stiffmat12_(i * numdof_art_ + coupleddofs_art_[dof],
+            j * numdof_cont_ + coupleddofs_cont_[dof]) += stiff;
+    }
+  }
+
+  // Evaluate meshtying stiffness for continuous element "mixed" N_2^T * (-N_1)
+  for (unsigned int i = 0; i < numnodescont_; i++)
+  {
+    for (unsigned int j = 0; j < numnodesart_; j++)
+    {
+      const double stiff = timefacrhs_cont_ * pp * N2(i) * (-N1(j));
+      for (int dof = 0; dof < numcoupleddofs_; dof++)
+        GPTS_NTP_stiffmat21_(i * numdof_cont_ + coupleddofs_cont_[dof],
+            j * numdof_art_ + coupleddofs_art_[dof]) += stiff;
+    }
+  }
+
+  // Evaluate meshtying stiffness for continuous element N_2^T * N_2
+  for (unsigned int i = 0; i < numnodescont_; i++)
+  {
+    for (unsigned int j = 0; j < numnodescont_; j++)
+    {
+      const double stiff = timefacrhs_cont_ * pp * N2(i) * N2(j);
+      for (int dof = 0; dof < numcoupleddofs_; dof++)
+        GPTS_NTP_stiffmat22_(i * numdof_cont_ + coupleddofs_cont_[dof],
             j * numdof_cont_ + coupleddofs_cont_[dof]) += stiff;
     }
   }
@@ -1487,7 +1707,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont,
     int dim>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
-    dim>::EvaluateGPTSForce(LINALG::SerialDenseVector& forcevec1,
+    dim>::EvaluateGPTSNTPForce(LINALG::SerialDenseVector& forcevec1,
     LINALG::SerialDenseVector& forcevec2, const LINALG::SerialDenseMatrix& stiffmat11,
     const LINALG::SerialDenseMatrix& stiffmat12, const LINALG::SerialDenseMatrix& stiffmat21,
     const LINALG::SerialDenseMatrix& stiffmat22)
@@ -1512,14 +1732,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont,
     int dim>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
-    dim>::UpdateGPTSStiff(LINALG::SerialDenseMatrix& stiffmat11,
+    dim>::UpdateGPTSNTPStiff(LINALG::SerialDenseMatrix& stiffmat11,
     LINALG::SerialDenseMatrix& stiffmat12, LINALG::SerialDenseMatrix& stiffmat21,
     LINALG::SerialDenseMatrix& stiffmat22)
 {
-  stiffmat11.Update(1.0, GPTS_stiffmat11_, 0.0);
-  stiffmat12.Update(1.0, GPTS_stiffmat12_, 0.0);
-  stiffmat21.Update(1.0, GPTS_stiffmat21_, 0.0);
-  stiffmat22.Update(1.0, GPTS_stiffmat22_, 0.0);
+  stiffmat11.Update(1.0, GPTS_NTP_stiffmat11_, 0.0);
+  stiffmat12.Update(1.0, GPTS_NTP_stiffmat12_, 0.0);
+  stiffmat21.Update(1.0, GPTS_NTP_stiffmat21_, 0.0);
+  stiffmat22.Update(1.0, GPTS_NTP_stiffmat22_, 0.0);
 
   for (int idof = 0; idof < numcoupleddofs_; idof++)
   {

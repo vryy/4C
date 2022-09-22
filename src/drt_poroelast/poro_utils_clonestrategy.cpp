@@ -400,8 +400,8 @@ std::map<std::string, std::string> POROELAST::UTILS::PoroScatraCloneStrategy::Co
   conditions_to_copy.insert(std::pair<std::string, std::string>("Initfield", "Initfield"));
 
   // artery to scatra coupling
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ArtScatraCouplCon", "ArtScatraCouplCon"));
+  conditions_to_copy.insert(std::pair<std::string, std::string>(
+      "ArtScatraCouplConNodebased", "ArtScatraCouplConNodebased"));
 
   // oxygen partial pressure calculation
   conditions_to_copy.insert(std::pair<std::string, std::string>(
@@ -410,6 +410,10 @@ std::map<std::string, std::string> POROELAST::UTILS::PoroScatraCloneStrategy::Co
   // Robin boundary condition
   conditions_to_copy.insert(
       std::pair<std::string, std::string>("TransportRobin", "TransportRobin"));
+
+  // artery to scatra coupling node-to-point
+  conditions_to_copy.insert(std::pair<std::string, std::string>(
+      "ArtScatraCouplConNodeToPoint", "ArtScatraCouplConNodeToPoint"));
 
   return conditions_to_copy;
 }

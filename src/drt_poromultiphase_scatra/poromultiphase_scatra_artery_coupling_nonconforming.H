@@ -75,6 +75,9 @@ namespace POROMULTIPHASESCATRA
     //! the parameters
     const Teuchos::ParameterList& couplingparams_;
 
+    //! name of the condition
+    const std::string condname_;
+
     //! have the managers been set?
     bool porofluidmanagersset_;
 
@@ -97,6 +100,9 @@ namespace POROMULTIPHASESCATRA
     //! interacting pairs of artery and continuous-discretization elements
     std::vector<Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>>
         coupl_elepairs_;
+
+    //! vector with 1D coupling nodes for ntp coupling
+    std::vector<int> couplingnodes_ntp_;
 
     //! type of coupling method
     INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod coupling_method_;
@@ -142,11 +148,17 @@ namespace POROMULTIPHASESCATRA
     //! access to blood vessel volume fraction
     Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction() override;
 
-    //! create interaction pairs
-    void CreateCouplingPairs();
+    //! create interaction pairs for line- or surfacebased coupling (GPTS and MP)
+    void CreateCouplingPairsLineSurfBased();
+
+    //! create interaction pairs for ntp coupling
+    void CreateCouplingPairsNTP();
 
     //! calculate the volume fraction occupied by blood vessels
     void CalculateBloodVesselVolumeFraction();
+
+    //! get the Id from 1D nodes for coupling
+    void GetCouplingIdsfromInput();
 
     //! evaluate the pairs
     void EvaluateCouplingPairs(
