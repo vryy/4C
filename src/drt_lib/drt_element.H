@@ -21,6 +21,8 @@
 #include "drt_parobject.H"
 #include "drt_condition.H"
 
+struct BoundingBox;
+
 // forward declarations
 namespace MAT
 {
@@ -1271,6 +1273,8 @@ namespace DRT
         unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
         std::vector<double>& vtu_point_result_data) const;
 
+    virtual BoundingBox GetBoundingBox(const DRT::Discretization& discret,
+        const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased) const;
     /// @}
 
    private:

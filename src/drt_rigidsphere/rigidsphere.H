@@ -400,6 +400,9 @@ namespace DRT
         mybondstobeams_.erase(id);
       };
 
+      BoundingBox GetBoundingBox(const DRT::Discretization& discret,
+          const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased) const override;
+
       //@}
 
      protected:

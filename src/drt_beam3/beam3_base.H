@@ -594,6 +594,8 @@ namespace DRT
 
       INPAR::BEAMINTERACTION::FilamentType GetFilamentType() const { return filamenttype_; }
 
+      BoundingBox GetBoundingBox(const DRT::Discretization& discret,
+          const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased) const override;
 
      private:
       //! position of binding spots on beam element in local coordinate system
