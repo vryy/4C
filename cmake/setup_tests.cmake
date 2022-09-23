@@ -4,7 +4,7 @@ if(DEFINED ENV{GLOBAL_TEST_TIMEOUT})
   message(STATUS "Global test timeout is $ENV{GLOBAL_TEST_TIMEOUT} s (before scaling).")
 else()
   # default test timeout, if not passed as an environment variable
-  set(GLOBAL_TEST_TIMEOUT 260) # Default timeout
+  set(GLOBAL_TEST_TIMEOUT 120) # Default timeout
 
   message(
     STATUS
