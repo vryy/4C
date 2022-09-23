@@ -9,6 +9,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "drt_function.H"
+#include "function_of_time.H"
 #include "drt_linedefinition.H"
 #include "../drt_fluid/fluid_functions.H"
 #include "../drt_fluid_xfluid/xfluid_functions.H"
@@ -26,6 +27,10 @@ namespace
   using CreateFunctionType = Teuchos::RCP<T> (*)(
       Teuchos::RCP<DRT::INPUT::LineDefinition>, DRT::UTILS::FunctionManager&, const int);
 
+  template <typename T>
+  using CreateMultiLineFunctionType = Teuchos::RCP<T> (*)(
+      std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>);
+
   /**
    * Utility function that takes a function object returning a Teuchos::RCP<T> and erases its return
    * type via std::any. In addition, if the returned object would be Teuchos::null, discard it and
@@ -40,6 +45,20 @@ namespace
                const int index) -> std::any
     {
       Teuchos::RCP<T> created = fun(linedef, fm, index);
+      if (created == Teuchos::null)
+        return {};
+      else
+        return created;
+    };
+  }
+
+  template <typename T>
+  std::function<std::any(std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>)>
+  WrapMultiLineFunction(CreateMultiLineFunctionType<T> fun)
+  {
+    return [fun](std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> multiline_def) -> std::any
+    {
+      Teuchos::RCP<T> created = fun(multiline_def);
       if (created == Teuchos::null)
         return {};
       else
@@ -95,18 +114,31 @@ namespace
         }
       }
 
+      // List all known multi-line functions in a vector, so they can be called with a unified
+      // syntax below. Also, erase their exact return type, since we can only store std::any.
+      std::vector<std::function<std::any(std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>)>>
+          try_create_multiline_function_vector{
+              WrapMultiLineFunction(DRT::UTILS::TryCreateExprFunction<dim>),
+              WrapMultiLineFunction(DRT::UTILS::TryCreateFunctionOfTime)};
+
       // If we haven't found the function by now, try to parse a multi-line function.
       if (!found_function)
       {
-        auto basic_funct = DRT::UTILS::TryCreateExprFunction<dim>(section_line_defs);
-        if (basic_funct != Teuchos::null)
+        for (const auto& try_create_multiline_function : try_create_multiline_function_vector)
         {
-          functions.emplace_back(std::move(basic_funct));
+          auto basic_funct = try_create_multiline_function(section_line_defs);
+          if (basic_funct.has_value())
+          {
+            functions.emplace_back(basic_funct);
+            found_function = true;
+            break;
+          }
         }
-        else
-        {
-          dserror("Could not create any function from the given function line definition.");
-        }
+      }
+
+      if (!found_function)
+      {
+        dserror("Could not create any function from the given function line definition.");
       }
     }
   }
@@ -124,6 +156,9 @@ void DRT::UTILS::AddValidFunctionFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> l
 {
   DRT::INPUT::LineDefinition onecomponentexpr;
   onecomponentexpr.AddNamedString("FUNCTION");
+
+  DRT::INPUT::LineDefinition symbolic_function_of_time;
+  symbolic_function_of_time.AddNamedString("SYMBOLIC_FUNCTION_OF_TIME");
 
   DRT::INPUT::LineDefinition componentexpr;
   componentexpr.AddNamedInt("COMPONENT").AddNamedString("FUNCTION");
@@ -157,6 +192,7 @@ void DRT::UTILS::AddValidFunctionFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> l
       .AddOptionalNamedDouble("T2");
 
   lines->Add(onecomponentexpr);
+  lines->Add(symbolic_function_of_time);
   lines->Add(componentexpr);
   lines->Add(variableexpr);
   lines->Add(variableexprmulti);

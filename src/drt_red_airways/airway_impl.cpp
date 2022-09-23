@@ -24,6 +24,7 @@
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/function_of_time.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include <fstream>
@@ -977,8 +978,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
 
             const double pressure_active =
                 DRT::Problem::Instance()
-                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funct_id_switch - 1)
-                    .EvaluateTime(time);
+                    ->FunctionById<DRT::UTILS::FunctionOfTime>(funct_id_switch - 1)
+                    .Evaluate(time);
 
             int funct_id_current = 0;
             if (std::abs(pressure_active - 1.0) < 10e-8)
@@ -1003,8 +1004,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
             }
 
             BCin = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funct_id_current - 1)
-                       .EvaluateTime(time);
+                       ->FunctionById<DRT::UTILS::FunctionOfTime>(funct_id_current - 1)
+                       .Evaluate(time);
           }
           else
           {
@@ -1022,8 +1023,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
               if (curve)
                 if ((curvenum = (*curve)[id]) >= 0)
                   return DRT::Problem::Instance()
-                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
-                      .EvaluateTime(time);
+                      ->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum)
+                      .Evaluate(time);
                 else
                   return 1.0;
               else
@@ -1159,8 +1160,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           if (curve) curvenum = (*curve)[phase_number];
           if (curvenum >= 0)
             curvefac = DRT::Problem::Instance()
-                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
-                           .EvaluateTime(time);
+                           ->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum)
+                           .Evaluate(time);
 
           BCin = (*vals)[phase_number] * curvefac;
 
@@ -1172,10 +1173,10 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
             if (fmod(time, period) < period1)
             {
               double Vnp = BCin;
-              double Vn = (*vals)[phase_number] *
-                          DRT::Problem::Instance()
-                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
-                              .EvaluateTime(time - dt);
+              double Vn =
+                  (*vals)[phase_number] * DRT::Problem::Instance()
+                                              ->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum)
+                                              .Evaluate(time - dt);
               BCin = (Vnp - Vn) / dt;
               Bc = "flow";
             }
@@ -1839,9 +1840,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
       int curvenum = -1;
       if (curve) curvenum = (*curve)[0];
       if (curvenum >= 0)
-        curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
-                       .EvaluateTime(time);
+        curvefac =
+            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
+                time);
 
       scnp = (*vals)[0] * curvefac;
 
@@ -2542,9 +2543,9 @@ bool DRT::ELEMENTS::AirwayImpl<distype>::GetCurveValAtCond(double& bcVal, DRT::N
       int curvenum = -1;
       if (curve) curvenum = (*curve)[0];
       if (curvenum >= 0)
-        curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
-                       .EvaluateTime(time);
+        curvefac =
+            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
+                time);
 
       bcVal = (*vals)[0] * curvefac;
 
@@ -2568,9 +2569,9 @@ bool DRT::ELEMENTS::AirwayImpl<distype>::GetCurveValAtCond(double& bcVal, DRT::N
       double curve2fac = 1.0;
       if (curve) curve2num = (*curve)[1];
       if (curve2num >= 0)
-        curve2fac = DRT::Problem::Instance()
-                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curve2num)
-                        .EvaluateTime(time);
+        curve2fac =
+            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curve2num).Evaluate(
+                time);
 
       bcVal += functionfac * curve2fac;
 

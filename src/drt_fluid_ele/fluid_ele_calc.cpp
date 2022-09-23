@@ -26,6 +26,7 @@
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/function_of_time.H"
 
 #include "../drt_mat/arrhenius_pv.H"
 #include "../drt_mat/carreauyasuda.H"
@@ -1553,9 +1554,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(DRT::ELEMENTS::Flu
       {
         // time factor (negative time indicating error)
         if (time >= 0.0)
-          functfac = DRT::Problem::Instance()
-                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum)
-                         .EvaluateTime(time);
+          functfac =
+              DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(functnum).Evaluate(
+                  time);
         else
           dserror("Negative time in bodyforce calculation: time = %f", time);
       }

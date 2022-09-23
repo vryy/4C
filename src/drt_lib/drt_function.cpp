@@ -269,11 +269,15 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateExprFunction(
   // evaluate the maximum component and the number of variables
   int maxcomp = 0;
   int maxvar = -1;
+  bool found_function_of_space_time(false);
   for (const auto& ith_function_lin_def : functions_lin_defs)
   {
     ith_function_lin_def->ExtractInt("COMPONENT", maxcomp);
     ith_function_lin_def->ExtractInt("VARIABLE", maxvar);
+    if (ith_function_lin_def->HaveNamed("FUNCTION")) found_function_of_space_time = true;
   }
+
+  if (!found_function_of_space_time) return Teuchos::null;
 
   // evaluate the number of rows used for the definition of the variables
   std::size_t numrowsvar = functions_lin_defs.size() - maxcomp - 1;

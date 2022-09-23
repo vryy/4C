@@ -19,6 +19,7 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_parallel.H"
+#include "../drt_lib/function_of_time.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -406,9 +407,9 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint(Teuchos::RCP<DRT::Discretiz
       bool usetime = true;
       if (time < 0.0) usetime = false;
       if (curvenum >= 0 && usetime)
-        curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
-                       .EvaluateTime(time);
+        curvefac =
+            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
+                time);
 
 
       double diff = (curvefac * (*initerror_)[eid] - (*acterror_)[eid]);

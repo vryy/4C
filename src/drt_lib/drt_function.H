@@ -70,24 +70,6 @@ namespace DRT
       virtual double Evaluate(const int index, const double* x, double t) = 0;
 
       /*!
-       * @brief Evaluation of time dependent FUNCT
-       *
-       * @param t  (i) The point in time in which the function will be evaluated
-       */
-      double EvaluateTime(double t)
-      {
-        std::array<double, 3> dummy = {0.0};
-
-#ifdef DEBUG
-        std::array<double, 3> dummy2 = {123.456};
-        if (std::abs(Evaluate(0, dummy.data(), t) - Evaluate(0, dummy2.data(), t)) > 1.0e-14)
-          dserror("You evaluate a FUNCT solely by time even if it dependents on x,y or z!");
-#endif
-
-        return Evaluate(0, dummy.data(), t);
-      }
-
-      /*!
        * \brief Evaluation of first spatial derivatives of time and space dependent FUNCT
        *
        * \param index (i) For vector-valued functions, index defines the function-component which
@@ -123,35 +105,6 @@ namespace DRT
         dserror("The evaluation of the time derivative is not implemented for this function");
         std::vector<double> emptyvector;
         return emptyvector;
-      };
-
-      /*!
-       * \brief Evaluation of time derivatives of time dependent FUNCT
-       *
-       * @param t  (i) The point in time in which the function will be evaluated
-       * @param deg   (i) maximum time derivative degree
-       * @return vector containing value and time derivative(s)
-       */
-      std::vector<double> EvaluateTimeDerivative(const double t, const unsigned deg)
-      {
-        std::array<double, 3> dummy = {0.0};
-
-#ifdef DEBUG
-        std::vector<double> res1 = EvaluateTimeDerivative(0, dummy.data(), t, deg);
-        std::array<double, 3> dummy2 = {123.456};
-        std::vector<double> res2 = EvaluateTimeDerivative(0, dummy2.data(), t, deg);
-        for (unsigned int i = 0; i < deg; i++)
-        {
-          if (std::abs(res1[deg] - res2[deg]) > 1.0e-14)
-          {
-            dserror(
-                "You evaluate the time derivative of a FUNCT solely by time even if it dependents "
-                "on x,y or z!");
-          }
-        }
-#endif
-
-        return EvaluateTimeDerivative(0, dummy.data(), t, deg);
       };
 
       /// Return number of components of FUNCT

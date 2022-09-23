@@ -31,6 +31,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_utils_parallel.H"
+#include "../drt_lib/function_of_time.H"
 
 #include "../drt_mat/matpar_bundle.H"
 
@@ -168,8 +169,8 @@ void SSI::SSIBase::Setup()
 
       temperature_vector_->PutScalar(
           DRT::Problem::Instance()
-              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(temperature_funct_num_ - 1)
-              .EvaluateTime(Time()));
+              ->FunctionById<DRT::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
+              .Evaluate(Time()));
 
       ssicoupling_->SetTemperatureField(
           *DRT::Problem::Instance()->GetDis("structure"), temperature_vector_);
@@ -596,8 +597,8 @@ void SSI::SSIBase::EvaluateAndSetTemperatureField()
     // evaluate temperature at current time and put to scalar
     const double temperature =
         DRT::Problem::Instance()
-            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(temperature_funct_num_ - 1)
-            .EvaluateTime(Time());
+            ->FunctionById<DRT::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
+            .Evaluate(Time());
     temperature_vector_->PutScalar(temperature);
 
     // set temperature vector to structure discretization

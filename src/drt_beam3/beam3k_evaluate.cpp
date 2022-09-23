@@ -13,6 +13,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/function_of_time.H"
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -2116,8 +2117,8 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
 
       if (functnum > 0)
         functtimefac[i] = DRT::Problem::Instance()
-                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                              .EvaluateTime(time);
+                              ->FunctionById<DRT::UTILS::FunctionOfTime>(functnum - 1)
+                              .Evaluate(time);
 
       load_vector_neumann(i) *= functtimefac[i];
     }

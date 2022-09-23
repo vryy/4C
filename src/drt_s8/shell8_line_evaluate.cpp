@@ -14,6 +14,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/function_of_time.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 
 extern "C"
@@ -49,8 +50,8 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(Teuchos::ParameterList& params,
   double functfac = 1.0;
   if (functnum >= 0)
     functfac = DRT::Problem::Instance()
-                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                   .EvaluateTime(time);
+                   ->FunctionById<DRT::UTILS::FunctionOfTime>(functnum - 1)
+                   .Evaluate(time);
 
   // init gaussian points of parent element
   S8_DATA s8data;

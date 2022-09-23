@@ -22,6 +22,7 @@
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/function_of_time.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include <fstream>
@@ -205,8 +206,8 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           if ((*curve)[0] >= 0)
           {
             curvefac = DRT::Problem::Instance()
-                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*curve)[0])
-                           .EvaluateTime(time);
+                           ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[0])
+                           .Evaluate(time);
             BCin = (*vals)[0] * curvefac;
           }
           else
@@ -235,8 +236,8 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           if (curve) curve2num = (*curve)[1];
           if (curve2num >= 0)
             curve2fac = DRT::Problem::Instance()
-                            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curve2num)
-                            .EvaluateTime(time);
+                            ->FunctionById<DRT::UTILS::FunctionOfTime>(curve2num)
+                            .Evaluate(time);
 
           // Add first_CURVE + FUNCTION * second_CURVE
           BCin += functionfac * curve2fac;
@@ -282,8 +283,8 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
               if ((*curve)[0] >= 0)
               {
                 curvefac = DRT::Problem::Instance()
-                               ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*curve)[0])
-                               .EvaluateTime(time);
+                               ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[0])
+                               .Evaluate(time);
               }
 
               // Get parameters for VolumeDependentPleuralPressure condition

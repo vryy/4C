@@ -17,6 +17,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/function_of_time.H"
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 
@@ -144,9 +145,9 @@ void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& 
     if (funct) functnum = (*funct)[0];
     double functfac = 1.0;
     if (functnum >= 0)
-      functfac = DRT::Problem::Instance()
-                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum)
-                     .EvaluateTime(time);
+      functfac =
+          DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(functnum).Evaluate(
+              time);
     for (int i = 0; i < nnode; ++i)
     {
       // do only nodes in my row map

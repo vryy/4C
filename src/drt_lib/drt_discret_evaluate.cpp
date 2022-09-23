@@ -19,6 +19,7 @@
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "drt_assemblestrategy.H"
+#include "../drt_lib/function_of_time.H"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 
@@ -207,8 +208,8 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
         if (tmp_funct) functnum = (*tmp_funct)[j];
         if (functnum > 0)
           functfac = DRT::Problem::Instance()
-                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                         .EvaluateTime(time);
+                         ->FunctionById<DRT::UTILS::FunctionOfTime>(functnum - 1)
+                         .Evaluate(time);
 
         value *= functfac;
         const int lid = systemvector.Map().LID(gid);
@@ -393,9 +394,9 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
         if (curve) curvenum = (*curve)[0];
         double curvefac = 1.0;
         if (curvenum >= 0)
-          curvefac = Problem::Instance()
-                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
-                         .EvaluateTime(time);
+          curvefac =
+              Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
+                  time);
 
         // Get ConditionID of current condition if defined and write value in parameter list
         const std::vector<int>* CondIDVec = cond.Get<std::vector<int>>("ConditionID");

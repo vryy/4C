@@ -13,6 +13,7 @@ species
 #include <vector>
 #include "newman.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/function_of_time.H"
 #include "../drt_mat/matpar_bundle.H"
 
 // TODO: math.H was included automatically
@@ -134,8 +135,8 @@ double MAT::Newman::ComputeTransferenceNumber(const double cint) const
     trans = EvalPreDefinedFunct(-1, cint, TransNrParams());
   else
     trans = DRT::Problem::Instance()
-                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(TransNrCurve() - 1)
-                .EvaluateTime(cint);
+                ->FunctionById<DRT::UTILS::FunctionOfTime>(TransNrCurve() - 1)
+                .Evaluate(cint);
 
   return trans;
 }
@@ -151,9 +152,9 @@ double MAT::Newman::ComputeFirstDerivTrans(const double cint) const
   else if (TransNrCurve() == 0)
     firstderiv = EvalFirstDerivPreDefinedFunct(-1, cint, TransNrParams());
   else
-    firstderiv = (DRT::Problem::Instance()
-                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(TransNrCurve() - 1)
-                      .EvaluateTimeDerivative(cint, 1))[1];
+    firstderiv = DRT::Problem::Instance()
+                     ->FunctionById<DRT::UTILS::FunctionOfTime>(TransNrCurve() - 1)
+                     .EvaluateDerivative(cint);
 
   return firstderiv;
 }
@@ -171,8 +172,8 @@ double MAT::Newman::ComputeThermFac(const double cint) const
     therm = 1.0;
   else
     therm = DRT::Problem::Instance()
-                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(ThermFacCurve() - 1)
-                .EvaluateTime(cint);
+                ->FunctionById<DRT::UTILS::FunctionOfTime>(ThermFacCurve() - 1)
+                .Evaluate(cint);
 
   return therm;
 }
@@ -190,9 +191,9 @@ double MAT::Newman::ComputeFirstDerivThermFac(const double cint) const
     // -> first derivative = 0.0
     firstderiv = 0.0;
   else
-    firstderiv = (DRT::Problem::Instance()
-                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(ThermFacCurve() - 1)
-                      .EvaluateTimeDerivative(cint, 1))[1];
+    firstderiv = DRT::Problem::Instance()
+                     ->FunctionById<DRT::UTILS::FunctionOfTime>(ThermFacCurve() - 1)
+                     .EvaluateDerivative(cint);
 
   return firstderiv;
 }

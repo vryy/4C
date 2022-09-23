@@ -17,6 +17,7 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/function_of_time.H"
 #include "art_junction.H"
 #include "art_terminal_bc.H"
 #include "../headers/singleton_owner.H"
@@ -1582,9 +1583,9 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateScatraBC(Artery* ele,
       if (curve) curvenum = (*curve)[0];
       if (curvenum > 0)
       {
-        curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
-                       .EvaluateTime(time);
+        curvefac =
+            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
+                time);
       }
 
 

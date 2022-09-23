@@ -14,6 +14,7 @@ equations
 #include "mixture_constituent_remodelfiber_expl.H"
 #include "../drt_lib/voigt_notation.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/function_of_time.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/material_service.H"
 #include "mixture_constituent_remodelfiber_material_exponential.H"
@@ -319,8 +320,8 @@ double MIXTURE::MixtureConstituent_RemodelFiberExpl::EvaluateDepositionStretch(
   }
 
   return DRT::Problem::Instance()
-      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(params_->deposition_stretch_timefunc_num_ - 1)
-      .EvaluateTime(time);
+      ->FunctionById<DRT::UTILS::FunctionOfTime>(params_->deposition_stretch_timefunc_num_ - 1)
+      .Evaluate(time);
 }
 void MIXTURE::MixtureConstituent_RemodelFiberExpl::UpdateHomeostaticValues(
     Teuchos::ParameterList& params, const int eleGID)
