@@ -90,7 +90,7 @@ XML File                            = beam3r_herm2line3_static_beam_to_solid_vol
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 0.0
 MAT 2 MAT_BeamReissnerElastHyper YOUNG 100 POISSONRATIO 0.0 DENS 0.0 CROSSAREA 0.031415926535897934 SHEARCORR 1 MOMINPOL 0.00015707963267948968 MOMIN2 7.853981633974484e-05 MOMIN3 7.853981633974484e-05
 --------------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+FUNCTION t
 --------------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE 2

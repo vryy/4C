@@ -65,11 +65,11 @@ MAT 3 MAT_newman VALENCE 1.0 DIFF_COEF_CONC_DEP_FUNCT 2 DIFF_COEF_TEMP_SCALE_FUN
 COMPONENT 0 FUNCTION 1.24 //initial concentration field: µmol/mm^3
 COMPONENT 1 FUNCTION 0.0 //initial potential field:
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION (1.0e-4)*(t^(-0.2))
+SYMBOLIC_FUNCTION_OF_TIME (1.0e-4)*(t^(-0.2))
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION 0.4-0.8*t
+SYMBOLIC_FUNCTION_OF_TIME 0.4-0.8*t
 ----------------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION 310.0*((1.262*t)/(1+0.2*t*t+0.08*t*t*t*t)+0.0144)
+SYMBOLIC_FUNCTION_OF_TIME 310.0*((1.262*t)/(1+0.2*t*t+0.08*t*t*t*t)+0.0144)
 ----------------------------------------------------------------------FUNCT5
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 10000.0 DESCRIPTION 1.24-1.0*t 0.24

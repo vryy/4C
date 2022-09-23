@@ -249,7 +249,7 @@ COMPONENT 0 FUNCTION 0.0 //magnetic field
 COMPONENT 1 FUNCTION 0.0 //magnetic field
 COMPONENT 2 FUNCTION 1.0 //magnetic field
 ----------------------------------------------------------------------FUNCT5
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 6 100000 DESCRIPTION -0.5*cos(pi*t/6)+0.5 1
 ----------------------------------------------------------------------FUNCT6
 COMPONENT 0 FUNCTION a

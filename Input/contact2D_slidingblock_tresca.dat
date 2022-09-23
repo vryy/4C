@@ -1595,7 +1595,7 @@ NODE 463 COORD 0.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.0 DENS 1 THEXPANS 0.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t/4
+FUNCTION t/4
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 347 QUANTITY dispx VALUE 7.76767609699509420e-01 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 347 QUANTITY dispy VALUE -7.53369551731937048e-03 TOLERANCE 1e-6

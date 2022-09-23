@@ -100,7 +100,7 @@ COMPONENT 1 FUNCTION 3.6
 ------------------------------------------------------------FUNCT4
 FUNCTION -2.0e-4*(1.0-cos(pi/2.5*t))
 ------------------------------------------------------------FUNCT5
-COMPONENT 0 FUNCTION a
+FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 20 VALUES 0.0 0.0 0.002
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 2 QUANTITY phi1 VALUE  1.01546947957019107e+01 TOLERANCE 1.0e-07

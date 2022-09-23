@@ -86,7 +86,7 @@ COMPONENT 0 FUNCTION (52.35987756*2)^0.5*(-0.51023*(52.35987756*2)*((x+0.05)/1)^
 COMPONENT 1 FUNCTION 0.0 //initial y-vel. field
 COMPONENT 2 FUNCTION 0.0 //initial pres. field
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.6 5.0 DESCRIPTION -1*(1.1-t) -0.5
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 3.55690177482925959e-02 TOLERANCE 1e-11

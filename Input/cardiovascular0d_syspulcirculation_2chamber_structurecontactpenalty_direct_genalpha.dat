@@ -163,16 +163,16 @@ MAT 100 ELAST_StructuralTensor STRATEGY Standard
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION (5.0*(t-(0.18+25.0/(5.0*(25.0-(-25.0)))))+1)*heaviside(5.0*(t-(0.18+25.0/(5.0*(25.0-(-25.0)))))+1)-5.0*(t-(0.18+25.0/(5.0*(25.0-(-25.0)))))*heaviside(5.0*(t-(0.18+25.0/(5.0*(25.0-(-25.0))))))-5.0*(t-(0.52-25.0/(5.0*(25.0-(-25.0)))))*heaviside(5.0*(t-(0.52-25.0/(5.0*(25.0-(-25.0))))))+(5.0*(t-(0.52-25.0/(5.0*(25.0-(-25.0)))))-1)*heaviside(5.0*(t-(0.52-25.0/(5.0*(25.0-(-25.0)))))-1)
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION v
+SYMBOLIC_FUNCTION_OF_TIME v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.26 0.9 DESCRIPTION 0.5*1.0*(1.0-cos(pi*(t)/0.13)) 0.0
 -------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION v
+SYMBOLIC_FUNCTION_OF_TIME v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.26 0.9 DESCRIPTION 0.5*1.0*(1.0-cos(pi*(t)/0.13)) 0.0
 -------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION v
+FUNCTION v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 6 TIMES 0.0 0.18 0.25 0.52 0.59 0.9 DESCRIPTION 0.0 0.5*(1.5)*(1.0-cos(pi*(t-0.18)/0.07)) 1.5 0.5*(1.5)*(1.0-cos(pi*(t-0.59)/0.07)) 0.0
 -------------------------------------------------------------FUNCT5
-COMPONENT 0 FUNCTION v
+FUNCTION v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 6 TIMES 0.0 0.18 0.25 0.52 0.59 0.9 DESCRIPTION 0.0 0.5*(1.0)*(1.0-cos(pi*(t-0.18)/0.07)) 1.0 0.5*(1.0)*(1.0-cos(pi*(t-0.59)/0.07)) 0.0
 -------------------------------------------------RESULT DESCRIPTION
 CARDIOVASCULAR0D DIS cardiovascular0d SPECIAL QUANTITY p_at_l VALUE 2.12078925976601412e-01 TOLERANCE 1e-6

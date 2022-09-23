@@ -98,5 +98,5 @@ STRUCTURE DIS structure NODE 21 QUANTITY dispx VALUE -2.38531029694526993e+01 TO
 STRUCTURE DIS structure NODE 21 QUANTITY dispy VALUE -1.37410259410149092e+01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 21 QUANTITY dispz VALUE  5.36661796032691996e+01 TOLERANCE 1e-8
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+SYMBOLIC_FUNCTION_OF_TIME t
 -----------------------------------------------------------------------------END

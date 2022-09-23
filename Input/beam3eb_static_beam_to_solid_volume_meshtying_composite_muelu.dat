@@ -110,7 +110,7 @@ STRUCTURE DIS structure NODE 169 QUANTITY dispz VALUE  4.79646727419917179e-02 T
 STRUCTURE SPECIAL QUANTITY num_iter_step_10 VALUE 3 TOLERANCE 1e-8
 STRUCTURE SPECIAL QUANTITY lin_iter_step_10 VALUE 1 TOLERANCE 1e-8
 --------------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+SYMBOLIC_FUNCTION_OF_TIME t
 --------------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE 1

@@ -90,7 +90,7 @@ COMPONENT 1 FUNCTION 0
 COMPONENT 2 FUNCTION 0
 COMPONENT 3 FUNCTION 9
 -------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION t
+FUNCTION t
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE 0

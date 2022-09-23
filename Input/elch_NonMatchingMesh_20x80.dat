@@ -66,7 +66,7 @@ COMPONENT 0 FUNCTION 5*(-y^2+0.25)
 COMPONENT 1 FUNCTION 0.0
 COMPONENT 2 FUNCTION 0.0
 -------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1 1000 DESCRIPTION 0.5*(sin((t*pi/1)-(pi/2)))+0.5 0.5*(sin((1*pi/1)-(pi/2)))+0.5
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 983 QUANTITY phi1 VALUE 9.98714425745408931e+01 TOLERANCE 1e-08

@@ -34,13 +34,13 @@ MAT 1 MAT_fluid DYNVISCOSITY 0.0000179105 DENSITY 0.000001176 GAMMA 1.0
 MAT 2 MAT_0D_MAXWELL_ACINUS_OGDEN Stiffness1 1.0e-1 Stiffness2 1.0e-1 Viscosity1 1.0e-1 Viscosity2 1.0e-1
 -------------------------------------------------------------FUNCT1
 //flow
-COMPONENT 0 FUNCTION 79.8*(sin(pi*t))
+SYMBOLIC_FUNCTION_OF_TIME 79.8*(sin(pi*t))
 -------------------------------------------------------------FUNCT2
 //pressure
-COMPONENT 0 FUNCTION 500*(1-cos(pi*t))
+SYMBOLIC_FUNCTION_OF_TIME 500*(1-cos(pi*t))
 -------------------------------------------------------------FUNCT3
 //function where pressure bc is active
-COMPONENT 0 FUNCTION f3
+SYMBOLIC_FUNCTION_OF_TIME f3
 VARIABLE 0 NAME f3 TYPE multifunction NUMPOINTS 5 TIMES 0.0 0.7 2.6 3.3 5.0 DESCRIPTION 1.0 0.0 1.0 0.0
 -------------------------DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS
 DPOINT                          2

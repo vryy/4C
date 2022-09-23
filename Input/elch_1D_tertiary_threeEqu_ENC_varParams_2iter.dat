@@ -53,7 +53,7 @@ COMPONENT 2 FUNCTION 0.2 // initial concentration field
 COMPONENT 3 FUNCTION 0.0 // initial electric potential field
 COMPONENT 4 FUNCTION 0.0 // initial electric current density field
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.1 12345 DESCRIPTION 0.5*(sin((t*pi/0.1)-(pi/2)))+0.5 1
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 9.09715952678755574e-02 TOLERANCE 1e-11

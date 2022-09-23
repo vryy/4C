@@ -179,7 +179,7 @@ COMPONENT 3 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT7
 VARFUNCTION 0.0
 ----------------------------------------------------------------------FUNCT8
-FUNCTION t
+SYMBOLIC_FUNCTION_OF_TIME t
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  2

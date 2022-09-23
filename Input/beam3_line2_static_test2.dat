@@ -98,5 +98,5 @@ STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE -7.0710659333296322e-01 TOLE
 STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE -7.0710659333071424e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 6 QUANTITY dispz VALUE -6.4721375902744227e-01 TOLERANCE 1e-8
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+SYMBOLIC_FUNCTION_OF_TIME t
 -------------------------------------------------------------------------END

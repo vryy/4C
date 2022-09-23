@@ -105,7 +105,7 @@ NODE 5 COORD 0.000000000000000 0.500000000000000 0.000000000000000e+00
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_BeamReissnerElastHyper YOUNG 1.0e+05 SHEARMOD 5.0e+04 DENS 0.001 CROSSAREA 0.03142 SHEARCORR 1.1 MOMINPOL 0.0001571 MOMIN2 0.00007854 MOMIN3 0.00007854
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+FUNCTION t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 4 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-10

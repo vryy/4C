@@ -154,7 +154,7 @@ COMPONENT 0 FUNCTION 293.15
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 6 TIMES 0 2 3 15 16 50 VALUES 0 0 10000 10000 0 0
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 9 TIMES 0 1 2 3 15 16 17 18 50 VALUES 293.15 40.0 40 950 950 40 40 293.15 293.15
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0

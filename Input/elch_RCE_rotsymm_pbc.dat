@@ -133,7 +133,7 @@ COMPONENT 3 FUNCTION 0.0
 COMPONENT 0 FUNCTION 0.2*x*a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 1 100000 DESCRIPTION -0.5*cos(pi*t)+0.5 1
 ----------------------------------------------------------------------FUNCT5
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 1 100000 DESCRIPTION -0.5*cos(pi*t)+0.5 1
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 179 QUANTITY velx VALUE 0.0e+00 TOLERANCE 1e-09

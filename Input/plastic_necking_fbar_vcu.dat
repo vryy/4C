@@ -53,7 +53,7 @@ COMPONENT 0 FUNCTION 0.0
 COMPONENT 1 FUNCTION 0.0
 COMPONENT 2 FUNCTION 1.0*(z+13.3335)/(2.0*13.3335)
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION t
+FUNCTION t
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  5

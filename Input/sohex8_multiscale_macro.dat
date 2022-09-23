@@ -311,7 +311,7 @@ NODE 27 COORD 1.000000000000000e+00 1.000000000000000e+00 1.000000000000000e+00
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_Multiscale MICROFILE sohex8_multiscale_micro.mat MICRODIS_NUM 1
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t/1.5
+FUNCTION t/1.5
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 2.23447603442736044e-02 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 2.23447603442734830e-02 TOLERANCE 1e-8

@@ -64,14 +64,14 @@ COMPONENT 0 FUNCTION 0.0 //initial x-vel. field
 COMPONENT 1 FUNCTION 0.0 //initial y-vel. field
 COMPONENT 2 FUNCTION 0.0 //initial pres. field
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 50000.0 DESCRIPTION 0.5*(sin((t*pi/1.0)-(pi/2)))+0.5 1
 ----------------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION 2.030e-5-1.270e-4*t+5.600e-4*t^2
+SYMBOLIC_FUNCTION_OF_TIME 2.030e-5-1.270e-4*t+5.600e-4*t^2
 ----------------------------------------------------------------------FUNCT5
-COMPONENT 0 FUNCTION 0.050+0.030*log(50.0*t)
+SYMBOLIC_FUNCTION_OF_TIME 0.050+0.030*log(50.0*t)
 ----------------------------------------------------------------------FUNCT6
-COMPONENT 0 FUNCTION 26.0+100.0*t-200.0*t^2
+SYMBOLIC_FUNCTION_OF_TIME 26.0+100.0*t-200.0*t^2
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 1.69409620468451254e-02 TOLERANCE 1e-11
 SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE -1.17810327801617723e-01 TOLERANCE 1e-10

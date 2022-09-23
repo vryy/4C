@@ -52,7 +52,7 @@ SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
 ------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 1.0
 ------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION t
+FUNCTION t
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 5 QUANTITY phi VALUE  1.05981971613447290e+00 TOLERANCE 1.1e-08
 SCATRA DIS scatra NODE 6 QUANTITY phi VALUE  1.05981971613447268e+00 TOLERANCE 1.1e-08

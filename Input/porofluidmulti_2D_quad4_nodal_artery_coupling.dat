@@ -139,7 +139,7 @@ VARFUNCTION S0-2/pi*atan(0.01*dp) NUMCONSTANTS 1 CONSTANTS S0 0.3
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 1 1000 DESCRIPTION 1000.0*0.5*(1-cos(t*pi/1.0)) 1000
 ----------------------------------------------------------------------FUNCT5
-FUNCTION t/1.5
+SYMBOLIC_FUNCTION_OF_TIME t/1.5
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 10
 NDLINE  3

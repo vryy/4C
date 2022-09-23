@@ -86,7 +86,7 @@ COMPONENT 1 FUNCTION 0.0
 ------------------------------------------------------------FUNCT3
 FUNCTION 1.0+x
 ------------------------------------------------------------FUNCT4
-FUNCTION 1.0e-2*t+2
+SYMBOLIC_FUNCTION_OF_TIME 1.0e-2*t+2
 ------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 48 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-16
 STRUCTURE DIS structure NODE 48 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-16

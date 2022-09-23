@@ -96,7 +96,7 @@ DPOINT 1
 E 1 - NUMDOF 9 ONOFF 0 1 0 0 0 0 0 0 0 VAL 0.0 2.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 1 0 0 0 0 0 0 0
 ---------------------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 1
-E 2 - NUMDOF 9 ONOFF 1 0 1 0 0 0 0 0 0 VAL -30.0 0.0 -30.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 1 0 0 0 0 0 0 Live Mid
+E 2 - NUMDOF 9 ONOFF 1 0 1 0 0 0 0 0 0 VAL -30.0 0.0 -30.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 2 0 2 0 0 0 0 0 0 Live Mid
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE      16 DNODE 1
 NODE       1 DNODE 2
@@ -195,7 +195,10 @@ MAT 1 MAT_BeamReissnerElastHyper YOUNG 1.3e+09 POISSONRATIO 0.3 DENS 1.384e-09 C
 MAT 2 MAT_Crosslinker MATNUM 3 JOINTTYPE beam3rline2rigid LINKINGLENGTH 0.5 LINKINGLENGTHTOL 0.02 LINKINGANGLE 0.0 LINKINGANGLETOL 0.392699081698724 K_ON 0.0 K_OFF 0.0 TYPE actin
 MAT 3 MAT_BeamReissnerElastHyper YOUNG 1.3e+09 POISSONRATIO 0.3 DENS 1.384e-09 CROSSAREA 4.751658e-06 SHEARCORR 1.0 MOMINPOL 8.9836e-11 MOMIN2 4.4918e-11 MOMIN3 4.4918e-11
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.0001 0.01 1.0 VALUES 0.0 0.0 1.0 1.0
+----------------------------------------------------------------------FUNCT2
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.0001 0.01 1.0 VALUES 0.0 0.0 1.0 1.0
 ---------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -5.55501829510494649e-01 TOLERANCE 1e-10

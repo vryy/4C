@@ -59,10 +59,10 @@ COMPONENT 1 FUNCTION -0.080830788307857
 COMPONENT 0 FUNCTION 10.56
 COMPONENT 1 FUNCTION 3.892392107528559
 ----------------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 5 20 VALUES 298.0 328.0 348.0
 ----------------------------------------------------------------------FUNCT5
-COMPONENT 0 FUNCTION exp(-605.8/8.314/t)
+SYMBOLIC_FUNCTION_OF_TIME exp(-605.8/8.314/t)
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 40 QUANTITY phi1 VALUE 8.11074389671311913e+00 TOLERANCE 8.1e-09         // local lithium concentration at anode-electrolyte interface (anode side)
 SCATRA DIS scatra NODE 277 QUANTITY phi1 VALUE 1.20019292960129076e+00 TOLERANCE 1.2e-09        // local lithium concentration at anode-electrolyte interface (electrolyte side)

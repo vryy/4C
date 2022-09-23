@@ -84,7 +84,7 @@ STRUCTURE DIS structure NODE 228 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-14
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 0.0
 MAT 2 MAT_BeamKirchhoffTorsionFreeElastHyper YOUNG 1 DENS 0.0 CROSSAREA 0.031415926535897934 MOMIN 7.853981633974484e-05
 --------------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+FUNCTION t
 --------------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE 1

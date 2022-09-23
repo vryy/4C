@@ -92,7 +92,7 @@ COMPONENT 1 FUNCTION 0.0 //initial y-vel. field
 //COMPONENT 2 FUNCTION 0.0 //initial z-vel. field
 COMPONENT 2 FUNCTION 0.0 //initial pres. field
 -------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.36 1000000 DESCRIPTION 5*t-0.2 5*0.36-0.2
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 1.83050254075637531e+00 TOLERANCE 1e-09

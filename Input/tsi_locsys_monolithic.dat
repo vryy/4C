@@ -170,7 +170,7 @@ SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 293.15
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION v
+SYMBOLIC_FUNCTION_OF_TIME v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 5 TIMES 0.0 2.0 3.0 4.0 5.0 DESCRIPTION 293.15-(293.15-40.0)*t/2.0 40.0 40+(293.15-40.0)*(t-3) 293.15
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0

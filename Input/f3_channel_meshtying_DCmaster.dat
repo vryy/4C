@@ -122,7 +122,7 @@ ML_DAMPCOARSE                   1.0                             // damping coars
 ----------------------------------------------------------MATERIALS
 MAT       1 MAT_fluid  DYNVISCOSITY 3.5e-6 DENSITY 1.0e-6 GAMMA 1.0
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+FUNCTION t
 -------------------------------------------------RESULT DESCRIPTION
 // node is located in the outer volume (HEX)
 FLUID DIS fluid NODE 4566 QUANTITY velx VALUE  5.38710522478107190e-04 TOLERANCE 1e-10

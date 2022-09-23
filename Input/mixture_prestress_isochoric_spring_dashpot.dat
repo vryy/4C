@@ -62,7 +62,7 @@ MAT 14 MIX_Constituent_ElastHyper NUMMAT 1 MATIDS 141 PRESTRESS_STRATEGY 149
 MAT 141 ELAST_IsoExpoPow K1 10 K2 10 C 1
 MAT 149 MIX_Prestress_Strategy_Iterative
 -------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 9999999999.0 VALUES 1.0 1.13 1.13
 -------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION a

@@ -65,7 +65,7 @@ COMPONENT 0 FUNCTION 2*x
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION -y
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION  sin(2*(t)*pi/10)
+SYMBOLIC_FUNCTION_OF_TIME sin(2*(t)*pi/10)
 ---------------------------------------DESIGN SURFACE MULTIPNT CONSTRAINT 3D
 DSURF                           1
 E 1 - 1 0.01 3 0.0 2 3 4 abs

@@ -93,7 +93,7 @@ COMPONENT 1  FUNCTION (x*sin(0.5236*2*(t-0.5))+y*cos(0.5236*2*(t-0.5))-y)*a
 COMPONENT 2  FUNCTION 0.0
 VARIABLE 0 NAME a TYPE  multifunction NUMPOINTS 3 TIMES 0.0 0.5 10 DESCRIPTION 0 1
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION t*2/0.5
+FUNCTION t*2/0.5
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0

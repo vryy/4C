@@ -54,7 +54,7 @@ STRAINS_GAUSSPOINT                    no
 -----------------------------------------------------------------------MATERIALS
 MAT 1 MAT_BeamKirchhoffTorsionFreeElastHyper YOUNG 1.0 DENS 0.0 CROSSAREA 0.007853981633974483 MOMIN 4.9087385212340526e-06
 --------------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+FUNCTION t
 --------------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 50 QUANTITY dispx VALUE 2.34429464027713363e-02 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 50 QUANTITY dispy VALUE 4.13031197682212223e+01 TOLERANCE 1e-9

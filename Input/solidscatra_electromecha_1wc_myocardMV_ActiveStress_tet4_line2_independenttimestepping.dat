@@ -95,7 +95,7 @@ COMPONENT 0 FUNCTION (0.5*tanh((t)/0.01)+0.5)*tanh((t)/0.1)*exp(-(((t)/500.0)^10
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION 1.0
 -------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 2 500000.0 DESCRIPTION 5 0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         3

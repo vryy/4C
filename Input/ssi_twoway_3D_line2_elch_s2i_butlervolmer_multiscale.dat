@@ -97,7 +97,7 @@ COMPONENT 2 FUNCTION 3.65
 ------------------------------------------------------------FUNCT4
 FUNCTION 1.2e3
 ------------------------------------------------------------FUNCT5
-FUNCTION 0.5*(1.0-cos(pi*t))*heaviside(1.01-t)+heaviside(t-1.01)
+SYMBOLIC_FUNCTION_OF_TIME 0.5*(1.0-cos(pi*t))*heaviside(1.01-t)+heaviside(t-1.01)
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 2 QUANTITY phi1 VALUE  9.99996741931946644e+02 TOLERANCE 1.0e-05
 SCATRA DIS scatra NODE 2 QUANTITY phi2 VALUE -6.18495746282374746e-10 TOLERANCE 1.0e-16

@@ -37,12 +37,12 @@ NDVOL                           0
 MAT 1 MAT_fluid DYNVISCOSITY 0.00001523 DENSITY 0.000001176 GAMMA 1.0
 MAT 2 MAT_0D_MAXWELL_ACINUS_DOUBLEEXPONENTIAL Stiffness1 14647.50 Stiffness2 5352.59 Viscosity1 3285.38 Viscosity2 188.023
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION v
+SYMBOLIC_FUNCTION_OF_TIME v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 4.0 400.0 DESCRIPTION (-530.0)*(-0.5*(1+cos((t/4.0)*pi))+1.0) (-530.0-0.5*330.0*(1.0-cos(2.0*pi*t/4.0)))
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 1.0
+SYMBOLIC_FUNCTION_OF_TIME 1.0
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION v
+SYMBOLIC_FUNCTION_OF_TIME v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 4.0 400.0 DESCRIPTION (-530.0)*(-0.5*(1+cos((t/4.0)*pi))+1.0)-200.0 (-530.0-0.5*330.0*(1.0-cos(2.0*pi*t/4.0)))-200.0
 -------------------------DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS
 DPOINT                          6

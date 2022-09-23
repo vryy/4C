@@ -230,10 +230,10 @@ VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 999 DESCRIPTION 0
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 999 DESCRIPTION 0.0933256806275 0
 ----------------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES 0.0 1.0 1.36 2 DESCRIPTION 0 0.5*(1.0)*(1.0-cos(pi*(t-1.0)/0.18)) 0
 ----------------------------------------------------------------------FUNCT5
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES 0.0 1.0 1.36 2 DESCRIPTION 0 0.5*(1.0)*(1.0-cos(pi*(t-1.0)/0.18)) 0
 ----------------------------------------------------------RESULT DESCRIPTION
 CARDIOVASCULAR0D DIS cardiovascular0d SPECIAL QUANTITY p_at_l VALUE 5.59886940485877282e-01 TOLERANCE 1e-6

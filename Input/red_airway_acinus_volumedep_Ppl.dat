@@ -34,7 +34,7 @@ MAT 1 MAT_fluid DYNVISCOSITY 0.00001523 DENSITY 0.000001176 GAMMA 1.0
 MAT 2 MAT_0D_MAXWELL_ACINUS_NEOHOOKEAN Stiffness1 1.0 Stiffness2 1.0 Viscosity1 1.0 Viscosity2 1.0
 MAT 3 MAT_0D_MAXWELL_ACINUS_NEOHOOKEAN Stiffness1 0.0 Stiffness2 0.0 Viscosity1 0.0 Viscosity2 0.0
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+SYMBOLIC_FUNCTION_OF_TIME t
 -------------------------DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS
 DPOINT                          2
 E 1 - pressure 1.0 1 none none

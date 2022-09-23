@@ -241,7 +241,7 @@ COMPONENT 1 FUNCTION 0.0 //initial y-vel. field
 //COMPONENT 2 FUNCTION 0.0 //initial z-vel. field
 COMPONENT 2 FUNCTION -y*9.81*1.0+0.1*9.81*1.0 //initial pres. field
 -------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 5.0 1000 DESCRIPTION 0.5*(sin((t*pi/5)-(pi/2)))+0.5 0.5*(sin((5*pi/5)-(pi/2)))+0.5
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 704 QUANTITY flux_domain_1_x VALUE -2.11480653763789403e-05 TOLERANCE 1e-14

@@ -81,7 +81,7 @@ NODE 6 COORD 1.000000000000000e+02 0 0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_BeamReissnerElastPlastic YOUNG 1.0e+07 YIELDM 5.0e+03 ISOHARDM 5.0e+06 TORSIONPLAST 1 SHEARMOD 5.0e+06 DENS 1.3e9 CROSSAREA 1 SHEARCORR 1 MOMINPOL 0.159155 MOMIN2 0.0795775 MOMIN3 0.0795775
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION sin(pi/2*t)
+SYMBOLIC_FUNCTION_OF_TIME sin(pi/2*t)
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE -2.40164104556591980e+01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE 4.80328209113184457e+01 TOLERANCE 1e-8

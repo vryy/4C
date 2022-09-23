@@ -133,7 +133,7 @@ STRUCTURE DIS structure NODE 404 QUANTITY dispy VALUE -1.77395619363675605e+00 T
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.1 0.11 1 VALUES 0 2 0 0
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.1 0.11 1 VALUES 0 6 0 0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4

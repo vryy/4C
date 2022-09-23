@@ -86,7 +86,7 @@ SOLVER                          UMFPACK
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.001
 MAT 2 ELAST_CoupNeoHooke YOUNG 240.5653612 NUE 0.4999
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+FUNCTION t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 162 QUANTITY dispy VALUE 6.6362266201633888e+00 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION

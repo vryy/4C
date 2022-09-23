@@ -106,7 +106,7 @@ SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 25+z*5
 ------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION t/100
+FUNCTION t/100
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0

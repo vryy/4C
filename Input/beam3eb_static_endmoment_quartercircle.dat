@@ -124,7 +124,7 @@ NODE 17 COORD 1.00000000e+00 0.00000000e+00 0.00000000e+00
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_BeamKirchhoffTorsionFreeElastHyper YOUNG 1 DENS 1.3e9 CROSSAREA 1 MOMIN 1e-4
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+SYMBOLIC_FUNCTION_OF_TIME t
 ----------------------------------------------------------RESULT DESCRIPTION
 //Results with ANS and 4 GP
 STRUCTURE DIS structure NODE 17 QUANTITY dispx VALUE -7.26759922527150826e-01 TOLERANCE 1e-12

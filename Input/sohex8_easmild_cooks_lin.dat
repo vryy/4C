@@ -59,7 +59,7 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 240.5653612 NUE 0.4999 DENS 0.0
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+FUNCTION t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 162 QUANTITY dispy VALUE 7.71168186703178016e+00 TOLERANCE 1e-12
 ----------------------------------------------------------DESIGN DESCRIPTION

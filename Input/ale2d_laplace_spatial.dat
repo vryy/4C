@@ -36,7 +36,7 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 1.0
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+FUNCTION t
 -------------------------------------------------RESULT DESCRIPTION
 ALE DIS ale NODE 3 QUANTITY dispx VALUE 5.0e-01 TOLERANCE 1e-12
 ALE DIS ale NODE 3 QUANTITY dispy VALUE 2.5e-01 TOLERANCE 1e-12

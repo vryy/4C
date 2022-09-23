@@ -142,7 +142,7 @@ NODE 6 COORD 2.000000000000000e-01 0.000000000000000e+00 5.000000000000000e-01
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_BeamKirchhoffTorsionFreeElastHyper YOUNG 1e4 DENS 0.001 CROSSAREA 0.00125663706144 MOMIN 1.25663706144e-07
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+FUNCTION t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE 1.24990253708982084e-02 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE 0.00000000000000000e+00 TOLERANCE 1e-10

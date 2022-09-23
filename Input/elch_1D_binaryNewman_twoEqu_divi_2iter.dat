@@ -50,14 +50,14 @@ MAT 3 MAT_newman VALENCE 1.0 DIFF_COEF_CONC_DEP_FUNCT 3 DIFF_COEF_TEMP_SCALE_FUN
 COMPONENT 0 FUNCTION 0.08 //initial concentration field: µmol/mm^3
 COMPONENT 1 FUNCTION 0.0 //initial current density field
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION f
+SYMBOLIC_FUNCTION_OF_TIME f
 VARIABLE 0 NAME f TYPE multifunction NUMPOINTS 4 TIMES -1.0 0.0 1.0 100.0 DESCRIPTION 0.0 0.5*(sin((t*pi/1.0)-(pi/2)))+0.5 1.0
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION 2.030e-5-1.270e-4*t+5.600e-4*t^2
+SYMBOLIC_FUNCTION_OF_TIME 2.030e-5-1.270e-4*t+5.600e-4*t^2
 ----------------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION 0.050+0.030*log(50.0*t)
+SYMBOLIC_FUNCTION_OF_TIME 0.050+0.030*log(50.0*t)
 ----------------------------------------------------------------------FUNCT5
-COMPONENT 0 FUNCTION 26.0+100.0*t-200.0*t^2
+SYMBOLIC_FUNCTION_OF_TIME 26.0+100.0*t-200.0*t^2
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE  2.97642381581044377e-02 TOLERANCE 1e-11
 SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE -1.45329772182024614e-01 TOLERANCE 1e-10

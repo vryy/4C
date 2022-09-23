@@ -69,7 +69,7 @@ SOLVER                          UMFPACK
 MAT 1 MAT_PlasticElastHyper NUMMAT 1 MATIDS 2 DENS 1.0 INITYIELD 248
 MAT 2 ELAST_CoupLogNeoHooke MODE YN C1 69.0e4 C2 0.3
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t*60
+FUNCTION t*60
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  2

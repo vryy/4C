@@ -167,7 +167,7 @@ COMPONENT 1 FUNCTION 0.0
 COMPONENT 2 FUNCTION 0.0
 COMPONENT 3 FUNCTION 0.75*0.5*4.0*pi*pi*(x+0.5) // pressure
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION t
+FUNCTION t
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4
 NDLINE 10

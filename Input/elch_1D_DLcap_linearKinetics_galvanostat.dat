@@ -62,13 +62,13 @@ MAT 3 MAT_newman VALENCE 1.0 DIFF_COEF_CONC_DEP_FUNCT 2 DIFF_COEF_TEMP_SCALE_FUN
 COMPONENT 0 FUNCTION 0.1 // initial concentration field
 COMPONENT 1 FUNCTION 0.0 // initial electric potential field
 ------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 1.6e-4
+SYMBOLIC_FUNCTION_OF_TIME 1.6e-4
 ------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION 0.5
+SYMBOLIC_FUNCTION_OF_TIME 0.5
 ------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION 96485.3399/(8.314472*298.15)*96485.3399*(1.6e-4-(-1.0)*1.6e-4)*1.0*t
+SYMBOLIC_FUNCTION_OF_TIME 96485.3399/(8.314472*298.15)*96485.3399*(1.6e-4-(-1.0)*1.6e-4)*1.0*t
 ------------------------------------------------------------FUNCT5
-COMPONENT 0 FUNCTION -150.0
+SYMBOLIC_FUNCTION_OF_TIME -150.0
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 9.31441672597716486e-02 TOLERANCE 1e-11
 SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE -2.21175621182536003e-01 TOLERANCE 1e-10

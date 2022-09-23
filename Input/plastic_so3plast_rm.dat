@@ -63,7 +63,7 @@ TOLDELTALP                      1.e-8
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_PlasticNlnLogNeoHooke YOUNG 206.9 NUE 0.29 DENS 0.0 YIELD 0.45 ISOHARD 0.12924 SATHARDENING 0.715 HARDEXPO 16.93
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION t/1000
+FUNCTION t/1000
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  5

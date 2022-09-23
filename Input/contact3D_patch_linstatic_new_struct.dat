@@ -5508,7 +5508,7 @@ NODE 1238 COORD 1.000000000000000e-01 1.000000000000000e-01 5.000000000000000e-0
 //                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.4 DENS 7.8e-6 THEXPANS 0.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+FUNCTION t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 723 QUANTITY dispx VALUE -9.117208004965520526e-15 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 723 QUANTITY dispy VALUE 2.000000000000337619e-02 TOLERANCE 1e-8
