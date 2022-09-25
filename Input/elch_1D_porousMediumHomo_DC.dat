@@ -62,8 +62,8 @@ MAT 1 MAT_elchmat NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 2 END
 MAT 2 MAT_elchphase EPSILON 0.39 TORTUOSITY 0.316 NUMMAT 1 MATIDS 3 END
 MAT 3 MAT_newman VALENCE 1.0 DIFF_COEF_CONC_DEP_FUNCT 2 DIFF_COEF_TEMP_SCALE_FUNCT 0 TRANSNR 3 THERMFAC 0 COND_CONC_DEP_FUNCT 4 COND_TEMP_SCALE_FUNCT 0 END
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1.24 //initial concentration field: µmol/mm^3
-COMPONENT 1 FUNCTION 0.0 //initial potential field:
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.24 //initial concentration field: µmol/mm³
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial potential field:
 ----------------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_TIME (1.0e-4)*(t^(-0.2))
 ----------------------------------------------------------------------FUNCT3
@@ -71,10 +71,10 @@ SYMBOLIC_FUNCTION_OF_TIME 0.4-0.8*t
 ----------------------------------------------------------------------FUNCT4
 SYMBOLIC_FUNCTION_OF_TIME 310.0*((1.262*t)/(1+0.2*t*t+0.08*t*t*t*t)+0.0144)
 ----------------------------------------------------------------------FUNCT5
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 10000.0 DESCRIPTION 1.24-1.0*t 0.24
 ----------------------------------------------------------------------FUNCT6
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 10000.0 DESCRIPTION 1.24+1.0*t 2.24
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 2.39999999999999991e-01 TOLERANCE 1e-10

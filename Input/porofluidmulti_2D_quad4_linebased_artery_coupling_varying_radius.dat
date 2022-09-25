@@ -9,7 +9,7 @@ General Data File BACI
 Test for line-based coupling between artery network and porofluid-
 multiphase-problem
 here, especially coupling with radius depending on porofluid-
-quantities is tested with FUNCTION 2 which prescribes radius
+quantities is tested with SYMBOLIC_FUNCTION_OF_SPACE_TIME 2 which prescribes radius
 via quadratic pressure profile p3
 radius of artery elements follows function
 0.375+100*(y-0.05)*(y+0.05)
@@ -84,13 +84,13 @@ MAT 3 MAT_CNST_ART VISCOSITY 1.0 DENS 1.0 YOUNG 400000.0 NUE 0.5 TH 1.630 PEXT1 
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD porofluid SRC_MAT 1 TAR_FIELD structure TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.1
-COMPONENT 1 FUNCTION 0.0
-COMPONENT 2 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.1
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------------------FUNCT2
 VARFUNCTION 1-p3/4
 ----------------------------------------------------------------------FUNCT3
-FUNCTION (-400*(y-0.05)*(y+0.05)+1)*t/0.2
+SYMBOLIC_FUNCTION_OF_SPACE_TIME (-400*(y-0.05)*(y+0.05)+1)*t/0.2
 ----------------------------------------------------------------------FUNCT4
 VARFUNCTION 0.0
 ------------------------------------------------DESIGN DESCRIPTION

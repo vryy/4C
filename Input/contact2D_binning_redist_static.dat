@@ -111,10 +111,10 @@ SOLVER                          Superlu
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 10 DENS 1.0e-6
 MAT 10 ELAST_CoupNeoHooke YOUNG 1.0 NUE 0.0
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION down
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME down
 VARIABLE 0 NAME down TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 0.1 20.0 VALUES 0.0 -0.15 -0.15
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION move_right
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME move_right
 VARIABLE 0 NAME move_right TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 0.1 10.0 VALUES 0.0 0.0 10.0
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 2.72587138234088799e+00 TOLERANCE 1.0e-4

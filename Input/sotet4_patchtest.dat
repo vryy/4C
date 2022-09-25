@@ -43,7 +43,7 @@ NORMCOMBI_RESFDISP              Or
 MAXITER                         1
 DIVERCONT                       continue
 -------------------------------------------------------------FUNCT1
-FUNCTION t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

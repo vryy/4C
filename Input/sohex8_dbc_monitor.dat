@@ -56,7 +56,7 @@ XML File                            = sohex8_dbc_monitor.xml
 -----------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000.0 NUE 0.0 DENS 0.0
 --------------------------------------------------------------------------FUNCT1
-FUNCTION t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 --------------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE 0

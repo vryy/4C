@@ -78,13 +78,13 @@ SRC_FIELD structure SRC_MAT 9 TAR_FIELD scatra TAR_MAT 6
 SRC_FIELD scatra SRC_MAT 5 TAR_FIELD thermo TAR_MAT 4
 SRC_FIELD scatra SRC_MAT 6 TAR_FIELD thermo TAR_MAT 4
 ------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1.0e1
-COMPONENT 1 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0e1
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 1.0e1
-COMPONENT 1 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0e1
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ------------------------------------------------------------FUNCT3
-FUNCTION 1.0+x
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0+x
 ------------------------------------------------------------FUNCT4
 SYMBOLIC_FUNCTION_OF_TIME 1.0e-2*t+2
 ------------------------------------------------RESULT DESCRIPTION

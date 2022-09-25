@@ -104,12 +104,12 @@ XFF_CONV_STAB_SCALING           averaged                      //inflow
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION (5-4)*y+4
-COMPONENT 1 FUNCTION 0
-COMPONENT 2 FUNCTION 0
-COMPONENT 3 FUNCTION 9
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (5-4)*y+4
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 9
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION y // shear flow; top 5.0, bottom 4.0 //(y*U_xmax)/h
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME y // shear flow; top 5.0, bottom 4.0 //(y*U_xmax)/h
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE 0

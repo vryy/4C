@@ -59,8 +59,8 @@ WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE MAT_FLUID 1 MAT_STRUC 2
 ------------------------------------------------------------FUNCT3
 WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY MAT_FLUID 1 MAT_STRUC 2
 ------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION 0                                                     // ux
-COMPONENT 1 FUNCTION -(sin(2*pi*x)*sin(2*pi*(t+1/4))*(cos(2*pi*x)-1))/20*y // uy
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0                                                     // ux
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME -(sin(2*pi*x)*sin(2*pi*(t+1/4))*(cos(2*pi*x)-1))/20*y // uy
 ------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 1 QUANTITY L2errmix VALUE 7.43797985655946903e-01 TOLERANCE 1e-10
 FLUID DIS fluid NODE 1 QUANTITY L2errden VALUE 5.88350500229279178e-08 TOLERANCE 1e-10

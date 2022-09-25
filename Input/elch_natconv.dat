@@ -239,15 +239,15 @@ MAT 5 MAT_matlist LOCAL No NUMMAT 3 MATIDS 2 3 4 END
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1.0 //initial concentration field
-COMPONENT 1 FUNCTION 0.5 //initial concentration field
-COMPONENT 2 FUNCTION 1.0 //initial concentration field
-COMPONENT 3 FUNCTION 0.0 //initial pot. field
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0 //initial concentration field
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.5 //initial concentration field
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0 //initial concentration field
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial pot. field
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 0.0 //initial x-vel. field
-COMPONENT 1 FUNCTION 0.0 //initial y-vel. field
-//COMPONENT 2 FUNCTION 0.0 //initial z-vel. field
-COMPONENT 2 FUNCTION -y*9.81*1.0+0.1*9.81*1.0 //initial pres. field
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial x-vel. field
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial y-vel. field
+//COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial z-vel. field
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME -y*9.81*1.0+0.1*9.81*1.0 //initial pres. field
 -------------------------------------------------------------FUNCT3
 SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 5.0 1000 DESCRIPTION 0.5*(sin((t*pi/5)-(pi/2)))+0.5 0.5*(sin((5*pi/5)-(pi/2)))+0.5

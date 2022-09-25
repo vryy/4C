@@ -66,7 +66,7 @@ MAT 3 ELAST_Iso1Pow C 2.5E4 D 1
 MAT 4 ELAST_VolSussmanBathe KAPPA 1.0E6
 MAT 100 ELAST_StructuralTensor STRATEGY ByDistributionFunction DISTR vonMisesFisher C1 500.0
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 6.5 50000.0 DESCRIPTION t/6.5 t/6.5
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE -1.92993171410875419e+00  TOLERANCE 1e-09

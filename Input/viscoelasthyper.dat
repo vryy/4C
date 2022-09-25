@@ -83,7 +83,7 @@ MAT 23 ELAST_Coup1Pow C 100. D 3
 MAT 24 ELAST_Coup3Pow C 6. D 6
 MAT 25 VISCO_Fract TAU 0.1 ALPHA 0.5 BETA 1
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 2 3 1000 VALUES 0 2e4 0 0
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2

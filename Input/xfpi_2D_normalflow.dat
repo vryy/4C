@@ -140,7 +140,7 @@ MAT 10 MAT_PoroLawConstant
 SRC_FIELD structure SRC_MAT 3 TAR_FIELD porofluid TAR_MAT 5
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 7
 -------------------------------------------------------------FUNCT1
-FUNCTION t*0.015
+SYMBOLIC_FUNCTION_OF_SPACE_TIME t*0.015
 -------------------------------------------------RESULT DESCRIPTION
 //The solution of the stationary problem would be velx=0, vely=-5e-3, pressure = 5.0
 XFLUID DIS fluid NODE 275 QUANTITY velx VALUE 4.44850703618201096e-15 TOLERANCE 1e-10

@@ -118,12 +118,12 @@ ML_DAMPCOARSE                   1.0                             // damping coars
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION (1-y*y)*1.0
-COMPONENT 1 FUNCTION 0
-COMPONENT 2 FUNCTION 0
-COMPONENT 3 FUNCTION 0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1-y*y)*1.0
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION -y
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME -y
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1
 NDLINE                          0

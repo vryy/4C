@@ -555,7 +555,7 @@ NODE 102 COORD 9.000000000000000e+00 1.000000000000000e+01 0.000000000000000e+00
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.4 DENS 7.8e-6 THEXPANS 0.0
 -------------------------------------------------------------FUNCT1
-FUNCTION t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 -------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_TIME t
 ----------------------------------------------------------RESULT DESCRIPTION

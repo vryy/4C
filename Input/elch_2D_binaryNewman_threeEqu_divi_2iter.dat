@@ -55,14 +55,14 @@ MAT 1 MAT_elchmat NUMDOF 4 NUMSCAL 1 NUMPHASE 1 PHASEIDS 2 END
 MAT 2 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 NUMMAT 1 MATIDS 3 END
 MAT 3 MAT_newman VALENCE 1.0 DIFF_COEF_CONC_DEP_FUNCT 4 DIFF_COEF_TEMP_SCALE_FUNCT 0 TRANSNR 5 THERMFAC 0 COND_CONC_DEP_FUNCT 6 COND_TEMP_SCALE_FUNCT 0 END
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.08 //initial concentration field: µmol/mm^3
-COMPONENT 1 FUNCTION 0.0 //initial potential field
-COMPONENT 2 FUNCTION 0.0 //initial current density field
-COMPONENT 3 FUNCTION 0.0 //initial current density field
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.08 //initial concentration field: µmol/mm³
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial potential field
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial current density field
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial current density field
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 0.0 //initial x-vel. field
-COMPONENT 1 FUNCTION 0.0 //initial y-vel. field
-COMPONENT 2 FUNCTION 0.0 //initial pres. field
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial x-vel. field
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial y-vel. field
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial pres. field
 ----------------------------------------------------------------------FUNCT3
 SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 50000.0 DESCRIPTION 0.5*(sin((t*pi/1.0)-(pi/2)))+0.5 1

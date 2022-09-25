@@ -164,7 +164,7 @@ INTERVALS   3 3 3
 ELEMENTS    FLUID HEX8 MAT 3 NA Euler
 PARTITION   structured
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 2 TIMES 0.0 5 DESCRIPTION t/5*0.2
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0

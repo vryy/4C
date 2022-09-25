@@ -134,9 +134,9 @@ AZOUTPUT                        50
 MAT 1 MAT_fluid DYNVISCOSITY 1.8e-04 DENSITY 1.3e-03 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1500.0 NUE 0.3 DENS 1.001
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION ((-(y-1.0)*(y-1.0))+1.0)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME ((-(y-1.0)*(y-1.0))+1.0)
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION -1.0*sin(2.0*pi*t)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME -1.0*sin(2.0*pi*t)
 -------------------------------------------------RESULT DESCRIPTION
 // nodes 11917 and 11918 are at the obstacle upstream tip and should yield same results
 STRUCTURE DIS structure NODE 11917 QUANTITY dispx VALUE 5.02723098491431909e-03 TOLERANCE 1e-10

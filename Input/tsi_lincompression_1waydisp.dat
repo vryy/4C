@@ -111,9 +111,9 @@ MAT 2 THERM_FourierIso CAPA 420 CONDUCT 52.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 293.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 293.0
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.1 1 3 VALUES 0 0 -4e7 -4e7
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4

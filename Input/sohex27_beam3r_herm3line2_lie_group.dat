@@ -78,7 +78,7 @@ STRUCTURE DIS structure NODE 1097 QUANTITY dispz VALUE 0 TOLERANCE 1e-10
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 100 NUE 0.0 DENS 10.0
 MAT 2 MAT_BeamReissnerElastHyper YOUNG 100 POISSONRATIO 0.0 DENS 10.0 CROSSAREA 0.04000000000000001 SHEARCORR 1 MOMINPOL 0.00026666666666666673 MOMIN2 0.00013333333333333337 MOMIN3 0.00013333333333333337
 --------------------------------------------------------------------------FUNCT1
-FUNCTION heaviside(t-0.01)
+SYMBOLIC_FUNCTION_OF_SPACE_TIME heaviside(t-0.01)
 --------------------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_TIME heaviside(t-0.01)
 --------------------------------------------------------------DESIGN DESCRIPTION

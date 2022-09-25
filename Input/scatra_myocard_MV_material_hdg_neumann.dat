@@ -53,7 +53,7 @@ CONVTOL                         1e-10
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_myocard DIFF1 1.0e-1 DIFF2 1.0e-2 DIFF3 0.0 PERTUBATION_DERIV 1e-6 MODEL MV TISSUE M TIME_SCALE 1.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES 0.0 1.0 2 500000.0 DESCRIPTION 0.1*t 0.2-0.1*t 0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0

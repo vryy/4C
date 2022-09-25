@@ -114,7 +114,7 @@ MAT 5 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 10.1 TYPE Darcy
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 5
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION -1.0/0.225*(y-0.7)*(y-1.0)*a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME -1.0/0.225*(y-0.7)*(y-1.0)*a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 2.5 500000.0 DESCRIPTION 0.5*(1-cos((t*2*pi/5.0))) 1
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS porofluid NODE 2 QUANTITY velx VALUE -1.06789078497480528e-02 TOLERANCE 1e-9

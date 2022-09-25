@@ -58,14 +58,14 @@ MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 2 3 END
 MAT 2 MAT_ion DIFFUSIVITY 1.71e-5 VALENCE 1.0 // diffusion: mm^2/s
 MAT 3 MAT_ion DIFFUSIVITY 2.18e-5 VALENCE -1.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.1 //initial concentration field: µmol/mm^3
-COMPONENT 1 FUNCTION 0.1 //initial concentration field: µmol/mm^3
-COMPONENT 2 FUNCTION 0.0 //initial concentration field:
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.1 //initial concentration field: µmol/mm³
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.1 //initial concentration field: µmol/mm³
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial concentration field:
 ----------------------------------------------------------------------FUNCT2
 // no velocity field
-COMPONENT 0 FUNCTION 0.0 //initial x-vel. field
-COMPONENT 1 FUNCTION 0.0 //initial y-vel. field
-COMPONENT 2 FUNCTION 0.0 //initial pres. field
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial x-vel. field
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial y-vel. field
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial pres. field
 ----------------------------------------------------------------------FUNCT3
 SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES 0.0 2.0 50 50000.0 DESCRIPTION -3.2*5e-4*(0.5*(sin((t*pi/2.0)-(pi/2)))+0.5) -3.2*5e-4 0

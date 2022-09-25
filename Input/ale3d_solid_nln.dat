@@ -75,7 +75,7 @@ TOLDISP                         1e-8
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 10 DENS 1.0e-7
 MAT 10 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.4
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION  -1/25*(x*x+y*y)*t
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME  -1/25*(x*x+y*y)*t
 -------------------------------------------------RESULT DESCRIPTION
 ALE DIS ale NODE 8   QUANTITY dispx VALUE  0.00000000000000000e+00 TOLERANCE 1e-12
 ALE DIS ale NODE 8   QUANTITY dispy VALUE  0.00000000000000000e+00 TOLERANCE 1e-12

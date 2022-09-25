@@ -51,11 +51,11 @@ CONVTOL                         1e-15
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 0.1
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION sin(pi*x)*sin(pi*y)*sin(pi*z)*cos(pi*t)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME sin(pi*x)*sin(pi*y)*sin(pi*z)*cos(pi*t)
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 0.5*cos(pi*x)*sin(pi*y)*sin(pi*z)*(3*pi*0.1*cos(pi*t)-sin(pi*t))
-COMPONENT 1 FUNCTION 0
-COMPONENT 2 FUNCTION 0.5*sin(pi*x)*sin(pi*y)*cos(pi*z)*(3*pi*0.1*cos(pi*t)-sin(pi*t))
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.5*cos(pi*x)*sin(pi*y)*sin(pi*z)*(3*pi*0.1*cos(pi*t)-sin(pi*t))
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.5*sin(pi*x)*sin(pi*y)*cos(pi*z)*(3*pi*0.1*cos(pi*t)-sin(pi*t))
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi VALUE 8.95420019865378558e-01 TOLERANCE 1E-6
 ------------------------------------------------DESIGN DESCRIPTION

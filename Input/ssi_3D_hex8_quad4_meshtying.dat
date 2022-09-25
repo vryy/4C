@@ -93,7 +93,7 @@ MAT 3 MAT_scatra DIFFUSIVITY 5.00
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 2139 QUANTITY dispz VALUE 2.60828498167937316e-02 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 2154 QUANTITY dispz VALUE 2.37974014831854250e-02 TOLERANCE 1e-8

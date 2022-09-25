@@ -29,7 +29,7 @@ PARALLEL_REDIST					        None
 -------------------------------------------------------------------MATERIALS
 MAT 6 MAT_Struct_StVenantKirchhoff YOUNG 1.0e06 NUE 0.0 DENS 1.0e-16
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 3*t
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 3*t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 120 QUANTITY dispx VALUE -6.0e-1 TOLERANCE 1e-14
 ----------------------------------------------------------DESIGN DESCRIPTION

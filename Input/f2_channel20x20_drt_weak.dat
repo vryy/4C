@@ -1428,7 +1428,7 @@ NODE 441 COORD 0.000000000000000e+000 1.000000000000000e+000 0.000000000000000e+
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION (1-4*(y-1/2)^2)*v
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1-4*(y-1/2)^2)*v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 10.0 1000.0 DESCRIPTION sin(t/10*3.14159265358979323846/2) 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 173 QUANTITY velx VALUE 1.2434840398369953e-01 TOLERANCE 1e-9

@@ -96,9 +96,9 @@ ALE DIS ale NODE 841 QUANTITY dispy VALUE 7.76807564586110347e-03 TOLERANCE 1e-1
 FSI NODE 1139 QUANTITY lambdax VALUE -1.51252966019678079e-03 TOLERANCE 1e-11
 FSI NODE 1139 QUANTITY lambday VALUE 9.55044516457570769e-02 TOLERANCE 1e-10
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 10*(y-1)*(1-cos(2*t*pi/5))
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 10*(y-1)*(1-cos(2*t*pi/5))
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION (1-cos(2*t*pi/5))
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1-cos(2*t*pi/5))
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         5
 NDLINE                          8

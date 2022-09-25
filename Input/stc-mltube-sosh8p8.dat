@@ -41,7 +41,7 @@ ML_SMOTIMES                     2 1                           // no. smoothing s
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2.06E11 NUE 0.0 DENS 7.8E3
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 2e-3 500000.0 DESCRIPTION 2.0E5*t/(1.0E-4) 2.0E5*10.0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDSURF                          2

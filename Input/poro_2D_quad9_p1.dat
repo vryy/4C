@@ -93,9 +93,9 @@ MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e3 NUE 0.3
 //MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 2.0e3 NUE 0.3 DENS 0.5
 MAT 3 MAT_FluidPoro DYNVISCOSITY 0.001 DENSITY 1.0 PERMEABILITY 1.0e-4 TYPE Darcy
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.4
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.4
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 2 500000.0 DESCRIPTION -1.0*0.5*(1-cos((t*pi/2.0))) -1.0*0.5*(1-cos((2*pi/2.0)))
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS porofluid NODE 4 QUANTITY velx VALUE -1.58808710111670681e+00 TOLERANCE 1e-8

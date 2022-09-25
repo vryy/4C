@@ -97,7 +97,7 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 SOLVER                          UMFPACK
 -------------------------------------------------------------FUNCT1
-FUNCTION t/0.2
+SYMBOLIC_FUNCTION_OF_SPACE_TIME t/0.2
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS porofluid NODE 7 QUANTITY velx VALUE 1.01885262948246472e-01 TOLERANCE 1e-7
 FLUID DIS porofluid NODE 8 QUANTITY velx VALUE 9.81147370517535256e-02 TOLERANCE 1e-7

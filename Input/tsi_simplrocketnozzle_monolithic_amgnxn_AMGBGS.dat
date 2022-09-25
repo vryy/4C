@@ -156,9 +156,9 @@ MAT 4 THERM_FourierIso CAPA 3956.04 CONDUCT 7.5e4 // Ni
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 SRC_FIELD structure SRC_MAT 3 TAR_FIELD thermo TAR_MAT 4
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 293.15
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 293.15
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 6 TIMES 0 2 3 15 16 50 VALUES 0 0 10000 10000 0 0
 ----------------------------------------------------------------------FUNCT3
 SYMBOLIC_FUNCTION_OF_TIME a

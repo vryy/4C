@@ -157,16 +157,16 @@ SRC_FIELD structure SRC_MAT 4 TAR_FIELD porofluid TAR_MAT 2
 SRC_FIELD structure SRC_MAT 4 TAR_FIELD scatra TAR_MAT 5
 SRC_FIELD artery SRC_MAT 3 TAR_FIELD artery_scatra TAR_MAT 6
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 3000.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 3000.0
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 2.88e-4
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2.88e-4
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION 398.2973792226528*1.0/(1.0+exp(-2.0*100.0*(-sqrt((x-0.01)*(x-0.01)+(y-0.01)*(y-0.01))+0.05)))+191.7026207774473
-COMPONENT 1 FUNCTION 295*1.0/(1.0+exp(-2.0*100.0*(-sqrt((x-0.01)*(x-0.01)+(y-0.01)*(y-0.01))+0.05)))
-COMPONENT 2 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 398.2973792226528*1.0/(1.0+exp(-2.0*100.0*(-sqrt((x-0.01)*(x-0.01)+(y-0.01)*(y-0.01))+0.05)))+191.7026207774473
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 295*1.0/(1.0+exp(-2.0*100.0*(-sqrt((x-0.01)*(x-0.01)+(y-0.01)*(y-0.01))+0.05)))
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION 2.0e-6
-COMPONENT 1 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2.0e-6
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------------------FUNCT5
 POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_T_growth 4.0e-8 w_nl_crit 1.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
 ----------------------------------------------------------------------FUNCT6

@@ -73,7 +73,7 @@ MAT 2 ELAST_CoupLogNeoHooke MODE Lame C1 3937.007874 C2 2992.775691      // C1 =
 MAT 3 ELAST_CoupTransverselyIsotropic ALPHA -1562.992126 BETA 374.653717 GAMMA 19425.41877 ANGLE 0 STR_TENS_ID 100
 MAT 100 ELAST_StructuralTensor STRATEGY Standard
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION ramp
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME ramp
 VARIABLE 0 NAME ramp TYPE linearinterpolation NUMPOINTS 2 TIMES 0.0 1.0 VALUES 0 20.0
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -1.64271401724059984e+00 TOLERANCE 1e-8

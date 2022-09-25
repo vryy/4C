@@ -92,7 +92,7 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2000000 NUE 0.3 DENS 7.8e-4 THEXPANS 0.
 MAT 2 MAT_fluid_murnaghantait DYNVISCOSITY 1.0 REFDENSITY 1.0 REFPRESSURE 0.0 REFBULKMODULUS 100.0 MATPARAMETER 1.0 GAMMA 1.0
 MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1000000 NUE 0.0 DENS 1.0 THEXPANS 0.0
 -------------------------------------------------------------FUNCT1
-FUNCTION -v
+SYMBOLIC_FUNCTION_OF_SPACE_TIME -v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 2 TIMES 0.0 1.5 DESCRIPTION 1.0/2.0*(-0.25/(2.0*pi)*cos(2.0*pi*t/0.25-pi/2.0)+t)
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT               3

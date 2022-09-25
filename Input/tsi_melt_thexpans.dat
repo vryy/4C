@@ -140,13 +140,13 @@ MAT 3 MAT_Consolidation SOLIDUS 60 LIQUIDUS 80 LATENTHEAT 0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 1
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 10
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 10
 ----------------------------------------------------------------------FUNCT2
 FASTPOLYNOMIAL NUMCOEFF 1 COEFF 2.22
 ----------------------------------------------------------------------FUNCT3
 FASTPOLYNOMIAL NUMCOEFF 1 COEFF 4.2260e+06
 ----------------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION -42.59476517155448e+06*(t-3.591354766548734)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME -42.59476517155448e+06*(t-3.591354766548734)
 ----------------------------------------------------------------------FUNCT5
 FASTPOLYNOMIAL                  NUMCOEFF 1 COEFF 1e-6
 ----------------------------------------------------------------------FUNCT6

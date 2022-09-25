@@ -132,7 +132,7 @@ BELTRAMI c1 1.0
 ------------------------------------------------------------FUNCT2
 BELTRAMI c1 2.0
 ------------------------------------------------------------FUNCT3
-FUNCTION 0.03*sin(20*pi*t)
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.03*sin(20*pi*t)
 ------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 690 QUANTITY velx VALUE -3.24972416964395605e-01 TOLERANCE 1e-10
 FLUID DIS fluid NODE 690 QUANTITY vely VALUE  1.49486522887728734e-01 TOLERANCE 1e-10

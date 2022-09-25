@@ -93,7 +93,7 @@ MAT 1 MAT_fluid DYNVISCOSITY 0.004 DENSITY 0.001 GAMMA 1.0
 MAT 2 MAT_Struct_AAAGasser DENS 0.0001 VOL OSM NUE 0.49 BETA -2.0 CLUM 2.62e3 CMED 1.98e3 CABLUM 1.73e3
 MAT 3 MAT_Struct_AAANeoHooke YOUNG 1.044E6 BETA 1.881E6 NUE 0.49 DENS 0.0001
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.3 0.5 1.05 VALUES 0.0 11598.84 16131.72 16131.72
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8

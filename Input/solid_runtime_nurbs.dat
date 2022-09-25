@@ -35,7 +35,7 @@ ELEMENT_GHOSTING                      yes
 -----------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.3 DENS 0.0
 --------------------------------------------------------------------------FUNCT1
-FUNCTION t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 --------------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 135 QUANTITY dispx VALUE -4.43537602981304180e-01 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 135 QUANTITY dispy VALUE 1.21873113546761869e+00 TOLERANCE 1e-10

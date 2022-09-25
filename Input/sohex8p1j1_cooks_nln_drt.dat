@@ -83,7 +83,7 @@ MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 10 11 DENS 0
 MAT 10 ELAST_CoupLogNeoHooke MODE Lame C1 80.1938 C2 0.0
 MAT 11 ELAST_VolOgden KAPPA 40.0889e4 BETA -2.0
 -------------------------------------------------------------FUNCT1
-FUNCTION t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 162 QUANTITY dispy VALUE 6.6185499759189623e+00 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION

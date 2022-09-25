@@ -127,10 +127,10 @@ MAT 20 ELAST_CoupNeoHooke YOUNG 1.0e-2 NUE 0.0
 MAT 3 MAT_lubrication LUBRICATIONLAWID 30 DENSITY 1.0
 MAT 30 MAT_lubrication_law_constant VISCOSITY 4.0E-8
 ------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE  multifunction NUMPOINTS 4 TIMES 0.0 1 5 100000 DESCRIPTION 0 0 0.005*(t-5)*(t-5)
 ------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION b
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME b
 VARIABLE 0 NAME b TYPE  multifunction NUMPOINTS 4 TIMES 0.0 1 5 100000 DESCRIPTION 0.05*t 0.05*1 0.05*1
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0

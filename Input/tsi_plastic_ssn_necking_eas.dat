@@ -106,15 +106,15 @@ SOLVER                          UMFPACK            // Amesos_KLU_sym,Amesos_KLU_
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 4
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 293.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 293.0
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 0.0
-COMPONENT 1 FUNCTION 0.0
-COMPONENT 2 FUNCTION (z+13.3335)/(13.3335*2)*1e-3
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME (z+13.3335)/(13.3335*2)*1e-3
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION (13.3335-z)/(13.3335*2)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (13.3335-z)/(13.3335*2)
 ----------------------------------------------------------------------FUNCT4
-FUNCTION t*9/9000
+SYMBOLIC_FUNCTION_OF_SPACE_TIME t*9/9000
 ------------------------------------------------------SEMI-SMOOTH PLASTICITY
 SEMI_SMOOTH_CPL                 175
 STABILIZATION_S                 1.0

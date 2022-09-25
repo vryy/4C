@@ -89,9 +89,9 @@ MAT 102 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTUBATION_DERIV 
 MAT 103 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTUBATION_DERIV 1e-6 MODEL FHN TISSUE M TIME_SCALE 1.0
 MAT 100 ELAST_StructuralTensor STRATEGY Standard
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION (0.5*tanh((t)/0.01)+0.5)*tanh((t)/0.1)*exp(-(((t)/500.0)^10))
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (0.5*tanh((t)/0.01)+0.5)*tanh((t)/0.1)*exp(-(((t)/500.0)^10))
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 1.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
 -------------------------------------------------------------FUNCT3
 SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES 0.0 1 2 500000.0 DESCRIPTION (0.15*t) (-0.15*(t-1.0)+0.15) 0

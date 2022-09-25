@@ -65,8 +65,8 @@ MAT 2   MAT_elchphase   EPSILON 0.2020 TORTUOSITY 0.532 NUMMAT 1 MATIDS 3 END
 -------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_TIME -1.0e-3
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 1.2 //initial concentration field
-COMPONENT 1 FUNCTION 0.0 //initial current density field
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.2 //initial concentration field
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial current density field
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 5 QUANTITY phi1 VALUE 1.18852961124979806e+00 TOLERANCE 1.2e-08
 SCATRA DIS scatra NODE 5 QUANTITY phi2 VALUE -1.38973823391696149e-03 TOLERANCE 1.4e-11

@@ -83,9 +83,9 @@ MAT 4 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 4
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 10*(y-1)*(1-cos(2*t*pi/5))
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 10*(y-1)*(1-cos(2*t*pi/5))
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION (1-cos(2*t*pi/5))
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1-cos(2*t*pi/5))
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         5
 NDLINE                          8

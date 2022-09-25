@@ -45,7 +45,7 @@ MAT 11 ELAST_VolPenalty EPSILON 1.0E7 GAMMA 1.0
 MAT 20 ELAST_AnisoActiveStress_Evolution SIGMA 2.0E5 TAUC0 0.0 MAX_ACTIVATION 20.0 MIN_ACTIVATION -30.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0.0 STR_TENS_ID 100
 MAT 100 ELAST_StructuralTensor STRATEGY Standard
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 100*t
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 100*t
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0

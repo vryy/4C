@@ -52,9 +52,9 @@ MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 2 3 END
 MAT 2 MAT_ion DIFFUSIVITY 1.71e-5 VALENCE 1.0
 MAT 3 MAT_ion DIFFUSIVITY 2.18e-5 VALENCE -1.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0  FUNCTION 0.1 // initial concentration field
-COMPONENT 1  FUNCTION 0.1 // initial concentration field
-COMPONENT 2  FUNCTION 0.0 // initial electric potential field
+COMPONENT 0  SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.1 // initial concentration field
+COMPONENT 1  SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.1 // initial concentration field
+COMPONENT 2  SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 // initial electric potential field
 -------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES 0 2 50 1000 DESCRIPTION -3.2*(0.5*(sin((t*pi/2.0)-(pi/2)))+0.5) -3.2 0.0

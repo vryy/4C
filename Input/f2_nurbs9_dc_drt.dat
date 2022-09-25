@@ -416,7 +416,7 @@ NODE 144 DLINE 4
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 10.0 500000.0 DESCRIPTION sin(t/10*pi/2) 1
 ----------------------------------------------------------RESULT DESCRIPTION
 // Results with Np_Gen_Alpha (different values due to small differences in stabilization parameters;

@@ -55,9 +55,9 @@ Linear Solver Details           = No
 Test Details                    = No
 Debug                           = No
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.0
-COMPONENT 1 FUNCTION 0.0
-COMPONENT 2 FUNCTION 5.0*t
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 5.0*t
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ParticleDEM INITRADIUS 0.5 INITDENSITY 1.0
 MAT 2 MAT_ParticleWallDEM FRICT_COEFF_TANG -1.0 FRICT_COEFF_ROLL -1.0 ADHESION_SURFACE_ENERGY -1.0

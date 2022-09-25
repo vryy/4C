@@ -116,11 +116,11 @@ DSURF  2
 E 5 - 1 Slave Active
 E 12 - 1 Master Inactive
 --------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION x+10*x*y+y*y
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME x+10*x*y+y*y
 --------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION x
-COMPONENT 1 FUNCTION x*y*z*z
-COMPONENT 2 FUNCTION y*y
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME x
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME x*y*z*z
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME y*y
 --------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                           16
 NDLINE                            24

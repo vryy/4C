@@ -89,15 +89,15 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD opti TAR_MAT 2
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0
 MAT 2 MAT_opti MINPORO 0 MAXPORO 25000 SMEARFAC 1
 ------------------------------------------------FUNCT1 // initial flow field
-COMPONENT 0 FUNCTION 0.0//1.0//
-COMPONENT 1 FUNCTION 0.0//0.0//
-COMPONENT 2 FUNCTION 0.0//0.0//
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0//1.0//
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0//0.0//
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0//0.0//
 ---------------------------------------------FUNCT2 // initial density field
-COMPONENT 0 FUNCTION 1.0 // 1=fluid,0=no fluid
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0 // 1=fluid,0=no fluid
 ---------------------------------------------FUNCT3 // initial adjoint field
-COMPONENT 0 FUNCTION 0.0//1.0//
-COMPONENT 1 FUNCTION 0.0//0.0//
-COMPONENT 2 FUNCTION 0.0//10.0//
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0//1.0//
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0//0.0//
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0//10.0//
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          3

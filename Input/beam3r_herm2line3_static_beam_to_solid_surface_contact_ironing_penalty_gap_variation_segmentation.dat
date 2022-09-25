@@ -98,10 +98,10 @@ XML File                            = beam3r_herm2line3_static_beam_to_solid_sur
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 0.0
 MAT 2 MAT_BeamReissnerElastHyper YOUNG 100 POISSONRATIO 0.0 DENS 0.0 CROSSAREA 0.5026548245743669 SHEARCORR 1 MOMINPOL 0.04021238596594936 MOMIN2 0.02010619298297468 MOMIN3 0.02010619298297468
 --------------------------------------------------------------------------FUNCT1
-FUNCTION var
+SYMBOLIC_FUNCTION_OF_SPACE_TIME var
 VARIABLE 0 NAME var TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 1.0 3.0 1000.0 VALUES 0.0 0.0 1.0 1.0
 --------------------------------------------------------------------------FUNCT2
-FUNCTION var
+SYMBOLIC_FUNCTION_OF_SPACE_TIME var
 VARIABLE 0 NAME var TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1.0 1000.0 VALUES 0.0 -1.0 -1.0
 --------------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1

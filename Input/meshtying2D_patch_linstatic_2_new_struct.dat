@@ -537,7 +537,7 @@ NODE 102 COORD 9.000000000000000e+00 1.000000000000000e+01 0.000000000000000e+00
 //                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.4 DENS 7.8e-6 THEXPANS 0.0
 ----------------------------------------------------------------------FUNCT1
-FUNCTION a
+SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 10000000 VALUES 0 1 1
 ----------------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_TIME a

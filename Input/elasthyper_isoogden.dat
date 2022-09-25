@@ -88,13 +88,13 @@ NDLINE  0
 NDSURF  6
 NDVOL   0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0 0.5 VALUES 0 -0.2 //compression
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0 0.5 VALUES 0 0.2 //tension
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0 0.5 VALUES 0 0.2 //shear
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  6

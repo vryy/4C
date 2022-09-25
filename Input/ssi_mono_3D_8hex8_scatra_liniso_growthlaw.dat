@@ -59,7 +59,7 @@ MAT 5 MAT_InelasticDefgradLinTempIso Temp_GrowthFac 0.1 RefTemp 300.0
 ----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
 ------------------------------------------------------------FUNCT1
-FUNCTION 5*(1-cos(t*pi/10))
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 5*(1-cos(t*pi/10))
 ------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_TIME 300+5*(1-cos(t*pi/10))
 ------------------------------------------------RESULT DESCRIPTION

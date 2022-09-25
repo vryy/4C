@@ -47,11 +47,11 @@ MAT 3 MAT_ion DIFFUSIVITY 1.0e-4 VALENCE  1.0
 MAT 4 MAT_ion DIFFUSIVITY 5.0e-4 VALENCE -2.0
 MAT 5 MAT_ion DIFFUSIVITY 1.0e-3 VALENCE  1.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.1 // initial concentration field
-COMPONENT 1 FUNCTION 0.15 // initial concentration field
-COMPONENT 2 FUNCTION 0.2 // initial concentration field
-COMPONENT 3 FUNCTION 0.0 // initial electric potential field
-COMPONENT 4 FUNCTION 0.0 // initial electric current density field
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.1 // initial concentration field
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.15 // initial concentration field
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.2 // initial concentration field
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 // initial electric potential field
+COMPONENT 4 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 // initial electric current density field
 ----------------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.1 12345 DESCRIPTION 0.5*(sin((t*pi/0.1)-(pi/2)))+0.5 1

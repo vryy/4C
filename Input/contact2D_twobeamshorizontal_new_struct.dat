@@ -1126,7 +1126,7 @@ NODE 306 COORD -1.000000000000000e+01 0.000000000000000e+00 0.000000000000000e+0
 //                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 689.56 NUE 0.32 DENS 7.8e-3 THEXPANS 0.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 35*t
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 35*t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 178 QUANTITY dispx VALUE 3.9704974518379865e+00 TOLERANCE 1e-6
 -------------------------------------------------------------------------END

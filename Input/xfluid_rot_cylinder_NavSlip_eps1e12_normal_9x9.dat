@@ -149,16 +149,16 @@ MAT 2 MAT_scatra DIFFUSIVITY 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------------------FUNCT2
 // initial G-function field
-COMPONENT 0 FUNCTION sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5))-0.2
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5))-0.2
 ----------------------------------------------------------------------FUNCT3
 // initial G-function field
-COMPONENT 0 FUNCTION -1.0*(x-0.5)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME -1.0*(x-0.5)
 ----------------------------------------------------------------------FUNCT4
 // initial G-function field
-COMPONENT 0 FUNCTION 1.0*(y-0.5)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0*(y-0.5)
 ----------------------------------------------------------RESULT DESCRIPTION
 XFLUID DIS fluid NODE 133 QUANTITY velx VALUE  4.02279002750336248e-02 TOLERANCE 1e-13
 XFLUID DIS fluid NODE 133 QUANTITY vely VALUE -4.02210579319527209e-02 TOLERANCE 1e-13

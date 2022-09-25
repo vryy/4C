@@ -67,30 +67,30 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra  DIFFUSIVITY 0.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1.0
-COMPONENT 1 FUNCTION 0.0
-COMPONENT 2 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------------------FUNCT2
 // too flat function with positive gradient
-COMPONENT 0 FUNCTION 0.2*x
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.2*x
 // flat function with positive gradient
-//FUNCTION 0.8*x
+//SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.8*x
 // steep function with positive gradient
-//FUNCTION 1.5*x
+//SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.5*x
 // too flat function with positive gradient
-//FUNCTION -0.2*x
+//SYMBOLIC_FUNCTION_OF_SPACE_TIME -0.2*x
 // flat function with positive gradient
-//FUNCTION -0.8*x
+//SYMBOLIC_FUNCTION_OF_SPACE_TIME -0.8*x
 // steep function with positive gradient
-//FUNCTION -1.5*x
+//SYMBOLIC_FUNCTION_OF_SPACE_TIME -1.5*x
 // parabolic function
-// FUNCTION (x+4.0)*(x-4.0)
+// SYMBOLIC_FUNCTION_OF_SPACE_TIME (x+4.0)*(x-4.0)
 // parabolic function on element face
-//FUNCTION (x+4.5)*(x+4.5)
+//SYMBOLIC_FUNCTION_OF_SPACE_TIME (x+4.5)*(x+4.5)
 // parabolic function on element face
-//FUNCTION (x+4.5)*(x-4.5)
+//SYMBOLIC_FUNCTION_OF_SPACE_TIME (x+4.5)*(x-4.5)
 // interface on element face
-//FUNCTION 0.2*x-1.5
+//SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.2*x-1.5
 ------------------------------------------------DESIGN SURF DIRICH CONDITIONS
 //DSURF 1
 //E 1 - NUMDOF 1 ONOFF 1  VAL 1.0 FUNCT 2

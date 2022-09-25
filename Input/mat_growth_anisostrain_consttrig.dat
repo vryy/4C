@@ -102,13 +102,13 @@ MAT 22 ELAST_VolSussmanBathe KAPPA 50.0
 
 MAT 3 MAT_GrowthAnisoStrainConstTrig TAU 1.0 TAU_REV 1.0 THETA_MIN 1.0 THETA_MAX 1.5 GAMMA 1.72 GAMMA_REV 1.0 LAMBDA_CRIT 1.0 TOL 1.0e-10
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1.0 2.0 VALUES 0.0 0.0 150.0
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 2.0 DESCRIPTION -sin((pi/2.0)*(t/1.0)) -1.0
 -------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 2.0 DESCRIPTION 1.0-cos((pi/2.0)*(t/1.0)) 1.0
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE -3.99293384685046604e+00 TOLERANCE 1e-6

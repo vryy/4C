@@ -244,7 +244,7 @@ MAT 4 MAT_Struct_StVenantKirchhoff YOUNG 250.0 NUE 0.3 DENS 500
 ----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 4
 ------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.5*(1-cos(2*t*pi/1.0))*1.0*(1-0.450430161*(x*x+y*y))
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.5*(1-cos(2*t*pi/1.0))*1.0*(1-0.450430161*(x*x+y*y))
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 20057 QUANTITY    dispx VALUE -1.27336672296565253e-05 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 20057 QUANTITY    dispz VALUE  4.53991046126393487e-05 TOLERANCE 1e-10

@@ -80,9 +80,9 @@ MASS_CONSERVATION_SCALING       full
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY .10 DENSITY 10 GAMMA 1.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION x*x+y*y-0.0625
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME x*x+y*y-0.0625
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0

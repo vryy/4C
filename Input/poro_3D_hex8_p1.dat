@@ -124,9 +124,9 @@ MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 2.0
 MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e6 NUE 0.3
 MAT 3 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 1.0e-2 TYPE Darcy
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.2
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.2
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 2 500000.0 DESCRIPTION -10.0e4*0.5*(1-cos((t*pi/2.0))) -10.0e4
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS porofluid NODE 124 QUANTITY velx VALUE 1.77224074787690859e-02 TOLERANCE 1e-8

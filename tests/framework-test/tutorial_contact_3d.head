@@ -144,5 +144,5 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 100.0 NUE 0.3 DENS 0.5
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 4000.0 NUE 0.3 DENS 1
 //
 --------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.1 2 VALUES 0 0.02 0.02

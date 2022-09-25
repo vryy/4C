@@ -1590,7 +1590,7 @@ NODE 463 COORD 0.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000000 NUE 0.0 DENS 1 THEXPANS 0.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES 0.0 2.000001 4.000001 8.000001 DESCRIPTION t*1/2.000001 0 -(t-4.000001)*1/4
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 347 QUANTITY dispx VALUE -3.7004194679938501e-01 TOLERANCE 1e-6

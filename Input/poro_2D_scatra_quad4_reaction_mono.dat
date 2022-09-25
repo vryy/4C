@@ -144,9 +144,9 @@ MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e4 NUE 0.3
 MAT 3 MAT_FluidPoro DYNVISCOSITY 0.04 DENSITY 1.0 PERMEABILITY 1.0e-3 TYPE Darcy
 MAT 5 MAT_scatra DIFFUSIVITY 0.02
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 10.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 10.0
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 1.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS porofluid NODE 4 QUANTITY velx VALUE 4.89940739490102645e-05 TOLERANCE 1e-8
 FLUID DIS porofluid NODE 34 QUANTITY vely VALUE 1.63651725134697977e-05 TOLERANCE 1e-8

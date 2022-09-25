@@ -106,7 +106,7 @@ MAT 2 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 1
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION -t*t
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME -t*t
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         3
 NDLINE                          0

@@ -23,7 +23,7 @@ DIVERCONT                       continue
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------------------FUNCT1
-FUNCTION a
+SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.034 500000.0 DESCRIPTION t/0.034 1
 ----------------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_TIME a

@@ -44,9 +44,9 @@ MAT 5 ELAST_CoupLogNeoHooke MODE YN C1 1.0e4 C2 0.4995
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 6 DENS 1.0
 MAT 6 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.4995
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION x*cos(t*pi/180)-y*sin(t*pi/180)-x
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME x*cos(t*pi/180)-y*sin(t*pi/180)-x
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION x*sin(t*pi/180)+y*cos(t*pi/180)-y
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME x*sin(t*pi/180)+y*cos(t*pi/180)-y
 -------------------------------------------------RESULT DESCRIPTION
 ALE DIS ale NODE 2889 QUANTITY dispx VALUE -1.15865185964513784e-01 TOLERANCE 1e-10
 ALE DIS ale NODE 2889 QUANTITY dispy VALUE 1.47360048611483885e-01  TOLERANCE 1e-10

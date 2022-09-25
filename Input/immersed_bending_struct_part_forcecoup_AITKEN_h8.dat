@@ -133,7 +133,7 @@ AZOUTPUT                        50
 MAT 1 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.2 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 40.0 NUE 0.3 DENS 500.0
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION ((-(y-1.0)*(y-1.0))+1.0)*a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME ((-(y-1.0)*(y-1.0))+1.0)*a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 3.0 50000.0 DESCRIPTION 1.0*0.5*(1.0-cos((t*pi/3.0))) 1.0*0.5*(1.0-cos((3*pi/3.0)))
 -------------------------------------------------RESULT DESCRIPTION
 // nodes 11917 and 11918 are at the obstacle upstream tip and should yield same results

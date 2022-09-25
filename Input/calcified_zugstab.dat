@@ -62,7 +62,7 @@ MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 10 11 DENS 0.001
 MAT 10 ELAST_IsoVolHUDependentNeoHooke ALPHA_MAX 1.0E4 CT_MIN 50.0 CT_MAX 600.0 NUE 0.475 BETA -2.0
 MAT 11 ELAST_IsoVolAAAGasser CLUM 2.0E4 CMED 5.0E4 CABLUM 8.0E4 NUE 0.475 BETA -2.0
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1 10 VALUES 0 50000 50000
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2

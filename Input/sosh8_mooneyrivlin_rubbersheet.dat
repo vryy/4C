@@ -70,7 +70,7 @@ SOLVER                          UMFPACK
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.0
 MAT 2 ELAST_CoupMooneyRivlin C1 25.0 C2 7.0 C3 1.0
 -------------------------------------------------------------FUNCT1
-FUNCTION t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 3.96377694465623043e-02 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE 4.00891525330574691e-02 TOLERANCE 1e-6

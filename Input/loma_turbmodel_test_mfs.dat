@@ -200,12 +200,12 @@ MAT 1 MAT_sutherland REFVISC 0.0055556 REFTEMP 1.0 SUTHTEMP 0.368 SHC 1004.5 PRA
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 1
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION (1-y*y)*20.3
-COMPONENT 1 FUNCTION 0
-COMPONENT 2 FUNCTION 0
-COMPONENT 3 FUNCTION 0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1-y*y)*20.3
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 0.005*y+1.0 //initial temperature field
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.005*y+1.0 //initial temperature field
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0

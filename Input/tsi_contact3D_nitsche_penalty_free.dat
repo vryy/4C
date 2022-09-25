@@ -143,10 +143,10 @@ MAT 120 THERM_FourierIso CAPA 0.1 CONDUCT 0.1
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 12
 SRC_FIELD structure SRC_MAT 10 TAR_FIELD thermo TAR_MAT 120
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 51 VALUES 0 0 1
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION b
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME b
 VARIABLE 0 NAME b TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 51 VALUES 0 0.3 0.3
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0

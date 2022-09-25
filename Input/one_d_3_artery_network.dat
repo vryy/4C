@@ -198,9 +198,9 @@ VARIABLE 0 NAME a TYPE fourierinterpolation NUMPOINTS 60 BYNUM yes TIMERANGE 0.0
 ----------------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_TIME 0.0
 ----------------------------------------------------------------------FUNCT3
-FUNCTION 1.0
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
 ----------------------------------------------------------------------FUNCT4
-FUNCTION 0.0
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
 ARTNET DIS artery NODE 1 QUANTITY area VALUE 4.52418847582032697e+02 TOLERANCE 1e-6
 ARTNET DIS artery NODE 2 QUANTITY area VALUE 4.52419711594689545e+02 TOLERANCE 1e-6

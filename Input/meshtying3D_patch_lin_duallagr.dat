@@ -68,7 +68,7 @@ SOLVER                          UMFPACK
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 100
 MAT 2 ELAST_CoupNeoHooke YOUNG 1000 NUE 0.0
 -------------------------------------------------------------FUNCT1
-FUNCTION 1
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 1
 -------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_TIME 1
 ----------------------------------------------------------DESIGN DESCRIPTION
