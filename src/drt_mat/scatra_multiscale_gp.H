@@ -95,6 +95,9 @@ namespace MAT
     //! create new result file
     void NewResultFile();
 
+    //! create path of new result file
+    const std::string NewResultFilePath(const std::string& newprefix);
+
     //! macro-scale Gauss point ID
     const int gp_id_;
 

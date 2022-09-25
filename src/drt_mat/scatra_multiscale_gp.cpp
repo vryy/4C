@@ -22,6 +22,8 @@ transport problems
 
 #include "../linalg/linalg_solver.H"
 
+#include <filesystem>
+
 // instantiate static maps
 std::map<int, Teuchos::RCP<SCATRA::TimIntOneStepTheta>>
     MAT::ScatraMultiScaleGP::microdisnum_microtimint_map_;
@@ -401,42 +403,10 @@ void MAT::ScatraMultiScaleGP::NewResultFile()
   Teuchos::RCP<DRT::Discretization> microdis = microproblem->GetDis(microdisname.str());
 
   // figure out prefix of micro-scale restart files
-  size_t pos = microprefix.rfind('-');
-  if (pos != std::string::npos)
-  {
-    std::string number = microprefix.substr(pos + 1);
-    std::string prefix = microprefix.substr(0, pos);
-    std::ostringstream s;
-    s << prefix << "_microdis" << microdisnum_ << "_el" << ele_id_ << "_gp" << gp_id_ << "-"
-      << number;
-    restartname_ = s.str();
-  }
-  else
-  {
-    std::ostringstream s;
-    s << microprefix << "_microdis" << microdisnum_ << "_el" << ele_id_ << "_gp" << gp_id_;
-    restartname_ = s.str();
-  }
+  restartname_ = NewResultFilePath(microprefix);
 
   // figure out new prefix for micro-scale output files
-  // note that the trailing number must be the same as for the macro scale
-  std::string newfilename;
-  size_t posn = micronewprefix.rfind('-');
-  if (posn != std::string::npos)
-  {
-    std::string number = micronewprefix.substr(posn + 1);
-    std::string prefix = micronewprefix.substr(0, posn);
-    std::ostringstream s;
-    s << prefix << "_microdis" << microdisnum_ << "_el" << ele_id_ << "_gp" << gp_id_ << "-"
-      << number;
-    newfilename = s.str();
-  }
-  else
-  {
-    std::ostringstream s;
-    s << micronewprefix << "_microdis" << microdisnum_ << "_el" << ele_id_ << "_gp" << gp_id_;
-    newfilename = s.str();
-  }
+  const std::string newfilename = NewResultFilePath(micronewprefix);
 
   if (eleowner_)
   {
@@ -460,6 +430,42 @@ void MAT::ScatraMultiScaleGP::NewResultFile()
     micro_output_->WriteMesh(
         step_, DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->Time());
   }
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+const std::string MAT::ScatraMultiScaleGP::NewResultFilePath(const std::string& newprefix)
+{
+  std::string newfilename;
+
+  // create path from string to extract only filename prefix
+  const std::filesystem::path path(newprefix);
+  const std::string newfileprefix = path.filename().string();
+
+  const size_t posn = newfileprefix.rfind('-');
+  if (posn != std::string::npos)
+  {
+    const std::string number = newfileprefix.substr(posn + 1);
+    const std::string prefix = newfileprefix.substr(0, posn);
+
+    // recombine path and file
+    const std::filesystem::path parent_path(path.parent_path());
+    const std::filesystem::path filen_name(prefix);
+    const std::filesystem::path recombined_path = parent_path / filen_name;
+
+    std::ostringstream s;
+    s << recombined_path.string() << "_microdis" << microdisnum_ << "_el" << ele_id_ << "_gp"
+      << gp_id_ << "-" << number;
+    newfilename = s.str();
+  }
+  else
+  {
+    std::ostringstream s;
+    s << newprefix << "_microdis" << microdisnum_ << "_el" << ele_id_ << "_gp" << gp_id_;
+    newfilename = s.str();
+  }
+
+  return newfilename;
 }
 
 /*--------------------------------------------------------------------*
