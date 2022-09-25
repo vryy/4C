@@ -131,7 +131,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList& param
               // evaluate function at current gauss point
               functfac = DRT::Problem::Instance()
                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                             .Evaluate(i, coordgpref, time);
+                             .Evaluate(coordgpref, time, i);
             }
 
             const double fac = (*val)[i] * intpoints.qwgt[gp] * dL * functfac;

@@ -2578,7 +2578,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateLineNeumannForces(
         functionfac =
             DRT::Problem::Instance()
                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*function_numbers)[idof] - 1)
-                .Evaluate(idof, &X_ref[0], time);
+                .Evaluate(&X_ref[0], time, idof);
       }
       else
         functionfac = 1.0;

@@ -1041,7 +1041,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
                     if ((functnum = (*functions)[0]) > 0)
                       return DRT::Problem::Instance()
                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                          .Evaluate(0, (ele->Nodes()[i])->X(), time);
+                          .Evaluate((ele->Nodes()[i])->X(), time, 0);
                     else
                       return 0.0;
                   else
@@ -1858,7 +1858,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
       {
         functionfac = DRT::Problem::Instance()
                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                          .Evaluate(0, (ele->Nodes()[i])->X(), time);
+                          .Evaluate((ele->Nodes()[i])->X(), time, 0);
       }
       scnp += functionfac;
 
@@ -2562,7 +2562,7 @@ bool DRT::ELEMENTS::AirwayImpl<distype>::GetCurveValAtCond(double& bcVal, DRT::N
       {
         functionfac = DRT::Problem::Instance()
                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                          .Evaluate(0, node->X(), time);
+                          .Evaluate(node->X(), time, 0);
       }
       // get curve2
       int curve2num = -1;

@@ -117,7 +117,7 @@ void FLD::TimIntPoro::SetInitialPorosityField(
         int numdofs = nodedofset.size();
         double initialval = DRT::Problem::Instance()
                                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                .Evaluate(0, lnode->X(), time_);
+                                .Evaluate(lnode->X(), time_, 0);
 
         // check whether there are invalid values of porosity
         if (initialval < EPS15) dserror("zero or negative initial porosity");

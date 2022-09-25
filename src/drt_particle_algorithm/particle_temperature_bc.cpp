@@ -126,7 +126,7 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::EvaluateTemperature
     for (int i = 0; i < particlestored; ++i)
     {
       // evaluate function
-      temp[i] = function.Evaluate(0, &(refpos[statedim * i]), evaltime);
+      temp[i] = function.Evaluate(&(refpos[statedim * i]), evaltime, 0);
     }
   }
 }

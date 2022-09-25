@@ -1721,7 +1721,7 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(Teuchos::ParameterList& params,
         const double functfac =
             (functnum > 0) ? DRT::Problem::Instance()
                                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                 .Evaluate(dim, xrefegp.A(), time)
+                                 .Evaluate(xrefegp.A(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
         for (int nodid = 0; nodid < NUMNOD_SOH8; ++nodid)

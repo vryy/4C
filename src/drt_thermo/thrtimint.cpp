@@ -1002,7 +1002,7 @@ void THR::TimInt::SetInitialField(const INPAR::THR::InitialField init, const int
           // evaluate component k of spatial function
           double initialval = DRT::Problem::Instance()
                                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .Evaluate(k, lnode->X(), 0.0);
+                                  .Evaluate(lnode->X(), 0.0, k);
           // extract temperature vector at time t_n (temp_ contains various vectors of
           // old(er) temperatures and is of type TimIntMStep<Epetra_Vector>)
           int err1 = (*temp_)(0)->ReplaceMyValues(1, &initialval, &doflid);

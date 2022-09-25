@@ -327,7 +327,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
               // evaluate function at current gauss point
               functfac = DRT::Problem::Instance()
                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                             .Evaluate(dof, coordgpref, time);
+                             .Evaluate(coordgpref, time, dof);
             }
             else
               functfac = 1.0;
@@ -374,7 +374,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
           // evaluate function at current gauss point
           functfac = DRT::Problem::Instance()
                          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                         .Evaluate(0, coordgpref, time);
+                         .Evaluate(coordgpref, time, 0);
         }
 
         const double fac = intpoints.qwgt[gp] * functfac * ortho_value * normalfac;
@@ -450,7 +450,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
             // evaluate function at current gauss point
             functfac = DRT::Problem::Instance()
                            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                           .Evaluate(0, coordgpref, time);
+                           .Evaluate(coordgpref, time, 0);
           }
           else
             functfac = 1.0;
@@ -1936,12 +1936,12 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
                   force_disp = DRT::Problem::Instance()
                                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
                                        (*numfuncnonlinstiff)[dim] - 1)
-                                   .Evaluate(0, displ, time);
+                                   .Evaluate(displ, time, 0);
 
                   force_disp_deriv = (DRT::Problem::Instance()
                                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
                                               (*numfuncnonlinstiff)[dim] - 1)
-                                          .EvaluateSpatialDerivative(0, displ, time))[dim];
+                                          .EvaluateSpatialDerivative(displ, time, 0))[dim];
                 }
 
                 // velocity related forces and derivatives
@@ -2016,12 +2016,12 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
                 force_disp = DRT::Problem::Instance()
                                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
                                      (*numfuncnonlinstiff)[0] - 1)
-                                 .Evaluate(0, displ, time);
+                                 .Evaluate(displ, time, 0);
 
                 force_disp_deriv = (DRT::Problem::Instance()
                                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
                                             (*numfuncnonlinstiff)[0] - 1)
-                                        .EvaluateSpatialDerivative(0, displ, time))[0];
+                                        .EvaluateSpatialDerivative(displ, time, 0))[0];
               }
 
               // velocity related forces

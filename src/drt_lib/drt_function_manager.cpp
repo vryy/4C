@@ -155,13 +155,13 @@ void PrintFunctionDatHeader()
 void DRT::UTILS::AddValidFunctionFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 {
   DRT::INPUT::LineDefinition onecomponentexpr;
-  onecomponentexpr.AddNamedString("FUNCTION");
+  onecomponentexpr.AddNamedString("SYMBOLIC_FUNCTION_OF_SPACE_TIME");
 
   DRT::INPUT::LineDefinition symbolic_function_of_time;
   symbolic_function_of_time.AddNamedString("SYMBOLIC_FUNCTION_OF_TIME");
 
   DRT::INPUT::LineDefinition componentexpr;
-  componentexpr.AddNamedInt("COMPONENT").AddNamedString("FUNCTION");
+  componentexpr.AddNamedInt("COMPONENT").AddNamedString("SYMBOLIC_FUNCTION_OF_SPACE_TIME");
 
   DRT::INPUT::LineDefinition variableexpr;
   variableexpr.AddNamedInt("VARIABLE")

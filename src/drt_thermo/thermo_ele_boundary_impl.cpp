@@ -625,7 +625,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(DRT::Element* el
             // evaluate function at current gauss point
             functfac = DRT::Problem::Instance()
                            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                           .Evaluate(dof, coordgpref, time);
+                           .Evaluate(coordgpref, time, dof);
           }
           else
             functfac = 1.0;

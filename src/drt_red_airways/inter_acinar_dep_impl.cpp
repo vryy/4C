@@ -227,7 +227,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           {
             functionfac = DRT::Problem::Instance()
                               ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                              .Evaluate(0, (ele->Nodes()[i])->X(), time);
+                              .Evaluate((ele->Nodes()[i])->X(), time, 0);
           }
 
           // Get factor of second CURVE

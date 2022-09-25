@@ -214,7 +214,7 @@ namespace
 
   /// modifies the index to zero in case the expression is of size one
   std::size_t FindModifiedIndex(
-      const int index, const std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>>& expr)
+      const std::size_t index, const std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>>& expr)
   {
     std::size_t index_mod = index;
 
@@ -274,7 +274,8 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateExprFunction(
   {
     ith_function_lin_def->ExtractInt("COMPONENT", maxcomp);
     ith_function_lin_def->ExtractInt("VARIABLE", maxvar);
-    if (ith_function_lin_def->HaveNamed("FUNCTION")) found_function_of_space_time = true;
+    if (ith_function_lin_def->HaveNamed("SYMBOLIC_FUNCTION_OF_SPACE_TIME"))
+      found_function_of_space_time = true;
   }
 
   if (!found_function_of_space_time) return Teuchos::null;
@@ -298,7 +299,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateExprFunction(
 
 
     // read the expression of the n-th component of the i-th function
-    functcomp->ExtractString("FUNCTION", functstring[n]);
+    functcomp->ExtractString("SYMBOLIC_FUNCTION_OF_SPACE_TIME", functstring[n]);
   }
 
   std::map<int, std::vector<Teuchos::RCP<FunctionVariable>>> variable_pieces;
@@ -453,44 +454,45 @@ DRT::UTILS::ExprFunction<dim>::ExprFunction(const std::vector<std::string>& expr
 }
 
 template <int dim>
-double DRT::UTILS::ExprFunction<dim>::Evaluate(const int index, const double* x, double t)
+double DRT::UTILS::ExprFunction<dim>::Evaluate(
+    const double* x, const double t, const std::size_t component)
 {
-  std::size_t index_mod = FindModifiedIndex(index, expr_);
+  std::size_t component_mod = FindModifiedIndex(component, expr_);
 
-  if (index_mod < 0 || index_mod >= expr_.size())
-    dserror("There are %d expressions but tried to access index %d", expr_.size(), index);
+  if (component_mod < 0 || component_mod >= expr_.size())
+    dserror("There are %d expressions but tried to access index %d", expr_.size(), component);
 
   // set spatial variables
-  if constexpr (dim > 0) expr_[index_mod]->SetValue("x", x[0]);
-  if constexpr (dim > 1) expr_[index_mod]->SetValue("y", x[1]);
-  if constexpr (dim > 2) expr_[index_mod]->SetValue("z", x[2]);
+  if constexpr (dim > 0) expr_[component_mod]->SetValue("x", x[0]);
+  if constexpr (dim > 1) expr_[component_mod]->SetValue("y", x[1]);
+  if constexpr (dim > 2) expr_[component_mod]->SetValue("z", x[2]);
 
   // set temporal variable
-  expr_[index_mod]->SetValue("t", t);
+  expr_[component_mod]->SetValue("t", t);
 
   // set the values of the variables at time t
   for (const auto& variable : variables_)
   {
-    expr_[index_mod]->SetValue(variable->Name(), variable->Value(t));
+    expr_[component_mod]->SetValue(variable->Name(), variable->Value(t));
   }
 
   // evaluate F = F ( x, y, z, t, v1, ..., vn )
-  return expr_[index_mod]->Evaluate();
+  return expr_[component_mod]->Evaluate();
 }
 
 template <int dim>
 std::vector<double> DRT::UTILS::ExprFunction<dim>::EvaluateSpatialDerivative(
-    const int index, const double* x, const double t)
+    const double* x, const double t, const std::size_t component)
 {
-  std::size_t index_mod = FindModifiedIndex(index, expr_);
+  std::size_t component_mod = FindModifiedIndex(component, expr_);
 
-  if (index_mod < 0 || index_mod >= expr_.size())
-    dserror("There are %d expressions but tried to access index %d", expr_.size(), index);
+  if (component_mod < 0 || component_mod >= expr_.size())
+    dserror("There are %d expressions but tried to access component %d", expr_.size(), component);
 
-  SetValuesInExpressionSecondDeriv<dim>(exprdd_[index_mod], variables_, x, t);
+  SetValuesInExpressionSecondDeriv<dim>(exprdd_[component_mod], variables_, x, t);
 
   // The expression evaluates to an FAD object for up to second derivatives
-  SecondDerivativeType fdfad = exprdd_[index_mod]->Evaluate();
+  SecondDerivativeType fdfad = exprdd_[component_mod]->Evaluate();
 
   // Here we return the first spatial derivatives given by FAD index 0, 1 and 2
   return {fdfad.dx(0).val(), fdfad.dx(1).val(), fdfad.dx(2).val()};
@@ -498,14 +500,14 @@ std::vector<double> DRT::UTILS::ExprFunction<dim>::EvaluateSpatialDerivative(
 
 template <int dim>
 std::vector<double> DRT::UTILS::ExprFunction<dim>::EvaluateTimeDerivative(
-    const int index, const double* x, const double t, const unsigned deg)
+    const double* x, const double t, const unsigned deg, const std::size_t component)
 {
   // result vector
   std::vector<double> res(deg + 1);
 
-  std::size_t index_mod = FindModifiedIndex(index, expr_);
+  std::size_t component_mod = FindModifiedIndex(component, expr_);
 
-  SetValuesInExpressionSecondDeriv<dim>(exprdd_[index_mod], variables_, x, t);
+  SetValuesInExpressionSecondDeriv<dim>(exprdd_[component_mod], variables_, x, t);
 
   // FAD object for evaluation of derivatives
   Sacado::Fad::DFad<Sacado::Fad::DFad<double>> fdfad;
@@ -513,13 +515,13 @@ std::vector<double> DRT::UTILS::ExprFunction<dim>::EvaluateTimeDerivative(
   const int number_of_arguments = 4;
 
   // add the value at time t
-  res[0] = Evaluate(index, x, t);
+  res[0] = Evaluate(x, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
   {
     // evaluation of derivatives
-    fdfad = exprdd_[index_mod]->Evaluate();
+    fdfad = exprdd_[component_mod]->Evaluate();
 
     // evaluation of dF/dt applying the chain rule:
     // dF/dt = dF*/dt + sum_i(dF/dvi*dvi/dt)
@@ -637,7 +639,7 @@ void DRT::UTILS::VariableExprFunction<dim>::ParseExpressions()
 
 template <int dim>
 double DRT::UTILS::VariableExprFunction<dim>::Evaluate(
-    const int index, const double* x, const double t)
+    const double* x, const double t, const std::size_t component)
 {
   std::vector<std::pair<std::string, double>> variables;
   variables.reserve(dim_);
@@ -651,12 +653,12 @@ double DRT::UTILS::VariableExprFunction<dim>::Evaluate(
   // set temporal variable
   variables.emplace_back("t", t);
 
-  return Evaluate(index, variables);
+  return Evaluate(component, variables);
 }
 
 template <int dim>
 std::vector<double> DRT::UTILS::VariableExprFunction<dim>::EvaluateSpatialDerivative(
-    int index, const double* x, const double t)
+    const double* x, const double t, const std::size_t component)
 {
   // arguments are: x, y, z, and t
   const int number_of_arguments = 4;
@@ -667,7 +669,7 @@ std::vector<double> DRT::UTILS::VariableExprFunction<dim>::EvaluateSpatialDeriva
   variables[2] = std::pair<std::string, double>("z", x[2]);
   variables[3] = std::pair<std::string, double>("t", t);
 
-  return EvaluateDerivative(index, variables);
+  return EvaluateDerivative(component, variables);
 }
 
 template <int dim>

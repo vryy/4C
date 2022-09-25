@@ -2235,7 +2235,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
           // (important: requires 3D position vector)
           functionfac(idim) = DRT::Problem::Instance()
                                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                  .Evaluate(idim, coordgp.A(), time);
+                                  .Evaluate(coordgp.A(), time, idim);
         }
         else
           functionfac(idim) = 1.0;
@@ -4914,7 +4914,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
               // evaluate function at current gauss point (important: requires 3D position vector)
               functionfac(dim) = DRT::Problem::Instance()
                                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                     .Evaluate(dim, coordgp.A(), time);
+                                     .Evaluate(coordgp.A(), time, dim);
             }
             else
             {
@@ -5283,7 +5283,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
             // evaluate function at current gauss point (important: requires 3D position vector)
             functionfac(dim) = DRT::Problem::Instance()
                                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                   .Evaluate(dim, coordgp.A(), time);
+                                   .Evaluate(coordgp.A(), time, dim);
           }
           else
           {

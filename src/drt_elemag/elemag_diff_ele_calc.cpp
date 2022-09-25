@@ -1285,7 +1285,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::EvaluateAll(const i
   for (int d = 0; d < v.M(); ++d)
     v[d] = DRT::Problem::Instance()
                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
-               .Evaluate(d % numComp, xyz.A(), t);
+               .Evaluate(xyz.A(), t, d % numComp);
 
   return;
 }
@@ -1316,7 +1316,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionGrad
   {
     std::vector<double> deriv = DRT::Problem::Instance()
                                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
-                                    .EvaluateSpatialDerivative(d % numComp, xyz.A(), t);
+                                    .EvaluateSpatialDerivative(xyz.A(), t, d % numComp);
     for (unsigned int d_der = 0; d_der < nsd_; ++d_der) v(d, d_der) = deriv[d_der];
   }
 
@@ -1349,10 +1349,10 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionTime
   for (int d = 0; d < v.M(); ++d)
     v[d] = (DRT::Problem::Instance()
                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
-                   .Evaluate(d % numComp, xyz.A(), t + (0.5 * dt)) -
+                   .Evaluate(xyz.A(), t + (0.5 * dt), d % numComp) -
                DRT::Problem::Instance()
                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
-                   .Evaluate(d % numComp, xyz.A(), t - (0.5 * dt))) /
+                   .Evaluate(xyz.A(), t - (0.5 * dt), d % numComp)) /
            dt;
 
   return;

@@ -138,7 +138,7 @@ void PARTICLEINTERACTION::SPHHeatSourceVolume::EvaluateHeatSource(const double& 
       double* tempdot_i = container_i->GetPtrToState(PARTICLEENGINE::TemperatureDot, particle_i);
 
       // evaluate function defining heat source
-      funct = function.EvaluateTimeDerivative(0, &(pos_i[0]), evaltime, 0);
+      funct = function.EvaluateTimeDerivative(&(pos_i[0]), evaltime, 0, 0);
 
       // add contribution of heat source
       tempdot_i[0] += thermomaterial_i->thermalAbsorptivity_ * funct[0] *
@@ -326,7 +326,7 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
       double* tempdot_i = container_i->GetPtrToState(PARTICLEENGINE::TemperatureDot, particle_i);
 
       // evaluate function defining heat source
-      funct = function.EvaluateTimeDerivative(0, &(pos_i[0]), evaltime, 0);
+      funct = function.EvaluateTimeDerivative(&(pos_i[0]), evaltime, 0, 0);
 
       // add contribution of heat source
       tempdot_i[0] += f_i_proj * thermomaterial_i->thermalAbsorptivity_ * funct[0] *

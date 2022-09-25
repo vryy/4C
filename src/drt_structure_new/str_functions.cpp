@@ -105,7 +105,7 @@ STR::WeaklyCompressibleEtienneFSIStructureFunction::WeaklyCompressibleEtienneFSI
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double STR::WeaklyCompressibleEtienneFSIStructureFunction::Evaluate(
-    int index, const double* xp, double t)
+    const double* xp, const double t, const std::size_t component)
 {
   // ease notation
   double x = xp[0];
@@ -118,7 +118,7 @@ double STR::WeaklyCompressibleEtienneFSIStructureFunction::Evaluate(
   u_ex(0) = -((cos(2. * PI * t) * cos(2. * PI * x)) / 6. + 1.) * (y - 1.);
   u_ex(1) = -(sin(2. * PI * x) * sin(2. * PI * (t + 1. / 4.)) * (cos(2. * PI * x) - 1.)) / 20.;
 
-  switch (index)
+  switch (component)
   {
     case 0:
       return u_ex(0);
@@ -133,13 +133,13 @@ double STR::WeaklyCompressibleEtienneFSIStructureFunction::Evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureFunction::EvaluateTimeDerivative(
-    const int index, const double* xp, const double t, const unsigned deg)
+    const double* xp, const double t, const unsigned deg, const std::size_t component)
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index, xp, t);
+  res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
@@ -156,7 +156,7 @@ std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureFunction::Evaluate
     dudt_ex(1) =
         -(PI * sin(2. * PI * x) * cos(2. * PI * (t + 1. / 4.)) * (cos(2. * PI * x) - 1.)) / 10.;
 
-    switch (index)
+    switch (component)
     {
       case 0:
         res[1] = dudt_ex(0);
@@ -199,7 +199,7 @@ STR::WeaklyCompressibleEtienneFSIStructureForceFunction::
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double STR::WeaklyCompressibleEtienneFSIStructureForceFunction::Evaluate(
-    int index, const double* xp, double t)
+    const double* xp, const double t, const std::size_t component)
 {
   // ease notation
   double x = xp[0];
@@ -229,7 +229,7 @@ double STR::WeaklyCompressibleEtienneFSIStructureForceFunction::Evaluate(
               (E * PI * v * sin(2. * PI * x) * sin(2. * PI * (t + 1. / 4.))) /
                   (3. * (2. * v - 1.) * (v + 1.));
 
-  switch (index)
+  switch (component)
   {
     case 0:
       return f_u_ex(0);
@@ -244,13 +244,13 @@ double STR::WeaklyCompressibleEtienneFSIStructureForceFunction::Evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureForceFunction::EvaluateTimeDerivative(
-    const int index, const double* xp, const double t, const unsigned deg)
+    const double* xp, const double t, const unsigned deg, const std::size_t component)
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index, xp, t);
+  res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)

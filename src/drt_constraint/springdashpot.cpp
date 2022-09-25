@@ -269,12 +269,12 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<LINALG::SparseMatrix> stif
             force_disp =
                 DRT::Problem::Instance()
                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*numfuncnonlinstiff)[dof] - 1)
-                    .Evaluate(0, displ.data(), total_time);
+                    .Evaluate(displ.data(), total_time, 0);
 
             force_disp_deriv = (DRT::Problem::Instance()
                                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
                                         (*numfuncnonlinstiff)[dof] - 1)
-                                    .EvaluateSpatialDerivative(0, displ.data(), total_time))[dof];
+                                    .EvaluateSpatialDerivative(displ.data(), total_time, 0))[dof];
           }
 
           // velocity related forces and derivatives

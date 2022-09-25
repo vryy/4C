@@ -858,7 +858,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       for (int idim = 0; idim < nsd_; ++idim)
         peconvvelaf_(idim, jnode) = DRT::Problem::Instance()
                                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-                                        .Evaluate(idim, jx, time);
+                                        .Evaluate(jx, time, idim);
     }
 
     // neighbor element
@@ -868,7 +868,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       for (int idim = 0; idim < nsd_; ++idim)
         neconvvelaf_(idim, jnode) = DRT::Problem::Instance()
                                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-                                        .Evaluate(idim, jx, time);
+                                        .Evaluate(jx, time, idim);
     }
 
     if (pele->IsAle()) dserror("is ALE for Oseen really reasonable");

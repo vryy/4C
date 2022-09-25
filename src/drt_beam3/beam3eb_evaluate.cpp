@@ -549,7 +549,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
           // evaluate function at the position of the current node       --> dof here correct?
           functionfac = DRT::Problem::Instance()
                             ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                            .Evaluate(dof, &X_ref[0], time);
+                            .Evaluate(&X_ref[0], time, dof);
         }
         else
           functionfac = 1.0;

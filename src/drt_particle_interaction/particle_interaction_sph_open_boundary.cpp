@@ -304,7 +304,7 @@ void PARTICLEINTERACTION::SPHOpenBoundaryDirichlet::PrescribeOpenBoundaryStates(
     double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
 
     // evaluate function to set velocity
-    UTILS::VecSetScale(vel_i, -function.Evaluate(0, pos_i, evaltime), &outwardnormal_[0]);
+    UTILS::VecSetScale(vel_i, -function.Evaluate(pos_i, evaltime, 0), &outwardnormal_[0]);
   }
 }
 
@@ -514,7 +514,7 @@ void PARTICLEINTERACTION::SPHOpenBoundaryNeumann::PrescribeOpenBoundaryStates(
       double* press_i = container_i->GetPtrToState(PARTICLEENGINE::Pressure, particle_i);
 
       // evaluate function to set pressure
-      press_i[0] = function.Evaluate(0, pos_i, evaltime);
+      press_i[0] = function.Evaluate(pos_i, evaltime, 0);
     }
   }
   else

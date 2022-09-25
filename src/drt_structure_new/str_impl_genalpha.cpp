@@ -167,7 +167,7 @@ void STR::IMPLICIT::GenAlpha::SetInitialDisplacement(
           // evaluate component k of spatial function
           double initialval = DRT::Problem::Instance()
                                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .Evaluate(d, lnode->X(), GlobalState().GetTimeN());
+                                  .Evaluate(lnode->X(), GlobalState().GetTimeN(), d);
 
           int err = GlobalState().GetMutableDisN()->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) dserror("dof not on proc");
