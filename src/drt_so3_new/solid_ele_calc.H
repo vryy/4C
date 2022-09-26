@@ -192,6 +192,8 @@ namespace DRT
         return 0;
       };
 
+      void MaterialPostSetup(const DRT::ELEMENTS::Solid& ele) override;
+
 
 
      protected:

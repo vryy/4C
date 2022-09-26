@@ -271,6 +271,8 @@ namespace DRT
       /// setup element data
       virtual void Setup(DRT::ELEMENTS::Solid* ele, DRT::INPUT::LineDefinition* linedef) = 0;
 
+      virtual void MaterialPostSetup(const DRT::ELEMENTS::Solid& ele) = 0;
+
       /// get stuff from the STR::ELEMENTS::ParamsInterface and write it in the parameter list
       /// todo: for now, we need this, since the solid materials still rely on it.
       ///       in a next step they should start using the paramsInterface as well

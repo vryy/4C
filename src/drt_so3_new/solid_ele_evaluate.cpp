@@ -22,6 +22,12 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
     Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
 {
+  if (!material_post_setup_)
+  {
+    DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->MaterialPostSetup(*this);
+    material_post_setup_ = true;
+  }
+
   // get ptr to interface to time integration
   SetParamsInterfacePtr(params);
 

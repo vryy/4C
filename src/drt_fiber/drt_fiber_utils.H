@@ -33,7 +33,7 @@ namespace DRT
        * \param gpFiberHolder output of the projected fibers and angles
        */
       template <DRT::Element::DiscretizationType distype>
-      void ProjectFibersToGaussPoints(DRT::Node** nodes,
+      void ProjectFibersToGaussPoints(const DRT::Node* const* nodes,
           const std::vector<
               LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>&
               shapefcts,
@@ -100,7 +100,7 @@ namespace DRT
        * \return false At least one one does not have a fiber
        */
       template <DRT::Element::DiscretizationType distype>
-      bool HaveNodalFibers(DRT::Node** nodes);
+      bool HaveNodalFibers(const DRT::Node* const* nodes);
     }  // namespace UTILS
   }    // namespace FIBER
 }  // namespace DRT

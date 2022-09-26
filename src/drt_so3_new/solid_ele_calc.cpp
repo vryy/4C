@@ -8,6 +8,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "solid_ele_calc.H"
+#include <Teuchos_ParameterList.hpp>
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/voigt_notation.H"
@@ -16,6 +17,9 @@
 #include "../drt_mat/so3_material.H"
 #include "solid_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_fiber/drt_fiber_node.H"
+#include "../drt_fiber/drt_fiber_utils.H"
+#include "../drt_fiber/nodal_fiber_holder.H"
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::SolidEleCalc<distype>* DRT::ELEMENTS::SolidEleCalc<distype>::Instance(bool create)
@@ -666,6 +670,43 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::WriteStressStrainOutput(DRT::ELEMENTS
     ele->AddtoPack(data, strain_output_);
     std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
   }
+}
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::SolidEleCalc<distype>::MaterialPostSetup(const DRT::ELEMENTS::Solid& ele)
+{
+  Teuchos::ParameterList params;
+  if (DRT::FIBER::UTILS::HaveNodalFibers<distype>(ele.Nodes()))
+  {
+    // This element has fiber nodes.
+    // Interpolate fibers to the Gauss points and pass them to the material
+
+    // Get shape functions
+    const static std::vector<LINALG::Matrix<nen_, 1>> shapefcts = std::invoke(
+        [&]
+        {
+          const DRT::UTILS::GaussIntegration& integration_rule = *default_integration_;
+
+          std::vector<LINALG::Matrix<nen_, 1>> shapefcns(integration_rule.NumPoints());
+          for (int gp = 0; gp < integration_rule.NumPoints(); ++gp)
+          {
+            LINALG::Matrix<nsd_, 1> xi(integration_rule.Point(gp), true);
+            DRT::UTILS::shape_function<distype>(xi, shapefcns[gp]);
+          }
+          return shapefcns;
+        });
+
+    // add fibers to the ParameterList
+    DRT::FIBER::NodalFiberHolder fiberHolder;
+
+    // Do the interpolation
+    DRT::FIBER::UTILS::ProjectFibersToGaussPoints<distype>(ele.Nodes(), shapefcts, fiberHolder);
+
+    params.set("fiberholder", fiberHolder);
+  }
+
+  // Call PostSetup of material
+  ele.SolidMaterial()->PostSetup(params, ele.Id());
 }
 
 // template classes

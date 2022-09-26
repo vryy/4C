@@ -353,6 +353,9 @@ namespace DRT::ELEMENTS
 
     //! element calculation interface
     std::unique_ptr<SolidEleInterface> solid_interface_ = nullptr;
+
+    //! flag, whether the post setup of materials is already called
+    bool material_post_setup_;
   };  // class Solid
 
 }  // namespace DRT::ELEMENTS
