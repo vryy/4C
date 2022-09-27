@@ -9,6 +9,7 @@ class for handling of micro-macro transitions
 *----------------------------------------------------------------------*/
 
 
+#include <filesystem>
 #include "micromaterialgp_static.H"
 #include "../drt_stru_multi/microstatic.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -137,42 +138,11 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
 
   if (microdis->Comm().MyPID() == 0)
   {
-    // figure out how the file we restart from is called on the microscale
-    size_t pos = microprefix.rfind('-');
-    if (pos != std::string::npos)
-    {
-      std::string number = microprefix.substr(pos + 1);
-      std::string prefix = microprefix.substr(0, pos);
-      std::ostringstream s;
-      s << prefix << "_el" << ele_ID_ << "_gp" << gp_;
-      microprefix = s.str();
-      s << "-" << number;
-      restartname_ = s.str();
-    }
-    else
-    {
-      std::ostringstream s;
-      s << microprefix << "_el" << ele_ID_ << "_gp" << gp_;
-      restartname_ = s.str();
-    }
+    // figure out prefix of micro-scale restart files
+    restartname_ = NewResultFilePath(microprefix);
 
-    // figure out how the new output file is called on the microscale
-    // note: the trailing number must be the same as on the macroscale
-    size_t posn = micronewprefix.rfind('-');
-    if (posn != std::string::npos)
-    {
-      std::string number = micronewprefix.substr(posn + 1);
-      std::string prefix = micronewprefix.substr(0, posn);
-      std::ostringstream s;
-      s << prefix << "_el" << ele_ID_ << "_gp" << gp_ << "-" << number;
-      newfilename = s.str();
-    }
-    else
-    {
-      std::ostringstream s;
-      s << micronewprefix << "_el" << ele_ID_ << "_gp" << gp_;
-      newfilename = s.str();
-    }
+    // figure out new prefix for micro-scale output files
+    newfilename = NewResultFilePath(micronewprefix);
   }
 
   // restart file name and new output file name are sent to supporting procs
@@ -224,6 +194,38 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
   }
 
   return;
+}
+
+const std::string MAT::MicroMaterialGP::NewResultFilePath(const std::string& newprefix)
+{
+  std::string newfilename;
+
+  // create path from string to extract only filename prefix
+  const std::filesystem::path path(newprefix);
+  const std::string newfileprefix = path.filename().string();
+
+  const size_t posn = newfileprefix.rfind('-');
+  if (posn != std::string::npos)
+  {
+    std::string number = newfileprefix.substr(posn + 1);
+    std::string prefix = newfileprefix.substr(0, posn);
+
+    // recombine path and file
+    const std::filesystem::path parent_path(path.parent_path());
+    const std::filesystem::path filen_name(prefix);
+    const std::filesystem::path recombined_path = parent_path / filen_name;
+
+    std::ostringstream s;
+    s << recombined_path.string() << "_el" << ele_ID_ << "_gp" << gp_ << "-" << number;
+    newfilename = s.str();
+  }
+  else
+  {
+    std::ostringstream s;
+    s << newprefix << "_el" << ele_ID_ << "_gp" << gp_;
+    newfilename = s.str();
+  }
+  return newfilename;
 }
 
 
