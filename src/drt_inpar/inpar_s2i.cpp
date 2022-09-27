@@ -244,6 +244,10 @@ void INPAR::S2I::SetValidConditions(
 
               kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle(
                   "Butler-Volmer", butlervolmer, INPAR::S2I::kinetics_butlervolmer)));
+
+              // same components for linearized Butler-Volmer necessary
+              kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer_Linearized",
+                  butlervolmer, INPAR::S2I::kinetics_butlervolmerlinearized)));
             }
 
             {
@@ -321,6 +325,11 @@ void INPAR::S2I::SetValidConditions(
 
               kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle("Butler-VolmerReduced",
                   butlervolmerreduced, INPAR::S2I::kinetics_butlervolmerreduced)));
+
+              // same components for linearized Butler-VolmerReduced necessary
+              kineticmodels.emplace_back(
+                  Teuchos::rcp(new CondCompBundle("Butler-VolmerReduced_Linearized",
+                      butlervolmerreduced, INPAR::S2I::kinetics_butlervolmerreducedlinearized)));
             }
 
             {

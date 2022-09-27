@@ -2964,8 +2964,10 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
         }
 
         case INPAR::S2I::kinetics_butlervolmer:
+        case INPAR::S2I::kinetics_butlervolmerlinearized:
         case INPAR::S2I::kinetics_butlervolmerreduced:
         case INPAR::S2I::kinetics_butlervolmerreducedcapacitance:
+        case INPAR::S2I::kinetics_butlervolmerreducedlinearized:
         case INPAR::S2I::kinetics_butlervolmerpeltier:
         case INPAR::S2I::kinetics_butlervolmerresistance:
         case INPAR::S2I::kinetics_butlervolmerreducedthermoresistance:

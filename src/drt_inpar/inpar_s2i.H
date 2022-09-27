@@ -65,9 +65,11 @@ namespace INPAR
     {
       kinetics_constperm,
       kinetics_butlervolmer,
+      kinetics_butlervolmerlinearized,
       kinetics_butlervolmerpeltier,
       kinetics_butlervolmerreduced,
       kinetics_butlervolmerreducedcapacitance,
+      kinetics_butlervolmerreducedlinearized,
       kinetics_butlervolmerresistance,
       kinetics_butlervolmerreducedresistance,
       kinetics_butlervolmerreducedthermoresistance,

@@ -3376,7 +3376,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
               DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
                   CalculateButlerVolmerElchLinearizations(kinetic_model, j0, frt, epdderiv, alphaa,
                       alphac, dummyresistance, expterm1, expterm2, kr, faraday, conc_el, conc_ed,
-                      cmax, dj_dc_ed, dj_dc_el, dj_dpot_ed, dj_dpot_el);
+                      cmax, eta, dj_dc_ed, dj_dc_el, dj_dpot_ed, dj_dpot_el);
 
               dq_dphi_[0] = dj_dc_el;
               dq_dphi_[1] = dj_dpot_el;

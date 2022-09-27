@@ -282,7 +282,7 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
         DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
             CalculateButlerVolmerElchLinearizations(kinetic_model, j0, frt, d_epd_dc, alphaa,
                 alphac, dummyresistance, expterm1, expterm2, kr, faraday, electrolyte_conc,
-                electrode_conc, cmax, dj_dc_electrode, dj_dc_electrolyte, dj_dpot_electrode,
+                electrode_conc, cmax, eta, dj_dc_electrode, dj_dc_electrolyte, dj_dpot_electrode,
                 dj_dpot_electrolyte);
 
         // initialize derivatives of flux w.r.t. electrochemistry dofs
