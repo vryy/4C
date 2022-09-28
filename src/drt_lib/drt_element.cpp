@@ -24,7 +24,8 @@
 #include <Shards_BasicTopologies.hpp>
 #include <utility>
 
-#include "../drt_geometric_search/bounding_box.H"
+#include "../drt_geometric_search/bounding_volume.H"
+#include "../drt_geometric_search/geometric_search_params.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1173,14 +1174,13 @@ unsigned int DRT::Element::AppendVisualizationDofBasedResultDataVector(
   return this->NumNode();
 }
 
-
-// Documentation for the header file:
-// This function adds the current position of all nodes of the element to a boundary
-// volume.
-BoundingBox DRT::Element::GetBoundingBox(const DRT::Discretization& discret,
-    const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased) const
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+GEOMETRICSEARCH::BoundingVolume DRT::Element::GetBoundingVolume(const DRT::Discretization& discret,
+    const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
+    const Teuchos::RCP<const GEOMETRICSEARCH::GeometricSearchParams>& params) const
 {
-  BoundingBox bounding_box;
+  GEOMETRICSEARCH::BoundingVolume bounding_box;
   LINALG::Matrix<3, 1, double> point;
 
   // The default bounding box is simply the bounding box of all element nodes.

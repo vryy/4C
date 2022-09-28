@@ -77,6 +77,12 @@ namespace BEAMINTERACTION
       return rep_strategy_;
     };
 
+    INPAR::BEAMINTERACTION::SearchStrategy GetSearchStrategy() const
+    {
+      CheckInitSetup();
+      return search_strategy_;
+    }
+
 
    private:
     bool isinit_;
@@ -85,6 +91,9 @@ namespace BEAMINTERACTION
 
     /// number of crosslinker that are initially set
     INPAR::BEAMINTERACTION::RepartitionStrategy rep_strategy_;
+
+    /// search strategy for beam coupling
+    INPAR::BEAMINTERACTION::SearchStrategy search_strategy_;
   };
 
 

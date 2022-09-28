@@ -10,6 +10,7 @@
 /*-----------------------------------------------------------*/
 
 #include "../drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact.H"
+#include "../drt_beaminteraction/beaminteraction_data.H"
 #include "../drt_beaminteraction/beam_contact_pair.H"
 #include "../drt_beaminteraction/beam_contact_params.H"
 #include "../drt_beaminteraction/beam_contact_runtime_vtk_output_params.H"
@@ -18,8 +19,9 @@
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_geometric_search/bounding_box.H"
+#include "../drt_geometric_search/bounding_volume.H"
 #include "../drt_geometric_search/geometric_search.H"
+#include "../drt_geometric_search/geometric_search_params.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
@@ -66,7 +68,9 @@
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::BeamContact()
     : beam_contact_params_ptr_(Teuchos::null),
+      beam_interaction_params_ptr_(Teuchos::null),
       beam_interaction_conditions_ptr_(Teuchos::null),
+      geometric_search_params_ptr_(Teuchos::null),
       contact_elepairs_(Teuchos::null),
       assembly_managers_(Teuchos::null),
       beam_to_solid_volume_meshtying_vtk_writer_ptr_(Teuchos::null),
@@ -82,6 +86,14 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::BeamContact()
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 {
   CheckInit();
+
+  // build a new data container to manage beam interaction parameters
+  beam_interaction_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamInteractionParams());
+  beam_interaction_params_ptr_->Init();
+  beam_interaction_params_ptr_->Setup();
+
+  // build a new data container to manage geometric search parameters
+  geometric_search_params_ptr_ = Teuchos::rcp(new GEOMETRICSEARCH::GeometricSearchParams());
 
   // build a new data container to manage beam contact parameters
   beam_contact_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamContactParams());
@@ -789,13 +801,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
   // Build the ids of the elements for the beam-to-solid conditions.
   beam_interaction_conditions_ptr_->BuildIdSets(DiscretPtr());
 
-  // TODO: This switch should be controlable from the input file
-  const bool old_implementation = false;
-  if (old_implementation)
+  if (beam_interaction_params_ptr_->GetSearchStrategy() ==
+      INPAR::BEAMINTERACTION::SearchStrategy::binning)
   {
     // loop over all row beam elements
     // note: like this we ensure that first element of pair is always a beam element, also only
-    // only beam to something contact considered
+    // beam to something contact considered
     int const numroweles = EleTypeMapExtractorPtr()->BeamMap()->NumMyElements();
     for (int rowele_i = 0; rowele_i < numroweles; ++rowele_i)
     {
@@ -811,6 +822,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
            biniter != BeamInteractionDataStatePtr()->GetRowEleToBinSet(elegid).end(); ++biniter)
       {
         std::vector<int> loc_neighboring_binIds;
+        // in three-dimensional space: 26 neighbouring-bins + 1 self
         loc_neighboring_binIds.reserve(27);
 
         // do not check on existence here -> shifted to GetBinContent
@@ -826,36 +838,32 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
       BinStrategyPtr()->GetBinContent(
           neighboring_elements, contactelementtypes_, glob_neighboring_binIds);
 
-      // Here we remove pairs based on very trivial rules, e.g.:
-      // - an element can not be in contact with it self, this is done by only taking beam-to-beam
-      // pairs where the GID of the first beam is lower than the one of the second beam. This also
-      // ensures that no pair is found twice, i.e., pair(ele1, ele2) and pair(ele2, ele1).
-
       // sort out elements that should not be considered in contact evaluation
       SelectElesToBeConsideredForContactEvaluation(currele, neighboring_elements);
 
       nearby_elements_map_[elegid] = neighboring_elements;
     }
   }
-  else
+  else if (beam_interaction_params_ptr_->GetSearchStrategy() ==
+           INPAR::BEAMINTERACTION::SearchStrategy::bounding_volume)
   {
     // Get vector of all beam element bounding boxes.
     int const numroweles = EleTypeMapExtractorPtr()->BeamMap()->NumMyElements();
-    std::vector<std::pair<int, BoundingBox>> beam_bounding_boxes;
+    std::vector<std::pair<int, GEOMETRICSEARCH::BoundingVolume>> beam_bounding_boxes;
     for (int rowele_i = 0; rowele_i < numroweles; ++rowele_i)
     {
       int const elegid = EleTypeMapExtractorPtr()->BeamMap()->GID(rowele_i);
       DRT::Element* currele = Discret().gElement(elegid);
-      // Todo, is this the correct displacement state?
-      beam_bounding_boxes.emplace_back(std::make_pair(elegid,
-          currele->GetBoundingBox(Discret(), BeamInteractionDataStatePtr()->GetDisColNp())));
+
+      beam_bounding_boxes.emplace_back(std::make_pair(
+          elegid, currele->GetBoundingVolume(Discret(),
+                      BeamInteractionDataStatePtr()->GetDisColNp(), geometric_search_params_ptr_)));
     }
 
-
     // Get vector of the bounding boxes of all possible interacting elements (also including beams
-    // if beam-to-beam contact is activated.
+    // if beam-to-beam contact is activated).
     int const numcoleles = Discret().NumMyColElements();
-    std::vector<std::pair<int, BoundingBox>> other_bounding_boxes;
+    std::vector<std::pair<int, GEOMETRICSEARCH::BoundingVolume>> other_bounding_boxes;
     for (int colele_i = 0; colele_i < numcoleles; ++colele_i)
     {
       // Check if the current element is relevant for beam-to-xxx contact.
@@ -865,34 +873,26 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
       if (std::find(contactelementtypes_.begin(), contactelementtypes_.end(), contact_type) !=
           contactelementtypes_.end())
       {
-        // Todo, is this the correct displacement state?
         other_bounding_boxes.emplace_back(std::make_pair(currele->Id(),
-            currele->GetBoundingBox(Discret(), BeamInteractionDataStatePtr()->GetDisColNp())));
+            currele->GetBoundingVolume(Discret(), BeamInteractionDataStatePtr()->GetDisColNp(),
+                geometric_search_params_ptr_.getConst())));
       }
     }
 
-    std::cout << "\nnumber of beam boundings: " << beam_bounding_boxes.size();
-    std::cout << "\nnumber of other boundings: " << other_bounding_boxes.size() << "\n";
-
     // Get colliding pairs.
-    std::vector<int> indices, offsets;
-    CollisionSearch(other_bounding_boxes, beam_bounding_boxes, indices, offsets);
+    const auto& [indices, offsets] = CollisionSearch(other_bounding_boxes, beam_bounding_boxes,
+        Discret().Comm(), geometric_search_params_ptr_->verbosity_);
 
     // Create the beam-to-xxx pair pointers according to the search.
-    for (unsigned int i_beam = 0; i_beam < beam_bounding_boxes.size(); i_beam++)
+    for (size_t i_beam = 0; i_beam < beam_bounding_boxes.size(); i_beam++)
     {
       const int beam_gid = beam_bounding_boxes[i_beam].first;
       DRT::Element* currele = Discret().gElement(beam_gid);
       std::set<DRT::Element*> neighboring_elements;
-      for (unsigned int j = offsets[i_beam]; j < offsets[i_beam + 1]; j++)
+      for (int j = offsets[i_beam]; j < offsets[i_beam + 1]; j++)
       {
         neighboring_elements.insert(Discret().gElement(other_bounding_boxes[indices[j]].first));
       }
-
-      // Here we remove pairs based on very trivial rules, e.g.:
-      // - an element can not be in contact with it self, this is done by only taking beam-to-beam
-      // pairs where the GID of the first beam is lower than the one of the second beam. This also
-      // ensures that no pair is found twice, i.e., pair(ele1, ele2) and pair(ele2, ele1).
 
       // sort out elements that should not be considered in contact evaluation
       SelectElesToBeConsideredForContactEvaluation(currele, neighboring_elements);
@@ -900,6 +900,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
       nearby_elements_map_[beam_gid] = neighboring_elements;
     }
   }
+  else
+    dserror("No appropriate search strategy for beam interaction chosen!");
 }
 
 /*----------------------------------------------------------------------------*

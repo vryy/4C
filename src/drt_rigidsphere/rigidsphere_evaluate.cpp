@@ -23,11 +23,11 @@
 #include "../drt_inpar/inpar_structure.H"
 #include <Epetra_CrsMatrix.h>
 
-#include "../drt_geometric_search/bounding_box.H"
-
 #include "../drt_inpar/inpar_browniandyn.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "../drt_geometric_search/geometric_search_params.H"
+#include "../drt_geometric_search/bounding_volume.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) meier 02/14|
@@ -331,9 +331,12 @@ int DRT::ELEMENTS::Rigidsphere::HowManyRandomNumbersINeed()
   return 3;
 }
 
-
-BoundingBox DRT::ELEMENTS::Rigidsphere::GetBoundingBox(const DRT::Discretization& discret,
-    const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased) const
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Rigidsphere::GetBoundingVolume(
+    const DRT::Discretization& discret,
+    const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
+    const Teuchos::RCP<const GEOMETRICSEARCH::GeometricSearchParams>& params) const
 {
   // Get the element displacements.
   std::vector<int> lm, lmowner, lmstride;
@@ -341,21 +344,22 @@ BoundingBox DRT::ELEMENTS::Rigidsphere::GetBoundingBox(const DRT::Discretization
   std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*result_data_dofbased, mydisp, lm);
 
-  // Add reference position
-  if (mydisp.size() != 3) dserror("Got unexpected size of DOFs");
+  // Add reference position.
+  if (mydisp.size() != 3)
+    dserror("Got unexpected number of DOFs. Expected 3, but received %d", mydisp.size());
   LINALG::Matrix<3, 1, double> sphere_center;
   for (unsigned int i_dof = 0; i_dof < 3; i_dof++)
     sphere_center(i_dof) = mydisp[i_dof] + Nodes()[0]->X()[i_dof];
 
-  BoundingBox bounding_box;
-  bounding_box.AddPoint(sphere_center);
+  GEOMETRICSEARCH::BoundingVolume bounding_volume;
+  bounding_volume.AddPoint(sphere_center);
 
-  // Todo: This factor should be controllable from the input file.
-  const double safety_factor = 1.5;
+  // Add the radius times a safety factor.
+  const double safety_factor = params->GetSphereBoundingVolumeScaling();
   const double radius = Radius();
-  bounding_box.ExtendBoundaries(radius * safety_factor);
+  bounding_volume.ExtendBoundaries(radius * safety_factor);
 
-  return bounding_box;
+  return bounding_volume;
 }
 
 /*----------------------------------------------------------------------------*

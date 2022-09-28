@@ -20,7 +20,10 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::BeamInteractionParams::BeamInteractionParams()
-    : isinit_(false), issetup_(false), rep_strategy_(INPAR::BEAMINTERACTION::repstr_adaptive)
+    : isinit_(false),
+      issetup_(false),
+      rep_strategy_(INPAR::BEAMINTERACTION::repstr_adaptive),
+      search_strategy_(INPAR::BEAMINTERACTION::SearchStrategy::binning)
 {
   // empty constructor
 }
@@ -35,6 +38,9 @@ void BEAMINTERACTION::BeamInteractionParams::Init()
 
   rep_strategy_ = DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::RepartitionStrategy>(
       params_list, "REPARTITIONSTRATEGY");
+
+  search_strategy_ = Teuchos::getIntegralValue<INPAR::BEAMINTERACTION::SearchStrategy>(
+      params_list, "SEARCH_STRATEGY");
 
   isinit_ = true;
 }

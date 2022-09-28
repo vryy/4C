@@ -41,6 +41,11 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
       tuple<int>(repstr_adaptive, repstr_adaptive, repstr_everydt, repstr_everydt),
       &beaminteraction);
 
+  setStringToIntegralParameter<SearchStrategy>("SEARCH_STRATEGY", "binning",
+      "Type of search strategy used for finding coupling pairs",
+      tuple<std::string>("binning", "bounding_volume"),
+      tuple<SearchStrategy>(SearchStrategy::binning, SearchStrategy::bounding_volume),
+      &beaminteraction);
 
   /*----------------------------------------------------------------------*/
   /* parameters for crosslinking submodel */

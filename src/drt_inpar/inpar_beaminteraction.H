@@ -37,6 +37,12 @@ namespace INPAR
       repstr_everydt    ///< do repartitioning every time step
     };
 
+    enum class SearchStrategy
+    {
+      binning,         ///< coupling pair search based on binning
+      bounding_volume  ///< coupling pair search based on bounding boxes
+    };
+
     /// type of the used submodel for beaminteraction
     enum SubModelType
     {

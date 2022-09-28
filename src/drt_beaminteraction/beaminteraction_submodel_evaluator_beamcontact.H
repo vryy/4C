@@ -15,6 +15,7 @@
 
 
 #include "../drt_binstrategy/binning_strategy_utils.H"
+#include "../drt_geometric_search/geometric_search_params.H"
 #include "beaminteraction_submodel_evaluator_generic.H"
 
 // forward declaration ...
@@ -231,6 +232,15 @@ namespace BEAMINTERACTION
       void FindAndStoreNeighboringElements();
 
       /// exclude certain neighbors from interaction evaluation
+      /*
+       * Here we remove pairs based on very trivial rules, e.g.:
+       * - an element can not be in contact with itself, thus is removed if same global indice
+       *   is found
+       * - evaluate beam contact pairs only once i.e., pair(ele1, ele2) and pair(ele2, ele1),
+       *   thus only beam-to-beam pairs where the GID of the first element is smaller than the
+       *   second are considered
+       * - elements sharing nodes don't interact
+       */
       void SelectElesToBeConsideredForContactEvaluation(
           DRT::Element* currele, std::set<DRT::Element*>& neighbors) const;
 
@@ -247,8 +257,14 @@ namespace BEAMINTERACTION
       //! data container holding all beam contact related parameters
       Teuchos::RCP<BEAMINTERACTION::BeamContactParams> beam_contact_params_ptr_;
 
+      //! data container holding all beam interaction related parameters
+      Teuchos::RCP<BEAMINTERACTION::BeamInteractionParams> beam_interaction_params_ptr_;
+
       //! data container holding all beam interactions defined by conditions
       Teuchos::RCP<BEAMINTERACTION::BeamInteractionConditions> beam_interaction_conditions_ptr_;
+
+      //! data container holding all geometric search related parameters
+      Teuchos::RCP<GEOMETRICSEARCH::GeometricSearchParams> geometric_search_params_ptr_;
 
       //! element types considered for beam to ? contact
       std::vector<BINSTRATEGY::UTILS::BinContentType> contactelementtypes_;

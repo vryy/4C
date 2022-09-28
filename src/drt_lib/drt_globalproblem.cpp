@@ -189,6 +189,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--PROBLEM SIZE", *list);
   reader.ReadGidSection("--PROBLEM TYP", *list);
   reader.ReadGidSection("--BINNING STRATEGY", *list);
+  reader.ReadGidSection("--BOUNDINGVOLUME STRATEGY", *list);
   reader.ReadGidSection("--IO", *list);
   reader.ReadGidSection("--IO/EVERY ITERATION", *list);
   reader.ReadGidSection("--IO/MONITOR STRUCTURE DBC", *list);

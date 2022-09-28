@@ -593,6 +593,16 @@ namespace GEO
 }  // namespace GEO
 
 /*!
+ * \brief Geometric search algorithm based on bounding volumes
+ *
+ * Implements baci-specific bounding volumes and the related brute force search.
+ *
+ */
+namespace GEOMETRICSEARCH
+{
+}
+
+/*!
  * \brief Geometry interactions (projection, intersection, ...) between two or more geometries.
  *
  * Implement geometry related functions for geometry pairs.

@@ -67,6 +67,7 @@
 #include "../drt_tutorial/inpar_tutorial.H"
 #include "inpar_beaminteraction.H"
 #include "inpar_binningstrategy.H"
+#include "inpar_geometric_search.H"
 #include "inpar_browniandyn.H"
 #include "inpar_cardiovascular0d.H"
 #include "inpar_plasticity.H"
@@ -481,6 +482,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   INPAR::GEO::SetValidParameters(list);
   INPAR::BINSTRATEGY::SetValidParameters(list);
+  INPAR::GEOMETRICSEARCH::SetValidParameters(list);
   INPAR::PASI::SetValidParameters(list);
 
   INPAR::SOLVER::SetValidParameters(list);
