@@ -312,7 +312,7 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
         DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
             CalculateButlerVolmerElchLinearizations(kinetic_model, j0, frt, epdderiv, alphaa,
                 alphac, dummyresistance, expterm1, expterm2, kr, faraday, el_conc, ed_conc, cmax,
-                dj_ded_conc, dj_del_conc, dj_ded_pot, dj_del_pot);
+                eta, dj_ded_conc, dj_del_conc, dj_ded_pot, dj_del_pot);
 
         // assemble concentration residuals
         auto residual = scatratimint_->Residual();

@@ -307,7 +307,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
         {
           double dj_dd_slave_timefacwgt(0.0);
           myelectrodeutils::CalculateButlerVolmerDispLinearizations(
-              alphaa, alphac, frt, j0, eta, timefacwgt, dj_dd_slave_timefacwgt);
+              kineticmodel, alphaa, alphac, frt, j0, eta, timefacwgt, dj_dd_slave_timefacwgt);
 
           // loop over matrix columns
           for (int ui = 0; ui < my::nen_; ++ui)

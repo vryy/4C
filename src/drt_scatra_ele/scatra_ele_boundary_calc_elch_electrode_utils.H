@@ -41,6 +41,7 @@ namespace DRT
        * @param[in] eslavephiint     state variables on slave-side integration points
        * @param[in] cmax             saturation value of intercalated lithium concentration from
        *                             electrode material
+       * @param[in] eta              overpotential in Butler-Volmer equation
        * @param[out] dj_dc_slave     linearization of Butler-Volmer mass flux density w.r.t.
        *                             concentration on slave-side
        * @param[out] dj_dc_master    linearization of Butler-Volmer mass flux density w.r.t.
@@ -57,7 +58,7 @@ namespace DRT
       static void CalculateButlerVolmerElchLinearizations(int kineticmodel, double j0, double frt,
           double epdderiv, double alphaa, double alphac, double resistance, double expterm1,
           double expterm2, double kr, double faraday, double emasterphiint, double eslavephiint,
-          double cmax, double& dj_dc_slave, double& dj_dc_master, double& dj_dpot_slave,
+          double cmax, double eta, double& dj_dc_slave, double& dj_dc_master, double& dj_dpot_slave,
           double& dj_dpot_master);
 
       /*!
@@ -83,6 +84,7 @@ namespace DRT
 
       /*!
        *
+       * @param[in] kineticmodel     kinetic model of scatra-scatra interface condition
        * @param [in] alphaa       symmetry coefficient of anodic intercalation reaction
        * @param [in] alphac       symmetry coefficient of cathodic intercalation reaction
        * @param [in] frt          Faraday/(gasconstant * temperature)
@@ -92,8 +94,9 @@ namespace DRT
        * @param [out] dj_dd_slave_timefacwgt [out] linearization of Butler-Volmer mass flux density
        *                                            w.r.t. slave side displacements times timefacwgt
        */
-      static void CalculateButlerVolmerDispLinearizations(double alphaa, double alphac, double frt,
-          double j0, double eta, double timefacwgt, double& dj_dd_slave_timefacwgt);
+      static void CalculateButlerVolmerDispLinearizations(int kineticmodel, double alphaa,
+          double alphac, double frt, double j0, double eta, double timefacwgt,
+          double& dj_dd_slave_timefacwgt);
 
       /*!
        * \brief calculate modified Butler-Volmer mass flux density via Newton method
@@ -121,6 +124,9 @@ namespace DRT
       static double CalculateModifiedButlerVolmerMassFluxDensity(double j0, double alphaa,
           double alphac, double frt, double pot_ed, double pot_el, double epd, double resistance,
           double itemax, double convtol, double faraday);
+
+      //! Return, if kinetic model uses linearized Butler-Volmer equation
+      static bool IsButlerVolmerLinearized(int kineticmodel);
 
       //! Return, if kinetic model uses reduced prefactor in Butler-Volmer equation
       static bool IsReducedButlerVolmer(int kineticmodel);

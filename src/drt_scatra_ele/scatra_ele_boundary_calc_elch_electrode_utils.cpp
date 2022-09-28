@@ -20,8 +20,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
         const double frt, const double epdderiv, const double alphaa, const double alphac,
         const double resistance, const double expterm1, const double expterm2, const double kr,
         const double faraday, const double emasterphiint, const double eslavephiint,
-        const double cmax, double& dj_dc_slave, double& dj_dc_master, double& dj_dpot_slave,
-        double& dj_dpot_master)
+        const double cmax, const double eta, double& dj_dc_slave, double& dj_dc_master,
+        double& dj_dpot_slave, double& dj_dpot_master)
 {
   const double expterm = expterm1 - expterm2;
   // core linearizations associated with Butler-Volmer mass flux density
@@ -37,6 +37,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
       dj_dpot_master = -dj_dpot_slave;
       break;
     }
+    case INPAR::S2I::kinetics_butlervolmerreducedlinearized:
+    {
+      dj_dc_slave = -j0 * frt * epdderiv;
+      dj_dc_master = 0.0;
+      dj_dpot_slave = j0 * frt;
+      dj_dpot_master = -dj_dpot_slave;
+      break;
+    }
     case INPAR::S2I::kinetics_butlervolmer:
     case INPAR::S2I::kinetics_butlervolmerpeltier:
     {
@@ -47,6 +55,18 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
               j0 * frt * epdderiv * (-alphaa * expterm1 - alphac * expterm2));
       dj_dc_master = j0 * alphaa / emasterphiint * expterm;
       dj_dpot_slave = j0 * (alphaa * frt * expterm1 + alphac * frt * expterm2);
+      dj_dpot_master = -dj_dpot_slave;
+      break;
+    }
+    case INPAR::S2I::kinetics_butlervolmerlinearized:
+    {
+      dj_dc_slave =
+          (kr * std::pow(emasterphiint, alphaa) * std::pow(cmax - eslavephiint, alphaa - 1.0) *
+                  std::pow(eslavephiint, alphac - 1.0) *
+                  (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * frt * eta -
+              j0 * frt * epdderiv);
+      dj_dc_master = j0 * alphaa / emasterphiint * frt * eta;
+      dj_dpot_slave = j0 * frt;
       dj_dpot_master = -dj_dpot_slave;
       break;
     }
@@ -133,24 +153,31 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
-    CalculateButlerVolmerDispLinearizations(const double alphaa, const double alphac,
-        const double frt, const double j0, const double eta, const double timefacwgt,
-        double& dj_dd_slave_timefacwgt)
+    CalculateButlerVolmerDispLinearizations(const int kineticmodel, const double alphaa,
+        const double alphac, const double frt, const double j0, const double eta,
+        const double timefacwgt, double& dj_dd_slave_timefacwgt)
 {
-  // exponential Butler-Volmer terms
-  const double expterm1 = std::exp(alphaa * frt * eta);
-  const double expterm2 = std::exp(-alphac * frt * eta);
-  const double expterm = expterm1 - expterm2;
-
-  // safety check
-  if (std::abs(expterm) > 1.0e5)
+  if (IsButlerVolmerLinearized(kineticmodel))
   {
-    dserror(
-        "Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf", expterm);
+    dj_dd_slave_timefacwgt = timefacwgt * j0 * frt * eta;
   }
+  else
+  {
+    // exponential Butler-Volmer terms
+    const double expterm1 = std::exp(alphaa * frt * eta);
+    const double expterm2 = std::exp(-alphac * frt * eta);
+    const double expterm = expterm1 - expterm2;
 
-  // core linearization associated with Butler-Volmer mass flux density
-  dj_dd_slave_timefacwgt = timefacwgt * j0 * expterm;
+    // safety check
+    if (std::abs(expterm) > 1.0e5)
+    {
+      dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
+          expterm);
+    }
+
+    // core linearization associated with Butler-Volmer mass flux density
+    dj_dd_slave_timefacwgt = timefacwgt * j0 * expterm;
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -209,6 +236,15 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
   }
   // final scaling
   return i / faraday;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::IsButlerVolmerLinearized(
+    int kineticmodel)
+{
+  return (kineticmodel == INPAR::S2I::kinetics_butlervolmerlinearized or
+          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedlinearized);
 }
 
 /*----------------------------------------------------------------------*
