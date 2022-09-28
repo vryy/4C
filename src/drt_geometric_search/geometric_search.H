@@ -27,6 +27,10 @@ struct BoundingBox;
 // primitives(indices(j)) for offsets(i) <= j < offsets(i+1). Following the usual convention,
 // offsets(n) == indices.size(), where n is the number of queries that were performed and
 // indices.size() is the total number of collisions.
+
+// Be aware, that this function will return all in primitives vs. all in predicates. If the two
+// vectors contain the same boundary boxes, self collisions will also be returned. Also, A-B will be
+// a pair, as will B-A. This has to be filtered later on.
 void CollisionSearch(const std::vector<std::pair<int, BoundingBox>>& primitives,
     const std::vector<std::pair<int, BoundingBox>>& predicates, std::vector<int>& indices,
     std::vector<int>& offsets);

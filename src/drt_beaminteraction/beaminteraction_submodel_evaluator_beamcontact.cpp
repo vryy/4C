@@ -914,16 +914,21 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::SelectElesToBeConsideredFo
   for (eiter = neighbors.begin(); eiter != neighbors.end();)
   {
     bool toerase = false;
-    // 1) ensure each contact only evaluated once (keep in mind that we are
-    //    using FEMatrices and FEvectors -> || (*eiter)->Owner() != myrank not necessary)
-    // note: as we are only looping over beam elements, only beam to beam contact needs id check
-    // here
-    if (dynamic_cast<DRT::ELEMENTS::Beam3Base*>(*eiter) != NULL and
-        not(currele->Id() < (*eiter)->Id()))
+    // 1) ensure that an element will not be in contact with it self
+    if (currele->Id() == (*eiter)->Id())
     {
       toerase = true;
     }
-    // 2) ensure that two elements sharing the same node do not get into contact
+    // 2) ensure each contact only evaluated once (keep in mind that we are
+    //    using FEMatrices and FEvectors -> || (*eiter)->Owner() != myrank not necessary)
+    // note: as we are only looping over beam elements, only beam to beam contact needs id check
+    // here
+    else if (dynamic_cast<DRT::ELEMENTS::Beam3Base*>(*eiter) != NULL and
+             not(currele->Id() < (*eiter)->Id()))
+    {
+      toerase = true;
+    }
+    // 3) ensure that two elements sharing the same node do not get into contact
     else
     {
       for (int i = 0; i < 2; ++i)

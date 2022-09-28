@@ -27,14 +27,10 @@ void CollisionSearch(const std::vector<std::pair<int, BoundingBox>>& primitives,
     for (size_t i_primitive = 0; i_primitive < primitives.size(); i_primitive++)
     {
       const auto& primitive = primitives[i_primitive];
-      // Exclude self contact.
-      if (primitive.first != predicate.first)
+      if (BoxesIntersect(primitive.second, predicate.second))
       {
-        if (BoxesIntersect(primitive.second, predicate.second))
-        {
-          indices.push_back(i_primitive);
-          predicate_collisions += 1;
-        }
+        indices.push_back(i_primitive);
+        predicate_collisions += 1;
       }
     }
     offsets.push_back(offsets.back() + predicate_collisions);
