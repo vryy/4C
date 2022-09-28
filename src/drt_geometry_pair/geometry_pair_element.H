@@ -223,11 +223,12 @@ namespace GEOMETRYPAIR
       DRT::Element::DiscretizationType discretization = base::discretization_;
 
       // Get the reference length of the beam element.
-      if (element == nullptr)
+      const auto* beam_element = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element);
+      if (beam_element == nullptr)
         dserror(
-            "The element pointer can not be a nullptr when evaluating the shape functions of a "
-            "beam, as we need to get RefLength()!");
-      const double length = (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element))->RefLength();
+            "The element pointer has to point to a valid beam element when evaluating the shape "
+            "functions of a beam, as we need to get RefLength()!");
+      const double length = beam_element->RefLength();
 
       // Evaluate the shape functions.
       DRT::UTILS::shape_function_hermite_1D(N, xi, length, discretization);
@@ -254,11 +255,12 @@ namespace GEOMETRYPAIR
       DRT::Element::DiscretizationType discretization = base::discretization_;
 
       // Get the reference length of the beam element.
-      if (element == nullptr)
+      const auto* beam_element = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element);
+      if (beam_element == nullptr)
         dserror(
-            "The element pointer can not be a nullptr when evaluating the shape functions of a "
-            "beam, as we need to get RefLength()!");
-      const double length = (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element))->RefLength();
+            "The element pointer has to point to a valid beam element when evaluating the shape "
+            "functions of a beam, as we need to get RefLength()!");
+      const double length = beam_element->RefLength();
 
       // Evaluate the shape functions.
       DRT::UTILS::shape_function_hermite_1D_deriv1(dN, xi, length, discretization);

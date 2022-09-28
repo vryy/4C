@@ -19,13 +19,7 @@
 
 
 // Forward declarations.
-namespace STR
-{
-  namespace MODELEVALUATOR
-  {
-    class BeamInteractionDataState;
-  }
-}  // namespace STR
+class Epetra_Vector;
 namespace GEOMETRYPAIR
 {
   class FaceElement;
@@ -67,8 +61,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Calculate the averaged nodal normals.
      */
-    void SetState(const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
-            beaminteraction_data_state);
+    void SetState(const Teuchos::RCP<const Epetra_Vector>& displacement_col_np);
 
     /**
      * \brief Get a reference to the face element map.
