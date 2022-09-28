@@ -12,7 +12,6 @@
 #define GEOMETRY_PAIR_ELEMENT_FUNCTIONS_H
 
 
-#include "../drt_beam3/beam3.H"
 #include "../headers/FAD_utils.H"
 #include "geometry_pair_element.H"
 #include "geometry_pair_utility_functions.H"

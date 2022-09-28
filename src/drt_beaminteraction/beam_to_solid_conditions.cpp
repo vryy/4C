@@ -25,6 +25,7 @@
 #include "beam_to_solid_surface_meshtying_params.H"
 #include "beam_to_solid_surface_contact_params.H"
 #include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.H"
+#include "str_model_evaluator_beaminteraction_datastate.H"
 
 #include "../drt_inpar/inpar_beam_to_solid.H"
 #include "../drt_lib/drt_discret.H"
@@ -501,7 +502,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::SetState(
     dserror("Could not cast to GEOMETRYPAIR::LineToSurfaceEvaluationData.");
 
   // Setup the geometry data for the surface patch.
-  line_to_surface_evaluation_data->SetState(beaminteraction_data_state);
+  line_to_surface_evaluation_data->SetState(beaminteraction_data_state->GetDisColNp());
 }
 
 /**
