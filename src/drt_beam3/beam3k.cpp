@@ -674,8 +674,9 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
       }
       computestrain(theta, theta_s, K0_[numgp]);
 
-      triad_mat.Clear();
-      LARGEROTATIONS::angletotriad(theta, Gref[REFERENCE_NODE], triad_mat);
+      LINALG::Matrix<3, 3> temp_triad(true);
+      LARGEROTATIONS::angletotriad(theta, temp_triad);
+      triad_mat.Multiply(Gref[REFERENCE_NODE], temp_triad);
       SetInitialDynamicClassVariables(numgp, triad_mat, r);
     }
 
@@ -1853,10 +1854,7 @@ void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateVector(
   {
     // values for tangent DOFs must be transformed in case of rotvec_==true
     LINALG::Matrix<3, 1, T> theta(true);
-    LINALG::Matrix<3, 3, T> unity(true);
     LINALG::Matrix<3, 3, T> triad(true);
-
-    for (unsigned int dim = 0; dim < 3; ++dim) unity(dim, dim) = 1.0;
 
     for (unsigned int node = 0; node < nnodecl; ++node)
     {
@@ -1866,7 +1864,7 @@ void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateVector(
         theta(dim) = dofvec(dofperboundarynode * node + 3 + dim);
       }
       // transform to triad
-      LARGEROTATIONS::angletotriad(theta, unity, triad);
+      LARGEROTATIONS::angletotriad(theta, triad);
 
       // direction of tangent is equivalent to first base vector of triad; length of tangent is 7th
       // nodal DOF
@@ -2082,16 +2080,14 @@ void DRT::ELEMENTS::Beam3k::SetTangentsAndTriadsAndReferenceTriadsAtBoundaryNode
   else
   {
     LINALG::Matrix<3, 1, T> theta(true);
-    LINALG::Matrix<3, 3, T> unity(true);
     for (unsigned int node = 0; node < 2; ++node)
     {
       for (unsigned int i = 0; i < 3; ++i)
       {
         theta(i) = disp_totlag(7 * node + 3 + i);
-        unity(i, i) = 1.0;
       }
       triad_mat_cp[node].Clear();
-      LARGEROTATIONS::angletotriad(theta, unity, triad_mat_cp[node]);
+      LARGEROTATIONS::angletotriad(theta, triad_mat_cp[node]);
 
       // tangent
       for (unsigned int i = 0; i < 3; ++i)
