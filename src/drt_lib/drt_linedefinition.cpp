@@ -1072,7 +1072,17 @@ std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> DRT::INPUT::Lines::Read(
       // line now is one entry of section
       if (line == Teuchos::null)
       {
-        dserror("read failed in section '%s': line '%s'", name.str().c_str(), i);
+        std::stringstream out;
+        out << "read failed in section " << std::quoted(name.str()) << ": line " << std::quoted(i)
+            << "\n";
+        out << "Valid lines are:\n\n";
+        std::for_each(definitions_.begin(), definitions_.end(),
+            [&](const LineDefinition& def)
+            {
+              def.Print(out);
+              out << "\n";
+            });
+        dserror(out.str().c_str());
       }
       lines.push_back(line);
     }
