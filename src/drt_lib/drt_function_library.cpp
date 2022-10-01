@@ -11,7 +11,6 @@ The functions in this file are not problem-specific and may be useful for a numb
 */
 /*----------------------------------------------------------------------*/
 #include <fstream>
-#include <Sacado.hpp>
 #include <utility>
 #include "drt_function.H"
 #include "drt_function_library.H"
