@@ -17,6 +17,9 @@ The functions in this file are not problem-specific and may be useful for a numb
 
 namespace DRT::UTILS
 {
+  // forward declaration
+  class CubicSplineInterpolation;
+
   /// add valid function lines
   void AddValidLibraryFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
 
@@ -126,5 +129,38 @@ namespace DRT::UTILS
    private:
     //! internal polynomial representation
     const DRT::UTILS::Polynomial mypoly_;
+  };
+
+  /**
+   * @brief Cubic spline interpolation from csv file
+   *
+   * This class defines a cubic spline interpolation connecting \f$ n \f$ points
+   * \f$ (x_i,y_i), i \in [0,1,...,n-1] \f$ expressed as splines \f$S_i(x)\f$ of the form:
+   * \f[
+   * S_i(x) = a_i + b_i(x-x_i) + c_i(x-x_i)^2 + d_i(x-x_i)^3, j \in [0,1,...,n-1],
+   * \f]
+   * where \f$ S_i(x) \f$ is a third order polynomial on the interval \f$ [x_i, x_{i+1}] \f$.
+   *
+   * @note The spline is calculated such that the first and second derivatives match at the
+   * intersection of two segments. Furthermore, so-called natural boundary conditions, i.e. the
+   * second derivatives at the two boundaries are set to zero, are applied.
+   */
+  class CubicSplineFromCSV : public FunctionOfScalar
+  {
+   public:
+    /*!
+     * @brief Constructor of function defining a cubic spline interpolation created based on data
+     * from csv-file
+     *
+     * @param[in] csv_file  absolute path to csv file
+     */
+    CubicSplineFromCSV(const std::string& csv_file);
+
+    [[nodiscard]] double Evaluate(double scalar) const override;
+
+    [[nodiscard]] double EvaluateDerivative(double scalar) const override;
+
+   private:
+    std::unique_ptr<CubicSplineInterpolation> cubic_spline_;
   };
 }  // namespace DRT::UTILS
