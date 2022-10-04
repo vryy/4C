@@ -252,6 +252,7 @@ bool DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::IsButlerVolmerLinea
 bool DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::IsReducedButlerVolmer(int kineticmodel)
 {
   return (kineticmodel == INPAR::S2I::kinetics_butlervolmerreduced or
+          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedlinearized or
           kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedresistance or
           kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance or
           kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedcapacitance);
