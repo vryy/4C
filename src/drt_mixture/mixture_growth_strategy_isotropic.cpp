@@ -35,10 +35,13 @@ void MIXTURE::IsotropicGrowthStrategy::EvaluateInverseGrowthDeformationGradient(
   }
 }
 
-void MIXTURE::IsotropicGrowthStrategy::AddGrowthStressCmat(const MIXTURE::MixtureRule& mixtureRule,
-    double currentReferenceGrowthScalar, const LINALG::Matrix<3, 3>& F,
+void MIXTURE::IsotropicGrowthStrategy::EvaluateGrowthStressCmat(
+    const MIXTURE::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
+    const LINALG::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC, const LINALG::Matrix<3, 3>& F,
     const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
     LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, const int gp,
     const int eleGID) const
 {
+  S_stress.Clear();
+  cmat.Clear();
 }

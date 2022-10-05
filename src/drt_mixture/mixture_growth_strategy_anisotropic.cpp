@@ -70,10 +70,13 @@ void MIXTURE::AnisotropicGrowthStrategy::EvaluateInverseGrowthDeformationGradien
       anisotropyExtension_.GetStructuralTensor(gp, 0), 1.0, Id);
 }
 
-void MIXTURE::AnisotropicGrowthStrategy::AddGrowthStressCmat(
+void MIXTURE::AnisotropicGrowthStrategy::EvaluateGrowthStressCmat(
     const MIXTURE::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
-    const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
-    Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
-    const int gp, const int eleGID) const
+    const LINALG::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC, const LINALG::Matrix<3, 3>& F,
+    const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
+    LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, const int gp,
+    const int eleGID) const
 {
+  S_stress.Clear();
+  cmat.Clear();
 }

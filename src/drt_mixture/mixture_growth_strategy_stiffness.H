@@ -45,12 +45,15 @@ namespace MIXTURE
    public:
     explicit StiffnessGrowthStrategy(MIXTURE::PAR::StiffnessGrowthStrategy* params);
 
+    [[nodiscard]] bool HasInelasticGrowthDeformationGradient() const override { return false; };
+
     void EvaluateInverseGrowthDeformationGradient(LINALG::Matrix<3, 3>& iFgM,
         const MIXTURE::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
         int gp) const override;
 
-    void AddGrowthStressCmat(const MIXTURE::MixtureRule& mixtureRule,
-        double currentReferenceGrowthScalar, const LINALG::Matrix<3, 3>& F,
+    void EvaluateGrowthStressCmat(const MIXTURE::MixtureRule& mixtureRule,
+        double currentReferenceGrowthScalar,
+        const LINALG::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC, const LINALG::Matrix<3, 3>& F,
         const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
         LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, const int gp,
         const int eleGID) const override;

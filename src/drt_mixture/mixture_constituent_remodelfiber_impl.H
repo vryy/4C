@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Declaration of a remodel constituent with explicit update rule
+\brief Declaration of a remodel constituent with implicit update rule
 \level 3
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_CONSTITUENT_REMODELFIBER_EXPL_H
-#define BACI_MIXTURE_CONSTITUENT_REMODELFIBER_EXPL_H
+#ifndef BACI_MIXTURE_CONSTITUENT_REMODELFIBER_IMPL_H
+#define BACI_MIXTURE_CONSTITUENT_REMODELFIBER_IMPL_H
 
 #include <Teuchos_RCPDecl.hpp>
 #include <cmath>
@@ -25,19 +25,18 @@ namespace MIXTURE
 
   namespace PAR
   {
-    class MixtureConstituent_RemodelFiberExpl : public MIXTURE::PAR::MixtureConstituent
+    class MixtureConstituent_RemodelFiberImpl : public MIXTURE::PAR::MixtureConstituent
     {
      public:
-      explicit MixtureConstituent_RemodelFiberExpl(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+      explicit MixtureConstituent_RemodelFiberImpl(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-      ~MixtureConstituent_RemodelFiberExpl() override = default;
+      ~MixtureConstituent_RemodelFiberImpl() override = default;
 
       /// create material instance of matching type with my parameters
       std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 
       const int fiber_id_;
       const int init_;
-      const double gamma_;
 
       const int fiber_material_id_;
       const MIXTURE::PAR::RemodelFiberMaterial<double>* fiber_material_;
@@ -48,20 +47,19 @@ namespace MIXTURE
 
       const double deposition_stretch_;
       const int deposition_stretch_timefunc_num_;
-
-      const bool inelastic_external_deformation_;
     };
   }  // namespace PAR
 
   /*!
-   * \brief Remodel fiber constituent with an explicit update rule
+   * \brief Remodel fiber constituent with an implicit update rule
    */
-  class MixtureConstituent_RemodelFiberExpl : public MIXTURE::MixtureConstituent
+  class MixtureConstituent_RemodelFiberImpl : public MIXTURE::MixtureConstituent
   {
    public:
-    explicit MixtureConstituent_RemodelFiberExpl(
-        MIXTURE::PAR::MixtureConstituent_RemodelFiberExpl* params, int id);
+    explicit MixtureConstituent_RemodelFiberImpl(
+        MIXTURE::PAR::MixtureConstituent_RemodelFiberImpl* params, int id);
 
+    /// Returns the material type enum
     [[nodiscard]] INPAR::MAT::MaterialType MaterialType() const override;
 
     void PackConstituent(DRT::PackBuffer& data) const override;
@@ -78,9 +76,6 @@ namespace MIXTURE
     void Update(
         const LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, int gp, int eleGID) override;
 
-    void UpdateElasticPart(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<3, 3>& iFext,
-        Teuchos::ParameterList& params, double dt, int gp, int eleGID) override;
-
     void UpdatePrestress(
         const LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, int gp, int eleGID) override;
 
@@ -93,6 +88,7 @@ namespace MIXTURE
         int gp, int eleGID) override;
 
     [[nodiscard]] double GetGrowthScalar(int gp) const override;
+    [[nodiscard]] LINALG::Matrix<1, 6> GetDGrowthScalarDC(int gp, int eleGID) const override;
 
     void RegisterVtkOutputDataNames(
         std::unordered_map<std::string, int>& names_and_size) const override;
@@ -101,9 +97,9 @@ namespace MIXTURE
         const std::string& name, Epetra_SerialDenseMatrix& data) const override;
 
    private:
+    void IntegrateLocalEvolutionEquations(double dt, int gp, int eleGID);
     [[nodiscard]] double EvaluateLambdaf(const LINALG::Matrix<3, 3>& C, int gp, int eleGID) const;
-    [[nodiscard]] double EvaluateLambdaExt(
-        const LINALG::Matrix<3, 3>& iFext, int gp, int eleGID) const;
+    [[nodiscard]] LINALG::Matrix<1, 6> EvaluateDLambdafsqDC(int gp, int eleGID) const;
 
     [[nodiscard]] LINALG::Matrix<6, 1> EvaluateCurrentPK2(int gp, int eleGID) const;
     [[nodiscard]] LINALG::Matrix<6, 6> EvaluateCurrentCmat(int gp, int eleGID) const;
@@ -114,14 +110,20 @@ namespace MIXTURE
     void Initialize();
 
     /// my material parameters
-    MIXTURE::PAR::MixtureConstituent_RemodelFiberExpl* params_;
+    MIXTURE::PAR::MixtureConstituent_RemodelFiberImpl* params_;
 
     /// An instance of the remodel fiber
     std::vector<RemodelFiber<2>> remodel_fiber_;
 
     /// Handler for anisotropic input
     MAT::DefaultAnisotropyExtension<1> anisotropy_extension_;
+
+    /// temporary variables used within one evaluation
+    /// @{
+    std::vector<LINALG::Matrix<1, 6>> dgrowthscalardC_;
+    std::vector<LINALG::Matrix<1, 6>> dlambdardC_;
+    /// @}
   };
 }  // namespace MIXTURE
 
-#endif  // BACI_MIXTURE_CONSTITUENT_REMODELFIBER_EXPL_H
+#endif  // BACI_MIXTURE_CONSTITUENT_REMODELFIBER_IMPL_H
