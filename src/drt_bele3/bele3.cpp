@@ -73,7 +73,7 @@ void DRT::ELEMENTS::Bele3Type::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
-  dimns = 3;
+  dimns = 6;
   nv = 3;
 }
 
