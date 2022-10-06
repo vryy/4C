@@ -5,9 +5,13 @@ else()
   # default unit test timeout, if not passed as an environment variable
   set(UNITTEST_TIMEOUT 10) # Default unit test timeout
 
+  # Determine scaled global test timeout
+  math(EXPR UNITTEST_TIMEOUT "10*${GLOBAL_TEST_TIMEOUT_SCALE}")
+  message("The scaled global test timeout is ${UNITTEST_TIMEOUT} s.")
+
   message(
     "GoogleTest: The unit test timeout is not passed as an environment variable. "
-    "It is set to the default value ${UNITTEST_TIMEOUT} s."
+    "It is set to the default value 10 s * ${GLOBAL_TEST_TIMEOUT_SCALE} = ${UNITTEST_TIMEOUT} s."
     )
 endif()
 
