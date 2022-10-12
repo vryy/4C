@@ -155,8 +155,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::GetCouplin
     for (auto couplingids : *ArteryNodeIds)
     {
       couplingnodes_ntp_[iter] = couplingids;
-      std::cout << "Artery Coupling Node Id " << iter
-                << " from Input = " << couplingnodes_ntp_[iter] << "\n";
+      if (myrank_ == 0)
+      {
+        std::cout << "Artery Coupling Node Id " << iter + 1
+                  << " from Input = " << couplingnodes_ntp_[iter] << "\n";
+      }
     }
   }
 }

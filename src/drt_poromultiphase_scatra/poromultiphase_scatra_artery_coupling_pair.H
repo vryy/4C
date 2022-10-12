@@ -535,9 +535,9 @@ namespace POROMULTIPHASESCATRA
     //! derivatives of the diameter function
     std::vector<double> diamderivs_;
 
-    //! numdofs of artery element
-    int numdof_cont_;
     //! numdofs of 2D/3D element
+    int numdof_cont_;
+    //! numdofs of artery element
     int numdof_art_;
     //! number of dofs * number of nodes of artery element
     int dim1_;

@@ -26,7 +26,6 @@
 
 #include <Epetra_MultiVector.h>
 
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont,
@@ -213,17 +212,35 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 
   // safety check
   for (int icont = 0; icont < numcoupleddofs_; icont++)
+  {
     if (coupleddofs_cont_[icont] >= numdof_cont_)
+    {
       dserror(
           "You try to couple DOF %d, which is larger than the number of dofs of the continuous "
           "discretization",
           coupleddofs_cont_[icont] + 1);
+    }
+    if (coupleddofs_cont_[icont] < 0)
+    {
+      dserror("Your coupling DOF of the continuous discretization must be >= 0, your DOF = %d",
+          coupleddofs_cont_[icont] + 1);
+    }
+  }
   for (int iart = 0; iart < numcoupleddofs_; iart++)
+  {
     if (coupleddofs_art_[iart] >= numdof_art_)
+    {
       dserror(
           "You try to couple DOF %d, which is larger than the number of dofs of the artery "
           "discretization",
           coupleddofs_art_[iart] + 1);
+    }
+    if (coupleddofs_art_[iart] < 0)
+    {
+      dserror("Your coupling DOF of the reduced discretization must be >= 0, your DOF = %d",
+          coupleddofs_art_[iart] + 1);
+    }
+  }
 
   // Set reference nodal positions for artery element
   for (unsigned int n = 0; n < numnodesart_; ++n)
