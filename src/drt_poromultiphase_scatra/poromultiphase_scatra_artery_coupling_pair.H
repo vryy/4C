@@ -66,7 +66,7 @@ namespace POROMULTIPHASESCATRA
         const Teuchos::ParameterList& fluidcouplingparams, const std::vector<int>& coupleddofs_cont,
         const std::vector<int>& coupleddofs_art, const std::vector<std::vector<int>>& scale_vec,
         const std::vector<std::vector<int>>& funct_vec, const std::string condnames,
-        const std::string couplingtype = "", const int eta_ntp = 0) = 0;
+        const double penalty, const std::string couplingtype = "", const int eta_ntp = 0) = 0;
 
     //! query if pair active
     virtual bool IsActive() = 0;
@@ -166,7 +166,7 @@ namespace POROMULTIPHASESCATRA
         const Teuchos::ParameterList& fluidcouplingparams, const std::vector<int>& coupleddofs_cont,
         const std::vector<int>& coupleddofs_art, const std::vector<std::vector<int>>& scale_vec,
         const std::vector<std::vector<int>>& funct_vec, const std::string condname,
-        const std::string couplingtype = "", const int eta_ntp = 0) override;
+        const double penalty, const std::string couplingtype = "", const int eta_ntp = 0) override;
 
     //! query if pair active
     bool IsActive() override { return isactive_; }

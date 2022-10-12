@@ -255,7 +255,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
             POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
                 CreateNewArteryCouplingPair(ele_ptrs);
         newpair->Init(ele_ptrs, couplingparams_, fluidcouplingparams, coupleddofs_cont_,
-            coupleddofs_art_, scale_vec_, funct_vec_, condname_);
+            coupleddofs_art_, scale_vec_, funct_vec_, condname_,
+            couplingparams_.get<double>("PENALTY"));
 
         // add to list of current contact pairs
         coupl_elepairs_[mypair] = newpair;
@@ -315,9 +316,15 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateCoup
         if (artnodes[i]->Id() == couplingnodes_ntp_[j])
         {
           // get coupling type (ARTERY or AIRWAY ?)
-          std::vector<DRT::Condition*> artCoupcond;
-          arterydis_->GetCondition(condname_, artCoupcond);
-          std::string coupling_element_type_ = *(artCoupcond[j])->Get<std::string>("coupling_type");
+          std::vector<DRT::Condition*> coupcond;
+          arterydis_->GetCondition(condname_, coupcond);
+          std::string coupling_element_type_ = *(coupcond[j])->Get<std::string>("coupling_type");
+
+          // recompute coupling dofs
+          RecomputeCoupledDOFsForNTP(coupcond, j);
+
+          // get penalty parameter
+          const double penalty = {coupcond[j]->GetDouble("PENALTY")};
 
           // get eta (parameter coordinate of corresponding node)
           const int eta_ntp = (i == 0) ? -1 : 1;
@@ -337,9 +344,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateCoup
                   newpair = POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
                       CreateNewArteryCouplingPair(ele_ptrs);
               newpair->Init(ele_ptrs, couplingparams_, fluidcouplingparams, coupleddofs_cont_,
-                  coupleddofs_art_, scale_vec_, funct_vec_, condname_, coupling_element_type_,
-                  eta_ntp);
-
+                  coupleddofs_art_, scale_vec_, funct_vec_, condname_, penalty,
+                  coupling_element_type_, eta_ntp);
               // add to list of current contact pairs
               coupl_elepairs_[mypair] = newpair;
               mypair++;

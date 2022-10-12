@@ -75,21 +75,15 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtC
     dserror("size mismatch between COUPLEDDOFS_ART and COUPLEDDOFS_PORO");
 
   num_coupled_dofs_ = coupleddofs_cont_.size();
+}
 
-  // output
-  if (myrank_ == 0)
-  {
-    std::cout << "<                                                  >" << std::endl;
-    if (num_coupled_dofs_ > 0)
-    {
-      std::cout << "<   Coupled Dofs are: (cont) <------> (art)        >" << std::endl;
-      for (int i = 0; i < num_coupled_dofs_; i++)
-        std::cout << "<                        " << coupleddofs_cont_[i] + 1 << "   <------>   "
-                  << coupleddofs_art_[i] + 1 << "          >" << std::endl;
-    }
-    else
-      std::cout << "<   No Coupling DOFs selected                      >" << std::endl;
-  }
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::RecomputeCoupledDOFsForNTP(
+    std::vector<DRT::Condition*> coupcond, unsigned int couplingnode)
+{
+  coupleddofs_art_ = {coupcond[couplingnode]->GetInt("COUPLEDDOF_REDUCED") - 1};
+  coupleddofs_cont_ = {coupcond[couplingnode]->GetInt("COUPLEDDOF_PORO") - 1};
 }
 
 /*----------------------------------------------------------------------*
