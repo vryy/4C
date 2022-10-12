@@ -449,6 +449,15 @@ namespace POROMULTIPHASESCATRA
         LINALG::SerialDenseMatrix& stiffmat12, LINALG::SerialDenseMatrix& stiffmat21,
         LINALG::SerialDenseMatrix& stiffmat22);
 
+    /**
+     * \brief coupling to additional porous network is only possible if we also have an
+     * element with a valid volume fraction pressure, i.e., if we also have a smeared representation
+     * of the neovasculature at this point if not ---> corresponding matrices are set to zero
+     */
+    void CheckValidVolumeFractionPressureCoupling(LINALG::SerialDenseMatrix& stiffmat11,
+        LINALG::SerialDenseMatrix& stiffmat12, LINALG::SerialDenseMatrix& stiffmat21,
+        LINALG::SerialDenseMatrix& stiffmat22);
+
     //! update the D, M and Kappa for MP
     void UpdateDMKappa(LINALG::SerialDenseMatrix& D_ele, LINALG::SerialDenseMatrix& M_ele,
         LINALG::SerialDenseVector& Kappa_ele);

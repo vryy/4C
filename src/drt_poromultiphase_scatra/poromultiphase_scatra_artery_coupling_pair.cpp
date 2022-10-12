@@ -1276,6 +1276,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     }  //! constant_part_evaluated_ or !evaluate_in_ref_config_
 
     UpdateGPTSNTPStiff(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
+    CheckValidVolumeFractionPressureCoupling(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
     EvaluateGPTSNTPForce(
         *forcevec1, *forcevec2, *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
   }
@@ -1331,6 +1332,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   }  //! constant_part_evaluated_ or !evaluate_in_ref_config_
 
   UpdateGPTSNTPStiff(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
+  //! safety check for coupling with additional porous network (= Artery coupling)
+  if (coupling_element_type_ == "ARTERY")
+    CheckValidVolumeFractionPressureCoupling(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
   EvaluateGPTSNTPForce(*forcevec1, *forcevec2, *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
 }
 
@@ -1740,38 +1744,55 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   stiffmat12.Update(1.0, GPTS_NTP_stiffmat12_, 0.0);
   stiffmat21.Update(1.0, GPTS_NTP_stiffmat21_, 0.0);
   stiffmat22.Update(1.0, GPTS_NTP_stiffmat22_, 0.0);
+}
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont,
+    int dim>
+void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
+    dim>::CheckValidVolumeFractionPressureCoupling(LINALG::SerialDenseMatrix& stiffmat11,
+    LINALG::SerialDenseMatrix& stiffmat12, LINALG::SerialDenseMatrix& stiffmat21,
+    LINALG::SerialDenseMatrix& stiffmat22)
+{
   for (int idof = 0; idof < numcoupleddofs_; idof++)
   {
-    // this coupling is only possible if we also have an element with a valid volume fraction
-    // pressure, i.e., if we also have a smeared representation of the neovasculature at this
-    // point if not ---> corresponding matrices are set to zero
     if (!variablemanager_->ElementHasValidVolFracPressure(
             volfracpressid_[idof] - numfluidphases_ - numvolfrac_))
     {
       // reset to zero for this dof
       for (unsigned int i = 0; i < numnodesart_; i++)
+      {
         for (unsigned int j = 0; j < numnodesart_; j++)
           stiffmat11(i * numdof_art_ + coupleddofs_art_[idof],
               j * numdof_art_ + coupleddofs_art_[idof]) = 0.0;
+      }
 
       for (unsigned int i = 0; i < numnodesart_; i++)
+      {
         for (unsigned int j = 0; j < numnodescont_; j++)
           stiffmat12(i * numdof_art_ + coupleddofs_art_[idof],
               j * numdof_cont_ + coupleddofs_cont_[idof]) = 0.0;
+      }
 
       for (unsigned int i = 0; i < numnodescont_; i++)
+      {
         for (unsigned int j = 0; j < numnodesart_; j++)
           stiffmat21(i * numdof_cont_ + coupleddofs_cont_[idof],
               j * numdof_art_ + coupleddofs_art_[idof]) = 0.0;
+      }
 
       for (unsigned int i = 0; i < numnodescont_; i++)
+      {
         for (unsigned int j = 0; j < numnodescont_; j++)
           stiffmat22(i * numdof_cont_ + coupleddofs_cont_[idof],
               j * numdof_cont_ + coupleddofs_cont_[idof]) = 0.0;
+      }
     }
   }
 }
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
