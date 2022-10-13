@@ -235,9 +235,6 @@ namespace DRT
     /// current wall time in seconds with micro second precision
     static double Walltime();
 
-    // do bandwith optimization of dofsets (as specified in the input file)
-    // bool BandWidthOpt() const;
-
     //! Return string name of the basis function type (polynomial/nurbs)
     std::string SpatialApproximation() const;
 

@@ -153,8 +153,6 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Ao
   const Epetra_Map& rowmap = A.RowMap();
 
   // determine the maximum bandwith for the result matrix.
-  // replaces the old, very(!) memory-consuming guess:
-  // int guessnpr = A.MaxNumEntries()*B.MaxNumEntries();
   int educatedguess = 0;
   for (int i = 0; i < myrowlength; ++i)
   {
