@@ -40,6 +40,10 @@ namespace POROMULTIPHASESCATRA
     //! access to full DOF map
     const Teuchos::RCP<const Epetra_Map>& FullMap() const;
 
+    //! Recompute the CouplingDOFs for each CouplingNode if ntp-coupling active
+    void RecomputeCoupledDOFsForNTP(
+        std::vector<DRT::Condition*> coupcond, unsigned int couplingnode);
+
     //! get global extractor
     const Teuchos::RCP<LINALG::MultiMapExtractor>& GlobalExtractor() const;
 

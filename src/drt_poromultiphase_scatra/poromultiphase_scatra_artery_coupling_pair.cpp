@@ -26,7 +26,6 @@
 
 #include <Epetra_MultiVector.h>
 
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont,
@@ -91,12 +90,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     const Teuchos::ParameterList& couplingparams, const Teuchos::ParameterList& fluidcouplingparams,
     const std::vector<int>& coupleddofs_cont, const std::vector<int>& coupleddofs_art,
     const std::vector<std::vector<int>>& scale_vec, const std::vector<std::vector<int>>& funct_vec,
-    const std::string condname, const std::string couplingtype, const int eta_ntp)
+    const std::string condname, const double penalty, const std::string couplingtype,
+    const int eta_ntp)
 {
   // init stuff
   couplmethod_ = DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
       couplingparams, "ARTERY_COUPLING_METHOD");
-
 
   condname_ = condname;
 
@@ -139,29 +138,29 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     // set eta
     eta_.resize(1);
     eta_[0] = eta_ntp;
+
     // check couplingtype
-    if (couplingtype != "ARTERY")
+    if (coupling_element_type_ != "ARTERY" && coupling_element_type_ != "AIRWAY")
     {
       if (coupltype_ == type_porofluid)
       {
         dserror(
-            "Wrong coupling type in DESIGN 1D ARTERY TO POROFLUID NONCONF COUPLING CONDITIONS. \n "
-            "So "
-            "far ntp-coupling is only possible for coupling type: "
-            "ARTERY. "
+            "Wrong coupling type in DESIGN 1D ARTERY TO POROFLUID NONCONF COUPLING CONDITIONS.\n "
+            "NTP-coupling is only possible for coupling type: "
+            " 'ARTERY' or 'AIRWAY'. "
             "Your coupling type "
             "is: " +
-            couplingtype);
+            coupling_element_type_);
       }
       else
       {
         dserror(
-            "Wrong coupling type in DESIGN 1D ARTERY TO SCATRA NONCONF COUPLING CONDITIONS. \nSo "
-            "far ntp-coupling is only possible for coupling type: "
-            "ARTERY. "
+            "Wrong coupling type in DESIGN 1D ARTERY TO SCATRA NONCONF COUPLING CONDITIONS.\n"
+            "NTP-coupling is only possible for coupling type: "
+            "'ARTERY' or 'AIRWAY'. "
             "Your coupling type "
             "is: " +
-            couplingtype);
+            coupling_element_type_);
       }
     }
   }
@@ -213,17 +212,35 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 
   // safety check
   for (int icont = 0; icont < numcoupleddofs_; icont++)
+  {
     if (coupleddofs_cont_[icont] >= numdof_cont_)
+    {
       dserror(
           "You try to couple DOF %d, which is larger than the number of dofs of the continuous "
           "discretization",
           coupleddofs_cont_[icont] + 1);
+    }
+    if (coupleddofs_cont_[icont] < 0)
+    {
+      dserror("Your coupling DOF of the continuous discretization must be >= 0, your DOF = %d",
+          coupleddofs_cont_[icont] + 1);
+    }
+  }
   for (int iart = 0; iart < numcoupleddofs_; iart++)
+  {
     if (coupleddofs_art_[iart] >= numdof_art_)
+    {
       dserror(
           "You try to couple DOF %d, which is larger than the number of dofs of the artery "
           "discretization",
           coupleddofs_art_[iart] + 1);
+    }
+    if (coupleddofs_art_[iart] < 0)
+    {
+      dserror("Your coupling DOF of the reduced discretization must be >= 0, your DOF = %d",
+          coupleddofs_art_[iart] + 1);
+    }
+  }
 
   // Set reference nodal positions for artery element
   for (unsigned int n = 0; n < numnodesart_; ++n)
@@ -257,7 +274,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   ele2pos_.Update(1.0, ele2posref_, 0.0);
 
   // get penalty parameter
-  pp_ = couplingparams.get<double>("PENALTY");
+  pp_ = penalty;
 
   // get out of here
   isinit_ = true;
@@ -293,9 +310,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
         Teuchos::RCP<MAT::Material> singlemat = multiphasemat->MaterialById(matid);
 
         // safety check
-        if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_volfracpressure)
-          dserror("You can only couple volume fraction pressures, your material is of type %d",
+        if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_volfracpressure &&
+            singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlephase)
+        {
+          dserror(
+              "You can only couple volume fraction pressures or fluid phases in multiphase "
+              "porespace, your material is of type %d",
               singlemat->MaterialType());
+        }
       }
       // we have a coupling with scatra -> the scatra-material is the third material in the 2D/3D
       // element
@@ -355,15 +377,23 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       {
         const int matid = contscatramat->MatID(coupleddofs_cont_[idof]);
         Teuchos::RCP<MAT::Material> singlemat = contscatramat->MaterialById(matid);
+
+        // safety check
+        if (singlemat->MaterialType() != INPAR::MAT::m_scatra_multiporo_volfrac &&
+            singlemat->MaterialType() != INPAR::MAT::m_scatra_multiporo_fluid)
+        {
+          dserror(
+              "You can only couple MAT::ScatraMatMultiPoroVolFrac or MAT::ScatraMatMultiPoroFluid, "
+              "your material is of type %d",
+              singlemat->MaterialType());
+        }
+
         if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_volfrac)
         {
           const Teuchos::RCP<const MAT::ScatraMatMultiPoroVolFrac>& poromat =
               Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroVolFrac>(singlemat);
           volfracpressid_[idof] = poromat->PhaseID() + multiphasemat->NumVolFrac();
         }
-        else
-          dserror("You can only couple MAT::ScatraMatMultiPoroVolFrac, your material is of type %d",
-              singlemat->MaterialType());
       }
       // get the artery scatra-material
       if (element1_->Material(0)->MaterialType() == INPAR::MAT::m_matlist)
@@ -1276,6 +1306,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     }  //! constant_part_evaluated_ or !evaluate_in_ref_config_
 
     UpdateGPTSNTPStiff(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
+    CheckValidVolumeFractionPressureCoupling(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
     EvaluateGPTSNTPForce(
         *forcevec1, *forcevec2, *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
   }
@@ -1331,6 +1362,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   }  //! constant_part_evaluated_ or !evaluate_in_ref_config_
 
   UpdateGPTSNTPStiff(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
+  //! safety check for coupling with additional porous network (= Artery coupling)
+  if (coupling_element_type_ == "ARTERY")
+    CheckValidVolumeFractionPressureCoupling(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
   EvaluateGPTSNTPForce(*forcevec1, *forcevec2, *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
 }
 
@@ -1740,38 +1774,55 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   stiffmat12.Update(1.0, GPTS_NTP_stiffmat12_, 0.0);
   stiffmat21.Update(1.0, GPTS_NTP_stiffmat21_, 0.0);
   stiffmat22.Update(1.0, GPTS_NTP_stiffmat22_, 0.0);
+}
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont,
+    int dim>
+void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
+    dim>::CheckValidVolumeFractionPressureCoupling(LINALG::SerialDenseMatrix& stiffmat11,
+    LINALG::SerialDenseMatrix& stiffmat12, LINALG::SerialDenseMatrix& stiffmat21,
+    LINALG::SerialDenseMatrix& stiffmat22)
+{
   for (int idof = 0; idof < numcoupleddofs_; idof++)
   {
-    // this coupling is only possible if we also have an element with a valid volume fraction
-    // pressure, i.e., if we also have a smeared representation of the neovasculature at this
-    // point if not ---> corresponding matrices are set to zero
     if (!variablemanager_->ElementHasValidVolFracPressure(
             volfracpressid_[idof] - numfluidphases_ - numvolfrac_))
     {
       // reset to zero for this dof
       for (unsigned int i = 0; i < numnodesart_; i++)
+      {
         for (unsigned int j = 0; j < numnodesart_; j++)
           stiffmat11(i * numdof_art_ + coupleddofs_art_[idof],
               j * numdof_art_ + coupleddofs_art_[idof]) = 0.0;
+      }
 
       for (unsigned int i = 0; i < numnodesart_; i++)
+      {
         for (unsigned int j = 0; j < numnodescont_; j++)
           stiffmat12(i * numdof_art_ + coupleddofs_art_[idof],
               j * numdof_cont_ + coupleddofs_cont_[idof]) = 0.0;
+      }
 
       for (unsigned int i = 0; i < numnodescont_; i++)
+      {
         for (unsigned int j = 0; j < numnodesart_; j++)
           stiffmat21(i * numdof_cont_ + coupleddofs_cont_[idof],
               j * numdof_art_ + coupleddofs_art_[idof]) = 0.0;
+      }
 
       for (unsigned int i = 0; i < numnodescont_; i++)
+      {
         for (unsigned int j = 0; j < numnodescont_; j++)
           stiffmat22(i * numdof_cont_ + coupleddofs_cont_[idof],
               j * numdof_cont_ + coupleddofs_cont_[idof]) = 0.0;
+      }
     }
   }
 }
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

@@ -66,7 +66,7 @@ namespace POROMULTIPHASESCATRA
         const Teuchos::ParameterList& fluidcouplingparams, const std::vector<int>& coupleddofs_cont,
         const std::vector<int>& coupleddofs_art, const std::vector<std::vector<int>>& scale_vec,
         const std::vector<std::vector<int>>& funct_vec, const std::string condnames,
-        const std::string couplingtype = "", const int eta_ntp = 0) = 0;
+        const double penalty, const std::string couplingtype = "", const int eta_ntp = 0) = 0;
 
     //! query if pair active
     virtual bool IsActive() = 0;
@@ -166,7 +166,7 @@ namespace POROMULTIPHASESCATRA
         const Teuchos::ParameterList& fluidcouplingparams, const std::vector<int>& coupleddofs_cont,
         const std::vector<int>& coupleddofs_art, const std::vector<std::vector<int>>& scale_vec,
         const std::vector<std::vector<int>>& funct_vec, const std::string condname,
-        const std::string couplingtype = "", const int eta_ntp = 0) override;
+        const double penalty, const std::string couplingtype = "", const int eta_ntp = 0) override;
 
     //! query if pair active
     bool IsActive() override { return isactive_; }
@@ -449,6 +449,15 @@ namespace POROMULTIPHASESCATRA
         LINALG::SerialDenseMatrix& stiffmat12, LINALG::SerialDenseMatrix& stiffmat21,
         LINALG::SerialDenseMatrix& stiffmat22);
 
+    /**
+     * \brief coupling to additional porous network is only possible if we also have an
+     * element with a valid volume fraction pressure, i.e., if we also have a smeared representation
+     * of the neovasculature at this point if not ---> corresponding matrices are set to zero
+     */
+    void CheckValidVolumeFractionPressureCoupling(LINALG::SerialDenseMatrix& stiffmat11,
+        LINALG::SerialDenseMatrix& stiffmat12, LINALG::SerialDenseMatrix& stiffmat21,
+        LINALG::SerialDenseMatrix& stiffmat22);
+
     //! update the D, M and Kappa for MP
     void UpdateDMKappa(LINALG::SerialDenseMatrix& D_ele, LINALG::SerialDenseMatrix& M_ele,
         LINALG::SerialDenseVector& Kappa_ele);
@@ -526,9 +535,9 @@ namespace POROMULTIPHASESCATRA
     //! derivatives of the diameter function
     std::vector<double> diamderivs_;
 
-    //! numdofs of artery element
-    int numdof_cont_;
     //! numdofs of 2D/3D element
+    int numdof_cont_;
+    //! numdofs of artery element
     int numdof_art_;
     //! number of dofs * number of nodes of artery element
     int dim1_;

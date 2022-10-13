@@ -3,10 +3,11 @@
 ==================================================================
 -------------------------------------------------------------TITLE
 Test for node-to-point (NTP) coupling (flow and scalar transport) 
-between 1D arteries and 3D PoroMultiphaseScatra-Framework with fixed structure.
+between 1D arteries, 1D airways and corresponding phases in the 
+3D PoroMultiphaseScatra-Framework with fixed structure.
 ------------------------------------------------------PROBLEM SIZE
-//ELEMENTS    31
-//NODES       80
+//ELEMENTS    34
+//NODES       84
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Multiphase_Poroelasticity_ScaTra
@@ -14,9 +15,9 @@ RESTART                         0
 ----------------------------------------------------------POROMULTIPHASESCATRA DYNAMIC
 RESULTSEVRY                     2
 RESTARTEVRY                     3
-NUMSTEP                         10
-MAXTIME                         5.0
-TIMESTEP                        0.01
+NUMSTEP                         25
+MAXTIME                         2.5
+TIMESTEP                        0.1
 COUPALGO                        twoway_monolithic
 ARTERY_COUPLING                 yes
 ----------------------------------POROMULTIPHASESCATRA DYNAMIC/MONOLITHIC
@@ -40,10 +41,7 @@ FLUX_PROJ_METHOD                none
 FLUX_PROJ_SOLVER                2
 -----------------------------------POROFLUIDMULTIPHASE DYNAMIC/ARTERY COUPLING
 ARTERY_COUPLING_METHOD          NTP
-PENALTY 			            1.0e3
 EVALUATE_IN_REF_CONFIG          yes
-COUPLEDDOFS_ART                 1
-COUPLEDDOFS_PORO                3
 SCALEREAC_ART                   0
 REACFUNCT_ART                   0
 SCALEREAC_CONT                  0 0 0
@@ -58,9 +56,9 @@ LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
 THETA                           1.0
-NUMSTEP                         10
-MAXTIME                         4.0
-TIMESTEP                        0.01
+NUMSTEP                         25
+MAXTIME                         2.5
+TIMESTEP                        0.1
 VELOCITYFIELD                   zero
 INITIALFIELD                    field_by_condition
 INITFUNCNO                      -1
@@ -71,24 +69,21 @@ CONVFORM                        convective
 ASSUGRDIFF                      no
 CONSISTENCY                     no
 DEFINITION_ASSGD                artificial_linear
-DEFINITION_TAU                  Zero
+DEFINITION_TAU                  Franca_Valentin
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 STABTYPE                        no_stabilization
 SUGRVEL                         no
 ---------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-ITEMAX                          10
+ITEMAX                          100
 CONVTOL                         1e-8
 ABSTOLRES                       -1
 -----------------------------------SCALAR TRANSPORT DYNAMIC/ARTERY COUPLING
 ARTERY_COUPLING_METHOD          NTP
-PENALTY 			            10
-COUPLEDDOFS_ARTSCATRA           1
-COUPLEDDOFS_SCATRA              1
 SCALEREAC_ART                   0
 REACFUNCT_ART                   0
-SCALEREAC_CONT                  0
-REACFUNCT_CONT                  0
+SCALEREAC_CONT                  0 0
+REACFUNCT_CONT                  0 0
 ------------------------------------------------------------ARTERIAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Stationary
@@ -96,129 +91,173 @@ SOLVESCATRA                     yes
 INITIALFIELD                    field_by_condition
 --------------------------------------------------------------------SOLVER 1
 NAME                            solver
-SOLVER                          UMFPACK
+SOLVER                          Superlu
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.2 NUMMAT 3 MATIDS 12 13 14 NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE 1 NUMREAC 1 REACIDS 50 END
-MAT 50 MAT_FluidPoroSingleReaction NUMSCAL 1 TOTALNUMDOF 3 NUMVOLFRAC 1 SCALE 1 1 1 COUPLING scalar_by_function FUNCTID 4
+MAT 1 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.2e-3 NUMMAT 3 MATIDS 12 13 14 NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE 1 NUMREAC 1 REACIDS 50 END
+MAT 50 MAT_FluidPoroSingleReaction NUMSCAL 2 TOTALNUMDOF 3 NUMVOLFRAC 1 SCALE 1 1 1 COUPLING scalar_by_function FUNCTID 4
 
 MAT 2 MAT_StructPoro MATID 20 POROLAWID 200 INITPOROSITY 0.8
 MAT 20 MAT_Struct_StVenantKirchhoff YOUNG 0.73 NUE 0.3 DENS 1.0e-6
 MAT 200 MAT_PoroLawDensityDependent DENSITYLAWID 202
 MAT 202 MAT_PoroDensityLawExp BULKMODULUS 1e+15
 
+
 MAT 12 MAT_FluidPoroSinglePhase DOFTYPEID 121 VISCOSITYLAWID 124 DENSITYLAWID 122 DENSITY 1.0e-9 RELPERMEABILITYLAWID 125
 MAT 121 MAT_FluidPoroSinglePhaseDofPressure PHASELAWID 123
-MAT 122 MAT_PoroDensityLawExp BULKMODULUS 1.0e12 
+MAT 122 MAT_PoroDensityLawExp BULKMODULUS 1.0e12 // incompressible 
 MAT 123 MAT_PhaseLawConstraint
 MAT 124 MAT_FluidPoroViscosityLawConstant VALUE 1.5e-8
 MAT 125 MAT_FluidPoroRelPermeabilityLawConstant VALUE 1.0
 
 MAT 13 MAT_FluidPoroSingleVolFrac DENSITY 1.03e-6 DIFFUSIVITY 1.0 AddScalarDependentFlux NO 
-MAT 14 MAT_FluidPoroVolFracPressure PERMEABILITY 0.15e-6 VISCOSITYLAWID 141
-MAT 141 MAT_FluidPoroViscosityLawConstant VALUE 0.004e-3
+MAT 14 MAT_FluidPoroVolFracPressure PERMEABILITY 0.15e-3 VISCOSITYLAWID 141
+MAT 141 MAT_FluidPoroViscosityLawConstant VALUE 4.0e-6
 
-MAT 3 MAT_CNST_ART VISCOSITY 0.004e-3 DENS 1.03e-6 YOUNG 400.0 NUE 0.5 TH 1.630 PEXT1 0.0 PEXT2 0.0 
+MAT 3 MAT_CNST_ART VISCOSITY 4.0e-6 DENS 1.03e-6 YOUNG 400.0 NUE 0.5 TH 1.630 PEXT1 0.0 PEXT2 0.0 // 1D artery and vein
 
-MAT 6 MAT_scatra DIFFUSIVITY 2.18e3 REACOEFF 0 SCNUM 0 DENSIFICATION 0 
+MAT 4 MAT_CNST_ART VISCOSITY 1.5e-8 DENS 1.0e-9 YOUNG 400.0 NUE 0.5 TH 1.630 PEXT1 0.0 PEXT2 0.0 // 1D airway
 
-MAT 5 MAT_matlist LOCAL No NUMMAT 1 MATIDS 301 END
-MAT 301 MAT_scatra_multiporo_volfrac PHASEID 1 DIFFUSIVITY 2.18e3 
+MAT 6 MAT_scatra DIFFUSIVITY 2.18e2 REACOEFF 0 SCNUM 0 DENSIFICATION 0 // Oxy in Blood
+
+MAT 7 MAT_scatra DIFFUSIVITY 17.6e2 REACOEFF 0 SCNUM 0 DENSIFICATION 0 // Oxy in Air
+
+
+MAT 5 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 301 302 NUMREAC 1 REACIDS 401 END
+MAT 301 MAT_scatra_multiporo_fluid PHASEID 0 DIFFUSIVITY 17.6e2 // Oxy in Air
+MAT 302 MAT_scatra_multiporo_volfrac PHASEID 1 DIFFUSIVITY 2.18e2 // Oxy in Blood
+MAT 401 MAT_scatra_reaction NUMSCAL 2 STOICH -1 1 REACCOEFF 1.0 COUPLING by_function ROLE 10 10
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD porofluid TAR_MAT 1
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 5
 SRC_FIELD artery SRC_MAT 3 TAR_FIELD artery_scatra TAR_MAT 6
+SRC_FIELD artery SRC_MAT 4 TAR_FIELD artery_scatra TAR_MAT 7
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1.0
+COMPONENT 0 FUNCTION 0.0
 COMPONENT 1 FUNCTION 0.1
-COMPONENT 2 FUNCTION 1.15
+COMPONENT 2 FUNCTION 1.25
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION 0.19
+COMPONENT 0 FUNCTION 1.883e-4
 ----------------------------------------------------------------------FUNCT4
 VARFUNCTION 0.0
 ----------------------------------------------------------------------FUNCT5
 COMPONENT 0 FUNCTION 1.3
 ----------------------------------------------------------------------FUNCT6
-COMPONENT 0 FUNCTION 1.0
+COMPONENT 0 FUNCTION 1.2
+----------------------------------------------------------------------FUNCT7
+COMPONENT 0 FUNCTION 0.19
+----------------------------------------------------------------------FUNCT8
+COMPONENT 0 FUNCTION 0.0
+----------------------------------------------------------------------FUNCT9
+COMPONENT 0 FUNCTION 2.5e-1*(1-cos(pi*t*0.4))
+----------------------------------------------------------------------FUNCT10
+POROMULTIPHASESCATRA_FUNCTION LUNG_OXYGEN_EXCHANGE_LAW NUMPARAMS 9 PARAMS rho_oxy 1.429e-9 DiffAdVTLC 5.38 alpha_oxy 2.1e-4 rho_air 1.0e-9 rho_bl 1.03e-6 n 3 P_oB50 3.6 NC_Hb 0.25 P_atmospheric 101.3
 ----------------------------------------------------------RESULT DESCRIPTION
-ARTNET DIS artery NODE 74 QUANTITY pressure VALUE  1.29996280074673565e+00 TOLERANCE 1e-08
-ARTNET DIS artery NODE 78 QUANTITY pressure VALUE  1.00001859962663242e+00 TOLERANCE 1e-08
-POROFLUIDMULTIPHASE DIS porofluid NODE 18 QUANTITY phi3 VALUE  1.27004493603703761e+00 TOLERANCE 1e-08
-POROFLUIDMULTIPHASE DIS porofluid NODE 23 QUANTITY phi3 VALUE  1.31430854383301221e+00 TOLERANCE 1e-08
-POROFLUIDMULTIPHASE DIS porofluid NODE 24 QUANTITY phi3 VALUE  1.31430854383301221e+00 TOLERANCE 1e-08
-POROFLUIDMULTIPHASE DIS porofluid NODE 27 QUANTITY phi3 VALUE  1.06043189130254678e+00 TOLERANCE 1e-08
-SCATRA DIS artery_scatra NODE 75 QUANTITY phi1 VALUE  1.74656565694645771e-01 TOLERANCE 1e-10
-SCATRA DIS artery_scatra NODE 79 QUANTITY phi1 VALUE  1.41601265707875512e-02 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 46 QUANTITY phi1 VALUE  3.03423380024064500e-02 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 57 QUANTITY phi1 VALUE  3.11214037839557221e-02 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 38 QUANTITY phi1 VALUE  2.59237979270096550e-02 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 49 QUANTITY phi1 VALUE  2.57957519047334188e-02 TOLERANCE 1e-10
+ARTNET DIS artery NODE 74 QUANTITY pressure VALUE  1.29197980183088035e+00 TOLERANCE 1e-08
+ARTNET DIS artery NODE 78 QUANTITY pressure VALUE  1.20401009908456014e+00 TOLERANCE 1e-08
+ARTNET DIS artery NODE 82 QUANTITY pressure VALUE  3.70258528624605177e-01 TOLERANCE 1e-08
+POROFLUIDMULTIPHASE DIS porofluid NODE 23 QUANTITY phi3 VALUE  1.28332288030463526e+00 TOLERANCE 1e-08
+POROFLUIDMULTIPHASE DIS porofluid NODE 47 QUANTITY phi3 VALUE  1.28044729802338120e+00 TOLERANCE 1e-08
+POROFLUIDMULTIPHASE DIS porofluid NODE 7 QUANTITY phi3 VALUE  1.22735071162066522e+00 TOLERANCE 1e-08
+POROFLUIDMULTIPHASE DIS porofluid NODE 39 QUANTITY phi3 VALUE  1.22858680672452092e+00 TOLERANCE 1e-08
+POROFLUIDMULTIPHASE DIS porofluid NODE 17 QUANTITY phi1 VALUE  1.44808706173953833e-01 TOLERANCE 1e-08
+POROFLUIDMULTIPHASE DIS porofluid NODE 9 QUANTITY phi1 VALUE  1.38990489100418974e-01 TOLERANCE 1e-08
+SCATRA DIS artery_scatra NODE 75 QUANTITY phi1 VALUE  2.43638935777759630e-04 TOLERANCE 1e-08
+SCATRA DIS artery_scatra NODE 79 QUANTITY phi1 VALUE  2.66663003632278714e-04 TOLERANCE 1e-08
+SCATRA DIS artery_scatra NODE 83 QUANTITY phi1 VALUE  1.89995406337145456e-01 TOLERANCE 1e-08
+SCATRA DIS scatra NODE 35 QUANTITY phi2 VALUE  2.50014283744773129e-04 TOLERANCE 1e-08
+SCATRA DIS scatra NODE 59 QUANTITY phi2 VALUE  2.48180675340286703e-04 TOLERANCE 1e-08
+SCATRA DIS scatra NODE 27 QUANTITY phi2 VALUE  2.66035945844635656e-04 TOLERANCE 1e-08
+SCATRA DIS scatra NODE 51 QUANTITY phi2 VALUE  2.66015315617453268e-04 TOLERANCE 1e-08
+SCATRA DIS scatra NODE 19 QUANTITY phi1 VALUE  1.89835936105365921e-01 TOLERANCE 1e-08
+SCATRA DIS scatra NODE 11 QUANTITY phi1 VALUE  1.89814931602373282e-01 TOLERANCE 1e-08
 ------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 14
+NDPOINT 22
 NDLINE  0
-NDSURF  6
+NDSURF  7
 NDVOL   4
 -------------------------------DESIGN SURF PORO NEUMANN CONDITIONS
 DSURF  6
 // backsurf
-E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // frontsurf
-E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // leftsurf
-E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // rightsurf
 E 4 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // topsurf
-E 5 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 5 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // bottomsurf
-E 6 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 6 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+-------------------------------DESIGN SURF PORO DIRICH CONDITIONS
+DSURF  1
+// rightsurf
+E 4 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT 2
+DPOINT 3
 // vertex_proximal_artery
 E 1 - NUMDOF 1 ONOFF 1 VAL 1.3 FUNCT 0
 // vertex_proximal_vein
-E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 0
---------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
-DPOINT 1
-// vertex_proximal_artery
-E 1 - NUMDOF 1 ONOFF 1 VAL 0.19 FUNCT 0
+E 2 - NUMDOF 1 ONOFF 1 VAL 1.2 FUNCT 0
+// vertex_proximal_airway
+E 3 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 9
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   1
 // vol_porousdomain
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
---------------------------DESIGN 1D ARTERY TO POROFLUID NONCONF COUPLING CONDITIONS
-DPOINT 4
+--------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
+DPOINT 2
+// vertex_proximal_artery
+E 1 - NUMDOF 1 ONOFF 1 VAL 1.883e-4 FUNCT 0
+// vertex_proximal_airway
+E 3 - NUMDOF 1 ONOFF 1 VAL 0.19 FUNCT 0
+--------------------------DESIGN 1D ARTERY/AIRWAY TO POROFLUID NONCONF COUPLING CONDITIONS
+DPOINT 6
 // vertex_distal_artery_negX
-E 3 - ARTERY
+E 4 - ARTERY COUPLEDDOF_REDUCED 1 COUPLEDDOF_PORO 3 PENALTY 1.0e3
 // vertex_distal_artery_posX
-E 4 - ARTERY
-// vertex_distal_vein_negX
-E 5 - ARTERY
+E 5 - ARTERY COUPLEDDOF_REDUCED 1 COUPLEDDOF_PORO 3 PENALTY 1.0e3
+// vertex_distal_vein_negX 
+E 6 - ARTERY COUPLEDDOF_REDUCED 1 COUPLEDDOF_PORO 3 PENALTY 1.0e3
 // vertex_distal_vein_posX
-E 6 - ARTERY
---------------------------DESIGN 1D ARTERY TO SCATRA NONCONF COUPLING CONDITIONS
-DPOINT 4
+E 7 - ARTERY COUPLEDDOF_REDUCED 1 COUPLEDDOF_PORO 3 PENALTY 1.0e3
+// vertex_distal_airway_posY
+E 8 - AIRWAY COUPLEDDOF_REDUCED 1 COUPLEDDOF_PORO 1 PENALTY 1.0e5
+// vertex_distal_airway_negY
+E 9 - AIRWAY COUPLEDDOF_REDUCED 1 COUPLEDDOF_PORO 1 PENALTY 1.0e5
+--------------------------DESIGN 1D ARTERY/AIRWAY TO SCATRA NONCONF COUPLING CONDITIONS
+DPOINT 6
 // vertex_distal_artery_negX
-E 3 - ARTERY
+E 4 - ARTERY COUPLEDDOF_REDUCED 1 COUPLEDDOF_PORO 2 PENALTY 1.0e2
 // vertex_distal_artery_posX
-E 4 - ARTERY
+E 5 - ARTERY COUPLEDDOF_REDUCED 1 COUPLEDDOF_PORO 2 PENALTY 1.0e2
 // vertex_distal_vein_negX
-E 5 - ARTERY
+E 6 - ARTERY COUPLEDDOF_REDUCED 1 COUPLEDDOF_PORO 2 PENALTY 1.0e2
 // vertex_distal_vein_posX
-E 6 - ARTERY
----------------------------------DESIGN VOL PORO DIRICH CONDITIONS
-DVOL   1
+E 7 - ARTERY COUPLEDDOF_REDUCED 1 COUPLEDDOF_PORO 2 PENALTY 1.0e2
+// vertex_distal_airway_posY
+E 8 - AIRWAY COUPLEDDOF_REDUCED 1 COUPLEDDOF_PORO 1 PENALTY 1.0e3
+// vertex_distal_airway_negY
+E 9 - AIRWAY COUPLEDDOF_REDUCED 1 COUPLEDDOF_PORO 1 PENALTY 1.0e3
+--------------------------------DESIGN VOL PORO DIRICH CONDITIONS
+DVOL  1
 // vol_porousdomain
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.1 0.0 FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.1 0.0 FUNCT 0 0 0
 -----------------------------DESIGN POINT INITIAL FIELD CONDITIONS
-DPOINT 3
+DPOINT 5
 // vertex_proximal_artery
 E 1 - ScaTra 3
 // vertex_proximal_artery
 E 1 - Artery 5
 // vertex_proximal_vein
 E 2 - Artery 6
+// vertex_proximal_airway
+E 3 - ScaTra 7
+// vertex_proximal_airway
+E 3 - Artery 8
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   2
 // vol_porousdomain
@@ -228,10 +267,13 @@ E 1 - ScaTra 2
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    73 DNODE 1
 NODE    77 DNODE 2
-NODE    75 DNODE 3
-NODE    76 DNODE 4
-NODE    79 DNODE 5
-NODE    80 DNODE 6
+NODE    81 DNODE 3
+NODE    75 DNODE 4
+NODE    76 DNODE 5
+NODE    79 DNODE 6
+NODE    80 DNODE 7
+NODE    83 DNODE 8
+NODE    84 DNODE 9
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    2 DSURFACE 1
 NODE    3 DSURFACE 1
@@ -507,6 +549,10 @@ NODE        77 COORD  0.0000000000000000e+00 -5.0000000000000000e+00  0.00000000
 NODE        78 COORD  0.0000000000000000e+00 -4.5000000000000000e+00  0.0000000000000000e+00
 NODE        79 COORD -2.5000000000000000e+00 -4.5000000000000000e+00  0.0000000000000000e+00
 NODE        80 COORD  2.5000000000000000e+00 -4.5000000000000000e+00  0.0000000000000000e+00
+NODE        81 COORD -5.0000000000000000e+00  0.0000000000000000e+00  0.0000000000000000e+00
+NODE        82 COORD -4.0000000000000000e+00  0.0000000000000000e+00  0.0000000000000000e+00
+NODE        83 COORD -3.5000000000000000e+00  2.5000000000000000e+00  0.0000000000000000e+00
+NODE        84 COORD -3.5000000000000000e+00 -2.5000000000000000e+00  0.0000000000000000e+00
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8POROSCATRA HEX8  1 2 3 4 5 6 7 8    MAT 2 KINEM nonlinear EAS none TYPE PoroMultiReac
    2 SOLIDH8POROSCATRA HEX8  4 3 9 10 8 7 11 12    MAT 2 KINEM nonlinear EAS none TYPE PoroMultiReac
@@ -540,5 +586,8 @@ NODE        80 COORD  2.5000000000000000e+00 -4.5000000000000000e+00  0.00000000
    29 ART LINE2  77 78    MAT 3 GP 3 TYPE PressureBased DIAM 0.5
    30 ART LINE2  78 79    MAT 3 GP 3 TYPE PressureBased DIAM 0.5
    31 ART LINE2  78 80    MAT 3 GP 3 TYPE PressureBased DIAM 0.5
+   32 ART LINE2  81 82    MAT 4 GP 3 TYPE PressureBased DIAM 0.5
+   33 ART LINE2  82 83    MAT 4 GP 3 TYPE PressureBased DIAM 0.5
+   34 ART LINE2  82 84    MAT 4 GP 3 TYPE PressureBased DIAM 0.5
 ---------------------------------------------------------------END
 // END
