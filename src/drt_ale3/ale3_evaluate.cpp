@@ -470,18 +470,6 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tria_stiffness(int node_p, int 
     //(O is local origin on plane pqr)
     xyze_dyn_tria(0, 1) = 0.0;
     p.Update(xyze_dyn_tria(1, 2), local_y, 1, qp);
-#if 0
-    {
-      FILE* errfile = DRT::Problem::Instance()->ErrorFile()->Handle();
-
-      fprintf(errfile,"\n");
-      fprintf(errfile,"rp=matrix([% e,% e,% e]).transpose()\n",rp(0),rp(1),rp(2));
-      fprintf(errfile,"pq=matrix([% e,% e,% e]).transpose()\n",pq(0),pq(1),pq(2));
-      fprintf(errfile,"sq=matrix([% e,% e,% e]).transpose()\n",sq(0),sq(1),sq(2));
-      fprintf(errfile,"p=matrix([% e,% e,% e]).transpose()\n",p(0),p(1),p(2));
-      fflush(errfile);
-    }
-#endif
 
     ///// solve xyze_dyn_tria(1,1) * local_y = p + lambda * (-rp)
     double d;
