@@ -131,10 +131,10 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain()
       "action", SCATRA::Action::calc_flux_domain, params);
 
   // number of dofset for velocity-related dofs
-  params.set<int>("ndsvel", nds_vel_);
+  params.set<int>("ndsvel", NdsVel());
 
   // number of dofset for displacement-related dofs in ALE cases
-  if (isale_) params.set<int>("ndsdisp", nds_disp_);
+  if (isale_) params.set<int>("ndsdisp", NdsDisp());
 
   // provide discretization with state vector
   discret_->ClearState();
@@ -258,10 +258,10 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
       // provide velocity field and potentially acceleration/pressure field
       // (export to column map necessary for parallel evaluation)
-      eleparams.set<int>("ndsvel", nds_vel_);
+      eleparams.set<int>("ndsvel", NdsVel());
 
       // provide displacement field in case of ALE
-      if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
+      if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
 
       // clear state
       discret_->ClearState();
@@ -322,10 +322,10 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
     // provide velocity field
     // (export to column map necessary for parallel evaluation)
-    params.set<int>("ndsvel", nds_vel_);
+    params.set<int>("ndsvel", NdsVel());
 
     // provide displacement field in case of ALE
-    if (isale_) params.set<int>("ndsdisp", nds_disp_);
+    if (isale_) params.set<int>("ndsdisp", NdsDisp());
 
     // call loop over boundary elements and add integrated fluxes to trueresidual_
     discret_->EvaluateCondition(params, trueresidual_, "ScaTraFluxCalc");
@@ -391,7 +391,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     Teuchos::ParameterList params;
 
     // provide displacement field in case of ALE
-    if (isale_) params.set<int>("ndsdisp", nds_disp_);
+    if (isale_) params.set<int>("ndsdisp", NdsDisp());
 
     // initialize variable for value of boundary integral
     double boundaryint(-1.);
@@ -662,8 +662,8 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
   Teuchos::ParameterList eleparams;
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_initial_time_deriv, eleparams);
-  eleparams.set<int>("ndsvel", nds_vel_);
-  if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
+  eleparams.set<int>("ndsvel", NdsVel());
+  if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
   AddProblemSpecificParametersAndVectors(eleparams);
 
   // add state vectors according to time integration scheme
@@ -842,9 +842,9 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
       "action", SCATRA::BoundaryAction::calc_fs3i_surface_permeability, condparams);
 
   // provide displacement field in case of ALE
-  if (isale_) condparams.set<int>("ndsdisp", nds_disp_);
+  if (isale_) condparams.set<int>("ndsdisp", NdsDisp());
 
-  condparams.set<int>("ndswss", nds_wss_);
+  condparams.set<int>("ndswss", NdsWallShearStress());
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -870,7 +870,7 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
   discret_->SetState("MembraneConcentration", membrane_conc_);
 
   // test if all necessary ingredients had been set
-  if (not discret_->HasState(nds_wss_, "WallShearStress"))
+  if (not discret_->HasState(NdsWallShearStress(), "WallShearStress"))
     dserror(
         "WSS must already been set into one of the secondary dofset before calling this function!");
 
@@ -901,10 +901,10 @@ void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
       "action", SCATRA::BoundaryAction::calc_fps3i_surface_permeability, condparams);
 
   // provide displacement field in case of ALE
-  if (isale_) condparams.set<int>("ndsdisp", nds_disp_);
+  if (isale_) condparams.set<int>("ndsdisp", NdsDisp());
 
-  condparams.set<int>("ndswss", nds_wss_);
-  condparams.set<int>("ndspres", nds_pres_);
+  condparams.set<int>("ndswss", NdsWallShearStress());
+  condparams.set<int>("ndspres", NdsPressure());
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -913,11 +913,11 @@ void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
   AddTimeIntegrationSpecificVectors();
 
   // test if all necessary ingredients for the second Kedem-Katchalsky equations had been set
-  if (not discret_->HasState(nds_wss_, "WallShearStress"))
+  if (not discret_->HasState(NdsWallShearStress(), "WallShearStress"))
     dserror(
         "WSS must already been set into one of the secondary dofset before calling this function!");
 
-  if (not discret_->HasState(nds_pres_, "Pressure"))
+  if (not discret_->HasState(NdsPressure(), "Pressure"))
   {
     dserror(
         "Pressure must already been set into one of the secondary dofset before calling this "
@@ -1000,7 +1000,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
   eleparams.set<Teuchos::RCP<Epetra_MultiVector>>("normal vectors", normal);
 
   // provide displacement field in case of ALE
-  if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
+  if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
 
   // loop over all intended types of conditions
   for (const auto& condname : condnames)
@@ -1097,8 +1097,8 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
 
   // provide velocity field and potentially acceleration/pressure field
   // as well as displacement field in case of ALE
-  condparams.set<int>("ndsvel", nds_vel_);
-  if (isale_) condparams.set<int>("ndsdisp", nds_disp_);
+  condparams.set<int>("ndsvel", NdsVel());
+  if (isale_) condparams.set<int>("ndsdisp", NdsDisp());
 
   // clear state
   discret_->ClearState();
@@ -1132,7 +1132,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
       "action", SCATRA::BoundaryAction::calc_convective_heat_transfer, condparams);
 
   // provide displacement field in case of ALE
-  if (isale_) condparams.set<int>("ndsdisp", nds_disp_);
+  if (isale_) condparams.set<int>("ndsdisp", NdsDisp());
 
   // clear state
   discret_->ClearState();
@@ -1273,12 +1273,12 @@ void SCATRA::ScaTraTimIntImpl::OutputToGmsh(const int step, const double time) c
 
     // extract convective velocity from discretization
     Teuchos::RCP<const Epetra_Vector> convel =
-        discret_->GetState(nds_vel_, "convective velocity field");
+        discret_->GetState(NdsVel(), "convective velocity field");
     if (convel == Teuchos::null)
       dserror("Cannot extract convective velocity field from discretization");
 
     // draw vector field 'Convective Velocity' for every element
-    IO::GMSH::VectorFieldDofBasedToGmsh(discret_, convel, gmshfilecontent, nds_vel_);
+    IO::GMSH::VectorFieldDofBasedToGmsh(discret_, convel, gmshfilecontent, NdsVel());
     gmshfilecontent << "};" << std::endl;
   }
   gmshfilecontent.close();
@@ -1465,7 +1465,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
       "action", SCATRA::Action::calc_subgrid_diffusivity_matrix, eleparams);
 
   // provide displacement field in case of ALE
-  if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
+  if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
 
   // add element parameters according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
@@ -1702,7 +1702,7 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
         "action", SCATRA::Action::calc_mean_Cai, myparams);
 
     // add number of dof-set associated with velocity related dofs
-    myparams.set<int>("ndsvel", nds_vel_);
+    myparams.set<int>("ndsvel", NdsVel());
 
     // add element parameters according to time-integration scheme
     AddTimeIntegrationSpecificVectors();
@@ -2432,7 +2432,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
       }
 
       // provide displacement field in case of ALE
-      if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
+      if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
 
       // set vector values needed by elements
       discret_->ClearState();
@@ -2524,7 +2524,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
         eleparams.set<int>("error function number", errorfunctnumber);
 
         // provide displacement field in case of ALE
-        if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
+        if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
 
         // set state vector needed by elements
         discret_->ClearState();
@@ -2703,8 +2703,8 @@ void SCATRA::ScaTraTimIntImpl::EvaluateInitialTimeDerivative(
   Teuchos::ParameterList eleparams;
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_initial_time_deriv, eleparams);
-  eleparams.set<int>("ndsvel", nds_vel_);
-  eleparams.set<int>("ndsdisp", nds_disp_);
+  eleparams.set<int>("ndsvel", NdsVel());
+  eleparams.set<int>("ndsdisp", NdsDisp());
   AddProblemSpecificParametersAndVectors(eleparams);
 
   // add state vectors according to time integration scheme
@@ -2736,10 +2736,10 @@ void SCATRA::OutputScalarsStrategyBase::PrepareEvaluate(
   eleparams.set("calc_grad_phi", output_mean_grad_);
 
   // provide number of dof set for mesh displacements in case of ALE
-  if (scatratimint->isale_) eleparams.set<int>("ndsdisp", scatratimint->nds_disp_);
+  if (scatratimint->isale_) eleparams.set<int>("ndsdisp", scatratimint->NdsDisp());
 
   // provide number of dof set for transport veloctiy
-  eleparams.set<int>("ndsvel", scatratimint->nds_vel_);
+  eleparams.set<int>("ndsvel", scatratimint->NdsVel());
 }
 
 /*----------------------------------------------------------------------------------*

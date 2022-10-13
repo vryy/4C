@@ -255,8 +255,23 @@ namespace SCATRA
     //! setup natural convection
     virtual void SetupNatConv();
 
+    //! set number of dofset to write displacement values on
+    void SetNumberOfDofSetDisplacement(int nds_disp) { nds_disp_ = nds_disp; }
+
     //! set number of dofset to write micro scale values on
-    void SetNodeSetMicroScale(int nds_micro) { nds_micro_ = nds_micro; }
+    void SetNumberOfDofSetMicroScale(int nds_micro) { nds_micro_ = nds_micro; }
+
+    //! set number of dofset to write pressure values on
+    void SetNumberOfDofSetPressure(int nds_pressure) { nds_pres_ = nds_pressure; }
+
+    //! set number of dofset to write vbelocity values on
+    void SetNumberOfDofSetVelocity(int nds_velocity) { nds_vel_ = nds_velocity; }
+
+    //! set number of dofset to write wall shear stress values on
+    void SetNumberOfDofSetWallShearStress(int nds_wall_shear_stress)
+    {
+      nds_wss_ = nds_wall_shear_stress;
+    }
 
     //! store reaction coefficient for macro-micro coupling with deforming macro dis
     void SetMacroMicroReaCoeff(const double macro_micro_rea_coeff)
@@ -402,14 +417,20 @@ namespace SCATRA
     //! return Krylov projector
     Teuchos::RCP<LINALG::KrylovProjector> Projector() { return projector_; }
 
-    //! return number of dofset associated with velocity dofs
-    int NdsVel() { return nds_vel_; }
-
     //! return number of dofset associated with displacement dofs
-    int NdsDisp() override { return nds_disp_; }
+    int NdsDisp() const override { return nds_disp_; }
 
-    //! number of dofset to store nodal micro quantities on macro dis
+    //! return number of dofset to store nodal micro quantities on macro dis
     int NdsMicro() const { return nds_micro_; }
+
+    //! return number of dofset associated with pressure dofs
+    int NdsPressure() const { return nds_pres_; }
+
+    //! return number of dofset associated with velocity dofs
+    int NdsVel() const { return nds_vel_; }
+
+    //! return number of dofset associated with wall shear stress dofs
+    int NdsWallShearStress() const { return nds_wss_; }
 
     //! return domain flux vector
     Teuchos::RCP<const Epetra_MultiVector> FluxDomain() const { return flux_domain_; };
@@ -1267,25 +1288,26 @@ namespace SCATRA
     //! mean concentration of micro discretization  on macro dis
     Teuchos::RCP<Epetra_Vector> phinp_micro_;
 
-    //! number of dofset associated with velocity related dofs
-    int nds_vel_;
-
+   private:
     //! number of dofset associated with displacement dofs
     int nds_disp_;
-
-    //! number of dofset associated with pressure dofs
-    int nds_pres_;
-
-    //! number of dofset associated with wall shear stress dofs
-    int nds_wss_;
 
     //! number of dofset to write micro scale values on
     int nds_micro_;
 
+    //! number of dofset associated with pressure dofs
+    int nds_pres_;
+
+    //! number of dofset associated with velocity related dofs
+    int nds_vel_;
+
+    //! number of dofset associated with wall shear stress dofs
+    int nds_wss_;
+
     /*========================================================================*/
     //! @name coefficients and related
     /*========================================================================*/
-
+   protected:
     //! subgrid-diffusivity(-scaling) vector
     Teuchos::RCP<Epetra_Vector> subgrdiff_;
 

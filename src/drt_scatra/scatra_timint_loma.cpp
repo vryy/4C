@@ -155,8 +155,8 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv()
   discret_->SetState("phinp", phin_);
 
   // provide numbers of dofsets associated with velocity and displacement dofs
-  eleparams.set<int>("ndsvel", nds_vel_);
-  if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
+  eleparams.set<int>("ndsvel", NdsVel());
+  if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
 
   // set parameters for element evaluation
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
@@ -253,7 +253,7 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialMass()
   eleparams.set("calc_grad_phi", false);
 
   // provide displacement field in case of ALE
-  if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
+  if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
 
   // evaluate integral of inverse temperature
   Teuchos::RCP<Epetra_SerialDenseVector> scalars =
@@ -298,7 +298,7 @@ void SCATRA::ScaTraTimIntLoma::ComputeThermPressureFromMassCons()
   eleparams.set("calc_grad_phi", false);
 
   // provide displacement field in case of ALE
-  if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
+  if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
 
   // evaluate integral of inverse temperature
   Teuchos::RCP<Epetra_SerialDenseVector> scalars =

@@ -270,7 +270,7 @@ void SCATRA::TimIntGenAlpha::DynamicComputationOfCs()
     {
       const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
       DynSmag_->ApplyFilterForDynamicComputationOfPrt(
-          phiaf_, 0.0, dirichtoggle, *extraparams_, nds_vel_);
+          phiaf_, 0.0, dirichtoggle, *extraparams_, NdsVel());
     }
     else
     {
@@ -287,7 +287,7 @@ void SCATRA::TimIntGenAlpha::DynamicComputationOfCv()
   if (turbmodel_ == INPAR::FLUID::dynamic_vreman)
   {
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
-    Vrem_->ApplyFilterForDynamicComputationOfDt(phiaf_, 0.0, dirichtoggle, *extraparams_, nds_vel_);
+    Vrem_->ApplyFilterForDynamicComputationOfDt(phiaf_, 0.0, dirichtoggle, *extraparams_, NdsVel());
   }
 }
 

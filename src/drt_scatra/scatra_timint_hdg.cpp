@@ -1387,7 +1387,7 @@ void SCATRA::TimIntHDG::AssembleRHS()
 
   // provide velocity field and potentially acceleration/pressure field
   // (export to column map necessary for parallel evaluation)
-  eleparams.set<int>("ndsvel", nds_vel_);
+  eleparams.set<int>("ndsvel", NdsVel());
 
   // set vector values needed by elements
   discret_->ClearState();

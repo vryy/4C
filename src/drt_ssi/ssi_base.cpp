@@ -794,7 +794,7 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
   ScaTraBaseAlgorithm()->Init(*scatratimeparams, SSI::UTILS::ModifyScaTraParams(scatraparams),
       problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), scatra_disname, isAle);
 
-  if (macro_scale_) ScaTraBaseAlgorithm()->ScaTraField()->SetNodeSetMicroScale(2);
+  if (macro_scale_) ScaTraBaseAlgorithm()->ScaTraField()->SetNumberOfDofSetMicroScale(2);
 
   // create and initialize scatra base algorithm for manifolds
   if (IsScaTraManifold())

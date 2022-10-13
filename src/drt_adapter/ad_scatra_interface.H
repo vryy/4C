@@ -54,7 +54,7 @@ namespace ADAPTER
     virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) = 0;
 
     //! return number of dofset associated with displacement dofs
-    virtual int NdsDisp() = 0;
+    virtual int NdsDisp() const = 0;
 
     //! return rcp ptr to neumann loads vector
     virtual Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr() = 0;

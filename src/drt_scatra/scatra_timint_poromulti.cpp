@@ -46,7 +46,7 @@ void SCATRA::ScaTraTimIntPoroMulti::SetL2FluxOfMultiFluid(
   if (nds_flux >= discret_->NumDofSets()) dserror("Too few dofsets on scatra discretization!");
 
   // store number of dof-set associated with velocity related dofs
-  nds_vel_ = nds_flux;
+  SetNumberOfDofSetVelocity(nds_flux);
 
   if (multiflux->NumVectors() % nsd_ != 0)
     dserror("Unexpected length of flux vector: %i", multiflux->NumVectors());
@@ -112,13 +112,13 @@ void SCATRA::ScaTraTimIntPoroMulti::SetSolutionFieldOfMultiFluid(
   // TODO: this is a hack to allow evaluation of initial time derivative
   //      with check nds_vel_ != -1 since in the case without L2- projection
   //      the velocity field is directly calculated at GPs with the Darcy eqn.
-  nds_vel_ = 1;
+  SetNumberOfDofSetVelocity(1);
 
   // store number of dof-set
-  nds_pres_ = nds_phi_fluid;
+  SetNumberOfDofSetPressure(nds_phi_fluid);
   // provide scatra discretization with fluid primary variable field
-  discret_->SetState(nds_pres_, "phinp_fluid", phinp_fluid);
-  discret_->SetState(nds_pres_, "phin_fluid", phin_fluid);
+  discret_->SetState(NdsPressure(), "phinp_fluid", phinp_fluid);
+  discret_->SetState(NdsPressure(), "phin_fluid", phin_fluid);
 }
 
 /*----------------------------------------------------------------------*
@@ -132,7 +132,7 @@ void SCATRA::ScaTraTimIntPoroMulti::AddProblemSpecificParametersAndVectors(
   // note: the velocity dof set is set by the standard time integrator
 
   // provide pressure field
-  params.set<int>("ndspres", nds_pres_);
+  params.set<int>("ndspres", NdsPressure());
   // provide pressure field
   params.set<bool>("L2-projection", L2_projection_);
 
@@ -172,7 +172,7 @@ void SCATRA::ScaTraTimIntPoroMulti::OutputState()
   // displacement field
   if (isale_)
   {
-    Teuchos::RCP<const Epetra_Vector> dispnp = discret_->GetState(nds_disp_, "dispnp");
+    Teuchos::RCP<const Epetra_Vector> dispnp = discret_->GetState(NdsDisp(), "dispnp");
     if (dispnp == Teuchos::null) dserror("Cannot extract displacement field from discretization");
 
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
@@ -183,7 +183,7 @@ void SCATRA::ScaTraTimIntPoroMulti::OutputState()
       DRT::Node* node = discret_->lRowNode(inode);
       for (int idim = 0; idim < nsd_; ++idim)
         (*dispnp_multi)[idim][inode] =
-            (*dispnp)[dispnp->Map().LID(discret_->Dof(nds_disp_, node, idim))];
+            (*dispnp)[dispnp->Map().LID(discret_->Dof(NdsDisp(), node, idim))];
     }
 
     output_->WriteVector("dispnp", dispnp_multi, IO::nodevector);

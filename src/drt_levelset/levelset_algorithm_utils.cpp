@@ -319,7 +319,7 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
 
   // extract convective velocity field
   Teuchos::RCP<const Epetra_Vector> convel =
-      discret_->GetState(nds_vel_, "convective velocity field");
+      discret_->GetState(NdsVel(), "convective velocity field");
   if (convel == Teuchos::null) dserror("Cannot get state vector convective velocity");
 
   Teuchos::RCP<Epetra_Vector> convel_new = Teuchos::rcp(new Epetra_Vector(*convel));
@@ -370,7 +370,7 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
               // get nodal values of velocity field from secondary dofset
               DRT::Element::LocationArray la(discret_->NumDofSets());
               adjelements[iele]->LocationVector(*discret_, la, false);
-              const std::vector<int>& lmvel = la[nds_vel_].lm_;
+              const std::vector<int>& lmvel = la[NdsVel()].lm_;
               std::vector<double> myconvel(lmvel.size());
 
               // extract local values from global vector
@@ -430,7 +430,7 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
     const int lnodeid = noderowmap->LID(gnodeid);
     DRT::Node* lnode = discret_->lRowNode(lnodeid);
 
-    std::vector<int> nodedofs = discret_->Dof(nds_vel_, lnode);
+    std::vector<int> nodedofs = discret_->Dof(NdsVel(), lnode);
 
     std::vector<double> myvel = iter->second;
     for (int index = 0; index < 3; ++index)
@@ -446,8 +446,8 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
   }
 
   // update velocity vectors
-  discret_->SetState(nds_vel_, "convective velocity field", convel_new);
-  discret_->SetState(nds_vel_, "velocity field", convel_new);
+  discret_->SetState(NdsVel(), "convective velocity field", convel_new);
+  discret_->SetState(NdsVel(), "velocity field", convel_new);
 
   return;
 }
@@ -467,17 +467,17 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
     IO::cout << "--- extension of flow field in interface region to entire domain" << IO::endl;
 
   Teuchos::RCP<const Epetra_Vector> convel_col =
-      discret_->GetState(nds_vel_, "convective velocity field");
+      discret_->GetState(NdsVel(), "convective velocity field");
   if (convel_col == Teuchos::null) dserror("Cannot get state vector convective velocity");
   Teuchos::RCP<Epetra_Vector> convel =
-      Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(nds_vel_), true));
+      Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(NdsVel()), true));
   LINALG::Export(*convel_col, *convel);
 
   // temporary vector for convective velocity (based on dofrowmap of standard (non-XFEM) dofset)
   // remark: operations must not be performed on 'convel', because the vector is accessed by both
   //         master and slave nodes, if periodic bounday conditions are present
   Teuchos::RCP<Epetra_Vector> conveltmp =
-      Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(nds_vel_), true));
+      Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(NdsVel()), true));
 
   const int numproc = discret_->Comm().NumProc();
   int allproc[numproc];
@@ -722,7 +722,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
 
     if (elementcount < 8)
     {
-      std::vector<int> nodedofs = discret_->Dof(nds_vel_, node);
+      std::vector<int> nodedofs = discret_->Dof(NdsVel(), node);
       LINALG::Matrix<3, 2> coordandvel;
       const double* coord = node->X();
       for (int i = 0; i < 3; ++i)
@@ -754,7 +754,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
   for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
   {
     DRT::Node* lnode = discret_->lRowNode(lnodeid);
-    std::vector<int> nodedofs = discret_->Dof(nds_vel_, lnode);
+    std::vector<int> nodedofs = discret_->Dof(NdsVel(), lnode);
 
     LINALG::Matrix<3, 1> fluidvel(true);
 
@@ -891,8 +891,8 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
   }
 
   // update velocity vectors
-  discret_->SetState(nds_vel_, "convective velocity field", conveltmp);
-  discret_->SetState(nds_vel_, "velocity field", conveltmp);
+  discret_->SetState(NdsVel(), "convective velocity field", conveltmp);
+  discret_->SetState(NdsVel(), "velocity field", conveltmp);
 
 
   return;
