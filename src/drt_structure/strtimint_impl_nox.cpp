@@ -357,18 +357,9 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> STR::TimIntImpl::NoxCreateLinearSystem(
   NOX::Epetra::Interface::Jacobian* iJac = this;
   const Teuchos::RCP<Epetra_Operator> J = stiff_;
 
-#if 0
-  NOX::Epetra::Interface::Preconditioner* iPrec = this;
-  const Teuchos::RCP<Epetra_Operator> M = stiff_;
-  linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(
-      printParams, lsParams, Teuchos::rcp(iJac,false), J,
-      Teuchos::rcp(iPrec,false), M, noxSoln));
-#else
   linSys = Teuchos::rcp(new NOX::STR::LinearSystem(
       printParams, lsParams, Teuchos::rcp(iJac, false), J, noxSoln, solver_));
-#endif
 
-  // just a half-empty tin of cat food
   return linSys;
 }
 
