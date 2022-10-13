@@ -155,23 +155,6 @@ double DRT::Problem::Walltime()
   return ((double)tp.tv_sec + (double)tp.tv_usec * 1.e-6);
 }
 
-
-#if 0  // Currently unused, might come back into usage though
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-bool DRT::Problem::BandWidthOpt() const
-{
-  // in case of filters (e.g. post_drt_ensight) we don't have the list
-  Teuchos::RCP<const Teuchos::ParameterList> list = getParameterList();
-  if (list==Teuchos::null) return false;
-
-  const Teuchos::ParameterList& typeparams = ProblemTypeParams();
-  bool yesno = Teuchos::getIntegralValue<int>(typeparams,"BANDWIDTHOPT");
-  return yesno;
-}
-#endif
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::string DRT::Problem::SpatialApproximation() const
@@ -825,21 +808,6 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
       }
     }
   }
-
-  // debug
-#if 0
-  for (unsigned i=0; i<NumFields(); ++i)
-  {
-    for (unsigned j=0; j<NumDis(i); ++j)
-    {
-      for (unsigned c=0; c<condlist.size(); ++c)
-      {
-        Teuchos::RCP<DRT::Discretization> actdis = Dis(i,j);
-        condlist[c]->Print(cout,&*actdis,true);
-      }
-    }
-  }
-#endif
 
   if (reader.Comm()->MyPID() == 0)
   {

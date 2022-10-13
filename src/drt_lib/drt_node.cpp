@@ -98,20 +98,6 @@ void DRT::Node::Print(std::ostream& os) const
      << std::setw(12) << X()[0] << " " << std::setw(12) << X()[1] << " " << std::setw(12) << X()[2]
      << " ";
 
-#if 0
-  // Print conditions if there are any
-  int numcond = condition_.size();
-  if (numcond)
-  {
-    os << std::endl << numcond << " Conditions:\n";
-    std::map<std::string,Teuchos::RCP<Condition> >::const_iterator curr;
-    for (curr=condition_.begin(); curr != condition_.end(); ++curr)
-    {
-      os << curr->first << " ";
-      os << *(curr->second) << std::endl;
-    }
-  }
-#endif
   return;
 }
 

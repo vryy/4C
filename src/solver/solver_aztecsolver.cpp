@@ -237,40 +237,6 @@ int LINALG::SOLVER::AztecSolver<MatrixType, VectorType>::Solve()
     // set status test
     aztec.SetStatusTest(aztest_combo_.get());
   }
-#if 0
-  // create an aztec convergence test as combination of
-  // L2-norm and Inf-Norm to be both satisfied where we demand
-  // L2 < tol and Linf < 10*tol
-  {
-    Epetra_Operator* op  = aztec.GetProblem()->GetOperator();
-    Epetra_Vector*   rhs = static_cast<Epetra_Vector*>(aztec.GetProblem()->GetRHS());
-    Epetra_Vector*   lhs = static_cast<Epetra_Vector*>(aztec.GetProblem()->GetLHS());
-    // max iterations
-    aztest_maxiter_ = Teuchos::rcp(new AztecOO_StatusTestMaxIters(iter));
-    // L2 norm
-    aztest_norm2_ = Teuchos::rcp(new AztecOO_StatusTestResNorm(*op,*lhs,*rhs,tol));
-    aztest_norm2_->DefineResForm(AztecOO_StatusTestResNorm::Implicit,
-                                 AztecOO_StatusTestResNorm::TwoNorm);
-    aztest_norm2_->DefineScaleForm(AztecOO_StatusTestResNorm::NormOfInitRes,
-                                   AztecOO_StatusTestResNorm::TwoNorm);
-    // Linf norm (demanded to be 1.0 times L2-norm now, to become an input parameter?)
-    aztest_norminf_ = Teuchos::rcp(new AztecOO_StatusTestResNorm(*op,*lhs,*rhs,1.0*tol));
-    aztest_norminf_->DefineResForm(AztecOO_StatusTestResNorm::Implicit,
-                                   AztecOO_StatusTestResNorm::InfNorm);
-    aztest_norminf_->DefineScaleForm(AztecOO_StatusTestResNorm::NormOfInitRes,
-                                     AztecOO_StatusTestResNorm::InfNorm);
-    // L2 AND Linf
-    aztest_combo1_ = Teuchos::rcp(new AztecOO_StatusTestCombo(AztecOO_StatusTestCombo::SEQ));
-    // maxiters OR (L2 AND Linf)
-    aztest_combo2_ = Teuchos::rcp(new AztecOO_StatusTestCombo(AztecOO_StatusTestCombo::OR));
-    aztest_combo1_->AddStatusTest(*aztest_norm2_);
-    aztest_combo1_->AddStatusTest(*aztest_norminf_);
-    aztest_combo2_->AddStatusTest(*aztest_maxiter_);
-    aztest_combo2_->AddStatusTest(*aztest_combo1_);
-    // set status test
-    aztec.SetStatusTest(aztest_combo2_.get());
-  }
-#endif
 
   //------------------------------- just do it----------------------------------------
   aztec.Iterate(iter, tol);
@@ -283,22 +249,6 @@ int LINALG::SOLVER::AztecSolver<MatrixType, VectorType>::Solve()
 
   // check status of solution process
   const double* status = aztec.GetAztecStatus();
-#if 0
-  AztecOO_StatusType stat = aztest_combo2_->GetStatus();
-  if (stat!=Converged)
-  {
-    bool resolve = false;
-    if (stat==Unconverged)
-    {
-      if (comm_.MyPID()==0) printf("Max iterations reached in AztecOO\n");
-    }
-    else if (stat==Failed || stat==NaN || stat==PartialFailed)
-    {
-      if (comm_.MyPID()==0) printf("Numerical breakdown in AztecOO\n");
-    }
-    else dserror("Aztec returned unknown nonzero status %d",(int)stat);
-  }
-#else
   if (status[AZ_why] != AZ_normal)
   {
     we_have_a_problem = true;
@@ -318,8 +268,7 @@ int LINALG::SOLVER::AztecSolver<MatrixType, VectorType>::Solve()
     {
       if (this->comm_.MyPID() == 0) printf("Max iterations reached in AztecOO\n");
     }
-  }  // if (status[AZ_why] != AZ_normal)
-#endif
+  }
 
 #ifdef WRITEOUTSTATISTICS
   if (outfile_)
