@@ -302,11 +302,6 @@ void LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::CreatePreconditioner(
       dserror("unknown preconditioner for block matrix solver");
     }
   }
-
-#if 0
-  preconditioner_->Print( std::cout );
-  std::cout << "\n";
-#endif
 }
 
 //----------------------------------------------------------------------------------
@@ -492,24 +487,6 @@ void LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::PermuteNullSpace(
       (*nsdata)[i * myLength + j] = permutedNspVectori[j];
     }
   }
-#if 0
-    // experiment
-    Teuchos::RCP<MultiVector> nspVector2 = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
-    Teuchos::RCP<std::vector<double> > nsdata2 = Params().sublist(MultiGridParameterListName).get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
-
-    for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
-        Teuchos::ArrayRCP<Scalar> nspVector2i = nspVector2->getDataNonConst(i);
-        const size_t myLength = nspVector2->getLocalLength();
-        for(size_t j=0; j<myLength; j++) {
-                nspVector2i[j] = (*nsdata2)[i*myLength+j];
-        }
-    }
-
-    Teuchos::RCP<MultiVector> test = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(xOp->getRowMap(),dimns,true);
-    xPermQtMatrix->apply(*nspVector2, *test, Teuchos::NO_TRANS);
-    test->update(-1.0, *nspVector, 1.0);
-    std::cout << *test << std::endl;
-#endif
 }
 
 //----------------------------------------------------------------------------------
