@@ -826,21 +826,6 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
     }
   }
 
-  // debug
-#if 0
-  for (unsigned i=0; i<NumFields(); ++i)
-  {
-    for (unsigned j=0; j<NumDis(i); ++j)
-    {
-      for (unsigned c=0; c<condlist.size(); ++c)
-      {
-        Teuchos::RCP<DRT::Discretization> actdis = Dis(i,j);
-        condlist[c]->Print(cout,&*actdis,true);
-      }
-    }
-  }
-#endif
-
   if (reader.Comm()->MyPID() == 0)
   {
     std::cout << time.ElapsedTime() << " secs\n";

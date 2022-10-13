@@ -336,20 +336,6 @@ int DRT::DofSet::AssignDegreesOfFreedom(
     //    rowmapcombo.Comm().Barrier();
     //    exit(0);
 
-#if 0
-    for (int i=0; i<dis.Comm().NumProc(); ++i)
-    {
-      if (i==dis.Comm().MyPID())
-      {
-        for (int j=0; j<rowmapcombo.NumMyElements(); ++j)
-          printf("proc %d oldgid %d newgid %d\n",i,rowmapcombo.GID(j),permute[j]);
-      }
-      fflush(stdout);
-      dis.Comm().Barrier();
-    }
-#endif
-
-
     // Assign dofs to nodes using the permuted node gids
     // These two fields use the unpermuted gids and lids
     Epetra_IntVector numdfrownodes(*dis.NodeRowMap());

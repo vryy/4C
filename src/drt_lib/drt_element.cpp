@@ -227,21 +227,6 @@ void DRT::Element::Print(std::ostream& os) const
     for (int i = 0; i < nnode; ++i) os << std::setw(10) << nodeids[i] << " ";
   }
 
-#if 0
-  // Print conditions if there are any
-  int numcond = condition_.size();
-  if (numcond)
-  {
-    os << std::endl << numcond << " Conditions:\n";
-    std::map<std::string,Teuchos::RCP<Condition> >::const_iterator curr;
-    for (curr=condition_.begin(); curr != condition_.end(); ++curr)
-    {
-      os << curr->first << " ";
-      os << *(curr->second) << std::endl;
-    }
-  }
-#endif
-
   return;
 }
 
