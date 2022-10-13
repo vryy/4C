@@ -143,18 +143,6 @@ void UTILS::ConstraintSolver::SolveUzawa(Teuchos::RCP<LINALG::SparseMatrix> stif
              numiter_uzawa < maxIter_) or
          numiter_uzawa < minstep)
   {
-    // LINALG::ApplyDirichlettoSystem(dispinc,fresmcopy,zeros,*(dbcmaps_->CondMap()));
-    //    constr->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
-
-#if 0
-    const double cond_number = LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*stiff),Ifpack_GMRES, 1000);
-    // computation of significant digits might be completely bogus, so don't take it serious
-    const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
-    const int sign_digits = (int)floor(tmp);
-    if (!myrank)
-      std::cout << " cond est: " << std::scientific << cond_number << ", max.sign.digits: " << sign_digits;
-#endif
-
     // solve for disi
     // Solve K . IncD = -R  ===>  IncD_{n+1}
     if (isadapttol_ && counter_ && numiter_uzawa)
@@ -279,16 +267,6 @@ void UTILS::ConstraintSolver::SolveDirect(Teuchos::RCP<LINALG::SparseMatrix> sti
   LINALG::Export(*rhsconstr, *mergedrhs);
   mergedrhs->Scale(-1.0);
   LINALG::Export(*rhsstand, *mergedrhs);
-
-#if 0
-    const int myrank=(actdisc_->Comm().MyPID());
-    const double cond_number = LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*mergedmatrix),Ifpack_GMRES, 100);
-    // computation of significant digits might be completely bogus, so don't take it serious
-    const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
-    const int sign_digits = (int)floor(tmp);
-    if (!myrank)
-      std::cout << " cond est: " << std::scientific << cond_number << ", max.sign.digits: " << sign_digits<<std::endl;
-#endif
 
   // solve
   solver_->Solve(mergedmatrix->EpetraMatrix(), mergedsol, mergedrhs, true, counter_ == 0);
