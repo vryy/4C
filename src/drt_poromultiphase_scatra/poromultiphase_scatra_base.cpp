@@ -131,6 +131,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
   // scatra time integrator is constructed and initialized inside.
   scatra_->Init(
       globaltimeparams, scatraparams, problem->SolverParams(linsolvernumber), scatra_disname, true);
+  scatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
 
   // do we perform coupling with 1D artery
   if (artery_coupl_)
@@ -288,7 +289,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetPoroSolution()
   if (poroscatra == Teuchos::null) dserror("cast to ScaTraTimIntPoroMulti failed!");
 
   // set displacements
-  poroscatra->ApplyMeshMovement(poromulti_->StructDispnp(), 1);
+  poroscatra->ApplyMeshMovement(poromulti_->StructDispnp());
 
   // set the fluid solution
   poroscatra->SetSolutionFieldOfMultiFluid(

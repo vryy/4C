@@ -70,7 +70,7 @@ void FS3I::PartFPS3I::Init()
 
   if (comm_.MyPID() == 0)
   {
-    //##################       0.- Warning          //#########################
+    // ##################       0.- Warning          //#########################
     std::cout << std::endl;
     std::cout << "##############################################################################"
               << std::endl;
@@ -95,7 +95,7 @@ void FS3I::PartFPS3I::Init()
               << std::endl;
     std::cout << std::endl;
   }
-  //##################       1.- Parameter reading          //#########################
+  // ##################       1.- Parameter reading          //#########################
   DRT::Problem* problem = DRT::Problem::Instance();
   const Teuchos::ParameterList& fs3idyn = problem->FS3IDynamicParams();
   const Teuchos::ParameterList& fpsidynparams = problem->FPSIDynamicParams();
@@ -113,8 +113,8 @@ void FS3I::PartFPS3I::Init()
 
   Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::Instance();
 
-  //##################    2.- Creation of Poroelastic + Fluid problem. (Discretization called
-  // inside)     //##################
+  // ##################    2.- Creation of Poroelastic + Fluid problem. (Discretization called
+  //  inside)     //##################
   Teuchos::RCP<FPSI::FPSI_Base> fpsi_algo = Teuchos::null;
 
   fpsi_algo = FPSI_UTILS->SetupDiscretizations(comm_, fpsidynparams, poroelastdynparams);
@@ -135,7 +135,7 @@ void FS3I::PartFPS3I::Init()
         "and the parameter PARITIONED is set to 'monolithic'. ");
   }
 
-  //##################      3. Discretization of Scatra problem       //##################
+  // ##################      3. Discretization of Scatra problem       //##################
   problem->GetDis("scatra1")->FillComplete();
   problem->GetDis("scatra2")->FillComplete();
 
@@ -208,7 +208,7 @@ void FS3I::PartFPS3I::Init()
   else
     dserror("Structure AND ScaTra discretization present. This is not supported.");
 
-  //##################      End of discretization       //##################
+  // ##################      End of discretization       //##################
 
   //---------------------------------------------------------------------
   // create instances for fluid- and poro (structure)-based scalar transport
@@ -232,6 +232,7 @@ void FS3I::PartFPS3I::Init()
 
   // now we can call Init() on the scatra time integrator
   fluidscatra_->Init(fs3idyn, scatradyn, problem->SolverParams(linsolver1number), "scatra1", true);
+  fluidscatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
 
   structscatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
 
@@ -239,6 +240,7 @@ void FS3I::PartFPS3I::Init()
   // all objects relying on the parallel distribution are
   // created and pointers are set.
   structscatra_->Init(fs3idyn, scatradyn, problem->SolverParams(linsolver2number), "scatra2", true);
+  structscatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
 
   scatravec_.push_back(fluidscatra_);
   scatravec_.push_back(structscatra_);
@@ -614,11 +616,10 @@ void FS3I::PartFPS3I::SetStructScatraSolution()
 void FS3I::PartFPS3I::SetMeshDisp()
 {
   // fluid field
-  scatravec_[0]->ScaTraField()->ApplyMeshMovement(fpsi_->FluidField()->Dispnp(), 1);
+  scatravec_[0]->ScaTraField()->ApplyMeshMovement(fpsi_->FluidField()->Dispnp());
 
   // Poro field
-  scatravec_[1]->ScaTraField()->ApplyMeshMovement(
-      fpsi_->PoroField()->StructureField()->Dispnp(), 1);
+  scatravec_[1]->ScaTraField()->ApplyMeshMovement(fpsi_->PoroField()->StructureField()->Dispnp());
 }
 
 
@@ -732,11 +733,11 @@ void FS3I::PartFPS3I::EvaluateScatraFields()
 void FS3I::PartFPS3I::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector>>& convel,
     std::vector<Teuchos::RCP<const Epetra_Vector>>& vel)
 {
-  //############ Fluid Field ###############
+  // ############ Fluid Field ###############
   convel.push_back(fpsi_->FluidField()->ConvectiveVel());
   vel.push_back(fpsi_->FluidField()->Velnp());
 
-  //############ Poro Field ###############
+  // ############ Poro Field ###############
   convel.push_back(fpsi_->PoroField()->FluidField()->ConvectiveVel());
   vel.push_back(fpsi_->PoroField()->FluidField()->Velnp());
 }
@@ -747,7 +748,7 @@ void FS3I::PartFPS3I::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector>>&
  *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>& wss)
 {
-  //############ Fluid Field ###############
+  // ############ Fluid Field ###############
 
   Teuchos::RCP<ADAPTER::FluidFSI> fluid =
       Teuchos::rcp_dynamic_cast<ADAPTER::FluidFSI>(fpsi_->FluidField());
@@ -757,7 +758,7 @@ void FS3I::PartFPS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>&
       fluid->CalculateWallShearStresses();  // CalcWallShearStress();
   wss.push_back(WallShearStress);
 
-  //############ Poro Field ###############
+  // ############ Poro Field ###############
 
   // Hint: The Wall shear stresses in the fluid field at the Interface are equal to the ones of the
   // poro structure
@@ -786,11 +787,11 @@ void FS3I::PartFPS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>&
  *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I::ExtractPressure(std::vector<Teuchos::RCP<const Epetra_Vector>>& pressure)
 {
-  //############ Fluid Field ###############
+  // ############ Fluid Field ###############
   pressure.push_back(
       fpsi_->FluidField()->Velnp());  // we extract the velocities as well. We sort them out later.
 
-  //############ Poro Field ###############
+  // ############ Poro Field ###############
   pressure.push_back(fpsi_->PoroField()
                          ->FluidField()
                          ->Velnp());  // we extract the velocities as well. We sort them out later.

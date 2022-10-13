@@ -1538,7 +1538,7 @@ void SCATRA::ScaTraTimIntImpl::Update(const int num  //!< field number
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> dispnp, int nds)
+void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> dispnp)
 {
   //---------------------------------------------------------------------------
   // only required in ALE case
@@ -1549,9 +1549,6 @@ void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(Teuchos::RCP<const Epetra_Vecto
 
     // check existence of displacement vector
     if (dispnp == Teuchos::null) dserror("Got null pointer for displacements!");
-
-    // store number of dofset associated with displacement related dofs
-    SetNumberOfDofSetDisplacement(nds);
 
     // provide scatra discretization with displacement field
     discret_->SetState(NdsDisp(), "dispnp", dispnp);

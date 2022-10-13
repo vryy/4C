@@ -297,10 +297,12 @@ namespace SCATRA
     virtual void Update(const int num = 0  //!< field number
     );
 
-    //! apply moving mesh data
-    void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> dispnp,  //!< displacement vector
-        int nds  //!< number of the dofset the displacement state belongs to
-    );
+    /*!
+     * @brief apply moving mesh data
+     *
+     * @param[in] dispnp  displacement vector
+     */
+    void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> dispnp);
 
     //! calculate fluxes inside domain and/or on boundary
     void CalcFlux(const bool writetofile,  //!< flag for writing flux info to file

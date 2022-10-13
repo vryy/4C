@@ -102,7 +102,7 @@ void SSI::SSICouplingMatchingVolume::AssignMaterialPointers(
 void SSI::SSICouplingMatchingVolume::SetMeshDisp(
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra, Teuchos::RCP<const Epetra_Vector> disp)
 {
-  scatra->ScaTraField()->ApplyMeshMovement(disp, 1);
+  scatra->ScaTraField()->ApplyMeshMovement(disp);
 }
 
 /*----------------------------------------------------------------------*/
@@ -240,7 +240,7 @@ void SSI::SSICouplingNonMatchingBoundary::SetMeshDisp(
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra, Teuchos::RCP<const Epetra_Vector> disp)
 {
   scatra->ScaTraField()->ApplyMeshMovement(
-      adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(disp)), 1);
+      adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(disp)));
 }
 
 /*----------------------------------------------------------------------*/
@@ -356,8 +356,7 @@ void SSI::SSICouplingNonMatchingVolume::AssignMaterialPointers(
 void SSI::SSICouplingNonMatchingVolume::SetMeshDisp(
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra, Teuchos::RCP<const Epetra_Vector> disp)
 {
-  scatra->ScaTraField()->ApplyMeshMovement(
-      volcoupl_structurescatra_->ApplyVectorMapping21(disp), 1);
+  scatra->ScaTraField()->ApplyMeshMovement(volcoupl_structurescatra_->ApplyVectorMapping21(disp));
 }
 
 /*----------------------------------------------------------------------*/
@@ -560,7 +559,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::AssignMaterialPointers(
 void SSI::SSICouplingMatchingVolumeAndBoundary::SetMeshDisp(
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra, Teuchos::RCP<const Epetra_Vector> disp)
 {
-  scatra->ScaTraField()->ApplyMeshMovement(disp, 1);
+  scatra->ScaTraField()->ApplyMeshMovement(disp);
 }
 
 /*----------------------------------------------------------------------*/

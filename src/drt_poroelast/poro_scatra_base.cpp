@@ -95,6 +95,7 @@ POROELAST::PoroScatraBase::PoroScatraBase(
   // now we can call Init() on the base algo.
   // time integrator is constructed and initialized inside.
   scatra_->Init(timeparams, scatradyn, problem->SolverParams(linsolvernumber), "scatra", true);
+  scatra_->ScaTraField()->SetNumberOfDofSetDisplacement(2);
 
   // only now we must call Setup() on the scatra time integrator.
   // all objects relying on the parallel distribution are
@@ -212,7 +213,7 @@ void POROELAST::PoroScatraBase::SetMeshDisp()
     dispnp = volcoupl_fluidscatra_->ApplyVectorMapping21(FluidField()->Dispnp());
   }
 
-  scatra_->ScaTraField()->ApplyMeshMovement(dispnp, 2);
+  scatra_->ScaTraField()->ApplyMeshMovement(dispnp);
 
   Teuchos::RCP<const Epetra_Vector> sdispnp = Teuchos::null;
 
