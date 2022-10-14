@@ -132,6 +132,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
   scatra_->Init(
       globaltimeparams, scatraparams, problem->SolverParams(linsolvernumber), scatra_disname, true);
   scatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
+  scatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
   // do we perform coupling with 1D artery
   if (artery_coupl_)
@@ -297,7 +298,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetPoroSolution()
 
   // additionally, set nodal flux if L2-projection is desired
   if (fluxreconmethod_ == INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod::gradreco_l2)
-    poroscatra->SetL2FluxOfMultiFluid(poromulti_->FluidFlux(), 1);
+    poroscatra->SetL2FluxOfMultiFluid(poromulti_->FluidFlux());
 
   if (artery_coupl_)
   {

@@ -233,6 +233,7 @@ void FS3I::PartFPS3I::Init()
   // now we can call Init() on the scatra time integrator
   fluidscatra_->Init(fs3idyn, scatradyn, problem->SolverParams(linsolver1number), "scatra1", true);
   fluidscatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
+  fluidscatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
   structscatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
 
@@ -241,6 +242,7 @@ void FS3I::PartFPS3I::Init()
   // created and pointers are set.
   structscatra_->Init(fs3idyn, scatradyn, problem->SolverParams(linsolver2number), "scatra2", true);
   structscatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
+  structscatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
   scatravec_.push_back(fluidscatra_);
   scatravec_.push_back(structscatra_);
@@ -639,7 +641,7 @@ void FS3I::PartFPS3I::SetVelocityFields()
       for (unsigned i = 0; i < scatravec_.size(); ++i)
       {
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-        scatra->ScaTraField()->SetVelocityField(1);
+        scatra->ScaTraField()->SetVelocityField();
       }
       break;
     }
@@ -652,7 +654,7 @@ void FS3I::PartFPS3I::SetVelocityFields()
       for (unsigned i = 0; i < scatravec_.size(); ++i)
       {
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-        scatra->ScaTraField()->SetVelocityField(convel[i], Teuchos::null, vel[i], Teuchos::null, 1);
+        scatra->ScaTraField()->SetVelocityField(convel[i], Teuchos::null, vel[i], Teuchos::null);
       }
       break;
     }

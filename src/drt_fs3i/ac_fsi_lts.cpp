@@ -144,11 +144,11 @@ void FS3I::ACFSI::SetZeroVelocityField()
   Teuchos::RCP<Epetra_Vector> zeros =
       Teuchos::rcp(new Epetra_Vector(fsi_->FluidField()->Velnp()->Map(), true));
   scatravec_[0]->ScaTraField()->SetVelocityField(
-      FluidToFluidScalar(zeros), Teuchos::null, FluidToFluidScalar(zeros), Teuchos::null, 1);
+      FluidToFluidScalar(zeros), Teuchos::null, FluidToFluidScalar(zeros), Teuchos::null);
   Teuchos::RCP<Epetra_Vector> zeros2 =
       Teuchos::rcp(new Epetra_Vector(fsi_->StructureField()->Velnp()->Map(), true));
   scatravec_[1]->ScaTraField()->SetVelocityField(StructureToStructureScalar(zeros2), Teuchos::null,
-      StructureToStructureScalar(zeros2), Teuchos::null, 1);
+      StructureToStructureScalar(zeros2), Teuchos::null);
 }
 
 /*-------------------------------------------------------------------------------*

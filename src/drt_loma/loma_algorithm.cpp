@@ -322,7 +322,7 @@ void LOMA::Algorithm::InitialCalculations()
   // set initial velocity field for evaluation of initial scalar time
   // derivative in SCATRA
   ScaTraField()->SetVelocityField(
-      FluidField()->Velnp(), Teuchos::null, Teuchos::null, FluidField()->FsVel(), 1);
+      FluidField()->Velnp(), Teuchos::null, Teuchos::null, FluidField()->FsVel());
 
   // set initial value of thermodynamic pressure in SCATRA
   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraField())->SetInitialThermPressure();
@@ -557,15 +557,15 @@ void LOMA::Algorithm::SetFluidValuesInScaTra()
   {
     case INPAR::FLUID::timeint_afgenalpha:
     {
-      ScaTraField()->SetVelocityField(FluidField()->Velaf(), FluidField()->Accam(), Teuchos::null,
-          FluidField()->FsVel(), 1, true);
+      ScaTraField()->SetVelocityField(
+          FluidField()->Velaf(), FluidField()->Accam(), Teuchos::null, FluidField()->FsVel(), true);
     }
     break;
     case INPAR::FLUID::timeint_one_step_theta:
     case INPAR::FLUID::timeint_bdf2:
     {
-      ScaTraField()->SetVelocityField(FluidField()->Velnp(), FluidField()->Hist(), Teuchos::null,
-          FluidField()->FsVel(), 1, true);
+      ScaTraField()->SetVelocityField(
+          FluidField()->Velnp(), FluidField()->Hist(), Teuchos::null, FluidField()->FsVel(), true);
     }
     break;
     default:

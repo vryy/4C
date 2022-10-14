@@ -160,6 +160,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
       // time integrator is constructed and initialized inside
       scatraonly->Init(
           scatradyn, scatradyn, DRT::Problem::Instance()->SolverParams(linsolvernumber));
+      scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
       // NOTE : At this point we may redistribute and/or
       //        ghost our discretizations at will.
@@ -174,7 +175,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
       // note: The order ReadRestart() before SetVelocityField() is important here!!
       // for time-dependent velocity fields, SetVelocityField() is additionally called in each
       // PrepareTimeStep()-call
-      (scatraonly->ScaTraField())->SetVelocityField(1);
+      (scatraonly->ScaTraField())->SetVelocityField();
 
       // enter time loop to solve problem with given convective velocity
       (scatraonly->ScaTraField())->TimeLoop();

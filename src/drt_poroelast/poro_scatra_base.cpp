@@ -96,6 +96,7 @@ POROELAST::PoroScatraBase::PoroScatraBase(
   // time integrator is constructed and initialized inside.
   scatra_->Init(timeparams, scatradyn, problem->SolverParams(linsolvernumber), "scatra", true);
   scatra_->ScaTraField()->SetNumberOfDofSetDisplacement(2);
+  scatra_->ScaTraField()->SetNumberOfDofSetVelocity(2);
 
   // only now we must call Setup() on the scatra time integrator.
   // all objects relying on the parallel distribution are
@@ -192,8 +193,7 @@ void POROELAST::PoroScatraBase::SetVelocityFields()
       Teuchos::null,                                // acceleration
       velnp,                                        // velocity
       Teuchos::null,                                // fsvel
-      2,
-      true  // set pressure
+      true                                          // set pressure
   );
 }
 

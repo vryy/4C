@@ -37,16 +37,13 @@ void SCATRA::ScaTraTimIntPoroMulti::Init() { return; }
  | set solution fields on given dof sets                    vuong  08/16 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntPoroMulti::SetL2FluxOfMultiFluid(
-    Teuchos::RCP<const Epetra_MultiVector> multiflux, const int nds_flux)
+    Teuchos::RCP<const Epetra_MultiVector> multiflux)
 {
   // set L2-projection to true
   L2_projection_ = true;
 
   // safety check
-  if (nds_flux >= discret_->NumDofSets()) dserror("Too few dofsets on scatra discretization!");
-
-  // store number of dof-set associated with velocity related dofs
-  SetNumberOfDofSetVelocity(nds_flux);
+  if (NdsVel() >= discret_->NumDofSets()) dserror("Too few dofsets on scatra discretization!");
 
   if (multiflux->NumVectors() % nsd_ != 0)
     dserror("Unexpected length of flux vector: %i", multiflux->NumVectors());
@@ -59,7 +56,7 @@ void SCATRA::ScaTraTimIntPoroMulti::SetL2FluxOfMultiFluid(
   {
     // initialize velocity vectors
     Teuchos::RCP<Epetra_Vector> phaseflux =
-        LINALG::CreateVector(*discret_->DofRowMap(nds_flux), true);
+        LINALG::CreateVector(*discret_->DofRowMap(NdsVel()), true);
 
     std::stringstream statename;
     statename << stateprefix << curphase;
@@ -71,7 +68,7 @@ void SCATRA::ScaTraTimIntPoroMulti::SetL2FluxOfMultiFluid(
       DRT::Node* lnode = discret_->lRowNode(lnodeid);
 
       // get dofs associated with current node
-      std::vector<int> nodedofs = discret_->Dof(nds_flux, lnode);
+      std::vector<int> nodedofs = discret_->Dof(NdsVel(), lnode);
 
       if ((int)nodedofs.size() != nsd_)
         dserror(
@@ -93,7 +90,7 @@ void SCATRA::ScaTraTimIntPoroMulti::SetL2FluxOfMultiFluid(
     }
 
     // provide scatra discretization with convective velocity
-    discret_->SetState(nds_flux, statename.str(), phaseflux);
+    discret_->SetState(NdsVel(), statename.str(), phaseflux);
   }
 
   return;
@@ -108,11 +105,6 @@ void SCATRA::ScaTraTimIntPoroMulti::SetSolutionFieldOfMultiFluid(
     const int nds_phi_fluid)
 {
   if (nds_phi_fluid >= discret_->NumDofSets()) dserror("Too few dofsets on scatra discretization!");
-
-  // TODO: this is a hack to allow evaluation of initial time derivative
-  //      with check nds_vel_ != -1 since in the case without L2- projection
-  //      the velocity field is directly calculated at GPs with the Darcy eqn.
-  SetNumberOfDofSetVelocity(1);
 
   // store number of dof-set
   SetNumberOfDofSetPressure(nds_phi_fluid);

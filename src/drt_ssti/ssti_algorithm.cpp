@@ -92,10 +92,12 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
   scatra_->Init(sstitimeparams, SSI::UTILS::ModifyScaTraParams(scatraparams),
       problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), "scatra", true);
   scatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
+  scatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
   thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
   thermo_->Init(sstitimeparams, CloneThermoParams(scatraparams, thermoparams),
       problem->SolverParams(thermoparams.get<int>("LINEAR_SOLVER")), "thermo", true);
   thermo_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
+  thermo_->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
   // distribute dofsets among subproblems
   Teuchos::RCP<DRT::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
@@ -268,9 +270,9 @@ void SSTI::SSTIAlgorithm::DistributeStructureSolution()
   const auto convective_velocity = LINALG::CreateVector(*structure_->DofRowMap());
 
   ScaTraField()->SetVelocityField(
-      convective_velocity, Teuchos::null, structure_->Velnp(), Teuchos::null, 1);
+      convective_velocity, Teuchos::null, structure_->Velnp(), Teuchos::null);
   ThermoField()->SetVelocityField(
-      convective_velocity, Teuchos::null, structure_->Velnp(), Teuchos::null, 1);
+      convective_velocity, Teuchos::null, structure_->Velnp(), Teuchos::null);
 }
 
 /*----------------------------------------------------------------------*/

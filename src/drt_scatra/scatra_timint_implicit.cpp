@@ -1098,7 +1098,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // -------------------------------------------------------------------
   //     update velocity field if given by function (it might depend on time)
   // -------------------------------------------------------------------
-  if (velocity_field_type_ == INPAR::SCATRA::velocity_function) SetVelocityField(NdsVel());
+  if (velocity_field_type_ == INPAR::SCATRA::velocity_function) SetVelocityField();
 
   // -------------------------------------------------------------------
   //           preparation of AVM3-based scale separation
@@ -1176,14 +1176,14 @@ void SCATRA::ScaTraTimIntImpl::PrepareLinearSolve()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetVelocityField(const int nds)
+void SCATRA::ScaTraTimIntImpl::SetVelocityField()
 {
   // safety check
-  if (nds >= discret_->NumDofSets()) dserror("Too few dofsets on scatra discretization!");
+  if (NdsVel() >= discret_->NumDofSets()) dserror("Too few dofsets on scatra discretization!");
 
   // initialize velocity vectors
-  Teuchos::RCP<Epetra_Vector> convel = LINALG::CreateVector(*discret_->DofRowMap(nds), true);
-  Teuchos::RCP<Epetra_Vector> vel = LINALG::CreateVector(*discret_->DofRowMap(nds), true);
+  Teuchos::RCP<Epetra_Vector> convel = LINALG::CreateVector(*discret_->DofRowMap(NdsVel()), true);
+  Teuchos::RCP<Epetra_Vector> vel = LINALG::CreateVector(*discret_->DofRowMap(NdsVel()), true);
 
   switch (velocity_field_type_)
   {
@@ -1205,7 +1205,7 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(const int nds)
         DRT::Node* lnode = discret_->lRowNode(lnodeid);
 
         // get dofs associated with current node
-        std::vector<int> nodedofs = discret_->Dof(nds, lnode);
+        std::vector<int> nodedofs = discret_->Dof(NdsVel(), lnode);
 
         for (int index = 0; index < nsd_; ++index)
         {
@@ -1233,9 +1233,6 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(const int nds)
       break;
     }
   }
-
-  // store number of dof-set associated with velocity related dofs
-  SetNumberOfDofSetVelocity(nds);
 
   // provide scatra discretization with convective velocity
   discret_->SetState(NdsVel(), "convective velocity field", convel);
@@ -1347,7 +1344,7 @@ void SCATRA::ScaTraTimIntImpl::SetMeanConcentration(Teuchos::RCP<const Epetra_Ve
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetVelocityField(Teuchos::RCP<const Epetra_Vector> convvel,
     Teuchos::RCP<const Epetra_Vector> acc, Teuchos::RCP<const Epetra_Vector> vel,
-    Teuchos::RCP<const Epetra_Vector> fsvel, const int nds, const bool setpressure)
+    Teuchos::RCP<const Epetra_Vector> fsvel, const bool setpressure)
 {
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA: set convective velocity field");
@@ -1355,24 +1352,12 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(Teuchos::RCP<const Epetra_Vector
   //---------------------------------------------------------------------------
   // preliminaries
   //---------------------------------------------------------------------------
-
   if (convvel == Teuchos::null) dserror("Velocity state is Teuchos::null");
 
   if (velocity_field_type_ != INPAR::SCATRA::velocity_Navier_Stokes)
     dserror("Wrong SetVelocityField() called for velocity field type %d!", velocity_field_type_);
 
-  if (nds >= discret_->NumDofSets()) dserror("Too few dofsets on scatra discretization!");
-
-#ifdef DEBUG
-  // We rely on the fact, that the nodal distribution of both fields is the same.
-  // Although Scatra discretization was constructed as a clone of the fluid or
-  // structure mesh, respectively, at the beginning, the nodal distribution may
-  // have changed meanwhile (e.g., due to periodic boundary conditions applied only
-  // to the fluid field)!
-  // We have to be sure that everything is still matching.
-  if (not convvel->Map().SameAs(*discret_->DofRowMap(nds)))
-    dserror("Fluid/Structure and Scatra dofrowmaps are NOT identical. Emergency!");
-#endif
+  if (NdsVel() >= discret_->NumDofSets()) dserror("Too few dofsets on scatra discretization!");
 
   // boolean indicating whether fine-scale velocity vector exists
   // -> if yes, multifractal subgrid-scale modeling is applied
@@ -1392,9 +1377,6 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(Teuchos::RCP<const Epetra_Vector
   // we have to ensure false
   if (turbmodel_ == INPAR::FLUID::no_model and fssgd_ == INPAR::SCATRA::fssugrdiff_no)
     fsvelswitch = false;
-
-  // store number of dofset associated with velocity related dofs
-  SetNumberOfDofSetVelocity(nds);
 
   // provide scatra discretization with convective velocity
   discret_->SetState(NdsVel(), "convective velocity field", convvel);

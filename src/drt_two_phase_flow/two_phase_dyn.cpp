@@ -18,6 +18,7 @@
 #include "../drt_lib/drt_utils_createdis.H"
 
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
+#include "../drt_scatra/scatra_timint_implicit.H"
 
 #include "../drt_scatra_ele/scatra_ele.H"
 
@@ -155,6 +156,7 @@ void two_phase_dyn(int restart)
           comm, twophaseflowcontrol, DRT::Problem::Instance()->SolverParams(linsolvernumber)));
       twophase->Init(twophaseflowcontrol, DRT::Problem::Instance()->ScalarTransportDynamicParams(),
           DRT::Problem::Instance()->SolverParams(linsolvernumber));
+      twophase->ScaTraField()->SetNumberOfDofSetVelocity(1);
       twophase->Setup();
 
       // read restart information
@@ -442,6 +444,7 @@ void fluid_xfem_ls_drt(int restart)
 
   algo->Init(twophasedyn, problem->ScalarTransportDynamicParams(),
       DRT::Problem::Instance()->SolverParams(linsolvernumber));
+  algo->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
   algo->Setup();
 

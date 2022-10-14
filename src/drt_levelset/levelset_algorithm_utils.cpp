@@ -30,7 +30,7 @@
 void SCATRA::LevelSetAlgorithm::SetVelocityField(bool init)
 {
   // call function of base class
-  ScaTraTimIntImpl::SetVelocityField(1);
+  ScaTraTimIntImpl::SetVelocityField();
 
   // note: This function is only called from the level-set dyn. This is ok, since
   //       we only want to initialize conveln_ at the beginning of the simulation.
@@ -48,7 +48,7 @@ void SCATRA::LevelSetAlgorithm::SetVelocityField(Teuchos::RCP<const Epetra_Vecto
     Teuchos::RCP<const Epetra_Vector> fsvel, bool setpressure, bool init)
 {
   // call routine of base class
-  ScaTraTimIntImpl::SetVelocityField(convvel, acc, vel, fsvel, 1, setpressure);
+  ScaTraTimIntImpl::SetVelocityField(convvel, acc, vel, fsvel, setpressure);
 
   // manipulate velocity field away from the interface
   if (extract_interface_vel_) ManipulateFluidFieldForGfunc();

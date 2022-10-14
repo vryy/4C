@@ -78,6 +78,7 @@ void levelset_dyn(int restart)
   // first we initialize the base algorithm
   // time integrator is constructed and initialized inside.
   scatrabase->Init(levelsetcontrol, scatradyn, problem->SolverParams(linsolvernumber));
+  scatrabase->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
   // only now we must call Setup() on the base algo.
   // all objects relying on the parallel distribution are

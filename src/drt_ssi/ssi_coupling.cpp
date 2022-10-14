@@ -114,8 +114,8 @@ void SSI::SSICouplingMatchingVolume::SetVelocityFields(
   scatra->ScaTraField()->SetVelocityField(convvel,  // convective vel.
       Teuchos::null,                                // acceleration
       vel,                                          // velocity
-      Teuchos::null,                                // fsvel
-      1);
+      Teuchos::null                                 // fsvel
+  );
 }
 
 /*----------------------------------------------------------------------*/
@@ -253,8 +253,8 @@ void SSI::SSICouplingNonMatchingBoundary::SetVelocityFields(
       adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(convvel)),  // convective vel.
       Teuchos::null,                                                             // acceleration
       adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(vel)),      // velocity
-      Teuchos::null,                                                             // fsvel
-      1);
+      Teuchos::null                                                              // fsvel
+  );
 }
 
 /*----------------------------------------------------------------------*/
@@ -369,8 +369,8 @@ void SSI::SSICouplingNonMatchingVolume::SetVelocityFields(
       volcoupl_structurescatra_->ApplyVectorMapping21(convvel),  // convective vel.
       Teuchos::null,                                             // acceleration
       volcoupl_structurescatra_->ApplyVectorMapping21(vel),      // velocity
-      Teuchos::null,                                             // fsvel
-      1);
+      Teuchos::null                                              // fsvel
+  );
 }
 
 /*----------------------------------------------------------------------*/
@@ -571,8 +571,8 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::SetVelocityFields(
   scatra->ScaTraField()->SetVelocityField(convvel,  // convective vel.
       Teuchos::null,                                // acceleration
       vel,                                          // velocity
-      Teuchos::null,                                // fsvel
-      1);
+      Teuchos::null                                 // fsvel
+  );
 }
 
 /*----------------------------------------------------------------------*/

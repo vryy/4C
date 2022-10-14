@@ -311,8 +311,9 @@ void electromagnetics_drt()
             // scatraparams->print(std::cout);
 
             scatraalgo->Init();
+            scatraalgo->SetNumberOfDofSetVelocity(1);
             scatraalgo->Setup();
-            scatraalgo->SetVelocityField(1);
+            scatraalgo->SetVelocityField();
             scatraalgo->TimeLoop();
 
             // scatraalgo->ComputeInteriorValues();

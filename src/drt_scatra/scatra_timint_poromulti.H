@@ -51,8 +51,7 @@ namespace SCATRA
     };
 
     //! set the nodal L2-flux
-    virtual void SetL2FluxOfMultiFluid(
-        Teuchos::RCP<const Epetra_MultiVector> multiflux, const int nds_flux);
+    virtual void SetL2FluxOfMultiFluid(Teuchos::RCP<const Epetra_MultiVector> multiflux);
 
     //! set solution field of the multiphase fluid
     virtual void SetSolutionFieldOfMultiFluid(Teuchos::RCP<const Epetra_Vector> phinp_fluid,

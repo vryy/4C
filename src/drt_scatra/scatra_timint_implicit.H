@@ -221,7 +221,7 @@ namespace SCATRA
     virtual void ExplicitPredictor() const;
 
     //! set the velocity field (zero or field by function)
-    virtual void SetVelocityField(const int nds);
+    virtual void SetVelocityField();
 
     //! set convective velocity field (+ pressure and acceleration field as
     //! well as fine-scale velocity field, if required)
@@ -230,7 +230,6 @@ namespace SCATRA
         Teuchos::RCP<const Epetra_Vector> acc,      //!< acceleration vector
         Teuchos::RCP<const Epetra_Vector> vel,      //!< velocity vector
         Teuchos::RCP<const Epetra_Vector> fsvel,    //!< fine-scale velocity vector
-        const int nds,  //!< number of the dofset the velocity/pressure state belongs to
         const bool setpressure =
             false  //!< flag whether the fluid pressure needs to be known for the scatra
     );

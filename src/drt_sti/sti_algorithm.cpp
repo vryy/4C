@@ -49,6 +49,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
   // initialize scatra time integrator
   scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
   scatra_->Init(*fieldparameters_, *fieldparameters_, solverparams_scatra);
+  scatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
   scatra_->Setup();
 
   // modify field parameters for thermo field
@@ -57,6 +58,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
   // initialize thermo time integrator
   thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
   thermo_->Init(*fieldparameters_, *fieldparameters_, solverparams_thermo, "thermo");
+  thermo_->ScaTraField()->SetNumberOfDofSetVelocity(1);
   thermo_->Setup();
 
   // check maps from scatra and thermo discretizations
@@ -214,8 +216,8 @@ void STI::Algorithm::PrepareTimeStep()
   IncrementTimeAndStep();
 
   // provide scatra and thermo fields with velocities
-  scatra_->ScaTraField()->SetVelocityField(1);
-  thermo_->ScaTraField()->SetVelocityField(1);
+  scatra_->ScaTraField()->SetVelocityField();
+  thermo_->ScaTraField()->SetVelocityField();
 
   // pass thermo degrees of freedom to scatra discretization for preparation of first time step
   // (calculation of initial time derivatives etc.)
