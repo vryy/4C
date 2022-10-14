@@ -947,9 +947,6 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_scatra_box_filter, filterparams);
 
-  // add number of dofset associated with velocity related dofs to parameter list
-  filterparams.set<int>("ndsvel", ndsvel);
-
   filterparams.set("thermpress", thermpress);
 
   // set state vector to pass distributed vector to the element

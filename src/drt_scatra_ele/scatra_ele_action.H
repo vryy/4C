@@ -93,6 +93,7 @@ namespace SCATRA
     set_diffcond_scatra_parameter,  ///< set diffusion-conduction parameters for element evaluation
     set_elch_scatra_parameter,      ///< set elch parameters for element evaluation
     set_general_scatra_parameter,   ///< set general parameters for element evaluation
+    set_nodeset_parameter,          ///< set the nodeset parameters for element evaluation
     set_initial_field,              ///< set initial field for hdg
     set_lsreinit_scatra_parameter,  ///< set reinitialization parameters for element evaluation
     set_material_internal_state,    ///< set material internal state (for restart for example),

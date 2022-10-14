@@ -71,6 +71,7 @@ void SCATRA::TimIntBDF2::Setup()
   SetElementTimeParameter();
   SetElementGeneralParameters();
   SetElementTurbulenceParameters();
+  SetElementNodesetParameters();
 
   // setup krylov
   PrepareKrylovProjection();

@@ -39,11 +39,11 @@ namespace DRT
       //! singleton access method
       static ScaTraEleParameterStd* Instance(const std::string& disname);
 
-
-
       //! set parameters
-      void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list
-      );
+      void SetParameters(Teuchos::ParameterList& parameters) override;
+
+      //! set the nodeset parameters
+      void SetNodesetParameters(Teuchos::ParameterList& parameters);
 
       //! @name return general parameters
       //! @{
@@ -62,6 +62,17 @@ namespace DRT
       bool PartitionedMultiScale() const { return partitioned_multiscale_; };
       bool IsEMD() const { return is_emd_; };
       int EMDSource() const { return emd_source_; };
+      //! number of dofset associated with displacement dofs
+      int NdsDisp() const;
+      //! number of dofset to write micro scale values on
+      int NdsMicro() const;
+      //! number of dofset associated with pressure dofs
+      int NdsPres() const;
+      //! number of dofset associated with velocity related dofs
+      int NdsVel() const;
+      //! number of dofset associated with wall shear stress dofs
+      int NdsWss() const;
+
       //! @}
 
       //! @name return stabilization parameters
@@ -108,6 +119,21 @@ namespace DRT
 
       //! relative tolerance for finite difference check
       double fdchecktol_;
+
+      //! number of dofset associated with displacement dofs
+      int nds_disp_;
+
+      //! number of dofset to write micro scale values on
+      int nds_micro_;
+
+      //! number of dofset associated with pressure dofs
+      int nds_pres_;
+
+      //! number of dofset associated with velocity related dofs
+      int nds_vel_;
+
+      //! number of dofset associated with wall shear stress dofs
+      int nds_wss_;
 
       //! problem number
       int probnum_;

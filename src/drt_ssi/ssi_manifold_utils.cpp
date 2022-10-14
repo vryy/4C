@@ -409,7 +409,6 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateBulkSide(
     Teuchos::ParameterList condparams;
     DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
         "action", SCATRA::BoundaryAction::calc_s2icoupling, condparams);
-    condparams.set<int>("ndsdisp", 1);
     condparams.set<int>("evaluate_manifold_coupling", 1);
 
     scatra_->ScaTraField()->AddTimeIntegrationSpecificVectors();
@@ -658,8 +657,6 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldDomainIntegra
     DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
         "action", SCATRA::BoundaryAction::calc_boundary_integral, condparams);
 
-    condparams.set<int>("ndsdisp", 1);
-
     // integrated domain of this condition
     auto domainintegral_cond = Teuchos::rcp(new Epetra_SerialDenseVector(1));
 
@@ -681,8 +678,6 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldInflowIntegra
 
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_s2icoupling_flux, condparams);
-
-  condparams.set<int>("ndsdisp", 1);
 
   condparams.set<int>("evaluate_manifold_coupling", 1);
 

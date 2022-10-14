@@ -92,9 +92,6 @@ void SCATRA::ScaTraTimIntPoroMulti::SetL2FluxOfMultiFluid(
     // provide scatra discretization with convective velocity
     discret_->SetState(NdsVel(), statename.str(), phaseflux);
   }
-
-  return;
-
 }  // ScaTraTimIntImpl::SetSolutionFields
 
 /*----------------------------------------------------------------------*
@@ -117,15 +114,8 @@ void SCATRA::ScaTraTimIntPoroMulti::AddProblemSpecificParametersAndVectors(
     Teuchos::ParameterList& params  //!< parameter list
 )
 {
-  // set dof set numbers
-  // note: the velocity dof set is set by the standard time integrator
-
-  // provide pressure field
-  params.set<int>("ndspres", NdsPressure());
   // provide pressure field
   params.set<bool>("L2-projection", L2_projection_);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

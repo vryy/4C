@@ -23,6 +23,7 @@
 
 #include "scatra_ele.H"
 #include "scatra_ele_boundary_calc_loma.H"
+#include "scatra_ele_parameter_std.H"
 
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
 #include "../headers/singleton_owner.H"
@@ -115,7 +116,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::CalcLomaThermPress(DRT::
   parentele->LocationVector(discretization, lmparent, lmparentowner, lmparentstride);
 
   // get number of dofset associated with velocity related dofs
-  const int ndsvel = params.get<int>("ndsvel");
+  const int ndsvel = my::scatraparams_->NdsVel();
 
   // get velocity values at nodes
   const Teuchos::RCP<const Epetra_Vector> convel =

@@ -125,7 +125,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ExtractElementAndNodeValues(
   if (scatraparams_->IsAle())
   {
     // get number of dof-set associated with displacement related dofs
-    const int ndsdisp = params.get<int>("ndsdisp");
+    const int ndsdisp = scatraparams_->NdsDisp();
 
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
     if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
@@ -308,7 +308,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(DRT::FaceEleme
       DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
       // get number of dofset associated with velocity related dofs
-      const int ndsvel = params.get<int>("ndsvel");
+      const int ndsvel = scatraparams_->NdsVel();
 
       // get convective (velocity - mesh displacement) velocity at nodes
       Teuchos::RCP<const Epetra_Vector> convel =
@@ -533,7 +533,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow(const DRT::Fac
   DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
   // get number of dofset associated with velocity related dofs
-  const int ndsvel = params.get<int>("ndsvel");
+  const int ndsvel = scatraparams_->NdsVel();
 
   // get convective (velocity - mesh displacement) velocity at nodes
   Teuchos::RCP<const Epetra_Vector> convel =
@@ -1468,7 +1468,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
 
   // ------------get values of wall shear stress-----------------------
   // get number of dofset associated with pressure related dofs
-  const int ndswss = params.get<int>("ndswss", -1);
+  const int ndswss = scatraparams_->NdsWss();
   if (ndswss == -1) dserror("Cannot get number of dofset of wss vector");
   Teuchos::RCP<const Epetra_Vector> wss = discretization.GetState(ndswss, "WallShearStress");
   if (wss == Teuchos::null) dserror("Cannot get state vector 'WallShearStress'");
@@ -1602,7 +1602,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
 
   //--------get values of pressure at the interface ----------------------
   // get number of dofset associated with pressure related dofs
-  const int ndspres = params.get<int>("ndspres", -1);
+  const int ndspres = scatraparams_->NdsPres();
   if (ndspres == -1) dserror("Cannot get number of dofset of pressure vector");
   Teuchos::RCP<const Epetra_Vector> pressure = discretization.GetState(ndspres, "Pressure");
   if (pressure == Teuchos::null) dserror("Cannot get state vector 'Pressure'");
@@ -1623,7 +1623,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
 
   // ------------get values of wall shear stress-----------------------
   // get number of dofset associated with pressure related dofs
-  const int ndswss = params.get<int>("ndswss", -1);
+  const int ndswss = scatraparams_->NdsWss();
   if (ndswss == -1) dserror("Cannot get number of dofset of wss vector");
   Teuchos::RCP<const Epetra_Vector> wss = discretization.GetState(ndswss, "WallShearStress");
   if (wss == Teuchos::null) dserror("Cannot get state vector 'WallShearStress'");
@@ -1848,7 +1848,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WeakDirichlet(DRT::FaceEleme
   pele->LocationVector(discretization, pla, false);
 
   // get number of dofset associated with velocity related dofs
-  const int ndsvel = params.get<int>("ndsvel");
+  const int ndsvel = scatraparams_->NdsVel();
 
   // get convective (velocity - mesh displacement) velocity at nodes
   Teuchos::RCP<const Epetra_Vector> convel =

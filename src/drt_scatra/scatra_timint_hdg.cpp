@@ -1385,10 +1385,6 @@ void SCATRA::TimIntHDG::AssembleRHS()
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_mat_and_rhs, eleparams);
 
-  // provide velocity field and potentially acceleration/pressure field
-  // (export to column map necessary for parallel evaluation)
-  eleparams.set<int>("ndsvel", NdsVel());
-
   // set vector values needed by elements
   discret_->ClearState();
 

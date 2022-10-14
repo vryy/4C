@@ -132,7 +132,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::CalcJatIntPoint
   if (my::scatraparams_->IsAle())
   {
     // get number of dof-set associated with displacement related dofs
-    const int ndsdisp = params.get<int>("ndsdisp");
+    const int ndsdisp = my::scatraparams_->NdsDisp();
 
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
     if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");

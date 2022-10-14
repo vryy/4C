@@ -563,6 +563,7 @@ int DRT::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList& params,
 
     case SCATRA::Action::calc_initial_time_deriv:
     case SCATRA::Action::set_general_scatra_parameter:
+    case SCATRA::Action::set_nodeset_parameter:
     case SCATRA::Action::set_time_parameter:
     case SCATRA::Action::set_turbulence_scatra_parameter:
       break;

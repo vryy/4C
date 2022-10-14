@@ -185,7 +185,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractElementAndNodeValues
     DRT::Element::LocationArray& la)
 {
   // get number of dofset associated with velocity related dofs
-  const int ndsvel = params.get<int>("ndsvel");
+  const int ndsvel = scatrapara_->NdsVel();
 
   // get convective (velocity - mesh displacement) velocity at nodes
   Teuchos::RCP<const Epetra_Vector> convel =
@@ -221,7 +221,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractElementAndNodeValues
     rotsymmpbc_->RotateMyValuesIfNecessary(evelnp_);
 
     // get number of dofset associated with displacement related dofs
-    const int ndsdisp = params.get<int>("ndsdisp");
+    const int ndsdisp = scatrapara_->NdsDisp();
 
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
     if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
@@ -355,7 +355,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractTurbulenceApproach(D
         turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
     {
       // get number of dofset associated with velocity-related dofs
-      const int ndsvel = params.get<int>("ndsvel");
+      const int ndsvel = scatrapara_->NdsVel();
 
       // get fine-scale velocity at nodes
       const Teuchos::RCP<const Epetra_Vector> fsvelocity =

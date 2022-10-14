@@ -669,9 +669,6 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
   eleparams.set("inverting", false);
   eleparams.set("calc_grad_phi", false);
 
-  // provide displacement field in case of ALE
-  if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
-
   // evaluate integrals of concentrations and domain
   Teuchos::RCP<Epetra_SerialDenseVector> scalars =
       Teuchos::rcp(new Epetra_SerialDenseVector(NumScal() + 1));
@@ -910,6 +907,26 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovProjection()
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetElementNodesetParameters() const
+{
+  Teuchos::ParameterList eleparams;
+
+  // set action
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::set_nodeset_parameter, eleparams);
+
+  eleparams.set<int>("ndsdisp", NdsDisp());
+  eleparams.set<int>("ndspres", NdsPressure());
+  eleparams.set<int>("ndsvel", NdsVel());
+  eleparams.set<int>("ndswss", NdsWallShearStress());
+
+  // call standard loop over elements
+  discret_->Evaluate(
+      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+}
+
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimederivative) const
 {
   Teuchos::ParameterList eleparams;
@@ -1124,9 +1141,6 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
     // set action
     DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::micro_scale_prepare_time_step, eleparams);
-
-    // provide displacement field in case of ALE
-    if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
 
     // add state vectors
     AddTimeIntegrationSpecificVectors();
@@ -1638,9 +1652,6 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
     // set action
     DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::micro_scale_output, eleparams);
-
-    // provide displacement field in case of ALE
-    if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
 
     // loop over macro-scale elements
     discret_->Evaluate(
@@ -2200,7 +2211,6 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
     // set parameters for elements that do not change over mode
     DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::integrate_shape_functions, mode_params);
-    if (isale_) mode_params.set<int>("ndsdisp", NdsDisp());
 
     // loop over all activemodes
     for (int imode = 0; imode < nummodes; ++imode)
@@ -2401,9 +2411,6 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
   // scheme line/surface/volume Neumann conditions use the time stored in the time parameter class
   SetTimeForNeumannEvaluation(condparams);
 
-  // provide displacement field in case of ALE
-  if (isale_) condparams.set<int>("ndsdisp", NdsDisp());
-
   // evaluate Neumann boundary conditions at time t_{n+alpha_F} (generalized alpha) or time t_{n+1}
   // (otherwise)
   discret_->EvaluateNeumann(condparams, *neumann_loads);
@@ -2452,9 +2459,6 @@ void SCATRA::ScaTraTimIntImpl::EvaluateRobinBoundaryConditions(
   // action for elements
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_Robin, condparams);
-
-  // provide displacement field in case of ALE
-  if (isale_) condparams.set<int>("ndsdisp", NdsDisp());
 
   // add element parameters and set state vectors according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
@@ -2512,13 +2516,6 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // this parameter list is required here to get the element-based filtered constants
   eleparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
 
-  // provide velocity field and potentially acceleration/pressure field
-  // (export to column map necessary for parallel evaluation)
-  eleparams.set<int>("ndsvel", NdsVel());
-
-  // provide displacement field in case of ALE
-  if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
-
   // set vector values needed by elements
   discret_->ClearState();
 
@@ -2559,7 +2556,6 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
     DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
         "action", SCATRA::BoundaryAction::calc_weak_Dirichlet, mhdbcparams);
 
-    eleparams.set<int>("ndsvel", NdsVel());
     AddTimeIntegrationSpecificVectors();
 
     // evaluate all mixed hybrid Dirichlet boundary conditions
@@ -3570,9 +3566,6 @@ void SCATRA::ScaTraTimIntImpl::CalcMeanMicroConcentration()
 
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_elch_elctrode_mean_concentration, eleparams);
-
-  // number of dofset associated with displacement-related dofs
-  if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
 
   // evaluate nodal mean concentration of micro discretizations
   DRT::AssembleStrategy strategy(NdsMicro(), NdsMicro(), Teuchos::null, Teuchos::null, phinp_micro_,

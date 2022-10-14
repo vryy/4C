@@ -356,7 +356,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractElementAndNodeVa
   if (my::scatrapara_->IsAle())
   {
     // get number of dofset associated with displacement related dofs
-    const int ndsdisp = params.get<int>("ndsdisp");
+    const int ndsdisp = my::scatrapara_->NdsDisp();
 
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
     if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
@@ -409,7 +409,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractElementAndNodeVa
   //---------------------------------------------------------------------------------------------
 
   // get number of dofset associated with pressure/fluid related dofs
-  const int ndspres = params.get<int>("ndspres");
+  const int ndspres = my::scatrapara_->NdsPres();
 
   // determine number of velocity related dofs per node (= number of phases)
   const int numfluidphases = VarManager()->MultiphaseMat()->NumFluidPhases();
@@ -457,7 +457,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractNodalFlux(DRT::E
   efluxnp_.resize(numfluidphases);
 
   // get number of dofset associated with velocity related dofs
-  const int ndsvel = params.get<int>("ndsvel");
+  const int ndsvel = my::scatrapara_->NdsVel();
 
   std::string stateprefix = "flux";
   for (int curphase = 0; curphase < numfluidphases; curphase++)

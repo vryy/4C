@@ -796,6 +796,9 @@ namespace SCATRA
     //! Set general element parameters
     void SetElementGeneralParameters(bool calcinitialtimederivative = false) const;
 
+    //! Set node set parameters
+    void SetElementNodesetParameters() const;
+
     //! Set additional problem-specific parameters for non-standard scalar transport problems
     //! (electrochemistry etc.)
     virtual void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams) const {};

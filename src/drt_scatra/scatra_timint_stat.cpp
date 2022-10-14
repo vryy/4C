@@ -108,6 +108,15 @@ void SCATRA::TimIntStationary::SetElementTimeParameter(bool forcedincrementalsol
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntStationary::Setup()
+{
+  // setup base class
+  ScaTraTimIntImpl::Setup();
+
+  SetElementNodesetParameters();
+}
 
 /*----------------------------------------------------------------------*
  | set time for evaluation of Neumann boundary conditions      vg 12/08 |

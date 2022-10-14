@@ -65,12 +65,6 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockThermoStructureDo
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_scatra_mono_odblock_mesh, eleparams);
 
-  // number of dofset associated with displacement-related dofs on thermo discretization
-  eleparams.set<int>("ndsdisp", 1);
-
-  // number of dofset associated with velocity-related dofs on thermo discretization
-  eleparams.set<int>("ndsvel", 1);
-
   // remove state vectors from thermo discretization
   thermo_->ScaTraField()->Discretization()->ClearState();
 
@@ -334,9 +328,6 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
 
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_s2icoupling_od, condparams);
-
-  // number of dofset associated with displacement-related dofs on scalar transport discretization
-  condparams.set<int>("ndsdisp", 1);
 
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
       "differentiationtype", SCATRA::DifferentiationType::disp, condparams);

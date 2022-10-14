@@ -52,11 +52,6 @@ void SCATRA::HeterogeneousReactionStrategy::EvaluateMeshtying()
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_heteroreac_mat_and_rhs, condparams);
 
-  // provide element parameter list with numbers of dofsets associated with displacement and
-  // velocity dofs on scatra discretization
-  condparams.set<int>("ndsdisp", scatratimint_->NdsDisp());
-  condparams.set<int>("ndsvel", scatratimint_->NdsVel());
-
   // set global state vectors according to time-integration scheme
   discret_->SetState("phinp", scatratimint_->Phiafnp());
   discret_->SetState("hist", scatratimint_->Hist());

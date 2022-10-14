@@ -88,6 +88,7 @@ void SCATRA::TimIntGenAlpha::Setup()
   SetElementTimeParameter();
   SetElementGeneralParameters();
   SetElementTurbulenceParameters();
+  SetElementNodesetParameters();
 
   // for initializing phiaf_, phiam_ based on the initial field that was
   // set for phinp_, phin_ in the TimInt base class constructor;

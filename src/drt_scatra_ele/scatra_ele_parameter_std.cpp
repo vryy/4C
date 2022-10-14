@@ -50,6 +50,11 @@ DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
       fdcheck_(INPAR::SCATRA::fdcheck_none),
       fdcheckeps_(0.),
       fdchecktol_(0.),
+      nds_disp_(-1),
+      nds_micro_(-1),
+      nds_pres_(-1),
+      nds_vel_(-1),
+      nds_wss_(-1),
       probnum_(0),
       semiimplicit_(false),
       intlayergrowth_convtol_(0.),
@@ -70,16 +75,22 @@ DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
       // we have to know the time parameters here to check for illegal combinations
       scatraparatimint_(DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(disname))
 {
-  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::ScaTraEleParameterStd::SetNodesetParameters(Teuchos::ParameterList& parameters)
+{
+  nds_disp_ = parameters.get<int>("ndsdisp", -1);
+  nds_pres_ = parameters.get<int>("ndspres", -1);
+  nds_vel_ = parameters.get<int>("ndsvel", -1);
+  nds_wss_ = parameters.get<int>("ndswss", -1);
 }
 
 
 /*----------------------------------------------------------------------*
- | set parameters                                            ehrl 04/10 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(
-    Teuchos::ParameterList& parameters  //!< parameter list
-)
+void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(Teuchos::ParameterList& parameters)
 {
   // set ale case
   is_ale_ = parameters.get<bool>("isale", false);
@@ -219,6 +230,44 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(
 
   // electromagnetic diffusion source function
   emd_source_ = parameters.get<int>("electromagnetic_diffusion_source", -1);
+}
 
-  return;
+int DRT::ELEMENTS::ScaTraEleParameterStd::NdsDisp() const
+{
+  dsassert(nds_disp_ != -1,
+      "You try to access the number of dofset associated with displacement dofs without "
+      "having set it!");
+  return nds_disp_;
+}
+
+int DRT::ELEMENTS::ScaTraEleParameterStd::NdsMicro() const
+{
+  dsassert(nds_micro_ != -1,
+      "You try to access the number of dofset to write micro scale values on without having "
+      "set it!");
+  return nds_micro_;
+}
+
+int DRT::ELEMENTS::ScaTraEleParameterStd::NdsPres() const
+{
+  dsassert(nds_pres_ != -1,
+      "You try to access the number of dofset associated with pressure dofs without having "
+      "set it!");
+  return nds_pres_;
+}
+
+int DRT::ELEMENTS::ScaTraEleParameterStd::NdsVel() const
+{
+  dsassert(nds_vel_ != -1,
+      "You try to access the number of dofset associated with velocity related dofs without "
+      "having set it!");
+  return nds_vel_;
+}
+
+int DRT::ELEMENTS::ScaTraEleParameterStd::NdsWss() const
+{
+  dsassert(nds_wss_ != -1,
+      "You try to access the number of dofset associated with wall shear stress dofs without "
+      "having set it!");
+  return nds_wss_;
 }

@@ -166,10 +166,6 @@ void SCATRA::TimIntLomaBDF2::ComputeThermPressure()
   discret_->ClearState();
   discret_->SetState("phinp", phinp_);
 
-  // provide numbers of dofsets associated with velocity and displacement dofs
-  eleparams.set<int>("ndsvel", NdsVel());
-  if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
-
   // set action for elements
   eleparams.set<int>("action", SCATRA::calc_domain_and_bodyforce);
   SetElementTimeParameter();

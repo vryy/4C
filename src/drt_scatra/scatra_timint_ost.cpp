@@ -72,6 +72,7 @@ void SCATRA::TimIntOneStepTheta::Setup()
   SetElementTimeParameter();
   SetElementGeneralParameters();
   SetElementTurbulenceParameters();
+  SetElementNodesetParameters();
 
   // setup krylov
   PrepareKrylovProjection();
@@ -103,9 +104,6 @@ void SCATRA::TimIntOneStepTheta::Setup()
     // set action
     DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::micro_scale_initialize, eleparams);
-
-    // provide displacement field in case of ALE
-    if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
 
     // loop over macro-scale elements
     discret_->Evaluate(
@@ -302,9 +300,6 @@ void SCATRA::TimIntOneStepTheta::Update(const int num)
     DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::micro_scale_update, eleparams);
 
-    // provide displacement field in case of ALE
-    if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
-
     // loop over macro-scale elements
     discret_->Evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -368,9 +363,6 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(const int step, Teuchos::RCP<IO::In
     // set action
     DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::micro_scale_read_restart, eleparams);
-
-    // provide displacement field in case of ALE
-    if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
 
     // loop over macro-scale elements
     discret_->Evaluate(eleparams);

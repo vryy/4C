@@ -557,7 +557,7 @@ void SCATRA::ScaTraTimIntElch::PrepareTimeLoop()
   Teuchos::ParameterList eleparams;
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::check_scatra_element_parameter, eleparams);
-  if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
+
   discret_->Evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
@@ -634,8 +634,6 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
           "action", SCATRA::Action::calc_error, eleparams);
       eleparams.set("total time", time_);
       eleparams.set<int>("calcerrorflag", calcerror_);
-      // provide displacement field in case of ALE
-      if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
 
       // set vector values needed by elements
       discret_->ClearState();
@@ -685,8 +683,6 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
           "action", SCATRA::Action::calc_error, eleparams);
       eleparams.set("total time", time_);
       eleparams.set<int>("calcerrorflag", calcerror_);
-      // provide displacement field in case of ALE
-      if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
 
       // set vector values needed by elements
       discret_->ClearState();
@@ -720,8 +716,6 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
           "action", SCATRA::Action::calc_error, eleparams);
       eleparams.set("total time", time_);
       eleparams.set<int>("calcerrorflag", calcerror_);
-      // provide displacement field in case of ALE
-      if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
 
       // set vector values needed by elements
       discret_->ClearState();
@@ -969,9 +963,6 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleE
 
   eleparams.set("calc_status", true);  // just want to have a status output!
 
-  // provide displacement field in case of ALE
-  if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
-
   // Since we just want to have the status output for t_{n+1},
   // we have to take care for Gen.Alpha!
   // AddTimeIntegrationSpecificVectors cannot be used since we do not want
@@ -1058,9 +1049,6 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleE
 
     // equip element parameter list with current condition
     condparams.set<Teuchos::RCP<DRT::Condition>>("condition", condition);
-
-    // provide displacement field in case of ALE
-    if (isale_) condparams.set<int>("ndsdisp", NdsDisp());
 
     // get node
     DRT::Node* node = discret_->gNode(nodeid);
@@ -1300,9 +1288,6 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
       DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
           "action", SCATRA::Action::calc_elch_electrode_soc_and_c_rate, condparams);
 
-      // number of dofset associated with displacement-related dofs
-      if (isale_) condparams.set<int>("ndsdisp", NdsDisp());
-
       // initialize result vector
       // first component  = integral of concentration
       // second component = integral of time derivative of concentration
@@ -1452,9 +1437,6 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
         // action for elements
         DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
             "action", SCATRA::BoundaryAction::calc_elch_cell_voltage, condparams);
-
-        // number of dofset associated with displacement-related dofs
-        if (isale_) condparams.set<int>("ndsdisp", NdsDisp());
 
         // initialize result vector
         // first component = electric potential integral, second component = domain integral
@@ -1649,9 +1631,6 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
       "action", SCATRA::Action::calc_total_and_mean_scalars, eleparams);
   eleparams.set("inverting", false);
   eleparams.set("calc_grad_phi", false);
-
-  // provide displacement field in case of ALE
-  if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
 
   // evaluate integrals of concentrations and domain
   Teuchos::RCP<Epetra_SerialDenseVector> scalars =
@@ -2101,12 +2080,6 @@ double SCATRA::ScaTraTimIntElch::ComputeConductivity(
   eleparams.set("effCond", effCond);
 
   eleparams.set("specresist", specresist);
-
-  // provide number of dofset associated with velocity-related dofs
-  eleparams.set<int>("ndsvel", NdsVel());
-
-  // provide displacement field in case of ALE
-  if (isale_) eleparams.set<int>("ndsdisp", NdsDisp());
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -2626,9 +2599,6 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeKineticsConditions(
   else
     dserror("Illegal action for electrode kinetics evaluation!");
 
-  if (isale_)  // provide displacement field in case of ALE
-    condparams.set<int>("ndsdisp", NdsDisp());
-
   // add element parameters and set state vectors according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
 
@@ -2658,9 +2628,6 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
   // set action for elements
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_elch_boundary_kinetics_point, condparams);
-
-  // provide displacement field in case of ALE
-  if (isale_) condparams.set<int>("ndsdisp", NdsDisp());
 
   // set state vectors according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
@@ -2992,9 +2959,6 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
             // set action for elements
             DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
                 "action", SCATRA::BoundaryAction::calc_Neumann, params);
-
-            // number of dofset associated with displacement-related dofs
-            if (isale_) params.set<int>("ndsdisp", NdsDisp());
 
             // loop over all conditioned elements
             std::map<int, Teuchos::RCP<DRT::Element>>& geometry = condition.Geometry();
