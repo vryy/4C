@@ -802,7 +802,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
   beam_interaction_conditions_ptr_->BuildIdSets(DiscretPtr());
 
   if (beam_interaction_params_ptr_->GetSearchStrategy() ==
-      INPAR::BEAMINTERACTION::SearchStrategy::binning)
+      INPAR::BEAMINTERACTION::SearchStrategy::bruteforce_with_binning)
   {
     // loop over all row beam elements
     // note: like this we ensure that first element of pair is always a beam element, also only
@@ -845,7 +845,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
     }
   }
   else if (beam_interaction_params_ptr_->GetSearchStrategy() ==
-           INPAR::BEAMINTERACTION::SearchStrategy::bounding_volume)
+           INPAR::BEAMINTERACTION::SearchStrategy::bruteforce_with_proc_boundingvolume)
   {
     // Get vector of all beam element bounding boxes.
     int const numroweles = EleTypeMapExtractorPtr()->BeamMap()->NumMyElements();

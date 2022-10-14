@@ -41,10 +41,11 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
       tuple<int>(repstr_adaptive, repstr_adaptive, repstr_everydt, repstr_everydt),
       &beaminteraction);
 
-  setStringToIntegralParameter<SearchStrategy>("SEARCH_STRATEGY", "binning",
+  setStringToIntegralParameter<SearchStrategy>("SEARCH_STRATEGY", "bruteforce_with_binning",
       "Type of search strategy used for finding coupling pairs",
-      tuple<std::string>("binning", "bounding_volume"),
-      tuple<SearchStrategy>(SearchStrategy::binning, SearchStrategy::bounding_volume),
+      tuple<std::string>("bruteforce_with_binning", "bruteforce_with_proc_boundingvolume"),
+      tuple<SearchStrategy>(SearchStrategy::bruteforce_with_binning,
+          SearchStrategy::bruteforce_with_proc_boundingvolume),
       &beaminteraction);
 
   /*----------------------------------------------------------------------*/

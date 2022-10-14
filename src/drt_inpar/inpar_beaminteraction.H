@@ -39,8 +39,8 @@ namespace INPAR
 
     enum class SearchStrategy
     {
-      binning,         ///< coupling pair search based on binning
-      bounding_volume  ///< coupling pair search based on bounding boxes
+      bruteforce_with_binning,             ///< coupling pair search based on binning
+      bruteforce_with_proc_boundingvolume  ///< coupling pair search based on bounding boxes
     };
 
     /// type of the used submodel for beaminteraction

@@ -39,7 +39,7 @@ Test Details                        = Yes
 Debug                               = No
 ----------------------------------------------------------------BEAM INTERACTION
 REPARTITIONSTRATEGY                   Everydt
-SEARCH_STRATEGY                       bounding_volume
+SEARCH_STRATEGY                       bruteforce_with_proc_boundingvolume
 --------------------------------------------------------------------BEAM CONTACT
 MODELEVALUATOR                        Standard
 BEAMS_STRATEGY                        Penalty

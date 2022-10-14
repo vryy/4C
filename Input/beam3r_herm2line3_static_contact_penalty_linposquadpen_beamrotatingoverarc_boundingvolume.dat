@@ -54,7 +54,7 @@ MAXITER                         30
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------------BEAM INTERACTION
-SEARCH_STRATEGY                 bounding_volume
+SEARCH_STRATEGY                 bruteforce_with_proc_boundingvolume
 ----------------------------------------------------------------BEAM INTERACTION/BEAM TO BEAM CONTACT
 STRATEGY                        penalty
 ----------------------------------------------------------------BEAM CONTACT

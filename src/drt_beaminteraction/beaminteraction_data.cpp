@@ -23,7 +23,7 @@ BEAMINTERACTION::BeamInteractionParams::BeamInteractionParams()
     : isinit_(false),
       issetup_(false),
       rep_strategy_(INPAR::BEAMINTERACTION::repstr_adaptive),
-      search_strategy_(INPAR::BEAMINTERACTION::SearchStrategy::binning)
+      search_strategy_(INPAR::BEAMINTERACTION::SearchStrategy::bruteforce_with_binning)
 {
   // empty constructor
 }
