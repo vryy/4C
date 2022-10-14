@@ -18,7 +18,6 @@
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/filesystem_utils.H"
 
 #include "../drt_io/io_pstream.H"
 
@@ -731,20 +730,20 @@ void VtkWriterBase::CreateRestartedInitialCollectionFileMidSection(
       if (readtime <= (restart_time + 1e-12))
       {
         std::string filename = GetXmlOptionValue(line, "file");
+        std::filesystem::path p_restart(restartfilename);
 
-        if (UTILS::FILESYSTEM::IsAbsolutePath(restartfilename))
+        if (p_restart.is_absolute())
         {
           // Do not modify the path if the restart is given with an absolute path (we don't want to
-          // have absolute paths in the colllection file)
+          // have absolute paths in the collection file)
           WriteMasterFileAndTimeValueIntoGivenVtkCollectionFileStream(
               collection_file_midsection_cumulated_content_, filename, readtime);
         }
         else
         {
-          std::string new_filename = UTILS::FILESYSTEM::Join(
-              UTILS::FILESYSTEM::GetDirectoryName(restartfilename), filename);
+          std::filesystem::path p_new_filename = "." / p_restart.parent_path() / filename;
           WriteMasterFileAndTimeValueIntoGivenVtkCollectionFileStream(
-              collection_file_midsection_cumulated_content_, new_filename, readtime);
+              collection_file_midsection_cumulated_content_, p_new_filename.string(), readtime);
         }
       }
       else
