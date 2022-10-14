@@ -234,6 +234,7 @@ void FS3I::PartFPS3I::Init()
   fluidscatra_->Init(fs3idyn, scatradyn, problem->SolverParams(linsolver1number), "scatra1", true);
   fluidscatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
   fluidscatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
+  fluidscatra_->ScaTraField()->SetNumberOfDofSetWallShearStress(1);
 
   structscatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
 
@@ -243,6 +244,7 @@ void FS3I::PartFPS3I::Init()
   structscatra_->Init(fs3idyn, scatradyn, problem->SolverParams(linsolver2number), "scatra2", true);
   structscatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
   structscatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
+  structscatra_->ScaTraField()->SetNumberOfDofSetWallShearStress(2);
 
   scatravec_.push_back(fluidscatra_);
   scatravec_.push_back(structscatra_);
@@ -672,7 +674,7 @@ void FS3I::PartFPS3I::SetWallShearStresses()
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->SetWallShearStresses(wss[i], i + 1);
+    scatra->ScaTraField()->SetWallShearStresses(wss[i]);
   }
 }
 

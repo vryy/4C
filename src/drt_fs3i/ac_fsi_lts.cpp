@@ -104,10 +104,10 @@ void FS3I::ACFSI::SetMeanWallShearStresses() const
 {
   std::vector<Teuchos::RCP<const Epetra_Vector>> wss;
 
-  //############ Fluid Field ###############
-  scatravec_[0]->ScaTraField()->SetWallShearStresses(FluidToFluidScalar(WallShearStress_lp_), 1);
+  // ############ Fluid Field ###############
+  scatravec_[0]->ScaTraField()->SetWallShearStresses(FluidToFluidScalar(WallShearStress_lp_));
 
-  //############ Structure Field ###############
+  // ############ Structure Field ###############
 
   // extract FSI-Interface from fluid field
   Teuchos::RCP<Epetra_Vector> WallShearStress =
@@ -123,7 +123,7 @@ void FS3I::ACFSI::SetMeanWallShearStresses() const
   // Parameter int block of function InsertVector: (0: inner dofs of structure, 1: interface dofs of
   // structure, 2: inner dofs of porofluid, 3: interface dofs of porofluid )
   fsi_->StructureField()->Interface()->InsertVector(WallShearStress, 1, structurewss);
-  scatravec_[1]->ScaTraField()->SetWallShearStresses(StructureToStructureScalar(structurewss), 1);
+  scatravec_[1]->ScaTraField()->SetWallShearStresses(StructureToStructureScalar(structurewss));
 }
 
 /*----------------------------------------------------------------------*

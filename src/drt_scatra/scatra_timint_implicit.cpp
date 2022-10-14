@@ -1243,8 +1243,7 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetWallShearStresses(
-    Teuchos::RCP<const Epetra_Vector> wss, const int nds_wss)
+void SCATRA::ScaTraTimIntImpl::SetWallShearStresses(Teuchos::RCP<const Epetra_Vector> wss)
 {
   if (wss == Teuchos::null) dserror("WSS state is Teuchos::null");
 
@@ -1255,11 +1254,10 @@ void SCATRA::ScaTraTimIntImpl::SetWallShearStresses(
   // have changed meanwhile (e.g., due to periodic boundary conditions applied only
   // to the fluid field)!
   // We have to be sure that everything is still matching.
-  if (not wss->Map().SameAs(*discret_->DofRowMap(nds_wss)))
+  if (not wss->Map().SameAs(*discret_->DofRowMap(NdsWallShearStress())))
     dserror("Maps are NOT identical. Emergency!");
 #endif
 
-  SetNumberOfDofSetWallShearStress(nds_wss);
   discret_->SetState(NdsWallShearStress(), "WallShearStress", wss);
 }
 

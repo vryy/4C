@@ -234,7 +234,7 @@ namespace SCATRA
             false  //!< flag whether the fluid pressure needs to be known for the scatra
     );
 
-    void SetWallShearStresses(Teuchos::RCP<const Epetra_Vector> wss, const int nds_wss);
+    void SetWallShearStresses(Teuchos::RCP<const Epetra_Vector> wss);
 
     void SetPressureField(Teuchos::RCP<const Epetra_Vector> pressure, const int nds_pres);
 
