@@ -101,13 +101,10 @@ void SCATRA::ScaTraTimIntPoroMulti::SetL2FluxOfMultiFluid(
  | set solution fields on given dof sets              kremheller  07/17 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntPoroMulti::SetSolutionFieldOfMultiFluid(
-    Teuchos::RCP<const Epetra_Vector> phinp_fluid, Teuchos::RCP<const Epetra_Vector> phin_fluid,
-    const int nds_phi_fluid)
+    Teuchos::RCP<const Epetra_Vector> phinp_fluid, Teuchos::RCP<const Epetra_Vector> phin_fluid)
 {
-  if (nds_phi_fluid >= discret_->NumDofSets()) dserror("Too few dofsets on scatra discretization!");
+  if (NdsPressure() >= discret_->NumDofSets()) dserror("Too few dofsets on scatra discretization!");
 
-  // store number of dof-set
-  SetNumberOfDofSetPressure(nds_phi_fluid);
   // provide scatra discretization with fluid primary variable field
   discret_->SetState(NdsPressure(), "phinp_fluid", phinp_fluid);
   discret_->SetState(NdsPressure(), "phin_fluid", phin_fluid);

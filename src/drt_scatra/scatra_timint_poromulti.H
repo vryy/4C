@@ -55,7 +55,7 @@ namespace SCATRA
 
     //! set solution field of the multiphase fluid
     virtual void SetSolutionFieldOfMultiFluid(Teuchos::RCP<const Epetra_Vector> phinp_fluid,
-        Teuchos::RCP<const Epetra_Vector> phin_fluid, const int nds_phi_fluid);
+        Teuchos::RCP<const Epetra_Vector> phin_fluid);
 
     //! set the velocity field (zero or field by function)
     virtual void SetVelocityField(const int nds)

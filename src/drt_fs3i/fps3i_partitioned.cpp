@@ -235,6 +235,7 @@ void FS3I::PartFPS3I::Init()
   fluidscatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
   fluidscatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
   fluidscatra_->ScaTraField()->SetNumberOfDofSetWallShearStress(1);
+  fluidscatra_->ScaTraField()->SetNumberOfDofSetPressure(1);
 
   structscatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
 
@@ -245,6 +246,7 @@ void FS3I::PartFPS3I::Init()
   structscatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
   structscatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
   structscatra_->ScaTraField()->SetNumberOfDofSetWallShearStress(2);
+  structscatra_->ScaTraField()->SetNumberOfDofSetPressure(2);
 
   scatravec_.push_back(fluidscatra_);
   scatravec_.push_back(structscatra_);
@@ -689,7 +691,7 @@ void FS3I::PartFPS3I::SetPressureFields()
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->SetPressureField(pressure[i], i + 1);
+    scatra->ScaTraField()->SetPressureField(pressure[i]);
   }
 }
 

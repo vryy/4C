@@ -1271,8 +1271,7 @@ void SCATRA::ScaTraTimIntImpl::SetOldPartOfRighthandside()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetPressureField(
-    Teuchos::RCP<const Epetra_Vector> pressure, const int nds_pres)
+void SCATRA::ScaTraTimIntImpl::SetPressureField(Teuchos::RCP<const Epetra_Vector> pressure)
 {
   if (pressure == Teuchos::null) dserror("Pressure state is Teuchos::null");
 
@@ -1283,11 +1282,10 @@ void SCATRA::ScaTraTimIntImpl::SetPressureField(
   // have changed meanwhile (e.g., due to periodic boundary conditions applied only
   // to the fluid field)!
   // We have to be sure that everything is still matching.
-  if (not pressure->Map().SameAs(*discret_->DofRowMap(nds_pres)))
+  if (not pressure->Map().SameAs(*discret_->DofRowMap(NdsPressure())))
     dserror("Maps are NOT identical. Emergency!");
 #endif
 
-  SetNumberOfDofSetPressure(nds_pres);
   discret_->SetState(NdsPressure(), "Pressure", pressure);
 }
 

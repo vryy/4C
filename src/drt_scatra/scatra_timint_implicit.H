@@ -236,7 +236,7 @@ namespace SCATRA
 
     void SetWallShearStresses(Teuchos::RCP<const Epetra_Vector> wss);
 
-    void SetPressureField(Teuchos::RCP<const Epetra_Vector> pressure, const int nds_pres);
+    void SetPressureField(Teuchos::RCP<const Epetra_Vector> pressure);
 
     void SetMembraneConcentration(Teuchos::RCP<const Epetra_Vector> MembraneConc);
 
