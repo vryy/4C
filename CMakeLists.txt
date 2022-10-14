@@ -41,6 +41,7 @@ configure_file(
 # include all external (cmake) macros that we use
 include(CheckCXXSourceRuns)
 include(CheckCXXSourceCompiles)
+include(ExternalProject)
 
 # define macro to remove duplicate libraries from the link line
 macro(REMOVE_DUPLICATES _list)
@@ -174,12 +175,8 @@ endforeach()
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
-# Use Trilinos_PREFIX, if the user set it, to help find Trilinos.
-# The final location will actually be held in Trilinos_DIR which must
-# point at "<prefix>/lib/cmake/Trilinos", but this helps the search.
-set(CMAKE_PREFIX_PATH ${Trilinos_PREFIX} ${CMAKE_PREFIX_PATH})
-
 # Get Trilinos as one entity
+set(Trilinos_DIR "${Trilinos_PREFIX}/lib/cmake/Trilinos")
 find_package(Trilinos REQUIRED)
 
 # Echo trilinos build info just for fun
@@ -273,6 +270,35 @@ if(NETCDF_FOUND)
   link_directories(${NETCDF_LIBRARY_DIRS})
   set(LIBRARIES ${LIBRARIES} ${NETCDF_LIBRARIES})
 endif(NETCDF_FOUND)
+
+# Find ArborX
+option(BACI_WITH_ARBORX "Use ArborX for search algorithms" OFF)
+if(BACI_WITH_ARBORX)
+  message(STATUS "Search algorithms with ArborX: enabled")
+  externalproject_add(
+    arborx
+    GIT_REPOSITORY https://github.com/arborx/ArborX.git
+    GIT_TAG v1.2
+    CMAKE_ARGS -D
+               CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+               -D
+               Kokkos_ROOT=${Trilinos_PREFIX}
+               -D
+               CMAKE_CXX_EXTENSIONS=OFF
+               -D
+               ARBORX_ENABLE_MPI=ON
+    UPDATE_COMMAND ""
+    )
+
+  include_directories(SYSTEM ${PROJECT_BINARY_DIR}/arborx-prefix/include)
+  include_directories(SYSTEM ${PROJECT_BINARY_DIR}/arborx-prefix/include/details)
+
+  add_definitions("-DHAVE_ARBORX")
+  set(HAVE_ARBORX ON)
+
+else()
+  message(STATUS "Search algorithms with ArborX: disabled")
+endif()
 
 # FFTW
 find_package(FFTW)
@@ -2839,16 +2865,21 @@ add_custom_target(post DEPENDS post_processor post_drt_monitor)
 add_custom_target(post_drt_ensight DEPENDS post_processor)
 add_custom_target(post_drt_vtk DEPENDS post_processor)
 add_custom_target(framework DEPENDS pre_exodus post)
-add_custom_target(
-  full
-  DEPENDS ${baciname}
-          post_processor
-          post_drt_monitor
-          post_drt_s8convert
-          pre_exodus
-          pre_locsys
-          cut_test
-  )
+
+set(FULL_TARGETS
+    post_processor
+    post_drt_monitor
+    post_drt_s8convert
+    pre_exodus
+    pre_locsys
+    cut_test
+    )
+# if arborx is there append it to the list
+if(BACI_WITH_ARBORX)
+  list(APPEND FULL_TARGETS arborx)
+endif()
+
+add_custom_target(full DEPENDS ${baciname} ${FULL_TARGETS})
 
 # various post-processing tools
 add_custom_command(

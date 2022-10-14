@@ -233,9 +233,6 @@ else
   FCOMPILER=$MPIDIR/bin/mpif90
 fi
 
-Trilinos_DIR="$Trilinos_PREFIX/lib/cmake/Trilinos"
-echo $Trilinos_DIR
-
 ############################################################
 # run cmake
 
@@ -266,7 +263,7 @@ CMAKE_FULL_ARGS=(--no-warn-unused-cli \
   -D COLOROUTPUT:BOOL=OFF \
   -D INCLUDE_INSTALL_DIR:PATH=\"$INCLUDE_INSTALL_DIR\" \
   -D LIB_INSTALL_DIR:PATH=\"$LIB_INSTALL_DIR\" \
-  -D Trilinos_DIR:PATH=\"$Trilinos_DIR\" \
+  -D Trilinos_PREFIX:PATH=\"$Trilinos_PREFIX\" \
   -D SEARCH_CLN_LIBRARY_DIR:PATH=\"$CLN_LIBRARYDIR\" \
   -D SEARCH_CLN_INCLUDE_DIR:PATH=\"$CLN_INCLUDEDIR\" \
   -D USE_NO_SYSTEM_PATHS:BOOL=\"$BOOST_EXCLUDE_SYSTEM_PATHS\" \
@@ -275,6 +272,7 @@ CMAKE_FULL_ARGS=(--no-warn-unused-cli \
   -D Boost_NO_BOOST_CMAKE:BOOL=\"$USE_USERSPECIFIED_BOOST\" \
   -D QHULL_LIBRARY_DIR:PATH=\"$QHULL_LIBRARYDIR\" \
   -D QHULL_INCLUDE_DIR:PATH=\"$QHULL_INCLUDEDIR\" \
+  -D BACI_WITH_ARBORX:BOOL=\"$BACI_WITH_ARBORX\" \
   -D MPI_DIR:PATH=\"$MPIDIR\" \
   -D MPI_RUN:FILEPATH=\"$MPIRUN\" \
   -D MPIEXEC_EXTRA_OPTS:STRING=\"$MPIEXEC_EXTRA_OPTS\" \
