@@ -311,38 +311,6 @@ void NOX::NLN::CONTACT::LinearSystem::LinearSubProblem::ExtractActiveBlocks(
       isdiagonal[r] = true;
   }
 
-#if 0
-  std::cout << "isempty = {";
-  for ( unsigned r = 0; r < isempty.size(); ++r )
-  {
-    std::cout << "{";
-    for (unsigned c = 0; c < isempty[r].size(); ++c)
-    {
-      std::cout << ( isempty[r][c] ? "TRUE " : "FALSE" );
-      if (c < isempty[r].size() - 1)
-      {
-        std::cout << " ";
-      }
-    }
-    std::cout << "}";
-    if (r < isempty.size() - 1)
-      std::cout << "\n           ";
-    else
-      std::cout << "}\n";
-  }
-
-  std::cout << "isdiagonal = {";
-  for ( unsigned r = 0; r < isdiagonal.size(); ++r )
-  {
-    std::cout << ( isdiagonal[r] ? "TRUE " : "FALSE" );
-    if (r < isdiagonal.size() - 1)
-    {
-      std::cout << " ";
-    }
-  }
-  std::cout << "}\n";
-#endif
-
   // find row/col index with empty off-diagonal blocks and
   // a diagonal matrix in the diagonal block. These rows/cols
   // can be identified by a skip_row_col value of one. These

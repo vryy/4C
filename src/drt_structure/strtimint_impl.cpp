@@ -914,11 +914,6 @@ void STR::TimIntImpl::ApplyForceStiffInternal(const double time, const double dt
     AssembleEdgeBasedMatandRHS(params, fint, dis, vel);
   }
 
-#if 0
-  if (pressure_ != Teuchos::null)
-    std::cout << "Total volume=" << std::scientific << p.get<double>("volume") << std::endl;
-#endif
-
   // *********** time measurement ***********
   dtele_ = timer_->WallTime() - dtcpu;
   // *********** time measurement ***********
@@ -4295,17 +4290,6 @@ void STR::TimIntImpl::UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtracto
  *----------------------------------------------------------------------*/
 void STR::TimIntImpl::STCPreconditioning()
 {
-// print first system matrix to file in matlab format (DEBUGGING)
-#if 0
-  if (iter_==1&& step_==0)
-  {
-    const std::string fname = "unscaled.mtl";
-    if (myrank_ == 0)
-      std::cout<<"Printing unscaled system matrix to file"<<std::endl;
-      LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_))->EpetraMatrix()));
-  }
-#endif
-
   if (stcscale_ != INPAR::STR::stc_none)
   {
     if (!stccompl_)
@@ -4324,20 +4308,7 @@ void STR::TimIntImpl::STCPreconditioning()
       stcmat_->Multiply(true, *fres_, *fressdc);
       fres_->Update(1.0, *fressdc, 0.0);
     }
-
-// print first system matrix to file in matlab format (DEBUGGING)
-#if 0
-    if (iter_==1&& step_==0)
-    {
-      const std::string fname = "scaled.mtl";
-      if (myrank_ == 0)
-        std::cout<<"Printing scaled system matrix to file"<<std::endl;
-        LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_))->EpetraMatrix()));
-    }
-#endif
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*/
