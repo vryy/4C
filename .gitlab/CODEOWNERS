@@ -146,6 +146,8 @@ drt_fsi/                       @baci/team_fsi
 
 drt_fsi_xfem/                  @baci/team_fsi
 
+drt_geometric_search/          @baci/team_contact @baci/team_structure
+
 drt_geometry/                  @baci/team_discretization
 
 drt_geometry_pair/             @baci/team_discretization

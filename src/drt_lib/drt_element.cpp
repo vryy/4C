@@ -24,6 +24,9 @@
 #include <Shards_BasicTopologies.hpp>
 #include <utility>
 
+#include "../drt_geometric_search/bounding_volume.H"
+#include "../drt_geometric_search/geometric_search_params.H"
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::StringToDistype(const std::string& name)
@@ -1154,6 +1157,40 @@ unsigned int DRT::Element::AppendVisualizationDofBasedResultDataVector(
   }
 
   return this->NumNode();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+GEOMETRICSEARCH::BoundingVolume DRT::Element::GetBoundingVolume(const DRT::Discretization& discret,
+    const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
+    const Teuchos::RCP<const GEOMETRICSEARCH::GeometricSearchParams>& params) const
+{
+  GEOMETRICSEARCH::BoundingVolume bounding_box;
+  LINALG::Matrix<3, 1, double> point;
+
+  // The default bounding box is simply the bounding box of all element nodes.
+  for (unsigned int i_node = 0; i_node < (unsigned int)this->NumNode(); ++i_node)
+  {
+    std::vector<int> nodedofs;
+    nodedofs.clear();
+
+    // local storage position of desired dof gid
+    const DRT::Node* node = this->Nodes()[i_node];
+    discret.Dof(node, nodedofs);
+
+    for (unsigned int i_dir = 0; i_dir < 3; ++i_dir)
+    {
+      const int lid = result_data_dofbased->Map().LID(nodedofs[i_dir]);
+
+      if (lid > -1)
+        point(i_dir) = node->X()[i_dir] + (*result_data_dofbased)[lid];
+      else
+        dserror("received illegal dof local id: %d", lid);
+    }
+    bounding_box.AddPoint(point);
+  }
+
+  return bounding_box;
 }
 
 /*----------------------------------------------------------------------*

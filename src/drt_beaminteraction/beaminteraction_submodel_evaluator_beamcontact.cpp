@@ -10,6 +10,7 @@
 /*-----------------------------------------------------------*/
 
 #include "../drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact.H"
+#include "../drt_beaminteraction/beaminteraction_data.H"
 #include "../drt_beaminteraction/beam_contact_pair.H"
 #include "../drt_beaminteraction/beam_contact_params.H"
 #include "../drt_beaminteraction/beam_contact_runtime_vtk_output_params.H"
@@ -18,6 +19,9 @@
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_geometric_search/bounding_volume.H"
+#include "../drt_geometric_search/geometric_search.H"
+#include "../drt_geometric_search/geometric_search_params.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
@@ -64,7 +68,9 @@
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::BeamContact()
     : beam_contact_params_ptr_(Teuchos::null),
+      beam_interaction_params_ptr_(Teuchos::null),
       beam_interaction_conditions_ptr_(Teuchos::null),
+      geometric_search_params_ptr_(Teuchos::null),
       contact_elepairs_(Teuchos::null),
       assembly_managers_(Teuchos::null),
       beam_to_solid_volume_meshtying_vtk_writer_ptr_(Teuchos::null),
@@ -80,6 +86,14 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::BeamContact()
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 {
   CheckInit();
+
+  // build a new data container to manage beam interaction parameters
+  beam_interaction_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamInteractionParams());
+  beam_interaction_params_ptr_->Init();
+  beam_interaction_params_ptr_->Setup();
+
+  // build a new data container to manage geometric search parameters
+  geometric_search_params_ptr_ = Teuchos::rcp(new GEOMETRICSEARCH::GeometricSearchParams());
 
   // build a new data container to manage beam contact parameters
   beam_contact_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamContactParams());
@@ -787,43 +801,107 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
   // Build the ids of the elements for the beam-to-solid conditions.
   beam_interaction_conditions_ptr_->BuildIdSets(DiscretPtr());
 
-  // loop over all row beam elements
-  // note: like this we ensure that first element of pair is always a beam element, also only
-  // only beam to something contact considered
-  int const numroweles = EleTypeMapExtractorPtr()->BeamMap()->NumMyElements();
-  for (int rowele_i = 0; rowele_i < numroweles; ++rowele_i)
+  if (beam_interaction_params_ptr_->GetSearchStrategy() ==
+      INPAR::BEAMINTERACTION::SearchStrategy::bruteforce_with_binning)
   {
-    int const elegid = EleTypeMapExtractorPtr()->BeamMap()->GID(rowele_i);
-    DRT::Element* currele = DiscretPtr()->gElement(elegid);
-
-    // (unique) set of neighboring bins for all col bins assigned to current element
-    std::set<int> neighboring_binIds;
-
-    // loop over all bins touched by currele
-    std::set<int>::const_iterator biniter;
-    for (biniter = BeamInteractionDataStatePtr()->GetRowEleToBinSet(elegid).begin();
-         biniter != BeamInteractionDataStatePtr()->GetRowEleToBinSet(elegid).end(); ++biniter)
+    // loop over all row beam elements
+    // note: like this we ensure that first element of pair is always a beam element, also only
+    // beam to something contact considered
+    int const numroweles = EleTypeMapExtractorPtr()->BeamMap()->NumMyElements();
+    for (int rowele_i = 0; rowele_i < numroweles; ++rowele_i)
     {
-      std::vector<int> loc_neighboring_binIds;
-      loc_neighboring_binIds.reserve(27);
+      int const elegid = EleTypeMapExtractorPtr()->BeamMap()->GID(rowele_i);
+      DRT::Element* currele = DiscretPtr()->gElement(elegid);
 
-      // do not check on existence here -> shifted to GetBinContent
-      BinStrategyPtr()->GetNeighborAndOwnBinIds(*biniter, loc_neighboring_binIds);
+      // (unique) set of neighboring bins for all col bins assigned to current element
+      std::set<int> neighboring_binIds;
 
-      // build up comprehensive unique set of neighboring bins
-      neighboring_binIds.insert(loc_neighboring_binIds.begin(), loc_neighboring_binIds.end());
+      // loop over all bins touched by currele
+      std::set<int>::const_iterator biniter;
+      for (biniter = BeamInteractionDataStatePtr()->GetRowEleToBinSet(elegid).begin();
+           biniter != BeamInteractionDataStatePtr()->GetRowEleToBinSet(elegid).end(); ++biniter)
+      {
+        std::vector<int> loc_neighboring_binIds;
+        // in three-dimensional space: 26 neighbouring-bins + 1 self
+        loc_neighboring_binIds.reserve(27);
+
+        // do not check on existence here -> shifted to GetBinContent
+        BinStrategyPtr()->GetNeighborAndOwnBinIds(*biniter, loc_neighboring_binIds);
+
+        // build up comprehensive unique set of neighboring bins
+        neighboring_binIds.insert(loc_neighboring_binIds.begin(), loc_neighboring_binIds.end());
+      }
+      // get set of elements that reside in neighboring bins
+      std::vector<int> glob_neighboring_binIds(
+          neighboring_binIds.begin(), neighboring_binIds.end());
+      std::set<DRT::Element*> neighboring_elements;
+      BinStrategyPtr()->GetBinContent(
+          neighboring_elements, contactelementtypes_, glob_neighboring_binIds);
+
+      // sort out elements that should not be considered in contact evaluation
+      SelectElesToBeConsideredForContactEvaluation(currele, neighboring_elements);
+
+      nearby_elements_map_[elegid] = neighboring_elements;
     }
-    // get set of elements that reside in neighboring bins
-    std::vector<int> glob_neighboring_binIds(neighboring_binIds.begin(), neighboring_binIds.end());
-    std::set<DRT::Element*> neighboring_elements;
-    BinStrategyPtr()->GetBinContent(
-        neighboring_elements, contactelementtypes_, glob_neighboring_binIds);
-
-    // sort out elements that should not be considered in contact evaluation
-    SelectElesToBeConsideredForContactEvaluation(currele, neighboring_elements);
-
-    nearby_elements_map_[elegid] = neighboring_elements;
   }
+  else if (beam_interaction_params_ptr_->GetSearchStrategy() ==
+           INPAR::BEAMINTERACTION::SearchStrategy::bruteforce_with_proc_boundingvolume)
+  {
+    // Get vector of all beam element bounding boxes.
+    int const numroweles = EleTypeMapExtractorPtr()->BeamMap()->NumMyElements();
+    std::vector<std::pair<int, GEOMETRICSEARCH::BoundingVolume>> beam_bounding_boxes;
+    for (int rowele_i = 0; rowele_i < numroweles; ++rowele_i)
+    {
+      int const elegid = EleTypeMapExtractorPtr()->BeamMap()->GID(rowele_i);
+      DRT::Element* currele = Discret().gElement(elegid);
+
+      beam_bounding_boxes.emplace_back(std::make_pair(
+          elegid, currele->GetBoundingVolume(Discret(),
+                      BeamInteractionDataStatePtr()->GetDisColNp(), geometric_search_params_ptr_)));
+    }
+
+    // Get vector of the bounding boxes of all possible interacting elements (also including beams
+    // if beam-to-beam contact is activated).
+    int const numcoleles = Discret().NumMyColElements();
+    std::vector<std::pair<int, GEOMETRICSEARCH::BoundingVolume>> other_bounding_boxes;
+    for (int colele_i = 0; colele_i < numcoleles; ++colele_i)
+    {
+      // Check if the current element is relevant for beam-to-xxx contact.
+      DRT::Element* currele = Discret().lColElement(colele_i);
+      const BINSTRATEGY::UTILS::BinContentType contact_type =
+          BINSTRATEGY::UTILS::ConvertElementToBinContentType(currele);
+      if (std::find(contactelementtypes_.begin(), contactelementtypes_.end(), contact_type) !=
+          contactelementtypes_.end())
+      {
+        other_bounding_boxes.emplace_back(std::make_pair(currele->Id(),
+            currele->GetBoundingVolume(Discret(), BeamInteractionDataStatePtr()->GetDisColNp(),
+                geometric_search_params_ptr_.getConst())));
+      }
+    }
+
+    // Get colliding pairs.
+    const auto& [indices, offsets] = CollisionSearch(other_bounding_boxes, beam_bounding_boxes,
+        Discret().Comm(), geometric_search_params_ptr_->verbosity_);
+
+    // Create the beam-to-xxx pair pointers according to the search.
+    for (size_t i_beam = 0; i_beam < beam_bounding_boxes.size(); i_beam++)
+    {
+      const int beam_gid = beam_bounding_boxes[i_beam].first;
+      DRT::Element* currele = Discret().gElement(beam_gid);
+      std::set<DRT::Element*> neighboring_elements;
+      for (int j = offsets[i_beam]; j < offsets[i_beam + 1]; j++)
+      {
+        neighboring_elements.insert(Discret().gElement(other_bounding_boxes[indices[j]].first));
+      }
+
+      // sort out elements that should not be considered in contact evaluation
+      SelectElesToBeConsideredForContactEvaluation(currele, neighboring_elements);
+
+      nearby_elements_map_[beam_gid] = neighboring_elements;
+    }
+  }
+  else
+    dserror("No appropriate search strategy for beam interaction chosen!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -838,16 +916,21 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::SelectElesToBeConsideredFo
   for (eiter = neighbors.begin(); eiter != neighbors.end();)
   {
     bool toerase = false;
-    // 1) ensure each contact only evaluated once (keep in mind that we are
-    //    using FEMatrices and FEvectors -> || (*eiter)->Owner() != myrank not necessary)
-    // note: as we are only looping over beam elements, only beam to beam contact needs id check
-    // here
-    if (dynamic_cast<DRT::ELEMENTS::Beam3Base*>(*eiter) != NULL and
-        not(currele->Id() < (*eiter)->Id()))
+    // 1) ensure that an element will not be in contact with it self
+    if (currele->Id() == (*eiter)->Id())
     {
       toerase = true;
     }
-    // 2) ensure that two elements sharing the same node do not get into contact
+    // 2) ensure each contact only evaluated once (keep in mind that we are
+    //    using FEMatrices and FEvectors -> || (*eiter)->Owner() != myrank not necessary)
+    // note: as we are only looping over beam elements, only beam to beam contact needs id check
+    // here
+    else if (dynamic_cast<DRT::ELEMENTS::Beam3Base*>(*eiter) != NULL and
+             not(currele->Id() < (*eiter)->Id()))
+    {
+      toerase = true;
+    }
+    // 3) ensure that two elements sharing the same node do not get into contact
     else
     {
       for (int i = 0; i < 2; ++i)

@@ -594,6 +594,16 @@ namespace DRT
 
       INPAR::BEAMINTERACTION::FilamentType GetFilamentType() const { return filamenttype_; }
 
+      /**
+       * \brief Get the bounding volume of the element for geometric search
+       *
+       * @param discret Discretization of the respective field
+       * @param result_data_dofbased Result data vector used for extracting positions
+       * @return bounding volume of the respective element
+       */
+      GEOMETRICSEARCH::BoundingVolume GetBoundingVolume(const DRT::Discretization& discret,
+          const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
+          const Teuchos::RCP<const GEOMETRICSEARCH::GeometricSearchParams>& params) const override;
 
      private:
       //! position of binding spots on beam element in local coordinate system

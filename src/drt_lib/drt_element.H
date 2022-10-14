@@ -27,6 +27,12 @@ namespace MAT
   class Material;
 }
 
+namespace GEOMETRICSEARCH
+{
+  class BoundingVolume;
+  class GeometricSearchParams;
+}  // namespace GEOMETRICSEARCH
+
 namespace DRT
 {
   namespace INPUT
@@ -1271,6 +1277,12 @@ namespace DRT
         unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
         std::vector<double>& vtu_point_result_data) const;
 
+    /**
+     * \brief Add the current position of all nodes of the element to a boundary volume.
+     */
+    virtual GEOMETRICSEARCH::BoundingVolume GetBoundingVolume(const DRT::Discretization& discret,
+        const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
+        const Teuchos::RCP<const GEOMETRICSEARCH::GeometricSearchParams>& params) const;
     /// @}
 
    private:

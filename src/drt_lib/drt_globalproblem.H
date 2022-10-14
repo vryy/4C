@@ -312,6 +312,10 @@ namespace DRT
     {
       return getParameterList()->sublist("BINNING STRATEGY");
     }
+    const Teuchos::ParameterList& GeometricSearchParams() const
+    {
+      return getParameterList()->sublist("BOUNDINGVOLUME STRATEGY");
+    }
     const Teuchos::ParameterList& IOParams() const { return getParameterList()->sublist("IO"); }
     const Teuchos::ParameterList& DesignDescriptionParams() const
     {

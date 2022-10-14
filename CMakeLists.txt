@@ -691,6 +691,7 @@ set(OBJS_DRT_INPAR
     src/drt_inpar/inpar_beam_to_solid.cpp
     src/drt_inpar/inpar_browniandyn.cpp
     src/drt_inpar/inpar_geometry_pair.cpp
+    src/drt_inpar/inpar_geometric_search.cpp
     src/drt_inpar/inpar_bio.cpp
     src/drt_inpar/inpar_cardiac_monodomain.cpp
     src/drt_inpar/inpar_particle.cpp
@@ -2484,6 +2485,12 @@ set(OBJS_DRT_FIBER_LIB
     src/drt_fiber/nodal_fiber_holder.cpp
     )
 
+set(OBJS_DRT_GEOMETRIC_SEARCH
+    src/drt_geometric_search/geometric_search.cpp
+    src/drt_geometric_search/geometric_search_params.cpp
+    src/drt_geometric_search/geometric_search_utils.cpp
+    )
+
 set(OBJS_DRT_GEOMETRY_PAIR
     src/drt_geometry_pair/geometry_pair_factory.cpp
     src/drt_geometry_pair/geometry_pair.cpp
@@ -2725,6 +2732,7 @@ add_library(drt_lib_statinv_ana ${OBJS_STATINV_ANALYSIS_LIB})
 add_library(drt_lib_immersed ${OBJS_DRT_IMMERSED_LIB})
 add_library(drt_lib_xfem_manag ${OBJS_DRT_XFEM_MANAG_LIB})
 add_library(drt_lib_fiber ${OBJS_DRT_FIBER_LIB})
+add_library(drt_lib_geometric_search ${OBJS_DRT_GEOMETRIC_SEARCH})
 add_library(drt_lib_geometry_pair ${OBJS_DRT_GEOMETRY_PAIR})
 add_library(alg_mor ${OBJS_DRT_MOR})
 
@@ -2751,6 +2759,7 @@ set(SUPPORT_LIBRARIES
     drt_lib_statinv_ana
     drt_lib_immersed
     drt_lib_fiber
+    drt_lib_geometric_search
     drt_lib_geometry_pair
     )
 

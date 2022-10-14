@@ -13,6 +13,9 @@
 #include "../drt_mat/beam_templated_material_generic.H"
 
 #include "../drt_beaminteraction/periodic_boundingbox.H"
+#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
+#include "../drt_geometric_search/bounding_volume.H"
+#include "../drt_geometric_search/geometric_search_params.H"
 
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 
@@ -414,7 +417,38 @@ void DRT::ELEMENTS::Beam3Base::GetTriadOfBindingSpot(LINALG::Matrix<3, 3>& triad
   GetTriadAtXi(triad, xi, disp);
 }
 
+/*--------------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------------*/
+GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Beam3Base::GetBoundingVolume(
+    const DRT::Discretization& discret,
+    const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
+    const Teuchos::RCP<const GEOMETRICSEARCH::GeometricSearchParams>& params) const
+{
+  // Get the centerline dof values of the beam.
+  std::vector<double> element_posdofvec;
+  BEAMINTERACTION::UTILS::ExtractPosDofVecValues(
+      discret, this, result_data_dofbased, element_posdofvec);
+  GEOMETRICSEARCH::BoundingVolume bounding_volume;
 
+  LINALG::Matrix<3, 1, double> point;
+
+  // TODO: replace this with convex hull from bezier curve (small student project?)
+  // Add a certain number of points along the beam.
+  const unsigned int n_points = 5;
+  for (unsigned int i_point = 0; i_point < n_points; ++i_point)
+  {
+    const double xi = -1.0 + 2.0 / (n_points - 1) * i_point;
+    this->GetPosAtXi(point, xi, element_posdofvec);
+    bounding_volume.AddPoint(point);
+  }
+
+  // Add the radius times a safety factor.
+  const double safety_factor = params->GetBeamBoundingVolumeScaling();
+  const double radius = GetCircularCrossSectionRadiusForInteractions();
+  bounding_volume.ExtendBoundaries(radius * safety_factor);
+
+  return bounding_volume;
+}
 
 /*--------------------------------------------------------------------------------------------*
  | explicit template instantiations                                                           |
