@@ -22,10 +22,11 @@ GEOMETRICSEARCH::GeometricSearchParams::GeometricSearchParams()
   Teuchos::ParameterList const& params_list = DRT::Problem::Instance()->GeometricSearchParams();
 
   beam_radius_extension_factor_ = params_list.get<double>("BEAM_RADIUS_EXTENSION_FACTOR");
-  dsassert(std::signbit(beam_radius_extension_factor_), "Scaling parameter needs to be positiv!");
+  dsassert(!std::signbit(beam_radius_extension_factor_), "Scaling parameter needs to be positiv!");
 
   sphere_radius_extension_factor_ = params_list.get<double>("SPHERE_RADIUS_EXTENSION_FACTOR");
-  dsassert(std::signbit(sphere_radius_extension_factor_), "Scaling parameter needs to be positiv!");
+  dsassert(
+      !std::signbit(sphere_radius_extension_factor_), "Scaling parameter needs to be positiv!");
 
   Teuchos::ParameterList const& params_list_io = DRT::Problem::Instance()->IOParams();
   verbosity_ = DRT::INPUT::IntegralValue<IO::verbositylevel>(params_list_io, "VERBOSITY");
