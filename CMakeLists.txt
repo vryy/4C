@@ -41,7 +41,6 @@ configure_file(
 # include all external (cmake) macros that we use
 include(CheckCXXSourceRuns)
 include(CheckCXXSourceCompiles)
-include(ExternalProject)
 include(FetchContent)
 
 # define macro to remove duplicate libraries from the link line
