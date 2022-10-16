@@ -42,6 +42,7 @@ configure_file(
 include(CheckCXXSourceRuns)
 include(CheckCXXSourceCompiles)
 include(ExternalProject)
+include(FetchContent)
 
 # define macro to remove duplicate libraries from the link line
 macro(REMOVE_DUPLICATES _list)
@@ -176,6 +177,7 @@ find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
 # Get Trilinos as one entity
+set(CMAKE_PREFIX_PATH ${Trilinos_PREFIX})
 set(Trilinos_DIR "${Trilinos_PREFIX}/lib/cmake/Trilinos")
 find_package(Trilinos REQUIRED)
 
@@ -274,24 +276,24 @@ endif(NETCDF_FOUND)
 # Find ArborX
 option(BACI_WITH_ARBORX "Use ArborX for search algorithms" OFF)
 if(BACI_WITH_ARBORX)
+
   message(STATUS "Search algorithms with ArborX: enabled")
-  externalproject_add(
+
+  fetchcontent_declare(
     arborx
     GIT_REPOSITORY https://github.com/arborx/ArborX.git
     GIT_TAG v1.2
-    CMAKE_ARGS -D
-               CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-               -D
-               Kokkos_ROOT=${Trilinos_PREFIX}
-               -D
-               CMAKE_CXX_EXTENSIONS=OFF
-               -D
-               ARBORX_ENABLE_MPI=ON
-    UPDATE_COMMAND ""
     )
 
-  include_directories(SYSTEM ${PROJECT_BINARY_DIR}/arborx-prefix/include)
-  include_directories(SYSTEM ${PROJECT_BINARY_DIR}/arborx-prefix/include/details)
+  fetchcontent_getproperties(arborx)
+  if(NOT arborx_POPULATED)
+    fetchcontent_populate(arborx)
+    add_subdirectory(${arborx_SOURCE_DIR} ${arborx_BINARY_DIR})
+  endif()
+
+  include_directories(SYSTEM ${arborx_SOURCE_DIR}/src)
+  include_directories(SYSTEM ${arborx_SOURCE_DIR}/src/details)
+  include_directories(SYSTEM ${arborx_BINARY_DIR}/include)
 
   add_definitions("-DHAVE_ARBORX")
   set(HAVE_ARBORX ON)
@@ -2874,10 +2876,6 @@ set(FULL_TARGETS
     pre_locsys
     cut_test
     )
-# if arborx is there append it to the list
-if(BACI_WITH_ARBORX)
-  list(APPEND FULL_TARGETS arborx)
-endif()
 
 add_custom_target(full DEPENDS ${baciname} ${FULL_TARGETS})
 
