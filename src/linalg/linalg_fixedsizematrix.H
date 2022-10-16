@@ -2640,36 +2640,6 @@ namespace LINALG
       return result / (i * j);
     }
 
-#if 0
-    template<unsigned int i, unsigned int j>
-    inline void reciprocalMultiply(value_type* out, const value_type* left, const value_type* right)
-    {
-#ifdef DEBUG
-      if (out==left) dserror("'out' and 'left' point to same memory location");
-      if (out==right) dserror("'out' and 'right' point to same memory location");
-#endif
-      *out = (*right)/(*left);
-      for (unsigned int c = 1; c < i*j; ++c) {
-        ++out; ++right; ++left;
-        *out = (*right)/(*left);
-      }
-    }
-
-    template<unsigned int i, unsigned int j>
-    inline void reciprocalMultiply(const value_type outfac, value_type* out, const value_type prodfac, const value_type* left, const value_type* right)
-    {
-#ifdef DEBUG
-      if (out==left) dserror("'out' and 'left' point to same memory location");
-      if (out==right) dserror("'out' and 'right' point to same memory location");
-#endif
-      *out = *out*outfac + prodfac*(*right)/(*left);
-      for (unsigned int c = 1; c < i*j; ++c) {
-        ++out; ++right; ++left;
-        *out = *out*outfac + prodfac*(*right)/(*left);
-      }
-    }
-#endif
-
     /*
      * Definitions of the functions taking Epetra_SerialDenseMatrix
      *
@@ -3116,32 +3086,6 @@ namespace LINALG
 #endif
       reciprocal<value_type, i, j>(dest.A(), src.A());
     }
-
-#if 0
-    template<unsigned int i, unsigned int j>
-    inline void reciprocalMultiply(Epetra_SerialDenseMatrix& dest, const Epetra_SerialDenseMatrix& left,
-                                   const Epetra_SerialDenseMatrix& right)
-    {
-#ifdef DEBUG
-      if (dest.M() != left.M() or left.M() != right.M() or dest.N() != left.N() or left.N() != right.N())
-        dserror("Invalid matrix sizes for reciprocal multiplication, (%i,%i) = reciprocalMultiply( (%i,%i), (%i,%i) )",
-                dest.M(),dest.N(), left.M(), left.N(), right.M(), right.N());
-#endif
-      reciprocalMultiply<value_type,i,j>(dest.A(), left.A(), right.A());
-    }
-
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void reciprocalMultiply(const value_type destfac, Epetra_SerialDenseMatrix& dest, const value_type prodfac,
-                                   const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
-    {
-#ifdef DEBUG
-      if (dest.M() != left.M() or left.M() != right.M() or dest.N() != left.N() or left.N() != right.N())
-        dserror("Invalid matrix sizes for reciprocal multiplication, (%i,%i) = reciprocalMultiply( (%i,%i), (%i,%i) )",
-                dest.M(),dest.N(), left.M(), left.N(), right.M(), right.N());
-#endif
-      reciprocalMultiply<value_type,i,j>(destfac, dest.A(), prodfac, left.A(), right.A());
-    }
-#endif
   }  // namespace DENSEFUNCTIONS
 
 

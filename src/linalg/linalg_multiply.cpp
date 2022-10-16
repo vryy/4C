@@ -194,19 +194,6 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Ao
   {
     int err = result->FillComplete(B.DomainMap(), A.RangeMap());
     if (err) dserror("Epetra_CrsMatrix::FillComplete returned err=%d", err);
-
-#if 0  // the current status is that we don't need this (mwgee)
-    EpetraExt::CrsMatrix_SolverMap ABtransform;
-    const Epetra_CrsMatrix& tmp = ABtransform(*result);
-    Teuchos::RCP<Epetra_CrsMatrix> finalresult = Teuchos::rcp(new Epetra_CrsMatrix(*result));
-    if (!finalresult->Filled())
-    {
-      finalresult->FillComplete(B.DomainMap(),A.RangeMap());
-      finalresult->OptimizeStorage();
-    }
-    result = Teuchos::null;
-    return Teuchos::rcp(new SparseMatrix(finalresult,explicitdirichlet,savegraph));
-#endif
   }
   return Teuchos::rcp(new SparseMatrix(result, View, explicitdirichlet, savegraph));
 }

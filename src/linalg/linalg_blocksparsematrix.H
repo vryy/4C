@@ -313,17 +313,6 @@ namespace LINALG
       Strategy::Assemble(eid, myrank, lmstride, Aele, lmrow, lmrowowner, lmcol);
     }
 
-#if 0
-  void Assemble(int eid,
-      const Epetra_SerialDenseMatrix& Aele,
-      const std::vector<int>& lmrow,
-      const std::vector<int>& lmrowowner,
-      const std::vector<int>& lmcol)
-  {
-    const int myrank = Comm().MyPID();
-    Strategy::Assemble(eid,myrank,Aele,lmrow,lmrowowner,lmcol);
-  }
-#endif
     /// single value assemble
     /*!
 
@@ -383,15 +372,7 @@ namespace LINALG
     void Assemble(int eid, int myrank, const std::vector<int>& lmstride,
         const Epetra_SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol);
-#if 0
-  /// assemble into the given block
-  void Assemble(int eid,
-      int myrank,
-      const Epetra_SerialDenseMatrix& Aele,
-      const std::vector<int>& lmrow,
-      const std::vector<int>& lmrowowner,
-      const std::vector<int>& lmcol);
-#endif
+
     /// assemble into the given block
     void Assemble(double val, int rgid, int cgid);
 
@@ -659,42 +640,6 @@ inline void LINALG::DefaultBlockMatrixStrategy::Assemble(int eid, int myrank,
   }
 }
 
-#if 0
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-inline
-void LINALG::DefaultBlockMatrixStrategy::Assemble(int eid,
-    int myrank,
-    const Epetra_SerialDenseMatrix& Aele,
-    const std::vector<int>& lmrow,
-    const std::vector<int>& lmrowowner,
-    const std::vector<int>& lmcol)
-{
-  const int lrowdim = (int)lmrow.size();
-  const int lcoldim = (int)lmcol.size();
-
-  // loop rows of local matrix
-  for (int lrow=0; lrow<lrowdim; ++lrow)
-  {
-
-    // check ownership of row
-    if (lmrowowner[lrow]!=myrank)
-      continue;
-
-    int rgid = lmrow[lrow];
-    int rblock = RowBlock(rgid);
-
-    for (int lcol=0; lcol<lcoldim; ++lcol)
-    {
-      double val = Aele(lrow,lcol);
-      int cgid = lmcol[lcol];
-      int cblock = ColBlock(rblock,cgid);
-
-      Assemble(val,lrow,rgid,rblock,lcol,cgid,cblock);
-    }
-  }
-}
-#endif
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

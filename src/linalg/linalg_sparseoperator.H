@@ -137,46 +137,6 @@ namespace LINALG
       Assemble(eid, lmstride, Aele, lm, lmowner, lm);
     }
 
-#if 0
-    /// Assemble a Epetra_SerialDenseMatrix into a matrix
-    /*!
-
-    This is an individual call.  Will only assemble locally and will never
-    do any commmunication.  All values that cannot be assembled locally will
-    be ignored.  Will use the communicator and rowmap from matrix to
-    determine ownerships.  Local matrix Aele has to be square.
-
-    If matrix is Filled(), it stays so and you can only assemble to places
-    already masked. An attempt to assemble into a non-existing place is a
-    grave mistake.
-
-    If matrix is not Filled(), the matrix is enlarged as required.
-
-    \note Assembling to a non-Filled() matrix is much more expensive than to
-    a Filled() matrix. If the sparse mask does not change it pays to keep
-    the matrix around and assemble into the Filled() matrix.
-
-    The first parameter \p eid is purely for performance enhancements. Plain
-    sparse matrices do not know about finite elements and do not use the
-    element id at all. However, BlockSparseMatrix might be created with
-    specialized, problem specific assembling strategies. And these strategies
-    might gain considerable performance advantages from knowing the element
-    id.
-
-    \param eid (in) : element gid
-    \param Aele (in) : dense matrix to be assembled
-    \param lm (in) : vector with gids
-    \param lmowner (in) : vector with owner procs of gids
-    */
-    virtual void Assemble(int eid,
-                          const Epetra_SerialDenseMatrix& Aele,
-                          const std::vector<int>& lm,
-                          const std::vector<int>& lmowner)
-    {
-      Assemble(eid,Aele,lm,lmowner,lm);
-    }
-#endif
-
     /// Assemble a Epetra_SerialDenseMatrix into a matrix with striding
     /*!
 
@@ -215,49 +175,6 @@ namespace LINALG
     virtual void Assemble(int eid, const std::vector<int>& lmstride,
         const Epetra_SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol) = 0;
-
-#if 0
-    /// Assemble a Epetra_SerialDenseMatrix into a matrix
-    /*!
-
-      This is an individual call.
-      Will only assemble locally and will never do any commmunication.
-      All values that can not be assembled locally will be ignored.
-      Will use the communicator and rowmap from matrix A to determine ownerships.
-      Local matrix Aele may be \b square or \b rectangular.
-
-      If matrix is Filled(), it stays so and you can only assemble to places
-      already masked. An attempt to assemble into a non-existing place is a
-      grave mistake.
-
-      If matrix is not Filled(), the matrix is enlarged as required.
-
-      \note Assembling to a non-Filled() matrix is much more expensive than to
-      a Filled() matrix. If the sparse mask does not change it pays to keep
-      the matrix around and assemble into the Filled() matrix.
-
-      \note The user must provide an \b additional input vector 'lmcol'
-      containing the column gids for assembly seperately!
-
-      The first parameter \p eid is purely for performance enhancements. Plain
-      sparse matrices do not know about finite elements and do not use the
-      element id at all. However, BlockSparseMatrix might be created with
-      specialized, problem specific assembling strategies. And these
-      strategies might gain considerable performance advantages from knowing
-      the element id.
-
-      \param eid (in) : element gid
-      \param Aele (in)       : dense matrix to be assembled
-      \param lmrow (in)      : vector with row gids
-      \param lmrowowner (in) : vector with owner procs of row gids
-      \param lmcol (in)      : vector with column gids
-    */
-    virtual void Assemble(int eid,
-                          const Epetra_SerialDenseMatrix& Aele,
-                          const std::vector<int>& lmrow,
-                          const std::vector<int>& lmrowowner,
-                          const std::vector<int>& lmcol) = 0;
-#endif
 
     /// single value assemble using gids
     virtual void Assemble(double val, int rgid, int cgid) = 0;

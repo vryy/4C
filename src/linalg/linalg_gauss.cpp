@@ -31,10 +31,6 @@ namespace LINALG
   {
     if (dim > 1)
     {
-#if 0
-    LINALG::Matrix<dim, dim> cA( A );
-    LINALG::Matrix<dim, 1>   cb( b );
-#endif
       bool changesign = false;
       if (not do_piv)
       {
@@ -122,22 +118,6 @@ namespace LINALG
       for (unsigned i = 0; i < dim; ++i) det *= 1.0 / A(i, i);
 
       if (changesign) det *= -1.0;
-
-#if 0
-    double nx = x.Norm2();
-    if ( nx != 0 )
-    {
-      LINALG::Matrix<dim, 1> res;
-      res.Multiply( cA, x );
-      res.Update( -1, cb, 1 );
-      double nres = res.Norm2();
-      if ( fabs( nres/nx ) > 1e-15 )
-      {
-        std::cout << nres/nx << "\n";
-        throw std::runtime_error( "failed to solve linear system" );
-      }
-    }
-#endif
 
       return det;
     }
