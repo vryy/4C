@@ -292,17 +292,6 @@ void LINALG::SparseMatrix::Zero()
   }
   else
   {
-#if 0
-    // Setting the matrix to zero is not the same as creating a new matrix
-    // since -- if (explicitdirichlet_) -- the graph will be the full graph and the
-    // matrix might contain some Dirichlet-rows. In this case we want to go
-    // back to the original graph.
-
-    // Here is room for speed improvements, but things are already quite
-    // complicated.
-
-    sysmat_->PutScalar(0.);
-#else
     const Epetra_Map domainmap = sysmat_->DomainMap();
     const Epetra_Map rangemap = sysmat_->RangeMap();
     // Remove old matrix before creating a new one so we do not have old and
@@ -316,7 +305,6 @@ void LINALG::SparseMatrix::Zero()
       dserror("matrix type is not correct");
 
     sysmat_->FillComplete(domainmap, rangemap);
-#endif
   }
 }
 
@@ -368,12 +356,6 @@ void LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstride,
     const Epetra_SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
     const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
 {
-#if 0  // return to standard assembly
-
-  Assemble(eid,Aele,lmrow,lmrowowner,lmcol);
-
-#else  // do strided assembly where possible
-
   const int lrowdim = (int)lmrow.size();
   const int lcoldim = (int)lmcol.size();
   // allow Aele to provide entries past the end of lmrow and lmcol that are
@@ -555,7 +537,6 @@ void LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstride,
       }  // for (int lcol=0; lcol<lcoldim; ++lcol)
     }    // for (int lrow=0; lrow<lrowdim; ++lrow)
   }
-#endif
 }
 
 /*----------------------------------------------------------------------*

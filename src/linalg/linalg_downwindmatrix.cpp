@@ -257,27 +257,6 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
               << "                nv " << nv_ << " np " << np_ << " bs " << bs_ << " tau " << tau_
               << std::endl;
 
-#if 0  // for debugging and viz of matrix data
-  // reindex the graph to see how it looks like then
-  {
-    EpetraExt::CrsMatrix_Reindex reindexer(*nnoderowmap);
-    Epetra_CrsMatrix& regraph = reindexer(*nnodegraph);
-    LINALG::PrintSparsityToPostscript(regraph);
-    exit(0);
-  }
-#endif
-
-#if 0  // for debugging and viz of matrix data
-  // reindex the matrix to see how it looks like then
-  {
-    EpetraExt::CrsMatrix_Reindex reindexer(*ndofrowmap_);
-    Epetra_CrsMatrix& reA = reindexer(*A_);
-    LINALG::PrintSparsityToPostscript(reA);
-    exit(0);
-  }
-#endif
-
-
   return;
 }
 

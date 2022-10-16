@@ -225,7 +225,7 @@ void LINALG::AMG_Operator::SetupNonSymStab()
     MLAPI::MultiVector boost(Ac.GetRangeSpace(), 1, false);
     bool test = true;
     int printit = 0;
-#if 1  // boost stuff above 1.0 only
+
     for (int i = 0; i < boost.GetMyLength(); ++i)
     {
       double nom = abs(cratioist(i));
@@ -245,48 +245,16 @@ void LINALG::AMG_Operator::SetupNonSymStab()
         printit = 1;
       }
     }
-#endif
-#if 0  // boost everything
-    for (int i=0; i<boost.GetMyLength(); ++i)
-    {
-      double nom   = abs(cratioist(i));
-      double denom = abs(cratiosoll(i));
-      if (denom<=1.0e-10) denom = 1.0e-08;
-      boost(i) = nom/denom;
-      if (boost(i)!=0.0  && test)
-      {
-        test = false;
-        printit  = 0;
-      }
-    }
-#endif
 
     int printout = 0;
     Comm().SumAll(&printit, &printout, 1);
     test = true;
-
-#if 0  // print nonzero boost vector
-    if (printout)
-    {
-      if (!Comm().MyPID()) cout << "boost\n";
-      fflush(stdout);
-      cout << boost;
-    }
-#endif
 
     //---------------------- build the boosting matrix B = diag(boost)
     MLAPI::Operator B = GetDiagonal(boost);
 
     //--------------------------------- boost the symmetric part of Ac
     MLAPI::Operator Acstab = B * Acsym * B;
-#if 0
-    if (printout)
-    {
-      if (!Comm().MyPID()) cout << "boost matrix\n";
-      fflush(stdout);
-      cout << Acstab;
-    }
-#endif
     MLAPI::Operator Acnonstab = Ac;
     Ac = Ac + Acstab;
 

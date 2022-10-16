@@ -64,12 +64,8 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator> matrix,
     // if we have an ml parameter list we do ml
     bool doifpack = solver_->Params().isSublist("IFPACK Parameters");
     bool doml = solver_->Params().isSublist("ML Parameters");
-#if 0
-    bool   dosimpler = solver_->Params().isSublist("SIMPLER");
-    if (!A || dosimpler)
-#else
+
     if (!A)
-#endif
     {
       doifpack = false;
       doml = false;
@@ -130,19 +126,6 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator> matrix,
         // dynamic_cast<ML_Epetra::MultiLevelPreconditioner&>(*P_).PrintUnused(0);
       }
     }
-
-#if 0
-    if (dosimpler)
-    {
-      // SIMPLER does not need copy of preconditioning matrix to live
-      // SIMPLER does not use the downwinding installed here, it does
-      // its own downwinding inside if desired
-      prec_ = Teuchos::rcp(new LINALG::SIMPLER_Operator(matrix,Params(),
-                                               solver_->Params().sublist("SIMPLER"),
-                                               outfile_));
-      Pmatrix_ = Teuchos::null;
-    }
-#endif
   }
 }
 
@@ -157,15 +140,6 @@ void LINALG::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator> matrix,
   if (solvertype == "aztec")
   {
     // do just the preconditioner from iterative solver
-
-#if 0
-    bool   doifpack  = solver_->Params().isSublist("IFPACK Parameters");
-    if (doifpack)
-    {
-      Teuchos::ParameterList& ifpacklist = solver_->Params().sublist("IFPACK Parameters");
-      ifpacklist.set<bool>("relaxation: zero starting solution",false);
-    }
-#endif
 
     // apply the preconditioner
     // This is were the work happens.
@@ -350,15 +324,6 @@ void LINALG::Preconditioner::EnrichFluidNullSpace(Teuchos::ParameterList& mllist
       }
     }  // for (int j=0; j<ndof; ++j)
   }    // for (int i=0; i<inodes->NumMyElements(); ++i)
-
-#if 0  // debug output
-  for (int i=0; i<size; ++i)
-  {
-    printf("%10.5e %10.5e %10.5e %10.5e %10.5e %10.5e %10.5e \n",
-           (*newns)[i],(*newns)[i+size],(*newns)[i+size*2],(*newns)[i+size*3],(*newns)[i+size*4],
-           (*newns)[i+size*5],(*newns)[i+size*6]);
-  }
-#endif
 
   // put new nullspace and its dimension in mllist
   mllist.set("null space: dimension", newnsdim);
