@@ -58,7 +58,8 @@ namespace BEAMINTERACTION
         LINALG::SerialDenseVector& local_constraint_offset) override;
 
     /**
-     * \brief This pair has no terms that need to be directly assembled into the global matrices.
+     * \brief This pair enforces constraints via a mortar-type method, which requires an own
+     * assembly method (provided by the mortar manager).
      */
     inline bool IsAssemblyDirect() const override { return false; };
 
