@@ -13,10 +13,6 @@
 #ifndef BOUNDING_VOLUME_H
 #define BOUNDING_VOLUME_H
 
-#ifdef HAVE_ARBORX
-#include <ArborX_AccessTraits.hpp>
-#endif
-
 #include "../linalg/linalg_fixedsizematrix.H"
 
 namespace GEOMETRICSEARCH
