@@ -135,32 +135,11 @@ namespace MAT
 
     /// how much of blood satisfies this rule
     double PerVolumeBlood() const { return params_->per_volume_blood_; }
-#if 0
-    ///The dominating value of E at zero O2 saturation
-    double EoLower() const {return params_->eo_lower_;}
 
-    ///Lower decay constant
-    double TauLower() const {return params_->tau_lower_;}
-
-    ///Lower VO2 translator
-    double VO2oLower() const {return params_->vO2o_lower_;}
-
-    ///Translating E at maximum O2 saturation
-    double Eo() const {return params_->eo_;}
-
-    ///The dominating value of E at maximum O2 saturation
-    double EoUpper() const {return params_->eo_upper_;}
-
-    ///Upper decay constant
-    double TauUpper() const {return params_->tau_upper_;}
-
-    ///Upper VO2 translator
-    double VO2oUpper() const {return params_->vO2o_upper_;}
-#else
     double O2SaturationPerVolumeBlood() const { return params_->o2_sat_per_vol_blood_; }
     double ReferencePressure() const { return params_->p_half_; }
     double SigmoidalPower() const { return params_->power_; }
-#endif
+
     /// Number of O2 moles per VO2
     double NumO2PerVO2() const { return params_->nO2_per_VO2_; }
 
