@@ -228,12 +228,6 @@ namespace BEAMINTERACTION
     inline virtual bool IsAssemblyDirect() const { return true; };
 
     /**
-     * \brief Per default it is assumed, that the pair does not give any contributions to the system
-     * that have to be indirectly assembled (for example mortar like terms).
-     */
-    inline virtual bool IsAssemblyIndirect() const { return false; };
-
-    /**
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
      * matrix.
      *

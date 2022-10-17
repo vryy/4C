@@ -52,12 +52,6 @@ namespace BEAMINTERACTION
     inline bool IsAssemblyDirect() const override { return false; };
 
     /**
-     * \brief This pair has terms that need to be indirectly (mortar like) assembled into the global
-     * matrices.
-     */
-    inline bool IsAssemblyIndirect() const override { return true; };
-
-    /**
      * \brief Add the visualization of this pair to the beam to solid vtu output writer. This will
      * add mortar specific data to the output.
      * @param visualization_writer (out) Object that manages all visualization related data for beam
