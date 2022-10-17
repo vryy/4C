@@ -41,6 +41,7 @@ configure_file(
 # include all external (cmake) macros that we use
 include(CheckCXXSourceRuns)
 include(CheckCXXSourceCompiles)
+include(FetchContent)
 
 # define macro to remove duplicate libraries from the link line
 macro(REMOVE_DUPLICATES _list)
@@ -174,12 +175,9 @@ endforeach()
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
-# Use Trilinos_PREFIX, if the user set it, to help find Trilinos.
-# The final location will actually be held in Trilinos_DIR which must
-# point at "<prefix>/lib/cmake/Trilinos", but this helps the search.
-set(CMAKE_PREFIX_PATH ${Trilinos_PREFIX} ${CMAKE_PREFIX_PATH})
-
 # Get Trilinos as one entity
+set(CMAKE_PREFIX_PATH ${Trilinos_PREFIX})
+set(Trilinos_DIR "${Trilinos_PREFIX}/lib/cmake/Trilinos")
 find_package(Trilinos REQUIRED)
 
 # Echo trilinos build info just for fun
@@ -273,6 +271,35 @@ if(NETCDF_FOUND)
   link_directories(${NETCDF_LIBRARY_DIRS})
   set(LIBRARIES ${LIBRARIES} ${NETCDF_LIBRARIES})
 endif(NETCDF_FOUND)
+
+# Find ArborX
+option(BACI_WITH_ARBORX "Use ArborX for search algorithms" OFF)
+if(BACI_WITH_ARBORX)
+
+  message(STATUS "Search algorithms with ArborX: enabled")
+
+  fetchcontent_declare(
+    arborx
+    GIT_REPOSITORY https://github.com/arborx/ArborX.git
+    GIT_TAG v1.2
+    )
+
+  fetchcontent_getproperties(arborx)
+  if(NOT arborx_POPULATED)
+    fetchcontent_populate(arborx)
+    add_subdirectory(${arborx_SOURCE_DIR} ${arborx_BINARY_DIR})
+  endif()
+
+  include_directories(SYSTEM ${arborx_SOURCE_DIR}/src)
+  include_directories(SYSTEM ${arborx_SOURCE_DIR}/src/details)
+  include_directories(SYSTEM ${arborx_BINARY_DIR}/include)
+
+  add_definitions("-DHAVE_ARBORX")
+  set(HAVE_ARBORX ON)
+
+else()
+  message(STATUS "Search algorithms with ArborX: disabled")
+endif()
 
 # FFTW
 find_package(FFTW)
@@ -2839,16 +2866,17 @@ add_custom_target(post DEPENDS post_processor post_drt_monitor)
 add_custom_target(post_drt_ensight DEPENDS post_processor)
 add_custom_target(post_drt_vtk DEPENDS post_processor)
 add_custom_target(framework DEPENDS pre_exodus post)
-add_custom_target(
-  full
-  DEPENDS ${baciname}
-          post_processor
-          post_drt_monitor
-          post_drt_s8convert
-          pre_exodus
-          pre_locsys
-          cut_test
-  )
+
+set(FULL_TARGETS
+    post_processor
+    post_drt_monitor
+    post_drt_s8convert
+    pre_exodus
+    pre_locsys
+    cut_test
+    )
+
+add_custom_target(full DEPENDS ${baciname} ${FULL_TARGETS})
 
 # various post-processing tools
 add_custom_command(
