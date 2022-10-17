@@ -46,7 +46,7 @@ namespace GEOMETRICSEARCH
      */
     inline void ExtendBoundaries(const double offset)
     {
-      dsassert(!std::signbit(offset), "Offset parameter needs to be positiv!");
+      dsassert(!std::signbit(offset), "Offset parameter needs to be positive!");
 
       LINALG::Matrix<3, 1, double> offset_vector;
       offset_vector.PutScalar(offset);
