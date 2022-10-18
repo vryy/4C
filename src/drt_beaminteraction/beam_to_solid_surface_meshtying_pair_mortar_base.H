@@ -47,15 +47,10 @@ namespace BEAMINTERACTION
     virtual ~BeamToSolidSurfaceMeshtyingPairMortarBase(){};
 
     /**
-     * \brief This pair has no terms that need to be directly assembled into the global matrices.
+     * \brief This pair enforces constraints via a mortar-type method, which requires an own
+     * assembly method (provided by the mortar manager).
      */
     inline bool IsAssemblyDirect() const override { return false; };
-
-    /**
-     * \brief This pair has terms that need to be indirectly (mortar like) assembled into the global
-     * matrices.
-     */
-    inline bool IsAssemblyIndirect() const override { return true; };
 
     /**
      * \brief Add the visualization of this pair to the beam to solid vtu output writer. This will
