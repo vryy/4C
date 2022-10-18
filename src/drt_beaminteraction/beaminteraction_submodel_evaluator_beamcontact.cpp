@@ -19,7 +19,6 @@
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_geometric_search/bounding_volume.H"
 #include "../drt_geometric_search/geometric_search.H"
 #include "../drt_geometric_search/geometric_search_params.H"
 

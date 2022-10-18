@@ -71,9 +71,6 @@ namespace INVANA
   class SurfCurrentGroup : public ObjectiveFunct
   {
    private:
-    //! Kokkos ScopeGuard ensures correct finalization of Kokkos in destructor of this class
-    Kokkos::ScopeGuard kokkosscopeguard_;
-
     //! Discretization of the source model
     Teuchos::RCP<DRT::Discretization> sourcedis_;
 

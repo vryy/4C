@@ -33,9 +33,9 @@ namespace GEOMETRICSEARCH::UTILS
 
     if (myrank == 0)
     {
-      IO::cout(IO::verbose) << "   Collision search:" << IO::endl;
+      IO::cout(IO::verbose) << "\n   Collision search:" << IO::endl;
       IO::cout(IO::verbose) << "   +-----+------------+------------+--------------+" << IO::endl;
-      IO::cout(IO::verbose) << "   | PID | predicates | primitives |  found pairs |" << IO::endl;
+      IO::cout(IO::verbose) << "   | PID | primitives | predicates |  found pairs |" << IO::endl;
       IO::cout(IO::verbose) << "   +-----+------------+------------+--------------+" << IO::endl;
 
       for (int npid = 0; npid < numproc; ++npid)
