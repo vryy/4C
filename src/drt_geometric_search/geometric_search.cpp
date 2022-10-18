@@ -40,7 +40,7 @@ namespace ArborX
     static auto get(
         const std::vector<std::pair<int, GEOMETRICSEARCH::BoundingVolume>>& vector, std::size_t i)
     {
-      return vector[i].second.bounding_volume_;
+      return ArborX::Box{vector[i].second.bounding_volume_};
     }
   };
 
@@ -103,17 +103,38 @@ namespace GEOMETRICSEARCH
       ArborX::BoundingVolumeHierarchy<memory_space> bounding_volume_hierarchy(
           Kokkos::DefaultExecutionSpace{}, primitives);
 
-
-      Kokkos::View<int*, memory_space> indices("indices", 0);
-      Kokkos::View<int*, memory_space> offset("offset", 0);
+      Kokkos::View<int*, Kokkos::HostSpace> indices_full("indices_full", 0);
+      Kokkos::View<int*, Kokkos::HostSpace> offset_full("offset_full", 0);
 
       // Perform the collision check.
-      bounding_volume_hierarchy.query(Kokkos::DefaultExecutionSpace{}, predicates, indices, offset);
+      bounding_volume_hierarchy.query(
+          Kokkos::DefaultExecutionSpace{}, predicates, indices_full, offset_full);
 
-      // Convert the Kokkos data arrays to std vectors.
-      indices_final.insert(
-          indices_final.begin(), indices.data(), indices.data() + indices.extent(0));
-      offsets_final.insert(offsets_final.begin(), offset.data(), offset.data() + offset.extent(0));
+      // ArborX only supports tree structures for points and axis-aligned-boundary-boxes (AABB). We
+      // convert the k-DOPs to AABB in the creation of the tree. Therefore, the query only gives the
+      // intersections of the AABB of the primitives with the predicates. In this loop we perform a
+      // post-processing of the query results in the sense, that we check each k-DOP of the
+      // primitives with each k-DOP of the predicates. This only marginally effects the performance
+      // of this function, but can lead to a drastic reduction of the found pairs.
+      offsets_final.push_back(0);
+      for (size_t i_predicate = 0; i_predicate < predicates.size(); i_predicate++)
+      {
+        int collisions_for_predicate_i = 0;
+        const auto& predicate = predicates[i_predicate].second.bounding_volume_;
+        for (int j = offset_full[i_predicate]; j < offset_full[i_predicate + 1]; j++)
+        {
+          // Check for actual intersection.
+          int i_primitive = indices_full[j];
+          if (ArborX::Experimental::intersects(
+                  predicate, primitives[i_primitive].second.bounding_volume_))
+          {
+            indices_final.push_back(i_primitive);
+            collisions_for_predicate_i += 1;
+          }
+        }
+
+        offsets_final.push_back(offsets_final.back() + collisions_for_predicate_i);
+      }
     }
 
     if (verbosity == IO::verbose)

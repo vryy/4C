@@ -15,12 +15,48 @@
 
 #ifdef HAVE_ARBORX
 #include <ArborX.hpp>
+#include <ArborX_KDOP.hpp>
 #endif
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
+#ifdef HAVE_ARBORX
+namespace ArborX::Details
+{
+  /*! \brief  This struct helps to get access to the protected static member directions from ArborX.
+   */
+  template <int n_directions>
+  struct GetKDOPDirections : private KDOP_Directions<2 * n_directions>
+  {
+    static KOKKOS_FUNCTION Kokkos::Array<Direction, n_directions> const &directions()
+    {
+      return KDOP_Directions<2 * n_directions>::directions();
+    }
+  };
+}  // namespace ArborX::Details
+
 namespace GEOMETRICSEARCH
 {
+  //! kdop_directions is the number of directions defining the possible faces of the k-DOP. In this
+  //! case 13 means that we have the (3) Cartesian basis vectors, all vectors pointing to the edges
+  //! of a unit cube (6) and all vectors pointing to corners of the unit cube (4). For more details
+  //! have a look in ArborX_KDOP.hpp.
+  constexpr int kdop_directions = 13;
+
+  //! kdop_k is the number of bounding slabs for the k-DOP, i.e., the resulting polytope can have a
+  //! maximum of kdop_k faces
+  constexpr int kdop_k = 2 * kdop_directions;
+}  // namespace GEOMETRICSEARCH
+#endif
+
+namespace GEOMETRICSEARCH
+{
+  /*!
+   * \brief Class representing a bounding volume of a set of points.
+   *
+   * Internal this class uses k-DOPs implemented in ArborX. A k-DOP (discrete oriented polytope) is
+   * a convex polytope containing the object.
+   */
   struct BoundingVolume
   {
 #ifndef HAVE_ARBORX
@@ -55,15 +91,22 @@ namespace GEOMETRICSEARCH
      */
     inline void ExtendBoundaries(const double offset)
     {
-      for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+      // Loop over directions.
+      for (int i_dir = 0; i_dir < kdop_directions; i_dir++)
       {
-        bounding_volume_.minCorner()[i_dim] -= static_cast<float>(offset);
-        bounding_volume_.maxCorner()[i_dim] += static_cast<float>(offset);
+        const auto& direction =
+            ArborX::Details::GetKDOPDirections<kdop_directions>::directions()[i_dir];
+        const auto direction_scaling_factor = std::sqrt(direction._data[0] * direction._data[0] +
+                                                        direction._data[1] * direction._data[1] +
+                                                        direction._data[2] * direction._data[2]);
+        const auto scaled_offset = offset * direction_scaling_factor;
+        bounding_volume_._min_values[i_dir] -= static_cast<float>(scaled_offset);
+        bounding_volume_._max_values[i_dir] += static_cast<float>(scaled_offset);
       }
     }
 
-    //! Data container to store geometry information of bounding volume
-    ArborX::Box bounding_volume_;
+    //! Use an ArborX geometry as internal storage.
+    ArborX::Experimental::KDOP<kdop_k> bounding_volume_;
 #endif
   };
 }  // namespace GEOMETRICSEARCH
