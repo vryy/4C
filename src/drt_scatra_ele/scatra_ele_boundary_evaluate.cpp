@@ -126,10 +126,10 @@ void DRT::ELEMENTS::TransportBoundary::LocationVector(const Discretization& dis,
     bool doDirichlet, const std::string& condstring, Teuchos::ParameterList& params) const
 {
   // check for the action parameter
-  const SCATRA::BoundaryAction action = DRT::INPUT::get<SCATRA::BoundaryAction>(params, "action");
+  const auto action = Teuchos::getIntegralValue<SCATRA::BoundaryAction>(params, "action");
   switch (action)
   {
-    case SCATRA::bd_calc_weak_Dirichlet:
+    case SCATRA::BoundaryAction::calc_weak_Dirichlet:
       // special cases: the boundary element assembles also into
       // the inner dofs of its parent element
       // note: using these actions, the element will get the parent location vector
@@ -140,5 +140,4 @@ void DRT::ELEMENTS::TransportBoundary::LocationVector(const Discretization& dis,
       DRT::Element::LocationVector(dis, la, doDirichlet);
       break;
   }
-  return;
 }

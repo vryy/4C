@@ -68,7 +68,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::EvaluateAction(
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::bd_calc_elch_boundary_kinetics:
+    case SCATRA::BoundaryAction::calc_elch_boundary_kinetics:
     {
       myelch::CalcElchBoundaryKinetics(
           ele, params, discretization, la, elemat1_epetra, elevec1_epetra, 1.);

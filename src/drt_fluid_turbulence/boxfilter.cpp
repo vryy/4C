@@ -11,13 +11,14 @@
 
 
 #include "boxfilter.H"
-#include "../drt_inpar/inpar_parameterlist_utils.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 
 #include "../drt_mat/matpar_bundle.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/newtonianfluid.H"
+
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     krank 09/13|
@@ -943,7 +944,8 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
   // generate a parameterlist for communication and control
   Teuchos::ParameterList filterparams;
   // action for elements
-  filterparams.set<int>("action", SCATRA::calc_scatra_box_filter);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_scatra_box_filter, filterparams);
 
   // add number of dofset associated with velocity related dofs to parameter list
   filterparams.set<int>("ndsvel", ndsvel);

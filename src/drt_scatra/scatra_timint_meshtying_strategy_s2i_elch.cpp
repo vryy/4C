@@ -13,6 +13,7 @@
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 
 #include "../drt_mat/electrode.H"
 #include "../drt_mat/soret.H"
@@ -61,7 +62,8 @@ void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
     Teuchos::ParameterList condparams;
 
     // action for elements
-    condparams.set<int>("action", SCATRA::bd_calc_elch_minmax_overpotential);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+        "action", SCATRA::BoundaryAction::calc_elch_minmax_overpotential, condparams);
 
     // initialize results
     condparams.set<double>("etagrowthmin", std::numeric_limits<double>::infinity());
@@ -865,8 +867,8 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
         distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(matelectrode,
         my::ephinp_slave_, etempnp_slave_, dummy_master_temp, my::ephinp_master_, my::funct_slave_,
         my::funct_master_, my::test_lm_slave_, my::test_lm_master_, dummy_shapederivatives,
-        my::scatraparamsboundary_, static_cast<int>(SCATRA::DifferentiationType::temp), timefacfac,
-        timefacwgt, dummy_detF, k_ss, k_ms);
+        my::scatraparamsboundary_, SCATRA::DifferentiationType::temp, timefacfac, timefacwgt,
+        dummy_detF, k_ss, k_ms);
   }  // loop over integration points
 }
 
@@ -1152,7 +1154,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
         distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(matelectrode,
         my::ephinp_slave_[0], my::ephinp_master_[0], eelchnp_slave_, eelchnp_master_,
         my::funct_slave_, my::funct_master_, my::scatraparamsboundary_, timefacfac, fac, dummy_detF,
-        static_cast<int>(SCATRA::DifferentiationType::elch), dummy_shape_deriv, k_ss, k_sm);
+        SCATRA::DifferentiationType::elch, dummy_shape_deriv, k_ss, k_sm);
   }  // loop over integration points
 }
 

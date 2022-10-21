@@ -46,7 +46,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateOD(DRT::Element* ele
   //--------------------------------------------------------------------------------
 
   // extract action parameter
-  const auto action = DRT::INPUT::get<SCATRA::Action>(params, "action");
+  const auto action = Teuchos::getIntegralValue<SCATRA::Action>(params, "action");
 
   // evaluate action
   EvaluateActionOD(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
@@ -70,14 +70,14 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateActionOD(DRT::Elemen
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::calc_scatra_mono_odblock_mesh:
+    case SCATRA::Action::calc_scatra_mono_odblock_mesh:
     {
       SysmatODMesh(ele, elemat1_epetra, nsd_);
 
       break;
     }
 
-    case SCATRA::calc_scatra_mono_odblock_fluid:
+    case SCATRA::Action::calc_scatra_mono_odblock_fluid:
     {
       SysmatODFluid(ele, elemat1_epetra, nsd_ + 1);
 

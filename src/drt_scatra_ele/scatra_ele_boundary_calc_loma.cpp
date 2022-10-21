@@ -75,7 +75,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::EvaluateAction(DRT::FaceE
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::bd_calc_loma_therm_press:
+    case SCATRA::BoundaryAction::calc_loma_therm_press:
     {
       CalcLomaThermPress(ele, params, discretization, la);
 

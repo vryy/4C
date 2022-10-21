@@ -325,27 +325,27 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateAc
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::bd_calc_s2icoupling_growthgrowth:
+    case SCATRA::BoundaryAction::calc_s2icoupling_growthgrowth:
     {
       EvaluateS2ICouplingGrowthGrowth(
           ele, params, discretization, la, elemat1_epetra, elevec1_epetra);
       break;
     }
 
-    case SCATRA::bd_calc_s2icoupling_growthscatra:
+    case SCATRA::BoundaryAction::calc_s2icoupling_growthscatra:
     {
       EvaluateS2ICouplingGrowthScatra(
           ele, params, discretization, la, elemat1_epetra, elemat2_epetra);
       break;
     }
 
-    case SCATRA::bd_calc_s2icoupling_scatragrowth:
+    case SCATRA::BoundaryAction::calc_s2icoupling_scatragrowth:
     {
       EvaluateS2ICouplingScatraGrowth(ele, params, discretization, la, elemat1_epetra);
       break;
     }
 
-    case SCATRA::bd_calc_elch_minmax_overpotential:
+    case SCATRA::BoundaryAction::calc_elch_minmax_overpotential:
     {
       EvaluateMinMaxOverpotential(ele, params, discretization, la);
       break;

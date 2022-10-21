@@ -7,9 +7,9 @@
 /*----------------------------------------------------------------------*/
 #include "../drt_io/io.H"
 
-#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 
-#include <Teuchos_TimeMonitor.hpp>
+#include "../drt_scatra_ele/scatra_ele_action.H"
 
 #include "scatra_timint_stat_hdg.H"
 
@@ -48,7 +48,8 @@ void SCATRA::TimIntStationaryHDG::SetElementTimeParameter(bool forcedincremental
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", SCATRA::set_time_parameter);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::set_time_parameter, eleparams);
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", true);
   if (forcedincrementalsolver == false)

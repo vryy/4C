@@ -13,8 +13,7 @@
 #include "levelset_algorithm.H"
 #include "levelset_intersection_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_lib/drt_periodicbc.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
@@ -227,7 +226,8 @@ void SCATRA::LevelSetAlgorithm::EvaluateErrorComparedToAnalyticalSol()
       {
         // create the parameters for the error calculation
         Teuchos::ParameterList eleparams;
-        eleparams.set<int>("action", SCATRA::calc_error);
+        DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+            "action", SCATRA::Action::calc_error, eleparams);
         eleparams.set<int>("calcerrorflag", calcerr);
 
         // get initial field
@@ -936,7 +936,8 @@ void SCATRA::LevelSetAlgorithm::ReconstructedNodalCurvature(Teuchos::RCP<Epetra_
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", SCATRA::recon_curvature_at_nodes);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::recon_curvature_at_nodes, eleparams);
 
   if (nsd_ != 3) dserror("check functionality for nsd!=3");
 
@@ -974,7 +975,8 @@ void SCATRA::LevelSetAlgorithm::MassCenterUsingSmoothing()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", SCATRA::calc_mass_center_smoothingfunct);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_mass_center_smoothingfunct, eleparams);
 
   // give access to interface thickness from smoothing function (TPF module) in element calculations
   eleparams.set<double>(

@@ -13,6 +13,7 @@
 
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
@@ -61,7 +62,8 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockThermoStructureDo
 
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", SCATRA::calc_scatra_mono_odblock_mesh);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_scatra_mono_odblock_mesh, eleparams);
 
   // number of dofset associated with displacement-related dofs on thermo discretization
   eleparams.set<int>("ndsdisp", 1);
@@ -330,12 +332,14 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
 {
   Teuchos::ParameterList condparams;
 
-  condparams.set<int>("action", SCATRA::bd_calc_s2icoupling_od);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+      "action", SCATRA::BoundaryAction::calc_s2icoupling_od, condparams);
 
   // number of dofset associated with displacement-related dofs on scalar transport discretization
   condparams.set<int>("ndsdisp", 1);
 
-  condparams.set<int>("differentiationtype", static_cast<int>(SCATRA::DifferentiationType::disp));
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
+      "differentiationtype", SCATRA::DifferentiationType::disp, condparams);
 
   thermo_->ScaTraField()->Discretization()->ClearState();
 

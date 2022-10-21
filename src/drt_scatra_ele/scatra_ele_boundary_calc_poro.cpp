@@ -73,18 +73,18 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(DRT::FaceE
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::bd_calc_fps3i_surface_permeability:
-    case SCATRA::bd_calc_fs3i_surface_permeability:
-    case SCATRA::bd_calc_Neumann:
-    case SCATRA::bd_calc_Robin:
-    case SCATRA::bd_calc_normal_vectors:
-    case SCATRA::bd_integrate_shape_functions:
+    case SCATRA::BoundaryAction::calc_fps3i_surface_permeability:
+    case SCATRA::BoundaryAction::calc_fs3i_surface_permeability:
+    case SCATRA::BoundaryAction::calc_Neumann:
+    case SCATRA::BoundaryAction::calc_Robin:
+    case SCATRA::BoundaryAction::calc_normal_vectors:
+    case SCATRA::BoundaryAction::integrate_shape_functions:
     {
       my::EvaluateAction(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
           elevec1_epetra, elevec2_epetra, elevec3_epetra);
       break;
     }
-    case SCATRA::bd_add_convective_mass_flux:
+    case SCATRA::BoundaryAction::add_convective_mass_flux:
     {
       // calculate integral of convective mass/heat flux
       // NOTE: since results are added to a global vector via normal assembly

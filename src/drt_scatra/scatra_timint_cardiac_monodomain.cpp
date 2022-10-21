@@ -12,9 +12,10 @@
 
 #include "../drt_mat/material.H"
 #include "../drt_mat/matlist.H"
-#include "../drt_mat/myocard.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
+
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
@@ -117,7 +118,8 @@ void SCATRA::TimIntCardiacMonodomain::OutputState()
   if (material_internal_state_np_ != Teuchos::null and nb_max_mat_int_state_vars_)
   {
     Teuchos::ParameterList params;
-    params.set<int>("action", SCATRA::get_material_internal_state);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::get_material_internal_state, params);
     params.set<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state",
         material_internal_state_np_);  // Probably do it once at the beginning
     discret_->Evaluate(params);
@@ -139,7 +141,8 @@ void SCATRA::TimIntCardiacMonodomain::OutputState()
   if (material_ionic_currents_np_ != Teuchos::null and nb_max_mat_ionic_currents_)
   {
     Teuchos::ParameterList params;
-    params.set<int>("action", SCATRA::get_material_ionic_currents);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::get_material_ionic_currents, params);
     params.set<Teuchos::RCP<Epetra_MultiVector>>("material_ionic_currents",
         material_ionic_currents_np_);  // Probably do it once at the beginning
     discret_->Evaluate(params);
@@ -168,7 +171,8 @@ void SCATRA::TimIntCardiacMonodomain::ElementMaterialTimeUpdate()
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   // action for elements
-  p.set<int>("action", SCATRA::time_update_material);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::time_update_material, p);
   // further required parameter
   p.set<int>("time-step length", dta_);
 

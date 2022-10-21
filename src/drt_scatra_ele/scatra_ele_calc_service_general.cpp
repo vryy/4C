@@ -47,7 +47,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
   switch (action)
   {
     // calculate global mass matrix
-    case SCATRA::calc_mass_matrix:
+    case SCATRA::Action::calc_mass_matrix:
     {
       // integration points and weights
       const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -68,14 +68,14 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     }
 
     // calculate time derivative for time value t_0
-    case SCATRA::calc_initial_time_deriv:
+    case SCATRA::Action::calc_initial_time_deriv:
     {
       // calculate matrix and rhs
       CalcInitialTimeDerivative(ele, elemat1_epetra, elevec1_epetra, params, discretization, la);
       break;
     }
 
-    case SCATRA::integrate_shape_functions:
+    case SCATRA::Action::integrate_shape_functions:
     {
       // calculate integral of shape functions
       const Epetra_IntSerialDenseVector& dofids = params.get<Epetra_IntSerialDenseVector>("dofids");
@@ -84,7 +84,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::calc_flux_domain:
+    case SCATRA::Action::calc_flux_domain:
     {
       // get number of dofset associated with velocity related dofs
       const int ndsvel = params.get<int>("ndsvel");
@@ -148,7 +148,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::calc_total_and_mean_scalars:
+    case SCATRA::Action::calc_total_and_mean_scalars:
     {
       // get flag for inverting
       const bool inverting = params.get<bool>("inverting");
@@ -166,7 +166,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::calc_mean_scalar_time_derivatives:
+    case SCATRA::Action::calc_mean_scalar_time_derivatives:
     {
       CalculateScalarTimeDerivatives(discretization, lm, elevec1_epetra);
       break;
@@ -174,7 +174,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
 
     // calculate filtered fields for calculation of turbulent Prandtl number
     // required for dynamic Smagorinsky model in scatra
-    case SCATRA::calc_scatra_box_filter:
+    case SCATRA::Action::calc_scatra_box_filter:
     {
       if (nsd_ == 3)
         CalcBoxFilter(ele, params, discretization, la);
@@ -185,7 +185,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     }
 
     // calculate turbulent prandtl number of dynamic Smagorinsky model
-    case SCATRA::calc_turbulent_prandtl_number:
+    case SCATRA::Action::calc_turbulent_prandtl_number:
     {
       if (nsd_ == 3)
       {
@@ -256,7 +256,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::calc_vreman_scatra:
+    case SCATRA::Action::calc_vreman_scatra:
     {
       if (nsd_ == 3)
       {
@@ -300,7 +300,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     }
 
     // calculate domain integral, i.e., surface area or volume of domain element
-    case SCATRA::calc_domain_integral:
+    case SCATRA::Action::calc_domain_integral:
     {
       CalcDomainIntegral(ele, elevec1_epetra);
 
@@ -308,7 +308,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     }
 
     // calculate normalized subgrid-diffusivity matrix
-    case SCATRA::calc_subgrid_diffusivity_matrix:
+    case SCATRA::Action::calc_subgrid_diffusivity_matrix:
     {
       // calculate mass matrix and rhs
       CalcSubgrDiffMatrix(ele, elemat1_epetra);
@@ -317,7 +317,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     }
 
     // calculate mean Cai of multifractal subgrid-scale modeling approach
-    case SCATRA::calc_mean_Cai:
+    case SCATRA::Action::calc_mean_Cai:
     {
       // get number of dofset associated with velocity related dofs
       const int ndsvel = params.get<int>("ndsvel");
@@ -426,13 +426,13 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     }
 
     // calculate dissipation introduced by stabilization and turbulence models
-    case SCATRA::calc_dissipation:
+    case SCATRA::Action::calc_dissipation:
     {
       CalcDissipation(params, ele, discretization, la);
       break;
     }
 
-    case SCATRA::recon_gradients_at_nodes:
+    case SCATRA::Action::recon_gradients_at_nodes:
     {
       const INPAR::SCATRA::L2ProjectionSystemType systemtype =
           params.get<INPAR::SCATRA::L2ProjectionSystemType>(
@@ -451,7 +451,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::calc_grad_ele_center:
+    case SCATRA::Action::calc_grad_ele_center:
     {
       // need current scalar vector
       // -> extract local values from the global vectors
@@ -464,7 +464,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::recon_curvature_at_nodes:
+    case SCATRA::Action::recon_curvature_at_nodes:
     {
       // need current scalar vector
       // -> extract local values from the global vectors
@@ -510,7 +510,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::calc_mass_center_smoothingfunct:
+    case SCATRA::Action::calc_mass_center_smoothingfunct:
     {
       double interface_thickness = params.get<double>("INTERFACE_THICKNESS_TPF");
 
@@ -547,7 +547,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::calc_error:
+    case SCATRA::Action::calc_error:
     {
       // check if length suffices
       if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
@@ -562,7 +562,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::calc_immersed_element_source:
+    case SCATRA::Action::calc_immersed_element_source:
     {
       int scalartoprovidwithsource = 0;
       double segregationconst = params.get<double>("segregation_constant");
@@ -577,7 +577,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::micro_scale_initialize:
+    case SCATRA::Action::micro_scale_initialize:
     {
       if (ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
       {
@@ -596,8 +596,8 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::micro_scale_prepare_time_step:
-    case SCATRA::micro_scale_solve:
+    case SCATRA::Action::micro_scale_prepare_time_step:
+    case SCATRA::Action::micro_scale_solve:
     {
       if (ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
       {
@@ -617,7 +617,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
           // evaluate state variables at Gauss point
           SetInternalVariablesForMatAndRHS();
 
-          if (action == SCATRA::micro_scale_prepare_time_step)
+          if (action == SCATRA::Action::micro_scale_prepare_time_step)
           {
             // prepare time step on micro scale
             Teuchos::rcp_static_cast<MAT::ScatraMatMultiScale>(ele->Material())
@@ -642,7 +642,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::micro_scale_update:
+    case SCATRA::Action::micro_scale_update:
     {
       if (ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
       {
@@ -658,7 +658,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::micro_scale_output:
+    case SCATRA::Action::micro_scale_output:
     {
       if (ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
       {
@@ -674,7 +674,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::micro_scale_read_restart:
+    case SCATRA::Action::micro_scale_read_restart:
     {
       if (ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
       {
@@ -690,7 +690,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::micro_scale_set_time:
+    case SCATRA::Action::micro_scale_set_time:
     {
       if (ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
       {
@@ -709,7 +709,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::calc_heteroreac_mat_and_rhs:
+    case SCATRA::Action::calc_heteroreac_mat_and_rhs:
     {
       //--------------------------------------------------------------------------------
       // extract element based or nodal values
@@ -727,7 +727,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::transform_real_to_reference_point:
+    case SCATRA::Action::transform_real_to_reference_point:
     {
       // init quantities
       LINALG::Matrix<nsd_, 1> x_real;
@@ -777,7 +777,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
-    case SCATRA::evaluate_field_in_point:
+    case SCATRA::Action::evaluate_field_in_point:
     {
       for (unsigned int d = 0; d < nsd_; ++d) xsi_(d, 0) = params.get<double*>("point")[d];
 
@@ -823,9 +823,9 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(DRT::Element
   if (SetupCalc(ele, discretization) == -1) return 0;
 
   // check for the action parameter
-  const auto action = DRT::INPUT::get<SCATRA::Action>(params, "action");
+  const auto action = Teuchos::getIntegralValue<SCATRA::Action>(params, "action");
 
-  if (scatrapara_->IsAle() and action != SCATRA::micro_scale_read_restart)
+  if (scatrapara_->IsAle() and action != SCATRA::Action::micro_scale_read_restart)
   {
     // get number of dofset associated with displacement related dofs
     const int ndsdisp = params.get<int>("ndsdisp");
@@ -1983,7 +1983,7 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalErrorComparedToAnalytSolution(
     const DRT::Element* ele, Teuchos::ParameterList& params, Epetra_SerialDenseVector& errors)
 {
-  if (DRT::INPUT::get<SCATRA::Action>(params, "action") != SCATRA::calc_error)
+  if (Teuchos::getIntegralValue<SCATRA::Action>(params, "action") != SCATRA::Action::calc_error)
     dserror("How did you get here?");
 
   // -------------- prepare common things first ! -----------------------
