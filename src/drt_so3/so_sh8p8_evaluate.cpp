@@ -687,9 +687,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
   Teuchos::RCP<LINALG::Matrix<NUMDIM_, 1>> axmetr0 = Teuchos::null;     // axial metrics at origin
   Teuchos::RCP<const double> hths = Teuchos::null;
   Teuchos::RCP<const double> hthr = Teuchos::null;
-#if 0
-  std::vector<LINALG::Matrix<NUMDIM_,NUMDIM_> > metr_sps;
-#endif
+
   if (ans_ == ans_onspot)
   {
     jac0 = Teuchos::rcp(new LINALG::Matrix<NUMDIM_, NUMDIM_>(false));
@@ -697,12 +695,6 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
     AxialMetricsAtOrigin(xrefe, *jac0, *axmetr0);
     hths = Teuchos::rcp(new double((*axmetr0)(2) / (*axmetr0)(1)));
     hthr = Teuchos::rcp(new double((*axmetr0)(2) / (*axmetr0)(0)));
-//    std::cout << "hths=" << *hths << ", hthr=" << *hthr << std::endl;
-#if 0
-    metr_sps.resize(NUMSP_);
-    for (int sp=0; sp<NUMSP_; ++sp)
-      LocalMetrics(jac_sps[sp],metr_sps[sp]);
-#endif
   }
 
 
@@ -1041,31 +1033,6 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
       }
       else if (ans_ == ans_onspot)
       {
-#if 0
-        const double hths_B = std::sqrt(metr_sps[1](2,2)/metr_sps[1](1,1));
-        const double hths_D = std::sqrt(metr_sps[3](2,2)/metr_sps[3](1,1));
-        const double hthr_A = std::sqrt(metr_sps[0](2,2)/metr_sps[0](0,0));
-        const double hthr_C = std::sqrt(metr_sps[2](2,2)/metr_sps[2](0,0));
-        const double atas_B = 1;///(1-metr_sps[1](0,2)/std::sqrt(metr_sps[1](0,0)*metr_sps[1](2,2)));
-        const double atas_D = 1;///(1-metr_sps[3](0,2)/std::sqrt(metr_sps[3](0,0)*metr_sps[3](2,2)));
-        const double atar_A = 1;///(1-metr_sps[0](1,2)/std::sqrt(metr_sps[0](1,1)*metr_sps[0](2,2)));
-        const double atar_C = 1;///(1-metr_sps[2](1,2)/std::sqrt(metr_sps[2](1,1)*metr_sps[2](2,2)));
-//        std::cout << "atas_B="  << atas_B << ", atas_D" << atas_D << ", atar_A=" << atar_A << "atar_C=" << atar_C << std::endl;
-        // E23: remedy of transverse shear locking
-        // Est = (1+r)/2 * Est(SP B) + (1-r)/2 * Est(SP D)
-        lstrain(4)
-          = 0.5*(1+r[gp]) * 0.5*(1-s[gp]) * ( (dydt_B - dYdt_B) + atas_B*hths_B*(dydt_F - dYdt_F) )
-          + 0.5*(1+r[gp]) * 0.5*(1+s[gp]) * ( (dydt_B - dYdt_B) + atas_B*hths_B*(dydt_G - dYdt_G) )
-          + 0.5*(1-r[gp]) * 0.5*(1-s[gp]) * ( (dydt_D - dYdt_D) + atas_D*hths_D*(dydt_E - dYdt_E) )
-          + 0.5*(1-r[gp]) * 0.5*(1+s[gp]) * ( (dydt_D - dYdt_D) + atas_D*hths_D*(dydt_H - dYdt_H) );
-        // E13: remedy of transverse shear locking
-        // Ert = (1-s)/2 * Ert(SP A) + (1+s)/2 * Ert(SP C)
-        lstrain(5)
-          = 0.5*(1-s[gp]) * 0.5*(1-r[gp]) * ( (dxdt_A - dXdt_A) + atar_A*hthr_A*(dxdt_E - dXdt_E) )
-          + 0.5*(1-s[gp]) * 0.5*(1+r[gp]) * ( (dxdt_A - dXdt_A) + atar_A*hthr_A*(dxdt_F - dXdt_F) )
-          + 0.5*(1+s[gp]) * 0.5*(1-r[gp]) * ( (dxdt_C - dXdt_C) + atar_C*hthr_C*(dxdt_H - dXdt_H) )
-          + 0.5*(1+s[gp]) * 0.5*(1+r[gp]) * ( (dxdt_C - dXdt_C) + atar_C*hthr_C*(dxdt_G - dXdt_G) );
-#else
         // E23: remedy of transverse shear locking
         // Est = (1+r)/2 * Est(SP B) + (1-r)/2 * Est(SP D)
         lstrain(4) = 0.5 * (1 + r[gp]) * 0.5 * (1 - s[gp]) *
@@ -1086,7 +1053,6 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
                          ((dxdt_C - dXdt_C) + (*hthr) * (dxdt_H - dXdt_H)) +
                      0.5 * (1 + s[gp]) * 0.5 * (1 + r[gp]) *
                          ((dxdt_C - dXdt_C) + (*hthr) * (dxdt_G - dXdt_G));
-#endif
       }
       else
       {
@@ -2172,57 +2138,19 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(double& detdefgrad,
   // and pure disp-based material stretch tensor
   LINALG::Matrix<NUMDIM_, NUMDIM_> rot;
   {
-#if 0
-    StretchTensor(nullptr,&rgtstrD,&invrgtstrD,cgD);
-    // rotation matrix
-    rot.MultiplyNN(defgradD,invrgtstrD);
-#else
-#if 0
-    LINALG::Matrix<NUMDIM_,NUMDIM_> nd;
-    LINALG::Matrix<NUMDIM_,NUMDIM_> lamd;
-    LINALG::Matrix<NUMDIM_,NUMDIM_> NdT;
-    LINALG::SVD(defgradD,nd,lamd,NdT);
-    rot.MultiplyNN(nd,NdT);
-    // pure disp-based material stretch tensor
-    LINALG::Matrix<NUMDIM_,NUMDIM_> aux;
-    aux.MultiplyTN(NdT,lamd);
-    rgtstrD.MultiplyNN(aux,NdT);
-#else
     // spectral decomposition of disp-based right Cauchy-Green tensor
     LINALG::Matrix<NUMDIM_, NUMDIM_> NdT;
     LINALG::Matrix<NUMDIM_, NUMDIM_> lamd;
-#if 0
-#if 0
-    const int err = SymSpectralDecompJacIter(lamd,NdT,cgD,EPS12,12);
-    if (err!=0) dserror("spectral decomposition failed");
-    // spectral composition of disp-based right stretch tensor
-    for (int i=0; i<NUMDIM_; ++i) lamd(i,i) = sqrt(lamd(i,i));
-    LINALG::Matrix<NUMDIM_,NUMDIM_> aux;
-    aux.MultiplyNN(NdT,lamd);
-    rgtstrD.MultiplyNT(aux,NdT);
-#else
-    LINALG::Matrix<NUMDIM_,NUMDIM_> Nd;
-    LINALG::SVD(cgD,NdT,lamd,Nd);
-    // spectral composition of disp-based right stretch tensor
-    for (int i=0; i<NUMDIM_; ++i) lamd(i,i) = sqrt(lamd(i,i));
-    LINALG::Matrix<NUMDIM_,NUMDIM_> aux;
-    aux.MultiplyNN(NdT,lamd);
-    rgtstrD.MultiplyNN(aux,Nd);
-#endif
-#else
+
     LINALG::SYEV(cgD, lamd, NdT);
+
     // spectral composition of disp-based right stretch tensor
     for (int al = 0; al < NUMDIM_; ++al) lamd(al, al) = sqrt(lamd(al, al));
     LINALG::Matrix<NUMDIM_, NUMDIM_> aux;
     aux.MultiplyNN(NdT, lamd);
     rgtstrD.MultiplyNT(aux, NdT);
-#endif
+
     // inverse disp-based right stretch tensor
-#if 0
-    invrgtstrD.Update(rgtstrD);
-    const double detrgtstrD = invrgtstrD.Invert();
-    if (detrgtstrD < 0.0) dserror("Trouble during inversion of right stretch tensor");
-#else
     invrgtstrD.Clear();
     // double detdefgradD = 1.0;
     for (int al = 0; al < NUMDIM_; ++al)
@@ -2234,11 +2162,9 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(double& detdefgrad,
         for (int i = 0; i < NUMDIM_; ++i) invrgtstrD(i, j) += NdT(i, al) * NdT_jal_by_lamd_alal;
       }
     }
-#endif
+
     // rotation matrix
     rot.MultiplyNN(defgradD, invrgtstrD);
-#endif
-#endif
 
     // // U_{,C}
     //     // correct, but same speed like solution with Lapack and inaccurate
@@ -2285,35 +2211,14 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(double& detdefgrad,
     }
     LINALG::Matrix<NUMDIM_, NUMDIM_> lama;
     LINALG::Matrix<NUMDIM_, NUMDIM_> NaT;
-#if 0
-    LINALG::Matrix<NUMDIM_,NUMDIM_> Na;
-    LINALG::SVD(cga,NaT,lama,Na);
-    for (int al=0; al<NUMDIM_; ++al) lama(al,al) = sqrt(lama(al,al));
-    LINALG::Matrix<NUMDIM_,NUMDIM_> aux;
-    aux.MultiplyNN(NaT,lama);
-    rgtstr.MultiplyNN(aux,Na);
-#else
+
     LINALG::SYEV(cga, lama, NaT);
     for (int al = 0; al < NUMDIM_; ++al) lama(al, al) = sqrt(lama(al, al));
-#if 0
-    rgtstr.Clear();
-    for (int al=0; al<NUMDIM_; ++al) {
-      for (int j=0; j<NUMDIM_; ++j) {
-        const double NaT_jal_times_lama_alal = NaT(j,al)*lama(al,al);
-        for (int i=0; i<NUMDIM_; ++i)
-          rgtstr(i,j) += NaT(i,al)*NaT_jal_times_lama_alal;
-      }
-    }
-#else
+
     LINALG::Matrix<NUMDIM_, NUMDIM_> aux;
     aux.MultiplyNN(NaT, lama);
     rgtstr.MultiplyNT(aux, NaT);
-#endif
-#endif
-#if 0
-    invrgtstr.Update(rgtstr);
-    detdefgrad = invrgtstr.Invert();
-#else
+
     invrgtstr.Clear();
     detdefgrad = 1.0;
     for (int al = 0; al < NUMDIM_; ++al)
@@ -2325,7 +2230,6 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(double& detdefgrad,
         for (int i = 0; i < NUMDIM_; ++i) invrgtstr(i, j) += NaT(i, al) * NaT_jal_by_lama_alal;
       }
     }
-#endif
   }
 
   // assumed deformation gradient
