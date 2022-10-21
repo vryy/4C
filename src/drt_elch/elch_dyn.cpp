@@ -52,11 +52,6 @@ void elch_dyn(int restart)
   fluiddis->FillComplete();
   scatradis->FillComplete();
 
-#if 0
-  std::ofstream f_system("mydiscretization.pos");
-  f_system<<IO::GMSH::disToString("Fluid",0,fluiddis);
-#endif
-
   // access the problem-specific parameter list
   const Teuchos::ParameterList& elchcontrol = problem->ELCHControlParams();
 
