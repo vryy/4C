@@ -479,7 +479,6 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix* stiff
   // build B operator
 
   Epetra_SerialDenseMatrix bopbar(6, ndofinpatch);
-  //  Teuchos::SerialDenseMatrix<int,FAD> tbopbar(6,ndofinpatch,true);
   Epetra_SerialDenseMatrix nxyzbar(9, ndofinpatch);
 
   // loop elements in patch
@@ -566,19 +565,6 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix* stiff
   glstrain(4) = cauchygreen(1, 2);
   glstrain(5) = cauchygreen(2, 0);
 
-#if 0
-  LINALG::Matrix<6,1,FADFAD> tglstrain(false);
-  tglstrain(0) = 0.5 * (tcauchygreen(0,0) - 1.0);
-  tglstrain(1) = 0.5 * (tcauchygreen(1,1) - 1.0);
-  tglstrain(2) = 0.5 * (tcauchygreen(2,2) - 1.0);
-  tglstrain(3) = tcauchygreen(0,1);
-  tglstrain(4) = tcauchygreen(1,2);
-  tglstrain(5) = tcauchygreen(2,0);
-
-  for (int i=0; i<ndofinpatch; ++i)
-    for (int k=0; k<6; ++k)
-      tbopbar(k,i) = tglstrain(k).dx(i);
-#endif
 
   //-------------------------------------------------------- output of strain
   if (iostrain != INPAR::STR::strain_none)
@@ -664,23 +650,11 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix* stiff
   {
     StressOutput(iostress, *nodalstress, stress, Fnode, Fnode.Determinant());
   }
-
-  //  Teuchos::SerialDenseMatrix<int,FAD> tforce(ndofinpatch,1,false);
   //----------------------------------------------------- internal forces
   if (force)
   {
     Epetra_SerialDenseVector stress_epetra(::View, stress.A(), stress.Rows());
     force->Multiply('T', 'N', Vnode, bopbar, stress_epetra, 0.0);
-
-#if 0
-    for (int i=0; i<ndofinpatch; ++i)
-    {
-      FAD sum = 0.0;
-      for (int j=0; j<6; ++j)
-        sum += tbopbar(j,i) * stress(j);
-      tforce(i,0) = Vnode * sum;
-    }
-#endif
   }
   //--------------------------------------------------- elastic stiffness
   if (stiff)
@@ -693,7 +667,6 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix* stiff
   }
 
   //----------------------------------------------------- geom. stiffness
-
   if (stiff)
   {
     if (!force) dserror("Cannot compute stiffness matrix without computing internal force");
@@ -720,15 +693,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix* stiff
         }  // for (int i=0; i<3; ++i)
       }    // for (int n=0; n<ndofinpatch; ++n)
     }      // for (int m=0; m<ndofinpatch; ++m)
-
-#if 0
-    Teuchos::SerialDenseMatrix<int,double> tkg(ndofinpatch,ndofinpatch,false);
-    for (int i=0; i<ndofinpatch; ++i)
-      for (int j=0; j<ndofinpatch; ++j)
-        tkg(i,j) = tforce(i,0).dx(j);
-#endif
-
-  }  // if (stiff)
+  }        // if (stiff)
 
   return;
 }

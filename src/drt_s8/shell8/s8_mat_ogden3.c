@@ -160,21 +160,6 @@ void s8_mat_ogden_uncoupled2(
   /*----------------------------------- make powers lamdev[i] ** alpfa[p] */
   for (i = 0; i < 3; i++)
     for (p = 0; p < 3; p++) lamdevpowalfap[i][p] = pow(lamdev[i], alfap[p]);
-/*--------------------------------------------------------- make energy */
-#if 0
-psi1 = 0.0;
-for (p=0; p<3; p++)
-{
-   psi1 += (mup[p]/alfap[p]) *
-           (lamdevpowalfap[0][p] +
-           lamdevpowalfap[1][p] +
-           lamdevpowalfap[2][p] - 3.0);
-}
-psi2 = (kappa/(beta*beta)) *
-       (beta*log(J) + pow(J,mbeta)-1.0);
-psi = psi1+psi2;
-printf("uncoupled PSI1 %20.10f PSI2 %20.10f PSI %20.10f\n\n",psi1,psi2,psi);fflush(stdout);
-#endif
   /*-------------------------------------------- make deviatoric stresses */
   for (p = 0; p < 3; p++)
   {

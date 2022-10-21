@@ -189,38 +189,6 @@ namespace DRT
       void BuildTheta(LINALG::Matrix<6, 9>& Theta, const LINALG::Matrix<3, 3>& F) const;
       void BuildYpsilon(LINALG::Matrix<6, 9>& Y, const LINALG::Matrix<3, 3>& F,
           const LINALG::Matrix<3, 3>& S) const;
-
-
-      // these were for debugging
-#if 0
-  void FDLambda(LINALG::SerialDenseMatrix& L, const LINALG::SerialDenseMatrix& f) const;
-  void FDLambdaT(LINALG::SerialDenseMatrix& L, const LINALG::SerialDenseMatrix& f) const;
-  void FDTheta(double Theta4[][3][3][3],LINALG::SerialDenseMatrix& Theta, const LINALG::SerialDenseMatrix& F) const;
-  void FDYpsilon(double Y4[][3][3][3],LINALG::SerialDenseMatrix& Y,
-                 const LINALG::SerialDenseMatrix& F,
-                 const LINALG::SerialDenseMatrix& S) const;
-  void FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
-                     const std::vector<double>& disp,
-                     const int gp,
-                     DRT::ELEMENTS::So_hex8* ele,
-                     Teuchos::ParameterList& params) const;
-  void FD_djdX(Epetra_SerialDenseMatrix& djdX,
-                     const std::vector<double>& disp,
-                     const int gp,
-                     DRT::ELEMENTS::So_hex8* ele) const;
-  void FD_dISdX(Epetra_SerialDenseMatrix& stiff,
-                     const std::vector<double>& disp,
-                     const int gp,
-                     DRT::ELEMENTS::So_hex8* ele,
-                     Teuchos::ParameterList& params) const;
-  void FD_dISdf(Epetra_SerialDenseMatrix& dISdf,
-                const Epetra_SerialDenseVector& stress,
-                const LINALG::SerialDenseMatrix& f) const;
-  void TensorMultiply(Epetra_SerialDenseMatrix& sum,double fac,
-                      double Y4[][3][3][3], double L4[][3][3][3]);
-#endif
-
-
     };  // class InvDesign
   }     // namespace ELEMENTS
 }  // namespace DRT
