@@ -12,4 +12,5 @@ source "${PYTHON_VENV}"/bin/activate
 
 # Install all the modules defined in requirements.txt.
 pip install --upgrade pip
+pip install wheel
 pip install -r requirements.txt
