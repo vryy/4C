@@ -117,7 +117,6 @@ GEO::CUT::FacetGraph::FacetGraph(const std::vector<Side *> &sides, const plain_f
     }
   }
 
-#if 1
 #ifdef DEBUGCUTLIBRARY
   {
     std::ofstream file("lines.py");
@@ -134,7 +133,6 @@ GEO::CUT::FacetGraph::FacetGraph(const std::vector<Side *> &sides, const plain_f
     }
     file << "]\n";
   }
-#endif
 #endif
 
   // graph is the graph of connected lines and facets,  including internal facets

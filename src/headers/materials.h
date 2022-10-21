@@ -72,9 +72,7 @@ typedef struct _COMPOGDEN
   DOUBLE density;  /* material specific weight */
   DOUBLE lambda;   /* 1. lame constant */
   DOUBLE kappa;    /* bulkmodulus */
-#if 1
   DOUBLE l[3];
-#endif
 } COMPOGDEN;
 
 /*----------------------------------------------------------------------*

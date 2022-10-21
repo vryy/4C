@@ -1116,7 +1116,6 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells(Mesh& mesh,
     std::vector<double> eqnpar(4), eqnfac(4);
     bool rever = false;
 
-#if 1
     std::vector<Point*> pts_par(par_nodes.size());
     for (unsigned parnode = 0; parnode < par_nodes.size(); parnode++)
       pts_par[parnode] = par_nodes[parnode]->point();
@@ -1133,7 +1132,6 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells(Mesh& mesh,
       eqnfac = KERNEL::EqnPlaneOfPolygon(corners);
       rever = ToReverse(posi, eqnpar, eqnfac);
     }
-#endif
 
 #if 0
     std::vector<Point*> parpts(3);

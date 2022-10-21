@@ -34,10 +34,8 @@ std::vector<double> GEO::CUT::FacetIntegration::equation_plane(
     const std::vector<std::vector<double>> &cornersLocal)
 {
   // TODO: use references for return!!!
-#if 1  // Newell's method of determining equation of plane
+  // Newell's method of determining equation of plane
   std::vector<double> eqn_plane = KERNEL::EqnPlaneOfPolygon(cornersLocal);
-#endif
-
 
 #if 0  // old method of deleting the inlin points etc etc..
   std::vector<double> eqn_plane(4);
@@ -901,11 +899,10 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells(
       // the facet is not warped
       else
       {
-#if 1  // split facet
+        // split facet
         if (!face1_->IsFacetSplit()) face1_->SplitFacet(corners);
         split = face1_->GetSplitCells();
         splitMethod = "split";
-#endif
 
 #if 0  // triangulate facet
        // std::cout<<"!!! WARNING !!! Facets are triangulated instead of getting splitted ---> more
@@ -1463,11 +1460,10 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCellsNew(bool divergenceRule,
       // the facet is not warped
       else
       {
-#if 1  // split facet
+        // split facet
         if (!face1_->IsFacetSplit()) face1_->SplitFacet(corners);
         split = face1_->GetSplitCells();
         splitMethod = "split";
-#endif
 
 #if 0  // triangulate facet
        // std::cout<<"!!! WARNING !!! Facets are triangulated instead of getting splitted ---> more

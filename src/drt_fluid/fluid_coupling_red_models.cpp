@@ -1103,8 +1103,6 @@ void FLD::UTILS::Fluid_couplingBc::OutflowBoundary(
 void FLD::UTILS::Fluid_couplingBc::InflowBoundary(
     double flowrate, double time, double dta, double theta, int condid)
 {
-#if 1
-
   // call the element to apply the pressure
   Teuchos::ParameterList eleparams;
   // action for elements
@@ -1126,7 +1124,6 @@ void FLD::UTILS::Fluid_couplingBc::InflowBoundary(
   area = Area(density, viscosity, condid_);
   velocity_ = flowrate / area;
 
-#endif
   return;
 }  // Fluid_couplingBc::InflowBoundary
 

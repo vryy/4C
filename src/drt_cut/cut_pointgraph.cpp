@@ -53,7 +53,6 @@ GEO::CUT::IMPL::PointGraph::PointGraph(
   // here we create the facets...
   Cycle cycle;
   FillGraph(element, side, cycle, strategy);
-#if 1
 #ifdef DEBUGCUTLIBRARY
   {
     std::ofstream f("all_points0.plot");
@@ -67,7 +66,6 @@ GEO::CUT::IMPL::PointGraph::PointGraph(
     std::ofstream f("cycle0.txt");
     f << cycle;
   }
-#endif
 #endif
 
   // if any edge in graph has single point

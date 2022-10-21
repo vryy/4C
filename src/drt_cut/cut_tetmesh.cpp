@@ -679,7 +679,6 @@ void GEO::CUT::TetMesh::CallQHull(
 #endif
   }
 
-#if 1
   // debug output to be read by qhull_test programm
   FILE* debug_f = fopen("qhull.debug", "w");
   for (int i = 0; i < n; ++i)
@@ -690,7 +689,6 @@ void GEO::CUT::TetMesh::CallQHull(
   }
   fprintf(debug_f, "\n");
   fclose(debug_f);
-#endif
 
 #ifdef QHULL_DEBUG_OUTPUT
   fflush(errfile);

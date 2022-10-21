@@ -2220,7 +2220,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WeakDirichlet(DRT::FaceEleme
     // compute global derivatives
     pderxy.Multiply(pxji, pderiv);
 
-#if 1
     //--------------------------------------------------------------------
     // check whether integration-point coordinates evaluated from
     // (boundary) and parent element match
@@ -2249,7 +2248,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WeakDirichlet(DRT::FaceEleme
       }
       dserror("Gausspoint matching error %12.5e\n", norm);
     }
-#endif
 
     //--------------------------------------------------------------------
     // factor for Dirichlet boundary condition given by spatial function
