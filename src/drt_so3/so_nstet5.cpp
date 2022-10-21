@@ -557,25 +557,12 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(std::map<int, DRT::ELEMENTS::NStet
       for (int dof : dofs) lm[count++] = dof;
     }
 
-#if 0
-    printf("node %d nodal dofs: ",nodeidL);
-    for (int i=0; i<count; ++i) printf("%d ",lm[i]);
-    printf("\n");
-    int start = count;
-#endif
-
     // add dofs of center nodes from elements. These appear as element dofs
     for (auto& j : myadjele)
     {
       const std::vector<int>& dofs = dis.Dof(j);
       for (int dof : dofs) lm[count++] = dof;
     }
-
-#if 0
-    printf("node %d ele   dofs: ",nodeidL);
-    for (int i=start; i<count; ++i) printf("%d ",lm[i]);
-    printf("\n\n");
-#endif
 
     adjlm[nodeidL] = lm;
 
@@ -606,11 +593,6 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(std::map<int, DRT::ELEMENTS::NStet
               }
           }
           if ((int)subele.size() != 3) dserror("Node not attached to exactly 3 subelements");
-#if 0
-          printf("node %d ele %d subele.size %d :",nodeidL,ele->Id(),(int)subele.size());
-          for (int l=0; l<(int)subele.size(); ++l) printf("%d ",subele[l]);
-          printf("\n");
-#endif
 
           masterele[ele->Id()] = subele;
 
@@ -623,10 +605,6 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(std::map<int, DRT::ELEMENTS::NStet
     if (masterele.size() != myadjele.size()) dserror("subelement connectivity wrong");
 
     adjsubele[nodeidL] = masterele;
-
-#if 0
-    printf("\n");
-#endif
 
     //-----------------------------------------------------------------
     // for each adjele and its subele, build local connectivity

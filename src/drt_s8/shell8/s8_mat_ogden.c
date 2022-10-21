@@ -160,10 +160,6 @@ printf("  coupled PSI  %20.10f\n\n",psi);fflush(stdout);
   for (p = 0; p < 3; p++)
     for (i = 0; i < 3; i++) PK2[i] += mup[p] * (lampowalfap[i][p] - 1.0);
   for (i = 0; i < 3; i++) PK2[i] /= (lam2[i]);
-/*----------------------------------------------------------------------*/
-#if 0
-printf("PK2        [0] %14.8f PK2        [1] %14.8f PK2        [2] %14.8f\n\n",PK2[0],PK2[1],PK2[2]);
-#endif
   /*----------------------- calculate the PK2 stresses in cartesian bases */
   s8_ogden_cartPK2(PK2cart, PK2, N);
   /*------------------ sort cartesian stresses to the vector shell8-style */

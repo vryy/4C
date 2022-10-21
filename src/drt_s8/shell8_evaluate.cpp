@@ -1510,24 +1510,6 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(std::vector<int>& lm, std::vector<do
   //------------------------------------------------ delete the only ARRAY
   amdel(&C_a);
 
-
-#if 0
-printf("Element id %d\n",Id());
-
-printf("stiffness\n");
-for (int i=0; i<nd; ++i)
-{
-  for (int j=0; j<nd; ++j)
-    printf("  %15.10e  ",(*stiffmatrix)(i,j));
-  printf("\n");
-}
-printf("internal forces\n");
-for (int i=0; i<nd; ++i)
-  printf("%15.10e\n",(*force)[i]);
-fflush(stdout);
-
-#endif
-
   return;
 }  // DRT::ELEMENTS::Shell8::s8_nlnstiffmass
 
