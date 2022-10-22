@@ -37,3 +37,18 @@ include(FindPackageHandleStandardArgs)
 
 find_package_handle_standard_args(ACML DEFAULT_MSG ACML_INCLUDES ACML_LIBRARIES)
 mark_as_advanced(ACML_INCLUDES ACML_LIBRARIES)
+
+if(ACML_FOUND AND NOT TARGET acml::acml)
+  add_library(acml::acml UNKNOWN IMPORTED)
+  set_target_properties(
+    acml::acml
+    PROPERTIES IMPORTED_LOCATION "${ACML_LIBRARIES}"
+               INTERFACE_INCLUDE_DIRECTORIES "${ACML_INCLUDES}"
+    )
+endif()
+
+if(ACML_FOUND)
+  list(APPEND BACI_ALL_ENABLED_EXTERNAL_LIBS acml::acml})
+  message(STATUS "Found ACML (AMD Core Math Library): ${ACML_LIBRARIES}")
+  message(STATUS "Found ACML (AMD Core Math Library): ${ACML_INCLUDES}")
+endif()
