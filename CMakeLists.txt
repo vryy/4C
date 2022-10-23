@@ -86,14 +86,6 @@ if(ENABLE_STACKTR)
   add_definitions("-DENABLE_STACKTR")
 endif(ENABLE_STACKTR)
 
-if(HAVE_OpenMP)
-  find_package(OpenMP)
-  if(OPENMP_FOUND)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-  endif()
-endif(HAVE_OpenMP)
-
 # ignore selected cut test
 option(IGNORE_UNSTABLE_CUTTEST "Ignore unstable cut test" OFF)
 if(IGNORE_UNSTABLE_CUTTEST)

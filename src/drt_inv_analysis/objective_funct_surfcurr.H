@@ -11,7 +11,7 @@
 #define OBJECTIVE_FUNCT_SURFCURR_H
 
 #include "objective_funct.H"
-//#include "../drt_lib/drt_globalproblem.H"
+// #include "../drt_lib/drt_globalproblem.H"
 
 #include "Epetra_Map.h"
 
@@ -438,18 +438,14 @@ namespace INVANA
    * benefit from the Kokkos:Serial mode which is anyhow way faster than plain MPI parallelization.
    *
    * By default Kokkos just uses Serial mode, meaning hardware threads are one-to-one connected to
-   * the mpi-ranks. If the newly introduced (r21563) do-configure HAVE_OpenMP-flag is set ON
-   * (default is OFF) baci is compiled with OpenMP support and Kokkos can make use of it in case a
-   * proper Trilinos is provided, i.e set
+   * the mpi-ranks. Kokkos can make use of OpenMP in case a proper Trilinos is provided, i.e set
    *
    * Trilinos_ENABLE_OpenMP:BOOL=ON
    * Kokkos_ENABLE_OpenMP:BOOL=ON
    * Kokkos_ENABLE_Pthread:BOOL=OFF
    * Tpetra_INST_OPENMP:BOOL=ON
    *
-   * in your trilinos. When using one of the /lnm/lib versions, baci will simply fall back to
-   * Kokkos::Serial mode although having HAVE_OpenMP=ON, since Kokkos doesn't provide the OpenMP
-   * macro.
+   * in your trilinos configuration.
    *
    * -----------------------------
    * GNU OpenMP implementation on workstations:
