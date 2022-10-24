@@ -113,9 +113,9 @@ void s8_mat_ogden_coupled(
   lam[0] = sqrt(lam2[0]);
   lam[1] = sqrt(lam2[1]);
   lam[2] = sqrt(lam2[2]);
-#if 1
+
   for (i = 0; i < 3; i++) mat->l[i] = lam[i];
-#endif
+
   /*------------------------------------------- make 3. invariant == detF */
   J = lam[0] * lam[1] * lam[2];
   dsassert(J > 0.0, "detF <= 0.0 in Ogden material");
@@ -123,8 +123,8 @@ void s8_mat_ogden_coupled(
   /*----------------------------------------- make powers lam[i]^alfap[p] */
   for (i = 0; i < 3; i++)
     for (p = 0; p < 3; p++) lampowalfap[i][p] = pow(lam[i], alfap[p]);
+
 /*---------------- test orthogonality and unit length of eigenvectors N */
-#if 1
   /*N0 * N1 = 0*/
   scal = N[0][0] * N[1][0] + N[0][1] * N[1][1] + N[0][2] * N[1][2];
   dsassert(fabs(scal) < EPS10, "eigenvectors N0,N1 not orthogonal");
@@ -142,7 +142,7 @@ void s8_mat_ogden_coupled(
   /*N2 * Ncross = 1.0*/
   scal = Ncross[0] * N[2][0] + Ncross[1] * N[2][1] + Ncross[2] * N[2][2];
   dsassert(fabs((scal - 1.0)) < EPS10, "eigenvectors do not form proper othogonal system");
-#endif
+
 /*----------------------------------------------------------------------*/
 /*--------------------------------------------------------- make energy */
 #if 0

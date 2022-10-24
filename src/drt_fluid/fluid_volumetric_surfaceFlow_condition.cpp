@@ -1044,14 +1044,9 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateTractionVelocityComp(
   eleparams.set("flowrate", flowrate);
   eleparams.set("area", area_);
 
-#if 1
   eleparams.set<int>("action", FLD::traction_velocity_component);
   eleparams.set("velocities", cond_velocities_);
   discret_->EvaluateCondition(eleparams, cond_traction_vel_, condname, condid_);
-#else
-  eleparams.set<int>("action", FLD::traction_Uv_integral_component);
-  discret_->EvaluateCondition(eleparams, cond_traction_vel_, condname, condid_);
-#endif
 }
 
 

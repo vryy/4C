@@ -35,12 +35,10 @@ GEO::CUT::Point* GEO::CUT::OctTreeNode::NewPoint(const double* x, Edge* cut_edge
     new_point = true;
 #endif
 
-#if 1
     if (points_.size() % 1000 == 0)  // split the node starting from level 0
     {
       Split(0);
     }
-#endif
   }
 
 

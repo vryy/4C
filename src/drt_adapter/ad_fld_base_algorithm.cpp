@@ -1479,21 +1479,12 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   fluidtimeparams->sublist("TIMEADAPTIVITY") = fdyn.sublist("TIMEADAPTIVITY");
 
   // -------- additional parameters in list for generalized-alpha scheme
-#if 1
   // parameter alpha_M
   fluidtimeparams->set<double>("alpha_M", fdyn.get<double>("ALPHA_M"));
   // parameter alpha_F
   fluidtimeparams->set<double>("alpha_F", fdyn.get<double>("ALPHA_F"));
   // parameter gamma
   fluidtimeparams->set<double>("gamma", fdyn.get<double>("GAMMA"));
-#else
-  // parameter alpha_M
-  fluidtimeparams->set<double>("alpha_M", 1. - prbdyn.get<double>("ALPHA_M"));
-  // parameter alpha_F
-  fluidtimeparams->set<double>("alpha_F", 1. - prbdyn.get<double>("ALPHA_F"));
-  // parameter gamma
-  fluidtimeparams->set<double>("gamma", prbdyn.get<double>("GAMMA"));
-#endif
 
   // ---------------------------------------------- nonlinear iteration
   // type of predictor

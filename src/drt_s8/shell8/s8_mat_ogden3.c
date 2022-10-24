@@ -125,11 +125,10 @@ void s8_mat_ogden_uncoupled2(
   lam[0] = sqrt(lam2[0]);
   lam[1] = sqrt(lam2[1]);
   lam[2] = sqrt(lam2[2]);
-#if 1
+
   for (i = 0; i < 3; i++) mat->l[i] = lam[i];
-#endif
+
 /*----------------------------------------------------------------------*/
-#if 1
   /*---------------- test orthogonality and unit length of eigenvectors N */
   /*N0 * N1 = 0*/
   scal = N[0][0] * N[1][0] + N[0][1] * N[1][1] + N[0][2] * N[1][2];
@@ -149,7 +148,7 @@ void s8_mat_ogden_uncoupled2(
   scal = Ncross[0] * N[2][0] + Ncross[1] * N[2][1] + Ncross[2] * N[2][2];
   dsassert(fabs((scal - 1.0)) < EPS10, "eigenvectors do not form proper othogonal system");
 /*----------------------------------------------------------------------*/
-#endif
+
   /*----------------------------------------------------- make J = det(F) */
   J = lam[0] * lam[1] * lam[2];
   dsassert(J > 0.0, "detF <= 0.0 in Ogden material");

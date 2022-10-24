@@ -148,7 +148,6 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(
     prowsum_ = Teuchos::null;
     pcolsum_ = Teuchos::null;
 
-#if 1
     smat->EpetraMatrix()->InvRowSums(*srowsum_);
     if (myrank_ == 0) std::cout << "do left scaling of SparseMatrix" << std::endl;
 
@@ -157,15 +156,9 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(
     px->PutScalar(1.0);
     velpressplitter_.InsertVector(*px, 1, *srowsum_);
 
-#else
-    srowsum_->PutScalar(1.0);
-#endif
-
     if (smat->LeftScale(*srowsum_)) dserror("fluid scaling failed");
     if (b.Multiply(1.0, *srowsum_, b, 0.0)) dserror("fluid scaling failed");
 
-
-#if 1
     smat->EpetraMatrix()->InvColSums(*scolsum_);
     if (myrank_ == 0) std::cout << "do right scaling pressure" << std::endl;
 
@@ -173,10 +166,6 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(
     Teuchos::RCP<Epetra_Vector> ux = velpressplitter_.ExtractVector(*scolsum_, 0);
     ux->PutScalar(1.0);
     velpressplitter_.InsertVector(*ux, 0, *scolsum_);
-
-#else
-    scolsum_->PutScalar(1.0);
-#endif
 
     if (smat->RightScale(*scolsum_)) dserror("fluid scaling failed");
   }  // SparseMatrix
