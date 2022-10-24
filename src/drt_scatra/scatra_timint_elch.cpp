@@ -665,45 +665,6 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
         printf(" concentration1 %15.8e\n concentration2 %15.8e\n potential      %15.8e\n\n",
             conerr1, conerr2, poterr);
       }
-#if 0
-    if (myrank_ == 0)
-    {
-      // append error of the last time step to the error file
-      if ((step_==stepmax_) or (time_==maxtime_))// write results to file
-      {
-        ostd::stringstream temp;
-        const std::string simulation = problem_->OutputControlFile()->FileName();
-        //const std::string fname = simulation+".relerror";
-        const std::string fname = "XXX_kwok_xele.relerror";
-
-        double elelength=0.0;
-        if(simulation.find("5x5")!=std::string::npos)
-          elelength=0.2;
-        else if(simulation.find("10x10")!=std::string::npos)
-          elelength=0.1;
-        else if(simulation.find("20x20")!=std::string::npos)
-          elelength=0.05;
-        else if(simulation.find("40x40")!=std::string::npos)
-          elelength=0.025;
-        else if(simulation.find("50x50")!=std::string::npos)
-          elelength=0.02;
-        else if(simulation.find("80x80")!=std::string::npos)
-          elelength=0.0125;
-        else std::cout << "Warning: file name did not allow a evaluation of the element size!!!" << std::endl;
-
-        std::ofstream f;
-        f.precision(12);
-        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-        f << "#| " << simulation << "\n";
-        //f << "#| Step | Time | rel. L2-error velocity mag |  rel. L2-error pressure  |\n";
-        f << "#| Step | Time | c1 abs. error L2 | c2 abs. error L2 | phi abs. error L2 |  element length  |\n";
-        //f << step_ << " " << time_ << " " << velerr/velint << " " << preerr/pint << " "<<"\n";
-        f << step_ << " " << time_ << " " << conerr1 << " " << conerr2 << " " <<  poterr << " "<< elelength << "" << "\n";
-        f.flush();
-        f.close();
-      }
-    }
-#endif
     }
     break;
     case INPAR::SCATRA::calcerror_cylinder:
@@ -2837,9 +2798,6 @@ void SCATRA::ScaTraTimIntElch::CheckConcentrationValues(Teuchos::RCP<Epetra_Vect
   bool makepositive(false);
 
   std::vector<int> numfound(NumScal(), 0);
-#if 0
-  std::stringstream myerrormessage;
-#endif
   for (int i = 0; i < discret_->NumMyRowNodes(); i++)
   {
     DRT::Node* lnode = discret_->lRowNode(i);
@@ -2853,11 +2811,6 @@ void SCATRA::ScaTraTimIntElch::CheckConcentrationValues(Teuchos::RCP<Epetra_Vect
       {
         numfound[k]++;
         if (makepositive) ((*vec)[lid]) = EPS13;
-#if 0
-        myerrormessage<<"PROC "<<myrank_<<" dof index: "<<k<<setprecision(7)<<scientific<<
-            " val: "<<((*vec)[lid])<<" node gid: "<<lnode->Id()<<
-            " coord: [x] "<< lnode->X()[0]<<" [y] "<< lnode->X()[1]<<" [z] "<< lnode->X()[2]<<std::endl;
-#endif
       }
     }
   }
@@ -2875,27 +2828,6 @@ void SCATRA::ScaTraTimIntElch::CheckConcentrationValues(Teuchos::RCP<Epetra_Vect
         std::cout << std::endl;
     }
   }
-
-#if 0
-  // print detailed info to error file
-  for(int p=0; p < discret_->Comm().NumProc(); p++)
-  {
-    if (p==myrank_) // is it my turn?
-    {
-      // finish error message
-      myerrormessage.flush();
-
-      // write info to error file
-      if ((errfile_!=NULL) and (myerrormessage.str()!=""))
-      {
-        fprintf(errfile_,myerrormessage.str().c_str());
-        // std::cout<<myerrormessage.str()<<std::endl;
-      }
-    }
-    // give time to finish writing to file before going to next proc ?
-    discret_->Comm().Barrier();
-  }
-#endif
 }
 
 /*----------------------------------------------------------------------*

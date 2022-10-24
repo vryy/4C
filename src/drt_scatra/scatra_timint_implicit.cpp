@@ -2085,63 +2085,6 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
             initval = (x2 - 0.0354) - eps;
           else
             initval = (-0.0354 - x2) - eps;
-
-#if 0
-        // initial wedge implementation for periodic spanwise boundary
-        if (x1 <= 0.0)
-        {
-          if (x2 >= 0.0)
-            initval = (x2-0.0354) - eps;
-          else
-            initval = (-0.0354-x2) - eps;
-        }
-        else if (x1 > 0.0 and x1 < xsing)
-        {
-          initval = abs(x2)-0.0354*(xsing-x1)/xsing - eps;
-        }
-        else if (x1 >= xsing)
-          initval = x1 - xsing - eps;
-        else
-          dserror("impossible!");
-#endif
-
-#if 0
-        // initial wedge implementation for spanwise walls
-        if (x1 <= 0.0)
-        {
-          if ( x3 <= -zsing and abs(x2) <= abs(x3+zsing) )
-          {
-            initval = (-0.7525-x3) - eps;
-          }
-          else if ( x3 >= zsing and abs(x2) <= (x3-zsing) )
-          {
-            initval = (x3-0.7525) - eps;
-          }
-          else if ( x2 >= 0.0 and ( x2 > abs(x3+zsing) or x2 > (x3-zsing) ))
-          {
-            initval = (x2-0.0354) - eps;
-          }
-          else if ( x2 < 0.0 and (-x2 > abs(x3+zsing) or -x2 > (x3-zsing) ))
-          {
-            initval = (-0.0354-x2) - eps;
-          }
-          else
-            dserror("coordinate out of range of ORACLES initial function");
-        }
-        else if (x1 > 0.0 and x1 < xsing)
-        {
-          if (abs(x3) <= 0.07)
-            initval = abs(x2)-0.0354*(xsing-x1)/xsing - eps;
-          else
-          {
-            initval = 0.07525-0.07;
-          }
-        }
-        else if (x1 >= xsing)
-          initval = x1 - xsing - eps;
-        else
-          dserror("impossible!");
-#endif
           int err = 0;
           err += phin_->ReplaceMyValues(1, &initval, &doflid);
           // initialize also the solution vector. These values are a pretty good guess for the

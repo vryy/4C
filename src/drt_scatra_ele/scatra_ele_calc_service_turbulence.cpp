@@ -1110,14 +1110,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcBAndDForMultifracSubgri
         dserror("Nvel < Nphi expected!");
       }
       // here different options are possible
-      // 1) we assume k^(-5/3) for the complete range
+      // we assume k^(-4/3) for the complete range
       gamma = 4.0 / 3.0;
-#if 0
-      // 2) we assume k^(-1) for the complete range
-      gamma = 2.0;
-      // 3) we take both ranges into account
-      two_ranges = true;
-#endif
     }
   }
 

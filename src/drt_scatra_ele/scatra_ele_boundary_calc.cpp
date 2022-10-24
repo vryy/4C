@@ -945,14 +945,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::GetConstNormal(
   {
     // ToDo: this is only a temporary solution in order to have something here.
     // Current handling of node-based normal vectors not applicable in NURBS case
-#if 0
-    // use one integration point at element center
-    const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToStabGaussRule<distype>::rule);
-    // hack: ele-id = -1
-    // for nurbs elements the normal vector must be scaled with a special orientation factor!!
-    // this is already part of this function call
-    EvalShapeFuncAndIntFac(intpoints,0,&normal);
-#endif
     normal(0) = 1.0;
   }
 

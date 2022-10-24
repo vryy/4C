@@ -134,22 +134,6 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       // overpotential based on opencircuit potential
       const double eta = epd - ocp;
 
-#if 0
-    // print all parameters read from the current condition
-    std::cout<<"kinetic model  = "<<*kinetics<<std::endl;
-    std::cout<<"react. species = "<<speciesid<<std::endl;
-    std::cout<<"pot0(mod.)     = "<<pot0<<std::endl;
-    std::cout<<"curvenum       = "<<curvenum<<std::endl;
-    std::cout<<"alpha_a        = "<<alphaa<<std::endl;
-    std::cout<<"alpha_c        = "<<alphac<<std::endl;
-    std::cout<<"i0(mod.)       = "<<i0<<std::endl;
-    std::cout<<"gamma          = "<<gamma<<std::endl;
-    std::cout<<"refcon         = "<<refcon<<std::endl;
-    std::cout<<"F/RT           = "<<frt<<std::endl<<std::endl;
-    std::cout<<"time factor    = "<<timefac<<std::endl;
-    std::cout<<"alpha_F        = "<<alphaF<<std::endl;
-#endif
-
 #ifdef DEBUG
       // some safety checks/ user warnings
       if ((alphaa * frt * eta) > 100.0)

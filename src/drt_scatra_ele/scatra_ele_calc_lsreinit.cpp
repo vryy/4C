@@ -10,7 +10,6 @@
 
 #include "scatra_ele_calc_lsreinit.H"
 
-#include "scatra_ele.H"
 #include "scatra_ele_parameter_lsreinit.H"
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
@@ -25,7 +24,6 @@
 #include "../headers/singleton_owner.H"
 
 #define USE_PHIN_FOR_VEL
-//#define MODIFIED_EQ
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -414,247 +412,6 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
 }
 
 
-#if 0
-/*----------------------------------------------------------------------*
-|  calculate system matrix and rhs (public)             rasthofer 12/13 |
-*----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
-  Epetra_SerialDenseMatrix&             emat,///< element matrix to calculate
-  Epetra_SerialDenseVector&             erhs ///< element rhs to calculate
-  )
-{
-  //----------------------------------------------------------------------
-  // calculation of element volume both for tau at ele. cent. and int. pt.
-  //----------------------------------------------------------------------
-  // use one-point Gauss rule to do calculations at the element center
-  DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
-
-  // volume of the element (2D: element surface area; 1D: element length)
-  // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
-  const double vol = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0);
-
-  //----------------------------------------------------------------------
-  // calculation of characteristic element length
-  //----------------------------------------------------------------------
-
-  // get gradient of initial phi at element center
-  LINALG::Matrix<my::nsd_,1> gradphizero(true);
-  gradphizero.Multiply(my::derxy_,ephizero_[0]);
-
-  // get characteristic element length
-  const double charelelength = CalcCharEleLengthReinit(vol,gradphizero);
-
-  //----------------------------------------------------------------------
-  // calculation of stabilization parameter at element center
-  //----------------------------------------------------------------------
-
-  // the stabilization parameter
-  double tau = 0.0;
-
-  if (my::scatrapara_->StabType()!=INPAR::SCATRA::stabtype_no_stabilization)
-  {
-    if (not my::scatrapara_->TauGP())
-    {
-      // gradient of current scalar value at element center
-      LINALG::Matrix<my::nsd_,1> gradphi(true);
-      gradphi.Multiply(my::derxy_,my::ephinp_[0]);
-      // get norm
-      const double gradphi_norm = gradphi.Norm2();
-      // get sign function
-      double signphi = 0.0;
-      // initial phi at element center
-      double phizero = 0.0;
-      phizero = my::funct_.Dot(ephizero_[0]);
-      // current phi at element center
-      double phi = 0.0;
-      phi = my::funct_.Dot(my::ephinp_[0]);
-      SignFunction(signphi,charelelength,phizero,gradphizero,phi,gradphi);
-
-      // get velocity at element center
-//      LINALG::Matrix<my::nsd_,1> convelint(true);
-//      if (gradphi_norm>1e-8)
-//        convelint.Update(signphi/gradphi_norm,gradphi);
-      //TODO:
-      // get velocity at integration point
-      LINALG::Matrix<my::nsd_,1> convelint(true);
-      convelint.Multiply(my::evelnp_,my::funct_);
-      // otherwise gradphi is almost zero and we keep a zero velocity
-
-      // calculation of stabilization parameter at element center
-      my::CalcTau(tau,0.0,0.0,1.0,convelint,vol,0);
-    }
-  }
-
-  //----------------------------------------------------------------------
-  // integration loop for one element
-  //----------------------------------------------------------------------
-  // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
-  {
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
-
-    //--------------------------------------------------------------------
-    // set all Gauss point quantities
-    //--------------------------------------------------------------------
-
-    // gradient of current scalar value Gauss point
-    LINALG::Matrix<my::nsd_,1> gradphi(true);
-    gradphi.Multiply(my::derxy_,my::ephinp_[0]);
-    // get norm
-    const double gradphi_norm = gradphi.Norm2();
-    // get sign function
-    double signphi = 0.0;
-    // initial phi at Gauss point
-    double phizero = 0.0;
-    phizero = my::funct_.Dot(ephizero_[0]);
-    gradphizero.Clear();
-    gradphizero.Multiply(my::derxy_,ephizero_[0]);
-//    std::cout << phizero << std::endl;
-    // current phi at Gauss point
-    double phi = 0.0;
-    phi = my::funct_.Dot(my::ephinp_[0]);
-    SignFunction(signphi,charelelength,phizero,gradphizero,phi,gradphi);
-
-    // get velocity at element center
-    LINALG::Matrix<my::nsd_,1> convelint(true);
-    //if (gradphi_norm>1e-8)
-      //convelint.Update(signphi/gradphi_norm,gradphi);
-//    LINALG::Matrix<my::nsd_,1> mygradphin(true);
-//    mygradphin.Multiply(my::derxy_,my::ephin_[0]);
-//    double mynorm = mygradphin.Norm2();
-//    if (mynorm>1e-8)
-//    convelint.Update(signphi/mynorm,mygradphin);
-    // otherwise gradphi is almost zero and we keep a zero velocity
-    //TODO:
-    // get velocity at integration point
-//    LINALG::Matrix<my::nsd_,1> convelint(true);
-    convelint.Multiply(my::evelnp_,my::funct_);
-
-    // convective part in convective form: u_x*N,x+ u_y*N,y
-    LINALG::Matrix<my::nen_,1> conv(true);
-    conv.MultiplyTN(my::derxy_,convelint);
-
-    // convective term using current scalar value
-    double conv_phi(0.0);
-    conv_phi = convelint.Dot(gradphi);
-
-    // get history data (or acceleration)
-    double hist(0.0);
-    // TODO:
-    // use history vector of global level
-    //hist = my::funct_.Dot(my::ehist_[0]);
-    // recompute history
-    // as long as the correction is not applied as a corrector step both
-    // ways are equivalent
-    // if we use a correction step than we loose the link used in the hist calculation
-#if 1
-    LINALG::Matrix<my::nsd_,1> gradphin(true);
-    gradphin.Multiply(my::derxy_,my::ephin_[0]);
-    // get norm
-    const double gradphin_norm = gradphin.Norm2();
-    double phin = 0.0;
-    phin = my::funct_.Dot(my::ephin_[0]);
-    double oldsign = 0.0;
-    SignFunction(oldsign,charelelength,phizero,gradphizero,phin,gradphin);
-    LINALG::Matrix<my::nsd_,1> convelintold(true);
-    if (gradphin_norm>1e-8)
-         convelintold.Update(oldsign/gradphin_norm,gradphin);
-    hist = phin - my::scatraparatimint_->Dt() * (1.0 - my::scatraparatimint_->TimeFac()/my::scatraparatimint_->Dt()) * (convelintold.Dot(gradphin)-oldsign);
-#endif
-
-    //--------------------------------------------------------------------
-    // calculation of stabilization parameter at integration point
-    //--------------------------------------------------------------------
-
-    // subgrid-scale velocity vector in gausspoint
-    LINALG::Matrix<my::nsd_,1> sgvelint(true);
-
-    if (my::scatrapara_->StabType()!=INPAR::SCATRA::stabtype_no_stabilization)
-    {
-      if (my::scatrapara_->TauGP())
-        // calculation of stabilization parameter at integration point
-        my::CalcTau(tau,0.0,0.0,1.0,convelint,vol,0);
-    }
-
-    // residual of convection-diffusion-reaction eq
-    double scatrares(0.0);
-
-    // compute residual of scalar transport equation and
-    // subgrid-scale part of scalar
-    my::CalcStrongResidual(0,scatrares,1.0,1.0,hist,conv_phi,0.0,signphi,tau);
-
-    //----------------------------------------------------------------
-    // evaluation of matrix and rhs
-    //----------------------------------------------------------------
-
-    // stabilization parameter and integration factors
-    const double taufac     = tau*fac;
-    const double timefacfac = my::scatraparatimint_->TimeFac()*fac;
-    const double timetaufac = my::scatraparatimint_->TimeFac()*taufac;
-
-    //----------------------------------------------------------------
-    // 1) element matrix: instationary terms
-    //----------------------------------------------------------------
-
-    my::CalcMatMass(emat,0,fac,1.0,1.0);
-
-    // diffusive part used in stabilization terms (dummy here)
-    LINALG::Matrix<my::nen_,1> diff(true);
-    // subgrid-scale velocity (dummy)
-    LINALG::Matrix<my::nen_,1> sgconv(true);
-    if (my::scatrapara_->StabType()!=INPAR::SCATRA::stabtype_no_stabilization)
-      my::CalcMatMassStab(emat,0,taufac,1.0,1.0,conv,sgconv,diff);
-
-    //----------------------------------------------------------------
-    // 2) element matrix: convective term in convective form
-    //----------------------------------------------------------------
-
-    my::CalcMatConv(emat,0,timefacfac,1.0,conv,sgconv);
-
-    // convective stabilization of convective term (in convective form)
-    // transient stabilization of convective term (in convective form)
-    if(my::scatrapara_->StabType()!=INPAR::SCATRA::stabtype_no_stabilization)
-      my::CalcMatTransConvDiffStab(emat,0,timetaufac,1.0,conv,sgconv,diff);
-
-    //----------------------------------------------------------------
-    // 3) element right hand side
-    //----------------------------------------------------------------
-
-    double rhsint    = signphi;
-    double rhsfac    = my::scatraparatimint_->TimeFacRhs() * fac;
-    double rhstaufac = my::scatraparatimint_->TimeFacRhsTau() * taufac;
-
-    // linearization of transient term
-    my::CalcRHSLinMass(erhs,0,rhsfac,fac,1.0,1.0,hist);
-
-    // the order of the following three functions is important
-    // and must not be changed
-    my::ComputeRhsInt(rhsint,1.0,1.0,hist);
-    double rea_phi(0.0); // dummy
-    my::RecomputeScatraResForRhs(scatrares,0,convelint,gradphi,diff,1.0,1.0,conv_phi,rea_phi,rhsint);
-    // note: the third function is not required here, since we neither have a subgrid velocity
-    //       nor a conservative form
-
-    // standard Galerkin transient, old part of rhs and bodyforce term
-    my::CalcRHSHistAndSource(erhs,0,fac,rhsint);
-
-    // linearization of convective term
-    my::CalcRHSConv(erhs,0,rhsfac,conv_phi);
-
-    // linearization of stabilization terms
-    if (my::scatrapara_->StabType()!=INPAR::SCATRA::stabtype_no_stabilization)
-      my::CalcRHSTransConvDiffStab(erhs,0,rhstaufac,1.0,scatrares,conv,sgconv,diff);
-
-  } // end: loop all Gauss points
-
-  return;
-}
-#endif
-
-
 /*----------------------------------------------------------------------*
 |  calculate system matrix and rhs (public)             rasthofer 12/13 |
 *----------------------------------------------------------------------*/
@@ -799,42 +556,6 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     VarManager()->SetPhin(0, phin);
     VarManager()->SetGradPhi(0, gradphinp);
 
-#if 0  // OLD but running
-    // gradient of current scalar value Gauss point
-    LINALG::Matrix<my::nsd_,1> gradphi(true);
-    gradphi.Multiply(my::derxy_,my::ephinp_[0]);
-    // get norm
-    const double gradphi_norm = gradphi.Norm2();
-    // get sign function
-    double signphi = 0.0;
-    // initial phi at Gauss point
-    double phizero = 0.0;
-    phizero = my::funct_.Dot(ephizero_[0]);
-    gradphizero.Clear();
-    gradphizero.Multiply(my::derxy_,ephizero_[0]);
-//    std::cout << phizero << std::endl;
-    // current phi at Gauss point
-    double phi = 0.0;
-    phi = my::funct_.Dot(my::ephinp_[0]);
-    SignFunction(signphi,charelelength,phizero,gradphizero,phi,gradphi);
-    if (my::eid_==10) std::cout << signphi << std::endl;
-
-    // get velocity at element center
-    LINALG::Matrix<my::nsd_,1> convelint(true);
-    //if (gradphi_norm>1e-8)
-      //convelint.Update(signphi/gradphi_norm,gradphi);
-    LINALG::Matrix<my::nsd_,1> mygradphin(true);
-    mygradphin.Multiply(my::derxy_,my::ephin_[0]);
-    double mynorm = mygradphin.Norm2();
-    if (mynorm>1e-8)
-    convelint.Update(signphi/mynorm,mygradphin);
-    // otherwise gradphi is almost zero and we keep a zero velocity
-    //TODO:
-    // get velocity at integration point
-//    LINALG::Matrix<my::nsd_,1> convelint(true);
-//    convelint.Multiply(my::econvelnp_,my::funct_);
-#endif
-
     // get velocity at element center
     LINALG::Matrix<my::nsd_, 1> convelint(true);
 
@@ -898,27 +619,6 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     double hist(0.0);
     // use history vector of global level
     hist = my::funct_.Dot(my::ehist_[0]);
-    // recompute history
-    // as long as the correction is not applied as a corrector step both
-    // ways are equivalent
-    // if we use a correction step than we loose the link used in the hist calculation
-#if 0
-#ifndef USE_PHIN_FOR_VEL
-    LINALG::Matrix<my::nsd_,1> gradphin(true);
-    gradphin.Multiply(my::derxy_,my::ephin_[0]);
-    // get norm
-    const double gradphin_norm = gradphin.Norm2();
-    double phin = 0.0;
-    phin = my::funct_.Dot(my::ephin_[0]);
-#endif
-    double oldsign = 0.0;
-    SignFunction(oldsign,charelelength,phizero,gradphizero,phin,gradphin);
-    LINALG::Matrix<my::nsd_,1> convelintold(true);
-    const double gradphin_norm = gradphin.Norm2();
-    if (gradphin_norm>1e-8)
-         convelintold.Update(oldsign/gradphin_norm,gradphin);
-    hist = phin - my::scatraparatimint_->Dt() * (1.0 - my::scatraparatimint_->TimeFac()/my::scatraparatimint_->Dt()) * (convelintold.Dot(gradphin)-oldsign);
-#endif
     // set changed values in variable manager
     VarManager()->SetHist(0, hist);
 

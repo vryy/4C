@@ -15,7 +15,6 @@
 #include "../drt_io/io.H"
 
 #include "../drt_scatra/scatra_timint_elch.H"
-//#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -338,14 +337,6 @@ void ELCH::MovingBoundaryAlgorithm::Output()
   {
     FluidField()->DiscWriter()->WriteVector("idispn", idispnp_);
   }
-
-#if 0
-  //ToDo
-  // for visualization only...
-  Teuchos::RCP<Epetra_Vector> idispnpfull = LINALG::CreateVector(*(FluidField()->DofRowMap()),true);
-  (FluidField()->Interface()).AddFSICondVector(idispnp_,idispnpfull);
-  FluidField()->DiscWriter()->WriteVector("idispnfull",idispnpfull);
-#endif
 
   // now the other physical fiels
   ScaTraField()->Output();
