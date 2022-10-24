@@ -12,7 +12,7 @@
 
 #include "../drt_inpar/inpar_particle.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

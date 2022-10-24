@@ -16,7 +16,7 @@
 
 #include "../pss_full/pss_cpp.h"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_io/io_pstream.H"

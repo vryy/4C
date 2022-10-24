@@ -13,7 +13,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/voigt_notation.H"
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_io/io_control.H"

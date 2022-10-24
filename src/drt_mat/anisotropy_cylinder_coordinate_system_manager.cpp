@@ -11,7 +11,7 @@
 
 #include "anisotropy_cylinder_coordinate_system_manager.H"
 #include "../drt_lib/drt_parobject.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "anisotropy_utils.H"
 #include "anisotropy.H"

@@ -16,7 +16,7 @@
 #endif
 
 #include "loca_nln_statustest_factory.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 // Concrete StatusTest Objects
 #include <LOCA_StatusTest_Combo.H>

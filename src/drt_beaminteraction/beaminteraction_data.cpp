@@ -11,7 +11,7 @@
 
 #include "beaminteraction_data.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_pack_buffer.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_globalproblem.H"

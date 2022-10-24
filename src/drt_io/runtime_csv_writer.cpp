@@ -8,7 +8,7 @@
 /* headers */
 #include "runtime_csv_writer.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_io/io.H"

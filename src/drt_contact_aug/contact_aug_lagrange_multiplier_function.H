@@ -14,7 +14,7 @@
 #include "contact_aug_utils.H"
 
 #include "../drt_inpar/inpar_solver.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 // forward declarations
 class Epetra_MultiVector;

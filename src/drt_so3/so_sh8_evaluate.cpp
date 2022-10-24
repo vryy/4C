@@ -10,7 +10,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../linalg/linalg_serialdensematrix.H"

@@ -14,7 +14,7 @@
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -5396,7 +5396,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::FADCheckLinOrthogonalityCo
 /*----------------------------------------------------------------------*
  |  End: FAD-Check for Linearizations of CPP
  *----------------------------------------------------------------------*/
-#endif  //#ifdef FADCHECKS
+#endif  // #ifdef FADCHECKS
 
 /*----------------------------------------------------------------------*
 |  FD-Check of stiffness matrix                              meier 11/14|

@@ -28,7 +28,7 @@
 #include "../drt_inpar/inpar_statinvanalysis.H"
 
 // Baci
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_comm/comm_utils.H"

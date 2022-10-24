@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------------*/
 
 #include "constraintmixture_history.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 MAT::ConstraintMixtureHistoryType MAT::ConstraintMixtureHistoryType::instance_;
 

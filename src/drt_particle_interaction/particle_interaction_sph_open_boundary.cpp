@@ -22,7 +22,7 @@
 #include "../drt_particle_engine/particle_container.H"
 #include "../drt_particle_engine/particle_object.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 

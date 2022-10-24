@@ -11,7 +11,7 @@
 #include "bele3.H"
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 
 DRT::ELEMENTS::Bele3LineType DRT::ELEMENTS::Bele3LineType::instance_;

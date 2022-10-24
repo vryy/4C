@@ -14,7 +14,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
 #include <Epetra_CrsMatrix.h>
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "adapter_coupling.H"
 
 // forward declarations

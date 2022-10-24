@@ -15,7 +15,7 @@
 #include "../drt_io/runtime_vtp_writer.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

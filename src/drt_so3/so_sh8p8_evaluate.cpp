@@ -14,7 +14,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../drt_lib/voigt_notation.H"
 #include "../linalg/linalg_utils_densematrix_eigen.H"

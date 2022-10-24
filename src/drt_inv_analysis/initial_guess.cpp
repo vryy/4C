@@ -22,7 +22,7 @@
 #include "../drt_inpar/inpar_statinvanalysis.H"
 #include "DcsMatrix.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"
 #include "../drt_timestepping/timintmstep.H"

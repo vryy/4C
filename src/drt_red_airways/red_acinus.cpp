@@ -12,7 +12,7 @@
 #include "red_airway.H"
 #include "../drt_mat/maxwell_0d_acinus.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 using namespace DRT::UTILS;

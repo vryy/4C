@@ -11,7 +11,7 @@ distributions
 #ifndef SRC_DRT_MORTAR_MORTAR_MATRIX_TRANSFORM_H_
 #define SRC_DRT_MORTAR_MORTAR_MATRIX_TRANSFORM_H_
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../headers/pairedvector.H"
 #include "../drt_lib/drt_utils_matrix_vector_enums.H"
 

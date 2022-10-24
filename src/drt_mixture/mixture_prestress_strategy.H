@@ -18,7 +18,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_RCPDecl.hpp>
 #include <utility>
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include <memory>
 
 namespace MAT

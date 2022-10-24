@@ -44,6 +44,10 @@ include(CheckCXXSourceRuns)
 include(CheckCXXSourceCompiles)
 include(FetchContent)
 
+# include our own macros
+include(Deprecated_BACIAddLibraryLinkedWithEverything)
+include(BACILinkDefaultLibraries)
+
 #
 ### Build in default values
 
@@ -160,55 +164,6 @@ set(OBJS_DRT_ALE_LIB
     src/drt_ale3/ale3_nurbs.cpp
     src/drt_ale3/ale3_surface.cpp
     src/drt_ale3/ale3_surface_evaluate.cpp
-    )
-set(OBJS_DRT_LIB
-    src/drt_lib/drt_periodicbc.cpp
-    src/drt_lib/drt_assemblestrategy.cpp
-    src/drt_lib/drt_condition.cpp
-    src/drt_lib/drt_conditiondefinition.cpp
-    src/drt_lib/drt_container.cpp
-    src/drt_lib/drt_cubic_spline_interpolation.cpp
-    src/drt_lib/drt_discret.cpp
-    src/drt_lib/drt_discret_faces.cpp
-    src/drt_lib/drt_discret_hdg.cpp
-    src/drt_lib/drt_discret_xwall.cpp
-    src/drt_lib/drt_discret_xfem.cpp
-    src/drt_lib/drt_discret_conditions.cpp
-    src/drt_lib/drt_discret_evaluate.cpp
-    src/drt_lib/drt_discret_fillcomplete.cpp
-    src/drt_lib/drt_discret_partition.cpp
-    src/drt_lib/drt_discret_utils.cpp
-    src/drt_lib/drt_dofset.cpp
-    src/drt_lib/drt_dofset_base.cpp
-    src/drt_lib/drt_dofset_proxy.cpp
-    src/drt_lib/drt_dofset_gidbased_wrapper.cpp
-    src/drt_lib/drt_dofset_merged_wrapper.cpp
-    src/drt_lib/drt_dofset_definedmapping_wrapper.cpp
-    src/drt_lib/drt_dofset_transparent.cpp
-    src/drt_lib/drt_dofset_transparent_independent.cpp
-    src/drt_lib/drt_dofset_pbc.cpp
-    src/drt_lib/drt_dofset_independent.cpp
-    src/drt_lib/drt_dofset_independent_pbc.cpp
-    src/drt_lib/drt_element.cpp
-    src/drt_lib/drt_function.cpp
-    src/drt_lib/drt_functionvariables.cpp
-    src/drt_lib/drt_function_library.cpp
-    src/drt_lib/drt_function_manager.cpp
-    src/drt_lib/function_of_time.cpp
-    src/drt_lib/drt_globalproblem.cpp
-    src/drt_lib/drt_locsys.cpp
-    src/drt_lib/drt_node.cpp
-    src/drt_lib/drt_parobject.cpp
-    src/drt_lib/drt_parobjectfactory.cpp
-    src/drt_lib/drt_utils_createdis.cpp
-    src/drt_lib/drt_utils_materials.cpp
-    src/drt_lib/drt_utils_factory.cpp
-    src/drt_lib/drt_utils_gid_vector.cpp
-    src/drt_lib/drt_utils_discret.cpp
-    src/drt_lib/drt_utils_discret_dbc.cpp
-    src/drt_lib/drt_utils_discret_evaluate.cpp
-    src/drt_lib/connectivity.cpp
-    src/drt_lib/tensor_transformation.cpp
     )
 set(OBJS_DRT_MAT_LIB
     src/drt_matelast/elast_aniso_structuraltensor_strategy.cpp
@@ -836,7 +791,6 @@ set(OBJS_DRT_BELE3_LIB
     src/drt_bele3/vele3_surface.cpp
     src/drt_bele3/vele3_surface_evaluate.cpp
     )
-set(OBJS_DRT_COMM src/drt_comm/comm_utils.cpp)
 
 set(OBJS_DRT_UTILS
     src/drt_binstrategy/binning_strategy_utils.cpp
@@ -885,7 +839,6 @@ set(OBJS_DRT_UTILS
     src/pss_full/pss_table_iter.c
     src/drt_lib/voigt_notation.cpp
     )
-set(OBJS_DRT_ERROR src/drt_lib/drt_dserror.cpp)
 set(OBJS_DRT_EHL
     src/drt_ehl/ehl_base.cpp
     src/drt_ehl/ehl_dyn.cpp
@@ -2361,8 +2314,6 @@ if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/src)
 endif(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
 
-include(Deprecated_BACIAddLibraryLinkedWithEverything)
-
 # Define the libraries. The link order is important!
 
 # Compile element libraries first. There are files that take time to compile.
@@ -2545,8 +2496,6 @@ deprecated_baci_add_library_linked_with_everything(drt_scatra_multi ${OBJS_DRT_M
 deprecated_baci_add_library_linked_with_everything(drt_lib_register ${OBJS_DRT_REGISTER})
 
 # libraries that are used by baci and by filters
-deprecated_baci_add_library_linked_with_everything(drt_comm ${OBJS_DRT_COMM})
-deprecated_baci_add_library_linked_with_everything(drt_lib ${OBJS_DRT_LIB})
 deprecated_baci_add_library_linked_with_everything(drt_lib_inpar ${OBJS_DRT_INPAR})
 deprecated_baci_add_library_linked_with_everything(drt_lib_constraint ${OBJS_DRT_CONSTRAINT_LIB})
 deprecated_baci_add_library_linked_with_everything(
@@ -2611,9 +2560,6 @@ set(SUPPORT_LIBRARIES
     drt_lib_geometry_pair
     )
 
-# separate library as it does not play well with testing
-deprecated_baci_add_library_linked_with_everything(drt_error ${OBJS_DRT_ERROR})
-
 # filter framework
 deprecated_baci_add_library_linked_with_everything(post_drt_common ${OBJS_POST_DRT_COMMON})
 deprecated_baci_add_library_linked_with_everything(post_drt_ensight_lib ${OBJS_POST_DRT_ENSIGHT})
@@ -2665,15 +2611,9 @@ set(BACI_LIBRARIES
     drt_comm
     )
 
-target_link_libraries(${baciname} ${BACI_LIBRARIES} drt_error)
+target_link_libraries(${baciname} ${BACI_LIBRARIES})
 
-set(FILTER_LIBRARIES
-    post_drt_common
-    -Wl,--start-group
-    ${BACI_LIBRARIES}
-    -Wl,--end-group
-    drt_error
-    )
+set(FILTER_LIBRARIES post_drt_common -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group)
 
 target_link_libraries(post_processor post_drt_ensight_lib post_drt_vtk_lib ${FILTER_LIBRARIES})
 target_link_libraries(post_drt_monitor ${FILTER_LIBRARIES})
@@ -2706,6 +2646,8 @@ add_custom_command(
     ${CMAKE_COMMAND} -D CMAKE_PROJECT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR} -P
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/scripts/baci_create_post_scripts.cmake
   )
+
+add_subdirectory(src)
 
 add_subdirectory(doc EXCLUDE_FROM_ALL)
 

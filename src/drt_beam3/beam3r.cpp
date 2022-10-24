@@ -15,7 +15,7 @@
 
 // Todo @grill: check for obsolete header inclusions
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../linalg/linalg_utils_nullspace.H"

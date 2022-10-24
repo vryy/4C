@@ -8,7 +8,7 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 

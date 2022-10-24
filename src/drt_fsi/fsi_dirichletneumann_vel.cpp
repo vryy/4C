@@ -14,7 +14,7 @@
 #include "../drt_adapter/ad_str_fbiwrapper.H"
 #include "../drt_binstrategy/binning_strategy.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_fbi.H"

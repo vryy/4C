@@ -17,7 +17,7 @@
 #include "str_timint_base.H"
 #include "str_integrator.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_blocksparsematrix.H"  // debugging
 

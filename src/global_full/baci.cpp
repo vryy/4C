@@ -23,7 +23,7 @@
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_elementdefinition.H"
 #include "../drt_lib/drt_resulttest.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_parobjectregister.H"
 #include "../drt_lib/drt_utils_createdis.H"
 

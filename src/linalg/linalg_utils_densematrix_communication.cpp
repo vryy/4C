@@ -11,7 +11,7 @@
 
 #include "linalg_utils_densematrix_communication.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

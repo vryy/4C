@@ -12,7 +12,7 @@
 #include "so_sh8p8.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils_nullspace.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "so_utils.H"

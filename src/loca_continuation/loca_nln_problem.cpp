@@ -17,7 +17,7 @@
 
 #include "../solver_nonlin_nox/nox_nln_globaldata.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <Epetra_Vector.h>
 

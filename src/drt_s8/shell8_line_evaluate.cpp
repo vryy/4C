@@ -11,7 +11,7 @@
 #include "shell8.H"
 #include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/function_of_time.H"

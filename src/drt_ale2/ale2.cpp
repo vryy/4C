@@ -13,7 +13,7 @@
 #include "../drt_ale2/ale2_nurbs.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 #include "../linalg/linalg_utils_nullspace.H"

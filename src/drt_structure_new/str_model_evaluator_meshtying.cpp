@@ -18,7 +18,7 @@
 #include "str_dbc.H"
 #include "str_utils.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"

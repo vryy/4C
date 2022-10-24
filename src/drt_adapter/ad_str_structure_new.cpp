@@ -26,7 +26,7 @@
 
 #include "../drt_structure/strtimada_create.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include "../drt_structure_new/str_timint_factory.H"
 #include "../drt_structure_new/str_solver_factory.H"

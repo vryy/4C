@@ -21,7 +21,7 @@
 
 #include "nox_nln_enum_lists.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 
 // forward declaration

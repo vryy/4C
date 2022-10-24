@@ -16,7 +16,7 @@
 
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_topopt.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 
 // forward declarations

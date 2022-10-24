@@ -10,7 +10,7 @@
 #include "../../headers/standardtypes.h"
 #include "../../headers/fortran_definitions.h"
 #include "shell8.h"
-#include "../../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 /*----------------------------------------------------------------------*
  | compressible ogden-material                            m.gee 6/03    |
  | no split in volumetric and deviatoric strains                        |

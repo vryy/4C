@@ -26,7 +26,7 @@
 
 #include "../drt_inpar/inpar_structure.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_structure_new/str_timint_basedatasdyn.H"

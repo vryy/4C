@@ -11,7 +11,7 @@
 #include "../drt_beam3/beam3eb.H"
 #include "../drt_beam3/beam3r.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_fem_general/largerotations.H"
 #include "../linalg/linalg_utils_nullspace.H"

@@ -22,7 +22,7 @@
 #include "../drt_io/io_pstream.H"
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_mortar/mortar_element.H"

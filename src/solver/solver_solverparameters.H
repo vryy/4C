@@ -11,7 +11,7 @@
 #define SOLVER_SOLVERPARAMETERS_H_
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_elementtype.H"
 
 #include "../linalg/linalg_nullspace.H"

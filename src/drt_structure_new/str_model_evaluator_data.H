@@ -11,7 +11,7 @@
 #ifndef SRC_DRT_STRUCTURE_NEW_STR_MODEL_EVALUATOR_DATA_H_
 #define SRC_DRT_STRUCTURE_NEW_STR_MODEL_EVALUATOR_DATA_H_
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include <Epetra_MultiVector.h>
 #include <NOX_Abstract_Vector.H>
 #include <unordered_map>

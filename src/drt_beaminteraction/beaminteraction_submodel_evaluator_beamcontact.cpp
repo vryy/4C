@@ -17,7 +17,7 @@
 #include "../drt_beaminteraction/beaminteraction_calc_utils.H"
 #include "../drt_beaminteraction/str_model_evaluator_beaminteraction_datastate.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_geometric_search/geometric_search.H"
 #include "../drt_geometric_search/geometric_search_params.H"

@@ -32,7 +32,7 @@
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include "../drt_io/runtime_vtp_writer.H"
 

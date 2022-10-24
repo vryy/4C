@@ -22,7 +22,7 @@
 #include "../drt_inpar/inpar_beampotential.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/function_of_time.H"
 
 #include "../headers/FAD_utils.H"

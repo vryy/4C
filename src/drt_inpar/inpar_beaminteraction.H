@@ -13,7 +13,7 @@
 
 #include "inpar_parameterlist_utils.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include "../drt_fem_general/drt_utils_integration.H"
 

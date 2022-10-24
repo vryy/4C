@@ -16,7 +16,7 @@
 #define AC_FSI_H
 
 #include "fs3i_partitioned_1wc.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 // forward declarations
 namespace LINALG

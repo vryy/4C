@@ -17,7 +17,7 @@
 #include <MueLu_ParameterListInterpreter.hpp>
 #include <MueLu_EpetraOperator.hpp>
 #include "EpetraExt_RowMatrixOut.h"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "solver_amgnxn_vcycle.H"
 #include "solver_amgnxn_smoothers.H"
 

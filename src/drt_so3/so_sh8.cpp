@@ -11,7 +11,7 @@
 #include "so_sh8.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils_nullspace.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "so_hex8.H"
 #include "so_utils.H"

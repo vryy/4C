@@ -7,7 +7,7 @@
 
 #include "inversedesign.H"
 #include "so_hex8.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 
 

@@ -18,7 +18,7 @@
 #include "Teuchos_RCP.hpp"
 
 #include "../drt_lib/drt_container.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_inpar/inpar_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "matpar_parameter.H"

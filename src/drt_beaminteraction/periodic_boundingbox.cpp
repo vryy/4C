@@ -14,7 +14,7 @@
 
 #include "../drt_io/discretization_runtime_vtu_writer.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dofset_independent.H"
 #include "../drt_lib/drt_utils_factory.H"

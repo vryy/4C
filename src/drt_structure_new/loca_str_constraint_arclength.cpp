@@ -11,7 +11,7 @@ continuation.
 /*-----------------------------------------------------------*/
 
 #include "loca_str_constraint_arclength.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 
 /*----------------------------------------------------------------------------*

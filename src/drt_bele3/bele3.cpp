@@ -10,7 +10,7 @@
 
 #include "bele3.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_lib/drt_linedefinition.H"
 

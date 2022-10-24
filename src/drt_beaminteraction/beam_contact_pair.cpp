@@ -11,7 +11,7 @@
 #include "beam_contact_pair.H"
 
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <Teuchos_RCP.hpp>
 

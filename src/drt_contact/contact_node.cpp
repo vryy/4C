@@ -14,7 +14,7 @@
 #include "../drt_contact_aug/contact_integrator_utils.H"
 
 #include "../linalg/linalg_serialdensevector.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 CONTACT::CoNodeType CONTACT::CoNodeType::instance_;
 

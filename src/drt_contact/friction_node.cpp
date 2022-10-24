@@ -8,7 +8,7 @@
 #include "friction_node.H"
 #include "contact_element.H"
 #include "contact_defines.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 CONTACT::FriNodeType CONTACT::FriNodeType::instance_;
 

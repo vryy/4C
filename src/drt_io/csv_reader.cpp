@@ -10,7 +10,7 @@
 
 #include "csv_reader.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 /*-----------------------------------------------------------------------------------------------*/
 std::vector<std::vector<double>> IO::ReadCsv(const int number_of_columns, std::istream& csv_stream)

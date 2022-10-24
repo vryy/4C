@@ -16,7 +16,7 @@
 
 #include <vector>
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "Teuchos_RCP.hpp"
 
 

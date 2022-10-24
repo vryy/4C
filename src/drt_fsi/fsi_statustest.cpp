@@ -12,7 +12,7 @@
 #include "fsi_nox_newton.H"
 
 #include "../drt_adapter/adapter_coupling.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <NOX_Abstract_Vector.H>
 #include <NOX_Abstract_Group.H>

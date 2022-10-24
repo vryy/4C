@@ -15,7 +15,7 @@
 #include "str_model_evaluator_data.H"
 #include "str_utils.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <Epetra_Comm.h>
 #include "../solver_nonlin_nox/nox_nln_floating_point_exception.H"

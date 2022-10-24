@@ -11,7 +11,7 @@
 
 // baci
 #include "../drt_io/io.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 /*----------------------------------------------------------------------------*/
 INVANA::InvanaWriter::InvanaWriter() : output_(Teuchos::null) { return; }

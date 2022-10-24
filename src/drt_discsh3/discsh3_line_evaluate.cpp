@@ -6,13 +6,13 @@
 
 */
 /*----------------------------------------------------------------------*/
-//#ifdef DISCSH3_H
+// #ifdef DISCSH3_H
 #include <Teuchos_TimeMonitor.hpp>
-//#include <algorithm>
+// #include <algorithm>
 #include "discsh3.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
 
@@ -947,4 +947,4 @@ void DRT::ELEMENTS::DiscSh3Line::LengthConstrtStiffmass(Teuchos::ParameterList& 
   return;
 }
 
-//#endif
+// #endif

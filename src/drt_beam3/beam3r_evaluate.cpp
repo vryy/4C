@@ -16,7 +16,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_mat/beam_elasthyper.H"

@@ -17,7 +17,7 @@
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_mapextractor.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 namespace LINALG::SOLVER
 {

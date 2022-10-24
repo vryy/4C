@@ -13,7 +13,7 @@
 #include "../drt_mat/scatra_mat_multiporo.H"
 
 #include "../drt_inpar/inpar_material.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "Teuchos_RCP.hpp"
 #include <vector>

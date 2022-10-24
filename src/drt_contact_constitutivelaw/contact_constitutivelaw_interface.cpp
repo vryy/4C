@@ -24,7 +24,7 @@
 #include "../drt_inpar/inpar_contact.H"
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_node.H"
 
 /*----------------------------------------------------------------------*

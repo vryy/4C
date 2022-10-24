@@ -18,7 +18,7 @@ elements
 
 #include "../linalg/linalg_serialdensematrix.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_utils_factory.H"
 
 #include <Teuchos_RCP.hpp>

@@ -31,7 +31,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_XMLParameterListCoreHelpers.hpp>
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_inpar/drt_boolifyparameters.H"
 
 /*----------------------------------------------------------------------------*

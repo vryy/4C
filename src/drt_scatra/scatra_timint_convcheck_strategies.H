@@ -11,7 +11,7 @@
 #ifndef SCATRA_TIMINT_CONVCHECK_STRATEGIES_H
 #define SCATRA_TIMINT_CONVCHECK_STRATEGIES_H
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 // forward declaration
 namespace Teuchos

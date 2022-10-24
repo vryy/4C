@@ -12,7 +12,7 @@
 #include <Epetra_ConfigDefs.h>
 #include <Teuchos_RCP.hpp>
 #include <algorithm>
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_mat/matpar_material.H"
 #include "mixture_constituent.H"
 #include <iosfwd>

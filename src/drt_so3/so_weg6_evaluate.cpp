@@ -8,7 +8,7 @@
 #include "so_weg6.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/prestress_service.H"
 #include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../linalg/linalg_utils_densematrix_eigen.H"

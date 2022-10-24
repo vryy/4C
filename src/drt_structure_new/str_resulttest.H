@@ -14,7 +14,7 @@
 
 #include <Epetra_Vector.h>
 #include "../drt_lib/drt_resulttest.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 
 // forward declarations

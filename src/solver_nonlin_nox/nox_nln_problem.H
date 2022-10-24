@@ -18,7 +18,7 @@
 #include <Teuchos_RCP.hpp>
 
 #include "nox_nln_enum_lists.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <NOX_StatusTest_Generic.H>
 

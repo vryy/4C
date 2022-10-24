@@ -14,7 +14,7 @@ MATLAB, PGFPlot or other tools.
 #include "contact_aug_plot.H"
 #include "contact_augmented_strategy.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"

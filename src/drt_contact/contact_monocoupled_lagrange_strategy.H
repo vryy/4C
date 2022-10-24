@@ -16,7 +16,7 @@ to be called!
 #define CONTACT_MONOCOUPLED_LAGRANGE_STRATEGY_H
 
 #include "contact_lagrange_strategy.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 namespace ADAPTER
 {

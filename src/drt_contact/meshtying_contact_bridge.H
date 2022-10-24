@@ -13,7 +13,7 @@
 #include "Epetra_Vector.h"
 #include "../drt_inpar/inpar_contact.H"
 #include "Epetra_Comm.h"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 // forward declarations
 namespace DRT

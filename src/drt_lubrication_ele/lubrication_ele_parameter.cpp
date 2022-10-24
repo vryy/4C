@@ -17,7 +17,7 @@ parameters required for Lubrication element evaluation.
 
 #include "../drt_lubrication_ele/lubrication_ele_parameter.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../headers/singleton_owner.H"
 
 /*----------------------------------------------------------------------*

@@ -13,7 +13,7 @@
 #ifndef SRC_DRT_STRUCTURE_NEW_STR_TIMINT_BASEDATAGLOBALSTATE_H_
 #define SRC_DRT_STRUCTURE_NEW_STR_TIMINT_BASEDATAGLOBALSTATE_H_
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_inpar/inpar_structure.H"
 
 #include "../drt_lib/drt_utils_matrix_vector_enums.H"

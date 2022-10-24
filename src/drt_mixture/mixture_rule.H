@@ -22,7 +22,7 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
 // forward declarations

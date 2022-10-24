@@ -19,7 +19,7 @@
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 // Todo check and get rid of outdated header inclusions
 #include "../drt_inpar/inpar_beamcontact.H"

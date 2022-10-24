@@ -16,7 +16,7 @@
 
 #include <Teuchos_RCP.hpp>
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_xfem.H"

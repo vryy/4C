@@ -10,7 +10,7 @@
 
 
 #include "fsi_monolithic_linearsystem.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 // NOX includes
 #include "NOX_Epetra_Interface_Required.H"

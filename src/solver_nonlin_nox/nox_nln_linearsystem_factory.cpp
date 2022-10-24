@@ -13,7 +13,7 @@
 #include "nox_nln_linearsystem_factory.H"
 #include "nox_nln_globaldata.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_sparseoperator.H"
 

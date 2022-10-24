@@ -16,7 +16,7 @@
 #include "../drt_lib/prestress_service.H"
 #include "../drt_lib/drt_utils_factory.H"
 #include "../linalg/linalg_utils_nullspace.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_mat/so3_material.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_linedefinition.H"

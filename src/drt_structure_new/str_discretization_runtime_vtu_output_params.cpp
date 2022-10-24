@@ -10,7 +10,7 @@
 
 #include "str_discretization_runtime_vtu_output_params.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 #include "../drt_inpar/inpar_structure.H"

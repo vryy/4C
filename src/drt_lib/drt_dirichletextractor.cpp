@@ -14,7 +14,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 
 /*----------------------------------------------------------------------*/

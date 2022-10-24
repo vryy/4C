@@ -14,7 +14,7 @@
 #include "nox_nln_group.H"
 #include "nox_nln_direction_defaultsteptest.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <NOX_GlobalData.H>
 #include <NOX_Solver_Generic.H>

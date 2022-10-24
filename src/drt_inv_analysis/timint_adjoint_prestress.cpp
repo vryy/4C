@@ -8,7 +8,7 @@
 !*/
 #include "timint_adjoint_prestress.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_solver.H"

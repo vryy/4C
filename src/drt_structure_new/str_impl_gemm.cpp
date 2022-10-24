@@ -11,7 +11,7 @@
 
 #include "str_impl_gemm.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../linalg/linalg_sparseoperator.H"
 
 #include <Epetra_Vector.h>

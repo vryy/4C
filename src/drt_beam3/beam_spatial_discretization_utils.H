@@ -13,7 +13,7 @@
 
 
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"

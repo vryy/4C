@@ -14,7 +14,7 @@
 
 #include "vtk_writer_base.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <sstream>
 #include <iostream>

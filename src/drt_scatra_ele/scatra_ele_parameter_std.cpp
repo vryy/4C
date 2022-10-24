@@ -20,7 +20,7 @@ coexist with this general class.
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../headers/singleton_owner.H"
 
 /*----------------------------------------------------------------------*

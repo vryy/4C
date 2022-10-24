@@ -16,7 +16,7 @@
 
 #include <set>
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_inpar/inpar_structure.H"
 
 // include of nox nln enumerators

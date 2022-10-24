@@ -12,15 +12,15 @@
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "Epetra_FECrsMatrix.h"
-//#include "Sacado.hpp"
+// #include "Sacado.hpp"
 #include "Teuchos_SerialDenseMatrix.hpp"
 #include "../linalg/linalg_serialdensevector.H"
-//#include "../linalg/linalg_fixedsizematrix.H"
+// #include "../linalg/linalg_fixedsizematrix.H"
 
 #include "../drt_mat/material_service.H"
 #include "../drt_mat/micromaterial.H"
@@ -254,9 +254,9 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
             for (int j = 0; j < ndofperpatch; ++j)
             {
               int* loc = std::lower_bound(indices, indices + length, lclm[j]);
-              //#ifdef DEBUG
+              // #ifdef DEBUG
               if (*loc != lclm[j]) dserror("Cannot find local column entry %d", lclm[j]);
-              //#endif
+              // #endif
               int pos = loc - indices;
 
               // test physical continuity of nodal values inside the Epetra_CrsMatrix

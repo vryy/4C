@@ -9,7 +9,7 @@
 
 #include "invana_utils.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "Epetra_SerialDenseVector.h"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "DcsMatrix.H"

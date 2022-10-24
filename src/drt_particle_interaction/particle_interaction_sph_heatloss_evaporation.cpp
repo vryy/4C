@@ -17,7 +17,7 @@
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

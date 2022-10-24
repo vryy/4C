@@ -15,7 +15,7 @@
 #include "../drt_beaminteraction/beaminteraction_calc_utils.H"
 
 #include "../drt_beaminteraction/periodic_boundingbox.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include "../drt_beaminteraction/beam_crosslinker_handler.H"
 

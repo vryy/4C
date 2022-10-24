@@ -17,7 +17,7 @@
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_utils_factory.H"
 
 #include <Teuchos_RCP.hpp>

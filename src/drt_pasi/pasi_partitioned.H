@@ -16,7 +16,7 @@
  *---------------------------------------------------------------------------*/
 #include "../drt_adapter/adapter_algorithmbase.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>

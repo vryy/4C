@@ -24,7 +24,7 @@
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_densematrix_communication.H"
 #include "../linalg/linalg_solver.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_function.H"
 #include "artery_resulttest.H"
 #include "art_junction.H"

@@ -16,7 +16,7 @@
 /*----------------------------------------------------------------------*
  |  headers                                                  dano 06/09 |
  *----------------------------------------------------------------------*/
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "inpar_parameterlist_utils.H"
 
 // forward declaration

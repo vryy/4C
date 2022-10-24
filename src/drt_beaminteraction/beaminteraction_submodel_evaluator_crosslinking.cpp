@@ -19,7 +19,7 @@
 #include "../drt_beaminteraction/beam_link_beam3r_line2_rigidjointed.H"
 #include "../drt_beaminteraction/beam_link_beam3r_line2_pinjointed.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_io/io.H"

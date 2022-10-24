@@ -16,7 +16,7 @@
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include "../drt_adapter/ad_field.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "poroelast_utils.H"
 
 #include "../linalg/linalg_mapextractor.H"

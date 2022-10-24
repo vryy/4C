@@ -8,7 +8,7 @@
 /*-----------------------------------------------------------------------*/
 
 #include "mortar_utils.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_sparsematrix.H"

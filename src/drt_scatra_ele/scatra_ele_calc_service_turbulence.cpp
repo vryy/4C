@@ -22,7 +22,7 @@
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
 

@@ -9,7 +9,7 @@
 #include "so_hex20.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/prestress_service.H"
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../linalg/linalg_serialdensevector.H"

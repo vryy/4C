@@ -13,7 +13,7 @@
 
 #include "../drt_beaminteraction/crosslinker_node.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_mat/crosslinkermat.H"
 #include "../drt_lib/drt_utils_factory.H"
 

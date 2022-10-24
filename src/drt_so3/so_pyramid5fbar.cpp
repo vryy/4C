@@ -11,7 +11,7 @@
 #include "so_pyramid5fbar.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils_nullspace.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "prestress.H"
 #include "../drt_lib/prestress_service.H"

@@ -7,7 +7,7 @@
 #include "so_element_service.H"
 #include "so_tet10.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/prestress_service.H"
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_patspec/patspec.H"

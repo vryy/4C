@@ -10,7 +10,7 @@
 /*-----------------------------------------------------------*/
 
 #include "ad_str_factory.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 // supported structural adapters
 #include "../drt_adapter/ad_str_loca.H"

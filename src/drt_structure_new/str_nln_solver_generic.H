@@ -13,7 +13,7 @@
 #define STR_NLN_SOLVER_GENERIC_H_
 
 #include <Teuchos_RCP.hpp>
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_inpar/inpar_structure.H"
 
 // forward declaration

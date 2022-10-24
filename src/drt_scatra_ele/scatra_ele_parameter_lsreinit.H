@@ -20,7 +20,7 @@ general static parameters required for scalar transport element evaluation.
 #include "scatra_ele_parameter_base.H"
 
 #include "../drt_inpar/inpar_levelset.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 namespace DRT
 {

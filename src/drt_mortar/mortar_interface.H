@@ -18,7 +18,7 @@
 #include <Epetra_Vector.h>
 
 #include "../drt_inpar/inpar_mortar.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../headers/pairedvector.H"
 #include "mortar_paramsinterface.H"
 

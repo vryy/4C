@@ -19,7 +19,7 @@
 #include "../drt_inpar/inpar_material.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_mat/matpar_parameter.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 // forward declarations
 namespace DRT

@@ -10,7 +10,7 @@
 #define LINALG_NULLSPACE_H
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_elementtype.H"
 

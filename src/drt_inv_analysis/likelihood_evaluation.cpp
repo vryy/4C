@@ -15,7 +15,7 @@
 #include "Epetra_CrsMatrix.h"
 #include "../drt_inpar/inpar_invanalysis.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include <random>
 #include <chrono>
 

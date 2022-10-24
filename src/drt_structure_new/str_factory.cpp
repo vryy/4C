@@ -12,7 +12,7 @@
 #include "str_factory.H"
 #include "str_timint_base.H"
 #include "str_dbc.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 // supported implicit time integrators
 #include "str_impl_statics.H"

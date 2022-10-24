@@ -12,7 +12,7 @@
 
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include "../drt_adapter/ad_poromultiphase.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 namespace ADAPTER
 {
