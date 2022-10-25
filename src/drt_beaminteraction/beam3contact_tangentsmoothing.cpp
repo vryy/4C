@@ -14,7 +14,6 @@
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 /*----------------------------------------------------------------------*
- |  Constructor of class B3CNeighbor                         meier 04/11|
  *----------------------------------------------------------------------*/
 CONTACT::B3CNeighbor::B3CNeighbor(const DRT::Element* left_neighbor,
     const DRT::Element* right_neighbor, int connecting_node_left, int connecting_node_right)
@@ -23,20 +22,16 @@ CONTACT::B3CNeighbor::B3CNeighbor(const DRT::Element* left_neighbor,
       connecting_node_left_(connecting_node_left),
       connecting_node_right_(connecting_node_right)
 {
-  return;
 }
-/*----------------------------------------------------------------------*
- |  end: Constructor of class B3CNeighbor
- *----------------------------------------------------------------------*/
+
 
 /*----------------------------------------------------------------------*
- |  Determine Neighbor Elements                              meier 04/11|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::B3CNeighbor> CONTACT::B3TANGENTSMOOTHING::DetermineNeigbors(
     const DRT::Element* element1)
 {
-  const DRT::Element* left_neighbor = NULL;
-  const DRT::Element* right_neighbor = NULL;
+  const DRT::Element* left_neighbor = nullptr;
+  const DRT::Element* right_neighbor = nullptr;
   int connecting_node_left = 0;
   int connecting_node_right = 0;
 
@@ -46,22 +41,16 @@ Teuchos::RCP<CONTACT::B3CNeighbor> CONTACT::B3TANGENTSMOOTHING::DetermineNeigbor
   // n_right is the local node-ID of the elements right node (at xi = 1) whereas the elements left
   // node (at xi = -1) allways has the local ID 1 For documentation of the node numbering see also
   // the file beam3.H
-  int n_right = 0;
+  int n_right;
   if (numnode == 2)
-  {
     n_right = 1;
-  }
   else
-  {
     n_right = numnode - 2;
-  }
-
 
   int globalneighborId = 0;
   int globalnodeId = 0;
 
-  //*******************local node 1 of element1 --> xi(element1)=-1 --> left
-  // neighbor******************
+  // local node 1 of element1 --> xi(element1)=-1 --> left neighbor
   globalnodeId = *element1->NodeIds();
 
   // only one neighbor element on each side of the considered element is allowed
@@ -86,7 +75,6 @@ Teuchos::RCP<CONTACT::B3CNeighbor> CONTACT::B3TANGENTSMOOTHING::DetermineNeigbor
       {
         connecting_node_left = 0;
       }
-
       // otherwise node n_right of the left neighbor is the connecting node
       else
       {
@@ -94,10 +82,8 @@ Teuchos::RCP<CONTACT::B3CNeighbor> CONTACT::B3TANGENTSMOOTHING::DetermineNeigbor
       }
     }
   }
-  //*************************************************************************************************
 
-  //*******************************local node n_right of element1 --> xi(element1)=1 --> right
-  // neighbor*******************
+  // ocal node n_right of element1 --> xi(element1)=1 --> right neighbor
   globalnodeId = *(element1->NodeIds() + n_right);
 
   // only one neighbor element on each side of the considered element is allowed
@@ -130,79 +116,55 @@ Teuchos::RCP<CONTACT::B3CNeighbor> CONTACT::B3TANGENTSMOOTHING::DetermineNeigbor
       }
     }
   }
-  //********************************************************************************************************
 
   return Teuchos::rcp(new CONTACT::B3CNeighbor(
       left_neighbor, right_neighbor, connecting_node_left, connecting_node_right));
 }
-/*----------------------------------------------------------------------*
- |  end: Determine Neighbor Elements
- *----------------------------------------------------------------------*/
+
 
 /*----------------------------------------------------------------------*
- |  compute right boundary node of an element                meier 05/11|
  *----------------------------------------------------------------------*/
-void CONTACT::B3TANGENTSMOOTHING::GetBoundaryNode(int& nright, int nnode)
+int CONTACT::B3TANGENTSMOOTHING::GetBoundaryNode(const int nnode)
 {
   if (nnode == 2)
-  {
-    nright = 1;
-  }
+    return 1;
   else
-  {
-    nright = nnode - 2;
-  }
+    return nnode - 2;
 }
-/*----------------------------------------------------------------------*
- |  end: compute right boundary node of an element           meier 05/11|
- *----------------------------------------------------------------------*/
+
 
 /*----------------------------------------------------------------------*
- |  compute element length                                   meier 05/11|
  *----------------------------------------------------------------------*/
-void CONTACT::B3TANGENTSMOOTHING::GetEleLength(
-    Epetra_SerialDenseMatrix& elepos, int& nright, double& length)
+double CONTACT::B3TANGENTSMOOTHING::GetEleLength(
+    const Teuchos::SerialDenseMatrix<int, double>& elepos, const int nright)
 {
-  length = 0;
+  double length = 0.0;
   for (int i = 0; i < 3; i++)
-  {
     length += (elepos(i, nright) - elepos(i, 0)) * (elepos(i, nright) - elepos(i, 0));
-  }
-  length = sqrt(length);
+
+  return sqrt(length);
 }
 
+
 /*----------------------------------------------------------------------*
- |  evaluate shape functions and derivatives                 meier 05/11|
  *----------------------------------------------------------------------*/
-void CONTACT::B3TANGENTSMOOTHING::GetNodalDerivatives(Epetra_SerialDenseMatrix& deriv1, int node,
-    const int nnode, double length, const DRT::Element::DiscretizationType distype)
+Teuchos::SerialDenseMatrix<int, double> CONTACT::B3TANGENTSMOOTHING::GetNodalDerivatives(
+    const int node, const int nnode, const double length,
+    const DRT::Element::DiscretizationType distype)
 {
+  Teuchos::SerialDenseMatrix<int, double> deriv1(1, nnode);
+
   if (node == nnode)
-  {
     DRT::UTILS::shape_function_1D_deriv1(deriv1, -1.0 + 2.0 / (nnode - 1), distype);
-  }
   else
   {
     if (node == 1)
-    {
       DRT::UTILS::shape_function_1D_deriv1(deriv1, -1.0, distype);
-    }
     else
-    {
       DRT::UTILS::shape_function_1D_deriv1(deriv1, -1.0 + node * 2.0 / (nnode - 1), distype);
-    }
   }
 
+  for (int i = 0; i < nnode; i++) deriv1(0, i) = 2.0 * deriv1(0, i) / length;
 
-  for (int i = 0; i < nnode; i++)
-  {
-    deriv1(0, i) = 2 * deriv1(0, i) / length;
-  }
-
-
-
-  return;
+  return deriv1;
 }
-/*----------------------------------------------------------------------*
- |  end: evaluate shape functions and derivatives
- *----------------------------------------------------------------------*/
