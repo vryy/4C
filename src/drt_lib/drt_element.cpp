@@ -1054,25 +1054,6 @@ int DRT::Element::Evaluate(Teuchos::ParameterList& params, DRT::Discretization& 
   return -1;
 }
 
-#if 0  // this no longer is a dummy (but pure virtual) to check on the
-       // parameter list. It can be a dummy again once everything with
-       // EvaluateNeumann is fixed
-/*----------------------------------------------------------------------*
- |  evaluate Neumann BC dummy (public)                       mwgee 01/07|
- *----------------------------------------------------------------------*/
-int DRT::Element::EvaluateNeumann(Teuchos::ParameterList& params,
-                                  DRT::Discretization&      discretization,
-                                  DRT::Condition&           condition,
-                                  std::vector<int>&         lm,
-                                  Epetra_SerialDenseVector& elevec1)
-{
-  std::cout << "DRT::Element::EvaluateNeumann:\n"
-       << "Base class dummy routine DRT::Element::EvaluateNeumann(...) called\n"
-       << __FILE__ << ":" << __LINE__ << std::endl;
-  return -1;
-}
-#endif
-
 int DRT::Element::Degree() const { return DRT::UTILS::getDegree(Shape()); }
 
 /*----------------------------------------------------------------------*
