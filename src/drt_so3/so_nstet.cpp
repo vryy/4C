@@ -418,10 +418,6 @@ void DRT::ELEMENTS::NStetType::InitMISnode(std::map<int, int>& misnodesmap,
           count.emplace_back((int)adjele_[node->second->Id()].size(), node->second->Id());
         sort(count.begin(), count.end());
         n = count.size() - 1;
-#if 0
-        for (int i=n; i>=0; --i)
-          std::cout << "Proc " << myrank << " n " << n << " still on stack node " << count[i].second << " numele " << count[i].first << std::endl;
-#endif
       }
     }  // if (proc==mypid)
     fflush(stdout);

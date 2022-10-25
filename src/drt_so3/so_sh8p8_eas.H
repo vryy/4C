@@ -178,27 +178,6 @@ void DRT::ELEMENTS::So_sh8p8::EasConstraintAndTangent(Teuchos::RCP<Epetra_Serial
   mff.MultiplyTN(defgradbyalpha, tinvdefgrad);
   // temporary integration factor
   const double fac = effpressure * detdefgrad * detJ_w;
-#if 0
-  std::cout << "effpressure=" << effpressure << std::endl;
-  std::cout << "detJ_w=" << detJ_w << std::endl;
-#endif
-
-
-#if 0
-  {
-  LINALG::Matrix<NUMEAS_T,NUMEAS_T> Kaa1(true);
-  LINALG::DENSEFUNCTIONS::multiplyTN<NUMEAS_T,MAT::NUM_STRESS_3D,NUMEAS_T>(1.0,Kaa1.A(), detJ_w,M->A(),cM.A());
-  std::cout << "Kaa1=" << Kaa1 << std::endl;
-  LINALG::Matrix<NUMEAS_T,NUMEAS_T> Kaa2(true);
-  LINALG::DENSEFUNCTIONS::multiplyTN<NUMEAS_T,NUMDFGR_,NUMEAS_T>(1.0,Kaa2.A(), -fac,defgradbyalpha.A(),ffwmf.A());
-  std::cout << "Kaa2=" << Kaa2 << std::endl;
-  LINALG::Matrix<NUMEAS_T,NUMDISP_> Kad1(true);
-  LINALG::DENSEFUNCTIONS::multiplyTN<NUMEAS_T,MAT::NUM_STRESS_3D,NUMDISP_>(1.0,Kad1.A(), detJ_w,M->A(),cb.A());
-  std::cout << "Kad1=" << Kad1 << std::endl;
-  std::cout << "M=" << *M << std::endl;
-  std::cout << "C.B=" << cb << std::endl;
-  }
-#endif
 
   // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
   //                     - (M_F^T . ( fv . fv^T + Wm ) . M_F) * (H . p) * detF * detJ * w
@@ -242,21 +221,10 @@ void DRT::ELEMENTS::So_sh8p8::EasCondensation(
     const Teuchos::RCP<Epetra_SerialDenseMatrix>& Kad,
     const Teuchos::RCP<Epetra_SerialDenseMatrix>& Kap)
 {
-#if 0
-  std::cout << " -  - - - - -  " << std::endl;
-  std::cout << "Kaa=" << *Kaa << std::endl;
-#endif
-
   // we need the inverse of Kaa
   Epetra_SerialDenseSolver solve_for_inverseKaa;
   solve_for_inverseKaa.SetMatrix(*Kaa);
   solve_for_inverseKaa.Invert();
-
-#if 0
-  std::cout << "Kaa=" << *Kaa << std::endl;
-  std::cout << "Kap=" << *Kap << std::endl;
-  std::cout << "Kad=" << std::scientific << *Kad << std::endl;
-#endif
 
   // temporary Kda.Kaa^{-1}
   LINALG::Matrix<NUMDISP_, NUMEAS_T> KdaKaa(false);
@@ -266,24 +234,6 @@ void DRT::ELEMENTS::So_sh8p8::EasCondensation(
   LINALG::Matrix<NUMPRES_, NUMEAS_T> KpaKaa(false);
   LINALG::DENSEFUNCTIONS::multiplyTN<double, NUMPRES_, NUMEAS_T, NUMEAS_T>(
       KpaKaa.A(), Kap->A(), Kaa->A());
-
-#if 0
-  LINALG::Matrix<NUMDISP_,NUMDISP_> KdaKaaKad(true);
-  LINALG::DENSEFUNCTIONS::multiplyNN<double,NUMDISP_,NUMEAS_T,NUMDISP_>(1.0,KdaKaaKad.A(), -1.0,KdaKaa.A(),Kad->A());
-  std::cout << "KdaKaaKad=" << KdaKaaKad << std::endl;
-  LINALG::Matrix<NUMDISP_,NUMPRES_> KdaKaaKap(true);
-  LINALG::DENSEFUNCTIONS::multiplyNN<double,NUMDISP_,NUMEAS_T,NUMPRES_>(1.0,KdaKaaKap.A(), -1.0,KdaKaa.A(),Kap->A());
-  std::cout << "KdaKaaKap=" << KdaKaaKap << std::endl;
-  LINALG::Matrix<NUMPRES_,NUMDISP_> KpaKaaKad(true);
-  LINALG::DENSEFUNCTIONS::multiplyNN<double,NUMPRES_,NUMEAS_T,NUMDISP_>(1.0,KpaKaaKad.A(), -1.0,KpaKaa.A(),Kad->A());
-  std::cout << "KpaKaaKad=" << KpaKaaKad << std::endl;
-  LINALG::Matrix<NUMPRES_,NUMPRES_> KpaKaaKap(true);
-  LINALG::DENSEFUNCTIONS::multiplyNN<double,NUMPRES_,NUMEAS_T,NUMPRES_>(1.0,KpaKaaKap.A(), -1.0,KpaKaa.A(),Kap->A());
-  std::cout << "KpaKaaKap=" << KpaKaaKap << std::endl;
-  std::cout << "stiffmatrix=" << *stiffmatrix << std::endl;
-  std::cout << "gradmatrix=" << *gradmatrix << std::endl;
-  std::cout << "stabmatrix=" << *stabmatrix << std::endl;
-#endif
 
   // EAS stiffness matrix is: Kdd - Kda . Kaa^-1 . Kad
   if (stiffmatrix != nullptr)

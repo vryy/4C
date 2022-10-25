@@ -160,21 +160,6 @@ void s8_mat_ogden_uncoupled2(
   /*----------------------------------- make powers lamdev[i] ** alpfa[p] */
   for (i = 0; i < 3; i++)
     for (p = 0; p < 3; p++) lamdevpowalfap[i][p] = pow(lamdev[i], alfap[p]);
-/*--------------------------------------------------------- make energy */
-#if 0
-psi1 = 0.0;
-for (p=0; p<3; p++)
-{
-   psi1 += (mup[p]/alfap[p]) *
-           (lamdevpowalfap[0][p] +
-           lamdevpowalfap[1][p] +
-           lamdevpowalfap[2][p] - 3.0);
-}
-psi2 = (kappa/(beta*beta)) *
-       (beta*log(J) + pow(J,mbeta)-1.0);
-psi = psi1+psi2;
-printf("uncoupled PSI1 %20.10f PSI2 %20.10f PSI %20.10f\n\n",psi1,psi2,psi);fflush(stdout);
-#endif
   /*-------------------------------------------- make deviatoric stresses */
   for (p = 0; p < 3; p++)
   {
@@ -188,12 +173,7 @@ printf("uncoupled PSI1 %20.10f PSI2 %20.10f PSI %20.10f\n\n",psi1,psi2,psi);fflu
   /*---------------- make total stresses and transform to cartesian bases */
   for (i = 0; i < 3; i++) PK2[i] = PK2dev[i] + PK2vol[i];
   s8_ogden_cartPK2(PK2cart, PK2, N);
-/*----------------------------------------------------------------------*/
-#if 0
-printf("PK2main_dev[0] %14.8f PK2main_dev[1] %14.8f PK2main_dev[2] %14.8f\n",PK2dev[0],PK2dev[1],PK2dev[2]);
-printf("PK2main_vol[0] %14.8f PK2main_vol[1] %14.8f PK2main_vol[2] %14.8f\n",PK2vol[0],PK2vol[1],PK2vol[2]);
-printf("PK2        [0] %14.8f PK2        [1] %14.8f PK2        [2] %14.8f\n\n",PK2[0],PK2[1],PK2[2]);
-#endif
+  /*----------------------------------------------------------------------*/
   /*--------------------------------- sort PK2cart to vector shell8 style */
   /*--- which then will be tranformed to shell bases outside this routine */
   stress_cart[0] = PK2cart[0][0];

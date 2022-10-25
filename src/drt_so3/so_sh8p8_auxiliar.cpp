@@ -435,41 +435,6 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtDiffByItself(
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& invfderf,
     const LINALG::Matrix<NUMDIM_, NUMDIM_>& invfmat)
 {
-#if 0
-  // VERIFIED
-
-//  std::cout << std::endl;
-//  std::cout << std::endl;
-  for (int ij=0; ij<MAT::NUM_STRESS_3D; ++ij)
-  {
-//    std::cout << "[";
-    const int i = VOIGT6ROW[ij];
-    const int j = VOIGT6COL[ij];
-    for (int kl=0; kl<MAT::NUM_STRESS_3D; ++kl)
-    {
-      const int k = VOIGT6ROW[kl];
-      const int l = VOIGT6COL[kl];
-      invfderf(ij,kl) = -0.5*(invfmat(i,k)*invfmat(l,j) + invfmat(i,l)*invfmat(k,j));
-//      std::cout << "invfderf("<<ij<<","<<kl<<") = ";
-//      std::cout << "-0.5*(invfmat("<<i<<","<<k<<")*invfmat("<<l<<","<<j<<")+invfmat("<<i<<","<<l<<")*invfmat("<<k<<","<<j<<"));";
-//      std::cout << "ct["<<i+1<<","<<k+1<<"]*ct["<<l+1<<","<<j+1<<"]+ct["<<i+1<<","<<l+1<<"]*ct["<<k+1<<","<<j+1<<"]";
-//      std::cout << std::endl;
-      if (ij >= NUMDIM_)
-      {
-#if 0
-        invfderf(ij,kl) += -0.5*(invfmat(j,k)*invfmat(l,i) + invfmat(j,l)*invfmat(k,i));
-//        std::cout << "+ct["<<j+1<<","<<k+1<<"]*ct["<<l+1<<","<<i+1<<"]+ct["<<j+1<<","<<l+1<<"]*ct["<<k+1<<","<<i+1<<"]";
-#else
-        invfderf(ij,kl) *= 2.0;
-//        std::cout << "invfderf("<<ij<<","<<kl<<") *= 2.0;";
-//        std::cout << std::endl;
-#endif
-      }
-//      std::cout << ", ";
-    }
-//    std::cout << "]," << std::endl;
-  }
-#else
   invfderf(0, 0) = -0.5 * (invfmat(0, 0) * invfmat(0, 0) + invfmat(0, 0) * invfmat(0, 0));
   invfderf(1, 0) = -0.5 * (invfmat(1, 0) * invfmat(0, 1) + invfmat(1, 0) * invfmat(0, 1));
   invfderf(2, 0) = -0.5 * (invfmat(2, 0) * invfmat(0, 2) + invfmat(2, 0) * invfmat(0, 2));
@@ -511,7 +476,6 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtDiffByItself(
   invfderf(3, 5) = -1.0 * (invfmat(0, 2) * invfmat(0, 1) + invfmat(0, 0) * invfmat(2, 1));
   invfderf(4, 5) = -1.0 * (invfmat(1, 2) * invfmat(0, 2) + invfmat(1, 0) * invfmat(2, 2));
   invfderf(5, 5) = -1.0 * (invfmat(2, 2) * invfmat(0, 0) + invfmat(2, 0) * invfmat(2, 0));
-#endif
 
   return;
 }
@@ -522,11 +486,6 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtTwiceDiffByItself(
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D * MAT::NUM_STRESS_3D>& invbvdderb,
     const LINALG::Matrix<NUMDIM_, NUMDIM_>& ibt)
 {
-  // VERIFIED
-
-  //  std::cout << std::endl;
-  //  std::cout << std::endl;
-
   for (int kl = 0; kl < MAT::NUM_STRESS_3D; ++kl)
   {
     const int k = VoigtMapping::Voigt6ToRow(kl);
@@ -547,42 +506,14 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtTwiceDiffByItself(
                                        ibt(i, k) * (ibt(l, m) * ibt(n, j) + ibt(l, n) * ibt(m, j)) +
                                        (ibt(i, m) * ibt(n, l) + ibt(i, n) * ibt(m, l)) * ibt(k, j) +
                                        ibt(i, l) * (ibt(k, m) * ibt(n, j) + ibt(k, n) * ibt(m, j)));
-        //        std::cout << ""
-        //             <<
-        //             "(ct["<<i+1<<","<<m+1<<"]*ct["<<n+1<<","<<k+1<<"]+ct["<<i+1<<","<<n+1<<"]*ct["<<m+1<<","<<k+1<<"])*ct["<<l+1<<","<<j+1<<"]"
-        //             <<
-        //             "+ct["<<i+1<<","<<k+1<<"]*(ct["<<l+1<<","<<m+1<<"]*ct["<<n+1<<","<<j+1<<"]+ct["<<l+1<<","<<n+1<<"]*ct["<<m+1<<","<<j+1<<"])"
-        //             <<
-        //             "+(ct["<<i+1<<","<<m+1<<"]*ct["<<n+1<<","<<l+1<<"]+ct["<<i+1<<","<<n+1<<"]*ct["<<m+1<<","<<l+1<<"])*ct["<<k+1<<","<<j+1<<"]"
-        //             <<
-        //             "+ct["<<i+1<<","<<l+1<<"]*(ct["<<k+1<<","<<m+1<<"]*ct["<<n+1<<","<<j+1<<"]+ct["<<k+1<<","<<n+1<<"]*ct["<<m+1<<","<<j+1<<"])"
-        //             << "";
         if (ij >= NUMDIM_)  // swap 'i' and 'j'
         {
-#if 0
-          invbvdderb_ijklmn += 0.25*(
-              ( ibt(j,m)*ibt(n,k) + ibt(j,n)*ibt(m,k) )*ibt(l,i)
-              + ibt(j,k)*( ibt(l,m)*ibt(n,i) + ibt(l,n)*ibt(m,i) )
-              + ( ibt(j,m)*ibt(n,l) + ibt(j,n)*ibt(m,l) )*ibt(k,i)
-              + ibt(j,l)*( ibt(k,m)*ibt(n,i) + ibt(k,n)*ibt(m,i) )
-            );
-//          std::cout << ""
-//               << "+(ct["<<j+1<<","<<m+1<<"]*ct["<<n+1<<","<<k+1<<"]+ct["<<j+1<<","<<n+1<<"]*ct["<<m+1<<","<<k+1<<"])*ct["<<l+1<<","<<i+1<<"]"
-//               << "+ct["<<j+1<<","<<k+1<<"]*(ct["<<l+1<<","<<m+1<<"]*ct["<<n+1<<","<<i+1<<"]+ct["<<l+1<<","<<n+1<<"]*ct["<<m+1<<","<<i+1<<"])"
-//               << "+(ct["<<j+1<<","<<m+1<<"]*ct["<<n+1<<","<<l+1<<"]+ct["<<j+1<<","<<n+1<<"]*ct["<<m+1<<","<<l+1<<"])*ct["<<k+1<<","<<i+1<<"]"
-//               << "+ct["<<j+1<<","<<l+1<<"]*(ct["<<k+1<<","<<m+1<<"]*ct["<<n+1<<","<<i+1<<"]+ct["<<k+1<<","<<n+1<<"]*ct["<<m+1<<","<<i+1<<"])"
-//               << "";
-#else
           invbvdderb_ijklmn *= 2.0;
-#endif
         }
         invbvdderb(ij, klmn) = invbvdderb_ijklmn;
         if (mn != kl) invbvdderb(ij, mnkl) = invbvdderb_ijklmn;
-        //        std::cout << ",\n";
       }
-      //      std::cout << "";
     }
-    //    std::cout << "],\n";
   }
 
   return;
@@ -595,36 +526,6 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtDiffByItself(
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& sqfderf,
     const LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat, ::UTILS::VOIGT::NotationType outvoigt6)
 {
-  // VERIFIED
-
-#if 0
-  // identity 2-tensor
-  LINALG::Matrix<NUMDIM_,NUMDIM_> id(true);
-  for (int i=0; i<NUMDIM_; ++i) id(i,i) = 1.0;
-
-  // (F.F)_{,F} with F^T=F
-//  std::cout << std::endl;
-  for (int ij=0; ij<MAT::NUM_STRESS_3D; ++ij)
-  {
-//    std::cout << "[";
-    const int i = VOIGT6ROW[ij];
-    const int j = VOIGT6COL[ij];
-    for (int kl=0; kl<MAT::NUM_STRESS_3D; ++kl)
-    {
-      const int k = VOIGT6ROW[kl];
-      const int l = VOIGT6COL[kl];
-      sqfderf(ij,kl) = id(i,k)*fmat(l,j) + id(j,l)*fmat(i,k);
-//      std::cout << "id["<<i+1<<","<<k+1<<"]*St["<<l+1<<","<<j+1<<"]+id["<<j+1<<","<<l+1<<"]*St["<<i+1<<","<<k+1<<"]";
-      if ( (outvoigt6 == voigt6_strain) and (ij >= NUMDIM_) )
-      {
-        sqfderf(ij,kl) += id(j,k)*fmat(l,i) + id(i,l)*fmat(j,k);
-//        std::cout << "+id["<<j+1<<","<<k+1<<"]*St["<<l+1<<","<<i+1<<"]+id["<<i+1<<","<<l+1<<"]*St["<<j+1<<","<<k+1<<"]";
-      }
-//      std::cout << ", ";
-    }
-//    std::cout << "]," << std::endl;
-  }
-#else
   if (outvoigt6 != ::UTILS::VOIGT::NotationType::strain)
     dserror("Can only produce row of strain-like type");
 
@@ -669,7 +570,6 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtDiffByItself(
   sqfderf(3, 5) = fmat(2, 1);
   sqfderf(4, 5) = fmat(1, 0);
   sqfderf(5, 5) = fmat(2, 2) + fmat(0, 0);
-#endif
 
   return;
 }
@@ -720,49 +620,6 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtTwiceDiffByItself(
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D * MAT::NUM_STRESS_3D>& sqfdderf,
     const LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat)
 {
-#if 0
-  // identity 2-tensor
-  LINALG::Matrix<NUMDIM_,NUMDIM_> id(true);
-  for (int i=0; i<NUMDIM_; ++i) id(i,i) = 1.0;
-
-  // VERIFIED
-
-  // (F^T.F)_{,FF} with F^T=F
-//  std::cout << std::endl;
-  for (int ij=0; ij<MAT::NUM_STRESS_3D; ++ij)
-  {
-//    std::cout << "[";
-    const int i = VOIGT6ROW[ij];
-    const int j = VOIGT6COL[ij];
-    for (int kl=0; kl<MAT::NUM_STRESS_3D; ++kl)
-    {
-      const int k = VOIGT6ROW[kl];
-      const int l = VOIGT6COL[kl];
-      for (int mn=0; mn<MAT::NUM_STRESS_3D; ++mn)
-      {
-        const int m = VOIGT6ROW[mn];
-        const int n = VOIGT6COL[mn];
-        const int klmn = MAT::NUM_STRESS_3D*kl + mn;
-        double sqfdderf_ijklmn = 0.25*(id(i,k)*id(l,m)*id(j,n)+id(j,l)*id(i,m)*id(k,n)
-                                       +id(i,k)*id(l,n)*id(j,m)+id(j,l)*id(i,n)*id(k,m)  // swap 'm' and 'n'
-                                       +id(i,l)*id(k,m)*id(j,n)+id(j,k)*id(i,m)*id(l,n)  // swap 'k' and 'l'
-                                       +id(i,l)*id(k,n)*id(j,m)+id(j,k)*id(i,n)*id(l,m));  // swap 'm' and 'n' as well as 'k' and 'l'
-        if (ij >= NUMDIM_)  // swap 'i' and 'j'
-        {
-          sqfdderf_ijklmn += 0.25*(id(j,k)*id(l,m)*id(i,n)+id(i,l)*id(j,m)*id(k,n)  // swap 'i' and 'j'
-                                   +id(j,k)*id(l,n)*id(i,m)+id(i,l)*id(j,n)*id(k,m)  // swap 'i' and 'j' as well as 'm' and 'n'
-                                   +id(j,l)*id(k,m)*id(i,n)+id(i,k)*id(j,m)*id(l,n)  // swap 'i' and 'j' as well as 'k' and 'l'
-                                   +id(j,l)*id(k,n)*id(i,m)+id(i,k)*id(j,n)*id(l,m) );  // swap 'i' and 'j' as well as 'm' and 'n' as well as 'k' and 'l'
-        }
-        sqfdderf(ij,klmn) = sqfdderf_ijklmn;
-//        std::cout << sqfdderf_ijklmn;
-//        std::cout << ", ";
-      }
-//      std::cout << "\n";
-    }
-//    std::cout << "],\n";
-  }
-#else
   sqfdderf.Clear();
 
   sqfdderf(0, 0) = 2.0;
@@ -797,7 +654,6 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtTwiceDiffByItself(
   sqfdderf(5, 27) = 0.5;
   sqfdderf(5, 30) = 1.0;
   sqfdderf(5, 32) = 1.0;
-#endif
 
   return;
 }
@@ -905,14 +761,12 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToMatrix6x9Voigt(
     const int l = VOIGT9COL_INCONSISTENT_[kl];
     for (int ij = 0; ij < MAT::NUM_STRESS_3D; ++ij)
     {
-      //    std::cout << "[";
       const int i = VoigtMapping::Voigt6ToRow(ij);
       const int j = VoigtMapping::Voigt6ToCol(ij);
       if (j == l)
         if (transpose)
         {
           bm(ij, kl) = bt(k, i);
-          //      std::cout << "bt["<<k+1<<","<<i+1<<"]";
         }
         else
           bm(ij, kl) = bt(i, k);
@@ -920,18 +774,14 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToMatrix6x9Voigt(
         if (transpose)
         {
           bm(ij, kl) = bt(k, j);
-          //      std::cout << "bt["<<k+1<<","<<j+1<<"]";
         }
         else
           bm(ij, kl) = bt(j, k);
       else
       {
         bm(ij, kl) = 0.0;
-        //      std::cout << "0";
       }
-      //      std::cout << ", ";
     }
-    //    std::cout << "]," << std::endl;
   }
 
   return;
@@ -1127,12 +977,6 @@ int DRT::ELEMENTS::So_sh8p8::SymSpectralDecompJacIter(LINALG::Matrix<NUMDIM_, NU
   double asum = 0.0;
 
   // initialise eigenvalue tensor and eigenvector tensor
-#if 0
-  asum = at.Norm1();
-  ew.Update(at);
-  ev.Clear();
-  for (int idim=0; idim<NUMDIM_; idim++) ev(idim,idim) = 1.0;
-#else
   {
     asum = 0.0;
     for (int jdim = 0; jdim < NUMDIM_; jdim++)
@@ -1146,7 +990,6 @@ int DRT::ELEMENTS::So_sh8p8::SymSpectralDecompJacIter(LINALG::Matrix<NUMDIM_, NU
       ev(jdim, jdim) = 1.0;
     }
   }
-#endif
 
   // check for trivial problem
   if (asum < EPS12)

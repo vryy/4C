@@ -44,16 +44,8 @@ void s8_mat_ogden_uncoupled(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE *strain,
   DOUBLE C[3][3][3][3];     /* components of material tangent in principal directions */
   DOUBLE C_vol[3][3][3][3]; /* volumetric components of material tangent in principal directions */
   DOUBLE C_cartvol[3][3][3][3];
-  /*
-  DOUBLE              psi,psi1,psi2;
-  */
-
   DOUBLE Ntest[3];
-#if 0
-/* for testing against holzapfel fortran routine*/
-DOUBLE              df[28],bpr[3],tautil[3],PK2tautil[3],atilp[6][6];
-DOUBLE              Ef;
-#endif
+
   /*----------------------------------------------------------------------*/
   for (i = 0; i < 3; i++)
     for (j = 0; j < 3; j++)
@@ -166,24 +158,6 @@ DOUBLE              Ef;
   work = N[2][0] * Ntest[0] + N[2][1] * Ntest[1] + N[2][2] * Ntest[2];
   if (fabs(work - 1.0) > EPS10)
     printf("eigenvectors are not right hand system  - cross product * N3 = %f\n", work);
-/*==================call holzapfel routine */
-#if 0
-bpr[0] = CGlambda2[0];
-bpr[1] = CGlambda2[1];
-bpr[2] = CGlambda2[2];
-df[21] = mup[0];
-df[22] = alfap[0];
-df[23] = mup[1];
-df[24] = alfap[1];
-df[25] = mup[2];
-df[26] = alfap[2];
-df[27] = 3.0;
-s8wder3f(df,bpr,tautil,atilp,&Ef);
-PK2tautil[0] = tautil[0]/CGlambda2[0];
-PK2tautil[1] = tautil[1]/CGlambda2[1];
-PK2tautil[2] = tautil[2]/CGlambda2[2];
-#endif
-  /*=========================================*/
   /*------------------------------------------- make 3. invariant == detF */
   J = lambda[0] * lambda[1] * lambda[2];
   dsassert(J > 0.0, "detF <= 0.0 in Ogden material");

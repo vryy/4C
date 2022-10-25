@@ -140,20 +140,6 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
     Epetra_SerialDenseVector& elevec3_epetra)
 {
-#if 0  // printout nodal and element degrees of freedom
-  printf("Size of location matrix %d\n",lm.size());
-  for (unsigned i=0; i<lm.size(); ++i)
-    printf("%d ",lm[i]);
-  printf("\n");
-  for (int i=0; i<NumNode(); ++i)
-    for (int j=0; j<discretization.NumDof(Nodes()[i]); ++j)
-      printf("%d ",discretization.Dof(Nodes()[i])[j]);
-  //printf("\n");
-  for (int j=0; j<discretization.NumDof(this); ++j)
-    printf("%d ",discretization.Dof(this)[j]);
-  printf("\n");
-#endif
-
   LINALG::Matrix<15, 15> elemat1(elemat1_epetra.A(), true);
   LINALG::Matrix<15, 15> elemat2(elemat2_epetra.A(), true);
   LINALG::Matrix<15, 1> elevec1(elevec1_epetra.A(), true);

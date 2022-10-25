@@ -28,9 +28,6 @@ void s8_mat_ogden_coupled(
   double *alfap;
   double J;
   double Jpowmbeta;
-#if 0
-      double      psi;
-#endif
 
   double CG[3][3];
   double N[3][3];
@@ -113,9 +110,7 @@ void s8_mat_ogden_coupled(
   lam[0] = sqrt(lam2[0]);
   lam[1] = sqrt(lam2[1]);
   lam[2] = sqrt(lam2[2]);
-
   for (i = 0; i < 3; i++) mat->l[i] = lam[i];
-
   /*------------------------------------------- make 3. invariant == detF */
   J = lam[0] * lam[1] * lam[2];
   dsassert(J > 0.0, "detF <= 0.0 in Ogden material");
@@ -123,8 +118,7 @@ void s8_mat_ogden_coupled(
   /*----------------------------------------- make powers lam[i]^alfap[p] */
   for (i = 0; i < 3; i++)
     for (p = 0; p < 3; p++) lampowalfap[i][p] = pow(lam[i], alfap[p]);
-
-/*---------------- test orthogonality and unit length of eigenvectors N */
+  /*---------------- test orthogonality and unit length of eigenvectors N */
   /*N0 * N1 = 0*/
   scal = N[0][0] * N[1][0] + N[0][1] * N[1][1] + N[0][2] * N[1][2];
   dsassert(fabs(scal) < EPS10, "eigenvectors N0,N1 not orthogonal");
@@ -142,28 +136,11 @@ void s8_mat_ogden_coupled(
   /*N2 * Ncross = 1.0*/
   scal = Ncross[0] * N[2][0] + Ncross[1] * N[2][1] + Ncross[2] * N[2][2];
   dsassert(fabs((scal - 1.0)) < EPS10, "eigenvectors do not form proper othogonal system");
-
-/*----------------------------------------------------------------------*/
-/*--------------------------------------------------------- make energy */
-#if 0
-psi = 0.0;
-for (p=0; p<3; p++)
-{
-   psi += (mup[p]/alfap[p])*(lampowalfap[0][p]+lampowalfap[1][p]+lampowalfap[2][p]-3.0);
-   psi -= mup[p]*log(J);
-}
-psi += (lame1/(beta*beta))*(Jpowmbeta-1.0+beta*log(J));
-printf("  coupled PSI  %20.10f\n\n",psi);fflush(stdout);
-#endif
   /*--------------------------- calculate the 2.PK stresses in eigenbases */
   PK2[0] = PK2[1] = PK2[2] = (lame1 / beta) * (1.0 - Jpowmbeta);
   for (p = 0; p < 3; p++)
     for (i = 0; i < 3; i++) PK2[i] += mup[p] * (lampowalfap[i][p] - 1.0);
   for (i = 0; i < 3; i++) PK2[i] /= (lam2[i]);
-/*----------------------------------------------------------------------*/
-#if 0
-printf("PK2        [0] %14.8f PK2        [1] %14.8f PK2        [2] %14.8f\n\n",PK2[0],PK2[1],PK2[2]);
-#endif
   /*----------------------- calculate the PK2 stresses in cartesian bases */
   s8_ogden_cartPK2(PK2cart, PK2, N);
   /*------------------ sort cartesian stresses to the vector shell8-style */

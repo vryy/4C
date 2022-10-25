@@ -267,15 +267,6 @@ namespace DRT
           const double& fac                                   //  a scaling factor, eg det(F)
       );
 
-#if 0
-  void test_stiffmat(
-    const std::vector<int>& lm,  ///< location matrix
-    const std::vector<double>& disp,  ///< current displacements
-    const std::vector<double>& residual,   ///< current residual displ
-    Teuchos::ParameterList& params  ///< algorithmic parameters e.g. time
-    );
-#endif
-
 
      private:
       std::string GetElementTypeString() const { return "SOLIDH8P1J1"; }

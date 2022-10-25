@@ -220,26 +220,6 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_enfthickd
   LINALG::Matrix<NUMDIM_SOH8, 1> thickdirlocsharp(false);
   thickdirlocsharp.MultiplyTN(iJ0, thickdirglo);
 
-#if 0
-  // metric tensor
-  // (G0_ji) = (J0_j^B) (delta_BA) (J0^A_i)
-  LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> metrflat(false);
-  metrflat.MultiplyNT(jac0,jac0);
-
-  // co-variant local enforced thickness direction
-  // (dxi_j) = (G0_ji) (dxi^i)
-  LINALG::Matrix<NUMDIM_SOH8,1> thickdirlocflat(false);
-  thickdirlocflat.MultiplyNN(metrflat,thickdirlocsharp);
-
-  // thickdirloclength
-  const double thickdirloclength = thickdirlocsharp.Dot(thickdirlocflat);
-
-  // check if transformation was successful
-  if (fabs(thickdirglolength-thickdirloclength)>EPS6)
-    dserror("Transformation erroneous: Vector length is not in-variant: %g!=%g",
-            thickdirglolength, thickdirloclength);
-#endif
-
   // identify parametric co-ordinate closest to enforced thickness direction
   int thick_index = -1;
   double thickdirlocmax = 0.0;
