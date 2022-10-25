@@ -331,7 +331,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
     //       condensed contact formulations, the model_evaluator
     //       can have its contact model. For now, the TSI Lagrange
     //       strategy resides in the TSI algorithm.
-    if (probtype == prb_tsi)
+    if (probtype == ProblemType::tsi)
     {
       const Teuchos::ParameterList& contact = DRT::Problem::Instance()->ContactDynamicParams();
       if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
@@ -413,19 +413,19 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   ProblemType probtype = problem->GetProblemType();
   switch (probtype)
   {
-    case prb_fsi:
-    case prb_immersed_fsi:
-    case prb_fbi:
-    case prb_fsi_redmodels:
-    case prb_fsi_lung:
-    case prb_gas_fsi:
-    case prb_ac_fsi:
-    case prb_biofilm_fsi:
-    case prb_thermo_fsi:
-    case prb_fsi_xfem:
-    case prb_pasi:
-    case prb_ssi:
-    case prb_ssti:
+    case ProblemType::fsi:
+    case ProblemType::immersed_fsi:
+    case ProblemType::fbi:
+    case ProblemType::fsi_redmodels:
+    case ProblemType::fsi_lung:
+    case ProblemType::gas_fsi:
+    case ProblemType::ac_fsi:
+    case ProblemType::biofilm_fsi:
+    case ProblemType::thermo_fsi:
+    case ProblemType::fsi_xfem:
+    case ProblemType::pasi:
+    case ProblemType::ssi:
+    case ProblemType::ssti:
     {
       if (prbdyn_->INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
               "Partitioned Coupling Model"))
@@ -706,8 +706,8 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(Teuchos::ParameterList& iofla
   // ---------------------------------------------------------------------------
   switch (probtype)
   {
-    case prb_fsi:
-    case prb_fsi_redmodels:
+    case ProblemType::fsi:
+    case ProblemType::fsi_redmodels:
     {
       const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
       const Teuchos::ParameterList& fsiada = fsidyn.sublist("TIMEADAPTIVITY");
@@ -740,7 +740,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(Teuchos::ParameterList& iofla
     // in case of nested inverse analysis
     // we just want to print the output of group 0 on screen
     // birzle 02/2017
-    case prb_invana:
+    case ProblemType::invana:
     {
       Teuchos::RCP<COMM_UTILS::NestedParGroup> group = DRT::Problem::Instance()->GetNPGroup();
 
@@ -803,7 +803,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetTimeIntegrationStrategy(
 
   switch (probtype)
   {
-    case prb_invana:
+    case ProblemType::invana:
     {
       ti_strategy->Setup();
 
@@ -859,13 +859,13 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateAdaptiveWrapper(
 
   switch (probtype)
   {
-    case prb_structure:  // pure structural time adaptivity
+    case ProblemType::structure:  // pure structural time adaptivity
     {
       str_wrapper_ = Teuchos::rcp(new StructureTimIntAda(wrapper_adaptive, ti_strategy));
       break;
     }
-    case prb_fsi:  // structure based time adaptivity within an FSI simulation
-    case prb_fsi_redmodels:
+    case ProblemType::fsi:  // structure based time adaptivity within an FSI simulation
+    case ProblemType::fsi_redmodels:
     {
       if ((actdis_->Comm()).MyPID() == 0)
         IO::cout << "Using StructureNOXCorrectionWrapper()..." << IO::endl;
@@ -898,14 +898,14 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
 
   switch (probtype)
   {
-    case prb_fsi:
-    case prb_fsi_redmodels:
-    case prb_fsi_lung:
-    case prb_gas_fsi:
-    case prb_ac_fsi:
-    case prb_biofilm_fsi:
-    case prb_thermo_fsi:
-    case prb_fsi_xfem:
+    case ProblemType::fsi:
+    case ProblemType::fsi_redmodels:
+    case ProblemType::fsi_lung:
+    case ProblemType::gas_fsi:
+    case ProblemType::ac_fsi:
+    case ProblemType::biofilm_fsi:
+    case ProblemType::thermo_fsi:
+    case ProblemType::fsi_xfem:
     {
       const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
       const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
@@ -944,7 +944,7 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
       }
       break;
     }
-    case prb_fbi:
+    case ProblemType::fbi:
     {
       const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
       if (DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(
@@ -954,30 +954,30 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
         dserror("Only DirichletNeumann is implemented for FBI so far");
       break;
     }
-    case prb_immersed_fsi:
+    case ProblemType::immersed_fsi:
     {
       str_wrapper_ = Teuchos::rcp(new FSIStructureWrapperImmersed(ti_strategy));
       break;
     }
-    case prb_ssi:
-    case prb_ssti:
+    case ProblemType::ssi:
+    case ProblemType::ssti:
     {
       str_wrapper_ = Teuchos::rcp(new SSIStructureWrapper(ti_strategy));
       break;
     }
-    case prb_pasi:
+    case ProblemType::pasi:
     {
       str_wrapper_ = Teuchos::rcp(new PASIStructureWrapper(ti_strategy));
       break;
     }
-    case prb_redairways_tissue:
+    case ProblemType::redairways_tissue:
       str_wrapper_ = Teuchos::rcp(new StructureRedAirway(ti_strategy));
       break;
-    case prb_poroelast:
-    case prb_poroscatra:
-    case prb_fpsi:
-    case prb_fps3i:
-    case prb_fpsi_xfem:
+    case ProblemType::poroelast:
+    case ProblemType::poroscatra:
+    case ProblemType::fpsi:
+    case ProblemType::fps3i:
+    case ProblemType::fpsi_xfem:
     {
       const Teuchos::ParameterList& porodyn = problem->PoroelastDynamicParams();
       const INPAR::POROELAST::SolutionSchemeOverFields coupling =
@@ -1001,13 +1001,13 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
       }
       break;
     }
-    case prb_struct_ale:
+    case ProblemType::struct_ale:
     {
       str_wrapper_ = Teuchos::rcp(new StructAleWrapper(ti_strategy));
-      dserror("prb_struct_ale not supported, yet");
+      dserror("ProblemType::struct_ale not supported, yet");
       break;
     }
-    case prb_invana:
+    case ProblemType::invana:
       str_wrapper_ = (Teuchos::rcp(new StructureInvana(ti_strategy)));
       break;
     default:

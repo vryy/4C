@@ -378,7 +378,7 @@ void STR::TimInt::CreateAllSolutionVectors()
   // displacements D_{n+1} at t_{n+1}
   disn_ = LINALG::CreateVector(*DofRowMapView(), true);
 
-  if ((DRT::Problem::Instance()->GetProblemType() == prb_struct_ale and
+  if ((DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale and
           (DRT::Problem::Instance()->WearParams()).get<double>("WEARCOEFF") > 0.0))
   {
     // material displacements Dm_{n+1} at t_{n+1}
@@ -555,7 +555,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   // print messages for multifield problems (e.g FSI)
   const ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
   const std::string probname = DRT::Problem::Instance()->ProblemName();
-  if (probtype != prb_structure && !myrank_)
+  if (probtype != ProblemType::structure && !myrank_)
   {
     // warnings
 #ifdef CONTACTPSEUDO2D

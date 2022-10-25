@@ -29,6 +29,7 @@ Refer also to the Semesterarbeit of Alexander Popp, 2006
 #include "../../linalg/linalg_serialdensevector.H"
 #include "../../drt_lib/drt_globalproblem.H"
 #include "../so_utils.H"
+#include "../../drt_lib/drt_utils_parameter_list.H"
 
 /*----------------------------------------------------------------------*
  | build an instance of plast type                         seitz 05/14 |
@@ -511,7 +512,8 @@ bool DRT::ELEMENTS::So_sh8Plast::ReadElement(
   dDp_inc_.resize(numgpt_, LINALG::SerialDenseVector(plspintype_, true));
 
   Teuchos::ParameterList plparams = DRT::Problem::Instance()->SemiSmoothPlastParams();
-  plparams.set<ProblemType>("ProblemType", DRT::Problem::Instance()->GetProblemType());
+  DRT::UTILS::AddEnumClassToParameterList(
+      "ProblemType", DRT::Problem::Instance()->GetProblemType(), plparams);
   ReadParameterList(Teuchos::rcpFromRef<Teuchos::ParameterList>(plparams));
 
   if (tsi_)

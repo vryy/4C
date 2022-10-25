@@ -267,8 +267,8 @@ void FLD::FluidImplicitTimeInt::Init()
     // XWall: enrichment with spaldings law
     if (DRT::INPUT::IntegralValue<int>(params_->sublist("WALL MODEL"), "X_WALL"))
     {
-      if (DRT::Problem::Instance()->GetProblemType() == prb_fsi ||
-          DRT::Problem::Instance()->GetProblemType() == prb_fluid_ale)
+      if (DRT::Problem::Instance()->GetProblemType() == ProblemType::fsi ||
+          DRT::Problem::Instance()->GetProblemType() == ProblemType::fluid_ale)
       {
         xwall_ = Teuchos::rcp(
             new XWallAleFSI(discret_, numdim_, params_, dbcmaps_, stressmanager_, dispnp_, gridv_));
@@ -575,7 +575,7 @@ void FLD::FluidImplicitTimeInt::Integrate()
   TimeLoop();
 
   // print the results of time measurements
-  if (DRT::Problem::Instance()->GetProblemType() != prb_fluid_topopt)
+  if (DRT::Problem::Instance()->GetProblemType() != ProblemType::fluid_topopt)
   {
     Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
         COMM_UTILS::toTeuchosComm<int>(discret_->Comm());

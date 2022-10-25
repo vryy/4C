@@ -1,81 +1,72 @@
 /*---------------------------------------------------------------------*/
 /*! \file
-
 \brief Some important enums used in conjunction with DRT::Problem
-
 \level 1
-
-
 */
 /*--------------------------------------------------------------------*/
 
 #ifndef DRT_GLOBALPROBLEM_ENUMS_H
 #define DRT_GLOBALPROBLEM_ENUMS_H
 
-#include <string>
-#include <map>
-
-/*----------------------------------------------------------------------*
- | PROBLEM TYPES                                          m.gee 7/01    |
- *----------------------------------------------------------------------*/
-typedef enum _PROBLEM_TYP
+/**
+ * A global definition of available problem types.
+ */
+enum class ProblemType
 {
-  // problem types in alphabetical order
-  prb_none,                // not a problem at all
-  prb_ac_fsi,              // atherosclerosis growth/multiscale problem
-  prb_ale,                 // pure ale problem
-  prb_art_net,             // arterial network problem _1D_ARTERY_
-  prb_biofilm_fsi,         // biofilm growth problem
-  prb_cardiac_monodomain,  // Cardiac electrophsiology problem
-  prb_ehl,        // elastohydrodynamic lubrication problem (or lubrication structure interaction)
-  prb_elch,       // electrochemical problem
-  prb_elemag,     // electromagnetic problem
-  prb_fluid,      // fluid problem
-  prb_fluid_ale,  // fluid on an ale mesh (no structure)
-  prb_fbi,        // 3D fluid interacting with a 1D beam
-  prb_fluid_redmodels,  // fluid_redairways problem
-  prb_fluid_topopt,     // fluid topology optimization
-  prb_fluid_xfem,       // fluid problem including XFEM interfaces
-  prb_fluid_xfem_ls,    // xfluid calculations using levelset for cut.
-  prb_fps3i,            // fluid porous structure scatra scatra interaction
-  prb_fpsi,             // fluid porous structure interaction problem
-  prb_fpsi_xfem,  // fluid poro structure interaction problem including XFEM interfaces (atm just
-                  // for FSI Interface!)
-  prb_freesurf,   // free surface fluid
-  prb_fsi,        // fluid structure interaction problem
-  prb_fsi_lung,   // airway fsi problem with attached parenchyma balloon
-  prb_fsi_redmodels,  // fluid structure interaction problem
-  prb_fsi_xfem,       // fluid structure interaction problem including XFEM interfaces
-  prb_gas_fsi,        // fsi with gas transport
-  prb_immersed_fsi,   // immersed fsi
-  prb_invana,         // inverse analysis of structures(so far)
-  prb_level_set,      // level-set problem
-  prb_loma,           // low-Mach-number flow problem
-  prb_lubrication,  // lubrication problem (reduced fluid model for elastohydrodynamic lubrication)
-  prb_np_support,   // supporting procs for nested parallelism
-  prb_opt,          // structural optimization  problem
-  prb_particle,     // particle simulation
-  prb_pasi,         // particle structure interaction
-  prb_polymernetwork,        // polymer network
-  prb_poroelast,             // poroelasticity
-  prb_poroscatra,            // passive scalar transport in porous media
-  prb_porofluidmultiphase,   // multiphase flow in porous media
-  prb_poromultiphase,        // multiphase flow in elastic porous media
-  prb_poromultiphasescatra,  // multiphase flow in elastic porous media with transport of species
-  prb_red_airways,           // reduced dimensional airways
-  prb_redairways_tissue,     // coupling of reduced-dimensional airways with 3D tissue model
-  prb_scatra,                // scalar transport problem (e.g. convection-diffusion)
-  prb_ssi,                   // scalar structure interaction
-  prb_ssti,                  // scalar structure thermo interaction
-  prb_sti,                   // scalar-thermo interaction
-  prb_struct_ale,            // structural problem, ale formulation
-  prb_structure,             // structural problem
-  prb_thermo,                // thermal problem
-  prb_thermo_fsi,            // thermo-fluid-structure-interaction problem
-  prb_tsi,                   // thermal structure interaction
-  prb_tutorial,              // student's c++/baci tutorial
-  prb_two_phase_flow,        // two phase flow problem using the fluid and levelset modules
-} ProblemType;
+  none,                // not a problem at all
+  ac_fsi,              // atherosclerosis growth/multiscale problem
+  ale,                 // pure ale problem
+  art_net,             // arterial network problem _1D_ARTERY_
+  biofilm_fsi,         // biofilm growth problem
+  cardiac_monodomain,  // Cardiac electrophsiology problem
+  ehl,              // elastohydrodynamic lubrication problem (or lubrication structure interaction)
+  elch,             // electrochemical problem
+  elemag,           // electromagnetic problem
+  fluid,            // fluid problem
+  fluid_ale,        // fluid on an ale mesh (no structure)
+  fbi,              // 3D fluid interacting with a 1D beam
+  fluid_redmodels,  // fluid_redairways problem
+  fluid_topopt,     // fluid topology optimization
+  fluid_xfem,       // fluid problem including XFEM interfaces
+  fluid_xfem_ls,    // xfluid calculations using levelset for cut.
+  fps3i,            // fluid porous structure scatra scatra interaction
+  fpsi,             // fluid porous structure interaction problem
+  fpsi_xfem,        // fluid poro structure interaction problem including XFEM interfaces (atm just
+                    // for FSI Interface!)
+  freesurf,         // free surface fluid
+  fsi,              // fluid structure interaction problem
+  fsi_lung,         // airway fsi problem with attached parenchyma balloon
+  fsi_redmodels,    // fluid structure interaction problem
+  fsi_xfem,         // fluid structure interaction problem including XFEM interfaces
+  gas_fsi,          // fsi with gas transport
+  immersed_fsi,     // immersed fsi
+  invana,           // inverse analysis of structures(so far)
+  level_set,        // level-set problem
+  loma,             // low-Mach-number flow problem
+  lubrication,      // lubrication problem (reduced fluid model for elastohydrodynamic lubrication)
+  np_support,       // supporting procs for nested parallelism
+  particle,         // particle simulation
+  pasi,             // particle structure interaction
+  polymernetwork,   // polymer network
+  poroelast,        // poroelasticity
+  poroscatra,       // passive scalar transport in porous media
+  porofluidmultiphase,   // multiphase flow in porous media
+  poromultiphase,        // multiphase flow in elastic porous media
+  poromultiphasescatra,  // multiphase flow in elastic porous media with transport of species
+  red_airways,           // reduced dimensional airways
+  redairways_tissue,     // coupling of reduced-dimensional airways with 3D tissue model
+  scatra,                // scalar transport problem (e.g. convection-diffusion)
+  ssi,                   // scalar structure interaction
+  ssti,                  // scalar structure thermo interaction
+  sti,                   // scalar-thermo interaction
+  struct_ale,            // structural problem, ale formulation
+  structure,             // structural problem
+  thermo,                // thermal problem
+  thermo_fsi,            // thermo-fluid-structure-interaction problem
+  tsi,                   // thermal structure interaction
+  tutorial,              // student's c++/baci tutorial
+  two_phase_flow,        // two phase flow problem using the fluid and levelset modules
+};
 
 
 /*----------------------------------------------------------------------*/

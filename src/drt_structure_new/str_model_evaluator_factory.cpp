@@ -121,7 +121,7 @@ STR::MODELEVALUATOR::Factory::BuildStructureModelEvaluator() const
   ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
   switch (probtype)
   {
-    case prb_struct_ale:
+    case ProblemType::struct_ale:
     {
       structure_model_ptr = Teuchos::rcp(new STR::MODELEVALUATOR::StructAle());
       break;

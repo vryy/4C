@@ -1240,7 +1240,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::InitElement()
   scatra_coupling_ = false;
 
   ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
-  if (probtype == prb_poroscatra) scatra_coupling_ = true;
+  if (probtype == ProblemType::poroscatra) scatra_coupling_ = true;
 }
 
 template <class so3_ele, DRT::Element::DiscretizationType distype>

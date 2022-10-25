@@ -131,8 +131,9 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   // overrule flags for solid-based scalar transport!
   // (assumed disname = "scatra2" for solid-based scalar transport)
   // -------------------------------------------------------------------
-  if (probtype == prb_ac_fsi or probtype == prb_biofilm_fsi or probtype == prb_gas_fsi or
-      probtype == prb_fps3i or probtype == prb_thermo_fsi)
+  if (probtype == ProblemType::ac_fsi or probtype == ProblemType::biofilm_fsi or
+      probtype == ProblemType::gas_fsi or probtype == ProblemType::fps3i or
+      probtype == ProblemType::thermo_fsi)
   {
     // scatra1 (=fluid scalar) get's inputs from SCALAR TRANSPORT DYNAMIC/STABILIZATION, hence
     // nothing is to do here
@@ -208,7 +209,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
       DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
 
   // low Mach number flow
-  if (probtype == prb_loma or probtype == prb_thermo_fsi)
+  if (probtype == ProblemType::loma or probtype == ProblemType::thermo_fsi)
   {
     Teuchos::RCP<Teuchos::ParameterList> lomaparams =
         Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->LOMAControlParams()));
@@ -241,17 +242,17 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   }
 
   // electrochemistry
-  else if (probtype == prb_elch or
-           ((probtype == prb_ssi and
+  else if (probtype == ProblemType::elch or
+           ((probtype == ProblemType::ssi and
                 Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(
                     DRT::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE") ==
                     INPAR::SSI::ScaTraTimIntType::elch) or
                (disname == "scatra" and
-                   ((probtype == prb_ssti and
+                   ((probtype == ProblemType::ssti and
                         Teuchos::getIntegralValue<INPAR::SSTI::ScaTraTimIntType>(
                             DRT::Problem::Instance()->SSTIControlParams(), "SCATRATIMINTTYPE") ==
                             INPAR::SSTI::ScaTraTimIntType::elch) or
-                       (probtype == prb_sti and
+                       (probtype == ProblemType::sti and
                            Teuchos::getIntegralValue<INPAR::STI::ScaTraTimIntType>(
                                DRT::Problem::Instance()->STIDynamicParams(), "SCATRATIMINTTYPE") ==
                                INPAR::STI::ScaTraTimIntType::elch)))))
@@ -296,16 +297,16 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   }
 
   // levelset and two phase flow
-  else if (probtype == prb_level_set or probtype == prb_two_phase_flow or
-           probtype == prb_fluid_xfem_ls)
+  else if (probtype == ProblemType::level_set or probtype == ProblemType::two_phase_flow or
+           probtype == ProblemType::fluid_xfem_ls)
   {
     Teuchos::RCP<Teuchos::ParameterList> lsparams = Teuchos::null;
     switch (probtype)
     {
-      case prb_level_set:
+      case ProblemType::level_set:
         lsparams = Teuchos::rcp(new Teuchos::ParameterList(prbdyn));
         break;
-      case prb_two_phase_flow:
+      case ProblemType::two_phase_flow:
       {
         // Give access to smoothing parameter for levelset calculations.
         lsparams =
@@ -350,7 +351,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
         // create instance of time integration class (call the constructor)
         switch (probtype)
         {
-          case prb_level_set:
+          case ProblemType::level_set:
           {
             dserror(
                 "Stationary time integration scheme only supported for a selection of coupled "
@@ -370,7 +371,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
       {
         switch (probtype)
         {
-          case prb_two_phase_flow:
+          case ProblemType::two_phase_flow:
           {
             std::cout << "\n\n\n WARNING: Level set algorithm does not yet support gen-alpha. You "
                          "thus get a standard Scatra!\n\n\n"
@@ -394,8 +395,8 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   }
 
   // cardiac monodomain
-  else if (probtype == prb_cardiac_monodomain or
-           (probtype == prb_ssi and
+  else if (probtype == ProblemType::cardiac_monodomain or
+           (probtype == ProblemType::ssi and
                Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(
                    DRT::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE") ==
                    INPAR::SSI::ScaTraTimIntType::cardiac_monodomain))
@@ -441,7 +442,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
       }  // switch(timintscheme)
     }
   }
-  else if (probtype == prb_poromultiphasescatra)
+  else if (probtype == ProblemType::poromultiphasescatra)
   {
     switch (timintscheme)
     {
@@ -573,10 +574,11 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
   ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
 
   // prepare fixing the null space for electrochemistry and sti
-  if (probtype == prb_elch or (probtype == prb_sti and discret->Name() == "scatra" and
-                                  Teuchos::getIntegralValue<INPAR::STI::ScaTraTimIntType>(
-                                      DRT::Problem::Instance()->STIDynamicParams(),
-                                      "SCATRATIMINTTYPE") == INPAR::STI::ScaTraTimIntType::elch))
+  if (probtype == ProblemType::elch or
+      (probtype == ProblemType::sti and discret->Name() == "scatra" and
+          Teuchos::getIntegralValue<INPAR::STI::ScaTraTimIntType>(
+              DRT::Problem::Instance()->STIDynamicParams(), "SCATRATIMINTTYPE") ==
+              INPAR::STI::ScaTraTimIntType::elch))
   {
     Teuchos::RCP<Teuchos::ParameterList> elchparams =
         Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ELCHControlParams()));
@@ -625,13 +627,13 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::ScaTraBaseAlgorithm::CreateScaTraFieldTes
   const ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
 
   bool is_elch_timeint;
-  if (probtype == prb_ssi)
+  if (probtype == ProblemType::ssi)
   {
     is_elch_timeint = Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(
                           DRT::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE") ==
                       INPAR::SSI::ScaTraTimIntType::elch;
   }
-  else if (probtype == prb_ssti)
+  else if (probtype == ProblemType::ssti)
   {
     is_elch_timeint = Teuchos::getIntegralValue<INPAR::SSTI::ScaTraTimIntType>(
                           DRT::Problem::Instance()->SSTIControlParams(), "SCATRATIMINTTYPE") ==
@@ -642,8 +644,9 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::ScaTraBaseAlgorithm::CreateScaTraFieldTes
 
   if (DRT::Problem::Instance()->SpatialApproximationType() == ShapeFunctionType::shapefunction_hdg)
     return Teuchos::rcp(new SCATRA::HDGResultTest(scatra_));
-  else if (probtype == prb_elch or (is_elch_timeint and disname == "scatra" and
-                                       (probtype == prb_ssi or probtype == prb_ssti)))
+  else if (probtype == ProblemType::elch or
+           (is_elch_timeint and disname == "scatra" and
+               (probtype == ProblemType::ssi or probtype == ProblemType::ssti)))
   {
     return Teuchos::rcp(
         new SCATRA::ElchResultTest(Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(scatra_)));

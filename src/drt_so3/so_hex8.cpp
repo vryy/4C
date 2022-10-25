@@ -148,7 +148,7 @@ DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner)
   if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
     invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOH8, NUMGPT_SOH8));
 
-  if (DRT::Problem::Instance()->GetProblemType() == prb_struct_ale)
+  if (DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale)
   {
     if (kintype_ == INPAR::STR::kinem_linear)
       dserror("Structure-Ale approach only for nonlinear kinematics !!!");
@@ -192,7 +192,7 @@ DRT::ELEMENTS::So_hex8::So_hex8(const DRT::ELEMENTS::So_hex8& old)
   if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
     invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
 
-  if (DRT::Problem::Instance()->GetProblemType() == prb_struct_ale)
+  if (DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale)
   {
     if (kintype_ == INPAR::STR::kinem_linear)
       dserror("Structure-Ale approach only for nonlinear kinematics !!!");

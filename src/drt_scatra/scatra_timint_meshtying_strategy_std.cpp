@@ -98,7 +98,7 @@ void SCATRA::MeshtyingStrategyStd::InitConvCheckStrategy()
   if (scatratimint_->MicroScale())
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdMicroScale(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
-  else if (DRT::Problem::Instance()->GetProblemType() == prb_poromultiphasescatra)
+  else if (DRT::Problem::Instance()->GetProblemType() == ProblemType::poromultiphasescatra)
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyPoroMultiphaseScatra(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
   else

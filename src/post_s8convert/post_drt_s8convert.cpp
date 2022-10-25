@@ -244,7 +244,7 @@ int main(int argc, char** argv)
 
   switch (problem.Problemtype())
   {
-    case prb_structure:
+    case ProblemType::structure:
     {
       PostField* field = problem.get_discretization(0);
       Converter conv(field);

@@ -25,7 +25,7 @@ ADAPTER::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> struct
   // set-up FSI interface
   interface_ = Teuchos::rcp(new STR::AUX::MapExtractor);
 
-  if (DRT::Problem::Instance()->GetProblemType() != prb_fpsi)
+  if (DRT::Problem::Instance()->GetProblemType() != ProblemType::fpsi)
     interface_->Setup(*Discretization(), *Discretization()->DofRowMap());
   else
     interface_->Setup(*Discretization(), *Discretization()->DofRowMap(),

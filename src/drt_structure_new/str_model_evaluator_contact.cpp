@@ -127,7 +127,7 @@ void STR::MODELEVALUATOR::Contact::CheckPseudo2D() const
 {
   // print messages for multifield problems (e.g FSI)
   const ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
-  if ((probtype != prb_structure) and (GState().GetMyRank() == 0))
+  if ((probtype != ProblemType::structure) and (GState().GetMyRank() == 0))
   {
     // warnings
 #ifdef CONTACTPSEUDO2D

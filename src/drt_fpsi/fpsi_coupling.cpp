@@ -9,9 +9,9 @@ Fluid-Poro-Coupling Matrixes!
 */
 ///*----------------------------------------------------------------------*/
 // GENERAL includes
-//#include <sstream>
+// #include <sstream>
 #include <Teuchos_TimeMonitor.hpp>
-//#include <Teuchos_Time.hpp>
+// #include <Teuchos_Time.hpp>
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 //
@@ -319,7 +319,7 @@ void FPSI::FPSICoupling::EvaluateCouplingMatrixesRHS()
       // what's the current problem type? Is it a fps3i problem?
       ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
 
-      if (probtype == prb_fps3i)
+      if (probtype == ProblemType::fps3i)
       {
         if (conductivity_ == 0.0)
         {

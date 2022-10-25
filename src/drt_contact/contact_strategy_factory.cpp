@@ -115,7 +115,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
         ">= 1.0");
   }
 
-  if (problemtype == prb_tsi &&
+  if (problemtype == ProblemType::tsi &&
       Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
           "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none &&
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
@@ -342,7 +342,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
         DRT::INPUT::IntegralValue<int>(contact, "FRLESS_FIRST") == true)
       dserror("Frictionless first contact step with wear not yet implemented");
 
-    if (problemtype != prb_ehl &&
+    if (problemtype != ProblemType::ehl &&
         DRT::INPUT::IntegralValue<int>(contact, "REGULARIZED_NORMAL_CONTACT") == true)
       dserror("Regularized normal contact only implemented for EHL");
 
@@ -371,19 +371,21 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
     // ---------------------------------------------------------------------
     // thermal-structure-interaction contact
     // ---------------------------------------------------------------------
-    if (problemtype == prb_tsi &&
+    if (problemtype == ProblemType::tsi &&
         DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
             INPAR::MORTAR::shape_standard &&
         DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") !=
             INPAR::MORTAR::lagmult_const)
       dserror("Thermal contact only for dual shape functions");
 
-    if (problemtype == prb_tsi && DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
-                                      contact, "SYSTEM") != INPAR::CONTACT::system_condensed)
+    if (problemtype == ProblemType::tsi &&
+        DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact, "SYSTEM") !=
+            INPAR::CONTACT::system_condensed)
       dserror("Thermal contact only for dual shape functions with condensed system");
 
     // no nodal scaling in for thermal-structure-interaction
-    if (problemtype == prb_tsi && tsic.get<double>("TEMP_DAMAGE") <= tsic.get<double>("TEMP_REF"))
+    if (problemtype == ProblemType::tsi &&
+        tsic.get<double>("TEMP_DAMAGE") <= tsic.get<double>("TEMP_REF"))
       dserror("damage temperature must be greater than reference temperature");
 
     // ---------------------------------------------------------------------
@@ -394,7 +396,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
         wearlist.get<double>("WEARCOEFF") != 0.0)
       dserror("Wear coefficient only necessary in the context of wear.");
 
-    if (problemtype == prb_structure and
+    if (problemtype == ProblemType::structure and
         DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
             INPAR::WEAR::wear_none and
         DRT::INPUT::IntegralValue<INPAR::WEAR::WearTimInt>(wearlist, "WEARTIMINT") !=
@@ -444,14 +446,16 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
     // ---------------------------------------------------------------------
     // poroelastic contact
     // ---------------------------------------------------------------------
-    if ((problemtype == prb_poroelast || problemtype == prb_fpsi || problemtype == prb_fpsi_xfem) &&
+    if ((problemtype == ProblemType::poroelast || problemtype == ProblemType::fpsi ||
+            problemtype == ProblemType::fpsi_xfem) &&
         (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
                 INPAR::MORTAR::shape_dual &&
             DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
                 INPAR::MORTAR::shape_petrovgalerkin))
       dserror("POROCONTACT: Only dual and petrovgalerkin shape functions implemented yet!");
 
-    if ((problemtype == prb_poroelast || problemtype == prb_fpsi || problemtype == prb_fpsi_xfem) &&
+    if ((problemtype == ProblemType::poroelast || problemtype == ProblemType::fpsi ||
+            problemtype == ProblemType::fpsi_xfem) &&
         Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
             "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
       dserror(
@@ -460,22 +464,26 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
                                                                          // are not copied to other
                                                                          // procs!
 
-    if ((problemtype == prb_poroelast || problemtype == prb_fpsi || problemtype == prb_fpsi_xfem) &&
+    if ((problemtype == ProblemType::poroelast || problemtype == ProblemType::fpsi ||
+            problemtype == ProblemType::fpsi_xfem) &&
         DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
             INPAR::CONTACT::solution_lagmult)
       dserror("POROCONTACT: Use Lagrangean Strategy for poro contact!");
 
-    if ((problemtype == prb_poroelast || problemtype == prb_fpsi || problemtype == prb_fpsi_xfem) &&
+    if ((problemtype == ProblemType::poroelast || problemtype == ProblemType::fpsi ||
+            problemtype == ProblemType::fpsi_xfem) &&
         DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
             INPAR::CONTACT::friction_none)
       dserror("POROCONTACT: Friction for poro contact not implemented!");
 
-    if ((problemtype == prb_poroelast || problemtype == prb_fpsi || problemtype == prb_fpsi_xfem) &&
+    if ((problemtype == ProblemType::poroelast || problemtype == ProblemType::fpsi ||
+            problemtype == ProblemType::fpsi_xfem) &&
         DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact, "SYSTEM") !=
             INPAR::CONTACT::system_condensed)
       dserror("POROCONTACT: System has to be condensed for poro contact!");
 
-    if ((problemtype == prb_poroelast || problemtype == prb_fpsi || problemtype == prb_fpsi_xfem) &&
+    if ((problemtype == ProblemType::poroelast || problemtype == ProblemType::fpsi ||
+            problemtype == ProblemType::fpsi_xfem) &&
         (dim != 3) && (dim != 2))
     {
       const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
@@ -514,7 +522,8 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
   else if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar, "ALGORITHM") ==
            INPAR::MORTAR::algorithm_nts)
   {
-    if (problemtype == prb_poroelast or problemtype == prb_fpsi or problemtype == prb_tsi)
+    if (problemtype == ProblemType::poroelast or problemtype == ProblemType::fpsi or
+        problemtype == ProblemType::tsi)
       dserror("NTS only for problem type: structure");
   }  // END NTS CHECKS
 
@@ -554,7 +563,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
 
   switch (problemtype)
   {
-    case prb_tsi:
+    case ProblemType::tsi:
     {
       double timestep = DRT::Problem::Instance()->TSIDynamicParams().get<double>("TIMESTEP");
       // rauch 01/16
@@ -569,7 +578,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
       params.set<double>("TIMESTEP", timestep);
       break;
     }
-    case prb_structure:
+    case ProblemType::structure:
     {
       params.set<double>(
           "TIMESTEP", DRT::Problem::Instance()->StructuralDynamicParams().get<double>("TIMESTEP"));
@@ -602,11 +611,11 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
   params.setName("CONTACT DYNAMIC / MORTAR COUPLING");
 
   // store relevant problem types
-  if (problemtype == prb_tsi)
+  if (problemtype == ProblemType::tsi)
   {
     params.set<int>("PROBTYPE", INPAR::CONTACT::tsi);
   }
-  else if (problemtype == prb_ssi)
+  else if (problemtype == ProblemType::ssi)
   {
     if (Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(
             DRT::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE") ==
@@ -619,11 +628,12 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
       params.set<int>("PROBTYPE", INPAR::CONTACT::ssi);
     }
   }
-  else if (problemtype == prb_struct_ale)
+  else if (problemtype == ProblemType::struct_ale)
   {
     params.set<int>("PROBTYPE", INPAR::CONTACT::structalewear);
   }
-  else if (problemtype == prb_poroelast or problemtype == prb_fpsi or problemtype == prb_fpsi_xfem)
+  else if (problemtype == ProblemType::poroelast or problemtype == ProblemType::fpsi or
+           problemtype == ProblemType::fpsi_xfem)
   {
     dserror(
         "Everything which is related to a special time integration scheme has to be moved to the"
@@ -636,11 +646,11 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
     params.set<bool>("CONTACTNOPEN",
         DRT::INPUT::IntegralValue<int>(porodyn, "CONTACTNOPEN"));  // used in the integrator
   }
-  else if (problemtype == prb_fsi_xfem)
+  else if (problemtype == ProblemType::fsi_xfem)
   {
     params.set<int>("PROBTYPE", INPAR::CONTACT::fsi);
   }
-  else if (problemtype == prb_fpsi_xfem)
+  else if (problemtype == ProblemType::fpsi_xfem)
   {
     dserror(
         "Everything which is related to a special time integration scheme has to be moved to the"

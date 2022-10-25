@@ -33,9 +33,9 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
     case INPAR::FSI::DirichletNeumannSlideale:
       switch (DRT::Problem::Instance()->GetProblemType())
       {
-        case (prb_fsi):
-        case (prb_fsi_redmodels):
-        case (prb_fsi_lung):
+        case (ProblemType::fsi):
+        case (ProblemType::fsi_redmodels):
+        case (ProblemType::fsi_lung):
           if (DRT::INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") ==
               INPAR::FSI::CoupVarPart::vel)
           {
@@ -54,9 +54,9 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
     case INPAR::FSI::DirichletNeumannVolCoupl:
       switch (DRT::Problem::Instance()->GetProblemType())
       {
-        case (prb_fsi):
-        case (prb_fsi_redmodels):
-        case (prb_fsi_lung):
+        case (ProblemType::fsi):
+        case (ProblemType::fsi_redmodels):
+        case (ProblemType::fsi_lung):
           if (DRT::INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") ==
               INPAR::FSI::CoupVarPart::vel)
           {
@@ -75,10 +75,10 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
     case INPAR::FSI::DirichletNeumann:
       switch (DRT::Problem::Instance()->GetProblemType())
       {
-        case (prb_fsi):
-        case (prb_fsi_redmodels):
-        case (prb_fsi_lung):
-        case (prb_fsi_xfem):
+        case (ProblemType::fsi):
+        case (ProblemType::fsi_redmodels):
+        case (ProblemType::fsi_lung):
+        case (ProblemType::fsi_xfem):
           if (DRT::INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") ==
               INPAR::FSI::CoupVarPart::vel)
           {
@@ -89,7 +89,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
           else
             return Teuchos::rcp(new FSI::DirichletNeumannDisp(comm));
           break;
-        case (prb_fbi):
+        case (ProblemType::fbi):
           if (DRT::INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") ==
               INPAR::FSI::CoupVarPart::disp)
           {

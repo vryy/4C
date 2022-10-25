@@ -56,7 +56,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
                           DRT::Problem::Instance()->StructuralDynamicParams(), "INT_STRATEGY") ==
                       INPAR::STR::int_old)
 {
-  if (DRT::Problem::Instance()->GetProblemType() != prb_poroelast)
+  if (DRT::Problem::Instance()->GetProblemType() != ProblemType::poroelast)
     is_part_of_multifield_problem_ = true;
 
   // access the structural discretization
