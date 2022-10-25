@@ -13,10 +13,14 @@
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_lib/drt_assemblestrategy.H"
+
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_sparseoperator.H"
+
+#include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
+
 #include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
 
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
@@ -63,7 +67,8 @@ void STI::ScatraThermoOffDiagCoupling::EvaluateOffDiagBlockScatraThermoDomain(
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", SCATRA::calc_scatra_mono_odblock_scatrathermo);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_scatra_mono_odblock_scatrathermo, eleparams);
 
   // number of dofset associated with velocity-related dofs on scatra discretization
   eleparams.set<int>("ndsvel", 1);
@@ -128,7 +133,8 @@ void STI::ScatraThermoOffDiagCoupling::EvaluateOffDiagBlockThermoScatraDomain(
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", SCATRA::calc_scatra_mono_odblock_thermoscatra);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_scatra_mono_odblock_thermoscatra, eleparams);
 
   // number of dofset associated with velocity-related dofs on thermo discretization
   eleparams.set<int>("ndsvel", 1);
@@ -287,13 +293,15 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateScatraThermoInterfac
   Teuchos::ParameterList condparams;
 
   // action for elements
-  condparams.set<int>("action", SCATRA::bd_calc_s2icoupling_od);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+      "action", SCATRA::BoundaryAction::calc_s2icoupling_od, condparams);
 
   // in case of deforming mesh: set displacement
   if (IsAle()) condparams.set<int>("ndsdisp", 1);
 
   // set type of differentiation to temperature
-  condparams.set<int>("differentiationtype", static_cast<int>(SCATRA::DifferentiationType::temp));
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
+      "differentiationtype", SCATRA::DifferentiationType::temp, condparams);
 
   // remove state vectors from scalar transport discretization
   ScaTraField()->Discretization()->ClearState();
@@ -470,10 +478,12 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockThermoSc
   Teuchos::ParameterList condparams;
 
   // action for elements
-  condparams.set<int>("action", SCATRA::bd_calc_s2icoupling_od);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+      "action", SCATRA::BoundaryAction::calc_s2icoupling_od, condparams);
 
   // set differentiation type to elch
-  condparams.set<int>("differentiationtype", static_cast<int>(SCATRA::DifferentiationType::elch));
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
+      "differentiationtype", SCATRA::DifferentiationType::elch, condparams);
 
   // in case of deforming mesh: set displacement
   if (IsAle()) condparams.set<int>("ndsdisp", 1);

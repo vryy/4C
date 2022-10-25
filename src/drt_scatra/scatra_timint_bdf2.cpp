@@ -16,11 +16,14 @@
 #include "../drt_fluid_turbulence/dyn_smag.H"
 #include "../drt_fluid_turbulence/dyn_vreman.H"
 
+#include "../drt_lib/drt_utils_parameter_list.H"
+
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 #include "scatra_timint_bdf2.H"
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -96,7 +99,8 @@ void SCATRA::TimIntBDF2::SetElementTimeParameter(bool forcedincrementalsolver) c
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", SCATRA::set_time_parameter);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::set_time_parameter, eleparams);
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", false);
   if (!forcedincrementalsolver)

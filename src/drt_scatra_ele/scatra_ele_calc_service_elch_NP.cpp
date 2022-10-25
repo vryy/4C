@@ -252,7 +252,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
     const DRT::Element* ele, Teuchos::ParameterList& params, Epetra_SerialDenseVector& errors)
 {
   // at the moment, there is only one analytical test problem available!
-  if (DRT::INPUT::get<SCATRA::Action>(params, "action") != SCATRA::calc_error)
+
+
+  if (Teuchos::getIntegralValue<SCATRA::Action>(params, "action") != SCATRA::Action::calc_error)
     dserror("How did you get here?");
 
   // -------------- prepare common things first ! -----------------------

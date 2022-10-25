@@ -151,7 +151,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateAction(D
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::calc_elch_boundary_kinetics_point:
+    case SCATRA::Action::calc_elch_boundary_kinetics_point:
     {
       // access material of parent element
       Teuchos::RCP<MAT::Material> material = ele->Material();
@@ -185,7 +185,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateAction(D
       break;
     }
 
-    case SCATRA::calc_elch_domain_kinetics:
+    case SCATRA::Action::calc_elch_domain_kinetics:
     {
       CalcElchDomainKinetics(
           ele, params, discretization, la[0].lm_, elemat1_epetra, elevec1_epetra);
@@ -694,7 +694,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalErrorCompare
       //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339–1359.
 
       // safety checks
-      if (DRT::INPUT::get<SCATRA::Action>(params, "action") != SCATRA::calc_error)
+      if (Teuchos::getIntegralValue<SCATRA::Action>(params, "action") != SCATRA::Action::calc_error)
         dserror("How did you get here?");
       if (my::scatrapara_->IsAle()) dserror("No ALE for Kwok & Wu error calculation allowed.");
       if (my::numscal_ != 1) dserror("Numscal_ != 1 for desired error calculation.");

@@ -11,12 +11,13 @@
 
 #include "dyn_smag.H"
 #include "boxfilter.H"
-#include "../drt_inpar/inpar_parameterlist_utils.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 
-#include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
+
+#include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/newtonianfluid.H"
 
 /*----------------------------------------------------------------------*
@@ -795,7 +796,8 @@ void FLD::DynSmagFilter::DynSmagComputePrt(Teuchos::ParameterList& extraparams, 
   // generate a parameterlist for communication and control
   Teuchos::ParameterList calc_turb_prandtl_params;
   // action for elements
-  calc_turb_prandtl_params.set<int>("action", SCATRA::calc_turbulent_prandtl_number);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_turbulent_prandtl_number, calc_turb_prandtl_params);
 
   // hand filtered global vectors down to the element
   calc_turb_prandtl_params.set("col_filtered_vel", col_filtered_vel_);

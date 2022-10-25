@@ -10,6 +10,10 @@
 #include "scatra_timint_hdg.H"
 #include "../drt_lib/drt_discret_hdg.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
+#include "../drt_lib/drt_assemblestrategy.H"
+#include "../drt_lib/drt_dofset.H"
+
 #include "../drt_scatra_ele/scatra_ele_hdg.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
@@ -17,9 +21,6 @@
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 
-#include "../drt_lib/drt_assemblestrategy.H"
-
-#include "../drt_lib/drt_dofset.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
 
@@ -300,7 +301,8 @@ namespace
 
     // call element routine to interpolate HDG to elements
     Teuchos::ParameterList eleparams;
-    eleparams.set<int>("action", SCATRA::interpolate_hdg_to_node);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::interpolate_hdg_to_node, eleparams);
     dis.SetState(0, "phiaf", traceValues);
     dis.SetState(nds_intvar_, "intphinp", interiorValues);
     DRT::Element::LocationArray la(ndofs);
@@ -506,7 +508,8 @@ void SCATRA::TimIntHDG::SetInitialField(
     {
       // set initial field defined by function
       Teuchos::ParameterList eleparams;
-      eleparams.set<int>("action", SCATRA::set_initial_field);
+      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+          "action", SCATRA::Action::set_initial_field, eleparams);
       eleparams.set<int>("funct", startfuncno);
 
       discret_->SetState("phiaf", phinp_);
@@ -634,7 +637,8 @@ void SCATRA::TimIntHDG::UpdateInteriorVariables(Teuchos::RCP<Epetra_Vector> upda
 {
   discret_->ClearState(true);
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", SCATRA::update_interior_variables);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::update_interior_variables, eleparams);
   discret_->SetState("phiaf", phinp_);
   discret_->SetState("phin", phin_);
   discret_->SetState(nds_intvar_, "intphin", intphin_);
@@ -712,7 +716,8 @@ void SCATRA::TimIntHDG::FDCheck()
   discret_->SetState(0, "phin", phin_);
   discret_->SetState(nds_intvar_, "intphinp", intphitemp);
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", SCATRA::calc_mat_and_rhs);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_mat_and_rhs, eleparams);
   DRT::Element::LocationArray la(discret_->NumDofSets());
 
   // loop over elements
@@ -780,7 +785,8 @@ void SCATRA::TimIntHDG::FDCheck()
       discret_->SetState(nds_intvar_, "intphinp", intphitemp);
 
       Teuchos::ParameterList eleparams;
-      eleparams.set<int>("action", SCATRA::calc_mat_and_rhs);
+      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+          "action", SCATRA::Action::calc_mat_and_rhs, eleparams);
 
       DRT::Element::LocationArray la(discret_->NumDofSets());
 
@@ -938,7 +944,8 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::TimIntHDG::ComputeError() const
 
   // create the parameters for the error calculation
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", SCATRA::calc_error);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_error, eleparams);
 
   eleparams.set<int>("error function number", errorfunctnumber);
   eleparams.set<double>("time", time_);
@@ -985,7 +992,8 @@ void SCATRA::TimIntHDG::CalcMatInitial()
 
   // check validity of material and element formulation
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", SCATRA::calc_mat_initial);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_mat_initial, eleparams);
 
   discret_->SetState("phiaf", phinp_);
   discret_->SetState("phin", phin_);
@@ -1072,7 +1080,8 @@ void SCATRA::TimIntHDG::AdaptDegree()
 
   // set action
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", SCATRA::calc_padaptivity);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_padaptivity, eleparams);
 
   Epetra_SerialDenseMatrix dummyMat;
   Epetra_SerialDenseVector dummyVec;
@@ -1260,7 +1269,8 @@ void SCATRA::TimIntHDG::AdaptVariableVector(Teuchos::RCP<Epetra_Vector> phi_new,
 {
   // set action
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", SCATRA::project_field);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::project_field, eleparams);
 
   // set number of dofset for the old dofsets on the parameter list to extract the correct location
   // array
@@ -1372,7 +1382,8 @@ void SCATRA::TimIntHDG::AssembleRHS()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", SCATRA::calc_mat_and_rhs);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_mat_and_rhs, eleparams);
 
   // provide velocity field and potentially acceleration/pressure field
   // (export to column map necessary for parallel evaluation)

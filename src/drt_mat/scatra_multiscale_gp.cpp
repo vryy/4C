@@ -14,6 +14,7 @@ transport problems
 
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 
 #include "../drt_scatra/scatra_timint_ost.H"
 
@@ -312,7 +313,8 @@ double MAT::ScatraMultiScaleGP::EvaluateMeanConcentration() const
 
   // set parameters for micro-scale elements
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", SCATRA::calc_total_and_mean_scalars);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_total_and_mean_scalars, eleparams);
   eleparams.set("inverting", false);
   eleparams.set("calc_grad_phi", false);
 
@@ -344,7 +346,8 @@ double MAT::ScatraMultiScaleGP::EvaluateMeanConcentrationTimeDerivative() const
 
   // set parameters for micro-scale elements
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", SCATRA::calc_mean_scalar_time_derivatives);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_mean_scalar_time_derivatives, eleparams);
 
   // initialize result vector: first component = integral of concentration time derivative, second
   // component = integral of domain

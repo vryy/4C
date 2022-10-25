@@ -28,6 +28,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_gid_vector.H"
 #include "../drt_lib/drt_utils_vector.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 
 #include "../drt_mat/electrode.H"
 
@@ -308,7 +309,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       Teuchos::ParameterList condparams;
 
       // action for elements
-      condparams.set<int>("action", SCATRA::bd_calc_s2icoupling);
+      DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+          "action", SCATRA::BoundaryAction::calc_s2icoupling, condparams);
 
       // number of dofset associated with displacement dofs
       if (scatratimint_->IsALE()) condparams.set<int>("ndsdisp", scatratimint_->NdsDisp());
@@ -889,7 +891,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         Teuchos::ParameterList conditionparams;
 
         // action for elements
-        conditionparams.set<int>("action", SCATRA::bd_calc_s2icoupling);
+        DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+            "action", SCATRA::BoundaryAction::calc_s2icoupling, conditionparams);
 
         // set global state vectors according to time-integration scheme
         scatratimint_->Discretization()->ClearState();
@@ -1048,7 +1051,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 Teuchos::ParameterList condparams;
 
                 // set action for elements
-                condparams.set<int>("action", SCATRA::bd_calc_s2icoupling_scatragrowth);
+                DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+                    "action", SCATRA::BoundaryAction::calc_s2icoupling_scatragrowth, condparams);
 
                 // evaluate off-diagonal linearizations arising from scatra-scatra interface
                 // coupling
@@ -1121,7 +1125,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 Teuchos::ParameterList condparams;
 
                 // set action for elements
-                condparams.set<int>("action", SCATRA::bd_calc_s2icoupling_growthscatra);
+                DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+                    "action", SCATRA::BoundaryAction::calc_s2icoupling_growthscatra, condparams);
 
                 // evaluate off-diagonal linearizations
                 scatratimint_->Discretization()->EvaluateCondition(
@@ -1170,7 +1175,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 Teuchos::ParameterList condparams;
 
                 // set action for elements
-                condparams.set<int>("action", SCATRA::bd_calc_s2icoupling_scatragrowth);
+                DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+                    "action", SCATRA::BoundaryAction::calc_s2icoupling_scatragrowth, condparams);
 
                 // evaluate off-diagonal linearizations arising from scatra-scatra interface
                 // coupling
@@ -1249,7 +1255,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 Teuchos::ParameterList condparams;
 
                 // set action for elements
-                condparams.set<int>("action", SCATRA::bd_calc_s2icoupling_growthscatra);
+                DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+                    "action", SCATRA::BoundaryAction::calc_s2icoupling_growthscatra, condparams);
 
                 // evaluate off-diagonal linearizations
                 scatratimint_->Discretization()->EvaluateCondition(
@@ -1314,7 +1321,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
             Teuchos::ParameterList condparams;
 
             // set action for elements
-            condparams.set<int>("action", SCATRA::bd_calc_s2icoupling_growthgrowth);
+            DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+                "action", SCATRA::BoundaryAction::calc_s2icoupling_growthgrowth, condparams);
 
             // set history vector associated with discrete scatra-scatra interface layer thicknesses
             scatratimint_->Discretization()->SetState(2, "growthhist", growthhist_);
@@ -1353,7 +1361,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateAndAssembleCapacitiveContributions()
   Teuchos::ParameterList capcondparas;
 
   // action for elements
-  capcondparas.set<int>("action", bd_calc_s2icoupling_capacitance);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+      "action", SCATRA::BoundaryAction::calc_s2icoupling_capacitance, capcondparas);
 
   // number of dofset associated with displacement dofs
   if (scatratimint_->IsALE()) capcondparas.set<int>("ndsdisp", scatratimint_->NdsDisp());
@@ -2928,7 +2937,8 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
   const DRT::Condition::ConditionType conditiontype = s2ikinetics_cond.Type();
 
   // set action, kinetic model, condition type and numscal
-  s2icouplingparameters.set<int>("action", SCATRA::set_scatra_ele_boundary_parameter);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::set_scatra_ele_boundary_parameter, s2icouplingparameters);
   s2icouplingparameters.set<int>("kinetic model", kineticmodel);
   s2icouplingparameters.set<DRT::Condition::ConditionType>("condition type", conditiontype);
 

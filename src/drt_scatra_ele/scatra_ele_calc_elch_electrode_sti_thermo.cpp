@@ -110,7 +110,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::EvaluateActionO
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::calc_scatra_mono_odblock_scatrathermo:
+    case SCATRA::Action::calc_scatra_mono_odblock_scatrathermo:
     {
       SysmatODScatraThermo(ele, elemat1_epetra);
 

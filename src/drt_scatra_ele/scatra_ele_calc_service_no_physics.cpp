@@ -28,7 +28,7 @@ int DRT::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::EvaluateAction(DRT:
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::time_update_material:
+    case SCATRA::Action::time_update_material:
       break;
 
     default:

@@ -14,6 +14,7 @@
 #include "../drt_lib/drt_dofset_merged_wrapper.H"
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
@@ -48,7 +49,8 @@ void SCATRA::HeterogeneousReactionStrategy::EvaluateMeshtying()
   Teuchos::ParameterList condparams;
 
   // action for elements
-  condparams.set<int>("action", SCATRA::calc_heteroreac_mat_and_rhs);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_heteroreac_mat_and_rhs, condparams);
 
   // provide element parameter list with numbers of dofsets associated with displacement and
   // velocity dofs on scatra discretization

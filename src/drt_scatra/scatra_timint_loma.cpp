@@ -7,10 +7,10 @@
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/sutherland.H"
-#include "../drt_mat/tempdepwater.H"
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
@@ -159,7 +159,8 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv()
   if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
 
   // set parameters for element evaluation
-  eleparams.set<int>("action", SCATRA::calc_domain_and_bodyforce);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_domain_and_bodyforce, eleparams);
 
   // the time = 0.0, since this function is called BEFORE the first IncrementTimeAndStep() in
   // InitialCalculations() therefore, the standard SetElementTimeParameter() can be used for this
@@ -176,7 +177,8 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv()
   double parbofint = (*scalars)[1];
 
   // set action for elements
-  eleparams.set<int>("action", SCATRA::bd_calc_loma_therm_press);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+      "action", SCATRA::BoundaryAction::calc_loma_therm_press, eleparams);
 
   // variables for integrals of normal velocity and diffusive flux
   double normvelint = 0.0;
@@ -244,7 +246,8 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialMass()
   discret_->SetState("phinp", phin_);
   // set action for elements
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", SCATRA::calc_total_and_mean_scalars);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_total_and_mean_scalars, eleparams);
   // inverted scalar values are required here
   eleparams.set("inverting", true);
   eleparams.set("calc_grad_phi", false);
@@ -288,7 +291,8 @@ void SCATRA::ScaTraTimIntLoma::ComputeThermPressureFromMassCons()
   discret_->SetState("phinp", phinp_);
   // set action for elements
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", SCATRA::calc_total_and_mean_scalars);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_total_and_mean_scalars, eleparams);
   // inverted scalar values are required here
   eleparams.set("inverting", true);
   eleparams.set("calc_grad_phi", false);

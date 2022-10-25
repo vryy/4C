@@ -13,11 +13,10 @@
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../drt_scatra_ele/scatra_ele_calc_hdg.H"
 
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
 
-#include "../drt_lib/drt_parobject.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 
 
 /*----------------------------------------------------------------------*
@@ -79,7 +78,8 @@ void SCATRA::TimIntCardiacMonodomainHDG::ElementMaterialTimeUpdate()
   discret_->ClearState(true);
 
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", SCATRA::time_update_material);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::time_update_material, eleparams);
 
   discret_->SetState("phiaf", phinp_);
   discret_->SetState(nds_intvar_, "intphin", intphin_);
@@ -115,7 +115,8 @@ void SCATRA::TimIntCardiacMonodomainHDG::OutputState()
   {
     material_internal_state_np_->PutScalar(0.0);
     Teuchos::ParameterList params;
-    params.set<int>("action", SCATRA::get_material_internal_state);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::get_material_internal_state, params);
     params.set<Teuchos::RCP<Epetra_MultiVector>>(
         "material_internal_state", material_internal_state_np_);
     discret_->Evaluate(params);
@@ -226,7 +227,8 @@ void SCATRA::TimIntCardiacMonodomainHDG::ProjectMaterial()
   discret_->ClearState(true);
   // set action
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", SCATRA::project_material_field);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::project_material_field, eleparams);
 
   Epetra_SerialDenseMatrix dummyMat;
   Epetra_SerialDenseVector dummyVec;

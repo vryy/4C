@@ -12,6 +12,7 @@
 #include "scatra_ele_hdg_boundary_calc.H"
 #include "scatra_ele_hdg.H"
 #include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 #include "scatra_ele_action.H"
 
 
@@ -114,7 +115,8 @@ int DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::EvaluateNeumann(
   Epetra_SerialDenseVector dummy_vec2, dummy_vec3;
   Epetra_SerialDenseMatrix dummy_mat2;
 
-  params.set<int>("action", SCATRA::project_neumann_field);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::project_neumann_field, params);
 
   const int* nodeids = ele->NodeIds();
 

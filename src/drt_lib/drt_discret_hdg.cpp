@@ -13,27 +13,22 @@
 
 #include "drt_exporter.H"
 #include "drt_globalproblem.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_fluid_ele/fluid_ele_calc.H"
 #include "../drt_fluid_ele/fluid_ele_hdg.H"
 #include "../drt_fluid_ele/fluid_ele_hdg_weak_comp.H"
 #include "../drt_fluid_ele/fluid_ele_calc_hdg.H"
-#include "../drt_fluid_ele/fluid_ele_calc_hdg_weak_comp.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../drt_elemag/elemag_ele.H"
 #include "../drt_elemag/elemag_ele_action.H"
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../drt_inpar/inpar_fluid.H"
 #include "../drt_mat/matpar_parameter.H"
 
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/fluid_murnaghantait.H"
-#include "../drt_mat/fluid_weakly_compressible.H"
 
 
 DRT::DiscretizationHDG::DiscretizationHDG(const std::string name, Teuchos::RCP<Epetra_Comm> comm)
@@ -582,7 +577,8 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
     if (DRT::Problem::Instance(0)->GetProblemType() == prb_elemag)
       initParams.set<int>("action", ELEMAG::project_dirich_field);
     else if (DRT::Problem::Instance(0)->GetProblemType() == prb_scatra)
-      initParams.set<int>("action", SCATRA::project_dirich_field);
+      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+          "action", SCATRA::Action::project_dirich_field, initParams);
     else
       initParams.set<int>(
           "action", FLD::project_fluid_field);  // TODO: Introduce a general action type that is

@@ -19,7 +19,7 @@ namespace SCATRA
    * \brief enum that provides all possible scatra actions
    *///                                                             nis Mar12
   /*--------------------------------------------------------------------------*/
-  enum Action
+  enum class Action
   {
     // domain action
     calc_dissipation,  ///< calculate dissipation introduced by stabilization and turbulence models
@@ -104,7 +104,7 @@ namespace SCATRA
     transform_real_to_reference_point,  ///< gets a point in real coordinates and returns reference
                                         ///< coordinates
     update_interior_variables           ///< update interior variables for hdg
-  };                                    // enum Action
+  };
 
 
   /*--------------------------------------------------------------------------*/
@@ -112,50 +112,50 @@ namespace SCATRA
    * \brief enum that provides all possible scatra actions on a boundary
    *///                                                             nis Mar12
   /*--------------------------------------------------------------------------*/
-  enum BoundaryAction
+  enum class BoundaryAction
   {
-    bd_calc_Neumann,
-    bd_add_convective_mass_flux,
-    bd_calc_boundary_integral,
-    bd_calc_convective_heat_transfer,
-    bd_calc_elch_boundary_kinetics,
-    bd_calc_elch_cell_voltage,
-    bd_calc_elch_linearize_nernst,
-    bd_calc_elch_minmax_overpotential,
-    bd_calc_fps3i_surface_permeability,  ///< Kedem-Katchalsky equations --> FPS3I problem
-    bd_calc_fs3i_surface_permeability,
-    bd_calc_loma_therm_press,
-    bd_calc_mass_matrix,
-    bd_calc_Neumann_inflow,
-    bd_calc_normal_vectors,
-    bd_calc_Robin,                       ///< Robin boundary condition
-    bd_calc_s2icoupling,                 ///< evaluate scatra-scatra interface coupling conditions
-    bd_calc_s2icoupling_flux,            ///< integral of all positive fluxes on s2i interface
-    bd_calc_s2icoupling_capacitance,     ///< evaluate capacitance part of scatra-scatra interface
-                                         ///< coupling conditions
-    bd_calc_s2icoupling_capacitance_od,  ///< evaluate derivatives of scatra-scatra interface
-                                         ///< coupling capacitance conditions w.r.t. secondary dofs
-    bd_calc_s2icoupling_growthgrowth,    ///< evaluate global growth-growth matrix block for
-                                         ///< scatra-scatra interface coupling involving interface
-                                         ///< layer growth
-    bd_calc_s2icoupling_growthscatra,    ///< evaluate global growth-scatra matrix block for
-                                         ///< scatra-scatra interface coupling involving interface
-                                         ///< layer growth
-    bd_calc_s2icoupling_od,            ///< evaluate derivatives of scatra-scatra interface coupling
-                                       ///< conditions w.r.t. secondary dofs
-    bd_calc_s2icoupling_scatragrowth,  ///< evaluate global scatra-growth matrix block for
-                                       ///< scatra-scatra interface coupling involving interface
-                                       ///< layer growth
-    bd_calc_weak_Dirichlet,
-    bd_integrate_shape_functions
-  };  // enum SCATRA::BoundaryAction
+    calc_Neumann,
+    add_convective_mass_flux,
+    calc_boundary_integral,
+    calc_convective_heat_transfer,
+    calc_elch_boundary_kinetics,
+    calc_elch_cell_voltage,
+    calc_elch_linearize_nernst,
+    calc_elch_minmax_overpotential,
+    calc_fps3i_surface_permeability,  ///< Kedem-Katchalsky equations --> FPS3I problem
+    calc_fs3i_surface_permeability,
+    calc_loma_therm_press,
+    calc_mass_matrix,
+    calc_Neumann_inflow,
+    calc_normal_vectors,
+    calc_Robin,                       ///< Robin boundary condition
+    calc_s2icoupling,                 ///< evaluate scatra-scatra interface coupling conditions
+    calc_s2icoupling_flux,            ///< integral of all positive fluxes on s2i interface
+    calc_s2icoupling_capacitance,     ///< evaluate capacitance part of scatra-scatra interface
+                                      ///< coupling conditions
+    calc_s2icoupling_capacitance_od,  ///< evaluate derivatives of scatra-scatra interface
+                                      ///< coupling capacitance conditions w.r.t. secondary dofs
+    calc_s2icoupling_growthgrowth,    ///< evaluate global growth-growth matrix block for
+                                      ///< scatra-scatra interface coupling involving interface
+                                      ///< layer growth
+    calc_s2icoupling_growthscatra,    ///< evaluate global growth-scatra matrix block for
+                                      ///< scatra-scatra interface coupling involving interface
+                                      ///< layer growth
+    calc_s2icoupling_od,              ///< evaluate derivatives of scatra-scatra interface coupling
+                                      ///< conditions w.r.t. secondary dofs
+    calc_s2icoupling_scatragrowth,    ///< evaluate global scatra-growth matrix block for
+                                      ///< scatra-scatra interface coupling involving interface
+                                      ///< layer growth
+    calc_weak_Dirichlet,
+    integrate_shape_functions
+  };
 
   /*--------------------------------------------------------------------------*/
   /*!
    * \brief for coupled, monolithic problems: linearization w.r.t. other primary variable
    */
   /*--------------------------------------------------------------------------*/
-  enum class DifferentiationType : int
+  enum class DifferentiationType
   {
     none,
     disp,

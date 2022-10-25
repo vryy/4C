@@ -14,6 +14,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 
 #include "../drt_poromultiphase/poromultiphase_base.H"
 #include "../drt_poromultiphase/poromultiphase_monolithic_twoway.H"
@@ -600,7 +601,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ApplyScatraStru
 
   if (solve_structure_)
   {
-    sparams_struct.set<int>("action", SCATRA::calc_scatra_mono_odblock_mesh);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::calc_scatra_mono_odblock_mesh, sparams_struct);
     // other parameters that might be needed by the elements
     sparams_struct.set("delta time", Dt());
     sparams_struct.set("total time", Time());
@@ -648,7 +650,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ApplyScatraPoro
 
   k_spf->Zero();
 
-  sparams_fluid.set<int>("action", SCATRA::calc_scatra_mono_odblock_fluid);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_scatra_mono_odblock_fluid, sparams_fluid);
   // other parameters that might be needed by the elements
   sparams_fluid.set("delta time", Dt());
   sparams_fluid.set("total time", Time());
@@ -1614,7 +1617,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
 
   k_asa->Zero();
 
-  sparams_artery.set<int>("action", SCATRA::calc_scatra_mono_odblock_fluid);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_scatra_mono_odblock_fluid, sparams_artery);
   // other parameters that might be needed by the elements
   sparams_artery.set("delta time", Dt());
   sparams_artery.set("total time", Time());

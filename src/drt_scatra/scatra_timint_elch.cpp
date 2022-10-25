@@ -12,6 +12,7 @@
 #include "../drt_io/io.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 
 #include "../drt_mat/ion.H"
 #include "../drt_mat/matlist.H"
@@ -365,13 +366,15 @@ void SCATRA::ScaTraTimIntElch::SetElementSpecificScaTraParameters(
   // overwrite action type
   if (DRT::INPUT::IntegralValue<int>(*elchparams_, "DIFFCOND_FORMULATION"))
   {
-    eleparams.set<int>("action", SCATRA::set_diffcond_scatra_parameter);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::set_diffcond_scatra_parameter, eleparams);
 
     // parameters for diffusion-conduction formulation
     eleparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
   }
   else
-    eleparams.set<int>("action", SCATRA::set_elch_scatra_parameter);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::set_elch_scatra_parameter, eleparams);
 
   // general elch parameters
   eleparams.set<double>("faraday", elchparams_->get<double>("FARADAY_CONSTANT"));
@@ -552,7 +555,8 @@ void SCATRA::ScaTraTimIntElch::PrepareTimeLoop()
 
   // check validity of material and element formulation
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", SCATRA::check_scatra_element_parameter);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::check_scatra_element_parameter, eleparams);
   if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
   discret_->Evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -626,7 +630,8 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
 
       // create the parameters for the error calculation
       Teuchos::ParameterList eleparams;
-      eleparams.set<int>("action", SCATRA::calc_error);
+      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+          "action", SCATRA::Action::calc_error, eleparams);
       eleparams.set("total time", time_);
       eleparams.set<int>("calcerrorflag", calcerror_);
       // provide displacement field in case of ALE
@@ -676,7 +681,8 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
 
       // create the parameters for the error calculation
       Teuchos::ParameterList eleparams;
-      eleparams.set<int>("action", SCATRA::calc_error);
+      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+          "action", SCATRA::Action::calc_error, eleparams);
       eleparams.set("total time", time_);
       eleparams.set<int>("calcerrorflag", calcerror_);
       // provide displacement field in case of ALE
@@ -710,7 +716,8 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
 
       // create the parameters for the error calculation
       Teuchos::ParameterList eleparams;
-      eleparams.set<int>("action", SCATRA::calc_error);
+      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+          "action", SCATRA::Action::calc_error, eleparams);
       eleparams.set("total time", time_);
       eleparams.set<int>("calcerrorflag", calcerror_);
       // provide displacement field in case of ALE
@@ -952,9 +959,11 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleE
 
   // set action for elements depending on type of condition to be evaluated
   if (condstring == "ElchDomainKinetics")
-    eleparams.set<int>("action", SCATRA::calc_elch_domain_kinetics);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::calc_elch_domain_kinetics, eleparams);
   else if (condstring == "ElchBoundaryKinetics")
-    eleparams.set<int>("action", SCATRA::bd_calc_elch_boundary_kinetics);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+        "action", SCATRA::BoundaryAction::calc_elch_boundary_kinetics, eleparams);
   else
     dserror("Invalid action " + condstring + " for output of electrode status information!");
 
@@ -1041,7 +1050,8 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleE
     Teuchos::ParameterList condparams;
 
     // set action for elements
-    condparams.set<int>("action", SCATRA::calc_elch_boundary_kinetics_point);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::calc_elch_boundary_kinetics_point, condparams);
 
     // set flag for evaluation of status information
     condparams.set<bool>("calc_status", true);
@@ -1287,7 +1297,8 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
       Teuchos::ParameterList condparams;
 
       // action for elements
-      condparams.set<int>("action", SCATRA::calc_elch_electrode_soc_and_c_rate);
+      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+          "action", SCATRA::Action::calc_elch_electrode_soc_and_c_rate, condparams);
 
       // number of dofset associated with displacement-related dofs
       if (isale_) condparams.set<int>("ndsdisp", nds_disp_);
@@ -1439,7 +1450,8 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
         Teuchos::ParameterList condparams;
 
         // action for elements
-        condparams.set<int>("action", SCATRA::bd_calc_elch_cell_voltage);
+        DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+            "action", SCATRA::BoundaryAction::calc_elch_cell_voltage, condparams);
 
         // number of dofset associated with displacement-related dofs
         if (isale_) condparams.set<int>("ndsdisp", nds_disp_);
@@ -1633,7 +1645,8 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
 
   // set action for elements
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", SCATRA::calc_total_and_mean_scalars);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_total_and_mean_scalars, eleparams);
   eleparams.set("inverting", false);
   eleparams.set("calc_grad_phi", false);
 
@@ -2081,7 +2094,8 @@ double SCATRA::ScaTraTimIntElch::ComputeConductivity(
 
   // create the parameters for the elements
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", SCATRA::calc_elch_conductivity);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_elch_conductivity, eleparams);
 
   eleparams.set("effCond", effCond);
 
@@ -2603,9 +2617,11 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeKineticsConditions(
 
   // set action for elements depending on type of condition to be evaluated
   if (condstring == "ElchDomainKinetics")
-    condparams.set<int>("action", SCATRA::calc_elch_domain_kinetics);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::calc_elch_domain_kinetics, condparams);
   else if (condstring == "ElchBoundaryKinetics")
-    condparams.set<int>("action", SCATRA::bd_calc_elch_boundary_kinetics);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+        "action", SCATRA::BoundaryAction::calc_elch_boundary_kinetics, condparams);
   else
     dserror("Illegal action for electrode kinetics evaluation!");
 
@@ -2639,7 +2655,8 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
   Teuchos::ParameterList condparams;
 
   // set action for elements
-  condparams.set<int>("action", SCATRA::calc_elch_boundary_kinetics_point);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_elch_boundary_kinetics_point, condparams);
 
   // provide displacement field in case of ALE
   if (isale_) condparams.set<int>("ndsdisp", nds_disp_);
@@ -2746,7 +2763,8 @@ void SCATRA::ScaTraTimIntElch::LinearizationNernstCondition()
   // update total time for time curve actions
   AddTimeIntegrationSpecificVectors();
   // action for elements
-  condparams.set<int>("action", SCATRA::bd_calc_elch_linearize_nernst);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+      "action", SCATRA::BoundaryAction::calc_elch_linearize_nernst, condparams);
 
   // add element parameters and set state vectors according to time-integration scheme
   // we need here concentration at t+np
@@ -2971,7 +2989,8 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
             Teuchos::ParameterList params;
 
             // set action for elements
-            params.set<int>("action", SCATRA::bd_calc_Neumann);
+            DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+                "action", SCATRA::BoundaryAction::calc_Neumann, params);
 
             // number of dofset associated with displacement-related dofs
             if (isale_) params.set<int>("ndsdisp", nds_disp_);

@@ -186,7 +186,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::micro_scale_initialize:
+    case SCATRA::Action::micro_scale_initialize:
     {
       const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
           SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -199,8 +199,8 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
       break;
     }
 
-    case SCATRA::micro_scale_prepare_time_step:
-    case SCATRA::micro_scale_solve:
+    case SCATRA::Action::micro_scale_prepare_time_step:
+    case SCATRA::Action::micro_scale_solve:
     {
       // extract state variables at element nodes
       DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(
@@ -224,7 +224,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
         phinp[1] = my::funct_.Dot(my::ephinp_[1]);
         phinp[2] = my::funct_.Dot(my::ephinp_[2]);
 
-        if (action == SCATRA::micro_scale_prepare_time_step)
+        if (action == SCATRA::Action::micro_scale_prepare_time_step)
         {
           // prepare time step on micro scale
           newmanmultiscale->PrepareTimeStep(iquad, phinp);
@@ -241,7 +241,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
       break;
     }
 
-    case SCATRA::micro_scale_update:
+    case SCATRA::Action::micro_scale_update:
     {
       const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
           SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -254,7 +254,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
       break;
     }
 
-    case SCATRA::micro_scale_output:
+    case SCATRA::Action::micro_scale_output:
     {
       const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
           SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -267,7 +267,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
       break;
     }
 
-    case SCATRA::micro_scale_read_restart:
+    case SCATRA::Action::micro_scale_read_restart:
     {
       const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
           SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -279,7 +279,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
 
       break;
     }
-    case SCATRA::micro_scale_set_time:
+    case SCATRA::Action::micro_scale_set_time:
     {
       const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
           SCATRA::DisTypeToOptGaussRule<distype>::rule);

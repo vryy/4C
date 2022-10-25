@@ -147,7 +147,7 @@ int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::EvaluateAction(DRT::Element* ele,
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::calc_total_and_mean_scalars:
+    case SCATRA::Action::calc_total_and_mean_scalars:
     {
       // get flag for inverting
       bool inverting = params.get<bool>("inverting");

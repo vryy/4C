@@ -13,19 +13,14 @@
 #include "levelset_algorithm.H"
 #include "levelset_intersection_utils.H"
 #include "../drt_lib/drt_periodicbc.H"
-#include "../drt_geometry/integrationcell.H"
-#include "../drt_geometry/geo_utils.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_solver.H"
 #include <list>
-
-#include "../drt_io/io_gmsh.H"
 
 
 /*----------------------------------------------------------------------*
@@ -71,7 +66,8 @@ void SCATRA::LevelSetAlgorithm::SetReinitializationElementParameters(
   Teuchos::ParameterList eleparams;
 
   // set action for elements
-  eleparams.set<int>("action", SCATRA::set_lsreinit_scatra_parameter);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::set_lsreinit_scatra_parameter, eleparams);
 
   // reinitialization equation is given in convective form
   eleparams.set<int>("convform", INPAR::SCATRA::convform_convective);
@@ -131,7 +127,8 @@ void SCATRA::LevelSetAlgorithm::SetReinitializationElementTimeParameters()
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", SCATRA::set_time_parameter);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::set_time_parameter, eleparams);
 
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", false);
@@ -393,7 +390,8 @@ void SCATRA::LevelSetAlgorithm::CalcNodeBasedReinitVel()
 
       // parameters for the elements
       // action
-      eleparams.set<int>("action", SCATRA::calc_node_based_reinit_velocity);
+      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+          "action", SCATRA::Action::calc_node_based_reinit_velocity, eleparams);
       // set current spatial direction
       // we have to loop the dimensions, since we merely have one dof per node here
       eleparams.set<int>("direction", idim);
@@ -525,7 +523,8 @@ void SCATRA::LevelSetAlgorithm::CorrectionReinit()
   // generate a parameterlist for communication and control
   Teuchos::ParameterList eleparams;
   // action for elements
-  eleparams.set<int>("action", SCATRA::calc_mat_and_rhs_lsreinit_correction_step);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_mat_and_rhs_lsreinit_correction_step, eleparams);
   eleparams.set<bool>("solve reinit eq", true);
 
   // set state vectors
@@ -570,7 +569,7 @@ void SCATRA::LevelSetAlgorithm::CorrectionReinit()
 //
 //  return steady_state;
 //}
-//#endif
+// #endif
 
 
 #if 0

@@ -37,7 +37,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateAction(DRT::
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::calc_mat_and_rhs_lsreinit_correction_step:
+    case SCATRA::Action::calc_mat_and_rhs_lsreinit_correction_step:
     {
       // extract local values from the global vectors
       Teuchos::RCP<const Epetra_Vector> phizero = discretization.GetState("phizero");
@@ -74,7 +74,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateAction(DRT::
 
       break;
     }
-    case SCATRA::calc_node_based_reinit_velocity:
+    case SCATRA::Action::calc_node_based_reinit_velocity:
     {
       // extract local values from the global vectors
       Teuchos::RCP<const Epetra_Vector> phizero = discretization.GetState("phizero");

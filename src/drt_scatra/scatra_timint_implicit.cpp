@@ -46,6 +46,7 @@
 #include "../drt_lib/drt_periodicbc.H"
 #include "../drt_lib/drt_utils_gid_vector.H"
 #include "../drt_lib/drt_utils_vector.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 
 #include "../drt_mat/elchmat.H"
 #include "../drt_mat/electrode.H"
@@ -663,7 +664,8 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
 
   // set action for elements
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", SCATRA::calc_total_and_mean_scalars);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_total_and_mean_scalars, eleparams);
   eleparams.set("inverting", false);
   eleparams.set("calc_grad_phi", false);
 
@@ -913,7 +915,8 @@ void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimed
   Teuchos::ParameterList eleparams;
 
   // set action
-  eleparams.set<int>("action", SCATRA::set_general_scatra_parameter);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::set_general_scatra_parameter, eleparams);
 
   // set problem number
   eleparams.set<int>("probnum", probnum_);
@@ -989,7 +992,8 @@ void SCATRA::ScaTraTimIntImpl::SetElementTurbulenceParameters(bool calcinitialti
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", SCATRA::set_turbulence_scatra_parameter);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::set_turbulence_scatra_parameter, eleparams);
 
   eleparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
   if (calcinitialtimederivative)
@@ -1118,7 +1122,8 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
     Teuchos::ParameterList eleparams;
 
     // set action
-    eleparams.set<int>("action", SCATRA::micro_scale_prepare_time_step);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::micro_scale_prepare_time_step, eleparams);
 
     // provide displacement field in case of ALE
     if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
@@ -1656,7 +1661,8 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
     Teuchos::ParameterList eleparams;
 
     // set action
-    eleparams.set<int>("action", SCATRA::micro_scale_output);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::micro_scale_output, eleparams);
 
     // provide displacement field in case of ALE
     if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
@@ -2217,7 +2223,8 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
     Teuchos::ParameterList mode_params;
 
     // set parameters for elements that do not change over mode
-    mode_params.set<int>("action", SCATRA::integrate_shape_functions);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::integrate_shape_functions, mode_params);
     if (isale_) mode_params.set<int>("ndsdisp", nds_disp_);
 
     // loop over all activemodes
@@ -2409,7 +2416,8 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
   Teuchos::ParameterList condparams;
 
   // action for elements
-  condparams.set<int>("action", SCATRA::bd_calc_Neumann);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+      "action", SCATRA::BoundaryAction::calc_Neumann, condparams);
 
   // specific parameters
   AddProblemSpecificParametersAndVectors(condparams);
@@ -2467,7 +2475,8 @@ void SCATRA::ScaTraTimIntImpl::EvaluateRobinBoundaryConditions(
   Teuchos::ParameterList condparams;
 
   // action for elements
-  condparams.set<int>("action", SCATRA::bd_calc_Robin);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+      "action", SCATRA::BoundaryAction::calc_Robin, condparams);
 
   // provide displacement field in case of ALE
   if (isale_) condparams.set<int>("ndsdisp", nds_disp_);
@@ -2505,7 +2514,8 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", SCATRA::calc_mat_and_rhs);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_mat_and_rhs, eleparams);
 
   // DO THIS AT VERY FIRST!!!
   // compute reconstructed diffusive fluxes for better consistency
@@ -2571,7 +2581,8 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
     Teuchos::ParameterList mhdbcparams;
 
     // set action for elements
-    mhdbcparams.set<int>("action", SCATRA::bd_calc_weak_Dirichlet);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+        "action", SCATRA::BoundaryAction::calc_weak_Dirichlet, mhdbcparams);
 
     eleparams.set<int>("ndsvel", nds_vel_);
     AddTimeIntegrationSpecificVectors();
@@ -2880,7 +2891,8 @@ void SCATRA::ScaTraTimIntImpl::NonlinearMicroScaleSolve()
   Teuchos::ParameterList eleparams;
 
   // set action for macro-scale elements
-  eleparams.set<int>("action", SCATRA::micro_scale_solve);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::micro_scale_solve, eleparams);
 
   // set state vectors
   AddTimeIntegrationSpecificVectors();
@@ -3581,7 +3593,8 @@ void SCATRA::ScaTraTimIntImpl::CalcMeanMicroConcentration()
 
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", SCATRA::calc_elch_elctrode_mean_concentration);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_elch_elctrode_mean_concentration, eleparams);
 
   // number of dofset associated with displacement-related dofs
   if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
@@ -3735,7 +3748,8 @@ void SCATRA::ScaTraTimIntImpl::SetTimeSteppingToMicroScale()
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", SCATRA::micro_scale_set_time);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::micro_scale_set_time, eleparams);
 
   eleparams.set<double>("dt", dta_);
   eleparams.set<double>("time", time_);

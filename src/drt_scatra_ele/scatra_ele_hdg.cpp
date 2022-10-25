@@ -519,7 +519,7 @@ int DRT::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList& params,
   int numscal = numdofpernode;
 
   // get the action required
-  const SCATRA::Action act = DRT::INPUT::get<SCATRA::Action>(params, "action");
+  const auto act = Teuchos::getIntegralValue<SCATRA::Action>(params, "action");
 
   // get material
   Teuchos::RCP<MAT::Material> mat = Material();
@@ -531,7 +531,7 @@ int DRT::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList& params,
     // standard implementation enabling time-integration schemes such as
     // one-step-theta, BDF2, and generalized-alpha (n+alpha_F and n+1)
     //-----------------------------------------------------------------------
-    case SCATRA::calc_mat_and_rhs:
+    case SCATRA::Action::calc_mat_and_rhs:
     {
       return DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
           Shape(), ImplType(), numdofpernode, numscal, discretization.Name())
@@ -539,19 +539,19 @@ int DRT::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    case SCATRA::interpolate_hdg_to_node:
-    case SCATRA::update_interior_variables:
-    case SCATRA::project_dirich_field:
-    case SCATRA::project_material_field:
-    case SCATRA::project_neumann_field:
-    case SCATRA::set_initial_field:
-    case SCATRA::time_update_material:
-    case SCATRA::get_material_internal_state:
-    case SCATRA::set_material_internal_state:
-    case SCATRA::calc_mat_initial:
-    case SCATRA::project_field:
-    case SCATRA::calc_padaptivity:
-    case SCATRA::calc_error:
+    case SCATRA::Action::interpolate_hdg_to_node:
+    case SCATRA::Action::update_interior_variables:
+    case SCATRA::Action::project_dirich_field:
+    case SCATRA::Action::project_material_field:
+    case SCATRA::Action::project_neumann_field:
+    case SCATRA::Action::set_initial_field:
+    case SCATRA::Action::time_update_material:
+    case SCATRA::Action::get_material_internal_state:
+    case SCATRA::Action::set_material_internal_state:
+    case SCATRA::Action::calc_mat_initial:
+    case SCATRA::Action::project_field:
+    case SCATRA::Action::calc_padaptivity:
+    case SCATRA::Action::calc_error:
 
     {
       return DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
@@ -561,10 +561,10 @@ int DRT::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList& params,
       break;
     }
 
-    case SCATRA::calc_initial_time_deriv:
-    case SCATRA::set_general_scatra_parameter:
-    case SCATRA::set_time_parameter:
-    case SCATRA::set_turbulence_scatra_parameter:
+    case SCATRA::Action::calc_initial_time_deriv:
+    case SCATRA::Action::set_general_scatra_parameter:
+    case SCATRA::Action::set_time_parameter:
+    case SCATRA::Action::set_turbulence_scatra_parameter:
       break;
 
     default:
