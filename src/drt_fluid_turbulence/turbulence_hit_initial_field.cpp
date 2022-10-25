@@ -201,7 +201,6 @@ namespace FLD
   }
 
   // also consider routine for HDG further down
-  // #if 1
   /*--------------------------------------------------------------*
    | calculate initial field using fft            rasthofer 04/13 |
    *--------------------------------------------------------------*/
@@ -556,7 +555,6 @@ namespace FLD
     dserror("FFTW required");
 #endif
   }
-  // #endif
 
 
   /*--------------------------------------------------------------*
@@ -889,7 +887,7 @@ namespace FLD
     return;
   }
 
-#if 1
+
   /*--------------------------------------------------------------*
    | calculate initial field using fft                   bk 03/15 |
    *--------------------------------------------------------------*/
@@ -1306,5 +1304,5 @@ namespace FLD
     dserror("FFTW required");
 #endif
   }
-#endif
+
 };  // namespace FLD
