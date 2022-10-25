@@ -14,8 +14,6 @@
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_mortar/mortar_strategy_factory.H"
 
-#include "../drt_xfem/xfem_enum_lists.H"
-
 // forward declarations
 namespace CONTACT
 {
