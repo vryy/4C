@@ -12,6 +12,8 @@
 
 /*----------------------------------------------------------------------*/
 // headers
+#include <Teuchos_BLAS.hpp>
+
 #include "wall1.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
@@ -318,8 +320,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
             data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
         Epetra_SerialDenseMatrix* alphao =
             data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
-        Epetra_BLAS blas;                                          // BLAS front-end dummy
-        blas.COPY((*alphao).M() * (*alphao).N(), (*alpha).A(), (*alphao).A());  // alphao := alpha
+        Teuchos::BLAS<unsigned int, double> blas;
+        blas.COPY(
+            (*alphao).M() * (*alphao).N(), (*alpha).A(), 1, (*alphao).A(), 1);  // alphao := alpha
       }
       SolidMaterial()->Update();
       break;
@@ -334,8 +337,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
             data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
         Epetra_SerialDenseMatrix* alphao =
             data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
-        Epetra_BLAS blas;
-        blas.COPY((*alphao).M() * (*alphao).N(), (*alphao).A(), (*alpha).A());  // alpha := alphao
+        Teuchos::BLAS<unsigned int, double> blas;
+        blas.COPY(
+            (*alphao).M() * (*alphao).N(), (*alphao).A(), 1, (*alpha).A(), 1);  // alpha := alphao
       }
       break;
     }

@@ -21,6 +21,7 @@
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/fluid_murnaghantait.H"
 
+#include <Teuchos_BLAS.hpp>
 #include <Epetra_SerialDenseSolver.h>
 
 
@@ -2386,7 +2387,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::CondenseLocalPart(
     eleVec(i) -= sum;
   }
 
-  Epetra_BLAS blas;
+  Teuchos::BLAS<unsigned int, double> blas;
 
   for (unsigned int f = 1; f < 1 + nfaces_ * shapesface_.nfdofs_ * nsd_; ++f)
   {
@@ -2431,8 +2432,8 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::CondenseLocalPart(
   dsassert(errnum == 0, "Substitution failed");
 
   // put velocity/pressure part into element matrix
-  blas.GEMM('N', 'N', fuMat.M(), ufMat.N(), fuMat.N(), -1., fuMat.A(), fuMat.M(), ufMat.A(),
-      ufMat.M(), 1., eleMat.A(), eleMat.M());
+  blas.GEMM(Teuchos::NO_TRANS, Teuchos::NO_TRANS, fuMat.M(), ufMat.N(), fuMat.N(), -1., fuMat.A(),
+      fuMat.M(), ufMat.A(), ufMat.M(), 1., eleMat.A(), eleMat.M());
 
   // update gfMat and apply inverse mass matrix: GF <- M^{-1} (GF - GU * UF)
   Epetra_SerialDenseVector gAux;
@@ -2465,8 +2466,8 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::CondenseLocalPart(
   }
 
   // compute FG * (M^{-1} GF)
-  blas.GEMM('N', 'N', fgMat.M(), gfMat.N(), fgMat.N(), -1., fgMat.A(), fgMat.M(), gfMat.A(),
-      gfMat.M(), 1., eleMat.A(), eleMat.M());
+  blas.GEMM(Teuchos::NO_TRANS, Teuchos::NO_TRANS, fgMat.M(), gfMat.N(), fgMat.N(), -1., fgMat.A(),
+      fgMat.M(), gfMat.A(), gfMat.M(), 1., eleMat.A(), eleMat.M());
 }
 
 template <DRT::Element::DiscretizationType distype>

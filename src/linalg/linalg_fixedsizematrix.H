@@ -10,7 +10,7 @@
 #define FIXED_SIZE_SERIAL_DENSE_MATRIX_H
 
 #include <Epetra_LAPACK.h>
-#include <Epetra_BLAS.h>
+#include <Teuchos_BLAS.hpp>
 #include <Epetra_SerialDenseMatrix.h>
 
 #include <cstring>
@@ -4522,7 +4522,7 @@ namespace LINALG
     /// wrapper for the LAPACK functions
     static Epetra_LAPACK lapack_;
     /// wrapper for the BLAS functions
-    static Epetra_BLAS blas_;
+    static Teuchos::BLAS<unsigned int, double> blas_;
 
     /// the matrix we got
     Matrix<rows, cols, double>* matrix_;
@@ -4752,8 +4752,8 @@ namespace LINALG
     {
       if (vec_B_ == vec_X_) return -100;
 
-      blas_.GEMM(transpose_ ? 'T' : 'N', 'N', cols, dim_rhs, cols, 1.0, matrix_->A(), rows,
-          vec_B_->A(), rows, 0.0, vec_X_->A(), cols);
+      blas_.GEMM(transpose_ ? Teuchos::TRANS : Teuchos::NO_TRANS, Teuchos::NO_TRANS, cols, dim_rhs,
+          cols, 1.0, matrix_->A(), rows, vec_B_->A(), rows, 0.0, vec_X_->A(), cols);
       solved_ = true;
     }
     else
@@ -4871,7 +4871,7 @@ namespace LINALG
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
   Epetra_LAPACK FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::lapack_;
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
-  Epetra_BLAS FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::blas_;
+  Teuchos::BLAS<unsigned int, double> FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::blas_;
 
 
 }  // namespace LINALG
