@@ -671,7 +671,6 @@ endmacro(result_file_rel)
 # Usage in TestingFrameworkListOfTests.cmake: "vtk_test(<name_of_input_file> <num_proc> <filetag> <pvd_referencefilename> <tolerance> <optional: time_steps>)"
 # <name_of_test>: name of this test
 # <name_of_input_file>: must equal the name of a .dat file from a previous test
-# <num_proc>: number of processors the test should use
 # <num_proc_base_run>: number of processors of precursor base run
 # <pvd_referencefilename>: file to compare with
 # <tolerance>: difference the values may have
@@ -680,7 +679,6 @@ macro(
   vtk_test
   name_of_test
   name_of_input_file
-  num_proc
   num_proc_base_run
   pvd_resultfilename
   pvd_referencefilename
@@ -703,7 +701,7 @@ macro(
 
   # add test to testing framework
   add_test(
-    NAME ${name_of_test}-p${num_proc}
+    NAME ${name_of_test}-p${num_proc_base_run}
     COMMAND
       ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3
       ${PROJECT_SOURCE_DIR}/tests/output_test/vtk_compare.py ${test_directory}
@@ -712,10 +710,11 @@ macro(
     )
 
   require_fixture(
-    ${name_of_test}-p${num_proc} "${name_of_input_file}-p${num_proc_base_run};test_cleanup"
+    ${name_of_test}-p${num_proc_base_run}
+    "${name_of_input_file}-p${num_proc_base_run};test_cleanup"
     )
-  set_processors(${name_of_test}-p${num_proc} 1)
-  set_timeout(${name_of_test}-p${num_proc})
+  set_processors(${name_of_test}-p${num_proc_base_run} 1)
+  set_timeout(${name_of_test}-p${num_proc_base_run})
 endmacro(vtk_test)
 
 ###------------------------------------------------------------------ List of tests
