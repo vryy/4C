@@ -38,34 +38,34 @@ DRT::ELEMENTS::Membrane<distype>::Membrane(int id, int owner)
       cur_thickness_(0),
       data_(),
       planetype_(plane_stress),
-      intpoints_(DRT::UTILS::intrule_tri_3point)
+      intpoints_(DRT::UTILS::GaussRule2D::tri_3point)
 {
   switch (distype)
   {
     case tri3:
     {
-      DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::intrule_tri_3point;
+      DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::GaussRule2D::tri_3point;
       // get gauss integration points
       intpoints_ = DRT::UTILS::IntegrationPoints2D(gaussrule);
       break;
     }
     case tri6:
     {
-      DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::intrule_tri_6point;
+      DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::GaussRule2D::tri_6point;
       // get gauss integration points
       intpoints_ = DRT::UTILS::IntegrationPoints2D(gaussrule);
       break;
     }
     case quad4:
     {
-      DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::intrule_quad_4point;
+      DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::GaussRule2D::quad_4point;
       // get gauss integration points
       intpoints_ = DRT::UTILS::IntegrationPoints2D(gaussrule);
       break;
     }
     case quad9:
     {
-      DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::intrule_quad_9point;
+      DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::GaussRule2D::quad_9point;
       // get gauss integration points
       intpoints_ = DRT::UTILS::IntegrationPoints2D(gaussrule);
       break;

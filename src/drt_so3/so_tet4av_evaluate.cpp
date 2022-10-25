@@ -364,7 +364,7 @@ void DRT::ELEMENTS::So_tet4av::InitJacobianMapping()
   }
   LINALG::Matrix<NUMDIM_SOTET4av, NUMNOD_SOTET4av> deriv;
 
-  DRT::UTILS::IntPointsAndWeights<3> intpoints(DRT::UTILS::intrule_tet_1point);
+  DRT::UTILS::IntPointsAndWeights<3> intpoints(DRT::UTILS::GaussRule3D::tet_1point);
   numgpt_ = intpoints.IP().nquad;
   xsi_.resize(numgpt_);
   wgt_.resize(numgpt_);
@@ -616,7 +616,7 @@ void DRT::ELEMENTS::So_tet4av::nlnstiffmass(std::vector<int>& lm,   // location 
     // jacobian is constatnt
     double ifactor, massfactor;
     // needs more than one gauss point
-    DRT::UTILS::IntPointsAndWeights<3> intpoints(DRT::UTILS::intrule_tet_4point);
+    DRT::UTILS::IntPointsAndWeights<3> intpoints(DRT::UTILS::GaussRule3D::tet_4point);
     LINALG::Matrix<3, 1> xsi;
 
     for (int gp = 0; gp < intpoints.IP().nquad; gp++)

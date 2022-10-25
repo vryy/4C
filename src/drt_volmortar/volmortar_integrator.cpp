@@ -62,7 +62,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     //*******************************
     case DRT::Element::tri3:
     {
-      DRT::UTILS::GaussRule2D mygaussrule = DRT::UTILS::intrule_tri_7point;
+      DRT::UTILS::GaussRule2D mygaussrule = DRT::UTILS::GaussRule2D::tri_7point;
 
       const DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
@@ -78,7 +78,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     }
     case DRT::Element::tri6:
     {
-      DRT::UTILS::GaussRule2D mygaussrule = DRT::UTILS::intrule_tri_12point;
+      DRT::UTILS::GaussRule2D mygaussrule = DRT::UTILS::GaussRule2D::tri_12point;
 
       const DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
@@ -94,7 +94,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     }
     case DRT::Element::quad4:
     {
-      DRT::UTILS::GaussRule2D mygaussrule = DRT::UTILS::intrule_quad_64point;
+      DRT::UTILS::GaussRule2D mygaussrule = DRT::UTILS::GaussRule2D::quad_64point;
 
       const DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
@@ -110,7 +110,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     }
     case DRT::Element::quad8:
     {
-      DRT::UTILS::GaussRule2D mygaussrule = DRT::UTILS::intrule_quad_64point;
+      DRT::UTILS::GaussRule2D mygaussrule = DRT::UTILS::GaussRule2D::quad_64point;
 
       const DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
@@ -126,7 +126,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     }
     case DRT::Element::quad9:
     {
-      DRT::UTILS::GaussRule2D mygaussrule = DRT::UTILS::intrule_quad_64point;
+      DRT::UTILS::GaussRule2D mygaussrule = DRT::UTILS::GaussRule2D::quad_64point;
 
       const DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
@@ -145,7 +145,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     //*******************************
     case DRT::Element::tet4:
     {
-      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::intrule_tet_45point;
+      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::GaussRule3D::tet_45point;
 
       const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
@@ -162,7 +162,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     }
     case DRT::Element::tet10:
     {
-      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::intrule_tet_45point;
+      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::GaussRule3D::tet_45point;
 
       const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
@@ -179,7 +179,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     }
     case DRT::Element::hex8:
     {
-      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::intrule_hex_27point;
+      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::GaussRule3D::hex_27point;
 
       const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
@@ -196,7 +196,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     }
     case DRT::Element::hex20:
     {
-      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::intrule_hex_125point;
+      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::GaussRule3D::hex_125point;
 
       const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
@@ -213,7 +213,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     }
     case DRT::Element::hex27:
     {
-      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::intrule_hex_125point;
+      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::GaussRule3D::hex_125point;
 
       const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
@@ -230,7 +230,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     }
     case DRT::Element::pyramid5:
     {
-      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::intrule_pyramid_8point;
+      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::GaussRule3D::pyramid_8point;
 
       const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
@@ -702,7 +702,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
   {
     case DRT::Element::tri3:
     {
-      DRT::UTILS::GaussRule2D mygaussrule = DRT::UTILS::intrule_tri_7point;
+      DRT::UTILS::GaussRule2D mygaussrule = DRT::UTILS::GaussRule2D::tri_7point;
 
       const DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
@@ -718,7 +718,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
     }
     case DRT::Element::tet4:
     {
-      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::intrule_tet_45point;
+      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::GaussRule3D::tet_45point;
 
       const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
@@ -735,7 +735,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
     }
     case DRT::Element::tet10:
     {
-      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::intrule_tet_45point;
+      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::GaussRule3D::tet_45point;
 
       const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
@@ -752,7 +752,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
     }
     case DRT::Element::hex8:
     {
-      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::intrule_hex_27point;
+      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::GaussRule3D::hex_27point;
 
       const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
@@ -769,7 +769,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
     }
     case DRT::Element::hex20:
     {
-      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::intrule_hex_125point;
+      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::GaussRule3D::hex_125point;
 
       const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
@@ -786,7 +786,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
     }
     case DRT::Element::hex27:
     {
-      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::intrule_hex_125point;
+      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::GaussRule3D::hex_125point;
 
       const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
@@ -803,7 +803,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
     }
     case DRT::Element::pyramid5:
     {
-      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::intrule_pyramid_8point;
+      DRT::UTILS::GaussRule3D mygaussrule = DRT::UTILS::GaussRule3D::pyramid_8point;
 
       const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;

@@ -23,7 +23,7 @@ BEAMINTERACTION::BeamToSolidParamsBase::BeamToSolidParamsBase()
       contact_discretization_(INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none),
       mortar_shape_function_(INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::none),
       penalty_parameter_(-1.0),
-      gauss_rule_(DRT::UTILS::GaussRule1D::intrule1D_undefined)
+      gauss_rule_(DRT::UTILS::GaussRule1D::undefined)
 {
   // Empty Constructor.
 }

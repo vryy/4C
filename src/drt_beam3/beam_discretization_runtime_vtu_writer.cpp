@@ -1640,7 +1640,7 @@ void BeamDiscretizationRuntimeVtuWriter::CalcInterpolationPolynomialCoefficients
   std::array<std::array<double, 3>, 3> lagrange_coefficients;
   switch (gauss_rule)
   {
-    case DRT::UTILS::intrule_line_3point:
+    case DRT::UTILS::GaussRule1D::line_3point:
     {
       lagrange_coefficients[0][0] = 0.0;
       lagrange_coefficients[0][1] = -0.645497224367889;
@@ -1655,7 +1655,7 @@ void BeamDiscretizationRuntimeVtuWriter::CalcInterpolationPolynomialCoefficients
       lagrange_coefficients[2][2] = 0.8333333333333333;
     }
     break;
-    case DRT::UTILS::intrule_line_lobatto3point:
+    case DRT::UTILS::GaussRule1D::line_lobatto3point:
     {
       lagrange_coefficients[0][0] = 0.0;
       lagrange_coefficients[0][1] = -0.5;

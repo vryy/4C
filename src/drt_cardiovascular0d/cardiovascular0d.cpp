@@ -45,7 +45,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
               DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist(
                   "RESPIRATORY PARAMETERS"),
               "RESPIRATORY_MODEL")),
-      gaussrule_(DRT::UTILS::intrule2D_undefined)
+      gaussrule_(DRT::UTILS::GaussRule2D::undefined)
 {
   actdisc_->GetCondition(conditionname, cardiovascular0dcond_);
   if (cardiovascular0dcond_.size())
@@ -353,22 +353,22 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
       switch (shape)
       {
         case DRT::Element::tri3:
-          gaussrule_ = DRT::UTILS::intrule_tri_3point;
+          gaussrule_ = DRT::UTILS::GaussRule2D::tri_3point;
           break;
         case DRT::Element::tri6:
-          gaussrule_ = DRT::UTILS::intrule_tri_6point;
+          gaussrule_ = DRT::UTILS::GaussRule2D::tri_6point;
           break;
         case DRT::Element::quad4:
-          gaussrule_ = DRT::UTILS::intrule_quad_4point;
+          gaussrule_ = DRT::UTILS::GaussRule2D::quad_4point;
           break;
         case DRT::Element::quad8:
-          gaussrule_ = DRT::UTILS::intrule_quad_9point;
+          gaussrule_ = DRT::UTILS::GaussRule2D::quad_9point;
           break;
         case DRT::Element::quad9:
-          gaussrule_ = DRT::UTILS::intrule_quad_9point;
+          gaussrule_ = DRT::UTILS::GaussRule2D::quad_9point;
           break;
         case DRT::Element::nurbs9:
-          gaussrule_ = DRT::UTILS::intrule_quad_9point;
+          gaussrule_ = DRT::UTILS::GaussRule2D::quad_9point;
           break;
         default:
           dserror("shape type unknown!\n");

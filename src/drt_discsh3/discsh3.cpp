@@ -95,9 +95,7 @@ DRT::ELEMENTS::DiscSh3::DiscSh3(int id, int owner)
       x_n_1_(LINALG::Matrix<1, 9>(true)),
       data_()
 {
-  //  gaussrule_ = DRT::UTILS::intrule_tri_1point;
-  //  gaussrule_ = DRT::UTILS::intrule_tri_3point;
-  gaussrule_ = DRT::UTILS::intrule_tri_3point_gauss_radau;
+  gaussrule_ = DRT::UTILS::GaussRule2D::tri_3point_gauss_radau;
   ngp_[0] = ngp_[1] = ngp_[2] = 0;
   eas_[0] = eas_[1] = eas_[2] = eas_[3] = eas_[4] = 0;
   return;

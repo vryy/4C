@@ -279,7 +279,7 @@ void DRT::ELEMENTS::So_hex20::soh20_expol(
   else
   {
     // get gaussian points
-    const DRT::UTILS::IntegrationPoints3D intpoints(DRT::UTILS::intrule_hex_27point);
+    const DRT::UTILS::IntegrationPoints3D intpoints(DRT::UTILS::GaussRule3D::hex_27point);
 
     // loop over all nodes
     for (int ip = 0; ip < NUMNOD_SOH20; ++ip)

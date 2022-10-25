@@ -1188,7 +1188,7 @@ const std::vector<LINALG::Matrix<NUMNOD_WEG6, 1>> DRT::ELEMENTS::So_weg6::sow6_s
   std::vector<LINALG::Matrix<NUMNOD_WEG6, 1>> shapefcts(NUMGPT_WEG6);
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
   // fill up nodal f at each gp
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_wedge_6point;
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::wedge_6point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
@@ -1209,7 +1209,7 @@ const std::vector<LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> DRT::ELEMENTS::So_we
   std::vector<LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs(NUMGPT_WEG6);
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_wedge_6point;
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::wedge_6point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
@@ -1228,7 +1228,7 @@ const std::vector<LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> DRT::ELEMENTS::So_we
 const std::vector<double> DRT::ELEMENTS::So_weg6::sow6_weights()
 {
   std::vector<double> weights(NUMGPT_WEG6);
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_wedge_6point;
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::wedge_6point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int i = 0; i < NUMGPT_WEG6; ++i)
   {
@@ -1265,7 +1265,7 @@ void DRT::ELEMENTS::So_weg6::sow6_shapederiv(
     // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
     // fill up nodal f at each gp
     // fill up df w.r.t. rst directions (NUMDIM) at each gp
-    const DRT::UTILS::GaussRule3D gaussrule_ = DRT::UTILS::intrule_wedge_6point;
+    const DRT::UTILS::GaussRule3D gaussrule_ = DRT::UTILS::GaussRule3D::wedge_6point;
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule_);
     for (int igp = 0; igp < intpoints.nquad; ++igp)
     {

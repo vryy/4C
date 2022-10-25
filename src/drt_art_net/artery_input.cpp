@@ -28,34 +28,34 @@ bool DRT::ELEMENTS::Artery::ReadElement(
   switch (ngp)
   {
     case 1:
-      gaussrule_ = DRT::UTILS::intrule_line_1point;
+      gaussrule_ = DRT::UTILS::GaussRule1D::line_1point;
       break;
     case 2:
-      gaussrule_ = DRT::UTILS::intrule_line_2point;
+      gaussrule_ = DRT::UTILS::GaussRule1D::line_2point;
       break;
     case 3:
-      gaussrule_ = DRT::UTILS::intrule_line_3point;
+      gaussrule_ = DRT::UTILS::GaussRule1D::line_3point;
       break;
     case 4:
-      gaussrule_ = DRT::UTILS::intrule_line_4point;
+      gaussrule_ = DRT::UTILS::GaussRule1D::line_4point;
       break;
     case 5:
-      gaussrule_ = DRT::UTILS::intrule_line_5point;
+      gaussrule_ = DRT::UTILS::GaussRule1D::line_5point;
       break;
     case 6:
-      gaussrule_ = DRT::UTILS::intrule_line_6point;
+      gaussrule_ = DRT::UTILS::GaussRule1D::line_6point;
       break;
     case 7:
-      gaussrule_ = DRT::UTILS::intrule_line_7point;
+      gaussrule_ = DRT::UTILS::GaussRule1D::line_7point;
       break;
     case 8:
-      gaussrule_ = DRT::UTILS::intrule_line_8point;
+      gaussrule_ = DRT::UTILS::GaussRule1D::line_8point;
       break;
     case 9:
-      gaussrule_ = DRT::UTILS::intrule_line_9point;
+      gaussrule_ = DRT::UTILS::GaussRule1D::line_9point;
       break;
     case 10:
-      gaussrule_ = DRT::UTILS::intrule_line_10point;
+      gaussrule_ = DRT::UTILS::GaussRule1D::line_10point;
       break;
     default:
       dserror("Reading of ART element failed: Gaussrule for line not supported!\n");

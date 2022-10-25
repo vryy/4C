@@ -65,12 +65,12 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
 
   switch (gaussrule)
   {
-    case intrule_hex_1point:
+    case GaussRule3D::hex_1point:
     {
-      internal::fillquadrature(intrule_line_1point, qxg, qwgt, nquad);
+      internal::fillquadrature(GaussRule1D::line_1point, qxg, qwgt, nquad);
       break;
     }
-    case intrule_hex_8point:
+    case GaussRule3D::hex_8point:
     {
       nquad = 8;
       static const double xi2 = 1.0 / std::sqrt(3.0);
@@ -103,13 +103,13 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
 
       break;
     }
-    case intrule_hex_18point:
+    case GaussRule3D::hex_18point:
     {
       nquad = 18;
       // in plane
-      DRT::UTILS::IntPointsAndWeights<2> ip_p(DRT::UTILS::intrule_quad_9point);
+      DRT::UTILS::IntPointsAndWeights<2> ip_p(DRT::UTILS::GaussRule2D::quad_9point);
       // director
-      DRT::UTILS::IntPointsAndWeights<1> ip_d(DRT::UTILS::intrule_line_2point);
+      DRT::UTILS::IntPointsAndWeights<1> ip_d(DRT::UTILS::GaussRule1D::line_2point);
 
       for (int d = 0; d < ip_d.IP().nquad; ++d)
         for (int p = 0; p < ip_p.IP().nquad; ++p)
@@ -121,7 +121,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
         }
       break;
     }
-    case intrule_hex_27point:
+    case GaussRule3D::hex_27point:
     {
       nquad = 27;
       const double xi3 = 0.7745966692415;
@@ -238,42 +238,42 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
       qwgt[26] = w2 * w2 * w2;
       break;
     }
-    case intrule_hex_64point:
+    case GaussRule3D::hex_64point:
     {
-      internal::fillquadrature(intrule_line_4point, qxg, qwgt, nquad);
+      internal::fillquadrature(GaussRule1D::line_4point, qxg, qwgt, nquad);
       break;
     }
-    case intrule_hex_125point:
+    case GaussRule3D::hex_125point:
     {
-      internal::fillquadrature(intrule_line_5point, qxg, qwgt, nquad);
+      internal::fillquadrature(GaussRule1D::line_5point, qxg, qwgt, nquad);
       break;
     }
-    case intrule_hex_216point:
+    case GaussRule3D::hex_216point:
     {
-      internal::fillquadrature(intrule_line_6point, qxg, qwgt, nquad);
+      internal::fillquadrature(GaussRule1D::line_6point, qxg, qwgt, nquad);
       break;
     }
-    case intrule_hex_343point:
+    case GaussRule3D::hex_343point:
     {
-      internal::fillquadrature(intrule_line_7point, qxg, qwgt, nquad);
+      internal::fillquadrature(GaussRule1D::line_7point, qxg, qwgt, nquad);
       break;
     }
-    case intrule_hex_512point:
+    case GaussRule3D::hex_512point:
     {
-      internal::fillquadrature(intrule_line_8point, qxg, qwgt, nquad);
+      internal::fillquadrature(GaussRule1D::line_8point, qxg, qwgt, nquad);
       break;
     }
-    case intrule_hex_729point:
+    case GaussRule3D::hex_729point:
     {
-      internal::fillquadrature(intrule_line_9point, qxg, qwgt, nquad);
+      internal::fillquadrature(GaussRule1D::line_9point, qxg, qwgt, nquad);
       break;
     }
-    case intrule_hex_1000point:
+    case GaussRule3D::hex_1000point:
     {
-      internal::fillquadrature(intrule_line_10point, qxg, qwgt, nquad);
+      internal::fillquadrature(GaussRule1D::line_10point, qxg, qwgt, nquad);
       break;
     }
-    case intrule_tet_1point:
+    case GaussRule3D::tet_1point:
     {
       nquad = 1;
       qxg[0][0] = Q14;
@@ -282,7 +282,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
       qwgt[0] = Q16;
       break;
     }
-    case intrule_tet_4point:
+    case GaussRule3D::tet_4point:
     {
       nquad = 4;
       const double palpha = (5.0 + 3.0 * sqrt(5.0)) / 20.0;
@@ -305,7 +305,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
       qwgt[3] = Q124;
       break;
     }
-    case intrule_tet_4point_gauss_radau:
+    case GaussRule3D::tet_4point_gauss_radau:
     {
       nquad = 4;
       qxg[0][0] = 0.0;
@@ -326,7 +326,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
       qwgt[3] = Q124;
       break;
     }
-    case intrule_tet_5point:
+    case GaussRule3D::tet_5point:
     {
       nquad = 5;
       qxg[0][0] = Q14;
@@ -353,7 +353,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
       qwgt[4] = Q9120;
       break;
     }
-    case intrule_tet_10point:
+    case GaussRule3D::tet_10point:
     {
       nquad = 10;
       qxg[0][0] = 0.5684305841968444;
@@ -398,7 +398,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
       qwgt[9] = 0.0214899534130631 * Q16;
       break;
     }
-    case intrule_tet_11point:
+    case GaussRule3D::tet_11point:
     {
       nquad = 11;
       qxg[0][0] = 0.2500000000000000;
@@ -447,7 +447,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
       qwgt[10] = 0.1493333333333333 * Q16;
       break;
     }
-    case intrule_tet_15point:
+    case GaussRule3D::tet_15point:
     {
       nquad = 15;
 
@@ -516,7 +516,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
       qxg[14][2] = 6.655015357366430e-02;
       break;
     }
-    case intrule_tet_24point:
+    case GaussRule3D::tet_24point:
     {
       nquad = 24;
       qxg[0][0] = 0.3561913862225449;
@@ -618,7 +618,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
       qwgt[23] = 0.0482142857142857 * Q16;
       break;
     }
-    case intrule_tet_45point:
+    case GaussRule3D::tet_45point:
     {
       nquad = 45;
 
@@ -852,7 +852,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
 
       break;
     }
-    case intrule_tet_64point_peano:
+    case GaussRule3D::tet_64point_peano:
     {
       nquad = 64;
 
@@ -1117,7 +1117,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
       qxg[63][2] = 8.212521388343824e-01;
       break;
     }
-    case intrule_tet_125point_peano:
+    case GaussRule3D::tet_125point_peano:
     {
       nquad = 125;
 
@@ -1626,7 +1626,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
       qxg[124][2] = 8.721839761603850e-01;
       break;
     }
-    case intrule_tet_343point_peano:
+    case GaussRule3D::tet_343point_peano:
     {
       nquad = 343;
 
@@ -3007,7 +3007,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
       qxg[342][2] = 9.257083350982236e-01;
       break;
     }
-    case intrule_tet_729point_peano:
+    case GaussRule3D::tet_729point_peano:
     {
       nquad = 729;
 
@@ -5932,7 +5932,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
       qxg[728][2] = 9.516061796200044e-01;
       break;
     }
-    case intrule_wedge_1point:
+    case GaussRule3D::wedge_1point:
     {
       const double Q13 = 1.0 / 3.0;
       nquad = 1;
@@ -5943,7 +5943,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
       break;
     }
 
-    case intrule_wedge_6point:
+    case GaussRule3D::wedge_6point:
     {
       const double xi3 = 1.0 / sqrt(3.0);
       const double Q23 = 2.0 / 3.0;
@@ -5978,7 +5978,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
       break;
     }
 
-    case intrule_wedge_9point:
+    case GaussRule3D::wedge_9point:
     {
       std::cout << "Sorry if I interrupt your work, but I think this rule is not sufficient for a "
                    "wedge15 element. ";
@@ -6033,7 +6033,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
       break;
     }
 
-    case intrule_pyramid_1point:
+    case GaussRule3D::pyramid_1point:
     {
       nquad = 1;
       qxg[0][0] = 0;
@@ -6043,7 +6043,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
       break;
     }
 
-    case intrule_pyramid_8point:
+    case GaussRule3D::pyramid_8point:
     {
       nquad = 8;
       qxg[0][0] = -0.26318405556971;
@@ -6098,12 +6098,12 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
 {
   switch (gaussrule)
   {
-    case intrule_quad_1point:
+    case GaussRule2D::quad_1point:
     {
-      internal::fillquadrature(intrule_line_1point, qxg, qwgt, nquad);
+      internal::fillquadrature(GaussRule1D::line_1point, qxg, qwgt, nquad);
       break;
     }
-    case intrule_quad_4point:
+    case GaussRule2D::quad_4point:
     {
       // numbering is consistent with GiD definition
       //
@@ -6137,7 +6137,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
       qxg[3][1] = 0.5773502691896;
       break;
     }
-    case intrule_quad_9point:
+    case GaussRule2D::quad_9point:
     {
       // numbering is consistent with GiD definition
       //
@@ -6187,7 +6187,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
 
       break;
     }
-    case intrule_quad_6point:
+    case GaussRule2D::quad_6point:
     {
       //
       //                ^ xi_2
@@ -6214,62 +6214,62 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
       qxg[3][1] = qxg[4][1] = qxg[5][1] = +0.5773502691896;
       break;
     }
-    case intrule_quad_16point:
+    case GaussRule2D::quad_16point:
     {
-      internal::fillquadrature(intrule_line_4point, qxg, qwgt, nquad);
+      internal::fillquadrature(GaussRule1D::line_4point, qxg, qwgt, nquad);
       break;
     }
-    case intrule_quad_25point:
+    case GaussRule2D::quad_25point:
     {
-      internal::fillquadrature(intrule_line_5point, qxg, qwgt, nquad);
+      internal::fillquadrature(GaussRule1D::line_5point, qxg, qwgt, nquad);
       break;
     }
-    case intrule_quad_36point:
+    case GaussRule2D::quad_36point:
     {
-      internal::fillquadrature(intrule_line_6point, qxg, qwgt, nquad);
+      internal::fillquadrature(GaussRule1D::line_6point, qxg, qwgt, nquad);
       break;
     }
-    case intrule_quad_49point:
+    case GaussRule2D::quad_49point:
     {
-      internal::fillquadrature(intrule_line_7point, qxg, qwgt, nquad);
+      internal::fillquadrature(GaussRule1D::line_7point, qxg, qwgt, nquad);
       break;
     }
-    case intrule_quad_64point:
+    case GaussRule2D::quad_64point:
     {
-      internal::fillquadrature(intrule_line_8point, qxg, qwgt, nquad);
+      internal::fillquadrature(GaussRule1D::line_8point, qxg, qwgt, nquad);
       break;
     }
-    case intrule_quad_81point:
+    case GaussRule2D::quad_81point:
     {
-      internal::fillquadrature(intrule_line_9point, qxg, qwgt, nquad);
+      internal::fillquadrature(GaussRule1D::line_9point, qxg, qwgt, nquad);
       break;
     }
-    case intrule_quad_100point:
+    case GaussRule2D::quad_100point:
     {
-      internal::fillquadrature(intrule_line_10point, qxg, qwgt, nquad);
+      internal::fillquadrature(GaussRule1D::line_10point, qxg, qwgt, nquad);
       break;
     }
-    case intrule_quad_256point:
+    case GaussRule2D::quad_256point:
     {
-      internal::fillquadrature(intrule_line_16point, qxg, qwgt, nquad);
+      internal::fillquadrature(GaussRule1D::line_16point, qxg, qwgt, nquad);
       break;
     }
-    case intrule_quad_400point:
+    case GaussRule2D::quad_400point:
     {
-      internal::fillquadrature(intrule_line_20point, qxg, qwgt, nquad);
+      internal::fillquadrature(GaussRule1D::line_20point, qxg, qwgt, nquad);
       break;
     }
-    case intrule_quad_1024point:
+    case GaussRule2D::quad_1024point:
     {
-      internal::fillquadrature(intrule_line_32point, qxg, qwgt, nquad);
+      internal::fillquadrature(GaussRule1D::line_32point, qxg, qwgt, nquad);
       break;
     }
-    case intrule_quad_lobatto25point:
+    case GaussRule2D::quad_lobatto25point:
     {
-      internal::fillquadrature(intrule_line_lobatto5point, qxg, qwgt, nquad);
+      internal::fillquadrature(GaussRule1D::line_lobatto5point, qxg, qwgt, nquad);
       break;
     }
-    case intrule_tri_1point:
+    case GaussRule2D::tri_1point:
     {
       nquad = 1;
       qwgt[0] = 0.5;
@@ -6278,7 +6278,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
       qxg[0][1] = 1.0 / 3.0;
       break;
     }
-    case intrule_tri_3point_gauss_radau:
+    case GaussRule2D::tri_3point_gauss_radau:
     {
       nquad = 3;
       qwgt[0] = 1.0 / 6.0;
@@ -6293,7 +6293,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
       qxg[2][1] = 0.5;
       break;
     }
-    case intrule_tri_3point:
+    case GaussRule2D::tri_3point:
     {
       nquad = 3;
       qwgt[0] = 1.0 / 6.0;
@@ -6308,7 +6308,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
       qxg[2][1] = 2.0 / 3.0;
       break;
     }
-    case intrule_tri_4point:
+    case GaussRule2D::tri_4point:
     {
       nquad = 4;
       qwgt[0] = -0.28125;
@@ -6326,7 +6326,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
       qxg[3][1] = 0.2;
       break;
     }
-    case intrule_tri_6point:
+    case GaussRule2D::tri_6point:
     {
       nquad = 6;
       qwgt[0] = 0.0549758718277;
@@ -6350,7 +6350,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
       qxg[5][1] = 0.4459484909160;
       break;
     }
-    case intrule_tri_7point:
+    case GaussRule2D::tri_7point:
     {
       nquad = 7;
 
@@ -6388,7 +6388,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
       qxg[6][1] = 0.470142064105;
       break;
     }
-    case intrule_tri_12point:
+    case GaussRule2D::tri_12point:
     {
       nquad = 12;
       const double q12 = 0.5;
@@ -6445,7 +6445,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
 
       break;
     }
-    case intrule_tri_16point:
+    case GaussRule2D::tri_16point:
     {
       const double q12 = 0.5;
       nquad = 16;
@@ -6514,7 +6514,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
 
       break;
     }
-    case intrule_tri_37point:
+    case GaussRule2D::tri_37point:
     {
       const double q12 = 0.5;
       nquad = 37;
@@ -6669,7 +6669,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
       qxg[36][1] = 0.635867859434;
       break;
     }
-    case intrule_tri_64point:
+    case GaussRule2D::tri_64point:
     {
       dserror(
           "temporarily switched off. Gives wrong surface integrals (liftdrag) in XFEM "
@@ -6874,7 +6874,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
       qxg[63][1] = 9.627180345898023e-01;
       break;
     }
-    case intrule2D_undefined:
+    case GaussRule2D::undefined:
     {
       dserror("trying to use uninitialised 2D gaussrule");
       break;
@@ -6892,14 +6892,14 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
 {
   switch (gaussrule)
   {
-    case intrule_line_1point:
+    case GaussRule1D::line_1point:
     {
       nquad = 1;
       qwgt[0] = 2.0;
       qxg[0][0] = 0.0;
       break;
     }
-    case intrule_line_2point:
+    case GaussRule1D::line_2point:
     {
       nquad = 2;
       qwgt[0] = 1.0;
@@ -6908,7 +6908,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
       qxg[1][0] = 0.5773502691896;
       break;
     }
-    case intrule_line_3point:
+    case GaussRule1D::line_3point:
     {
       nquad = 3;
       qwgt[0] = 0.5555555555556;
@@ -6920,7 +6920,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
       qxg[2][0] = xi3;
       break;
     }
-    case intrule_line_4point:
+    case GaussRule1D::line_4point:
     {
       nquad = 4;
       qwgt[0] = 0.3478548451374538;
@@ -6934,7 +6934,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
       qxg[3][0] = 0.8611363115940526;
       break;
     }
-    case intrule_line_5point:
+    case GaussRule1D::line_5point:
     {
       nquad = 5;
       qwgt[0] = 0.2369268850561891;
@@ -6950,7 +6950,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
       qxg[4][0] = 0.9061798459386640;
       break;
     }
-    case intrule_line_6point:
+    case GaussRule1D::line_6point:
     {
       nquad = 6;
 
@@ -6970,7 +6970,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
 
       break;
     }
-    case intrule_line_7point:
+    case GaussRule1D::line_7point:
     {
       nquad = 7;
 
@@ -6992,7 +6992,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
 
       break;
     }
-    case intrule_line_8point:
+    case GaussRule1D::line_8point:
     {
       nquad = 8;
 
@@ -7016,7 +7016,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
 
       break;
     }
-    case intrule_line_9point:
+    case GaussRule1D::line_9point:
     {
       nquad = 9;
 
@@ -7042,7 +7042,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
 
       break;
     }
-    case intrule_line_10point:
+    case GaussRule1D::line_10point:
     {
       nquad = 10;
 
@@ -7070,7 +7070,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
 
       break;
     }
-    case intrule_line_20point:
+    case GaussRule1D::line_20point:
     {
       nquad = 20;
 
@@ -7118,7 +7118,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
 
       break;
     }
-    case intrule_line_32point:
+    case GaussRule1D::line_32point:
     {
       nquad = 32;
 
@@ -7190,7 +7190,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
 
       break;
     }
-    case intrule_line_50point:
+    case GaussRule1D::line_50point:
     {
       nquad = 50;
 
@@ -7298,7 +7298,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
 
       break;
     }
-    case intrule_line_lobatto2point:
+    case GaussRule1D::line_lobatto2point:
     {
       nquad = 2;
       qwgt[0] = 1.0;
@@ -7307,7 +7307,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
       qxg[1][0] = 1.0;
       break;
     }
-    case intrule_line_lobatto3point:
+    case GaussRule1D::line_lobatto3point:
     {
       nquad = 3;
       qwgt[0] = 0.33333333333333333;
@@ -7318,7 +7318,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
       qxg[2][0] = 1.0;
       break;
     }
-    case intrule_line_lobatto4point:
+    case GaussRule1D::line_lobatto4point:
     {
       nquad = 4;
       qwgt[0] = 0.16666666666666667;
@@ -7331,7 +7331,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
       qxg[3][0] = 1.0;
       break;
     }
-    case intrule_line_lobatto5point:
+    case GaussRule1D::line_lobatto5point:
     {
       nquad = 5;
       qwgt[0] = 0.1;
@@ -7346,7 +7346,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
       qxg[4][0] = 1.0;
       break;
     }
-    case intrule_line_lobatto6point:
+    case GaussRule1D::line_lobatto6point:
     {
       nquad = 6;
       qwgt[0] = 0.066666666666666667;
@@ -7363,7 +7363,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
       qxg[5][0] = 1;
       break;
     }
-    case intrule_line_lobatto7point:
+    case GaussRule1D::line_lobatto7point:
     {
       nquad = 7;
       qwgt[0] = 0.047619047619047616;
@@ -7382,7 +7382,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
       qxg[6][0] = 1;
       break;
     }
-    case intrule_line_lobatto8point:
+    case GaussRule1D::line_lobatto8point:
     {
       nquad = 8;
       qwgt[0] = 0.035714285714285714;
@@ -7403,7 +7403,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
       qxg[7][0] = 1;
       break;
     }
-    case intrule_line_lobatto9point:
+    case GaussRule1D::line_lobatto9point:
     {
       nquad = 9;
       qwgt[0] = 0.027777777777777778;
@@ -7426,7 +7426,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
       qxg[8][0] = 1;
       break;
     }
-    case intrule_line_lobatto10point:
+    case GaussRule1D::line_lobatto10point:
     {
       nquad = 10;
       qwgt[0] = 0.022222222222222222;
@@ -7451,7 +7451,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
       qxg[9][0] = 1;
       break;
     }
-    case intrule_line_lobatto11point:
+    case GaussRule1D::line_lobatto11point:
     {
       nquad = 11;
       qwgt[0] = 0.0181818181818181818;
@@ -7478,7 +7478,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
       qxg[10][0] = 1;
       break;
     }
-    case intrule_line_lobatto12point:
+    case GaussRule1D::line_lobatto12point:
     {
       nquad = 12;
       qwgt[0] = 0.0151515151515151515;
@@ -7507,7 +7507,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
       qxg[11][0] = 1;
       break;
     }
-    case intrule_line_lobatto13point:
+    case GaussRule1D::line_lobatto13point:
     {
       nquad = 13;
       qwgt[0] = 0.0128205128205128205;
@@ -7538,7 +7538,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
       qxg[12][0] = 1;
       break;
     }
-    case intrule_line_lobatto14point:
+    case GaussRule1D::line_lobatto14point:
     {
       nquad = 14;
       qwgt[0] = 0.0109890109890109890;

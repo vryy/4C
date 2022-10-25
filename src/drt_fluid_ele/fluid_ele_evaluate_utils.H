@@ -238,7 +238,7 @@ namespace FLD
       LINALG::Matrix<3, 3> xjm;
 
       // get the quad9 gaussrule for the in-plane integration
-      const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_quad_9point);
+      const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::GaussRule2D::quad_9point);
 
       // a hex8 element has two levels, the hex20 and hex27 element have three layers to sample
       // (now we allow even more)
@@ -642,7 +642,7 @@ namespace FLD
       LINALG::Matrix<3, 3> xjm;
 
       // get the quad9 gaussrule for the in-plane integration
-      const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_quad_9point);
+      const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::GaussRule2D::quad_9point);
 
       // a hex8 element has two levels, the hex20 and hex27 element have three layers to sample
       // (now we allow even more)
@@ -919,14 +919,14 @@ namespace FLD
     }
 
     // get gauss rule: we use a one-point rule here
-    DRT::UTILS::GaussRule3D integrationrule_filter = DRT::UTILS::intrule_hex_1point;
+    DRT::UTILS::GaussRule3D integrationrule_filter = DRT::UTILS::GaussRule3D::hex_1point;
     switch (distype)
     {
       case DRT::Element::hex8:
-        integrationrule_filter = DRT::UTILS::intrule_hex_1point;
+        integrationrule_filter = DRT::UTILS::GaussRule3D::hex_1point;
         break;
       case DRT::Element::tet4:
-        integrationrule_filter = DRT::UTILS::intrule_tet_1point;
+        integrationrule_filter = DRT::UTILS::GaussRule3D::tet_1point;
         break;
       case DRT::Element::tet10:
       case DRT::Element::hex20:
@@ -1413,17 +1413,17 @@ namespace FLD
 
 
     // use one point gauss
-    DRT::UTILS::GaussRule3D integrationrule_filter = DRT::UTILS::intrule_hex_1point;
+    DRT::UTILS::GaussRule3D integrationrule_filter = DRT::UTILS::GaussRule3D::hex_1point;
     switch (distype)
     {
       case DRT::Element::hex8:
       case DRT::Element::hex20:
       case DRT::Element::hex27:
-        integrationrule_filter = DRT::UTILS::intrule_hex_1point;
+        integrationrule_filter = DRT::UTILS::GaussRule3D::hex_1point;
         break;
       case DRT::Element::tet4:
       case DRT::Element::tet10:
-        integrationrule_filter = DRT::UTILS::intrule_tet_1point;
+        integrationrule_filter = DRT::UTILS::GaussRule3D::tet_1point;
         break;
       default:
         dserror("invalid discretization type for fluid3");
@@ -1864,14 +1864,14 @@ namespace FLD
     }
 
     // get gauss rule: we use a one-point rule here
-    DRT::UTILS::GaussRule3D integrationrule_filter = DRT::UTILS::intrule_hex_1point;
+    DRT::UTILS::GaussRule3D integrationrule_filter = DRT::UTILS::GaussRule3D::hex_1point;
     switch (distype)
     {
       case DRT::Element::hex8:
-        integrationrule_filter = DRT::UTILS::intrule_hex_1point;
+        integrationrule_filter = DRT::UTILS::GaussRule3D::hex_1point;
         break;
       case DRT::Element::tet4:
-        integrationrule_filter = DRT::UTILS::intrule_tet_1point;
+        integrationrule_filter = DRT::UTILS::GaussRule3D::tet_1point;
         break;
       case DRT::Element::tet10:
       case DRT::Element::hex20:

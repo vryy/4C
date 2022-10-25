@@ -602,7 +602,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(Teuchos::ParameterList& pa
   }
   /* ================================================= Loop over Gauss Points */
   const int numgp = 27;
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   LINALG::Matrix<3, 1> gpa;
 
@@ -794,7 +794,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
   /*------------------------------------------------------------------*/
   const int numgp = 27;
 
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
   invJ_.resize(numgp);
@@ -983,7 +983,7 @@ const std::vector<LINALG::Matrix<27, 1>> DRT::ELEMENTS::NURBS::So_nurbs27::sonur
   std::vector<LINALG::Matrix<27, 1>> shapefcts(numgp);
   // (r,s,t) gp-locations of fully integrated quadratic Nurbs 27
   // fill up nodal f at each gp
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
@@ -1010,7 +1010,7 @@ const std::vector<LINALG::Matrix<3, 27>> DRT::ELEMENTS::NURBS::So_nurbs27::sonur
   std::vector<LINALG::Matrix<3, 27>> derivs(numgp);
   // (r,s,t) gp-locations of fully integrated quadratic Nurbs 27
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
@@ -1035,7 +1035,7 @@ const std::vector<double> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_gpweights(
   const int numgp = 27;
 
   std::vector<double> gpweights(numgp);
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int i = 0; i < numgp; ++i)
   {
@@ -1114,7 +1114,7 @@ double DRT::ELEMENTS::NURBS::So_nurbs27::CalcIntEnergy(
   /*------------------------------------------------------------------*/
   const int numgp = 27;
 
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
   invJ_.resize(numgp);

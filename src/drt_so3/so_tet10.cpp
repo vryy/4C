@@ -319,7 +319,7 @@ const LINALG::SerialDenseMatrix& DRT::ELEMENTS::So_tet10::GaussPointsToNodesExtr
   if (!isfilled)
   {
     // get gaussian points
-    const DRT::UTILS::IntegrationPoints3D intpoints(DRT::UTILS::intrule_tet_4point);
+    const DRT::UTILS::IntegrationPoints3D intpoints(DRT::UTILS::GaussRule3D::tet_4point);
 
     // transformation of nodes of virtual tet4 element defined by GP
     const double palpha = (5.0 + 3.0 * sqrt(5.0)) / 20.0;

@@ -153,7 +153,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
  *----------------------------------------------------------------------*/
 DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
 {
-  DRT::UTILS::GaussRule2D rule = DRT::UTILS::intrule2D_undefined;
+  DRT::UTILS::GaussRule2D rule = DRT::UTILS::GaussRule2D::undefined;
 
   switch (Shape())
   {
@@ -163,11 +163,11 @@ DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
     {
       if ((ngp[0] == 2) && (ngp[1] == 2))
       {
-        rule = DRT::UTILS::intrule_quad_4point;
+        rule = DRT::UTILS::GaussRule2D::quad_4point;
       }
       else if ((ngp[0] == 3) && (ngp[1] == 3))
       {
-        rule = DRT::UTILS::intrule_quad_9point;
+        rule = DRT::UTILS::GaussRule2D::quad_9point;
       }
       else
         dserror("Unknown number of Gauss points for quad element");
@@ -178,23 +178,23 @@ DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
     {
       if ((ngp[0] == 2) && (ngp[1] == 2))
       {
-        rule = DRT::UTILS::intrule_quad_4point;
+        rule = DRT::UTILS::GaussRule2D::quad_4point;
       }
       else if ((ngp[0] == 3) && (ngp[1] == 3))
       {
-        rule = DRT::UTILS::intrule_quad_9point;
+        rule = DRT::UTILS::GaussRule2D::quad_9point;
       }
       else if ((ngp[0] == 4) && (ngp[1] == 4))
       {
-        rule = DRT::UTILS::intrule_quad_16point;
+        rule = DRT::UTILS::GaussRule2D::quad_16point;
       }
       else if ((ngp[0] == 5) && (ngp[1] == 5))
       {
-        rule = DRT::UTILS::intrule_quad_25point;
+        rule = DRT::UTILS::GaussRule2D::quad_25point;
       }
       else if ((ngp[0] == 10) && (ngp[1] == 10))
       {
-        rule = DRT::UTILS::intrule_quad_100point;
+        rule = DRT::UTILS::GaussRule2D::quad_100point;
       }
       else
         dserror("Unknown number of Gauss points for nurbs element");
@@ -205,15 +205,15 @@ DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
     {
       if ((ngp[0] == 1) && (ngp[1] == 0))
       {
-        rule = DRT::UTILS::intrule_tri_1point;
+        rule = DRT::UTILS::GaussRule2D::tri_1point;
       }
       else if ((ngp[0] == 3) && (ngp[1] == 0))
       {
-        rule = DRT::UTILS::intrule_tri_3point;
+        rule = DRT::UTILS::GaussRule2D::tri_3point;
       }
       else if ((ngp[0] == 6) && (ngp[1] == 0))
       {
-        rule = DRT::UTILS::intrule_tri_6point;
+        rule = DRT::UTILS::GaussRule2D::tri_6point;
       }
       else
         dserror("Unknown number of Gauss points for tri element");

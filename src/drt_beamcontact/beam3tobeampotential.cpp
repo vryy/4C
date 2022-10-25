@@ -179,8 +179,7 @@ void CONTACT::Beam3tobeampotential<numnodes,
     numnodalvalues>::EvaluateFpotandStiffpot_LargeSepApprox()
 {
   // Set gauss integration rule
-  DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule_line_10point;
-  //  DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule_line_32point;
+  DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::GaussRule1D::line_10point;
 
   // Get gauss points (gp) for integration
   DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);

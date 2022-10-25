@@ -419,20 +419,20 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
 DRT::UTILS::GaussRule1D DRT::ELEMENTS::Wall1Line::getOptimalGaussrule(
     const DiscretizationType& distype)
 {
-  DRT::UTILS::GaussRule1D rule = DRT::UTILS::intrule1D_undefined;
+  DRT::UTILS::GaussRule1D rule = DRT::UTILS::GaussRule1D::undefined;
   switch (distype)
   {
     case line2:
-      rule = DRT::UTILS::intrule_line_2point;
+      rule = DRT::UTILS::GaussRule1D::line_2point;
       break;
     case line3:
-      rule = DRT::UTILS::intrule_line_3point;
+      rule = DRT::UTILS::GaussRule1D::line_3point;
       break;
     case nurbs2:
-      rule = DRT::UTILS::intrule_line_2point;
+      rule = DRT::UTILS::GaussRule1D::line_2point;
       break;
     case nurbs3:
-      rule = DRT::UTILS::intrule_line_3point;
+      rule = DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
       dserror("unknown number of nodes for gaussrule initialization");

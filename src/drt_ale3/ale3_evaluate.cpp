@@ -1727,23 +1727,23 @@ inline DRT::UTILS::GaussRule3D DRT::ELEMENTS::Ale3_Impl<distype>::getOptimalGaus
   {
     case DRT::Element::hex8:
     case DRT::Element::nurbs8:
-      return DRT::UTILS::intrule_hex_8point;
+      return DRT::UTILS::GaussRule3D::hex_8point;
     case DRT::Element::hex20:
     case DRT::Element::hex27:
     case DRT::Element::nurbs27:
-      return DRT::UTILS::intrule_hex_27point;
+      return DRT::UTILS::GaussRule3D::hex_27point;
     case DRT::Element::tet4:
-      return DRT::UTILS::intrule_tet_4point;
+      return DRT::UTILS::GaussRule3D::tet_4point;
     case DRT::Element::tet10:
-      return DRT::UTILS::intrule_tet_5point;
+      return DRT::UTILS::GaussRule3D::tet_5point;
     case DRT::Element::wedge6:
-      return DRT::UTILS::intrule_wedge_6point;
+      return DRT::UTILS::GaussRule3D::wedge_6point;
     case DRT::Element::wedge15:
-      return DRT::UTILS::intrule_wedge_9point;
+      return DRT::UTILS::GaussRule3D::wedge_9point;
     case DRT::Element::pyramid5:
-      return DRT::UTILS::intrule_pyramid_8point;
+      return DRT::UTILS::GaussRule3D::pyramid_8point;
     default:
       dserror("unknown number of nodes for gaussrule initialization");
-      return DRT::UTILS::intrule3D_undefined;
+      return DRT::UTILS::GaussRule3D::undefined;
   }
 }

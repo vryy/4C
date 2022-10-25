@@ -1263,7 +1263,7 @@ namespace IMMERSED
     static const int fluid_dim = DRT::UTILS::DisTypeToDim<fluiddistype>::dim;
 
     // get integration rule of structural surface element
-    const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_quad_36point);
+    const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::GaussRule2D::quad_36point);
 
     // initialize structural shape functions matrix
     LINALG::Matrix<4, 1> shapefcts(true);

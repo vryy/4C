@@ -42,7 +42,7 @@ DRT::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner, int nnode
     : DRT::FaceElement(id, owner),
       distype_(DRT::Element::dis_none),
       numdofpernode_(-1),
-      gaussrule_(DRT::UTILS::intrule2D_undefined)
+      gaussrule_(DRT::UTILS::GaussRule2D::undefined)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -70,7 +70,7 @@ DRT::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner)
     : DRT::FaceElement(id, owner),
       distype_(DRT::Element::dis_none),
       numdofpernode_(-1),
-      gaussrule_(DRT::UTILS::intrule2D_undefined)
+      gaussrule_(DRT::UTILS::GaussRule2D::undefined)
 {
   return;
 }
@@ -238,25 +238,25 @@ void DRT::ELEMENTS::StructuralSurface::SetGaussrule()
   switch (Shape())
   {
     case tri3:
-      gaussrule_ = DRT::UTILS::intrule_tri_3point;
+      gaussrule_ = DRT::UTILS::GaussRule2D::tri_3point;
       break;
     case tri6:
-      gaussrule_ = DRT::UTILS::intrule_tri_6point;
+      gaussrule_ = DRT::UTILS::GaussRule2D::tri_6point;
       break;
     case quad4:
-      gaussrule_ = DRT::UTILS::intrule_quad_4point;
+      gaussrule_ = DRT::UTILS::GaussRule2D::quad_4point;
       break;
     case quad8:
-      gaussrule_ = DRT::UTILS::intrule_quad_9point;
+      gaussrule_ = DRT::UTILS::GaussRule2D::quad_9point;
       break;
     case quad9:
-      gaussrule_ = DRT::UTILS::intrule_quad_9point;
+      gaussrule_ = DRT::UTILS::GaussRule2D::quad_9point;
       break;
     case nurbs9:
-      gaussrule_ = DRT::UTILS::intrule_quad_9point;
+      gaussrule_ = DRT::UTILS::GaussRule2D::quad_9point;
       break;
     case quad6:
-      gaussrule_ = DRT::UTILS::intrule_quad_6point;
+      gaussrule_ = DRT::UTILS::GaussRule2D::quad_6point;
       break;
     default:
       dserror("shape type unknown!\n");

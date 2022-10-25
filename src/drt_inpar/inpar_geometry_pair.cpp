@@ -70,35 +70,35 @@ DRT::UTILS::GaussRule1D INPAR::GEOMETRYPAIR::IntToGaussRule1D(const int n_gauss_
   switch (n_gauss_points)
   {
     case 1:
-      return DRT::UTILS::GaussRule1D::intrule_line_1point;
+      return DRT::UTILS::GaussRule1D::line_1point;
     case 2:
-      return DRT::UTILS::GaussRule1D::intrule_line_2point;
+      return DRT::UTILS::GaussRule1D::line_2point;
     case 3:
-      return DRT::UTILS::GaussRule1D::intrule_line_3point;
+      return DRT::UTILS::GaussRule1D::line_3point;
     case 4:
-      return DRT::UTILS::GaussRule1D::intrule_line_4point;
+      return DRT::UTILS::GaussRule1D::line_4point;
     case 5:
-      return DRT::UTILS::GaussRule1D::intrule_line_5point;
+      return DRT::UTILS::GaussRule1D::line_5point;
     case 6:
-      return DRT::UTILS::GaussRule1D::intrule_line_6point;
+      return DRT::UTILS::GaussRule1D::line_6point;
     case 7:
-      return DRT::UTILS::GaussRule1D::intrule_line_7point;
+      return DRT::UTILS::GaussRule1D::line_7point;
     case 8:
-      return DRT::UTILS::GaussRule1D::intrule_line_8point;
+      return DRT::UTILS::GaussRule1D::line_8point;
     case 9:
-      return DRT::UTILS::GaussRule1D::intrule_line_9point;
+      return DRT::UTILS::GaussRule1D::line_9point;
     case 10:
-      return DRT::UTILS::GaussRule1D::intrule_line_10point;
+      return DRT::UTILS::GaussRule1D::line_10point;
     case 20:
-      return DRT::UTILS::GaussRule1D::intrule_line_20point;
+      return DRT::UTILS::GaussRule1D::line_20point;
     case 32:
-      return DRT::UTILS::GaussRule1D::intrule_line_32point;
+      return DRT::UTILS::GaussRule1D::line_32point;
     case 50:
-      return DRT::UTILS::GaussRule1D::intrule_line_50point;
+      return DRT::UTILS::GaussRule1D::line_50point;
     default:
     {
       dserror("No Gauss rule defined for %d points", n_gauss_points);
-      return DRT::UTILS::GaussRule1D::intrule1D_undefined;
+      return DRT::UTILS::GaussRule1D::undefined;
     }
   }
 };

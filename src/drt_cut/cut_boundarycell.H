@@ -312,7 +312,7 @@ namespace GEO
      protected:
       virtual DRT::UTILS::GaussRule2D MySimpleGaussRule()
       {
-        return DRT::UTILS::intrule2D_undefined;
+        return DRT::UTILS::GaussRule2D::undefined;
       }
     };
 
@@ -349,7 +349,7 @@ namespace GEO
      protected:
       virtual DRT::UTILS::GaussRule2D MySimpleGaussRule()
       {
-        return DRT::UTILS::intrule2D_undefined;
+        return DRT::UTILS::GaussRule2D::undefined;
       }
     };
 
@@ -387,7 +387,10 @@ namespace GEO
       virtual bool IsValidBoundaryCell();
 
      protected:
-      virtual DRT::UTILS::GaussRule2D MySimpleGaussRule() { return DRT::UTILS::intrule_tri_3point; }
+      virtual DRT::UTILS::GaussRule2D MySimpleGaussRule()
+      {
+        return DRT::UTILS::GaussRule2D::tri_3point;
+      }
     };
 
     /*----------------------------------------------------------------------------*/
@@ -424,7 +427,7 @@ namespace GEO
      protected:
       virtual DRT::UTILS::GaussRule2D MySimpleGaussRule()
       {
-        return DRT::UTILS::intrule_quad_4point;
+        return DRT::UTILS::GaussRule2D::quad_4point;
       }
     };
 
@@ -461,7 +464,7 @@ namespace GEO
      protected:
       virtual DRT::UTILS::GaussRule2D MySimpleGaussRule()
       {
-        return DRT::UTILS::intrule_quad_4point;
+        return DRT::UTILS::GaussRule2D::quad_4point;
       }
 
      private:
