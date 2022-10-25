@@ -10,7 +10,6 @@
 
 /*----------------------------------------------------------------------------*/
 #include "ale3.H"
-#include "ale3_nurbs.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_factory.H"
