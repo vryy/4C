@@ -371,10 +371,6 @@ void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
     if (coupling.find(gid) != coupling.end())
     {
       std::pair<int, double>& coupled = coupling[gid];
-#if 0
-      if (coupled.second > 1e-7)
-        dserror("Coupled nodes (%d,%d) do not match. difference=%e", gid, coupled.first, coupled.second);
-#endif
       patchedmasternodes.push_back(gid);
       permslavenodes.push_back(coupled.first);
     }
@@ -785,14 +781,9 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::Coupling::MasterToPermMaster(
 
   // OK. You cannot use the same exporter for different matrices. So we
   // recreate one all the time... This has to be optimized later on.
-
-#if 0
-  int err = permsm->Import(*sm.EpetraMatrix(),*masterexport_,Insert);
-#else
   Teuchos::RCP<Epetra_Export> exporter =
       Teuchos::rcp(new Epetra_Export(*permmasterdofmap_, *masterdofmap_));
   int err = permsm->Import(*sm.EpetraMatrix(), *exporter, Insert);
-#endif
 
   if (err) dserror("Import failed with err=%d", err);
 
@@ -820,13 +811,9 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::Coupling::SlaveToPermSlave(
   // OK. You cannot use the same exporter for different matrices. So we
   // recreate one all the time... This has to be optimized later on.
 
-#if 0
-  int err = permsm->Import(*sm.EpetraMatrix(),*slaveexport_,Insert);
-#else
   Teuchos::RCP<Epetra_Export> exporter =
       Teuchos::rcp(new Epetra_Export(*permslavedofmap_, *slavedofmap_));
   int err = permsm->Import(*sm.EpetraMatrix(), *exporter, Insert);
-#endif
 
   if (err) dserror("Import failed with err=%d", err);
 
