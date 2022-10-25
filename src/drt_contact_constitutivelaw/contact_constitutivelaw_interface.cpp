@@ -18,15 +18,7 @@
 
 #include "../drt_contact/contact_node.H"
 #include "../drt_contact/contact_element.H"
-#include "../drt_contact/contact_integrator.H"
-#include "../drt_contact/contact_interpolator.H"
-#include "../drt_contact/contact_coupling2d.H"
-#include "../drt_contact/contact_coupling3d.H"
 #include "../drt_contact/contact_defines.H"
-#include "../drt_contact/contact_line_coupling.H"
-
-#include "../drt_mortar/mortar_defines.H"
-#include "../drt_mortar/mortar_projector.H"
 
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
@@ -34,9 +26,6 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_node.H"
-
-
-#include "../drt_mortar/mortar_coupling3d_classes.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                                       |

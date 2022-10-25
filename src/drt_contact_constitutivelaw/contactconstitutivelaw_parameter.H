@@ -16,7 +16,7 @@ relate the contact gap to the contact pressure based on micro interactions
 /*----------------------------------------------------------------------*/
 /* headers */
 #include <Teuchos_RCP.hpp>
-#include "Epetra_Vector.h"
+#include <Epetra_Vector.h>
 #include "../drt_lib/drt_container.H"
 
 /*----------------------------------------------------------------------*/

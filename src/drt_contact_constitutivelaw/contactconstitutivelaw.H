@@ -15,7 +15,6 @@ contact pressure based on micro interactions
 
 
 #include <Teuchos_RCP.hpp>
-#include "../drt_lib/drt_parobject.H"
 #include "contactconstitutivelaw_parameter.H"
 
 namespace CONTACT
@@ -27,9 +26,6 @@ namespace CONTACT
     /**
      * \brief The ConstitutiveLaw class provides a framework in order to relate the contact gap to
      * the contact pressure using information like micro roughness for contact problems.
-     *
-     * In order to support storage of material data (for restart, post
-     * processing, ...) this class implements DRT::ParObject.
      */
     class ConstitutiveLaw
     {
