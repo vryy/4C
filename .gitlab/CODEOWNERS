@@ -9,6 +9,7 @@
 # note:
 #  * single developers are no eligible code owners!
 #  * combinations of eligible code owners are possible
+#  * later matches override earlier matches
 #
 # refer to:
 # https://docs.gitlab.com/ee/user/project/code_owners.html
@@ -40,15 +41,6 @@
 /unittests*/                       @baci/team_testing
 
 /utilities/                        @baci/baci_maintainer @baci/team_infrastructure
-
-# infrastructure configuration files
-*CMakeLists.txt                    @baci/baci_maintainer @baci/team_infrastructure
-do-configure                       @baci/team_infrastructure @baci/baci_maintainer
-
-# testing framework configuration files
-TestingFramework.cmake             @baci/team_testing
-TestingFrameworkListOfTests.cmake  @baci/baci_developers
-UnittestingFramework.cmake         @baci/team_testing
 
 # --- specify code owner of BACI source directories (including corresponding unit test directory) -------------------- #
 #
@@ -414,3 +406,15 @@ Input/rigidsphere*                 @baci/team_structure
 /Input/wear*                       @baci/team_contact
 
 /Input/xfluid_*                    @baci/team_fluid
+
+# infrastructure configuration files
+
+# put CMakeLists.txt last to override folder owners
+*CMakeLists.txt                    @baci/baci_maintainer @baci/team_infrastructure
+do-configure                       @baci/team_infrastructure @baci/baci_maintainer
+
+# testing framework configuration files
+TestingFramework.cmake             @baci/team_testing
+TestingFrameworkListOfTests.cmake  @baci/baci_developers
+UnittestingFramework.cmake         @baci/team_testing
+

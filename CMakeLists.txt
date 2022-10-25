@@ -27,7 +27,8 @@ configure_file(
 # so that we will find TutorialConfig.h
 include_directories("${PROJECT_BINARY_DIR}/src/headers")
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
+# specify where our own cmake modules are located
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 
 # get current Baci revision from git
 include(GetGitRevision)
@@ -43,15 +44,6 @@ include(CheckCXXSourceRuns)
 include(CheckCXXSourceCompiles)
 include(FetchContent)
 
-# define macro to remove duplicate libraries from the link line
-macro(REMOVE_DUPLICATES _list)
-  if(NOT "${${_list}}" STREQUAL "")
-    list(REVERSE ${_list})
-    list(REMOVE_DUPLICATES ${_list})
-    list(REVERSE ${_list})
-  endif()
-endmacro()
-
 #
 ### Build in default values
 
@@ -63,9 +55,6 @@ if(NOT CMAKE_BUILD_TYPE)
             FORCE
       )
 endif(NOT CMAKE_BUILD_TYPE)
-
-# external library variable
-set(LIBRARIES "")
 
 #
 ### compile time options
@@ -96,43 +85,6 @@ if(ENABLE_STACKTR)
   message("II Print stacktrace in dserror")
   add_definitions("-DENABLE_STACKTR")
 endif(ENABLE_STACKTR)
-
-# additional features
-
-if(${CMAKE_VERSION} VERSION_GREATER "3.10.0")
-  set(HDF5_PREFER_PARALLEL true)
-endif()
-find_package(HDF5 REQUIRED COMPONENTS C HL)
-if(HDF5_FOUND)
-  message("-- HDF5_IS_PARALLEL: ${HDF5_IS_PARALLEL}")
-  message("-- HDF5 include directory: ${HDF5_INCLUDE_DIRS}")
-  message("-- HDF5 library directory: ${HDF5_LIBRARY_DIRS}")
-  message("-- HDF5 libraries: ${HDF5_LIBRARIES}")
-  message("-- HDF5 HL libraries: ${HDF5_HL_LIBRARIES}")
-  include_directories(${HDF5_INCLUDE_DIRS})
-  link_directories(${HDF5_LIBRARY_DIRS})
-  set(LIBRARIES ${LIBRARIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
-endif(HDF5_FOUND)
-
-find_package(MPI REQUIRED)
-
-find_package(Qhull REQUIRED)
-if(QHULL_FOUND)
-  include_directories(${QHULL_INCLUDE_DIRS})
-  link_directories(${QHULL_LIBRARY_DIRS})
-  message("-- QHULL include directory: ${QHULL_INCLUDE_DIRS}")
-  message("-- QHULL library directory: ${QHULL_LIBRARY}")
-  message("-- QHULL libraries: ${QHULL_LIBRARIES}")
-  set(LIBRARIES ${LIBRARIES} ${QHULL_LIBRARIES})
-endif(QHULL_FOUND)
-
-if(HAVE_OpenMP)
-  find_package(OpenMP)
-  if(OPENMP_FOUND)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-  endif()
-endif(HAVE_OpenMP)
 
 # ignore selected cut test
 option(IGNORE_UNSTABLE_CUTTEST "Ignore unstable cut test" OFF)
@@ -172,191 +124,27 @@ endforeach()
 
 ###------------------------------------------------------------------ External Libraries
 
+find_package(
+  HDF5
+  COMPONENTS C HL
+  REQUIRED
+  )
+find_package(MPI REQUIRED)
+find_package(Qhull REQUIRED)
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
-
-# Get Trilinos as one entity
-set(CMAKE_PREFIX_PATH ${Trilinos_PREFIX})
-set(Trilinos_DIR "${Trilinos_PREFIX}/lib/cmake/Trilinos")
 find_package(Trilinos REQUIRED)
-
-# Echo trilinos build info just for fun
-message("\nFound Trilinos!  Here are the details: ")
-message("   Trilinos_VERSION = ${Trilinos_VERSION}")
-message("   Trilinos_DIR = ${Trilinos_DIR}")
-message("   Trilinos_PACKAGE_LIST = ${Trilinos_PACKAGE_LIST}")
-message("   Trilinos_TPL_LIST = ${Trilinos_TPL_LIST}")
-message("End of Trilinos details\n")
-
-# get trilinos version information
-include(GetTrilinosVersion)
-get_trilinos_version()
-
-# configure trilinos version file to pass information to the source code
-configure_file(
-  "${PROJECT_SOURCE_DIR}/src/headers/trilinos_version.H.in"
-  "${PROJECT_BINARY_DIR}/src/headers/trilinos_version.H"
-  )
-
-set(BOOST_LIBRARYDIR,${BOOST_LIBRARYDIR})
-set(BOOST_INCLUDEDIR,${BOOST_INCLUDEDIR})
-
-# This is needed on kaiser to enforce the usage of the non-system boost libraries
-option(USE_NO_SYSTEM_PATHS "Avoid boost libraries in system paths" OFF)
-if(USE_NO_SYSTEM_PATHS)
-  set(Boost_NO_SYSTEM_PATHS ON)
-endif(USE_NO_SYSTEM_PATHS)
-
 find_package(
   Boost
   COMPONENTS graph system
   REQUIRED
   )
-
-if(Boost_FOUND)
-  message("-- Found Boost: ${Boost_INCLUDE_DIRS}")
-  message("-- Boost component libraries: ${Boost_LIBRARIES}")
-  message("-- Boost libraries directory: ${Boost_LIBRARY_DIRS}")
-  include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-  link_directories(${Boost_LIBRARY_DIRS})
-  set(LIBRARIES ${Boost_LIBRARIES} ${LIBRARIES})
-  # Pass the version to baci
-  add_definitions("-DBOOST_MAJOR_VERSION=${Boost_MAJOR_VERSION}")
-  add_definitions("-DBOOST_MINOR_VERSION=${Boost_MINOR_VERSION}")
-
-else()
-  message(FATAL_ERROR ${Boost_ERROR_REASON})
-endif()
-
-# trilinos libraries
-# Choose trilinos libraries explicitly.
-if(Trilinos_FOUND)
-  if(TRILINOS_DEVELOP)
-    include_directories(SYSTEM ${Trilinos_INCLUDE_DIRS})
-    link_directories(${Trilinos_LIBRARY_DIRS})
-    set(LIBRARIES ${LIBRARIES} Trilinos::all_selected_libs)
-  else()
-    remove_duplicates(Trilinos_LIBRARIES)
-    remove_duplicates(Trilinos_TPL_LIBRARIES)
-    remove_duplicates(Trilinos_INCLUDE_DIRS)
-    remove_duplicates(Trilinos_TPL_INCLUDE_DIRS)
-
-    # convert list of trilinos libraries to full path for consistency with other libraries
-    set(_libraries "")
-    foreach(_library ${Trilinos_LIBRARIES})
-      find_library(
-        TRILINOS_LIBRARY_${_library}
-        NAMES ${_library}
-        HINTS ${Trilinos_LIBRARY_DIRS}
-        NO_DEFAULT_PATH
-        NO_CMAKE_ENVIRONMENT_PATH
-        NO_CMAKE_PATH
-        NO_SYSTEM_ENVIRONMENT_PATH
-        NO_CMAKE_SYSTEM_PATH
-        NO_CMAKE_FIND_ROOT_PATH
-        )
-      list(APPEND _libraries ${TRILINOS_LIBRARY_${_library}})
-    endforeach()
-
-    include_directories(SYSTEM ${Trilinos_INCLUDE_DIRS})
-    include_directories(SYSTEM ${Trilinos_TPL_INCLUDE_DIRS})
-    link_directories(${Trilinos_LIBRARY_DIRS})
-    set(LIBRARIES ${_libraries} ${Trilinos_TPL_LIBRARIES} ${LIBRARIES})
-  endif()
-endif(Trilinos_FOUND)
-
 find_package(Netcdf REQUIRED)
-if(NETCDF_FOUND)
-  include_directories(${NETCDF_INCLUDE_DIRS})
-  link_directories(${NETCDF_LIBRARY_DIRS})
-  set(LIBRARIES ${LIBRARIES} ${NETCDF_LIBRARIES})
-endif(NETCDF_FOUND)
-
-# Find ArborX
-option(BACI_WITH_ARBORX "Use ArborX for search algorithms" OFF)
-if(BACI_WITH_ARBORX)
-
-  message(STATUS "Search algorithms with ArborX: enabled")
-
-  fetchcontent_declare(
-    arborx
-    GIT_REPOSITORY https://github.com/arborx/ArborX.git
-    GIT_TAG v1.2
-    )
-
-  fetchcontent_getproperties(arborx)
-  if(NOT arborx_POPULATED)
-    fetchcontent_populate(arborx)
-    add_subdirectory(${arborx_SOURCE_DIR} ${arborx_BINARY_DIR})
-  endif()
-
-  include_directories(SYSTEM ${arborx_SOURCE_DIR}/src)
-  include_directories(SYSTEM ${arborx_SOURCE_DIR}/src/details)
-  include_directories(SYSTEM ${arborx_BINARY_DIR}/include)
-
-  add_definitions("-DHAVE_ARBORX")
-  set(HAVE_ARBORX ON)
-
-else()
-  message(STATUS "Search algorithms with ArborX: disabled")
-endif()
-
-# FFTW
+find_package(ArborX)
 find_package(FFTW)
-if(FFTW_FOUND)
-  message("-- FFTW include directory: ${FFTW_INCLUDE_DIRS}")
-  message("-- FFTW library directory: ${FFTW_LIBRARY}")
-  message("-- FFTW libraries: ${FFTW_LIBRARIES}")
-  include_directories(${FFTW_INCLUDE_DIRS})
-  link_directories(${FFTW_LIBRARY_DIRS})
-  set(LIBRARIES ${LIBRARIES} ${FFTW_LIBRARIES})
-  add_definitions("-DHAVE_FFTW") # HAVE_FFTW preprocessor flag for BACI
-  set(HAVE_FFTW ON)
-else()
-  message("WW *************************************************************")
-  message("WW Warning: FFTW not found. no FFTW support in BACI.")
-  message("WW Warning: You cannot run simulations that need a discrete FFT.")
-  message("WW *************************************************************")
-endif()
-
 find_package(ACML)
-if(ACML_FOUND)
-  include_directories(${ACML_INCLUDES})
-  #link_directories(${ACML_INCLUDES})
-  set(LIBRARIES ${ACML_LIBRARIES} ${LIBRARIES})
-  #set(LIBRARIES /lnm/lib/Q3_2012/amdlibm-3-0-2/lib/static/libamdlibm.a ${LIBRARIES} )
-  message("II Found ACML (AMD Core Math Library): ${ACML_LIBRARIES}")
-  message("II Found ACML (AMD Core Math Library): ${ACML_INCLUDES}")
-endif()
-
-# find AMD replacement for libM
 find_package(AMDLIBM)
-if(AMDLIBM_FOUND)
-  include_directories(${AMDLIBM_INCLUDES})
-  set(LIBRARIES ${AMDLIBM_LIBRARIES} ${LIBRARIES})
-  message("II Found AMD libM: ${AMDLIBM_LIBRARIES}")
-  message("II Found AMD libM: ${AMDLIBM_INCLUDES}")
-endif()
-
 find_package(CLN REQUIRED)
-if(CLN_FOUND)
-  include_directories(SYSTEM ${CLN_INCLUDE_DIRS})
-  set(LIBRARIES ${CLN_LIBRARIES} ${LIBRARIES})
-  message("-- CLN include directory: ${CLN_INCLUDE_DIRS}")
-  message("-- CLN library directory: ${CLN_LIBRARY}")
-  message("-- CLN libraries: ${CLN_LIBRARIES}")
-endif()
-#explicitly remove all duplicate libraries, keeping the rightmost library
-#additionally remove the keywords debug;optimized;general since the libraries
-#are precompiled and this flag has no influence
-remove_duplicates(LIBRARIES)
-list(
-  REMOVE_ITEM
-  LIBRARIES
-  debug
-  optimized
-  general
-  )
 
 ###------------------------------------------------------------------ List of files
 set(OBJS_DRT_ALE_LIB
@@ -2572,29 +2360,33 @@ if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/src)
 endif(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
 
+include(Deprecated_BACIAddLibraryLinkedWithEverything)
+
 # Define the libraries. The link order is important!
 
 # Compile element libraries first. There are files that take time to compile.
-add_library(ele_fluid ${OBJS_DRT_FLUID_ELE_LIB})
-add_library(ele_ale ${OBJS_DRT_ALE_LIB})
-add_library(ele_b3 ${OBJS_DRT_B3_LIB})
-add_library(ele_rigidsphere ${OBJS_DRT_RIGIDSPHERE_LIB})
-add_library(ele_bele3 ${OBJS_DRT_BELE3_LIB})
-add_library(ele_opti ${OBJS_DRT_TOPOPT_LIB})
-add_library(ele_s8 ${OBJS_DRT_S8_LIB})
-add_library(ele_membrane ${OBJS_DRT_MEMBRANE_LIB})
-add_library(ele_lubrication ${OBJS_DRT_LUBRICATION_LIB})
-add_library(ele_porofluidmultiphase ${OBJS_DRT_POROFLUIDMULTIPHASE_LIB})
-add_library(ele_scatra ${OBJS_DRT_SCATRA_LIB})
-add_library(ele_discsh3 ${OBJS_DRT_DISCSH3_LIB})
-add_library(ele_sp3 ${OBJS_DRT_SP3_LIB})
-add_library(ele_so ${OBJS_SOH8_LIB})
-add_library(ele_t3 ${OBJS_DRT_T3_LIB})
-add_library(ele_t3cl ${OBJS_DRT_T3CL_LIB})
-add_library(ele_thermo ${OBJS_DRT_THERMO_LIB})
-add_library(ele_to3 ${OBJS_DRT_TO3_LIB})
-add_library(ele_w1 ${OBJS_DRT_W1_LIB})
-add_library(ele_elemag ${OBJS_DRT_ELEMAG_LIB})
+deprecated_baci_add_library_linked_with_everything(ele_fluid ${OBJS_DRT_FLUID_ELE_LIB})
+deprecated_baci_add_library_linked_with_everything(ele_ale ${OBJS_DRT_ALE_LIB})
+deprecated_baci_add_library_linked_with_everything(ele_b3 ${OBJS_DRT_B3_LIB})
+deprecated_baci_add_library_linked_with_everything(ele_rigidsphere ${OBJS_DRT_RIGIDSPHERE_LIB})
+deprecated_baci_add_library_linked_with_everything(ele_bele3 ${OBJS_DRT_BELE3_LIB})
+deprecated_baci_add_library_linked_with_everything(ele_opti ${OBJS_DRT_TOPOPT_LIB})
+deprecated_baci_add_library_linked_with_everything(ele_s8 ${OBJS_DRT_S8_LIB})
+deprecated_baci_add_library_linked_with_everything(ele_membrane ${OBJS_DRT_MEMBRANE_LIB})
+deprecated_baci_add_library_linked_with_everything(ele_lubrication ${OBJS_DRT_LUBRICATION_LIB})
+deprecated_baci_add_library_linked_with_everything(
+  ele_porofluidmultiphase ${OBJS_DRT_POROFLUIDMULTIPHASE_LIB}
+  )
+deprecated_baci_add_library_linked_with_everything(ele_scatra ${OBJS_DRT_SCATRA_LIB})
+deprecated_baci_add_library_linked_with_everything(ele_discsh3 ${OBJS_DRT_DISCSH3_LIB})
+deprecated_baci_add_library_linked_with_everything(ele_sp3 ${OBJS_DRT_SP3_LIB})
+deprecated_baci_add_library_linked_with_everything(ele_so ${OBJS_SOH8_LIB})
+deprecated_baci_add_library_linked_with_everything(ele_t3 ${OBJS_DRT_T3_LIB})
+deprecated_baci_add_library_linked_with_everything(ele_t3cl ${OBJS_DRT_T3CL_LIB})
+deprecated_baci_add_library_linked_with_everything(ele_thermo ${OBJS_DRT_THERMO_LIB})
+deprecated_baci_add_library_linked_with_everything(ele_to3 ${OBJS_DRT_TO3_LIB})
+deprecated_baci_add_library_linked_with_everything(ele_w1 ${OBJS_DRT_W1_LIB})
+deprecated_baci_add_library_linked_with_everything(ele_elemag ${OBJS_DRT_ELEMAG_LIB})
 
 set(ELEMENT_LIBRARIES
     ele_ale
@@ -2620,25 +2412,27 @@ set(ELEMENT_LIBRARIES
     )
 
 # algorithm libraries that depend on adapters
-add_library(alg_elch ${OBJS_DRT_ELCH})
-add_library(alg_fbi ${OBJS_DRT_FBI})
-add_library(alg_fsi ${OBJS_DRT_FSI})
-add_library(alg_immersed_problem ${OBJS_DRT_IMMERSED_PROBLEM})
-add_library(alg_fsi_xfem ${OBJS_DRT_FSI_XFEM})
-add_library(alg_loma ${OBJS_DRT_LOMA})
-add_library(alg_two_phase ${OBJS_DRT_TWO_PHASE})
-add_library(alg_tsi ${OBJS_DRT_TSI})
-add_library(alg_sti ${OBJS_DRT_STI})
-add_library(alg_wear ${OBJS_DRT_WEAR})
-add_library(alg_poroelast ${OBJS_DRT_POROELAST})
-add_library(alg_poromultiphase ${OBJS_DRT_POROMULTIPHASE})
-add_library(alg_fpsi ${OBJS_DRT_FPSI})
-add_library(alg_fs3i ${OBJS_DRT_FS3I})
-add_library(alg_topopt ${OBJS_DRT_TOPOPT})
-add_library(alg_ssi ${OBJS_DRT_SSI})
-add_library(alg_ssti ${OBJS_DRT_SSTI})
-add_library(alg_ehl ${OBJS_DRT_EHL})
-add_library(alg_pasi ${OBJS_DRT_PASI})
+deprecated_baci_add_library_linked_with_everything(alg_elch ${OBJS_DRT_ELCH})
+deprecated_baci_add_library_linked_with_everything(alg_fbi ${OBJS_DRT_FBI})
+deprecated_baci_add_library_linked_with_everything(alg_fsi ${OBJS_DRT_FSI})
+deprecated_baci_add_library_linked_with_everything(
+  alg_immersed_problem ${OBJS_DRT_IMMERSED_PROBLEM}
+  )
+deprecated_baci_add_library_linked_with_everything(alg_fsi_xfem ${OBJS_DRT_FSI_XFEM})
+deprecated_baci_add_library_linked_with_everything(alg_loma ${OBJS_DRT_LOMA})
+deprecated_baci_add_library_linked_with_everything(alg_two_phase ${OBJS_DRT_TWO_PHASE})
+deprecated_baci_add_library_linked_with_everything(alg_tsi ${OBJS_DRT_TSI})
+deprecated_baci_add_library_linked_with_everything(alg_sti ${OBJS_DRT_STI})
+deprecated_baci_add_library_linked_with_everything(alg_wear ${OBJS_DRT_WEAR})
+deprecated_baci_add_library_linked_with_everything(alg_poroelast ${OBJS_DRT_POROELAST})
+deprecated_baci_add_library_linked_with_everything(alg_poromultiphase ${OBJS_DRT_POROMULTIPHASE})
+deprecated_baci_add_library_linked_with_everything(alg_fpsi ${OBJS_DRT_FPSI})
+deprecated_baci_add_library_linked_with_everything(alg_fs3i ${OBJS_DRT_FS3I})
+deprecated_baci_add_library_linked_with_everything(alg_topopt ${OBJS_DRT_TOPOPT})
+deprecated_baci_add_library_linked_with_everything(alg_ssi ${OBJS_DRT_SSI})
+deprecated_baci_add_library_linked_with_everything(alg_ssti ${OBJS_DRT_SSTI})
+deprecated_baci_add_library_linked_with_everything(alg_ehl ${OBJS_DRT_EHL})
+deprecated_baci_add_library_linked_with_everything(alg_pasi ${OBJS_DRT_PASI})
 
 set(MULTIFIELD_LIBRARIES
     alg_elch
@@ -2663,33 +2457,43 @@ set(MULTIFIELD_LIBRARIES
     )
 
 # the adapter layer
-add_library(drt_adapter ${OBJS_DRT_ADAPT})
+deprecated_baci_add_library_linked_with_everything(drt_adapter ${OBJS_DRT_ADAPT})
 
 # algorithm libraries the adapters depend uo
-add_library(alg_ale ${OBJS_DRT_ALEALG})
-add_library(alg_artnet ${OBJS_DRT_ARTNET})
-add_library(alg_contact ${OBJS_DRT_CONTACT})
-add_library(alg_contact_aug ${OBJS_DRT_CONTACT_AUG})
-add_library(alg_fluid ${OBJS_DRT_FLUID})
-add_library(alg_fluid_turbulence ${OBJS_DRT_FLUID_TURBULENCE})
-add_library(alg_xfluid ${OBJS_DRT_FLUID_XFLUID})
-add_library(alg_statinvanalysis ${OBJS_STATINV_ANALYSIS})
-add_library(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
-add_library(alg_lubrication ${OBJS_DRT_LUBRICATION})
-add_library(alg_porofluidmultiphase ${OBJS_DRT_POROFLUIDMULTIPHASE})
-add_library(alg_scatra ${OBJS_DRT_SCATRA})
-add_library(alg_structure ${OBJS_DRT_STRUCTURE})
-add_library(alg_xstructure ${OBJS_DRT_STRUCTURE_XSTRUCTURE})
-add_library(alg_thermo ${OBJS_DRT_THERMO})
-add_library(alg_fluid_adjoint ${OBJS_DRT_TOPOPT_ADJOINT})
-add_library(alg_opti ${OBJS_OPTI})
-add_library(alg_particle_algorithm ${OBJS_DRT_PARTICLE_ALGORITHM})
-add_library(alg_particle_engine ${OBJS_DRT_PARTICLE_ENGINE})
-add_library(alg_particle_interaction ${OBJS_DRT_PARTICLE_INTERACTION})
-add_library(alg_particle_rigidbody ${OBJS_DRT_PARTICLE_RIGIDBODY})
-add_library(alg_particle_wall ${OBJS_DRT_PARTICLE_WALL})
-add_library(alg_elemag ${OBJS_DRT_ELEMAG})
-add_library(alg_tutorial ${OBJS_DRT_TUTORIAL})
+deprecated_baci_add_library_linked_with_everything(alg_ale ${OBJS_DRT_ALEALG})
+deprecated_baci_add_library_linked_with_everything(alg_artnet ${OBJS_DRT_ARTNET})
+deprecated_baci_add_library_linked_with_everything(alg_contact ${OBJS_DRT_CONTACT})
+deprecated_baci_add_library_linked_with_everything(alg_contact_aug ${OBJS_DRT_CONTACT_AUG})
+deprecated_baci_add_library_linked_with_everything(alg_fluid ${OBJS_DRT_FLUID})
+deprecated_baci_add_library_linked_with_everything(
+  alg_fluid_turbulence ${OBJS_DRT_FLUID_TURBULENCE}
+  )
+deprecated_baci_add_library_linked_with_everything(alg_xfluid ${OBJS_DRT_FLUID_XFLUID})
+deprecated_baci_add_library_linked_with_everything(alg_statinvanalysis ${OBJS_STATINV_ANALYSIS})
+deprecated_baci_add_library_linked_with_everything(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
+deprecated_baci_add_library_linked_with_everything(alg_lubrication ${OBJS_DRT_LUBRICATION})
+deprecated_baci_add_library_linked_with_everything(
+  alg_porofluidmultiphase ${OBJS_DRT_POROFLUIDMULTIPHASE}
+  )
+deprecated_baci_add_library_linked_with_everything(alg_scatra ${OBJS_DRT_SCATRA})
+deprecated_baci_add_library_linked_with_everything(alg_structure ${OBJS_DRT_STRUCTURE})
+deprecated_baci_add_library_linked_with_everything(alg_xstructure ${OBJS_DRT_STRUCTURE_XSTRUCTURE})
+deprecated_baci_add_library_linked_with_everything(alg_thermo ${OBJS_DRT_THERMO})
+deprecated_baci_add_library_linked_with_everything(alg_fluid_adjoint ${OBJS_DRT_TOPOPT_ADJOINT})
+deprecated_baci_add_library_linked_with_everything(alg_opti ${OBJS_OPTI})
+deprecated_baci_add_library_linked_with_everything(
+  alg_particle_algorithm ${OBJS_DRT_PARTICLE_ALGORITHM}
+  )
+deprecated_baci_add_library_linked_with_everything(alg_particle_engine ${OBJS_DRT_PARTICLE_ENGINE})
+deprecated_baci_add_library_linked_with_everything(
+  alg_particle_interaction ${OBJS_DRT_PARTICLE_INTERACTION}
+  )
+deprecated_baci_add_library_linked_with_everything(
+  alg_particle_rigidbody ${OBJS_DRT_PARTICLE_RIGIDBODY}
+  )
+deprecated_baci_add_library_linked_with_everything(alg_particle_wall ${OBJS_DRT_PARTICLE_WALL})
+deprecated_baci_add_library_linked_with_everything(alg_elemag ${OBJS_DRT_ELEMAG})
+deprecated_baci_add_library_linked_with_everything(alg_tutorial ${OBJS_DRT_TUTORIAL})
 
 set(SINGLEFIELD_LIBRARIES
     alg_ale
@@ -2720,48 +2524,64 @@ set(SINGLEFIELD_LIBRARIES
     )
 
 # general framework
-add_library(drt_nurbs ${OBJS_DRT_NURBS_DISCRET})
-add_library(drt_constraint ${OBJS_DRT_CONSTRAINT})
-add_library(drt_cardiovascular0d ${OBJS_DRT_CARDIOVASCULAR0D})
-add_library(drt_mortar ${OBJS_DRT_MORTAR})
-add_library(drt_volmortar ${OBJS_DRT_VOLMORTAR})
-add_library(drt_mor ${OBJS_DRT_MOR})
+deprecated_baci_add_library_linked_with_everything(drt_nurbs ${OBJS_DRT_NURBS_DISCRET})
+deprecated_baci_add_library_linked_with_everything(drt_constraint ${OBJS_DRT_CONSTRAINT})
+deprecated_baci_add_library_linked_with_everything(
+  drt_cardiovascular0d ${OBJS_DRT_CARDIOVASCULAR0D}
+  )
+deprecated_baci_add_library_linked_with_everything(drt_mortar ${OBJS_DRT_MORTAR})
+deprecated_baci_add_library_linked_with_everything(drt_volmortar ${OBJS_DRT_VOLMORTAR})
+deprecated_baci_add_library_linked_with_everything(drt_mor ${OBJS_DRT_MOR})
 
 # material definitions
-add_library(drt_mat ${OBJS_DRT_MAT_LIB} ${OBJS_DRT_MIXTURE})
-add_library(drt_micromat ${OBJS_DRT_MAT} ${OBJS_DRT_STRU_MULTI})
-add_library(drt_scatra_multi ${OBJS_DRT_MAT_SCATRA_MULTI})
+deprecated_baci_add_library_linked_with_everything(drt_mat ${OBJS_DRT_MAT_LIB} ${OBJS_DRT_MIXTURE})
+deprecated_baci_add_library_linked_with_everything(
+  drt_micromat ${OBJS_DRT_MAT} ${OBJS_DRT_STRU_MULTI}
+  )
+deprecated_baci_add_library_linked_with_everything(drt_scatra_multi ${OBJS_DRT_MAT_SCATRA_MULTI})
 
 # special library that demands all parobject types
-add_library(drt_lib_register ${OBJS_DRT_REGISTER})
+deprecated_baci_add_library_linked_with_everything(drt_lib_register ${OBJS_DRT_REGISTER})
 
 # libraries that are used by baci and by filters
-add_library(drt_comm ${OBJS_DRT_COMM})
-add_library(drt_lib ${OBJS_DRT_LIB})
-add_library(drt_lib_inpar ${OBJS_DRT_INPAR})
-add_library(drt_lib_constraint ${OBJS_DRT_CONSTRAINT_LIB})
-add_library(drt_lib_contact ${OBJS_DRT_CONTACT_LIB} ${OBJS_DRT_BEAMCONTACT_LIB})
-add_library(drt_lib_roughcontact ${OBJS_DRT_ROUGH_CONTACT})
-add_library(drt_lib_beaminteraction ${OBJS_DRT_BEAMINTERACTION_LIB})
-add_library(drt_lib_poromulti_art_coupl ${OBJS_DRT_POROMULTIPHASE_ART_COUPL})
-add_library(drt_lib_xfem ${OBJS_DRT_XFEM})
-add_library(drt_lib_io ${OBJS_DRT_IO_LIB})
-add_library(drt_lib_mortar ${OBJS_DRT_MORTAR_LIB})
-add_library(drt_lib_nurbs ${OBJS_DRT_NURBS_DISCRET_LIB})
-add_library(drt_lib_binstrategy ${OBJS_DRT_BINSTRATEGY_DISCRET_LIB})
-add_library(drt_lib_particleengine ${OBJS_DRT_PARTICLE_ENGINE_LIB})
-add_library(drt_lib_surfstress ${OBJS_DRT_SURFSTRESS})
-add_library(drt_lib_utils ${OBJS_DRT_UTILS})
-add_library(drt_lib_artnet ${OBJS_DRT_ARTNET_LIB})
-add_library(drt_lib_redairways ${OBJS_DRT_RED_AIRWAYS_LIB})
-add_library(drt_lib_cut ${OBJS_DRT_CUT})
-add_library(drt_lib_statinv_ana ${OBJS_STATINV_ANALYSIS_LIB})
-add_library(drt_lib_immersed ${OBJS_DRT_IMMERSED_LIB})
-add_library(drt_lib_xfem_manag ${OBJS_DRT_XFEM_MANAG_LIB})
-add_library(drt_lib_fiber ${OBJS_DRT_FIBER_LIB})
-add_library(drt_lib_geometric_search ${OBJS_DRT_GEOMETRIC_SEARCH})
-add_library(drt_lib_geometry_pair ${OBJS_DRT_GEOMETRY_PAIR})
-add_library(alg_mor ${OBJS_DRT_MOR})
+deprecated_baci_add_library_linked_with_everything(drt_comm ${OBJS_DRT_COMM})
+deprecated_baci_add_library_linked_with_everything(drt_lib ${OBJS_DRT_LIB})
+deprecated_baci_add_library_linked_with_everything(drt_lib_inpar ${OBJS_DRT_INPAR})
+deprecated_baci_add_library_linked_with_everything(drt_lib_constraint ${OBJS_DRT_CONSTRAINT_LIB})
+deprecated_baci_add_library_linked_with_everything(
+  drt_lib_contact ${OBJS_DRT_CONTACT_LIB} ${OBJS_DRT_BEAMCONTACT_LIB}
+  )
+deprecated_baci_add_library_linked_with_everything(drt_lib_roughcontact ${OBJS_DRT_ROUGH_CONTACT})
+deprecated_baci_add_library_linked_with_everything(
+  drt_lib_beaminteraction ${OBJS_DRT_BEAMINTERACTION_LIB}
+  )
+deprecated_baci_add_library_linked_with_everything(
+  drt_lib_poromulti_art_coupl ${OBJS_DRT_POROMULTIPHASE_ART_COUPL}
+  )
+deprecated_baci_add_library_linked_with_everything(drt_lib_xfem ${OBJS_DRT_XFEM})
+deprecated_baci_add_library_linked_with_everything(drt_lib_io ${OBJS_DRT_IO_LIB})
+deprecated_baci_add_library_linked_with_everything(drt_lib_mortar ${OBJS_DRT_MORTAR_LIB})
+deprecated_baci_add_library_linked_with_everything(drt_lib_nurbs ${OBJS_DRT_NURBS_DISCRET_LIB})
+deprecated_baci_add_library_linked_with_everything(
+  drt_lib_binstrategy ${OBJS_DRT_BINSTRATEGY_DISCRET_LIB}
+  )
+deprecated_baci_add_library_linked_with_everything(
+  drt_lib_particleengine ${OBJS_DRT_PARTICLE_ENGINE_LIB}
+  )
+deprecated_baci_add_library_linked_with_everything(drt_lib_surfstress ${OBJS_DRT_SURFSTRESS})
+deprecated_baci_add_library_linked_with_everything(drt_lib_utils ${OBJS_DRT_UTILS})
+deprecated_baci_add_library_linked_with_everything(drt_lib_artnet ${OBJS_DRT_ARTNET_LIB})
+deprecated_baci_add_library_linked_with_everything(drt_lib_redairways ${OBJS_DRT_RED_AIRWAYS_LIB})
+deprecated_baci_add_library_linked_with_everything(drt_lib_cut ${OBJS_DRT_CUT})
+deprecated_baci_add_library_linked_with_everything(drt_lib_statinv_ana ${OBJS_STATINV_ANALYSIS_LIB})
+deprecated_baci_add_library_linked_with_everything(drt_lib_immersed ${OBJS_DRT_IMMERSED_LIB})
+deprecated_baci_add_library_linked_with_everything(drt_lib_xfem_manag ${OBJS_DRT_XFEM_MANAG_LIB})
+deprecated_baci_add_library_linked_with_everything(drt_lib_fiber ${OBJS_DRT_FIBER_LIB})
+deprecated_baci_add_library_linked_with_everything(
+  drt_lib_geometric_search ${OBJS_DRT_GEOMETRIC_SEARCH}
+  )
+deprecated_baci_add_library_linked_with_everything(drt_lib_geometry_pair ${OBJS_DRT_GEOMETRY_PAIR})
+deprecated_baci_add_library_linked_with_everything(alg_mor ${OBJS_DRT_MOR})
 
 set(SUPPORT_LIBRARIES
     drt_lib_xfem_manag
@@ -2791,22 +2611,22 @@ set(SUPPORT_LIBRARIES
     )
 
 # separate library as it does not play well with testing
-add_library(drt_error ${OBJS_DRT_ERROR})
+deprecated_baci_add_library_linked_with_everything(drt_error ${OBJS_DRT_ERROR})
 
 # filter framework
-add_library(post_drt_common ${OBJS_POST_DRT_COMMON})
-add_library(post_drt_ensight_lib ${OBJS_POST_DRT_ENSIGHT})
-add_library(post_drt_vtk_lib ${OBJS_POST_DRT_VTK})
+deprecated_baci_add_library_linked_with_everything(post_drt_common ${OBJS_POST_DRT_COMMON})
+deprecated_baci_add_library_linked_with_everything(post_drt_ensight_lib ${OBJS_POST_DRT_ENSIGHT})
+deprecated_baci_add_library_linked_with_everything(post_drt_vtk_lib ${OBJS_POST_DRT_VTK})
 
 # linear algebra objects
-add_library(linalg ${OBJS_LINALG})
-add_library(libsolver ${OBJS_SOLVER})
+deprecated_baci_add_library_linked_with_everything(linalg ${OBJS_LINALG})
+deprecated_baci_add_library_linked_with_everything(libsolver ${OBJS_SOLVER})
 
 # continuation method
-add_library(locacontinuation ${OBJS_LOCA_CONTINUATION})
+deprecated_baci_add_library_linked_with_everything(locacontinuation ${OBJS_LOCA_CONTINUATION})
 
 # nonlinear solver objects
-add_library(nlnsolver_nox ${OBJS_SOLVER_NONLIN_NOX})
+deprecated_baci_add_library_linked_with_everything(nlnsolver_nox ${OBJS_SOLVER_NONLIN_NOX})
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
 set(baciname baci-${BUILD_TYPE})
@@ -2844,14 +2664,13 @@ set(BACI_LIBRARIES
     drt_comm
     )
 
-target_link_libraries(${baciname} ${BACI_LIBRARIES} ${LIBRARIES} drt_error)
+target_link_libraries(${baciname} ${BACI_LIBRARIES} drt_error)
 
 set(FILTER_LIBRARIES
     post_drt_common
     -Wl,--start-group
     ${BACI_LIBRARIES}
     -Wl,--end-group
-    ${LIBRARIES}
     drt_error
     )
 
@@ -2906,7 +2725,6 @@ target_link_libraries(
   -Wl,--start-group
   ${BACI_LIBRARIES}
   -Wl,--end-group
-  ${LIBRARIES}
   )
 
 include(TestingFramework.cmake)

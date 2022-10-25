@@ -31,10 +31,20 @@ find_library(
 
 message("II use CLN in ${CLN_LIBRARY}")
 
-set(CLN_INCLUDE_DIRS ${CLN_INCLUDE_DIR})
-set(CLN_LIBRARIES ${CLN_LIBRARY})
-
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(CLN DEFAULT_MSG CLN_LIBRARIES CLN_INCLUDE_DIRS)
+find_package_handle_standard_args(CLN DEFAULT_MSG CLN_LIBRARY CLN_INCLUDE_DIR)
 
-mark_as_advanced(CLN_INCLUDE_DIRS CLN_LIBRARIES)
+if(CLN_FOUND AND NOT TARGET cln::cln)
+  add_library(cln::cln UNKNOWN IMPORTED)
+  set_target_properties(
+    cln::cln
+    PROPERTIES IMPORTED_LOCATION "${CLN_LIBRARY}"
+               INTERFACE_INCLUDE_DIRECTORIES "${CLN_INCLUDE_DIR}"
+    )
+endif()
+
+if(CLN_FOUND)
+  list(APPEND BACI_ALL_ENABLED_EXTERNAL_LIBS cln::cln)
+  message(STATUS "CLN include directory: ${CLN_INCLUDE_DIR}")
+  message(STATUS "CLN library directory: ${CLN_LIBRARY}")
+endif()
