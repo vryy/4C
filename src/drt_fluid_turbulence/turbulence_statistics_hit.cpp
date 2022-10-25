@@ -1628,40 +1628,6 @@ namespace FLD
 
     // integration of energy spectrum via trapezoidal rule
     int rr_k_max = 0.0;
-#if 0
-  for (std::size_t rr = 1; rr < E_exp_1.size(); rr++)
-  {
-    std::cout << "rr " << rr << std::endl;
-    if (E_exp_1[rr-1] > 0.0)
-    {
-      std::cout << "1 " << 0.5 * (k_exp[rr] - k_exp[rr-1]) * (E_exp_1[rr] + E_exp_1[rr-1]) << std::endl;
-      std::cout << "k_exp[rr] " << k_exp[rr] << std::endl;
-      std::cout << "k_exp[rr-1] " << k_exp[rr-1] << std::endl;
-      std::cout << "E_exp_1[rr] " << E_exp_1[rr] << std::endl;
-      std::cout << "E_exp_1[rr-1] " << E_exp_1[rr-1] << std::endl;
-      q_1 += (0.5 * (k_exp[rr] - k_exp[rr-1]) * (E_exp_1[rr] + E_exp_1[rr-1]));
-      std::cout << q_1 << std::endl;
-      if (k_exp[rr] <= k_c)
-      {
-        std::cout << "rr for k_c " << rr << "   " << k_exp[rr] << std::endl;
-        q_1_r += 0.5 * (k_exp[rr] - k_exp[rr-1]) * (E_exp_1[rr] + E_exp_1[rr-1]);
-        rr_k_max = rr;
-      }
-    }
-    if (E_exp_2[rr-1] > 0.0)
-    {
-      q_2 += 0.5 * (k_exp[rr] - k_exp[rr-1]) * (E_exp_2[rr] + E_exp_2[rr-1]);
-      if (k_exp[rr] <= (k_c))
-        q_2_r += 0.5 * (k_exp[rr] - k_exp[rr-1]) * (E_exp_2[rr] + E_exp_2[rr-1]);
-    }
-    if (E_exp_2[rr] > 0.0)
-    {
-      q_3 += 0.5 * (k_exp[rr] - k_exp[rr-1]) * (E_exp_3[rr] + E_exp_3[rr-1]);
-      if (k_exp[rr] <= (k_c))
-        q_3_r += 0.5 * (k_exp[rr] - k_exp[rr-1]) * (E_exp_3[rr] + E_exp_3[rr-1]);
-    }
-  }
-#endif
     for (std::size_t rr = 1; rr < E_exp_1.size(); rr++)
     {
       if (E_exp_1[rr - 1] > 0.0)
@@ -1705,28 +1671,6 @@ namespace FLD
         q_3_r += IntegrateTrapezoidalRule(k_exp[rr_k_max], k_c, E_exp_3[rr_k_max], E3_k_c);
       }
     }
-#if 0
-  // integration of energy spectrum via Simpson rule
-  for (std::size_t rr = 2; rr < E_exp_1.size(); rr++)
-  {
-    std::cout << "rr " << rr << std::endl;
-    if (E_exp_1[rr-1] > 0.0 and E_exp_1[rr-2] > 0.0)
-    {
-      //std::cout << "1 " << 0.5 * (k_exp[rr] - k_exp[rr-1]) * (E_exp_1[rr] + E_exp_1[rr-1]) << std::endl;
-      std::cout << "k_exp[rr] " << k_exp[rr] << std::endl;
-      std::cout << "k_exp[rr-1] " << k_exp[rr-1] << std::endl;
-      std::cout << "k_exp[rr-2] " << k_exp[rr-2] << std::endl;
-      std::cout << "E_exp_1[rr] " << E_exp_1[rr] << std::endl;
-      std::cout << "E_exp_1[rr-1] " << E_exp_1[rr-1] << std::endl;
-      std::cout << "E_exp_1[rr-2] " << E_exp_1[rr-2] << std::endl;
-      q_1 += (1.0/6.0 * (k_exp[rr] - k_exp[rr-2]) * (E_exp_1[rr] + 4 * E_exp_1[rr-1] + E_exp_1[rr-2]));
-      std::cout << q_1 << std::endl;
-      if (k_exp[rr] <= k_c)
-        q_1_r += (1.0/6.0 * (k_exp[rr] - k_exp[rr-2]) * (E_exp_1[rr] + 4 * E_exp_1[rr-1] + E_exp_1[rr-2]));
-      rr++;
-    }
-  }
-#endif
 
     // subgrid turbulent kinetic energy at
     // the three measure locations
