@@ -28,7 +28,7 @@
 
 /*----------------------------------------------------------------------*/
 INVANA::SurfCurrentGroup::SurfCurrentGroup(Teuchos::RCP<DRT::Discretization> discret)
-    : kokkosscopeguard_(), sourcedis_(discret), targetdis_(Teuchos::null)
+    : sourcedis_(discret), targetdis_(Teuchos::null)
 {
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
