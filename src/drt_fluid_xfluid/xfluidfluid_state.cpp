@@ -142,14 +142,11 @@ void FLD::XFluidFluidState::SetupMapExtractors(
 bool FLD::XFluidFluidState::Destroy()
 {
   // destroy system matrix
-#if (1)
   std::cout << "Destroying the xffluidsysmat_ is not possible at the moment. Internally more "
                "strong RCPs point to the EpetraMatrix. This has to be checked!!!"
             << std::endl;
-#else
-  XFEM::DestroyMatrix(xffluidsysmat_);
-#endif
-
+  // TODO use this
+  // XFEM::DestroyMatrix(xffluidsysmat_);
 
   XFEM::DestroyRCPObject(xffluidvelnp_);
   XFEM::DestroyRCPObject(xffluidveln_);

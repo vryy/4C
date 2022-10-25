@@ -452,18 +452,6 @@ void XFLUIDLEVELSET::Algorithm::SetScaTraValuesInFluid()
   ComputeGeometricQuantities(require_smoothedgradphi, require_nodalcurvature, scatra_phinp,
       smoothedgradphitype_, scatra_smoothedgradphi, scatra_nodalcurvature);
 
-#if (0)
-  {
-    std::cout << "scatra_phinp " << *scatra_phinp << std::endl;
-
-    if (require_smoothedgradphi)
-      std::cout << "scatra_smoothedgradphi " << *scatra_smoothedgradphi << std::endl;
-
-    if (require_nodalcurvature)
-      std::cout << "scatra_nodalcurvature " << *scatra_nodalcurvature << std::endl;
-  }
-#endif
-
   // map geometric quantities from scatra dof-based to fluid node based vectors
   CopyGeometricQuantities(require_smoothedgradphi, require_nodalcurvature, scatra_phinp,
       scatra_smoothedgradphi, scatra_nodalcurvature, fluid_phinp, fluid_smoothedgradphi,

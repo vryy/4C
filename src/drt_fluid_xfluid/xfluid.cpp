@@ -2523,34 +2523,6 @@ void FLD::XFluid::Solve()
         solver_->AdaptTolerance(ittol, currresidual, adaptolbetter);
       }
 
-#if 0
-      // print matrix in matlab format
-
-            // matrix printing options (DEBUGGING!)
-      IO::cout << "print matrix in matlab format to sparsematrix.mtl";
-
-            Teuchos::RCP<LINALG::SparseMatrix> A = state_->SystemMatrix();
-            if (A != Teuchos::null)
-            {
-              // print to file in matlab format
-              const std::string fname = "sparsematrix.mtl";
-              LINALG::PrintMatrixInMatlabFormat(fname,*(A->EpetraMatrix()));
-              // print to screen
-//              (A->EpetraMatrix())->Print(cout);
-              // print sparsity pattern to file
-              LINALG::PrintSparsityToPostscript( *(A->EpetraMatrix()) );
-            }
-            else
-            {
-              Teuchos::RCP<LINALG::BlockSparseMatrixBase> A = state_->BlockSystemMatrix();
-              const std::string fname = "sparsematrix.mtl";
-              LINALG::PrintBlockMatrixInMatlabFormat(fname,*(A));
-            }
-
-            IO::cout << " ...done" << IO::endl;
-            // ScaleLinearSystem();  // still experimental (gjb 04/10)
-#endif
-
       // scale system prior to solver call
       if (fluid_infnormscaling_ != Teuchos::null)
         fluid_infnormscaling_->ScaleSystem(state_->SystemMatrix(), *(state_->Residual()));
@@ -2606,24 +2578,6 @@ void FLD::XFluid::Solve()
   // Reset the solver and so release the system matrix' pointer (enables to delete the
   // state_->systemmatrix)
   solver_->Reset();
-
-
-#if (0)
-  if (gmsh_debug_out_)
-  {
-    std::string filename_base = "DEBUG_SOL";
-
-    //--------------------------------------------------------------------
-    Teuchos::RCP<const Epetra_Vector> output_col_velnp =
-        DRT::UTILS::GetColVersionOfRowVector(discret_, state_->velnp_);
-    const std::string prefix("SOL");
-    output_service_->GmshOutput(
-        filename_base, prefix, step_, state_it_, state_->Wizard(), output_col_velnp);
-
-    //--------------------------------------------------------------------
-    condition_manager_->GmshOutput(filename_base, step_, gmsh_step_diff_, gmsh_debug_out_screen_);
-  }
-#endif
 }
 
 bool FLD::XFluid::ConvergenceCheck(int itnum, int itemax, const double velrestol,
@@ -3378,8 +3332,8 @@ void FLD::XFluid::CutAndSetStateVectors()
       XTimint_DoIncrementStepTransfer(screen_out, firstcall_in_timestep);
 
 
-#if (1)  // just possible for partitioned FSI, the usage for pure fluids overwrites the
-         // fluid-predictor
+  // just possible for partitioned FSI, the usage for pure fluids overwrites the
+  // fluid-predictor
   //------------------------------------------------------------------------------------
   //      set initial start vectors for new time step (steady-state predictor)
   //------------------------------------------------------------------------------------
@@ -3390,7 +3344,7 @@ void FLD::XFluid::CutAndSetStateVectors()
     state_->velnp_->Update(1.0, *state_->veln_, 0.0);  // use old velocity as start value
     state_->accnp_->Update(1.0, *state_->accn_, 0.0);  // use old velocity as start value
   }
-#endif
+
 
   //---------------------------------- GMSH SOLUTION OUTPUT (reference/predicted solution fields for
   // pressure, velocity, acc) ------------------------
@@ -4179,24 +4133,17 @@ void FLD::XFluid::XTimint_ReconstructGhostValues(
 
   Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
 
-#if (0)  // use direct solver
-  solverparams->set("solver", "umfpack");
-#else  // use iterative solver
+  // use direct solver
+  // solverparams->set("solver", "umfpack");
+  // use iterative solver
   Teuchos::ParameterList& azlist = solverparams->sublist("Aztec Parameters");
   azlist.set<int>("reuse", 0);
   azlist.set<double>("AZ_tol", 1.0e-12);
   // azlist.set("AZ_kspace",inparams.get<int>("AZSUB")); //AZSUB
   azlist.set("AZ_overlap", 0);
-
-#if 0  // suppress output
-  azlist.set("AZ_output",0);
-#else
   azlist.set("AZ_output", 50);
-#endif
   solverparams->sublist("IFPACK Parameters");
-
   solverparams->set("solver", "aztec");
-#endif
 
   Teuchos::RCP<LINALG::Solver> solver_gp = Teuchos::rcp(new LINALG::Solver(
       solverparams, discret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
@@ -4793,7 +4740,6 @@ void FLD::XFluid::SetInitialFlowField(
         //----------------------------------------------
         // compute components of initial velocity vector
         //----------------------------------------------
-#if (1)
         vel(0) = (C / R_squared) * (-(xyz(1) - xyz0_left(1)) * exp(-r_squared_left / 2.0) +
                                        (xyz(1) - xyz0_right(1)) * exp(-r_squared_right / 2.0));
         vel(1) = (C / R_squared) * ((xyz(0) - xyz0_left(0)) * exp(-r_squared_left / 2.0) -
@@ -4801,12 +4747,7 @@ void FLD::XFluid::SetInitialFlowField(
                  flamespeed * dens_u / dens;
         // 2D problem -> vel_z = 0.0
         vel(2) = 0.0;
-#else  // without vortices (just for testing)
-        vel(0) = 0.0;
-        vel(1) = flamespeed * dens_u / dens;
-        // 2D problem -> vel_z = 0.0
-        vel(2) = 0.0;
-#endif
+
         // access standard FEM dofset (3 x vel + 1 x pressure) to get std-dof IDs for this node
         std::vector<int> std_dofs;
         dofset->Dof(std_dofs, lnode, i);
@@ -5235,13 +5176,6 @@ void FLD::XFluid::ReadRestart(int step)
     reader.ReadVector(gridvnp_, "full_gridvnp_res");
     reader.ReadVector(
         gridvn_, "full_gridvnp_res");  // as update() was called anyway before output...
-
-#if (0)
-    std::cout << "dispnp_ " << *dispnp_ << std::endl;
-    std::cout << "dispn_ " << *dispn_ << std::endl;
-    std::cout << "gridvnp_ " << *gridvnp_ << std::endl;
-    std::cout << "gridvn_ " << *gridvnp_ << std::endl;
-#endif
   }
 
   // state-vectors in state will be set in the creation of a new state
@@ -5253,13 +5187,6 @@ void FLD::XFluid::ReadRestart(int step)
   reader.ReadVector(state_->veln_, "veln_res");
   reader.ReadVector(state_->accnp_, "accnp_res");
   reader.ReadVector(state_->accn_, "accn_res");
-
-#if (0)
-  std::cout << "velnp_ " << *(state_->velnp_) << std::endl;
-  std::cout << "veln_ " << *(state_->veln_) << std::endl;
-  std::cout << "accnp_ " << *(state_->accnp_) << std::endl;
-  std::cout << "accn_ " << *(state_->accn_) << std::endl;
-#endif
 
   // set element time parameter after restart:
   // Here it is already needed by AVM3 and impedance boundary condition!!
