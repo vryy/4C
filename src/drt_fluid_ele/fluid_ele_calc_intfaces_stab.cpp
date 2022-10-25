@@ -1070,34 +1070,6 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
     EvalVelPresAndDerivsAtIntPoint(use2ndderiv, pele->IsAle());
 
-#if #DEBUG  // DEBUGGING
-    std::cout << "intface->FaceSlaveNumber " << intface->FaceSlaveNumber() << std::endl;
-    std::cout << "intface->FaceMasterNumber " << intface->FaceMasterNumber() << std::endl;
-
-    std::cout << "face nodes" << std::endl;
-    const int* face_nodes = intface->NodeIds();
-    for (int i = 0; i < intface->NumNode(); i++) std::cout << face_nodes[i] << std::endl;
-
-    std::cout << "parent nodes" << std::endl;
-    const int* pele_nodes = pele->NodeIds();
-    for (int i = 0; i < pele->NumNode(); i++) std::cout << pele_nodes[i] << std::endl;
-
-    std::cout << "neighbor nodes" << std::endl;
-    const int* nele_nodes = nele->NodeIds();
-    for (int i = 0; i < nele->NumNode(); i++) std::cout << nele_nodes[i] << std::endl;
-
-    LINALG::Matrix<nsd_, 1> p_x, n_x, f_x(true);
-
-    p_x.Multiply(pxyze_, pfunct_);
-    n_x.Multiply(nxyze_, nfunct_);
-    f_x.Multiply(xyze_, funct_);
-
-    std::cout << "p_x " << p_x << std::endl;
-    std::cout << "n_x " << n_x << std::endl;
-    std::cout << "f_x " << f_x << std::endl;
-
-#endif
-
     //-----------------------------------------------------
     vderxyaf_diff_.Update(1.0, nvderxyaf_, -1.0, pvderxyaf_, 0.0);
     vderxynp_diff_.Update(1.0, nvderxynp_, -1.0, pvderxynp_, 0.0);
