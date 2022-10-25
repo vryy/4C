@@ -145,8 +145,6 @@ bool FLD::XFluidFluidState::Destroy()
   std::cout << "Destroying the xffluidsysmat_ is not possible at the moment. Internally more "
                "strong RCPs point to the EpetraMatrix. This has to be checked!!!"
             << std::endl;
-  // TODO use this
-  // XFEM::DestroyMatrix(xffluidsysmat_);
 
   XFEM::DestroyRCPObject(xffluidvelnp_);
   XFEM::DestroyRCPObject(xffluidveln_);

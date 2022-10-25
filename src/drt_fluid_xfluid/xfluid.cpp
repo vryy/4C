@@ -4133,8 +4133,6 @@ void FLD::XFluid::XTimint_ReconstructGhostValues(
 
   Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
 
-  // use direct solver
-  // solverparams->set("solver", "umfpack");
   // use iterative solver
   Teuchos::ParameterList& azlist = solverparams->sublist("Aztec Parameters");
   azlist.set<int>("reuse", 0);
