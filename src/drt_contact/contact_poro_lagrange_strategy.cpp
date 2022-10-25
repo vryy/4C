@@ -358,19 +358,6 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(
       LINALG::SplitMatrix2x2(tmpftanginvD, fgactivet_, restfgactivet, fgactivedofs_,
           restfgactivedofs, ftanginvD_, tmpm1, tmpm2, tmpm3);
 
-#if (0)
-      // Some solutions that do not work!
-
-      //    ftanginvD_ = Teuchos::rcp<LINALG::SparseMatrix>(new
-      //    LINALG::SparseMatrix(*fgactivet_,1,true,false));
-      //  ftanginvD_->Assign(View,*tmpftanginvD);
-
-      //   ftanginvD_->Add(*tmpftanginvD,false,1.0,1.0);
-      //   ftanginvD_->Complete(*fgactivedofs_,*fgactivet_);
-
-      //  int err = ftanginvD_->EpetraMatrix()->ReplaceRowMap(*fgactivet_);
-      // if (err) dserror("RRM STOPPED .... with err! %d",err);
-#endif
       //
       //************************************************************************************************
       //
@@ -394,38 +381,6 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(
           ADAPTER::CouplingMasterConverter(coupfs), *flinTangentiallambda_, false);
       flinTangentiallambda_->Complete(*gsdofrowmap_, *fgactivet_);
 
-#if (0)  // just in case
-         // only for parallel redistribution case
-         //     if (parredist) //care about that if its in contact ... ChrAg Todo
-         //     {
-         //       NCoup_lindisp_    = MORTAR::MatrixRowColTransform(NCoup_lindisp_,
-         //       interface_[i]->NormalDofs(), masterdofrowmap_); NCoup_linvel_     =
-         //       MORTAR::MatrixRowColTransform(NCoup_linvel_, interface_[i]->NormalDofs(),
-         //       slavedofrowmap_);
-         //     }
-
-      // only for parallel redistribution case
-      //     if (parredist) //care about that if its in contact ... ChrAg Todo
-      //     {
-      //       Tangential_    = MORTAR::MatrixRowColTransform(Tangential_,
-      //       interface_[i]->TangentialDofs(), slavedofrowmap_); linTangentiallambda_     =
-      //       MORTAR::MatrixRowColTransform(linTangentiallambda_, interface_[i]->TangentialDofs(),
-      //       slavedofrowmap_);
-      //     }
-
-
-      //  Assemble lin of D & M - Matrix --
-      //  Teuchos::RCP<LINALG::SparseMatrix> lindglobal = Teuchos::rcp(new
-      //  LINALG::SparseMatrix(*gsdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
-      //  //ChrAg Teuchos::RCP<LINALG::SparseMatrix> linmglobal = Teuchos::rcp(new
-      //  LINALG::SparseMatrix(*gmdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
-      //  //ChrAg
-
-
-
-      // porolindmatrix_ = lindglobal;
-      // porolinmmatrix_ = linmglobal;
-#endif
       //
       //************************************************************************************************
       //
