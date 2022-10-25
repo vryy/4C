@@ -11,6 +11,8 @@
 #include "linalg_utils_densematrix_eigen.H"
 #include "../drt_lib/drt_dserror.H"
 
+#include "Epetra_LAPACK.h"
+
 /*----------------------------------------------------------------------*
  |  compute all eigenvalues of a real symmetric matrix A        lw 04/08|
  *----------------------------------------------------------------------*/
@@ -75,6 +77,7 @@ void LINALG::SymmetricEigen(
   Epetra_LAPACK lapack;
 
   lapack.SYEVD(jobz, uplo, dim, a, lda, w, &(work[0]), lwork, &(iwork[0]), liwork, &info);
+
 
   if (!postproc)
   {

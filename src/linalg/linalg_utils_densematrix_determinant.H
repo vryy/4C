@@ -14,7 +14,6 @@
 #include "linalg_fixedsizematrix.H"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
-#include "Epetra_LAPACK.h"
 #include "../drt_lib/drt_exporter.H"
 #include "linalg_blocksparsematrix.H"
 

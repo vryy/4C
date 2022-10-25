@@ -22,6 +22,7 @@
 #include "../drt_mat/fluid_murnaghantait.H"
 
 #include <Epetra_SerialDenseSolver.h>
+#include <Teuchos_LAPACK.hpp>
 
 
 
@@ -2314,7 +2315,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::SolveResidual()
 
   // factorize uuMatFinal and solve. do not use LINALG::FixedSizeSerialDenseSolver because
   // we want to solve twice and reuse the factorization
-  Epetra_LAPACK lapack;
+  Teuchos::LAPACK<int, double> lapack;
   const int size = uuMatFinal.M();
   pivots.resize(size);
   int errnum;
@@ -2422,7 +2423,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::CondenseLocalPart(
   }
 
   // solve for velocity matrix
-  Epetra_LAPACK lapack;
+  Teuchos::LAPACK<int, double> lapack;
   int errnum;
   dsassert(pivots.size() == static_cast<unsigned int>(uuMatFinal.M()) && pivots[0] + pivots[1] > 0,
       "Matrix seems to not have been factorized");

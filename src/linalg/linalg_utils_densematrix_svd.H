@@ -12,7 +12,7 @@
 
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
-#include "Epetra_LAPACK.h"
+#include <Teuchos_LAPACK.hpp>
 #include "../drt_lib/drt_exporter.H"
 
 namespace LINALG
@@ -48,16 +48,17 @@ namespace LINALG
       LINALG::Matrix<rows, cols>& S, LINALG::Matrix<cols, cols>& VT)
   {
     Matrix<rows, cols> tmp(A.A(), false);  // copy, because content of matrix is destroyed
-    Epetra_LAPACK lapack;
-    const char jobu = 'A';   // compute and return all M columns of U
-    const char jobvt = 'A';  // compute and return all N rows of V^T
+    const char jobu = 'A';                 // compute and return all M columns of U
+    const char jobvt = 'A';                // compute and return all N rows of V^T
     std::vector<double> s(std::min(rows, cols));
     int info;
     int lwork = std::max(3 * std::min(rows, cols) + std::max(rows, cols), 5 * std::min(rows, cols));
     std::vector<double> work(lwork);
+    double rwork;
 
+    Teuchos::LAPACK<int, double> lapack;
     lapack.GESVD(jobu, jobvt, rows, cols, tmp.A(), tmp.M(), &s[0], Q.A(), Q.M(), VT.A(), VT.M(),
-        &work[0], &lwork, &info);
+        &work[0], lwork, &rwork, &info);
 
     if (info) dserror("Lapack's dgesvd returned %d", info);
 

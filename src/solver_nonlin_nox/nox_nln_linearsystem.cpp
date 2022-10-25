@@ -29,6 +29,7 @@
 #include <Epetra_LinearProblem.h>
 
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_LAPACK.hpp>
 
 #include <NOX_Epetra_Scaling.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>
@@ -711,7 +712,7 @@ double NOX::NLN::LinearSystem::computeSerialConditionNumberOfJacobian(
   LINALG::SerialDenseMatrix dense_jac;
   convertJacobianToDenseMatrix(dense_jac);
 
-  Epetra_LAPACK lapack;
+  Teuchos::LAPACK<int, double> lapack;
 
   const int N = dense_jac.N();
   const int M = dense_jac.M();
@@ -939,7 +940,7 @@ void NOX::NLN::LinearSystem::callGGEV(LINALG::SerialDenseMatrix& mat,
 
   LINALG::SerialDenseVector beta(reigenvalues);
 
-  Epetra_LAPACK lapack;
+  Teuchos::LAPACK<int, double> lapack;
   lapack.GGEV('N', 'N', mat.N(), mat.A(), mat.LDA(), bmat.A(), bmat.LDA(), reigenvalues.A(),
       ieigenvalues.A(), beta.A(), NULL, 1, NULL, 1, work.data(), lwork, &info);
 
@@ -968,7 +969,7 @@ void NOX::NLN::LinearSystem::callGEEV(LINALG::SerialDenseMatrix& mat,
   int lwork = 3.0 * mat.N();
   std::vector<double> work(lwork);
 
-  Epetra_LAPACK lapack;
+  Teuchos::LAPACK<int, double> lapack;
   lapack.GEEV('N', 'N', mat.N(), mat.A(), mat.LDA(), reigenvalues.A(), ieigenvalues.A(), NULL, 1,
       NULL, 1, work.data(), lwork, &info);
 

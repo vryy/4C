@@ -9,7 +9,7 @@
 #ifndef FIXED_SIZE_SERIAL_DENSE_MATRIX_H
 #define FIXED_SIZE_SERIAL_DENSE_MATRIX_H
 
-#include <Epetra_LAPACK.h>
+#include <Teuchos_LAPACK.hpp>
 #include <Epetra_BLAS.h>
 #include <Epetra_SerialDenseMatrix.h>
 
@@ -2185,10 +2185,12 @@ namespace LINALG
       // only with minor changes.
       std::vector<double> tmp(i * j);
       std::copy(mat, mat + i * j, &tmp[0]);
-      Epetra_LAPACK lapack;
       std::vector<int> ipiv(j);
       int info;
+
+      Teuchos::LAPACK<int, double> lapack;
       lapack.GETRF(i, j, &tmp[0], i, &ipiv[0], &info);
+
       if (info < 0)
         dserror("Lapack's dgetrf returned %d", info);
       else if (info > 0)
@@ -4520,7 +4522,7 @@ namespace LINALG
     FixedSizeSerialDenseSolver& operator=(const FixedSizeSerialDenseSolver<rows, cols, dim_rhs>&);
 
     /// wrapper for the LAPACK functions
-    static Epetra_LAPACK lapack_;
+    static Teuchos::LAPACK<int, double> lapack_;
     /// wrapper for the BLAS functions
     static Epetra_BLAS blas_;
 
@@ -4859,7 +4861,7 @@ namespace LINALG
 
     int lwork = 4 * cols;
     std::vector<double> work(lwork);
-    lapack_.GETRI(cols, matrix_->A(), rows, &(pivot_vec_[0]), &(work[0]), &lwork, &errnum);
+    lapack_.GETRI(cols, matrix_->A(), rows, &(pivot_vec_[0]), &(work[0]), lwork, &errnum);
     if (errnum != 0) return errnum;
     inverted_ = true;
     factored_ = false;
@@ -4869,7 +4871,7 @@ namespace LINALG
 
   // Initialize the static objects.
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
-  Epetra_LAPACK FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::lapack_;
+  Teuchos::LAPACK<int, double> FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::lapack_;
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
   Epetra_BLAS FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::blas_;
 

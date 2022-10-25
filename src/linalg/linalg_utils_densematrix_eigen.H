@@ -12,7 +12,7 @@
 
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
-#include "Epetra_LAPACK.h"
+#include <Teuchos_LAPACK.hpp>
 #include "Teuchos_RCP.hpp"
 #include "../drt_lib/drt_exporter.H"
 #include "linalg_blocksparsematrix.H"
@@ -89,15 +89,12 @@ namespace LINALG
     std::vector<double> w(dim);
     const int lwork = 2 * dim * dim + 6 * dim + 1;
     std::vector<double> work(lwork);
-    const int liwork = 3 + 5 * dim;
-    std::vector<int> iwork(liwork);
     int info;
 
-    Epetra_LAPACK lapack;
-    lapack.SYEVD(
-        jobz, uplo, N, tmp.A(), lda, &(w[0]), &(work[0]), lwork, &(iwork[0]), liwork, &info);
+    Teuchos::LAPACK<int, double> lapack;
+    lapack.SYEV(jobz, uplo, N, tmp.A(), lda, &(w[0]), &(work[0]), lwork, &info);
 
-    if (info) dserror("Lapack's SYEVD returned %d", info);
+    if (info) dserror("Lapack's SYEV returned %d", info);
 
     // return eigenvectors
     V.Update(tmp);
