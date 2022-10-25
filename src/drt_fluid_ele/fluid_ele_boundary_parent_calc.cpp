@@ -5381,13 +5381,6 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
           // get velocity norm
           double normu = velint.Norm2();
 
-#if 0
-          if((*hixhybdbc_cond).GetDouble("u_C")<0)
-            {
-              normu=u_C;
-            }
-#endif
-
           // compute friction velocity u_tau
           double utau = visc_ / y;
 
@@ -5451,21 +5444,6 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
                 // a la Michler
                 tau_tangential *= utau * utau / normtraction;
               }
-#if 0
-              if(parent->Id()==myid)
-              {
-                printf("u_tau Spalding %12.5e "          ,utau);
-                printf("sqrt(normtraction) %12.5e "      ,sqrt(normtraction));
-                printf("(visc_dudy/normtraction %12.5e) ",visc_dudy/normtraction);
-                printf("sqrt(visc_dudy) %12.5e \n"       ,sqrt(visc_dudy));
-
-                printf("visc_dudy      %12.5e ",visc_dudy);
-                printf("normtraction   %12.5e ",normtraction);
-                printf("tau_tangential %12.5e ",tau_tangential);
-                printf("y %12.5e "             ,y);
-                printf("y+  %12.5e\n"          ,y*utau/visc_);
-              }
-#endif
             }
           }  // if(spalding)
         }

@@ -1070,7 +1070,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
     EvalVelPresAndDerivsAtIntPoint(use2ndderiv, pele->IsAle());
 
-#if (0)  // DEBUGGING
+#if #DEBUG  // DEBUGGING
     std::cout << "intface->FaceSlaveNumber " << intface->FaceSlaveNumber() << std::endl;
     std::cout << "intface->FaceMasterNumber " << intface->FaceMasterNumber() << std::endl;
 

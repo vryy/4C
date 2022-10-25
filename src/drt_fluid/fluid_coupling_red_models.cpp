@@ -420,7 +420,6 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(
         }
       }
     }
-    //#if 0
     // -----------------------------------------------------------------
     // Define a map that will have the interpolated values at the
     // reduced-D time subscale
@@ -806,16 +805,6 @@ void FLD::UTILS::Fluid_couplingBc::WriteRestart(IO::DiscretizationWriter& output
   // condition Id numbers must not change at restart!!!!
   std::stringstream stream1, stream2, stream3;
 
-#if 0
-  stream1 << "flowrateId" << condnum;
-  // write the flowrate
-  output.WriteDouble(stream1.str(),flowrate_);
-
-  stream2 << "pressureId" << condnum;
-  // write the flowrate
-  output.WriteDouble(stream2.str(),pressure_);
-#endif
-
   // also write vector couplingbc_
   stream3 << "couplingbc" << condnum;
   output.WriteVector(stream3.str(), couplingbc_);
@@ -840,16 +829,6 @@ void FLD::UTILS::Fluid_couplingBc::WriteRestart(IO::DiscretizationWriter& output
 void FLD::UTILS::Fluid_couplingBc::ReadRestart(IO::DiscretizationReader& reader, int condnum)
 {
   std::stringstream stream1, stream2, stream3;
-
-#if 0
-  stream1 << "flowrateId" << condnum;
-  // read the flowrate
-  flowrate_ = reader.ReadDouble(stream1.str());
-
-  stream2 << "pressureId" << condnum;
-  // read the flowrate
-  pressure_ = reader.ReadDouble(stream2.str());
-#endif
 
   // also read vector couplingbc_
   stream3 << "couplingbc" << condnum;

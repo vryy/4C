@@ -1140,13 +1140,12 @@ namespace DRT
             // get convective velocity at integration point
             my::SetConvectiveVelint(ele->IsAle());
 
-#if (0)
             // FOR INTERPOLATION ERRORS
             // I_h(u_analyt) - u_analyt
             // grad(I_h(u_analyt) - u_analyt)
             // I_h(p_analyt) - p_analyt
             //---------------------------------------------------------------
-            LINALG::Matrix<my::nsd_, 1> u_analyt_interpolated(true);
+            /*LINALG::Matrix<my::nsd_, 1> u_analyt_interpolated(true);
             LINALG::Matrix<my::nsd_, my::nsd_> grad_u_analyt_interpolated(true);
             double p_analyt_interpolated = 0.0;
 
@@ -1185,8 +1184,7 @@ namespace DRT
             u_analyt_interpolated.Multiply(u_analyt_element, my::funct_);
             grad_u_analyt_interpolated.MultiplyNT(u_analyt_element, my::derxy_);
 
-            p_analyt_interpolated = my::funct_.Dot(p_analyt_element);
-#endif
+            p_analyt_interpolated = my::funct_.Dot(p_analyt_element);*/
 
             //--------------------------------------------
             // compute errors
@@ -1231,12 +1229,10 @@ namespace DRT
               grad_u_err.Update(1.0, my::vderxy_, -1.0, grad_u_analyt, 0.0);
               p_err = press - p_analyt;
 
-#if (0)
               // FOR interpolation error
-              u_err.Update(1.0, u_analyt_interpolated, -1.0, u_analyt, 0.0);
-              grad_u_err.Update(1.0, grad_u_analyt_interpolated, -1.0, grad_u_analyt, 0.0);
-              p_err = p_analyt_interpolated - p_analyt;
-#endif
+              // u_err.Update(1.0, u_analyt_interpolated, -1.0, u_analyt, 0.0);
+              // grad_u_err.Update(1.0, grad_u_analyt_interpolated, -1.0, grad_u_analyt, 0.0);
+              // p_err = p_analyt_interpolated - p_analyt;
             }
 
             flux_u_err.Multiply(grad_u_err, normal);
@@ -3613,19 +3609,6 @@ namespace DRT
               INPAR::XFEM::ViscStab_TraceEstimate_eigenvalue)
           {
             inv_hk = cond_manager->Get_TraceEstimate_MaxEigenvalue(coup_sid);
-#if (0)
-            std::cout.precision(15);
-            std::cout << "C_T/hk (formula): "
-                      << NIT_getTraceEstimateConstant(ele_distype) /
-                             XFEM::UTILS::ComputeCharEleLength<distype>(coupl_ele, coupl_xyze,
-                                 cond_manager, vcSet, bcells, bintpoints,
-                                 fldparaxfem_->ViscStabHK(), emb, side);
-            << " max_eigenvalue ~ C_T/hk: "
-            << my::fldpara_->Get_TraceEstimate_MaxEigenvalue(coup_sid)
-            << " max_eigenvalue*h_k = C_T: "
-            << my::fldpara_->Get_TraceEstimate_MaxEigenvalue(coup_sid) * h_k
-            << " vs: C_T (formula) " << NIT_getTraceEstimateConstant(ele_distype) << std::endl;
-#endif
             h_k = 1.0 / inv_hk;
           }
           else  // ... char. length defined otherwise

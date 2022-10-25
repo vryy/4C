@@ -69,13 +69,7 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(
       srowsum_->PutScalar(1.0);
     }
 
-#if 0
-    A00->InvColSums(*scolsum_);
-    if (myrank_==0)
-      std::cout<<"do right scaling velocity blocks"<<std::endl;
-#else
     scolsum_->PutScalar(1.0);
-#endif
 
     if (A00->LeftScale(*srowsum_) or A00->RightScale(*scolsum_) or
         mat.Matrix(0, 1).EpetraMatrix()->LeftScale(*srowsum_) or
@@ -112,14 +106,7 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(
       prowsum_->PutScalar(1.0);
     }
 
-    // right scaling of pressure blocks not supported for the moment
-#if 0
-    A->InvColSums(*pcolsum_);
-    if (myrank_==0)
-      std::cout<<"do right scaling of pressure blocks"<<std::endl;
-#else
     pcolsum_->PutScalar(1.0);
-#endif
 
     if (A11->LeftScale(*prowsum_) or
         //      A->RightScale(*pcolsum_) or
