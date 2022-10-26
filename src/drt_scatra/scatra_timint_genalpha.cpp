@@ -16,6 +16,8 @@
 
 #include "../drt_io/io.H"
 
+#include "../drt_lib/drt_utils_parameter_list.H"
+
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
 #include "scatra_timint_genalpha.H"
@@ -120,7 +122,8 @@ void SCATRA::TimIntGenAlpha::SetElementTimeParameter(bool forcedincrementalsolve
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", SCATRA::set_time_parameter);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::set_time_parameter, eleparams);
   eleparams.set<bool>("using generalized-alpha time integration", true);
   eleparams.set<bool>("using stationary formulation", false);
   if (!forcedincrementalsolver)
@@ -146,7 +149,8 @@ void SCATRA::TimIntGenAlpha::SetElementTimeParameterBackwardEuler() const
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", SCATRA::set_time_parameter);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::set_time_parameter, eleparams);
 
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", false);

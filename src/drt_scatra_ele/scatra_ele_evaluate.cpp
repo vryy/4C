@@ -36,39 +36,39 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization& dis, Teuchos
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, Teuchos::RCP<Epetra_Vector> systemvector1,
     Teuchos::RCP<Epetra_Vector> systemvector2, Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  const auto action = DRT::INPUT::get<SCATRA::Action>(p, "action");
+  const auto action = Teuchos::getIntegralValue<SCATRA::Action>(p, "action");
 
   switch (action)
   {
-    case SCATRA::set_general_scatra_parameter:
+    case SCATRA::Action::set_general_scatra_parameter:
     {
       ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
 
       break;
     }
 
-    case SCATRA::set_turbulence_scatra_parameter:
+    case SCATRA::Action::set_turbulence_scatra_parameter:
     {
       ScaTraEleParameterTurbulence::Instance(dis.Name())->SetParameters(p);
 
       break;
     }
 
-    case SCATRA::set_time_parameter:
+    case SCATRA::Action::set_time_parameter:
     {
       ScaTraEleParameterTimInt::Instance(dis.Name())->SetParameters(p);
 
       break;
     }
 
-    case SCATRA::set_mean_Cai:
+    case SCATRA::Action::set_mean_Cai:
     {
       ScaTraEleParameterTurbulence::Instance(dis.Name())->SetCsgsPhi(p.get<double>("meanCai"));
 
       break;
     }
 
-    case SCATRA::set_lsreinit_scatra_parameter:
+    case SCATRA::Action::set_lsreinit_scatra_parameter:
     {
       // set general parameters first
       ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
@@ -79,7 +79,7 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization& dis, Teuchos
       break;
     }
 
-    case SCATRA::set_elch_scatra_parameter:
+    case SCATRA::Action::set_elch_scatra_parameter:
     {
       // set general parameters first
       ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
@@ -90,7 +90,7 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization& dis, Teuchos
       break;
     }
 
-    case SCATRA::set_scatra_ele_boundary_parameter:
+    case SCATRA::Action::set_scatra_ele_boundary_parameter:
     {
       // set additional, problem-dependent parameters
       ScaTraEleParameterBoundary::Instance("scatra")->SetParameters(p);
@@ -98,7 +98,7 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization& dis, Teuchos
       break;
     }
 
-    case SCATRA::set_diffcond_scatra_parameter:
+    case SCATRA::Action::set_diffcond_scatra_parameter:
     {
       // set general parameters first
       ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
@@ -207,13 +207,13 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
   }
 
   // check for the action parameter
-  const auto action = DRT::INPUT::get<SCATRA::Action>(params, "action");
+  const auto action = Teuchos::getIntegralValue<SCATRA::Action>(params, "action");
   switch (action)
   {
     // all physics-related stuff is included in the implementation class(es) that can
     // be used in principle inside any element (at the moment: only Transport element)
-    case SCATRA::calc_mat_and_rhs:
-    case SCATRA::calc_rhs:
+    case SCATRA::Action::calc_mat_and_rhs:
+    case SCATRA::Action::calc_rhs:
     {
       return ScaTraFactory::ProvideImpl(
           Shape(), impltype_, numdofpernode, numscal, discretization.Name())
@@ -221,10 +221,10 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
       break;
     }
 
-    case SCATRA::calc_scatra_mono_odblock_fluid:
-    case SCATRA::calc_scatra_mono_odblock_mesh:
-    case SCATRA::calc_scatra_mono_odblock_scatrathermo:
-    case SCATRA::calc_scatra_mono_odblock_thermoscatra:
+    case SCATRA::Action::calc_scatra_mono_odblock_fluid:
+    case SCATRA::Action::calc_scatra_mono_odblock_mesh:
+    case SCATRA::Action::calc_scatra_mono_odblock_scatrathermo:
+    case SCATRA::Action::calc_scatra_mono_odblock_thermoscatra:
     {
       return ScaTraFactory::ProvideImpl(
           Shape(), impltype_, numdofpernode, numscal, discretization.Name())
@@ -233,49 +233,49 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
       break;
     }
 
-    case SCATRA::check_scatra_element_parameter:
-    case SCATRA::calc_initial_time_deriv:
-    case SCATRA::integrate_shape_functions:
-    case SCATRA::calc_flux_domain:
-    case SCATRA::calc_total_and_mean_scalars:
-    case SCATRA::calc_mean_scalar_time_derivatives:
-    case SCATRA::calc_domain_and_bodyforce:
-    case SCATRA::calc_scatra_box_filter:
-    case SCATRA::calc_turbulent_prandtl_number:
-    case SCATRA::calc_vreman_scatra:
-    case SCATRA::calc_subgrid_diffusivity_matrix:
-    case SCATRA::get_material_parameters:
-    case SCATRA::calc_mean_Cai:
-    case SCATRA::calc_dissipation:
-    case SCATRA::calc_mat_and_rhs_lsreinit_correction_step:
-    case SCATRA::calc_node_based_reinit_velocity:
-    case SCATRA::calc_domain_integral:
-    case SCATRA::calc_error:
-    case SCATRA::calc_elch_conductivity:
-    case SCATRA::calc_elch_electrode_soc_and_c_rate:
-    case SCATRA::calc_elch_elctrode_mean_concentration:
-    case SCATRA::calc_elch_domain_kinetics:
-    case SCATRA::recon_gradients_at_nodes:
-    case SCATRA::recon_curvature_at_nodes:
-    case SCATRA::calc_grad_ele_center:
-    case SCATRA::calc_mass_center_smoothingfunct:
-    case SCATRA::get_material_internal_state:
-    case SCATRA::set_material_internal_state:
-    case SCATRA::get_material_ionic_currents:
-    case SCATRA::time_update_material:
-    case SCATRA::calc_immersed_element_source:
-    case SCATRA::calc_elch_boundary_kinetics_point:
-    case SCATRA::micro_scale_initialize:
-    case SCATRA::micro_scale_prepare_time_step:
-    case SCATRA::micro_scale_solve:
-    case SCATRA::micro_scale_update:
-    case SCATRA::micro_scale_output:
-    case SCATRA::micro_scale_read_restart:
-    case SCATRA::micro_scale_set_time:
-    case SCATRA::calc_heteroreac_mat_and_rhs:
-    case SCATRA::calc_mass_matrix:
-    case SCATRA::transform_real_to_reference_point:
-    case SCATRA::evaluate_field_in_point:
+    case SCATRA::Action::check_scatra_element_parameter:
+    case SCATRA::Action::calc_initial_time_deriv:
+    case SCATRA::Action::integrate_shape_functions:
+    case SCATRA::Action::calc_flux_domain:
+    case SCATRA::Action::calc_total_and_mean_scalars:
+    case SCATRA::Action::calc_mean_scalar_time_derivatives:
+    case SCATRA::Action::calc_domain_and_bodyforce:
+    case SCATRA::Action::calc_scatra_box_filter:
+    case SCATRA::Action::calc_turbulent_prandtl_number:
+    case SCATRA::Action::calc_vreman_scatra:
+    case SCATRA::Action::calc_subgrid_diffusivity_matrix:
+    case SCATRA::Action::get_material_parameters:
+    case SCATRA::Action::calc_mean_Cai:
+    case SCATRA::Action::calc_dissipation:
+    case SCATRA::Action::calc_mat_and_rhs_lsreinit_correction_step:
+    case SCATRA::Action::calc_node_based_reinit_velocity:
+    case SCATRA::Action::calc_domain_integral:
+    case SCATRA::Action::calc_error:
+    case SCATRA::Action::calc_elch_conductivity:
+    case SCATRA::Action::calc_elch_electrode_soc_and_c_rate:
+    case SCATRA::Action::calc_elch_elctrode_mean_concentration:
+    case SCATRA::Action::calc_elch_domain_kinetics:
+    case SCATRA::Action::recon_gradients_at_nodes:
+    case SCATRA::Action::recon_curvature_at_nodes:
+    case SCATRA::Action::calc_grad_ele_center:
+    case SCATRA::Action::calc_mass_center_smoothingfunct:
+    case SCATRA::Action::get_material_internal_state:
+    case SCATRA::Action::set_material_internal_state:
+    case SCATRA::Action::get_material_ionic_currents:
+    case SCATRA::Action::time_update_material:
+    case SCATRA::Action::calc_immersed_element_source:
+    case SCATRA::Action::calc_elch_boundary_kinetics_point:
+    case SCATRA::Action::micro_scale_initialize:
+    case SCATRA::Action::micro_scale_prepare_time_step:
+    case SCATRA::Action::micro_scale_solve:
+    case SCATRA::Action::micro_scale_update:
+    case SCATRA::Action::micro_scale_output:
+    case SCATRA::Action::micro_scale_read_restart:
+    case SCATRA::Action::micro_scale_set_time:
+    case SCATRA::Action::calc_heteroreac_mat_and_rhs:
+    case SCATRA::Action::calc_mass_matrix:
+    case SCATRA::Action::transform_real_to_reference_point:
+    case SCATRA::Action::evaluate_field_in_point:
     {
       return ScaTraFactory::ProvideImpl(
           Shape(), impltype_, numdofpernode, numscal, discretization.Name())
@@ -283,14 +283,14 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
               this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
-    case SCATRA::set_general_scatra_parameter:
-    case SCATRA::set_turbulence_scatra_parameter:
-    case SCATRA::set_time_parameter:
-    case SCATRA::set_mean_Cai:
-    case SCATRA::set_lsreinit_scatra_parameter:
-    case SCATRA::set_elch_scatra_parameter:
-    case SCATRA::set_scatra_ele_boundary_parameter:
-    case SCATRA::set_diffcond_scatra_parameter:
+    case SCATRA::Action::set_general_scatra_parameter:
+    case SCATRA::Action::set_turbulence_scatra_parameter:
+    case SCATRA::Action::set_time_parameter:
+    case SCATRA::Action::set_mean_Cai:
+    case SCATRA::Action::set_lsreinit_scatra_parameter:
+    case SCATRA::Action::set_elch_scatra_parameter:
+    case SCATRA::Action::set_scatra_ele_boundary_parameter:
+    case SCATRA::Action::set_diffcond_scatra_parameter:
       // these actions have already been evaluated during element pre-evaluate
       break;
 

@@ -37,7 +37,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::EvaluateAction(DRT::Element* ele,
   const std::vector<int>& lm = la[0].lm_;
 
   // determine and evaluate action
-  if (action == SCATRA::calc_dissipation or action == SCATRA::calc_mean_Cai)
+  if (action == SCATRA::Action::calc_dissipation or action == SCATRA::Action::calc_mean_Cai)
   {
     if (my::scatraparatimint_->IsGenAlpha())
     {
@@ -48,7 +48,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::EvaluateAction(DRT::Element* ele,
     }
   }
 
-  if (action == SCATRA::calc_dissipation or action == SCATRA::calc_mean_Cai)
+  if (action == SCATRA::Action::calc_dissipation or action == SCATRA::Action::calc_mean_Cai)
   {
     // get thermodynamic pressure (for CalcDissipation)
     thermpressnp_ = params.get<double>("thermodynamic pressure");
@@ -59,7 +59,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::EvaluateAction(DRT::Element* ele,
 
   switch (action)
   {
-    case SCATRA::calc_domain_and_bodyforce:
+    case SCATRA::Action::calc_domain_and_bodyforce:
     {
       // NOTE: add integral values only for elements which are NOT ghosted!
       if (ele->Owner() == discretization.Comm().MyPID())

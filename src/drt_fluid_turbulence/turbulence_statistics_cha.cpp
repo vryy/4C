@@ -10,12 +10,15 @@
 /*----------------------------------------------------------------------*/
 
 #include "turbulence_statistics_cha.H"
-#include "../drt_lib/drt_globalproblem.H"
+
 #include "../drt_fluid/fluid_utils.H"
 
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../drt_fluid/fluid_xwall.H"
+
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/newtonianfluid.H"
@@ -24,7 +27,7 @@
 
 #define NODETOL 1e-9
 // turn on if problems with mean values in planes occur
-//#define NO_VALUES_IN_PLANES
+// #define NO_VALUES_IN_PLANES
 
 /*----------------------------------------------------------------------
 
@@ -3094,7 +3097,8 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
       // add dissipation and residuals of scalar field
 
       // set action for elements
-      scatraeleparams_.set<int>("action", SCATRA::calc_dissipation);
+      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+          "action", SCATRA::Action::calc_dissipation, scatraeleparams_);
       // set parameters required for evaluation of residuals, etc.
       scatraeleparams_.set<double>("time-step length", scatraparams_->get<double>("TIMESTEP"));
       scatraeleparams_.set<int>("fs subgrid diffusivity",

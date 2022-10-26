@@ -13,14 +13,12 @@
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "turbulence_hit_scalar_forcing.H"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Teuchos_TimeMonitor.hpp>
 #include "../drt_io/io.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_fluid_turbulence/dyn_smag.H"
 #include "../drt_fluid_turbulence/dyn_vreman.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 
 
 /*----------------------------------------------------------------------*
@@ -147,7 +145,8 @@ void SCATRA::TimIntLomaGenAlpha::ComputeThermPressure()
   if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
 
   // set action for elements
-  eleparams.set<int>("action", SCATRA::calc_domain_and_bodyforce);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_domain_and_bodyforce, eleparams);
   SetElementTimeParameter();
 
   // variables for integrals of domain and bodyforce
@@ -161,7 +160,8 @@ void SCATRA::TimIntLomaGenAlpha::ComputeThermPressure()
   double parbofint = (*scalars)[1];
 
   // set action for elements
-  eleparams.set<int>("action", SCATRA::bd_calc_loma_therm_press);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+      "action", SCATRA::BoundaryAction::calc_loma_therm_press, eleparams);
 
   // variables for integrals of normal velocity and diffusive flux
   double normvelint = 0.0;

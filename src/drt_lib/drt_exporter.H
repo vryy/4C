@@ -457,13 +457,6 @@ namespace DRT
     */
     inline std::vector<std::set<int>>& SendPlan() { return sendplan_; }
 
-#if 0
-  /*!
-  \brief Get recvplan_
-  */
-  inline vector<std::set<int> > & RecvPlan() { return recvplan_; }
-#endif
-
     /*!
     \brief generic export algorithm that delegates the specific pack/unpack to a helper
      */
@@ -484,10 +477,6 @@ namespace DRT
     int numproc_;
     //! sending information
     std::vector<std::set<int>> sendplan_;
-#if 0
-  //! receiving information
-  std::vector<std::set<int> >   recvplan_;
-#endif
 
     /// Internal helper class for Exporter that encapsulates packing and unpacking
     /*!

@@ -28,11 +28,22 @@ find_library(
 
 mark_as_advanced(NETCDF_INCLUDE_DIR NETCDF_LIBRARY)
 
-# Per-recommendation
-set(NETCDF_INCLUDE_DIRS ${NETCDF_INCLUDE_DIR})
-set(NETCDF_LIBRARIES ${NETCDF_LIBRARY})
-
 # handle the QUIETLY and REQUIRED arguments and set NETCDF_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Netcdf DEFAULT_MSG NETCDF_LIBRARIES NETCDF_INCLUDE_DIRS)
+find_package_handle_standard_args(Netcdf DEFAULT_MSG NETCDF_LIBRARY NETCDF_INCLUDE_DIR)
+
+if(NETCDF_FOUND AND NOT TARGET netcdf::netcdf)
+  add_library(netcdf::netcdf UNKNOWN IMPORTED)
+  set_target_properties(
+    netcdf::netcdf
+    PROPERTIES IMPORTED_LOCATION "${NETCDF_LIBRARY}"
+               INTERFACE_INCLUDE_DIRECTORIES "${NETCDF_INCLUDE_DIR}"
+    )
+endif()
+
+if(NETCDF_FOUND)
+  list(APPEND BACI_ALL_ENABLED_EXTERNAL_LIBS netcdf::netcdf)
+  message(STATUS "Netcdf include directory: ${NETCDF_INCLUDE_DIR}")
+  message(STATUS "Netcdf library directory: ${NETCDF_LIBRARY}")
+endif(NETCDF_FOUND)

@@ -29,10 +29,28 @@ find_library(
   /usr/lib64
   )
 
-set(FFTW_INCLUDE_DIRS ${FFTW_INCLUDE_DIR})
-set(FFTW_LIBRARIES ${FFTW_LIBRARY})
-
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(FFTW DEFAULT_MSG FFTW_LIBRARIES FFTW_INCLUDE_DIRS)
+find_package_handle_standard_args(FFTW DEFAULT_MSG FFTW_LIBRARY FFTW_INCLUDE_DIR)
 
-mark_as_advanced(FFTW_INCLUDE_DIRS FFTW_LIBRARIES)
+if(FFTW_FOUND AND NOT TARGET fftw::fftw)
+  add_library(fftw::fftw UNKNOWN IMPORTED)
+  set_target_properties(
+    fftw::fftw
+    PROPERTIES IMPORTED_LOCATION "${FFTW_LIBRARY}"
+               INTERFACE_INCLUDE_DIRECTORIES "${FFTW_INCLUDE_DIR}"
+    )
+endif()
+
+if(FFTW_FOUND)
+  message(STATUS "FFTW include directory: ${FFTW_INCLUDE_DIR}")
+  message(STATUS "FFTW libraries: ${FFTW_LIBRARY}")
+
+  list(APPEND BACI_ALL_ENABLED_EXTERNAL_LIBS fftw::fftw)
+  add_definitions("-DHAVE_FFTW") # HAVE_FFTW preprocessor flag for BACI
+  set(HAVE_FFTW ON)
+else()
+  message("WW *************************************************************")
+  message("WW Warning: FFTW not found. no FFTW support in BACI.")
+  message("WW Warning: You cannot run simulations that need a discrete FFT.")
+  message("WW *************************************************************")
+endif()

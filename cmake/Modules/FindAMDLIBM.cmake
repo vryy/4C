@@ -25,3 +25,18 @@ include(FindPackageHandleStandardArgs)
 
 find_package_handle_standard_args(AMDLIBM DEFAULT_MSG AMDLIBM_INCLUDES AMDLIBM_LIBRARIES)
 mark_as_advanced(AMDLIBM_INCLUDES AMDLIBM_LIBRARIES)
+
+if(AMDLIBM_FOUND AND NOT TARGET amdlibm::amdlibm)
+  add_library(amdlibm::amdlibm UNKNOWN IMPORTED)
+  set_target_properties(
+    amdlibm::amdlibm
+    PROPERTIES IMPORTED_LOCATION "${AMDLIBM_LIBRARIES}"
+               INTERFACE_INCLUDE_DIRECTORIES "${AMDLIBM_INCLUDES}"
+    )
+endif()
+
+if(AMDLIBM_FOUND)
+  list(APPEND BACI_ALL_ENABLED_EXTERNAL_LIBS amdlibm::amdlibm)
+  message(STATUS "Found AMD libM: ${AMDLIBM_LIBRARIES}")
+  message(STATUS "Found AMD libM: ${AMDLIBM_INCLUDES}")
+endif()

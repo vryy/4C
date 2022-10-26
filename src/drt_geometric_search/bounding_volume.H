@@ -13,19 +13,67 @@
 #ifndef BOUNDING_VOLUME_H
 #define BOUNDING_VOLUME_H
 
+#ifdef HAVE_ARBORX
+#include <ArborX.hpp>
+#include <ArborX_KDOP.hpp>
+#endif
+
 #include "../linalg/linalg_fixedsizematrix.H"
+
+#ifdef HAVE_ARBORX
+namespace ArborX::Details
+{
+  /*! \brief  This struct helps to get access to the protected static member directions from ArborX.
+   */
+  template <int n_directions>
+  struct GetKDOPDirections : private KDOP_Directions<2 * n_directions>
+  {
+    static KOKKOS_FUNCTION Kokkos::Array<Direction, n_directions> const &directions()
+    {
+      return KDOP_Directions<2 * n_directions>::directions();
+    }
+  };
+}  // namespace ArborX::Details
 
 namespace GEOMETRICSEARCH
 {
+  //! kdop_directions is the number of directions defining the possible faces of the k-DOP. In this
+  //! case 13 means that we have the (3) Cartesian basis vectors, all vectors pointing to the edges
+  //! of a unit cube (6) and all vectors pointing to corners of the unit cube (4). For more details
+  //! have a look in ArborX_KDOP.hpp.
+  constexpr int kdop_directions = 13;
+
+  //! kdop_k is the number of bounding slabs for the k-DOP, i.e., the resulting polytope can have a
+  //! maximum of kdop_k faces
+  constexpr int kdop_k = 2 * kdop_directions;
+}  // namespace GEOMETRICSEARCH
+#endif
+
+namespace GEOMETRICSEARCH
+{
+  /*!
+   * \brief Class representing a bounding volume of a set of points.
+   *
+   * Internal this class uses k-DOPs implemented in ArborX. A k-DOP (discrete oriented polytope) is
+   * a convex polytope containing the object.
+   */
   struct BoundingVolume
   {
-    /*! \brief Constructor initializing the bounding volume corners with numerical limit values.
+#ifndef HAVE_ARBORX
+    /*! \brief This class can not be used without ArborX, add empy methods and a controlled error.
      */
     BoundingVolume()
     {
-      min_corner_.PutScalar(std::numeric_limits<double>::max());
-      max_corner_.PutScalar(std::numeric_limits<double>::lowest());
+      dserror(
+          "The struct 'GEOMETRICSEARCH::BoundingVolume' can only be used with ArborX."
+          "To use it, enable ArborX during the configure process.");
     }
+    inline void ExtendBoundaries(const double offset) {}
+    inline void AddPoint(const LINALG::Matrix<3, 1, double> &point) {}
+#else
+    /*! \brief Constructor initializing the bounding volume corners with numerical limit values.
+     */
+    BoundingVolume() : bounding_volume_{} {}
 
     /*! \brief Adds a point to the bounding volume.
      *
@@ -33,49 +81,34 @@ namespace GEOMETRICSEARCH
      */
     inline void AddPoint(const LINALG::Matrix<3, 1, double>& point)
     {
-      for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-      {
-        min_corner_(i_dim) = std::min(min_corner_(i_dim), point(i_dim));
-        max_corner_(i_dim) = std::max(max_corner_(i_dim), point(i_dim));
-      }
+      bounding_volume_ += ArborX::Point{
+          static_cast<float>(point(0)), static_cast<float>(point(1)), static_cast<float>(point(2))};
     }
 
     /*! \brief Extends the bounding volume based on a scalar value.
      *
-     * @param offset Safety value by which to expand the bounding volume
+     * @param offset Value by which to expand the bounding volume
      */
     inline void ExtendBoundaries(const double offset)
     {
-      dsassert(!std::signbit(offset), "Offset parameter needs to be positive!");
-
-      LINALG::Matrix<3, 1, double> offset_vector;
-      offset_vector.PutScalar(offset);
-
-      min_corner_ -= offset_vector;
-      max_corner_ += offset_vector;
+      // Loop over directions.
+      for (int i_dir = 0; i_dir < kdop_directions; i_dir++)
+      {
+        const auto& direction =
+            ArborX::Details::GetKDOPDirections<kdop_directions>::directions()[i_dir];
+        const auto direction_scaling_factor = std::sqrt(direction._data[0] * direction._data[0] +
+                                                        direction._data[1] * direction._data[1] +
+                                                        direction._data[2] * direction._data[2]);
+        const auto scaled_offset = offset * direction_scaling_factor;
+        bounding_volume_._min_values[i_dir] -= static_cast<float>(scaled_offset);
+        bounding_volume_._max_values[i_dir] += static_cast<float>(scaled_offset);
+      }
     }
 
-    //! Corners of the bounding box
-    LINALG::Matrix<3, 1, double> min_corner_;
-    LINALG::Matrix<3, 1, double> max_corner_;
+    //! Use an ArborX geometry as internal storage.
+    ArborX::Experimental::KDOP<kdop_k> bounding_volume_;
+#endif
   };
-
-  /*! \brief Checks if two bounding volumes intersect with each other.
-   *
-   * @param box_1 Fist bounding volume to be considered for intersection
-   * @param box_2 Second bounding volume to be considered for intersection
-   * @return Boolean is true if bounding volumes intersect, false otherwise
-   */
-  inline bool BoxesIntersect(const BoundingVolume& box_1, const BoundingVolume& box_2)
-  {
-    for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-    {
-      const bool dimension_overlaps = (box_1.min_corner_(i_dim) < box_2.max_corner_(i_dim)) and
-                                      (box_2.min_corner_(i_dim) < box_1.max_corner_(i_dim));
-      if (!dimension_overlaps) return false;
-    }
-    return true;
-  }
 }  // namespace GEOMETRICSEARCH
 
 #endif

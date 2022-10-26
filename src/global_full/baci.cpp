@@ -31,6 +31,8 @@
 #include <trilinos_version.H>
 #include <unistd.h>
 
+#include <Kokkos_Core.hpp>
+
 #ifdef TRAP_FE
 #include <cfenv>
 #endif /* TRAP_FE */
@@ -213,6 +215,7 @@ int main(int argc, char *argv[])
   int buffsize = MPIBUFFSIZE;
 
   MPI_Init(&argc, &argv);
+  Kokkos::ScopeGuard kokkos_guard(argc, argv);
 
   COMM_UTILS::CreateComm(argc, argv);
 

@@ -366,8 +366,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupl
     my::ExtractNodeValues(emastertemp, discretization, la, "imastertemp", 3);
 
   // get primary variable to derive the linearization
-  const int differentiationtype =
-      params.get<int>("differentiationtype", static_cast<int>(SCATRA::DifferentiationType::none));
+  const auto differentiationtype =
+      Teuchos::getIntegralValue<SCATRA::DifferentiationType>(params, "differentiationtype");
 
   // get the node coordinates in material configuration (we have a nsd_+1 dimensional domain!)
   LINALG::Matrix<my::nsd_ + 1, my::nen_> XYZe;
@@ -420,8 +420,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
         funct_master,
     const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
     const double timefacfac, const double timefacwgt, const double detF,
-    const int differentiationtype, const LINALG::Matrix<my::nsd_ + 1, my::nen_>& shapederivatives,
-    Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm)
+    const SCATRA::DifferentiationType differentiationtype,
+    const LINALG::Matrix<my::nsd_ + 1, my::nen_>& shapederivatives, Epetra_SerialDenseMatrix& k_ss,
+    Epetra_SerialDenseMatrix& k_sm)
 {
   // get condition specific parameters
   const int kineticmodel = scatra_parameter_boundary->KineticModel();
@@ -455,7 +456,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
     {
       switch (differentiationtype)
       {
-        case static_cast<int>(SCATRA::DifferentiationType::elch):
+        case SCATRA::DifferentiationType::elch:
         {
           // access input parameters associated with current condition
           const double faraday =
@@ -553,7 +554,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
     {
       switch (differentiationtype)
       {
-        case static_cast<int>(SCATRA::DifferentiationType::disp):
+        case SCATRA::DifferentiationType::disp:
         {
           // Part 1
           // compute factor F/(RT)
@@ -639,7 +640,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
           }
           break;
         }
-        case static_cast<int>(SCATRA::DifferentiationType::elch):
+        case SCATRA::DifferentiationType::elch:
         {
           const double gasconstant =
               DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
@@ -746,14 +747,14 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateAction(
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::bd_calc_s2icoupling:
+    case SCATRA::BoundaryAction::calc_s2icoupling:
     {
       EvaluateS2ICoupling(
           ele, params, discretization, la, elemat1_epetra, elemat1_epetra, elevec1_epetra);
       break;
     }
 
-    case SCATRA::bd_calc_s2icoupling_od:
+    case SCATRA::BoundaryAction::calc_s2icoupling_od:
     {
       EvaluateS2ICouplingOD(ele, params, discretization, la, elemat1_epetra, elemat2_epetra);
       break;
@@ -870,8 +871,9 @@ template void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<DRT::Element::qua
         const LINALG::Matrix<
             DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
         const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double, const double,
-        const double, const int, const LINALG::Matrix<my::nsd_ + 1, my::nen_>&,
-        Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&);
+        const double, const SCATRA::DifferentiationType,
+        const LINALG::Matrix<my::nsd_ + 1, my::nen_>&, Epetra_SerialDenseMatrix&,
+        Epetra_SerialDenseMatrix&);
 template void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<DRT::Element::quad4>::
     EvaluateS2ICouplingODAtIntegrationPoint<DRT::Element::tri3>(
         const Teuchos::RCP<const MAT::Electrode>&, const LINALG::Matrix<my::nen_, 1>&,
@@ -884,8 +886,9 @@ template void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<DRT::Element::qua
         const LINALG::Matrix<
             DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
         const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double, const double,
-        const double, const int, const LINALG::Matrix<my::nsd_ + 1, my::nen_>&,
-        Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&);
+        const double, const SCATRA::DifferentiationType,
+        const LINALG::Matrix<my::nsd_ + 1, my::nen_>&, Epetra_SerialDenseMatrix&,
+        Epetra_SerialDenseMatrix&);
 template void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<DRT::Element::tri3>::
     EvaluateS2ICouplingODAtIntegrationPoint<DRT::Element::quad4>(
         const Teuchos::RCP<const MAT::Electrode>&, const LINALG::Matrix<my::nen_, 1>&,
@@ -898,8 +901,9 @@ template void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<DRT::Element::tri
         const LINALG::Matrix<
             DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
         const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double, const double,
-        const double, const int, const LINALG::Matrix<my::nsd_ + 1, my::nen_>&,
-        Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&);
+        const double, const SCATRA::DifferentiationType,
+        const LINALG::Matrix<my::nsd_ + 1, my::nen_>&, Epetra_SerialDenseMatrix&,
+        Epetra_SerialDenseMatrix&);
 template void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<DRT::Element::tri3>::
     EvaluateS2ICouplingODAtIntegrationPoint<DRT::Element::tri3>(
         const Teuchos::RCP<const MAT::Electrode>&, const LINALG::Matrix<my::nen_, 1>&,
@@ -912,5 +916,6 @@ template void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<DRT::Element::tri
         const LINALG::Matrix<
             DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
         const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double, const double,
-        const double, const int, const LINALG::Matrix<my::nsd_ + 1, my::nen_>&,
-        Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&);
+        const double, const SCATRA::DifferentiationType,
+        const LINALG::Matrix<my::nsd_ + 1, my::nen_>&, Epetra_SerialDenseMatrix&,
+        Epetra_SerialDenseMatrix&);

@@ -31,13 +31,13 @@ int DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::EvaluateAction(
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::calc_elch_electrode_soc_and_c_rate:
+    case SCATRA::Action::calc_elch_electrode_soc_and_c_rate:
     {
       CalculateElectrodeSOCAndCRate(ele, discretization, la, elevec1_epetra);
 
       break;
     }
-    case SCATRA::calc_elch_elctrode_mean_concentration:
+    case SCATRA::Action::calc_elch_elctrode_mean_concentration:
     {
       CalculateMeanElectrodeConcentration(ele, discretization, la, elevec1_epetra);
 

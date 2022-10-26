@@ -181,13 +181,14 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
   if (!hdgele) dserror("cannot cast element to scatrahdg element");
 
   // get the action required
-  const SCATRA::Action act = DRT::INPUT::get<SCATRA::Action>(params, "action");
+
+  const auto act = Teuchos::getIntegralValue<SCATRA::Action>(params, "action");
 
   InitializeShapes(ele, discretization.Name());
 
   switch (act)
   {
-    case SCATRA::update_interior_variables:
+    case SCATRA::Action::update_interior_variables:
     {
       shapes_->Evaluate(*ele);
       ReadGlobalVectors(ele, discretization, la);
@@ -196,7 +197,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
       break;
     }
 
-    case SCATRA::interpolate_hdg_to_node:
+    case SCATRA::Action::interpolate_hdg_to_node:
     {
       shapes_->Evaluate(*ele);
       ReadGlobalVectors(ele, discretization, la);
@@ -204,7 +205,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
       break;
     }
 
-    case SCATRA::set_initial_field:
+    case SCATRA::Action::set_initial_field:
     {
       ElementInit(ele);
       PrepareMaterialParams(ele);
@@ -213,7 +214,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
 
       break;
     }
-    case SCATRA::calc_mat_initial:
+    case SCATRA::Action::calc_mat_initial:
     {
       if (hdgele->PadaptEle() || !hdgele->MatInit())
       {
@@ -229,33 +230,33 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
 
       break;
     }
-    case SCATRA::project_material_field:
+    case SCATRA::Action::project_material_field:
     {
       ProjectMaterialField(ele);
       break;
     }
-    case SCATRA::project_field:
+    case SCATRA::Action::project_field:
     {
       shapes_->Evaluate(*ele);
       return ProjectField(ele, discretization, params, elevec1_epetra, elevec2_epetra, la);
       break;
     }
-    case SCATRA::time_update_material:
+    case SCATRA::Action::time_update_material:
     {
       TimeUpdateMaterial(ele);
       break;
     }
-    case SCATRA::get_material_internal_state:
+    case SCATRA::Action::get_material_internal_state:
     {
       GetMaterialInternalState(ele, params, discretization);
       break;
     }
-    case SCATRA::set_material_internal_state:
+    case SCATRA::Action::set_material_internal_state:
     {
       SetMaterialInternalState(ele, params, discretization);
       break;
     }
-    case SCATRA::project_dirich_field:
+    case SCATRA::Action::project_dirich_field:
     {
       if (params.isParameter("faceconsider"))
       {
@@ -263,7 +264,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
       }
       break;
     }
-    case SCATRA::project_neumann_field:
+    case SCATRA::Action::project_neumann_field:
     {
       int face = params.get<int>("face");
       int sumindex = 0;
@@ -279,14 +280,14 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
       localSolver_->ComputeNeumannBC(ele, params, face, elevec1_epetra, sumindex);
       break;
     }
-    case SCATRA::calc_padaptivity:
+    case SCATRA::Action::calc_padaptivity:
     {
       shapes_->Evaluate(*ele);
       ReadGlobalVectors(ele, discretization, la);
       return CalcPAdaptivity(ele, discretization, params);
       break;
     }
-    case SCATRA::calc_error:
+    case SCATRA::Action::calc_error:
     {
       shapes_->Evaluate(*ele);
       ReadGlobalVectors(ele, discretization, la);

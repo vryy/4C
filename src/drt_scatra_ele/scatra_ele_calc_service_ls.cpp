@@ -10,11 +10,7 @@
 
 #include "scatra_ele_calc_ls.H"
 
-#include "scatra_ele.H"
 #include "scatra_ele_action.H"
-
-//#include "scatra_ele_parameter.H"
-//#include "scatra_ele_parameter_timint.H"
 
 #include "../drt_inpar/inpar_levelset.H"
 
@@ -41,7 +37,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::EvaluateAction(DRT::Element* ele,
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::calc_error:
+    case SCATRA::Action::calc_error:
     {
       // extract local values from the global vectors
       Teuchos::RCP<const Epetra_Vector> phizero = discretization.GetState("phiref");

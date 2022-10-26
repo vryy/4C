@@ -25,6 +25,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_matchingoctree.H"
 #include "../drt_lib/drt_utils_gid_vector.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 
@@ -406,7 +407,8 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateBulkSide(
         Teuchos::rcp(new LINALG::SparseMatrix(*full_map_scatra_, 27, false, true));
 
     Teuchos::ParameterList condparams;
-    condparams.set<int>("action", SCATRA::bd_calc_s2icoupling);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+        "action", SCATRA::BoundaryAction::calc_s2icoupling, condparams);
     condparams.set<int>("ndsdisp", 1);
     condparams.set<int>("evaluate_manifold_coupling", 1);
 
@@ -414,8 +416,8 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateBulkSide(
 
     // Evaluation of RHS and scatra-manifold coupling matrices
     {
-      condparams.set<int>(
-          "differentiationtype", static_cast<int>(SCATRA::DifferentiationType::elch));
+      DRT::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
+          "differentiationtype", SCATRA::DifferentiationType::elch, condparams);
 
       // dscatra_dscatra, dscatra_dmanifold (on scatra side)
       DRT::AssembleStrategy strategyscatra(0, 0, systemmatrix_scatra_cond_,
@@ -437,10 +439,11 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateBulkSide(
 
     // Evaluation of linearization w.r.t. displacement
     {
-      condparams.set<int>("action", SCATRA::bd_calc_s2icoupling_od);
+      DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+          "action", SCATRA::BoundaryAction::calc_s2icoupling_od, condparams);
 
-      condparams.set<int>(
-          "differentiationtype", static_cast<int>(SCATRA::DifferentiationType::disp));
+      DRT::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
+          "differentiationtype", SCATRA::DifferentiationType::disp, condparams);
 
       // dscatra_dstructure
       auto matrix_scatra_structure_cond_slave_side_disp_evaluate =
@@ -652,7 +655,8 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldDomainIntegra
   {
     Teuchos::ParameterList condparams;
 
-    condparams.set<int>("action", SCATRA::bd_calc_boundary_integral);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+        "action", SCATRA::BoundaryAction::calc_boundary_integral, condparams);
 
     condparams.set<int>("ndsdisp", 1);
 
@@ -675,7 +679,8 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldInflowIntegra
 
   Teuchos::ParameterList condparams;
 
-  condparams.set<int>("action", SCATRA::bd_calc_s2icoupling_flux);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+      "action", SCATRA::BoundaryAction::calc_s2icoupling_flux, condparams);
 
   condparams.set<int>("ndsdisp", 1);
 
@@ -701,7 +706,8 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::PreEvaluate(
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", SCATRA::set_scatra_ele_boundary_parameter);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::set_scatra_ele_boundary_parameter, eleparams);
 
   eleparams.set<DRT::Condition::ConditionType>(
       "condition type", DRT::Condition::ConditionType::S2IKinetics);

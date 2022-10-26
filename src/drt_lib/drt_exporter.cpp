@@ -190,15 +190,6 @@ void DRT::Exporter::ConstructExporter()
   // SendPlan()(lid,MyPID()) = 0 always! (I never send to myself)
   SendPlan().resize(NumProc());
 
-#if 0
-  // allocate a receive plan
-  // RecvPlan():
-  // RecvPlan()(lid,proc) = 1 data with local id lid will be received from proc
-  // RecvPlan()(lid,proc) = 0 otherwise
-  // RecvPlan()(lid,MyPID()) = 0 always! (I never receive from myself)
-  RecvPlan().resize(NumProc());
-#endif
-
   // To build these plans, everybody has to communicate what he has and wants:
   // bundle this info to save on communication:
   int sizes[2];
@@ -225,21 +216,6 @@ void DRT::Exporter::ConstructExporter()
     // const int* have = &recvbuff[0];            // this is what proc has
     const int* want = &recvbuff[recvsizes[0]];  // this is what proc needs
 
-#if 0
-    // Loop what proc has and what I need (RecvPlan)
-    // (I do not receive from myself)
-    if (proc != MyPID())
-      for (int i=0; i<recvsizes[0]; ++i)
-      {
-        const int gid = have[i];
-        if (TargetMap().MyGID(gid))
-        {
-          const int lid = TargetMap().LID(gid);
-          RecvPlan()[proc].insert(lid);
-        }
-      }
-#endif
-
     // Loop what proc wants and what I have (SendPlan)
     if (proc != MyPID())
     {
@@ -255,42 +231,6 @@ void DRT::Exporter::ConstructExporter()
     }
     Comm().Barrier();
   }  // for (int proc=0; proc<NumProc(); ++proc)
-
-
-
-#if 0
-  // make test print of RecvPlan
-  for (int proc=0; proc<NumProc(); ++proc)
-  {
-    if (MyPID()==proc)
-    {
-      for (int i=0; i<RecvPlan().M(); ++i)
-        for (int j=0; j<RecvPlan().N(); ++j)
-          if (RecvPlan()(i,j))
-            cout << "Proc " << MyPID() << " wants gid "
-                 << TargetMap().MyGlobalElements()[i]
-                 << " from proc " << j << endl;
-    }
-    fflush(stdout);
-    Comm().Barrier();
-  }
-  cout << endl;
-  // make test print of SendPlan
-  for (int proc=0; proc<NumProc(); ++proc)
-  {
-    if (MyPID()==proc)
-    {
-      for (int i=0; i<SendPlan().M(); ++i)
-        for (int j=0; j<SendPlan().N(); ++j)
-          if (SendPlan()(i,j))
-          cout << "Proc " << MyPID() << " sends gid "
-               << SourceMap().MyGlobalElements()[i]
-               << " to proc " << j << endl;
-    }
-    fflush(stdout);
-    Comm().Barrier();
-  }
-#endif
 }
 
 void DRT::Exporter::GenericExport(ExporterHelper& helper)

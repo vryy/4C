@@ -15,7 +15,7 @@
 #include "poro_base.H"
 #include "poroelast_utils.H"
 
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+
 #include "../drt_adapter/ad_fld_poro.H"
 #include "../drt_adapter/ad_str_fpsiwrapper.H"
 
@@ -25,18 +25,15 @@
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
 #include "../drt_io/io_control.H"
-#include "../drt_inpar/inpar_poroelast.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_assemblestrategy.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_blocksparsematrix.H"
-
 
 
 /*----------------------------------------------------------------------*
@@ -1156,7 +1153,8 @@ void POROELAST::PoroScatraMono::EvaluateODBlockMatScatra()
 
   k_sps_->Zero();
 
-  sparams_struct.set<int>("action", SCATRA::calc_scatra_mono_odblock_mesh);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_scatra_mono_odblock_mesh, sparams_struct);
   // other parameters that might be needed by the elements
   sparams_struct.set("delta time", Dt());
   sparams_struct.set("total time", Time());
@@ -1193,7 +1191,8 @@ void POROELAST::PoroScatraMono::EvaluateODBlockMatScatra()
   // create the parameters for the discretization
   Teuchos::ParameterList sparams_fluid;
 
-  sparams_fluid.set<int>("action", SCATRA::calc_scatra_mono_odblock_fluid);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_scatra_mono_odblock_fluid, sparams_fluid);
   // other parameters that might be needed by the elements
   sparams_fluid.set("delta time", Dt());
   sparams_fluid.set("total time", Time());

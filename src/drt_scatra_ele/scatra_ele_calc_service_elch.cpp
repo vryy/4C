@@ -43,13 +43,13 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::check_scatra_element_parameter:
+    case SCATRA::Action::check_scatra_element_parameter:
     {
       CheckElchElementParameter(ele);
       break;
     }
 
-    case SCATRA::calc_flux_domain:
+    case SCATRA::Action::calc_flux_domain:
     {
       //--------------------------------------------------------------------------------
       // extract element based or nodal values
@@ -181,7 +181,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
 
       break;
     }
-    case SCATRA::calc_error:
+    case SCATRA::Action::calc_error:
     {
       // check if length suffices
       if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
@@ -196,7 +196,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
       break;
     }
 
-    case SCATRA::calc_elch_conductivity:
+    case SCATRA::Action::calc_elch_conductivity:
     {
       // get flag if effective conductivity should be calculated
       bool effCond = params.get<bool>("effCond");
@@ -214,7 +214,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
       break;
     }
 
-    case SCATRA::calc_elch_boundary_kinetics_point:
+    case SCATRA::Action::calc_elch_boundary_kinetics_point:
     {
       // process electrode boundary kinetics point condition
       CalcElchBoundaryKineticsPoint(

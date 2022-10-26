@@ -40,7 +40,7 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::EvaluateAct
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::time_update_material:
+    case SCATRA::Action::time_update_material:
     {
       std::vector<Teuchos::RCP<MAT::Myocard>> updatemat;
       updatemat.reserve(my::numscal_);
@@ -100,7 +100,7 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::EvaluateAct
       break;
     }
 
-    case SCATRA::get_material_internal_state:
+    case SCATRA::Action::get_material_internal_state:
     {
       // NOTE: add integral values only for elements which are NOT ghosted!
       if (ele->Owner() == discretization.Comm().MyPID())
@@ -128,7 +128,7 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::EvaluateAct
       break;
     }
 
-    case SCATRA::set_material_internal_state:
+    case SCATRA::Action::set_material_internal_state:
     {
       // NOTE: add integral values only for elements which are NOT ghosted!
       if (ele->Owner() == discretization.Comm().MyPID())
@@ -150,7 +150,7 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::EvaluateAct
 
     break;
 
-    case SCATRA::get_material_ionic_currents:
+    case SCATRA::Action::get_material_ionic_currents:
     {
       // NOTE: add integral values only for elements which are NOT ghosted!
       if (ele->Owner() == discretization.Comm().MyPID())

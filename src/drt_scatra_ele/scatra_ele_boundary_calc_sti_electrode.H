@@ -125,7 +125,8 @@ namespace DRT
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
-          double timefacfac, double timefacwgt, double detF, int differentiationtype,
+          double timefacfac, double timefacwgt, double detF,
+          SCATRA::DifferentiationType differentiationtype,
           const LINALG::Matrix<my::nsd_ + 1, my::nen_>& shapederivatives,
           Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm);
 

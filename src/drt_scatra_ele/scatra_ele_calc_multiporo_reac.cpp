@@ -345,7 +345,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractElementAndNodeVa
     DRT::Element::LocationArray& la)
 {
   // extract action parameter
-  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params, "action");
+  const auto action = Teuchos::getIntegralValue<SCATRA::Action>(params, "action");
   VarManager()->SetAction(action);
 
   //---------------------------------------------------------------------------------------------

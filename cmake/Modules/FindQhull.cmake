@@ -29,10 +29,20 @@ find_library(
 
 message("II use QHULL in ${QHULL_LIBRARY}")
 
-set(QHULL_INCLUDE_DIRS ${QHULL_INCLUDE_DIR})
-set(QHULL_LIBRARIES ${QHULL_LIBRARY})
-
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Qhull DEFAULT_MSG QHULL_LIBRARIES QHULL_INCLUDE_DIRS)
+find_package_handle_standard_args(Qhull DEFAULT_MSG QHULL_LIBRARY QHULL_INCLUDE_DIR)
 
-mark_as_advanced(QHULL_INCLUDE_DIRS QHULL_LIBRARIES)
+if(QHULL_FOUND AND NOT TARGET qhull::qhull)
+  add_library(qhull::qhull UNKNOWN IMPORTED)
+  set_target_properties(
+    qhull::qhull
+    PROPERTIES IMPORTED_LOCATION "${QHULL_LIBRARY}"
+               INTERFACE_INCLUDE_DIRECTORIES "${QHULL_INCLUDE_DIR}"
+    )
+endif()
+
+if(QHULL_FOUND)
+  message(STATUS "QHULL include directory: ${QHULL_INCLUDE_DIR}")
+  message(STATUS "QHULL library directory: ${QHULL_LIBRARY}")
+  list(APPEND BACI_ALL_ENABLED_EXTERNAL_LIBS qhull::qhull)
+endif(QHULL_FOUND)

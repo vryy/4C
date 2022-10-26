@@ -586,8 +586,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
 
   // get condition specific parameters
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
-  const int differentiationtype =
-      params.get<int>("differentiationtype", static_cast<int>(SCATRA::DifferentiationType::none));
+  const auto differentiationtype =
+      Teuchos::getIntegralValue<SCATRA::DifferentiationType>(params, "differentiationtype");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   this->ExtractNodeValues(discretization, la);
@@ -679,7 +679,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
         // derivative of interface flux w.r.t. displacement
         switch (differentiationtype)
         {
-          case static_cast<int>(SCATRA::DifferentiationType::disp):
+          case SCATRA::DifferentiationType::disp:
           {
             double dj_dd_slave_timefacwgt(0.0);
             myelectrodeutils::CalculateButlerVolmerDispLinearizations(
@@ -721,7 +721,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       {
         switch (differentiationtype)
         {
-          case static_cast<int>(SCATRA::DifferentiationType::disp):
+          case SCATRA::DifferentiationType::disp:
           {
             const std::vector<bool>* onoff = my::scatraparamsboundary_->OnOff();
 
@@ -792,8 +792,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
     DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix,
     Epetra_SerialDenseMatrix& emastermatrix)
 {
-  const int differentiationtype =
-      params.get<int>("differentiationtype", static_cast<int>(SCATRA::DifferentiationType::none));
+  const auto differentiationtype =
+      Teuchos::getIntegralValue<SCATRA::DifferentiationType>(params, "differentiationtype");
 
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
   const int numelectrons = my::scatraparamsboundary_->NumElectrons();
@@ -855,7 +855,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
         // derivative of interface flux w.r.t. displacement
         switch (differentiationtype)
         {
-          case static_cast<int>(SCATRA::DifferentiationType::disp):
+          case SCATRA::DifferentiationType::disp:
           {
             const double djC_dd_timefacwgt = jC * timefacwgt;
 

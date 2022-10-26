@@ -19,6 +19,7 @@
 #include "../drt_fluid_turbulence/dyn_vreman.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
@@ -126,7 +127,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain()
   Teuchos::ParameterList params;
 
   // set action for elements
-  params.set<int>("action", SCATRA::calc_flux_domain);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_flux_domain, params);
 
   // number of dofset for velocity-related dofs
   params.set<int>("ndsvel", nds_vel_);
@@ -149,7 +151,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain()
     Teuchos::RCP<Epetra_Vector> integratedshapefcts = LINALG::CreateVector(dofrowmap);
 
     // overwrite action for elements
-    params.set<int>("action", SCATRA::integrate_shape_functions);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::integrate_shape_functions, params);
 
     // integrate shape functions
     Epetra_IntSerialDenseVector dofids(NumDofPerNode());
@@ -170,7 +173,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain()
   {
     // solve global, linear system of equations without lumping global mass matrix
     // overwrite action for elements
-    params.set<int>("action", SCATRA::calc_mass_matrix);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::calc_mass_matrix, params);
 
     // initialize global mass matrix
     Teuchos::RCP<LINALG::SparseMatrix> massmatrix =
@@ -245,7 +249,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
       Teuchos::ParameterList eleparams;
       // action for elements
-      eleparams.set<int>("action", SCATRA::calc_mat_and_rhs);
+      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+          "action", SCATRA::Action::calc_mat_and_rhs, eleparams);
 
       // other parameters that might be needed by the elements
       // the resulting system has to be solved incrementally
@@ -309,7 +314,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     discret_->ClearState();
     Teuchos::ParameterList params;
 
-    params.set<int>("action", SCATRA::bd_add_convective_mass_flux);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+        "action", SCATRA::BoundaryAction::add_convective_mass_flux, params);
 
     // add element parameters according to time-integration scheme
     AddTimeIntegrationSpecificVectors();
@@ -396,7 +402,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       // lump boundary mass matrix instead of solving a small, linear system of equations
       // calculate integral of shape functions over indicated boundary and its area
       params.set("area", 0.0);
-      params.set<int>("action", SCATRA::bd_integrate_shape_functions);
+      DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+          "action", SCATRA::BoundaryAction::integrate_shape_functions, params);
 
       // create vector (+ initialization with zeros)
       const Teuchos::RCP<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(dofrowmap);
@@ -418,7 +425,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     {
       // solve small, linear system of equations without lumping boundary mass matrix
       // add action to parameter list
-      params.set<int>("action", SCATRA::bd_calc_mass_matrix);
+      DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+          "action", SCATRA::BoundaryAction::calc_mass_matrix, params);
 
       // initialize boundary mass matrix
       Teuchos::RCP<LINALG::SparseMatrix> massmatrix_boundary =
@@ -441,7 +449,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       solver_->Reset();
 
       // overwrite action in parameter list
-      params.set<int>("action", SCATRA::bd_calc_boundary_integral);
+      DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+          "action", SCATRA::BoundaryAction::calc_boundary_integral, params);
 
       // initialize one-component result vector for value of boundary integral
       Teuchos::RCP<Epetra_SerialDenseVector> boundaryint_vector =
@@ -651,7 +660,8 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
 
   // create and fill parameter list for elements
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", SCATRA::calc_initial_time_deriv);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_initial_time_deriv, eleparams);
   eleparams.set<int>("ndsvel", nds_vel_);
   if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
   AddProblemSpecificParametersAndVectors(eleparams);
@@ -828,7 +838,8 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
   Teuchos::ParameterList condparams;
 
   // action for elements
-  condparams.set<int>("action", SCATRA::bd_calc_fs3i_surface_permeability);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+      "action", SCATRA::BoundaryAction::calc_fs3i_surface_permeability, condparams);
 
   // provide displacement field in case of ALE
   if (isale_) condparams.set<int>("ndsdisp", nds_disp_);
@@ -886,7 +897,8 @@ void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
   Teuchos::ParameterList condparams;
 
   // action for elements
-  condparams.set<int>("action", SCATRA::bd_calc_fps3i_surface_permeability);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+      "action", SCATRA::BoundaryAction::calc_fps3i_surface_permeability, condparams);
 
   // provide displacement field in case of ALE
   if (isale_) condparams.set<int>("ndsdisp", nds_disp_);
@@ -983,7 +995,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
 
   // set action for elements
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", SCATRA::bd_calc_normal_vectors);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+      "action", SCATRA::BoundaryAction::calc_normal_vectors, eleparams);
   eleparams.set<Teuchos::RCP<Epetra_MultiVector>>("normal vectors", normal);
 
   // provide displacement field in case of ALE
@@ -1079,7 +1092,8 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
   Teuchos::ParameterList condparams;
 
   // action for elements
-  condparams.set<int>("action", SCATRA::bd_calc_Neumann_inflow);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+      "action", SCATRA::BoundaryAction::calc_Neumann_inflow, condparams);
 
   // provide velocity field and potentially acceleration/pressure field
   // as well as displacement field in case of ALE
@@ -1114,7 +1128,8 @@ void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
   Teuchos::ParameterList condparams;
 
   // action for elements
-  condparams.set<int>("action", SCATRA::bd_calc_convective_heat_transfer);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+      "action", SCATRA::BoundaryAction::calc_convective_heat_transfer, condparams);
 
   // provide displacement field in case of ALE
   if (isale_) condparams.set<int>("ndsdisp", nds_disp_);
@@ -1364,7 +1379,8 @@ void SCATRA::ScaTraTimIntImpl::OutputIntegrReac(const int num)
     discret_->SetState("phinp", phinp_);
     // set action for elements
     Teuchos::ParameterList eleparams;
-    eleparams.set<int>("action", SCATRA::calc_integr_reaction);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::calc_integr_reaction, eleparams);
     Teuchos::RCP<std::vector<double>> myreacnp =
         Teuchos::rcp(new std::vector<double>(NumScal(), 0.0));
     eleparams.set<Teuchos::RCP<std::vector<double>>>("local reaction integral", myreacnp);
@@ -1445,7 +1461,8 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
   Teuchos::ParameterList eleparams;
 
   // action for elements, time factor and stationary flag
-  eleparams.set<int>("action", SCATRA::calc_subgrid_diffusivity_matrix);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_subgrid_diffusivity_matrix, eleparams);
 
   // provide displacement field in case of ALE
   if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
@@ -1681,7 +1698,8 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
     Teuchos::ParameterList myparams;
 
     // action for elements
-    myparams.set<int>("action", SCATRA::calc_mean_Cai);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::calc_mean_Cai, myparams);
 
     // add number of dof-set associated with velocity related dofs
     myparams.set<int>("ndsvel", nds_vel_);
@@ -1735,7 +1753,8 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
     }
 
     // set meanCai via pre-evaluate call
-    myparams.set<int>("action", SCATRA::set_mean_Cai);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::set_mean_Cai, myparams);
     myparams.set<double>("meanCai", meanCai);
     // call standard loop over elements
     discret_->Evaluate(
@@ -1839,7 +1858,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ReconstructGradientAt
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", SCATRA::calc_grad_ele_center);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_grad_ele_center, eleparams);
 
   const int dim = problem_->NDim();
 
@@ -1912,7 +1932,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ReconstructGradientAt
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", SCATRA::recon_gradients_at_nodes);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::recon_gradients_at_nodes, eleparams);
 
   //  ///=========================================
   //  // Need to change call in scatra_ele_calc_general_service.cpp CalcGradientAtNodes(..,..,..)
@@ -2397,7 +2418,8 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     {
       // create the parameters for the error calculation
       Teuchos::ParameterList eleparams;
-      eleparams.set<int>("action", SCATRA::calc_error);
+      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+          "action", SCATRA::Action::calc_error, eleparams);
       eleparams.set<int>("calcerrorflag", calcerror_);
 
       if (calcerror_ == INPAR::SCATRA::calcerror_byfunction)
@@ -2494,7 +2516,8 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 
         // create element parameter list for error calculation
         Teuchos::ParameterList eleparams;
-        eleparams.set<int>("action", SCATRA::calc_error);
+        DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+            "action", SCATRA::Action::calc_error, eleparams);
         eleparams.set<int>("calcerrorflag", INPAR::SCATRA::calcerror_byfunction);
         const int errorfunctnumber = relerrorconditions[icond]->GetInt("FunctionID");
         if (errorfunctnumber < 1) dserror("Invalid function number for error calculation!");
@@ -2678,7 +2701,8 @@ void SCATRA::ScaTraTimIntImpl::EvaluateInitialTimeDerivative(
 {
   // create and fill parameter list for elements
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", SCATRA::calc_initial_time_deriv);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_initial_time_deriv, eleparams);
   eleparams.set<int>("ndsvel", nds_vel_);
   eleparams.set<int>("ndsdisp", nds_disp_);
   AddProblemSpecificParametersAndVectors(eleparams);
@@ -2706,7 +2730,8 @@ void SCATRA::OutputScalarsStrategyBase::PrepareEvaluate(
   discret->SetState("phinp", scatratimint->phinp_);
 
   // set action for elements
-  eleparams.set<int>("action", SCATRA::calc_total_and_mean_scalars);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_total_and_mean_scalars, eleparams);
   eleparams.set("inverting", false);
   eleparams.set("calc_grad_phi", output_mean_grad_);
 
@@ -3121,12 +3146,14 @@ void SCATRA::OutputDomainIntegralStrategy::EvaluateIntegralsAndPrintResults(
   if (condstring == "BoundaryIntegral")
   {
     label = "Boundary";
-    condparams.set<int>("action", SCATRA::bd_calc_boundary_integral);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+        "action", SCATRA::BoundaryAction::calc_boundary_integral, condparams);
   }
   else if (condstring == "DomainIntegral")
   {
     label = "Domain";
-    condparams.set<int>("action", SCATRA::calc_domain_integral);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::calc_domain_integral, condparams);
   }
   else
     dserror("Invalid condition name!");

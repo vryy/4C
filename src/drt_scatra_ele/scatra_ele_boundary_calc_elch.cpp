@@ -54,14 +54,14 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateAction(
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::bd_calc_elch_linearize_nernst:
+    case SCATRA::BoundaryAction::calc_elch_linearize_nernst:
     {
       CalcNernstLinearization(ele, params, discretization, la, elemat1_epetra, elevec1_epetra);
 
       break;
     }
 
-    case SCATRA::bd_calc_elch_cell_voltage:
+    case SCATRA::BoundaryAction::calc_elch_cell_voltage:
     {
       CalcCellVoltage(ele, params, discretization, la, elevec1_epetra);
 

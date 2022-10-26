@@ -105,7 +105,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::Evaluate(DRT::FaceElement* el
   ExtractElementAndNodeValues(ele, params, discretization, la);
 
   // check for the action parameter
-  const auto action = DRT::INPUT::get<SCATRA::BoundaryAction>(params, "action");
+
+  const auto action = Teuchos::getIntegralValue<SCATRA::BoundaryAction>(params, "action");
   // evaluate action
   EvaluateAction(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
       elevec1_epetra, elevec2_epetra, elevec3_epetra);
@@ -162,13 +163,13 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(DRT::FaceEleme
 
   switch (action)
   {
-    case SCATRA::bd_calc_normal_vectors:
+    case SCATRA::BoundaryAction::calc_normal_vectors:
     {
       CalcNormalVectors(params, ele);
       break;
     }
 
-    case SCATRA::bd_integrate_shape_functions:
+    case SCATRA::BoundaryAction::integrate_shape_functions:
     {
       // NOTE: add area value only for elements which are NOT ghosted!
       const bool addarea = (ele->Owner() == discretization.Comm().MyPID());
@@ -177,14 +178,14 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(DRT::FaceEleme
       break;
     }
 
-    case SCATRA::bd_calc_mass_matrix:
+    case SCATRA::BoundaryAction::calc_mass_matrix:
     {
       CalcMatMass(ele, elemat1_epetra);
 
       break;
     }
 
-    case SCATRA::bd_calc_Neumann:
+    case SCATRA::BoundaryAction::calc_Neumann:
     {
       DRT::Condition* condition = params.get<DRT::Condition*>("condition");
       if (condition == nullptr) dserror("Cannot access Neumann boundary condition!");
@@ -194,14 +195,14 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(DRT::FaceEleme
       break;
     }
 
-    case SCATRA::bd_calc_Neumann_inflow:
+    case SCATRA::BoundaryAction::calc_Neumann_inflow:
     {
       NeumannInflow(ele, params, discretization, la, elemat1_epetra, elevec1_epetra);
 
       break;
     }
 
-    case SCATRA::bd_calc_convective_heat_transfer:
+    case SCATRA::BoundaryAction::calc_convective_heat_transfer:
     {
       // get the parent element including its material
       DRT::Element* parentele = ele->ParentElement();
@@ -229,7 +230,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(DRT::FaceEleme
       break;
     }
 
-    case SCATRA::bd_calc_weak_Dirichlet:
+    case SCATRA::BoundaryAction::calc_weak_Dirichlet:
     {
       // get the parent element including its material
       DRT::Element* parentele = ele->ParentElement();
@@ -278,21 +279,21 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(DRT::FaceEleme
       break;
     }
 
-    case SCATRA::bd_calc_fs3i_surface_permeability:
+    case SCATRA::BoundaryAction::calc_fs3i_surface_permeability:
     {
       EvaluateSurfacePermeability(ele, params, discretization, la, elemat1_epetra, elevec1_epetra);
 
       break;
     }
 
-    case SCATRA::bd_calc_fps3i_surface_permeability:
+    case SCATRA::BoundaryAction::calc_fps3i_surface_permeability:
     {
       EvaluateKedemKatchalsky(ele, params, discretization, la, elemat1_epetra, elevec1_epetra);
 
       break;
     }
 
-    case SCATRA::bd_add_convective_mass_flux:
+    case SCATRA::BoundaryAction::add_convective_mass_flux:
     {
       // calculate integral of convective mass/heat flux
       // NOTE: since results are added to a global vector via normal assembly
@@ -340,7 +341,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(DRT::FaceEleme
       break;
     }
 
-    case SCATRA::bd_calc_s2icoupling:
+    case SCATRA::BoundaryAction::calc_s2icoupling:
     {
       EvaluateS2ICoupling(
           ele, params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra);
@@ -348,7 +349,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(DRT::FaceEleme
       break;
     }
 
-    case SCATRA::bd_calc_s2icoupling_capacitance:
+    case SCATRA::BoundaryAction::calc_s2icoupling_capacitance:
     {
       EvaluateS2ICouplingCapacitance(
           discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra, elevec2_epetra);
@@ -356,29 +357,29 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(DRT::FaceEleme
       break;
     }
 
-    case SCATRA::bd_calc_s2icoupling_od:
+    case SCATRA::BoundaryAction::calc_s2icoupling_od:
     {
       EvaluateS2ICouplingOD(ele, params, discretization, la, elemat1_epetra);
       break;
     }
 
-    case SCATRA::bd_calc_s2icoupling_capacitance_od:
+    case SCATRA::BoundaryAction::calc_s2icoupling_capacitance_od:
     {
       EvaluateS2ICouplingCapacitanceOD(params, discretization, la, elemat1_epetra, elemat2_epetra);
       break;
     }
 
-    case SCATRA::bd_calc_boundary_integral:
+    case SCATRA::BoundaryAction::calc_boundary_integral:
     {
       CalcBoundaryIntegral(ele, elevec1_epetra);
       break;
     }
-    case SCATRA::bd_calc_Robin:
+    case SCATRA::BoundaryAction::calc_Robin:
     {
       CalcRobinBoundary(ele, params, discretization, la, elemat1_epetra, elevec1_epetra, 1.);
       break;
     }
-    case SCATRA::bd_calc_s2icoupling_flux:
+    case SCATRA::BoundaryAction::calc_s2icoupling_flux:
     {
       CalcS2ICouplingFlux(ele, params, discretization, la, elevec1_epetra);
       break;
@@ -1123,8 +1124,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD(
     dserror("Cannot access scatra-scatra interface coupling condition!");
 
   // get primary variable to derive the linearization
-  const int differentiationtype =
-      params.get<int>("differentiationtype", static_cast<int>(SCATRA::DifferentiationType::none));
+  const auto differentiationtype =
+      Teuchos::getIntegralValue<SCATRA::DifferentiationType>(params, "differentiationtype");
 
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
@@ -1162,7 +1163,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD(
           // dervivative of interface flux w.r.t. displacement
           switch (differentiationtype)
           {
-            case static_cast<int>(SCATRA::DifferentiationType::disp):
+            case SCATRA::DifferentiationType::disp:
             {
               // access real vector of constant permeabilities associated with current condition
               const std::vector<double>* permeabilities = scatraparamsboundary_->Permeabilities();

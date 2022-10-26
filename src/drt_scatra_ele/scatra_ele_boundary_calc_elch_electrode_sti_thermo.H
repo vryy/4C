@@ -83,8 +83,8 @@ namespace DRT
               test_master,
           LINALG::Matrix<my::nsd_ + 1, my::nen_> shapederivatives,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
-          int differentiationtype, double timefacfac, double timefacwgt, double detF,
-          Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_ms);
+          SCATRA::DifferentiationType differentiationtype, double timefacfac, double timefacwgt,
+          double detF, Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_ms);
 
      private:
       //! private constructor for singletons

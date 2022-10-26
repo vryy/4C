@@ -11,14 +11,15 @@
 
 #include "dyn_vreman.H"
 #include "boxfilter.H"
-#include "../drt_inpar/inpar_parameterlist_utils.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 
 #include "../drt_mat/matpar_bundle.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/scatra_mat.H"
+
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_parameter_list.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     krank 09/13|
@@ -191,7 +192,8 @@ void FLD::Vreman::DynVremanComputeDt(Teuchos::ParameterList& extraparams)
 
   // generate a parameterlist for communication and control
   Teuchos::ParameterList calc_vreman_params_scatra;
-  calc_vreman_params_scatra.set<int>("action", SCATRA::calc_vreman_scatra);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::calc_vreman_scatra, calc_vreman_params_scatra);
   calc_vreman_params_scatra.set("col_filtered_phi", col_filtered_phi_);
   calc_vreman_params_scatra.set("col_filtered_phi2", col_filtered_phi2_);
   calc_vreman_params_scatra.set("col_filtered_phiexpression", col_filtered_phiexpression_);

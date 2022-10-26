@@ -72,7 +72,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateAction(
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::bd_calc_elch_boundary_kinetics:
+    case SCATRA::BoundaryAction::calc_elch_boundary_kinetics:
     {
       // access material of parent element
       Teuchos::RCP<MAT::Material> material = ele->ParentElement()->Material();

@@ -16,6 +16,8 @@
 
 #include "../drt_io/io.H"
 
+#include "../drt_lib/drt_utils_parameter_list.H"
+
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
 /*----------------------------------------------------------------------*
@@ -99,7 +101,8 @@ void SCATRA::TimIntOneStepTheta::Setup()
     Teuchos::ParameterList eleparams;
 
     // set action
-    eleparams.set<int>("action", SCATRA::micro_scale_initialize);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::micro_scale_initialize, eleparams);
 
     // provide displacement field in case of ALE
     if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
@@ -116,7 +119,8 @@ void SCATRA::TimIntOneStepTheta::SetElementTimeParameter(bool forcedincrementals
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", SCATRA::set_time_parameter);
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::set_time_parameter, eleparams);
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", false);
   if (!forcedincrementalsolver)
@@ -295,7 +299,8 @@ void SCATRA::TimIntOneStepTheta::Update(const int num)
     Teuchos::ParameterList eleparams;
 
     // set action
-    eleparams.set<int>("action", SCATRA::micro_scale_update);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::micro_scale_update, eleparams);
 
     // provide displacement field in case of ALE
     if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
@@ -361,7 +366,8 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(const int step, Teuchos::RCP<IO::In
     Teuchos::ParameterList eleparams;
 
     // set action
-    eleparams.set<int>("action", SCATRA::micro_scale_read_restart);
+    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        "action", SCATRA::Action::micro_scale_read_restart, eleparams);
 
     // provide displacement field in case of ALE
     if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
