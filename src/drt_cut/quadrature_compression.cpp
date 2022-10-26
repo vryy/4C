@@ -19,8 +19,6 @@
 #include <Teuchos_LAPACK.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-#include <Epetra_LAPACK_wrappers.h>
-
 // Use Chebyshev polynomials to form Vandermonde matrix.
 // if commented use regular monomial basis for which the conditioning of the matrix may not be good
 // Since we are using only 5th order
@@ -33,7 +31,6 @@ GEO::CUT::QuadratureCompression::QuadratureCompression() {}
 /*---------------------------------------------------------------------------------------------------------------*
  * Perform all operations related to quadrature compression
  * Only computing Leja points (from LU-decomposition) is checked
- * (Method based on QR decomposition is not incomplete)
  *---------------------------------------------------------------------------------------------------------------*/
 bool GEO::CUT::QuadratureCompression::PerformCompressionOfQuadrature(
     DRT::UTILS::GaussPointsComposite& gin, GEO::CUT::VolumeCell* vc)
@@ -50,16 +47,6 @@ bool GEO::CUT::QuadratureCompression::PerformCompressionOfQuadrature(
   FormMatrixSystem(gin, vander, rhs);
 
   bool success = Compress_Leja_points(gin, vander, rhs, x);
-
-  // WriteCompressedQuadratureGMSH( gin, vc );
-
-  /*Teuchos_GELS( sqr, rhs, x );
-
-  QR_decomposition_Teuchos( sqr, rhs, x );
-
-  QR_decomposition_LAPACK( sqr, rhs, x );*/
-
-  // dserror("done");
 
   const double t_end = Teuchos::Time::wallTime() - t_start;
   std::cout << "quadtime = " << t_end << "\n";

@@ -47,34 +47,21 @@ void LINALG::SymmetricEigen(
   const int lda = A.LDA();
   const int dim = A.M();
 
-  int liwork = 0;
-  if (dim == 1)
-    liwork = 1;
-  else
-  {
-    if (jobz == 'N')
-      liwork = 1;
-    else if (jobz == 'V')
-      liwork = 3 + 5 * dim;
-  }
-  std::vector<int> iwork(liwork);
-
   int lwork = 0;
   if (dim == 1)
     lwork = 1;
   else
   {
     if (jobz == 'N')
-      lwork = 2 * dim + 1;
+      lwork = 3 * dim + 1;
     else if (jobz == 'V')
       lwork = 2 * dim * dim + 6 * dim + 1;
   }
   std::vector<double> work(lwork);
   int info = 0;
 
-  Epetra_LAPACK lapack;
-
-  lapack.SYEVD(jobz, uplo, dim, a, lda, w, &(work[0]), lwork, &(iwork[0]), liwork, &info);
+  Teuchos::LAPACK<int, double> lapack;
+  lapack.SYEV(jobz, uplo, dim, a, lda, w, &(work[0]), lwork, &info);
 
   if (!postproc)
   {

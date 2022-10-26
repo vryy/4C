@@ -7,6 +7,7 @@
 */
 /*----------------------------------------------------------------------*/
 
+#include <Teuchos_LAPACK.hpp>
 #include "linalg_utils_densematrix_determinant.H"
 #include "../drt_lib/drt_dserror.H"
 
@@ -18,12 +19,14 @@ double LINALG::DeterminantLU(const Epetra_SerialDenseMatrix& A)
   if (A.M() != A.N()) dserror("Matrix is not square");
 #endif
   Epetra_SerialDenseMatrix tmp(A);
-  Epetra_LAPACK lapack;
   const int n = tmp.N();
   const int m = tmp.M();
   std::vector<int> ipiv(n);
   int info;
+
+  Teuchos::LAPACK<int, double> lapack;
   lapack.GETRF(m, n, tmp.A(), tmp.LDA(), &ipiv[0], &info);
+
   if (info < 0)
     dserror("Lapack's dgetrf returned %d", info);
   else if (info > 0)

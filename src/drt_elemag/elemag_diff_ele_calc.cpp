@@ -25,6 +25,7 @@
 
 #include <Epetra_SerialDenseSolver.h>
 #include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_LAPACK.hpp>
 
 namespace
 {
@@ -926,7 +927,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::PostProcessing(
 
   {
     Epetra_SerialDenseVector test(postproc_rhs.Length() * 2);
-    Epetra_LAPACK solve;
+    Teuchos::LAPACK<int, double> solve;
     int err;
     solve.GELS('N', postproc_mat.M(), postproc_mat.N(), 1, postproc_mat.A(), postproc_mat.LDA(),
         postproc_rhs.A(), postproc_rhs.Length(), test.A(), test.Length(), &err);

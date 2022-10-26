@@ -8,6 +8,7 @@
 */
 /*-----------------------------------------------------------*/
 
+#include <Teuchos_LAPACK.hpp>
 
 #include "so_hex8_determinant_analysis.H"
 
@@ -149,7 +150,7 @@ void DRT::ELEMENTS::So_Hex8_Determinant_Analysis::buildMapLagrangeToBezier()
   std::vector<int> ipiv(27);
   int info = 0;
 
-  Epetra_LAPACK lapack;
+  Teuchos::LAPACK<int, double> lapack;
   lapack.GETRF(27, 27, map_l2b_.A(), 27, ipiv.data(), &info);
 
   if (info) dserror("Error detected in LAPACK::GETRF. info = %d", info);
@@ -157,7 +158,7 @@ void DRT::ELEMENTS::So_Hex8_Determinant_Analysis::buildMapLagrangeToBezier()
   // (1) compute the optimal block size first
   std::vector<double> work(1);
   int lwork = -1;
-  lapack.GETRI(27, map_l2b_.A(), 27, ipiv.data(), work.data(), &lwork, &info);
+  lapack.GETRI(27, map_l2b_.A(), 27, ipiv.data(), work.data(), lwork, &info);
   if (info)
     dserror(
         "Error detected in LAPACK::GETRI during the calculation of "
@@ -167,7 +168,7 @@ void DRT::ELEMENTS::So_Hex8_Determinant_Analysis::buildMapLagrangeToBezier()
   // (2) compute the inverse: map from lagrange to bezier
   lwork = work[0];
   work.resize(lwork);
-  lapack.GETRI(27, map_l2b_.A(), 27, ipiv.data(), work.data(), &lwork, &info);
+  lapack.GETRI(27, map_l2b_.A(), 27, ipiv.data(), work.data(), lwork, &info);
   if (info)
     dserror(
         "Error detected in LAPACK::GETRI during the calculation of "
