@@ -9,37 +9,23 @@
 */
 /*---------------------------------------------------------------------*/
 #include "contact_constitutivelaw_interface.H"
+#include "contactconstitutivelaw.H"
+#include "contactconstitutivelaw_parameter.H"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
 #include <Epetra_Time.h>
+
 #include "../drt_contact/contact_node.H"
 #include "../drt_contact/contact_element.H"
-#include "../drt_contact/contact_integrator.H"
-#include "../drt_contact/contact_interpolator.H"
-#include "../drt_contact/contact_coupling2d.H"
-#include "../drt_contact/contact_coupling3d.H"
 #include "../drt_contact/contact_defines.H"
-#include "../drt_contact/contact_line_coupling.H"
-#include "../drt_contact/friction_node.H"
-#include "../drt_mortar/mortar_binarytree.H"
-#include "../drt_mortar/mortar_defines.H"
-#include "../drt_mortar/mortar_projector.H"
+
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_contact_constitutivelaw/contactconstitutivelaw_parameter.H"
 
-#include "../drt_mortar/mortar_coupling3d_classes.H"
-#include "../drt_contact/contact_nitsche_utils.H"
-
-#include <Teuchos_TimeMonitor.hpp>
-#include "../drt_contact/selfcontact_binarytree_unbiased.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
-#include "contactconstitutivelaw.H"
+#include "../drt_lib/drt_node.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                                       |

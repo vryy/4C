@@ -14,7 +14,6 @@
 /* headers */
 
 #include "constitutivelaw_definition.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_inputreader.H"
 #include "contact_constitutivelaw_bundle.H"
 #include "../drt_lib/drt_colors.H"

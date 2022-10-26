@@ -20,7 +20,6 @@
 #include <Epetra_MpiComm.h>
 #include <Teuchos_RCP.hpp>
 
-#include "drt_node.H"
 #include "drt_utils_factory.H"
 #include "drt_parobject.H"
 
