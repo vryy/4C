@@ -1081,12 +1081,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMultiFracSubgridScaCoef(
       // here different options are possible
       // 1) we assume k^(-5/3) for the complete range
       gamma = 4.0 / 3.0;
-#if 0
-      // 2) we assume k^(-1) for the complete range
-      gamma = 2.0;
-      // 3) we take both ranges into account
-      two_ranges = true;
-#endif
     }
   }
 

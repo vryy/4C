@@ -200,71 +200,7 @@ namespace FLD
     return;
   }
 
-
-// dummy function to check the functionality of the fftw library
-#if 0
-void HomIsoTurbInitialField::CalculateInitialField()
-{
-  Teuchos::RCP<Teuchos::Array <std::complex<double> > > u1_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
-  Teuchos::RCP<Teuchos::Array <double> > u1 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
-
-  for (int i = 0; i < nummodes_; i++)
-  {
-    for (int j = 0; j< nummodes_; j++)
-    {
-      for (int l = 0; l< nummodes_; l++){
-      int pos = l+ nummodes_ * j + nummodes_ * nummodes_ * i;
-      double myi = (double) i;
-      double myj = (double) j;
-      double myl = (double) l;
-      (*u1)[pos] = (myi+1) * (myj+1) * (myl+1);
-      }
-    }
-  }
-
-  // output on screen
-  std::cout << "u1_hat " << u1->size() << std::endl;
-  for (int i=0; i< u1->size(); i++)
-    std::cout << (*u1)[i] << std::endl;
-
-  // set-up
-  fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
-                                       &((*u1)[0]),
-                                       (reinterpret_cast<fftw_complex*>(&((*u1_hat)[0]))),
-                                       FFTW_ESTIMATE);
-  // fft
-  fftw_execute(fft);
-
-  for (int i=0; i< u1_hat->size(); i++)
-      (*u1_hat)[i] /= nummodes_*nummodes_*nummodes_;
-
-  std::cout << "u1_hat " << u1_hat->size() << std::endl;
-  for (int i=0; i< u1_hat->size(); i++)
-    std::cout << "real  " << real((*u1_hat)[i]) << "    imag  " << imag((*u1_hat)[i]) << std::endl;
-
-  // backward
-  Teuchos::RCP<Teuchos::Array <double> > u1_back = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
-  fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_, //instead of (nummodes_/2+1): this is important to have here
-                             (reinterpret_cast<fftw_complex*>(&((*u1_hat)[0]))),
-                             &((*u1_back)[0]),
-                             FFTW_ESTIMATE);
-  fftw_execute(fft);
-  // free memory
-  fftw_destroy_plan(fft);
-
-  // output on screen
-//  std::cout << "u1_hat " << std::endl;
-//  for (int i=0; i< u1_hat->size(); i++)
-//    std::cout << "real  " << real((*u1_hat)[i]) << "    imag  " << imag((*u1_hat)[i]) << std::endl;
-  for (int i=0; i< u1_back->size(); i++)
-    std::cout << (*u1_back)[i] << std::endl;
-
-  return;
-}
-#endif
-
-// also consider routine for HDG further down
-#if 1
+  // also consider routine for HDG further down
   /*--------------------------------------------------------------*
    | calculate initial field using fft            rasthofer 04/13 |
    *--------------------------------------------------------------*/
@@ -619,7 +555,6 @@ void HomIsoTurbInitialField::CalculateInitialField()
     dserror("FFTW required");
 #endif
   }
-#endif
 
 
   /*--------------------------------------------------------------*
@@ -952,7 +887,7 @@ void HomIsoTurbInitialField::CalculateInitialField()
     return;
   }
 
-#if 1
+
   /*--------------------------------------------------------------*
    | calculate initial field using fft                   bk 03/15 |
    *--------------------------------------------------------------*/
@@ -1369,5 +1304,5 @@ void HomIsoTurbInitialField::CalculateInitialField()
     dserror("FFTW required");
 #endif
   }
-#endif
+
 };  // namespace FLD

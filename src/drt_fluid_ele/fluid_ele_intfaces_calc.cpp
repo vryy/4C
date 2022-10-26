@@ -283,17 +283,11 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
     {
       if (eos_gp_pattern == INPAR::FLUID::EOS_GP_Pattern_uvwp)
       {
-#if (1)
         for (int ij = 0; ij < numdofpernode; ij++)
         {
           systemmatrix->FEAssemble(elemat_blocks[ij], patch_components_lm[ij],
               patch_components_lmowner[ij], patch_components_lm[ij]);
         }
-#else  // assemble only pressure block
-        int ij = nsd;
-        systemmatrix->FEAssemble(-1, elemat_blocks[ij], patch_components_lm[ij],
-            patch_components_lmowner[ij], patch_components_lm[ij]);
-#endif
       }
       else if (eos_gp_pattern == INPAR::FLUID::EOS_GP_Pattern_up)
       {

@@ -3422,31 +3422,6 @@ void FLD::FluidImplicitTimeInt::Output()
 
     if (params_->get<bool>("COMPUTE_EKIN")) WriteOutputKineticEnergy();
 
-      // don't write output in case of separate inflow computation
-      // Sep_-Matrix needed for algebraic-multigrid filter has never been build
-#if 0
-    // output of coarse and fine scale velocities
-    // at time n+1 or n+af depending on the time
-    // integration scheme
-    if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales) // or dynamic_smagorinsky_)
-    {
-      const Epetra_Map* dofrowmap = discret_->DofRowMap();
-      Teuchos::RCP<Epetra_Vector> filteredvel = LINALG::CreateVector(*dofrowmap,true);
-      Teuchos::RCP<Epetra_Vector> fsvel = LINALG::CreateVector(*dofrowmap,true);
-      if (scale_sep_ == INPAR::FLUID::algebraic_multigrid_operator)
-      {
-        OutputofFilteredVel(filteredvel,fsvel);
-      }
-      if (scale_sep_ == INPAR::FLUID::box_filter)
-      {
-        Boxf_->OutputofAveragedVel(filteredvel);
-        Boxf_->OutputofFineScaleVel(fsvel);
-      }
-      output_->WriteVector("filteredvel",filteredvel);
-      output_->WriteVector("fsvelaf",fsvel);
-    }
-#endif
-
     // write domain decomposition for visualization (only once!)
     output_->WriteElementData(true);
 

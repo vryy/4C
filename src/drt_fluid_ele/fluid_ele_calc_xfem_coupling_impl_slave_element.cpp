@@ -417,21 +417,6 @@ namespace DRT
       {
         //  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::ProjectOnSide" );
 
-#if (0)
-        // REMARK: the current cut_kernel implementation is a factor of 3 slower than this
-        // implementation
-
-        GEO::CUT::Position2d<slave_distype> pos(slave_xyze_, x_gp_lin);
-        pos.Compute(true);
-        pos.LocalCoordinates(xi_side);
-
-        // evaluate shape function at solution
-        DRT::UTILS::shape_function_2D(slave_funct_, xi_side(0), xi_side(1), slave_distype);
-
-        // get projected gauss point
-        x_side.Multiply(slave_xyze_, slave_funct_);
-#endif
-
         // check, if called on a 3D-element
 #ifdef DEBUG
         if (slave_nsd_ == nsd_)

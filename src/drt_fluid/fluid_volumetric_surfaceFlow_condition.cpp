@@ -964,19 +964,6 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(
     (*flowrates_)[flowrates_->size() - 1] = flowrate;
   }
 
-
-#if 0
-  std::cout<<"condition("<<condid_<<"): has position: "<<position<<std::endl;
-  std::cout<<"condition("<<condid_<<"): has area: "<<area_<<std::endl;
-  if (!myrank)
-  {
-    for(int i=0;i<flowrates_->size();i++)
-    {
-      std::cout<<"Flowrate"<<condid_<<": "<<(*flowrates_)[i]<<" time: "<<double(i)*dta_<<std::endl;
-    }
-  }
-#endif
-
   Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::rcp(new Teuchos::ParameterList);
 
   params->set<int>("Number of Harmonics", n_harmonics_);
@@ -1463,14 +1450,6 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::FlowRateCalculation(
     Teuchos::ParameterList eleparams, double time, std::string ds_condname,
     FLD::BoundaryAction action, int condid)
 {
-#if 0
-  if (!(eleparams.isParameter("velaf")))
-  {
-    Teuchos::RCP<const Epetra_Vector> velaf =discret_->GetState("velaf");
-    Teuchos::RCP<Epetra_Vector> vv = Teuchos::rcp(const_cast<Epetra_Vector*>(velaf.get()),false);
-    eleparams.set<Teuchos::RCP<Epetra_Vector> > ("velaf",vv);
-  }
-#endif
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
   eleparams.set<int>("action", action);
