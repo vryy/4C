@@ -17,6 +17,8 @@
 #include "anisotropy_extension_provider.H"
 #include "mixture_constituent.H"
 #include <Teuchos_RCP.hpp>
+
+
 namespace MIXTURE
 {
   namespace PAR
@@ -161,36 +163,17 @@ namespace MIXTURE
         Teuchos::ParameterList& params, const double lambdaM, double& Pa, double& derivPa);
 
     /*!
-     *  \brief Evaluate activation level omegaa and its derivative w.r.t. the right Cauchy Green
-     * tensor
+     *  \brief Evaluate activation level omegaa and its derivative w.r.t. the fiber stretch
      *
      *  \param[in]     params Container for additional information
      *  \param[in]     lambdaM Fiber stretch
-     *  \param[in]     M Fiber structural tensor (dyadic product of fiber directions)
      *  \param[in]     Pa Active nominal stress
      *  \param[in]     derivPa Derivative of active nominal stress w.r.t. the fiber stretch
      *  \param[in,out] omegaa Activation level
-     *  \param[in,out] domegaadC Derivative of the activation level w.r.t. the right Cauchy
-     *                           Green tensor
+     *  \param[in,out] derivOmegaa Derivative of the activation level w.r.t. the fiber stretch
      */
-    void EvaluateActivationLevel(Teuchos::ParameterList& params, const double lambdaM,
-        LINALG::Matrix<3, 3>& M, double Pa, double derivPa, double& omegaa,
-        LINALG::Matrix<3, 3>& domegaadC);
-
-    /*!
-     *  \brief Evaluate Lambert W function with Halley's method
-     *
-     *  Solution of Lambert W function is functional inverse of xi = W_0*exp(W_0)
-     *  Computation here restricted to principal branch W_0
-     *  Use of Halley's method according to:
-     *  https://blogs.mathworks.com/cleve/2013/09/02/the-lambert-w-funsolutiction/
-     *
-     *  \param[in]     xi Argument of Lambert W function W(xi)
-     *  \param[in,out] WO Solution of principal branch of Lambert W function
-     *  \param[in]     tol Tolerance for Halley's approximation
-     *  \param[in]     maxiter Maximal number of iterations
-     */
-    void EvaluateLambert(double xi, double& W0, double tol, double maxiter);
+    void EvaluateActivationLevel(Teuchos::ParameterList& params, const double lambdaM, double Pa,
+        double derivPa, double& omegaa, double& derivOmegaa);
 
     /// Weickenmeier material parameters
     MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier* params_{};

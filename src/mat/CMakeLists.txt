@@ -84,6 +84,7 @@ set(OBJS_MAT
     modpowerlaw.cpp
     multiplicative_split_defgrad_elasthyper.cpp
     multiplicative_split_defgrad_elasthyper_service.H
+    muscle_utils.cpp
     myocard.cpp
     myocard_fitzhugh_nagumo.cpp
     myocard_inada.cpp

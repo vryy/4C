@@ -1,0 +1,155 @@
+/*-----------------------------------------------------------*/
+/*! \file
+
+\brief Utility methods for skeletal muscle
+
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
+
+#ifndef MUSCLE_UTILS_H
+#define MUSCLE_UTILS_H
+
+#include <vector>
+
+namespace MAT
+{
+  namespace UTILS
+  {
+    namespace MUSCLE
+    {
+      /*!
+       * @brief Evaluate Lambert W function with Halley's method
+       *
+       * Solution of Lambert W function is functional inverse of xi = W_0*exp(W_0)
+       * Computation here restricted to principal branch W_0
+       * Use of Halley's method according to:
+       * https://blogs.mathworks.com/cleve/2013/09/02/the-lambert-w-funsolutiction/
+       *
+       * @param[in]     xi Argument of Lambert W function W(xi)
+       * @param[in,out] WO Solution of principal branch of Lambert W function
+       * @param[in]     tol Tolerance for Halley's approximation
+       * @param[in]     maxiter Maximal number of iterations
+       */
+      void EvaluateLambert(const double xi, double &W0, const double tol, const int maxiter);
+
+      /*!
+       * @brief Evaluate the force-stretch dependency according to Ehret et al.
+       *
+       * Reference: A. E. Ehret, M. Boel, M. Itskova, 'A continuum constitutive model for the active
+       * behaviour of skeletal muscle', Journal of the Mechanics and Physics of Solids, vol. 59, pp.
+       * 625-636, 2011, doi: 10.1016/j.jmps.2010.12.008.
+       *
+       * @param[in]     lambdaM Fiber stretch
+       * @param[in]     lambdaMin Minimal fiber stretch
+       * @param[in]     lambdaOpt Optimal fiber stretch
+       * @param[out]    fxi Force-stretch function result between zero and one
+       */
+      double EvaluateForceStretchDependencyEhret(
+          const double lambdaM, const double lambdaMin, const double lambdaOpt);
+
+      /*!
+       * @brief Evaluate the derivative of the force-stretch dependency according to Ehret et al.
+       *        w.r.t. the fiber stretch
+       *
+       * Reference: A. E. Ehret, M. Boel, M. Itskova, 'A continuum constitutive model for the active
+       * behaviour of skeletal muscle', Journal of the Mechanics and Physics of Solids, vol. 59, pp.
+       * 625-636, 2011, doi: 10.1016/j.jmps.2010.12.008.
+       *
+       * @param[in]     lambdaM Fiber stretch
+       * @param[in]     lambdaMin Minimal fiber stretch
+       * @param[in]     lambdaOpt Optimal fiber stretch
+       * @param[out]    dFxidLamdaM Derivative of the force-stretch function w.r.t. the fiber
+       *                            stretch
+       */
+      double EvaluateDerivativeForceStretchDependencyEhret(
+          const double lambdaM, const double lambdaMin, const double lambdaOpt);
+
+      /*!
+       * @brief Evaluate the force-velocity dependency in the style of Boel et al.
+       *
+       * Force-velocity dependecy according to Boel et al. with some slight modifications. Boel et.
+       * al. scale and shift the eccentric branch of the velocity dependency using the parameter d.
+       * To be able to turn the velocity dependency on and off, this concept is adopted for the
+       * concentric branch as well. Choosing de=dc=0 leads to a neglection of the velocity
+       * dependence. Choosing dc=1 and de=d-1 reproduces the function presented by Boel et. al.
+       *
+       * Reference: M. Boel and S. Reese, 'Micromechanical modelling of skeletal muscles based on
+       * the finite element method', Computer Methods in Biomechanics and Biomedical Engineering,
+       * vol. 11, no. 5, pp. 489-504, 2008, doi: 10.1080/10255840701771750.
+       *
+       * @param[in]     lambdaM Fiber stretch at current timestep n
+       * @param[in]     lambdaMOld Fiber stretch at timestep n-1
+       * @param[in]     timestepsize Time step size (i.e. t_n - t_{n-1})
+       * @param[in]     dotLambdaMMin Minimal stretch rate
+       * @param[in]     de Amplitude of the eccentric velocity dependency function
+       * @param[in]     dc Amplitude of the concentric velocity dependency function
+       * @param[in]     ke Curvature of the eccentric velocity dependency function
+       * @param[in]     kc Curvature of the concentric velocity dependency function
+       * @param[out]    fxi Force-velocity function result between zero and one
+       */
+      double EvaluateForceVelocityDependencyBoel(const double lambdaM, const double lambdaMOld,
+          const double timestepsize, const double dotLambdaMMin, const double de, const double dc,
+          const double ke, const double kc);
+
+      /*!
+       * @brief Evaluate the derivative of the force-velocity dependency in the style of Boel et al.
+       *        w.r.t. the fiber stretch
+       *
+       * Force-velocity dependecy according to Boel et al. with some slight modifications. Boel et.
+       * al. scale and shift the eccentric branch of the velocity dependency using the parameter d.
+       * To be able to turn the velocity dependency on and off, this concept is adopted for the
+       * concentric branch as well. Choosing de=dc=0 leads to a neglection of the velocity
+       * dependence. Choosing dc=1 and de=d-1 reproduces the function presented by Boel et. al.
+       *
+       * Reference: M. Boel and S. Reese, 'Micromechanical modelling of skeletal muscles based on
+       * the finite element method', Computer Methods in Biomechanics and Biomedical Engineering,
+       * vol. 11, no. 5, pp. 489-504, 2008, doi: 10.1080/10255840701771750.
+       *
+       * @param[in]     lambdaM Fiber stretch at current timestep n
+       * @param[in]     lambdaMOld Fiber stretch at timestep n-1
+       * @param[in]     timestepsize Time step size (i.e. t_n - t_{n-1})
+       * @param[in]     dotLambdaMMin Minimal stretch rate
+       * @param[in]     de Amplitude of the eccentric velocity dependency function
+       * @param[in]     dc Amplitude of the concentric velocity dependency function
+       * @param[in]     ke Curvature of the eccentric velocity dependency function
+       * @param[in]     kc Curvature of the concentric velocity dependency function
+       * @param[out]    dFvdLamdaM Derivative of the force-velocity function w.r.t. the fiber
+       *                           stretch
+       */
+      double EvaluateDerivativeForceVelocityDependencyBoel(const double lambdaM,
+          const double lambdaMOld, const double timestepsize, const double dotLambdaMMin,
+          const double de, const double dc, const double ke, const double kc);
+
+      /*!
+       * @brief Evaluate the time-dependent optimal active stress by summation single twitches
+       * according to Ehret et al.
+       *
+       * Reference: A. E. Ehret, M. Boel, M. Itskova, 'A continuum constitutive model for the active
+       * behaviour of skeletal muscle', Journal of the Mechanics and Physics of Solids, vol. 59, pp.
+       * 625-636, 2011, doi: 10.1016/j.jmps.2010.12.008.
+       *
+       * @param[in]     Na Number of active motor units (MU) per undeformed muscle cross-sectional
+       *                   area
+       * @param[in]     muTypesNum Number of motor unit (MU) types
+       * @param[in]     rho Fraction of MU types
+       * @param[in]     I Interstimulus intervals of MU types
+       * @param[in]     F Twitch forces of MU types
+       * @param[in]     T Twitch contraction times of MU types
+       * @param[in]     actIntervalsNum Number of time intervals where activation is prescribed
+       * @param[in]     actTimes Time boundaries between intervals
+       * @param[in]     actValues Scaling factor in intervals (1=full activation, 0=no activation)
+       * @param[in]     currentTime Current time
+       * @param[out]    Poptft Time-dependent optimal active stress at currentTime
+       */
+      double EvaluateTimeDependentActiveStressEhret(const double Na, const int muTypesNum,
+          const std::vector<double> &rho, const std::vector<double> &I,
+          const std::vector<double> &F, const std::vector<double> &T, const int actIntervalsNum,
+          const std::vector<double> &actTimes, const std::vector<double> &actValues,
+          const double currentTime);
+    }  // namespace MUSCLE
+  }    // namespace UTILS
+}  // namespace MAT
+#endif
