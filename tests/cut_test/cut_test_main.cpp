@@ -86,7 +86,6 @@ void test_hex8_quad4_touch4();
 void test_hex8_quad4_touch5();
 void test_hex8_quad4_touch6();
 void test_hex8_quad4_touch7();
-void test_quad4_quad4_simple();
 void test_hex8_quad4_mesh();
 void test_position2d();
 void test_facet_split();
@@ -234,7 +233,6 @@ void test_ls_hex8_magnus7();  // Problem with Global Cut with DD
 void test_ls_hex8_tes_dd_simple();
 
 
-void test_quad4_surface_mesh_cut();
 void test_hex8_quad4_double_cut();
 
 void test_unit_intersection_touch();
@@ -683,7 +681,6 @@ int main(int argc, char** argv)
   functable["ls_hex8_magnus7"] = test_ls_hex8_magnus7;  // Issues in Global Cut for DD
   functable["ls_hex8_tes_dd_simple"] = test_ls_hex8_tes_dd_simple;
 
-  functable["quad4_surface_mesh_cut"] = test_quad4_surface_mesh_cut;
   functable["hex8_quad4_double_cut"] = test_hex8_quad4_double_cut;
 
   functable["unit_intersection_touch"] = test_unit_intersection_touch;
@@ -691,12 +688,6 @@ int main(int argc, char** argv)
   functable["geometry"] = test_geometry;
 
   functable["cut_volumes"] = test_cut_volumes;
-#if 0
-  // Does not work with current volume cell construction
-  // algorithms. FacetGraph fails here.
-  functable["cut_volumes2"] = test_cut_volumes2;
-  functable["cut_volumes3"] = test_cut_volumes3;
-#endif
 
   functable["fluidfluid"] = test_fluidfluid;
   functable["fluidfluid2"] = test_fluidfluid2;
