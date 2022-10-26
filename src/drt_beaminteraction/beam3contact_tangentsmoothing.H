@@ -7,6 +7,7 @@
 
 */
 /*----------------------------------------------------------------------------*/
+
 #ifndef BEAM3CONTACT_TANGENTSMOOTHING_H
 #define BEAM3CONTACT_TANGENTSMOOTHING_H
 
@@ -19,7 +20,8 @@
 
 namespace CONTACT
 {
-  // Small class that stores neighbor element information necessary for nodal tangent smoothing
+  //! \brief Small class that stores neighbor element information necessary for nodal tangent
+  //! smoothing
   class B3CNeighbor
   {
    public:
@@ -40,16 +42,20 @@ namespace CONTACT
 
   namespace B3TANGENTSMOOTHING
   {
-    // determine the neighbour elements of an element
+    //! \brief Determine the neighbour elements of an element
     Teuchos::RCP<B3CNeighbor> DetermineNeigbors(const DRT::Element* element1);
 
+    //! \brief Get boundary node
     int GetBoundaryNode(const int nnode);
 
+    //! \brief Get the element length based on element positions
     double GetEleLength(const Teuchos::SerialDenseMatrix<int, double>& elepos, const int nright);
 
+    //! \brief Get the nodal derivative matrix
     Teuchos::SerialDenseMatrix<int, double> GetNodalDerivatives(const int node, const int nnode,
         double length, const DRT::Element::DiscretizationType distype);
 
+    //! \brief Get the nodal tangent matrix
     template <int numnodes>
     LINALG::Matrix<3 * numnodes, 1> CalculateNodalTangents(
         std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
@@ -162,6 +168,7 @@ namespace CONTACT
       return node_tangent1;
     }
 
+    //! \brief Get the tangent and derivative matrix
     template <int numnodes, int numnodalvalues>
     void ComputeTangentsAndDerivs(LINALG::Matrix<3, 1, TYPE>& t, LINALG::Matrix<3, 1, TYPE>& t_xi,
         const LINALG::Matrix<3 * numnodes, 1> nodaltangentssmooth1,
