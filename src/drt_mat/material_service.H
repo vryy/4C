@@ -433,6 +433,33 @@ namespace MAT
       LINALG::Matrix<9, 9>& out);                 ///< Output
 
   /*!
+   *  \brief Add scaled derivative of invA*B*invA w.r.t. A
+   *
+   *  Add the following contribution to the tensor out(6,6) based on
+   *  - the inverse of the tensor (\f$ \mathbf{A} \f$)
+   *  - the term invA*B*invA (\f$ \mathbf{A}^{-1} \mathbf{B} \mathbf{A}^{-1} \f$) with the tensor B
+   * (\f$ \mathbf{B} \f$)
+   *
+   *  \f$\text{scalar} \cdot \frac{\partial \mathbf{A}^{-1} \mathbf{B} \mathbf{A}^{-1}}{\partial
+   *  \mathbf{A}} \f$
+   *
+   *  wherein the derivative \f$ \frac{\partial \mathbf{A}^-1 \mathbf{B} \mathbf{A}^-1}{\partial
+   *  \mathbf{A}}  \f$ is computed to:  \f$ - 1/2 \cdot ( \mathbf{A}^{-1}_{ik}
+   *  \mathbf{A}^{-1}_{jm} B_{mn} \mathbf{A}^{-1}_{nl} + \mathbf{A}^{-1}_{il} \mathbf{A}^{-1}_{jm}
+   *  B_{mn} \mathbf{A}^{-1}_{nk} + \mathbf{A}^{-1}_{jk} \mathbf{A}^{-1}_{im} B_{mn}
+   *  \mathbf{A}^{-1}_{nl} + \mathbf{A}^{-1}_{jl} \mathbf{A}^{-1}_{im} B_{mn}
+   * \mathbf{A}^{-1}_{nk}) \f$
+   *
+   *  \param[in]     fac Scaling factor
+   *  \param[in]     invA Inverse of the 2nd order tensor A stress-like Voigt notation
+   *  \param[in]     invABinvA 2nd order tensor product invA*B*invA in stress-like Voigt notation
+   *  \param[in,out] out 4th order tensor derivative of invA*B*invA w.r.t. A in stress-like Voigt
+   *                     notation
+   */
+  void AddDerivInvABInvBProduct(double const& fac, const LINALG::Matrix<6, 1>& invA,
+      const LINALG::Matrix<6, 1>& invABinvA, LINALG::Matrix<6, 6>& out);
+
+  /*!
    * \brief Evaluates the principal invariants of any symmetric tensor
    *
    * @param prinv (out) : Principal invariants of the tensor
