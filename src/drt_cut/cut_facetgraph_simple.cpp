@@ -34,13 +34,6 @@ GEO::CUT::SimpleFacetGraph_1D::SimpleFacetGraph_1D(
   // first store all facets
   all_facets_.reserve(facets.size());
   all_facets_.assign(facets.begin(), facets.end());
-
-#if 0
-  std::cout << __PRETTY_FUNCTION__ << std::endl;
-  for ( std::vector<Facet * >::const_iterator cit = all_facets_.begin();
-        cit != all_facets_.end(); ++cit )
-    (*cit)->Print();
-#endif
 }
 
 /*----------------------------------------------------------------------------*
@@ -58,21 +51,6 @@ void GEO::CUT::SimpleFacetGraph_1D::CreateVolumeCells(
   std::vector<plain_facet_set> volumes;
   volumes.reserve(all_facets_.size() - 1);
   CombineFacetsToLineVolumes(sorted_facets, volumes);
-
-#if 0
-  std::cout << __PRETTY_FUNCTION__ << std::endl;
-  unsigned vcount = 0;
-  for ( std::vector<plain_facet_set>::const_iterator c_vec = volumes.begin();
-      c_vec != volumes.end(); ++c_vec )
-  {
-    std::cout << "--- Volume " << vcount++ << std::endl;
-    for ( plain_facet_set::const_iterator c_f = c_vec->begin();
-        c_f != c_vec->end(); ++c_f )
-    {
-      (*c_f)->Print();
-    }
-  }
-#endif
 
   // no volume lines in 1-D
   std::map<std::pair<Point*, Point*>, plain_facet_set> volume_lines;

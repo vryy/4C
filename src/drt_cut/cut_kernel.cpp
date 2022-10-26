@@ -876,63 +876,6 @@ double GEO::CUT::KERNEL::getAreaTri(const double* p0_ptr, const double* p1_ptr,
 
 #endif
 
-
-  // Herons formula:
-  // This method of calculating the area is valid as long as b \approx c -> this leads to TRIs
-  //  which are ill-suited for this algorithm. It was found that the cross-product is more robust
-  //  for smaller TRIs.
-  // The implementation is tested and works if it's needed again.
-#if (0)
-
-  double a = v01.Norm2();
-  double b = v02.Norm2();
-  double c = v12.Norm2();
-
-  // Sort for numerical robustness: a > b > c, |v01| > |v02| > |v12|
-  // According to: Miscalculating Area and Angles of a Needle-like Triangle
-  // ( from Lecture Notes for Introductory Numerical Analysis Classes )
-  // https://www.cs.unc.edu/~snoeyink/c/c205/Triangle.pdf
-  // Ensures -> positive areas and test for feasibility of triangle geometry!
-  if (a < b)
-  {
-    std::swap(a, b);
-  }
-  if (a < c)
-  {
-    std::swap(a, c);
-  }
-  if (b < c)
-  {
-    std::swap(b, c);
-  }
-
-  //          sqrt((a+(b+c))(c-(a-b))(c+(a-b))(a+(b-c)))/4
-  double areasqr = (a + (b + c)) * (c - (a - b)) * (c + (a - b)) * (a + (b - c));
-
-  double tol = a * 1e-16;
-  // Check feasibility.
-  // If this does not hold -> triangle is not valid!!!! For instance: a=5, b=4, c at least has to be
-  // >1
-  //   as this would be the minimal distance if a and b sides are parallel.
-  if (((c - (a - b) < tol) and ((c - (a - b)) > 0.0)))
-  {
-    areasqr = 0.0;
-    // dserror("Sides are not a triangle! FATAL, THIS BoundaryCell SHOULD NOT EXIST!");
-  }
-  else if (c - (a - b) < 0.0)
-    areasqr = 0.0;
-
-  if (areasqr < 0.0)
-  {
-    areametric = 0.0;
-    areasqr = 0.0;
-    // dserror("Area squared not positive! FATAL ERROR (should not occur with this algorithm!!!).");
-  }
-
-  double areaheron = 0.25 * sqrt(areasqr);
-
-#endif
-
   return 0.5 * doubleareacrossprod;
 }
 

@@ -72,9 +72,6 @@ namespace GEO
       /** Get the cut points between the levelset side and the specified edge */
       virtual bool Cut(Mesh& mesh, Edge& edge, PointSet& cut_points);
 
-      //   virtual void MakeSideCutFacets( Mesh & mesh, Element * element, plain_facet_set & facets
-      //   );
-
       /** In the level-set case, the level-set side is the cut side and will
        *  be divided into facets. Among other places, this becomes important for
        *  the boundary integration cell creation. */

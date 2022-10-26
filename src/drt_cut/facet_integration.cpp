@@ -37,39 +37,6 @@ std::vector<double> GEO::CUT::FacetIntegration::equation_plane(
   // Newell's method of determining equation of plane
   std::vector<double> eqn_plane = KERNEL::EqnPlaneOfPolygon(cornersLocal);
 
-#if 0  // old method of deleting the inlin points etc etc..
-  std::vector<double> eqn_plane(4);
-  int cornSize = cornersLocal.size();
-
-  // construct a temporary point list to find the concave points of the facet in local coords
-  std::vector<GEO::CUT::Point*> ptlist(cornersLocal.size());
-  GEO::CUT::Options options;
-  GEO::CUT::Mesh mesh(options);
-
-  for( int i=0;i<cornSize;i++ )
-  {
-    std::vector<double> coordPt = cornersLocal[i];
-    ptlist[i] = mesh.NewPoint( &coordPt[0], NULL, NULL );
-  }
-
-  CUT::KERNEL::DeleteInlinePts( ptlist );
-
-  // For some geometries, cut produces a facet with all points
-  // lying on a line. all coefficients are zero in such cases
-  if( ptlist.size()==0 )
-  {
-#if DEBUGCUTLIBRARY
-    std::cout<<"WARNING:::cut algorithm produced a facet with all points on a line\n";
-#endif
-    for( unsigned i=0;i<4;i++ )
-      eqn_plane[i] = 0.0;
-  }
-  else
-  {
-    eqn_plane = GEO::CUT::KERNEL::EqnPlanePolygon( ptlist );
-  }
-#endif
-
   return eqn_plane;
 }
 
@@ -760,33 +727,6 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule(
         file, midpt, GEO::CUT::OUTPUT::GetEqOfPlane(bcell->Points()), true);
 #endif
 
-
-#if 0  // DEBUGCUTLIBRARY //write separate file for each bcell along with the distribution of Gauss
-       // points
-    static int facetno = 0;
-    facetno++;
-    std::stringstream str;
-    str << "facetid" << facetno << ".pos";
-    std::ofstream file( str.str().c_str() );
-
-    const std::vector<Point*> ptl = bcell->Points();
-    int mm=0;
-    for( unsigned ii=0;ii<ptl.size();ii++ )
-    {
-      Point* pt1 = ptl[ii];
-      LINALG::Matrix<3,1> global1,local1;
-      pt1->Coordinates(global1.A());
-      elem1_->LocalCoordinates( global1, local1 );
-      //file<<"Point("<<mm<<")="<<"{"<<local1(0,0)<<","<<local1(1,0)<<","<<local1(2,0)<<"};\n";
-      file<<"Point("<<mm<<")="<<"{"<<global1(0,0)<<","<<global1(1,0)<<","<<global1(2,0)<<"};\n";
-      mm++;
-    }
-    for( unsigned ii=0;ii<ptl.size();ii++ )
-    {
-      file<<"Line("<<ii<<")="<<"{"<<ii<<","<<(ii+1)%ptl.size()<<"};\n";
-    }
-#endif
-
     DRT::UTILS::GaussIntegration gi_temp =
         DRT::UTILS::GaussIntegration(bcell->Shape(), DIRECTDIV_GAUSSRULE);
 
@@ -826,12 +766,6 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule(
       double wei = iquad.Weight() * drs * normalX;
 
       cgp->Append(x_gp_loc, wei);
-
-#if 0  // DEBUGCUTLIBRARY //write separate file for each bcell along with the distribution of Gauss
-       // points (contd...)
-      file<<"Point("<<mm<<")="<<"{"<<x_gp_loc(0,0)<<","<<x_gp_loc(1,0)<<","<<x_gp_loc(2,0)<<"};\n";
-      mm++;
-#endif
     }
   }
 #ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
@@ -903,18 +837,6 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells(
         if (!face1_->IsFacetSplit()) face1_->SplitFacet(corners);
         split = face1_->GetSplitCells();
         splitMethod = "split";
-
-#if 0  // triangulate facet
-       // std::cout<<"!!! WARNING !!! Facets are triangulated instead of getting splitted ---> more
-       // Gauss points\n";
-        TriangulateFacet tf( corners );
-
-        std::vector<int> ptconc;
-        tf.EarClipping( ptconc, true );
-
-        split = tf.GetSplitCells();
-        splitMethod = "triangulation";
-#endif
       }
 
       for (std::vector<std::vector<Point *>>::const_iterator j = split.begin(); j != split.end();
@@ -1264,33 +1186,6 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
     }
 #endif
 
-
-#if 0  // DEBUGCUTLIBRARY //write separate file for each bcell along with the distribution of Gauss
-       // points
-    static int facetno = 0;
-    facetno++;
-    std::stringstream str;
-    str << "facetid" << facetno << ".pos";
-    std::ofstream file( str.str().c_str() );
-
-    const std::vector<Point*> ptl = bcell->Points();
-    int mm=0;
-    for( unsigned ii=0;ii<ptl.size();ii++ )
-    {
-      Point* pt1 = ptl[ii];
-      LINALG::Matrix<3,1> global1,local1;
-      pt1->Coordinates(global1.A());
-      elem1_->LocalCoordinates( global1, local1 );
-      //file<<"Point("<<mm<<")="<<"{"<<local1(0,0)<<","<<local1(1,0)<<","<<local1(2,0)<<"};\n";
-      file<<"Point("<<mm<<")="<<"{"<<global1(0,0)<<","<<global1(1,0)<<","<<global1(2,0)<<"};\n";
-      mm++;
-    }
-    for( unsigned ii=0;ii<ptl.size();ii++ )
-    {
-      file<<"Line("<<ii<<")="<<"{"<<ii<<","<<(ii+1)%ptl.size()<<"};\n";
-    }
-#endif
-
     DRT::UTILS::GaussIntegration gi_temp =
         DRT::UTILS::GaussIntegration(bcell->Shape(), DIRECTDIV_GAUSSRULE);
 
@@ -1332,12 +1227,6 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
       double wei = iquad.Weight() * drs * normalX;
 
       cgp->Append(x_gp_loc, wei);
-
-#if 0  // DEBUGCUTLIBRARY //write separate file for each bcell along with the distribution of Gauss
-       // points (contd...)
-      file<<"Point("<<mm<<")="<<"{"<<x_gp_loc(0,0)<<","<<x_gp_loc(1,0)<<","<<x_gp_loc(2,0)<<"};\n";
-      mm++;
-#endif
     }
     zz++;  // Iterator of divCells.
   }
@@ -1464,18 +1353,6 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCellsNew(bool divergenceRule,
         if (!face1_->IsFacetSplit()) face1_->SplitFacet(corners);
         split = face1_->GetSplitCells();
         splitMethod = "split";
-
-#if 0  // triangulate facet
-       // std::cout<<"!!! WARNING !!! Facets are triangulated instead of getting splitted ---> more
-       // Gauss points\n";
-        TriangulateFacet tf( corners );
-
-        std::vector<int> ptconc;
-        tf.EarClipping( ptconc, true );
-
-        split = tf.GetSplitCells();
-        splitMethod = "triangulation";
-#endif
       }
 
       for (std::vector<std::vector<Point *>>::const_iterator j = split.begin(); j != split.end();

@@ -31,18 +31,6 @@ bool GEO::CUT::LevelSetSide<probdim>::FindCutPointsDispatch(
   return e.FindCutPointsLevelSet(mesh, element, side, *this);
 }
 
-
-#if 0
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-template < int probdim >
-void GEO::CUT::LevelSetSide<probdim>::MakeSideCutFacets(
-    Mesh & mesh, Element * element, plain_facet_set & facets )
-{
-  Side::MakeSideCutFacets( mesh, element, facets );
-}
-#endif
-
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int probdim>

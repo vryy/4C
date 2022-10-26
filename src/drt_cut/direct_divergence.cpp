@@ -107,11 +107,6 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegrationR
     faee1.DivergenceIntegrationRuleNew(mesh_, cgp);
   }
 
-#if 0  // integrate specified functions using the Gaussian rule generated -- used in postprocessing
-  DRT::UTILS::GaussIntegration gi(cgp);
-  IntegrateSpecificFuntions( gi, RefPlaneEqn );  //integrate specific functions
-#endif
-
   return cgp;
 }
 
@@ -652,34 +647,4 @@ void GEO::CUT::DirectDivergence::DebugVolume(const DRT::UTILS::GaussIntegration&
                  "GEO::CUT::DirectDivergenceGlobalRefplane::GetReferencePlane() \n";
     throw std::runtime_error("Volume is not a number.");
   }
-}
-
-/*--------------------------------------------------------------------------------------------------------------*
-         Integrate given polynomials using the gaussian rule generated using directDivergence.
-sudhakar 04/12 Can be used for post-processing
-*---------------------------------------------------------------------------------------------------------------*/
-void GEO::CUT::DirectDivergence::IntegrateSpecificFuntions(const DRT::UTILS::GaussIntegration& gpc)
-{
-  double TotalInteg = 0.0;
-
-  //#ifdef LOCAL
-  DRT::UTILS::GaussIntegration gpv(gpc);
-  for (DRT::UTILS::GaussIntegration::iterator iquad = gpv.begin(); iquad != gpv.end(); ++iquad)
-  {
-    const LINALG::Matrix<3, 1> etaFacet(iquad.Point());
-    const double weiFacet = iquad.Weight();
-    double xx = etaFacet(0, 0);
-    double yy = etaFacet(1, 0);
-    double zz = etaFacet(2, 0);
-    TotalInteg +=
-        (pow(xx, 6) + xx * pow(yy, 4) * zz + xx * xx * yy * yy * zz * zz + pow(zz, 6)) * weiFacet;
-  }
-  //#else
-
-  //#endif
-
-
-
-  std::cout << std::setprecision(20) << "the integral of a predefined function = " << TotalInteg
-            << "\n";
 }

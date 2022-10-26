@@ -325,97 +325,6 @@ bool GEO::CUT::Facet::ShareSameCutSide(Facet* f) /* Does the facet share the sam
 *-----------------------------------------------------------------------------*/
 void GEO::CUT::Facet::CreateTriangulation(Mesh& mesh, const std::vector<Point*>& points)
 {
-#if 0  // old implementation of Ulli -- failed when --test=alex55 when called for directDivergence
-  LINALG::Matrix<3,1> x1;
-  LINALG::Matrix<3,1> x2;
-  LINALG::Matrix<3,1> x3;
-
-  LINALG::Matrix<3,1> b1;
-//   LINALG::Matrix<3,1> b2;
-//   LINALG::Matrix<3,1> b3;
-
-  std::vector<Point*> pts( points );
-  pts.push_back( points[0] );
-  std::vector<std::vector<Point*> > lines;
-
-  for ( unsigned pos = 0; pos<pts.size(); )
-  {
-    lines.push_back( std::vector<Point*>() );
-    std::vector<Point*> * current_line = & lines.back();
-
-    current_line->push_back( pts[pos++] );
-    if ( pos==pts.size() )
-      break;
-    current_line->push_back( pts[pos++] );
-
-    ( *current_line )[0]->Coordinates( x1.A() );
-    ( *current_line )[1]->Coordinates( x2.A() );
-
-    b1.Update( 1, x2, -1, x1, 0 );
-
-    if ( b1.Norm2() < std::numeric_limits<double>::min() )
-    {
-      throw std::runtime_error( "same point in facet not supported" );
-    }
-
-    for ( ; pos<pts.size(); ++pos )
-    {
-      Point * p = pts[pos];
-      p->Coordinates( x3.A() );
-
-      x3.Update( -1, x1, 1 );
-
-      double f = x3.Norm2() / b1.Norm2();
-      x3.Update( -f, b1, 1 );
-      if ( x3.Norm2() > TOLERANCE )
-      {
-        --pos;
-        break;
-      }
-      current_line->push_back( p );
-    }
-  }
-
-  if ( lines.size()<4 )
-    throw std::runtime_error( "too few lines" );
-
-  // Invent point in middle of surface. Surface needs to be convex to
-  // allow all this.
-
-  x1 = 0;
-  x2 = 0;
-
-  for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
-  {
-    Point * p = *i;
-    p->Coordinates( x1.A() );
-    x2.Update( 1, x1, 1 );
-  }
-
-  x2.Scale( 1./points.size() );
-
-  Point * p1 = mesh.NewPoint( x2.A(), NULL, ParentSide() );
-  p1->Position( Position() );
-  p1->Register( this );
-  //p1->Register( parentside_ );
-  triangulation_.clear();
-
-  for ( std::vector<std::vector<Point*> >::iterator i=lines.begin(); i!=lines.end(); ++i )
-  {
-    std::vector<Point*> & line = *i;
-    triangulation_.push_back( std::vector<Point*>() );
-
-    std::vector<Point*> & newtri = triangulation_.back();
-    newtri.push_back( p1 );
-
-    //std::copy( line.begin(), line.end(), std::back_inserter( triangulation_.back() ) );
-    newtri.insert( newtri.end(), line.begin(), line.end() );
-
-    //std::copy( line.begin(), line.end(), std::ostream_iterator<Point*>( std::cout, "; " ) );
-    //std::cout << "\n";
-  }
-#else  // new simpler triangulation implementation (Sudhakar 04/12)
-
   // Perform centre-point triangulation
   // Find the middle point (M) and join them with the corners of the facet to create triangles
   // Works only for convex facets, because of the middle point calculation
@@ -525,8 +434,6 @@ void GEO::CUT::Facet::CreateTriangulation(Mesh& mesh, const std::vector<Point*>&
       triangulation_ = tf.GetSplitCells();
     }
   }
-
-#endif
 }
 
 /*----------------------------------------------------------------------------*
@@ -650,32 +557,13 @@ void GEO::CUT::Facet::Position(Point::PointPosition pos)
  *----------------------------------------------------------------------------*/
 void GEO::CUT::Facet::GetLines(std::map<std::pair<Point*, Point*>, plain_facet_set>& lines)
 {
-#if 0
-  // We are interested in the surrounding lines of the facet. Thus the
-  // internal lines that result from a triangulation are not wanted
-  // here. (There are no other facets connected to any of our internal lines.)
-  //if ( this->BelongsToLevelSetSide() and  IsTriangulated() )
-  if ( IsTriangulated() )
-  {
-    for ( std::vector<std::vector<Point*> >::iterator i=triangulation_.begin();
-          i!=triangulation_.end();
-          ++i )
-    {
-      std::vector<Point*> & points = *i;
-      GetLines( points, lines );
-    }
-  }
-  else
-#endif
-  {
-    GetLines(points_, lines);
+  GetLines(points_, lines);
 
-    // add hole lines but do not connect with parent facet
-    for (plain_facet_set::iterator i = holes_.begin(); i != holes_.end(); ++i)
-    {
-      Facet* hole = *i;
-      hole->GetLines(lines);
-    }
+  // add hole lines but do not connect with parent facet
+  for (plain_facet_set::iterator i = holes_.begin(); i != holes_.end(); ++i)
+  {
+    Facet* hole = *i;
+    hole->GetLines(lines);
   }
 }
 

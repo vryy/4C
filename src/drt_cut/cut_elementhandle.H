@@ -149,22 +149,6 @@ namespace GEO
       // TODO note which ones???
       virtual void GetBoundaryCells(plain_boundarycell_set& bcells) = 0;
 
-#if (0)
-      /*!
-      \brief Unused
-       */
-      void BoundaryCellGaussPoints(
-          const std::map<int, std::vector<GEO::CUT::BoundaryCell*>>& bcells,
-          std::map<int, std::vector<DRT::UTILS::GaussIntegration>>& intpoints);
-
-      /*!
-      \brief unused: old implementation of boundarycell Gauss points collection
-       */
-      void BoundaryCellGaussPoints(MeshIntersection& mesh, int mi,
-          const std::map<int, std::vector<GEO::CUT::BoundaryCell*>>& bcells,
-          std::map<int, std::vector<DRT::UTILS::GaussIntegration>>& intpoints);
-#endif
-
       /*!
       \brief Collect the Gauss points of all the boundary-cells belong to this element.
       This is the method used now in the new implementation
@@ -255,11 +239,6 @@ namespace GEO
       Teuchos::RCP<DRT::UTILS::GaussPoints> CreateProjected(
           const std::vector<GEO::CUT::Point*>& cpoints,
           Teuchos::RCP<DRT::UTILS::GaussPoints> gp_ic);
-
-#if 0
-  template <DRT::Element::DiscretizationType distype>
-  Teuchos::RCP<DRT::UTILS::GaussPoints> TransformVolumeCellGaussPoints( GEO::CUT::IntegrationCell * ic );
-#endif
 
       std::map<Point*, LINALG::Matrix<3, 1>> local_coordinates_;
 

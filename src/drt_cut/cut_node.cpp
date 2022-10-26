@@ -507,16 +507,6 @@ void GEO::CUT::Node::SortNodalDofSets()
     sort(it_start, nodaldofsets_.end(), NodalDofSetCmp());
   }
 
-#if (0)
-  // print the sorted dofsets:
-  std::cout << "Sorted DOFSETs for node: " << Id() << std::endl;
-  for (int i = 0; i < NumDofSets(); i++)
-  {
-    NodalDofSet* dofset = GetNodalDofSet(i);
-    dofset->Print();
-  }
-#endif
-
   return;
 }
 
@@ -607,23 +597,6 @@ void GEO::CUT::Node::CollectNodalDofSets(bool connect_ghost_with_standard_nds)
 
   std::copy(collected_nodaldofsets.begin(), collected_nodaldofsets.end(),
       std::inserter(nodaldofsets_, nodaldofsets_.begin()));
-
-  // safety check for number of allowed sets (one std and one ghost per position)
-
-
-  if (NumDofSets() > 1 and
-      connect_ghost_with_standard_nds)  // if statement reasonable for single phase problems
-  {
-#if (0)
-    // print the sorted dofsets:
-    std::cout << "Collected DOFSETs for node: " << Id() << std::endl;
-    for (int i = 0; i < NumDofSets(); i++)
-    {
-      NodalDofSet* dofset = GetNodalDofSet(i);
-      dofset->Print();
-    }
-#endif
-  }
 }
 
 

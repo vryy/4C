@@ -324,9 +324,6 @@ namespace GEO
        *  For all these facets, parent side is an element side */
       virtual void MakeOwnedSideFacets(Mesh& mesh, Element* element, plain_facet_set& facets);
 
-      //   virtual void MakeSideCutFacets( Mesh & mesh, Element * element, plain_facet_set & facets
-      //   );
-
       /** \brief create facets on the cut sides of the element
        *
        *  For all these facets, parent side is a cut side.

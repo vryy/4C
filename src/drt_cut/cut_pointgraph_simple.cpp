@@ -162,13 +162,6 @@ void GEO::CUT::IMPL::SimplePointGraph_2D::Graph::FindCycles(
     }
     main_cycles_ = std::vector<Cycle>(1, Cycle(line));
   }
-
-#if 0
-  std::cout << "New main-Cycles\n";
-  for ( std::vector<Cycle>::const_iterator cit = main_cycles_.begin();
-        cit != main_cycles_.end(); ++cit )
-    cit->Print();
-#endif
 }
 
 /*----------------------------------------------------------------------------*
@@ -238,11 +231,6 @@ void GEO::CUT::IMPL::SimplePointGraph_2D::FillGraphAndCycleWithLineFacets(
   }
 
   cycle = Cycle(std::vector<Point *>(point_set.begin(), point_set.end()));
-
-#if 0
-  GetGraph().Print();
-  cycle.Print();
-#endif
 }
 
 /*----------------------------------------------------------------------------*

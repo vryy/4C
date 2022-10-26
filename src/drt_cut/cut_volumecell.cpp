@@ -751,17 +751,9 @@ void GEO::CUT::VolumeCell::TestSurface()
         {
           for (unsigned l = 0; l < facetlines.size(); l++)
           {
-#if (0)
-            if (lines[k] == facetlines[l])
-            {
-              numberoflines++;
-              facetlineindex.push_back(l);
-            }
-#else
             dserror(
                 "not supported when using std::set in definition of point_line_set. Adapt this. "
                 "Anyway this routine is not bugfree! This about before using this function!!!");
-#endif
           }
         }
         std::cout << "numberoflines: " << numberoflines << std::endl;
@@ -1132,31 +1124,6 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells(Mesh& mesh,
       eqnfac = KERNEL::EqnPlaneOfPolygon(corners);
       rever = ToReverse(posi, eqnpar, eqnfac);
     }
-
-#if 0
-    std::vector<Point*> parpts(3);
-
-    parpts[0] = par_nodes[0]->point();
-    parpts[1] = par_nodes[1]->point();
-    parpts[2] = par_nodes[2]->point();
-
-    std::vector<double> eqnpar(4),eqnfac(4);
-    // equation of plane denotes normal direction
-    eqnpar = KERNEL::EqnPlane( parpts[0], parpts[1], parpts[2] );
-
-    std::vector<Point*> corners = fac->CornerPoints();
-    std::vector<Point*> cornersTemp (corners);
-
-    // when finding eqn of plane for the facet, inline points should not be taken
-   CUT::KERNEL::DeleteInlinePts( cornersTemp );
-
-   bool rever = false;
-   if( cornersTemp.size()!=0 )
-   {
-     eqnfac = KERNEL::EqnPlanePolygon( cornersTemp );
-     rever = ToReverse( posi, eqnpar, eqnfac );
-   }
-#endif
 
     // For Marked sides the boundary-cells on outside vc's need to be the same as for inside.
     if (fac->OnMarkedBackgroundSide() and posi == GEO::CUT::Point::outside) rever = !rever;
@@ -1650,11 +1617,6 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule(
     // Now we map this rule to local coodinates since the weak form evaluation is done on local
     // coord
     ProjectGaussPointsToLocalCoodinates();
-#endif
-
-#if 0  // integrate a predefined function
-    DRT::UTILS::GaussIntegration gpi(gp_);
-    dd.IntegrateSpecificFuntions( gpi );
 #endif
   }
   // generate boundary cells -- when using tessellation this is automatically done

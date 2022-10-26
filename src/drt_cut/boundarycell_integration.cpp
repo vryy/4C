@@ -41,10 +41,6 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
 
   while (1)
   {
-#if 0
-    std::cout<<"pts on each line = "<<ptsEachLine<<"\n";
-#endif
-
     std::vector<double> eqn = faee1.get_equation();
     DistributeBoundaryCellGaussPoints(eqn, corners1, BcellgausPts_, ptsEachLine);
 
@@ -126,9 +122,6 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
     }
 
     double maxerr = err.InfNorm();
-#if 0
-    std::cout<<"numpts = "<<ptsEachLine<<"\tmax error = "<<maxerr<<"\n";
-#endif
 
     if (maxerr < 1e-10 || ptsEachLine > 25)
       break;

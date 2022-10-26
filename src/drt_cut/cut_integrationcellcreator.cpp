@@ -1313,43 +1313,7 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut(Mesh& mesh, Element* el
       Add(cell, DRT::Element::hex8, points);
     }
     else
-    {
-#if 0
-      PointSet points;
-      const std::vector<Point*> & corner_points = f->CornerPoints();
-
-      f->AllPoints( points );
-
-      for ( std::vector<Point*>::const_iterator i=corner_points.begin();
-            i!=corner_points.end();
-            ++i )
-      {
-        Point * p = *i;
-
-        std::vector<Point*>::iterator pos = std::find( inner_points.begin(), inner_points.end(), p );
-        if ( pos==inner_points.end() )
-        {
-          throw std::runtime_error( "inner point missing" );
-        }
-
-        points.insert( projected_points[pos - inner_points.begin()] );
-      }
-
-      std::vector<Point*> cell_points;
-      cell_points.reserve( points.size() );
-      //std::copy( points.begin(), points.end(), std::back_inserter( cell_points ) );
-      cell_points.assign( points.begin(), points.end() );
-
-      // sort points that go into qhull to obtain the same result independent of
-      // pointer values (compiler flags, code structure, memory usage, ...)
-      std::sort( cell_points.begin(), cell_points.end(), PointPidLess() );
-
-      plain_facet_set cell_facets;
-      cell_facets.insert( f );
-      cell->CreateTet4IntegrationCells( mesh, position, cell_points, cell_facets, true );
-#endif
       return false;
-    }
   }
   return true;
 }

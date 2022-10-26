@@ -105,15 +105,6 @@ void GEO::CUT::ParentIntersection::CreateNodalDofSet(
       FindNodalCellSets(include_inner, eids, sourrounding_elements, nodal_cell_sets_inside,
           nodal_cell_sets_outside, cell_sets_inside, cell_sets_outside, cell_sets);
 
-#if (0)
-      // Gmsh output for the NodalCellSet of node with id n_gid
-      if (n_gid == 6)
-      {
-        DumpGmshNodalCellSet(nodal_cell_sets_outside, dis);
-        DumpGmshCellSets(cell_sets_outside, dis);
-      }
-#endif
-
 
       // finds also the connections of volumecell sets between adjacent elements
       // finally, each found DOFSet around a 1-ring of the node maintains its own set of DOFs
@@ -216,11 +207,6 @@ void GEO::CUT::ParentIntersection::CreateNodalDofSet(
     ConnectNodalDOFSets(nodes, include_inner, dis, ele_vc_sets_outside, nodaldofset_vc_sets_outside,
         vcsets_nid_dofsetnumber_map_toComm_outside);
   }
-
-
-#if (0)
-  DumpGmshNumDOFSets("numdofsets_debug", include_inner, dis);
-#endif
 }
 
 
@@ -584,20 +570,6 @@ void GEO::CUT::ParentIntersection::Cut_Finalize(bool include_inner,
   }
   else
     dserror("Undefined option of volumecell gauss points generation");
-
-
-    //----------------------------------------------------------
-    //
-    //  const double t_diff = Teuchos::Time::wallTime()-t_start;
-    //  if ( myrank_ == 0 and screenoutput)
-    //  {
-    //    IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
-    //  }
-
-#if (0)
-  std::cout << "\n XFEM::FluidWizard::Quadrature construction time = " << t_diff << "\n";
-#endif
-
 
 #ifdef DEBUGCUTLIBRARY
   std::stringstream str;
