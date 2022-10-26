@@ -139,6 +139,12 @@ namespace MAT
    *          + 1/2 \cdot ScalarAB \cdot ( A_{IK} \cdot B_{JL} + A_{IL} \cdot B_{JK} )
    * \f]
    *
+   * compute the "material tensor product" A o B (also known as kronecker-tensor-product) of two 2nd
+   * order tensors (in matrix notation) and add the result to a 4th order tensor (also in matrix
+   * notation) using the symmetry-conditions inherent to material tensors, or tangent matrices,
+   * respectively AND the Voigt notation of E,S, and C with the famous factor 2! The implementation
+   * is based on the Epetra-Method Matrix.Multiply.
+   *
    * \param C (in/out)    : Material tangent matrix to be modified
    * \param ScalarAB (in) : Scalar to multiply with A o B
    * \param A (in)        : Dense matrix (3 by 3) as 2nd order tensor A
@@ -158,6 +164,12 @@ namespace MAT
    * C_{IJKL} := ScalarThis \cdot C_{IJKL}
    *          + 1/2 \cdot ScalarAB \cdot ( A_{IK} \cdot B_{JL} + A_{IL} \cdot B_{JK} )
    * \f]
+   *
+   * compute the "material tensor product" A o B (also known as kronecker-tensor-product) of two 2nd
+   * order tensors (in matrix notation) and add the result to a 4th order tensor (also in matrix
+   * notation) using the symmetry-conditions inherent to material tensors, or tangent matrices,
+   * respectively AND the Voigt notation of E,S, and C with the famous factor 2! The implementation
+   * uses the fixed size matrix.ss
    *
    * \param C (in/out)    : Material tangent matrix to be modified
    * \param ScalarAB (in) : Scalar to multiply with A o B
@@ -208,7 +220,7 @@ namespace MAT
    *
    * This function adds the following contribution to the given constitutive
    * matrix #cmat based on the inverse of the right Cauchy-Green vector
-   * #invc.
+   * #invc:
    *
    * In compact tensor notation this method performs
    * \f[
