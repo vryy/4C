@@ -1390,64 +1390,6 @@ static void init_parser_data(struct _PARSER_DATA* data, const CHAR* filename, MP
 /*----------------------------------------------------------------------*/
 static void destroy_parser_data(struct _PARSER_DATA* data) { CCAFREE(data->file_buffer); }
 
-
-#if 0
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Debug output.
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-static void print_token(PARSER_DATA* data)
-{
-  CHAR buf[256];
-
-  switch (data->tok) {
-  case tok_none:
-    printf("<none>");
-    break;
-  case tok_done:
-    printf("<eof>");
-    break;
-  case tok_name:
-    strncpy(buf, data->token_string, data->token_int);
-    buf[data->token_int] = '\0';
-    printf("<name: %s, %d>", buf, data->token_int);
-    break;
-  case tok_string:
-    strncpy(buf, data->token_string, data->token_int);
-    buf[data->token_int] = '\0';
-    printf("<string: %s, %d>", buf, data->token_int);
-    break;
-  case tok_int:
-    printf("<int: %d>", data->token_int);
-    break;
-  case tok_real:
-    printf("<real: %f>", data->token_real);
-    break;
-  case tok_colon:
-    printf("<colon>");
-    break;
-  case tok_equal:
-    printf("<equal>");
-    break;
-  case tok_indent:
-    printf("<indent: %d, %d>", data->token_int, data->indent_level);
-    break;
-  case tok_dedent:
-    printf("<dedent: %d, %d>", data->token_int, data->indent_level);
-    break;
-  default:
-    printf("<unknown>");
-  }
-}
-
-#endif
-
-
 /*----------------------------------------------------------------------*/
 /*!
   \brief Get the next char.

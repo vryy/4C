@@ -125,14 +125,6 @@ namespace DRT
           ereader_[i]->Partition();
         }
 
-        // Debug
-#if 0
-    if (numnodes!=DRT::Problem::Instance()->ProblemSizeParams().get<int>("NODES"))
-      dserror("expect %d nodes but got %d",
-              DRT::Problem::Instance()->ProblemSizeParams().get<int>("NODES"),
-              numnodes);
-#endif
-
         Epetra_Time time(*comm_);
 
         if (!myrank && !reader_.MyOutputFlag())
