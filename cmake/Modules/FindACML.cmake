@@ -48,7 +48,7 @@ if(ACML_FOUND AND NOT TARGET acml::acml)
 endif()
 
 if(ACML_FOUND)
-  list(APPEND BACI_ALL_ENABLED_EXTERNAL_LIBS acml::acml})
+  list(APPEND BACI_ALL_ENABLED_EXTERNAL_LIBS acml::acml)
   message(STATUS "Found ACML (AMD Core Math Library): ${ACML_LIBRARIES}")
   message(STATUS "Found ACML (AMD Core Math Library): ${ACML_INCLUDES}")
 endif()
