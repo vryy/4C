@@ -305,7 +305,7 @@ void DRT::ELEMENTS::So_hex18::InitGp()
 {
   xsi_.resize(NUMGPT_SOH18, LINALG::Matrix<NUMDIM_SOH18, 1>(true));
   wgt_.resize(NUMGPT_SOH18, 0.);
-  DRT::UTILS::IntPointsAndWeights<NUMDIM_SOH18> intpoints(DRT::UTILS::intrule_hex_18point);
+  DRT::UTILS::IntPointsAndWeights<NUMDIM_SOH18> intpoints(DRT::UTILS::GaussRule3D::hex_18point);
   for (int gp = 0; gp < NUMGPT_SOH18; ++gp)
   {
     wgt_.at(gp) = (intpoints.IP().qwgt)[gp];

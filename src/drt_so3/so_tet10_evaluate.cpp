@@ -381,7 +381,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
             // Compute deformation gradient
             LINALG::Matrix<3, 3> defgrd(false);
             LINALG::Matrix<3, 10> derivs(false);
-            so_tet10_derivs<DRT::UTILS::GaussRule3D::intrule_tet_4point>(derivs, gp);
+            so_tet10_derivs<DRT::UTILS::GaussRule3D::tet_4point>(derivs, gp);
 
 
             UTILS::ComputeDeformationGradient<DRT::Element::tet10>(
@@ -1635,7 +1635,7 @@ DRT::ELEMENTS::So_tet10::so_tet10_4gp_shapefcts()
   static bool shapefcts_done = false;
   if (shapefcts_done) return shapefcts;
 
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_4point;
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::tet_4point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int gp = 0; gp < NUMGPT_SOTET10; gp++)
   {
@@ -1662,7 +1662,7 @@ DRT::ELEMENTS::So_tet10::so_tet10_4gp_derivs()
 
   for (int gp = 0; gp < NUMGPT_SOTET10; gp++)
   {
-    so_tet10_derivs<DRT::UTILS::GaussRule3D::intrule_tet_4point>(derivs[gp], gp);
+    so_tet10_derivs<DRT::UTILS::GaussRule3D::tet_4point>(derivs[gp], gp);
   }
   derivs_done = true;
 
@@ -1691,7 +1691,7 @@ const std::vector<double>& DRT::ELEMENTS::So_tet10::so_tet10_4gp_weights()
   static bool weights_done = false;
   if (weights_done) return weights;
 
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_4point;
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::tet_4point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int gp = 0; gp < NUMGPT_SOTET10; gp++) weights[gp] = intpoints.qwgt[gp];
   weights_done = true;
@@ -1710,7 +1710,7 @@ DRT::ELEMENTS::So_tet10::so_tet10_11gp_shapefcts()
   static bool shapefcts_done = false;
   if (shapefcts_done) return shapefcts;
 
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_11point;
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::tet_11point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int gp = 0; gp < NUMGPT_MASS_SOTET10; gp++)
   {
@@ -1737,7 +1737,7 @@ DRT::ELEMENTS::So_tet10::so_tet10_11gp_derivs()
 
   for (int gp = 0; gp < NUMGPT_MASS_SOTET10; gp++)
   {
-    so_tet10_derivs<DRT::UTILS::GaussRule3D::intrule_tet_11point>(derivs[gp], gp);
+    so_tet10_derivs<DRT::UTILS::GaussRule3D::tet_11point>(derivs[gp], gp);
   }
   derivs_done = true;
 
@@ -1753,7 +1753,7 @@ const std::vector<double>& DRT::ELEMENTS::So_tet10::so_tet10_11gp_weights()
   static bool weights_done = false;
   if (weights_done) return weights;
 
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_11point;
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::tet_11point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int gp = 0; gp < NUMGPT_MASS_SOTET10; gp++) weights[gp] = intpoints.qwgt[gp];
   weights_done = true;
@@ -1890,7 +1890,7 @@ void DRT::ELEMENTS::So_tet10::Update_element(std::vector<double>& disp,
       point.MultiplyTN(so_tet10_4gp_shapefcts()[gp], xrefe);
       params.set("gprefecoord", point);
       LINALG::Matrix<3, 10> derivs(false);
-      so_tet10_derivs<DRT::UTILS::GaussRule3D::intrule_tet_4point>(derivs, gp);
+      so_tet10_derivs<DRT::UTILS::GaussRule3D::tet_4point>(derivs, gp);
 
       UTILS::ComputeDeformationGradient<DRT::Element::tet10>(
           defgrd, kintype_, xdisp, xcurr, invJ_[gp], derivs, pstype_, prestress_, gp);

@@ -4065,7 +4065,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
 
     // get the quad9 gaussrule for the in plane integration
     DRT::UTILS::GaussIntegration intpoints(DRT::Element::quad9);
-    //    const DRT::UTILS::IntegrationPoints2D  intpoints(DRT::UTILS::intrule_quad_9point);
 
     // a hex8 element has two levels, the hex20 and hex27 element have three layers to sample
     // (now we allow even more)

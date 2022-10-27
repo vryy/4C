@@ -23,7 +23,7 @@ FBI::BeamToFluidMeshtyingParams::BeamToFluidMeshtyingParams()
       constraint_enforcement_(INPAR::FBI::BeamToFluidConstraintEnforcement::none),
       meshtying_discretization_(INPAR::FBI::BeamToFluidDiscretization::none),
       penalty_parameter_(-1.0),
-      gauss_rule_(DRT::UTILS::GaussRule1D::intrule1D_undefined),
+      gauss_rule_(DRT::UTILS::GaussRule1D::undefined),
       calcfluidweakdirichletforce_(false),
       mortar_shape_function_(INPAR::FBI::BeamToFluidMeshtingMortarShapefunctions::none)
 {

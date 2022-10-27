@@ -38,7 +38,7 @@ DRT::ELEMENTS::Membrane_line3Type& DRT::ELEMENTS::Membrane_line3Type::Instance()
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::MembraneLine<distype>::MembraneLine(int id, int owner, int nnode, const int* nodeids,
     DRT::Node** nodes, DRT::ELEMENTS::Membrane<distype>* parent, const int lline)
-    : DRT::FaceElement(id, owner), intpointsline_(DRT::UTILS::intrule_line_2point)
+    : DRT::FaceElement(id, owner), intpointsline_(DRT::UTILS::GaussRule1D::line_2point)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -47,14 +47,14 @@ DRT::ELEMENTS::MembraneLine<distype>::MembraneLine(int id, int owner, int nnode,
   {
     case line2:
     {
-      DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule_line_2point;
+      DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::GaussRule1D::line_2point;
       // get gauss integration points
       intpointsline_ = DRT::UTILS::IntegrationPoints1D(gaussrule);
       break;
     }
     case line3:
     {
-      DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule_line_3point;
+      DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::GaussRule1D::line_3point;
       // get gauss integration points
       intpointsline_ = DRT::UTILS::IntegrationPoints1D(gaussrule);
       break;

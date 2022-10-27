@@ -33,7 +33,7 @@ MORTAR::ElementIntegrator::ElementIntegrator(DRT::Element::DiscretizationType el
     case DRT::Element::nurbs2:
     case DRT::Element::nurbs3:
     {
-      const DRT::UTILS::IntegrationPoints1D intpoints(DRT::UTILS::intrule_line_5point);
+      const DRT::UTILS::IntegrationPoints1D intpoints(DRT::UTILS::GaussRule1D::line_5point);
       ngp_ = intpoints.nquad;
       coords_.Reshape(nGP(), 2);
       weights_.resize(nGP());
@@ -46,19 +46,23 @@ MORTAR::ElementIntegrator::ElementIntegrator(DRT::Element::DiscretizationType el
       break;
     }
     case DRT::Element::tri3:
-      rule2d = Teuchos::rcp(new DRT::UTILS::IntegrationPoints2D(DRT::UTILS::intrule_tri_7point));
+      rule2d =
+          Teuchos::rcp(new DRT::UTILS::IntegrationPoints2D(DRT::UTILS::GaussRule2D::tri_7point));
       break;
     case DRT::Element::tri6:
-      rule2d = Teuchos::rcp(new DRT::UTILS::IntegrationPoints2D(DRT::UTILS::intrule_tri_16point));
+      rule2d =
+          Teuchos::rcp(new DRT::UTILS::IntegrationPoints2D(DRT::UTILS::GaussRule2D::tri_16point));
       break;
     case DRT::Element::quad4:
-      rule2d = Teuchos::rcp(new DRT::UTILS::IntegrationPoints2D(DRT::UTILS::intrule_quad_9point));
+      rule2d =
+          Teuchos::rcp(new DRT::UTILS::IntegrationPoints2D(DRT::UTILS::GaussRule2D::quad_9point));
       break;
     case DRT::Element::quad8:
     case DRT::Element::quad9:
     case DRT::Element::nurbs4:
     case DRT::Element::nurbs9:
-      rule2d = Teuchos::rcp(new DRT::UTILS::IntegrationPoints2D(DRT::UTILS::intrule_quad_25point));
+      rule2d =
+          Teuchos::rcp(new DRT::UTILS::IntegrationPoints2D(DRT::UTILS::GaussRule2D::quad_25point));
       break;
     default:
       dserror("ElementIntegrator: This contact element type is not implemented!");

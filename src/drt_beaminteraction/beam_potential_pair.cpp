@@ -210,31 +210,31 @@ DRT::UTILS::GaussRule1D BEAMINTERACTION::BeamPotentialPair::GetGaussRule() const
   {
     case 5:
     {
-      return DRT::UTILS::intrule_line_5point;
+      return DRT::UTILS::GaussRule1D::line_5point;
       break;
     }
 
     case 10:
     {
-      return DRT::UTILS::intrule_line_10point;
+      return DRT::UTILS::GaussRule1D::line_10point;
       break;
     }
 
     case 20:
     {
-      return DRT::UTILS::intrule_line_20point;
+      return DRT::UTILS::GaussRule1D::line_20point;
       break;
     }
 
     case 32:
     {
-      return DRT::UTILS::intrule_line_32point;
+      return DRT::UTILS::GaussRule1D::line_32point;
       break;
     }
 
     case 50:
     {
-      return DRT::UTILS::intrule_line_50point;
+      return DRT::UTILS::GaussRule1D::line_50point;
       break;
     }
 
@@ -242,5 +242,5 @@ DRT::UTILS::GaussRule1D BEAMINTERACTION::BeamPotentialPair::GetGaussRule() const
       dserror("%d Gauss points are not supported yet!", Params()->NumberGaussPoints());
   }
 
-  return DRT::UTILS::intrule1D_undefined;
+  return DRT::UTILS::GaussRule1D::undefined;
 }

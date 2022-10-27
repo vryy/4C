@@ -207,107 +207,107 @@ namespace VOLMORTAR
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::hex8>
     {
-      static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule_hex_8point;
+      static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::GaussRule3D::hex_8point;
     };
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::hex20>
     {
-      static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule_hex_64point;
+      static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::GaussRule3D::hex_64point;
     };
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::hex27>
     {
-      static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule_hex_64point;
+      static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::GaussRule3D::hex_64point;
     };
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::tet4>
     {
-      static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule_tet_4point;
+      static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::GaussRule3D::tet_4point;
     };
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::tet10>
     {
-      static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule_tet_45point;
+      static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::GaussRule3D::tet_45point;
     };
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::wedge6>
     {
-      static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule_wedge_6point;
+      static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::GaussRule3D::wedge_6point;
     };
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::wedge15>
     {
-      static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule_wedge_9point;
+      static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::GaussRule3D::wedge_9point;
     };
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::pyramid5>
     {
-      static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule_pyramid_8point;
+      static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::GaussRule3D::pyramid_8point;
     };
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::nurbs8>
     {
-      static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule_hex_8point;
+      static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::GaussRule3D::hex_8point;
     };
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::nurbs27>
     {
-      static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule_hex_27point;
+      static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::GaussRule3D::hex_27point;
     };
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::quad4>
     {
-      static const DRT::UTILS::GaussRule2D rule = DRT::UTILS::intrule_quad_4point;
+      static const DRT::UTILS::GaussRule2D rule = DRT::UTILS::GaussRule2D::quad_4point;
     };
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::quad8>
     {
-      static const DRT::UTILS::GaussRule2D rule = DRT::UTILS::intrule_quad_9point;
+      static const DRT::UTILS::GaussRule2D rule = DRT::UTILS::GaussRule2D::quad_9point;
     };
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::quad9>
     {
-      static const DRT::UTILS::GaussRule2D rule = DRT::UTILS::intrule_quad_9point;
+      static const DRT::UTILS::GaussRule2D rule = DRT::UTILS::GaussRule2D::quad_9point;
     };
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::tri3>
     {
-      static const DRT::UTILS::GaussRule2D rule = DRT::UTILS::intrule_tri_3point;
+      static const DRT::UTILS::GaussRule2D rule = DRT::UTILS::GaussRule2D::tri_3point;
     };
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::tri6>
     {
-      static const DRT::UTILS::GaussRule2D rule = DRT::UTILS::intrule_tri_6point;
+      static const DRT::UTILS::GaussRule2D rule = DRT::UTILS::GaussRule2D::tri_6point;
     };
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::nurbs4>
     {
-      static const DRT::UTILS::GaussRule2D rule = DRT::UTILS::intrule_quad_4point;
+      static const DRT::UTILS::GaussRule2D rule = DRT::UTILS::GaussRule2D::quad_4point;
     };
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::nurbs9>
     {
-      static const DRT::UTILS::GaussRule2D rule = DRT::UTILS::intrule_quad_9point;
+      static const DRT::UTILS::GaussRule2D rule = DRT::UTILS::GaussRule2D::quad_9point;
     };
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::line2>
     {
-      static const DRT::UTILS::GaussRule1D rule = DRT::UTILS::intrule_line_2point;
+      static const DRT::UTILS::GaussRule1D rule = DRT::UTILS::GaussRule1D::line_2point;
     };
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::line3>
     {
-      static const DRT::UTILS::GaussRule1D rule = DRT::UTILS::intrule_line_3point;
+      static const DRT::UTILS::GaussRule1D rule = DRT::UTILS::GaussRule1D::line_3point;
     };
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::nurbs2>
     {
-      static const DRT::UTILS::GaussRule1D rule = DRT::UTILS::intrule_line_2point;
+      static const DRT::UTILS::GaussRule1D rule = DRT::UTILS::GaussRule1D::line_2point;
     };
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::nurbs3>
     {
-      static const DRT::UTILS::GaussRule1D rule = DRT::UTILS::intrule_line_3point;
+      static const DRT::UTILS::GaussRule1D rule = DRT::UTILS::GaussRule1D::line_3point;
     };
 
     /*----------------------------------------------------------------------*

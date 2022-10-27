@@ -81,8 +81,8 @@ dserror(
 #endif
 
 #define MYGAUSSRULEBEAM3K \
-  intrule_line_4point  // define gauss rule; intrule_line_1point - intrule_line_10point is
-                       // implemented.
+  GaussRule1D::line_4point  // define gauss rule; intrule_line_1point - intrule_line_10point
+                            // is implemented.
 // DEFAULT: intrule_line_4point
 
 #define LENGTHCALCNEWTONTOL 10e-12  // Tolerance for iterative determination of element length.

@@ -563,7 +563,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 
   // we use always 25 integration points per integration patch
   DRT::UTILS::IntegrationPoints2D gaussPointsperPatch =
-      DRT::UTILS::IntegrationPoints2D(DRT::UTILS::GaussRule2D::intrule_quad_25point);
+      DRT::UTILS::IntegrationPoints2D(DRT::UTILS::GaussRule2D::quad_25point);
   n_gp_per_patch_ = gaussPointsperPatch.nquad;
   n_gp_ = n_gp_per_patch_ * numpatch_axi_ * numpatch_rad_;
   // define Gauss points and n_gp-sized quantities
@@ -656,9 +656,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   // --> we need 4 gp for exact integration
 
   DRT::UTILS::IntegrationPoints1D gaussPoints =
-      DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::intrule_line_3point);
+      DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_3point);
   if (numdim_ == 3)
-    gaussPoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::intrule_line_4point);
+    gaussPoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_4point);
 
   n_gp_ = gaussPoints.nquad;
   // define Gauss points and n_gp-sized quantities
@@ -1194,9 +1194,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     etaB = -1.0 + 2.0 * ((length_so_far + curr_seg_length) / arteryelelength_);
 
     DRT::UTILS::IntegrationPoints1D gaussPoints =
-        DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::intrule_line_3point);
+        DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_3point);
     if (numdim_ == 3)
-      gaussPoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::intrule_line_4point);
+      gaussPoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_4point);
 
     // distribute new Gauss points
     const double determinant = (etaB - etaA) / 2.0;
@@ -2123,9 +2123,9 @@ FAD POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, dis
 
   // define GPs
   DRT::UTILS::IntegrationPoints1D gaussPoints =
-      DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::intrule_line_3point);
+      DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_3point);
   if (numdim_ == 3)
-    gaussPoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::intrule_line_4point);
+    gaussPoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_4point);
 
   static LINALG::Matrix<1, numnodescont_, FAD> N2(true);           // = N2
   static LINALG::Matrix<numdim_, numnodescont_, FAD> N2_xi(true);  // = N2,xi1

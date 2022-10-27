@@ -31,41 +31,112 @@ namespace DRT
     //! integration rules can be distinguished into open and closed rules
     //! hereby, open rules are rules where all integration points are inside the domain
     //! and none on the boundary of the integrated domain
-    enum GaussRule3D
+    enum class GaussRule3D
     {
-      intrule3D_undefined,  ///< use this to initialize a gaussrule, if you don't know the value,
-                            ///< yet!
-      intrule_hex_1point,   ///< GAUSS INTEGRATION, DEG.OF PRECISION 1 (open)
-      intrule_hex_8point,   ///< GAUSS INTEGRATION, DEG.OF PRECISION 3 (open)
-      intrule_hex_18point,  ///< GAUSS INTEGRATION, DEG.OF PRECISION 5 in xy-plane, 3 in z-direction
-                            ///< (open)
-      intrule_hex_27point,  ///< GAUSS INTEGRATION, DEG.OF PRECISION 5 (open)
-      intrule_hex_64point,
-      intrule_hex_125point,
-      intrule_hex_216point,
-      intrule_hex_343point,
-      intrule_hex_512point,
-      intrule_hex_729point,
-      intrule_hex_1000point,
-      intrule_tet_1point,              ///< GAUSS INTEGRATION, DEG.OF PRECISION 1 (open)
-      intrule_tet_4point,              ///< GAUSS INTEGRATION, DEG.OF PRECISION 2 (open)
-      intrule_tet_4point_gauss_radau,  ///< GAUSS INTEGRATION, DEG.OF PRECISION 2 (closed)
-      intrule_tet_5point,              ///< GAUSS INTEGRATION, DEG.OF PRECISION 3 (open)
-      intrule_tet_10point,             ///< KEAST3           , DEG.OF PRECISION 3 (closed)
-      intrule_tet_11point,             ///< KEAST5           , DEG.OF PRECISION 4 (open)
-      intrule_tet_15point,             ///< KEAST6           , DEG.OF PRECISION 5 (closed)
-      intrule_tet_24point,             ///< KEAST7           , DEG.OF PRECISION 6 (open)
-      intrule_tet_64point_peano,   ///< GAUSS-LOBATTO    , DEG.OF PRECISION 6 (open)   (Peano, 1982)
-      intrule_tet_45point,         ///< KEAST9           , DEG.OF PRECISION 8 (open)
-      intrule_tet_125point_peano,  ///< GAUSS-LOBATTO    , DEG.OF PRECISION 9 (open)   (Peano, 1982)
-      intrule_tet_343point_peano,  ///< GAUSS-LOBATTO    , DEG.OF PRECISION 13 (open)  (Peano, 1982)
-      intrule_tet_729point_peano,  ///< GAUSS-LOBATTO    , DEG.OF PRECISION 16 (open)  (Peano, 1982)
-      intrule_wedge_1point,        ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
-      intrule_wedge_6point,        ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
-      intrule_wedge_9point,        ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
-      intrule_pyramid_1point,      ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
-      intrule_pyramid_8point       ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
+      undefined,    ///< use this to initialize a gaussrule, if you don't know the value,
+                    ///< yet!
+      hex_1point,   ///< GAUSS INTEGRATION, DEG.OF PRECISION 1 (open)
+      hex_8point,   ///< GAUSS INTEGRATION, DEG.OF PRECISION 3 (open)
+      hex_18point,  ///< GAUSS INTEGRATION, DEG.OF PRECISION 5 in xy-plane, 3 in z-direction
+                    ///< (open)
+      hex_27point,  ///< GAUSS INTEGRATION, DEG.OF PRECISION 5 (open)
+      hex_64point,
+      hex_125point,
+      hex_216point,
+      hex_343point,
+      hex_512point,
+      hex_729point,
+      hex_1000point,
+      tet_1point,              ///< GAUSS INTEGRATION, DEG.OF PRECISION 1 (open)
+      tet_4point,              ///< GAUSS INTEGRATION, DEG.OF PRECISION 2 (open)
+      tet_4point_gauss_radau,  ///< GAUSS INTEGRATION, DEG.OF PRECISION 2 (closed)
+      tet_5point,              ///< GAUSS INTEGRATION, DEG.OF PRECISION 3 (open)
+      tet_10point,             ///< KEAST3           , DEG.OF PRECISION 3 (closed)
+      tet_11point,             ///< KEAST5           , DEG.OF PRECISION 4 (open)
+      tet_15point,             ///< KEAST6           , DEG.OF PRECISION 5 (closed)
+      tet_24point,             ///< KEAST7           , DEG.OF PRECISION 6 (open)
+      tet_64point_peano,       ///< GAUSS-LOBATTO    , DEG.OF PRECISION 6 (open)   (Peano, 1982)
+      tet_45point,             ///< KEAST9           , DEG.OF PRECISION 8 (open)
+      tet_125point_peano,      ///< GAUSS-LOBATTO    , DEG.OF PRECISION 9 (open)   (Peano, 1982)
+      tet_343point_peano,      ///< GAUSS-LOBATTO    , DEG.OF PRECISION 13 (open)  (Peano, 1982)
+      tet_729point_peano,      ///< GAUSS-LOBATTO    , DEG.OF PRECISION 16 (open)  (Peano, 1982)
+      wedge_1point,            ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
+      wedge_6point,            ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
+      wedge_9point,            ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
+      pyramid_1point,          ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
+      pyramid_8point           ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
     };
+
+    inline std::string GaussRuleToString(GaussRule3D gauss_rule)
+    {
+      switch (gauss_rule)
+      {
+        case GaussRule3D::undefined:
+          return "undefined";
+        case GaussRule3D::hex_1point:
+          return "hex_1point";
+        case GaussRule3D::hex_8point:
+          return "hex_8point";
+        case GaussRule3D::hex_18point:
+          return "hex_18point";
+        case GaussRule3D::hex_27point:
+          return "hex_27point";
+        case GaussRule3D::hex_64point:
+          return "hex_64point";
+        case GaussRule3D::hex_125point:
+          return "hex_125point";
+        case GaussRule3D::hex_216point:
+          return "hex_216point";
+        case GaussRule3D::hex_343point:
+          return "hex_343point";
+        case GaussRule3D::hex_512point:
+          return "hex_512point";
+        case GaussRule3D::hex_729point:
+          return "hex_729point";
+        case GaussRule3D::hex_1000point:
+          return "hex_1000point";
+        case GaussRule3D::tet_1point:
+          return "tet_1point";
+        case GaussRule3D::tet_4point:
+          return "tet_4point";
+        case GaussRule3D::tet_4point_gauss_radau:
+          return "tet_4point_gauss_radau";
+        case GaussRule3D::tet_5point:
+          return "tet_5point";
+        case GaussRule3D::tet_10point:
+          return "tet_10point";
+        case GaussRule3D::tet_11point:
+          return "tet_11point";
+        case GaussRule3D::tet_15point:
+          return "tet_15point";
+        case GaussRule3D::tet_24point:
+          return "tet_24point";
+        case GaussRule3D::tet_64point_peano:
+          return "tet_64point_peano";
+        case GaussRule3D::tet_45point:
+          return "tet_45point";
+        case GaussRule3D::tet_125point_peano:
+          return "tet_125point_peano";
+        case GaussRule3D::tet_343point_peano:
+          return "tet_343point_peano";
+        case GaussRule3D::tet_729point_peano:
+          return "tet_729point_peano";
+        case GaussRule3D::wedge_1point:
+          return "wedge_1point";
+        case GaussRule3D::wedge_6point:
+          return "wedge_6point";
+        case GaussRule3D::wedge_9point:
+          return "wedge_9point";
+        case GaussRule3D::pyramid_1point:
+          return "pyramid_1point";
+        case GaussRule3D::pyramid_8point:
+          return "pyramid_8point";
+      }
+      dserror("Your GaussRule3D (%d) has not beed added into the list above",
+          static_cast<int>(gauss_rule));
+      return "unknown";
+    }
+
 
     /// allow to verify the openness of an integration rule
     ///
@@ -76,88 +147,88 @@ namespace DRT
 
       switch (intrule)
       {
-        case intrule_hex_1point:
+        case GaussRule3D::hex_1point:
           open = true;
           break;
-        case intrule_hex_8point:
+        case GaussRule3D::hex_8point:
           open = true;
           break;
-        case intrule_hex_27point:
+        case GaussRule3D::hex_27point:
           open = true;
           break;
-        case intrule_hex_64point:
+        case GaussRule3D::hex_64point:
           open = true;
           break;
-        case intrule_hex_125point:
+        case GaussRule3D::hex_125point:
           open = true;
           break;
-        case intrule_hex_216point:
+        case GaussRule3D::hex_216point:
           open = true;
           break;
-        case intrule_hex_343point:
+        case GaussRule3D::hex_343point:
           open = true;
           break;
-        case intrule_hex_512point:
+        case GaussRule3D::hex_512point:
           open = true;
           break;
-        case intrule_hex_729point:
+        case GaussRule3D::hex_729point:
           open = true;
           break;
-        case intrule_hex_1000point:
+        case GaussRule3D::hex_1000point:
           open = true;
           break;
-        case intrule_tet_1point:
+        case GaussRule3D::tet_1point:
           open = true;
           break;
-        case intrule_tet_4point:
+        case GaussRule3D::tet_4point:
           open = true;
           break;
-        case intrule_tet_4point_gauss_radau:
+        case GaussRule3D::tet_4point_gauss_radau:
           open = false;
           break;
-        case intrule_tet_5point:
+        case GaussRule3D::tet_5point:
           open = true;
           break;
-        case intrule_tet_10point:
+        case GaussRule3D::tet_10point:
           open = false;
           break;
-        case intrule_tet_11point:
+        case GaussRule3D::tet_11point:
           open = true;
           break;
-        case intrule_tet_15point:
+        case GaussRule3D::tet_15point:
           open = false;
           break;
-        case intrule_tet_24point:
+        case GaussRule3D::tet_24point:
           open = true;
           break;
-        case intrule_tet_64point_peano:
+        case GaussRule3D::tet_64point_peano:
           open = true;
           break;
-        case intrule_tet_45point:
+        case GaussRule3D::tet_45point:
           open = true;
           break;
-        case intrule_tet_125point_peano:
+        case GaussRule3D::tet_125point_peano:
           open = true;
           break;
-        case intrule_tet_343point_peano:
+        case GaussRule3D::tet_343point_peano:
           open = true;
           break;
-        case intrule_tet_729point_peano:
+        case GaussRule3D::tet_729point_peano:
           open = true;
           break;
-        case intrule_wedge_1point:
+        case GaussRule3D::wedge_1point:
           open = true;
           break;
-        case intrule_wedge_6point:
+        case GaussRule3D::wedge_6point:
           open = true;
           break;
-        case intrule_wedge_9point:
+        case GaussRule3D::wedge_9point:
           open = true;
           break;
-        case intrule_pyramid_1point:
+        case GaussRule3D::pyramid_1point:
           open = true;
           break;
-        case intrule_pyramid_8point:
+        case GaussRule3D::pyramid_8point:
           open = true;
           break;
         default:
@@ -174,152 +245,152 @@ namespace DRT
     {
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule3D_undefined>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::undefined>
     {
       static const unsigned value = 0;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_hex_1point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_1point>
     {
       static const unsigned value = 1;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_hex_8point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_8point>
     {
       static const unsigned value = 8;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_hex_18point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_18point>
     {
       static const unsigned value = 18;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_hex_27point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_27point>
     {
       static const unsigned value = 27;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_hex_64point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_64point>
     {
       static const unsigned value = 64;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_hex_125point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_125point>
     {
       static const unsigned value = 125;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_hex_216point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_216point>
     {
       static const unsigned value = 216;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_hex_343point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_343point>
     {
       static const unsigned value = 343;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_hex_512point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_512point>
     {
       static const unsigned value = 512;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_hex_729point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_729point>
     {
       static const unsigned value = 729;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_hex_1000point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_1000point>
     {
       static const unsigned value = 1000;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_tet_1point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_1point>
     {
       static const unsigned value = 1;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_tet_4point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_4point>
     {
       static const unsigned value = 4;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_tet_4point_gauss_radau>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_4point_gauss_radau>
     {
       static const unsigned value = 4;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_tet_5point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_5point>
     {
       static const unsigned value = 5;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_tet_10point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_10point>
     {
       static const unsigned value = 10;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_tet_11point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_11point>
     {
       static const unsigned value = 11;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_tet_15point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_15point>
     {
       static const unsigned value = 15;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_tet_24point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_24point>
     {
       static const unsigned value = 24;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_tet_64point_peano>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_64point_peano>
     {
       static const unsigned value = 64;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_tet_45point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_45point>
     {
       static const unsigned value = 45;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_tet_125point_peano>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_125point_peano>
     {
       static const unsigned value = 125;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_tet_343point_peano>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_343point_peano>
     {
       static const unsigned value = 343;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_tet_729point_peano>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_729point_peano>
     {
       static const unsigned value = 729;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_wedge_1point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::wedge_1point>
     {
       static const unsigned value = 1;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_wedge_6point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::wedge_6point>
     {
       static const unsigned value = 6;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_wedge_9point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::wedge_9point>
     {
       static const unsigned value = 9;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_pyramid_1point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::pyramid_1point>
     {
       static const unsigned value = 1;
     };
     template <>
-    struct GaussRule3DToNumGaussPoints<intrule_pyramid_8point>
+    struct GaussRule3DToNumGaussPoints<GaussRule3D::pyramid_8point>
     {
       static const unsigned value = 8;
     };
@@ -329,47 +400,111 @@ namespace DRT
     //! integration rules can be distinguished into open and closed rules
     //! hereby, open rules are rules where all integration points are inside the domain
     //! and none on the boundary of the integrated domain
-    enum GaussRule2D
+    enum class GaussRule2D
     {
-      intrule2D_undefined,   ///< use this to initialize a gaussrule, if you don't know the value,
-                             ///< yet!
-      intrule_quad_1point,   ///< degree of precision: 1  (open)
-      intrule_quad_4point,   ///< degree of precision: 3  (open)
-      intrule_quad_6point,   ///< degree of precision: 3/5  (open) (2 by 3 gauss points for quad6
-                             ///< element
-      intrule_quad_9point,   ///< degree of precision: 5  (open)
-      intrule_quad_16point,  ///< degree of precision: 7  (open)
-      intrule_quad_25point,  ///< degree of precision: 9  (open)
-      intrule_quad_lobatto25point,  ///< degree of precision: 7  (closed)
-      intrule_quad_36point,         ///< degree of precision: 11 (open)
-      intrule_quad_49point,         ///< degree of precision: 13 (open)
-      intrule_quad_64point,         ///< degree of precision: 15 (open)
-      intrule_quad_81point,         ///< degree of precision: 17 (open)
-      intrule_quad_100point,        ///< degree of precision: 19 (open)
-      intrule_quad_256point,        ///< degree of precision: 31 (open)
-      intrule_quad_400point,        ///< degree of precision: 39 (open)
-      intrule_quad_1024point,       ///< degree of precision: 63 (open)
-      intrule_tri_1point,           ///< degree of precision: 1  (open)
-      intrule_tri_3point,  ///< degree of precision: 2  (open)   (Hughes, The Finite Element Method)
-      intrule_tri_3point_gauss_radau,  ///< degree of precision: 2  (closed) (Hughes, The Finite
-                                       ///< Element Method)
-      intrule_tri_4point,  ///< degree of precision: 3  (open)   (Hughes, The Finite Element Method)
-      intrule_tri_6point,  ///< degree of precision: 4  (open)   (Hughes, The Finite Element Method)
-      intrule_tri_7point,  ///< degree of precision: 5  (open)   (Gilbert Strang, George Fix, An
-                           ///< Analysis of the Finite Element Method, Cambridge, 1973,ISBN:
-                           ///< 096140888X,LC: TA335.S77.)
-      intrule_tri_12point,  ///< degree of precision: 6  (open)   (Hughes, The Finite Element
-                            ///< Method)
-      intrule_tri_16point,  ///< degree of precision: 8  (open)   (Linbo Zhang, Tao Cui and Hui Liu:
-                            ///< A SET OF SYMMETRIC QUADRATURE RULES ON TRIANGLES
-                            ///<                                   AND TETRAHEDRA, Journal of
-                            ///<                                   Computational Mathematics,
-                            ///<                                   Vol.27, No.1, 2009, 89–96.)
-      intrule_tri_37point,  ///< degree of precision: 13 (open)   (rule from ACM TOMS algorithm
-                            ///< #706)
-      intrule_tri_64point   ///< degree of precision: 15 (open)   (essentially a product of two 8
-                            ///< point 1D Gauss-Legendre rules)
+      undefined,            ///< use this to initialize a gaussrule, if you don't know the value,
+                            ///< yet!
+      quad_1point,          ///< degree of precision: 1  (open)
+      quad_4point,          ///< degree of precision: 3  (open)
+      quad_6point,          ///< degree of precision: 3/5  (open) (2 by 3 gauss points for quad6
+                            ///< element
+      quad_9point,          ///< degree of precision: 5  (open)
+      quad_16point,         ///< degree of precision: 7  (open)
+      quad_25point,         ///< degree of precision: 9  (open)
+      quad_lobatto25point,  ///< degree of precision: 7  (closed)
+      quad_36point,         ///< degree of precision: 11 (open)
+      quad_49point,         ///< degree of precision: 13 (open)
+      quad_64point,         ///< degree of precision: 15 (open)
+      quad_81point,         ///< degree of precision: 17 (open)
+      quad_100point,        ///< degree of precision: 19 (open)
+      quad_256point,        ///< degree of precision: 31 (open)
+      quad_400point,        ///< degree of precision: 39 (open)
+      quad_1024point,       ///< degree of precision: 63 (open)
+      tri_1point,           ///< degree of precision: 1  (open)
+      tri_3point,  ///< degree of precision: 2  (open)   (Hughes, The Finite Element Method)
+      tri_3point_gauss_radau,  ///< degree of precision: 2  (closed) (Hughes, The Finite
+                               ///< Element Method)
+      tri_4point,   ///< degree of precision: 3  (open)   (Hughes, The Finite Element Method)
+      tri_6point,   ///< degree of precision: 4  (open)   (Hughes, The Finite Element Method)
+      tri_7point,   ///< degree of precision: 5  (open)   (Gilbert Strang, George Fix, An
+                    ///< Analysis of the Finite Element Method, Cambridge, 1973,ISBN:
+                    ///< 096140888X,LC: TA335.S77.)
+      tri_12point,  ///< degree of precision: 6  (open)   (Hughes, The Finite Element
+                    ///< Method)
+      tri_16point,  ///< degree of precision: 8  (open)   (Linbo Zhang, Tao Cui and Hui Liu:
+                    ///< A SET OF SYMMETRIC QUADRATURE RULES ON TRIANGLES
+                    ///<                                   AND TETRAHEDRA, Journal of
+                    ///<                                   Computational Mathematics,
+                    ///<                                   Vol.27, No.1, 2009, 89–96.)
+      tri_37point,  ///< degree of precision: 13 (open)   (rule from ACM TOMS algorithm
+                    ///< #706)
+      tri_64point   ///< degree of precision: 15 (open)   (essentially a product of two 8
+                    ///< point 1D Gauss-Legendre rules)
     };
+
+
+
+    inline std::string GaussRuleToString(GaussRule2D gauss_rule)
+    {
+      switch (gauss_rule)
+      {
+        case GaussRule2D::undefined:
+          return "undefined";
+        case GaussRule2D::quad_1point:
+          return "quad_1point";
+        case GaussRule2D::quad_4point:
+          return "quad_4point";
+        case GaussRule2D::quad_6point:
+          return "quad_6point";
+        case GaussRule2D::quad_9point:
+          return "quad_9point";
+        case GaussRule2D::quad_16point:
+          return "quad_16point";
+        case GaussRule2D::quad_25point:
+          return "quad_25point";
+        case GaussRule2D::quad_lobatto25point:
+          return "quad_lobatto25point";
+        case GaussRule2D::quad_36point:
+          return "quad_36point";
+        case GaussRule2D::quad_49point:
+          return "quad_49point";
+        case GaussRule2D::quad_64point:
+          return "quad_64point";
+        case GaussRule2D::quad_81point:
+          return "quad_81point";
+        case GaussRule2D::quad_100point:
+          return "quad_100point";
+        case GaussRule2D::quad_256point:
+          return "quad_256point";
+        case GaussRule2D::quad_400point:
+          return "quad_400point";
+        case GaussRule2D::quad_1024point:
+          return "quad_1024point";
+        case GaussRule2D::tri_1point:
+          return "tri_1point";
+        case GaussRule2D::tri_3point:
+          return "tri_3point";
+        case GaussRule2D::tri_3point_gauss_radau:
+          return "tri_3point_gauss_radau";
+        case GaussRule2D::tri_4point:
+          return "tri_4point";
+        case GaussRule2D::tri_6point:
+          return "tri_6point";
+        case GaussRule2D::tri_7point:
+          return "tri_7point";
+        case GaussRule2D::tri_12point:
+          return "tri_12point";
+        case GaussRule2D::tri_16point:
+          return "tri_16point";
+        case GaussRule2D::tri_37point:
+          return "tri_37point";
+        case GaussRule2D::tri_64point:
+          return "tri_64point";
+      }
+      dserror("Your GaussRule2D (%d) has not beed added into the list above",
+          static_cast<int>(gauss_rule));
+      return "unknown";
+    }
 
     /// allow to verify the openness of an integration rule
     ///
@@ -380,76 +515,76 @@ namespace DRT
 
       switch (intrule)
       {
-        case intrule_quad_1point:
+        case GaussRule2D::quad_1point:
           open = true;
           break;
-        case intrule_quad_4point:
+        case GaussRule2D::quad_4point:
           open = true;
           break;
-        case intrule_quad_6point:
+        case GaussRule2D::quad_6point:
           open = true;
           break;
-        case intrule_quad_9point:
+        case GaussRule2D::quad_9point:
           open = true;
           break;
-        case intrule_quad_16point:
+        case GaussRule2D::quad_16point:
           open = true;
           break;
-        case intrule_quad_25point:
+        case GaussRule2D::quad_25point:
           open = true;
           break;
-        case intrule_quad_lobatto25point:
+        case GaussRule2D::quad_lobatto25point:
           open = false;
           break;
-        case intrule_quad_36point:
+        case GaussRule2D::quad_36point:
           open = true;
           break;
-        case intrule_quad_49point:
+        case GaussRule2D::quad_49point:
           open = true;
           break;
-        case intrule_quad_64point:
+        case GaussRule2D::quad_64point:
           open = true;
           break;
-        case intrule_quad_81point:
+        case GaussRule2D::quad_81point:
           open = true;
           break;
-        case intrule_quad_100point:
+        case GaussRule2D::quad_100point:
           open = true;
           break;
-        case intrule_quad_256point:
+        case GaussRule2D::quad_256point:
           open = true;
           break;
-        case intrule_quad_400point:
+        case GaussRule2D::quad_400point:
           open = true;
           break;
-        case intrule_quad_1024point:
+        case GaussRule2D::quad_1024point:
           open = true;
           break;
-        case intrule_tri_1point:
+        case GaussRule2D::tri_1point:
           open = true;
           break;
-        case intrule_tri_3point:
+        case GaussRule2D::tri_3point:
           open = true;
           break;
-        case intrule_tri_3point_gauss_radau:
+        case GaussRule2D::tri_3point_gauss_radau:
           open = false;
           break;
-        case intrule_tri_6point:
+        case GaussRule2D::tri_6point:
           open = true;
           break;
-        case intrule_tri_7point:
+        case GaussRule2D::tri_7point:
           open = true;
           break;
-        case intrule_tri_12point:
+        case GaussRule2D::tri_12point:
           open = true;
           break;
-        case intrule_tri_16point:
+        case GaussRule2D::tri_16point:
           open = true;
           break;
-        case intrule_tri_37point:
+        case GaussRule2D::tri_37point:
           open = true;
           break;
-        case intrule_tri_64point:
+        case GaussRule2D::tri_64point:
           open = true;
           break;
         default:
@@ -461,42 +596,104 @@ namespace DRT
     }
 
     //! supported 1d integration rules
-
-    /*note: the following enum should be renamed the following way: GaussRule1D -> IntRule1D,
-     *  intrule1D_line*point -> gauss1D_*point, intrule_line_lobatto*point -> lobatto1D_*point*/
-    enum GaussRule1D
+    enum class GaussRule1D
     {
-      intrule1D_undefined,   ///< use this to initialize a gaussrule, if you don't know the value,
-                             ///< yet!
-      intrule_line_1point,   ///< degree of precision: 1  (open)
-      intrule_line_2point,   ///< degree of precision: 3  (open)
-      intrule_line_3point,   ///< degree of precision: 5  (open)
-      intrule_line_4point,   ///< degree of precision: 7  (open)
-      intrule_line_5point,   ///< degree of precision: 9  (open)
-      intrule_line_6point,   ///< degree of precision: 11 (open)
-      intrule_line_7point,   ///< degree of precision: 13 (open)
-      intrule_line_8point,   ///< degree of precision: 15 (open)
-      intrule_line_9point,   ///< degree of precision: 17 (open)
-      intrule_line_10point,  ///< degree of precision: 19 (open)
-      intrule_line_16point,  ///< degree of precision: 31 (open)
-      intrule_line_20point,  ///< degree of precision: 39 (open)
-      intrule_line_32point,  ///< degree of precision: 63 (open)
-      intrule_line_50point,  ///< degree of precision: 99 (open)
-      intrule_line_lobatto2point,   ///< degree of precision: 1  (closed)
-      intrule_line_lobatto3point,   ///< degree of precision: 3  (closed)
-      intrule_line_lobatto4point,   ///< degree of precision: 5  (closed)
-      intrule_line_lobatto5point,   ///< degree of precision: 7  (closed)
-      intrule_line_lobatto6point,   ///< degree of precision: 9  (closed)
-      intrule_line_lobatto7point,   ///< degree of precision: 11 (closed)
-      intrule_line_lobatto8point,   ///< degree of precision: 13 (closed)
-      intrule_line_lobatto9point,   ///< degree of precision: 15 (closed)
-      intrule_line_lobatto10point,  ///< degree of precision: 17 (closed)
-      intrule_line_lobatto11point,  ///< degree of precision: 19 (closed)
-      intrule_line_lobatto12point,  ///< degree of precision: 21 (closed)
-      intrule_line_lobatto13point,  ///< degree of precision: 23 (closed)
-      intrule_line_lobatto14point   ///< degree of precision: 25 (closed)
-
+      undefined,            ///< use this to initialize a gaussrule, if you don't know the value,
+                            ///< yet!
+      line_1point,          ///< degree of precision: 1  (open)
+      line_2point,          ///< degree of precision: 3  (open)
+      line_3point,          ///< degree of precision: 5  (open)
+      line_4point,          ///< degree of precision: 7  (open)
+      line_5point,          ///< degree of precision: 9  (open)
+      line_6point,          ///< degree of precision: 11 (open)
+      line_7point,          ///< degree of precision: 13 (open)
+      line_8point,          ///< degree of precision: 15 (open)
+      line_9point,          ///< degree of precision: 17 (open)
+      line_10point,         ///< degree of precision: 19 (open)
+      line_16point,         ///< degree of precision: 31 (open)
+      line_20point,         ///< degree of precision: 39 (open)
+      line_32point,         ///< degree of precision: 63 (open)
+      line_50point,         ///< degree of precision: 99 (open)
+      line_lobatto2point,   ///< degree of precision: 1  (closed)
+      line_lobatto3point,   ///< degree of precision: 3  (closed)
+      line_lobatto4point,   ///< degree of precision: 5  (closed)
+      line_lobatto5point,   ///< degree of precision: 7  (closed)
+      line_lobatto6point,   ///< degree of precision: 9  (closed)
+      line_lobatto7point,   ///< degree of precision: 11 (closed)
+      line_lobatto8point,   ///< degree of precision: 13 (closed)
+      line_lobatto9point,   ///< degree of precision: 15 (closed)
+      line_lobatto10point,  ///< degree of precision: 17 (closed)
+      line_lobatto11point,  ///< degree of precision: 19 (closed)
+      line_lobatto12point,  ///< degree of precision: 21 (closed)
+      line_lobatto13point,  ///< degree of precision: 23 (closed)
+      line_lobatto14point   ///< degree of precision: 25 (closed)
     };
+
+    inline std::string GaussRuleToString(GaussRule1D gauss_rule)
+    {
+      switch (gauss_rule)
+      {
+        case GaussRule1D::undefined:
+          return "undefined";
+        case GaussRule1D::line_1point:
+          return "line_1point";
+        case GaussRule1D::line_2point:
+          return "line_2point";
+        case GaussRule1D::line_3point:
+          return "line_3point";
+        case GaussRule1D::line_4point:
+          return "line_4point";
+        case GaussRule1D::line_5point:
+          return "line_5point";
+        case GaussRule1D::line_6point:
+          return "line_6point";
+        case GaussRule1D::line_7point:
+          return "line_7point";
+        case GaussRule1D::line_8point:
+          return "line_8point";
+        case GaussRule1D::line_9point:
+          return "line_9point";
+        case GaussRule1D::line_10point:
+          return "line_10point";
+        case GaussRule1D::line_16point:
+          return "line_16point";
+        case GaussRule1D::line_20point:
+          return "line_20point";
+        case GaussRule1D::line_32point:
+          return "line_32point";
+        case GaussRule1D::line_50point:
+          return "line_50point";
+        case GaussRule1D::line_lobatto2point:
+          return "line_lobatto2point";
+        case GaussRule1D::line_lobatto3point:
+          return "line_lobatto3point";
+        case GaussRule1D::line_lobatto4point:
+          return "line_lobatto4point";
+        case GaussRule1D::line_lobatto5point:
+          return "line_lobatto5point";
+        case GaussRule1D::line_lobatto6point:
+          return "line_lobatto6point";
+        case GaussRule1D::line_lobatto7point:
+          return "line_lobatto7point";
+        case GaussRule1D::line_lobatto8point:
+          return "line_lobatto8point";
+        case GaussRule1D::line_lobatto9point:
+          return "line_lobatto9point";
+        case GaussRule1D::line_lobatto10point:
+          return "line_lobatto10point";
+        case GaussRule1D::line_lobatto11point:
+          return "line_lobatto11point";
+        case GaussRule1D::line_lobatto12point:
+          return "line_lobatto12point";
+        case GaussRule1D::line_lobatto13point:
+          return "line_lobatto13point";
+        case GaussRule1D::line_lobatto14point:
+          return "line_lobatto14point";
+      }
+      dserror("Your GaussRule1D (%d) has not beed added into the list above",
+          static_cast<int>(gauss_rule));
+      return "unknown";
+    }
 
     /// allow to verify the openness of an integration rule
     ///
@@ -507,85 +704,85 @@ namespace DRT
 
       switch (intrule)
       {
-        case intrule_line_1point:
+        case GaussRule1D::line_1point:
           open = true;
           break;
-        case intrule_line_2point:
+        case GaussRule1D::line_2point:
           open = true;
           break;
-        case intrule_line_3point:
+        case GaussRule1D::line_3point:
           open = true;
           break;
-        case intrule_line_4point:
+        case GaussRule1D::line_4point:
           open = true;
           break;
-        case intrule_line_5point:
+        case GaussRule1D::line_5point:
           open = true;
           break;
-        case intrule_line_6point:
+        case GaussRule1D::line_6point:
           open = true;
           break;
-        case intrule_line_7point:
+        case GaussRule1D::line_7point:
           open = true;
           break;
-        case intrule_line_8point:
+        case GaussRule1D::line_8point:
           open = true;
           break;
-        case intrule_line_9point:
+        case GaussRule1D::line_9point:
           open = true;
           break;
-        case intrule_line_10point:
+        case GaussRule1D::line_10point:
           open = true;
           break;
-        case intrule_line_16point:
+        case GaussRule1D::line_16point:
           open = true;
           break;
-        case intrule_line_20point:
+        case GaussRule1D::line_20point:
           open = true;
           break;
-        case intrule_line_32point:
+        case GaussRule1D::line_32point:
           open = true;
           break;
-        case intrule_line_50point:
+        case GaussRule1D::line_50point:
           open = true;
           break;
-        case intrule_line_lobatto2point:
+        case GaussRule1D::line_lobatto2point:
           open = false;
           break;
-        case intrule_line_lobatto3point:
+        case GaussRule1D::line_lobatto3point:
           open = false;
           break;
-        case intrule_line_lobatto4point:
+        case GaussRule1D::line_lobatto4point:
           open = false;
           break;
-        case intrule_line_lobatto5point:
+        case GaussRule1D::line_lobatto5point:
           open = false;
           break;
-        case intrule_line_lobatto6point:
+        case GaussRule1D::line_lobatto6point:
           open = false;
           break;
-        case intrule_line_lobatto7point:
+        case GaussRule1D::line_lobatto7point:
           open = false;
           break;
-        case intrule_line_lobatto8point:
+        case GaussRule1D::line_lobatto8point:
           open = false;
           break;
-        case intrule_line_lobatto9point:
+        case GaussRule1D::line_lobatto9point:
           open = false;
           break;
-        case intrule_line_lobatto10point:
+        case GaussRule1D::line_lobatto10point:
           open = false;
           break;
-        case intrule_line_lobatto11point:
+        case GaussRule1D::line_lobatto11point:
           open = false;
           break;
-        case intrule_line_lobatto12point:
+        case GaussRule1D::line_lobatto12point:
           open = false;
           break;
-        case intrule_line_lobatto13point:
+        case GaussRule1D::line_lobatto13point:
           open = false;
           break;
-        case intrule_line_lobatto14point:
+        case GaussRule1D::line_lobatto14point:
           open = false;
           break;
         default:

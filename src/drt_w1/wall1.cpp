@@ -149,7 +149,7 @@ DRT::ELEMENTS::Wall1::Wall1(int id, int owner)
       material_(0),
       thickness_(0.0),
       old_step_length_(0.0),
-      gaussrule_(DRT::UTILS::intrule2D_undefined),
+      gaussrule_(DRT::UTILS::GaussRule2D::undefined),
       wtype_(plane_none),
       stresstype_(w1_none),
       iseas_(false),
@@ -221,7 +221,7 @@ void DRT::ELEMENTS::Wall1::Pack(DRT::PackBuffer& data) const
   // plane strain or plane stress information
   AddtoPack(data, wtype_);
   // gaussrule_
-  AddtoPack(data, gaussrule_);  // implicit conversion from enum to integer
+  AddtoPack(data, gaussrule_);
   // stresstype
   AddtoPack(data, stresstype_);
   // eas
@@ -263,10 +263,7 @@ void DRT::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
   // plane strain or plane stress information_
   wtype_ = static_cast<DimensionalReduction>(ExtractInt(position, data));
   // gaussrule_
-  int gausrule_integer;
-  ExtractfromPack(position, data, gausrule_integer);
-  gaussrule_ =
-      DRT::UTILS::GaussRule2D(gausrule_integer);  // explicit conversion from integer to enum
+  ExtractfromPack(position, data, gaussrule_);
   // stresstype_
   stresstype_ = static_cast<StressType>(ExtractInt(position, data));
   // iseas_
@@ -302,7 +299,7 @@ void DRT::ELEMENTS::Wall1::Print(std::ostream& os) const
 {
   os << "Wall1 ";
   Element::Print(os);
-  os << " gaussrule_: " << gaussrule_ << " ";
+  os << " gaussrule_: " << DRT::UTILS::GaussRuleToString(gaussrule_) << " ";
   return;
 }
 

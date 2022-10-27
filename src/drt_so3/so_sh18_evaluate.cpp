@@ -1136,7 +1136,7 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_r(const int gp, LINALG::Matrix<
   LINALG::Matrix<2, 9> deriv;
   DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv);
 
-  DRT::UTILS::IntPointsAndWeights<1> ip(DRT::UTILS::intrule_line_2point);
+  DRT::UTILS::IntPointsAndWeights<1> ip(DRT::UTILS::GaussRule1D::line_2point);
   for (int i = 0; i < 9; ++i)
   {
     const LINALG::Matrix<3, 1> coord_i = NodeParamCoord(i);
@@ -1181,7 +1181,7 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_s(const int gp, LINALG::Matrix<
   LINALG::Matrix<2, 9> deriv;
   DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv);
 
-  DRT::UTILS::IntPointsAndWeights<1> ip(DRT::UTILS::intrule_line_2point);
+  DRT::UTILS::IntPointsAndWeights<1> ip(DRT::UTILS::GaussRule1D::line_2point);
   for (int i = 0; i < 9; ++i)
   {
     const LINALG::Matrix<3, 1> coord_i = NodeParamCoord(i);
@@ -1227,7 +1227,7 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_rs(
   // integration
   const double coord_refNode[2] = {0., 0.};
   const LINALG::Matrix<18, 3> coords = NodeParamCoord();
-  DRT::UTILS::IntPointsAndWeights<1> ip(DRT::UTILS::intrule_line_2point);
+  DRT::UTILS::IntPointsAndWeights<1> ip(DRT::UTILS::GaussRule1D::line_2point);
   LINALG::Matrix<2, 9> deriv_xieta;
   DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv_xieta);
 
@@ -1280,7 +1280,7 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_r(
   LINALG::Matrix<2, 9> deriv;
   DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv);
 
-  DRT::UTILS::IntPointsAndWeights<1> ip(DRT::UTILS::intrule_line_2point);
+  DRT::UTILS::IntPointsAndWeights<1> ip(DRT::UTILS::GaussRule1D::line_2point);
   for (int i = 0; i < 9; ++i)
   {
     const LINALG::Matrix<3, 1> coord_i = NodeParamCoord(i);
@@ -1325,7 +1325,7 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_s(
   LINALG::Matrix<2, 9> deriv;
   DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv);
 
-  DRT::UTILS::IntPointsAndWeights<1> ip(DRT::UTILS::intrule_line_2point);
+  DRT::UTILS::IntPointsAndWeights<1> ip(DRT::UTILS::GaussRule1D::line_2point);
   for (int i = 0; i < 9; ++i)
   {
     const LINALG::Matrix<3, 1> coord_i = NodeParamCoord(i);

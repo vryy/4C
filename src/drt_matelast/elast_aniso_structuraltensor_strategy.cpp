@@ -125,7 +125,7 @@ void MAT::ELASTIC::StructuralTensorStrategyStandard::SetupStructuralTensor(
 void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructuralTensor(
     const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor_stress)
 {
-  const DRT::UTILS::IntegrationPoints1D gausspoints(DRT::UTILS::intrule_line_50point);
+  const DRT::UTILS::IntegrationPoints1D gausspoints(DRT::UTILS::GaussRule1D::line_50point);
   LINALG::Matrix<numbgp, twice> rho;
 
   // constants for distribution around fiber_vector

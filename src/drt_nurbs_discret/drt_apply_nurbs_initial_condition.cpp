@@ -252,7 +252,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
           case 2:
           {
             // gaussian points
-            const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_quad_9point);
+            const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::GaussRule2D::quad_9point);
 
             for (int iquad = 0; iquad < intpoints.nquad; ++iquad)
             {
@@ -376,7 +376,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
           case 3:
           {
             // gaussian points
-            const DRT::UTILS::IntegrationPoints3D intpoints(DRT::UTILS::intrule_hex_27point);
+            const DRT::UTILS::IntegrationPoints3D intpoints(DRT::UTILS::GaussRule3D::hex_27point);
 
             for (int iquad = 0; iquad < intpoints.nquad; ++iquad)
             {

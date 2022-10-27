@@ -610,7 +610,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   // Setting up gauss quadrature (do not forget to adapt defines "numbgp" and "twice" in
   // activefiber.H)
-  const DRT::UTILS::IntegrationPoints1D gausspoints(DRT::UTILS::intrule_line_10point);
+  const DRT::UTILS::IntegrationPoints1D gausspoints(DRT::UTILS::GaussRule1D::line_10point);
 
 
   double tol = 1e-12;
@@ -1258,7 +1258,7 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
   double dt = params.get<double>("delta time", -1.0);
 
   // Setup integration rule
-  const DRT::UTILS::IntegrationPoints1D gausspoints(DRT::UTILS::intrule_line_10point);
+  const DRT::UTILS::IntegrationPoints1D gausspoints(DRT::UTILS::GaussRule1D::line_10point);
 
   // Jacobi Determinant
   const double detF = defgrd.Determinant();

@@ -17,6 +17,37 @@
 
 #include "../headers/singleton_owner.H"
 
+namespace
+{
+  inline DRT::UTILS::GaussRule1D Get1DLagrangeBasisLobattoGaussRule(const unsigned int degree)
+  {
+    switch (degree)
+    {
+      case 1:
+        return DRT::UTILS::GaussRule1D::line_lobatto2point;
+      case 2:
+        return DRT::UTILS::GaussRule1D::line_lobatto3point;
+      case 3:
+        return DRT::UTILS::GaussRule1D::line_lobatto4point;
+      case 4:
+        return DRT::UTILS::GaussRule1D::line_lobatto5point;
+      case 5:
+        return DRT::UTILS::GaussRule1D::line_lobatto6point;
+      case 6:
+        return DRT::UTILS::GaussRule1D::line_lobatto7point;
+      case 7:
+        return DRT::UTILS::GaussRule1D::line_lobatto8point;
+      case 8:
+        return DRT::UTILS::GaussRule1D::line_lobatto9point;
+      case 9:
+        return DRT::UTILS::GaussRule1D::line_lobatto10point;
+      default:
+        dserror("The Lobatto Gauss rule is not implemented for degree %d", degree);
+        return DRT::UTILS::GaussRule1D::undefined;
+    }
+  }
+}  // namespace
+
 namespace DRT
 {
   namespace UTILS
@@ -33,9 +64,8 @@ namespace DRT
         return poly1d;
       }
 
-      dsassert(degree < 10, "Not implemented");
       DRT::UTILS::IntegrationPoints1D gaussLobattoPoints(
-          DRT::UTILS::GaussRule1D(DRT::UTILS::intrule_line_lobatto2point + degree - 1));
+          Get1DLagrangeBasisLobattoGaussRule(degree));
       std::vector<double> points(degree);
       for (unsigned int i = 0; i <= degree; ++i)
       {

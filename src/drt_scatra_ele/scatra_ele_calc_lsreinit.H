@@ -456,12 +456,12 @@ namespace SCATRA
   template <>
   struct CellTypeToOptGaussRule<DRT::Element::quad4>
   {
-    static const DRT::UTILS::GaussRule2D rule = DRT::UTILS::intrule_quad_36point;
+    static const DRT::UTILS::GaussRule2D rule = DRT::UTILS::GaussRule2D::quad_36point;
   };
   template <>
   struct CellTypeToOptGaussRule<DRT::Element::tri3>
   {
-    static const DRT::UTILS::GaussRule2D rule = DRT::UTILS::intrule_tri_37point;
+    static const DRT::UTILS::GaussRule2D rule = DRT::UTILS::GaussRule2D::tri_37point;
   };
 }  // namespace SCATRA
 

@@ -568,7 +568,7 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
     {
       case 8:
       {
-        DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::UTILS::intrule_hex_8point);
+        DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::UTILS::GaussRule3D::hex_8point);
         numgpt_ = intpoints.IP().nquad;
         xsi_.resize(numgpt_);
         wgt_.resize(numgpt_);
@@ -601,7 +601,7 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
       }
       case 27:
       {
-        DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::UTILS::intrule_hex_27point);
+        DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::UTILS::GaussRule3D::hex_27point);
         numgpt_ = intpoints.IP().nquad;
         xsi_.resize(numgpt_);
         wgt_.resize(numgpt_);

@@ -582,30 +582,30 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
         case line2:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::intrule_line_1point;
+            return DRT::UTILS::GaussRule1D::line_1point;
           else
-            return DRT::UTILS::intrule_line_lobatto3point;
+            return DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
         case line3:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::intrule_line_2point;
+            return DRT::UTILS::GaussRule1D::line_2point;
           else
-            return DRT::UTILS::intrule_line_lobatto3point;
+            return DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
         case line4:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::intrule_line_3point;
+            return DRT::UTILS::GaussRule1D::line_3point;
           else
-            return DRT::UTILS::intrule_line_lobatto3point;
+            return DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
         case line5:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::intrule_line_4point;
+            return DRT::UTILS::GaussRule1D::line_4point;
           else
-            return DRT::UTILS::intrule_line_lobatto3point;
+            return DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
         default:
         {
@@ -626,30 +626,30 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
         case line2:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::intrule_line_1point;
+            return DRT::UTILS::GaussRule1D::line_1point;
           else
-            return DRT::UTILS::intrule_line_2point;
+            return DRT::UTILS::GaussRule1D::line_2point;
         }
         case line3:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::intrule_line_2point;
+            return DRT::UTILS::GaussRule1D::line_2point;
           else
-            return DRT::UTILS::intrule_line_3point;
+            return DRT::UTILS::GaussRule1D::line_3point;
         }
         case line4:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::intrule_line_3point;
+            return DRT::UTILS::GaussRule1D::line_3point;
           else
-            return DRT::UTILS::intrule_line_4point;
+            return DRT::UTILS::GaussRule1D::line_4point;
         }
         case line5:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::intrule_line_4point;
+            return DRT::UTILS::GaussRule1D::line_4point;
           else
-            return DRT::UTILS::intrule_line_5point;
+            return DRT::UTILS::GaussRule1D::line_5point;
         }
         default:
         {
@@ -667,19 +667,19 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
       {
         case line2:
         {
-          return DRT::UTILS::intrule_line_2point;
+          return DRT::UTILS::GaussRule1D::line_2point;
         }
         case line3:
         {
-          return DRT::UTILS::intrule_line_3point;
+          return DRT::UTILS::GaussRule1D::line_3point;
         }
         case line4:
         {
-          return DRT::UTILS::intrule_line_4point;
+          return DRT::UTILS::GaussRule1D::line_4point;
         }
         case line5:
         {
-          return DRT::UTILS::intrule_line_5point;
+          return DRT::UTILS::GaussRule1D::line_5point;
         }
         default:
         {
@@ -693,7 +693,7 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     // 'full' integration of damping and stochastic contributions
     case res_damp_stoch:
     {
-      return DRT::UTILS::intrule_line_4point;
+      return DRT::UTILS::GaussRule1D::line_4point;
     }
 
     /* 'full' integration of Neumann line loads
@@ -706,21 +706,21 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
         case line2:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::intrule_line_1point;
+            return DRT::UTILS::GaussRule1D::line_1point;
           else
-            return DRT::UTILS::intrule_line_2point;
+            return DRT::UTILS::GaussRule1D::line_2point;
         }
         case line3:
         {
-          return DRT::UTILS::intrule_line_2point;
+          return DRT::UTILS::GaussRule1D::line_2point;
         }
         case line4:
         {
-          return DRT::UTILS::intrule_line_3point;
+          return DRT::UTILS::GaussRule1D::line_3point;
         }
         case line5:
         {
-          return DRT::UTILS::intrule_line_4point;
+          return DRT::UTILS::GaussRule1D::line_4point;
         }
         default:
         {
@@ -738,7 +738,7 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     }
   }
 
-  return DRT::UTILS::intrule1D_undefined;
+  return DRT::UTILS::GaussRule1D::undefined;
   ;
 }
 
@@ -1287,7 +1287,7 @@ void DRT::ELEMENTS::Beam3r::Calculate_reflength(
   {
     // Get 'more than enough' integration points for exact integration
     DRT::UTILS::IntegrationPoints1D gausspoints =
-        DRT::UTILS::IntegrationPoints1D(DRT::UTILS::intrule_line_10point);
+        DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_10point);
 
     // Newton Iteration - Tolerance and residual
     double res = 1.0;

@@ -66,7 +66,7 @@ void DRT::ELEMENTS::ArteryType::SetupElementDefinition(
 DRT::ELEMENTS::Artery::Artery(int id, int owner)
     : DRT::Element(id, owner), impltype_(INPAR::ARTDYN::impltype_undefined), data_()
 {
-  gaussrule_ = intrule1D_undefined;
+  gaussrule_ = GaussRule1D::undefined;
 
   return;
 }
@@ -123,7 +123,7 @@ void DRT::ELEMENTS::Artery::Pack(DRT::PackBuffer& data) const
   // add base class Element
   Element::Pack(data);
   // Gaussrule
-  AddtoPack(data, gaussrule_);  // implicit conversion from enum to integer
+  AddtoPack(data, gaussrule_);
   AddtoPack(data, impltype_);
 
   // data_
@@ -150,9 +150,7 @@ void DRT::ELEMENTS::Artery::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, basedata);
   Element::Unpack(basedata);
   // Gaussrule
-  int gausrule_integer;
-  ExtractfromPack(position, data, gausrule_integer);
-  gaussrule_ = GaussRule1D(gausrule_integer);  // explicit conversion from integer to enum
+  ExtractfromPack(position, data, gaussrule_);
   impltype_ = static_cast<INPAR::ARTDYN::ImplType>(ExtractInt(position, data));
 
   // data_

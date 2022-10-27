@@ -27,9 +27,9 @@ DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::So3_Scatra(int id, int owner)
     : so3_ele(id, owner),
       impltype_(INPAR::SCATRA::impltype_undefined),
       intpoints_(distype == DRT::Element::tet4
-                     ? DRT::UTILS::intrule_tet_1point
+                     ? DRT::UTILS::GaussRule3D::tet_1point
                      : (distype == DRT::Element::tet10
-                               ? DRT::UTILS::intrule_tet_4point
+                               ? DRT::UTILS::GaussRule3D::tet_4point
                                : DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule)),
       numgpt_(intpoints_.nquad),
       xsi_(0.0),

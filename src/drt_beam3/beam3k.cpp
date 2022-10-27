@@ -953,7 +953,7 @@ void DRT::ELEMENTS::Beam3k::Calculate_length(const std::vector<LINALG::Matrix<3,
   // DRT::UTILS::IntegrationPoints1D gausspoints =
   //    DRT::UTILS::IntegrationPoints1D(DRT::UTILS::MYGAUSSRULEBEAM3K);
   DRT::UTILS::IntegrationPoints1D gausspoints =
-      DRT::UTILS::IntegrationPoints1D(DRT::UTILS::intrule_line_10point);
+      DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_10point);
 
   // Newton Iteration - Tolerance and residual
   double res = 1.0;

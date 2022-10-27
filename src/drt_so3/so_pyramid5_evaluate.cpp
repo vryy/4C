@@ -1653,7 +1653,7 @@ const std::vector<LINALG::Matrix<NUMNOD_SOP5, 1>> DRT::ELEMENTS::So_pyramid5::so
   std::vector<LINALG::Matrix<NUMNOD_SOP5, 1>> shapefcts(NUMGPT_SOP5);
   // (r,s,t) gp-locations
   // fill up nodal f at each gp
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_pyramid_8point;
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::pyramid_8point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
@@ -1676,7 +1676,7 @@ DRT::ELEMENTS::So_pyramid5::sop5_derivs()
   std::vector<LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs(NUMGPT_SOP5);
   // (r,s,t) gp-locations
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_pyramid_8point;
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::pyramid_8point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
@@ -1696,7 +1696,7 @@ DRT::ELEMENTS::So_pyramid5::sop5_derivs()
 const std::vector<double> DRT::ELEMENTS::So_pyramid5::sop5_weights()
 {
   std::vector<double> weights(NUMGPT_SOP5);
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_pyramid_8point;
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::pyramid_8point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int i = 0; i < NUMGPT_SOP5; ++i)
   {
@@ -1732,7 +1732,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_shapederiv(
     // (r,s,t) gp-locations
     // fill up nodal f at each gp
     // fill up df w.r.t. rst directions (NUMDIM) at each gp
-    const DRT::UTILS::GaussRule3D gaussrule_ = DRT::UTILS::intrule_pyramid_8point;
+    const DRT::UTILS::GaussRule3D gaussrule_ = DRT::UTILS::GaussRule3D::pyramid_8point;
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule_);
     for (int igp = 0; igp < intpoints.nquad; ++igp)
     {

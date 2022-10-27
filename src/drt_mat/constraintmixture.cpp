@@ -3171,24 +3171,24 @@ void MAT::ConstraintMixtureOutputToGmsh(
     Epetra_SerialDenseVector funct(numnode);
 
     // define gauss rule
-    DRT::UTILS::GaussRule3D gaussrule_ = DRT::UTILS::intrule3D_undefined;
+    DRT::UTILS::GaussRule3D gaussrule_ = DRT::UTILS::GaussRule3D::undefined;
     switch (distype)
     {
       case DRT::Element::hex8:
       {
-        gaussrule_ = DRT::UTILS::intrule_hex_8point;
+        gaussrule_ = DRT::UTILS::GaussRule3D::hex_8point;
         if (ngp != 8) dserror("hex8 has not 8 gauss points: %d", ngp);
         break;
       }
       case DRT::Element::wedge6:
       {
-        gaussrule_ = DRT::UTILS::intrule_wedge_6point;
+        gaussrule_ = DRT::UTILS::GaussRule3D::wedge_6point;
         if (ngp != 6) dserror("wedge6 has not 6 gauss points: %d", ngp);
         break;
       }
       case DRT::Element::tet4:
       {
-        gaussrule_ = DRT::UTILS::intrule_tet_1point;
+        gaussrule_ = DRT::UTILS::GaussRule3D::tet_1point;
         if (ngp != 1) dserror("tet4 has not 1 gauss point: %d", ngp);
         break;
       }

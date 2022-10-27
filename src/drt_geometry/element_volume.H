@@ -26,7 +26,7 @@ namespace GEO
     // number of nodes for element
     const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
-    DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
+    DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::undefined;
 
     switch (DISTYPE)
     {
@@ -34,24 +34,24 @@ namespace GEO
       case DRT::Element::hex20:
       case DRT::Element::hex27:
       {
-        gaussrule = DRT::UTILS::intrule_hex_8point;
+        gaussrule = DRT::UTILS::GaussRule3D::hex_8point;
         break;
       }
       case DRT::Element::tet4:
       case DRT::Element::tet10:
       {
-        gaussrule = DRT::UTILS::intrule_tet_4point;
+        gaussrule = DRT::UTILS::GaussRule3D::tet_4point;
         break;
       }
       case DRT::Element::wedge6:
       case DRT::Element::wedge15:
       {
-        gaussrule = DRT::UTILS::intrule_wedge_6point;
+        gaussrule = DRT::UTILS::GaussRule3D::wedge_6point;
         break;
       }
       case DRT::Element::pyramid5:
       {
-        gaussrule = DRT::UTILS::intrule_pyramid_8point;
+        gaussrule = DRT::UTILS::GaussRule3D::pyramid_8point;
         break;
       }
       default:

@@ -1730,7 +1730,7 @@ const std::vector<LINALG::Matrix<NUMNOD_SOH27, 1>> DRT::ELEMENTS::So_hex27::soh2
   std::vector<LINALG::Matrix<NUMNOD_SOH27, 1>> shapefcts(NUMGPT_SOH27);
   // (r,s,t) gp-locations of fully integrated quadratic Hex 27
   // fill up nodal f at each gp
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
@@ -1753,7 +1753,7 @@ DRT::ELEMENTS::So_hex27::soh27_derivs()
   std::vector<LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs(NUMGPT_SOH27);
   // (r,s,t) gp-locations of fully integrated quadratic Hex 27
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
@@ -1772,7 +1772,7 @@ DRT::ELEMENTS::So_hex27::soh27_derivs()
 const std::vector<double> DRT::ELEMENTS::So_hex27::soh27_weights()
 {
   std::vector<double> weights(NUMGPT_SOH27);
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int i = 0; i < NUMGPT_SOH27; ++i)
   {
@@ -1807,7 +1807,7 @@ void DRT::ELEMENTS::So_hex27::soh27_shapederiv(
     // (r,s,t) gp-locations of fully integrated quadratic Hex 27
     // fill up nodal f at each gp
     // fill up df w.r.t. rst directions (NUMDIM) at each gp
-    const DRT::UTILS::GaussRule3D gaussrule_ = DRT::UTILS::intrule_hex_27point;
+    const DRT::UTILS::GaussRule3D gaussrule_ = DRT::UTILS::GaussRule3D::hex_27point;
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule_);
     for (int igp = 0; igp < intpoints.nquad; ++igp)
     {

@@ -536,17 +536,17 @@ double XFEM::UTILS::ComputeMeasFace(DRT::Element *ele,  ///< fluid element
   if (nsd != 3)
     dserror("don't call this function for non-3D examples, adapt the following for 2D!");
 
-  DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::intrule2D_undefined;
+  DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::GaussRule2D::undefined;
   switch (face_shape)
   {
     case DRT::Element::quad4:
     case DRT::Element::quad8:
     case DRT::Element::quad9:
-      gaussrule = DRT::UTILS::intrule_quad_1point;
+      gaussrule = DRT::UTILS::GaussRule2D::quad_1point;
       break;
     case DRT::Element::tri3:
     case DRT::Element::tri6:
-      gaussrule = DRT::UTILS::intrule_tri_1point;
+      gaussrule = DRT::UTILS::GaussRule2D::tri_1point;
       break;
     default:
       dserror("shape type unknown!\n");

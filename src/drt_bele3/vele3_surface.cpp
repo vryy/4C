@@ -142,21 +142,21 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3Surface::Surfaces()
 DRT::UTILS::GaussRule2D DRT::ELEMENTS::Vele3Surface::getOptimalGaussrule(
     const DRT::Element::DiscretizationType& distype) const
 {
-  DRT::UTILS::GaussRule2D rule = DRT::UTILS::intrule2D_undefined;
+  DRT::UTILS::GaussRule2D rule = DRT::UTILS::GaussRule2D::undefined;
   switch (distype)
   {
     case DRT::Element::quad4:
-      rule = DRT::UTILS::intrule_quad_4point;
+      rule = DRT::UTILS::GaussRule2D::quad_4point;
       break;
     case DRT::Element::quad8:
     case DRT::Element::quad9:
-      rule = DRT::UTILS::intrule_quad_9point;
+      rule = DRT::UTILS::GaussRule2D::quad_9point;
       break;
     case DRT::Element::tri3:
-      rule = DRT::UTILS::intrule_tri_3point;
+      rule = DRT::UTILS::GaussRule2D::tri_3point;
       break;
     case DRT::Element::tri6:
-      rule = DRT::UTILS::intrule_tri_6point;
+      rule = DRT::UTILS::GaussRule2D::tri_6point;
       break;
     default:
       dserror("unknown number of nodes for gaussrule initialization");
