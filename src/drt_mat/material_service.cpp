@@ -929,75 +929,32 @@ void MAT::AddNonSymmetricProduct(double const& fac, LINALG::Matrix<3, 3> const& 
 void MAT::AddDerivInvABInvBProduct(double const& fac, const LINALG::Matrix<6, 1>& invA,
     const LINALG::Matrix<6, 1>& invABinvA, LINALG::Matrix<6, 6>& out)
 {
-  out(0, 0) -= 0.5 * fac *
-               (invA(0) * invABinvA(0) + invA(0) * invABinvA(0) + invA(0) * invABinvA(0) +
-                   invA(0) * invABinvA(0));
-  out(0, 1) -= 0.5 * fac *
-               (invA(3) * invABinvA(3) + invA(3) * invABinvA(3) + invA(3) * invABinvA(3) +
-                   invA(3) * invABinvA(3));
-  out(0, 2) -= 0.5 * fac *
-               (invA(5) * invABinvA(5) + invA(5) * invABinvA(5) + invA(5) * invABinvA(5) +
-                   invA(5) * invABinvA(5));
-  out(0, 3) -= 0.5 * fac *
-               (invA(0) * invABinvA(3) + invA(3) * invABinvA(0) + invA(0) * invABinvA(3) +
-                   invA(3) * invABinvA(0));
-  out(0, 4) -= 0.5 * fac *
-               (invA(3) * invABinvA(5) + invA(5) * invABinvA(3) + invA(3) * invABinvA(5) +
-                   invA(5) * invABinvA(3));
-  out(0, 5) -= 0.5 * fac *
-               (invA(0) * invABinvA(5) + invA(5) * invABinvA(0) + invA(0) * invABinvA(5) +
-                   invA(5) * invABinvA(0));
+  out(0, 0) -= 2.0 * fac * (invA(0) * invABinvA(0));
+  out(0, 1) -= 2.0 * fac * (invA(3) * invABinvA(3));
+  out(0, 2) -= 2.0 * fac * (invA(5) * invABinvA(5));
+  out(0, 3) -= fac * (invA(0) * invABinvA(3) + invA(3) * invABinvA(0));
+  out(0, 4) -= fac * (invA(3) * invABinvA(5) + invA(5) * invABinvA(3));
+  out(0, 5) -= fac * (invA(0) * invABinvA(5) + invA(5) * invABinvA(0));
 
-  out(1, 0) -= 0.5 * fac *
-               (invA(3) * invABinvA(3) + invA(3) * invABinvA(3) + invA(3) * invABinvA(3) +
-                   invA(3) * invABinvA(3));
-  out(1, 1) -= 0.5 * fac *
-               (invA(1) * invABinvA(1) + invA(1) * invABinvA(1) + invA(1) * invABinvA(1) +
-                   invA(1) * invABinvA(1));
-  out(1, 2) -= 0.5 * fac *
-               (invA(4) * invABinvA(4) + invA(4) * invABinvA(4) + invA(4) * invABinvA(4) +
-                   invA(4) * invABinvA(4));
-  out(1, 3) -= 0.5 * fac *
-               (invA(3) * invABinvA(1) + invA(1) * invABinvA(3) + invA(3) * invABinvA(1) +
-                   invA(1) * invABinvA(3));
-  out(1, 4) -= 0.5 * fac *
-               (invA(1) * invABinvA(4) + invA(4) * invABinvA(1) + invA(1) * invABinvA(4) +
-                   invA(4) * invABinvA(1));
-  out(1, 5) -= 0.5 * fac *
-               (invA(3) * invABinvA(4) + invA(4) * invABinvA(3) + invA(3) * invABinvA(4) +
-                   invA(4) * invABinvA(3));
+  out(1, 0) -= 2.0 * fac * (invA(3) * invABinvA(3));
+  out(1, 1) -= 2.0 * fac * (invA(1) * invABinvA(1));
+  out(1, 2) -= 2.0 * fac * (invA(4) * invABinvA(4));
+  out(1, 3) -= fac * (invA(3) * invABinvA(1) + invA(1) * invABinvA(3));
+  out(1, 4) -= fac * (invA(1) * invABinvA(4) + invA(4) * invABinvA(1));
+  out(1, 5) -= fac * (invA(3) * invABinvA(4) + invA(4) * invABinvA(3));
 
-  out(2, 0) -= 0.5 * fac *
-               (invA(5) * invABinvA(5) + invA(5) * invABinvA(5) + invA(5) * invABinvA(5) +
-                   invA(5) * invABinvA(5));
-  out(2, 1) -= 0.5 * fac *
-               (invA(4) * invABinvA(4) + invA(4) * invABinvA(4) + invA(4) * invABinvA(4) +
-                   invA(4) * invABinvA(4));
-  out(2, 2) -= 0.5 * fac *
-               (invA(2) * invABinvA(2) + invA(2) * invABinvA(2) + invA(2) * invABinvA(2) +
-                   invA(2) * invABinvA(2));
-  out(2, 3) -= 0.5 * fac *
-               (invA(5) * invABinvA(4) + invA(4) * invABinvA(5) + invA(5) * invABinvA(4) +
-                   invA(4) * invABinvA(5));
-  out(2, 4) -= 0.5 * fac *
-               (invA(4) * invABinvA(2) + invA(2) * invABinvA(4) + invA(4) * invABinvA(2) +
-                   invA(2) * invABinvA(4));
-  out(2, 5) -= 0.5 * fac *
-               (invA(5) * invABinvA(2) + invA(2) * invABinvA(5) + invA(5) * invABinvA(2) +
-                   invA(2) * invABinvA(5));
+  out(2, 0) -= 2.0 * fac * (invA(5) * invABinvA(5));
+  out(2, 1) -= 2.0 * fac * (invA(4) * invABinvA(4));
+  out(2, 2) -= 2.0 * fac * (invA(2) * invABinvA(2));
+  out(2, 3) -= fac * (invA(5) * invABinvA(4) + invA(4) * invABinvA(5));
+  out(2, 4) -= fac * (invA(4) * invABinvA(2) + invA(2) * invABinvA(4));
+  out(2, 5) -= fac * (invA(5) * invABinvA(2) + invA(2) * invABinvA(5));
 
-  out(3, 0) -= 0.5 * fac *
-               (invA(0) * invABinvA(3) + invA(0) * invABinvA(3) + invA(3) * invABinvA(0) +
-                   invA(3) * invABinvA(0));
-  out(3, 1) -= 0.5 * fac *
-               (invA(3) * invABinvA(1) + invA(3) * invABinvA(1) + invA(1) * invABinvA(3) +
-                   invA(1) * invABinvA(3));
-  out(3, 2) -= 0.5 * fac *
-               (invA(5) * invABinvA(4) + invA(5) * invABinvA(4) + invA(4) * invABinvA(5) +
-                   invA(4) * invABinvA(5));
-  out(3, 3) -= 0.5 * fac *
-               (invA(0) * invABinvA(1) + invA(3) * invABinvA(3) + invA(3) * invABinvA(3) +
-                   invA(1) * invABinvA(0));
+  out(3, 0) -= fac * (invA(0) * invABinvA(3) + invA(3) * invABinvA(0));
+  out(3, 1) -= fac * (invA(3) * invABinvA(1) + invA(1) * invABinvA(3));
+  out(3, 2) -= fac * (invA(5) * invABinvA(4) + invA(4) * invABinvA(5));
+  out(3, 3) -=
+      fac * (0.5 * (invA(0) * invABinvA(1) + invA(1) * invABinvA(0)) + invA(3) * invABinvA(3));
   out(3, 4) -= 0.5 * fac *
                (invA(3) * invABinvA(4) + invA(5) * invABinvA(1) + invA(1) * invABinvA(5) +
                    invA(4) * invABinvA(3));
@@ -1005,43 +962,29 @@ void MAT::AddDerivInvABInvBProduct(double const& fac, const LINALG::Matrix<6, 1>
                (invA(0) * invABinvA(4) + invA(5) * invABinvA(3) + invA(3) * invABinvA(5) +
                    invA(4) * invABinvA(0));
 
-  out(4, 0) -= 0.5 * fac *
-               (invA(3) * invABinvA(5) + invA(3) * invABinvA(5) + invA(5) * invABinvA(3) +
-                   invA(5) * invABinvA(3));
-  out(4, 1) -= 0.5 * fac *
-               (invA(1) * invABinvA(4) + invA(1) * invABinvA(4) + invA(4) * invABinvA(1) +
-                   invA(4) * invABinvA(1));
-  out(4, 2) -= 0.5 * fac *
-               (invA(4) * invABinvA(2) + invA(4) * invABinvA(2) + invA(2) * invABinvA(4) +
-                   invA(2) * invABinvA(4));
+  out(4, 0) -= fac * (invA(3) * invABinvA(5) + invA(5) * invABinvA(3));
+  out(4, 1) -= fac * (invA(1) * invABinvA(4) + invA(4) * invABinvA(1));
+  out(4, 2) -= fac * (invA(4) * invABinvA(2) + invA(2) * invABinvA(4));
   out(4, 3) -= 0.5 * fac *
                (invA(3) * invABinvA(4) + invA(1) * invABinvA(5) + invA(5) * invABinvA(1) +
                    invA(4) * invABinvA(3));
-  out(4, 4) -= 0.5 * fac *
-               (invA(1) * invABinvA(2) + invA(4) * invABinvA(4) + invA(4) * invABinvA(4) +
-                   invA(2) * invABinvA(1));
+  out(4, 4) -=
+      fac * (0.5 * (invA(1) * invABinvA(2) + invA(2) * invABinvA(1)) + invA(4) * invABinvA(4));
   out(4, 5) -= 0.5 * fac *
                (invA(3) * invABinvA(2) + invA(4) * invABinvA(5) + invA(5) * invABinvA(4) +
                    invA(2) * invABinvA(3));
 
-  out(5, 0) -= 0.5 * fac *
-               (invA(0) * invABinvA(5) + invA(0) * invABinvA(5) + invA(5) * invABinvA(0) +
-                   invA(5) * invABinvA(0));
-  out(5, 1) -= 0.5 * fac *
-               (invA(3) * invABinvA(4) + invA(3) * invABinvA(4) + invA(4) * invABinvA(3) +
-                   invA(4) * invABinvA(3));
-  out(5, 2) -= 0.5 * fac *
-               (invA(5) * invABinvA(2) + invA(5) * invABinvA(2) + invA(2) * invABinvA(5) +
-                   invA(2) * invABinvA(5));
+  out(5, 0) -= fac * (invA(0) * invABinvA(5) + invA(5) * invABinvA(0));
+  out(5, 1) -= fac * (invA(3) * invABinvA(4) + invA(4) * invABinvA(3));
+  out(5, 2) -= fac * (invA(5) * invABinvA(2) + invA(2) * invABinvA(5));
   out(5, 3) -= 0.5 * fac *
                (invA(0) * invABinvA(4) + invA(3) * invABinvA(5) + invA(5) * invABinvA(3) +
                    invA(4) * invABinvA(0));
   out(5, 4) -= 0.5 * fac *
                (invA(3) * invABinvA(2) + invA(5) * invABinvA(4) + invA(4) * invABinvA(5) +
                    invA(2) * invABinvA(3));
-  out(5, 5) -= 0.5 * fac *
-               (invA(0) * invABinvA(2) + invA(5) * invABinvA(5) + invA(5) * invABinvA(5) +
-                   invA(2) * invABinvA(0));
+  out(5, 5) -=
+      fac * (0.5 * (invA(0) * invABinvA(2) + invA(2) * invABinvA(0)) + invA(5) * invABinvA(5));
 }
 
 void MAT::InvariantsModified(LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<3, 1>& prinv)
