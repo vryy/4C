@@ -53,7 +53,7 @@ namespace DRT::ELEMENTS
 
     void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-    Epetra_SerialDenseMatrix ComputeNullSpace(
+    Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
         DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
     static SolidType& Instance();
@@ -271,7 +271,7 @@ namespace DRT::ELEMENTS
      *
      *  \author hiermeier
      *  \date 04/16 */
-    inline STR::ELEMENTS::ParamsInterface& ParamsInterface()
+    [[nodiscard]] inline STR::ELEMENTS::ParamsInterface& ParamsInterface() const
     {
       if (not IsParamsInterface()) dserror("The interface ptr is not set!");
       return *interface_ptr_;
@@ -355,7 +355,7 @@ namespace DRT::ELEMENTS
     std::unique_ptr<SolidEleInterface> solid_interface_ = nullptr;
 
     //! flag, whether the post setup of materials is already called
-    bool material_post_setup_;
+    bool material_post_setup_ = false;
   };  // class Solid
 
 }  // namespace DRT::ELEMENTS

@@ -27,7 +27,7 @@ TOLDISP                         1.0E-12
 MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 10 DENS 0.1
 MAT 10   ELAST_CoupNeoHooke YOUNG 10 NUE 0.25
 ------------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ------------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 11 QUANTITY dispx VALUE 1.6902311337357376 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 1.6966321085469775 TOLERANCE 1e-12

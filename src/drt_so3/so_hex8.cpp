@@ -362,7 +362,7 @@ void DRT::ELEMENTS::So_hex8::soh8_expol(
   nodalstresses.Multiply(extrapolationMatrix, stresses);
 
   DRT::ELEMENTS::AssembleExtrapolatedNodalValues<LINALG::Matrix<NUMNOD_SOH8, MAT::NUM_STRESS_3D>>(
-      expolstresses, nodalstresses, this);
+      expolstresses, nodalstresses, *this);
 }
 
 void DRT::ELEMENTS::So_hex8::ExtrapolateGPQuantityToNodesAndAssemble(
@@ -376,7 +376,7 @@ void DRT::ELEMENTS::So_hex8::ExtrapolateGPQuantityToNodesAndAssemble(
   nodal_quantity.Multiply('N', 'N', 1.0, GaussPointsToNodesExtrapolation(), gp_quantity, 0.0);
 
   DRT::ELEMENTS::AssembleExtrapolatedNodalValues<LINALG::SerialDenseMatrix>(
-      global_quantity, nodal_quantity, this, nodal_average);
+      global_quantity, nodal_quantity, *this, nodal_average);
 }
 
 

@@ -14,6 +14,10 @@
 
 namespace DRT
 {
+  namespace UTILS
+  {
+    class GaussIntegration;
+  }
   namespace ELEMENTS
   {
     /*!
@@ -33,7 +37,7 @@ namespace DRT
      */
     template <class T>
     void AssembleExtrapolatedNodalValues(Epetra_MultiVector& global_data, const T& nodal_data,
-        const DRT::ELEMENTS::So_base* ele, bool nodal_average = true);
+        const DRT::Element& ele, bool nodal_average = true);
 
     /*!
      * \brief Assemble averaged date. The data at the Gauss points are averaged within the element.
@@ -45,7 +49,7 @@ namespace DRT
      */
     template <class T>
     void AssembleAveragedElementValues(
-        Epetra_MultiVector& global_data, const T& gp_data, const DRT::ELEMENTS::So_base* ele);
+        Epetra_MultiVector& global_data, const T& gp_data, const DRT::Element& ele);
 
     /*!
      * \brief Assemble nodal element count
@@ -53,8 +57,7 @@ namespace DRT
      * \param global_data Add a 1 to all nodes belonging to this element
      * \param ele element
      */
-    void AssembleNodalElementCount(
-        Epetra_IntVector& global_data, const DRT::ELEMENTS::So_base* ele);
+    void AssembleNodalElementCount(Epetra_IntVector& global_data, const DRT::Element& ele);
 
     /*!
      * \brief Assemble Gauss point data into an array of global cell data
@@ -64,11 +67,20 @@ namespace DRT
      * \param ele element
      */
     void AssembleGaussPointValues(std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data,
-        const Epetra_SerialDenseMatrix& gp_data, const DRT::ELEMENTS::So_base* ele);
+        const Epetra_SerialDenseMatrix& gp_data, const DRT::Element& ele);
+
+    template <DRT::Element::DiscretizationType distype>
+    void ExtrapolateGPQuantityToNodesAndAssemble(const DRT::Element& ele,
+        const LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+        bool nodal_average, const DRT::UTILS::GaussIntegration&);
+
+    template <DRT::Element::DiscretizationType distype>
+    LINALG::SerialDenseMatrix EvaluateGaussPointsToNodesExtrapolationMatrix(
+        const DRT::UTILS::GaussIntegration&);
 
     /*!
-     * @brief calculate and return the value of the quantity at position xi based on the quantity
-     * node vector
+     * @brief calculate and return the value of the quantity at position xi based on the
+     * quantity node vector
      *
      * @tparam distype        discretization type of element
      * @param xi              position to project to in local coordinates

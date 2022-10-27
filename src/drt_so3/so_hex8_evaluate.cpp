@@ -616,7 +616,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       else if (stresstype == "cxyz")
       {
         DRT::ELEMENTS::AssembleAveragedElementValues<
-            LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>>(*poststress, gpstress, this);
+            LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>>(*poststress, gpstress, *this);
       }
       else
       {
@@ -673,7 +673,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
                       .MutableGaussPointDataOutputManagerPtr()
                       ->GetMutableElementCenterData()
                       .at(quantity_name);
-              DRT::ELEMENTS::AssembleAveragedElementValues(*global_data, gp_data, this);
+              DRT::ELEMENTS::AssembleAveragedElementValues(*global_data, gp_data, *this);
               break;
             }
             case INPAR::STR::GaussPointDataOutputType::nodes:
@@ -691,7 +691,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
                        .at(quantity_name);
 
               ExtrapolateGPQuantityToNodesAndAssemble(gp_data, *global_data, false);
-              DRT::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, this);
+              DRT::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, *this);
               break;
             }
             case INPAR::STR::GaussPointDataOutputType::gauss_points:
@@ -701,7 +701,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
                       .MutableGaussPointDataOutputManagerPtr()
                       ->GetMutableGaussPointData()
                       .at(quantity_name);
-              DRT::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, this);
+              DRT::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, *this);
               break;
             }
             case INPAR::STR::GaussPointDataOutputType::none:

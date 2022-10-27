@@ -30,7 +30,7 @@ MAT 11 ELAST_CoupAnisoExpo K1 100.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT
 // Structural tensor strategy
 MAT 1000 ELAST_StructuralTensor STRATEGY Standard
 ------------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ------------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE 0.023489667181652237 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE -0.0037664969896164307 TOLERANCE 1e-12

@@ -13,6 +13,7 @@
 #define ELEMENT_H
 
 
+#include <type_traits>
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_SerialDenseMatrix.h"
@@ -1560,6 +1561,55 @@ doing the original Evaluate(...)
     friend class DRT::DiscretizationHDG;
   };
 
+
+
+  template <DRT::Element::DiscretizationType distype>
+  using is_tet = std::bool_constant<distype == DRT::Element::DiscretizationType::tet4 ||
+                                    distype == DRT::Element::DiscretizationType::tet10>;
+
+  template <DRT::Element::DiscretizationType distype>
+  using is_hex = std::bool_constant<distype == DRT::Element::DiscretizationType::hex8 ||
+                                    distype == DRT::Element::DiscretizationType::hex16 ||
+                                    distype == DRT::Element::DiscretizationType::hex18 ||
+                                    distype == DRT::Element::DiscretizationType::hex20 ||
+                                    distype == DRT::Element::DiscretizationType::hex27>;
+
+  template <DRT::Element::DiscretizationType distype>
+  using is_wedge = std::bool_constant<distype == DRT::Element::DiscretizationType::wedge6 ||
+                                      distype == DRT::Element::DiscretizationType::wedge15>;
+
+  template <DRT::Element::DiscretizationType distype>
+  using is_pyramid = std::bool_constant<distype == DRT::Element::DiscretizationType::pyramid5>;
+
+  template <DRT::Element::DiscretizationType distype>
+  using is_quad = std::bool_constant<distype == DRT::Element::DiscretizationType::quad4 ||
+                                     distype == DRT::Element::DiscretizationType::quad6 ||
+                                     distype == DRT::Element::DiscretizationType::quad8 ||
+                                     distype == DRT::Element::DiscretizationType::quad9>;
+
+  template <DRT::Element::DiscretizationType distype>
+  using is_tri = std::bool_constant<distype == DRT::Element::DiscretizationType::tri3 ||
+                                    distype == DRT::Element::DiscretizationType::tri6>;
+
+
+
+  template <DRT::Element::DiscretizationType distype>
+  inline static constexpr bool is_tet_v = is_tet<distype>::value;
+
+  template <DRT::Element::DiscretizationType distype>
+  inline static constexpr bool is_hex_v = is_hex<distype>::value;
+
+  template <DRT::Element::DiscretizationType distype>
+  inline static constexpr bool is_wedge_v = is_wedge<distype>::value;
+
+  template <DRT::Element::DiscretizationType distype>
+  inline static constexpr bool is_pyramid_v = is_pyramid<distype>::value;
+
+  template <DRT::Element::DiscretizationType distype>
+  inline static constexpr bool is_quad_v = is_quad<distype>::value;
+
+  template <DRT::Element::DiscretizationType distype>
+  inline static constexpr bool is_tri_v = is_tri<distype>::value;
 
   /*!
    * \brief translate to string for screen output

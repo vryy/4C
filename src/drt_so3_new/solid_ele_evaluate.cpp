@@ -35,6 +35,16 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
   DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->Evaluate(
       this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
 
+
+  // const ELEMENTS::ActionType action = std::invoke(
+  //     [&]()
+  //     {
+  //       if (IsParamsInterface())
+  //         return ParamsInterface().GetActionType();
+  //       else
+  //         return String2ActionType(params.get<std::string>("action", "none"));
+  //     });
+
   return 0;
 }
 int DRT::ELEMENTS::Solid::EvaluateNeumann(Teuchos::ParameterList& params,

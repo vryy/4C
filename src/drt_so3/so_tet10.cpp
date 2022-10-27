@@ -306,7 +306,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_expol(
   nodalstresses.Multiply(extrapolationMatrix, stresses);
 
   DRT::ELEMENTS::AssembleExtrapolatedNodalValues<
-      LINALG::Matrix<NUMNOD_SOTET10, MAT::NUM_STRESS_3D>>(expolstresses, nodalstresses, this);
+      LINALG::Matrix<NUMNOD_SOTET10, MAT::NUM_STRESS_3D>>(expolstresses, nodalstresses, *this);
 }
 
 const LINALG::SerialDenseMatrix& DRT::ELEMENTS::So_tet10::GaussPointsToNodesExtrapolation()
@@ -391,7 +391,7 @@ void DRT::ELEMENTS::So_tet10::ExtrapolateGPQuantityToNodesAndAssemble(
   nodal_quantity.Multiply('N', 'N', 1.0, GaussPointsToNodesExtrapolation(), gp_quantity, 0.0);
 
   DRT::ELEMENTS::AssembleExtrapolatedNodalValues<LINALG::SerialDenseMatrix>(
-      global_quantity, nodal_quantity, this, nodal_average);
+      global_quantity, nodal_quantity, *this, nodal_average);
 }
 
 /*====================================================================*/

@@ -182,7 +182,7 @@ void DRT::ELEMENTS::SolidType::NodalBlockInformation(
   nv = 3;
 }
 
-Epetra_SerialDenseMatrix DRT::ELEMENTS::SolidType::ComputeNullSpace(
+Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::SolidType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   // todo make this work for 3D
@@ -321,6 +321,9 @@ void DRT::ELEMENTS::Solid::Pack(DRT::PackBuffer& data) const
 
   // eas type
   AddtoPack(data, eastype_);
+
+  // Setup flag
+  data.AddtoPack(material_post_setup_);
 }
 
 void DRT::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
@@ -342,8 +345,8 @@ void DRT::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
   DRT::ParObject::ExtractfromPack(position, data, eletech_);
   // eas type
   eastype_ = static_cast<::STR::ELEMENTS::EASType>(ExtractInt(position, data));
-
-  DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->Setup(this, nullptr);
+  // Setup flag
+  DRT::ParObject::ExtractfromPack(position, data, material_post_setup_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -351,7 +354,7 @@ void DRT::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
 
 void DRT::ELEMENTS::Solid::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
 {
-  if (interface_ptr_ != Teuchos::null) return;
+  // if (interface_ptr_ != Teuchos::null) return;
   if (p.isParameter("interface"))
   {
     interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(

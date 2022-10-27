@@ -14,6 +14,7 @@
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_element.H"
 
 namespace STR::ELEMENTS
 {
@@ -277,7 +278,13 @@ namespace DRT
       /// todo: for now, we need this, since the solid materials still rely on it.
       ///       in a next step they should start using the paramsInterface as well
       virtual void ParamsInterfaceToList(
-          STR::ELEMENTS::ParamsInterface& pi, Teuchos::ParameterList& pl);
+          const STR::ELEMENTS::ParamsInterface& pi, Teuchos::ParameterList& pl) const;
+
+      virtual void InitializeGaussPointDataOutput(DRT::ELEMENTS::Solid& ele,
+          const std::optional<DRT::UTILS::GaussIntegration>& intpoints) const = 0;
+
+      virtual void EvaluateGaussPointDataOutput(DRT::ELEMENTS::Solid& ele,
+          const std::optional<DRT::UTILS::GaussIntegration>& intpoints) const = 0;
 
      protected:
       //! ctor

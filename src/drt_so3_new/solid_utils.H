@@ -21,42 +21,42 @@ namespace STR::UTILS
   {
   };
   template <>
-  struct IntRuleToNquad<DRT::UTILS::intrule_hex_8point>
+  struct IntRuleToNquad<DRT::UTILS::GaussRule3D::hex_8point>
   {
     static const int ngp = 8;
   };
   template <>
-  struct IntRuleToNquad<DRT::UTILS::intrule_hex_27point>
+  struct IntRuleToNquad<DRT::UTILS::GaussRule3D::hex_27point>
   {
     static const int ngp = 27;
   };
   template <>
-  struct IntRuleToNquad<DRT::UTILS::intrule_hex_18point>
+  struct IntRuleToNquad<DRT::UTILS::GaussRule3D::hex_18point>
   {
     static const int ngp = 18;
   };
   template <>
-  struct IntRuleToNquad<DRT::UTILS::intrule_pyramid_1point>
+  struct IntRuleToNquad<DRT::UTILS::GaussRule3D::pyramid_1point>
   {
     static const int ngp = 1;
   };
   template <>
-  struct IntRuleToNquad<DRT::UTILS::intrule_pyramid_8point>
+  struct IntRuleToNquad<DRT::UTILS::GaussRule3D::pyramid_8point>
   {
     static const int ngp = 8;
   };
   template <>
-  struct IntRuleToNquad<DRT::UTILS::intrule_tet_1point>
+  struct IntRuleToNquad<DRT::UTILS::GaussRule3D::tet_1point>
   {
     static const int ngp = 1;
   };
   template <>
-  struct IntRuleToNquad<DRT::UTILS::intrule_tet_4point>
+  struct IntRuleToNquad<DRT::UTILS::GaussRule3D::tet_4point>
   {
     static const int ngp = 4;
   };
   template <>
-  struct IntRuleToNquad<DRT::UTILS::intrule_tet_11point>
+  struct IntRuleToNquad<DRT::UTILS::GaussRule3D::tet_11point>
   {
     static const int ngp = 11;
   };

@@ -10,6 +10,9 @@
 #ifndef SOLID_ELE_CALC_H
 #define SOLID_ELE_CALC_H
 
+#include <memory>
+#include <string>
+#include <unordered_map>
 #include "solid_ele_interface.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
@@ -194,16 +197,22 @@ namespace DRT
 
       void MaterialPostSetup(const DRT::ELEMENTS::Solid& ele) override;
 
+      void InitializeGaussPointDataOutput(
+          DRT::ELEMENTS::Solid& ele, const std::optional<DRT::UTILS::GaussIntegration>& intpoints =
+                                         std::nullopt) const override;
 
+      void EvaluateGaussPointDataOutput(DRT::ELEMENTS::Solid& ele,
+          const std::optional<DRT::UTILS::GaussIntegration>& intpoints) const override;
 
      protected:
       /// static values for matrix sizes
-      static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
-      static const int numdofperelement_ = nen_ * nsd_;
-      static const int numstr_ = nsd_ * (nsd_ + 1) / 2;
+      static constexpr int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static constexpr int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static constexpr int numdofperelement_ = nen_ * nsd_;
+      static constexpr int numstr_ = nsd_ * (nsd_ + 1) / 2;
 
-      Teuchos::RCP<DRT::UTILS::GaussIntegration> default_integration_;
+      std::unique_ptr<DRT::UTILS::GaussIntegration> stiffness_matrix_integration_;
+      std::unique_ptr<DRT::UTILS::GaussIntegration> mass_matrix_integration_;
 
       virtual void EvaluateShapeDeriv(const DRT::UTILS::GaussIntegration& intpoints, const int gp);
 
@@ -241,6 +250,8 @@ namespace DRT
 
       //! interface ptr for data exchange between the element and the time integrator.
       Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
+
+      Teuchos::RCP<DRT::UTILS::GaussIntegration> default_integration_ = Teuchos::null;
 
       /// Integration factor: detJ * w(gp)
       double fac_;
