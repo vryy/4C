@@ -57,8 +57,6 @@ void checkTemporary(GEO::CUT::Mesh& mesh, GEO::CUT::Element* e, GEO::CUT::Side* 
 
 void checkTemporary2(GEO::CUT::Mesh& mesh, GEO::CUT::Element* e, GEO::CUT::Side* s);
 
-void checkTemporary3(GEO::CUT::Mesh& mesh, GEO::CUT::Element* e, GEO::CUT::Side* s);
-
 GEO::CUT::Side* Create_quad4(
     GEO::CUT::Mesh& mesh, double x, double dx, double dz, bool reverse = false)
 {
@@ -135,7 +133,6 @@ void test_facet_split()
 
   /*checkTemporary( mesh, e, s );*/
   // checkTemporary2( mesh, e, s );
-  // checkTemporary3( mesh, e, s );
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -2865,153 +2862,4 @@ void checkTemporary2(GEO::CUT::Mesh& mesh, GEO::CUT::Element* e, GEO::CUT::Side*
       std::cout << coo[0] << "\t" << coo[1] << "\t" << coo[2] << "\n";
     }
   }
-}
-
-void checkTemporary3(GEO::CUT::Mesh& mesh, GEO::CUT::Element* e, GEO::CUT::Side* s)
-{
-  std::cout << "checkTemporary3...\n";
-  std::vector<GEO::CUT::Point*> ptlist(9);
-  double x[3];
-
-#if 0
-  x[2] = 0.0;
-  x[0] = 0.0;x[1]=0.0;
-  GEO::CUT::Point * p1 = mesh.NewPoint( x, NULL, s, 0.0);
-  ptlist[0] = p1;
-
-  x[0] = 1.0;x[1]=1.0;
-  GEO::CUT::Point * p2 = mesh.NewPoint( x, NULL, s, 0.0);
-  ptlist[1] = p2;
-
-  x[0] = 2.0;x[1]=0.0;
-  GEO::CUT::Point * p3 = mesh.NewPoint( x, NULL, s, 0.0);
-  ptlist[2] = p3;
-
-  x[0] = 2.0;x[1]=2.0;
-  GEO::CUT::Point * p4 = mesh.NewPoint( x, NULL, s, 0.0);
-  ptlist[3] = p4;
-
-  x[0] = 0.0;x[1]=2.0;
-  GEO::CUT::Point * p5 = mesh.NewPoint( x, NULL, s, 0.0);
-  ptlist[4] = p5;
-
-  GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
-#endif
-
-#if 0
-  x[0] = 1.0;
-  x[1] = 0.0;x[2]=2.0;
-  GEO::CUT::Point * p1 = mesh.NewPoint( x, NULL, s, 0.0);
-  ptlist[0] = p1;
-
-  x[1] = 1.0;x[2]=1.0;
-  GEO::CUT::Point * p2 = mesh.NewPoint( x, NULL, s, 0.0);
-  ptlist[1] = p2;
-
-  x[1] = 0.0;x[2]=0.0;
-  GEO::CUT::Point * p3 = mesh.NewPoint( x, NULL, s, 0.0);
-  ptlist[2] = p3;
-
-  x[1] = 2.0;x[2]=0.0;
-  GEO::CUT::Point * p4 = mesh.NewPoint( x, NULL, s, 0.0);
-  ptlist[3] = p4;
-
-  x[1] = 2.0;x[2]=2.0;
-  GEO::CUT::Point * p5 = mesh.NewPoint( x, NULL, s, 0.0);
-  ptlist[4] = p5;
-
-  GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
-#endif
-
-#if 1
-  x[2] = 0.416667;
-  x[0] = 1;
-  x[1] = 0.75;
-  GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
-  ptlist[0] = p1;
-
-  x[0] = 0.916667;
-  x[1] = 0.75;
-  GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
-  ptlist[1] = p2;
-
-  x[0] = 0.916667;
-  x[1] = 0.67140811030991;
-  GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
-  ptlist[2] = p3;
-
-  x[0] = 0.919953046856685;
-  x[1] = 0.674831592269648;
-  GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
-  ptlist[3] = p4;
-
-  x[0] = 0.940723323462606;
-  x[1] = 0.696470163540002;
-  GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
-  ptlist[4] = p5;
-
-  x[0] = 0.950656042346053;
-  x[1] = 0.70681817489873;
-  GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
-  ptlist[5] = p6;
-
-  x[0] = 0.958516450562517;
-  x[1] = 0.710801042806183;
-  GEO::CUT::Point* p7 = mesh.NewPoint(x, NULL, s, 0.0);
-  ptlist[6] = p7;
-
-  x[0] = 0.992804012972973;
-  x[1] = 0.726273224864865;
-  GEO::CUT::Point* p8 = mesh.NewPoint(x, NULL, s, 0.0);
-  ptlist[7] = p8;
-
-  x[0] = 1.0;
-  x[1] = 0.728883621292496;
-  GEO::CUT::Point* p9 = mesh.NewPoint(x, NULL, s, 0.0);
-  ptlist[8] = p9;
-
-  std::reverse(ptlist.begin(), ptlist.end());
-
-  GEO::CUT::TriangulateFacet tf(ptlist);
-#endif
-
-  tf.SplitFacet();
-  // std::vector<int> ptc;
-  // tf.EarClipping( ptc, true );
-
-  std::vector<std::vector<GEO::CUT::Point*>> split;
-  split = tf.GetSplitCells();
-
-  for (std::vector<std::vector<GEO::CUT::Point*>>::iterator i = split.begin(); i != split.end();
-       i++)
-  {
-    std::cout << "cell\n";
-    std::vector<GEO::CUT::Point*> cell = *i;
-    ;
-    for (std::vector<GEO::CUT::Point*>::iterator j = cell.begin(); j != cell.end(); j++)
-    {
-      GEO::CUT::Point* pt = *j;
-      double coo[3];
-      pt->Coordinates(coo);
-      std::cout << coo[0] << "\t" << coo[1] << "\t" << coo[2] << "\n";
-    }
-  }
-
-  /*std::vector<GEO::CUT::Point*> cell1 = split[0];
-  std::vector<GEO::CUT::Point*> cell2 = split[1];
-  std::vector<GEO::CUT::Point*> cell3 = split[2];
-  std::vector<GEO::CUT::Point*> cell4 = split[3];
-  std::vector<GEO::CUT::Point*> cell5 = split[4];
-  if( cell1[0]!=p10 || cell1[1]!=p1 || cell1[2]!=p2 )
-    dserror( "triangulation failed for check10nodedShiftEarClipToSplit" );
-  if( cell2[0]!=p10 || cell2[1]!=p2 || cell2[2]!=p3 )
-    dserror( "triangulation failed for check10nodedShiftEarClipToSplit" );
-  if( cell3[0]!=p4 || cell3[1]!=p5 || cell3[2]!=p6 || cell3[3]!=p7 )
-    dserror( "triangulation failed for check10nodedShiftEarClipToSplit" );
-  if( cell4[0]!=p7 || cell4[1]!=p8 || cell4[2]!=p9 )
-    dserror( "triangulation failed for check10nodedShiftEarClipToSplit" );
-  if( cell5[0]!=p9 || cell5[1]!=p10 || cell5[2]!=p3 || cell5[3]!=p4 )
-    dserror( "triangulation failed for check10nodedShiftEarClipToSplit" );*/
 }

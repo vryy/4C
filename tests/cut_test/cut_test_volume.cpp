@@ -148,30 +148,6 @@ void test_cut_volumes3()
 
   w.CreatePyramid5Sides(xyze);
 
-#if 0
-  xyze( 0, 0 ) =  0;
-  xyze( 1, 0 ) = -1;
-  xyze( 2, 0 ) = -1;
-
-  xyze( 0, 1 ) =  0;
-  xyze( 1, 1 ) =  1;
-  xyze( 2, 1 ) = -1;
-
-  xyze( 0, 2 ) =  0;
-  xyze( 1, 2 ) =  1;
-  xyze( 2, 2 ) =  1;
-
-  xyze( 0, 3 ) =  0;
-  xyze( 1, 3 ) = -1;
-  xyze( 2, 3 ) =  1;
-
-  xyze( 0, 4 ) = 0.5;
-  xyze( 1, 4 ) = 0;
-  xyze( 2, 4 ) = 0;
-
-  w.CreatePyramid5Sides( xyze );
-#endif
-
   w.Status();
   w.CutTest_Cut();
 }

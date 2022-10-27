@@ -108,16 +108,6 @@ GEO::CUT::IMPL::PointGraph::PointGraph(
   // Simplified graph strategy for three points as ther is anyway just one way of creating the
   // facets! ager 09/19: this is a very good idea to do that but changed results of the testcase
   // xfluid_moving_torus* Thus, should be activated in a separate commit!
-#if (0)
-  if (GetGraph().graph_.size() == 3)
-  {
-    GetGraph().main_cycles_.push_back(Cycle());
-    for (std::map<int, plain_int_set>::iterator git = GetGraph().graph_.begin();
-         git != GetGraph().graph_.end(); ++git)
-      GetGraph().main_cycles_[0].push_back(GetGraph().all_points_[git->first]);
-    return;
-  }
-#endif
 
   try
   {
@@ -147,13 +137,6 @@ GEO::CUT::IMPL::PointGraph::PointGraph(
     file.close();
     throw err;
   }
-#if 0
-  cycle.Print();
-  std::cout << "Main-Cycles\n";
-  for ( std::vector<Cycle>::const_iterator cit = GetGraph().main_cycles_.begin();
-        cit != GetGraph().main_cycles_.end(); ++cit )
-    cit->Print();
-#endif
 }
 
 /*-------------------------------------------------------------------------------------*
@@ -506,39 +489,10 @@ bool GEO::CUT::IMPL::FindCycles(graph_t &g, GEO::CUT::Cycle &cycle,
     std::cout << "\n";
 #endif
   }
-#ifdef CLN_CALC_OUTSIDE_KERNEL
-  // ClnWrapper::precision_ = 30;
-#endif
-
-#if 0
-  // this check actually modifies the graph!  if the input graph is not planar, it create kuratowski subgraph
-  if ( not boost::boyer_myrvold_planarity_test( boost::boyer_myrvold_params::graph = g,
-                                                boost::boyer_myrvold_params::embedding = &embedding[0] ) )
-  // we can better use
-  if (not boost::boyer_myrvold_planarity_test( g ) )
-  {
-    throw std::runtime_error( "input graph is not planar" );
-  }
-#endif
-  //#endif
-
-#if 0
-#ifdef DEBUGCUTLIBRARY
-  std::cout << "embedding:\n";
-  for ( std::vector<vec_t>::iterator i=embedding.begin(); i!=embedding.end(); ++i )
-  {
-    vec_t & em = *i;
-    std::copy( em.begin(), em.end(), std::ostream_iterator<edge_t>( std::cout, " " ) );
-    std::cout << "\n";
-  }
-#endif
-#endif
 
   face_visitor vis(name_map, cycles);
   boost::planar_face_traversal(g, &embedding[0], vis);
 
-
-//#ifdef DEBUGCUTLIBRARY
 #if DEBUG_POINTGRAPH
   for (std::vector<Cycle>::iterator i = cycles.begin(); i != cycles.end(); ++i)
   {
@@ -546,8 +500,6 @@ bool GEO::CUT::IMPL::FindCycles(graph_t &g, GEO::CUT::Cycle &cycle,
     c.TestUnique();
   }
 #endif
-  //#endif
-
 
   // boost face traversal will produce two cycles, in case if there  is one planar face ( surface
   // with no cut lines ), hence we need to remove redundant one and the other will serve as a facet
@@ -809,18 +761,6 @@ void GEO::CUT::IMPL::PointGraph::Graph::FindCycles(
   // All vertices are connected. If there is no cycle, done.
   if (boost::num_vertices(g) > boost::num_edges(g))
   {
-#if 0
-#ifdef DEBUGCUTLIBRARY
-    if ( boost::num_vertices( g ) > 2 )
-    {
-      std::cout << "failed graph: num_vertices=" << boost::num_vertices( g )
-                << "   num_edges=" << boost::num_edges( g )
-                << "\n"
-                << cycle << "\n";
-      boost::print_graph( g, boost::get( boost::vertex_name, g ) );
-    }
-#endif
-#endif
     return;
   }
 
@@ -895,14 +835,6 @@ void GEO::CUT::IMPL::PointGraph::Graph::FindCycles(
       {
         GnuplotDumpCycles("cycles", main_cycles_);
         boost::print_graph(g, boost::get(boost::vertex_name, g));
-
-#if 0
-        // Output the graph in DOT format
-        boost::dynamic_properties dp;
-        dp.property( "label", boost::get( boost::vertex_index, g ) );
-        std::ofstream out( "side-graph.dot" );
-        boost::write_graphviz( out, g, dp, std::string(), boost::get( boost::vertex_index, g ) );
-#endif
 
         run_time_error("cycle needs to contain side edges");
       }

@@ -43,10 +43,6 @@ namespace GEO
       \brief Construct the square matrix by multiplying the transpose of the original system matrix
       */
       Epetra_SerialDenseMatrix get_square_matrix(Epetra_SerialDenseVector &rhs);
-      /*std::vector<double> ConjugateGradient(std::vector<std::vector<double> >coeff,
-      std::vector<double> rhs); std::vector<double> multiply(std::vector<std::vector<double> > mat,
-      std::vector<double> ve); double multi_vec(std::vector<double> mm1, std::vector<double> mm2);
-      double maxAbsolute(std::vector<double>a);*/
 
       std::vector<std::vector<double>> matri_;
       Epetra_SerialDenseVector sourc_;

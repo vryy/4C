@@ -582,19 +582,6 @@ void GEO::CUT::QuadratureCompression::QR_decomposition_Teuchos(
 {
   Teuchos::SerialQRDenseSolver<int, double> qr;
 
-#if 0
-  mat->shape( 4,3 );
-  rhs->shape( 4,1 );
-  sol->shape( 3,1 );
-
-  (*mat)(0,0) = 5.0; (*mat)(0,1) = 10.0; (*mat)(0,2) = 9.0;
-  (*mat)(1,0) = 12.0; (*mat)(1,1) = 2.0; (*mat)(1,2) = 10.0;
-  (*mat)(2,0) = 3.0; (*mat)(2,1) = 7.0;  (*mat)(2,2) = 11.0;
-  (*mat)(3,0) = 4.0; (*mat)(3,1) = 8.0;  (*mat)(3,2) = 12.0;
-
-  //(*rhs)(0) = 19.5; (*rhs)(1) = 23.0; (*rhs)(2) = 25.5; (*rhs)(3) = 20.0;
-  (*rhs)(0) = 24.0; (*rhs)(1) = 24.0; (*rhs)(2) = 21.0; (*rhs)(3) = 24.0;
-#else
   mat->shape(4, 3);
   rhs->shape(3, 1);
   sol->shape(4, 1);
@@ -615,7 +602,6 @@ void GEO::CUT::QuadratureCompression::QR_decomposition_Teuchos(
   (*rhs)(0) = 17.0;
   (*rhs)(1) = 27.0;
   (*rhs)(2) = 22.0;
-#endif
 
   qr.setMatrix(mat);
   qr.setVectors(sol, rhs);
@@ -636,15 +622,6 @@ void GEO::CUT::QuadratureCompression::QR_decomposition_LAPACK(
   //  int mb = rhs->numRows();
   int nb = rhs->numCols();
 
-#if 0
-  (*mat)(0,0) = 5.0; (*mat)(0,1) = 10.0; (*mat)(0,2) = 9.0;
-  (*mat)(1,0) = 12.0; (*mat)(1,1) = 2.0; (*mat)(1,2) = 10.0;
-  (*mat)(2,0) = 3.0; (*mat)(2,1) = 7.0;  (*mat)(2,2) = 11.0;
-  (*mat)(3,0) = 4.0; (*mat)(3,1) = 8.0;  (*mat)(3,2) = 12.0;
-
-  (*rhs)(0) = 24.0; (*rhs)(1) = 24.0; (*rhs)(2) = 21.0; (*rhs)(3) = 24.0;
-  (*sol)(0) = 0.0; (*sol)(1) = 0.0; (*sol)(2) = 0.0;
-#else
   mat->shape(3, 4);
   rhs->shape(3, 1);
   sol->shape(4, 1);
@@ -669,7 +646,6 @@ void GEO::CUT::QuadratureCompression::QR_decomposition_LAPACK(
   (*sol)(1) = 0.0;
   (*sol)(2) = 0.0;
   (*sol)(3) = 0.0;
-#endif
 
   Teuchos::RCP<Teuchos::SerialDenseVector<int, int>> jpvt =
       Teuchos::rcp(new Teuchos::SerialDenseVector<int, int>);

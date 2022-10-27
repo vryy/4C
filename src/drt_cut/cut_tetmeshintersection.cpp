@@ -216,23 +216,6 @@ void GEO::CUT::TetMeshIntersection::FindEdgeCuts()
     cut_edges.insert(e);
   }
 
-#if 0
-  plain_edge_set mesh_edges;
-  const std::map<plain_int_set, Teuchos::RCP<Edge> > & m_edges = mesh_.Edges();
-  for ( std::map<plain_int_set, Teuchos::RCP<Edge> >::const_iterator i=m_edges.begin();
-        i!=m_edges.end();
-        ++i )
-  {
-    Edge * e = &*i->second;
-    Node * n1 = e->BeginNode();
-    Node * n2 = e->EndNode();
-    if ( n1->Position()==Point::oncutsurface and n2->Position()==Point::oncutsurface )
-    {
-      mesh_edges.insert( e );
-    }
-  }
-#endif
-
   for (plain_edge_set::iterator i = cut_edges.begin(); i != cut_edges.end(); ++i)
   {
     Edge* ce = *i;
@@ -332,14 +315,6 @@ void GEO::CUT::TetMeshIntersection::Cut(Mesh& parent_mesh, Element* element,
 
 #ifdef DEBUGCUTLIBRARY
   mesh_.DumpGmsh("mesh.pos");
-#endif
-
-#if 0
-  // Not needed on this level.
-  if ( mesh_.CreateOptions().FindPositions() )
-  {
-    mesh_.FindNodePositions();
-  }
 #endif
 
 #ifdef DEBUGCUTLIBRARY
@@ -557,14 +532,6 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells(Mesh& parent_mesh, Element* e
                     }
                   }
                 }
-#if 0
-                else if ( child_cells.size()==0 )
-                {
-                  // Ignore. There is a child facet that is not connected to
-                  // anything. Oh, well.
-                  f->Print();
-                }
-#endif
                 else
                 {
                   std::stringstream str;
@@ -1419,40 +1386,5 @@ void GEO::CUT::TetMeshIntersection::CopyCutSide(Side* s, Facet* f)
     {
       p2->AddSide(cs);
     }
-
-#if 0
-    if ( p1!=NULL and p2!=NULL )
-    {
-      std::vector<Line*> newlines;
-      mesh_.NewLine( p1, p2, cs, NULL, NULL, &newlines );
-
-      plain_edge_set edges;
-      p1->CommonEdge( p2, edges );
-      for ( plain_edge_set::iterator i=edges.begin(); i!=edges.end(); ++i )
-      {
-        Edge * e = *i;
-        const plain_side_set & sides = e->Sides();
-        for ( plain_side_set::const_iterator i=sides.begin(); i!=sides.end(); ++i )
-        {
-          Side * s = *i;
-          for ( std::vector<Line*>::iterator i=newlines.begin(); i!=newlines.end(); ++i )
-          {
-            Line * nl = *i;
-            nl->AddSide( s );
-          }
-          const plain_element_set & elements = s->Elements();
-          for ( plain_element_set::const_iterator i=elements.begin(); i!=elements.end(); ++i )
-          {
-            Element * e = *i;
-            for ( std::vector<Line*>::iterator i=newlines.begin(); i!=newlines.end(); ++i )
-            {
-              Line * nl = *i;
-              nl->AddElement( e );
-            }
-          }
-        }
-      }
-    }
-#endif
   }
 }

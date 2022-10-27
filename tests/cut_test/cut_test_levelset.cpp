@@ -1370,66 +1370,6 @@ void test_ls_hex8_simple4()
   lsi.Cut();
 }
 
-#if 0
-void test_ls_hex8_simple4()
-{
-  GEO::CUT::LevelSetIntersection lsi;
-  lsi.GetOptions().Init_for_Cuttests();
-
-  // simple hex8 element
-  std::vector<int> nids( 8 );
-  std::vector<double> lsvs( 8, -1 );
-  Epetra_SerialDenseMatrix xyze( 3, 8 );
-
-  for ( int i=0; i<8; ++i )
-  {
-    nids[i] = i;
-  }
-
-  // this is the impossible (undefined) case
-
-  lsvs[1] = 1;
-  lsvs[3] = 1;
-  lsvs[4] = 1;
-  lsvs[6] = 1;
-
-  xyze( 0, 0 ) = 0;
-  xyze( 1, 0 ) = 0;
-  xyze( 2, 0 ) = 0;
-
-  xyze( 0, 1 ) = 1;
-  xyze( 1, 1 ) = 0;
-  xyze( 2, 1 ) = 0;
-
-  xyze( 0, 2 ) = 1;
-  xyze( 1, 2 ) = 1;
-  xyze( 2, 2 ) = 0;
-
-  xyze( 0, 3 ) = 0;
-  xyze( 1, 3 ) = 1;
-  xyze( 2, 3 ) = 0;
-
-  xyze( 0, 4 ) = 0;
-  xyze( 1, 4 ) = 0;
-  xyze( 2, 4 ) = 1;
-
-  xyze( 0, 5 ) = 1;
-  xyze( 1, 5 ) = 0;
-  xyze( 2, 5 ) = 1;
-
-  xyze( 0, 6 ) = 1;
-  xyze( 1, 6 ) = 1;
-  xyze( 2, 6 ) = 1;
-
-  xyze( 0, 7 ) = 0;
-  xyze( 1, 7 ) = 1;
-  xyze( 2, 7 ) = 1;
-
-  lsi.AddElement( 1, nids, xyze, DRT::Element::hex8, &lsvs[0]  );
-  lsi.Cut();
-}
-#endif
-
 void test_ls_hex8_simple5()
 {
   GEO::CUT::LevelSetIntersection lsi;

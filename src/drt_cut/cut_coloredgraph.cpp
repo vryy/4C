@@ -285,51 +285,6 @@ namespace GEO
         if (visited[facet] < 0) run_time_error("facet left more than once");
       }
 
-#if 0
-      bool IsOneCycle( const std::vector<std::pair<Point*, Point*> > & all_lines,
-                       std::vector<int> & split_trace,
-                       int split_color )
-      {
-        // See if those split lines form one loop. Just one.
-
-        std::map<Point*, std::vector<int> > points;
-        for ( std::vector<int>::iterator i=split_trace.begin(); i!=split_trace.end(); ++i )
-        {
-          int line = *i;
-          int pos = line - split_color;
-          if ( pos < 0 or pos >= static_cast<int>( all_lines.size() ) )
-          {
-            run_time_error( "line index error" );
-          }
-          points[all_lines[pos].first ].push_back( pos );
-          points[all_lines[pos].second].push_back( pos );
-        }
-
-        Point * first = points.begin()->first;
-        int l = points[first][0];
-
-        unsigned count = 0;
-        for ( Point * next = ( all_lines[l].first == first ) ? all_lines[l].second : all_lines[l].first;
-              next != first;
-              next = ( all_lines[l].first == next ) ? all_lines[l].second : all_lines[l].first )
-        {
-          if ( points[next].size() != 2 )
-          {
-            //throw std::runtime_error( "not a cycle" );
-            return false;
-          }
-          l = ( points[next][0] == l ) ? points[next][1] : points[next][0];
-          count += 1;
-          if ( count >= split_trace.size() )
-          {
-            run_time_error( "overflow." );
-          }
-        }
-
-        return count == split_trace.size()-1;
-      }
-#endif
-
       bool VisitFacetDFS(Graph& graph, Graph& used, plain_int_set& free, int facet,
           const std::vector<std::pair<Point*, Point*>>& all_lines, std::vector<int>& visited,
           std::vector<int>& split_trace)
@@ -388,8 +343,6 @@ namespace GEO
                     run_time_error("no split trace");
                   }
 
-                  // ok. all points connected.
-                  // if ( IsOneCycle( all_lines, split_trace, graph.Split() ) )
                   return true;
                 }
 

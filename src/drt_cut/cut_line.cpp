@@ -53,38 +53,6 @@ GEO::CUT::Line::Line(Point* p1, Point* p2, Side* cut_side1, Side* cut_side2, Ele
     Element* s = *i;
     AddElement(s);
   }
-
-#if 0
-#ifdef DEBUGCUTLIBRARY
-  double x1[] = { 1.0571400000000001906, 0.49999999999999994449, -0.024639335281227081609 };
-  double x2[] = { 1.0571400000000001906, 0.49999999999999994449, -0.050000000000000009714 };
-
-  LINALG::Matrix<3,1> px1( p1_->X() );
-  LINALG::Matrix<3,1> px2( p2_->X() );
-
-  LINALG::Matrix<3,1> mx1( x1 );
-  LINALG::Matrix<3,1> mx2( x2 );
-
-  LINALG::Matrix<3,1> d1;
-  LINALG::Matrix<3,1> d2;
-
-  d1.Update( 1, px1, -1, mx1, 0 );
-  d2.Update( 1, px2, -1, mx2, 0 );
-
-  if ( d1.Norm2() < 1e-12 and d2.Norm2() < 1e-12 )
-  {
-    std::cout << "offending line 1\n";
-  }
-
-  d1.Update( 1, px1, -1, mx2, 0 );
-  d2.Update( 1, px2, -1, mx1, 0 );
-
-  if ( d1.Norm2() < 1e-12 and d2.Norm2() < 1e-12 )
-  {
-    std::cout << "offending line 2\n";
-  }
-#endif
-#endif
 }
 
 void GEO::CUT::Line::AddSide(Side* cut_side)
@@ -99,60 +67,15 @@ void GEO::CUT::Line::AddElement(Element* cut_element)
 {
   if (cut_element != NULL)
   {
-#if 0
-#ifdef DEBUGCUTLIBRARY
-    Node * n1 = NULL;
-    Node * n2 = NULL;
-    const std::vector<Node*> & nodes = cut_element->Nodes();
-    for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
-    {
-      Node * n = *i;
-      if ( n->point()==p1_ )
-      {
-        n1 = n;
-      }
-      if ( n->point()==p2_ )
-      {
-        n2 = n;
-      }
-    }
-    if ( n1!=NULL and n2!=NULL )
-    {
-      plain_edge_set edges;
-      p1_->CommonEdge( p2_, edges );
-      if ( edges.size()!=1 )
-        throw std::runtime_error( "line does not belong to element" );
-      Edge * e = *edges.begin();
-
-      const plain_side_set & edge_sides = e->Sides();
-      const std::vector<Side*> & element_sides = cut_element->Sides();
-
-      bool found = false;
-      for ( std::vector<Side*>::const_iterator i=element_sides.begin(); i!=element_sides.end(); ++i )
-      {
-        Side * s = *i;
-        if ( edge_sides.count( s )>0 )
-        {
-          found = true;
-        }
-      }
-      if ( not found )
-      {
-        throw std::runtime_error( "line does not belong to element" );
-      }
-    }
-#endif
-#endif
-    cut_elements_.insert(cut_element);
-#if 1
     if (not p1_->IsCut(cut_element) or not p2_->IsCut(cut_element))
     {
       throw std::runtime_error("cut line between non-cut points");
     }
-#else
+
+    cut_elements_.insert(cut_element);
+
     p1_->AddElement(cut_element);
     p2_->AddElement(cut_element);
-#endif
   }
 }
 

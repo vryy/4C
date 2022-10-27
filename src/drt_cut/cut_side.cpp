@@ -1072,33 +1072,6 @@ void GEO::CUT::Side::MakeInternalFacets(
 
   if (sides.size() > 1)
   {
-#if 0
-    std::stringstream str;
-    str << "can touch exactly one element side: "
-      << points
-      << "found sides:\n";
-    std::copy( sides.begin(), sides.end(), std::ostream_iterator<Side*>( str, "\n" ) );
-
-
-    int counter = 0;
-    std::ofstream file("multiple_touched_sides.pos");
-    for (plain_side_set::iterator it = sides.begin(); it != sides.end(); ++it, ++counter)
-    {
-      file << "View \"ElementSide" << counter << "\" {\n";
-      GEO::CUT::OUTPUT::GmshSideDump(file, *it, NULL);
-      file << "};\n";
-    }
-    file << "View \"ThisSide" << "\" {\n";
-    GEO::CUT::OUTPUT::GmshSideDump(file, this, NULL);
-    file << "};\n";
-    file << "//Cycle dump\n";
-
-    points.GmshDump( file );
-
-    file.close();
-
-    dserror( str.str() );
-#endif
     {
       Facet* f = NULL;
       for (plain_side_set::iterator it = sides.begin(); it != sides.end(); ++it)
@@ -1123,14 +1096,11 @@ void GEO::CUT::Side::MakeInternalFacets(
 
       return;
     }
-
-    // run_time_error( str.str() );
   }
   else if (sides.size() == 1)
   {
     s = *sides.begin();
   }
-  // else s==NULL :-)
 
   if (s != NULL)
   {

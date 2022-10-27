@@ -102,11 +102,6 @@ GEO::CUT::TetMesh::TetMesh(
 #endif
   }
 
-#if 0
-  // if this is not the first cut, it might be fine not to have all points
-  TestUsedPoints( tets_ );
-#endif
-
   Init();
 
 #ifdef TETMESH_GMSH_DEBUG_OUTPUT
@@ -549,32 +544,13 @@ void GEO::CUT::TetMesh::CallQHull(
 #else
   FILE* outfile = 0;
 #endif
-//#define QHULL_DEBUG_OUTPUT
+
 #ifdef QHULL_DEBUG_OUTPUT
-#if 0
-  static FILE * errfile;
-  if ( errfile==NULL )
-    errfile = fopen( "qhull_error.log", "w" );
-#else
   FILE* errfile = stderr;
-#endif
 #else
   static NullFile errfile;
 #endif
 
-#if 0
-  static FILE * debug_f;
-  if ( debug_f==NULL )
-    debug_f = fopen( "qhull.debug", "w" );
-  for ( int i=0; i<n; ++i )
-  {
-    Point * p = points[i];
-    const double * x = p->X();
-    fprintf( debug_f, "% .20f % .20f % .20f ", x[0], x[1], x[2] );
-  }
-  fprintf( debug_f, "\n");
-  fflush( debug_f );
-#endif
 #ifdef QHULL_EXTENDED_DEBUG_OUTPUT
   int counter_qhull = 0;
 #endif
@@ -621,14 +597,6 @@ void GEO::CUT::TetMesh::CallQHull(
             for (void** vertexp = &facet->vertices->e[0].p;
                  (vertex = static_cast<vertexT*>(*vertexp++));)
             {
-              // if delaunayn crashes, enable this check
-#if 0
-              if (j > dim)
-              {
-                std::runtime_error("internal error. Qhull returned non-tetsicial facets");
-              }
-#endif
-
               int p = qh_pointid(vertex->point);
               if (p >= n)
               {

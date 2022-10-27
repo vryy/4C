@@ -53,12 +53,6 @@ namespace GEO
       void DebugVolume(const DRT::UTILS::GaussIntegration& gpv, bool& isNeg);
 
       /*!
-      \brief Integration of specific predefined functions using the Gaussian rule generated from
-      DirectDivergence
-      */
-      void IntegrateSpecificFuntions(const DRT::UTILS::GaussIntegration& gpv);
-
-      /*!
       \brief Geometry of volumecell, reference facet, main and internal gauss points for gmsh
       output.
        */

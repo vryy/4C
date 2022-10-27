@@ -184,17 +184,6 @@ GEO::CUT::FacetGraph::FacetGraph(const std::vector<Side *> &sides, const plain_f
     }
   }
 
-#if 0
-#ifdef DEBUGCUTLIBRARY
-  std::cout << "Split is" << all_facets.size() << std::endl;
-  std::cout << "graph:\n";
-  graph_.Print();
-
-  std::cout << "cycle:\n";
-  cycle.Print();
-#endif
-#endif
-
 #ifdef DEBUGCUTLIBRARY
   graph_.DumpGraph("facetgraph.py");
   cycle.DumpGraph("facetcycle.py");
@@ -210,26 +199,6 @@ GEO::CUT::FacetGraph::FacetGraph(const std::vector<Side *> &sides, const plain_f
     int p = i->first;
     free.erase(p);
   }
-
-#if 0
-#ifdef DEBUGCUTLIBRARY
-  std::cout << "free: ";
-  std::copy( free.begin(), free.end(), std::ostream_iterator<int>( std::cout, " " ) );
-  std::cout << "\n";
-
-#if 0
-  for ( std::vector<Facet*>::iterator i=all_facets_.begin(); i!=all_facets_.end(); ++i )
-  {
-    Facet * f = *i;
-    std::stringstream str;
-    str << "facet-" << std::distance( all_facets_.begin(), i ) << ".plot";
-    std::cout << str.str() << "\n";
-    std::ofstream file( str.str().c_str() );
-    f->Print( file );
-  }
-#endif
-#endif
-#endif
 
   // used is the external and it is looped over already , free is the internal, but we still use the
   // main graph_ with everything

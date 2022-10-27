@@ -381,24 +381,6 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
     else
       OnLine(inter1, inter2, linePts, numeach);
 #endif
-#if 0  // scaled point distribution method in intersection lines (produced more error than old
-       // method)
-    int numX = (int)((fabs(inter2[0]-inter1[0])/(maxi[0]-mini[0]))*numeach+1);
-    if(numX==1)
-    {
-      std::vector<double> middle(3);
-      middle[0] = 0.5*(inter2[0]+inter1[0]);
-      middle[1] = inter2[1];
-      middle[2] = inter2[2];
-      linePts.push_back(middle);
-      intersect = true;
-    }
-    else
-    {
-      OnLine(inter1,inter2,linePts,numX);
-      intersect = true;
-    }
-#endif
     return intersect;
   }
   else
@@ -791,21 +773,6 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
           num_func_, std::vector<double>(gaus_pts_.size()));
       moment_fitting_matrix(moment_matrix, gaus_pts_);
 
-#if 0  // addition of linear combination of monomials. found no improvement even if it is added
-        if(num_func_>1)
-          FirstOrderAdditionalTerms(moment_matrix,rhs_moment);
-        if(num_func_>4)
-          SecondOrderAdditionalTerms(moment_matrix,rhs_moment);
-        if(num_func_>10)
-          ThirdOrderAdditionalTerms(moment_matrix,rhs_moment);
-        if(num_func_>20)
-          FourthOrderAdditionalTerms(moment_matrix,rhs_moment);
-        if(num_func_>35)
-          FifthOrderAdditionalTerms(moment_matrix,rhs_moment);
-        if(num_func_>56)
-          SixthOrderAdditionalTerms(moment_matrix,rhs_moment);
-#endif
-
       // if all the elements in a row of the moment fitting matrix are zero, then the row has to be
       // deleted this ensures non-zero diagonal elements in the matrix
       // REquires further checking
@@ -865,10 +832,6 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
       else
         err(i) = err(i) - rhs_moment(i);
     }
-
-#if 0  // call the computation of error when integrating specific functions
-    ErrorForSpecificFunction(rhs_moment,weights,numeach);
-#endif
 
     const double maxError = err.InfNorm();
 #ifdef DEBUGCUTLIBRARY

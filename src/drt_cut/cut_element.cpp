@@ -379,12 +379,6 @@ void GEO::CUT::Element::MakeFacets(Mesh& mesh)
       cut_side.MakeInternalFacets(mesh, this, facets_);
     }
   }
-#if 0
-  std::cout << __PRETTY_FUNCTION__ << std::endl;
-  for ( plain_facet_set::const_iterator cit = facets_.begin();
-        cit != facets_.end(); ++cit )
-    (*cit)->Print();
-#endif
 }
 
 /*------------------------------------------------------------------------------------------*
@@ -1121,25 +1115,6 @@ void GEO::CUT::Element::CreateIntegrationCells(Mesh& mesh, int count, bool tetce
   // pointer values (compiler flags, code structure, memory usage, ...)
   std::sort(points.begin(), points.end(), PointPidLess());
 
-#if 0
-  {
-    LINALG::Matrix<3,1> xyz;
-    LINALG::Matrix<3,1> rst;
-    for ( std::vector<Point*>::iterator i=points.begin(); i!=points.end(); ++i )
-    {
-      Point * p = *i;
-      std::copy( p->X(), p->X()+3, &xyz( 0, 0 ) );
-      LocalCoordinates( xyz, rst );
-      std::cout << "rst[" << p->Id() << "] = ("
-      << std::setprecision( 10 )
-      << rst( 0, 0 ) << ","
-      << rst( 1, 0 ) << ","
-      << rst( 2, 0 ) << ")\n";
-    }
-    throw std::runtime_error( "debug output done" );
-  }
-#endif
-
   // standard subtetrahedralization starts here, there also the boundary cells will be created
 
 #ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
@@ -1223,12 +1198,6 @@ void GEO::CUT::Element::RemoveEmptyVolumeCells()
  *----------------------------------------------------------------------------*/
 void GEO::CUT::Element::MakeVolumeCells(Mesh& mesh)
 {
-#if 0
-#ifdef DEBUGCUTLIBRARY
-  DumpFacets();
-#endif
-#endif
-
   Teuchos::RCP<FacetGraph> fg = FacetGraph::Create(sides_, facets_);
   fg->CreateVolumeCells(mesh, this, cells_);
 }

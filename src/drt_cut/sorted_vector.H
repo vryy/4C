@@ -155,33 +155,6 @@ namespace GEO
 
       iterator insert(iterator it, const value_type& x)  // it is the hint
       {
-#if 0
-      if ( it != end() )
-      {
-        if ( bNoDuplicates )
-        {
-          if ( less_( *it, x ) )
-          {
-            if ( ( it+1 ) == end() or Gt_( *(it+1), x ) )
-            {
-              // use hint
-              return InsertImpl_(it+1,x);
-            }
-            else if ( Geq_( *(it+1), x ) )
-            {
-              return end();
-            }
-          }
-        }
-        else
-        {
-          if ( Leq_(*it,x) and ( (it+1)==end() or Geq_( *(it+1),x ) ) )
-          {
-            return InsertImpl_(it+1,x);
-          }
-        }
-      }
-#endif
         return insert(x).first;
       }
 

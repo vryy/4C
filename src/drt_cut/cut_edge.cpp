@@ -241,25 +241,7 @@ void GEO::CUT::Edge::AddPoint(Point* cut_point)
   // make sure the position of the point on this edge is known
   cut_point->t(this);
 
-#if 0
-  std::vector<Point*>::iterator j = std::lower_bound( cut_points_.begin(), cut_points_.end(), cut_point, PointPositionLess( this ) );
-  if ( j==cut_points_.end() or *j!=cut_point )
-  {
-    cut_points_.push_back( cut_point );
-    std::sort( cut_points_.begin(), cut_points_.end(), PointPositionLess( this ) );
-  }
-#else
   cut_points_.insert(cut_point);
-#endif
-
-#if 0
-#ifdef DEBUGCUTLIBRARY
-  PointSet cp;
-  std::copy( cut_points_.begin(), cut_points_.end(), std::inserter( cp, cp.begin() ) );
-  if ( cut_points_.size() != cp.size() )
-    throw std::runtime_error( "broken cut points" );
-#endif
-#endif
 }
 
 /*----------------------------------------------------------------------------*

@@ -893,28 +893,6 @@ void test_hex8_quad4_gedreht()
 
   w.CreateHex8();
 
-#if 0
-  Epetra_SerialDenseMatrix xyze( 3, 4 );
-
-  xyze( 0, 0 ) = 0.5;
-  xyze( 1, 0 ) = 0.5;
-  xyze( 2, 0 ) = -0.2;
-
-  xyze( 0, 1 ) = 0.5;
-  xyze( 1, 1 ) = 1.2;
-  xyze( 2, 1 ) = 0.5;
-
-  xyze( 0, 2 ) = 0.5;
-  xyze( 1, 2 ) = 0.5;
-  xyze( 2, 2 ) = 1.2;
-
-  xyze( 0, 3 ) = 0.5;
-  xyze( 1, 3 ) = -0.2;
-  xyze( 2, 3 ) = 0.5;
-
-  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
-#endif
-
   w.CreateQuad4Mesh(2, 2);
 
   w.Status();
@@ -1478,57 +1456,6 @@ void test_hex8_quad4_touch7()
   w.Status();
   w.CutTest_Cut();
 }
-
-#if 0
-void test_quad4_quad4_simple()
-{
-  GEO::CUT::Mesh mesh;
-
-  Epetra_SerialDenseMatrix xyze( 3, 8 );
-
-  xyze( 0, 0 ) = 0;
-  xyze( 1, 0 ) = 0;
-  xyze( 2, 0 ) = 0;
-
-  xyze( 0, 1 ) = 1;
-  xyze( 1, 1 ) = 0;
-  xyze( 2, 1 ) = 0;
-
-  xyze( 0, 2 ) = 1;
-  xyze( 1, 2 ) = 1;
-  xyze( 2, 2 ) = 0;
-
-  xyze( 0, 3 ) = 0;
-  xyze( 1, 3 ) = 1;
-  xyze( 2, 3 ) = 0;
-
-  GEO::CUT::Side* quad4_1 = create_quad4( mesh, xyze );
-
-  xyze( 0, 0 ) = 0.5;
-  xyze( 1, 0 ) = 0.5;
-  xyze( 2, 0 ) = 0;
-
-  xyze( 0, 1 ) = 1.5;
-  xyze( 1, 1 ) = 0.5;
-  xyze( 2, 1 ) = 0;
-
-  xyze( 0, 2 ) = 1.5;
-  xyze( 1, 2 ) = 1.5;
-  xyze( 2, 2 ) = 0;
-
-  xyze( 0, 3 ) = 0.5;
-  xyze( 1, 3 ) = 1.5;
-  xyze( 2, 3 ) = 0;
-
-  GEO::CUT::Side* quad4_2 = create_quad4( mesh, xyze );
-
-  mesh.Status();
-
-  quad4_1->Cut( mesh, *quad4_2, NULL );
-
-  mesh.Status();
-}
-#endif
 
 void test_hex8_quad4_mesh()
 {

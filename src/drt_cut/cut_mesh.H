@@ -414,10 +414,6 @@ namespace GEO
        */
       Node* GetNode(int nid, const double* xyz, double lsv = 0.0, double tolerance = 0.0);
 
-#if 0
-  Node* GetNode( int nid, Point * p, double lsv=0.0 );
-#endif
-
       /// ?
       Node* GetNode(const plain_int_set& nids, const double* xyz, double lsv = 0.0);
 
@@ -429,12 +425,6 @@ namespace GEO
 
       /// ???
       Side* GetSide(int sid, const std::vector<int>& nids, const CellTopologyData* top_data);
-
-#if 0
-  Side* GetSide( int sid,
-                 const std::vector<Point*> & points,
-                 const CellTopologyData * top_data );
-#endif
 
       /// ???
       Side* GetSide(int sid, const std::vector<Node*>& nodes, const CellTopologyData* top_data);
@@ -448,19 +438,6 @@ namespace GEO
        */
       Element* GetElement(int eid, const std::vector<int>& nids, const CellTopologyData& top_data,
           bool active = true);
-#if 0
-  Element* GetSubElement( int parenteid, int subeid,
-                       const std::vector<int> & nids,
-                       const CellTopologyData & top_data,
-                       bool active=true );
-
-#endif
-
-#if 0
-  Element* GetElement( int eid,
-                       const std::vector<Point*> & nids,
-                       const CellTopologyData & top_data );
-#endif
 
       /*! \brief Create a new element 1D/2D/3D element with given nodes.
        *

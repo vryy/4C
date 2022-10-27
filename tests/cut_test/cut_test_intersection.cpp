@@ -57,12 +57,6 @@
 
 void test_quad4_line2(double x1, double y1, double x2, double y2)
 {
-#if 0
-  std::cout << "(" << x1 << "," << y1 << ")"
-            << "--"
-            << "(" << x2 << "," << y2 << ")\n";
-#endif
-
   GEO::CUT::Options options;
   options.Init_for_Cuttests();  // use cln
   GEO::CUT::Mesh mesh(options);
@@ -101,19 +95,8 @@ void test_quad4_line2(double x1, double y1, double x2, double y2)
       GEO::CUT::IntersectionBase::Create(DRT::Element::line2, DRT::Element::quad4);
   intersection->Init(&mesh, edge, side, false, false, false);
 
-#if 0
-  GEO::CUT::PointSet cuts;
-  bool does = intersection.Intersect( cuts );
-  std::cout << "does intersect: " << does << "  " << cuts.size() << "\n";
-  for ( GEO::CUT::PointSet::iterator i=cuts.begin(); i!=cuts.end(); ++i )
-  {
-    GEO::CUT::Point * p = *i;
-    p->Plot( std::cout );
-  }
-#else
   GEO::CUT::PointSet cuts;
   intersection->Intersect(cuts);
-#endif
 
   mesh.Status();
 
@@ -893,14 +876,9 @@ void test_tet4_quad4_alex9()
     points.push_back(n->point());
   }
 
-#if 0
-  GEO::CUT::TetMeshIntersection tmi( tets, accept_tets, points, cut_sides );
-  tmi.CutTest_Cut();
-#else
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_Tessellation);
   intersection.Status();
-#endif
 }
 
 void test_tet4_quad4_alex10()
@@ -982,14 +960,9 @@ void test_tet4_quad4_alex10()
     points.push_back(n->point());
   }
 
-#if 0
-  GEO::CUT::TetMeshIntersection tmi( tets, accept_tets, points, cut_sides );
-  tmi.CutTest_Cut();
-#else
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_Tessellation);
   intersection.Status();
-#endif
 }
 
 void test_tet4_quad4_alex11()

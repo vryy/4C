@@ -530,51 +530,6 @@ namespace GEO
       }
 
      private:
-      // not used in the actual version 02/17
-#if (0)
-
-      /*! \brief Compute the perpendicular distance between point p3 and the line joining p1 and p2
-       *
-       *                  \f$(p_3)\f$ x_____
-       *                             /:    ^
-       *                            / :    |  distance d
-       *                           /  :    v
-       *               f$(p_1)\f$ o---+-------------o \f$(p_2)\f$
-       *                           (\f$\hat{p_3}\f$) */
-      bool LinePointDistance(const LINALG::Matrix<probdim, 1>& p1,
-          const LINALG::Matrix<probdim, 1>& p2, const LINALG::Matrix<probdim, 1>& p3,
-          double& distance)
-      {
-        // vector between p1 and p2
-        LINALG::Matrix<probdim, 1> n;
-        n.Update(1, p2, -1, p1, 0);
-
-        // vector between p1 and p3
-        LINALG::Matrix<probdim, 1> m;
-        m.Update(1, p3, -1, p1, 0);
-
-        // calculate the scaled distance factor from point p1 to the projection
-        // point \hat{p3}.
-        double a = m.Dot(n);
-        double b = n.Dot(n);
-        double c = a / b;
-
-        /* If c is smaller than 0.0, the projection will be on the left side
-         * of p1 (see sketch). If it is larger than 1.0 the projection lies
-         * on the right side of p2. */
-        if (c < 0 or c > 1) return false;
-
-        // calculate the distance from p3 to the projection point \hat{p3}
-        LINALG::Matrix<probdim, 1> d;
-        d.Update(1.0, p1, c, n, 0.0);
-        d.Update(-1.0, p3, 1.0);
-
-        distance = d.Norm2();
-        return true;
-      }
-#endif
-
-     private:
       /** local coordinates corresponding to \c px_, the last n = ( probdim - dim )
        *  coordinates are the distance values (embedded case only) */
       LINALG::Matrix<probdim, 1> xsi_aug_;
