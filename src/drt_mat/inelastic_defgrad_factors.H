@@ -620,14 +620,14 @@ namespace MAT
      Volumetric change due to this law is dependent on the current concentration \f$ c \f$ as
      follows:
      \f[
-     \bold{F}_\text{in} = \bold{I} + \left[ \text{Scalar1MolarGrowthFac}
-     \left( c \det\bold{F}  - \text{Scalar1refconc} \right) \right] \bold{G},
+     \mathbf{F}_\text{in} = \mathbf{I} + \left[ \text{Scalar1MolarGrowthFac}
+     \left( c \det\mathbf{F}  - \text{Scalar1refconc} \right) \right] \mathbf{G},
      \f]
-     where \f$ \bold{G} \f$ (#growthdirmat_) is a matrix providing the information of the
+     where \f$ \mathbf{G} \f$ (#growthdirmat_) is a matrix providing the information of the
      growth direction, that is constructed as follows:
-     \f$ \bold{G} = \bold{g} \otimes \bold{g} \f$,
-     where \f$ \bold{g} \f$ is the growth direction vector given in the input file.
-     \f$ \bold{g} \f$ is normalized to length 1 before calculation of \f$ \bold{G} \f$.
+     \f$ \mathbf{G} = \mathbf{g} \otimes \mathbf{g} \f$,
+     where \f$ \mathbf{g} \f$ is the growth direction vector given in the input file.
+     \f$ \mathbf{g} \f$ is normalized to length 1 before calculation of \f$ \mathbf{G} \f$.
      \f$ f(\chi) \f$ is defined by the user in the input file.
      */
   class InelasticDefgradLinScalarAniso : public InelasticDefgradScalar

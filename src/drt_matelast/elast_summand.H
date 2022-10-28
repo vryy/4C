@@ -436,7 +436,7 @@ namespace MAT
        * Holzapfel [1], p. 274
        *
        * \f[
-       * \bold{S} = \gamma^{aniso}_1 \ \boldsymbol{A}_1 + \gamma^{aniso}_2 \ \boldsymbol{A}_2 +
+       * \mathbf{S} = \gamma^{aniso}_1 \ \boldsymbol{A}_1 + \gamma^{aniso}_2 \ \boldsymbol{A}_2 +
        * \gamma^{aniso}_3 \ \boldsymbol{A}_1\boldsymbol{A}_2
        * \f]
        * \f[
@@ -452,36 +452,34 @@ namespace MAT
        * material constitutive tensor coefficients
        * cf. Holzapfel [1], p. 261
        * \f[
-       *  \mathbb{C} = \delta^{aniso}_1 \left( \bold{A}_1 \otimes \bold{A}_1 \right) +
-       *  \delta^{aniso}_2 \left( \bold{A}_2 \otimes \bold{A}_2 \right)
-       *  + \delta^{aniso}_3 \left( \bold{Id} \otimes \bold{A}_1 + \bold{A}_1 \otimes \bold{Id}
-       *  \right) + \delta^{aniso}_4 \left( \bold{Id} \otimes \bold{A}_2 + \bold{A}_2 \otimes
-       *  \bold{Id} \right)
-       *  + \delta^{aniso}_5 \left( \bold{C} \otimes \bold{A}_1 + \bold{A}_1 \otimes \bold{C}
-       *  \right) + \delta^{aniso}_6 \left( \bold{C} \otimes \bold{A}_2 + \bold{A}_2 \otimes
-       *  \bold{C} \right)
-       *  + \delta^{aniso}_7 \left( \bold{C}^{-1} \otimes \bold{A}_1 + \bold{A}_1 \otimes
-       *  \bold{C}^{-1} \right)
+       *  \mathbb{C} = \delta^{aniso}_1 \left( \mathbf{A}_1 \otimes \mathbf{A}_1 \right) +
+       *  \delta^{aniso}_2 \left( \mathbf{A}_2 \otimes \mathbf{A}_2 \right)
+       *  + \delta^{aniso}_3 \left( \mathbf{Id} \otimes \mathbf{A}_1 + \mathbf{A}_1 \otimes
+       * \mathbf{Id} \right) + \delta^{aniso}_4 \left( \mathbf{Id} \otimes \mathbf{A}_2 +
+       * \mathbf{A}_2 \otimes \mathbf{Id} \right)
+       *  + \delta^{aniso}_5 \left( \mathbf{C} \otimes \mathbf{A}_1 + \mathbf{A}_1 \otimes
+       * \mathbf{C} \right) + \delta^{aniso}_6 \left( \mathbf{C} \otimes \mathbf{A}_2 + \mathbf{A}_2
+       * \otimes \mathbf{C} \right)
+       *  + \delta^{aniso}_7 \left( \mathbf{C}^{-1} \otimes \mathbf{A}_1 + \mathbf{A}_1 \otimes
+       *  \mathbf{C}^{-1} \right)
        * \f]
        * \f[
-       *  + \delta^{aniso}_8 \left( \bold{C}^{-1} \otimes \bold{A}_2 + \bold{A}_2 \otimes
-       *  \bold{C}^{-1} \right)
-       *  + \delta^{aniso}_9 \left( \bold{A}_1 \otimes \bold{A}_2 + \bold{A}_2 \otimes \bold{A}_1
-       *  \right)
-       *  + \delta^{aniso}_{10} \left( \bold{Id} \otimes \bold{A}_1 \bold{A}_2 + \bold{A}_1
-       *  \bold{A}_2 \otimes \bold{Id} \right)
-       *  + \delta^{aniso}_{11} \left( \bold{C} \otimes \bold{A}_1 \bold{A}_2 + \bold{A}_1
-       *  \bold{A}_2 \otimes \bold{C} \right)
-       *  + \delta^{aniso}_{12} \left( \bold{C}^{-1} \otimes \bold{A}_1 \bold{A}_2 + \bold{A}_1
-       *  \bold{A}_2 \otimes \bold{C}^{-1} \right)
-       *  + \delta^{aniso}_{13} \left( \bold{A}_1 \otimes \bold{A}_1 \bold{A}_2 + \bold{A}_1
-       *  \bold{A}_2 \otimes \bold{A}_1 \right)
-       *  + \delta^{aniso}_{14} \left( \bold{A}_2 \otimes \bold{A}_1 \bold{A}_2 + \bold{A}_1
-       *  \bold{A}_2 \otimes \bold{A}_2 \right)
-       *  + \delta^{aniso}_{15} \left( \bold{A}_1 \bold{A}_2 \otimes \bold{A}_1 \bold{A}_2 \right)
-       * \f]
-       * \f[
-       * \delta^{aniso}_1 = 4\frac {\partial^2\Psi}{\partial IV_{\boldsymbol C}^2}
+       *  + \delta^{aniso}_8 \left( \mathbf{C}^{-1} \otimes \mathbf{A}_2 + \mathbf{A}_2 \otimes
+       *  \mathbf{C}^{-1} \right)
+       *  + \delta^{aniso}_9 \left( \mathbf{A}_1 \otimes \mathbf{A}_2 + \mathbf{A}_2 \otimes
+       * \mathbf{A}_1 \right)
+       *  + \delta^{aniso}_{10} \left( \mathbf{Id} \otimes \mathbf{A}_1 \mathbf{A}_2 + \mathbf{A}_1
+       *  \mathbf{A}_2 \otimes \mathbf{Id} \right)
+       *  + \delta^{aniso}_{11} \left( \mathbf{C} \otimes \mathbf{A}_1 \mathbf{A}_2 + \mathbf{A}_1
+       *  \mathbf{A}_2 \otimes \mathbf{C} \right)
+       *  + \delta^{aniso}_{12} \left( \mathbf{C}^{-1} \otimes \mathbf{A}_1 \mathbf{A}_2 +
+       * \mathbf{A}_1 \mathbf{A}_2 \otimes \mathbf{C}^{-1} \right)
+       *  + \delta^{aniso}_{13} \left( \mathbf{A}_1 \otimes \mathbf{A}_1 \mathbf{A}_2 + \mathbf{A}_1
+       *  \mathbf{A}_2 \otimes \mathbf{A}_1 \right)
+       *  + \delta^{aniso}_{14} \left( \mathbf{A}_2 \otimes \mathbf{A}_1 \mathbf{A}_2 + \mathbf{A}_1
+       *  \mathbf{A}_2 \otimes \mathbf{A}_2 \right)
+       *  + \delta^{aniso}_{15} \left( \mathbf{A}_1 \mathbf{A}_2 \otimes \mathbf{A}_1 \mathbf{A}_2
+       * \right) \f] \f[ \delta^{aniso}_1 = 4\frac {\partial^2\Psi}{\partial IV_{\boldsymbol C}^2}
        * \f]
        * \f[
        * \delta^{aniso}_2 = 4\frac {\partial^2\Psi}{\partial VI_{\boldsymbol C}^2}

@@ -246,7 +246,7 @@ namespace MAT
    *
    *  cf. Holzapfel [1], p. 216 (6.32) and p. 248
    * \f[
-   *   \bold{S} = \gamma_1 \ \bold{Id} + \gamma_2 \ \bold{C} + \gamma_3 \ \bold{C}^{-1}
+   *   \mathbf{S} = \gamma_1 \ \mathbf{Id} + \gamma_2 \ \mathbf{C} + \gamma_3 \ \mathbf{C}^{-1}
    * \f]
    * \f[
    *  \gamma_1 = 2\left( \frac{\partial \Psi}{\partial I_{\boldsymbol{C}}}
@@ -262,12 +262,13 @@ namespace MAT
    *  material constitutive tensor coefficients
    *  cf. Holzapfel [1], p. 261
    * \f[
-   *   \mathbb{C} = \delta_1 \left( \bold{Id} \otimes \bold{Id} \right) + \delta_2 \left(
-   *   \bold{Id} \otimes \bold{C} + \bold{C} \otimes \bold{Id} \right)
-   *   + \delta_3 \left( \bold{Id} \otimes \bold{C}^{-1} + \bold{C}^{-1} \otimes \bold{Id} \right)
-   *   + \delta_4 \left( \bold{C} \otimes \bold{C} \right)
-   *   + \delta_5 \left( \bold{C} \otimes \bold{C}^{-1} + \bold{C}^{-1} \otimes \bold{C} \right) +
-   *   \delta_6 \left( \bold{C}^{-1} \otimes \bold{C}^{-1} \right)
+   *   \mathbb{C} = \delta_1 \left( \mathbf{Id} \otimes \mathbf{Id} \right) + \delta_2 \left(
+   *   \mathbf{Id} \otimes \mathbf{C} + \mathbf{C} \otimes \mathbf{Id} \right)
+   *   + \delta_3 \left( \mathbf{Id} \otimes \mathbf{C}^{-1} + \mathbf{C}^{-1} \otimes \mathbf{Id}
+   * \right)
+   *   + \delta_4 \left( \mathbf{C} \otimes \mathbf{C} \right)
+   *   + \delta_5 \left( \mathbf{C} \otimes \mathbf{C}^{-1} + \mathbf{C}^{-1} \otimes \mathbf{C}
+   * \right) + \delta_6 \left( \mathbf{C}^{-1} \otimes \mathbf{C}^{-1} \right)
    *   + \delta_7 \mathbb{P}
    * \f]
    * \f[

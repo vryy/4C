@@ -83,43 +83,47 @@ namespace MAT
      * linearizations are calculated. A potential thermal dependency is handled if the temperature
      * is handed in.
      *
-     * @param[in] defgrd  deformation gradient (\f[\bold{F}\f])
-     * @param[in] n       normal vector (\f[\bold{n}\f])
-     * @param[in] dir     direction vector (\f[\bold{v}\f]), can be either normal or tangential
+     * @param[in] defgrd  deformation gradient (\f[\mathbf{F}\f])
+     * @param[in] n       normal vector (\f[\mathbf{n}\f])
+     * @param[in] dir     direction vector (\f[\mathbf{v}\f]), can be either normal or tangential
      *                    vector
      * @param[out] cauchy_n_dir  cauchy stress tensor contracted using the vectors n and dir
-     *                           (\f[ \bold{\sigma} \cdot \bold{n} \cdot \bold{v} \f])
+     *                           (\f[ \mathbf{\sigma} \cdot \mathbf{n} \cdot \mathbf{v} \f])
      * @param[out] d_cauchyndir_dn   derivative of cauchy_n_dir w.r.t. vector n
-     *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-     *                                  { \mathrm{d} \bold{n}} \f])
+     *                        (\f[ \frac{ \mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+     * \mathbf{v}} { \mathrm{d} \mathbf{n}} \f])
      * @param[out] d_cauchyndir_ddir  derivative of cauchy_n_dir w.r.t. direction vector v
-     *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-     *                                  { \mathrm{d} \bold{v}} \f])
+     *                        (\f[ \frac{ \mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+     * \mathbf{v}} { \mathrm{d} \mathbf{v}} \f])
      * @param[out] d_cauchyndir_dF    derivative of cauchy_n_dir w.r.t. deformation gradient
-     *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-     *                                  { \mathrm{d} \bold{F}} \f])
+     *                        (\f[ \frac{ \mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+     * \mathbf{v}} { \mathrm{d} \mathbf{F}} \f])
      * @param[out] d2_cauchyndir_dF2  second derivative of cauchy_n_dir w.r.t. deformation gradient
-     *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-     *                                 {\mathrm{d} \bold{F} \mathrm{d} \bold{F} } \f])
+     *                       (\f[ \frac{\mathrm{d}^2 \mathbf{\sigma} \cdot \mathbf{n} \cdot
+     * \mathbf{v}}
+     *                                 {\mathrm{d} \mathbf{F} \mathrm{d} \mathbf{F} } \f])
      * @param[out] d2_cauchyndir_dF_dn  second derivative of cauchy_n_dir w.r.t. deformation
      *                                  gradient and normal vector
-     *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-     *                                 {\mathrm{d} \bold{F} \mathrm{d} \bold{n} } \f])
+     *                       (\f[ \frac{\mathrm{d}^2 \mathbf{\sigma} \cdot \mathbf{n} \cdot
+     * \mathbf{v}}
+     *                                 {\mathrm{d} \mathbf{F} \mathrm{d} \mathbf{n} } \f])
      * @param[out] d2_cauchyndir_dF_ddir  second derivative of cauchy_n_dir w.r.t. deformation
      *                                  gradient and direction vector
-     *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-     *                                 {\mathrm{d} \bold{F} \mathrm{d} \bold{v} } \f])
+     *                       (\f[ \frac{\mathrm{d}^2 \mathbf{\sigma} \cdot \mathbf{n} \cdot
+     * \mathbf{v}}
+     *                                 {\mathrm{d} \mathbf{F} \mathrm{d} \mathbf{v} } \f])
      * @param[in] gp             Gauss point id
      * @param[in] eleGID         global id of element
      * @param[in] concentration  concentration
      * @param[in] temp           temperature
      * @param[out] d_cauchyndir_dT    derivative of cauchy_n_dir w.r.t. temperature
-     *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-     *                                  { \mathrm{d} T} \f])
+     *                        (\f[ \frac{ \mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+     * \mathbf{v}} { \mathrm{d} T} \f])
      * @param[out] d2_cauchyndir_dF_dT  second derivative of cauchy_n_dir w.r.t. deformation
      *                                  gradient and temperature
-     *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-     *                                 {\mathrm{d} \bold{F} \mathrm{d} T } \f])
+     *                       (\f[ \frac{\mathrm{d}^2 \mathbf{\sigma} \cdot \mathbf{n} \cdot
+     * \mathbf{v}}
+     *                                 {\mathrm{d} \mathbf{F} \mathrm{d} T } \f])
      */
     virtual void EvaluateCauchyNDirAndDerivatives(const LINALG::Matrix<3, 3>& defgrd,
         const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
