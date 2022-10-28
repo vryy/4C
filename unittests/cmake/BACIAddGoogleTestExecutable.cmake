@@ -44,8 +44,13 @@ function(baci_add_google_test_executable TESTNAME)
   target_include_directories(${TESTNAME} PRIVATE ${PROJECT_SOURCE_DIR})
 
   # the first process will write a unit test report
+  separate_arguments(MPIEXEC_EXTRA_OPTS_LIST UNIX_COMMAND ${MPIEXEC_EXTRA_OPTS})
   set(mpi_arguments
-      -np 1 $<TARGET_FILE:${TESTNAME}> --gtest_output=xml:unittest_reports/${TESTNAME}_report.xml
+      ${MPIEXEC_EXTRA_OPTS_LIST}
+      -np
+      1
+      $<TARGET_FILE:${TESTNAME}>
+      --gtest_output=xml:unittest_reports/${TESTNAME}_report.xml
       )
   # if there is more than one process, spawn the remaining ones without a report
   if(BACI_ADD_GOOGLE_TEST_EXECUTABLE_NP GREATER "1")
@@ -60,7 +65,7 @@ function(baci_add_google_test_executable TESTNAME)
       )
   endif()
 
-  add_test(NAME ${TESTNAME} COMMAND "mpirun" ${mpi_arguments})
+  add_test(NAME ${TESTNAME} COMMAND ${MPI_RUN} ${mpi_arguments})
   set_tests_properties(${TESTNAME} PROPERTIES TIMEOUT ${UNITTEST_TIMEOUT} LABELS minimal)
   set_tests_properties(${TESTNAME} PROPERTIES PROCESSORS ${BACI_ADD_GOOGLE_TEST_EXECUTABLE_NP})
 
