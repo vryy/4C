@@ -1737,7 +1737,8 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
           "non-linear solver!!");
     }
 
-    if (problem_->GetProblemType() != prb_ssi and problem_->GetProblemType() != prb_ssti and
+    if (problem_->GetProblemType() != ProblemType::ssi and
+        problem_->GetProblemType() != ProblemType::ssti and
         DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(*params_, "CONVFORM") !=
             INPAR::SCATRA::convform_convective)
       dserror("Only the convective formulation is supported so far!!");

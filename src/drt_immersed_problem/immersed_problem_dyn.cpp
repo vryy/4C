@@ -52,7 +52,7 @@ void immersed_problem_drt()
     {
       switch (DRT::Problem::Instance()->GetProblemType())
       {
-        case prb_immersed_fsi:
+        case ProblemType::immersed_fsi:
         {
           // fill discretizations
           problem->GetDis("structure")->FillComplete(false, false, false);
@@ -125,7 +125,7 @@ void immersed_problem_drt()
           DRT::Problem::Instance()->TestAll(comm);
 
           break;
-        }  // case prb_immersed_fsi
+        }  // case ProblemType::immersed_fsi
 
         default:
         {

@@ -37,9 +37,9 @@ void runEnsightVtuFilter(PostProblem& problem)
   // each problem type is different and writes different results
   switch (problem.Problemtype())
   {
-    case prb_fsi:
-    case prb_fsi_redmodels:
-    case prb_fsi_lung:
+    case ProblemType::fsi:
+    case ProblemType::fsi_redmodels:
+    case ProblemType::fsi_lung:
     {
       std::string basename = problem.outname();
       PostField* structfield = problem.get_discretization(0);
@@ -70,9 +70,9 @@ void runEnsightVtuFilter(PostProblem& problem)
       }
       break;
     }
-    case prb_gas_fsi:
-    case prb_ac_fsi:
-    case prb_thermo_fsi:
+    case ProblemType::gas_fsi:
+    case ProblemType::ac_fsi:
+    case ProblemType::thermo_fsi:
     {
       std::string basename = problem.outname();
       PostField* structfield = problem.get_discretization(0);
@@ -95,7 +95,7 @@ void runEnsightVtuFilter(PostProblem& problem)
 
       break;
     }
-    case prb_biofilm_fsi:
+    case ProblemType::biofilm_fsi:
     {
       std::string basename = problem.outname();
       PostField* structfield = problem.get_discretization(0);
@@ -118,7 +118,7 @@ void runEnsightVtuFilter(PostProblem& problem)
 
       break;
     }
-    case prb_struct_ale:
+    case ProblemType::struct_ale:
     {
       PostField* structurefield = problem.get_discretization(0);
       StructureFilter structwriter(
@@ -130,7 +130,7 @@ void runEnsightVtuFilter(PostProblem& problem)
       alewriter.WriteFiles();
       break;
     }
-    case prb_structure:
+    case ProblemType::structure:
     {
       // Regular solid/structure output
       {
@@ -160,7 +160,7 @@ void runEnsightVtuFilter(PostProblem& problem)
 
       break;
     }
-    case prb_polymernetwork:
+    case ProblemType::polymernetwork:
     {
       int numdiscr = problem.num_discr();
       for (int i = 0; i < numdiscr; ++i)
@@ -197,7 +197,7 @@ void runEnsightVtuFilter(PostProblem& problem)
       }
       break;
     }
-    case prb_fluid:
+    case ProblemType::fluid:
     {
       if (problem.num_discr() == 2)
       {
@@ -211,7 +211,7 @@ void runEnsightVtuFilter(PostProblem& problem)
       }
       // don't add break here !!!!
     }
-    case prb_fluid_redmodels:
+    case ProblemType::fluid_redmodels:
     {
       if (problem.num_discr() == 2)
       {
@@ -230,8 +230,8 @@ void runEnsightVtuFilter(PostProblem& problem)
       }
       // don't add break here !!!!
     }
-    case prb_fluid_ale:
-    case prb_freesurf:
+    case ProblemType::fluid_ale:
+    case ProblemType::freesurf:
     {
       PostField* field = problem.get_discretization(0);
       FluidFilter writer(field, problem.outname());
@@ -245,8 +245,8 @@ void runEnsightVtuFilter(PostProblem& problem)
       }
       break;
     }
-    case prb_particle:
-    case prb_pasi:
+    case ProblemType::particle:
+    case ProblemType::pasi:
     {
       int numdiscr = problem.num_discr();
       for (int i = 0; i < numdiscr; ++i)
@@ -272,7 +272,7 @@ void runEnsightVtuFilter(PostProblem& problem)
       }
       break;
     }
-    case prb_level_set:
+    case ProblemType::level_set:
     {
       std::string basename = problem.outname();
 
@@ -282,7 +282,7 @@ void runEnsightVtuFilter(PostProblem& problem)
 
       break;
     }
-    case prb_redairways_tissue:
+    case ProblemType::redairways_tissue:
     {
       PostField* structfield = problem.get_discretization(0);
       StructureFilter structwriter(
@@ -295,21 +295,21 @@ void runEnsightVtuFilter(PostProblem& problem)
       fluidwriter.WriteFiles();
       break;
     }
-    case prb_ale:
+    case ProblemType::ale:
     {
       PostField* field = problem.get_discretization(0);
       AleFilter writer(field, problem.outname());
       writer.WriteFiles();
       break;
     }
-    case prb_lubrication:
+    case ProblemType::lubrication:
     {
       PostField* lubricationfield = problem.get_discretization(0);
       LubricationFilter lubricationwriter(lubricationfield, problem.outname());
       lubricationwriter.WriteFiles();
       break;
     }
-    case prb_porofluidmultiphase:
+    case ProblemType::porofluidmultiphase:
     {
       std::string basename = problem.outname();
 
@@ -327,7 +327,7 @@ void runEnsightVtuFilter(PostProblem& problem)
       }
       break;
     }
-    case prb_poromultiphase:
+    case ProblemType::poromultiphase:
     {
       std::string basename = problem.outname();
 
@@ -349,7 +349,7 @@ void runEnsightVtuFilter(PostProblem& problem)
       }
       break;
     }
-    case prb_poromultiphasescatra:
+    case ProblemType::poromultiphasescatra:
     {
       std::string basename = problem.outname();
 
@@ -404,8 +404,8 @@ void runEnsightVtuFilter(PostProblem& problem)
         dserror("wrong number of discretizations");
       break;
     }
-    case prb_cardiac_monodomain:
-    case prb_scatra:
+    case ProblemType::cardiac_monodomain:
+    case ProblemType::scatra:
     {
       std::string basename = problem.outname();
       // do we have a fluid discretization?
@@ -431,7 +431,7 @@ void runEnsightVtuFilter(PostProblem& problem)
 
       break;
     }
-    case prb_sti:
+    case ProblemType::sti:
     {
       // extract label for output files
       std::string basename = problem.outname();
@@ -463,10 +463,10 @@ void runEnsightVtuFilter(PostProblem& problem)
 
       break;
     }
-    case prb_fsi_xfem:
-    case prb_fpsi_xfem:
-    case prb_fluid_xfem_ls:
-    case prb_two_phase_flow:
+    case ProblemType::fsi_xfem:
+    case ProblemType::fpsi_xfem:
+    case ProblemType::fluid_xfem_ls:
+    case ProblemType::two_phase_flow:
     {
       std::cout << "|=============================================================================|"
                 << std::endl;
@@ -526,7 +526,7 @@ void runEnsightVtuFilter(PostProblem& problem)
                 << std::endl;
       break;
     }
-    case prb_fluid_xfem:
+    case ProblemType::fluid_xfem:
     {
       std::cout << "Output FLUID-XFEM Problem" << std::endl;
 
@@ -571,7 +571,7 @@ void runEnsightVtuFilter(PostProblem& problem)
       }
       break;
     }
-    case prb_loma:
+    case ProblemType::loma:
     {
       std::string basename = problem.outname();
 
@@ -584,7 +584,7 @@ void runEnsightVtuFilter(PostProblem& problem)
       scatrawriter.WriteFiles();
       break;
     }
-    case prb_elch:
+    case ProblemType::elch:
     {
       std::string basename = problem.outname();
       int numfield = problem.num_discr();
@@ -626,7 +626,7 @@ void runEnsightVtuFilter(PostProblem& problem)
         dserror("number of fields does not match: got %d", numfield);
       break;
     }
-    case prb_art_net:
+    case ProblemType::art_net:
     {
       std::string basename = problem.outname();
       PostField* field = problem.get_discretization(0);
@@ -644,14 +644,14 @@ void runEnsightVtuFilter(PostProblem& problem)
 
       break;
     }
-    case prb_thermo:
+    case ProblemType::thermo:
     {
       PostField* field = problem.get_discretization(0);
       ThermoFilter writer(field, problem.outname(), problem.heatfluxtype(), problem.tempgradtype());
       writer.WriteFiles();
       break;
     }
-    case prb_tsi:
+    case ProblemType::tsi:
     {
       std::cout << "Output TSI Problem" << std::endl;
 
@@ -668,7 +668,7 @@ void runEnsightVtuFilter(PostProblem& problem)
       structwriter.WriteFiles();
       break;
     }
-    case prb_red_airways:
+    case ProblemType::red_airways:
     {
       std::string basename = problem.outname();
       PostField* field = problem.get_discretization(0);
@@ -679,7 +679,7 @@ void runEnsightVtuFilter(PostProblem& problem)
 
       break;
     }
-    case prb_poroelast:
+    case ProblemType::poroelast:
     {
       std::string basename = problem.outname();
 
@@ -693,7 +693,7 @@ void runEnsightVtuFilter(PostProblem& problem)
       fluidwriter.WriteFiles();
       break;
     }
-    case prb_poroscatra:
+    case ProblemType::poroscatra:
     {
       std::string basename = problem.outname();
 
@@ -712,7 +712,7 @@ void runEnsightVtuFilter(PostProblem& problem)
 
       break;
     }
-    case prb_fpsi:
+    case ProblemType::fpsi:
     {
       std::string basename = problem.outname();
 
@@ -731,8 +731,8 @@ void runEnsightVtuFilter(PostProblem& problem)
 
       break;
     }
-    case prb_immersed_fsi:
-    case prb_fbi:
+    case ProblemType::immersed_fsi:
+    case ProblemType::fbi:
     {
       std::string basename = problem.outname();
 
@@ -747,7 +747,7 @@ void runEnsightVtuFilter(PostProblem& problem)
 
       break;
     }
-    case prb_fps3i:
+    case ProblemType::fps3i:
     {
       std::string basename = problem.outname();
 
@@ -777,7 +777,7 @@ void runEnsightVtuFilter(PostProblem& problem)
 
       break;
     }
-    case prb_ehl:
+    case ProblemType::ehl:
     {
       std::string basename = problem.outname();
 
@@ -792,7 +792,7 @@ void runEnsightVtuFilter(PostProblem& problem)
 
       break;
     }
-    case prb_ssi:
+    case ProblemType::ssi:
     {
       std::string basename = problem.outname();
 
@@ -829,7 +829,7 @@ void runEnsightVtuFilter(PostProblem& problem)
       break;
     }
 
-    case prb_ssti:
+    case ProblemType::ssti:
     {
       std::string basename = problem.outname();
 
@@ -852,7 +852,7 @@ void runEnsightVtuFilter(PostProblem& problem)
 
       break;
     }
-    case prb_fluid_topopt:
+    case ProblemType::fluid_topopt:
     {
       std::string basename = problem.outname();
 
@@ -878,21 +878,21 @@ void runEnsightVtuFilter(PostProblem& problem)
 
       break;
     }
-    case prb_elemag:
+    case ProblemType::elemag:
     {
       PostField* field = problem.get_discretization(0);
       ElemagFilter writer(field, problem.outname());
       writer.WriteFiles();
       break;
     }
-    case prb_invana:
+    case ProblemType::invana:
     {
       PostField* field = problem.get_discretization(0);
       InvanaFilter writer(field, problem.outname());
       writer.WriteFiles();
       break;
     }
-    case prb_none:
+    case ProblemType::none:
     {
       // Special problem type that contains one discretization and any number
       // of vectors. We just want to see whatever there is.

@@ -283,7 +283,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
   // in case of nested inverse analysis
   // we just want to print the output of group 0 on screen
   // birzle 02/2017
-  if (probtype == prb_invana)
+  if (probtype == ProblemType::invana)
   {
     Teuchos::RCP<COMM_UTILS::NestedParGroup> group = DRT::Problem::Instance()->GetNPGroup();
     const int groupid = group->GroupId();
@@ -329,7 +329,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
    * \author mayr.mt \date 12/2013
    */
   // ---------------------------------------------------------------------------
-  if (probtype == prb_fsi or probtype == prb_fsi_redmodels)
+  if (probtype == ProblemType::fsi or probtype == ProblemType::fsi_redmodels)
   {
     const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
     const Teuchos::ParameterList& fsiada = fsidyn.sublist("TIMEADAPTIVITY");
@@ -367,13 +367,13 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
   {
     switch (probtype)
     {
-      case prb_structure:  // pure structural time adaptivity
+      case ProblemType::structure:  // pure structural time adaptivity
       {
         structure_ = Teuchos::rcp(new StructureTimIntAda(sta, tmpstr));
         break;
       }
-      case prb_fsi:  // structure based time adaptivity within an FSI simulation
-      case prb_fsi_redmodels:
+      case ProblemType::fsi:  // structure based time adaptivity within an FSI simulation
+      case ProblemType::fsi_redmodels:
       {
         if ((actdis->Comm()).MyPID() == 0)
           IO::cout << "Using StructureNOXCorrectionWrapper()..." << IO::endl;
@@ -399,13 +399,13 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
   {
     switch (probtype)
     {
-      case prb_fsi:
-      case prb_fsi_redmodels:
-      case prb_fsi_lung:
-      case prb_gas_fsi:
-      case prb_ac_fsi:
-      case prb_biofilm_fsi:
-      case prb_thermo_fsi:
+      case ProblemType::fsi:
+      case ProblemType::fsi_redmodels:
+      case ProblemType::fsi_lung:
+      case ProblemType::gas_fsi:
+      case ProblemType::ac_fsi:
+      case ProblemType::biofilm_fsi:
+      case ProblemType::thermo_fsi:
       {
         const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
         const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
@@ -435,28 +435,28 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
         }
       }
       break;
-      case prb_immersed_fsi:
+      case ProblemType::immersed_fsi:
       {
         structure_ = Teuchos::rcp(new FSIStructureWrapperImmersed(tmpstr));
       }
       break;
-      case prb_ssi:
-      case prb_ssti:
+      case ProblemType::ssi:
+      case ProblemType::ssti:
       {
         structure_ = Teuchos::rcp(new SSIStructureWrapper(tmpstr));
       }
       break;
-      case prb_redairways_tissue:
+      case ProblemType::redairways_tissue:
       {
         structure_ = Teuchos::rcp(new StructureRedAirway(tmpstr));
       }
       break;
-      case prb_poroelast:
-      case prb_poroscatra:
-      case prb_fpsi:
-      case prb_fps3i:
-      case prb_fpsi_xfem:
-      case prb_fsi_xfem:
+      case ProblemType::poroelast:
+      case ProblemType::poroscatra:
+      case ProblemType::fpsi:
+      case ProblemType::fps3i:
+      case ProblemType::fpsi_xfem:
+      case ProblemType::fsi_xfem:
       {
         const Teuchos::ParameterList& porodyn = problem->PoroelastDynamicParams();
         const INPAR::POROELAST::SolutionSchemeOverFields coupling =
@@ -477,12 +477,12 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
         }
       }
       break;
-      case prb_struct_ale:
+      case ProblemType::struct_ale:
       {
         structure_ = Teuchos::rcp(new FSIStructureWrapper(tmpstr));
       }
       break;
-      case prb_invana:
+      case ProblemType::invana:
       {
         structure_ = (Teuchos::rcp(new StructureInvana(tmpstr)));
       }

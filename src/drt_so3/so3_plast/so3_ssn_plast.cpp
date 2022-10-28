@@ -14,6 +14,7 @@
 #include "../../drt_lib/drt_linedefinition.H"
 #include "../../drt_fem_general/drt_utils_shapefunctions_service.H"
 #include "../../drt_lib/drt_utils_factory.H"
+#include "../../drt_lib/drt_utils_parameter_list.H"
 #include "../../drt_mat/plasticelasthyper.H"
 #include "../so_surface.H"
 #include "../so_line.H"
@@ -558,7 +559,7 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   {
     if (distype != DRT::Element::hex8)
       dserror("You may only choose the Gauss point number for SOLIDH8PLAST");
-    if (DRT::Problem::Instance()->GetProblemType() == prb_tsi)
+    if (DRT::Problem::Instance()->GetProblemType() == ProblemType::tsi)
       dserror("You may not choose the Gauss point number in TSI problems");
 
     int ngp = 0;
@@ -687,7 +688,8 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   dDp_inc_.resize(numgpt_, LINALG::SerialDenseVector(plspintype_, true));
 
   Teuchos::ParameterList plparams = DRT::Problem::Instance()->SemiSmoothPlastParams();
-  plparams.set<ProblemType>("ProblemType", DRT::Problem::Instance()->GetProblemType());
+  DRT::UTILS::AddEnumClassToParameterList(
+      "ProblemType", DRT::Problem::Instance()->GetProblemType(), plparams);
   ReadParameterList(Teuchos::rcpFromRef<Teuchos::ParameterList>(plparams));
 
 
@@ -796,8 +798,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::ReadParameterList(
   if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
     static_cast<MAT::PlasticElastHyper*>(Material().get())->GetParams(s, cpl);
 
-  ProblemType probtype = plparams->get<ProblemType>("ProblemType");
-  if (probtype == prb_tsi)
+  ProblemType probtype = Teuchos::getIntegralValue<ProblemType>(*plparams, "ProblemType");
+  if (probtype == ProblemType::tsi)
     tsi_ = true;
   else
     tsi_ = false;

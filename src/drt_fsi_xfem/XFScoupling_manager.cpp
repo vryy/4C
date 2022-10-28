@@ -141,7 +141,7 @@ void XFEM::XFSCoupling_Manager::AddCouplingMatrix(
   bool is_xfluidfluid =
       Teuchos::rcp_dynamic_cast<FLD::XFluidFluid>(xfluid_, false) != Teuchos::null;
 
-  if (probtype == prb_fsi_xfem && !is_xfluidfluid)  // use assign for off diagonal blocks
+  if (probtype == ProblemType::fsi_xfem && !is_xfluidfluid)  // use assign for off diagonal blocks
   {
     // scale the off diagonal coupling blocks
     xfluid_->C_sx_Matrix(cond_name_)
@@ -153,7 +153,7 @@ void XFEM::XFSCoupling_Manager::AddCouplingMatrix(
     systemmatrix.Assign(idx_[0], idx_[1], LINALG::View, *xfluid_->C_sx_Matrix(cond_name_));
     systemmatrix.Assign(idx_[1], idx_[0], LINALG::View, *xfluid_->C_xs_Matrix(cond_name_));
   }
-  else if (probtype == prb_fpsi_xfem || is_xfluidfluid)
+  else if (probtype == ProblemType::fpsi_xfem || is_xfluidfluid)
   {
     LINALG::SparseMatrix& C_fs_block = (systemmatrix)(idx_[1], idx_[0]);
     LINALG::SparseMatrix& C_sf_block = (systemmatrix)(idx_[0], idx_[1]);

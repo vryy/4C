@@ -1806,7 +1806,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::InitElement()
   scatra_coupling_ = false;
 
   ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
-  if (probtype == prb_poroscatra) scatra_coupling_ = true;
+  if (probtype == ProblemType::poroscatra) scatra_coupling_ = true;
 
   init_ = true;
 }

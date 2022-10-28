@@ -89,8 +89,8 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
 
   if ((DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
           1)  // matching meshes
-      and (DRT::Problem::Instance()->GetProblemType() != prb_fsi_xfem) and
-      (DRT::Problem::Instance()->GetProblemType() != prb_fbi))
+      and (DRT::Problem::Instance()->GetProblemType() != ProblemType::fsi_xfem) and
+      (DRT::Problem::Instance()->GetProblemType() != ProblemType::fbi))
   {
     matchingnodes_ = true;
     const int ndim = DRT::Problem::Instance()->NDim();
@@ -103,8 +103,8 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
   }
   else if ((DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
                1)  // matching meshes coupled via XFEM
-           and (DRT::Problem::Instance()->GetProblemType() == prb_fsi_xfem) and
-           (DRT::Problem::Instance()->GetProblemType() != prb_fbi))
+           and (DRT::Problem::Instance()->GetProblemType() == ProblemType::fsi_xfem) and
+           (DRT::Problem::Instance()->GetProblemType() != ProblemType::fbi))
   {
     matchingnodes_ = true;  // matching between structure and boundary dis! non-matching between
                             // boundary dis and fluid is handled bei XFluid itself
@@ -120,13 +120,13 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
     if (coupsf.MasterDofMap()->NumGlobalElements() == 0)
       dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
   }
-  else if ((DRT::Problem::Instance()->GetProblemType() == prb_fbi))
+  else if ((DRT::Problem::Instance()->GetProblemType() == ProblemType::fbi))
   {
     matchingnodes_ = true;
   }
   else if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
                0  // mortar coupling
-           and (DRT::Problem::Instance()->GetProblemType() != prb_fsi_xfem))
+           and (DRT::Problem::Instance()->GetProblemType() != ProblemType::fsi_xfem))
   {
     // coupling condition at the fsi interface: displacements (=number of spatial dimensions) are
     // coupled e.g.: 3D: coupleddof = [1, 1, 1]

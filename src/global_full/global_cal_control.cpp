@@ -55,162 +55,162 @@ void ntacal()
   // choose the entry-routine depending on the problem type
   switch (DRT::Problem::Instance()->GetProblemType())
   {
-    case prb_structure:
-    case prb_polymernetwork:
+    case ProblemType::structure:
+    case ProblemType::polymernetwork:
       caldyn_drt();
       break;
-    case prb_fluid:
-    case prb_fluid_redmodels:
+    case ProblemType::fluid:
+    case ProblemType::fluid_redmodels:
       dyn_fluid_drt(restart);
       break;
-    case prb_lubrication:
+    case ProblemType::lubrication:
       lubrication_dyn(restart);
       break;
-    case prb_ehl:
+    case ProblemType::ehl:
       ehl_dyn();
       break;
-    case prb_scatra:
+    case ProblemType::scatra:
       scatra_dyn(restart);
       break;
-    case prb_cardiac_monodomain:
+    case ProblemType::cardiac_monodomain:
       scatra_cardiac_monodomain_dyn(restart);
       break;
-    case prb_sti:
+    case ProblemType::sti:
       sti_dyn(restart);
       break;
-    case prb_fluid_xfem:
+    case ProblemType::fluid_xfem:
       fluid_xfem_drt();
       break;
       break;
-    case prb_fluid_ale:
+    case ProblemType::fluid_ale:
       fluid_ale_drt();
       break;
-    case prb_freesurf:
+    case ProblemType::freesurf:
       fluid_freesurf_drt();
       break;
 
-    case prb_fsi:
-    case prb_fsi_redmodels:
-    case prb_fsi_lung:
+    case ProblemType::fsi:
+    case ProblemType::fsi_redmodels:
+    case ProblemType::fsi_lung:
       fsi_ale_drt();
       break;
-    case prb_fsi_xfem:
+    case ProblemType::fsi_xfem:
       xfsi_drt();
       break;
-    case prb_fpsi_xfem:
+    case ProblemType::fpsi_xfem:
       xfpsi_drt();
       break;
-    case prb_gas_fsi:
-    case prb_ac_fsi:
-    case prb_biofilm_fsi:
-    case prb_thermo_fsi:
-    case prb_fps3i:
+    case ProblemType::gas_fsi:
+    case ProblemType::ac_fsi:
+    case ProblemType::biofilm_fsi:
+    case ProblemType::thermo_fsi:
+    case ProblemType::fps3i:
       fs3i_dyn();
       break;
-    case prb_fbi:
+    case ProblemType::fbi:
       fsi_immersed_drt();
       break;
 
-    case prb_ale:
+    case ProblemType::ale:
       dyn_ale_drt();
       break;
 
-    case prb_thermo:
+    case ProblemType::thermo:
       thr_dyn_drt();
       break;
 
-    case prb_tsi:
+    case ProblemType::tsi:
       tsi_dyn_drt();
       break;
 
-    case prb_loma:
+    case ProblemType::loma:
       loma_dyn(restart);
       break;
 
-    case prb_elch:
+    case ProblemType::elch:
       elch_dyn(restart);
       break;
 
-    case prb_fluid_topopt:
+    case ProblemType::fluid_topopt:
       fluid_topopt_dyn();
       break;
 
-    case prb_art_net:
+    case ProblemType::art_net:
       dyn_art_net_drt();
       break;
 
-    case prb_red_airways:
+    case ProblemType::red_airways:
       dyn_red_airways_drt();
       break;
 
-    case prb_struct_ale:
+    case ProblemType::struct_ale:
       wear_dyn_drt(restart);
       break;
 
-    case prb_immersed_fsi:
+    case ProblemType::immersed_fsi:
       immersed_problem_drt();
       break;
 
-    case prb_poroelast:
+    case ProblemType::poroelast:
       poroelast_drt();
       break;
-    case prb_poroscatra:
+    case ProblemType::poroscatra:
       poro_scatra_drt();
       break;
-    case prb_porofluidmultiphase:
+    case ProblemType::porofluidmultiphase:
       porofluidmultiphase_dyn(restart);
       break;
-    case prb_poromultiphase:
+    case ProblemType::poromultiphase:
       poromultiphase_dyn(restart);
       break;
-    case prb_poromultiphasescatra:
+    case ProblemType::poromultiphasescatra:
       poromultiphasescatra_dyn(restart);
       break;
-    case prb_fpsi:
+    case ProblemType::fpsi:
       fpsi_drt();
       break;
-    case prb_ssi:
+    case ProblemType::ssi:
       ssi_drt();
       break;
-    case prb_ssti:
+    case ProblemType::ssti:
       ssti_drt();
       break;
-    case prb_redairways_tissue:
+    case ProblemType::redairways_tissue:
       redairway_tissue_dyn();
       break;
 
-    case prb_particle:
+    case ProblemType::particle:
       particle_drt();
       break;
 
-    case prb_pasi:
+    case ProblemType::pasi:
       pasi_dyn();
       break;
 
-    case prb_level_set:
+    case ProblemType::level_set:
       levelset_dyn(restart);
       break;
 
-    case prb_np_support:
+    case ProblemType::np_support:
       STRUMULTI::np_support_drt();
       break;
 
-    case prb_elemag:
+    case ProblemType::elemag:
       electromagnetics_drt();
       break;
 
-    case prb_two_phase_flow:
+    case ProblemType::two_phase_flow:
       two_phase_dyn(restart);
       break;
-    case prb_fluid_xfem_ls:
+    case ProblemType::fluid_xfem_ls:
       fluid_xfem_ls_drt(restart);  // Exists in drt_two_phase_flow subfolder
       break;
 
-    case prb_invana:
+    case ProblemType::invana:
       invana_cal();
       break;
 
-    case prb_tutorial:
+    case ProblemType::tutorial:
       tutorial_drt();
       break;
 

@@ -1801,9 +1801,9 @@ int main(int argc, char** argv)
 
   switch (problem.Problemtype())
   {
-    case prb_fsi:
-    case prb_fsi_redmodels:
-    case prb_fsi_lung:
+    case ProblemType::fsi:
+    case ProblemType::fsi_redmodels:
+    case ProblemType::fsi_lung:
     {
       if (infieldtype == "fluid")
       {
@@ -1827,13 +1827,13 @@ int main(int argc, char** argv)
       }
       break;
     }
-    case prb_structure:
-    case prb_loma:
-    case prb_two_phase_flow:
-    case prb_fluid_xfem_ls:
-    case prb_fluid:
-    case prb_fluid_redmodels:
-    case prb_fps3i:
+    case ProblemType::structure:
+    case ProblemType::loma:
+    case ProblemType::two_phase_flow:
+    case ProblemType::fluid_xfem_ls:
+    case ProblemType::fluid:
+    case ProblemType::fluid_redmodels:
+    case ProblemType::fps3i:
     {
       if (infieldtype == "scatra")
       {
@@ -1847,13 +1847,13 @@ int main(int argc, char** argv)
       }
       break;
     }
-    case prb_ale:
+    case ProblemType::ale:
     {
       AleMonWriter mymonwriter(problem, infieldtype, node);
       mymonwriter.WriteMonFile(problem, infieldtype, node);
       break;
     }
-    case prb_thermo:
+    case ProblemType::thermo:
     {
       ThermoMonWriter mymonwriter(problem, infieldtype, node);
       mymonwriter.WriteMonFile(problem, infieldtype, node);
@@ -1861,7 +1861,7 @@ int main(int argc, char** argv)
       mymonwriter.WriteMonTempgradFile(problem, infieldtype, problem.tempgradtype(), node);
       break;
     }
-    case prb_tsi:
+    case ProblemType::tsi:
     {
       if (infieldtype == "structure")
       {
@@ -1887,15 +1887,15 @@ int main(int argc, char** argv)
       }
       break;
     }
-    case prb_gas_fsi:
-    case prb_ac_fsi:
-    case prb_biofilm_fsi:
-    case prb_thermo_fsi:
+    case ProblemType::gas_fsi:
+    case ProblemType::ac_fsi:
+    case ProblemType::biofilm_fsi:
+    case ProblemType::thermo_fsi:
     {
       dserror("not implemented yet");
       break;
     }
-    case prb_red_airways:
+    case ProblemType::red_airways:
     {
       if (infieldtype == "red_airway")
       {
@@ -1904,7 +1904,7 @@ int main(int argc, char** argv)
       }
       break;
     }
-    case prb_poroelast:
+    case ProblemType::poroelast:
     {
       if (infieldtype == "fluid")
       {
@@ -1918,13 +1918,13 @@ int main(int argc, char** argv)
       }
       break;
     }
-    case prb_porofluidmultiphase:
+    case ProblemType::porofluidmultiphase:
     {
       PoroFluidMultiMonWriter mymonwriter(problem, infieldtype, node);
       mymonwriter.WriteMonFile(problem, infieldtype, node);
       break;
     }
-    case prb_poromultiphase:
+    case ProblemType::poromultiphase:
     {
       if (infieldtype == "structure")
       {
@@ -1941,7 +1941,7 @@ int main(int argc, char** argv)
             infieldtype.c_str());
       break;
     }
-    case prb_poromultiphasescatra:
+    case ProblemType::poromultiphasescatra:
     {
       if (infieldtype == "structure")
       {

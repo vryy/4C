@@ -157,7 +157,7 @@ DRT::ELEMENTS::Wall1::Wall1(int id, int owner)
       structale_(false),
       distype_(dis_none)
 {
-  if (DRT::Problem::Instance()->GetProblemType() == prb_struct_ale) structale_ = true;
+  if (DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale) structale_ = true;
   return;
 }
 

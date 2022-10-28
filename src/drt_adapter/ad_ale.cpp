@@ -113,7 +113,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
   adyn->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
   adyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
 
-  if (probtype == prb_fpsi)
+  if (probtype == ProblemType::fpsi)
   {
     // FPSI input parameters
     const Teuchos::ParameterList& fpsidyn = DRT::Problem::Instance()->FPSIDynamicParams();
@@ -161,16 +161,16 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
    * problem-specific wrapper */
   switch (probtype)
   {
-    case prb_ale:
+    case ProblemType::ale:
     {
       ale_ = ale;
       break;
     }
-    case prb_fsi:
-    case prb_gas_fsi:
-    case prb_thermo_fsi:
-    case prb_ac_fsi:
-    case prb_biofilm_fsi:
+    case ProblemType::fsi:
+    case ProblemType::gas_fsi:
+    case ProblemType::thermo_fsi:
+    case ProblemType::ac_fsi:
+    case ProblemType::biofilm_fsi:
     {
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
       int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
@@ -216,7 +216,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
       }
       break;
     }
-    case prb_fsi_lung:
+    case ProblemType::fsi_lung:
     {
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
       int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
@@ -233,7 +233,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
       }
       break;
     }
-    case prb_fsi_redmodels:
+    case ProblemType::fsi_redmodels:
     {
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
       int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
@@ -267,23 +267,23 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
       }
       break;
     }
-    case prb_fpsi:
-    case prb_fps3i:
-    case prb_fsi_xfem:
-    case prb_fpsi_xfem:
+    case ProblemType::fpsi:
+    case ProblemType::fps3i:
+    case ProblemType::fsi_xfem:
+    case ProblemType::fpsi_xfem:
     {
       ale_ = Teuchos::rcp(new ADAPTER::AleFpsiWrapper(ale));
       break;
     }
-    case prb_struct_ale:
+    case ProblemType::struct_ale:
     {
       ale_ = Teuchos::rcp(new ADAPTER::AleWearWrapper(ale));
       break;
     }
-    case prb_freesurf:
-    case prb_fluid_ale:
-    case prb_elch:
-    case prb_fluid_xfem:
+    case ProblemType::freesurf:
+    case ProblemType::fluid_ale:
+    case ProblemType::elch:
+    case ProblemType::fluid_xfem:
     {
       ale_ = Teuchos::rcp(new ADAPTER::AleFluidWrapper(ale));
       break;

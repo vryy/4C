@@ -39,27 +39,27 @@ void fs3i_dyn()
 
   switch (probtype)
   {
-    case prb_gas_fsi:
+    case ProblemType::gas_fsi:
     {
       fs3i = Teuchos::rcp(new FS3I::PartFS3I_1WC(comm));
     }
     break;
-    case prb_ac_fsi:
+    case ProblemType::ac_fsi:
     {
       fs3i = Teuchos::rcp(new FS3I::ACFSI(comm));
     }
     break;
-    case prb_thermo_fsi:
+    case ProblemType::thermo_fsi:
     {
       fs3i = Teuchos::rcp(new FS3I::PartFS3I_2WC(comm));
     }
     break;
-    case prb_biofilm_fsi:
+    case ProblemType::biofilm_fsi:
     {
       fs3i = Teuchos::rcp(new FS3I::BiofilmFSI(comm));
     }
     break;
-    case prb_fps3i:
+    case ProblemType::fps3i:
     {
       fs3i = Teuchos::rcp(new FS3I::PartFPS3I_1WC(comm));
     }

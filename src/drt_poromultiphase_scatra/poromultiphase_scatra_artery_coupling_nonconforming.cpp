@@ -62,7 +62,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
 {
   // we do not have a moving mesh
-  if (DRT::Problem::Instance()->GetProblemType() == prb_porofluidmultiphase)
+  if (DRT::Problem::Instance()->GetProblemType() == ProblemType::porofluidmultiphase)
   {
     evaluate_in_ref_config_ = true;
     porofluidprob_ = true;

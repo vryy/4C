@@ -100,7 +100,7 @@ void DRT::Problem::Done()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::Problem::Problem()
-    : probtype_(prb_none), restartstep_(0), restarttime_(0.0), npgroup_(Teuchos::null)
+    : probtype_(ProblemType::none), restartstep_(0), restarttime_(0.0), npgroup_(Teuchos::null)
 {
   materials_ = Teuchos::rcp(new MAT::PAR::Bundle());
   contactconstitutivelaws_ = Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::Bundle());
@@ -438,7 +438,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   if (restarttime_ > 0.0)
   {
     // Currently this option is implemented only for scalar structure interaction problems
-    if (GetProblemType() != prb_ssi)
+    if (GetProblemType() != ProblemType::ssi)
       dserror("Restart with time option currently only implemented for SSI problems");
     // The value restartstep_ is used very deep down in Baci. Therefore we demand the user
     // to set this value, if one wants to use restart time option.
@@ -975,9 +975,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
   switch (GetProblemType())
   {
-    case prb_fsi:
-    case prb_fsi_redmodels:
-    case prb_fsi_lung:
+    case ProblemType::fsi:
+    case ProblemType::fsi_redmodels:
+    case ProblemType::fsi_lung:
     {
       if (distype == ShapeFunctionType::shapefunction_nurbs)
       {
@@ -1030,9 +1030,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_gas_fsi:
-    case prb_ac_fsi:
-    case prb_thermo_fsi:
+    case ProblemType::gas_fsi:
+    case ProblemType::ac_fsi:
+    case ProblemType::thermo_fsi:
     {
       switch (distype)
       {
@@ -1082,7 +1082,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_biofilm_fsi:
+    case ProblemType::biofilm_fsi:
     {
       switch (distype)
       {
@@ -1138,8 +1138,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_fsi_xfem:
-    case prb_fluid_xfem:
+    case ProblemType::fsi_xfem:
+    case ProblemType::fluid_xfem:
     {
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
       // create discretization writer - in constructor set into and owned by corresponding discret
@@ -1188,7 +1188,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
           Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
       break;
     }
-    case prb_fpsi_xfem:
+    case ProblemType::fpsi_xfem:
     {
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
       fluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid", reader.Comm()));
@@ -1220,7 +1220,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_ale:
+    case ProblemType::ale:
     {
       switch (distype)
       {
@@ -1246,8 +1246,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_fluid:
-    case prb_fluid_redmodels:
+    case ProblemType::fluid:
+    case ProblemType::fluid_redmodels:
     {
       if (distype == ShapeFunctionType::shapefunction_hdg)
       {
@@ -1288,7 +1288,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_lubrication:
+    case ProblemType::lubrication:
     {
       // create empty discretizations
       lubricationdis = Teuchos::rcp(new DRT::Discretization("lubrication", reader.Comm()));
@@ -1303,8 +1303,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_cardiac_monodomain:
-    case prb_scatra:
+    case ProblemType::cardiac_monodomain:
+    case ProblemType::scatra:
     {
       switch (distype)
       {
@@ -1343,7 +1343,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_sti:
+    case ProblemType::sti:
     {
       // safety checks
       if (distype == ShapeFunctionType::shapefunction_nurbs)
@@ -1367,8 +1367,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_fluid_ale:
-    case prb_freesurf:
+    case ProblemType::fluid_ale:
+    case ProblemType::freesurf:
     {
       if (distype == ShapeFunctionType::shapefunction_hdg)
       {
@@ -1425,7 +1425,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_tsi:
+    case ProblemType::tsi:
     {
       switch (distype)
       {
@@ -1459,7 +1459,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_thermo:
+    case ProblemType::thermo:
     {
       switch (distype)
       {
@@ -1486,8 +1486,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       break;
     }
 
-    case prb_structure:
-    case prb_invana:
+    case ProblemType::structure:
+    case ProblemType::invana:
     {
       switch (distype)
       {
@@ -1515,7 +1515,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       break;
     }
 
-    case prb_polymernetwork:
+    case ProblemType::polymernetwork:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -1536,7 +1536,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       break;
     }
 
-    case prb_loma:
+    case ProblemType::loma:
     {
       // create empty discretizations
       fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
@@ -1557,12 +1557,12 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       break;
     }
 
-    case prb_two_phase_flow:
-    case prb_fluid_xfem_ls:
+    case ProblemType::two_phase_flow:
+    case ProblemType::fluid_xfem_ls:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
-      if (GetProblemType() == prb_fluid_xfem_ls)
+      if (GetProblemType() == ProblemType::fluid_xfem_ls)
         fluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid", reader.Comm()));
       else
         fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
@@ -1589,7 +1589,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       break;
     }
 
-    case prb_elch:
+    case ProblemType::elch:
     {
       // create empty discretizations
       switch (distype)
@@ -1628,7 +1628,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_art_net:  // _1D_ARTERY_
+    case ProblemType::art_net:  // _1D_ARTERY_
     {
       // create empty discretizations
       arterydis = Teuchos::rcp(new DRT::Discretization("artery", reader.Comm()));
@@ -1662,7 +1662,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_red_airways:  // _reduced D airways
+    case ProblemType::red_airways:  // _reduced D airways
     {
       // create empty discretizations
       airwaydis = Teuchos::rcp(new DRT::Discretization("red_airway", reader.Comm()));
@@ -1677,7 +1677,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_struct_ale:  // structure with ale
+    case ProblemType::struct_ale:  // structure with ale
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -1697,7 +1697,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_fluid_topopt:
+    case ProblemType::fluid_topopt:
     {
       // create empty discretizations
       fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
@@ -1715,8 +1715,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_poroelast:
-    case prb_poromultiphase:
+    case ProblemType::poroelast:
+    case ProblemType::poromultiphase:
     {
       // create empty discretizations
       switch (distype)
@@ -1759,7 +1759,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_poromultiphasescatra:
+    case ProblemType::poromultiphasescatra:
     {
       // create empty discretizations
       switch (distype)
@@ -1814,7 +1814,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_porofluidmultiphase:
+    case ProblemType::porofluidmultiphase:
     {
       // create empty discretizations
       switch (distype)
@@ -1850,7 +1850,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       }
       break;
     }
-    case prb_fpsi:
+    case ProblemType::fpsi:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -1876,7 +1876,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_fbi:
+    case ProblemType::fbi:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -1897,7 +1897,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_immersed_fsi:
+    case ProblemType::immersed_fsi:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -1917,7 +1917,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_fps3i:
+    case ProblemType::fps3i:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -1956,7 +1956,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_poroscatra:
+    case ProblemType::poroscatra:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -1980,7 +1980,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
           Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
       break;
     }
-    case prb_ehl:
+    case ProblemType::ehl:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -2000,8 +2000,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_ssi:
-    case prb_ssti:
+    case ProblemType::ssi:
+    case ProblemType::ssti:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -2029,7 +2029,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       nodereader.AddElementReader(
           Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
 
-      if (GetProblemType() == prb_ssti)
+      if (GetProblemType() == ProblemType::ssti)
       {
         thermdis = Teuchos::rcp(new DRT::Discretization("thermo", reader.Comm()));
         thermdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(thermdis)));
@@ -2040,8 +2040,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_particle:
-    case prb_pasi:
+    case ProblemType::particle:
+    case ProblemType::pasi:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -2056,7 +2056,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_level_set:
+    case ProblemType::level_set:
     {
       // create empty discretizations
       scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm()));
@@ -2070,12 +2070,12 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
           Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
       break;
     }
-    case prb_np_support:
+    case ProblemType::np_support:
     {
       // no discretizations and nodes needed for supporting procs
       break;
     }
-    case prb_elemag:
+    case ProblemType::elemag:
     {
       // create empty discretizations
       elemagdis = Teuchos::rcp(new DRT::DiscretizationHDG("elemag", reader.Comm()));
@@ -2094,7 +2094,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_redairways_tissue:
+    case ProblemType::redairways_tissue:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -2113,7 +2113,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
           new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
     }
     break;
-    case prb_tutorial:
+    case ProblemType::tutorial:
     {
     }
     break;
@@ -2125,10 +2125,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   // add artery or airways discretizations only for the following problem types
   switch (GetProblemType())
   {
-    case prb_fsi_redmodels:
-    case prb_fsi_lung:
-    case prb_fluid_ale:
-    case prb_fluid_redmodels:
+    case ProblemType::fsi_redmodels:
+    case ProblemType::fsi_lung:
+    case ProblemType::fluid_ale:
+    case ProblemType::fluid_redmodels:
     {
       if (distype == ShapeFunctionType::shapefunction_polynomial)
       {
@@ -2162,26 +2162,26 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     // care for special applications
     switch (GetProblemType())
     {
-      case prb_elch:
-      case prb_fsi:
-      case prb_fsi_redmodels:
-      case prb_fsi_lung:
-      case prb_invana:
-      case prb_scatra:
-      case prb_structure:
+      case ProblemType::elch:
+      case ProblemType::fsi:
+      case ProblemType::fsi_redmodels:
+      case ProblemType::fsi_lung:
+      case ProblemType::invana:
+      case ProblemType::scatra:
+      case ProblemType::structure:
       {
         // read microscale fields from second, third, ... input file if necessary
         // (in case of multi-scale material models)
         if (npType != copy_dat_file) ReadMicroFields(reader);
         break;
       }
-      case prb_np_support:
+      case ProblemType::np_support:
       {
         // read microscale fields from second, third, ... inputfile for supporting processors
         ReadMicrofieldsNPsupport();
         break;
       }
-      case prb_tutorial:
+      case ProblemType::tutorial:
       {
         break;
       }
