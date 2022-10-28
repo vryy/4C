@@ -44,9 +44,11 @@ function(baci_add_google_test_executable TESTNAME)
   target_include_directories(${TESTNAME} PRIVATE ${PROJECT_SOURCE_DIR})
 
   # the first process will write a unit test report
-  separate_arguments(MPIEXEC_EXTRA_OPTS_LIST UNIX_COMMAND ${MPIEXEC_EXTRA_OPTS})
+  separate_arguments(
+    MPIEXEC_EXTRA_OPTS_FOR_TESTING_LIST UNIX_COMMAND ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}
+    )
   set(mpi_arguments
-      ${MPIEXEC_EXTRA_OPTS_LIST}
+      ${MPIEXEC_EXTRA_OPTS_FOR_TESTING_LIST}
       -np
       1
       $<TARGET_FILE:${TESTNAME}>
