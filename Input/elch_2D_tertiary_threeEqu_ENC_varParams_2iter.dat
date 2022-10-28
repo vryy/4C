@@ -61,9 +61,9 @@ MAT 3 MAT_ion DIFFUSIVITY 1.0e-4 VALENCE  1.0
 MAT 4 MAT_ion DIFFUSIVITY 5.0e-4 VALENCE -2.0
 MAT 5 MAT_ion DIFFUSIVITY 1.0e-3 VALENCE  1.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.1 //initial concentration field: µmol/mm³
-COMPONENT 1 FUNCTION 0.15 //initial concentration field: µmol/mm³
-COMPONENT 2 FUNCTION 0.2 //initial concentration field: µmol/mm³
+COMPONENT 0 FUNCTION 0.1 //initial concentration field: µmol/mm^3
+COMPONENT 1 FUNCTION 0.15 //initial concentration field: µmol/mm^3
+COMPONENT 2 FUNCTION 0.2 //initial concentration field: µmol/mm^3
 COMPONENT 3 FUNCTION 0.0 //initial potential field
 COMPONENT 4 FUNCTION 0.0 //initial current density field
 COMPONENT 5 FUNCTION 0.0 //initial current density field

@@ -673,7 +673,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::GetMaterialParams(const D
   material = ele->Material(1);
   if (material->MaterialType() == INPAR::MAT::m_elchmat)
   {
-    // pre calculate RT and F²/(RT)
+    // pre calculate RT and F^2/(RT)
     const double rt = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant() *
                       VarManager()->Phinp(0);
     const double ffrt =

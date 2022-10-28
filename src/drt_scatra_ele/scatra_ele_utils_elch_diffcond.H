@@ -46,7 +46,7 @@ namespace DRT
           const std::vector<double>& concentrations,  //!< local concentration values
           double temperature,                         //!< temperature
           INPAR::ELCH::EquPot equpot,  //!< type of closing equation for electric potential
-          double ffrt,                 //!< factor F²/RT
+          double ffrt,                 //!< factor F^2/RT
           const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>& diffmanager,  //!< diffusion manager
           INPAR::ELCH::DiffCondMat& diffcondmat                               //!< ion type
       );
@@ -56,7 +56,7 @@ namespace DRT
           const std::vector<double>& concentrations,  //!< local concentration values
           double temperature,                         //!< temperature
           const INPAR::ELCH::EquPot& equpot,  //!< type of closing equation for electric potential
-          const double& ffrt,                 //!< factor F²/RT
+          const double& ffrt,                 //!< factor F^2/RT
           const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>& diffmanager,  //!< diffusion manager
           INPAR::ELCH::DiffCondMat& diffcondmat                               //!< ion type
       );

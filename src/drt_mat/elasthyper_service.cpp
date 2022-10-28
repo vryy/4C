@@ -484,38 +484,38 @@ void MAT::ElastHyperCheckPolyconvexity(const LINALG::Matrix<3, 3>& defgrd,
 
   // single matrices of Frechet Derivative:
 
-  // d²P/dFdF
+  // d^2P/dFdF
   // = 4 d^2\Psi/dI_1dI_1 F \otimes F + 2 \d\Psi/dI_1 *II
   static LINALG::Matrix<9, 9> FreDFF(true);
   FreDFF.Clear();
   FreDFF.MultiplyNT(4 * ddPII(0), dfgrd, dfgrd, 1.0);
   FreDFF.Update(2 * dPI(0), ID4, 1.0);
 
-  // d²P/d(cofF)d(cofF)
+  // d^2P/d(cofF)d(cofF)
   // = = 4 d^2\Psi/dI_2dI_2 cof(F) \otimes cof(F) + 2 \d\Psi/dI_2 *II
   static LINALG::Matrix<9, 9> FreDcFcF(true);
   FreDcFcF.Clear();
   FreDcFcF.MultiplyNT(4 * ddPII(1), CofF, CofF, 1.0);
   FreDcFcF.Update(2 * dPI(1), ID4, 1.0);
 
-  // d²P/d(detF)d(detF)
-  // = 2*d \Psi/dI_3 + 4*I_3*d²\Psi/dI_3dI_3
+  // d^2P/d(detF)d(detF)
+  // = 2*d \Psi/dI_3 + 4*I_3*d^2\Psi/dI_3dI_3
   double FreDJJ(true);
   FreDJJ += 2 * dPI(2) + 4 * prinv(2) * ddPII(2);
 
-  // d²P/d(cofF)dF
+  // d^2P/d(cofF)dF
   // = 4*d\Psi/dI_1dI_2 F /otimes CofF
   static LINALG::Matrix<9, 9> FreDcFF(true);
   FreDcFF.Clear();
   FreDcFF.MultiplyNT(4 * ddPII(5), dfgrd, CofF, 1.0);
 
-  // d²P/d(detF)d(cofF)
+  // d^2P/d(detF)d(cofF)
   // = 4*J*d^2 \Psi /dI_2 dI_3 \mat{CofF}
   static LINALG::Matrix<9, 1> FreDcFJ(true);
   FreDcFF.Clear();
   FreDcFJ.Update(4 * J * ddPII(3), CofF, 1.0);
 
-  // d²P/d(detF) dF = d²P/dF d(detF)
+  // d^2P/d(detF) dF = d^2P/dF d(detF)
   // = 4*J*d^2 \Psi /dI_1 dI_3 \mat{F}
   static LINALG::Matrix<9, 1> FreDFJ(true);
   FreDcFF.Clear();

@@ -349,7 +349,7 @@ void MAT::AAAneohooke_stopro::StrainEnergy(
   /*
   plain strain energy function
 
-  W    = alpha (Ic*IIIc^(-1/3) -3) + beta (Ic*IIIc^(-1/3)-3)²
+  W    = alpha (Ic*IIIc^(-1/3) -3) + beta (Ic*IIIc^(-1/3)-3)^2
 
   Ic   .. first invariant of right Cauchy-Green tensor C
   IIIc .. third invariant of right Cauchy-Green tensor C
@@ -432,7 +432,7 @@ void MAT::AAAneohooke_stopro::StrainEnergy(
   const double third = 1.0 / 3.0;
   // now compute
   // ISOCHORIC PART plain strain energy function
-  // PSI_iso    = alpha (Ic*IIIc^(-1/3) -3) + beta (Ic*IIIc^(-1/3)-3)²
+  // PSI_iso    = alpha (Ic*IIIc^(-1/3) -3) + beta (Ic*IIIc^(-1/3)-3)^2
   psi = alpha * (inv * pow(iiinv, -third) - 3) +
         beta * (inv * pow(iiinv, -third) - 3) * (inv * pow(iiinv, -third) - 3);
   // add volumetric part
