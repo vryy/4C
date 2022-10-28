@@ -2714,8 +2714,6 @@ enable_testing()
 include(CTest)
 
 ###------------------------------------------------------------------ Unit Tests
-separate_arguments(MPIEXEC_EXTRA_OPTS_LIST UNIX_COMMAND ${MPIEXEC_EXTRA_OPTS})
-
 add_executable(cut_test EXCLUDE_FROM_ALL ${OBJS_CUT_TEST})
 target_link_libraries(
   cut_test
