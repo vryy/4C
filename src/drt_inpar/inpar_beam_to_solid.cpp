@@ -104,13 +104,15 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
 
     setStringToIntegralParameter<BeamToSolidRotationCoupling>("ROTATION_COUPLING", "none",
         "Type of rotational coupling",
-        tuple<std::string>("none", "polar_decomposition_2d", "deformation_gradient_y_2d",
-            "deformation_gradient_z_2d", "deformation_gradient_average_2d", "fix_triad_2d",
-            "deformation_gradient_3d_local_1", "deformation_gradient_3d_local_2",
-            "deformation_gradient_3d_local_3", "deformation_gradient_3d_general",
-            "deformation_gradient_3d_general_in_cross_section_plane",
+        tuple<std::string>("none", "deformation_gradient_3d_general_in_cross_section_plane",
+            "polar_decomposition_2d", "deformation_gradient_y_2d", "deformation_gradient_z_2d",
+            "deformation_gradient_average_2d", "fix_triad_2d", "deformation_gradient_3d_local_1",
+            "deformation_gradient_3d_local_2", "deformation_gradient_3d_local_3",
+            "deformation_gradient_3d_general",
+
             "deformation_gradient_3d_base_1"),
         tuple<BeamToSolidRotationCoupling>(BeamToSolidRotationCoupling::none,
+            BeamToSolidRotationCoupling::deformation_gradient_3d_general_in_cross_section_plane,
             BeamToSolidRotationCoupling::polar_decomposition_2d,
             BeamToSolidRotationCoupling::deformation_gradient_y_2d,
             BeamToSolidRotationCoupling::deformation_gradient_z_2d,
@@ -120,7 +122,6 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
             BeamToSolidRotationCoupling::deformation_gradient_3d_local_2,
             BeamToSolidRotationCoupling::deformation_gradient_3d_local_3,
             BeamToSolidRotationCoupling::deformation_gradient_3d_general,
-            BeamToSolidRotationCoupling::deformation_gradient_3d_general_in_cross_section_plane,
             BeamToSolidRotationCoupling::deformation_gradient_3d_base_1),
         &beam_to_solid_volume_mestying);
 
@@ -224,10 +225,10 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
         &beam_to_solid_surface_mestying);
     setStringToIntegralParameter<BeamToSolidSurfaceRotationCoupling>(
         "ROTATIONAL_COUPLING_SURFACE_TRIAD", "none", "Construction method for surface triad",
-        tuple<std::string>("none", "averaged", "surface_cross_section_director"),
+        tuple<std::string>("none", "surface_cross_section_director", "averaged"),
         tuple<BeamToSolidSurfaceRotationCoupling>(BeamToSolidSurfaceRotationCoupling::none,
-            BeamToSolidSurfaceRotationCoupling::averaged,
-            BeamToSolidSurfaceRotationCoupling::surface_cross_section_director),
+            BeamToSolidSurfaceRotationCoupling::surface_cross_section_director,
+            BeamToSolidSurfaceRotationCoupling::averaged),
         &beam_to_solid_surface_mestying);
 
     // Add the geometry pair input parameters.
