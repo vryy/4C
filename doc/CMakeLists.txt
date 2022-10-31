@@ -1,33 +1,46 @@
 #
 # Build routine/test for doxygen documentation
+option(BUILD_DOXYGEN "Build doxygen documentation" ON)
 
-#
-### General Setup
-
-cmake_minimum_required(VERSION 3.17)
-project(documentation CXX C)
-
-# generates documentation in build folder
-# Dependencies: Doxyfile <- Doxyfile.defs <- gen_doxygen_defs.py
-add_custom_command(
-  OUTPUT Doxyfile
-  COMMAND
-    cat ${CMAKE_SOURCE_DIR}/doc/Doxyfile.tmpl Doxyfile.defs > Doxyfile && sed -i -e
-    "s/####REVISION####/${baci_WC_REVISION}/" -e "s:####SOURCE####:${CMAKE_SOURCE_DIR}:" Doxyfile
-  MAIN_DEPENDENCY ${PROJECT_BINARY_DIR}/Doxyfile.defs
+# prefer doxygen at specified path instead of default path
+find_program(
+  DOXYGEN doxygen
+  PATHS ${DOXYGEN_BASE_PATH}
+  NO_DEFAULT_PATH
   )
-add_custom_command(
-  OUTPUT Doxyfile.defs
-  COMMAND
-    ${CMAKE_SOURCE_DIR}/utilities/baci-python-venv/bin/python
-    ${CMAKE_SOURCE_DIR}/gen_doxygen_defs.py "${PROJECT_BINARY_DIR}/../" "${PROJECT_BINARY_DIR}"
-  )
+find_program(DOXYGEN doxygen)
+if(DOXYGEN)
+  message("Found doxygen: ${DOXYGEN}")
 
-# start build with "make documentation"
-# N.B. this target is always considered out of date and therefore doxygen always runs
-add_custom_target(
-  documentation ALL
-  echo
-  COMMAND doxygen Doxyfile
-  DEPENDS ${PROJECT_BINARY_DIR}/Doxyfile
-  )
+  # set input and output files
+  set(DOXYGEN_CONFIG_IN ${CMAKE_SOURCE_DIR}/doc/Doxyfile.in)
+  set(DOXYGEN_OUT_DIRECTORY ${CMAKE_BINARY_DIR}/doc/)
+  set(DOXYGEN_CONFIG_OUT ${DOXYGEN_OUT_DIRECTORY}/Doxyfile)
+
+  # find mathjax
+  include(FindMathJax.cmake)
+
+  # configure doxygen configuration
+  configure_file(${DOXYGEN_CONFIG_IN} ${DOXYGEN_CONFIG_OUT} @ONLY)
+
+  add_custom_target(
+    documentation ALL
+    COMMAND ${DOXYGEN} ${DOXYGEN_CONFIG_OUT}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    VERBATIM
+    )
+
+  if(DOXYGEN_USE_LOCAL_MATHJAX)
+    add_custom_command(
+      TARGET documentation
+      POST_BUILD
+      COMMAND
+        ${CMAKE_COMMAND} -E make_directory ${DOXYGEN_OUT_DIRECTORY}/html/${DOXYGEN_MATHJAX_RELPATH}
+      COMMAND
+        ${CMAKE_COMMAND} -E copy_directory ${DOXYGEN_LOCAL_MATHJAX_BASEPATH}
+        ${DOXYGEN_OUT_DIRECTORY}/html/${DOXYGEN_MATHJAX_RELPATH}
+      )
+  endif()
+else()
+  message("Doxygen not found.")
+endif()

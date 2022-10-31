@@ -408,6 +408,9 @@ variables:
         # Output to log because it is too much for the gitlab console.
   - ctest -S $CI_PROJECT_DIR/tests/testconfig/test_doxygen.cmake -VV > ../doxygen.log
         # Throw error if there are Latex errors in doxygen comments. Latex errors can be uniquely identified by a line starting with "! ".
+  - if grep -qE '^[eE]rror:' ../doxygen.log; then echo 'Found at least one fatal error
+    during doxygen generation.'; exit 1; else echo 'Doxygen builds without fatal errors.';
+    fi
   - if grep -qE '^! ' ../doxygen.log; then echo "Found at least one LaTeX error during
     doxygen build."; exit 1; else echo "Doxygen builds without LaTeX errors."; fi
         # Move final doxygen into the base folder for the next stage
@@ -854,8 +857,6 @@ lnm-doxygen:
     CTEST_BUILD_NAME_GITLAB: Doxygen-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
-        # Path on testing machine where doxygen will be copied to.
-    DOXYGEN_PATH: /home/gitlab-runner/.
   tags:
   - lnm-doxygen
   - lnm-ubuntu
