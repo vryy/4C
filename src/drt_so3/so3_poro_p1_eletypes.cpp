@@ -68,11 +68,10 @@ void DRT::ELEMENTS::So_hex8PoroP1Type::NodalBlockInformation(
   nv = 3;
 }
 
-Epetra_SerialDenseMatrix DRT::ELEMENTS::So_hex8PoroP1Type::ComputeNullSpace(
+Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::So_hex8PoroP1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
-  return nullspace;
+  return LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
 int DRT::ELEMENTS::So_hex8PoroP1Type::Initialize(DRT::Discretization& dis)
@@ -160,9 +159,8 @@ void DRT::ELEMENTS::So_tet4PoroP1Type::NodalBlockInformation(
   nv = 3;
 }
 
-Epetra_SerialDenseMatrix DRT::ELEMENTS::So_tet4PoroP1Type::ComputeNullSpace(
+Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::So_tet4PoroP1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
-  return nullspace;
+  return LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
 }

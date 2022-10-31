@@ -54,11 +54,10 @@ void DRT::ELEMENTS::Spring3Type::NodalBlockInformation(
   nv = 3;
 }
 
-Epetra_SerialDenseMatrix DRT::ELEMENTS::Spring3Type::ComputeNullSpace(
+Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Spring3Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid3DNullSpace(node, x0);
-  return nullspace;
+  return LINALG::ComputeSolid3DNullSpace(node, x0);
 }
 
 void DRT::ELEMENTS::Spring3Type::SetupElementDefinition(

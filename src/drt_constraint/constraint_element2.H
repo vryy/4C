@@ -12,6 +12,7 @@
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 
 #include "../drt_lib/drt_element.H"
@@ -48,7 +49,7 @@ namespace DRT
       virtual void NodalBlockInformation(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
-      virtual Epetra_SerialDenseMatrix ComputeNullSpace(
+      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
 
      private:

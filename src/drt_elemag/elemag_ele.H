@@ -15,6 +15,7 @@ Pack, Unpack, NumDofPerNode etc.
 #ifndef ELEMAG_ELE_H
 #define ELEMAG_ELE_H
 
+#include <Teuchos_SerialDenseMatrix.hpp>
 #include "Teuchos_RCP.hpp"
 
 #include "../drt_lib/drt_elementtype.H"
@@ -51,8 +52,8 @@ namespace DRT
       virtual void NodalBlockInformation(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
-      virtual Epetra_SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, int numdof, int dimnsp);
+      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
 
       virtual void SetupElementDefinition(
           std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
@@ -426,10 +427,10 @@ namespace DRT
       {
       }
 
-      virtual Epetra_SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, int numdof, int dimnsp)
+      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Epetra_SerialDenseMatrix nullspace;
+        Teuchos::SerialDenseMatrix<int, double> nullspace;
         dserror("method ComputeNullSpace not implemented");
         return nullspace;
       }
@@ -688,10 +689,10 @@ namespace DRT
       {
       }
 
-      virtual Epetra_SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, int numdof, int dimnsp)
+      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Epetra_SerialDenseMatrix nullspace;
+        Teuchos::SerialDenseMatrix<int, double> nullspace;
         dserror("method ComputeNullSpace not implemented");
         return nullspace;
       }

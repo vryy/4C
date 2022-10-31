@@ -18,6 +18,7 @@ Pack, Unpack, NumDofPerNode etc.
 /*----------------------------------------------------------------------*
  | headers                                                    gjb 01/08 |
  *----------------------------------------------------------------------*/
+#include <Teuchos_SerialDenseMatrix.hpp>
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
 
@@ -54,7 +55,7 @@ namespace DRT
 
       virtual void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
-      virtual Epetra_SerialDenseMatrix ComputeNullSpace(
+      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
 
       virtual void SetupElementDefinition(
@@ -384,10 +385,10 @@ namespace DRT
       {
       }
 
-      virtual Epetra_SerialDenseMatrix ComputeNullSpace(
+      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Epetra_SerialDenseMatrix nullspace;
+        Teuchos::SerialDenseMatrix<int, double> nullspace;
         dserror("method ComputeNullSpace not implemented");
         return nullspace;
       }

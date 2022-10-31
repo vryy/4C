@@ -32,6 +32,7 @@
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
@@ -81,10 +82,10 @@ void DRT::ELEMENTS::Beam3kType::NodalBlockInformation(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam3kType::ComputeNullSpace(
+Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Beam3kType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace;
+  Teuchos::SerialDenseMatrix<int, double> nullspace;
   dserror("method ComputeNullSpace not implemented for element type beam3k!");
   return nullspace;
 }

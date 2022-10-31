@@ -9,6 +9,7 @@
 #ifndef SO_SURFACE_H
 #define SO_SURFACE_H
 
+#include <Teuchos_SerialDenseMatrix.hpp>
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -36,10 +37,10 @@ namespace DRT
       {
       }
 
-      Epetra_SerialDenseMatrix ComputeNullSpace(
+      Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
-        Epetra_SerialDenseMatrix nullspace;
+        Teuchos::SerialDenseMatrix<int, double> nullspace;
         dserror("method ComputeNullSpace not implemented!");
         return nullspace;
       }

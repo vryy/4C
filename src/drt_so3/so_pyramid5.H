@@ -9,6 +9,7 @@
 #define SOP5_H
 
 
+#include <Teuchos_SerialDenseMatrix.hpp>
 #include "so_base.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_inpar/inpar_structure.H"
@@ -53,7 +54,7 @@ namespace DRT
       void NodalBlockInformation(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Epetra_SerialDenseMatrix ComputeNullSpace(
+      Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void SetupElementDefinition(

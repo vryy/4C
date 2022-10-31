@@ -60,11 +60,10 @@ void DRT::ELEMENTS::FluidXWallType::NodalBlockInformation(
   np = 1;
 }
 
-Epetra_SerialDenseMatrix DRT::ELEMENTS::FluidXWallType::ComputeNullSpace(
+Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::FluidXWallType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
-  return nullspace;
+  return LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
 void DRT::ELEMENTS::FluidXWallType::SetupElementDefinition(

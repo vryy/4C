@@ -51,10 +51,10 @@ void DRT::ELEMENTS::ConstraintElement3Type::NodalBlockInformation(
 {
 }
 
-Epetra_SerialDenseMatrix DRT::ELEMENTS::ConstraintElement3Type::ComputeNullSpace(
+Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::ConstraintElement3Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace;
+  Teuchos::SerialDenseMatrix<int, double> nullspace;
   dserror("method ComputeNullSpace not implemented!");
   return nullspace;
 }

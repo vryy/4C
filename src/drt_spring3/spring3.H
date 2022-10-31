@@ -10,6 +10,7 @@
 #ifndef SPRING3_H
 #define SPRING3_H
 
+#include <Teuchos_SerialDenseMatrix.hpp>
 #include "Teuchos_RCP.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
@@ -45,7 +46,7 @@ namespace DRT
       virtual void NodalBlockInformation(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
-      virtual Epetra_SerialDenseMatrix ComputeNullSpace(
+      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
 
       virtual void SetupElementDefinition(

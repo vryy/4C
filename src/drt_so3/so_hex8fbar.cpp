@@ -58,11 +58,10 @@ void DRT::ELEMENTS::So_hex8fbarType::NodalBlockInformation(
   np = 0;
 }
 
-Epetra_SerialDenseMatrix DRT::ELEMENTS::So_hex8fbarType::ComputeNullSpace(
+Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::So_hex8fbarType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid3DNullSpace(node, x0);
-  return nullspace;
+  return LINALG::ComputeSolid3DNullSpace(node, x0);
 }
 
 void DRT::ELEMENTS::So_hex8fbarType::SetupElementDefinition(

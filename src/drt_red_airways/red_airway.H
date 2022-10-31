@@ -12,6 +12,7 @@
 #ifndef RED_AIRWAY_H_
 #define RED_AIRWAY_H_
 
+#include <Teuchos_SerialDenseMatrix.hpp>
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
 
@@ -55,10 +56,10 @@ namespace DRT
       {
       }
 
-      virtual Epetra_SerialDenseMatrix ComputeNullSpace(
+      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Epetra_SerialDenseMatrix nullspace;
+        Teuchos::SerialDenseMatrix<int, double> nullspace;
         dserror("method ComputeNullSpace not implemented");
         return nullspace;
       }
@@ -452,10 +453,10 @@ namespace DRT
       {
       }
 
-      virtual Epetra_SerialDenseMatrix ComputeNullSpace(
+      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Epetra_SerialDenseMatrix nullspace;
+        Teuchos::SerialDenseMatrix<int, double> nullspace;
         dserror("method ComputeNullSpace not implemented");
         return nullspace;
       }
@@ -856,10 +857,10 @@ namespace DRT
       {
       }
 
-      virtual Epetra_SerialDenseMatrix ComputeNullSpace(
+      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Epetra_SerialDenseMatrix nullspace;
+        Teuchos::SerialDenseMatrix<int, double> nullspace;
         dserror("method ComputeNullSpace not implemented");
         return nullspace;
       }
@@ -1235,10 +1236,10 @@ namespace DRT
       {
       }
 
-      virtual Epetra_SerialDenseMatrix ComputeNullSpace(
+      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Epetra_SerialDenseMatrix nullspace;
+        Teuchos::SerialDenseMatrix<int, double> nullspace;
         dserror("method ComputeNullSpace not implemented");
         return nullspace;
       }
@@ -1610,10 +1611,10 @@ namespace DRT
       {
       }
 
-      virtual Epetra_SerialDenseMatrix ComputeNullSpace(
+      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Epetra_SerialDenseMatrix nullspace;
+        Teuchos::SerialDenseMatrix<int, double> nullspace;
         dserror("method ComputeNullSpace not implemented");
         return nullspace;
       }

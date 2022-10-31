@@ -88,10 +88,10 @@ void DRT::ELEMENTS::Beam3rType::NodalBlockInformation(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam3rType::ComputeNullSpace(
+Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Beam3rType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace;
+  Teuchos::SerialDenseMatrix<int, double> nullspace;
   dserror("method ComputeNullSpace not implemented for element type beam3r!");
   return nullspace;
 }

@@ -8,6 +8,7 @@
 #ifndef SO_WEG6_H_
 #define SO_WEG6_H_
 
+#include <Teuchos_SerialDenseMatrix.hpp>
 #include "Teuchos_RCP.hpp"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_element.H"
@@ -55,7 +56,7 @@ namespace DRT
       void NodalBlockInformation(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Epetra_SerialDenseMatrix ComputeNullSpace(
+      Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void SetupElementDefinition(

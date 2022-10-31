@@ -7,6 +7,8 @@
 
 *----------------------------------------------------------------------*/
 
+#include <Teuchos_SerialDenseMatrix.hpp>
+
 #include "linalg_nullspace.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
@@ -30,17 +32,19 @@ Teuchos::RCP<Epetra_MultiVector> LINALG::NULLSPACE::ComputeNullSpace(const DRT::
   else
   {
     // for rigid body rotations compute nodal center of the discretization
-    double x0send[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> x0send = {0.0, 0.0, 0.0};
     for (int i = 0; i < dis.NumMyRowNodes(); ++i)
       for (int j = 0; j < 3; ++j) x0send[j] += dis.lRowNode(i)->X()[j];
-    double x0[3];
-    dis.Comm().SumAll(x0send, x0, 3);
+
+    std::array<double, 3> x0;
+    dis.Comm().SumAll(x0send.data(), x0.data(), 3);
+
     for (int i = 0; i < 3; ++i) x0[i] /= dis.NumGlobalNodes();
 
     // assembly process of the nodalNullspace into the actual nullspace
-    for (int i = 0; i < dis.NumMyRowNodes(); ++i)
+    for (int node = 0; node < dis.NumMyRowNodes(); ++node)
     {
-      DRT::Node* actnode = dis.lRowNode(i);
+      DRT::Node* actnode = dis.lRowNode(node);
       std::vector<int> dofs = dis.Dof(0, actnode);
       const int localLength = dofs.size();
 
@@ -53,8 +57,8 @@ Teuchos::RCP<Epetra_MultiVector> LINALG::NULLSPACE::ComputeNullSpace(const DRT::
       // check size of degrees of freedom
       if (localLength != numdf)
       {
-        std::cout << "Warning: At local node " << i << " : nullspace degrees of freedom ( " << numdf
-                  << " ) "
+        std::cout << "Warning: At local node " << node << " : nullspace degrees of freedom ( "
+                  << numdf << " ) "
                   << "and rowmap degrees of freedom ( " << localLength << " ) are not consistent"
                   << std::endl;
       }
@@ -62,7 +66,9 @@ Teuchos::RCP<Epetra_MultiVector> LINALG::NULLSPACE::ComputeNullSpace(const DRT::
       // Here we check the first element type of the node. One node can be owned by several elements
       // we restrict the routine, that a node is only owned by elements with the same physics
       if (actnode->NumElement() > 1)
+      {
         for (int i = 0; i < actnode->NumElement() - 1; i++)
+        {
           // if element types are different, check nullspace dimension and dofs
           if (actnode->Elements()[i + 1]->ElementType() != actnode->Elements()[i]->ElementType())
           {
@@ -76,9 +82,12 @@ Teuchos::RCP<Epetra_MultiVector> LINALG::NULLSPACE::ComputeNullSpace(const DRT::
             if (numdof1 != numdof2 || dimnsp1 != dimnsp2)
               dserror("Node is owned by different element types, nullspace calculation aborted!");
           }
+        }
+      }
 
-      Epetra_SerialDenseMatrix nodalNullspace =
-          actnode->Elements()[0]->ElementType().ComputeNullSpace(*actnode, x0, localLength, dimns);
+      Teuchos::SerialDenseMatrix<int, double> nodalNullspace =
+          actnode->Elements()[0]->ElementType().ComputeNullSpace(
+              *actnode, x0.data(), localLength, dimns);
 
       for (int dim = 0; dim < dimns; ++dim)
       {
@@ -110,7 +119,7 @@ void LINALG::NULLSPACE::FixNullSpace(std::string field, const Epetra_Map& oldmap
   if (!solveparams.isSublist("ML Parameters") && !solveparams.isSublist("MueLu Parameters")) return;
 
   // find the ML or MueLu list
-  Teuchos::ParameterList* params_ptr = NULL;
+  Teuchos::ParameterList* params_ptr = nullptr;
   if (solveparams.isSublist("ML Parameters"))
     params_ptr = &(solveparams.sublist("ML Parameters"));
   else if (solveparams.isSublist("MueLu Parameters"))
@@ -143,8 +152,9 @@ void LINALG::NULLSPACE::FixNullSpace(std::string field, const Epetra_Map& oldmap
   {
     Epetra_Vector* nullspaceData = (*nullspace)(i);
     Epetra_Vector* nullspaceDataNew = (*nullspaceNew)(i);
-    const size_t myLength = nullspaceDataNew->MyLength();
-    for (size_t j = 0; j < myLength; j++)
+    const int myLength = nullspaceDataNew->MyLength();
+
+    for (int j = 0; j < myLength; j++)
     {
       int gid = newmap.GID(j);
       int olid = oldmap.LID(gid);

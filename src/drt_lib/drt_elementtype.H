@@ -14,6 +14,7 @@
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_SerialDenseMatrix.hpp>
 #include <Epetra_Vector.h>
 
 #include "drt_parobjectfactory.H"
@@ -95,7 +96,7 @@ namespace DRT
         DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) = 0;
 
     /// do the null space computation
-    virtual Epetra_SerialDenseMatrix ComputeNullSpace(
+    virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
         DRT::Node& node, const double* x0, const int numdof, const int dimnsp) = 0;
   };
 

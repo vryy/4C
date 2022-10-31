@@ -56,11 +56,11 @@ void DRT::ELEMENTS::Wall1Type::NodalBlockInformation(
   nv = 2;
 }
 
-Epetra_SerialDenseMatrix DRT::ELEMENTS::Wall1Type::ComputeNullSpace(
+Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Wall1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, int const numdof, int const dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid2DNullSpace(node, x0);
-  return nullspace;
+  return LINALG::ComputeSolid2DNullSpace(node, x0);
+  ;
 }
 
 void DRT::ELEMENTS::Wall1Type::SetupElementDefinition(
