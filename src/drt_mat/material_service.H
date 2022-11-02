@@ -139,6 +139,12 @@ namespace MAT
    *          + 1/2 \cdot ScalarAB \cdot ( A_{IK} \cdot B_{JL} + A_{IL} \cdot B_{JK} )
    * \f]
    *
+   * compute the "material tensor product" A o B (also known as kronecker-tensor-product) of two 2nd
+   * order tensors (in matrix notation) and add the result to a 4th order tensor (also in matrix
+   * notation) using the symmetry-conditions inherent to material tensors, or tangent matrices,
+   * respectively AND the Voigt notation of E,S, and C with the famous factor 2! The implementation
+   * is based on the Epetra-Method Matrix.Multiply.
+   *
    * \param C (in/out)    : Material tangent matrix to be modified
    * \param ScalarAB (in) : Scalar to multiply with A o B
    * \param A (in)        : Dense matrix (3 by 3) as 2nd order tensor A
@@ -158,6 +164,12 @@ namespace MAT
    * C_{IJKL} := ScalarThis \cdot C_{IJKL}
    *          + 1/2 \cdot ScalarAB \cdot ( A_{IK} \cdot B_{JL} + A_{IL} \cdot B_{JK} )
    * \f]
+   *
+   * compute the "material tensor product" A o B (also known as kronecker-tensor-product) of two 2nd
+   * order tensors (in matrix notation) and add the result to a 4th order tensor (also in matrix
+   * notation) using the symmetry-conditions inherent to material tensors, or tangent matrices,
+   * respectively AND the Voigt notation of E,S, and C with the famous factor 2! The implementation
+   * uses the fixed size matrix.ss
    *
    * \param C (in/out)    : Material tangent matrix to be modified
    * \param ScalarAB (in) : Scalar to multiply with A o B
@@ -208,7 +220,7 @@ namespace MAT
    *
    * This function adds the following contribution to the given constitutive
    * matrix #cmat based on the inverse of the right Cauchy-Green vector
-   * #invc.
+   * #invc:
    *
    * In compact tensor notation this method performs
    * \f[
@@ -419,6 +431,33 @@ namespace MAT
       LINALG::Matrix<3, 3> const& A,              ///< Matrix in the above mentioned equation
       LINALG::Matrix<3, 3> const& B,              ///< Matrix in the above mentioned equation
       LINALG::Matrix<9, 9>& out);                 ///< Output
+
+  /*!
+   *  \brief Add scaled derivative of invA*B*invA w.r.t. A
+   *
+   *  Add the following contribution to the tensor out(6,6) based on
+   *  - the inverse of the tensor (\f$ \mathbf{A} \f$)
+   *  - the term invA*B*invA (\f$ \mathbf{A}^{-1} \mathbf{B} \mathbf{A}^{-1} \f$) with the tensor B
+   * (\f$ \mathbf{B} \f$)
+   *
+   *  \f$\text{scalar} \cdot \frac{\partial \mathbf{A}^{-1} \mathbf{B} \mathbf{A}^{-1}}{\partial
+   *  \mathbf{A}} \f$
+   *
+   *  wherein the derivative \f$ \frac{\partial \mathbf{A}^-1 \mathbf{B} \mathbf{A}^-1}{\partial
+   *  \mathbf{A}}  \f$ is computed to:  \f$ - 1/2 \cdot ( \mathbf{A}^{-1}_{ik}
+   *  \mathbf{A}^{-1}_{jm} B_{mn} \mathbf{A}^{-1}_{nl} + \mathbf{A}^{-1}_{il} \mathbf{A}^{-1}_{jm}
+   *  B_{mn} \mathbf{A}^{-1}_{nk} + \mathbf{A}^{-1}_{jk} \mathbf{A}^{-1}_{im} B_{mn}
+   *  \mathbf{A}^{-1}_{nl} + \mathbf{A}^{-1}_{jl} \mathbf{A}^{-1}_{im} B_{mn}
+   * \mathbf{A}^{-1}_{nk}) \f$
+   *
+   *  \param[in]     fac Scaling factor
+   *  \param[in]     invA Inverse of the 2nd order tensor A stress-like Voigt notation
+   *  \param[in]     invABinvA 2nd order tensor product invA*B*invA in stress-like Voigt notation
+   *  \param[in,out] out 4th order tensor derivative of invA*B*invA w.r.t. A in stress-like Voigt
+   *                     notation
+   */
+  void AddDerivInvABInvBProduct(double const& fac, const LINALG::Matrix<6, 1>& invA,
+      const LINALG::Matrix<6, 1>& invABinvA, LINALG::Matrix<6, 6>& out);
 
   /*!
    * \brief Evaluates the principal invariants of any symmetric tensor

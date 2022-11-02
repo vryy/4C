@@ -192,33 +192,6 @@ namespace MIXTURE
      */
     void EvaluateLambert(double xi, double& W0, double tol, double maxiter);
 
-    /*!
-     *  \brief Add scaled derivative of invC*L*invC to Cmat
-     *
-     *  Add the following contribution to the constitutive tensor cmat(6,6) based on
-     *  - the inverse of the right Cauchy-Green vector invC
-     *  - the term invC*L*invC (\f$ \mathbf{C}^{-1} \mathbf{L} \mathbf{C}^{-1} \f$) with the
-     *  structural tensor L (\f$ \mathbf{L} \f$)
-     *
-     *  \f$\text{scalar} \cdot \frac{\partial \mathbf{C}^{-1} \mathbf{L} \mathbf{C}^{-1}}{\partial
-     *  \mathbf{C}} \f$
-     *
-     *  wherein the derivative \f$ \frac{\partial \mathbf{C}^-1 \mathbf{L} \mathbf{C}^-1}{\partial
-     *  \mathbf{C}}  \f$ is computed to:  \f$ - 1/2 \cdot ( \mathbf{C}^{-1}_{ik}
-     *  \mathbf{C}^{-1}_{jm} L_{mn} \mathbf{C}^{-1}_{nl} + \mathbf{C}^{-1}_{il} \mathbf{C}^{-1}_{jm}
-     *  L_{mn} \mathbf{C}^{-1}_{nk} + \mathbf{C}^{-1}_{jk} \mathbf{C}^{-1}_{im} L_{mn}
-     *  \mathbf{C}^{-1}_{nl} + \mathbf{C}^{-1}_{jl} \mathbf{C}^{-1}_{im} L_{mn}
-     * \mathbf{C}^{-1}_{nk}) \f$
-     *
-     *  \param[in,out] cmat Constitutive matrix
-     *  \param[in]     invC Inverse of right Cauchy Green tensor in matrix notation
-     *  \param[in]     invCLinvC Product invC*L*invC with modified structual tensor and inverse of
-     *                           right Cauchy Green tensor
-     *  \param[in]     scalar scaling factor
-     */
-    void AddtoCmatDerivInvCLInvCProduct(LINALG::Matrix<6, 6>& cmat,
-        const LINALG::Matrix<3, 3>& invC, const LINALG::Matrix<3, 3>& invCLinvC, double scalar);
-
     /// Weickenmeier material parameters
     MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier* params_{};
 

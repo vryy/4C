@@ -29,32 +29,6 @@
 
 using FAD = Sacado::Fad::DFad<double>;
 
-
-/*----------------------------------------------------------------------*
- |  Add 'Holzapfel product' contribution to constitutive tensor         |
- |  using Voigt notation                                                |
- |                                                (public)  chfoe 04/08 |
- *----------------------------------------------------------------------*
-
- This function adds the following contribution to the given constitutive
- matrix cmat(6,6) based on the inverse of the right Cauchy-Green vector
- invc(6):
-
- scalar * ( Cinv boeppel Cinv )
-
- For that purpose we need the derivative
-
-  \partial tensor(C)^-1
- -----------------------
-   \partial tensor(C)
-
- which yields the following product
-
-  - ( Cinv boeppel Cinv )_{abcd} = 1/2 * ( Cinv_{ac} Cinv_{bd} + Cinv_{ad} Cinv_{bc} )
-
- For more details see Holzapfel p. 254
-
- */
 void MAT::AddtoCmatHolzapfelProduct(
     Epetra_SerialDenseMatrix& cmat, const Epetra_SerialDenseVector& invc, const double scalar)
 {
@@ -107,33 +81,6 @@ void MAT::AddtoCmatHolzapfelProduct(
   cmat(5, 5) += scalar * 0.5 * (invc(0) * invc(2) + invc(5) * invc(5));
 }
 
-/*----------------------------------------------------------------------*
- |  Add 'Holzapfel product' contribution to constitutive tensor         |
- |  using Voigt notation                                                |
- | This is a plain copy of the Epetra version of this method            |
- | with different parameter types
- |                                                (public)  mgee  10/08 |
- *----------------------------------------------------------------------*
-
- This function adds the following contribution to the given constitutive
- matrix cmat(6,6) based on the inverse of the right Cauchy-Green vector
- invc(6):
-
- scalar * ( Cinv boeppel Cinv )
-
- For that purpose we need the derivative
-
-  \partial tensor(C)^-1
- -----------------------
-   \partial tensor(C)
-
- which yields the following product
-
-  - ( Cinv boeppel Cinv )_{abcd} = - 1/2 * ( Cinv_{ac} Cinv_{bd} + Cinv_{ad} Cinv_{bc} )
-
- For more details see Holzapfel p. 254
-
- */
 template <typename T>
 void MAT::AddtoCmatHolzapfelProduct(
     LINALG::Matrix<6, 6, T>& cmat, const LINALG::Matrix<6, 1, T>& invc, const T scalar)
@@ -187,15 +134,6 @@ void MAT::AddtoCmatHolzapfelProduct(
   cmat(5, 5) += scalar * 0.5 * (invc(0) * invc(2) + invc(5) * invc(5));
 }
 
-
-/*----------------------------------------------------------------------*
- | compute the "elasticity tensor product" A x B of                     |
- | two 2nd order tensors (in matrix notation) and add the result to     |
- | a 4th order tensor (in Voigt matrix notation!) using the             |
- | symmetry-conditions inherent to elasticity tensors                   |
- | The implementation is based on the Epetra-Method Matrix.Multiply.    |
- | (public)                                                    maf 11/07|
- *----------------------------------------------------------------------*/
 void MAT::ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C, const double ScalarAB,
     const Epetra_SerialDenseMatrix& A, const Epetra_SerialDenseMatrix& B, const double ScalarThis)
 {
@@ -231,15 +169,6 @@ void MAT::ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C, const double Scala
   C.Multiply('N', 'T', ScalarAB, AVoigt, BVoigt, ScalarThis);
 }
 
-
-/*----------------------------------------------------------------------*
- | compute the "elasticity tensor product" A x B of                     |
- | two 2nd order tensors (in matrix notation) and add the result to     |
- | a 4th order tensor (in Voigt matrix notation!) using the             |
- | symmetry-conditions inherent to elasticity tensors                   |
- | (public)                                                    maf 11/07|
- *----------------------------------------------------------------------*/
-// This is a copy of the above function, using the fixed size matrix.
 void MAT::ElastSymTensorMultiply(LINALG::Matrix<6, 6>& C, const double ScalarAB,
     const LINALG::Matrix<3, 3>& A, const LINALG::Matrix<3, 3>& B, const double ScalarThis)
 {
@@ -266,15 +195,6 @@ void MAT::ElastSymTensorMultiply(LINALG::Matrix<6, 6>& C, const double ScalarAB,
   C.MultiplyNT(ScalarAB, AVoigt, BVoigt, ScalarThis);
 }
 
-
-/*----------------------------------------------------------------------*
- | compute the "elasticity tensor product" (A x B + B x A) of           |
- | two 2nd order tensors (in matrix notation) and add the result to     |
- | a 4th order tensor (in Voigt matrix notation!) using the             |
- | symmetry-conditions inherent to elasticity tensors                   |
- | The implementation is based on the Epetra-Method Matrix.Multiply.    |
- | (public)                                                    maf 11/07|
- *----------------------------------------------------------------------*/
 void MAT::ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C, const double ScalarAB,
     const Epetra_SerialDenseMatrix& A, const Epetra_SerialDenseMatrix& B, const double ScalarThis)
 {
@@ -311,15 +231,6 @@ void MAT::ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C, const double
   C.Multiply('N', 'T', ScalarAB, BVoigt, AVoigt, 1.0);
 }
 
-/*----------------------------------------------------------------------*
- | compute the "elasticity tensor product" (A x B + B x A) of           |
- | two 2nd order tensors (in matrix notation) and add the result to     |
- | a 4th order tensor (in Voigt matrix notation!) using the             |
- | symmetry-conditions inherent to elasticity tensors                   |
- | The implementation is based on the Epetra-Method Matrix.Multiply.    |
- | (public)                                                    maf 11/07|
- *----------------------------------------------------------------------*/
-// This is a copy of the above function, using the fixed size matrix.
 void MAT::ElastSymTensorMultiplyAddSym(LINALG::Matrix<6, 6>& C, const double ScalarAB,
     const LINALG::Matrix<3, 3>& A, const LINALG::Matrix<3, 3>& B, const double ScalarThis)
 {
@@ -356,16 +267,6 @@ void MAT::ElastSymTensorMultiplyAddSym(LINALG::Matrix<6, 6>& C, const double Sca
   C.MultiplyNT(ScalarAB, BVoigt, AVoigt, 1.0);
 }
 
-/*----------------------------------------------------------------------*
- | compute the "material tensor product" A o B (also known as           |
- | kronecker-tensor-product) of two 2nd order tensors                   |
- | (in matrix notation) and add the result to a 4th order tensor        |
- | (also in matrix notation) using the symmetry-conditions inherent to  |
- | material tensors, or tangent matrices, respectively                  |
- | AND the Voigt notation of E,S, and C with the famous factor 2!       |
- | The implementation is based on the Epetra-Method Matrix.Multiply.    |
- | (public)                                                    maf 11/07|
- *----------------------------------------------------------------------*/
 void MAT::ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C, const double ScalarAB,
     const Epetra_SerialDenseMatrix& A, const Epetra_SerialDenseMatrix& B, const double ScalarThis)
 {
@@ -524,21 +425,9 @@ void MAT::ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C, const double Sc
       ScalarThis * C(5, 5) + ScalarAB * 0.5 * (A(0, 0) * B(2, 2) + A(0, 2) * B(2, 0));  // C1313
 }
 
-/*----------------------------------------------------------------------*
- | compute the "material tensor product" A o B (also known as           |
- | kronecker-tensor-product) of two 2nd order tensors                   |
- | (in matrix notation) and add the result to a 4th order tensor        |
- | (also in matrix notation) using the symmetry-conditions inherent to  |
- | material tensors, or tangent matrices, respectively                  |
- | AND the Voigt notation of E,S, and C with the famous factor 2!       |
- | (public)                                                    maf 11/07|
- *----------------------------------------------------------------------*/
-// This is a copy of the above function, using the fixed size matrix.ss
 void MAT::ElastSymTensor_o_Multiply(LINALG::Matrix<6, 6>& C, const double ScalarAB,
     const LINALG::Matrix<3, 3>& A, const LINALG::Matrix<3, 3>& B, const double ScalarThis)
 {
-  // To keep the code somewhat shorter I removed the explanation comment here,
-  // but they are still in the Epetra Version
   const double ScalarABhalf = ScalarAB * 0.5;
   C(0, 0) = ScalarThis * C(0, 0) + ScalarAB * (A(0, 0) * B(0, 0));                          // C1111
   C(0, 1) = ScalarThis * C(0, 1) + ScalarAB * (A(0, 1) * B(0, 1));                          // C1122
@@ -583,8 +472,6 @@ void MAT::ElastSymTensor_o_Multiply(LINALG::Matrix<6, 6>& C, const double Scalar
   C(5, 5) = ScalarThis * C(5, 5) + ScalarABhalf * (A(0, 0) * B(2, 2) + A(0, 2) * B(2, 0));  // C1313
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::VolumetrifyAndIsochorify(LINALG::Matrix<6, 1>* pk2vol, LINALG::Matrix<6, 6>* cvol,
     LINALG::Matrix<6, 1>* pk2iso, LINALG::Matrix<6, 6>* ciso, const LINALG::Matrix<6, 1>& gl,
     const LINALG::Matrix<6, 1>& pk2, const LINALG::Matrix<6, 6>& cmat)
@@ -656,9 +543,6 @@ void MAT::VolumetrifyAndIsochorify(LINALG::Matrix<6, 1>* pk2vol, LINALG::Matrix<
   }
 }
 
-/*----------------------------------------------------------------------*
- |  add dX^2/dX to cmat                                     seitz 07/13 |
- *----------------------------------------------------------------------*/
 void MAT::AddToCmatDerivTensorSquare(
     LINALG::Matrix<6, 6>& C, double ScalarDX2, LINALG::Matrix<3, 3> X, double ScalarThis)
 {
@@ -705,10 +589,6 @@ void MAT::AddToCmatDerivTensorSquare(
   C(5, 5) = ScalarThis * C(5, 5) + ScalarDX2 * 0.5 * (X(2, 2) + X(0, 0));  // C1313
 }
 
-
-/*----------------------------------------------------------------------*
- |                                                          seitz 09/13 |
- *----------------------------------------------------------------------*/
 void MAT::AddSymmetricHolzapfelProduct(LINALG::Matrix<6, 6>& X, const LINALG::Matrix<3, 3>& A,
     const LINALG::Matrix<3, 3>& B, const double fac)
 {
@@ -755,9 +635,6 @@ void MAT::AddSymmetricHolzapfelProduct(LINALG::Matrix<6, 6>& X, const LINALG::Ma
   X(2, 2) += 4 * fac * A(2, 2) * B(2, 2);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 template <typename T>
 void MAT::AddRightNonSymmetricHolzapfelProduct(LINALG::Matrix<6, 9, T>& out,
     LINALG::Matrix<3, 3, T> const& A, LINALG::Matrix<3, 3, T> const& B, T const fac)
@@ -823,8 +700,6 @@ void MAT::AddRightNonSymmetricHolzapfelProduct(LINALG::Matrix<6, 9, T>& out,
   out(5, 2) += fac * (A(0, 2) * B(2, 2) + A(2, 2) * B(0, 2));
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 template <typename T>
 void MAT::AddRightNonSymmetricHolzapfelProductStrainLike(LINALG::Matrix<6, 9, T>& out,
     LINALG::Matrix<3, 3, T> const& A, LINALG::Matrix<3, 3, T> const& B, T const fac)
@@ -890,8 +765,6 @@ void MAT::AddRightNonSymmetricHolzapfelProductStrainLike(LINALG::Matrix<6, 9, T>
   out(5, 2) += 2 * fac * (A(0, 2) * B(2, 2) + A(2, 2) * B(0, 2));
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::AddLeftNonSymmetricHolzapfelProduct(LINALG::Matrix<9, 6>& out,
     LINALG::Matrix<3, 3> const& A, LINALG::Matrix<3, 3> const& B, double const fac)
 {
@@ -959,9 +832,6 @@ void MAT::AddLeftNonSymmetricHolzapfelProduct(LINALG::Matrix<9, 6>& out,
   out(2, 2) += fac * 2 * A(2, 2) * B(2, 2);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::AddNonSymmetricProduct(double const& fac, LINALG::Matrix<3, 3> const& A,
     LINALG::Matrix<3, 3> const& B, LINALG::Matrix<9, 9>& out)
 {
@@ -1056,8 +926,67 @@ void MAT::AddNonSymmetricProduct(double const& fac, LINALG::Matrix<3, 3> const& 
   out(2, 2) += fac * A(2, 2) * B(2, 2);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+void MAT::AddDerivInvABInvBProduct(double const& fac, const LINALG::Matrix<6, 1>& invA,
+    const LINALG::Matrix<6, 1>& invABinvA, LINALG::Matrix<6, 6>& out)
+{
+  out(0, 0) -= 2.0 * fac * (invA(0) * invABinvA(0));
+  out(0, 1) -= 2.0 * fac * (invA(3) * invABinvA(3));
+  out(0, 2) -= 2.0 * fac * (invA(5) * invABinvA(5));
+  out(0, 3) -= fac * (invA(0) * invABinvA(3) + invA(3) * invABinvA(0));
+  out(0, 4) -= fac * (invA(3) * invABinvA(5) + invA(5) * invABinvA(3));
+  out(0, 5) -= fac * (invA(0) * invABinvA(5) + invA(5) * invABinvA(0));
+
+  out(1, 0) -= 2.0 * fac * (invA(3) * invABinvA(3));
+  out(1, 1) -= 2.0 * fac * (invA(1) * invABinvA(1));
+  out(1, 2) -= 2.0 * fac * (invA(4) * invABinvA(4));
+  out(1, 3) -= fac * (invA(3) * invABinvA(1) + invA(1) * invABinvA(3));
+  out(1, 4) -= fac * (invA(1) * invABinvA(4) + invA(4) * invABinvA(1));
+  out(1, 5) -= fac * (invA(3) * invABinvA(4) + invA(4) * invABinvA(3));
+
+  out(2, 0) -= 2.0 * fac * (invA(5) * invABinvA(5));
+  out(2, 1) -= 2.0 * fac * (invA(4) * invABinvA(4));
+  out(2, 2) -= 2.0 * fac * (invA(2) * invABinvA(2));
+  out(2, 3) -= fac * (invA(5) * invABinvA(4) + invA(4) * invABinvA(5));
+  out(2, 4) -= fac * (invA(4) * invABinvA(2) + invA(2) * invABinvA(4));
+  out(2, 5) -= fac * (invA(5) * invABinvA(2) + invA(2) * invABinvA(5));
+
+  out(3, 0) -= fac * (invA(0) * invABinvA(3) + invA(3) * invABinvA(0));
+  out(3, 1) -= fac * (invA(3) * invABinvA(1) + invA(1) * invABinvA(3));
+  out(3, 2) -= fac * (invA(5) * invABinvA(4) + invA(4) * invABinvA(5));
+  out(3, 3) -=
+      fac * (0.5 * (invA(0) * invABinvA(1) + invA(1) * invABinvA(0)) + invA(3) * invABinvA(3));
+  out(3, 4) -= 0.5 * fac *
+               (invA(3) * invABinvA(4) + invA(5) * invABinvA(1) + invA(1) * invABinvA(5) +
+                   invA(4) * invABinvA(3));
+  out(3, 5) -= 0.5 * fac *
+               (invA(0) * invABinvA(4) + invA(5) * invABinvA(3) + invA(3) * invABinvA(5) +
+                   invA(4) * invABinvA(0));
+
+  out(4, 0) -= fac * (invA(3) * invABinvA(5) + invA(5) * invABinvA(3));
+  out(4, 1) -= fac * (invA(1) * invABinvA(4) + invA(4) * invABinvA(1));
+  out(4, 2) -= fac * (invA(4) * invABinvA(2) + invA(2) * invABinvA(4));
+  out(4, 3) -= 0.5 * fac *
+               (invA(3) * invABinvA(4) + invA(1) * invABinvA(5) + invA(5) * invABinvA(1) +
+                   invA(4) * invABinvA(3));
+  out(4, 4) -=
+      fac * (0.5 * (invA(1) * invABinvA(2) + invA(2) * invABinvA(1)) + invA(4) * invABinvA(4));
+  out(4, 5) -= 0.5 * fac *
+               (invA(3) * invABinvA(2) + invA(4) * invABinvA(5) + invA(5) * invABinvA(4) +
+                   invA(2) * invABinvA(3));
+
+  out(5, 0) -= fac * (invA(0) * invABinvA(5) + invA(5) * invABinvA(0));
+  out(5, 1) -= fac * (invA(3) * invABinvA(4) + invA(4) * invABinvA(3));
+  out(5, 2) -= fac * (invA(5) * invABinvA(2) + invA(2) * invABinvA(5));
+  out(5, 3) -= 0.5 * fac *
+               (invA(0) * invABinvA(4) + invA(3) * invABinvA(5) + invA(5) * invABinvA(3) +
+                   invA(4) * invABinvA(0));
+  out(5, 4) -= 0.5 * fac *
+               (invA(3) * invABinvA(2) + invA(5) * invABinvA(4) + invA(4) * invABinvA(5) +
+                   invA(2) * invABinvA(3));
+  out(5, 5) -=
+      fac * (0.5 * (invA(0) * invABinvA(2) + invA(2) * invABinvA(0)) + invA(5) * invABinvA(5));
+}
+
 void MAT::InvariantsModified(LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<3, 1>& prinv)
 {
   // 1st invariant, trace
@@ -1068,8 +997,6 @@ void MAT::InvariantsModified(LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<
   modinv(2) = std::pow(prinv(2), 1. / 2.);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::StretchesPrincipal(
     LINALG::Matrix<3, 1>& prstr, LINALG::Matrix<3, 3>& prdir, const LINALG::Matrix<6, 1>& rcg)
 {
@@ -1090,8 +1017,6 @@ void MAT::StretchesPrincipal(
   for (int al = 0; al < 3; ++al) prstr(al) = std::sqrt(prstr2(al, al));
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::StretchesModified(LINALG::Matrix<3, 1>& modstr, const LINALG::Matrix<3, 1>& prstr)
 {
   // determinant of deformation gradient
@@ -1112,8 +1037,6 @@ T* MAT::CreateMaterialParameterInstance(Teuchos::RCP<MAT::PAR::Material> curmat)
   return params;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 template <int dim>
 void MAT::ClearFourTensor(LINALG::FourTensor<dim>& fourTensor)
 {
@@ -1132,8 +1055,6 @@ void MAT::ClearFourTensor(LINALG::FourTensor<dim>& fourTensor)
   }
 }
 
-/*------------------------------------------------------------------------------------*
- *------------------------------------------------------------------------------------*/
 template <int dim>
 void MAT::MultiplyFourTensorMatrix(LINALG::FourTensor<dim>& fourTensorResult,
     const LINALG::FourTensor<dim>& fourTensor, const LINALG::Matrix<dim, dim>& matrix,
@@ -1158,8 +1079,6 @@ void MAT::MultiplyFourTensorMatrix(LINALG::FourTensor<dim>& fourTensorResult,
   }
 }
 
-/*------------------------------------------------------------------------------------*
- *------------------------------------------------------------------------------------*/
 template <int dim>
 void MAT::MultiplyMatrixFourTensor(LINALG::FourTensor<dim>& fourTensorResult,
     const LINALG::Matrix<dim, dim>& matrix, const LINALG::FourTensor<dim>& fourTensor,
@@ -1185,8 +1104,6 @@ void MAT::MultiplyMatrixFourTensor(LINALG::FourTensor<dim>& fourTensorResult,
   }
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 template <int dim>
 LINALG::Matrix<6, 6> MAT::PullBackFourTensor(
     const LINALG::Matrix<dim, dim>& defgr, const LINALG::Matrix<6, 6>& cMatVoigt)
@@ -1242,8 +1159,6 @@ LINALG::Matrix<6, 6> MAT::PullBackFourTensor(
   return cMatResultVoigt;
 }
 
-/*-------------------------------------------------------------------------------------*
- *-------------------------------------------------------------------------------------*/
 template <int dim>
 double MAT::PullBackFourTensorijkl(const LINALG::Matrix<dim, dim>& defgr,
     const LINALG::FourTensor<dim>& fourTensor, const int i, const int j, const int k, const int l)
@@ -1268,8 +1183,6 @@ double MAT::PullBackFourTensorijkl(const LINALG::Matrix<dim, dim>& defgr,
   return cMatResult_ijkl;
 }
 
-/*-------------------------------------------------------------------------------------*
- *-------------------------------------------------------------------------------------*/
 template <int dim>
 void MAT::SetupFourTensor(
     LINALG::FourTensor<dim>& fourTensor, const LINALG::Matrix<6, 6>& matrixVoigt)
@@ -1367,8 +1280,6 @@ void MAT::SetupFourTensor(
   fourTensor(2, 0, 2, 0) = matrixVoigt(5, 5);  // C1331 = C3131
 }
 
-/*------------------------------------------------------------------------------------------*
- *------------------------------------------------------------------------------------------*/
 template <int dim>
 void MAT::Setup6x6VoigtMatrix(
     LINALG::Matrix<6, 6>& matrixVoigt, const LINALG::FourTensor<dim>& fourTensor)
@@ -1376,18 +1287,6 @@ void MAT::Setup6x6VoigtMatrix(
 #ifdef DEBUG
   if (dim != 3) dserror("Current implementation only valid for dim = 3.");
 #endif
-
-  ///*  [      C1111                 C1122                C1133                0.5*(C1112+C1121)
-  /// 0.5*(C1123+C1132)                0.5*(C1113+C1131)      ]
-  //    [      C2211                 C2222                C2233                0.5*(C2212+C2221)
-  //    0.5*(C2223+C2232)                0.5*(C2213+C2231)      ] [      C3311                 C3322
-  //    C3333                0.5*(C3312+C3321)               0.5*(C3323+C3332) 0.5*(C3313+C3331) ]
-  //    [0.5*(C1211+C2111)    0.5*(C1222+C2122)    0.5*(C1233+C2133) 0.5*(C1212+C2112+C1221+C2121)
-  //    0.5*(C1223+C2123+C1232+C2132)    0.5*(C1213+C2113+C1231+C2131)] [0.5*(C2311+C3211)
-  //    0.5*(C2322+C3222)    0.5*(C2333+C3233)    0.5*(C2312+C3212+C2321+C3221)
-  //    0.5*(C2323+C3223+C2332+C3232)    0.5*(C2313+C3213+C2331+C3231)] [0.5*(C1322+C3122)
-  //    0.5*(C1322+C3122)    0.5*(C1333+C3133)    0.5*(C1312+C3112+C1321+C3121)
-  //    0.5*(C1323+C3123+C1332+C3132)    0.5*(C1313+C3113+C1331+C3131)] */
 
   // Setup 6x6 Voigt matrix from 4-Tensor
   matrixVoigt(0, 0) = fourTensor(0, 0, 0, 0);                                   // C1111
@@ -1451,8 +1350,6 @@ void MAT::Setup6x6VoigtMatrix(
                  fourTensor(2, 0, 2, 0));  // 0.5*(C1313+C3113+C1331+C3131)
 }
 
-/*------------------------------------------------------------------------------------------*
- *------------------------------------------------------------------------------------------*/
 template <int dim>
 void MAT::TransposeFourTensor12(
     LINALG::FourTensor<dim>& resultTensor, const LINALG::FourTensor<dim>& inputTensor)
@@ -1472,8 +1369,6 @@ void MAT::TransposeFourTensor12(
   }
 }
 
-/*------------------------------------------------------------------------------------------*
- *------------------------------------------------------------------------------------------*/
 template <int dim>
 void MAT::PrintFourTensor(const LINALG::FourTensor<dim>& fourTensor)
 {
@@ -1491,7 +1386,6 @@ void MAT::PrintFourTensor(const LINALG::FourTensor<dim>& fourTensor)
   }
 }
 
-
 template <int dim>
 void MAT::GetSymmetricPart(
     const LINALG::Matrix<dim, dim>& inputM, LINALG::Matrix<dim, dim>& outputM)
@@ -1500,7 +1394,6 @@ void MAT::GetSymmetricPart(
   outputM.UpdateT(0.5, inputM, 1.0);
 }
 
-/*----------------------------------------------------------------------------*/
 // explicit instantiation of template functions
 template void MAT::AddRightNonSymmetricHolzapfelProduct<double>(LINALG::Matrix<6, 9, double>&,
     LINALG::Matrix<3, 3, double> const&, LINALG::Matrix<3, 3, double> const&, double const);
