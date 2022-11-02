@@ -1815,9 +1815,11 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         Epetra_SerialDenseVector norm_refnormal_sq;
         norm_refnormal_sq.Size(numnode);
         for (int node = 0; node < numnode; ++node)
+        {
           for (int dim = 0; dim < numdim; dim++)
             norm_refnormal_sq[node] +=
                 elevector2[node * numdf + dim] * elevector2[node * numdf + dim];
+        }
 
         // normalize nodal subvectors of element normal vector
         for (int node = 0; node < numnode; ++node)
@@ -1826,17 +1828,23 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
 
         // build nodal N \otimes N matrix
         for (int node = 0; node < numnode; ++node)
+        {
           for (int dim1 = 0; dim1 < numdf; dim1++)
+          {
             for (int dim2 = 0; dim2 < numdf; dim2++)
               N_otimes_N(node * numdf + dim1, node * numdf + dim2) =
                   elevector2[node * numdf + dim1] * elevector2[node * numdf + dim2];
+          }
+        }
 
         // (N \otimes N) disp, (N \otimes N) velo
         for (int node = 0; node < numnode; ++node)
+        {
           for (int dim1 = 0; dim1 < numdim; dim1++)
+          {
+            refnormal[node * numdf + dim1] += elevector2[node * numdf + dim1];
             for (int dim2 = 0; dim2 < numdim; dim2++)
             {
-              refnormal[node * numdf + dim1] += elevector2[node * numdf + dim1];
               mydisp_refnormal[node * numdf + dim1] +=
                   N_otimes_N(node * numdf + dim1, node * numdf + dim2) *
                   (mydisp[node * numdf + dim2]);
@@ -1847,6 +1855,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
                   N_otimes_N(node * numdf + dim1, node * numdf + dim2) *
                   myoffprestr[node * numdf + dim2];
             }
+          }
+        }
       }
 
       // allocate vector for shape functions and matrix for derivatives
