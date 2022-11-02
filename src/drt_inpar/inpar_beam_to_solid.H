@@ -79,6 +79,11 @@ namespace INPAR
     {
       //! Default value.
       none,
+      //! 3D case with an in plane cross-section construction.
+      //! This is the variant used in "Steinbrecher, I., Popp, A. and Meier, C.: Consistent
+      //! coupling of positions and rotations for embedding 1D Cosserat beams into 3D solid
+      //! volumes" and should be the default case if rotational coupling is activated.
+      deformation_gradient_3d_general_in_cross_section_plane,
       //! Polar decomposition of the deformation gradient.
       polar_decomposition_2d,
       //! Deformed y basis vector.
@@ -97,8 +102,6 @@ namespace INPAR
       deformation_gradient_3d_local_3,
       //! 3D case with a general construction.
       deformation_gradient_3d_general,
-      //! 3D case with an in plane cross-section construction.
-      deformation_gradient_3d_general_in_cross_section_plane,
       //! 3D case with a construction based on the local e1 vector and minization of realitve
       //! angles.
       deformation_gradient_3d_base_1
@@ -111,12 +114,15 @@ namespace INPAR
     {
       //! Default value.
       none,
-      //! Construction based on the surface deformation gradient and the averaged vector
-      //! construction from the solid volume triads.
-      averaged,
       //! Construction based on the surface material director obtained by intersection of the beam
       //! cross-section with the solid surface.
-      surface_cross_section_director
+      //! This is the variant used in "Steinbrecher, I., Meier, C. and Popp, A.: A consistent
+      //! mixed-dimensional coupling approach for 1D Cosserat beams and 2D solid surfaces " and
+      //! should be the default case if surface rotational coupling is activated.
+      surface_cross_section_director,
+      //! Construction based on the surface deformation gradient and the averaged vector
+      //! construction from the solid volume triads.
+      averaged
     };
 
     /**
