@@ -28,7 +28,7 @@ double MAT::UTILS::MUSCLE::NewtonScalar(const std::function<ValuesFunctAndFunctD
   {
     numiter++;
 
-    // x_{n+1} = x_{n} – func(x_{n}) / derivFunc(x_{n})
+    // x_{n+1} = x_{n} - func(x_{n}) / derivFunc(x_{n})
     x = x - funct_and_funct_deriv.val_funct / funct_and_funct_deriv.val_deriv_funct;
 
     // f(x_{n+1})
@@ -169,6 +169,21 @@ double MAT::UTILS::MUSCLE::EvaluateDerivativeForceStretchDependencyEhret(
   }
 
   return dFxidLamdaM;
+}
+
+double MAT::UTILS::MUSCLE::EvaluateIntegralForceStretchDependencyEhret(
+    const double lambdaM, const double lambdaMin, const double lambdaOpt)
+{
+  double intFxi = 0.0;
+  double explambda = std::exp(((2 * lambdaMin - lambdaM - lambdaOpt) * (lambdaM - lambdaOpt)) /
+                              (2 * std::pow(lambdaMin - lambdaOpt, 2)));  // prefactor
+
+  if (lambdaM > lambdaMin)
+  {
+    intFxi = (lambdaMin - lambdaOpt) * (explambda - std::exp(0.5));
+  }
+
+  return intFxi;
 }
 
 double MAT::UTILS::MUSCLE::EvaluateForceVelocityDependencyBoel(const double dotLambdaM,
@@ -332,7 +347,6 @@ double MAT::UTILS::MUSCLE::EvaluateDerivativeActiveForceStretchDependencyBlemker
   return dFxidLamdaM;
 }
 
-
 double MAT::UTILS::MUSCLE::EvaluatePassiveForceStretchDependencyBlemker(const double lambdaM,
     const double lambdaOpt, const double lambdaStar, const double P1, const double P2)
 {
@@ -404,4 +418,35 @@ double MAT::UTILS::MUSCLE::EvaluateTimeDependentActiveStressTanh(const double si
   double sigma_max_ft = sigma_max * ft;
 
   return sigma_max_ft;
+}
+
+double MAT::UTILS::MUSCLE::FiberStretch(
+    const LINALG::Matrix<3, 3> &C, const LINALG::Matrix<3, 3> &M)
+{
+  // product C^T*M
+  LINALG::Matrix<3, 3> transpCM(false);
+  transpCM.MultiplyTN(C, M);  // C^TM = C^T*M
+
+  // stretch in fibre direction lambdaM
+  // lambdaM = sqrt(C:M) = sqrt(tr(C^T M)), see Holzapfel2000, p.14
+  double lambdaM = std::sqrt(transpCM(0, 0) + transpCM(1, 1) + transpCM(2, 2));
+
+  return lambdaM;
+}
+
+LINALG::Matrix<3, 3> MAT::UTILS::MUSCLE::DFiberStretch_DC(
+    const double lambdaM, const LINALG::Matrix<3, 3> &C, const LINALG::Matrix<3, 3> &M)
+{
+  // derivative of lambdaM w.r.t. C
+  LINALG::Matrix<3, 3> dlambdaMdC(M);
+  dlambdaMdC.Scale(0.5 / lambdaM);
+
+  return dlambdaMdC;
+}
+
+double MAT::UTILS::MUSCLE::ContractionVelocityBWEuler(
+    const double lambdaM, const double lambdaMOld, const double timeStepSize)
+{
+  double dotLambdaM = (lambdaM - lambdaMOld) / timeStepSize;
+  return dotLambdaM;
 }

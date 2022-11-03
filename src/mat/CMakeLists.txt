@@ -80,6 +80,7 @@ set(OBJS_MAT
     mat_modpowerlaw.cpp
     mat_multiplicative_split_defgrad_elasthyper.cpp
     mat_multiplicative_split_defgrad_elasthyper_service.H
+    mat_muscle_giantesio.cpp
     mat_muscle_utils.cpp
     mat_muscle_weickenmeier.cpp
     mat_myocard.cpp

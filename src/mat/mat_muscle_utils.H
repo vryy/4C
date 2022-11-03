@@ -159,6 +159,22 @@ namespace MAT
           const double lambdaM, const double lambdaMin, const double lambdaOpt);
 
       /*!
+       * @brief Evaluate the integral of the force-stretch dependency according to Giantesio et al.
+       *        w.r.t. the fiber stretch
+       *
+       * Reference: G. Giantesio, A. Musesti, 'Strain-dependent internal parameters in hyperelastic
+       * biological materials', International Journal of Non-Linear Mechanics, vol. 95, pp. 162-167,
+       * 2017, doi:10.1016/j.ijnonlinmec.2017.06.012.
+       *
+       * @param[in]     lambdaM Fiber stretch
+       * @param[in]     lambdaMin Minimal fiber stretch
+       * @param[in]     lambdaOpt Optimal fiber stretch
+       * @param[out]    intFxi Integral of the force-stretch function w.r.t. the fiber stretch
+       */
+      double EvaluateIntegralForceStretchDependencyEhret(
+          const double lambdaM, const double lambdaMin, const double lambdaOpt);
+
+      /*!
        * @brief Evaluate the force-velocity dependency in the style of Boel et al.
        *
        * Force-velocity dependecy according to Boel et al. with some slight modifications. Boel et.
@@ -323,6 +339,37 @@ namespace MAT
        */
       double EvaluateTimeDependentActiveStressTanh(const double sigma_max, const double alpha,
           const double beta, const double t_act_start, const double t_current);
+
+      /*!
+       *  @brief Returns the fiber stretch in the current configuration
+       *
+       *  @param[in] C Cauchy-Green strain tensor
+       *  @param[in] M Structural tensor of fiber directions
+       *  @param[out] lambdaM Fiber stretch
+       */
+      double FiberStretch(const LINALG::Matrix<3, 3> &C, const LINALG::Matrix<3, 3> &M);
+
+      /*!
+       *  @brief Returns the derivative of the fiber stretch w.r.t. the Cauchy-Green strain
+       *
+       *  @param[in] lambdaM Fiber stretch
+       *  @param[in] C Cauchy-Green strain tensor
+       *  @param[in] M Structural tensor of fiber directions
+       *  @param[out] dlambdaMdC Derivative of the fiber stretch w.r.t. the Cauchy-Green strains
+       */
+      LINALG::Matrix<3, 3> DFiberStretch_DC(
+          const double lambdaM, const LINALG::Matrix<3, 3> &C, const LINALG::Matrix<3, 3> &M);
+
+      /*!
+       *  @brief Returns the contraction velocity computed by a Backward Euler approximation
+       *
+       *  @param[in] lambdaM Fiber stretch at time t_n
+       *  @param[in] lambdaMOld Fiber stretch at time t_{n-1}
+       *  @param[in] timeStepSize Timestep size t_n - t_{n-1}
+       *  @return dotLambdaM Contraction velocity, i.e. time derivative of the fiber stretch
+       */
+      double ContractionVelocityBWEuler(
+          const double lambdaM, const double lambdaMOld, const double timeStepSize);
     }  // namespace MUSCLE
   }    // namespace UTILS
 }  // namespace MAT

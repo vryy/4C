@@ -132,6 +132,41 @@ namespace
     EXPECT_NEAR(test_dfxi_l_greater_lopt, ref_dfxi_l_greater_lopt, 1.0e-10);
   }
 
+  TEST(MuscleUtilsTest, TestEvaluateIntegralForceStretchDependencyEhret)
+  {
+    const double l_smaller_lmin = 0.5;
+    const double l_greater_lmin_smaller_lopt = 0.7;
+    const double l_greater_lopt = 1.4;
+
+    const double lmin = 0.6;
+    const double lopt = 1.2;
+
+    double ref_dfxi_l_smaller_lmin = 0.0;
+    double ref_dfxi_l_equal_lmin = 0.0;
+    double ref_dfxi_l_greater_lmin_smaller_lopt = 0.013644372005153471;
+    double ref_dfxi_l_equal_lopt = 0.38923276242007693;
+    double ref_dfxi_l_greater_lopt = 0.58254701561680666;
+
+    auto test_dfxi_l_smaller_lmin =
+        MAT::UTILS::MUSCLE::EvaluateIntegralForceStretchDependencyEhret(l_smaller_lmin, lmin, lopt);
+    auto test_dfxi_l_equal_lmin =
+        MAT::UTILS::MUSCLE::EvaluateIntegralForceStretchDependencyEhret(lmin, lmin, lopt);
+    auto test_dfxi_l_greater_lmin_smaller_lopt =
+        MAT::UTILS::MUSCLE::EvaluateIntegralForceStretchDependencyEhret(
+            l_greater_lmin_smaller_lopt, lmin, lopt);
+    auto test_dfxi_l_equal_lopt =
+        MAT::UTILS::MUSCLE::EvaluateIntegralForceStretchDependencyEhret(lopt, lmin, lopt);
+    auto test_dfxi_l_greater_lopt =
+        MAT::UTILS::MUSCLE::EvaluateIntegralForceStretchDependencyEhret(l_greater_lopt, lmin, lopt);
+
+    EXPECT_NEAR(test_dfxi_l_smaller_lmin, ref_dfxi_l_smaller_lmin, 1.0e-10);
+    EXPECT_NEAR(test_dfxi_l_equal_lmin, ref_dfxi_l_equal_lmin, 1.0e-10);
+    EXPECT_NEAR(
+        test_dfxi_l_greater_lmin_smaller_lopt, ref_dfxi_l_greater_lmin_smaller_lopt, 1.0e-10);
+    EXPECT_NEAR(test_dfxi_l_equal_lopt, ref_dfxi_l_equal_lopt, 1.0e-10);
+    EXPECT_NEAR(test_dfxi_l_greater_lopt, ref_dfxi_l_greater_lopt, 1.0e-10);
+  }
+
   TEST(MuscleUtilsTest, TestEvaluateForceVelocityDependencyBoel)
   {
     const double dotl_greater_zero = (1.2 - 0.7) / 0.1;

@@ -151,6 +151,7 @@ namespace INPAR
       m_multiplicative_split_defgrad_elasthyper,  ///< deformation gradient is split
                                                   ///< multiplicatively in elastic and inelastic
                                                   ///< parts
+      m_muscle_giantesio,                         ///< Giantesio active strain muscle material
       m_muscle_weickenmeier,                      ///< Weickenmeier muscle material
       m_myocard,                ///< anisotropic electrophysical model of heart tissue
       m_newman,                 ///< properties of an ion species in an electrolyte solution

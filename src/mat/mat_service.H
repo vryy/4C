@@ -426,7 +426,7 @@ namespace MAT
    * @brief Multiply 4th order tensor with 2nd order matrix
    *
    * @param[in,out] fourTensorResult   Result of 4th order tensor - matrix multiplication
-   *                                   \f$C^{ijkl} += A^{ijkm} \cdot B_m^l\f$
+   *                                   \f$C^{ijkl} += A^{ijkm} B_m^l\f$
    * @param[in] fourTensor             4th order tensor \f$A^{ijkm}\f$
    * @param[in] matrix                 2-tensor \f$B_m^l\f$
    * @param[in] clearResultTensor      if true: \f$C^{ijkl}\f$ is cleared when method is called
@@ -440,7 +440,7 @@ namespace MAT
    * @brief Multiply 2nd order matrix with 4th order tensor
    *
    * @param[in,out] fourTensorResult   Result of matrix - 4th order tensor multiplication
-   *                                   \f$C^{ijkl} += B^i_m \cdot A^{mjkl}\f$
+   *                                   \f$C^{ijkl} += B^i_m A^{mjkl}\f$
    * @param[in] matrix                 2-tensor \f$B^i_m\f$
    * @param[in] fourTensor             4th order tensor \f$A^{mjkl}\f$
    * @param[in] clearResultTensor      if true: \f$C^{ijkl}\f$ is cleared when method is called
@@ -448,6 +448,34 @@ namespace MAT
   template <int dim>
   void MultiplyMatrixFourTensor(LINALG::FourTensor<dim>& fourTensorResult,
       const LINALG::Matrix<dim, dim>& matrix, const LINALG::FourTensor<dim>& fourTensor,
+      const bool clearResultTensor = true);
+
+  /*!
+   * @brief Multiply 2nd order matrix with 4th order tensor by the second index
+   *
+   * @param[in,out] fourTensorResult   Result of matrix - 4th order tensor multiplication
+   *                                   \f$C^{ijkl} += B_m^j A^{imkl}\f$
+   * @param[in] matrix                 2nd order tensor \f$B_m^j\f$
+   * @param[in] fourTensor             4th order tensor \f$A^{imkl}\f$
+   * @param[in] clearResultTensor      if true: C_ijkl is cleared when method is called
+   */
+  template <int dim>
+  void MultiplyMatrixFourTensorBySecondIndex(LINALG::FourTensor<dim>& fourTensorResult,
+      const LINALG::Matrix<dim, dim>& matrix, const LINALG::FourTensor<dim>& fourTensor,
+      const bool clearResultTensor = true);
+
+  /*!
+   * @brief Multiply 4th order tensor with 4th order tensor by the first two indices
+   *
+   * @param[in,out] fourTensorResult   Result of 4th order tensor - 4th order tensor multiplication
+   *                                   \f$C^{ijkl} += A^{ij}_{ab} B^{abkl}\f$
+   * @param[in] fourTensor1            4th order tensor \f$A^{ij}_{ab}\f$
+   * @param[in] fourTensor2            4th order tensor \f$B^{abkl}\f$
+   * @param[in] clearResultTensor      if true: C_ijkl is cleared when method is called
+   */
+  template <int dim>
+  void MultiplyFourTensorFourTensor(LINALG::FourTensor<dim>& fourTensorResult,
+      const LINALG::FourTensor<dim>& fourTensor1, const LINALG::FourTensor<dim>& fourTensor2,
       const bool clearResultTensor = true);
 
   /*!
@@ -496,6 +524,38 @@ namespace MAT
   template <int dim>
   void TransposeFourTensor12(
       LINALG::FourTensor<dim>& resultTensor, const LINALG::FourTensor<dim>& inputTensor);
+
+  /*!
+   * @brief Adds the dyadic product of two 2nd order tensors (in matrix notation) to a 4th order
+   * tensor
+   *
+   * @param[in,out] fourTensorResult    4th order tensor \f$C^{ijkl} = A^{ij} B^{kl}\f$
+   * @param[in]     matrixA             2nd order tensor \f$A^{ij}\f$
+   * @param[in]     matrixB             2nd order tensor \f$B^{kl}\f$
+   */
+  void AddDyadicProductMatrixMatrix(LINALG::FourTensor<3>& fourTensorResult,
+      const LINALG::Matrix<3, 3>& matrixA, const LINALG::Matrix<3, 3>& matrixB);
+
+  /*!
+   * @brief Adds the contraction of a 2nd order tensor (in matrix notation) and a 4th order tensor
+   * to a 2nd order tensor (in matrix notation)
+   *
+   * @param[in,out] matrixResult    2nd order tensor \f$C^{kl} = A_{ij} B^{ijkl}\f$
+   * @param[in]     matrix          2nd order tensor \f$A_{ij}\f$
+   * @param[in]     fourTensor      4th order tensor \f$B^{ijkl}\f$
+   */
+  void AddContractionMatrixFourTensor(LINALG::Matrix<3, 3>& matrixResult,
+      const LINALG::Matrix<3, 3>& matrix, const LINALG::FourTensor<3>& fourTensor);
+
+  /*!
+   * @brief Returns the double contraction of two 2nd order tensors (in matrix notation)
+   *
+   * @param[out]    scalarContraction   0th order tensor \f$s = A_{ij} B^{ij}\f$
+   * @param[in]     matrixA             2nd order tensor \f$A_{ij}\f$
+   * @param[in]     matrixB             2nd order tensor \f$B^{ij}\f$
+   */
+  double ContractMatrixMatrix(
+      const LINALG::Matrix<3, 3>& matrixA, const LINALG::Matrix<3, 3>& matrixB);
 }  // namespace MAT
 
 #endif
