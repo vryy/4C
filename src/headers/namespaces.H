@@ -1438,6 +1438,19 @@ namespace MAT
   namespace TRAIT
   {
   }
+
+  /*!
+   * @brief Utilities for materials
+   */
+  namespace UTILS
+  {
+    /*!
+     * @brief Muscle-material related utilities
+     */
+    namespace MUSCLE
+    {
+    }  // namespace MUSCLE
+  }    // namespace UTILS
 }  // namespace MAT
 
 /*!

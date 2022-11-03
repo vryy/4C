@@ -385,14 +385,15 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActiveNominalStres
   const auto& actValues = params_->actValues_;
 
   // compute force-time/stimulation frequency dependency Poptft
-  double Poptft = MUSCLE_UTILS::EvaluateTimeDependentActiveStressEhret(
+  double Poptft = MAT::UTILS::MUSCLE::EvaluateTimeDependentActiveStressEhret(
       Na, muTypesNum, rho, I, F, T, actIntervalsNum, actTimes, actValues, t_tot);
 
   // compute force-stretch dependency fxi
-  double fxi = MUSCLE_UTILS::EvaluateForceStretchDependencyEhret(lambdaM, lambdaMin, lambdaOpt);
+  double fxi =
+      MAT::UTILS::MUSCLE::EvaluateForceStretchDependencyEhret(lambdaM, lambdaMin, lambdaOpt);
 
   // compute force-velocity dependency fv
-  double fv = MUSCLE_UTILS::EvaluateForceVelocityDependencyBoel(
+  double fv = MAT::UTILS::MUSCLE::EvaluateForceVelocityDependencyBoel(
       lambdaM, lambdaMOld_, timestep, dotLambdaMMin, de, dc, ke, kc);
 
   // compute active nominal stress Pa
@@ -404,9 +405,9 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActiveNominalStres
   double dFvdLambdaM = 0.0;
   if (Pa != 0)
   {
-    dFxidLamdaM =
-        MUSCLE_UTILS::EvaluateDerivativeForceStretchDependencyEhret(lambdaM, lambdaMin, lambdaOpt);
-    dFvdLambdaM = MUSCLE_UTILS::EvaluateDerivativeForceVelocityDependencyBoel(
+    dFxidLamdaM = MAT::UTILS::MUSCLE::EvaluateDerivativeForceStretchDependencyEhret(
+        lambdaM, lambdaMin, lambdaOpt);
+    dFvdLambdaM = MAT::UTILS::MUSCLE::EvaluateDerivativeForceVelocityDependencyBoel(
         lambdaM, lambdaMOld_, timestep, dotLambdaMMin, de, dc, ke, kc);
   }
 
@@ -440,7 +441,7 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActivationLevel(
   double W0 = 1.0;           // starting guess for solution
   const double tol = 1e-15;  // tolerance for numeric approximation 10^-15
   const int maxiter = 100;   // maximal number of iterations
-  MUSCLE_UTILS::EvaluateLambert(xi, W0, tol, maxiter);
+  MAT::UTILS::MUSCLE::EvaluateLambert(xi, W0, tol, maxiter);
 
   // derivatives of xi and W0 w.r.t. lambdaM used for activation level computation
   double derivXi =

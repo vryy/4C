@@ -149,6 +149,91 @@ namespace MAT
           const std::vector<double> &F, const std::vector<double> &T, const int actIntervalsNum,
           const std::vector<double> &actTimes, const std::vector<double> &actValues,
           const double currentTime);
+
+      /*!
+       * @brief Evaluate the active force-stretch dependency according to Blemker et al.
+       *
+       * Reference: S. S. Blemker, P. M. Pinsky und S. L. Delp, 'A 3D model of muscle reveals the
+       * causes of nonuniform strains in the biceps brachii', Journal of biomechanics, vol. 38, no.
+       * 4, pp. 657-665, 2005. doi: 10.1016/j.jbiomech.2004.04.009
+       *
+       * @param[in]     lambdaM Fiber stretch
+       * @param[in]     lambdaOpt Optimal fiber stretch
+       * @param[out]    fxi Force-stretch function result between zero and one
+       */
+      double EvaluateActiveForceStretchDependencyBlemker(
+          const double lambdaM, const double lambdaOpt);
+
+      /*!
+       * @brief Evaluate the derivative of the active force-stretch dependency according to
+       *        Blemker et al. w.r.t. the fiber stretch
+       *
+       * Reference: S. S. Blemker, P. M. Pinsky und S. L. Delp, 'A 3D model of muscle reveals the
+       * causes of nonuniform strains in the biceps brachii', Journal of biomechanics, vol. 38, no.
+       * 4, pp. 657-665, 2005. doi: 10.1016/j.jbiomech.2004.04.009
+       *
+       * @param[in]     lambdaM Fiber stretch
+       * @param[in]     lambdaOpt Optimal fiber stretch
+       * @param[out]    dFxidLamdaM Derivative of the force-stretch function w.r.t. the fiber
+       *                            stretch
+       */
+      double EvaluateDerivativeActiveForceStretchDependencyBlemker(
+          const double lambdaM, const double lambdaOpt);
+
+      /*!
+       * @brief Evaluate the passive force-stretch dependency according to Blemker et al.
+       *
+       * Reference: S. S. Blemker, P. M. Pinsky und S. L. Delp, 'A 3D model of muscle reveals the
+       * causes of nonuniform strains in the biceps brachii', Journal of biomechanics, vol. 38, no.
+       * 4, pp. 657-665, 2005. doi: 10.1016/j.jbiomech.2004.04.009
+       *
+       * @param[in]     lambdaM Fiber stretch
+       * @param[in]     lambdaOpt Optimal fiber stretch
+       * @param[in]     lambdaStar Fiber strech where normalized passive fiber force becomes linear
+       * @param[in]     P1 Linear material parameter for along-fiber response
+       * @param[in]     P2 Exponential material parameter for along-fiber response
+       * @param[out]    fxi Force-stretch function result between zero and one
+       */
+      double EvaluatePassiveForceStretchDependencyBlemker(const double lambdaM,
+          const double lambdaOpt, const double lambdaStar, const double P1, const double P2);
+
+      /*!
+       * @brief Evaluate the derivative of the passive force-stretch dependency according to
+       *        Blemker et al. w.r.t. the fiber stretch
+       *
+       * Reference: S. S. Blemker, P. M. Pinsky und S. L. Delp, 'A 3D model of muscle reveals the
+       * causes of nonuniform strains in the biceps brachii', Journal of biomechanics, vol. 38, no.
+       * 4, pp. 657-665, 2005. doi: 10.1016/j.jbiomech.2004.04.009
+       *
+       * @param[in]     lambdaM Fiber stretch
+       * @param[in]     lambdaOpt Optimal fiber stretch
+       * @param[in]     lambdaStar Fiber strech where normalized passive fiber force becomes linear
+       * @param[in]     P1 Linear material parameter for along-fiber response
+       * @param[in]     P2 Exponential material parameter for along-fiber response
+       * @param[out]    dFxidLamdaM Derivative of the force-stretch function w.r.t. the fiber
+       *                            stretch
+       */
+      double EvaluateDerivativePassiveForceStretchDependencyBlemker(const double lambdaM,
+          const double lambdaOpt, const double lambdaStar, const double P1, const double P2);
+
+      /*!
+       * @brief Evaluate the time-dependent optimal (i.e. maximal) active stress using a
+       * tanh-function
+       *
+       * The time-dependent activation function is computed for any t_tot>t_act_start as
+       * ft = alpha*tanh(beta*(t_tot-t_act_start)).
+       *
+       * The time-dependent optimal active stress is obtained by sigma_opt = sigma_max * ft
+       *
+       * @param[in]     sigma_max optimal (i.e. maximal) active stress
+       * @param[in]     alpha tetanised activation level
+       * @param[in]     beta scaling factor
+       * @param[in]     t_act_start time of start of activation
+       * @param[in]     t_current current time
+       * @param[out]    sigma_max_ft Time-dependent optimal active stress at t_current
+       */
+      double EvaluateTimeDependentActiveStressTanh(const double sigma_max, const double alpha,
+          const double beta, const double t_act_start, const double t_current);
     }  // namespace MUSCLE
   }    // namespace UTILS
 }  // namespace MAT

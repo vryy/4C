@@ -192,3 +192,125 @@ double MAT::UTILS::MUSCLE::EvaluateTimeDependentActiveStressEhret(const double N
 
   return Poptft;
 }
+
+double MAT::UTILS::MUSCLE::EvaluateActiveForceStretchDependencyBlemker(
+    const double lambdaM, const double lambdaOpt)
+{
+  // helper variable
+  double ratio_lambda = lambdaM / lambdaOpt;
+
+  // active stretch dependency fxi
+  double fxi = 1.0;
+  if (lambdaM <= 0.6 * lambdaOpt)
+  {
+    fxi = 9 * std::pow(ratio_lambda - 0.4, 2.0);
+  }
+  else if (lambdaM < 1.4 * lambdaOpt)
+  {
+    fxi = 1 - 4 * std::pow(1 - ratio_lambda, 2.0);
+  }
+  else
+  {
+    fxi = 9 * std::pow(ratio_lambda - 1.6, 2.0);
+  }
+
+  return fxi;
+}
+
+double MAT::UTILS::MUSCLE::EvaluateDerivativeActiveForceStretchDependencyBlemker(
+    const double lambdaM, const double lambdaOpt)
+{
+  // helper variable
+  double ratio_lambda = lambdaM / lambdaOpt;
+
+  // derivative of active stretch dependency fxi w.r.t. fiber stretch
+  double dFxidLamdaM = 1.0;
+  if (lambdaM <= 0.6 * lambdaOpt)
+  {
+    dFxidLamdaM = 18 / lambdaOpt * (ratio_lambda - 0.4);
+  }
+  else if (lambdaM < 1.4 * lambdaOpt)
+  {
+    dFxidLamdaM = 8 / lambdaOpt * (1 - ratio_lambda);
+  }
+  else
+  {
+    dFxidLamdaM = 18 / lambdaOpt * (ratio_lambda - 1.6);
+  }
+
+  return dFxidLamdaM;
+}
+
+
+double MAT::UTILS::MUSCLE::EvaluatePassiveForceStretchDependencyBlemker(const double lambdaM,
+    const double lambdaOpt, const double lambdaStar, const double P1, const double P2)
+{
+  // helper variable
+  double ratio_lambda = lambdaM / lambdaOpt;
+
+  // calculate constants
+  double P3 = P1 * P2 * std::exp(P2 * (lambdaStar / lambdaOpt - 1.0)) / lambdaOpt;
+  double P4 =
+      P1 * (std::exp(P2 * ((lambdaStar / lambdaOpt) - 1.0)) - 1.0) - P3 * lambdaStar / lambdaOpt;
+
+  // passive stretch dependency fxi
+  double fxi = 1.0;
+  if (lambdaM <= lambdaOpt)
+  {
+    fxi = 0.0;
+  }
+  else if (lambdaM < lambdaStar)
+  {
+    fxi = P1 * (std::exp(P2 * (ratio_lambda - 1.0)) - 1.0);
+  }
+  else
+  {
+    fxi = P3 * ratio_lambda + P4;
+  }
+
+  return fxi;
+}
+
+double MAT::UTILS::MUSCLE::EvaluateDerivativePassiveForceStretchDependencyBlemker(
+    const double lambdaM, const double lambdaOpt, const double lambdaStar, const double P1,
+    const double P2)
+{
+  // helper variable
+  double ratio_lambda = lambdaM / lambdaOpt;
+
+  // calculate constant
+  double P3 = P1 * P2 * std::exp(P2 * (lambdaStar / lambdaOpt - 1.0)) / lambdaOpt;
+
+  // derivative of passive stretch dependency fxi w.r.t. fibre stretch
+  double dFxidLamdaM = 1.0;
+  if (lambdaM <= lambdaOpt)
+  {
+    dFxidLamdaM = 0.0;
+  }
+  else if (lambdaM < lambdaStar)
+  {
+    dFxidLamdaM = P1 * std::exp(P2 * (ratio_lambda - 1.0)) * P2 / lambdaOpt;
+  }
+  else
+  {
+    dFxidLamdaM = P3 / lambdaOpt;
+  }
+
+  return dFxidLamdaM;
+}
+
+double MAT::UTILS::MUSCLE::EvaluateTimeDependentActiveStressTanh(const double sigma_max,
+    const double alpha, const double beta, const double t_act_start, const double t_current)
+{
+  // compute time-depencency ft
+  double ft = 0;
+  if (t_current >= t_act_start)
+  {
+    ft = alpha * std::tanh(beta * (t_current - t_act_start));
+  }
+
+  // compute active optimal stress at current time
+  double sigma_max_ft = sigma_max * ft;
+
+  return sigma_max_ft;
+}
