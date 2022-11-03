@@ -129,7 +129,7 @@ void MAT::AAAneohooke::Unpack(const std::vector<char>& data)
 
  plain strain energy function
 
- W    = alpha (Ic*IIIc^(-1/3) -3) + beta (Ic*IIIc^(-1/3)-3)²
+ W    = alpha (Ic*IIIc^(-1/3) -3) + beta (Ic*IIIc^(-1/3)-3)^2
 
  taken from
  M.L. Raghavan, D.A. Vorp: Toward a biomechanical tool to evaluate rupture potential
@@ -373,7 +373,7 @@ void MAT::AAAneohooke::StrainEnergy(
                  0.25 * rcg(0) * rcg(4) * rcg(4);  // 3rd invariant, determinante
 
   // isochoric part
-  // W    = alpha (Ic*IIIc^(-1/3) -3) + beta (Ic*IIIc^(-1/3)-3)²
+  // W    = alpha (Ic*IIIc^(-1/3) -3) + beta (Ic*IIIc^(-1/3)-3)^2
   psi += alpha * (inv * pow(iiinv, -1 / 3.) - 3) +
          beta * (inv * pow(iiinv, -1 / 3.) - 3) * (inv * pow(iiinv, -1 / 3.) - 3);
   // volumetric part

@@ -115,7 +115,7 @@ void MAT::AAA_mixedeffects::Unpack(const std::vector<char>& data)
 
  plain strain energy function
 
- W    = alpha (Ic*IIIc^(-1/3) -3) + beta (Ic*IIIc^(-1/3)-3)²
+ W    = alpha (Ic*IIIc^(-1/3) -3) + beta (Ic*IIIc^(-1/3)-3)^2
 
  taken from
  M.L. Raghavan, D.A. Vorp: Toward a biomechanical tool to evaluate rupture potential
@@ -305,7 +305,7 @@ void MAT::AAA_mixedeffects::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
  plain strain energy function
 
- W    = alpha (Ic*IIIc^(-1/3) -3) + beta (Ic*IIIc^(-1/3)-3)²
+ W    = alpha (Ic*IIIc^(-1/3) -3) + beta (Ic*IIIc^(-1/3)-3)^2
 
  taken from
  M.L. Raghavan, D.A. Vorp: Toward a biomechanical tool to evaluate rupture potential

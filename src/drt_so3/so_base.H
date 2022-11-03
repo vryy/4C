@@ -109,50 +109,54 @@ namespace DRT
        *
        * @param[in] xi            position in parameter space xi
        * @param[in] disp          vector of displacements
-       * @param[in] n             normal vector (\f[\bold{n}\f])
-       * @param[in] dir           direction vector (\f[\bold{v}\f]), can be either normal or
+       * @param[in] n             normal vector (\f[\mathbf{n}\f])
+       * @param[in] dir           direction vector (\f[\mathbf{v}\f]), can be either normal or
        *                          tangential vector
        * @param[out] cauchy_n_dir  cauchy stress tensor contracted using the vectors n and dir
-       *                           (\f[ \bold{\sigma} \cdot \bold{n} \cdot \bold{v} \f])
+       *                           (\f[ \mathbf{\sigma} \cdot \mathbf{n} \cdot \mathbf{v} \f])
        * @param[out] d_cauchyndir_dd    derivative of cauchy_n_dir w.r.t. displacements
-       *                         (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                   { \mathrm{d} \bold{d}} \f])
+       *                         (\f[ \frac{ \mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}} { \mathrm{d} \mathbf{d}} \f])
        * @param[out] d2_cauchyndir_dd2  second derivative of cauchy_n_dir w.r.t. displacements
-       *                      (\f[ \frac{ \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                { \mathrm{d} \bold{d}^2 } \f])
+       *                      (\f[ \frac{ \mathrm{d}^2 \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}} { \mathrm{d} \mathbf{d}^2 } \f])
        * @param[out] d2_cauchyndir_dd_dn  second derivative of cauchy_n_dir w.r.t. displacements and
        *                                  vector n
-       *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                 {\mathrm{d} \bold{d} \mathrm{d} \bold{n} } \f])
+       *                       (\f[ \frac{\mathrm{d}^2 \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}}
+       *                                 {\mathrm{d} \mathbf{d} \mathrm{d} \mathbf{n} } \f])
        * @param[out] d2_cauchyndir_dd_ddir  second derivative of cauchy_n_dir w.r.t. displacements
        *                                    and direction vector v
-       *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                 {\mathrm{d} \bold{d} \mathrm{d} \bold{v} } \f])
+       *                       (\f[ \frac{\mathrm{d}^2 \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}}
+       *                                 {\mathrm{d} \mathbf{d} \mathrm{d} \mathbf{v} } \f])
        * @param[out] d2_cauchyndir_dd_dxi  second derivative of cauchy_n_dir w.r.t. displacements
        *                                   and local parameter coordinate xi
-       *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                 {\mathrm{d} \bold{d} \mathrm{d} \bold{\xi} } \f])
+       *                       (\f[ \frac{\mathrm{d}^2 \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}}
+       *                                 {\mathrm{d} \mathbf{d} \mathrm{d} \mathbf{\xi} } \f])
        * @param[out] d_cauchyndir_dn   derivative of cauchy_n_dir w.r.t. vector n
-       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                  { \mathrm{d} \bold{n}} \f])
+       *                        (\f[ \frac{ \mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}} { \mathrm{d} \mathbf{n}} \f])
        * @param[out] d_cauchyndir_ddir  derivative of cauchy_n_dir w.r.t. direction vector v
-       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                  { \mathrm{d} \bold{v}} \f])
+       *                        (\f[ \frac{ \mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}} { \mathrm{d} \mathbf{v}} \f])
        * @param[out] d_cauchyndir_dxi  derivative of cauchy_n_dir w.r.t. local parameter coord. xi
-       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                  { \mathrm{d} \bold{\xi}} \f])
+       *                        (\f[ \frac{ \mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}} { \mathrm{d} \mathbf{\xi}} \f])
        * @param[in] temp                temperature
        * @param[out] d_cauchyndir_dT    derivative of cauchy_n_dir w.r.t. temperature
-       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                  { \mathrm{d} T} \f])
+       *                        (\f[ \frac{ \mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}} { \mathrm{d} T} \f])
        * @param[out] d2_cauchyndir_dd_dT  second derivative of cauchy_n_dir w.r.t. displacements
        *                                   and temperature
-       *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                 {\mathrm{d} \bold{d} \mathrm{d} T } \f])
+       *                       (\f[ \frac{\mathrm{d}^2 \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}}
+       *                                 {\mathrm{d} \mathbf{d} \mathrm{d} T } \f])
        * @param[in] concentration     concentration
        * @param[out] d_cauchyndir_dc  derivative of cauchy_n_dir w.r.t. concentration
-       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                  { \mathrm{d} c} \f])
+       *                        (\f[ \frac{ \mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}} { \mathrm{d} c} \f])
        *
        * @note At the moment this method is only used for the nitsche contact formulation
        */
@@ -177,50 +181,54 @@ namespace DRT
        *
        * @param[in] xi            position in parameter space xi
        * @param[in] disp          vector of displacements
-       * @param[in] n             normal vector (\f[\bold{n}\f])
-       * @param[in] dir           direction vector (\f[\bold{v}\f]), can be either normal or
+       * @param[in] n             normal vector (\f[\mathbf{n}\f])
+       * @param[in] dir           direction vector (\f[\mathbf{v}\f]), can be either normal or
        *                          tangential vector
        * @param[out] cauchy_n_dir  cauchy stress tensor contracted using the vectors n and dir
-       *                           (\f[ \bold{\sigma} \cdot \bold{n} \cdot \bold{v} \f])
+       *                           (\f[ \mathbf{\sigma} \cdot \mathbf{n} \cdot \mathbf{v} \f])
        * @param[out] d_cauchyndir_dd    derivative of cauchy_n_dir w.r.t. displacements
-       *                         (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                   { \mathrm{d} \bold{d}} \f])
+       *                         (\f[ \frac{ \mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}} { \mathrm{d} \mathbf{d}} \f])
        * @param[out] d2_cauchyndir_dd2  second derivative of cauchy_n_dir w.r.t. displacements
-       *                      (\f[ \frac{ \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                { \mathrm{d} \bold{d}^2 } \f])
+       *                      (\f[ \frac{ \mathrm{d}^2 \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}} { \mathrm{d} \mathbf{d}^2 } \f])
        * @param[out] d2_cauchyndir_dd_dn  second derivative of cauchy_n_dir w.r.t. displacements and
        *                                  vector n
-       *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                 {\mathrm{d} \bold{d} \mathrm{d} \bold{n} } \f])
+       *                       (\f[ \frac{\mathrm{d}^2 \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}}
+       *                                 {\mathrm{d} \mathbf{d} \mathrm{d} \mathbf{n} } \f])
        * @param[out] d2_cauchyndir_dd_ddir  second derivative of cauchy_n_dir w.r.t. displacements
        *                                    and direction vector v
-       *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                 {\mathrm{d} \bold{d} \mathrm{d} \bold{v} } \f])
+       *                       (\f[ \frac{\mathrm{d}^2 \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}}
+       *                                 {\mathrm{d} \mathbf{d} \mathrm{d} \mathbf{v} } \f])
        * @param[out] d2_cauchyndir_dd_dxi  second derivative of cauchy_n_dir w.r.t. displacements
        *                                   and local parameter coordinate xi
-       *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                 {\mathrm{d} \bold{d} \mathrm{d} \bold{\xi} } \f])
+       *                       (\f[ \frac{\mathrm{d}^2 \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}}
+       *                                 {\mathrm{d} \mathbf{d} \mathrm{d} \mathbf{\xi} } \f])
        * @param[out] d_cauchyndir_dn   derivative of cauchy_n_dir w.r.t. vector n
-       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                  { \mathrm{d} \bold{n}} \f])
+       *                        (\f[ \frac{ \mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}} { \mathrm{d} \mathbf{n}} \f])
        * @param[out] d_cauchyndir_ddir  derivative of cauchy_n_dir w.r.t. direction vector v
-       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                  { \mathrm{d} \bold{v}} \f])
+       *                        (\f[ \frac{ \mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}} { \mathrm{d} \mathbf{v}} \f])
        * @param[out] d_cauchyndir_dxi  derivative of cauchy_n_dir w.r.t. local parameter coord. xi
-       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                  { \mathrm{d} \bold{\xi}} \f])
+       *                        (\f[ \frac{ \mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}} { \mathrm{d} \mathbf{\xi}} \f])
        * @param[in] temp                temperature
        * @param[out] d_cauchyndir_dT    derivative of cauchy_n_dir w.r.t. temperature
-       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                  { \mathrm{d} T} \f])
+       *                        (\f[ \frac{ \mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}} { \mathrm{d} T} \f])
        * @param[out] d2_cauchyndir_dd_dT  second derivative of cauchy_n_dir w.r.t. displacements
        *                                   and temperature
-       *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                 {\mathrm{d} \bold{d} \mathrm{d} T } \f])
+       *                       (\f[ \frac{\mathrm{d}^2 \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}}
+       *                                 {\mathrm{d} \mathbf{d} \mathrm{d} T } \f])
        * @param[in] concentration     concentration
        * @param[out] d_cauchyndir_dc  derivative of cauchy_n_dir w.r.t. concentration
-       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                  { \mathrm{d} c} \f])
+       *                        (\f[ \frac{ \mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}} { \mathrm{d} c} \f])
        *
        * @note At the moment this method is only used for the nitsche contact formulation
        */

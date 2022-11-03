@@ -214,8 +214,8 @@ namespace MAT
      * @brief Evaluate additional terms of the elasticity tensor
      *
      * \f[
-     *   cmat_{add} = \frac{\partial\bold{S}}{\partial \bold{F}_\text{in}^{-1}}
-     *             : \frac{\partial\bold{F}_\text{in}^{-1}}{\partial \bold{C}}
+     *   cmat_{add} = \frac{\partial\mathbf{S}}{\partial \mathbf{F}_\text{in}^{-1}}
+     *             : \frac{\partial\mathbf{F}_\text{in}^{-1}}{\partial \mathbf{C}}
      * \f]
      *
      * @param[in] defgrad  Deformation gradient
@@ -237,19 +237,20 @@ namespace MAT
      * @param[in] delta  Factors for elasticity tensor calculation (see e.g. Holzapfel  - Nonlinear
      *                   Solid Mechanics)
      * @param[in] iFinM   Inverse inelastic deformation gradient
-     * @param[in] iCinCM  \f$ \bold{C}_\text{in}^{-1} \cdot \bold{C} \f$
-     * @param[in] iCinV   Inverse inelastic right Cauchy-Green tensor \f$\bold{C}_\text{in}^{-1}\f$
-     *                    stored as 6x1 vector
-     * @param[in] CiFin9x1    \f$ \bold{C} \cdot \bold{F}_\text{in}^{-1} \f$ stored as 9x1 vector
-     * @param[in] CiFinCe9x1  \f$ \bold{C} \cdot \bold{F}_\text{in}^{-1} \cdot \bold{C}_\text{el}
-     *                        \f$ stored as 9x1 vector
-     * @param[in] iCinCiCinV    \f$ \bold{C}_\text{in}^{-1} \cdot \bold{C} \cdot
-     *                          \bold{C}_\text{in}^{-1} \f$ stored as 6x1 vector
-     * @param[in] CiFiniCe9x1   \f$ \bold{C} \cdot \bold{F}_\text{in}^{-1} \cdot
-     *                          \bold{C}_\text{el}^{-1} \f$ stored as 9x1 vector
-     * @param[in] iCV           Inverse right Cauchy-Green tensor \f$ \bold{C}^{-1} \f$ stored as
+     * @param[in] iCinCM  \f$ \mathbf{C}_\text{in}^{-1} \cdot \mathbf{C} \f$
+     * @param[in] iCinV   Inverse inelastic right Cauchy-Green tensor
+     * \f$\mathbf{C}_\text{in}^{-1}\f$ stored as 6x1 vector
+     * @param[in] CiFin9x1    \f$ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \f$ stored as 9x1
+     * vector
+     * @param[in] CiFinCe9x1  \f$ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \cdot
+     * \mathbf{C}_\text{el} \f$ stored as 9x1 vector
+     * @param[in] iCinCiCinV    \f$ \mathbf{C}_\text{in}^{-1} \cdot \mathbf{C} \cdot
+     *                          \mathbf{C}_\text{in}^{-1} \f$ stored as 6x1 vector
+     * @param[in] CiFiniCe9x1   \f$ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \cdot
+     *                          \mathbf{C}_\text{el}^{-1} \f$ stored as 9x1 vector
+     * @param[in] iCV           Inverse right Cauchy-Green tensor \f$ \mathbf{C}^{-1} \f$ stored as
      *                          6x1 vector
-     * @param[in] iFinCeM       \f$ \bold{F}_\text{in}^{-1} \cdot \bold{C}_\text{el} \f$
+     * @param[in] iFinCeM       \f$ \mathbf{F}_\text{in}^{-1} \cdot \mathbf{C}_\text{el} \f$
      * @param[in] detFin        determinant of inelastic deformation gradient
      * @param[out] dSdiFin      derivative of 2nd Piola Kirchhoff stresses w.r.t. inverse inelastic
      *                          deformation gradient
@@ -265,41 +266,41 @@ namespace MAT
      * @brief Evaluates stress and cmat
      *
      * \f[
-     *   cmat = 2 \frac{\partial \bold{S}}{\partial \bold{C}}
+     *   cmat = 2 \frac{\partial \mathbf{S}}{\partial \mathbf{C}}
      * \f]
      *
      *  cf. Holzapfel [1], p. 216 (6.32) and p. 248
      *  The formulation in Holzapfel is slightly changed as only the elastic strains cause stresses
-     *  with \f$\bold{C}_\text{in} = \bold{F}_\text{in}^T \cdot \bold{F}_\text{in}\f$
-     *  and \f$\bold{F}_\text{in}\f$ denoting the inelastic deformation gradient
+     *  with \f$\mathbf{C}_\text{in} = \mathbf{F}_\text{in}^T \cdot \mathbf{F}_\text{in}\f$
+     *  and \f$\mathbf{F}_\text{in}\f$ denoting the inelastic deformation gradient
      * \f[
-     *   \bold{S} = 2 \det(\bold{F}_\text{in}) \bold{F}_\text{in}^{-1} \frac{\partial
-     *   \Psi_\text{e}}{\partial \bold{C}_\text{e}} \bold{F}_\text{in}^{-T}
+     *   \mathbf{S} = 2 \det(\mathbf{F}_\text{in}) \mathbf{F}_\text{in}^{-1} \frac{\partial
+     *   \Psi_\text{e}}{\partial \mathbf{C}_\text{e}} \mathbf{F}_\text{in}^{-T}
      * \f]
      * \f[
-     * \bold{S} = \det(\bold{F}_\text{in}) \left(\gamma_1 \ \bold{C}_\text{in}^{-1} + \gamma_2 \
-     * \bold{C}_\text{in}^{-1} \cdot \bold{C} \cdot \bold{C}_\text{in}^{-1} + \gamma_3 \
-     * \bold{C}^{-1} \right)
+     * \mathbf{S} = \det(\mathbf{F}_\text{in}) \left(\gamma_1 \ \mathbf{C}_\text{in}^{-1} + \gamma_2
+     * \
+     * \mathbf{C}_\text{in}^{-1} \cdot \mathbf{C} \cdot \mathbf{C}_\text{in}^{-1} + \gamma_3 \
+     * \mathbf{C}^{-1} \right)
      * \f] with \f$\gamma_i\f$ as defined in MAT::CalculateGammaDelta()
      *
      * \f[
-     *   \mathbb{C} = \det(\bold{F}_\text{in}) \left( \delta_1 \left( \bold{C}_\text{in}^{-1}
-     *                \otimes \bold{C}_\text{in}^{-1} \right)
-     *              + \delta_2 \left( \bold{C}_\text{in}^{-1} \otimes \bold{C}_\text{in}^{-1}
-     *                \bold{C} \bold{C}_\text{in}^{-1}  + \bold{C}_\text{in}^{-1} \bold{C}
-     *                \bold{C}_\text{in}^{-1} \otimes \bold{C}_\text{in}^{-1} \right)
-     *              + \delta_3 \left( \bold{C}_\text{in}^{-1} \otimes \bold{C}^{-1} + \bold{C}^{-1}
-     *                \otimes \bold{C}_\text{in}^{-1} \right)
-     *              + \delta_4 \left( \bold{C}_\text{in}^{-1} \bold{C} \bold{C}_\text{in}^{-1}
-     *                \otimes \bold{C}_\text{in}^{-1} \bold{C} \bold{C}_\text{in}^{-1} \right)
-     *              + \delta_5 \left( \bold{C}_\text{in}^{-1} \bold{C} \bold{C}_\text{in}^{-1}
-     *                \otimes \bold{C}^{-1} + \bold{C}^{-1} \otimes \bold{C}_\text{in}^{-1} \bold{C}
-     *                \bold{C}_\text{in}^{-1} \right)
-     *              + \delta_6 \left( \bold{C}^{-1} \otimes \bold{C}^{-1} \right)
-     *              + \delta_7 \left( \bold{C}^{-1} \odot \bold{C}^{-1} \right)
-     *              + \delta_8 \left( \bold{C}_\text{in}^{-1} \odot \bold{C}_\text{in}^{-1} \right)
-     *              \right)
-     * \f]
+     *   \mathbb{C} = \det(\mathbf{F}_\text{in}) \left( \delta_1 \left( \mathbf{C}_\text{in}^{-1}
+     *                \otimes \mathbf{C}_\text{in}^{-1} \right)
+     *              + \delta_2 \left( \mathbf{C}_\text{in}^{-1} \otimes \mathbf{C}_\text{in}^{-1}
+     *                \mathbf{C} \mathbf{C}_\text{in}^{-1}  + \mathbf{C}_\text{in}^{-1} \mathbf{C}
+     *                \mathbf{C}_\text{in}^{-1} \otimes \mathbf{C}_\text{in}^{-1} \right)
+     *              + \delta_3 \left( \mathbf{C}_\text{in}^{-1} \otimes \mathbf{C}^{-1} +
+     * \mathbf{C}^{-1} \otimes \mathbf{C}_\text{in}^{-1} \right)
+     *              + \delta_4 \left( \mathbf{C}_\text{in}^{-1} \mathbf{C} \mathbf{C}_\text{in}^{-1}
+     *                \otimes \mathbf{C}_\text{in}^{-1} \mathbf{C} \mathbf{C}_\text{in}^{-1} \right)
+     *              + \delta_5 \left( \mathbf{C}_\text{in}^{-1} \mathbf{C} \mathbf{C}_\text{in}^{-1}
+     *                \otimes \mathbf{C}^{-1} + \mathbf{C}^{-1} \otimes \mathbf{C}_\text{in}^{-1}
+     * \mathbf{C} \mathbf{C}_\text{in}^{-1} \right)
+     *              + \delta_6 \left( \mathbf{C}^{-1} \otimes \mathbf{C}^{-1} \right)
+     *              + \delta_7 \left( \mathbf{C}^{-1} \odot \mathbf{C}^{-1} \right)
+     *              + \delta_8 \left( \mathbf{C}_\text{in}^{-1} \odot \mathbf{C}_\text{in}^{-1}
+     * \right) \right) \f]
      *
      * \f$ \odot \f$ is defined as follows:
      * \f[
@@ -307,12 +308,12 @@ namespace MAT
      *   A^{-1}_{ad} A^{-1}_{bc}); \text{ for } A_{ab} = A_{ba}
      * \f] meaning a symmetric 2-tensor \f$A\f$
      *
-     * @param[in] iCV     Inverse right Cauchy-Green tensor \f$ \bold{C}^{-1} \f$ stored as 6x1
+     * @param[in] iCV     Inverse right Cauchy-Green tensor \f$ \mathbf{C}^{-1} \f$ stored as 6x1
      *                    vector
-     * @param[in] iCinV   Inverse inelastic right Cauchy-Green tensor \f$\bold{C}_\text{in}^{-1}\f$
-     *                    stored as 6x1 vector
-     * @param[in] iCinCiCinV  \f$ \bold{C}_\text{in}^{-1} \cdot \bold{C} \cdot
-     *                        \bold{C}_\text{in}^{-1} \f$ stored as 6x1 vector
+     * @param[in] iCinV   Inverse inelastic right Cauchy-Green tensor
+     * \f$\mathbf{C}_\text{in}^{-1}\f$ stored as 6x1 vector
+     * @param[in] iCinCiCinV  \f$ \mathbf{C}_\text{in}^{-1} \cdot \mathbf{C} \cdot
+     *                        \mathbf{C}_\text{in}^{-1} \f$ stored as 6x1 vector
      * @param[in] gamma  Factors for stress calculation (see e.g. Holzapfel - Nonlinear Solid
      *                   Mechanics)
      * @param[in] delta  Factors for elasticity tensor calculation (see e.g. Holzapfel  - Nonlinear
@@ -332,19 +333,20 @@ namespace MAT
      *
      * @param[in] defgrad  Deformation gradient
      * @param[in] iFinM    Inverse inelastic deformation gradient
-     * @param[out] iCinV   Inverse inelastic right Cauchy-Green tensor \f$\bold{C}_\text{in}^{-1}\f$
-     *                     stored as 6x1 vector
-     * @param[out] iCinCiCinV  \f$ \bold{C}_\text{in}^{-1} \cdot \bold{C} \cdot
-     *                         \bold{C}_\text{in}^{-1} \f$ stored as 6x1 vector
-     * @param[out] iCV         Inverse right Cauchy-Green tensor \f$ \bold{C}^{-1} \f$ stored as 6x1
-     *                         vector
-     * @param[out] iCinCM      \f$ \bold{C}_\text{in}^{-1} \cdot \bold{C} \f$
-     * @param[out] iFinCeM     \f$ \bold{F}_\text{in}^{-1} \cdot \bold{C}_\text{el} \f$
-     * @param[out] CiFin9x1    \f$ \bold{C} \cdot \bold{F}_\text{in}^{-1} \f$ stored as 9x1 vector
-     * @param[out] CiFinCe9x1  \f$ \bold{C} \cdot \bold{F}_\text{in}^{-1} \cdot
-     *                         \bold{C}_\text{el} \f$ stored as 9x1 vector
-     * @param[out] CiFiniCe9x1   \f$ \bold{C} \cdot \bold{F}_\text{in}^{-1} \cdot
-     *                           \bold{C}_\text{el}^{-1} \f$ stored as 9x1 vector
+     * @param[out] iCinV   Inverse inelastic right Cauchy-Green tensor
+     * \f$\mathbf{C}_\text{in}^{-1}\f$ stored as 6x1 vector
+     * @param[out] iCinCiCinV  \f$ \mathbf{C}_\text{in}^{-1} \cdot \mathbf{C} \cdot
+     *                         \mathbf{C}_\text{in}^{-1} \f$ stored as 6x1 vector
+     * @param[out] iCV         Inverse right Cauchy-Green tensor \f$ \mathbf{C}^{-1} \f$ stored as
+     * 6x1 vector
+     * @param[out] iCinCM      \f$ \mathbf{C}_\text{in}^{-1} \cdot \mathbf{C} \f$
+     * @param[out] iFinCeM     \f$ \mathbf{F}_\text{in}^{-1} \cdot \mathbf{C}_\text{el} \f$
+     * @param[out] CiFin9x1    \f$ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \f$ stored as 9x1
+     * vector
+     * @param[out] CiFinCe9x1  \f$ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \cdot
+     *                         \mathbf{C}_\text{el} \f$ stored as 9x1 vector
+     * @param[out] CiFiniCe9x1   \f$ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \cdot
+     *                           \mathbf{C}_\text{el}^{-1} \f$ stored as 9x1 vector
      * @param[out] prinv         Principal invariants of the elastic right Cauchy-Green tensor
      */
     void EvaluateKinQuantElast(const LINALG::Matrix<3, 3>* defgrad,

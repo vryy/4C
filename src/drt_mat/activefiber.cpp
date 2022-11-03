@@ -1507,7 +1507,7 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
     }  // loop over i
   }    // loop over j
 
-  // F^⁻1 * [F^-1 * sigma]^T12
+  // F^-1 * [F^-1 * sigma]^T12
   MAT::MultiplyMatrixFourTensor<3>(temptens8, invdefgrd, temptensgauss, true);
   TransposeFourTensor12(temptensgauss, temptens8);
   MAT::MultiplyMatrixFourTensor<3>(temptens4, invdefgrd, temptensgauss, false);

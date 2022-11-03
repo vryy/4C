@@ -268,26 +268,26 @@ namespace DRT
        * @param[in] xi                   position in parameter space xi
        * @param[in] disp_nodal_values    vector containing nodal values of displacements
        * @param[in] scalar_nodal_values  vector containing nodal values of scalars
-       * @param[in] n                    vector (\f[\bold{n}\f])
-       * @param[in] dir                  direction vector (\f[\bold{v}\f]), can be either normal or
-       *                                 tangential vector
+       * @param[in] n                    vector (\f[\mathbf{n}\f])
+       * @param[in] dir                  direction vector (\f[\mathbf{v}\f]), can be either normal
+       * or tangential vector
        * @param[out] cauchy_n_dir  cauchy stress tensor contracted using the vectors n and dir
-       *                           (\f[ \bold{\sigma} \cdot \bold{n} \cdot \bold{v} \f])
+       *                           (\f[ \mathbf{\sigma} \cdot \mathbf{n} \cdot \mathbf{v} \f])
        * @param[out] d_cauchyndir_dd  derivative of cauchy_n_dir w.r.t. displacements
-       *                         (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                   { \mathrm{d} \bold{d}} \f])
+       *                         (\f[ \frac{ \mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}} { \mathrm{d} \mathbf{d}} \f])
        * @param d_cauchyndir_ds  derivative of cauchy_n_dir w.r.t. vector of scalars s
-       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                  { \mathrm{d} \bold{s}} \f])
+       *                        (\f[ \frac{ \mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}} { \mathrm{d} \mathbf{s}} \f])
        * @param[out] d_cauchyndir_dn   derivative of cauchy_n_dir w.r.t. vector n
-       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                  { \mathrm{d} \bold{n}} \f])
+       *                        (\f[ \frac{ \mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}} { \mathrm{d} \mathbf{n}} \f])
        * @param[out] d_cauchyndir_ddir  derivative of cauchy_n_dir w.r.t. direction vector v
-       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                  { \mathrm{d} \bold{v}} \f])
+       *                        (\f[ \frac{ \mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}} { \mathrm{d} \mathbf{v}} \f])
        * @param[out] d_cauchyndir_dxi  derivative of cauchy_n_dir w.r.t. local parameter coord. xi
-       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
-       *                                  { \mathrm{d} \bold{\xi}} \f])
+       *                        (\f[ \frac{ \mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+       * \mathbf{v}} { \mathrm{d} \mathbf{\xi}} \f])
        *
        * @note At the moment this method is only used for the nitsche contact formulation
        */

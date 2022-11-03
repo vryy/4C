@@ -528,27 +528,29 @@ namespace MAT
      * \brief Evaluate the thermal dependency of the linearizations of the cauchy stress
      *
      * \param prinv[in]      principle invariants of the tensor
-     * \param ndt[in]        dot product of vectors n and t (\f[\bold{t} \cdot \bold{t}\f])
+     * \param ndt[in]        dot product of vectors n and t (\f[\mathbf{t} \cdot \mathbf{t}\f])
      * \param bdndt[in]      left Cauchy-Green tensor contracted using the vector n and t (\f[
-                             \bold{b} \cdot \bold{n} \cdot \bold{t} \f])
+                             \mathbf{b} \cdot \mathbf{n} \cdot \mathbf{t} \f])
      * \param ibdndt[in]     inverse of left Cauchy-Green tensor contracted using the vector n and t
-                             (\f[ \bold{b}^{-1} \cdot \bold{n} \cdot \bold{t} \f])
+                             (\f[ \mathbf{b}^{-1} \cdot \mathbf{n} \cdot \mathbf{t} \f])
      * \param temp[in]       temperature
      * \param DsntDT[out]    derivative of cauchy stress contracted with vectors n and t w.r.t.
-                             temperature (\f[\frac{\mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot
-                             \bold{t} }{ \mathrm{d} T }\f])
+                             temperature (\f[\frac{\mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
+                             \mathbf{t} }{ \mathrm{d} T }\f])
      * \param iFTV[in]       inverse transposed of the deformation gradient
      * \param DbdndtDFV[in]  derivative of bdndt w.r.t. deformation gradient (\f[\frac{ \mathrm{d}
-                             \bold{b} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} \bold{F} }\f])
+                             \mathbf{b} \cdot \mathbf{n} \cdot \mathbf{t}}{\mathrm{d} \mathbf{F}
+     }\f])
      * \param DibdndtDFV[in] derivative of ibdndt w.r.t. deformation gradient (\f[\frac{ \mathrm{d}
-                             \bold{b}^{-1} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} \bold{F} }\f])
+                             \mathbf{b}^{-1} \cdot \mathbf{n} \cdot \mathbf{t}}{\mathrm{d}
+     \mathbf{F} }\f])
      * \param DI1DF[in]      derivative of first invariant w.r.t. deformation gradient
      * \param DI2DF[in]      derivative of second invariant w.r.t. deformation gradient
      * \param DI3DF[in]      derivative of third invariant w.r.t. deformation gradient
      * \param D2sntDFDT[out] second derivative of cauchy stress contracted with vectors n and t
                              w.r.t. temperature and deformation gradient (\f[ \frac{\mathrm{d}^2
-                             \bold{\sigma} \cdot \bold{n} \cdot \bold{t}} {\mathrm{d} \bold{F}
-                             \mathrm{d} T } \f])
+                             \mathbf{\sigma} \cdot \mathbf{n} \cdot \mathbf{t}} {\mathrm{d}
+     \mathbf{F} \mathrm{d} T } \f])
      */
     void EvaluateCauchyTempDeriv(const LINALG::Matrix<3, 1>& prinv, const double ndt,
         const double bdndt, const double ibdndt, const double* temp, double* DsntDT,
