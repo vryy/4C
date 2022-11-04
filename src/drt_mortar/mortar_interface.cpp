@@ -20,18 +20,18 @@
 #include "mortar_defines.H"
 #include "mortar_utils.H"
 
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
+#include "io.H"
+#include "io_control.H"
 
-#include "../drt_lib/drt_utils_rebalancing.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_parallel.H"
+#include "drt_utils_rebalancing.H"
+#include "drt_utils.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_parallel.H"
 
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
@@ -41,11 +41,11 @@
 #include <Epetra_Time.h>
 #include <Epetra_SerialComm.h>
 
-#include "../drt_binstrategy/binning_strategy.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_poroelast/poroelast_utils.H"
+#include "binning_strategy.H"
+#include "drt_nurbs_discret.H"
+#include "poroelast_utils.H"
 
-#include "../drt_contact/contact_interpolator.H"
+#include "contact_interpolator.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

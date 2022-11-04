@@ -12,7 +12,7 @@
 #ifndef BACI_ANISOTROPY_CYLINDER_COORDINATE_SYSTEM_PROVIDER_H
 #define BACI_ANISOTROPY_CYLINDER_COORDINATE_SYSTEM_PROVIDER_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 
 namespace MAT

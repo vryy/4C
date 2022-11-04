@@ -12,9 +12,9 @@
 #define SCATRA_ELE_CALC_UTILS_H
 
 
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_inpar/inpar_scatra.H"
+#include "drt_utils_integration.H"
+#include "drt_element.H"
+#include "inpar_scatra.H"
 
 
 namespace SCATRA

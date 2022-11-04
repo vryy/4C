@@ -19,8 +19,8 @@
 #include <Epetra_VbrMatrix.h>
 #include <Epetra_Vector.h>
 
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
+#include "linalg_serialdensematrix.H"
 #include "fsi_nox_linearsystem_gcr.H"
 
 

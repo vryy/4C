@@ -10,14 +10,14 @@
  *---------------------------------------------------------------------------*/
 #include "particle_wall_datastate.H"
 
-#include "../drt_inpar/inpar_particle.H"
+#include "inpar_particle.H"
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
+#include "io.H"
+#include "io_control.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

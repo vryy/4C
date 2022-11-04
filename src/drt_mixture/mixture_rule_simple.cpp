@@ -13,10 +13,10 @@
 #include <Teuchos_RCP.hpp>
 #include <algorithm>
 #include "drt_dserror.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 #include "mixture_constituent.H"
 #include <iosfwd>
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 MIXTURE::PAR::SimpleMixtureRule::SimpleMixtureRule(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MixtureRule(matdata),

@@ -14,9 +14,9 @@
 
 #include <set>
 
-#include "../drt_inpar/inpar_structure.H"
-#include "../solver_nonlin_nox/nox_nln_statustest_factory.H"
-#include "../solver_nonlin_nox/nox_nln_enum_lists.H"
+#include "inpar_structure.H"
+#include "nox_nln_statustest_factory.H"
+#include "nox_nln_enum_lists.H"
 
 // forward declaration
 namespace Teuchos

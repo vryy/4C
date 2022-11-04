@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "../drt_adapter/adapter_algorithmbase.H"
+#include "adapter_algorithmbase.H"
 
 #include "drt_dserror.H"
 

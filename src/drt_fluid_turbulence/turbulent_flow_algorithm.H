@@ -12,9 +12,9 @@
 #ifndef TURBULENT_FLOW_ALGORITHM_H
 #define TURBULENT_FLOW_ALGORITHM_H
 
-#include "../drt_adapter/ad_fld_base_algorithm.H"
+#include "ad_fld_base_algorithm.H"
 
-#include "../drt_fluid/fluidresulttest.H"
+#include "fluidresulttest.H"
 
 
 namespace FLD

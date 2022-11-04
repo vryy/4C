@@ -13,8 +13,8 @@
 #include "drt_utils_polynomial.H"
 #include "drt_utils_gausspoints.H"
 
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
+#include "linalg_serialdensematrix.H"
 
 namespace DRT
 {

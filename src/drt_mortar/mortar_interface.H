@@ -17,9 +17,9 @@
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 
-#include "../drt_inpar/inpar_mortar.H"
+#include "inpar_mortar.H"
 #include "drt_dserror.H"
-#include "../headers/pairedvector.H"
+#include "pairedvector.H"
 #include "mortar_paramsinterface.H"
 
 // forward declarations

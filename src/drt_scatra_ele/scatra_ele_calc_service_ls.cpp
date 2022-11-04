@@ -12,12 +12,12 @@
 
 #include "scatra_ele_action.H"
 
-#include "../drt_inpar/inpar_levelset.H"
+#include "inpar_levelset.H"
 
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
-#include "../drt_geometry/position_array.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_utils.H"
+#include "standardtypes_cpp.H"  // for EPS13 and so on
+#include "position_array.H"
+#include "drt_discret.H"
 
 
 /*----------------------------------------------------------------------*

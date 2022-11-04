@@ -13,7 +13,7 @@
 #include "drt_dserror.H"
 
 // supported structural adapters
-#include "../drt_adapter/ad_str_loca.H"
+#include "ad_str_loca.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

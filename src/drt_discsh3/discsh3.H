@@ -15,16 +15,16 @@
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "drt_element.H"
+#include "drt_elementtype.H"
+#include "drt_parobjectfactory.H"
+#include "drt_utils_integration.H"
+#include "drt_utils_fem_shapefunctions.H"
 
-#include "../linalg/linalg_serialdensevector.H"
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_discret_faces.H"
+#include "linalg_serialdensevector.H"
+#include "drt_node.H"
+#include "drt_discret.H"
+#include "drt_discret_faces.H"
 
 #include "Sacado.hpp"
 typedef Sacado::Fad::DFad<double> FAD;

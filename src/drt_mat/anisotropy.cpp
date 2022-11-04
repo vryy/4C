@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 #include "anisotropy.H"
 #include "material_service.H"
-#include "../drt_lib/drt_parobject.H"
-#include "../drt_fiber/nodal_fiber_holder.H"
+#include "drt_parobject.H"
+#include "nodal_fiber_holder.H"
 #include "anisotropy_utils.H"
 #include "anisotropy_extension.H"
 

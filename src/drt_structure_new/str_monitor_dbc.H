@@ -12,7 +12,7 @@
 #ifndef SRC_DRT_STRUCTURE_NEW_STR_MONITOR_DBC_H_
 #define SRC_DRT_STRUCTURE_NEW_STR_MONITOR_DBC_H_
 
-#include "../drt_lib/drt_condition.H"
+#include "drt_condition.H"
 
 namespace IO
 {

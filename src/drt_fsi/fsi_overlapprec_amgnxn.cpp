@@ -14,9 +14,9 @@
 #include <Teuchos_XMLParameterListHelpers.hpp>
 
 #include "fsi_overlapprec_amgnxn.H"
-#include "../solver/solver_amgnxn_preconditioner.H"
-#include "../linalg/linalg_precond.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "solver_amgnxn_preconditioner.H"
+#include "linalg_precond.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

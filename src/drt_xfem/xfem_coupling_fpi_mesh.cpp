@@ -17,25 +17,25 @@ xfluid class and the cut-library
 #include "xfem_interface_utils.H"
 #include "xfem_discretization_utils.H"
 
-#include "../drt_lib/drt_colors.H"
-#include "../drt_lib/drt_utils_parallel.H"
-#include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_dofset_transparent_independent.H"
+#include "drt_colors.H"
+#include "drt_utils_parallel.H"
+#include "drt_utils_createdis.H"
+#include "drt_dofset_transparent_independent.H"
 
-#include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_fluid_ele/fluid_ele_parameter_xfem.H"
+#include "fluid_ele_action.H"
+#include "fluid_ele_parameter_xfem.H"
 
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_gmsh.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_pstream.H"
+#include "io.H"
+#include "io_gmsh.H"
+#include "io_control.H"
+#include "io_pstream.H"
 
-#include "../drt_poroelast/poroelast_utils.H"
-#include "../drt_mat/structporo.H"
-#include "../drt_mat/fluidporo.H"
+#include "poroelast_utils.H"
+#include "structporo.H"
+#include "fluidporo.H"
 #include "xfem_xfluid_contact_communicator.H"
 
 //! constructor

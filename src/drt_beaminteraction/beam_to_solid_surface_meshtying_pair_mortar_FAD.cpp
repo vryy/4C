@@ -14,12 +14,12 @@ evaluated with FAD.
 #include "beam_to_solid_surface_meshtying_params.H"
 #include "beaminteraction_calc_utils.H"
 #include "beam_to_solid_mortar_manager.H"
-#include "../drt_geometry_pair/geometry_pair_line_to_surface.H"
-#include "../drt_geometry_pair/geometry_pair_element_faces.H"
-#include "../drt_inpar/inpar_beam_to_solid.H"
-#include "../drt_inpar/inpar_geometry_pair.H"
+#include "geometry_pair_line_to_surface.H"
+#include "geometry_pair_element_faces.H"
+#include "inpar_beam_to_solid.H"
+#include "inpar_geometry_pair.H"
 #include "beam_to_solid_utils.H"
-#include "../drt_beam3/triad_interpolation_local_rotation_vectors.H"
+#include "triad_interpolation_local_rotation_vectors.H"
 
 #include "Epetra_FEVector.h"
 

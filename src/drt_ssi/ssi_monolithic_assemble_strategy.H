@@ -12,8 +12,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
 
-#include "../linalg/linalg_sparseoperator.H"
-#include "../drt_adapter/adapter_coupling.H"
+#include "linalg_sparseoperator.H"
+#include "adapter_coupling.H"
 #include "ssi_utils.H"
 
 namespace LINALG

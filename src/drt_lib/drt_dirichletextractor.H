@@ -12,7 +12,7 @@
 #ifndef DRT_DIRICHLETEXTRACTOR_H
 #define DRT_DIRICHLETEXTRACTOR_H
 
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_mapextractor.H"
 
 namespace DRT
 {

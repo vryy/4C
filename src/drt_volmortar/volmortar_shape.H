@@ -17,14 +17,14 @@
 /*----------------------------------------------------------------------*
  | Header                                                   farah 01/14 |
  *----------------------------------------------------------------------*/
-#include "../linalg/linalg_utils_densematrix_inverse.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_mortar/mortar_element.H"
-#include "../drt_lib/drt_element_integration_select.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-#include "../drt_inpar/inpar_volmortar.H"
+#include "linalg_utils_densematrix_inverse.H"
+#include "drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_integration.H"
+#include "mortar_element.H"
+#include "drt_element_integration_select.H"
+#include "drt_utils_nurbs_shapefunctions.H"
+#include "inpar_volmortar.H"
 
 /*----------------------------------------------------------------------*
  | Utils                                                    farah 01/14 |

@@ -15,7 +15,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Epetra_SerialDenseVector.h>
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 
 

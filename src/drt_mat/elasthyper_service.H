@@ -13,8 +13,8 @@
 #define BACI_ELASTHYPER_EVALUATE_H
 
 #include <NOX.H>
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_matelast/elast_summand.H"
+#include "linalg_fixedsizematrix.H"
+#include "elast_summand.H"
 namespace MAT
 {
   // Forward declaration

@@ -12,7 +12,7 @@
 
 #include "shell8.H"
 
-#include "../drt_inpar/inpar_scatra.H"
+#include "inpar_scatra.H"
 
 namespace DRT
 {

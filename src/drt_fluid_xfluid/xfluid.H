@@ -30,12 +30,12 @@ interface
 /*==========================================================================*/
 
 
-#include "../drt_inpar/inpar_xfem.H"
-#include "../drt_inpar/inpar_cut.H"
+#include "inpar_xfem.H"
+#include "inpar_cut.H"
 // Needed to set Surface Tension parameters in condition_manager
-#include "../drt_inpar/inpar_twophase.H"
+#include "inpar_twophase.H"
 
-#include "../drt_fluid/fluidimplicitintegration.H"
+#include "fluidimplicitintegration.H"
 
 #include "xfluid_state.H"
 

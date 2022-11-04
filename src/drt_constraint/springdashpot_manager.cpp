@@ -9,13 +9,13 @@
 *----------------------------------------------------------------------*/
 
 #include <iostream>
-#include "../drt_io/io_pstream.H"  // has to go before io.H
-#include "../drt_io/io.H"
+#include "io_pstream.H"  // has to go before io.H
+#include "io.H"
 
 #include "springdashpot_manager.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_discret.H"
+#include "inpar_structure.H"
+#include "drt_globalproblem.H"
 #include "springdashpot.H"
 
 UTILS::SpringDashpotManager::SpringDashpotManager(Teuchos::RCP<DRT::Discretization> dis)

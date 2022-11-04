@@ -10,9 +10,9 @@ according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium"
 #define ELAST_COUPANISOEXPOTWOCOUP_H_
 
 #include "elast_summand.H"
-#include "../drt_mat/matpar_parameter.H"
-#include "../drt_mat/anisotropy.H"
-#include "../drt_mat/anisotropy_extension_default.H"
+#include "matpar_parameter.H"
+#include "anisotropy.H"
+#include "anisotropy_extension_default.H"
 
 namespace MAT
 {

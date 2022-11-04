@@ -9,12 +9,12 @@
 
 #include "poromultiphase_partitioned_twoway.H"
 
-#include "../drt_adapter/ad_porofluidmultiphase_wrapper.H"
-#include "../drt_adapter/ad_str_wrapper.H"
-#include "../drt_adapter/ad_art_net.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../drt_io/io.H"
+#include "ad_porofluidmultiphase_wrapper.H"
+#include "ad_str_wrapper.H"
+#include "ad_art_net.H"
+#include "drt_globalproblem.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "io.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16 |

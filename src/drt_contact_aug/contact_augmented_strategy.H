@@ -11,12 +11,12 @@
 #ifndef CONTACT_AUGMENTED_STRATEGY_H_
 #define CONTACT_AUGMENTED_STRATEGY_H_
 
-#include "../drt_contact/contact_lagrange_strategy.H"
+#include "contact_lagrange_strategy.H"
 #include "contact_aug_utils.H"
 #include "contact_aug_enum_lists.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include "contact_aug_timemonitor.H"
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 // forward declaration
 namespace DRT

@@ -6,31 +6,31 @@
 \level 2
 
  *------------------------------------------------------------------------------------------------*/
-#include "../drt_fluid/fluid_utils.H"  // for splitter
+#include "fluid_utils.H"  // for splitter
 
-#include "../drt_io/io_control.H"
-#include "../drt_io/io.H"
+#include "io_control.H"
+#include "io.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_parameter_list.H"
-#include "../drt_lib/function_of_time.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_parameter_list.H"
+#include "function_of_time.H"
 
-#include "../drt_mat/ion.H"
-#include "../drt_mat/matlist.H"
+#include "ion.H"
+#include "matlist.H"
 
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "drt_nurbs_discret.H"
 
-#include "../drt_scatra/scatra_timint_meshtying_strategy_fluid_elch.H"
-#include "../drt_scatra/scatra_timint_meshtying_strategy_s2i_elch.H"
-#include "../drt_scatra/scatra_timint_meshtying_strategy_std_elch.H"
+#include "scatra_timint_meshtying_strategy_fluid_elch.H"
+#include "scatra_timint_meshtying_strategy_s2i_elch.H"
+#include "scatra_timint_meshtying_strategy_std_elch.H"
 
-#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "scatra_ele_action.H"
 
-#include "../linalg/linalg_krylov_projector.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_krylov_projector.H"
+#include "linalg_solver.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 #include "scatra_timint_elch.H"
 #include "scatra_timint_elch_service.H"

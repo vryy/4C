@@ -10,15 +10,15 @@
 /*----------------------------------------------------------------------*/
 
 #include "mixture_rule.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_material.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/material_service.H"
+#include "drt_globalproblem.H"
+#include "matpar_material.H"
+#include "matpar_bundle.H"
+#include "material_service.H"
 #include "mixture_rule_growthremodel.H"
 #include "mixture_rule_simple.H"
-#include "../drt_inpar/inpar_material.H"
-#include "../drt_lib/drt_parobject.H"
-#include "../drt_mat/matpar_parameter.H"
+#include "inpar_material.H"
+#include "drt_parobject.H"
+#include "matpar_parameter.H"
 #include "drt_dserror.H"
 
 // forward declarations

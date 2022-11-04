@@ -18,8 +18,8 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include "../drt_adapter/ad_fld_fluid_ale.H"
-#include "../drt_adapter/adapter_algorithmbase.H"
+#include "ad_fld_fluid_ale.H"
+#include "adapter_algorithmbase.H"
 
 
 // forward declarations

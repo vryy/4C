@@ -9,13 +9,13 @@
 /*----------------------------------------------------------------------------*/
 
 #include "beam3contact_utils.H"
-#include "../drt_beam3/beam3.H"
-#include "../drt_beam3/beam3r.H"
-#include "../drt_beam3/beam3eb.H"
-#include "../drt_beam3/beam3k.H"
-#include "../drt_rigidsphere/rigidsphere.H"
-#include "../drt_beamcontact/beam3contact_manager.H"
-#include "../headers/FAD_utils.H"
+#include "beam3.H"
+#include "beam3r.H"
+#include "beam3eb.H"
+#include "beam3k.H"
+#include "rigidsphere.H"
+#include "beam3contact_manager.H"
+#include "FAD_utils.H"
 
 /*----------------------------------------------------------------------*
  |  Check, if current node belongs to a beam element         meier 05/14|

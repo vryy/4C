@@ -9,8 +9,8 @@
 
 
 #include "so_hex8p1j1.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_mat/so3_material.H"
+#include "drt_linedefinition.H"
+#include "so3_material.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

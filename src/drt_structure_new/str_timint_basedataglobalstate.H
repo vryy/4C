@@ -14,16 +14,16 @@
 #define SRC_DRT_STRUCTURE_NEW_STR_TIMINT_BASEDATAGLOBALSTATE_H_
 
 #include "drt_dserror.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 
-#include "../drt_lib/drt_utils_matrix_vector_enums.H"
+#include "drt_utils_matrix_vector_enums.H"
 
-#include "../linalg/linalg_sparseoperator.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../drt_timestepping/timintmstep.H"
+#include "linalg_sparseoperator.H"
+#include "linalg_mapextractor.H"
+#include "timintmstep.H"
 
-#include "../solver_nonlin_nox/nox_nln_abstract_prepostoperator.H"
-#include "../solver_nonlin_nox/nox_nln_enum_lists.H"
+#include "nox_nln_abstract_prepostoperator.H"
+#include "nox_nln_enum_lists.H"
 
 #include <Teuchos_RCP.hpp>
 

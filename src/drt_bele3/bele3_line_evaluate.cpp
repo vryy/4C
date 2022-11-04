@@ -9,13 +9,13 @@
 /*----------------------------------------------------------------------*/
 
 #include "bele3.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_lib/drt_discret.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_discret.H"
 #include "drt_dserror.H"
-#include "../drt_lib/drt_function.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_function.H"
+#include "drt_globalproblem.H"
+#include "drt_utils.H"
 
 
 

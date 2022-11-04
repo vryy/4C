@@ -13,7 +13,7 @@
 
 #include "so3_ssn_plast.H"
 #include "so3_ssn_plast_eletypes.H"
-#include "../so_sh18.H"
+#include "so_sh18.H"
 
 namespace DRT
 {

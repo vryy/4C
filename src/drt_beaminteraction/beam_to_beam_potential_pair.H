@@ -10,9 +10,9 @@
 #ifndef BEAMTOBEAMPOTENTIALPAIR_H
 #define BEAMTOBEAMPOTENTIALPAIR_H
 
-#include "../drt_beaminteraction/beam_potential_pair.H"
+#include "beam_potential_pair.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 #include <Sacado.hpp>
 

@@ -15,10 +15,10 @@
 #include "fluid_ele_interface.H"
 #include "fluid_ele_calc.H"
 
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 // includes gauss points
-#include "../drt_lib/drt_utils.H"
+#include "drt_utils.H"
 
 namespace DRT
 {

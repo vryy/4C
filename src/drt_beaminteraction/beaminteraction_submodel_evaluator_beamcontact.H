@@ -14,8 +14,8 @@
 #define BEAMINTERACTION_SUBMODEL_EVALUATOR_BEAMCONTACT_H_
 
 
-#include "../drt_binstrategy/binning_strategy_utils.H"
-#include "../drt_geometric_search/geometric_search_params.H"
+#include "binning_strategy_utils.H"
+#include "geometric_search_params.H"
 #include "beaminteraction_submodel_evaluator_generic.H"
 
 // forward declaration ...

@@ -11,14 +11,14 @@
 #include "mortar_node.H"
 #include "mortar_calc_utils.H"
 
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
+#include "linalg_serialdensematrix.H"
 
-#include "../drt_contact/contact_nitsche_utils.H"
+#include "contact_nitsche_utils.H"
 
-#include "../drt_mat/material.H"
+#include "material.H"
 
-#include "../drt_so3/so_surface.H"
+#include "so_surface.H"
 #include <Teuchos_RCP.hpp>
 
 

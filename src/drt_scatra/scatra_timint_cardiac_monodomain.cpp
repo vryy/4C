@@ -10,20 +10,20 @@
 
 #include "scatra_timint_cardiac_monodomain.H"
 
-#include "../drt_mat/material.H"
-#include "../drt_mat/matlist.H"
+#include "material.H"
+#include "matlist.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_parameter_list.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_parameter_list.H"
 
-#include "../drt_scatra_ele/scatra_ele_action.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "scatra_ele_action.H"
+#include "drt_nurbs_discret.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_krylov_projector.H"
+#include "io.H"
+#include "io_control.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_solver.H"
+#include "linalg_krylov_projector.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                              ehrl  01/14 |

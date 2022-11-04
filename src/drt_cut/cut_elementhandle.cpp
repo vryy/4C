@@ -22,7 +22,7 @@
 #include "quadrature_compression.H"
 
 
-#include "../drt_inpar/inpar_xfem.H"
+#include "inpar_xfem.H"
 
 #include "cut_elementhandle.H"
 

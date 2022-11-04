@@ -16,7 +16,7 @@
 #include "Epetra_SerialDenseVector.h"
 #include "Teuchos_RCP.hpp"
 
-#include "../drt_inpar/inpar_fluid.H"
+#include "inpar_fluid.H"
 
 // forward declarations
 namespace DRT

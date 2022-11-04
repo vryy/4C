@@ -13,8 +13,8 @@
 #define TOPOPT_FLUIDADJOINT3_IMPL_PARAMETER_H_
 
 
-#include "../drt_inpar/inpar_fluid.H"
-#include "../drt_inpar/inpar_topopt.H"
+#include "inpar_fluid.H"
+#include "inpar_topopt.H"
 
 
 namespace DRT

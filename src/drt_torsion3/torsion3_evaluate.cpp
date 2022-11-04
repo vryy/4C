@@ -10,14 +10,14 @@
 
 #include <cmath>
 
-#include "../drt_inpar/inpar_browniandyn.H"
+#include "inpar_browniandyn.H"
 #include "torsion3.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 #include "drt_dserror.H"
-#include "../drt_lib/drt_utils.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_mat/spring.H"
-#include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "drt_utils.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "spring.H"
+#include "str_elements_paramsinterface.H"
 
 
 /*-----------------------------------------------------------------------------------------------------------*

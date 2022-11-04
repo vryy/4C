@@ -12,8 +12,8 @@
 #define numbgp 50
 #define twice 100
 
-#include "../drt_mat/matpar_parameter.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "matpar_parameter.H"
+#include "linalg_fixedsizematrix.H"
 
 namespace MAT
 {

@@ -8,7 +8,7 @@ terms of the first Cauchy-Green invariant
 /*----------------------------------------------------------------------*/
 
 #include "elast_iso1pow.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 
 MAT::ELASTIC::PAR::Iso1Pow::Iso1Pow(const Teuchos::RCP<MAT::PAR::Material>& matdata)

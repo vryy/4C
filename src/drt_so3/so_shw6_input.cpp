@@ -8,8 +8,8 @@
 
 
 #include "so_shw6.H"  //**
-#include "../drt_mat/so3_material.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "so3_material.H"
+#include "drt_linedefinition.H"
 
 
 /*----------------------------------------------------------------------*/

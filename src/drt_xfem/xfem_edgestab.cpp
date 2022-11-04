@@ -13,27 +13,27 @@ continuous interior penalty) scheme
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_lib/drt_assemblestrategy.H"
-#include "../drt_lib/drt_discret_faces.H"
+#include "drt_assemblestrategy.H"
+#include "drt_discret_faces.H"
 
-#include "../drt_cut/cut_elementhandle.H"
-#include "../drt_cut/cut_sidehandle.H"
-#include "../drt_cut/cut_volumecell.H"
-#include "../drt_cut/cut_cutwizard.H"
+#include "cut_elementhandle.H"
+#include "cut_sidehandle.H"
+#include "cut_volumecell.H"
+#include "cut_cutwizard.H"
 
 
-#include "../drt_fluid_ele/fluid_ele.H"
-#include "../drt_fluid_ele/fluid_ele_intfaces_calc.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "fluid_ele.H"
+#include "fluid_ele_intfaces_calc.H"
+#include "fluid_ele_action.H"
 
-#include "../drt_inpar/inpar_fluid.H"
+#include "inpar_fluid.H"
 
 // Needed for material check.
-#include "../drt_xfem/xfem_utils.H"
+#include "xfem_utils.H"
 // Needed for safety check.
-#include "../drt_mat/material.H"
-#include "../drt_mat/matlist.H"
-#include "../drt_mat/newtonianfluid.H"
+#include "material.H"
+#include "matlist.H"
+#include "newtonianfluid.H"
 
 #include "xfem_edgestab.H"
 

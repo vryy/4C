@@ -17,10 +17,10 @@
 #include <set>
 
 #include "drt_dserror.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 
 // include of nox nln enumerators
-#include "../solver_nonlin_nox/nox_nln_enum_lists.H"
+#include "nox_nln_enum_lists.H"
 // include of enumerators of the nox abstract vector class
 #include <NOX_Abstract_Vector.H>
 

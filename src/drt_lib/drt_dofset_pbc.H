@@ -26,7 +26,7 @@
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 
-#include "../drt_lib/drt_dofset.H"
+#include "drt_dofset.H"
 
 
 

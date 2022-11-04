@@ -16,24 +16,24 @@
 #include "poroelast_utils.H"
 
 
-#include "../drt_adapter/ad_fld_poro.H"
-#include "../drt_adapter/ad_str_fpsiwrapper.H"
+#include "ad_fld_poro.H"
+#include "ad_str_fpsiwrapper.H"
 
-#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "fluid_ele_action.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "scatra_timint_implicit.H"
+#include "scatra_ele_action.H"
 
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_assemblestrategy.H"
-#include "../drt_lib/drt_utils_parameter_list.H"
+#include "drt_globalproblem.H"
+#include "drt_assemblestrategy.H"
+#include "drt_utils_parameter_list.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_solver.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_solver.H"
 
 
 /*----------------------------------------------------------------------*

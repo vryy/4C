@@ -12,9 +12,9 @@
 
 #include "drt_dserror.H"
 
-#include "../drt_inpar/inpar_parameterlist_utils.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "inpar_parameterlist_utils.H"
+#include "inpar_structure.H"
+#include "drt_globalproblem.H"
 
 
 /*-----------------------------------------------------------------------------------------------*

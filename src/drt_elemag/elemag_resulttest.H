@@ -11,7 +11,7 @@
 #ifndef ELEMAG_RESULTTEST_H
 #define ELEMAG_RESULTTEST_H
 
-#include "../drt_lib/drt_resulttest.H"
+#include "drt_resulttest.H"
 #include <Epetra_Vector.h>
 #include <Epetra_SerialDenseVector.h>
 

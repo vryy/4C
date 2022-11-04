@@ -14,7 +14,7 @@
 
 #include "beam_contact_pair.H"
 
-#include "../drt_geometry_pair/geometry_pair_utility_classes.H"
+#include "geometry_pair_utility_classes.H"
 
 
 namespace BEAMINTERACTION

@@ -12,7 +12,7 @@
 /* header inclusions */
 #include "ad_ale_wear.H"
 #include "drt_dserror.H"
-#include "../drt_ale/ale_utils_mapextractor.H"
+#include "ale_utils_mapextractor.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

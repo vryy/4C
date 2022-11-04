@@ -22,17 +22,17 @@ convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods A
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
-#include "../drt_fem_general/drt_utils_gder2.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_boundary_integration.H"
+#include "drt_utils_gder2.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_inpar/inpar_fluid.H"
+#include "inpar_fluid.H"
 
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/fluidporo.H"
-#include "../drt_mat/matlist.H"
+#include "newtonianfluid.H"
+#include "fluidporo.H"
+#include "matlist.H"
 
 #include "fluid_ele_calc_intfaces_stab.H"
 

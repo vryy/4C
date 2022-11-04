@@ -10,12 +10,12 @@
 #ifndef SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_PAIR_H_
 #define SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_PAIR_H_
 
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_porofluidmultiphase_ele/porofluid_variablemanager.H"
-#include "../drt_porofluidmultiphase_ele/porofluid_phasemanager.H"
-#include "../drt_inpar/inpar_bio.H"
+#include "linalg_fixedsizematrix.H"
+#include "linalg_serialdensevector.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "porofluid_variablemanager.H"
+#include "porofluid_phasemanager.H"
+#include "inpar_bio.H"
 #include "Sacado.hpp"
 
 

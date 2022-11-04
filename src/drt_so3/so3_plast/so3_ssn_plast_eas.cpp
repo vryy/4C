@@ -12,9 +12,9 @@
  | headers                                                  seitz 04/14 |
  *----------------------------------------------------------------------*/
 #include "so3_ssn_plast.H"
-#include "../../linalg/linalg_utils_densematrix_eigen.H"
-#include "../../linalg/linalg_fixedsizematrix.H"
-#include "../../drt_lib/drt_globalproblem.H"
+#include "linalg_utils_densematrix_eigen.H"
+#include "linalg_fixedsizematrix.H"
+#include "drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*

@@ -13,23 +13,23 @@
 
 #include "ssi_utils.H"
 
-#include "../drt_adapter/ad_str_ssiwrapper.H"
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "ad_str_ssiwrapper.H"
+#include "adapter_coupling.H"
+#include "adapter_scatra_base_algorithm.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "scatra_timint_implicit.H"
 
-#include "../drt_ssi/ssi_partitioned.H"
+#include "ssi_partitioned.H"
 
-#include "../drt_structure_new/str_dbc.H"
-#include "../drt_structure_new/str_impl_generic.H"
-#include "../drt_structure_new/str_timint_implicit.H"
+#include "str_dbc.H"
+#include "str_impl_generic.H"
+#include "str_timint_implicit.H"
 
-#include "../solver_nonlin_nox/nox_nln_group.H"
+#include "nox_nln_group.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
-#include "../linalg/linalg_matrixtransform.H"
+#include "linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 01/18 |

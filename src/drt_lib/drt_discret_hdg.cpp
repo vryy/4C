@@ -13,22 +13,22 @@
 
 #include "drt_exporter.H"
 #include "drt_globalproblem.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_fluid_ele/fluid_ele_calc.H"
-#include "../drt_fluid_ele/fluid_ele_hdg.H"
-#include "../drt_fluid_ele/fluid_ele_hdg_weak_comp.H"
-#include "../drt_fluid_ele/fluid_ele_calc_hdg.H"
-#include "../drt_scatra_ele/scatra_ele_action.H"
-#include "../drt_elemag/elemag_ele.H"
-#include "../drt_elemag/elemag_ele_action.H"
-#include "../drt_lib/drt_dofset_predefineddofnumber.H"
-#include "../drt_lib/drt_utils_parameter_list.H"
+#include "fluid_ele_action.H"
+#include "fluid_ele_calc.H"
+#include "fluid_ele_hdg.H"
+#include "fluid_ele_hdg_weak_comp.H"
+#include "fluid_ele_calc_hdg.H"
+#include "scatra_ele_action.H"
+#include "elemag_ele.H"
+#include "elemag_ele_action.H"
+#include "drt_dofset_predefineddofnumber.H"
+#include "drt_utils_parameter_list.H"
 
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../drt_mat/matpar_parameter.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "matpar_parameter.H"
 
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/newtonianfluid.H"
+#include "matpar_bundle.H"
+#include "newtonianfluid.H"
 
 
 DRT::DiscretizationHDG::DiscretizationHDG(const std::string name, Teuchos::RCP<Epetra_Comm> comm)

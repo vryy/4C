@@ -14,7 +14,7 @@
 #define STR_PREDICT_TANGDIS_H_
 
 #include "str_predict_generic.H"
-#include "../solver_nonlin_nox/nox_nln_abstract_prepostoperator.H"
+#include "nox_nln_abstract_prepostoperator.H"
 
 // forward declaration
 class Epetra_Vector;

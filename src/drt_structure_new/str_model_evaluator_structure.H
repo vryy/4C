@@ -15,7 +15,7 @@
 
 #include "str_elements_paramsinterface.H"  // interface to the element evaluation
 
-#include "../drt_inpar/inpar_structure.H"  // enumerators
+#include "inpar_structure.H"  // enumerators
 
 #include <Teuchos_RCP.hpp>
 

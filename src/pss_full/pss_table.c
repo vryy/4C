@@ -40,7 +40,7 @@ table. This table can be queried for those values quite easily.
 
 */
 
-#include "../headers/standardtypes.h"
+#include "standardtypes.h"
 #include "drt_dserror.H"
 
 #include "pss_table.h"

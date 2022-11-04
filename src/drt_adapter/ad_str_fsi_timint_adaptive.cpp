@@ -15,15 +15,15 @@
 
 #include "ad_str_fsi_timint_adaptive.H"
 
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_structure/strtimada.H"
-#include "../drt_structure/strtimint.H"
-#include "../drt_structure/stru_aux.H"
+#include "strtimada.H"
+#include "strtimint.H"
+#include "stru_aux.H"
 
 
 /*======================================================================*/

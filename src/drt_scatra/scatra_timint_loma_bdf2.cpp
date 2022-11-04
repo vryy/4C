@@ -11,16 +11,16 @@
 
 #include "scatra_timint_loma_bdf2.H"
 
-#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "scatra_ele_action.H"
 #include "turbulence_hit_scalar_forcing.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
-#include "../drt_io/io.H"
-#include "../linalg/linalg_solver.H"
-#include "../drt_fluid_turbulence/dyn_smag.H"
-#include "../drt_fluid_turbulence/dyn_vreman.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "io.H"
+#include "linalg_solver.H"
+#include "dyn_smag.H"
+#include "dyn_vreman.H"
+#include "drt_globalproblem.H"
+#include "drt_validparameters.H"
 
 
 /*----------------------------------------------------------------------*

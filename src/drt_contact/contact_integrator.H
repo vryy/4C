@@ -11,9 +11,9 @@
 #ifndef CONTACT_INTEGRATOR_H
 #define CONTACT_INTEGRATOR_H
 
-#include "../drt_mortar/mortar_integrator.H"
-#include "../drt_inpar/inpar_wear.H"
-#include "../headers/pairedvector.H"
+#include "mortar_integrator.H"
+#include "inpar_wear.H"
+#include "pairedvector.H"
 
 // forward declarations
 namespace LINALG

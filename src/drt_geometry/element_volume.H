@@ -12,9 +12,9 @@
 #define ELEMENT_VOLUME_H
 
 
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_cut/cut_kernel.H"
+#include "drt_utils_integration.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "cut_kernel.H"
 
 namespace GEO
 {

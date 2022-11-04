@@ -17,10 +17,10 @@
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_mlapi_operator.H"
 
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_node.H"
+#include "drt_discret.H"
 
-#include "../drt_fluid_ele/fluid_ele.H"
+#include "fluid_ele.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

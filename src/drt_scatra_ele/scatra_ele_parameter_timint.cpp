@@ -16,7 +16,7 @@ general static parameters required for scalar transport element evaluation.
 /*----------------------------------------------------------------------*/
 #include "drt_dserror.H"
 #include "scatra_ele_parameter_timint.H"
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

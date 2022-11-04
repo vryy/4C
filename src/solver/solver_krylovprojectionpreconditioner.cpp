@@ -8,7 +8,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "../linalg/linalg_projected_precond.H"
+#include "linalg_projected_precond.H"
 
 #include "solver_krylovprojectionpreconditioner.H"
 

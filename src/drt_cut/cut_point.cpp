@@ -16,7 +16,7 @@
 
 #include "cut_output.H"
 #include "cut_tolerance.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 #ifdef CLN_CALC_OUTSIDE_KERNEL_POINT
 #include "cut_clnwrapper.H"
@@ -520,8 +520,8 @@ void GEO::CUT::Point::Position(Point::PointPosition pos)
 {
   if (position_ != pos)
   {
-    //#ifdef DEBUGCUTLIBRARY
-    // safety check, if the position of a facet changes from one side to the other
+    // #ifdef DEBUGCUTLIBRARY
+    //  safety check, if the position of a facet changes from one side to the other
     if ((position_ == Point::inside and pos == Point::outside) or
         (position_ == Point::outside and pos == Point::inside))
     {
@@ -532,7 +532,7 @@ void GEO::CUT::Point::Position(Point::PointPosition pos)
           "Are you sure that you want to change the point-position from inside to outside or vice "
           "versa?");
     }
-    //#endif
+    // #endif
 
     // do not overwrite oncutsurface points
     if (position_ == Point::oncutsurface) return;

@@ -11,7 +11,7 @@
 
 #include "fluid_ele_immersed_base.H"
 #include "fluid_ele_immersed.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidTypeImmersedBase::Create(

@@ -8,12 +8,12 @@
 #define SOH20_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "drt_element.H"
+#include "drt_elementtype.H"
+#include "drt_parobjectfactory.H"
+#include "inpar_structure.H"
 
-#include "../drt_mat/material.H"
+#include "material.H"
 
 #include "so_base.H"
 

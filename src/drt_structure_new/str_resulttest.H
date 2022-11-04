@@ -13,7 +13,7 @@
 #define SRC_DRT_STRUCTURE_NEW_STR_RESULTTEST_H_
 
 #include <Epetra_Vector.h>
-#include "../drt_lib/drt_resulttest.H"
+#include "drt_resulttest.H"
 #include "drt_dserror.H"
 
 

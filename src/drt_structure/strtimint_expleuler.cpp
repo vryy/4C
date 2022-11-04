@@ -10,12 +10,12 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "strtimint_expleuler.H"
-#include "../drt_mortar/mortar_manager_base.H"
-#include "../drt_mortar/mortar_strategy_base.H"
-#include "../drt_contact/meshtying_contact_bridge.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../drt_io/io.H"
+#include "mortar_manager_base.H"
+#include "mortar_strategy_base.H"
+#include "meshtying_contact_bridge.H"
+#include "linalg_solver.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "io.H"
 
 /*----------------------------------------------------------------------*/
 /* Constructor */

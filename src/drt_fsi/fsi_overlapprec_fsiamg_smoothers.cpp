@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*/
 
 #include "fsi_overlapprec_fsiamg.H"
-#include "../linalg/linalg_precond.H"
-#include "../linalg/linalg_solver.H"
+#include "linalg_precond.H"
+#include "linalg_solver.H"
 
 #include <Epetra_Time.h>
 #include <ml_MultiLevelPreconditioner.h>
@@ -25,7 +25,7 @@
 #include "EpetraExt_SolverMap_CrsMatrix.h"
 
 
-//#define PRINTOUT
+// #define PRINTOUT
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(const int myrank,

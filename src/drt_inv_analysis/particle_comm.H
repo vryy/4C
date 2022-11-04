@@ -10,7 +10,7 @@
 #ifndef PARTICLE_COMM_H_
 #define PARTICLE_COMM_H_
 
-#include "../drt_comm/comm_utils.H"
+#include "comm_utils.H"
 
 
 namespace INVANA

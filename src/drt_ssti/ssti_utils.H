@@ -13,10 +13,10 @@
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 
-#include "../drt_ssi/ssi_clonestrategy.H"
-#include "../drt_sti/sti_clonestrategy.H"
+#include "ssi_clonestrategy.H"
+#include "sti_clonestrategy.H"
 
-#include "../drt_adapter/adapter_coupling.H"
+#include "adapter_coupling.H"
 
 namespace ADAPTER
 {

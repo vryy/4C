@@ -10,11 +10,11 @@
 #include <Teuchos_TimeMonitor.hpp>
 // #include <algorithm>
 #include "discsh3.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../drt_lib/drt_discret.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "drt_discret.H"
 #include "drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_globalproblem.H"
+#include "drt_utils.H"
 
 
 

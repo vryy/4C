@@ -14,9 +14,9 @@
  | headers                                                   gjb 01/08 |
  *----------------------------------------------------------------------*/
 #include "thr_dyn.H"
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_adapter/adapter_thermo.H"
+#include "drt_validparameters.H"
+#include "drt_globalproblem.H"
+#include "adapter_thermo.H"
 #include "thr_resulttest.H"
 
 /*----------------------------------------------------------------------*

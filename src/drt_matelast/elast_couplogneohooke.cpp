@@ -8,7 +8,7 @@ continuum mechanics for finite element analysis", Cambridge, 1997.
 /*----------------------------------------------------------------------*/
 
 #include "elast_couplogneohooke.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 
 MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(const Teuchos::RCP<MAT::PAR::Material>& matdata)

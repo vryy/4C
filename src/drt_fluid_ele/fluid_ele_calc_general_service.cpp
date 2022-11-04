@@ -16,21 +16,21 @@
 #include "fluid_ele_parameter_timint.H"
 #include "fluid_ele_action.H"
 
-#include "../drt_fluid/fluid_rotsym_periodicbc.H"
+#include "fluid_rotsym_periodicbc.H"
 
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_condition_utils.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/fluid_linear_density_viscosity.H"
-#include "../drt_mat/fluid_murnaghantait.H"
-#include "../drt_mat/fluidporo.H"
+#include "newtonianfluid.H"
+#include "fluid_linear_density_viscosity.H"
+#include "fluid_murnaghantait.H"
+#include "fluidporo.H"
 
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+#include "drt_nurbs_utils.H"
 #include "Sacado.hpp"
 
 // immersed fsi related
-#include "../drt_immersed_problem/immersed_base.H"
+#include "immersed_base.H"
 
 /*----------------------------------------------------------------------*
  * Evaluate supporting methods of the element

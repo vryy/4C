@@ -16,7 +16,7 @@
 #include <iostream>
 
 #include "cut_clnwrapper.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 /*!
 \brief Returns the function that is to be integrated along the bounding lines of the irregular

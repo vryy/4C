@@ -10,8 +10,8 @@
 #include "scatra_ele_utils_elch_electrode.H"
 #include "scatra_ele_calc_elch_electrode.H"
 
-#include "../drt_mat/electrode.H"
-#include "../headers/singleton_owner.H"
+#include "electrode.H"
+#include "singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*

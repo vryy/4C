@@ -14,7 +14,7 @@
 #define INVANA_RESULTTEST_H
 
 
-#include "../drt_lib/drt_resulttest.H"
+#include "drt_resulttest.H"
 #include "Epetra_MultiVector.h"
 
 namespace DRT

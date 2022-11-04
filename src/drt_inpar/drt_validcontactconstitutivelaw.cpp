@@ -8,9 +8,9 @@
 /*----------------------------------------------------------------------*/
 #include "drt_validcontactconstitutivelaw.H"
 
-#include "../drt_contact_constitutivelaw/constitutivelaw_definition.H"
-#include "../drt_contact_constitutivelaw/contactconstitutivelaw_parameter.H"
-#include "../drt_lib/drt_colors.H"
+#include "constitutivelaw_definition.H"
+#include "contactconstitutivelaw_parameter.H"
+#include "drt_colors.H"
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::PrintEmptyContactConstitutiveLawDefinitions(std::ostream& stream,

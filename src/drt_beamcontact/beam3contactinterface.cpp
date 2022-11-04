@@ -10,10 +10,10 @@
 
 #include "beam3contactinterface.H"
 
-#include "../drt_beaminteraction/beam3contact_defines.H"
+#include "beam3contact_defines.H"
 #include "beam3contactnew.H"
 #include "beam3contact.H"
-#include "../drt_inpar/inpar_beamcontact.H"
+#include "inpar_beamcontact.H"
 
 Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Impl(
     const int numnodes, const int numnodalvalues, const DRT::Discretization& pdiscret,

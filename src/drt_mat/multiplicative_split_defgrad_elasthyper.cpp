@@ -17,11 +17,11 @@ multiplicatively into elastic and inelastic parts
 #include "matpar_bundle.H"
 #include "multiplicative_split_defgrad_elasthyper_service.H"
 
-#include "../drt_inpar/inpar_ssi.H"
+#include "inpar_ssi.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_structure_new/str_enum_lists.H"
+#include "str_enum_lists.H"
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/

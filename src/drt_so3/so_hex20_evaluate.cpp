@@ -7,25 +7,25 @@
 *----------------------------------------------------------------------*/
 
 #include "so_hex20.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
 #include "drt_dserror.H"
-#include "../drt_lib/prestress_service.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "prestress_service.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
-#include "../drt_mat/so3_material.H"
-#include "../drt_contact/contact_analytical.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/micromaterial.H"
+#include "so3_material.H"
+#include "contact_analytical.H"
+#include "drt_utils_integration.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_globalproblem.H"
+#include "micromaterial.H"
 
 // inverse design object
 #include "inversedesign.H"
 #include "prestress.H"
 
-#include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "str_elements_paramsinterface.H"
 #include "so_utils.H"
 
 /*----------------------------------------------------------------------*

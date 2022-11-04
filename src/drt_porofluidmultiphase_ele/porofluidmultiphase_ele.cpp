@@ -9,14 +9,14 @@
 
 #include "porofluidmultiphase_ele.H"
 
-#include "../drt_mat/fluidporo_multiphase.H"
+#include "fluidporo_multiphase.H"
 
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_utils_factory.H"
+#include "drt_linedefinition.H"
+#include "drt_utils_factory.H"
 
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
-#include "../linalg/linalg_utils_nullspace.H"
+#include "linalg_utils_nullspace.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*

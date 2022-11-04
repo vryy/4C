@@ -23,7 +23,7 @@ EQSTRMAX 0.6444974  A 2.4816557 B  0.478626783 DENS 0.001
 
 #include "matpar_parameter.H"
 #include "so3_material.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 
 namespace MAT
 {

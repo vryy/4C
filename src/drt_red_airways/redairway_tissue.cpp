@@ -14,14 +14,14 @@
 
 #include "redairway_tissue.H"
 #include "airwayimplicitintegration.H"
-#include "../drt_adapter/ad_str_redairway.H"
-#include "../drt_lib/drt_condition.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_resulttest.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io.H"
-#include "../linalg/linalg_solver.H"
+#include "ad_str_redairway.H"
+#include "drt_condition.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_resulttest.H"
+#include "io_control.H"
+#include "io.H"
+#include "linalg_solver.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 yoshihara 09/12|

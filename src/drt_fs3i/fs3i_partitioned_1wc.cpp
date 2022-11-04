@@ -13,14 +13,14 @@
 
 #include "fs3i_partitioned_1wc.H"
 
-#include "../drt_fsi/fsi_monolithic.H"
-#include "../drt_scatra/scatra_algorithm.H"
-#include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_inpar/inpar_scatra.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/ad_fld_fluid_fsi.H"
+#include "fsi_monolithic.H"
+#include "scatra_algorithm.H"
+#include "scatra_timint_implicit.H"
+#include "inpar_scatra.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "ad_str_fsiwrapper.H"
+#include "ad_fld_fluid_fsi.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

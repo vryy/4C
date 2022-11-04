@@ -28,10 +28,10 @@
 #include <NOX_Epetra.H>
 #include <ml_common.h>
 #include <ml_include.h>
-#include "../drt_adapter/ad_str_structure.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_timestepping/timintmstep.H"
-#include "../drt_lib/drt_elements_paramsinterface.H"
+#include "ad_str_structure.H"
+#include "inpar_structure.H"
+#include "timintmstep.H"
+#include "drt_elements_paramsinterface.H"
 
 
 // forward declarations

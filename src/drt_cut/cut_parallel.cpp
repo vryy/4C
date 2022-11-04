@@ -11,9 +11,9 @@
 #include <Teuchos_Time.hpp>
 
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_pack_buffer.H"
+#include "drt_discret.H"
+#include "drt_exporter.H"
+#include "drt_pack_buffer.H"
 
 #include "cut_volumecell.H"
 

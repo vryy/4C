@@ -10,9 +10,9 @@
 *----------------------------------------------------------------------*/
 #include "membrane.H"
 
-#include "../drt_lib/drt_utils_factory.H"
-#include "../drt_structure_new/str_elements_paramsinterface.H"
-#include "../drt_mat/so3_material.H"
+#include "drt_utils_factory.H"
+#include "str_elements_paramsinterface.H"
+#include "so3_material.H"
 
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_line2Type::Create(const int id, const int owner)

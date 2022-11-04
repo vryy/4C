@@ -8,18 +8,18 @@
 *----------------------------------------------------------------------*/
 
 #include "so_surface.H"
-#include "../linalg/linalg_utils_densematrix_eigen.H"
-#include "../linalg/linalg_utils_densematrix_determinant.H"
-#include "../drt_lib/drt_element_integration_select.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-#include "../drt_mat/so3_material.H"
-#include "../drt_fem_general/drt_utils_gausspoints.H"
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
-#include "../drt_mat/material_service.H"
-#include "../drt_mat/fourieriso.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "linalg_utils_densematrix_eigen.H"
+#include "linalg_utils_densematrix_determinant.H"
+#include "drt_element_integration_select.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_nurbs_shapefunctions.H"
+#include "so3_material.H"
+#include "drt_utils_gausspoints.H"
+#include "drt_utils_boundary_integration.H"
+#include "material_service.H"
+#include "fourieriso.H"
+#include "drt_globalproblem.H"
+#include "drt_nurbs_discret.H"
 
 
 /*----------------------------------------------------------------------*

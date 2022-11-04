@@ -19,17 +19,17 @@
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialDenseMatrix.h"
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "drt_element.H"
+#include "drt_elementtype.H"
+#include "drt_parobjectfactory.H"
+#include "drt_node.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_integration.H"
+#include "inpar_structure.H"
 
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "drt_utils_nurbs_shapefunctions.H"
 
-#include "../drt_so3/so_base.H"
+#include "so_base.H"
 
 namespace DRT
 {

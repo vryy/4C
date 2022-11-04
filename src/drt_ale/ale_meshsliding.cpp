@@ -8,16 +8,16 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "../drt_adapter/adapter_coupling_nonlin_mortar.H"
+#include "adapter_coupling_nonlin_mortar.H"
 
-#include "../drt_contact/contact_interface.H"
-#include "../drt_contact/contact_node.H"
+#include "contact_interface.H"
+#include "contact_node.H"
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_solver.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

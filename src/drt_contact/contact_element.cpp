@@ -8,8 +8,8 @@
 #include "contact_element.H"
 #include "contact_node.H"
 #include "friction_node.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
+#include "linalg_serialdensematrix.H"
 
 CONTACT::CoElementType CONTACT::CoElementType::instance_;
 

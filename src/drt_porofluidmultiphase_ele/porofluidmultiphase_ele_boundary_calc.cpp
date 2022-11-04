@@ -12,13 +12,13 @@
 #include "porofluidmultiphase_ele_parameter.H"
 #include "porofluidmultiphase_ele_action.H"
 
-#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "inpar_parameterlist_utils.H"
 
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "drt_utils_boundary_integration.H"
 
-#include "../drt_lib/drt_globalproblem.H"  // for curves and functions
-#include "../drt_lib/standardtypes_cpp.H"  // for EPS12 and so on
-#include "../headers/singleton_owner.H"
+#include "drt_globalproblem.H"  // for curves and functions
+#include "standardtypes_cpp.H"  // for EPS12 and so on
+#include "singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   vuong 08/16 |

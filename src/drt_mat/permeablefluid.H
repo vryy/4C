@@ -13,7 +13,7 @@
 
 #include "material.H"
 #include "matpar_parameter.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 
 namespace MAT
 {

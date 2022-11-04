@@ -10,7 +10,7 @@
 
 #include "membrane_scatra.H"
 
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                   sfuchs 05/18 |

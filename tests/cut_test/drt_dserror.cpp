@@ -23,7 +23,7 @@
 #ifdef THROWELEMENTERRORS
 
 #include "drt_globalproblem.H"
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
 
 static bool elementcall = false;

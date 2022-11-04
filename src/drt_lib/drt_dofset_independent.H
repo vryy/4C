@@ -19,7 +19,7 @@
 
 #include <Teuchos_RCP.hpp>
 
-#include "../drt_lib/drt_dofset.H"
+#include "drt_dofset.H"
 
 
 // forward declarations

@@ -9,13 +9,13 @@
 *----------------------------------------------------------------------*/
 #include "scatra_timint_meshtying_strategy_std.H"
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "scatra_timint_implicit.H"
+#include "drt_globalproblem.H"
 
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_solver.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_solver.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |

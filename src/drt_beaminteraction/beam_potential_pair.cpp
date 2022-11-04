@@ -10,7 +10,7 @@
 
 #include "beam_potential_pair.H"
 
-#include "../drt_lib/drt_element.H"
+#include "drt_element.H"
 
 #include "drt_dserror.H"
 
@@ -19,8 +19,8 @@
 #include "beam_to_beam_potential_pair.H"
 #include "beam_to_sphere_potential_pair.H"
 
-#include "../drt_beam3/beam3_base.H"
-#include "../drt_rigidsphere/rigidsphere.H"
+#include "beam3_base.H"
+#include "rigidsphere.H"
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/

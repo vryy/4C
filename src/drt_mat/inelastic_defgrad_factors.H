@@ -10,7 +10,7 @@
 #define INELASTIC_DEFGRAD_FACTORS_H
 
 #include "matpar_parameter.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 namespace MAT
 {

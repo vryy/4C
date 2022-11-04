@@ -12,7 +12,7 @@
 #ifndef ELCH_ALGORITHM_H
 #define ELCH_ALGORITHM_H
 
-#include "../drt_scatra/scatra_algorithm.H"
+#include "scatra_algorithm.H"
 
 namespace ELCH
 {

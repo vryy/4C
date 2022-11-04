@@ -19,22 +19,22 @@
  *----------------------------------------------------------------------*/
 #include "tsi_utils.H"
 
-#include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_utils_createdis.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_thermo/thermo_element.H"
-#include "../drt_thermo/thermo_ele_impl_utils.H"
-#include "../drt_so3/so3_thermo.H"
-#include "../drt_so3/so3_plast/so3_ssn_plast.H"
+#include "thermo_element.H"
+#include "thermo_ele_impl_utils.H"
+#include "so3_thermo.H"
+#include "so3_ssn_plast.H"
 
-#include "../drt_lib/drt_dofset.H"
-#include "../drt_lib/drt_dofset_predefineddofnumber.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_periodicbc.H"
+#include "drt_dofset.H"
+#include "drt_dofset_predefineddofnumber.H"
+#include "drt_discret.H"
+#include "drt_periodicbc.H"
 
-#include "../drt_volmortar/volmortar_utils.H"
+#include "volmortar_utils.H"
 
-#include "../drt_mat/fouriervar.H"
+#include "fouriervar.H"
 
 /*----------------------------------------------------------------------*
  | remove flag thermo from condition                         dano 12/11 |

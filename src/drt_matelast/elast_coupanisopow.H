@@ -9,7 +9,7 @@
 #define ELAST_COUPANISOPOW_H_
 
 #include "elast_summand.H"
-#include "../drt_mat/matpar_parameter.H"
+#include "matpar_parameter.H"
 
 namespace MAT
 {

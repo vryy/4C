@@ -12,8 +12,8 @@
 #include "loca_nln_stepper.H"
 #include "drt_dserror.H"
 
-#include "../solver_nonlin_nox/nox_nln_inner_statustest_generic.H"
-#include "../solver_nonlin_nox/nox_nln_solver_factory.H"
+#include "nox_nln_inner_statustest_generic.H"
+#include "nox_nln_solver_factory.H"
 
 #include <LOCA_MultiContinuation_AbstractStrategy.H>
 #include <LOCA_MultiContinuation_AbstractGroup.H>

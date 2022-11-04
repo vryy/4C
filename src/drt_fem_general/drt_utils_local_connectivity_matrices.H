@@ -21,7 +21,7 @@ in the Baci guide in the Convention chapter.
 #ifndef DRT_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
 #define DRT_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
 
-#include "../drt_lib/drt_element.H"
+#include "drt_element.H"
 
 namespace DRT
 {

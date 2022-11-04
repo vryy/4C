@@ -14,14 +14,14 @@
 #include "mortar_defines.H"
 #include "mortar_calc_utils.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_serialdensematrix.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "linalg_serialdensevector.H"
+#include "linalg_serialdensematrix.H"
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "drt_utils_fem_shapefunctions.H"
 
-#include "../drt_contact/contact_element.H"
-#include "../drt_contact/contact_node.H"
+#include "contact_element.H"
+#include "contact_node.H"
 
 /*----------------------------------------------------------------------*
  |  impl. for aux.-plane based projection                    farah 01/14|

@@ -12,7 +12,7 @@
 #include "cut_element.H"
 #include "cut_volumecell.H"
 #include "cut_side.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

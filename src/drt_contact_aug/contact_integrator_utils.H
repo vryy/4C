@@ -10,8 +10,8 @@
 #ifndef SRC_DRT_CONTACT_AUG_CONTACT_INTEGRATOR_UTILS_H_
 #define SRC_DRT_CONTACT_AUG_CONTACT_INTEGRATOR_UTILS_H_
 
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "linalg_fixedsizematrix.H"
+#include "drt_utils_local_connectivity_matrices.H"
 #include "contact_aug_utils.H"
 #include <unordered_map>
 

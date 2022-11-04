@@ -18,12 +18,12 @@
 
 #include <Teuchos_ParameterList.hpp>
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
-#include "../drt_adapter/ad_porofluidmultiphase.H"
-#include "../drt_adapter/ad_art_net.H"
+#include "ad_porofluidmultiphase.H"
+#include "ad_art_net.H"
 
-#include "../drt_inpar/inpar_porofluidmultiphase.H"
+#include "inpar_porofluidmultiphase.H"
 
 
 /*==========================================================================*/

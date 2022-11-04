@@ -15,10 +15,10 @@ parameters required for Lubrication element evaluation.
 */
 /*--------------------------------------------------------------------------*/
 
-#include "../drt_lubrication_ele/lubrication_ele_parameter.H"
+#include "lubrication_ele_parameter.H"
 
 #include "drt_dserror.H"
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                  wirtz 10/15 |

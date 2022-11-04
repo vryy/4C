@@ -13,9 +13,9 @@
 
 #include "triad_interpolation.H"
 
-#include "../drt_lib/drt_element.H"
+#include "drt_element.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 namespace LARGEROTATIONS
 {

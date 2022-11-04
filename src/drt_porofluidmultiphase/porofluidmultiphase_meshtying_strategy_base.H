@@ -11,7 +11,7 @@
 #define SRC_DRT_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_MESHTYING_STRATEGY_BASE_H_
 
 #include "porofluidmultiphase_timint_implicit.H"
-#include "../drt_inpar/inpar_porofluidmultiphase.H"
+#include "inpar_porofluidmultiphase.H"
 
 namespace ADAPTER
 {

@@ -10,15 +10,15 @@
 
 
 #include "ad_opt_fluid_adjoint_base.H"
-#include "../drt_lib/drt_periodicbc.H"
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_opti/topopt_fluidAdjointImplTimeIntegration.H"
-#include "../drt_opti/topopt_utils.H"
-#include "../linalg/linalg_solver.H"
+#include "drt_periodicbc.H"
+#include "drt_validparameters.H"
+#include "io.H"
+#include "io_control.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "topopt_fluidAdjointImplTimeIntegration.H"
+#include "topopt_utils.H"
+#include "linalg_solver.H"
 
 
 

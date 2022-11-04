@@ -10,8 +10,8 @@
 
 #include "struct_ale_str_model_evaluator.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_structure_new/str_timint_basedataglobalstate.H"
+#include "drt_discret.H"
+#include "str_timint_basedataglobalstate.H"
 
 
 /*----------------------------------------------------------------------*

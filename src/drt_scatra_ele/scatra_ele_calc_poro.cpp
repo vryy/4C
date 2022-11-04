@@ -10,23 +10,23 @@
 
 #include "scatra_ele_calc_poro.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_element.H"
+#include "drt_utils.H"
 
-#include "../drt_mat/structporo.H"
-#include "../drt_mat/scatra_mat.H"
-#include "../drt_mat/matlist.H"
+#include "structporo.H"
+#include "scatra_mat.H"
+#include "matlist.H"
 
 #include "scatra_ele.H"
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
+#include "standardtypes_cpp.H"  // for EPS13 and so on
 
-#include "../drt_fluid/fluid_rotsym_periodicbc.H"
-#include "../headers/singleton_owner.H"
+#include "fluid_rotsym_periodicbc.H"
+#include "singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  |                                                           vuong 07/14 |

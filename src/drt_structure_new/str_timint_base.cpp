@@ -22,20 +22,20 @@
 #include "str_timint_basedataio_monitor_dbc.H"
 #include "str_enum_lists.H"
 
-#include "../drt_beaminteraction/str_model_evaluator_beaminteraction.H"
+#include "str_model_evaluator_beaminteraction.H"
 
-#include "../drt_comm/comm_utils.H"
+#include "comm_utils.H"
 
-#include "../drt_inpar/inpar_contact.H"
+#include "inpar_contact.H"
 
-#include "../drt_io/io_gmsh.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_io/io_control.H"
+#include "io_gmsh.H"
+#include "io.H"
+#include "io_pstream.H"
+#include "io_control.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../linalg/linalg_blocksparsematrix.H"
+#include "linalg_blocksparsematrix.H"
 
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>

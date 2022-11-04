@@ -15,7 +15,7 @@
 #include "inpar_structure.H"
 #include "inpar_thermo.H"
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 void INPAR::IO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {

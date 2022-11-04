@@ -10,14 +10,14 @@
 /*---------------------------------------------------------------------------*/
 
 #include "truss3cl.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 #include "drt_dserror.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/function_of_time.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_mat/stvenantkirchhoff.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "drt_utils.H"
+#include "function_of_time.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "stvenantkirchhoff.H"
+#include "standardtypes_cpp.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) mukherjee 01/14|

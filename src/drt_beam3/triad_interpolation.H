@@ -11,7 +11,7 @@
 #ifndef TRIAD_INTERPOLATION
 #define TRIAD_INTERPOLATION
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 #include <Teuchos_RCP.hpp>
 

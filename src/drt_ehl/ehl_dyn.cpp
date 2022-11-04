@@ -14,8 +14,8 @@
 #include "ehl_monolithic.H"
 #include "ehl_utils.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

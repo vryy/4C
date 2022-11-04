@@ -9,13 +9,13 @@
 *----------------------------------------------------------------------*/
 
 #include "so_sh8.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_nullspace.H"
+#include "drt_discret.H"
+#include "linalg_utils_nullspace.H"
 #include "drt_dserror.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 #include "so_hex8.H"
 #include "so_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 
 DRT::ELEMENTS::So_sh8Type DRT::ELEMENTS::So_sh8Type::instance_;

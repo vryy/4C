@@ -13,19 +13,19 @@
 #include "beam3contact_utils.H"
 #include "beam3contact_defines.H"
 
-#include "../drt_beam3/beam3_base.H"
-#include "../drt_rigidsphere/rigidsphere.H"
+#include "beam3_base.H"
+#include "rigidsphere.H"
 
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
 
 #include "drt_dserror.H"
 
 // Todo check and get rid of outdated header inclusions
-#include "../drt_inpar/inpar_beamcontact.H"
+#include "inpar_beamcontact.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "drt_utils_fem_shapefunctions.H"
 
 #include "beam_contact_params.H"
 #include "beam_to_sphere_contact_params.H"

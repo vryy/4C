@@ -10,11 +10,11 @@
 #define SRC_DRT_POROFLUIDMULTPHASE_ELE_POROFLUID_PHASEMANAGER_H_
 
 #include "porofluidmultiphase_ele_action.H"
-#include "../drt_mat/scatra_mat_multiporo.H"
+#include "scatra_mat_multiporo.H"
 
-#include "../drt_inpar/inpar_material.H"
+#include "inpar_material.H"
 #include "drt_dserror.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include "Teuchos_RCP.hpp"
 #include <vector>
 

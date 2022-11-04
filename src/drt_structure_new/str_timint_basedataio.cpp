@@ -15,12 +15,12 @@
 #include "str_timint_basedataio_runtime_vtp_output.H"
 #include "str_timint_basedataio_monitor_dbc.H"
 
-#include "../drt_io/every_iteration_writer.H"
-#include "../drt_io/io_control.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../solver_nonlin_nox/nox_nln_aux.H"
-#include "../solver_nonlin_nox/nox_nln_linesearch_generic.H"
-#include "../solver_nonlin_nox/nox_nln_linesearch_prepostoperator.H"
+#include "every_iteration_writer.H"
+#include "io_control.H"
+#include "drt_globalproblem.H"
+#include "nox_nln_aux.H"
+#include "nox_nln_linesearch_generic.H"
+#include "nox_nln_linesearch_prepostoperator.H"
 
 #include <NOX_Solver_Generic.H>
 

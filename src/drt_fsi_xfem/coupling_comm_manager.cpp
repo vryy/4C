@@ -10,16 +10,16 @@ transform matrixes, vectors, ...
 
 #include "coupling_comm_manager.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_condition_selector.H"
-#include "../drt_lib/drt_colors.H"
+#include "drt_discret.H"
+#include "drt_condition_selector.H"
+#include "drt_colors.H"
 
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_matrixtransform.H"
+#include "linalg_mapextractor.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_matrixtransform.H"
 
-#include "../drt_adapter/adapter_coupling.H"
+#include "adapter_coupling.H"
 
 #include <iostream>
 #include <string>

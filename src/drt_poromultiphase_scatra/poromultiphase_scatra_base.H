@@ -11,9 +11,9 @@
 
 #include <set>
 
-#include "../drt_adapter/adapter_algorithmbase.H"
-#include "../drt_porofluidmultiphase/porofluidmultiphase_utils.H"
-#include "../drt_inpar/inpar_poromultiphase_scatra.H"
+#include "adapter_algorithmbase.H"
+#include "porofluidmultiphase_utils.H"
+#include "inpar_poromultiphase_scatra.H"
 
 #include "Teuchos_RCP.hpp"
 #include <Epetra_Vector.h>

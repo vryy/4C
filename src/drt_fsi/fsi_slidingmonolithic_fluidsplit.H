@@ -13,9 +13,9 @@ with condensed fluid interface velocities
 
 
 #include "fsi_monolithic.H"
-#include "../drt_inpar/inpar_fsi.H"
-#include "../drt_adapter/ad_fld_fluid_fsi_msht.H"
-#include "../drt_adapter/ad_ale_fsi_msht.H"
+#include "inpar_fsi.H"
+#include "ad_fld_fluid_fsi_msht.H"
+#include "ad_ale_fsi_msht.H"
 
 // forward declarations
 namespace ADAPTER

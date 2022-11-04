@@ -10,11 +10,11 @@
  *---------------------------------------------------------------------------*/
 #include "particle_runtime_vtp_writer.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/runtime_vtp_writer.H"
+#include "io.H"
+#include "io_control.H"
+#include "runtime_vtp_writer.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 #include "drt_dserror.H"
 
 /*---------------------------------------------------------------------------*

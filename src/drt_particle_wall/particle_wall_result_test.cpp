@@ -13,8 +13,8 @@
 #include "particle_wall_interface.H"
 #include "particle_wall_datastate.H"
 
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_linedefinition.H"
+#include "drt_discret.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

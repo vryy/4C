@@ -17,13 +17,13 @@
 
 
 #include "drt_utils_local_connectivity_matrices.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include "drt_utils_integration.H"
 #include "drt_utils_gausspoints.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-#include "../drt_geometry/position_array.H"
-#include "../drt_lib/drt_element_integration_select.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_utils_nurbs_shapefunctions.H"
+#include "position_array.H"
+#include "drt_element_integration_select.H"
+#include "drt_discret.H"
 
 namespace DRT
 {

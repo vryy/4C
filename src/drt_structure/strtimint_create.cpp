@@ -23,13 +23,13 @@
 #include "strtimint_centrdiff.H"
 #include "strtimint_ab2.H"
 
-#include "../drt_io/io.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "io.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_validparameters.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
-#include "../drt_lib/prestress_service.H"
+#include "prestress_service.H"
 
 /*======================================================================*/
 /* create marching time integrator */

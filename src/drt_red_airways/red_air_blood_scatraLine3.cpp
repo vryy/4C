@@ -10,9 +10,9 @@
 /*---------------------------------------------------------------------*/
 
 #include "red_airway.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 #include "drt_dserror.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
 using namespace DRT::UTILS;
 

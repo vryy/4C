@@ -25,7 +25,7 @@
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
 
-#include "../drt_inpar/inpar_thermo.H"
+#include "inpar_thermo.H"
 
 
 /*----------------------------------------------------------------------*

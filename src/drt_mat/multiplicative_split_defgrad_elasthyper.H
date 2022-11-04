@@ -14,7 +14,7 @@ multiplicatively into elastic and inelastic parts
 #include "matpar_parameter.H"
 #include "so3_material.H"
 
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 
 
 // forward declaration

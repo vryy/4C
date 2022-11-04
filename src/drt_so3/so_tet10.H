@@ -8,16 +8,16 @@
 
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_element.H"
+#include "drt_elementtype.H"
+#include "drt_parobjectfactory.H"
 
-#include "../drt_mat/material.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "material.H"
+#include "inpar_structure.H"
 
 #include "so_base.H"
 
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "drt_utils_integration.H"
 
 // gee: note that these are also defined in so_integrator.H
 #define NUMNOD_SOTET10 10       ///< number of nodes

@@ -14,7 +14,7 @@
 
 
 #include <Teuchos_RCP.hpp>
-#include "../drt_opti/topopt_fluidAdjoint_timeint.H"
+#include "topopt_fluidAdjoint_timeint.H"
 
 
 namespace Teuchos

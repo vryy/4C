@@ -8,14 +8,14 @@
 *----------------------------------------------------------------------*/
 #include "XFScoupling_manager.H"
 
-#include "../drt_xfem/xfem_condition_manager.H"
-#include "../drt_fluid_xfluid/xfluid.H"
-#include "../drt_adapter/ad_str_structure.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "xfem_condition_manager.H"
+#include "xfluid.H"
+#include "ad_str_structure.H"
+#include "drt_globalproblem.H"
+#include "io.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_fluid_xfluid/xfluidfluid.H"  //Todo: remove me finally
+#include "xfluidfluid.H"  //Todo: remove me finally
 
 /*-----------------------------------------------------------------------------------------*
 | Constructor                                                                 ager 06/2016 |

@@ -19,33 +19,33 @@
 #include "ssi_resulttest.H"
 #include "ssi_utils.H"
 
-#include "../drt_adapter/ad_str_ssiwrapper.H"
-#include "../drt_adapter/ad_str_structure_new.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "ad_str_ssiwrapper.H"
+#include "ad_str_structure_new.H"
+#include "adapter_scatra_base_algorithm.H"
 
-#include "../drt_contact/contact_nitsche_strategy_ssi.H"
+#include "contact_nitsche_strategy_ssi.H"
 
-#include "../drt_inpar/inpar_ssi.H"
+#include "inpar_ssi.H"
 
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
-#include "../drt_lib/drt_assemblestrategy.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_locsys.H"
+#include "drt_assemblestrategy.H"
+#include "drt_globalproblem.H"
+#include "drt_locsys.H"
 
-#include "../drt_scatra/scatra_timint_elch.H"
-#include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
+#include "scatra_timint_elch.H"
+#include "scatra_timint_meshtying_strategy_s2i.H"
 
-#include "../drt_structure_new/str_model_evaluator_contact.H"
+#include "str_model_evaluator_contact.H"
 
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_matrixtransform.H"
-#include "../linalg/linalg_equilibrate.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_print.H"
+#include "linalg_mapextractor.H"
+#include "linalg_matrixtransform.H"
+#include "linalg_equilibrate.H"
+#include "linalg_solver.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_print.H"
 
 #include <Epetra_Time.h>
 

@@ -12,9 +12,9 @@
 
 #include "Epetra_SerialComm.h"
 #include "meshtying_poro_lagrange_strategy.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "inpar_contact.H"
+#include "linalg_multiply.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                      h.Willmann    2015|

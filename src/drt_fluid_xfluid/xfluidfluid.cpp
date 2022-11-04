@@ -12,32 +12,32 @@
 #include "xfluid_state_creator.H"
 #include "xfluidresulttest.H"
 
-#include "../drt_lib/drt_discret_faces.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_condition_selector.H"
-#include "../drt_lib/drt_dofset_transparent_independent.H"
-#include "../drt_lib/drt_utils_parallel.H"
+#include "drt_discret_faces.H"
+#include "drt_globalproblem.H"
+#include "drt_condition_selector.H"
+#include "drt_dofset_transparent_independent.H"
+#include "drt_utils_parallel.H"
 
-#include "../drt_io/io_pstream.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io.H"
+#include "io_pstream.H"
+#include "io_control.H"
+#include "io.H"
 
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_solver.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_fluid/fluid_utils.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "fluid_utils.H"
+#include "fluid_utils_mapextractor.H"
 
-#include "../drt_fluid_ele/fluid_ele.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_fluid_ele/fluid_ele_interface.H"
-#include "../drt_fluid_ele/fluid_ele_factory.H"
+#include "fluid_ele.H"
+#include "fluid_ele_action.H"
+#include "fluid_ele_interface.H"
+#include "fluid_ele_factory.H"
 
-#include "../drt_xfem/xfem_edgestab.H"
-#include "../drt_xfem/xfem_dofset.H"
-#include "../drt_xfem/xfem_condition_manager.H"
-#include "../drt_xfem/xfem_mesh_projector.H"
-#include "../drt_xfem/xfluid_timeInt.H"
+#include "xfem_edgestab.H"
+#include "xfem_dofset.H"
+#include "xfem_condition_manager.H"
+#include "xfem_mesh_projector.H"
+#include "xfluid_timeInt.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

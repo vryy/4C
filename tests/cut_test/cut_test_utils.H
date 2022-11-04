@@ -13,9 +13,9 @@
 
 #include <Epetra_SerialDenseMatrix.h>
 
-#include "../../src/drt_lib/drt_element.H"
+#include "drt_element.H"
 
-#include "../../src/linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 namespace GEO
 {

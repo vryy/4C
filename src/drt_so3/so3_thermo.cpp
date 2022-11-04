@@ -10,8 +10,8 @@
  *----------------------------------------------------------------------*/
 #include "so3_thermo.H"
 
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_fem_general/drt_utils_shapefunctions_service.H"
+#include "drt_linedefinition.H"
+#include "drt_utils_shapefunctions_service.H"
 
 
 /*----------------------------------------------------------------------*

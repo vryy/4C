@@ -16,8 +16,8 @@
 #ifndef CONTROL_POINT_H
 #define CONTROL_POINT_H
 
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_node.H"
+#include "drt_parobjectfactory.H"
 
 namespace DRT
 {

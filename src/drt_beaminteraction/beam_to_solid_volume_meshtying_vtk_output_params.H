@@ -14,7 +14,7 @@
 
 
 #include "drt_dserror.H"
-#include "../drt_inpar/inpar_IO_runtime_vtk_output.H"
+#include "inpar_IO_runtime_vtk_output.H"
 
 
 namespace BEAMINTERACTION

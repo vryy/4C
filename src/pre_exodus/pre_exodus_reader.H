@@ -17,7 +17,7 @@ is handed to a c++ object mesh.
 #include <iostream>
 #include <vector>
 #include "drt_dserror.H"
-#include "../drt_lib/drt_element.H"
+#include "drt_element.H"
 
 namespace EXODUS
 {

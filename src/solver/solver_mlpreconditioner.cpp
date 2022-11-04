@@ -17,8 +17,8 @@
 #include "ml_epetra_operator.h"
 #include "ml_MultiLevelPreconditioner.h"
 
-#include "../linalg/linalg_mlapi_operator.H"  // Michael's MLAPI based ML preconditioner
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_mlapi_operator.H"  // Michael's MLAPI based ML preconditioner
+#include "linalg_utils_sparse_algebra_math.H"
 #include "drt_dserror.H"
 
 #include "solver_mlpreconditioner.H"

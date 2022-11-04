@@ -14,8 +14,8 @@
 #include "thrtimint_impl.H"
 #include "thr_aux.H"
 #include "thermo_ele_action.H"
-#include "../drt_adapter/adapter_coupling_mortar.H"
-#include "../drt_io/io_pstream.H"
+#include "adapter_coupling_mortar.H"
+#include "io_pstream.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                              bborn 08/09 |

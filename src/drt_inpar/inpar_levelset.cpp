@@ -13,7 +13,7 @@
 #include "drt_validparameters.H"
 #include "inpar_levelset.H"
 #include "inpar_scatra.H"
-#include "../drt_lib/drt_conditiondefinition.H"
+#include "drt_conditiondefinition.H"
 
 
 void INPAR::LEVELSET::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)

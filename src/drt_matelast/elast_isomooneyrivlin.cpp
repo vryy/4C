@@ -7,7 +7,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "elast_isomooneyrivlin.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 
 MAT::ELASTIC::PAR::IsoMooneyRivlin::IsoMooneyRivlin(const Teuchos::RCP<MAT::PAR::Material>& matdata)

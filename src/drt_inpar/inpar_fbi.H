@@ -16,7 +16,7 @@
 
 #include "drt_dserror.H"
 
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "drt_utils_integration.H"
 
 // forward declaration
 namespace DRT

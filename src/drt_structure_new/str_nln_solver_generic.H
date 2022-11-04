@@ -14,7 +14,7 @@
 
 #include <Teuchos_RCP.hpp>
 #include "drt_dserror.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 
 // forward declaration
 namespace NOX

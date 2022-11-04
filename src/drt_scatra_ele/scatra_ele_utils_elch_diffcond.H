@@ -12,7 +12,7 @@
 
 #include "scatra_ele_utils_elch_electrode.H"
 
-#include "../drt_inpar/inpar_elch.H"
+#include "inpar_elch.H"
 
 namespace DRT
 {

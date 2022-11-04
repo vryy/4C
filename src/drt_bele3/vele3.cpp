@@ -9,10 +9,10 @@
 /*----------------------------------------------------------------------*/
 
 #include "vele3.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 #include "drt_dserror.H"
-#include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_utils_factory.H"
+#include "drt_linedefinition.H"
 
 DRT::ELEMENTS::Vele3Type DRT::ELEMENTS::Vele3Type::instance_;
 

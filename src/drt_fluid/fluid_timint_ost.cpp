@@ -10,10 +10,10 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_timint_ost.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_fluid/fluid_utils.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_io/io.H"
+#include "fluid_ele_action.H"
+#include "fluid_utils.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "io.H"
 
 
 

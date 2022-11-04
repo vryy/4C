@@ -9,9 +9,9 @@
 
 #include "so3_poro.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_utils_factory.H"
+#include "drt_discret.H"
+#include "drt_linedefinition.H"
+#include "drt_utils_factory.H"
 
 #include "so3_poro_eletypes.H"
 
@@ -19,7 +19,7 @@
 #include "so_line.H"
 
 // for ReadElement()
-#include "../drt_mat/structporo.H"
+#include "structporo.H"
 
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Poro<so3_ele, distype>::So3_Poro(int id, int owner)

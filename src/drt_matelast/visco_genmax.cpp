@@ -9,7 +9,7 @@ SLS-model
 /*----------------------------------------------------------------------*/
 
 #include "visco_genmax.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 MAT::ELASTIC::PAR::GenMax::GenMax(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),

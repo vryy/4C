@@ -10,18 +10,18 @@
 
 #include "wall1_poro.H"
 
-#include "../drt_poroelast/poroelast_utils.H"
+#include "poroelast_utils.H"
 
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils_factory.H"
+#include "drt_linedefinition.H"
+#include "drt_discret.H"
+#include "drt_utils_factory.H"
 
 // for secondDerivativesZero
-#include "../drt_fem_general/drt_utils_shapefunctions_service.H"
+#include "drt_utils_shapefunctions_service.H"
 
-#include "../drt_mat/structporo.H"
-#include "../drt_mat/fluidporo.H"
-#include "../drt_mat/fluidporo_multiphase.H"
+#include "structporo.H"
+#include "fluidporo.H"
+#include "fluidporo_multiphase.H"
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(int id, int owner)

@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "elast_isovarga.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 MAT::ELASTIC::PAR::IsoVarga::IsoVarga(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), mue_(matdata->GetDouble("MUE")), beta_(matdata->GetDouble("BETA"))

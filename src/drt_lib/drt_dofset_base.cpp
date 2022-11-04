@@ -17,9 +17,9 @@
 #include "drt_discret.H"
 #include "drt_utils.H"
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 
 // list of all dof sets

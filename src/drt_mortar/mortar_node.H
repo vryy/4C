@@ -9,9 +9,9 @@
 #ifndef MORTAR_NODE_H
 #define MORTAR_NODE_H
 
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../headers/pairedvector.H"
+#include "drt_node.H"
+#include "drt_parobjectfactory.H"
+#include "pairedvector.H"
 
 namespace MORTAR
 {

@@ -14,7 +14,7 @@
 #include "str_model_evaluator_generic.H"
 #include <Teuchos_RCP.hpp>
 
-#include "../drt_constraint/constraint_manager.H"
+#include "constraint_manager.H"
 
 // forward declarations
 namespace LINALG

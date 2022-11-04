@@ -16,9 +16,9 @@
  | headers                                                  wirtz 01/16 |
  *----------------------------------------------------------------------*/
 #include "ehl_base.H"
-#include "../drt_inpar/inpar_ehl.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_inpar/inpar_lubrication.H"
+#include "inpar_ehl.H"
+#include "inpar_structure.H"
+#include "inpar_lubrication.H"
 
 #include <Epetra_Time.h>
 #include <Epetra_FEVector.h>

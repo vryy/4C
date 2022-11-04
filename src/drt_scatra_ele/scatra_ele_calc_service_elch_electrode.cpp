@@ -12,10 +12,10 @@ within electrodes
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
 
-#include "../drt_mat/material.H"
+#include "material.H"
 
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |

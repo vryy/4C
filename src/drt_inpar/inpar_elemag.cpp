@@ -10,8 +10,8 @@
 
 #include "drt_validparameters.H"
 #include "inpar_elemag.H"
-#include "../drt_lib/drt_conditiondefinition.H"
-#include "../linalg/linalg_equilibrate.H"
+#include "drt_conditiondefinition.H"
+#include "linalg_equilibrate.H"
 
 void INPAR::ELEMAG::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {

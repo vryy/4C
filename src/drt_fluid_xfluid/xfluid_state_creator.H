@@ -16,11 +16,11 @@
 
 #include <Teuchos_RCP.hpp>
 
-#include "../drt_inpar/inpar_fluid.H"
-#include "../drt_inpar/inpar_xfem.H"
-#include "../drt_inpar/inpar_cut.H"
+#include "inpar_fluid.H"
+#include "inpar_xfem.H"
+#include "inpar_cut.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 // forward declarations
 namespace DRT

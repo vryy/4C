@@ -11,17 +11,17 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_adapter/ad_str_fpsiwrapper.H"
-#include "../drt_adapter/ad_fld_poro.H"
-#include "../drt_adapter/adapter_coupling.H"
+#include "ad_str_fpsiwrapper.H"
+#include "ad_fld_poro.H"
+#include "adapter_coupling.H"
 
-#include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "fluid_utils_mapextractor.H"
 
-#include "../drt_structure/stru_aux.H"
+#include "stru_aux.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_matrixtransform.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_matrixtransform.H"
 
 
 POROELAST::MonolithicStructureSplit::MonolithicStructureSplit(

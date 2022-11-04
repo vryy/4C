@@ -63,7 +63,7 @@
 #define BEAM3EB_H
 
 
-#include "../drt_lib/drt_node.H"
+#include "drt_node.H"
 
 #include "beam3_base.H"
 
@@ -71,7 +71,7 @@
  * slight modification in the do-configure file and in linalg_fixesizematrix.H are
  * necessary. Read the text above for more information.
  * */
-//#define PRECISION ;
+// #define PRECISION ;
 #ifdef PRECISION
 #include <cln/float.h>
 #include <cln/io.h>
@@ -80,8 +80,8 @@
 using namespace cln;
 #endif
 
-//#define SIMPLECALC ;          // simplified residuum and stiffness calculation for the small
-// tension case Default: Off
+// #define SIMPLECALC ;          // simplified residuum and stiffness calculation for the small
+//  tension case Default: Off
 #define NODALDOFS \
   2  // With this flag it can be switched between third order (2 nodal dofs) and fifth order
      // hermitian polynomials (3 nodal dofs). So the valid values of NODALDOFS are 2 and 3
@@ -97,30 +97,31 @@ using namespace cln;
                             // is implemented
 // Default: 4
 
-//#define BEAM3EBAUTOMATICDIFF      // is Sacado used or not?
-// Default: off
+// #define BEAM3EBAUTOMATICDIFF      // is Sacado used or not?
+//  Default: off
 
-//#define CONSISTENTANSBEAM3EB   //Decide wether the variational correct or the simplified ANS
-// approach should be applied Default: off
+// #define CONSISTENTANSBEAM3EB   //Decide wether the variational correct or the simplified ANS
+//  approach should be applied Default: off
 
-//#define INEXTENSIBLE 1.0        //apply inextensibility constraint. only possible in combination
-// with FAD and ANS_BEAM3EB and ANSVALUES=3 as well as NODALDOFS=2
-// Default: off
+// #define INEXTENSIBLE 1.0        //apply inextensibility constraint. only possible in combination
+//  with FAD and ANS_BEAM3EB and ANSVALUES=3 as well as NODALDOFS=2
+//  Default: off
 
-//#define SWITCHINEXTENSIBLEON
-// Default: off
+// #define SWITCHINEXTENSIBLEON
+//  Default: off
 
-//#define ORTHOPRESSURE 3.1415926535897938
-// Default: off
+// #define ORTHOPRESSURE 3.1415926535897938
+//  Default: off
 
-//#define BEAM3EBROTPTC          //switch from standard PTC scheme to angular velocity based PTC for
-// tangential DoFs Default: off #define BEAM3EBCONSTSTOCHFORCE       //Flag in order to hold
-// stochastic forces constant over the element length Default: off                  //(needed in
-// order to compare with Reissner beams)
+// #define BEAM3EBROTPTC          //switch from standard PTC scheme to angular velocity based PTC
+// for
+//  tangential DoFs Default: off #define BEAM3EBCONSTSTOCHFORCE       //Flag in order to hold
+//  stochastic forces constant over the element length Default: off                  //(needed in
+//  order to compare with Reissner beams)
 
-//#define BEAM3EBDISCRETELINENEUMANN 0.0 //Flag in order to interpret line Neumann condition as
-// discrete force at given element parameter position DISCRETELINENEUMANN Default: off //for all
-// elements contained in the corresponding design line!
+// #define BEAM3EBDISCRETELINENEUMANN 0.0 //Flag in order to interpret line Neumann condition as
+//  discrete force at given element parameter position DISCRETELINENEUMANN Default: off //for all
+//  elements contained in the corresponding design line!
 
 #if (defined(CONSISTENTANSBEAM3EB) or defined(INEXTENSIBLE) or defined(ORTHOPRESSURE)) and \
     !defined(BEAM3EBAUTOMATICDIFF)

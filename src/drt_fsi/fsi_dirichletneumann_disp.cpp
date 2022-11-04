@@ -9,11 +9,11 @@ based on the interface displacements
 */
 /*----------------------------------------------------------------------*/
 
-#include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "ad_str_fsiwrapper.H"
 #include "fsi_debugwriter.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_inpar/inpar_fsi.H"
+#include "inpar_fsi.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "fsi_dirichletneumann_disp.H"

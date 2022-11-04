@@ -17,25 +17,25 @@
 #include "elemag_dyn.H"
 #include "elemag_timeint.H"
 #include "elemag_ele.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/inpar_elemag.H"
-#include "../drt_lib/drt_discret_hdg.H"
-#include "../drt_lib/drt_dofset_independent.H"
-#include "../linalg/linalg_solver.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
-#include "../drt_comm/comm_utils.H"
-#include "../drt_lib/drt_dofset_predefineddofnumber.H"
+#include "drt_globalproblem.H"
+#include "inpar_elemag.H"
+#include "drt_discret_hdg.H"
+#include "drt_dofset_independent.H"
+#include "linalg_solver.H"
+#include "io.H"
+#include "io_control.H"
+#include "comm_utils.H"
+#include "drt_dofset_predefineddofnumber.H"
 
 // Clone discreization
-#include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_elemag/elemag_utils_clonestrategy.H"
+#include "drt_utils_createdis.H"
+#include "elemag_utils_clonestrategy.H"
 
 // Scatra init
-#include "../drt_inpar/inpar_scatra.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
-#include "../drt_scatra/scatra_timint_stat.H"
-#include "../drt_scatra/scatra_timint_stat_hdg.H"
+#include "inpar_scatra.H"
+#include "adapter_scatra_base_algorithm.H"
+#include "scatra_timint_stat.H"
+#include "scatra_timint_stat_hdg.H"
 
 void electromagnetics_drt()
 {

@@ -18,8 +18,8 @@
 #include <Epetra_Vector.h>
 #include <Epetra_MpiComm.h>
 
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_lib/drt_elementtype.H"
+#include "linalg_fixedsizematrix.H"
+#include "drt_elementtype.H"
 
 namespace DRT
 {

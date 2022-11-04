@@ -21,8 +21,8 @@
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 
-#include "../drt_lib/drt_dofset_independent.H"
-#include "../drt_lib/drt_dofset_pbc.H"
+#include "drt_dofset_independent.H"
+#include "drt_dofset_pbc.H"
 
 
 // forward declarations

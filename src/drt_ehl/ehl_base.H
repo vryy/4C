@@ -12,13 +12,13 @@ algorithms
 #define SRC_DRT_EHL_EHL_BASE_H_
 
 
-#include "../drt_adapter/adapter_algorithmbase.H"
+#include "adapter_algorithmbase.H"
 
 #include <Epetra_Vector.h>
 
-#include "../drt_inpar/inpar_ehl.H"
+#include "inpar_ehl.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 // forward declarations
 namespace ADAPTER

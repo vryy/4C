@@ -12,16 +12,16 @@
  *----------------------------------------------------------------------*/
 #include "thermo_ele_boundary_impl.H"
 #include "thermo_ele_action.H"
-#include "../drt_inpar/inpar_thermo.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/function_of_time.H"
+#include "inpar_thermo.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "function_of_time.H"
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
-#include "../drt_geometry/position_array.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_boundary_integration.H"
+#include "position_array.H"
+#include "drt_utils_nurbs_shapefunctions.H"
+#include "drt_nurbs_discret.H"
 
 
 /*----------------------------------------------------------------------*

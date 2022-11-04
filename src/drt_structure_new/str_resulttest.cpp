@@ -14,10 +14,10 @@
 #include "str_timint_base.H"
 #include "str_model_evaluator_data.H"
 
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/voigt_notation.H"
+#include "drt_linedefinition.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "voigt_notation.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

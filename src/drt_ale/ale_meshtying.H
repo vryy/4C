@@ -11,9 +11,9 @@
 #define SRC_DRT_ALE_ALE_MESHTYING_H_
 
 
-#include "../drt_inpar/inpar_ale.H"
+#include "inpar_ale.H"
 
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_mapextractor.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>

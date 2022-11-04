@@ -11,14 +11,14 @@
 
 #include "fluid_timint.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/inpar_parameterlist_utils.H"
-#include "../drt_inpar/inpar_fluid.H"
+#include "drt_discret.H"
+#include "fluid_utils_mapextractor.H"
+#include "drt_globalproblem.H"
+#include "inpar_parameterlist_utils.H"
+#include "inpar_fluid.H"
 
 #include "fluid_discretization_runtime_vtu_output_params.H"
-#include "../drt_io/discretization_runtime_vtu_writer.H"
+#include "discretization_runtime_vtu_writer.H"
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>

@@ -3,30 +3,30 @@
 \brief quadratic nonlinear tetrahedron
 \level 1
 *----------------------------------------------------------------------*/
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "drt_utils_fem_shapefunctions.H"
 #include "so_element_service.H"
 #include "so_tet10.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_utils.H"
 #include "drt_dserror.H"
-#include "../drt_lib/prestress_service.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_patspec/patspec.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../drt_contact/contact_analytical.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/so3_material.H"
+#include "prestress_service.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "patspec.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
+#include "contact_analytical.H"
+#include "drt_globalproblem.H"
+#include "so3_material.H"
 #include "Epetra_SerialDenseSolver.h"
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "drt_utils_integration.H"
 #include "so_utils.H"
-#include "../drt_fiber/drt_fiber_node.H"
+#include "drt_fiber_node.H"
 
 // inverse design object
 #include "inversedesign.H"
 #include "prestress.H"
 
-#include "../drt_structure_new/str_elements_paramsinterface.H"
-#include "../drt_structure_new/gauss_point_data_output_manager.H"
+#include "str_elements_paramsinterface.H"
+#include "gauss_point_data_output_manager.H"
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |

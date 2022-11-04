@@ -10,12 +10,12 @@
  *---------------------------------------------------------------------------*/
 #include "particle_rigidbody_affiliation_pairs.H"
 
-#include "../drt_particle_engine/particle_engine_interface.H"
-#include "../drt_particle_engine/particle_communication_utils.H"
+#include "particle_engine_interface.H"
+#include "particle_communication_utils.H"
 
-#include "../drt_io/io.H"
-#include "../drt_lib/drt_pack_buffer.H"
-#include "../drt_lib/drt_parobject.H"
+#include "io.H"
+#include "drt_pack_buffer.H"
+#include "drt_parobject.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

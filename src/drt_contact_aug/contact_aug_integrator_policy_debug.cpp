@@ -7,21 +7,21 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "../drt_mortar/mortar_element.H"
-#include "../drt_contact/contact_node.H"
+#include "mortar_element.H"
+#include "contact_node.H"
 #include "contact_aug_integrator_policy.H"
 
-//#define DD_NON_UNIT_NORMAL
-//#define DD_JACOBIAN
-//#define DD_SMOOTH_UNIT_NORMAL
-//#define DD_MXI
-//#define DD_WGAP
-//#define DD_WGAP_SL
-//#define D_MXI
-//#define D_WGAP_SL
-//#define D_WGAP
-//#define D_GPN               // 1-st order derivative of the GP normal
-//#define D_KAPPA
+// #define DD_NON_UNIT_NORMAL
+// #define DD_JACOBIAN
+// #define DD_SMOOTH_UNIT_NORMAL
+// #define DD_MXI
+// #define DD_WGAP
+// #define DD_WGAP_SL
+// #define D_MXI
+// #define D_WGAP_SL
+// #define D_WGAP
+// #define D_GPN               // 1-st order derivative of the GP normal
+// #define D_KAPPA
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

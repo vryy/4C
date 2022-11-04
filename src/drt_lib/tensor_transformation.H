@@ -6,7 +6,7 @@
 #ifndef TENSOR_UTILS_H
 #define TENSOR_UTILS_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 
 namespace UTILS

@@ -15,13 +15,13 @@
 #include <Epetra_LinearProblem.h>
 #include <Epetra_CrsMatrix.h>
 
-#include "../drt_lib/drt_discret_interface.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_structure_new/str_timint_basedatasdyn.H"
-#include "../drt_structure_new/str_timint_basedataglobalstate.H"
+#include "drt_discret_interface.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_multiply.H"
+#include "linalg_sparsematrix.H"
+#include "inpar_structure.H"
+#include "str_timint_basedatasdyn.H"
+#include "str_timint_basedataglobalstate.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

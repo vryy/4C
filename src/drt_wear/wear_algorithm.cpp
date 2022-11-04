@@ -14,30 +14,30 @@
  | headers                                                  farah 11/13 |
  *----------------------------------------------------------------------*/
 #include "wear_algorithm.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mortar/mortar_manager_base.H"
+#include "drt_globalproblem.H"
+#include "mortar_manager_base.H"
 
-#include "../drt_adapter/ad_ale.H"
-#include "../drt_adapter/ad_ale_wear.H"
+#include "ad_ale.H"
+#include "ad_ale_wear.H"
 
-#include "../drt_contact/meshtying_contact_bridge.H"
-#include "../drt_contact/contact_wear_lagrange_strategy.H"
-#include "../drt_contact/contact_wear_interface.H"
-#include "../drt_contact/friction_node.H"
-#include "../drt_contact/contact_element.H"
-#include "../drt_contact_aug/contact_augmented_interface.H"
-#include "../drt_contact/contact_strategy_factory.H"
-#include "../drt_contact/contact_utils.H"
+#include "meshtying_contact_bridge.H"
+#include "contact_wear_lagrange_strategy.H"
+#include "contact_wear_interface.H"
+#include "friction_node.H"
+#include "contact_element.H"
+#include "contact_augmented_interface.H"
+#include "contact_strategy_factory.H"
+#include "contact_utils.H"
 
-#include "../drt_adapter/ad_str_structure.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "ad_str_structure.H"
+#include "ad_str_fsiwrapper.H"
 
-#include "../drt_inpar/inpar_wear.H"
-#include "../drt_inpar/inpar_ale.H"
+#include "inpar_wear.H"
+#include "inpar_ale.H"
 
-#include "../drt_nurbs_discret/drt_control_point.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_nurbs_discret/drt_knotvector.H"
+#include "drt_control_point.H"
+#include "drt_nurbs_discret.H"
+#include "drt_knotvector.H"
 
 
 /*----------------------------------------------------------------------*

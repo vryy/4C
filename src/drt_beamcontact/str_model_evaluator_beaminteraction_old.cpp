@@ -10,23 +10,23 @@
 
 #include "str_model_evaluator_beaminteraction_old.H"
 
-#include "../drt_structure_new/str_timint_base.H"
+#include "str_timint_base.H"
 
 #include <Epetra_Vector.h>
 #include <Epetra_Time.h>
 #include <Teuchos_ParameterList.hpp>
 
-#include "../linalg/linalg_sparseoperator.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_sparseoperator.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
 
 #include "drt_dserror.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
-#include "../drt_io/io.H"
+#include "io.H"
 
-#include "../drt_structure_new/str_model_evaluator_data.H"
-#include "../drt_beamcontact/beam3contact_manager.H"
+#include "str_model_evaluator_data.H"
+#include "beam3contact_manager.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

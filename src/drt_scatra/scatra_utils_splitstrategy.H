@@ -12,7 +12,7 @@
 #ifndef SCATRA_UTILS_SPLITSTRATEGY_H
 #define SCATRA_UTILS_SPLITSTRATEGY_H
 
-#include "../linalg/linalg_blocksparsematrix.H"
+#include "linalg_blocksparsematrix.H"
 
 namespace SCATRA
 {

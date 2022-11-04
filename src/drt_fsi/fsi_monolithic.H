@@ -14,13 +14,13 @@
 #include <NOX.H>
 #include <NOX_Epetra.H>
 
-#include "../drt_adapter/ad_fld_base_algorithm.H"
-#include "../drt_adapter/adapter_algorithmbase.H"
+#include "ad_fld_base_algorithm.H"
+#include "adapter_algorithmbase.H"
 
 #include "fsi_monolithicinterface.H"
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_mapextractor.H"
 
-#include "../drt_inpar/inpar_fsi.H"
+#include "inpar_fsi.H"
 
 // forward declarations
 namespace ADAPTER

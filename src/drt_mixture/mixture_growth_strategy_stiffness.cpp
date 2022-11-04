@@ -8,9 +8,9 @@
 
 #include "mixture_growth_strategy_stiffness.H"
 #include "mixture_growth_strategy.H"
-#include "../drt_mat/material_service.H"
-#include "../drt_lib/voigt_notation.H"
-#include "../drt_mat/matpar_material.H"
+#include "material_service.H"
+#include "voigt_notation.H"
+#include "matpar_material.H"
 
 MIXTURE::PAR::StiffnessGrowthStrategy::StiffnessGrowthStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)

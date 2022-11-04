@@ -27,16 +27,16 @@
 #include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.H"
 #include "str_model_evaluator_beaminteraction_datastate.H"
 
-#include "../drt_inpar/inpar_beam_to_solid.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_condition.H"
-#include "../drt_geometry_pair/geometry_pair_element.H"
-#include "../drt_geometry_pair/geometry_pair_element_faces.H"
-#include "../drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
-#include "../drt_geometry_pair/geometry_pair_line_to_surface_evaluation_data.H"
-#include "../drt_so3/so_base.H"
-#include "../drt_beam3/beam3r.H"
-#include "../drt_beam3/beam3eb.H"
+#include "inpar_beam_to_solid.H"
+#include "drt_discret.H"
+#include "drt_condition.H"
+#include "geometry_pair_element.H"
+#include "geometry_pair_element_faces.H"
+#include "geometry_pair_line_to_3D_evaluation_data.H"
+#include "geometry_pair_line_to_surface_evaluation_data.H"
+#include "so_base.H"
+#include "beam3r.H"
+#include "beam3eb.H"
 
 
 /**

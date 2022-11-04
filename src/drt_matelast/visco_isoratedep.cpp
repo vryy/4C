@@ -8,7 +8,7 @@ modified from Pioletti, 1997
 /*----------------------------------------------------------------------*/
 
 #include "visco_isoratedep.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 
 MAT::ELASTIC::PAR::IsoRateDep::IsoRateDep(const Teuchos::RCP<MAT::PAR::Material>& matdata)

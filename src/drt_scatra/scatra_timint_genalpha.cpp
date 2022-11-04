@@ -11,14 +11,14 @@
 #include "scatra_timint_meshtying_strategy_base.H"
 #include "turbulence_hit_scalar_forcing.H"
 
-#include "../drt_fluid_turbulence/dyn_smag.H"
-#include "../drt_fluid_turbulence/dyn_vreman.H"
+#include "dyn_smag.H"
+#include "dyn_vreman.H"
 
-#include "../drt_io/io.H"
+#include "io.H"
 
-#include "../drt_lib/drt_utils_parameter_list.H"
+#include "drt_utils_parameter_list.H"
 
-#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "scatra_ele_action.H"
 
 #include "scatra_timint_genalpha.H"
 

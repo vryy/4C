@@ -22,7 +22,7 @@
 #include "str_impl_gemm.H"
 #include "str_impl_ost.H"  // derived from ost
 
-#include "../drt_lib/prestress_service.H"
+#include "prestress_service.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

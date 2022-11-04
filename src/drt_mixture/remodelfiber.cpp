@@ -11,10 +11,10 @@
 #include <memory>
 #include "mixture_constituent_remodelfiber_material.H"
 #include "mixture_constituent_remodelfiber_material_active.H"
-#include "../drt_lib/drt_parobject.H"
+#include "drt_parobject.H"
 #include <Sacado.hpp>
 #include <type_traits>
-#include "../headers/FAD_utils.H"
+#include "FAD_utils.H"
 
 // anonymous namespace for helper functions and classes
 namespace

@@ -14,12 +14,12 @@
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include "Sacado.hpp"
 
-#include "../drt_beaminteraction/beam3contact_defines.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_fem_general/largerotations.H"
+#include "beam3contact_defines.H"
+#include "drt_discret.H"
+#include "largerotations.H"
 
 typedef Sacado::Fad::DFad<double> FAD;
 

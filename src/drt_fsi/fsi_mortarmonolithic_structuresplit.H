@@ -13,7 +13,7 @@ with condensed structure interface displacements
 #define FSI_MORTARMONOLITHICSTRUCTURESPLIT_H
 
 #include "fsi_monolithic.H"
-#include "../drt_inpar/inpar_fsi.H"
+#include "inpar_fsi.H"
 
 // forward declarations
 namespace ADAPTER

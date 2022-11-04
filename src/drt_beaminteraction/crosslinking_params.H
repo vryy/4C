@@ -11,8 +11,8 @@
 #define CROSSLINKINGPARAMS_H
 
 #include "drt_dserror.H"
-#include "../drt_inpar/inpar_beaminteraction.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "inpar_beaminteraction.H"
+#include "linalg_fixedsizematrix.H"
 
 // forward declaration
 namespace STR

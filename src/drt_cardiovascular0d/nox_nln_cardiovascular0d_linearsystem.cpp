@@ -14,13 +14,13 @@
 
 #include "nox_nln_cardiovascular0d_linearsystem.H"
 
-#include "../solver_nonlin_nox/nox_nln_interface_jacobian.H"
-#include "../solver_nonlin_nox/nox_nln_interface_required.H"
+#include "nox_nln_interface_jacobian.H"
+#include "nox_nln_interface_required.H"
 
 #include <Teuchos_ParameterList.hpp>
 
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_sparseoperator.H"
+#include "linalg_solver.H"
+#include "linalg_sparseoperator.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

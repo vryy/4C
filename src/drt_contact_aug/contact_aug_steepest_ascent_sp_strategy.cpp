@@ -13,12 +13,12 @@
 #include "contact_aug_lagrange_multiplier_function.H"
 #include "contact_aug_penalty_update.H"
 
-#include "../drt_contact/contact_paramsinterface.H"
+#include "contact_paramsinterface.H"
 
-#include "../drt_io/io_pstream.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../drt_lib/epetra_utils.H"
+#include "io_pstream.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "epetra_utils.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

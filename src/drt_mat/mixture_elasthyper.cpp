@@ -9,9 +9,9 @@
 #include <memory>
 
 #include "mixture_elasthyper.H"
-#include "../drt_mat/material_service.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
+#include "material_service.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
 
 // constructor of the parameters
 MAT::PAR::Mixture_ElastHyper::Mixture_ElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata)

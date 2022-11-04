@@ -7,13 +7,13 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "../drt_beaminteraction/crosslinking_params.H"
+#include "crosslinking_params.H"
 
-#include "../drt_mat/crosslinkermat.H"
+#include "crosslinkermat.H"
 
-#include "../drt_structure_new/str_timint_basedataglobalstate.H"
+#include "str_timint_basedataglobalstate.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------------*

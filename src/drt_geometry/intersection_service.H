@@ -13,7 +13,7 @@
 
 #include "geo_utils.H"
 #include "intersection_math.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
 
 namespace GEO

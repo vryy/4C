@@ -19,8 +19,8 @@
 #include <string>
 #include <Teuchos_CommandLineProcessor.hpp>
 
-#include "../post_drt_common/post_drt_common.H"
-#include "../drt_lib/drt_discret.H"
+#include "post_drt_common.H"
+#include "drt_discret.H"
 
 
 /*----------------------------------------------------------------------*/

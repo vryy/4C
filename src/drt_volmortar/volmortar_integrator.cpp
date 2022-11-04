@@ -16,17 +16,17 @@
 #include "volmortar_defines.H"
 #include "volmortar_cell.H"
 
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "drt_utils_integration.H"
 
-#include "../drt_mortar/mortar_coupling3d_classes.H"
-#include "../drt_mortar/mortar_calc_utils.H"
+#include "mortar_coupling3d_classes.H"
+#include "mortar_calc_utils.H"
 
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_serialdensevector.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_cut/cut_volumecell.H"
+#include "drt_discret.H"
+#include "cut_volumecell.H"
 
 
 /*----------------------------------------------------------------------*

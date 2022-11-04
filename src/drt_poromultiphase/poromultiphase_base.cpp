@@ -8,23 +8,23 @@
 
 #include "poromultiphase_base.H"
 
-#include "../drt_porofluidmultiphase/porofluidmultiphase_utils.H"
+#include "porofluidmultiphase_utils.H"
 
-#include "../drt_inpar/inpar_porofluidmultiphase.H"
+#include "inpar_porofluidmultiphase.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
 
-#include "../drt_adapter/ad_porofluidmultiphase_wrapper.H"
+#include "ad_porofluidmultiphase_wrapper.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
 // new structural time integration
-#include "../drt_adapter/ad_str_structure_new.H"
-#include "../drt_adapter/ad_str_factory.H"
+#include "ad_str_structure_new.H"
+#include "ad_str_factory.H"
 
-#include "../drt_io/io_control.H"
-#include "../drt_io/io.H"
+#include "io_control.H"
+#include "io.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16  |

@@ -12,15 +12,15 @@
 #include "artery_ele_calc_lin_exp.H"
 #include "artery_ele_calc.H"
 
-#include "../drt_mat/cnst_1d_art.H"
-#include "../drt_lib/drt_function.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/function_of_time.H"
+#include "cnst_1d_art.H"
+#include "drt_function.H"
+#include "drt_utils.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_globalproblem.H"
+#include "function_of_time.H"
 #include "art_junction.H"
 #include "art_terminal_bc.H"
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 #include <fstream>
 #include <iomanip>
 

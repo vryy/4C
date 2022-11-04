@@ -10,8 +10,8 @@
 #include "so3_poro_p1_eletypes.H"
 #include "so3_poro_p1.H"
 
-#include "../drt_lib/drt_linedefinition.H"
-#include "../linalg/linalg_utils_nullspace.H"
+#include "drt_linedefinition.H"
+#include "linalg_utils_nullspace.H"
 
 /*----------------------------------------------------------------------*
  |  HEX 8 Element                                                       |

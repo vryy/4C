@@ -8,7 +8,7 @@
 
 #include "elast_coupanisoexpobase.H"
 
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 
 MAT::ELASTIC::PAR::CoupAnisoExpoBase::CoupAnisoExpoBase(

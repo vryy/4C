@@ -15,12 +15,12 @@
 #include "red_airways_dyn_drt.H"
 #include "airwayimplicitintegration.H"
 #include "redairway_tissue.H"
-#include "../drt_adapter/ad_str_redairway.H"
-#include "../drt_lib/drt_resulttest.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "ad_str_redairway.H"
+#include "drt_resulttest.H"
+#include "drt_globalproblem.H"
+#include "io_control.H"
+#include "io_pstream.H"
+#include "drt_validparameters.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>

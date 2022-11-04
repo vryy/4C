@@ -13,7 +13,7 @@
 #define DRT_ELEMENT_VTK_CELL_TYPE_H
 
 /* headers */
-#include "../drt_lib/drt_element.H"
+#include "drt_element.H"
 #include "drt_dserror.H"
 
 #include <vector>

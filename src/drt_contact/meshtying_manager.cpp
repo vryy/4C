@@ -16,20 +16,20 @@
 #include "meshtying_defines.H"
 #include "meshtying_poro_lagrange_strategy.H"
 
-#include "../drt_mortar/mortar_interface.H"
-#include "../drt_mortar/mortar_node.H"
-#include "../drt_mortar/mortar_element.H"
-#include "../drt_mortar/mortar_defines.H"
-#include "../drt_mortar/mortar_utils.H"
+#include "mortar_interface.H"
+#include "mortar_node.H"
+#include "mortar_element.H"
+#include "mortar_defines.H"
+#include "mortar_utils.H"
 
-#include "../drt_io/io.H"
+#include "io.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_inpar/inpar_mortar.H"
+#include "inpar_contact.H"
+#include "inpar_mortar.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/08|

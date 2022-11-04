@@ -13,22 +13,22 @@
 
 #include <fstream>
 
-#include "../drt_cut/cut_boundarycell.H"
-#include "../drt_cut/cut_position.H"
-#include "../drt_cut/cut_volumecell.H"
+#include "cut_boundarycell.H"
+#include "cut_position.H"
+#include "cut_volumecell.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 #include "fluid_ele.H"
 #include "fluid_ele_parameter_xfem.H"
 #include "fluid_ele_calc_xfem.H"
 
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/matpar_bundle.H"
+#include "newtonianfluid.H"
+#include "matpar_bundle.H"
 
-#include "../drt_fluid/fluid_functions.H"
+#include "fluid_functions.H"
 
-#include "../drt_lib/drt_condition_utils.H"
+#include "drt_condition_utils.H"
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcXFEM<distype>* DRT::ELEMENTS::FluidEleCalcXFEM<distype>::Instance(

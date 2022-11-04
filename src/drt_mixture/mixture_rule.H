@@ -15,7 +15,7 @@
 #include <memory>
 #include <unordered_map>
 
-#include "../drt_mat/matpar_parameter.H"
+#include "matpar_parameter.H"
 #include <Teuchos_ENull.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_RCPDecl.hpp>
@@ -23,7 +23,7 @@
 #include <utility>
 #include <vector>
 #include "drt_dserror.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 // forward declarations
 class Epetra_SerialDenseMatrix;

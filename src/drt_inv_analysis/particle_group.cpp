@@ -18,9 +18,9 @@
 #include "metropolis_kernel.H"
 #include "invana_utils.H"
 
-#include "../drt_comm/comm_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "comm_utils.H"
+#include "drt_globalproblem.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 #include "Epetra_MpiComm.h"
 

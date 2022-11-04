@@ -15,11 +15,11 @@
 #include "scatra_ele_boundary_interface.H"
 #include "scatra_ele_calc_utils.H"
 
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
-#include "../drt_inpar/inpar_elch.H"
+#include "inpar_elch.H"
 
-#include "../drt_fluid_ele/fluid_ele.H"
+#include "fluid_ele.H"
 
 namespace FLD
 {

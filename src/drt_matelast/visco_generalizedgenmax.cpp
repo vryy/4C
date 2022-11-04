@@ -7,9 +7,9 @@
 /*----------------------------------------------------------------------*/
 #include "visco_generalizedgenmax.H"
 
-#include "../drt_mat/matpar_material.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "matpar_material.H"
+#include "matpar_bundle.H"
+#include "drt_globalproblem.H"
 
 MAT::ELASTIC::PAR::GeneralizedGenMax::GeneralizedGenMax(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)

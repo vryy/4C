@@ -11,19 +11,19 @@
 
 #include "matpar_bundle.H"
 
-#include "../drt_mixture/mixture_prestress_strategy_isocyl.H"
-#include "../drt_mixture/mixture_prestress_strategy_constant.H"
-#include "../drt_mixture/mixture_prestress_strategy_iterative.H"
-#include "../drt_mixture/mixture_growth_strategy_anisotropic.H"
-#include "../drt_mixture/mixture_growth_strategy_isotropic.H"
-#include "../drt_mixture/mixture_growth_strategy_stiffness.H"
-#include "../drt_mixture/mixture_rule_growthremodel.H"
-#include "../drt_mixture/mixture_rule_simple.H"
-#include "../drt_mixture/mixture_constituent_remodelfiber_material_exponential.H"
-#include "../drt_mixture/mixture_constituent_remodelfiber_material_exponential_active.H"
+#include "mixture_prestress_strategy_isocyl.H"
+#include "mixture_prestress_strategy_constant.H"
+#include "mixture_prestress_strategy_iterative.H"
+#include "mixture_growth_strategy_anisotropic.H"
+#include "mixture_growth_strategy_isotropic.H"
+#include "mixture_growth_strategy_stiffness.H"
+#include "mixture_rule_growthremodel.H"
+#include "mixture_rule_simple.H"
+#include "mixture_constituent_remodelfiber_material_exponential.H"
+#include "mixture_constituent_remodelfiber_material_exponential_active.H"
 
-#include "../linalg/linalg_utils_densematrix_eigen.H"
-#include "../linalg/linalg_four_tensor.H"
+#include "linalg_utils_densematrix_eigen.H"
+#include "linalg_four_tensor.H"
 
 #include <Sacado.hpp>
 

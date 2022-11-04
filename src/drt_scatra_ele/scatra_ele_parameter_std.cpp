@@ -21,7 +21,7 @@ coexist with this general class.
 #include "scatra_ele_parameter_timint.H"
 
 #include "drt_dserror.H"
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                             thon/vuong 07/15 |

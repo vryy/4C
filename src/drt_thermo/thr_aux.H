@@ -18,7 +18,7 @@
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
 
-#include "../drt_inpar/inpar_thermo.H"
+#include "inpar_thermo.H"
 
 
 /*----------------------------------------------------------------------*

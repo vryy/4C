@@ -18,8 +18,8 @@
 #include "str_integrator.H"
 
 #include "drt_dserror.H"
-#include "../linalg/linalg_sparseoperator.H"
-#include "../linalg/linalg_blocksparsematrix.H"  // debugging
+#include "linalg_sparseoperator.H"
+#include "linalg_blocksparsematrix.H"  // debugging
 
 #include <Epetra_Vector.h>
 

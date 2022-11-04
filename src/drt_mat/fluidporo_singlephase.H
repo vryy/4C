@@ -16,7 +16,7 @@
  *---------------------------------------------------------------------*/
 #include "material.H"
 #include "matpar_parameter.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 #include "fluidporo_relpermeability_law.H"
 #include "fluidporo_viscosity_law.H"
 #include "poro_density_law.H"

@@ -9,8 +9,8 @@
 
 #include <math.h>
 #include "contact_analytical.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "inpar_contact.H"
+#include "drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*

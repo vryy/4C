@@ -13,8 +13,8 @@
 #define BEAMINTERACTION_SUBMODEL_EVALUATOR_POTENTIAL_H_
 
 
-#include "../drt_beaminteraction/beaminteraction_submodel_evaluator_generic.H"
-#include "../drt_binstrategy/binning_strategy_utils.H"
+#include "beaminteraction_submodel_evaluator_generic.H"
+#include "binning_strategy_utils.H"
 
 // forward declaration ...
 class RuntimeVtpWriter;

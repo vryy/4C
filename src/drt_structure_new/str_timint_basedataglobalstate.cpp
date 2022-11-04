@@ -15,23 +15,23 @@
 #include "str_model_evaluator_generic.H"
 #include "str_model_evaluator_meshtying.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_discret.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_beam3/beam3_base.H"
-#include "../drt_fem_general/largerotations.H"
-#include "../drt_structure_new/str_utils.H"
-#include "../drt_contact/meshtying_abstract_strategy.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_discret.H"
+#include "inpar_contact.H"
+#include "beam3_base.H"
+#include "largerotations.H"
+#include "str_utils.H"
+#include "meshtying_abstract_strategy.H"
 
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_sparsematrix.H"
+#include "linalg_solver.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_sparsematrix.H"
 
 
-#include "../solver_nonlin_nox/nox_nln_group.H"
-#include "../solver_nonlin_nox/nox_nln_group_prepostoperator.H"
+#include "nox_nln_group.H"
+#include "nox_nln_group_prepostoperator.H"
 
 #include <Epetra_Vector.h>
 #include <Epetra_Time.h>

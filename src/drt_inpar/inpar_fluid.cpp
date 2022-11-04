@@ -14,7 +14,7 @@
 #include "inpar_fluid.H"
 #include "inpar_turbulence.H"
 #include "inpar.H"
-#include "../drt_lib/drt_conditiondefinition.H"
+#include "drt_conditiondefinition.H"
 
 
 

@@ -6,11 +6,11 @@
 
 *----------------------------------------------------------------------*/
 
-#include "../../src/drt_cut/cut_options.H"
-#include "../../src/drt_cut/cut_mesh.H"
-#include "../../src/drt_cut/cut_element.H"
+#include "cut_options.H"
+#include "cut_mesh.H"
+#include "cut_element.H"
 #include "cut_test_utils.H"
-#include "../../src/drt_cut/cut_triangulateFacet.H"
+#include "cut_triangulateFacet.H"
 
 void check4nodedInline(GEO::CUT::Mesh& mesh, GEO::CUT::Element* e, GEO::CUT::Side* s);
 void check4nodedconcave(GEO::CUT::Mesh& mesh, GEO::CUT::Element* e, GEO::CUT::Side* s);

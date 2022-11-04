@@ -19,13 +19,13 @@
 #include "str_model_evaluator.H"
 #include "str_model_evaluator_data.H"
 
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 #include "drt_dserror.H"
 
-#include "../solver_nonlin_nox/nox_nln_group.H"
-#include "../solver_nonlin_nox/nox_nln_group_prepostoperator.H"
+#include "nox_nln_group.H"
+#include "nox_nln_group_prepostoperator.H"
 
 #include <NOX_Epetra_Vector.H>
 

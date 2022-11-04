@@ -15,7 +15,7 @@
 /* headers */
 #include "timint_adjoint.H"
 
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 
 /*----------------------------------------------------------------------*/
 namespace STR

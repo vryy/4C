@@ -14,7 +14,7 @@
 #include "cut_levelsetside.H"
 #include "cut_options.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 #include <string>
 #include <stack>

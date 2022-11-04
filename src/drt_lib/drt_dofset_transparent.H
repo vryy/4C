@@ -14,8 +14,8 @@
 
 
 #include "drt_exporter.H"
-#include "../drt_lib/drt_dofset.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_dofset.H"
+#include "drt_discret.H"
 
 
 namespace DRT

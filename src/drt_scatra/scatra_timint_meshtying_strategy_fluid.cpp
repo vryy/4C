@@ -9,13 +9,13 @@
 *----------------------------------------------------------------------*/
 #include "scatra_timint_meshtying_strategy_fluid.H"
 
-#include "../drt_fluid/fluid_meshtying.H"
+#include "fluid_meshtying.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "scatra_timint_implicit.H"
 
-#include "../linalg/linalg_sparseoperator.H"
+#include "linalg_sparseoperator.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |

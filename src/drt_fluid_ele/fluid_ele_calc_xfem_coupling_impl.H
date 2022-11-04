@@ -12,7 +12,7 @@
 #ifndef FLUID_ELE_CALC_XFEM_COUPLING_IMPL_H_
 #define FLUID_ELE_CALC_XFEM_COUPLING_IMPL_H_
 
-#include "../drt_inpar/inpar_xfem.H"
+#include "inpar_xfem.H"
 
 //   qnuP - option SHOULD BE ON!
 //     projects the given velocity into normal direction in case there
@@ -22,7 +22,7 @@
 //  For comparison to Urquizas paper with his slip length implementation
 //   Only working for Navier-Slip (i.e. itraction_jump_ = 0)!
 //   Can be modified to work for this case as well.
-//#define ENFORCE_URQUIZA_GNBC
+// #define ENFORCE_URQUIZA_GNBC
 
 namespace DRT
 {

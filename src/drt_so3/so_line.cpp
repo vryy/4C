@@ -7,7 +7,7 @@
 *----------------------------------------------------------------------*/
 
 #include "so_line.H"
-#include "../linalg/linalg_serialdensematrix.H"
+#include "linalg_serialdensematrix.H"
 #include "drt_dserror.H"
 
 

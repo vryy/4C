@@ -12,16 +12,16 @@
 #include "post_filter_base.H"
 #include "post_writer_base.H"
 #include "post_drt_common.H"
-#include "../post_ensight/post_drt_ensight_writer.H"
-#include "../post_vtk/post_drt_vtu_writer.H"
-#include "../post_vtk/post_drt_vtu_writer_node_based.H"
-#include "../post_vtk/post_drt_vti_writer.H"
+#include "post_drt_ensight_writer.H"
+#include "post_drt_vtu_writer.H"
+#include "post_drt_vtu_writer_node_based.H"
+#include "post_drt_vti_writer.H"
 
 
-#include "../pss_full/pss_cpp.h"
+#include "pss_cpp.h"
 extern "C"
 {
-#include "../pss_full/pss_table_iter.h"
+#include "pss_table_iter.h"
 }
 
 

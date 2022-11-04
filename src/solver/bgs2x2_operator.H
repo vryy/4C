@@ -14,8 +14,8 @@
 #include "Teuchos_ParameterList.hpp"
 
 #include "drt_dserror.H"
-#include "../linalg/linalg_precond.H"
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_precond.H"
+#include "linalg_mapextractor.H"
 
 #include "solver_preconditionertype.H"
 

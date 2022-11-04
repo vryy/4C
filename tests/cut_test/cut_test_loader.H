@@ -12,7 +12,7 @@
 #include <map>
 #include <vector>
 
-#include "../../src/drt_cut/cut_meshintersection.H"
+#include "cut_meshintersection.H"
 
 class MeshLoader
 {

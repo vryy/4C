@@ -9,21 +9,21 @@
 #include "contact_augmented_interface.H"
 #include "contact_augmented_integrator.H"
 
-#include "../drt_contact/contact_node.H"
-#include "../drt_contact/contact_coupling3d.H"
-#include "../drt_contact/contact_paramsinterface.H"
+#include "contact_node.H"
+#include "contact_coupling3d.H"
+#include "contact_paramsinterface.H"
 
-#include "../drt_mortar/mortar_element.H"
-#include "../drt_mortar/mortar_binarytree.H"
+#include "mortar_element.H"
+#include "mortar_binarytree.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/epetra_utils.H"
+#include "drt_discret.H"
+#include "epetra_utils.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_serialdensevector.H"
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 #include <Teuchos_Time.hpp>
 #include <Epetra_Time.h>

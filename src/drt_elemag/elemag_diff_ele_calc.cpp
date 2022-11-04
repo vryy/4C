@@ -12,16 +12,16 @@
 #include "elemag_diff_ele_calc.H"
 #include "elemag_ele_action.H"
 
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "drt_utils_boundary_integration.H"
 
-#include "../drt_geometry/position_array.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "position_array.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_elementtype.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_elementtype.H"
 
-#include "../drt_mat/electromagnetic.H"
+#include "electromagnetic.H"
 
 #include <Epetra_SerialDenseSolver.h>
 #include <Teuchos_TimeMonitor.hpp>

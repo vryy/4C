@@ -9,10 +9,10 @@
 #ifndef LINALG_NULLSPACE_H
 #define LINALG_NULLSPACE_H
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 #include "drt_dserror.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_elementtype.H"
+#include "drt_exporter.H"
+#include "drt_elementtype.H"
 
 namespace LINALG::NULLSPACE
 {

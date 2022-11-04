@@ -12,7 +12,7 @@
 #include "wall1_poro_p1_scatra_eletypes.H"
 #include "wall1_poro_p1_scatra.H"
 
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
 /*----------------------------------------------------------------------*
  |  QUAD 4 Element                                        schmidt 09/17 |

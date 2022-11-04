@@ -21,8 +21,8 @@ CABLUM 1.98e-3
 /* headers */
 #include "aaagasser.H"
 #include "matpar_bundle.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/material_service.H"
+#include "drt_globalproblem.H"
+#include "material_service.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |

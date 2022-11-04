@@ -10,7 +10,7 @@
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph_density_correction.H"
 
-#include "../drt_inpar/inpar_particle.H"
+#include "inpar_particle.H"
 
 #include "drt_dserror.H"
 

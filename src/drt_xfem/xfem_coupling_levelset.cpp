@@ -15,29 +15,29 @@ bridge between the xfluid class and the cut-library
 #include "xfem_utils.H"
 #include "xfem_interface_utils.H"
 
-#include "../drt_cut/cut_cutwizard.H"
-#include "../drt_cut/cut_node.H"
-#include "../drt_cut/cut_point.H"
+#include "cut_cutwizard.H"
+#include "cut_node.H"
+#include "cut_point.H"
 
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_inpar/inpar_xfem.H"
-#include "../drt_inpar/inpar_fluid.H"
+#include "inpar_xfem.H"
+#include "inpar_fluid.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_gmsh.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_pstream.H"
+#include "io.H"
+#include "io_gmsh.H"
+#include "io_control.H"
+#include "io_pstream.H"
 
-#include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_lib/drt_discret_xfem.H"
+#include "fluid_ele_action.H"
+#include "drt_discret_xfem.H"
 
 // Needed to find element conditions
-#include "../drt_lib/drt_condition_utils.H"
+#include "drt_condition_utils.H"
 
-#include "../drt_mat/newtonianfluid.H"
+#include "newtonianfluid.H"
 
 // TODO: CouplingBase should become abstract class
 

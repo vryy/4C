@@ -9,9 +9,9 @@
 
 
 #include "art_net_timint.H"
-#include "../drt_inpar/inpar_bio.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_solver.H"
+#include "inpar_bio.H"
+#include "drt_globalproblem.H"
+#include "linalg_solver.H"
 #include "artery_resulttest.H"
 
 

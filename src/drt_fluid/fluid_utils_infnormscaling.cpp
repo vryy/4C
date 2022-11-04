@@ -13,10 +13,10 @@
 #include <stdio.h>
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_blocksparsematrix.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../drt_inpar/inpar_fluid.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_blocksparsematrix.H"
+#include "linalg_mapextractor.H"
+#include "inpar_fluid.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

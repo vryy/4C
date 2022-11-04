@@ -15,14 +15,14 @@
 
 #include "io_control.H"
 
-#include "../drt_lib/drt_element_vtk_cell_type_register.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_element_vtk_cell_type_register.H"
+#include "drt_discret.H"
+#include "drt_element.H"
+#include "drt_globalproblem.H"
 
 #include "drt_dserror.H"
 
-#include "../drt_beam3/beam3_base.H"
+#include "beam3_base.H"
 
 #include "Epetra_FEVector.h"
 

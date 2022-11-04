@@ -12,7 +12,7 @@
 #ifndef STR_NLN_SOLVER_FACTORY_H_
 #define STR_NLN_SOLVER_FACTORY_H_
 
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 
 namespace STR
 {

@@ -19,9 +19,9 @@
  | headers                                                   dano 08/09 |
  *----------------------------------------------------------------------*/
 #include "thrtimint.H"
-#include "../drt_lib/drt_resulttest.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io.H"
+#include "drt_resulttest.H"
+#include "drt_globalproblem.H"
+#include "io.H"
 
 
 /*----------------------------------------------------------------------*

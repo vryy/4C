@@ -10,8 +10,8 @@
 #ifndef CUT_EDGE_H
 #define CUT_EDGE_H
 
-#include "../drt_inpar/inpar_cut.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "inpar_cut.H"
+#include "drt_utils_fem_shapefunctions.H"
 
 #include "cut_node.H"
 #include "cut_tolerance.H"

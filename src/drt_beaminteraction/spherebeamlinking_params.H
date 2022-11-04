@@ -13,7 +13,7 @@
 #define SPHEREBEAMLINKING_PARAMS_H
 
 #include "drt_dserror.H"
-#include "../drt_inpar/inpar_beaminteraction.H"
+#include "inpar_beaminteraction.H"
 #include <Teuchos_RCP.hpp>
 
 

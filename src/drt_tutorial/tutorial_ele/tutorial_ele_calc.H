@@ -12,9 +12,9 @@
 #ifndef TUTORIAL_ELE_CALC_H
 #define TUTORIAL_ELE_CALC_H
 
-#include "../../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
-#include "../../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 namespace TUTORIAL
 {

@@ -15,7 +15,7 @@
 #include "cut_position.H"
 #include "cut_output.H"
 
-#include "../drt_geometry/element_volume.H"
+#include "element_volume.H"
 
 
 /*----------------------------------------------------------------------------*

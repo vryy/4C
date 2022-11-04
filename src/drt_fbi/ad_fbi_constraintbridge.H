@@ -12,7 +12,7 @@ enforcement technique with a discretization approach for Fluid-beam interaction.
 #define AD_FBI_CONSTRAINTBRIDGE_H_
 
 #include <Teuchos_RCP.hpp>
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include <Epetra_Map.h>
 #include <vector>
 

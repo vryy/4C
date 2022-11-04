@@ -11,18 +11,18 @@
 #include "contact_augmented_strategy.H"
 #include "contact_augmented_interface.H"
 
-#include "../drt_contact/contact_node.H"
+#include "contact_node.H"
 
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../linalg/linalg_matrixtransform.H"
-#include "../headers/singleton_owner.H"
+#include "linalg_matrixtransform.H"
+#include "singleton_owner.H"
 
-//#define CONTACTFD_DLMGAPLINMATRIX      /* flag for global FD-check of the weighted gap gradient
-// w.r.t. displ. */ #define CONTACTFD_DGLMLINMATRIX        /* flag for global FD-check of the
-// dGLmLinMatrix w.r.t. displ. */ #define CONTACTFD_DGGLINMATRIX         /* flag for global FD-check
-// of the dGGLinMatrix w.r.t. displ. */
+// #define CONTACTFD_DLMGAPLINMATRIX      /* flag for global FD-check of the weighted gap gradient
+//  w.r.t. displ. */ #define CONTACTFD_DGLMLINMATRIX        /* flag for global FD-check of the
+//  dGLmLinMatrix w.r.t. displ. */ #define CONTACTFD_DGGLINMATRIX         /* flag for global
+//  FD-check of the dGGLinMatrix w.r.t. displ. */
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

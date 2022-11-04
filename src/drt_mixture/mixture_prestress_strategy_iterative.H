@@ -11,9 +11,9 @@
 #ifndef BACI_MIXTURE_PRESTRESS_STRATEGY_ITERATIVE_H
 #define BACI_MIXTURE_PRESTRESS_STRATEGY_ITERATIVE_H
 
-#include "../drt_mat/matpar_parameter.H"
-#include "../drt_lib/drt_pack_buffer.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "matpar_parameter.H"
+#include "drt_pack_buffer.H"
+#include "linalg_fixedsizematrix.H"
 #include "mixture_prestress_strategy.H"
 
 // forward declarations

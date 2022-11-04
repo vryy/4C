@@ -17,7 +17,7 @@
 #define FSI_BIOFILM_GROWTH_H
 
 
-#include "../drt_fs3i/fs3i_partitioned_1wc.H"
+#include "fs3i_partitioned_1wc.H"
 
 
 // forward declarations

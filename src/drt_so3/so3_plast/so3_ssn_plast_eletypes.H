@@ -6,11 +6,11 @@
 #ifndef SO3_SSN_PLAST_ELETYPES_H_
 #define SO3_SSN_PLAST_ELETYPES_H_
 
-#include "../so_tet4.H"
-#include "../so_hex8.H"
-#include "../so_hex18.H"
-#include "../so_hex27.H"
-#include "../so_nurbs27.H"
+#include "so_tet4.H"
+#include "so_hex8.H"
+#include "so_hex18.H"
+#include "so_hex27.H"
+#include "so_nurbs27.H"
 
 namespace DRT
 {

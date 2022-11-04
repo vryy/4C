@@ -13,16 +13,16 @@ be directly assembled into the global matrices.
 
 #include "partitioned_penaltycoupling_assembly_manager_direct.H"
 
-#include "../drt_beaminteraction/beam_contact_pair.H"
-#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
-#include "../drt_fbi/fbi_calc_utils.H"
-#include "../drt_fbi/fluid_assembly_strategy.H"
+#include "beam_contact_pair.H"
+#include "beaminteraction_calc_utils.H"
+#include "fbi_calc_utils.H"
+#include "fluid_assembly_strategy.H"
 
-#include "../drt_lib/drt_element.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_sparseoperator.H"
-#include "../linalg/linalg_sparsematrix.H"
+#include "drt_element.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
+#include "linalg_sparseoperator.H"
+#include "linalg_sparsematrix.H"
 
 
 /**

@@ -26,10 +26,10 @@
 
 #include <Epetra_Vector.h>
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_serialdensematrix.H"
+#include "drt_globalproblem.H"
+#include "io_control.H"
+#include "linalg_serialdensevector.H"
+#include "linalg_serialdensematrix.H"
 
 
 NOX::FSI::MinimalPolynomial::MinimalPolynomial(

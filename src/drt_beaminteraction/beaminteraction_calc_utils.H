@@ -11,9 +11,9 @@
 #define BEAMINTERACTION_CALC_UTILS_H_
 
 #include "Teuchos_RCP.hpp"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../drt_inpar/inpar_beaminteraction.H"
+#include "linalg_fixedsizematrix.H"
+#include "linalg_mapextractor.H"
+#include "inpar_beaminteraction.H"
 
 
 // forward declaration

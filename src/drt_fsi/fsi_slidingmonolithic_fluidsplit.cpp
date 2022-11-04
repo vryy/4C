@@ -12,9 +12,9 @@ with condensed fluid interface velocities
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_adapter/adapter_coupling_mortar.H"
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "adapter_coupling_mortar.H"
+#include "adapter_coupling.H"
+#include "ad_str_fsiwrapper.H"
 
 #include "fsi_slidingmonolithic_fluidsplit.H"
 #include "fsi_debugwriter.H"
@@ -24,26 +24,26 @@ with condensed fluid interface velocities
 #include "fsi_monolithic_linearsystem.H"
 #include "fsi_utils.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../drt_structure/stru_aux.H"
-#include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../drt_ale/ale_utils_mapextractor.H"
-#include "../drt_adapter/ad_fld_fluid_fsi.H"
-#include "../drt_adapter/ad_ale_fsi.H"
+#include "drt_globalproblem.H"
+#include "drt_validparameters.H"
+#include "fluid_utils_mapextractor.H"
+#include "stru_aux.H"
+#include "linalg_multiply.H"
+#include "linalg_solver.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "ale_utils_mapextractor.H"
+#include "ad_fld_fluid_fsi.H"
+#include "ad_ale_fsi.H"
 
-#include "../drt_constraint/constraint_manager.H"
+#include "constraint_manager.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
+#include "io.H"
+#include "io_control.H"
 
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_matrixtransform.H"
+#include "linalg_mapextractor.H"
+#include "linalg_matrixtransform.H"
 
 #include <math.h>
 

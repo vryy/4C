@@ -12,7 +12,7 @@
 #ifndef SRC_LOCA_CONTINUATION_LOCA_NLN_PROBLEM_H_
 #define SRC_LOCA_CONTINUATION_LOCA_NLN_PROBLEM_H_
 
-#include "../solver_nonlin_nox/nox_nln_problem.H"
+#include "nox_nln_problem.H"
 
 namespace LOCA
 {

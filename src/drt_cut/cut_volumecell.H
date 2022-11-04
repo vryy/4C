@@ -12,9 +12,9 @@
 #define CUT_VOLUMECELL_H
 
 #include "cut_facet.H"
-#include "../../src/drt_fem_general/drt_utils_gausspoints.H"
+#include "drt_utils_gausspoints.H"
 
-#include "../drt_inpar/inpar_cut.H"
+#include "inpar_cut.H"
 
 namespace GEO
 {

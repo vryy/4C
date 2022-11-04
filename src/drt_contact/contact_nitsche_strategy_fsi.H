@@ -15,7 +15,7 @@
 
 #include <utility>
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 namespace CONTACT
 {

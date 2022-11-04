@@ -10,11 +10,11 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_timint_two_phase.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_levelset/levelset_algorithm.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "fluid_ele_action.H"
+#include "levelset_algorithm.H"
+#include "drt_globalproblem.H"
+#include "io.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 
 /*----------------------------------------------------------------------*

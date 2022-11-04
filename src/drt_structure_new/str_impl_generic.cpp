@@ -14,12 +14,12 @@
 #include "str_model_evaluator.H"
 #include "str_model_evaluator_data.H"
 
-#include "../solver_nonlin_nox/nox_nln_group.H"
-#include "../solver_nonlin_nox/nox_nln_aux.H"
-#include "../solver_nonlin_nox/nox_nln_solver_linesearchbased.H"
-#include "../solver_nonlin_nox/nox_nln_group_prepostoperator.H"
+#include "nox_nln_group.H"
+#include "nox_nln_aux.H"
+#include "nox_nln_solver_linesearchbased.H"
+#include "nox_nln_group_prepostoperator.H"
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 
 /*----------------------------------------------------------------------------*

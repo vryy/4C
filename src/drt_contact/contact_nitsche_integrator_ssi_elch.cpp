@@ -11,12 +11,12 @@ electrochemistry
 #include "contact_nitsche_integrator_ssi_elch.H"
 #include "contact_nitsche_utils.H"
 
-#include "../drt_mat/electrode.H"
+#include "electrode.H"
 
-#include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
-#include "../drt_scatra_ele/scatra_ele_parameter_boundary.H"
-#include "../drt_scatra_ele/scatra_ele_parameter_elch.H"
-#include "../drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode_utils.H"
+#include "scatra_ele_parameter_timint.H"
+#include "scatra_ele_parameter_boundary.H"
+#include "scatra_ele_parameter_elch.H"
+#include "scatra_ele_boundary_calc_elch_electrode_utils.H"
 
 struct CONTACT::CoIntegratorNitscheSsiElch::ElementDataBundle
 {

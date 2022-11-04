@@ -11,7 +11,7 @@
 
 #include "drt_validparameters.H"
 #include "inpar_cut.H"
-#include "../drt_lib/drt_conditiondefinition.H"
+#include "drt_conditiondefinition.H"
 
 
 

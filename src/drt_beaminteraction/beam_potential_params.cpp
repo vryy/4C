@@ -11,12 +11,12 @@
 #include "beam_potential_params.H"
 #include "beam_potential_runtime_vtk_output_params.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 #include "drt_dserror.H"
 
 // Todo get rid of this as soon as historic dependency on INPAR::BEAMCONTACT::OctreeType is fully
 // gone
-#include "../drt_inpar/inpar_beamcontact.H"
+#include "inpar_beamcontact.H"
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/

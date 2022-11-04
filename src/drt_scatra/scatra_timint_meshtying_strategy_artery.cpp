@@ -10,15 +10,15 @@
 #include "scatra_timint_meshtying_strategy_artery.H"
 #include "scatra_timint_implicit.H"
 
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
-#include "../drt_adapter/ad_art_net.H"
-#include "../linalg/linalg_solver.H"
+#include "adapter_scatra_base_algorithm.H"
+#include "ad_art_net.H"
+#include "linalg_solver.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_poromultiphase_scatra/poromultiphase_scatra_artery_coupling_nodebased.H"
-#include "../drt_poromultiphase_scatra/poromultiphase_scatra_utils.H"
+#include "drt_globalproblem.H"
+#include "poromultiphase_scatra_artery_coupling_nodebased.H"
+#include "poromultiphase_scatra_utils.H"
 
-#include "../drt_inpar/inpar_bio.H"
+#include "inpar_bio.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                         kremheller 04/18 |

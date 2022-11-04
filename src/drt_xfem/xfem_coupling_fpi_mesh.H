@@ -13,12 +13,12 @@ xfluid class and the cut-library
 #define XFEM_COUPLING_FPI_MESH_H_
 
 #include "xfem_coupling_mesh.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_fem_general/drt_utils_gausspoints.H"
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_gausspoints.H"
+#include "drt_utils_boundary_integration.H"
 
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
 namespace GEO
 {

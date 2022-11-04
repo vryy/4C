@@ -15,7 +15,7 @@ BETA_ISO 1.E4 BETA_ANISO 1.E4 RELAX_ISO 0.0010001 RELAX_ANISO 0
 
 #include "so3_material.H"
 #include "matpar_parameter.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 #include <Teuchos_ParameterList.hpp>
 
 

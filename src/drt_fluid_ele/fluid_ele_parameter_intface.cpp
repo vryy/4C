@@ -20,7 +20,7 @@ be set in problem specific parameter lists derived from this class.
 #include <string>
 #include <iostream>
 #include "drt_dserror.H"
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 
 DRT::ELEMENTS::FluidEleParameterIntFace* DRT::ELEMENTS::FluidEleParameterIntFace::Instance(

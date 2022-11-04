@@ -16,7 +16,7 @@
 #include "Epetra_Export.h"
 
 #include "drt_dserror.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "linalg_utils_densematrix_communication.H"
 
 /*----------------------------------------------------------------------*/
 INVANA::CholFactor::CholFactor(Teuchos::RCP<Epetra_CrsMatrix> A)

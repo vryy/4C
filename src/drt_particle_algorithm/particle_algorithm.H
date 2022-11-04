@@ -14,12 +14,12 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "../drt_adapter/adapter_algorithmbase.H"
+#include "adapter_algorithmbase.H"
 
-#include "../drt_particle_engine/particle_typedefs.H"
-#include "../drt_particle_engine/particle_engine.H"
+#include "particle_typedefs.H"
+#include "particle_engine.H"
 
-#include "../drt_particle_wall/particle_wall.H"
+#include "particle_wall.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |

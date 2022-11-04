@@ -9,12 +9,12 @@
 
 /* headers */
 #include "strtimint_prestress.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_io/io.H"
-#include "../drt_lib/prestress_service.H"
-#include "../drt_constraint/springdashpot_manager.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "drt_globalproblem.H"
+#include "io_pstream.H"
+#include "io.H"
+#include "prestress_service.H"
+#include "springdashpot_manager.H"
 
 /*======================================================================*/
 /* constructor */

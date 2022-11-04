@@ -13,8 +13,8 @@
 #include "post_drt_common.H"
 #include <string>
 #include "post_single_field_writers.H"
-#include "../linalg/linalg_utils_densematrix_eigen.H"
-#include "../pss_full/pss_cpp.h"
+#include "linalg_utils_densematrix_eigen.H"
+#include "pss_cpp.h"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

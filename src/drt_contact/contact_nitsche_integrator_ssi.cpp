@@ -10,11 +10,11 @@
 #include "contact_nitsche_integrator_ssi.H"
 #include "contact_nitsche_utils.H"
 
-#include "../drt_scatra_ele/scatra_ele_parameter_boundary.H"
-#include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
+#include "scatra_ele_parameter_boundary.H"
+#include "scatra_ele_parameter_timint.H"
 
-#include "../drt_so3/so_base.H"
-#include "../drt_so3/so3_scatra.H"
+#include "so_base.H"
+#include "so3_scatra.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

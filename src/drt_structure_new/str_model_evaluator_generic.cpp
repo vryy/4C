@@ -18,7 +18,7 @@
 #include "drt_dserror.H"
 
 #include <Epetra_Comm.h>
-#include "../solver_nonlin_nox/nox_nln_floating_point_exception.H"
+#include "nox_nln_floating_point_exception.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

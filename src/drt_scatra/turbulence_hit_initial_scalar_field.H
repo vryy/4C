@@ -17,7 +17,7 @@ transport
 #include "Epetra_Vector.h"
 #include "Teuchos_RCP.hpp"
 
-#include "../drt_inpar/inpar_scatra.H"
+#include "inpar_scatra.H"
 
 // forward declarations
 namespace DRT

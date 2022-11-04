@@ -11,7 +11,7 @@
 #define SRC_DRT_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_FACTORY_H_
 
 
-#include "../drt_lib/drt_element.H"
+#include "drt_element.H"
 
 namespace DRT
 {

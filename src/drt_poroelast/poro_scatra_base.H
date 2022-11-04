@@ -11,9 +11,9 @@
 #ifndef PORO_SCATRA_BASE_H_
 #define PORO_SCATRA_BASE_H_
 
-#include "../drt_adapter/adapter_algorithmbase.H"
-#include "../drt_scatra/scatra_algorithm.H"
-#include "../drt_poroelast/poro_base.H"
+#include "adapter_algorithmbase.H"
+#include "scatra_algorithm.H"
+#include "poro_base.H"
 
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |

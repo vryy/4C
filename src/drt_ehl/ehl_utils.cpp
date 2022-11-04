@@ -12,7 +12,7 @@
 #include "ehl_utils.H"
 #include "drt_dserror.H"
 
-#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "inpar_parameterlist_utils.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

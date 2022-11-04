@@ -12,7 +12,7 @@
 #define STR_MODEL_EVALUATOR_GENERIC_H_
 
 #include <Teuchos_RCP.hpp>
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 
 // forward declarations
 class Epetra_Vector;

@@ -11,9 +11,9 @@
 #include "membrane.H"
 #include "membrane_eletypes.H"
 
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
-#include "../linalg/linalg_utils_nullspace.H"
+#include "linalg_utils_nullspace.H"
 
 /*----------------------------------------------------------------------*
  |  TRI 3 Element                                          fbraeu 06/16 |

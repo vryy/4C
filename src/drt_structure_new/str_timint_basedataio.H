@@ -15,9 +15,9 @@
 
 #include <fstream>
 
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 
-#include "../solver_nonlin_nox/nox_nln_abstract_prepostoperator.H"
+#include "nox_nln_abstract_prepostoperator.H"
 
 // forward declarations
 namespace IO

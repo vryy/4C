@@ -12,9 +12,9 @@
 #ifndef SRC_DRT_ART_NET_ARTERY_ELE_FACTORY_H_
 #define SRC_DRT_ART_NET_ARTERY_ELE_FACTORY_H_
 
-#include "../drt_inpar/inpar_bio.H"
+#include "inpar_bio.H"
 
-#include "../drt_lib/drt_element.H"
+#include "drt_element.H"
 
 #include "artery_ele_interface.H"
 

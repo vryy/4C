@@ -14,16 +14,16 @@
  | headers                                                  seitz 07/13 |
  *----------------------------------------------------------------------*/
 #include "so3_ssn_plast_eletypes.H"
-#include "../../drt_thermo/thermo_ele_impl_utils.H"
+#include "thermo_ele_impl_utils.H"
 
-#include "../../linalg/linalg_serialdensematrix.H"
-#include "../../linalg/linalg_serialdensevector.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
 
 // include header because number of Gauss points are determined
 // dependent on distype
-#include "../../drt_fem_general/drt_utils_gausspoints.H"
+#include "drt_utils_gausspoints.H"
 
-#include "../../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "drt_utils_nurbs_shapefunctions.H"
 
 /*----------------------------------------------------------------------*
  |                                                          seitz 07/13 |

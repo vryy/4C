@@ -15,7 +15,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 
-#include "../drt_scatra/scatra_timint_meshtying_strategy_base.H"
+#include "scatra_timint_meshtying_strategy_base.H"
 
 
 // forward declarations

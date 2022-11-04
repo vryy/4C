@@ -28,12 +28,12 @@
 #include "particle_interaction_sph_phase_change.H"
 #include "particle_interaction_sph_rigid_particle_contact.H"
 
-#include "../drt_particle_engine/particle_engine_interface.H"
-#include "../drt_particle_engine/particle_container.H"
+#include "particle_engine_interface.H"
+#include "particle_container.H"
 
-#include "../drt_particle_wall/particle_wall_interface.H"
+#include "particle_wall_interface.H"
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

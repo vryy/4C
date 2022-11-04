@@ -13,7 +13,7 @@
 #define SRC_DRT_STRUCTURE_NEW_STR_TIMINT_BASEDATAIO_RUNTIME_VTK_OUTPUT_H_
 
 
-#include "../drt_inpar/inpar_IO_runtime_vtk_output.H"
+#include "inpar_IO_runtime_vtk_output.H"
 
 namespace Teuchos
 {

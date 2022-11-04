@@ -11,7 +11,7 @@
 #ifndef BEAMCONTACTVTKPARAMS_H
 #define BEAMCONTACTVTKPARAMS_H
 
-#include "../drt_inpar/inpar_beamcontact.H"
+#include "inpar_beamcontact.H"
 
 
 namespace BEAMINTERACTION

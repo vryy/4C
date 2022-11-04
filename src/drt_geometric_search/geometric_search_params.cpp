@@ -10,7 +10,7 @@
 
 #include <Teuchos_ParameterList.hpp>
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 #include "geometric_search_params.H"
 

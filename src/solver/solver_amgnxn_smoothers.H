@@ -20,11 +20,11 @@ Created on: Feb 27, 2014
 #include <MueLu_UseDefaultTypes.hpp>
 
 // Baci includes
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_blocksparsematrix.H"
+#include "linalg_solver.H"
+#include "linalg_blocksparsematrix.H"
 #include "solver_preconditionertype.H"
 #include "solver_amgnxn_objects.H"
-//#include "solver_amgnxn_vcycle.H"
+// #include "solver_amgnxn_vcycle.H"
 
 
 namespace LINALG::SOLVER::AMGNXN

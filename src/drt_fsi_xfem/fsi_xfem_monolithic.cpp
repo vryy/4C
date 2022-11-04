@@ -7,36 +7,36 @@
 
 *----------------------------------------------------------------------*/
 
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/ad_str_poro_wrapper.H"
-#include "../drt_adapter/ad_fld_poro.H"
-#include "../drt_poroelast/poroelast_monolithic.H"
-#include "../drt_adapter/ad_ale_fpsi.H"
-#include "../drt_fluid_xfluid/xfluid.H"
+#include "adapter_coupling.H"
+#include "ad_str_poro_wrapper.H"
+#include "ad_fld_poro.H"
+#include "poroelast_monolithic.H"
+#include "ad_ale_fpsi.H"
+#include "xfluid.H"
 
-#include "../drt_fsi/fsi_debugwriter.H"
+#include "fsi_debugwriter.H"
 
-#include "../linalg/linalg_blocksparsematrix.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_blocksparsematrix.H"
+#include "linalg_mapextractor.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_solver.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_inpar/inpar_solver.H"
-#include "../drt_inpar/inpar_fsi.H"
+#include "inpar_solver.H"
+#include "inpar_fsi.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_colors.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_colors.H"
 
-#include "../drt_structure/stru_aux.H"
+#include "stru_aux.H"
 
-#include "../drt_io/io_control.H"
-#include "../drt_io/io.H"
-#include "../drt_constraint/constraint_manager.H"
-#include "../drt_io/io_pstream.H"
+#include "io_control.H"
+#include "io.H"
+#include "constraint_manager.H"
+#include "io_pstream.H"
 
 #include "XFScoupling_manager.H"
 #include "XFAcoupling_manager.H"
@@ -44,12 +44,12 @@
 #include "XFFcoupling_manager.H"
 
 
-#include "../drt_xfem/xfem_condition_manager.H"
+#include "xfem_condition_manager.H"
 
-#include "../drt_xfem/xfem_xfluid_contact_communicator.H"
-#include "../drt_contact/contact_interface.H"
-#include "../drt_contact/meshtying_contact_bridge.H"
-#include "../drt_contact/contact_nitsche_strategy_fsi.H"
+#include "xfem_xfluid_contact_communicator.H"
+#include "contact_interface.H"
+#include "meshtying_contact_bridge.H"
+#include "contact_nitsche_strategy_fsi.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_Time.h>

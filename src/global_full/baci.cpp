@@ -13,19 +13,19 @@
 #include <csignal>
 #include <Epetra_MpiComm.h>
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_comm/comm_utils.H"
-#include <../headers/compile_settings.h>
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_inpar/drt_validcontactconstitutivelaw.H"
-#include "../drt_inpar/drt_validconditions.H"
-#include "../drt_inpar/drt_validmaterials.H"
-#include "../drt_lib/drt_function.H"
-#include "../drt_lib/drt_elementdefinition.H"
-#include "../drt_lib/drt_resulttest.H"
+#include "drt_globalproblem.H"
+#include "comm_utils.H"
+#include "compile_settings.h"
+#include "drt_validparameters.H"
+#include "drt_validcontactconstitutivelaw.H"
+#include "drt_validconditions.H"
+#include "drt_validmaterials.H"
+#include "drt_function.H"
+#include "drt_elementdefinition.H"
+#include "drt_resulttest.H"
 #include "drt_dserror.H"
-#include "../drt_lib/drt_parobjectregister.H"
-#include "../drt_lib/drt_utils_createdis.H"
+#include "drt_parobjectregister.H"
+#include "drt_utils_createdis.H"
 
 #include <revision.H>
 #include <trilinos_version.H>

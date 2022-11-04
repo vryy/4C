@@ -8,14 +8,14 @@
 /*----------------------------------------------------------------------*/
 
 #include "str_impl_prestress.H"
-#include "../drt_io/io.H"
+#include "io.H"
 #include "str_model_evaluator.H"
 #include "str_timint_basedataglobalstate.H"
-#include "../drt_lib/prestress_service.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_io/io.H"
+#include "prestress_service.H"
+#include "io_pstream.H"
+#include "io.H"
 #include "str_timint_basedatasdyn.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

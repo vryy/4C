@@ -13,23 +13,23 @@
 #include "contact_utils.H"
 #include "friction_node.H"
 
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_inpar/inpar_wear.H"
-#include "../drt_inpar/inpar_s2i.H"
-#include "../drt_inpar/inpar_ssi.H"
+#include "drt_validparameters.H"
+#include "inpar_wear.H"
+#include "inpar_s2i.H"
+#include "inpar_ssi.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
+#include "io.H"
+#include "io_pstream.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_structure_new/str_timint_basedataglobalstate.H"
-#include "../drt_structure_new/str_utils.H"
+#include "str_timint_basedataglobalstate.H"
+#include "str_utils.H"
 
-#include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
+#include "scatra_timint_meshtying_strategy_s2i.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -45,13 +45,13 @@
 #include "contact_nitsche_strategy.H"
 #include "contact_penalty_strategy.H"
 #include "contact_wear_lagrange_strategy.H"
-#include "../drt_contact_aug/contact_augmented_interface.H"
-#include "../drt_contact_aug/contact_aug_steepest_ascent_interface.H"
-#include "../drt_contact_aug/contact_aug_steepest_ascent_strategy.H"
-#include "../drt_contact_aug/contact_aug_lagrange_strategy.H"
-#include "../drt_contact_aug/contact_aug_lagrange_interface.H"
-#include "../drt_contact_aug/contact_aug_combo_strategy.H"
-#include "../drt_contact_constitutivelaw/contact_constitutivelaw_interface.H"
+#include "contact_augmented_interface.H"
+#include "contact_aug_steepest_ascent_interface.H"
+#include "contact_aug_steepest_ascent_strategy.H"
+#include "contact_aug_lagrange_strategy.H"
+#include "contact_aug_lagrange_interface.H"
+#include "contact_aug_combo_strategy.H"
+#include "contact_constitutivelaw_interface.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

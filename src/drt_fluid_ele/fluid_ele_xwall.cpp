@@ -16,12 +16,12 @@ of errors, turbulence statistics etc.)
 
 #include "fluid_ele_xwall.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_utils_factory.H"
+#include "drt_linedefinition.H"
+#include "drt_globalproblem.H"
 
-#include "../linalg/linalg_utils_nullspace.H"
+#include "linalg_utils_nullspace.H"
 
 DRT::ELEMENTS::FluidXWallType DRT::ELEMENTS::FluidXWallType::instance_;
 

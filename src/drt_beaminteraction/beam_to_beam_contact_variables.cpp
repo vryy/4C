@@ -8,27 +8,27 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "../drt_beaminteraction/beam_to_beam_contact_variables.H"
+#include "beam_to_beam_contact_variables.H"
 
 #include "beam3contact_utils.H"
 
-#include "../drt_inpar/inpar_beamcontact.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_exporter.H"
+#include "inpar_beamcontact.H"
+#include "inpar_contact.H"
+#include "drt_discret.H"
+#include "drt_exporter.H"
 #include "drt_dserror.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_structure/strtimint_impl.H"
-#include "../drt_beam3/beam3.H"
-#include "../drt_beam3/beam3r.H"
-#include "../drt_beam3/beam3eb.H"
+#include "strtimint_impl.H"
+#include "beam3.H"
+#include "beam3r.H"
+#include "beam3eb.H"
 
 #include "Teuchos_TimeMonitor.hpp"
 
-#include "../drt_beaminteraction/beam_to_beam_contact_pair.H"
+#include "beam_to_beam_contact_pair.H"
 #include "beam3contact_defines.H"
 
 /*----------------------------------------------------------------------*

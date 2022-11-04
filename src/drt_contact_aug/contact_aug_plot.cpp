@@ -15,23 +15,23 @@ MATLAB, PGFPlot or other tools.
 #include "contact_augmented_strategy.H"
 
 #include "drt_dserror.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "inpar_contact.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_lib/drt_discret_interface.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/epetra_utils.H"
+#include "drt_discret_interface.H"
+#include "drt_element.H"
+#include "drt_node.H"
+#include "epetra_utils.H"
 
-#include "../solver_nonlin_nox/nox_nln_aux.H"
-#include "../solver_nonlin_nox/nox_nln_constraint_group.H"
-#include "../solver_nonlin_nox/nox_nln_solver_linesearchbased.H"
+#include "nox_nln_aux.H"
+#include "nox_nln_constraint_group.H"
+#include "nox_nln_solver_linesearchbased.H"
 
-#include "../drt_structure_new/str_model_evaluator_contact.H"
+#include "str_model_evaluator_contact.H"
 
-#include "../drt_io/every_iteration_writer.H"
-#include "../drt_io/io_pstream.H"
+#include "every_iteration_writer.H"
+#include "io_pstream.H"
 
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>

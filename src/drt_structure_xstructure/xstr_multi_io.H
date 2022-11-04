@@ -12,8 +12,8 @@
 #ifndef SRC_DRT_STRUCTURE_XSTRUCTURE_XSTR_MULTI_IO_H_
 #define SRC_DRT_STRUCTURE_XSTRUCTURE_XSTR_MULTI_IO_H_
 
-#include "../drt_io/io.H"
-#include "../drt_xfem/xfem_multi_field_mapextractor.H"
+#include "io.H"
+#include "xfem_multi_field_mapextractor.H"
 
 namespace DRT
 {

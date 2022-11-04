@@ -14,27 +14,27 @@
  *----------------------------------------------------------------------*/
 #include "adapter_coupling_nonlin_mortar.H"
 
-#include "../drt_contact/contact_interface.H"
-#include "../drt_contact/friction_node.H"
-#include "../drt_contact/contact_element.H"
-#include "../drt_contact/contact_integrator.H"
+#include "contact_interface.H"
+#include "friction_node.H"
+#include "contact_element.H"
+#include "contact_integrator.H"
 
-#include "../drt_mortar/mortar_utils.H"
+#include "mortar_utils.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_condition_utils.H"
+#include "drt_globalproblem.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_multiply.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_multiply.H"
 
-#include "../drt_nurbs_discret/drt_control_point.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_nurbs_discret/drt_knotvector.H"
+#include "drt_control_point.H"
+#include "drt_nurbs_discret.H"
+#include "drt_knotvector.H"
 
-#include "../drt_inpar/inpar_contact.H"
+#include "inpar_contact.H"
 
 #include <Epetra_Vector.h>
 

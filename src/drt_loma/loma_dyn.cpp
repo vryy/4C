@@ -15,16 +15,16 @@
 
 #include "loma_dyn.H"
 #include "loma_algorithm.H"
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_scatra/scatra_utils_clonestrategy.H"
-#include "../drt_scatra_ele/scatra_ele.H"
+#include "drt_validparameters.H"
+#include "scatra_timint_implicit.H"
+#include "scatra_utils_clonestrategy.H"
+#include "scatra_ele.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_createdis.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_createdis.H"
 #include <Epetra_Time.h>
-#include "../drt_lib/drt_dofset_predefineddofnumber.H"
+#include "drt_dofset_predefineddofnumber.H"
 
 
 /*----------------------------------------------------------------------*/

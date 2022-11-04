@@ -28,52 +28,52 @@
 #include "fluidimplicitintegration.H"
 #include "fluid_utils.H"
 #include "fluidresulttest.H"
-#include "../drt_fluid_turbulence/dyn_smag.H"
-#include "../drt_fluid_turbulence/dyn_vreman.H"
-#include "../drt_fluid_turbulence/boxfilter.H"
-#include "../drt_fluid_turbulence/turbulence_statistic_manager.H"
+#include "dyn_smag.H"
+#include "dyn_vreman.H"
+#include "boxfilter.H"
+#include "turbulence_statistic_manager.H"
 #include "fluid_utils_mapextractor.H"
 #include "fluid_meshtying.H"
 #include "fluid_xwall.H"
 #include "fluid_MHD_evaluate.H"
-#include "../drt_fluid_turbulence/turbulence_hit_initial_field.H"
-#include "../drt_fluid_turbulence/turbulence_hit_forcing.H"
-#include "../drt_fluid_turbulence/drt_transfer_turb_inflow.H"
+#include "turbulence_hit_initial_field.H"
+#include "turbulence_hit_forcing.H"
+#include "drt_transfer_turb_inflow.H"
 #include "fluid_utils_infnormscaling.H"
-#include "../drt_fluid_ele/fluid_ele.H"
-#include "../linalg/linalg_krylov_projector.H"
-#include "../linalg/linalg_solver.H"
-#include "../drt_io/io.H"
-#include "../drt_io/discretization_runtime_vtu_writer.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_function.H"  //Todo: ager check if this header can be removed after NavierSlip is removed from BACI
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_assemblestrategy.H"
-#include "../drt_lib/drt_locsys.H"
-#include "../drt_comm/comm_utils.H"
-#include "../drt_adapter/adapter_coupling_mortar.H"
-#include "../drt_adapter/ad_opt.H"
-#include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/newtonianfluid.H"
+#include "fluid_ele.H"
+#include "linalg_krylov_projector.H"
+#include "linalg_solver.H"
+#include "io.H"
+#include "discretization_runtime_vtu_writer.H"
+#include "drt_condition_utils.H"
+#include "drt_function.H"  //Todo: ager check if this header can be removed after NavierSlip is removed from BACI
+#include "drt_globalproblem.H"
+#include "drt_assemblestrategy.H"
+#include "drt_locsys.H"
+#include "comm_utils.H"
+#include "adapter_coupling_mortar.H"
+#include "ad_opt.H"
+#include "drt_apply_nurbs_initial_condition.H"
+#include "matpar_bundle.H"
+#include "newtonianfluid.H"
 #include "fluidimpedancecondition.H"
-#include "../drt_inpar/inpar_xfem.H"  //for enums only
+#include "inpar_xfem.H"  //for enums only
 
 // print error file for function EvaluateErrorComparedToAnalyticalSol()
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
 // for AVM3 solver:
 #include <MLAPI_Workspace.h>
 #include <MLAPI_Aggregation.h>
 
-#include "../drt_io/io_gmsh.H"
+#include "io_gmsh.H"
 
 #include <cmath>
 
 // allows for dealing with edged-based stabilization
-#include "../drt_lib/drt_discret_faces.H"
+#include "drt_discret_faces.H"
 
-#include "../drt_geometry/position_array.H"
+#include "position_array.H"
 
 
 /*----------------------------------------------------------------------*

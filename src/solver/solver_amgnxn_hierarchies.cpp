@@ -22,7 +22,7 @@
 #include "drt_dserror.H"
 #include "solver_amgnxn_hierarchies.H"
 #include "solver_amgnxn_vcycle.H"
-#include "../linalg/linalg_multiply.H"
+#include "linalg_multiply.H"
 
 
 /*------------------------------------------------------------------------------*/

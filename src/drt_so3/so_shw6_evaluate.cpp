@@ -6,19 +6,19 @@
 
 *----------------------------------------------------------------------*/
 #include "so_shw6.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_exporter.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
+#include "drt_exporter.H"
 #include "drt_dserror.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
+#include "drt_utils_integration.H"
+#include "drt_utils_fem_shapefunctions.H"
 #include "Epetra_SerialDenseSolver.h"
-#include "../drt_mat/viscoanisotropic.H"
-#include "../drt_mat/micromaterial.H"
-#include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "viscoanisotropic.H"
+#include "micromaterial.H"
+#include "str_elements_paramsinterface.H"
 
 
 /*----------------------------------------------------------------------*

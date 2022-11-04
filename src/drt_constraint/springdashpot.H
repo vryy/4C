@@ -14,7 +14,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include "../headers/pairedvector.H"
+#include "pairedvector.H"
 
 // forward declarations
 class Epetra_Vector;

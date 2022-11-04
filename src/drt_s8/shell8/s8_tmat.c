@@ -7,7 +7,7 @@
 
 */
 /*---------------------------------------------------------------------------*/
-#include "../../headers/standardtypes.h"
+#include "standardtypes.h"
 #include "shell8.h"
 
 #include "drt_dserror.H"

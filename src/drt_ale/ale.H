@@ -20,9 +20,9 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include "../drt_adapter/ad_ale.H"
+#include "ad_ale.H"
 
-#include "../drt_inpar/inpar_ale.H"
+#include "inpar_ale.H"
 
 #include "ale_meshtying.H"
 

@@ -10,13 +10,13 @@ constraint enforcement technique with a discretization approach for Fluid-beam i
 #include "ad_fbi_constraintbridge.H"
 #include "fluid_assembly_strategy.H"
 #include "fluidblockmatrix_assembly_strategy.H"
-#include "../drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
-#include "../drt_beaminteraction/beam_contact_pair.H"
+#include "geometry_pair_line_to_3D_evaluation_data.H"
+#include "beam_contact_pair.H"
 #include "beam_to_fluid_meshtying_pair_factory.H"
 #include "beam_to_fluid_meshtying_params.H"
-#include "../drt_inpar/inpar_fbi.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_sparseoperator.H"
+#include "inpar_fbi.H"
+#include "drt_globalproblem.H"
+#include "linalg_sparseoperator.H"
 
 ADAPTER::FBIConstraintBridge::FBIConstraintBridge()
     : beam_interaction_params_(Teuchos::null),

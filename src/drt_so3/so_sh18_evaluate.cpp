@@ -7,12 +7,12 @@
 *----------------------------------------------------------------------*/
 
 #include "so_sh18.H"
-#include "../linalg/linalg_utils_densematrix_eigen.H"
-#include "../drt_mat/so3_material.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "linalg_utils_densematrix_eigen.H"
+#include "so3_material.H"
+#include "drt_utils_integration.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_globalproblem.H"
+#include "str_elements_paramsinterface.H"
 
 
 int DRT::ELEMENTS::So_sh18::InitJacobianMapping()

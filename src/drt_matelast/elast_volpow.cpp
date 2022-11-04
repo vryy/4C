@@ -7,7 +7,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "elast_volpow.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 
 MAT::ELASTIC::PAR::VolPow::VolPow(const Teuchos::RCP<MAT::PAR::Material>& matdata)

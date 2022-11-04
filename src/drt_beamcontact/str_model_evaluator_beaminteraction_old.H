@@ -12,7 +12,7 @@
 #ifndef STR_MODEL_EVALUATOR_BEAMINTERACTIONOLD_H
 #define STR_MODEL_EVALUATOR_BEAMINTERACTIONOLD_H
 
-#include "../drt_structure_new/str_model_evaluator_generic.H"
+#include "str_model_evaluator_generic.H"
 
 #include <Teuchos_RCP.hpp>
 

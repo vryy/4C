@@ -16,27 +16,27 @@
 #include "str_nln_linearsystem_scaling.H"
 #include "str_utils.H"
 
-#include "../drt_constraint/constraint_manager.H"
-#include "../drt_constraint/lagpenconstraint_noxinterface.H"
+#include "constraint_manager.H"
+#include "lagpenconstraint_noxinterface.H"
 
-#include "../drt_contact/contact_abstract_strategy.H"
-#include "../drt_contact/contact_noxinterface.H"
-#include "../drt_contact/meshtying_abstract_strategy.H"
-#include "../drt_contact/meshtying_noxinterface.H"
+#include "contact_abstract_strategy.H"
+#include "contact_noxinterface.H"
+#include "meshtying_abstract_strategy.H"
+#include "meshtying_noxinterface.H"
 
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 
 #include "drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_structure_new/str_timint_basedatasdyn.H"
-#include "../drt_structure_new/str_impl_genalpha.H"
+#include "str_timint_basedatasdyn.H"
+#include "str_impl_genalpha.H"
 
-#include "../solver_nonlin_nox/nox_nln_aux.H"
-#include "../solver_nonlin_nox/nox_nln_constraint_interface_preconditioner.H"
-#include "../solver_nonlin_nox/nox_nln_constraint_interface_required.H"
+#include "nox_nln_aux.H"
+#include "nox_nln_constraint_interface_preconditioner.H"
+#include "nox_nln_constraint_interface_required.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 #include <Epetra_Vector.h>
 

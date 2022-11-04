@@ -13,9 +13,9 @@
 #include "beam_contact_pair.H"
 #include "beam_to_beam_contact_pair.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_condition.H"
-#include "../drt_beam3/beam3_base.H"
+#include "drt_discret.H"
+#include "drt_condition.H"
+#include "beam3_base.H"
 
 
 /**

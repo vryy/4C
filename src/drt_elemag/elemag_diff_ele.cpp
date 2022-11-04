@@ -12,10 +12,10 @@
 
 #include "elemag_diff_ele.H"
 #include "elemag_ele_boundary_calc.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_discret_faces.H"
-#include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_discret.H"
+#include "drt_discret_faces.H"
+#include "drt_utils_factory.H"
+#include "drt_linedefinition.H"
 
 DRT::ELEMENTS::ElemagDiffType DRT::ELEMENTS::ElemagDiffType::instance_;
 DRT::ELEMENTS::ElemagDiffBoundaryType DRT::ELEMENTS::ElemagDiffBoundaryType::instance_;

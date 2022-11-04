@@ -11,7 +11,7 @@ dependent Neo Hooke material.
 #define ELAST_ISOVOLHUDEPENDENTNEOHOOKE_H_
 
 #include "elast_summand.H"
-#include "../drt_mat/matpar_parameter.H"
+#include "matpar_parameter.H"
 
 namespace MAT
 {

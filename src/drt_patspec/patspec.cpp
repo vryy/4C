@@ -11,22 +11,22 @@
 
 
 #include "patspec.H"
-#include "../drt_mat/material.H"
-#include "../drt_mat/elasthyper.H"
-#include "../linalg/linalg_utils_densematrix_inverse.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "material.H"
+#include "elasthyper.H"
+#include "linalg_utils_densematrix_inverse.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "drt_globalproblem.H"
 #include <iostream>
-#include "../drt_io/io_pstream.H"  // has to go before io.H
-#include "../drt_io/io.H"
+#include "io_pstream.H"  // has to go before io.H
+#include "io.H"
 #include <Epetra_Time.h>
 
-//#include "../drt_mat/matpar_material.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/matpar_parameter.H"
-#include "../drt_matelast/elast_summand.H"
-#include "../drt_matelast/elast_isovolaaagasser.H"
+// #include "matpar_material.H"
+#include "matpar_bundle.H"
+#include "matpar_parameter.H"
+#include "elast_summand.H"
+#include "elast_isovolaaagasser.H"
 
 
 /*----------------------------------------------------------------------*

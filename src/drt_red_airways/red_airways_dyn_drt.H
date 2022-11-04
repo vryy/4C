@@ -16,10 +16,10 @@
 
 #include "Epetra_Time.h"
 #include "Teuchos_RCP.hpp"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../linalg/linalg_solver.H"
-#include "../drt_io/io.H"
+#include "drt_discret.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "linalg_solver.H"
+#include "io.H"
 #include "airwayimplicitintegration.H"
 
 

@@ -40,8 +40,8 @@ table. This table can be queried for those values quite easily.
 #ifndef PSS_TYPES_H
 #define PSS_TYPES_H
 
-#include "../headers/standardtypes.h"
-#include "../headers/am.h"
+#include "standardtypes.h"
+#include "am.h"
 
 /*!
   \brief Types of the symbols we store in a map.

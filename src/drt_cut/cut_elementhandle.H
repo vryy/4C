@@ -14,7 +14,7 @@
 
 #include "cut_element.H"
 
-#include "../../src/drt_fem_general/drt_utils_gausspoints.H"
+#include "drt_utils_gausspoints.H"
 
 
 namespace GEO

@@ -9,11 +9,11 @@
 /*----------------------------------------------------------------------*/
 #include "sti_clonestrategy.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_mat/matpar_bundle.H"
+#include "matpar_bundle.H"
 
-#include "../drt_scatra_ele/scatra_ele.H"
+#include "scatra_ele.H"
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/

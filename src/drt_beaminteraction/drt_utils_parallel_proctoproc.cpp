@@ -11,9 +11,9 @@
 
 #include "drt_utils_parallel_proctoproc.H"
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 #include "drt_dserror.H"
-#include "../drt_lib/drt_exporter.H"
+#include "drt_exporter.H"
 
 #include <Epetra_MpiComm.h>
 

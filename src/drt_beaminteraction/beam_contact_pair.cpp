@@ -10,7 +10,7 @@
 
 #include "beam_contact_pair.H"
 
-#include "../drt_lib/drt_element.H"
+#include "drt_element.H"
 #include "drt_dserror.H"
 
 #include <Teuchos_RCP.hpp>
@@ -19,14 +19,14 @@
 #include "beaminteraction_conditions.H"
 #include "beam_to_sphere_contact_pair.H"
 
-#include "../drt_beam3/beam3_base.H"
-#include "../drt_rigidsphere/rigidsphere.H"
-#include "../drt_so3/so_base.H"
+#include "beam3_base.H"
+#include "rigidsphere.H"
+#include "so_base.H"
 #include "beam_to_beam_contact_params.H"
 
 #include "beam_contact_params.H"
 
-#include "../drt_geometry_pair/geometry_pair.H"
+#include "geometry_pair.H"
 
 
 /*----------------------------------------------------------------------------*

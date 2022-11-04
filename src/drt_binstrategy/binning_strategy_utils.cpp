@@ -10,15 +10,15 @@
 
 #include "binning_strategy_utils.H"
 
-#include "../drt_scatra_ele/scatra_ele.H"
-#include "../drt_fluid_ele/fluid_ele.H"
-#include "../drt_bele3/bele3.H"
-#include "../drt_beam3/beam3_base.H"
-#include "../drt_rigidsphere/rigidsphere.H"
-#include "../drt_so3/so_base.H"
+#include "scatra_ele.H"
+#include "fluid_ele.H"
+#include "bele3.H"
+#include "beam3_base.H"
+#include "rigidsphere.H"
+#include "so_base.H"
 
-#include "../drt_lib/drt_utils_parallel.H"
-#include "../drt_lib/drt_exporter.H"
+#include "drt_utils_parallel.H"
+#include "drt_exporter.H"
 
 namespace BINSTRATEGY
 {

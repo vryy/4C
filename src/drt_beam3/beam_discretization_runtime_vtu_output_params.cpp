@@ -10,7 +10,7 @@
 
 #include "drt_dserror.H"
 
-#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "inpar_parameterlist_utils.H"
 
 #include "beam_discretization_runtime_vtu_output_params.H"
 

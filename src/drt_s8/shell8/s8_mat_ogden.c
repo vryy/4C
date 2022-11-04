@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------------*/
-#include "../../headers/standardtypes.h"
-#include "../../headers/fortran_definitions.h"
+#include "standardtypes.h"
+#include "fortran_definitions.h"
 #include "shell8.h"
 #include "drt_dserror.H"
 /*----------------------------------------------------------------------*

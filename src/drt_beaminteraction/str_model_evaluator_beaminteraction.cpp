@@ -9,44 +9,44 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "../drt_beaminteraction/str_model_evaluator_beaminteraction.H"
+#include "str_model_evaluator_beaminteraction.H"
 
-#include "../drt_structure_new/str_timint_base.H"
-#include "../drt_structure_new/str_utils.H"
-#include "../drt_structure_new/str_model_evaluator_data.H"
+#include "str_timint_base.H"
+#include "str_utils.H"
+#include "str_model_evaluator_data.H"
 
-#include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_parallel.H"
+#include "drt_utils_createdis.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_parallel.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
+#include "io.H"
+#include "io_pstream.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_matrixtransform.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
+#include "linalg_matrixtransform.H"
 
-#include "../drt_inpar/inpar_beamcontact.H"
-#include "../drt_inpar/inpar_beam_to_solid.H"
-#include "../drt_adapter/adapter_coupling.H"
+#include "inpar_beamcontact.H"
+#include "inpar_beam_to_solid.H"
+#include "adapter_coupling.H"
 
-#include "../drt_beam3/beam3_base.H"
+#include "beam3_base.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_FEVector.h>
 
-#include "../drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact.H"
-#include "../drt_beaminteraction/beaminteraction_submodel_evaluator_crosslinking.H"
-#include "../drt_beaminteraction/beaminteraction_submodel_evaluator_factory.H"
-#include "../drt_beaminteraction/beaminteraction_submodel_evaluator_generic.H"
-#include "../drt_beaminteraction/crosslinker_node.H"
-#include "../drt_beaminteraction/periodic_boundingbox.H"
-#include "../drt_beaminteraction/str_model_evaluator_beaminteraction_datastate.H"
-#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
-#include "../drt_beaminteraction/beaminteraction_data.H"
-#include "../drt_beaminteraction/beam_crosslinker_handler.H"
+#include "beaminteraction_submodel_evaluator_beamcontact.H"
+#include "beaminteraction_submodel_evaluator_crosslinking.H"
+#include "beaminteraction_submodel_evaluator_factory.H"
+#include "beaminteraction_submodel_evaluator_generic.H"
+#include "crosslinker_node.H"
+#include "periodic_boundingbox.H"
+#include "str_model_evaluator_beaminteraction_datastate.H"
+#include "beaminteraction_calc_utils.H"
+#include "beaminteraction_data.H"
+#include "beam_crosslinker_handler.H"
 
 
 

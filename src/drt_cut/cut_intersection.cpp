@@ -14,7 +14,7 @@
 #include "cut_position.H"
 #include "cut_utils.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 // whether to perform triangulation during intersection
 #define TRIANGULATED_INTERSECTION true

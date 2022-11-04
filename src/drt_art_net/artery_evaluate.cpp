@@ -13,15 +13,15 @@
 #include "artery_ele_factory.H"
 #include "artery_ele_interface.H"
 #include "artery_ele_calc_lin_exp.H"
-#include "../drt_inpar/inpar_bio.H"
+#include "inpar_bio.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_lib/drt_exporter.H"
+#include "drt_discret.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_exporter.H"
 #include "drt_dserror.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_mat/cnst_1d_art.H"
-#include "../drt_mat/matlist.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "cnst_1d_art.H"
+#include "matlist.H"
 
 
 #include <Epetra_SerialDenseSolver.h>

@@ -13,13 +13,13 @@ builds the bridge between the xfluid class and the cut-library
 #include "xfem_utils.H"
 #include "Epetra_IntVector.h"
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_cut/cut_volumecell.H"
+#include "cut_volumecell.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
+#include "io.H"
+#include "io_pstream.H"
 
 
 // constructor

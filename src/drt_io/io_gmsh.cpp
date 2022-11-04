@@ -11,14 +11,14 @@
 
 #include "io_gmsh.H"
 #include "io_control.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_utils_parallel.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"  // LINALG::Export
-#include "../linalg/linalg_serialdensevector.H"
-#include "../drt_geometry/intersection_service.H"
-#include "../drt_geometry/position_array.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_utils.H"
+#include "drt_utils_parallel.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"  // LINALG::Export
+#include "linalg_serialdensevector.H"
+#include "intersection_service.H"
+#include "position_array.H"
 
 
 /*------------------------------------------------------------------------------------------------*

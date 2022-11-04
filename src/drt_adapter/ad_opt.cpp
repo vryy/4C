@@ -10,13 +10,13 @@
 
 
 #include "ad_opt.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_opti/topopt_optimizer.H"
-#include "../drt_opti/topopt_utils.H"
-#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "io.H"
+#include "io_control.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "topopt_optimizer.H"
+#include "topopt_utils.H"
+#include "inpar_parameterlist_utils.H"
 
 
 /// constructor

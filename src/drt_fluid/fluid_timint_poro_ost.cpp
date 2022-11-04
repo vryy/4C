@@ -10,7 +10,7 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_timint_poro_ost.H"
-#include "../drt_io/io.H"
+#include "io.H"
 
 FLD::TimIntPoroOst::TimIntPoroOst(const Teuchos::RCP<DRT::Discretization>& actdis,
     const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,

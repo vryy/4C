@@ -14,21 +14,21 @@
 
 #include "fluid_ele_action.H"
 #include "fluid_ele_parameter_std.H"
-#include "../drt_lib/drt_element_integration_select.H"
+#include "drt_element_integration_select.H"
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_nurbs_shapefunctions.H"
 
-#include "../drt_geometry/position_array.H"
+#include "position_array.H"
 
-#include "../drt_inpar/inpar_turbulence.H"
+#include "inpar_turbulence.H"
 
-#include "../drt_lib/drt_utils.H"
+#include "drt_utils.H"
 
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/sutherland.H"
+#include "newtonianfluid.H"
+#include "sutherland.H"
 
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "drt_nurbs_discret.H"
 
 namespace FLD
 {

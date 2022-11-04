@@ -8,12 +8,12 @@
 #define MORTAR_INTEGRATOR_H
 
 #include "Epetra_Comm.h"
-#include "../drt_inpar/inpar_mortar.H"
-#include "../drt_inpar/inpar_contact.H"
+#include "inpar_mortar.H"
+#include "inpar_contact.H"
 
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 // forward declarations
 namespace LINALG

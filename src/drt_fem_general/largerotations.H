@@ -11,8 +11,8 @@
 #ifndef LARGEROTATIONS_DEFINES_H
 #define LARGEROTATIONS_DEFINES_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../headers/FAD_utils.H"
+#include "linalg_fixedsizematrix.H"
+#include "FAD_utils.H"
 
 
 namespace LARGEROTATIONS

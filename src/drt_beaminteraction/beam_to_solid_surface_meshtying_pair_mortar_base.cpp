@@ -14,8 +14,8 @@
 #include "beam_to_solid_surface_vtk_output_params.H"
 #include "beam_to_solid_mortar_manager.H"
 #include "beam_to_solid_utils.H"
-#include "../drt_geometry_pair/geometry_pair_line_to_surface.H"
-#include "../drt_geometry_pair/geometry_pair_element_functions.H"
+#include "geometry_pair_line_to_surface.H"
+#include "geometry_pair_element_functions.H"
 
 #include <unordered_set>
 

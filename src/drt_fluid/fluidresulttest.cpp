@@ -12,8 +12,8 @@
 #include <string>
 
 #include "fluidresulttest.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_globalproblem.H"
+#include "drt_linedefinition.H"
 #include "fluidimplicitintegration.H"
 #include "fluid_utils.H"
 

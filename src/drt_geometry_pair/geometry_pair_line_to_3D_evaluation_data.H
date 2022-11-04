@@ -15,8 +15,8 @@
 #include "geometry_pair_evaluation_data_base.H"
 #include "geometry_pair_utility_classes.H"
 
-#include "../drt_inpar/inpar_geometry_pair.H"
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "inpar_geometry_pair.H"
+#include "drt_utils_integration.H"
 
 
 namespace GEOMETRYPAIR

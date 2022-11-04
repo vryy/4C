@@ -12,19 +12,19 @@
 #include "contact_augmented_strategy.H"
 #include "contact_augmented_interface.H"
 
-#include "../drt_contact/contact_strategy_factory.H"
-#include "../drt_contact/contact_paramsinterface.H"
+#include "contact_strategy_factory.H"
+#include "contact_paramsinterface.H"
 
-#include "../drt_structure_new/str_solver_factory.H"
+#include "str_solver_factory.H"
 
-#include "../drt_inpar/inpar_contact.H"
+#include "inpar_contact.H"
 
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_mapextractor.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_lib/drt_utils_parallel.H"
+#include "drt_utils_parallel.H"
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

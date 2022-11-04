@@ -13,9 +13,9 @@
 #include <Teuchos_any.hpp>
 
 #include "drt_validparameters.H"
-#include "../drt_lib/drt_colors.H"
-#include "../drt_lib/drt_globalproblem_enums.H"
-#include "../drt_io/io_pstream.H"
+#include "drt_colors.H"
+#include "drt_globalproblem_enums.H"
+#include "io_pstream.H"
 #include "inpar.H"
 #include "inpar_ale.H"
 #include "inpar_solver.H"
@@ -64,7 +64,7 @@
 #include "inpar_bio.H"
 #include "inpar_volmortar.H"
 #include "inpar_loca_continuation.H"
-#include "../drt_tutorial/inpar_tutorial.H"
+#include "inpar_tutorial.H"
 #include "inpar_beaminteraction.H"
 #include "inpar_binningstrategy.H"
 #include "inpar_geometric_search.H"

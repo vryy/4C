@@ -9,9 +9,9 @@
 /*---------------------------------------------------------------------------*/
 
 #include "wall1_nurbs.H"
-#include "../drt_lib/drt_utils_factory.H"
-#include "../linalg/linalg_utils_nullspace.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_utils_factory.H"
+#include "linalg_utils_nullspace.H"
+#include "drt_linedefinition.H"
 
 DRT::ELEMENTS::NURBS::Wall1NurbsType DRT::ELEMENTS::NURBS::Wall1NurbsType::instance_;
 

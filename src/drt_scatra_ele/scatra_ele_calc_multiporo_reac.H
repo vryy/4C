@@ -12,21 +12,21 @@
 
 
 #include "scatra_ele_calc_poro_reac.H"
-#include "../drt_mat/fluidporo_multiphase.H"
-#include "../drt_mat/fluidporo_singlephase.H"
-#include "../drt_mat/fluidporo_multiphase_reactions.H"
-#include "../drt_mat/scatra_mat_multiporo.H"
-#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_calc_utils.H"
+#include "fluidporo_multiphase.H"
+#include "fluidporo_singlephase.H"
+#include "fluidporo_multiphase_reactions.H"
+#include "scatra_mat_multiporo.H"
+#include "porofluidmultiphase_ele_calc_utils.H"
 
-#include "../drt_porofluidmultiphase_ele/porofluid_phasemanager.H"
-#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_action.H"
-#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_calc.H"
-#include "../drt_porofluidmultiphase_ele/porofluid_variablemanager.H"
-#include "../drt_porofluidmultiphase_ele/porofluid_evaluator.H"
-#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_parameter.H"
+#include "porofluid_phasemanager.H"
+#include "porofluidmultiphase_ele_action.H"
+#include "porofluidmultiphase_ele_calc.H"
+#include "porofluid_variablemanager.H"
+#include "porofluid_evaluator.H"
+#include "porofluidmultiphase_ele_parameter.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
 
 // forward declarations
 namespace MAT

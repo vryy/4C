@@ -11,7 +11,7 @@
 #define OPTIMIZER_SMC_H_
 
 #include "optimizer_base.H"  // base class
-#include "../drt_io/io.H"
+#include "io.H"
 
 #include "Teuchos_ParameterList.hpp"
 

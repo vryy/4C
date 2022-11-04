@@ -8,8 +8,8 @@
 *----------------------------------------------------------------------*/
 
 #include "artery.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_mat/cnst_1d_art.H"
+#include "drt_linedefinition.H"
+#include "cnst_1d_art.H"
 
 
 /*----------------------------------------------------------------------*/

@@ -9,7 +9,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "shell8.h"
-#include "../../headers/standardtypes.h"
+#include "standardtypes.h"
 #include "drt_dserror.H"
 
 /* declaration of fortran routine*/

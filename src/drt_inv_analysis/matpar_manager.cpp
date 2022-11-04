@@ -11,21 +11,21 @@
 /* headers */
 #include "matpar_manager.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_comm/comm_utils.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_inpar/inpar_material.H"
-#include "../drt_mat/growth.H"
-#include "../drt_mat/material.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../linalg/linalg_utils_densematrix_inverse.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "comm_utils.H"
+#include "io.H"
+#include "io_pstream.H"
+#include "drt_element.H"
+#include "inpar_material.H"
+#include "growth.H"
+#include "material.H"
+#include "matpar_bundle.H"
+#include "linalg_utils_densematrix_inverse.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_mat/elasthyper.H"  //to fit elasthyper-materials
-#include "../drt_mat/growth_law.H"
+#include "elasthyper.H"  //to fit elasthyper-materials
+#include "growth_law.H"
 
 /*----------------------------------------------------------------------*/
 INVANA::MatParManager::MatParManager(Teuchos::RCP<DRT::Discretization> discret)

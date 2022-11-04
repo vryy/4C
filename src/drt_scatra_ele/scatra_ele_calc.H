@@ -10,7 +10,7 @@
 #ifndef SCATRA_ELE_CALC_H
 #define SCATRA_ELE_CALC_H
 
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
 #include <Epetra_IntSerialDenseVector.h>
 
@@ -18,7 +18,7 @@
 #include "scatra_ele_calc_utils.H"
 #include "scatra_ele_interface.H"
 
-#include "../drt_fluid_ele/fluid_ele.H"
+#include "fluid_ele.H"
 
 namespace FLD
 {

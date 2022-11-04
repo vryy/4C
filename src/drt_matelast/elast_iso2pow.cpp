@@ -8,7 +8,7 @@ terms of the second Cauchy-Green invariant
 /*----------------------------------------------------------------------*/
 
 #include "elast_iso2pow.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 
 MAT::ELASTIC::PAR::Iso2Pow::Iso2Pow(const Teuchos::RCP<MAT::PAR::Material>& matdata)

@@ -13,8 +13,8 @@
 #include "str_timint_base.H"
 
 #include "drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/inpar_contact.H"
+#include "drt_globalproblem.H"
+#include "inpar_contact.H"
 
 #include <Teuchos_XMLParameterListCoreHelpers.hpp>
 

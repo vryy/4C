@@ -16,31 +16,31 @@
 #include "tsi_algorithm.H"
 #include "tsi_defines.H"
 #include "tsi_utils.H"
-#include "../drt_adapter/ad_str_structure_new.H"
-#include "../drt_adapter/ad_str_factory.H"
-#include "../drt_adapter/ad_str_wrapper.H"
-#include "../drt_adapter/adapter_coupling_mortar.H"
-#include "../drt_inpar/inpar_tsi.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io.H"
+#include "ad_str_structure_new.H"
+#include "ad_str_factory.H"
+#include "ad_str_wrapper.H"
+#include "adapter_coupling_mortar.H"
+#include "inpar_tsi.H"
+#include "drt_globalproblem.H"
+#include "io.H"
 
-#include "../drt_adapter/adapter_thermo.H"
-#include "../drt_lib/drt_discret.H"
+#include "adapter_thermo.H"
+#include "drt_discret.H"
 
 // for coupling of nonmatching meshes
-#include "../drt_adapter/adapter_coupling_volmortar.H"
-#include "../drt_volmortar/volmortar_utils.H"
+#include "adapter_coupling_volmortar.H"
+#include "volmortar_utils.H"
 
 // contact
-#include "../drt_contact/contact_lagrange_strategy.H"
-#include "../drt_contact/contact_tsi_lagrange_strategy.H"
-#include "../drt_contact/contact_nitsche_strategy_tsi.H"
-#include "../drt_contact/meshtying_contact_bridge.H"
-#include "../drt_contact/contact_strategy_factory.H"
+#include "contact_lagrange_strategy.H"
+#include "contact_tsi_lagrange_strategy.H"
+#include "contact_nitsche_strategy_tsi.H"
+#include "meshtying_contact_bridge.H"
+#include "contact_strategy_factory.H"
 
-#include "../drt_structure_new/str_model_evaluator_contact.H"
-#include "../drt_structure_new/str_model_evaluator_structure.H"
-#include "../drt_mortar/mortar_multifield_coupling.H"
+#include "str_model_evaluator_contact.H"
+#include "str_model_evaluator_structure.H"
+#include "mortar_multifield_coupling.H"
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries

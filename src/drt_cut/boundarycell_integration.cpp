@@ -12,7 +12,7 @@
 #include "least_squares.H"
 #include "base_vol.H"
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 /*--------------------------------------------------------------------------------------------*
   Generate quadrature rule for boundarycells

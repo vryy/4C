@@ -11,24 +11,24 @@
 
 #include "scatra_ele_calc_hdg.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_element.H"
+#include "standardtypes_cpp.H"  // for EPS13 and so on
 
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_std.H"
 
-#include "../drt_fiber/drt_fiber_node.H"
-#include "../drt_fiber/drt_fiber_utils.H"
-#include "../drt_fiber/nodal_fiber_holder.H"
+#include "drt_fiber_node.H"
+#include "drt_fiber_utils.H"
+#include "nodal_fiber_holder.H"
 
-#include "../drt_mat/myocard.H"
-#include "../drt_mat/matlist.H"
+#include "myocard.H"
+#include "matlist.H"
 
-#include "../drt_fem_general/drt_utils_polynomial.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "drt_utils_polynomial.H"
+#include "drt_utils_integration.H"
+#include "drt_utils_fem_shapefunctions.H"
 
 
 /*----------------------------------------------------------------------*

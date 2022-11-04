@@ -21,9 +21,9 @@
 #include <Epetra_MultiVector.h>
 #include <Epetra_MpiComm.h>
 
-#include "../drt_geometry/geo_utils.H"
+#include "geo_utils.H"
 // only due to enumerator use (can be resolved with C++11)
-#include "../drt_cut/cut_point.H"
+#include "cut_point.H"
 
 namespace DRT
 {

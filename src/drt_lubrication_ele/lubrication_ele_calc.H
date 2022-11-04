@@ -11,15 +11,15 @@
 #define SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_CALC_H_
 
 
-#include "../drt_lib/drt_element.H"
+#include "drt_element.H"
 
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
-#include "../drt_lubrication_ele/lubrication_ele_interface.H"
+#include "drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_integration.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_boundary_integration.H"
+#include "lubrication_ele_interface.H"
 
-#include "../drt_lubrication_ele/lubrication_ele_action.H"
+#include "lubrication_ele_action.H"
 
 
 

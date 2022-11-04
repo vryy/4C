@@ -9,14 +9,16 @@
 
 #include <iostream>
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/function_of_time.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../drt_so3/so_surface.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "function_of_time.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
+#include "so_surface.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_nurbs_shapefunctions.H"
+#include "drt_utils_boundary_integration.H"
 #include "cardiovascular0d_arterialproxdist.H"
 
 

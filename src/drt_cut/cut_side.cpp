@@ -15,14 +15,14 @@
 #include "cut_pointgraph.H"
 #include "cut_levelsetside.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 
 #include <string>
 #include <stack>
 #include <list>
 
-//#define DEBUG_PARALLEL_CUT_SURFACE
+// #define DEBUG_PARALLEL_CUT_SURFACE
 
 
 /*----------------------------------------------------------------------------*

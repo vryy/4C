@@ -19,8 +19,8 @@
 #include <MueLu_Utilities.hpp>
 #include <MueLu_UseDefaultTypes.hpp>
 
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_blocksparsematrix.H"
+#include "linalg_solver.H"
+#include "linalg_blocksparsematrix.H"
 #include "solver_preconditionertype.H"
 #include "solver_amgnxn_smoothers.H"
 

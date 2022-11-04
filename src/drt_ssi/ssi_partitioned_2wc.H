@@ -11,7 +11,7 @@
 #define SSI_PARTITIONED2_WC_H_
 
 #include "ssi_partitioned.H"
-#include "../drt_inpar/inpar_ssi.H"
+#include "inpar_ssi.H"
 
 namespace SSI
 {

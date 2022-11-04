@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "fluid_ele_immersed.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
 DRT::ELEMENTS::FluidTypeImmersed DRT::ELEMENTS::FluidTypeImmersed::instance_;
 

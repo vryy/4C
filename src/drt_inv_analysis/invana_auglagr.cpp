@@ -19,27 +19,27 @@
 #include "regularization_base.H"
 #include "optimizer_base.H"
 
-#include "../drt_adapter/ad_str_invana.H"
-#include "../drt_adapter/ad_str_factory.H"
-#include "../drt_adapter/ad_str_structure_new.H"
-#include "../drt_adapter/ad_str_structure.H"
+#include "ad_str_invana.H"
+#include "ad_str_factory.H"
+#include "ad_str_structure_new.H"
+#include "ad_str_structure.H"
 
 
 #include "timint_adjoint.H"
 #include "timint_adjoint_prestress.H"
 
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_io/io_hdf.H"
-#include "../drt_io/io.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/prestress_service.H"
-#include "../drt_timestepping/timintmstep.H"
-#include "../drt_lib/drt_parobject.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../drt_inpar/inpar_statinvanalysis.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "io_control.H"
+#include "io_pstream.H"
+#include "io_hdf.H"
+#include "io.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "prestress_service.H"
+#include "timintmstep.H"
+#include "drt_parobject.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "inpar_statinvanalysis.H"
+#include "drt_validparameters.H"
 
 #include <Teuchos_ParameterList.hpp>
 

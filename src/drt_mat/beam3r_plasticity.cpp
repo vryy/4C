@@ -11,11 +11,11 @@ function)
 #include "beam3r_plasticity.H"
 #include "beam_elasthyper_parameter.H"
 
-#include "../drt_mat/matpar_bundle.H"
+#include "matpar_bundle.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../headers/FAD_utils.H"
+#include "FAD_utils.H"
 #include <cmath>
 
 /*-----------------------------------------------------------------------------------------------*

@@ -15,7 +15,7 @@
 #include "ad_ale_xffsi.H"
 
 #include "drt_dserror.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

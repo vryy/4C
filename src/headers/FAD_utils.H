@@ -13,7 +13,7 @@
 #ifndef FAD_UTILS_H
 #define FAD_UTILS_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include <Sacado.hpp>
 
 namespace FADUTILS

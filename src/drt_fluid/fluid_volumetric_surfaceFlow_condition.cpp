@@ -13,10 +13,10 @@
 #include <stdio.h>
 
 #include "fluid_volumetric_surfaceFlow_condition.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_function.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/function_of_time.H"
+#include "drt_condition_utils.H"
+#include "drt_function.H"
+#include "drt_globalproblem.H"
+#include "function_of_time.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

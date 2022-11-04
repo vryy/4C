@@ -9,15 +9,15 @@
 /*----------------------------------------------------------------------*/
 
 #include "mixture_constituent_muscle_weickenmeier.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/voigt_notation.H"
-#include "../drt_matelast/elast_aniso_structuraltensor_strategy.H"
-#include "../drt_mat/elasthyper_service.H"
-#include "../drt_mat/material_service.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/mixture_elasthyper.H"
+#include "drt_globalproblem.H"
+#include "drt_linedefinition.H"
+#include "standardtypes_cpp.H"
+#include "voigt_notation.H"
+#include "elast_aniso_structuraltensor_strategy.H"
+#include "elasthyper_service.H"
+#include "material_service.H"
+#include "matpar_bundle.H"
+#include "mixture_elasthyper.H"
 
 
 MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_Weickenmeier(

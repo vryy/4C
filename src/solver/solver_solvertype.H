@@ -11,7 +11,7 @@
 #define SOLVER_SOLVERTYPE_H_
 
 #include "drt_dserror.H"
-#include "../linalg/linalg_krylov_projector.H"
+#include "linalg_krylov_projector.H"
 
 namespace LINALG::SOLVER
 {

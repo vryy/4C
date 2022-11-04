@@ -18,7 +18,7 @@
 #include "Epetra_SerialDenseMatrix.h"
 
 
-#include "../drt_cut/cut_utils.H"
+#include "cut_utils.H"
 
 namespace MAT
 {

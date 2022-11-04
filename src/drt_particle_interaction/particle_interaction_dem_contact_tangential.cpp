@@ -12,7 +12,7 @@
 
 #include "particle_interaction_utils.H"
 
-#include "../drt_inpar/inpar_particle.H"
+#include "inpar_particle.H"
 
 #include "drt_dserror.H"
 

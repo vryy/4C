@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 #include "ad_fld_fluid_ac_fsi.H"
-#include "../drt_fluid/fluidimplicitintegration.H"
-#include "../drt_fluid/fluidimpedancecondition.H"
+#include "fluidimplicitintegration.H"
+#include "fluidimpedancecondition.H"
 
 /*======================================================================*/
 /* constructor */

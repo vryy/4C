@@ -33,7 +33,7 @@
 #include "drt_dserror.H"
 #include "solver_aztecsolver.H"
 #include "solver_aztecsolver_projectedresidual.H"
-#include "../linalg/linalg_krylov_projector.H"
+#include "linalg_krylov_projector.H"
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------

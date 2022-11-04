@@ -9,8 +9,8 @@
 #include "elast_coupanisoexpo.H"
 #include "elast_aniso_structuraltensor_strategy.H"
 
-#include "../drt_mat/matpar_material.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "matpar_material.H"
+#include "standardtypes_cpp.H"
 
 
 MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension::CoupAnisoExpoAnisotropyExtension(

@@ -7,15 +7,15 @@
  *----------------------------------------------------------------------*/
 
 
-#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele.H"
+#include "porofluidmultiphase_ele.H"
 
-#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "inpar_parameterlist_utils.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_factory.H"
-#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_interface.H"
-#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_parameter.H"
-#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_action.H"
+#include "drt_discret.H"
+#include "porofluidmultiphase_ele_factory.H"
+#include "porofluidmultiphase_ele_interface.H"
+#include "porofluidmultiphase_ele_parameter.H"
+#include "porofluidmultiphase_ele_action.H"
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                           vuong 08/16 |

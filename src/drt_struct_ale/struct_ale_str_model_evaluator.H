@@ -11,7 +11,7 @@
 #ifndef STRUCT_ALE_STR_MODEL_EVALUATOR_H_
 #define STRUCT_ALE_STR_MODEL_EVALUATOR_H_
 
-#include "../drt_structure_new/str_model_evaluator_structure.H"
+#include "str_model_evaluator_structure.H"
 
 
 namespace STR

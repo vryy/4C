@@ -11,11 +11,11 @@
 #include "so_sh18.H"
 #include "so_surface.H"
 #include "so_line.H"
-#include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/so3_material.H"
+#include "drt_utils_factory.H"
+#include "drt_globalproblem.H"
+#include "so3_material.H"
 
-#include "../linalg/linalg_utils_nullspace.H"
+#include "linalg_utils_nullspace.H"
 
 #include "so_utils.H"
 

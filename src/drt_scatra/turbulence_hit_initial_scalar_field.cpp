@@ -20,10 +20,10 @@ transport
 #include "turbulence_hit_initial_scalar_field.H"
 
 #include "scatra_timint_implicit.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "drt_exporter.H"
+#include "drt_globalproblem.H"
+#include "drt_utils.H"
+#include "standardtypes_cpp.H"
 
 namespace SCATRA
 {

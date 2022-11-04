@@ -11,9 +11,9 @@
 
 #include "str_integrator.H"
 #include "drt_dserror.H"
-#include "../drt_lib/epetra_utils.H"
+#include "epetra_utils.H"
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 #include "str_dbc.H"
 #include "str_timint_base.H"
@@ -24,9 +24,9 @@
 #include "str_monitor_dbc.H"
 #include "nox_nln_str_linearsystem.H"
 
-#include "../solver_nonlin_nox/nox_nln_aux.H"
+#include "nox_nln_aux.H"
 
-#include "../linalg/linalg_sparsematrix.H"
+#include "linalg_sparsematrix.H"
 
 #include <Epetra_Vector.h>
 

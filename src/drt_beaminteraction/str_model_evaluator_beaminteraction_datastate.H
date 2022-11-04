@@ -16,7 +16,7 @@
 
 #include <set>
 
-#include "../drt_timestepping/timintmstep.H"
+#include "timintmstep.H"
 
 // forward declaration
 class Epetra_FEVector;

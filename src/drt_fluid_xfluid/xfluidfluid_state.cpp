@@ -11,20 +11,20 @@ fluid meshes
 
 #include "xfluidfluid_state.H"
 
-#include "../drt_xfem/xfem_condition_manager.H"
+#include "xfem_condition_manager.H"
 
 #include "xfluid_state.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_mapextractor.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_xfem/xfield_state_utils.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "xfield_state_utils.H"
+#include "fluid_utils_mapextractor.H"
 
-#include "../drt_fluid/fluid_utils.H"
+#include "fluid_utils.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor for XFluidFluidState                         kruse 01/15 |

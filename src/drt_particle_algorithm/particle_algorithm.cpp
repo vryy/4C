@@ -19,28 +19,28 @@
 #include "particle_initial_field.H"
 #include "particle_result_test.H"
 
-#include "../drt_particle_interaction/particle_interaction_base.H"
-#include "../drt_particle_interaction/particle_interaction_sph.H"
-#include "../drt_particle_interaction/particle_interaction_dem.H"
+#include "particle_interaction_base.H"
+#include "particle_interaction_sph.H"
+#include "particle_interaction_dem.H"
 
-#include "../drt_particle_engine/particle_engine.H"
-#include "../drt_particle_engine/particle_communication_utils.H"
-#include "../drt_particle_engine/particle_object.H"
-#include "../drt_particle_engine/particle_container.H"
+#include "particle_engine.H"
+#include "particle_communication_utils.H"
+#include "particle_object.H"
+#include "particle_container.H"
 
-#include "../drt_particle_wall/particle_wall.H"
-#include "../drt_particle_wall/particle_wall_result_test.H"
+#include "particle_wall.H"
+#include "particle_wall_result_test.H"
 
-#include "../drt_particle_rigidbody/particle_rigidbody.H"
-#include "../drt_particle_rigidbody/particle_rigidbody_result_test.H"
+#include "particle_rigidbody.H"
+#include "particle_rigidbody_result_test.H"
 
-#include "../drt_inpar/inpar_particle.H"
+#include "inpar_particle.H"
 
 #include "drt_dserror.H"
-#include "../drt_lib/drt_resulttest.H"
+#include "drt_resulttest.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
+#include "io.H"
+#include "io_pstream.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

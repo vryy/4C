@@ -9,13 +9,13 @@
 
 #include "poro_partitioned.H"
 
-#include "../drt_adapter/ad_str_fpsiwrapper.H"
-#include "../drt_adapter/ad_fld_poro.H"
-#include "../drt_structure/stru_aux.H"
+#include "ad_str_fpsiwrapper.H"
+#include "ad_fld_poro.H"
+#include "stru_aux.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
 POROELAST::Partitioned::Partitioned(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)

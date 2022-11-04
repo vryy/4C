@@ -8,12 +8,12 @@
 *----------------------------------------------------------------------*/
 
 
-#include "../drt_binstrategy/drt_meshfree_multibin.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "drt_meshfree_multibin.H"
+#include "drt_discret.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
+#include "io.H"
+#include "io_pstream.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

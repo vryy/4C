@@ -14,11 +14,11 @@
  *---------------------------------------------------------------------------*/
 #include "drt_particlereader.H"
 
-#include "../drt_particle_engine/particle_enums.H"
-#include "../drt_particle_engine/particle_typedefs.H"
-#include "../drt_particle_engine/particle_object.H"
+#include "particle_enums.H"
+#include "particle_typedefs.H"
+#include "particle_object.H"
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 #include <Epetra_Time.h>
 

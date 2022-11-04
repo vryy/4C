@@ -10,12 +10,12 @@
 
 #include "contact_utils_parallel.H"
 
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_inpar/inpar_mortar.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_contact.H"
+#include "inpar_mortar.H"
+#include "inpar_structure.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_globalproblem_enums.H"
+#include "drt_globalproblem.H"
+#include "drt_globalproblem_enums.H"
 
 #include <Teuchos_ParameterList.hpp>
 

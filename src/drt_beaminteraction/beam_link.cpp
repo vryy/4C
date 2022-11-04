@@ -8,10 +8,10 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "../drt_fem_general/largerotations.H"
+#include "largerotations.H"
 
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
 
 #include "drt_dserror.H"
 

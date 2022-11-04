@@ -9,9 +9,9 @@
 
 #include <vector>
 #include "scatra_mat_aniso.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_comm/comm_utils.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
+#include "comm_utils.H"
 
 
 /*----------------------------------------------------------------------*/

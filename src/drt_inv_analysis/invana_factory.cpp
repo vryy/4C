@@ -25,13 +25,13 @@
 #include "initial_guess.H"
 
 // Input
-#include "../drt_inpar/inpar_statinvanalysis.H"
+#include "inpar_statinvanalysis.H"
 
 // Baci
 #include "drt_dserror.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_comm/comm_utils.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "comm_utils.H"
 
 // Teuchos
 #include <Teuchos_ParameterList.hpp>

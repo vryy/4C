@@ -7,10 +7,10 @@
 #ifndef INVERSEDESIGN_H
 #define INVERSEDESIGN_H
 
-#include "../drt_lib/drt_parobject.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_mat/material.H"
+#include "drt_parobject.H"
+#include "drt_parobjectfactory.H"
+#include "inpar_structure.H"
+#include "material.H"
 
 #include "so_hex8.H"
 

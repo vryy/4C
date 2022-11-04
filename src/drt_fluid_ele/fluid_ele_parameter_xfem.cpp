@@ -10,7 +10,7 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_ele_parameter_xfem.H"
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 DRT::ELEMENTS::FluidEleParameterXFEM* DRT::ELEMENTS::FluidEleParameterXFEM::Instance(
     ::UTILS::SingletonAction action)

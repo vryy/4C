@@ -7,10 +7,10 @@ dependent Neo Hooke material
 */
 /*----------------------------------------------------------------------*/
 #include "elast_isovolHUdependentneohooke.H"
-#include "../drt_mat/matpar_material.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "matpar_material.H"
+#include "standardtypes_cpp.H"
+#include "drt_linedefinition.H"
+#include "drt_globalproblem.H"
 
 
 MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke::IsoVolHUDependentNeoHooke(

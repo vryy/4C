@@ -12,20 +12,20 @@
 
 #include "beam_spatial_discretization_utils.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
 #include "drt_dserror.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/function_of_time.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_fem_general/largerotations.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "drt_utils.H"
+#include "function_of_time.H"
+#include "linalg_fixedsizematrix.H"
+#include "largerotations.H"
+#include "inpar_structure.H"
+#include "standardtypes_cpp.H"
+#include "str_elements_paramsinterface.H"
 
 #include <Sacado.hpp>
 
-#include "../drt_inpar/inpar_browniandyn.H"
+#include "inpar_browniandyn.H"
 typedef Sacado::Fad::DFad<double> FAD;
 
 /*-----------------------------------------------------------------------------------------------------------*

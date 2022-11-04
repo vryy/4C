@@ -12,28 +12,28 @@
 #include "ssi_monolithic.H"
 #include "ssi_utils.H"
 
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "adapter_coupling.H"
+#include "adapter_scatra_base_algorithm.H"
 
-#include "../drt_inpar/inpar_s2i.H"
-#include "../drt_inpar/inpar_ssi.H"
+#include "inpar_s2i.H"
+#include "inpar_ssi.H"
 
-#include "../drt_io/runtime_csv_writer.H"
+#include "runtime_csv_writer.H"
 
-#include "../drt_lib/drt_assemblestrategy.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_matchingoctree.H"
-#include "../drt_lib/drt_utils_gid_vector.H"
-#include "../drt_lib/drt_utils_parameter_list.H"
+#include "drt_assemblestrategy.H"
+#include "drt_condition_utils.H"
+#include "drt_globalproblem.H"
+#include "drt_matchingoctree.H"
+#include "drt_utils_gid_vector.H"
+#include "drt_utils_parameter_list.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "scatra_timint_implicit.H"
 
-#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "scatra_ele_action.H"
 
-#include "../linalg/linalg_matrixtransform.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_matrixtransform.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 
 /*---------------------------------------------------------------------------------*

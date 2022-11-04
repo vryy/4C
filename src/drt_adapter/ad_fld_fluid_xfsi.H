@@ -17,9 +17,9 @@
 #include <Epetra_Map.h>
 
 #include "ad_fld_wrapper.H"
-#include "../drt_fluid_xfluid/xfluid.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "xfluid.H"
+#include "linalg_mapextractor.H"
+#include "fluid_utils_mapextractor.H"
 
 // forward declarations
 namespace DRT

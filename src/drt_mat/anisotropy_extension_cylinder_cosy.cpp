@@ -13,7 +13,7 @@ materials with @MAT::Anisotropy
 #include "anisotropy.H"
 #include "anisotropy_extension_cylinder_cosy.H"
 #include "anisotropy_coordinate_system_provider.H"
-#include "../drt_lib/drt_parobject.H"
+#include "drt_parobject.H"
 
 MAT::CylinderCoordinateSystemAnisotropyExtension::CylinderCoordinateSystemAnisotropyExtension()
     : cosyLocation_(CosyLocation::None)

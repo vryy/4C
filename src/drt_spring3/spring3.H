@@ -16,11 +16,11 @@
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
 
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "drt_elementtype.H"
+#include "drt_utils_integration.H"
 #include "Sacado.hpp"
 
-#include "../drt_inpar/inpar_browniandyn.H"
+#include "inpar_browniandyn.H"
 typedef Sacado::Fad::DFad<double> FAD;
 
 namespace DRT

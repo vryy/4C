@@ -12,14 +12,14 @@ elements
 #include "beam_link.H"
 #include "beam_link_beam3r_line2_rigidjointed.H"
 
-#include "../drt_beam3/beam3r.H"
+#include "beam3r.H"
 
-#include "../drt_fem_general/largerotations.H"
+#include "largerotations.H"
 
-#include "../linalg/linalg_serialdensematrix.H"
+#include "linalg_serialdensematrix.H"
 
 #include "drt_dserror.H"
-#include "../drt_lib/drt_utils_factory.H"
+#include "drt_utils_factory.H"
 
 #include <Teuchos_RCP.hpp>
 

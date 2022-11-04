@@ -9,40 +9,40 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "../drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact.H"
-#include "../drt_beaminteraction/beaminteraction_data.H"
-#include "../drt_beaminteraction/beam_contact_pair.H"
-#include "../drt_beaminteraction/beam_contact_params.H"
-#include "../drt_beaminteraction/beam_contact_runtime_vtk_output_params.H"
-#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
-#include "../drt_beaminteraction/str_model_evaluator_beaminteraction_datastate.H"
+#include "beaminteraction_submodel_evaluator_beamcontact.H"
+#include "beaminteraction_data.H"
+#include "beam_contact_pair.H"
+#include "beam_contact_params.H"
+#include "beam_contact_runtime_vtk_output_params.H"
+#include "beaminteraction_calc_utils.H"
+#include "str_model_evaluator_beaminteraction_datastate.H"
 
 #include "drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_geometric_search/geometric_search.H"
-#include "../drt_geometric_search/geometric_search_params.H"
+#include "drt_globalproblem.H"
+#include "geometric_search.H"
+#include "geometric_search_params.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_io/runtime_vtp_writer.H"
+#include "io.H"
+#include "io_control.H"
+#include "io_pstream.H"
+#include "runtime_vtp_writer.H"
 
-#include "../drt_structure_new/str_timint_basedataglobalstate.H"
-#include "../drt_structure_new/str_timint_basedataio.H"
+#include "str_timint_basedataglobalstate.H"
+#include "str_timint_basedataio.H"
 
-#include "../linalg/linalg_utils_densematrix_inverse.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_utils_densematrix_inverse.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
+#include "linalg_fixedsizematrix.H"
 
-#include "../drt_inpar/inpar_beamcontact.H"
+#include "inpar_beamcontact.H"
 
-#include "../drt_binstrategy/binning_strategy.H"
+#include "binning_strategy.H"
 
-#include "../drt_beam3/beam3_base.H"
-#include "../drt_rigidsphere/rigidsphere.H"
+#include "beam3_base.H"
+#include "rigidsphere.H"
 
-#include "../drt_so3/so_base.H"
+#include "so_base.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_FEVector.h>
@@ -56,8 +56,8 @@
 #include "beam_to_solid_volume_meshtying_params.H"
 #include "beam_to_solid_volume_meshtying_vtk_output_params.H"
 #include "beam_to_solid_volume_meshtying_vtk_output_writer.H"
-#include "../drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
-#include "../drt_inpar/inpar_geometry_pair.H"
+#include "geometry_pair_line_to_3D_evaluation_data.H"
+#include "inpar_geometry_pair.H"
 #include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.H"
 #include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.H"
 #include "str_model_evaluator_beaminteraction_datastate.H"

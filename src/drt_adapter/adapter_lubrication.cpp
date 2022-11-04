@@ -10,17 +10,17 @@
 
 #include "adapter_lubrication.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
 
-#include "../drt_io/io_control.H"
-#include "../drt_io/io.H"
+#include "io_control.H"
+#include "io.H"
 
-#include "../linalg/linalg_solver.H"
+#include "linalg_solver.H"
 
-#include "../drt_lubrication/lubrication_resulttest.H"
+#include "lubrication_resulttest.H"
 
-#include "../drt_lubrication/lubrication_timint_stat.H"
+#include "lubrication_timint_stat.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

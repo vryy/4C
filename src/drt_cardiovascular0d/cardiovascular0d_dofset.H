@@ -17,10 +17,10 @@
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
 
-#include "../drt_mor/mor_pod.H"
+#include "mor_pod.H"
 
-#include "../drt_lib/drt_dofset.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_dofset.H"
+#include "drt_discret.H"
 
 namespace UTILS
 {

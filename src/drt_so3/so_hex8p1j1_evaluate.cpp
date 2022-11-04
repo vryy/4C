@@ -8,14 +8,14 @@
 /*----------------------------------------------------------------------*/
 
 #include "so_hex8p1j1.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_exporter.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
+#include "drt_exporter.H"
 #include "drt_dserror.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../drt_mat/so3_material.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
+#include "so3_material.H"
 
 #include <Epetra_SerialComm.h>
 

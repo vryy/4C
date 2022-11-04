@@ -11,8 +11,8 @@
 #include "particle_sim.H"
 #include "particle_algorithm.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_comm/comm_utils.H"
+#include "drt_globalproblem.H"
+#include "comm_utils.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>

@@ -12,8 +12,8 @@
 #include "contact_augmented_strategy.H"
 #include "contact_augmented_interface.H"
 
-#include "../drt_io/io_pstream.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "io_pstream.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

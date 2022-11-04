@@ -9,7 +9,7 @@ Comput. Methods Appl. Mech. Engrg. 260, 2013"
 /*----------------------------------------------------------------------*/
 
 #include "elast_couplogmixneohooke.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 
 MAT::ELASTIC::PAR::CoupLogMixNeoHooke::CoupLogMixNeoHooke(

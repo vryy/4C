@@ -18,42 +18,42 @@
 #include "fpsi_utils.H"
 
 // POROELAST includes
-#include "../drt_poroelast/poro_base.H"
-#include "../drt_adapter/ad_fld_poro.H"
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_poroelast/poroelast_monolithic.H"
+#include "poro_base.H"
+#include "ad_fld_poro.H"
+#include "adapter_coupling.H"
+#include "poroelast_monolithic.H"
 
 // FSI includes
-#include "../drt_fsi/fsi_debugwriter.H"
-#include "../drt_fsi/fsi_statustest.H"
-#include "../drt_fsi/fsi_overlapprec_fsiamg.H"
-#include "../drt_fsi/fsi_monolithic_linearsystem.H"
-#include "../drt_lib/drt_colors.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "fsi_debugwriter.H"
+#include "fsi_statustest.H"
+#include "fsi_overlapprec_fsiamg.H"
+#include "fsi_monolithic_linearsystem.H"
+#include "drt_colors.H"
+#include "drt_globalproblem.H"
 
 // FLUID includes
-#include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "fluid_utils_mapextractor.H"
 
 // STRUCTURE includes
-#include "../drt_structure/stru_aux.H"
+#include "stru_aux.H"
 
 // ALE includes
-#include "../drt_ale/ale_utils_mapextractor.H"
+#include "ale_utils_mapextractor.H"
 
 // LINALG includes
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_matrixtransform.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_solver.H"
+#include "linalg_matrixtransform.H"
 
 // IO includes
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
+#include "io.H"
+#include "io_control.H"
 
 // OTHERS
-#include "../drt_constraint/constraint_manager.H"
-#include "../drt_lib/drt_assemblestrategy.H"
-#include "../drt_adapter/ad_str_fpsiwrapper.H"
+#include "constraint_manager.H"
+#include "drt_assemblestrategy.H"
+#include "ad_str_fpsiwrapper.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

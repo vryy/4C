@@ -16,7 +16,7 @@
 #include "inpar_beaminteraction.H"
 #include "inpar_geometry_pair.H"
 #include "drt_dserror.H"
-#include "../drt_lib/drt_conditiondefinition.H"
+#include "drt_conditiondefinition.H"
 
 
 /**

@@ -7,8 +7,8 @@
 
  */
 /*----------------------------------------------------------------------*/
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/elchmat.H"
+#include "drt_globalproblem.H"
+#include "elchmat.H"
 
 #include "scatra_ele.H"
 #include "scatra_ele_boundary_calc_elch_diffcond.H"

@@ -26,7 +26,7 @@
 #include <Epetra_MultiVector.h>
 
 #include "drt_dserror.H"
-#include "../drt_lib/drt_globalproblem_enums.H"
+#include "drt_globalproblem_enums.H"
 
 namespace DRT
 {

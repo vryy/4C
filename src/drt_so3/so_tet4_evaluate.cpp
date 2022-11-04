@@ -4,22 +4,22 @@
 \level 1
 *----------------------------------------------------------------------*/
 #include "so_tet4.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
 #include "drt_dserror.H"
-#include "../drt_lib/voigt_notation.H"
-#include "../drt_lib/prestress_service.H"
-#include "../linalg/linalg_utils_densematrix_inverse.H"
-#include "../linalg/linalg_utils_densematrix_eigen.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../drt_patspec/patspec.H"
+#include "voigt_notation.H"
+#include "prestress_service.H"
+#include "linalg_utils_densematrix_inverse.H"
+#include "linalg_utils_densematrix_eigen.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
+#include "patspec.H"
 #include "Epetra_SerialDenseSolver.h"
-#include "../drt_mat/elasthyper.H"
-#include "../drt_mat/stvenantkirchhoff.H"
-#include "../drt_mat/constraintmixture.H"
-#include "../drt_contact/contact_analytical.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "elasthyper.H"
+#include "stvenantkirchhoff.H"
+#include "constraintmixture.H"
+#include "contact_analytical.H"
+#include "drt_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -27,11 +27,11 @@
 #include "inversedesign.H"
 #include "prestress.H"
 
-#include "../drt_structure_new/str_elements_paramsinterface.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_mat/thermostvenantkirchhoff.H"
-#include "../drt_mat/thermoplastichyperelast.H"
-#include "../drt_mat/robinson.H"
+#include "str_elements_paramsinterface.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "thermostvenantkirchhoff.H"
+#include "thermoplastichyperelast.H"
+#include "robinson.H"
 #include "so_utils.H"
 
 // #define PRINT_DEBUG

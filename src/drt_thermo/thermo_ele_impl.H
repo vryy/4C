@@ -18,9 +18,9 @@
  | headers                                                    gjb 01/08 |
  *----------------------------------------------------------------------*/
 #include "thermo_ele_impl_utils.H"
-#include "../drt_inpar/inpar_thermo.H"
+#include "inpar_thermo.H"
 
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  |                                                            gjb 01/08 |

@@ -9,25 +9,25 @@
 /*---------------------------------------------------------------------------*/
 
 #include "shell8.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_exporter.H"
+#include "standardtypes_cpp.H"
+#include "drt_discret.H"
+#include "drt_exporter.H"
 #include "drt_dserror.H"
-#include "../drt_lib/drt_utils.H"
-#include "../linalg/linalg_utils_densematrix_inverse.H"
-#include "../drt_mat/material.H"
-#include "../drt_mat/stvenantkirchhoff.H"
-#include "../drt_mat/elasthyper.H"
-#include "../drt_matelast/elast_coupneohooke.H"
-#include "../drt_mat/compogden.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "drt_utils.H"
+#include "linalg_utils_densematrix_inverse.H"
+#include "material.H"
+#include "stvenantkirchhoff.H"
+#include "elasthyper.H"
+#include "elast_coupneohooke.H"
+#include "compogden.H"
+#include "drt_globalproblem.H"
+#include "str_elements_paramsinterface.H"
 
 extern "C"
 {
 #include "./shell8/shell8.h"
-#include "../headers/am.h"
-#include "../pss_full/pss_prototypes.h"
+#include "am.h"
+#include "pss_prototypes.h"
 }
 
 

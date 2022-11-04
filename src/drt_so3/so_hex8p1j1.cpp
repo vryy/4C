@@ -8,11 +8,11 @@
 /*----------------------------------------------------------------------*/
 
 #include "so_hex8p1j1.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 #include "drt_dserror.H"
 #include "so_hex8.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_linedefinition.H"
+#include "drt_globalproblem.H"
 #include "so_utils.H"
 
 DRT::ELEMENTS::So_Hex8P1J1Type DRT::ELEMENTS::So_Hex8P1J1Type::instance_;

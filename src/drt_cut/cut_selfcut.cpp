@@ -18,7 +18,7 @@
 #include "cut_options.H"
 #include "cut_output.H"
 
-#include "../drt_geometry/searchtree.H"
+#include "searchtree.H"
 
 #include "cut_selfcut.H"
 

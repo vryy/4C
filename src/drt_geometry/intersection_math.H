@@ -15,7 +15,7 @@
 #define INTERSECTION_MATH_H_
 
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "Epetra_SerialDenseVector.h"
 

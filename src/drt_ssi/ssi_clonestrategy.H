@@ -11,7 +11,7 @@
 #define SSI_CLONESTRATEGY_H
 
 #include <Teuchos_RCP.hpp>
-#include "../drt_inpar/inpar_scatra.H"
+#include "inpar_scatra.H"
 
 // forward declaration
 namespace DRT

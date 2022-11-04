@@ -11,12 +11,12 @@
 
 #include "lubrication_dyn.H"
 
-#include "../drt_adapter/adapter_lubrication.H"
+#include "adapter_lubrication.H"
 
-#include "../drt_lib/drt_utils_createdis.H"
+#include "drt_utils_createdis.H"
 
-#include "../drt_lubrication/lubrication_timint_implicit.H"
-#include "../drt_lib/drt_dofset_predefineddofnumber.H"
+#include "lubrication_timint_implicit.H"
+#include "drt_dofset_predefineddofnumber.H"
 
 
 /*----------------------------------------------------------------------*

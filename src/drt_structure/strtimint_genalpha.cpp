@@ -13,13 +13,13 @@
 /* headers */
 #include "strtimint_genalpha.H"
 #include "stru_aux.H"
-#include "../drt_io/io.H"
-#include "../drt_lib/drt_locsys.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_structure_new/str_utils.H"
-#include "../drt_structure_new/str_impl_genalpha.H"
+#include "io.H"
+#include "drt_locsys.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "io_pstream.H"
+#include "str_utils.H"
+#include "str_impl_genalpha.H"
 
 /*----------------------------------------------------------------------*/
 void STR::TimIntGenAlpha::CalcCoeff()

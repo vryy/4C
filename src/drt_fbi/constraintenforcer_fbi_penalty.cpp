@@ -14,14 +14,14 @@ fluid-beam interaction)
 #include "constraintenforcer_fbi_penalty.H"
 #include "constraintenforcer_fbi.H"
 
-#include "../drt_adapter/ad_fld_fbi_movingboundary.H"
-#include "../drt_adapter/ad_str_fbiwrapper.H"
-#include "../drt_io/io_control.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_sparseoperator.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "ad_fld_fbi_movingboundary.H"
+#include "ad_str_fbiwrapper.H"
+#include "io_control.H"
+#include "drt_globalproblem.H"
+#include "linalg_mapextractor.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_sparseoperator.H"
+#include "linalg_utils_sparse_algebra_create.H"
 #include <Epetra_Vector.h>
 
 /*----------------------------------------------------------------------*/

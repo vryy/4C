@@ -13,15 +13,15 @@
 #include "fsi_overlapprec.H"
 #include "fsi_debugwriter.H"
 
-#include "../drt_adapter/ad_ale_fsi.H"
-#include "../drt_adapter/ad_fld_fluid.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "ad_ale_fsi.H"
+#include "ad_fld_fluid.H"
+#include "ad_str_fsiwrapper.H"
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
-#include "../linalg/linalg_nullspace.H"
-#include "../linalg/linalg_precond.H"
-#include "../linalg/linalg_solver.H"
+#include "linalg_nullspace.H"
+#include "linalg_precond.H"
+#include "linalg_solver.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

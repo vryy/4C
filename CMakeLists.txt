@@ -2433,6 +2433,8 @@ set(BACI_LIBRARIES
     libsolver
     linalg
     drt_comm
+    headers
+    drt_timestepping
     )
 
 ###
@@ -2444,6 +2446,12 @@ set(BACI_LIBRARIES
 if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/src)
 endif(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+
+add_library(headers INTERFACE)
+target_include_directories(headers INTERFACE ${PROJECT_SOURCE_DIR}/src/headers)
+
+add_library(drt_timestepping INTERFACE)
+target_include_directories(drt_timestepping INTERFACE ${PROJECT_SOURCE_DIR}/src/drt_timestepping)
 
 # Compile element libraries first. There are files that take time to compile.
 deprecated_baci_add_library_linked_with_everything(ele_fluid ${OBJS_DRT_FLUID_ELE_LIB})
@@ -2593,6 +2601,9 @@ deprecated_baci_add_library_linked_with_everything(alg_mor ${OBJS_DRT_MOR})
 deprecated_baci_add_library_linked_with_everything(post_drt_common ${OBJS_POST_DRT_COMMON})
 deprecated_baci_add_library_linked_with_everything(post_drt_ensight_lib ${OBJS_POST_DRT_ENSIGHT})
 deprecated_baci_add_library_linked_with_everything(post_drt_vtk_lib ${OBJS_POST_DRT_VTK})
+
+target_link_libraries(post_drt_vtk_lib PUBLIC post_drt_common)
+target_link_libraries(post_drt_ensight_lib PUBLIC post_drt_common)
 
 # linear algebra objects
 deprecated_baci_add_library_linked_with_everything(linalg ${OBJS_LINALG})

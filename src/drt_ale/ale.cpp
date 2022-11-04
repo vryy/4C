@@ -15,27 +15,27 @@
 #include "ale_utils_mapextractor.H"
 
 // further includes for AleBaseAlgorithm:
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_locsys.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_sparseoperator.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_blocksparsematrix.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_precond.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_locsys.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_sparseoperator.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_blocksparsematrix.H"
+#include "linalg_solver.H"
+#include "linalg_precond.H"
+#include "io.H"
+#include "io_control.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include "../drt_inpar/inpar_ale.H"
-#include "../drt_inpar/inpar_fsi.H"
-#include "../drt_lib/drt_periodicbc.H"
+#include "inpar_ale.H"
+#include "inpar_fsi.H"
+#include "drt_periodicbc.H"
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 #define SCALING_INFNORM true
 

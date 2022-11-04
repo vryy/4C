@@ -7,7 +7,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "elast_coupmooneyrivlin.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 
 MAT::ELASTIC::PAR::CoupMooneyRivlin::CoupMooneyRivlin(

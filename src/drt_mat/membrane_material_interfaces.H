@@ -10,7 +10,7 @@
 #ifndef MEMBRANE_MATERIAL_INTERFACES_H
 #define MEMBRANE_MATERIAL_INTERFACES_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include <Teuchos_ParameterList.hpp>
 
 namespace MAT

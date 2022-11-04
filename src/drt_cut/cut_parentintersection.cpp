@@ -10,7 +10,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
 #include "cut_volumecell.H"
 
@@ -954,7 +954,7 @@ void GEO::CUT::ParentIntersection::Status(INPAR::CUT::VCellGaussPts gausstype)
 void GEO::CUT::ParentIntersection::DebugCut(Mesh& m)
 {
   // TEST IF VOLUMES PREDICTED OF CELLS ARE SAME:
-  //###########################################################
+  // ###########################################################
   std::vector<double> tessVol, dirDivVol;
   double diff_tol = 10000 * BASICTOL;  // 1e-20; //How sharp to test for.
 
@@ -1019,5 +1019,5 @@ void GEO::CUT::ParentIntersection::DebugCut(Mesh& m)
     // std::cout << "Volume predicted by one of the methods is wrong." << std::endl;
   }
   //------------------------------------------------------
-  //###########################################################
+  // ###########################################################
 }

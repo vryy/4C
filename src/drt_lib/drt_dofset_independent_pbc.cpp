@@ -12,11 +12,11 @@
 #include "drt_dofset_independent_pbc.H"
 
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "drt_discret.H"
+#include "drt_element.H"
+#include "drt_node.H"
+#include "drt_discret.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 
 /*----------------------------------------------------------------------*

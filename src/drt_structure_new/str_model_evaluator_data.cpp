@@ -16,15 +16,15 @@
 #include "str_nln_solver_utils.H"
 #include "str_nln_solver_nox.H"
 
-#include "../solver_nonlin_nox/nox_nln_aux.H"
-#include "../solver_nonlin_nox/nox_nln_statustest_normf.H"
-#include "../solver_nonlin_nox/nox_nln_statustest_normwrms.H"
-#include "../solver_nonlin_nox/nox_nln_statustest_normupdate.H"
+#include "nox_nln_aux.H"
+#include "nox_nln_statustest_normf.H"
+#include "nox_nln_statustest_normwrms.H"
+#include "nox_nln_statustest_normupdate.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
+#include "io.H"
+#include "io_control.H"
 
-#include "../drt_lib/data_collector.H"
+#include "data_collector.H"
 
 #include <Epetra_Comm.h>
 

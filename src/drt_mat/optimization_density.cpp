@@ -10,8 +10,8 @@ Former file of Martin Winklmaier
 
 #include <vector>
 #include "optimization_density.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
 
 
 /*----------------------------------------------------------------------*/

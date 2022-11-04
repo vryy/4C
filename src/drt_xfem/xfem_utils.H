@@ -12,8 +12,8 @@
 #ifndef XFEM_UTILS_H_
 #define XFEM_UTILS_H_
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_cut/cut_point.H"
+#include "drt_discret.H"
+#include "cut_point.H"
 
 namespace XFEM
 {

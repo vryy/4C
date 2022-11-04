@@ -12,12 +12,12 @@
 
 #include "contact_utils.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/every_iteration_writer.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "every_iteration_writer.H"
 
-#include "../drt_inpar/inpar_mortar.H"
-#include "../drt_inpar/inpar_contact.H"
+#include "inpar_mortar.H"
+#include "inpar_contact.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

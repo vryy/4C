@@ -15,17 +15,17 @@
 
 // Todo get rid of header inclusions
 #include "beam3contact_utils.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "linalg_fixedsizematrix.H"
+#include "linalg_sparsematrix.H"
+#include "drt_utils_local_connectivity_matrices.H"
 #include "Sacado.hpp"
-#include "../headers/FAD_utils.H"
+#include "FAD_utils.H"
 
-#include "../drt_inpar/inpar_beamcontact.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_beam3/beam3_base.H"
+#include "inpar_beamcontact.H"
+#include "inpar_contact.H"
+#include "beam3_base.H"
 
-#include "../drt_lib/standardtypes_cpp.H"
+#include "standardtypes_cpp.H"
 
 #include <Epetra_SerialDenseVector.h>
 

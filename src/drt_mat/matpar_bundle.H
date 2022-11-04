@@ -13,7 +13,7 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "../drt_inpar/inpar_material.H"
+#include "inpar_material.H"
 #include "matpar_material.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>

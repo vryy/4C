@@ -16,7 +16,7 @@ MAT 1 MAT_VISCONEOHOOKE YOUNGS_SLOW 1.0 POISSON 0.499 DENS 0.1 YOUNGS_FAST 100.0
 
 #include "so3_material.H"
 #include "matpar_parameter.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 

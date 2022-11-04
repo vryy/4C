@@ -15,8 +15,8 @@ MATLAB, PGFPlot or other tools.
 
 #include <NOX_Observer.hpp>
 
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 class Epetra_Vector;
 class Epetra_Map;

@@ -13,15 +13,15 @@
 
 #include "fluid_utils.H"
 #include "fluidimplicitintegration.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_dofset.H"
-#include "../drt_lib/drt_dofset_interface.H"
-#include "../drt_io/io_control.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_solver.H"
-#include "../drt_inpar/inpar_fluid.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "drt_globalproblem.H"
+#include "drt_dofset.H"
+#include "drt_dofset_interface.H"
+#include "io_control.H"
+#include "linalg_mapextractor.H"
+#include "linalg_solver.H"
+#include "inpar_fluid.H"
+#include "fluid_ele_action.H"
 
 //////////// For WSS aggregation ///////////////
 #include <MLAPI_Workspace.h>

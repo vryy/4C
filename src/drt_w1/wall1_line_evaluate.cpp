@@ -9,20 +9,20 @@
 /*---------------------------------------------------------------------------*/
 
 #include "wall1.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../drt_lib/drt_discret.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "linalg_serialdensevector.H"
+#include "linalg_serialdensematrix.H"
+#include "drt_discret.H"
 #include "drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
-#include "../drt_lib/drt_elements_paramsinterface.H"
+#include "drt_globalproblem.H"
+#include "drt_utils.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_boundary_integration.H"
+#include "drt_elements_paramsinterface.H"
 
-#include "../drt_mat/structporo.H"
+#include "structporo.H"
 
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "drt_nurbs_discret.H"
 
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)      popp 06/13|

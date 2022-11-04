@@ -10,8 +10,8 @@
 
 
 #include "so_base.H"
-#include "../drt_mat/so3_material.H"
-#include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "so3_material.H"
+#include "str_elements_paramsinterface.H"
 
 
 /*----------------------------------------------------------------------*

@@ -13,16 +13,16 @@
 #include "particle_dirichlet_bc.H"
 #include "particle_temperature_bc.H"
 
-#include "../drt_particle_engine/particle_engine_interface.H"
-#include "../drt_particle_engine/particle_enums.H"
-#include "../drt_particle_engine/particle_container_bundle.H"
-#include "../drt_particle_engine/particle_container.H"
+#include "particle_engine_interface.H"
+#include "particle_enums.H"
+#include "particle_container_bundle.H"
+#include "particle_container.H"
 
-#include "../drt_particle_rigidbody/particle_rigidbody_interface.H"
+#include "particle_rigidbody_interface.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_io/io.H"
+#include "io.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

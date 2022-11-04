@@ -13,9 +13,9 @@
 #include "integrationcell.H"
 #include "element_coordtrafo.H"
 #include "element_volume.H"
-#include "../drt_io/io_gmsh.H"
+#include "io_gmsh.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*

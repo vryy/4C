@@ -15,12 +15,12 @@
 
 #include "levelset_intersection_utils.H"
 
-#include "../drt_scatra/scatra_resulttest.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "scatra_resulttest.H"
+#include "standardtypes_cpp.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_io/io.H"
+#include "io.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

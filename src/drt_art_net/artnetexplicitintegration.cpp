@@ -15,21 +15,21 @@
 
 #include <stdio.h>
 
-#include "../drt_art_net/artnetexplicitintegration.H"
+#include "artnetexplicitintegration.H"
 #include "artery_ele_action.H"
 
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_solver.H"
+#include "drt_condition_utils.H"
+#include "drt_globalproblem.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "linalg_solver.H"
 #include "drt_dserror.H"
-#include "../drt_lib/drt_function.H"
+#include "drt_function.H"
 #include "artery_resulttest.H"
 #include "art_junction.H"
 
-//#include "../drt_fluid/fluidimpedancecondition.H"
+// #include "fluidimpedancecondition.H"
 
 
 
@@ -829,10 +829,10 @@ void ART::ArtNetExplicitTimeInt::Output(
     // write domain decomposition for visualization (only once!)
     if (step_ == upres_) output_.WriteElementData(true);
 
-    //#endif
-    // ------------------------------------------------------------------
-    // Export gnuplot format arteries
-    // ------------------------------------------------------------------
+    // #endif
+    //  ------------------------------------------------------------------
+    //  Export gnuplot format arteries
+    //  ------------------------------------------------------------------
 
     Teuchos::ParameterList params;
     // other parameters that might be needed by the elements
@@ -898,7 +898,7 @@ void ART::ArtNetExplicitTimeInt::Output(
     // ------------------------------------------------------------------
     // Export gnuplot format arteries
     // ------------------------------------------------------------------
-    //#endif
+    // #endif
     Teuchos::ParameterList params;
     // other parameters that might be needed by the elements
     params.set("total time", time_);

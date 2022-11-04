@@ -10,10 +10,10 @@
 
 #include "membrane_scatra.H"
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "drt_utils_fem_shapefunctions.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
 
 /*----------------------------------------------------------------------*
  |  pre-evaluate the element (public)                      sfuchs 05/18 |

@@ -16,7 +16,7 @@ to)
 #ifndef TRANSFERTURBINF_H
 #define TRANSFERTURBINF_H
 #include "Teuchos_RCP.hpp"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 /*
 

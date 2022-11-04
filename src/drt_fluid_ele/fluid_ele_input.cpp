@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "fluid_ele.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
 
 

@@ -9,7 +9,7 @@
 #include "consolidation.H"
 #include "fouriervar.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 #include "matpar_bundle.H"
 #include "stvenantkirchhoff.H"
 #include "thermostvenantkirchhoff.H"

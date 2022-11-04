@@ -12,8 +12,8 @@
 #ifndef BACI_MIXTURE_PRESTRESS_STRATEGY_H
 #define BACI_MIXTURE_PRESTRESS_STRATEGY_H
 
-#include "../drt_mat/matpar_parameter.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "matpar_parameter.H"
+#include "linalg_fixedsizematrix.H"
 #include <Teuchos_ENull.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_RCPDecl.hpp>

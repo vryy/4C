@@ -17,14 +17,14 @@
 #include <functional>
 
 #include "fsi_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../drt_mat/matpar_bundle.H"
+#include "drt_globalproblem.H"
+#include "drt_utils.H"
+#include "drt_condition_utils.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "matpar_bundle.H"
 
 #include <Epetra_CrsMatrix.h>
 #include <EpetraExt_RowMatrixOut.h>
@@ -32,21 +32,21 @@
 #include <NOX_Epetra.H>
 #include <Epetra_SerialDenseMatrix.h>
 
-#include "../drt_so3/so_surface.H"
-#include "../drt_so3/so_line.H"
+#include "so_surface.H"
+#include "so_line.H"
 
 #include "fsi_debugwriter.H"
-#include "../drt_geometry/searchtree.H"
-#include "../drt_geometry/searchtree_geometry_service.H"
-#include "../drt_adapter/ad_fld_fluid_ale.H"
-#include "../drt_adapter/adapter_coupling_mortar.H"
-#include "../drt_mortar/mortar_interface.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/ad_ale_fsi.H"
-#include "../drt_adapter/adapter_coupling.H"
+#include "searchtree.H"
+#include "searchtree_geometry_service.H"
+#include "ad_fld_fluid_ale.H"
+#include "adapter_coupling_mortar.H"
+#include "mortar_interface.H"
+#include "ad_str_fsiwrapper.H"
+#include "ad_ale_fsi.H"
+#include "adapter_coupling.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
+#include "io.H"
+#include "io_control.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

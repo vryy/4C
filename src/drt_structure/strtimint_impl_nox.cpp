@@ -16,9 +16,9 @@
 #include "strtimint_impl.H"
 #include "strtimint_noxgroup.H"
 #include "strtimint_noxlinsys.H"
-#include "../drt_inpar/drt_boolifyparameters.H"
-#include "../linalg/linalg_blocksparsematrix.H"
-#include "../drt_io/io_pstream.H"
+#include "drt_boolifyparameters.H"
+#include "linalg_blocksparsematrix.H"
+#include "io_pstream.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

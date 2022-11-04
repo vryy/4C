@@ -8,24 +8,24 @@
 /*-----------------------------------------------------------*/
 
 #include "discsh3.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_discret.H"
-// #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_utils.H"
+#include "drt_discret.H"
+// #include "drt_element.H"
+#include "drt_globalproblem.H"
 #include "drt_dserror.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_mat/stvenantkirchhoff.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "stvenantkirchhoff.H"
+#include "linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_integration.H"
+#include "drt_utils_fem_shapefunctions.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "Sacado.hpp"
 
-#include "../drt_inpar/inpar_browniandyn.H"
+#include "inpar_browniandyn.H"
 typedef Sacado::Fad::DFad<double> FAD;
 
 

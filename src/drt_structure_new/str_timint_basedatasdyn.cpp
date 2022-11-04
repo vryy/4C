@@ -14,16 +14,16 @@
 #include "str_timint_basedatasdyn.H"
 #include "str_utils.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
 
-#include "../drt_lib/prestress_service.H"
+#include "prestress_service.H"
 
-#include "../linalg/linalg_solver.H"
+#include "linalg_solver.H"
 
 #include <Epetra_Time.h>
 
-#include "../drt_beaminteraction/periodic_boundingbox.H"
+#include "periodic_boundingbox.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

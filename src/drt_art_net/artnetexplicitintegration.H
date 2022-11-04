@@ -20,11 +20,11 @@
 
 
 #include "Teuchos_RCP.hpp"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../drt_io/io.H"
-#include "../drt_lib/drt_function.H"
+#include "drt_discret.H"
+#include "linalg_mapextractor.H"
+#include "linalg_sparsematrix.H"
+#include "io.H"
+#include "drt_function.H"
 #include "art_junction.H"
 #include "art_write_gnuplot.H"
 

@@ -13,12 +13,12 @@
 #include "porofluid_variablemanager.H"
 #include "porofluidmultiphase_ele_calc_utils.H"
 
-#include "../drt_mat/scatra_mat_multiporo.H"
-#include "../drt_mat/fluidporo_multiphase.H"
-#include "../drt_mat/fluidporo_singlephase.H"
-#include "../drt_mat/structporo.H"
-#include "../drt_mat/fluidporo_multiphase_reactions.H"
-#include "../drt_mat/fluidporo_multiphase_singlereaction.H"
+#include "scatra_mat_multiporo.H"
+#include "fluidporo_multiphase.H"
+#include "fluidporo_singlephase.H"
+#include "structporo.H"
+#include "fluidporo_multiphase_reactions.H"
+#include "fluidporo_multiphase_singlereaction.H"
 
 #include <Epetra_SerialDenseSolver.h>
 

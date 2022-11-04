@@ -9,8 +9,8 @@
 #ifndef PRESTRESS_H
 #define PRESTRESS_H
 
-#include "../drt_lib/drt_parobject.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobject.H"
+#include "drt_parobjectfactory.H"
 
 namespace DRT
 {

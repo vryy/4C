@@ -10,11 +10,11 @@
 #include "contact_nitsche_strategy_ssi.H"
 #include "contact_interface.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_mortar/mortar_element.H"
+#include "mortar_element.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/

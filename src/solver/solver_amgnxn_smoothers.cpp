@@ -23,7 +23,7 @@
 #include <MueLu_EpetraOperator.hpp>
 
 #include "drt_dserror.H"
-#include "../linalg/linalg_multiply.H"
+#include "linalg_multiply.H"
 
 #include "solver_amgnxn_smoothers.H"
 #include "solver_amgnxn_hierarchies.H"

@@ -10,9 +10,9 @@
 #include "beam_to_beam_point_coupling_pair_condition.H"
 #include "beam_to_beam_point_coupling_pair.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_condition.H"
-#include "../drt_geometry_pair/geometry_pair_element.H"
+#include "drt_discret.H"
+#include "drt_condition.H"
+#include "geometry_pair_element.H"
 
 
 /**

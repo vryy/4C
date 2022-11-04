@@ -13,7 +13,7 @@
 #include "poromultiphase_monolithic.H"
 #include <Epetra_Time.h>
 
-#include "../drt_inpar/inpar_poromultiphase.H"
+#include "inpar_poromultiphase.H"
 
 // forward declarations
 namespace LINALG

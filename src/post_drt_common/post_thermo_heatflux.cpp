@@ -19,9 +19,9 @@
 #include "post_drt_common.H"
 #include <string>
 #include "post_single_field_writers.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../pss_full/pss_cpp.h"
-#include "../drt_thermo/thermo_ele_action.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "pss_cpp.h"
+#include "thermo_ele_action.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               dano 11/09 |

@@ -18,11 +18,11 @@
 
 #include "thermo_ele_action.H"
 
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
-#include "../drt_timestepping/timintmstep.H"
+#include "timintmstep.H"
 
-#include "../drt_contact/contact_nitsche_strategy_tsi.H"
+#include "contact_nitsche_strategy_tsi.H"
 
 /*----------------------------------------------------------------------*
  | print thermal time logo                                   dano 08/09 |

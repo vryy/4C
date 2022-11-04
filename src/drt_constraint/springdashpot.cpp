@@ -12,16 +12,16 @@
 
 #include <iostream>
 #include <utility>
-#include "../drt_adapter/adapter_coupling_nonlin_mortar.H"
-#include "../drt_contact/contact_interface.H"
-#include "../drt_io/io_pstream.H"  // has to go before io.H
-#include "../drt_io/io.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/function_of_time.H"
-#include "../drt_truss3/truss3.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "adapter_coupling_nonlin_mortar.H"
+#include "contact_interface.H"
+#include "io_pstream.H"  // has to go before io.H
+#include "io.H"
+#include "drt_condition_utils.H"
+#include "drt_globalproblem.H"
+#include "function_of_time.H"
+#include "truss3.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
 /*----------------------------------------------------------------------*
  |                                                         pfaller Apr15|

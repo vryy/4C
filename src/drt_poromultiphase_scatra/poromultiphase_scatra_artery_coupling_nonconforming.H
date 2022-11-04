@@ -11,7 +11,7 @@
 #define SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_NONCONFORMING_H_
 
 #include "poromultiphase_scatra_artery_coupling_base.H"
-#include "../drt_inpar/inpar_bio.H"
+#include "inpar_bio.H"
 
 // forward declaration
 class Epetra_FEVector;

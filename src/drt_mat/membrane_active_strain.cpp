@@ -15,9 +15,9 @@
  | headers                                         brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
 #include "membrane_active_strain.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_utils_densematrix_inverse.H"
+#include "matpar_bundle.H"
+#include "drt_globalproblem.H"
+#include "linalg_utils_densematrix_inverse.H"
 #include "membrane_elasthyper.H"
 
 /*----------------------------------------------------------------------*

@@ -14,11 +14,11 @@
 #ifndef SRC_DRT_STRUCTURE_NEW_STR_TIMINT_NOXINTERFACE_H_
 #define SRC_DRT_STRUCTURE_NEW_STR_TIMINT_NOXINTERFACE_H_
 
-#include "../solver_nonlin_nox/nox_nln_interface_required.H"  // (1) base class: rhs, status tests and more
-#include "../solver_nonlin_nox/nox_nln_interface_jacobian.H"  // (2) base class: jacobian
+#include "nox_nln_interface_required.H"           // (1) base class: rhs, status tests and more
+#include "nox_nln_interface_jacobian.H"           // (2) base class: jacobian
 #include <NOX_Epetra_Interface_Preconditioner.H>  // (3) base class: preconditioner stuff
 
-#include "../solver_nonlin_nox/nox_nln_enum_lists.H"
+#include "nox_nln_enum_lists.H"
 // forward declaration ...
 namespace NOX
 {

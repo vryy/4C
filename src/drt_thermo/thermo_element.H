@@ -19,13 +19,13 @@ Pack, Unpack, NumDofPerNode etc.
  | headers                                                    gjb 01/08 |
  *----------------------------------------------------------------------*/
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementtype.H"
+#include "drt_element.H"
+#include "drt_elementtype.H"
 
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
-//#include "../drt_tsi/kinematictype.H"
-#include "../drt_inpar/inpar_structure.H"
+// #include "kinematictype.H"
+#include "inpar_structure.H"
 
 
 /*----------------------------------------------------------------------*/

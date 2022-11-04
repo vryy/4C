@@ -12,17 +12,17 @@
  | headers                                                  bborn 08/09 |
  *----------------------------------------------------------------------*/
 #include "adapter_thermo.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_thermo/thrtimint_statics.H"
-#include "../drt_thermo/thrtimint_genalpha.H"
-#include "../drt_thermo/thrtimint_ost.H"
-#include "../drt_thermo/thrtimint_expleuler.H"
+#include "io_pstream.H"
+#include "drt_globalproblem.H"
+#include "thrtimint_statics.H"
+#include "thrtimint_genalpha.H"
+#include "thrtimint_ost.H"
+#include "thrtimint_expleuler.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 // further includes for ThermoBaseAlgorithm:
-#include "../drt_inpar/inpar_thermo.H"
+#include "inpar_thermo.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 

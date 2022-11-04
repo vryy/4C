@@ -17,7 +17,7 @@
 
 #include "ad_fld_wrapper.H"
 
-#include "../drt_inpar/inpar_fsi.H"
+#include "inpar_fsi.H"
 
 namespace DRT
 {

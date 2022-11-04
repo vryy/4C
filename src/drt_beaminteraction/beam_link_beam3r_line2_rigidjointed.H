@@ -11,9 +11,9 @@ elements
 #ifndef BeamLinkBeam3rLine2RigidJointed_H
 #define BeamLinkBeam3rLine2RigidJointed_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include "beam_link_rigidjointed.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_serialdensevector.H"
 
 // forward declarations
 namespace LINALG

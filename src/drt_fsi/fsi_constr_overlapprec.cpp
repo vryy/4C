@@ -12,12 +12,12 @@
 
 #include "fsi_constr_overlapprec.H"
 #include "fsi_debugwriter.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/ad_fld_fluid.H"
-#include "../linalg/linalg_precond.H"
-#include "../linalg/linalg_solver.H"
+#include "drt_globalproblem.H"
+#include "io_control.H"
+#include "ad_str_fsiwrapper.H"
+#include "ad_fld_fluid.H"
+#include "linalg_precond.H"
+#include "linalg_solver.H"
 
 // /*----------------------------------------------------------------------*
 //  *----------------------------------------------------------------------*/

@@ -17,19 +17,19 @@
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialDenseMatrix.h"
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_lib/drt_node.H"
+#include "drt_element.H"
+#include "drt_elementtype.H"
+#include "drt_parobjectfactory.H"
+#include "drt_node.H"
 
 #include "so_base.H"
 
 //@=
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 
-#include "../drt_mat/material.H"
+#include "material.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 /// Several parameters which are fixed for Solid nurbs27
 const int NUMNOD_SONURBS27 = 27;  ///< number of nodes

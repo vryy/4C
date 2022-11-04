@@ -13,7 +13,7 @@
 #include "immersed_geometry_coupler_fbi.H"
 #include "immersed_geometry_coupler_fbi_binning.H"
 
-#include "../drt_inpar/inpar_fbi.H"
+#include "inpar_fbi.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 /*----------------------------------------------------------------------*/

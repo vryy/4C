@@ -15,8 +15,8 @@
 #include "Teuchos_RCP.hpp"
 #include <vector>
 
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_lib/drt_element.H"
+#include "linalg_fixedsizematrix.H"
+#include "drt_element.H"
 
 
 

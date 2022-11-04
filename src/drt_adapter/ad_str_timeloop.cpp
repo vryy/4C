@@ -11,8 +11,8 @@
 /*----------------------------------------------------------------------*/
 
 #include "ad_str_timeloop.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "inpar_structure.H"
+#include "drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*/

@@ -13,9 +13,9 @@
 
 #include "topopt_fluidAdjointResulttest.H"
 #include "topopt_fluidAdjointImplTimeIntegration.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_linedefinition.H"
 
 
 /*----------------------------------------------------------------------*/

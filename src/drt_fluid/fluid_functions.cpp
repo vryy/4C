@@ -10,15 +10,15 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_functions.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/fluid_murnaghantait.H"
-#include "../drt_mat/fluid_linear_density_viscosity.H"
-#include "../drt_mat/fluid_weakly_compressible.H"
-#include "../drt_mat/stvenantkirchhoff.H"
-#include "../drt_structure_new/str_functions.cpp"
+#include "drt_globalproblem.H"
+#include "standardtypes_cpp.H"
+#include "matpar_bundle.H"
+#include "newtonianfluid.H"
+#include "fluid_murnaghantait.H"
+#include "fluid_linear_density_viscosity.H"
+#include "fluid_weakly_compressible.H"
+#include "stvenantkirchhoff.H"
+#include "str_functions.cpp"
 #include "Teuchos_RCP.hpp"
 
 namespace

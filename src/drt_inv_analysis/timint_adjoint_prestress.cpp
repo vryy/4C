@@ -9,13 +9,13 @@
 #include "timint_adjoint_prestress.H"
 
 #include "drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../drt_lib/drt_locsys.H"
-#include "../drt_lib/prestress_service.H"
+#include "drt_globalproblem.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_solver.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "drt_locsys.H"
+#include "prestress_service.H"
 
 /*----------------------------------------------------------------------*/
 /* constructor                                               keh 12/14  */

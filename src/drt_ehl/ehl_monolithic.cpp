@@ -15,42 +15,42 @@
  *----------------------------------------------------------------------*/
 #include "ehl_monolithic.H"
 
-#include "../drt_lubrication/lubrication_timint_implicit.H"
+#include "lubrication_timint_implicit.H"
 
-#include "../drt_lubrication_ele/lubrication_ele_action.H"
+#include "lubrication_ele_action.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_adapter/adapter_lubrication.H"
-#include "../drt_adapter/ad_str_structure.H"
-#include "../drt_lib/drt_assemblestrategy.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_locsys.H"
+#include "adapter_lubrication.H"
+#include "ad_str_structure.H"
+#include "drt_assemblestrategy.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_locsys.H"
 
-#include "../drt_adapter/adapter_coupling_ehl_mortar.H"
-#include "../drt_contact/contact_interface.H"
-#include "../drt_contact/contact_node.H"
+#include "adapter_coupling_ehl_mortar.H"
+#include "contact_interface.H"
+#include "contact_node.H"
 
-#include "../drt_contact/contact_element.H"
+#include "contact_element.H"
 
-#include "../drt_mortar/mortar_node.H"
-#include "../drt_mortar/mortar_coupling3d_classes.H"
+#include "mortar_node.H"
+#include "mortar_coupling3d_classes.H"
 
-#include "../linalg/linalg_blocksparsematrix.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_matrixtransform.H"
+#include "linalg_blocksparsematrix.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_solver.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_multiply.H"
+#include "linalg_matrixtransform.H"
 
-#include "../drt_inpar/inpar_solver.H"
+#include "inpar_solver.H"
 
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
-#include "../drt_mat/lubrication_mat.H"
+#include "lubrication_mat.H"
 
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is

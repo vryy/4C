@@ -12,12 +12,12 @@
 #include "wall1_poro_p1.H"
 #include "wall1_poro_p1_eletypes.H"
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
-#include "../drt_mat/fluidporo.H"
-#include "../drt_mat/structporo.H"
+#include "fluidporo.H"
+#include "structporo.H"
 
-#include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "str_elements_paramsinterface.H"
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_PoroP1<distype>::ComputePorosityAndLinearization(

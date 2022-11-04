@@ -11,7 +11,7 @@
 
 #include <Epetra_MpiComm.h>
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

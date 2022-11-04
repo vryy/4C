@@ -9,22 +9,22 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
 #include "drt_dserror.H"
-#include "../linalg/linalg_utils_densematrix_inverse.H"
-#include "../linalg/linalg_utils_densematrix_determinant.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_utils_densematrix_inverse.H"
+#include "linalg_utils_densematrix_determinant.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "Epetra_FECrsMatrix.h"
 #include "Sacado.hpp"
 
-#include "../drt_mat/material_service.H"
-#include "../drt_mat/micromaterial.H"
-#include "../drt_mat/stvenantkirchhoff.H"
-#include "../drt_mat/aaaneohooke.H"
-#include "../drt_mat/elasthyper.H"
+#include "material_service.H"
+#include "micromaterial.H"
+#include "stvenantkirchhoff.H"
+#include "aaaneohooke.H"
+#include "elasthyper.H"
 
 #include "so_nstet.H"
 

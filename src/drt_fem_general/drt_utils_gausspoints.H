@@ -11,7 +11,7 @@
 #define DRT_UTILS_GAUSSPOINTS_H
 
 #include "drt_utils_fem_shapefunctions.H"
-#include "../drt_geometry/element_coordtrafo.H"
+#include "element_coordtrafo.H"
 
 namespace DRT
 {

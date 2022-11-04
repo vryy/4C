@@ -15,9 +15,9 @@
 #include "drt_assemblestrategy.H"
 #include "drt_discret.H"
 
-#include "../linalg/linalg_sparseoperator.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_sparseoperator.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
 
 DRT::AssembleStrategy::AssembleStrategy(int firstdofset, int seconddofset,
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
@@ -77,9 +77,9 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::AssembleStrategy::MatrixGraph(
 
       // check whether I have that global row
       int rgid = lmrow[lrow];
-      //#ifdef DEBUG
+      // #ifdef DEBUG
       if (!dofrowmap.MyGID(rgid)) dserror("Proc %d does not have global row %d", myrank, rgid);
-      //#endif
+      // #endif
 
       // if we have a Dirichlet map check if this row is a Dirichlet row
       int err;

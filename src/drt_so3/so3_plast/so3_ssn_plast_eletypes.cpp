@@ -7,7 +7,7 @@
 #include "so3_ssn_plast_eletypes.H"
 #include "so3_ssn_plast.H"
 
-#include "../../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
 /*----------------------------------------------------------------------------*
  *  HEX8 element

@@ -10,10 +10,10 @@
 #include "so3_poro_p1.H"
 #include "so3_poro_p1_eletypes.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_mat/fluidporo.H"
-#include "../drt_mat/structporo.H"
+#include "fluidporo.H"
+#include "structporo.H"
 
 
 template <class so3_ele, DRT::Element::DiscretizationType distype>

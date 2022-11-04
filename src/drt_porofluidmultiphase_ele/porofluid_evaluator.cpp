@@ -14,11 +14,11 @@
 
 #include "porofluidmultiphase_ele_parameter.H"
 
-#include "../drt_mat/fluidporo_multiphase.H"
-#include "../drt_mat/fluidporo_singlephase.H"
+#include "fluidporo_multiphase.H"
+#include "fluidporo_singlephase.H"
 
 // necessary for function
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  | factory method                                           vuong 08/16 |

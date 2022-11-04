@@ -18,8 +18,8 @@
  *----------------------------------------------------------------------*/
 #include <list>
 
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_binstrategy/binning_strategy_utils.H"
+#include "linalg_fixedsizematrix.H"
+#include "binning_strategy_utils.H"
 
 
 #include "Epetra_MpiComm.h"

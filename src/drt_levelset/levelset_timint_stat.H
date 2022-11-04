@@ -12,7 +12,7 @@
 #ifndef LEVELSET_TIMINT_STAT_H
 #define LEVELSET_TIMINT_STAT_H
 
-#include "../drt_scatra/scatra_timint_stat.H"
+#include "scatra_timint_stat.H"
 #include "levelset_algorithm.H"
 
 

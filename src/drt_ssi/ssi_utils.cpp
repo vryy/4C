@@ -13,21 +13,21 @@
 
 #include "ssi_monolithic.H"
 
-#include "../drt_adapter/ad_str_ssiwrapper.H"
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "ad_str_ssiwrapper.H"
+#include "adapter_coupling.H"
+#include "adapter_scatra_base_algorithm.H"
 
-#include "../drt_inpar/inpar_s2i.H"
+#include "inpar_s2i.H"
 
-#include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_utils_gid_vector.H"
+#include "drt_utils_createdis.H"
+#include "drt_utils_gid_vector.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
+#include "scatra_timint_implicit.H"
+#include "scatra_timint_meshtying_strategy_s2i.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../drt_lib/drt_matchingoctree.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "drt_matchingoctree.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

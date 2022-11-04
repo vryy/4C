@@ -11,7 +11,7 @@
 #ifndef BEAMPOTENTIALPARAMS_H
 #define BEAMPOTENTIALPARAMS_H
 
-#include "../drt_inpar/inpar_beampotential.H"
+#include "inpar_beampotential.H"
 
 // forward declaration
 namespace BEAMINTERACTION

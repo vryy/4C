@@ -14,8 +14,8 @@
 #define INTERSECTION_TEMPLATES_H_
 
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_geometry/intersection_math.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "intersection_math.H"
 
 
 namespace GEO

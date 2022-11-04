@@ -15,10 +15,10 @@
 
 #include "fluid_ele_parameter_std.H"
 #include "fluid_ele_parameter_timint.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_integration.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 namespace DRT
 {

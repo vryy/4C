@@ -10,7 +10,7 @@
 #include "invana_writer.H"
 
 // baci
-#include "../drt_io/io.H"
+#include "io.H"
 #include "drt_dserror.H"
 
 /*----------------------------------------------------------------------------*/

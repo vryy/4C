@@ -11,7 +11,7 @@
 #include "fluidporo_multiphase_reactions.H"
 #include "fluidporo_multiphase_singlereaction.H"
 #include "matpar_bundle.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  | rstandard constructor                                     vuong 08/16 |

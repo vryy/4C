@@ -11,8 +11,8 @@
 #ifndef STRUCTURE_UTILS_MAPEXTRACTOR_H
 #define STRUCTURE_UTILS_MAPEXTRACTOR_H
 
-#include "../linalg/linalg_mapextractor.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "linalg_mapextractor.H"
+#include "inpar_structure.H"
 
 // forward declarations
 namespace DRT

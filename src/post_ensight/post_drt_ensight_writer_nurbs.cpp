@@ -11,11 +11,11 @@
 
 
 #include "post_drt_ensight_writer.H"
-#include "../post_drt_common/post_drt_common.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-#include "../drt_nurbs_discret/drt_control_point.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "post_drt_common.H"
+#include "drt_nurbs_discret.H"
+#include "drt_utils_nurbs_shapefunctions.H"
+#include "drt_control_point.H"
+#include "linalg_utils_densematrix_communication.H"
 #include <string>
 
 /*----------------------------------------------------------------------*/

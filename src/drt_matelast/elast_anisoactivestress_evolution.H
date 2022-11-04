@@ -10,9 +10,9 @@
 #define ELAST_ANISOACTIVESTRESS_EVOLUTION_H_
 
 #include "elast_summand.H"
-#include "../drt_mat/matpar_parameter.H"
-#include "../drt_mat/anisotropy.H"
-#include "../drt_mat/anisotropy_extension_default.H"
+#include "matpar_parameter.H"
+#include "anisotropy.H"
+#include "anisotropy_extension_default.H"
 
 namespace MAT
 {

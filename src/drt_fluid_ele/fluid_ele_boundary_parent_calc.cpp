@@ -11,36 +11,36 @@
 
 #include "fluid_ele_boundary_parent_calc.H"
 #include "fluid_ele.H"
-#include "../drt_lib/drt_element_integration_select.H"
+#include "drt_element_integration_select.H"
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_boundary_integration.H"
+#include "drt_utils_nurbs_shapefunctions.H"
 
-#include "../drt_geometry/position_array.H"
+#include "position_array.H"
 
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+#include "drt_nurbs_utils.H"
 // TODO: remove after Nurbs functions are changed
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "drt_nurbs_discret.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/function_of_time.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "drt_globalproblem.H"
+#include "drt_utils.H"
+#include "function_of_time.H"
+#include "standardtypes_cpp.H"
 
-#include "../linalg/linalg_utils_densematrix_eigen.H"
+#include "linalg_utils_densematrix_eigen.H"
 
-#include "../drt_mat/arrhenius_pv.H"
-#include "../drt_mat/carreauyasuda.H"
-#include "../drt_mat/ferech_pv.H"
-#include "../drt_mat/fluidporo.H"
-#include "../drt_mat/herschelbulkley.H"
-#include "../drt_mat/mixfrac.H"
-#include "../drt_mat/modpowerlaw.H"
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/permeablefluid.H"
-#include "../drt_mat/sutherland.H"
-#include "../drt_mat/tempdepwater.H"
+#include "arrhenius_pv.H"
+#include "carreauyasuda.H"
+#include "ferech_pv.H"
+#include "fluidporo.H"
+#include "herschelbulkley.H"
+#include "mixfrac.H"
+#include "modpowerlaw.H"
+#include "newtonianfluid.H"
+#include "permeablefluid.H"
+#include "sutherland.H"
+#include "tempdepwater.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

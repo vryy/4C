@@ -9,22 +9,22 @@
 /*----------------------------------------------------------------------*/
 #include "scatra_timint_heterogeneous_reaction_strategy.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dofset_gidbased_wrapper.H"
-#include "../drt_lib/drt_dofset_merged_wrapper.H"
-#include "../drt_lib/drt_utils_parallel.H"
-#include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_utils_parameter_list.H"
+#include "drt_discret.H"
+#include "drt_dofset_gidbased_wrapper.H"
+#include "drt_dofset_merged_wrapper.H"
+#include "drt_utils_parallel.H"
+#include "drt_utils_createdis.H"
+#include "drt_utils_parameter_list.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_scatra/scatra_utils_clonestrategy.H"
+#include "scatra_timint_implicit.H"
+#include "scatra_utils_clonestrategy.H"
 
-#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "scatra_ele_action.H"
 
-#include "../drt_scatra_ele/scatra_ele.H"
+#include "scatra_ele.H"
 
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_solver.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_solver.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               vuong 06/16 |

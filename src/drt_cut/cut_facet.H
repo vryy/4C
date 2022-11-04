@@ -11,11 +11,11 @@
 #ifndef CUT_FACET_H
 #define CUT_FACET_H
 
-#include "../../src/drt_fem_general/drt_utils_gausspoints.H"
+#include "drt_utils_gausspoints.H"
 
 #include "cut_line.H"
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 namespace GEO
 {

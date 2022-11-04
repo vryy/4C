@@ -16,16 +16,16 @@
 #include <Epetra_FEVector.h>
 #include <Epetra_Time.h>
 
-#include "../drt_contact/contact_node.H"
-#include "../drt_contact/contact_element.H"
-#include "../drt_contact/contact_defines.H"
+#include "contact_node.H"
+#include "contact_element.H"
+#include "contact_defines.H"
 
-#include "../drt_inpar/inpar_mortar.H"
-#include "../drt_inpar/inpar_contact.H"
+#include "inpar_mortar.H"
+#include "inpar_contact.H"
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 #include "drt_dserror.H"
-#include "../drt_lib/drt_node.H"
+#include "drt_node.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                                       |

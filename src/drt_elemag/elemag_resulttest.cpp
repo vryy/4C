@@ -11,8 +11,8 @@
 
 #include "elemag_resulttest.H"
 #include "elemag_timeint.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_linedefinition.H"
+#include "drt_discret.H"
 
 /*----------------------------------------------------------------------*
  |                                                     berardocco 10/18 |

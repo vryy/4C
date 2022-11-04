@@ -19,11 +19,11 @@
 #include "str_elements_paramsinterface.H"  // base class of the Data class
 #include "str_timint_basedatasdyn.H"       // base class of the Data class
 #include "str_enum_lists.H"
-#include "../drt_contact/contact_paramsinterface.H"  // base class of the ContactData class
-#include "../drt_lib/drt_discret.H"
-#include "../drt_inpar/inpar_browniandyn.H"  // enums
+#include "contact_paramsinterface.H"  // base class of the ContactData class
+#include "drt_discret.H"
+#include "inpar_browniandyn.H"  // enums
 
-#include "../headers/pairedvector.H"
+#include "pairedvector.H"
 
 
 // forward declarations

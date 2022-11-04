@@ -14,7 +14,7 @@
 #include "nox_nln_meritfunction_lagrangian.H"  // class header
 #include "nox_nln_constraint_group.H"
 
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_serialdensevector.H"
 
 #include <NOX_Abstract_Vector.H>
 #include <NOX_Utils.H>

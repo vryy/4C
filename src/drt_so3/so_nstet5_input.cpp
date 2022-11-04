@@ -9,8 +9,8 @@
 *----------------------------------------------------------------------*/
 
 #include "so_nstet5.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_mat/elasthyper.H"
+#include "drt_linedefinition.H"
+#include "elasthyper.H"
 
 
 /*----------------------------------------------------------------------*/

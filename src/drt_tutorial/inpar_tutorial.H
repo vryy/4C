@@ -14,7 +14,7 @@
 #ifndef INPAR_TUTORIAL_H_
 #define INPAR_TUTORIAL_H_
 
-#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "inpar_parameterlist_utils.H"
 
 namespace INPAR
 {

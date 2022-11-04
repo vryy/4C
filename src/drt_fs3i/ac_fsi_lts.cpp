@@ -16,38 +16,38 @@
 
 #include "ac_fsi.H"
 
-#include "../drt_fsi/fsi_monolithic.H"
+#include "fsi_monolithic.H"
 
-#include "../drt_adapter/ad_fld_fluid_ac_fsi.H"
-#include "../drt_adapter/ad_ale_fsi.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "ad_fld_fluid_ac_fsi.H"
+#include "ad_ale_fsi.H"
+#include "ad_str_fsiwrapper.H"
 
-#include "../drt_scatra/scatra_algorithm.H"
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "scatra_algorithm.H"
+#include "scatra_timint_implicit.H"
 
-#include "../drt_inpar/inpar_material.H"
+#include "inpar_material.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_element.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_mat/material.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/so3_material.H"
-#include "../drt_mat/growth_law.H"
-#include "../drt_mat/growth.H"
+#include "material.H"
+#include "matpar_bundle.H"
+#include "so3_material.H"
+#include "growth_law.H"
+#include "growth.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_solver.H"
+#include "linalg_mapextractor.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
+#include "io.H"
+#include "io_control.H"
 
 // FOR WSS CALCULATIONS
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../drt_structure/stru_aux.H"
+#include "fluid_utils_mapextractor.H"
+#include "stru_aux.H"
 
 /*----------------------------------------------------------------------*
  | timeloop for small time scales                            Thon 07/15 |

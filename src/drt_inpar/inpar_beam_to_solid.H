@@ -15,7 +15,7 @@
 
 #include "inpar_parameterlist_utils.H"
 
-#include "../drt_lib/drt_condition.H"
+#include "drt_condition.H"
 
 
 // Forward declaration.

@@ -13,16 +13,16 @@
 #include "contact_augmented_strategy.H"
 #include "contact_augmented_interface.H"
 
-#include "../drt_contact/contact_paramsinterface.H"
-#include "../drt_contact/contact_strategy_factory.H"
+#include "contact_paramsinterface.H"
+#include "contact_strategy_factory.H"
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_structure_new/str_model_evaluator_contact.H"
+#include "str_model_evaluator_contact.H"
 
 
 /*----------------------------------------------------------------------------*

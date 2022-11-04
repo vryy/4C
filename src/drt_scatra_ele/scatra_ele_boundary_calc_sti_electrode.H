@@ -10,7 +10,7 @@
 #ifndef SCATRA_ELE_BOUNDARY_CALC_STI_ELECTRODE_H
 #define SCATRA_ELE_BOUNDARY_CALC_STI_ELECTRODE_H
 
-#include "../drt_scatra_ele/scatra_ele_boundary_calc.H"
+#include "scatra_ele_boundary_calc.H"
 
 // forward declaration
 namespace MAT

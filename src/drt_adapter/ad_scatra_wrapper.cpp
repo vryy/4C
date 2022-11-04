@@ -7,9 +7,9 @@
 
 
 #include "ad_scatra_wrapper.H"
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "scatra_timint_implicit.H"
 #include "drt_dserror.H"
-#include "../linalg/linalg_sparseoperator.H"
+#include "linalg_sparseoperator.H"
 
 
 /*----------------------------------------------------------------------------*

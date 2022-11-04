@@ -14,10 +14,10 @@
 
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
-#include "../drt_lib/drt_resulttest.H"
+#include "drt_resulttest.H"
 #include <Epetra_Vector.h>
 
-#include "../drt_adapter/ad_ale.H"
+#include "ad_ale.H"
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */

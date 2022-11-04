@@ -9,21 +9,21 @@
 /*----------------------------------------------------------------------*/
 #include "ad_fld_fluid_fsi.H"
 
-#include "../drt_adapter/ad_fld_fluid.H"
-#include "../drt_fluid/fluidimplicitintegration.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../drt_fluid/fluid_utils.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_solver.H"
+#include "ad_fld_fluid.H"
+#include "fluidimplicitintegration.H"
+#include "fluid_utils_mapextractor.H"
+#include "fluid_utils.H"
+#include "fluid_ele_action.H"
+#include "linalg_mapextractor.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_solver.H"
 
-#include "../drt_inpar/inpar_fsi.H"
+#include "inpar_fsi.H"
 
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>

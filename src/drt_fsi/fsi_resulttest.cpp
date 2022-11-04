@@ -18,10 +18,10 @@
 #include "fsi_fluidfluidmonolithic_fluidsplit_nonox.H"
 #include "fsi_slidingmonolithic_fluidsplit.H"
 #include "fsi_slidingmonolithic_structuresplit.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/ad_fld_fluid_fsi.H"
+#include "drt_linedefinition.H"
+#include "drt_discret.H"
+#include "ad_str_fsiwrapper.H"
+#include "ad_fld_fluid_fsi.H"
 
 
 /*----------------------------------------------------------------------*/

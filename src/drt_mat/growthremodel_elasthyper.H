@@ -10,11 +10,11 @@
 #define GROWTHREMODEL_ELASTHYPER_H
 
 
-#include "../headers/FADmatrix_utils.H"
+#include "FADmatrix_utils.H"
 #include "matpar_parameter.H"
 #include "membrane_material_interfaces.H"
 #include "so3_material.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 #include "anisotropy.H"
 
 // forward declaration due to avoid header definition

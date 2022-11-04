@@ -12,9 +12,9 @@
 
 #include "str_timint_factory.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_lib/prestress_service.H"
+#include "drt_globalproblem.H"
+#include "inpar_structure.H"
+#include "prestress_service.H"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -25,8 +25,8 @@
 
 // supported data containers
 #include "str_timint_basedatasdyn.H"
-#include "../drt_structure/strtimada.H"
-#include "../drt_structure_xstructure/xstr_xstructure_structure_state.H"
+#include "strtimada.H"
+#include "xstr_xstructure_structure_state.H"
 
 
 /*----------------------------------------------------------------------------*

@@ -16,15 +16,15 @@
 #include "fluid_ele.H"
 #include "fluid_ele_tds.H"
 
-#include "../drt_fluid/fluid_rotsym_periodicbc.H"
+#include "fluid_rotsym_periodicbc.H"
 
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "drt_condition_utils.H"
+#include "drt_globalproblem.H"
+#include "standardtypes_cpp.H"
 
-#include "../drt_mat/arrhenius_pv.H"
+#include "arrhenius_pv.H"
 
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+#include "drt_nurbs_utils.H"
 
 
 /*----------------------------------------------------------------------*

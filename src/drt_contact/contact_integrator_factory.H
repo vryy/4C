@@ -11,8 +11,8 @@
 #ifndef SRC_DRT_CONTACT_CONTACT_INTEGRATOR_FACTORY_H_
 #define SRC_DRT_CONTACT_CONTACT_INTEGRATOR_FACTORY_H_
 
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_lib/drt_element.H"
+#include "inpar_contact.H"
+#include "drt_element.H"
 
 // forward declaration
 class Epetra_Comm;

@@ -11,8 +11,8 @@
 #include "scatra_ele_calc_artery.H"
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
-#include "../drt_mat/scatra_mat.H"
-#include "../headers/singleton_owner.H"
+#include "scatra_mat.H"
+#include "singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

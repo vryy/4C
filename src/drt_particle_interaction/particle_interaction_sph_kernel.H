@@ -16,7 +16,7 @@
  *---------------------------------------------------------------------------*/
 #include <memory>
 
-#include "../drt_inpar/inpar_particle.H"
+#include "inpar_particle.H"
 
 #include <Teuchos_ParameterList.hpp>
 

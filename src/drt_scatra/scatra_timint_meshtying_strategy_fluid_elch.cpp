@@ -10,7 +10,7 @@
 *----------------------------------------------------------------------*/
 #include "scatra_timint_meshtying_strategy_fluid_elch.H"
 
-#include "../drt_fluid/fluid_meshtying.H"
+#include "fluid_meshtying.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |

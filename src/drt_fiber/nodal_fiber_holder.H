@@ -14,7 +14,7 @@
 
 #include <vector>
 #include <unordered_map>
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include "drt_fiber_node.H"
 
 namespace DRT

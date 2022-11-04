@@ -11,7 +11,7 @@ Weickenmeier_2014
 #define ELAST_EXPPOL_H_
 
 #include "elast_summand.H"
-#include "../drt_mat/matpar_parameter.H"
+#include "matpar_parameter.H"
 
 namespace MAT
 {

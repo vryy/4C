@@ -13,7 +13,7 @@
 
 #include "drt_dserror.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 #include "Teuchos_RCP.hpp"
 

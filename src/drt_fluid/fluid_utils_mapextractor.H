@@ -13,7 +13,7 @@
 #define FLUID_UTILS_MAPEXTRACTOR_H
 
 
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_mapextractor.H"
 
 
 namespace DRT

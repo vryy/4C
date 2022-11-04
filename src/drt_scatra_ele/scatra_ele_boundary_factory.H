@@ -12,8 +12,8 @@
 #ifndef SCATRA_ELE_BOUNDARY_FACTORY_H
 #define SCATRA_ELE_BOUNDARY_FACTORY_H
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_inpar/inpar_scatra.H"
+#include "drt_element.H"
+#include "inpar_scatra.H"
 
 namespace DRT
 {

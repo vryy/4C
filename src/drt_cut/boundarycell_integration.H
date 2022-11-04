@@ -13,7 +13,7 @@
 
 #include "facet_integration.H"
 
-#include "../linalg/linalg_serialdensematrix.H"
+#include "linalg_serialdensematrix.H"
 
 namespace GEO
 {

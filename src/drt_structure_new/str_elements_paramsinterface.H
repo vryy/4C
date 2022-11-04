@@ -16,10 +16,10 @@
 
 #include <unordered_map>
 #include "str_enum_lists.H"
-#include "../drt_inpar/inpar_structure.H"             // enums
-#include "../drt_inpar/inpar_browniandyn.H"           // enums
-#include "../drt_lib/drt_elements_paramsinterface.H"  // base class
-#include "../solver_nonlin_nox/nox_nln_enum_lists.H"  // enums
+#include "inpar_structure.H"               // enums
+#include "inpar_browniandyn.H"             // enums
+#include "drt_elements_paramsinterface.H"  // base class
+#include "nox_nln_enum_lists.H"            // enums
 
 #include "Epetra_MultiVector.h"
 

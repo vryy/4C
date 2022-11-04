@@ -16,9 +16,9 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Operator.h>
 
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 #include "ad_field.H"
-#include "../drt_lib/drt_elements_paramsinterface.H"
+#include "drt_elements_paramsinterface.H"
 
 // forward declarations
 namespace DRT

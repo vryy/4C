@@ -14,22 +14,22 @@
 
 #include "ssti_monolithic.H"
 
-#include "../drt_adapter/ad_str_ssiwrapper.H"
+#include "ad_str_ssiwrapper.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
+#include "scatra_timint_implicit.H"
+#include "scatra_timint_meshtying_strategy_s2i.H"
 
-#include "../drt_ssi/ssi_utils.H"
+#include "ssi_utils.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 
-#include "../drt_mat/matpar_material.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_scatra_ele/scatra_ele.H"
-#include "../drt_so3/so_nurbs27.H"
+#include "matpar_material.H"
+#include "matpar_bundle.H"
+#include "scatra_ele.H"
+#include "so_nurbs27.H"
 
 
 

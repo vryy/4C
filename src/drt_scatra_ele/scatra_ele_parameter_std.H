@@ -22,8 +22,8 @@ coexist with this general class.
 
 #include "scatra_ele_parameter_base.H"
 
-#include "../drt_inpar/inpar_scatra.H"
-#include "../drt_inpar/inpar_cardiac_monodomain.H"
+#include "inpar_scatra.H"
+#include "inpar_cardiac_monodomain.H"
 
 namespace DRT
 {

@@ -9,10 +9,10 @@
 #ifndef SRC_DRT_CONTACT_CONTACT_STRATEGY_FACTORY_H_
 #define SRC_DRT_CONTACT_CONTACT_STRATEGY_FACTORY_H_
 
-#include "../drt_inpar/inpar_contact.H"
+#include "inpar_contact.H"
 
-#include "../drt_mortar/mortar_element.H"
-#include "../drt_mortar/mortar_strategy_factory.H"
+#include "mortar_element.H"
+#include "mortar_strategy_factory.H"
 
 // forward declarations
 namespace Teuchos

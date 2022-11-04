@@ -29,10 +29,10 @@
 #include <MueLu_UseDefaultTypes.hpp>
 #include <MueLu_EpetraOperator.hpp>
 
-#include "../linalg/linalg_ana.H"
-#include "../linalg/linalg_blocksparsematrix.H"
-#include "../linalg/linalg_downwindmatrix.H"
-#include "../linalg/linalg_multiply.H"
+#include "linalg_ana.H"
+#include "linalg_blocksparsematrix.H"
+#include "linalg_downwindmatrix.H"
+#include "linalg_multiply.H"
 
 #include "solver_cheapsimplepreconditioner.H"
 

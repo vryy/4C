@@ -11,9 +11,9 @@
 #ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_CROSSLINKING_H_
 #define BEAMINTERACTION_SUBMODEL_EVALUATOR_CROSSLINKING_H_
 
-#include "../drt_binstrategy/binning_strategy_utils.H"
-#include "../drt_inpar/inpar_beaminteraction.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "binning_strategy_utils.H"
+#include "inpar_beaminteraction.H"
+#include "linalg_fixedsizematrix.H"
 #include <Epetra_MpiComm.h>
 #include "beaminteraction_submodel_evaluator_generic.H"
 

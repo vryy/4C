@@ -10,7 +10,7 @@
 #ifndef FSI_FLUID_XFEM_H
 #define FSI_FLUID_XFEM_H
 
-#include "../drt_adapter/ad_fld_fluid_xfem.H"
+#include "ad_fld_fluid_xfem.H"
 
 namespace FSI
 {

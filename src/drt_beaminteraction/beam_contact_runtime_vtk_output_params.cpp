@@ -11,7 +11,7 @@
 #include "beam_contact_runtime_vtk_output_params.H"
 
 #include "drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/

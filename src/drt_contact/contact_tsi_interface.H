@@ -9,7 +9,7 @@
 #ifndef CONTACT_TSI_INTERFACE_H_
 #define CONTACT_TSI_INTERFACE_H_
 
-#include "../drt_inpar/inpar_contact.H"
+#include "inpar_contact.H"
 #include "contact_interface.H"
 
 

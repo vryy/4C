@@ -12,11 +12,11 @@
 #include "fluid_timint_red.H"
 #include "fluid_coupling_red_models.H"
 #include "fluid_volumetric_surfaceFlow_condition.H"
-#include "../drt_adapter/ad_art_net.H"
+#include "ad_art_net.H"
 #include "fluid_meshtying.H"
-#include "../drt_lib/drt_locsys.H"
-#include "../drt_io/io.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "drt_locsys.H"
+#include "io.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
 
 
 /*----------------------------------------------------------------------*

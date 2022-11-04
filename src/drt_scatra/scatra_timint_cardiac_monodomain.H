@@ -11,7 +11,7 @@
 #ifndef SCATRA_TIMINT_CARDIAC_MONODOMAIN_H
 #define SCATRA_TIMINT_CARDIAC_MONODOMAIN_H
 
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "scatra_timint_implicit.H"
 
 
 /*==========================================================================*/

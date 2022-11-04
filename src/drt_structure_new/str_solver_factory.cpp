@@ -12,24 +12,24 @@
 
 #include "str_solver_factory.H"
 
-#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
+#include "beaminteraction_calc_utils.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
 
-#include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_nullspace.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "linalg_multiply.H"
+#include "linalg_solver.H"
+#include "linalg_nullspace.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_inpar/inpar_cardiovascular0d.H"
+#include "inpar_structure.H"
+#include "inpar_contact.H"
+#include "inpar_cardiovascular0d.H"
 
-#include "../drt_so3/so_base.H"
-#include "../drt_beam3/beam3eb.H"
+#include "so_base.H"
+#include "beam3eb.H"
 
 #include <Teuchos_ParameterList.hpp>
 

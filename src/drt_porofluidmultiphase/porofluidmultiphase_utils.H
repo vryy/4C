@@ -14,10 +14,10 @@
 #include "Teuchos_RCP.hpp"
 #include <Epetra_Vector.h>
 
-#include "../drt_inpar/inpar_porofluidmultiphase.H"
-#include "../drt_inpar/inpar_bio.H"
-#include "../drt_io/io.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "inpar_porofluidmultiphase.H"
+#include "inpar_bio.H"
+#include "io.H"
+#include "linalg_fixedsizematrix.H"
 
 namespace DRT
 {

@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "../drt_lib/drt_function.H"
-#include "../drt_mat/stvenantkirchhoff.H"
+#include "drt_function.H"
+#include "stvenantkirchhoff.H"
 
 #ifndef STR_FUNCTION_H
 #define STR_FUNCTION_H

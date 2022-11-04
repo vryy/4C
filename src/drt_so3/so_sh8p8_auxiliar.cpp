@@ -10,14 +10,14 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "so_sh8p8.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_exporter.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
+#include "drt_exporter.H"
 #include "drt_dserror.H"
-#include "../drt_lib/voigt_notation.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_io/io_control.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "voigt_notation.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "io_control.H"
+#include "drt_globalproblem.H"
 #include "Epetra_Time.h"
 #include "Teuchos_TimeMonitor.hpp"
 
