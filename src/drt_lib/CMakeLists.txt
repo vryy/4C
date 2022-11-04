@@ -48,7 +48,8 @@ set(OBJS_DRT_LIB
     tensor_transformation.cpp
     )
 
-deprecated_baci_add_library_linked_with_everything(drt_lib ${OBJS_DRT_LIB})
-target_include_directories(drt_lib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+baci_add_library(drt_lib ${OBJS_DRT_LIB})
+target_link_libraries(drt_lib PUBLIC linalg)
+# TODO this module requires a lot more includes that are currently included transitively from linalg
 
 add_subdirectory(error)

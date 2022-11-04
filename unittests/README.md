@@ -16,7 +16,7 @@ Writing a new unit test roughly works like this:
    Consider the existing test directories as a template. In case you have problems listing all
    necessary
    libraries for your test, you can use
-   `baci_link_google_test_necessary_libraries(${TESTNAME} -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group)`
+   `baci_link_google_test_necessary_libraries(${TESTNAME} ${BACI_LIBRARIES})`
    as a temporary solution to include all libraries in the correct order.
 3. Include the gtest header.
 4. Open an anonymous namespace inside the file.
