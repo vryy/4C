@@ -66,7 +66,7 @@ void SCATRA::TimIntLomaOST::DynamicComputationOfCs()
     // compute averaged values for LkMk and MkMk
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
     DynSmag_->ApplyFilterForDynamicComputationOfPrt(
-        phinp_, thermpressnp_, dirichtoggle, *extraparams_, nds_vel_);
+        phinp_, thermpressnp_, dirichtoggle, *extraparams_, NdsVel());
   }
 }
 
@@ -78,7 +78,7 @@ void SCATRA::TimIntLomaOST::DynamicComputationOfCv()
   {
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
     Vrem_->ApplyFilterForDynamicComputationOfDt(
-        phinp_, thermpressnp_, dirichtoggle, *extraparams_, nds_vel_);
+        phinp_, thermpressnp_, dirichtoggle, *extraparams_, NdsVel());
   }
 }
 
@@ -107,10 +107,6 @@ void SCATRA::TimIntLomaOST::ComputeThermPressure()
   // set scalar and density vector values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp", phinp_);
-
-  // provide numbers of dofsets associated with velocity and displacement dofs
-  eleparams.set<int>("ndsvel", nds_vel_);
-  if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
 
   // set action for elements
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(

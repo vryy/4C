@@ -1159,11 +1159,6 @@ void POROELAST::PoroScatraMono::EvaluateODBlockMatScatra()
   sparams_struct.set("delta time", Dt());
   sparams_struct.set("total time", Time());
 
-  // provide element parameter list with numbers of dofsets associated with displacement and
-  // velocity dofs on scatra discretization
-  sparams_struct.set<int>("ndsdisp", ScaTraField()->NdsDisp());
-  sparams_struct.set<int>("ndsvel", ScaTraField()->NdsVel());
-
   ScaTraField()->Discretization()->ClearState();
   ScaTraField()->Discretization()->SetState(0, "hist", ScaTraField()->Hist());
   ScaTraField()->Discretization()->SetState(0, "phinp", ScaTraField()->Phinp());
@@ -1196,11 +1191,6 @@ void POROELAST::PoroScatraMono::EvaluateODBlockMatScatra()
   // other parameters that might be needed by the elements
   sparams_fluid.set("delta time", Dt());
   sparams_fluid.set("total time", Time());
-
-  // provide element parameter list with numbers of dofsets associated with displacement and
-  // velocity dofs on scatra discretization
-  sparams_fluid.set<int>("ndsdisp", ScaTraField()->NdsDisp());
-  sparams_fluid.set<int>("ndsvel", ScaTraField()->NdsVel());
 
   ScaTraField()->Discretization()->ClearState();
   ScaTraField()->Discretization()->SetState(0, "hist", ScaTraField()->Hist());

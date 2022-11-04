@@ -40,6 +40,8 @@ namespace SCATRA
     ///  compute scalar time derivate parameters of the input voltage
     void ComputeTimeDerivPot0(const bool init) { return; };
 
+    void Setup() override;
+
     /// Update the solution after convergence of the nonlinear iteration.
     /// Current solution becomes old solution of next timestep.
     virtual void Update(const int num = 0);

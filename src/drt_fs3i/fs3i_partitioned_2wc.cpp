@@ -108,7 +108,7 @@ void FS3I::PartFS3I_2WC::InitialCalculations()
   // set initial fluid velocity field for evaluation of initial scalar
   // time derivative in fluid-based scalar transport
   scatravec_[0]->ScaTraField()->SetVelocityField(
-      fsi_->FluidField()->Velnp(), Teuchos::null, Teuchos::null, Teuchos::null, 1);
+      fsi_->FluidField()->Velnp(), Teuchos::null, Teuchos::null, Teuchos::null);
 
   // set initial value of thermodynamic pressure in fluid-based scalar
   // transport

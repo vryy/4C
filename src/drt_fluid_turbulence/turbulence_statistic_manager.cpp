@@ -63,7 +63,6 @@ namespace FLD
         myfsscaaf_(fluid.fsscaaf_),
         myxwall_(fluid.xwall_),
         mystressmanager_(fluid.stressmanager_),
-        myscatrandsvel_(-1),
         flow_(no_special_flow),
         withscatra_(false),
         turbmodel_(INPAR::FLUID::no_model),
@@ -916,8 +915,7 @@ namespace FLD
               case scatra_channel_flow_of_height_2:
               {
                 statistics_channel_->EvaluateResiduals(statevecs, statetenss, thermpressaf,
-                    thermpressam, thermpressdtaf, thermpressdtam, scatrastatevecs, scatrafieldvecs,
-                    myscatrandsvel_);
+                    thermpressam, thermpressdtaf, thermpressdtam, scatrastatevecs, scatrafieldvecs);
                 break;
               }
               case taylor_green_vortex:
@@ -1492,7 +1490,6 @@ namespace FLD
     myphinp_ = scatra_timeint->Phinp();
     myphiaf_ = scatra_timeint->Phiaf();
     myphiam_ = scatra_timeint->Phiam();
-    myscatrandsvel_ = scatra_timeint->NdsVel();
     myscatrahist_ = scatra_timeint->Hist();
     myphidtam_ = scatra_timeint->Phidtam();
     myfsphi_ = scatra_timeint->FsPhi();

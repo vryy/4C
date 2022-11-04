@@ -95,11 +95,11 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::Setup()
     // subgrid scales not transferred since they are zero at time t=0.0
     if (volcoupl_fluidscatra_.is_null())
       ScaTraField()->SetVelocityField(
-          FluidField()->ConvectiveVel(), Teuchos::null, Teuchos::null, Teuchos::null, 1);
+          FluidField()->ConvectiveVel(), Teuchos::null, Teuchos::null, Teuchos::null);
     else
       ScaTraField()->SetVelocityField(
           volcoupl_fluidscatra_->ApplyVectorMapping21(FluidField()->ConvectiveVel()), Teuchos::null,
-          Teuchos::null, Teuchos::null, 1);
+          Teuchos::null, Teuchos::null);
   }
 
   // ensure that both single field solvers use the same

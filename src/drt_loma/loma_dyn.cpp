@@ -94,6 +94,7 @@ void loma_dyn(int restart)
       // now we can call Init() on base algo
       scatraonly->Init(
           lomacontrol, scatradyn, DRT::Problem::Instance()->SolverParams(linsolvernumber));
+      scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
       // only now we must call Setup() on the scatra time integrator.
       // all objects relying on the parallel distribution are
@@ -108,7 +109,7 @@ void loma_dyn(int restart)
       // note: The order ReadRestart() before SetVelocityField() is important here!!
       // for time-dependent velocity fields, SetVelocityField() is additionally called in each
       // PrepareTimeStep()-call
-      (scatraonly->ScaTraField())->SetVelocityField(1);
+      (scatraonly->ScaTraField())->SetVelocityField();
 
       // enter time loop to solve problem with given convective velocity field
       (scatraonly->ScaTraField())->TimeLoop();
@@ -169,6 +170,7 @@ void loma_dyn(int restart)
 
       loma->Init(lomacontrol, DRT::Problem::Instance()->ScalarTransportDynamicParams(),
           DRT::Problem::Instance()->SolverParams(linsolvernumber));
+      loma->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
       loma->Setup();
 

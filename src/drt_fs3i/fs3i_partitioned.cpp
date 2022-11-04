@@ -14,7 +14,6 @@
 
 
 #include <Teuchos_TimeMonitor.hpp>
-//#include <initializer_list>
 
 #include "fs3i_partitioned.H"
 
@@ -55,8 +54,6 @@
 // CLONE SCATRA DISCRETIZATION FROM STRUCTURE DISCRETIZATION
 #include "../drt_ssi/ssi_clonestrategy.H"
 
-
-//#define SCATRABLOCKMATRIXMERGE
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -297,15 +294,19 @@ void FS3I::PartFS3I::Init()
   fluidscatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
   fluidscatra_->Init(fs3idyn, problem->ScalarTransportDynamicParams(),
       problem->SolverParams(linsolver1number), "scatra1", true);
+  fluidscatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
+  fluidscatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
+  fluidscatra_->ScaTraField()->SetNumberOfDofSetWallShearStress(1);
 
   structscatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
   structscatra_->Init(fs3idyn, problem->ScalarTransportDynamicParams(),
       problem->SolverParams(linsolver2number), "scatra2", true);
+  structscatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
+  structscatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
+  structscatra_->ScaTraField()->SetNumberOfDofSetWallShearStress(1);
 
   scatravec_.push_back(fluidscatra_);
   scatravec_.push_back(structscatra_);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -655,13 +656,12 @@ void FS3I::PartFS3I::SetMeshDisp() const
 {
   // fluid field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra = scatravec_[0];
-  fluidscatra->ScaTraField()->ApplyMeshMovement(
-      FluidToFluidScalar(fsi_->FluidField()->Dispnp()), 1);
+  fluidscatra->ScaTraField()->ApplyMeshMovement(FluidToFluidScalar(fsi_->FluidField()->Dispnp()));
 
   // structure field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra = scatravec_[1];
   structscatra->ScaTraField()->ApplyMeshMovement(
-      StructureToStructureScalar(fsi_->StructureField()->Dispnp()), 1);
+      StructureToStructureScalar(fsi_->StructureField()->Dispnp()));
 }
 
 
@@ -677,7 +677,7 @@ void FS3I::PartFS3I::SetVelocityFields() const
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
     scatra->ScaTraField()->SetVelocityField(VolMortarMasterToSlavei(i, convel[i]), Teuchos::null,
-        VolMortarMasterToSlavei(i, vel[i]), Teuchos::null, 1);
+        VolMortarMasterToSlavei(i, vel[i]), Teuchos::null);
   }
 }
 
@@ -733,7 +733,7 @@ void FS3I::PartFS3I::SetWallShearStresses() const
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->SetWallShearStresses(VolMortarMasterToSlavei(i, wss[i]), 1);
+    scatra->ScaTraField()->SetWallShearStresses(VolMortarMasterToSlavei(i, wss[i]));
   }
 }
 
@@ -742,7 +742,7 @@ void FS3I::PartFS3I::SetWallShearStresses() const
  *----------------------------------------------------------------------*/
 void FS3I::PartFS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>& wss) const
 {
-  //############ Fluid Field ###############
+  // ############ Fluid Field ###############
 
   Teuchos::RCP<ADAPTER::FluidFSI> fluid =
       Teuchos::rcp_dynamic_cast<ADAPTER::FluidFSI>(fsi_->FluidField());
@@ -756,7 +756,7 @@ void FS3I::PartFS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>& 
 
   wss.push_back(WallShearStress);
 
-  //############ Structure Field ###############
+  // ############ Structure Field ###############
 
   // extract FSI-Interface from fluid field
   WallShearStress = fsi_->FluidField()->Interface()->ExtractFSICondVector(WallShearStress);

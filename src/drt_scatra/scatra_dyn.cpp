@@ -146,6 +146,7 @@ void scatra_dyn(int restart)
       // time integrator is constructed and initialized inside
       scatraonly->Init(
           scatradyn, scatradyn, DRT::Problem::Instance()->SolverParams(linsolvernumber));
+      scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
       // redistribution between Init(...) and Setup()
       // redistribute scatra elements in case of heterogeneous reactions
@@ -171,7 +172,7 @@ void scatra_dyn(int restart)
       // note: The order ReadRestart() before SetVelocityField() is important here!!
       // for time-dependent velocity fields, SetVelocityField() is additionally called in each
       // PrepareTimeStep()-call
-      (scatraonly->ScaTraField())->SetVelocityField(1);
+      (scatraonly->ScaTraField())->SetVelocityField();
 
       // enter time loop to solve problem with given convective velocity
       (scatraonly->ScaTraField())->TimeLoop();
@@ -269,6 +270,7 @@ void scatra_dyn(int restart)
 
       // init algo (init fluid time integrator and scatra time integrator inside)
       algo->Init(scatradyn, scatradyn, DRT::Problem::Instance()->SolverParams(linsolvernumber));
+      algo->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
       // redistribution between Init(...) and Setup()
       // redistribute scatra elements if the scatra discretization is not empty

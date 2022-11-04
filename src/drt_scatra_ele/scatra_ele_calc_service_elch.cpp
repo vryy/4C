@@ -56,7 +56,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
       //--------------------------------------------------------------------------------
 
       // get number of dofset associated with velocity related dofs
-      const int ndsvel = params.get<int>("ndsvel");
+      const int ndsvel = my::scatrapara_->NdsVel();
 
       // get velocity values at nodes
       const Teuchos::RCP<const Epetra_Vector> convel =

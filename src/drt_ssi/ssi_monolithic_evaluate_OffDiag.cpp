@@ -79,13 +79,6 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureDom
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_scatra_mono_odblock_mesh, eleparams);
 
-  // number of dofset associated with displacement-related dofs on scalar transport
-  // discretization
-  eleparams.set<int>("ndsdisp", 1);
-
-  // number of dofset associated with velocity-related dofs on scalar transport discretization
-  eleparams.set<int>("ndsvel", 1);
-
   // remove state vectors from scalar transport discretization
   ScaTraField()->Discretization()->ClearState();
 
@@ -128,13 +121,6 @@ void SSI::ScatraManifoldStructureOffDiagCoupling::EvaluateOffDiagBlockScatraMani
   // action for elements
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_scatra_mono_odblock_mesh, eleparams);
-
-  // number of dofset associated with displacement-related dofs on scalar transport
-  // discretization
-  eleparams.set<int>("ndsdisp", 1);
-
-  // number of dofset associated with velocity-related dofs on scalar transport discretization
-  eleparams.set<int>("ndsvel", 1);
 
   // remove state vectors from scalar transport discretization
   scatra_manifold_->Discretization()->ClearState();
@@ -359,9 +345,6 @@ void SSI::ScatraStructureOffDiagCoupling::
   // linearization of boundary flux w.r.t. displacement
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
       "differentiationtype", SCATRA::DifferentiationType::disp, condparams);
-
-  // number of dofset associated with displacement-related dofs on scalar transport discretization
-  condparams.set<int>("ndsdisp", 1);
 
   // remove state vectors from scalar transport discretization
   ScaTraField()->Discretization()->ClearState();
@@ -615,9 +598,6 @@ void SSI::ScatraStructureOffDiagCoupling::
   // linearization of boundary flux w.r.t. displacement
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
       "differentiationtype", SCATRA::DifferentiationType::disp, condparams);
-
-  // number of dofset associated with displacement-related dofs on scalar transport discretization
-  condparams.set<int>("ndsdisp", 1);
 
   // remove state vectors from scalar transport discretization
   ScaTraField()->Discretization()->ClearState();

@@ -312,9 +312,6 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
           "action", SCATRA::BoundaryAction::calc_s2icoupling, condparams);
 
-      // number of dofset associated with displacement dofs
-      if (scatratimint_->IsALE()) condparams.set<int>("ndsdisp", scatratimint_->NdsDisp());
-
       // set global state vectors according to time-integration scheme
       scatratimint_->Discretization()->ClearState();
       scatratimint_->AddTimeIntegrationSpecificVectors();
@@ -1363,9 +1360,6 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateAndAssembleCapacitiveContributions()
   // action for elements
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_s2icoupling_capacitance, capcondparas);
-
-  // number of dofset associated with displacement dofs
-  if (scatratimint_->IsALE()) capcondparas.set<int>("ndsdisp", scatratimint_->NdsDisp());
 
   // set global state vectors according to time-integration scheme
   scatratimint_->Discretization()->ClearState();

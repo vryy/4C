@@ -72,6 +72,7 @@ void SCATRA::TimIntOneStepTheta::Setup()
   SetElementTimeParameter();
   SetElementGeneralParameters();
   SetElementTurbulenceParameters();
+  SetElementNodesetParameters();
 
   // setup krylov
   PrepareKrylovProjection();
@@ -103,9 +104,6 @@ void SCATRA::TimIntOneStepTheta::Setup()
     // set action
     DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::micro_scale_initialize, eleparams);
-
-    // provide displacement field in case of ALE
-    if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
 
     // loop over macro-scale elements
     discret_->Evaluate(
@@ -215,7 +213,7 @@ void SCATRA::TimIntOneStepTheta::DynamicComputationOfCs()
     // compute averaged values for LkMk and MkMk
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
     DynSmag_->ApplyFilterForDynamicComputationOfPrt(
-        phinp_, 0.0, dirichtoggle, *extraparams_, nds_vel_);
+        phinp_, 0.0, dirichtoggle, *extraparams_, NdsVel());
   }
 }
 
@@ -226,7 +224,7 @@ void SCATRA::TimIntOneStepTheta::DynamicComputationOfCv()
   if (turbmodel_ == INPAR::FLUID::dynamic_vreman)
   {
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
-    Vrem_->ApplyFilterForDynamicComputationOfDt(phinp_, 0.0, dirichtoggle, *extraparams_, nds_vel_);
+    Vrem_->ApplyFilterForDynamicComputationOfDt(phinp_, 0.0, dirichtoggle, *extraparams_, NdsVel());
   }
 }
 
@@ -302,9 +300,6 @@ void SCATRA::TimIntOneStepTheta::Update(const int num)
     DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::micro_scale_update, eleparams);
 
-    // provide displacement field in case of ALE
-    if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
-
     // loop over macro-scale elements
     discret_->Evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -323,7 +318,7 @@ void SCATRA::TimIntOneStepTheta::OutputRestart() const
   output_->WriteVector("phin", phin_);
 
   // write nodal micro concentration
-  if (macro_scale_ and nds_micro_ != -1) output_->WriteVector("phinp_micro", phinp_micro_);
+  if (macro_scale_ and NdsMicro() != -1) output_->WriteVector("phinp_micro", phinp_micro_);
 }
 
 /*----------------------------------------------------------------------*
@@ -360,7 +355,7 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(const int step, Teuchos::RCP<IO::In
   // read restart on micro scale in multi-scale simulations if necessary
   if (macro_scale_)
   {
-    if (nds_micro_ != -1) reader->ReadVector(phinp_micro_, "phinp_micro");
+    if (NdsMicro() != -1) reader->ReadVector(phinp_micro_, "phinp_micro");
 
     // create parameter list for macro-scale elements
     Teuchos::ParameterList eleparams;
@@ -368,9 +363,6 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(const int step, Teuchos::RCP<IO::In
     // set action
     DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::micro_scale_read_restart, eleparams);
-
-    // provide displacement field in case of ALE
-    if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
 
     // loop over macro-scale elements
     discret_->Evaluate(eleparams);

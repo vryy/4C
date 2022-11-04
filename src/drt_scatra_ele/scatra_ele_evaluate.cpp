@@ -47,6 +47,13 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization& dis, Teuchos
       break;
     }
 
+    case SCATRA::Action::set_nodeset_parameter:
+    {
+      ScaTraEleParameterStd::Instance(dis.Name())->SetNodesetParameters(p);
+
+      break;
+    }
+
     case SCATRA::Action::set_turbulence_scatra_parameter:
     {
       ScaTraEleParameterTurbulence::Instance(dis.Name())->SetParameters(p);
@@ -287,6 +294,7 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case SCATRA::Action::set_turbulence_scatra_parameter:
     case SCATRA::Action::set_time_parameter:
     case SCATRA::Action::set_mean_Cai:
+    case SCATRA::Action::set_nodeset_parameter:
     case SCATRA::Action::set_lsreinit_scatra_parameter:
     case SCATRA::Action::set_elch_scatra_parameter:
     case SCATRA::Action::set_scatra_ele_boundary_parameter:

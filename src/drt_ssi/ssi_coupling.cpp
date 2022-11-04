@@ -102,7 +102,7 @@ void SSI::SSICouplingMatchingVolume::AssignMaterialPointers(
 void SSI::SSICouplingMatchingVolume::SetMeshDisp(
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra, Teuchos::RCP<const Epetra_Vector> disp)
 {
-  scatra->ScaTraField()->ApplyMeshMovement(disp, 1);
+  scatra->ScaTraField()->ApplyMeshMovement(disp);
 }
 
 /*----------------------------------------------------------------------*/
@@ -114,8 +114,8 @@ void SSI::SSICouplingMatchingVolume::SetVelocityFields(
   scatra->ScaTraField()->SetVelocityField(convvel,  // convective vel.
       Teuchos::null,                                // acceleration
       vel,                                          // velocity
-      Teuchos::null,                                // fsvel
-      1);
+      Teuchos::null                                 // fsvel
+  );
 }
 
 /*----------------------------------------------------------------------*/
@@ -240,7 +240,7 @@ void SSI::SSICouplingNonMatchingBoundary::SetMeshDisp(
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra, Teuchos::RCP<const Epetra_Vector> disp)
 {
   scatra->ScaTraField()->ApplyMeshMovement(
-      adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(disp)), 1);
+      adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(disp)));
 }
 
 /*----------------------------------------------------------------------*/
@@ -253,8 +253,8 @@ void SSI::SSICouplingNonMatchingBoundary::SetVelocityFields(
       adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(convvel)),  // convective vel.
       Teuchos::null,                                                             // acceleration
       adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(vel)),      // velocity
-      Teuchos::null,                                                             // fsvel
-      1);
+      Teuchos::null                                                              // fsvel
+  );
 }
 
 /*----------------------------------------------------------------------*/
@@ -356,8 +356,7 @@ void SSI::SSICouplingNonMatchingVolume::AssignMaterialPointers(
 void SSI::SSICouplingNonMatchingVolume::SetMeshDisp(
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra, Teuchos::RCP<const Epetra_Vector> disp)
 {
-  scatra->ScaTraField()->ApplyMeshMovement(
-      volcoupl_structurescatra_->ApplyVectorMapping21(disp), 1);
+  scatra->ScaTraField()->ApplyMeshMovement(volcoupl_structurescatra_->ApplyVectorMapping21(disp));
 }
 
 /*----------------------------------------------------------------------*/
@@ -370,8 +369,8 @@ void SSI::SSICouplingNonMatchingVolume::SetVelocityFields(
       volcoupl_structurescatra_->ApplyVectorMapping21(convvel),  // convective vel.
       Teuchos::null,                                             // acceleration
       volcoupl_structurescatra_->ApplyVectorMapping21(vel),      // velocity
-      Teuchos::null,                                             // fsvel
-      1);
+      Teuchos::null                                              // fsvel
+  );
 }
 
 /*----------------------------------------------------------------------*/
@@ -560,7 +559,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::AssignMaterialPointers(
 void SSI::SSICouplingMatchingVolumeAndBoundary::SetMeshDisp(
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra, Teuchos::RCP<const Epetra_Vector> disp)
 {
-  scatra->ScaTraField()->ApplyMeshMovement(disp, 1);
+  scatra->ScaTraField()->ApplyMeshMovement(disp);
 }
 
 /*----------------------------------------------------------------------*/
@@ -572,8 +571,8 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::SetVelocityFields(
   scatra->ScaTraField()->SetVelocityField(convvel,  // convective vel.
       Teuchos::null,                                // acceleration
       vel,                                          // velocity
-      Teuchos::null,                                // fsvel
-      1);
+      Teuchos::null                                 // fsvel
+  );
 }
 
 /*----------------------------------------------------------------------*/

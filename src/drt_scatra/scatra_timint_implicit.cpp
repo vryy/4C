@@ -153,11 +153,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<DRT::Discretization> act
       mean_conc_(Teuchos::null),
       membrane_conc_(Teuchos::null),
       phinp_micro_(Teuchos::null),
-      nds_vel_(-1),
       nds_disp_(-1),
-      nds_pres_(-1),
-      nds_wss_(-1),
       nds_micro_(-1),
+      nds_pres_(-1),
+      nds_vel_(-1),
+      nds_wss_(-1),
       densific_(0, 0.0),
       c0_(0, 0.0),
       macro_micro_rea_coeff_(0.0),
@@ -359,7 +359,7 @@ void SCATRA::ScaTraTimIntImpl::Setup()
   // solutions at time n+1 and n
   phinp_ = LINALG::CreateVector(*dofrowmap, true);
   phin_ = LINALG::CreateVector(*dofrowmap, true);
-  if (nds_micro_ != -1) phinp_micro_ = LINALG::CreateVector(*discret_->DofRowMap(nds_micro_));
+  if (NdsMicro() != -1) phinp_micro_ = LINALG::CreateVector(*discret_->DofRowMap(NdsMicro()));
 
   if (solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro or
       solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken or
@@ -669,9 +669,6 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
   eleparams.set("inverting", false);
   eleparams.set("calc_grad_phi", false);
 
-  // provide displacement field in case of ALE
-  if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
-
   // evaluate integrals of concentrations and domain
   Teuchos::RCP<Epetra_SerialDenseVector> scalars =
       Teuchos::rcp(new Epetra_SerialDenseVector(NumScal() + 1));
@@ -910,6 +907,26 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovProjection()
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetElementNodesetParameters() const
+{
+  Teuchos::ParameterList eleparams;
+
+  // set action
+  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      "action", SCATRA::Action::set_nodeset_parameter, eleparams);
+
+  eleparams.set<int>("ndsdisp", NdsDisp());
+  eleparams.set<int>("ndspres", NdsPressure());
+  eleparams.set<int>("ndsvel", NdsVel());
+  eleparams.set<int>("ndswss", NdsWallShearStress());
+
+  // call standard loop over elements
+  discret_->Evaluate(
+      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+}
+
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimederivative) const
 {
   Teuchos::ParameterList eleparams;
@@ -1041,7 +1058,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeLoop()
     EvaluateErrorComparedToAnalyticalSol();
 
     // calculate mean concentration of micro discretization and set state to nds_micro_
-    if (macro_scale_ and nds_micro_ != -1) CalcMeanMicroConcentration();
+    if (macro_scale_ and NdsMicro() != -1) CalcMeanMicroConcentration();
   }
 }
 
@@ -1098,7 +1115,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // -------------------------------------------------------------------
   //     update velocity field if given by function (it might depend on time)
   // -------------------------------------------------------------------
-  if (velocity_field_type_ == INPAR::SCATRA::velocity_function) SetVelocityField(nds_vel_);
+  if (velocity_field_type_ == INPAR::SCATRA::velocity_function) SetVelocityField();
 
   // -------------------------------------------------------------------
   //           preparation of AVM3-based scale separation
@@ -1125,9 +1142,6 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
     DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::micro_scale_prepare_time_step, eleparams);
 
-    // provide displacement field in case of ALE
-    if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
-
     // add state vectors
     AddTimeIntegrationSpecificVectors();
 
@@ -1143,7 +1157,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareFirstTimeStep()
 {
   if (not skipinitder_)
   {
-    if (nds_vel_ != -1)  // if some velocity field has been set
+    if (NdsVel() != -1)  // if some velocity field has been set
     {
       // TODO: Restructure enforcement of Dirichlet boundary conditions on phin_
       // A clean solution would incorporate ApplyDirichletBC(...) into CalcInitialTimeDerivative().
@@ -1176,14 +1190,14 @@ void SCATRA::ScaTraTimIntImpl::PrepareLinearSolve()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetVelocityField(const int nds)
+void SCATRA::ScaTraTimIntImpl::SetVelocityField()
 {
   // safety check
-  if (nds >= discret_->NumDofSets()) dserror("Too few dofsets on scatra discretization!");
+  if (NdsVel() >= discret_->NumDofSets()) dserror("Too few dofsets on scatra discretization!");
 
   // initialize velocity vectors
-  Teuchos::RCP<Epetra_Vector> convel = LINALG::CreateVector(*discret_->DofRowMap(nds), true);
-  Teuchos::RCP<Epetra_Vector> vel = LINALG::CreateVector(*discret_->DofRowMap(nds), true);
+  Teuchos::RCP<Epetra_Vector> convel = LINALG::CreateVector(*discret_->DofRowMap(NdsVel()), true);
+  Teuchos::RCP<Epetra_Vector> vel = LINALG::CreateVector(*discret_->DofRowMap(NdsVel()), true);
 
   switch (velocity_field_type_)
   {
@@ -1205,7 +1219,7 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(const int nds)
         DRT::Node* lnode = discret_->lRowNode(lnodeid);
 
         // get dofs associated with current node
-        std::vector<int> nodedofs = discret_->Dof(nds, lnode);
+        std::vector<int> nodedofs = discret_->Dof(NdsVel(), lnode);
 
         for (int index = 0; index < nsd_; ++index)
         {
@@ -1234,20 +1248,16 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(const int nds)
     }
   }
 
-  // store number of dof-set associated with velocity related dofs
-  nds_vel_ = nds;
-
   // provide scatra discretization with convective velocity
-  discret_->SetState(nds_vel_, "convective velocity field", convel);
+  discret_->SetState(NdsVel(), "convective velocity field", convel);
 
   // provide scatra discretization with velocity
-  discret_->SetState(nds_vel_, "velocity field", vel);
+  discret_->SetState(NdsVel(), "velocity field", vel);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetWallShearStresses(
-    Teuchos::RCP<const Epetra_Vector> wss, const int nds_wss)
+void SCATRA::ScaTraTimIntImpl::SetWallShearStresses(Teuchos::RCP<const Epetra_Vector> wss)
 {
   if (wss == Teuchos::null) dserror("WSS state is Teuchos::null");
 
@@ -1258,12 +1268,11 @@ void SCATRA::ScaTraTimIntImpl::SetWallShearStresses(
   // have changed meanwhile (e.g., due to periodic boundary conditions applied only
   // to the fluid field)!
   // We have to be sure that everything is still matching.
-  if (not wss->Map().SameAs(*discret_->DofRowMap(nds_wss)))
+  if (not wss->Map().SameAs(*discret_->DofRowMap(NdsWallShearStress())))
     dserror("Maps are NOT identical. Emergency!");
 #endif
 
-  nds_wss_ = nds_wss;
-  discret_->SetState(nds_wss, "WallShearStress", wss);
+  discret_->SetState(NdsWallShearStress(), "WallShearStress", wss);
 }
 
 /*----------------------------------------------------------------------*
@@ -1276,8 +1285,7 @@ void SCATRA::ScaTraTimIntImpl::SetOldPartOfRighthandside()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetPressureField(
-    Teuchos::RCP<const Epetra_Vector> pressure, const int nds_pres)
+void SCATRA::ScaTraTimIntImpl::SetPressureField(Teuchos::RCP<const Epetra_Vector> pressure)
 {
   if (pressure == Teuchos::null) dserror("Pressure state is Teuchos::null");
 
@@ -1288,12 +1296,11 @@ void SCATRA::ScaTraTimIntImpl::SetPressureField(
   // have changed meanwhile (e.g., due to periodic boundary conditions applied only
   // to the fluid field)!
   // We have to be sure that everything is still matching.
-  if (not pressure->Map().SameAs(*discret_->DofRowMap(nds_pres)))
+  if (not pressure->Map().SameAs(*discret_->DofRowMap(NdsPressure())))
     dserror("Maps are NOT identical. Emergency!");
 #endif
 
-  nds_pres_ = nds_pres;
-  discret_->SetState(nds_pres, "Pressure", pressure);
+  discret_->SetState(NdsPressure(), "Pressure", pressure);
 }
 
 /*----------------------------------------------------------------------*
@@ -1347,7 +1354,7 @@ void SCATRA::ScaTraTimIntImpl::SetMeanConcentration(Teuchos::RCP<const Epetra_Ve
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetVelocityField(Teuchos::RCP<const Epetra_Vector> convvel,
     Teuchos::RCP<const Epetra_Vector> acc, Teuchos::RCP<const Epetra_Vector> vel,
-    Teuchos::RCP<const Epetra_Vector> fsvel, const int nds, const bool setpressure)
+    Teuchos::RCP<const Epetra_Vector> fsvel, const bool setpressure)
 {
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA: set convective velocity field");
@@ -1355,24 +1362,12 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(Teuchos::RCP<const Epetra_Vector
   //---------------------------------------------------------------------------
   // preliminaries
   //---------------------------------------------------------------------------
-
   if (convvel == Teuchos::null) dserror("Velocity state is Teuchos::null");
 
   if (velocity_field_type_ != INPAR::SCATRA::velocity_Navier_Stokes)
     dserror("Wrong SetVelocityField() called for velocity field type %d!", velocity_field_type_);
 
-  if (nds >= discret_->NumDofSets()) dserror("Too few dofsets on scatra discretization!");
-
-#ifdef DEBUG
-  // We rely on the fact, that the nodal distribution of both fields is the same.
-  // Although Scatra discretization was constructed as a clone of the fluid or
-  // structure mesh, respectively, at the beginning, the nodal distribution may
-  // have changed meanwhile (e.g., due to periodic boundary conditions applied only
-  // to the fluid field)!
-  // We have to be sure that everything is still matching.
-  if (not convvel->Map().SameAs(*discret_->DofRowMap(nds)))
-    dserror("Fluid/Structure and Scatra dofrowmaps are NOT identical. Emergency!");
-#endif
+  if (NdsVel() >= discret_->NumDofSets()) dserror("Too few dofsets on scatra discretization!");
 
   // boolean indicating whether fine-scale velocity vector exists
   // -> if yes, multifractal subgrid-scale modeling is applied
@@ -1393,27 +1388,24 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(Teuchos::RCP<const Epetra_Vector
   if (turbmodel_ == INPAR::FLUID::no_model and fssgd_ == INPAR::SCATRA::fssugrdiff_no)
     fsvelswitch = false;
 
-  // store number of dofset associated with velocity related dofs
-  nds_vel_ = nds;
-
   // provide scatra discretization with convective velocity
-  discret_->SetState(nds_vel_, "convective velocity field", convvel);
+  discret_->SetState(NdsVel(), "convective velocity field", convvel);
 
   // provide scatra discretization with velocity
   if (vel != Teuchos::null)
-    discret_->SetState(nds_vel_, "velocity field", vel);
+    discret_->SetState(NdsVel(), "velocity field", vel);
   else
   {
     // if velocity vector is not provided by the respective algorithm, we
     // assume that it equals the given convective velocity:
-    discret_->SetState(nds_vel_, "velocity field", convvel);
+    discret_->SetState(NdsVel(), "velocity field", convvel);
   }
 
   // provide scatra discretization with acceleration field if required
-  if (acc != Teuchos::null) discret_->SetState(nds_vel_, "acceleration field", acc);
+  if (acc != Teuchos::null) discret_->SetState(NdsVel(), "acceleration field", acc);
 
   // provide scatra discretization with fine-scale convective velocity if required
-  if (fsvelswitch) discret_->SetState(nds_vel_, "fine-scale velocity field", fsvel);
+  if (fsvelswitch) discret_->SetState(NdsVel(), "fine-scale velocity field", fsvel);
 }
 
 /*----------------------------------------------------------------------*
@@ -1538,7 +1530,7 @@ void SCATRA::ScaTraTimIntImpl::Update(const int num  //!< field number
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> dispnp, int nds)
+void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> dispnp)
 {
   //---------------------------------------------------------------------------
   // only required in ALE case
@@ -1550,11 +1542,8 @@ void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(Teuchos::RCP<const Epetra_Vecto
     // check existence of displacement vector
     if (dispnp == Teuchos::null) dserror("Got null pointer for displacements!");
 
-    // store number of dofset associated with displacement related dofs
-    nds_disp_ = nds;
-
     // provide scatra discretization with displacement field
-    discret_->SetState(nds_disp_, "dispnp", dispnp);
+    discret_->SetState(NdsDisp(), "dispnp", dispnp);
   }  // if (isale_)
 }
 
@@ -1663,9 +1652,6 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
     // set action
     DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::micro_scale_output, eleparams);
-
-    // provide displacement field in case of ALE
-    if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
 
     // loop over macro-scale elements
     discret_->Evaluate(
@@ -2225,7 +2211,6 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
     // set parameters for elements that do not change over mode
     DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::integrate_shape_functions, mode_params);
-    if (isale_) mode_params.set<int>("ndsdisp", nds_disp_);
 
     // loop over all activemodes
     for (int imode = 0; imode < nummodes; ++imode)
@@ -2426,9 +2411,6 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
   // scheme line/surface/volume Neumann conditions use the time stored in the time parameter class
   SetTimeForNeumannEvaluation(condparams);
 
-  // provide displacement field in case of ALE
-  if (isale_) condparams.set<int>("ndsdisp", nds_disp_);
-
   // evaluate Neumann boundary conditions at time t_{n+alpha_F} (generalized alpha) or time t_{n+1}
   // (otherwise)
   discret_->EvaluateNeumann(condparams, *neumann_loads);
@@ -2477,9 +2459,6 @@ void SCATRA::ScaTraTimIntImpl::EvaluateRobinBoundaryConditions(
   // action for elements
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_Robin, condparams);
-
-  // provide displacement field in case of ALE
-  if (isale_) condparams.set<int>("ndsdisp", nds_disp_);
 
   // add element parameters and set state vectors according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
@@ -2537,13 +2516,6 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // this parameter list is required here to get the element-based filtered constants
   eleparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
 
-  // provide velocity field and potentially acceleration/pressure field
-  // (export to column map necessary for parallel evaluation)
-  eleparams.set<int>("ndsvel", nds_vel_);
-
-  // provide displacement field in case of ALE
-  if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
-
   // set vector values needed by elements
   discret_->ClearState();
 
@@ -2584,7 +2556,6 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
     DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
         "action", SCATRA::BoundaryAction::calc_weak_Dirichlet, mhdbcparams);
 
-    eleparams.set<int>("ndsvel", nds_vel_);
     AddTimeIntegrationSpecificVectors();
 
     // evaluate all mixed hybrid Dirichlet boundary conditions
@@ -2800,7 +2771,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   }  // nonlinear iteration
 
   // calculate mean concentration of micro discretization and set state to nds_micro_
-  if (macro_scale_ and nds_micro_ != -1) CalcMeanMicroConcentration();
+  if (macro_scale_ and NdsMicro() != -1) CalcMeanMicroConcentration();
 }
 
 /*-----------------------------------------------------------------------------*
@@ -2946,7 +2917,7 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
       velocity_field_type_ == INPAR::SCATRA::velocity_Navier_Stokes)
   {
     Teuchos::RCP<const Epetra_Vector> convel =
-        discret_->GetState(nds_vel_, "convective velocity field");
+        discret_->GetState(NdsVel(), "convective velocity field");
     if (convel == Teuchos::null) dserror("Cannot get state vector convective velocity");
 
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
@@ -2957,7 +2928,7 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
       DRT::Node* node = discret_->lRowNode(inode);
       for (int idim = 0; idim < nsd_; ++idim)
         (*convel_multi)[idim][inode] =
-            (*convel)[convel->Map().LID(discret_->Dof(nds_vel_, node, idim))];
+            (*convel)[convel->Map().LID(discret_->Dof(NdsVel(), node, idim))];
     }
 
     output_->WriteVector("convec_velocity", convel_multi, IO::nodevector);
@@ -2966,7 +2937,7 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
   // displacement field
   if (isale_)
   {
-    Teuchos::RCP<const Epetra_Vector> dispnp = discret_->GetState(nds_disp_, "dispnp");
+    Teuchos::RCP<const Epetra_Vector> dispnp = discret_->GetState(NdsDisp(), "dispnp");
     if (dispnp == Teuchos::null) dserror("Cannot extract displacement field from discretization");
 
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
@@ -2977,7 +2948,7 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
       DRT::Node* node = discret_->lRowNode(inode);
       for (int idim = 0; idim < nsd_; ++idim)
         (*dispnp_multi)[idim][inode] =
-            (*dispnp)[dispnp->Map().LID(discret_->Dof(nds_disp_, node, idim))];
+            (*dispnp)[dispnp->Map().LID(discret_->Dof(NdsDisp(), node, idim))];
     }
 
     output_->WriteVector("dispnp", dispnp_multi, IO::nodevector);
@@ -3587,7 +3558,7 @@ void SCATRA::ScaTraTimIntImpl::CalcMeanMicroConcentration()
 {
   phinp_micro_->PutScalar(0.0);
 
-  if (nds_micro_ < 0) dserror("must set number of dofset for micro scale concentrations");
+  if (NdsMicro() < 0) dserror("must set number of dofset for micro scale concentrations");
   discret_->ClearState();
   discret_->SetState("phinp", phinp_);
 
@@ -3596,11 +3567,8 @@ void SCATRA::ScaTraTimIntImpl::CalcMeanMicroConcentration()
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_elch_elctrode_mean_concentration, eleparams);
 
-  // number of dofset associated with displacement-related dofs
-  if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
-
   // evaluate nodal mean concentration of micro discretizations
-  DRT::AssembleStrategy strategy(nds_micro_, nds_micro_, Teuchos::null, Teuchos::null, phinp_micro_,
+  DRT::AssembleStrategy strategy(NdsMicro(), NdsMicro(), Teuchos::null, Teuchos::null, phinp_micro_,
       Teuchos::null, Teuchos::null);
   discret_->Evaluate(eleparams, strategy);
 
@@ -3619,7 +3587,7 @@ void SCATRA::ScaTraTimIntImpl::CalcMeanMicroConcentration()
       // micro and macro dofs at this node
       auto* node = nodes[node_lid];
       int dof_macro = discret_->Dof(0, node)[0];
-      int dof_micro = discret_->Dof(nds_micro_, node)[0];
+      int dof_micro = discret_->Dof(NdsMicro(), node)[0];
 
       const int dof_lid_micro = phinp_micro_->Map().LID(dof_micro);
       const int dof_lid_macro = phinp_->Map().LID(dof_macro);
@@ -3640,7 +3608,7 @@ void SCATRA::ScaTraTimIntImpl::CalcMeanMicroConcentration()
   {
     const int node_gid = node_row_map->GID(node_lid);
     const auto* node = discret_->gNode(node_gid);
-    std::vector<int> dofs = discret_->Dof(nds_micro_, node);
+    std::vector<int> dofs = discret_->Dof(NdsMicro(), node);
 
     if (dofs.size() != 1) dserror("Only one dof expected.");
 

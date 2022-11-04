@@ -70,12 +70,6 @@ void STI::ScatraThermoOffDiagCoupling::EvaluateOffDiagBlockScatraThermoDomain(
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_scatra_mono_odblock_scatrathermo, eleparams);
 
-  // number of dofset associated with velocity-related dofs on scatra discretization
-  eleparams.set<int>("ndsvel", 1);
-
-  // in case of deforming mesh: set displacement
-  if (IsAle()) eleparams.set<int>("ndsdisp", 1);
-
   // remove state vectors from scatra discretization
   ScaTraField()->Discretization()->ClearState();
 
@@ -135,12 +129,6 @@ void STI::ScatraThermoOffDiagCoupling::EvaluateOffDiagBlockThermoScatraDomain(
   // action for elements
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_scatra_mono_odblock_thermoscatra, eleparams);
-
-  // number of dofset associated with velocity-related dofs on thermo discretization
-  eleparams.set<int>("ndsvel", 1);
-
-  // in case of deforming mesh: set displacement
-  if (IsAle()) eleparams.set<int>("ndsdisp", 1);
 
   // remove state vectors from thermo discretization
   ThermoField()->Discretization()->ClearState();
@@ -295,9 +283,6 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateScatraThermoInterfac
   // action for elements
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_s2icoupling_od, condparams);
-
-  // in case of deforming mesh: set displacement
-  if (IsAle()) condparams.set<int>("ndsdisp", 1);
 
   // set type of differentiation to temperature
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
@@ -484,9 +469,6 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockThermoSc
   // set differentiation type to elch
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
       "differentiationtype", SCATRA::DifferentiationType::elch, condparams);
-
-  // in case of deforming mesh: set displacement
-  if (IsAle()) condparams.set<int>("ndsdisp", 1);
 
   // create strategy for assembly of auxiliary system matrices
   DRT::AssembleStrategy strategythermoscatras2i(

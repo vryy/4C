@@ -793,8 +793,10 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
 
   ScaTraBaseAlgorithm()->Init(*scatratimeparams, SSI::UTILS::ModifyScaTraParams(scatraparams),
       problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), scatra_disname, isAle);
+  ScaTraBaseAlgorithm()->ScaTraField()->SetNumberOfDofSetDisplacement(1);
+  ScaTraBaseAlgorithm()->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
-  if (macro_scale_) ScaTraBaseAlgorithm()->ScaTraField()->SetNodeSetMicroScale(2);
+  if (macro_scale_) ScaTraBaseAlgorithm()->ScaTraField()->SetNumberOfDofSetMicroScale(2);
 
   // create and initialize scatra base algorithm for manifolds
   if (IsScaTraManifold())
@@ -805,6 +807,8 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
         SSI::UTILS::CloneScaTraManifoldParams(scatraparams, globaltimeparams.sublist("MANIFOLD")),
         problem->SolverParams(globaltimeparams.sublist("MANIFOLD").get<int>("LINEAR_SOLVER")),
         "scatra_manifold", isAle);
+    ScaTraManifoldBaseAlgorithm()->ScaTraField()->SetNumberOfDofSetDisplacement(1);
+    ScaTraManifoldBaseAlgorithm()->ScaTraField()->SetNumberOfDofSetVelocity(1);
   }
 
   // do checks if adaptive time stepping is activated

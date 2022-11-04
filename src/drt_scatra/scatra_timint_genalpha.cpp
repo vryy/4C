@@ -88,6 +88,7 @@ void SCATRA::TimIntGenAlpha::Setup()
   SetElementTimeParameter();
   SetElementGeneralParameters();
   SetElementTurbulenceParameters();
+  SetElementNodesetParameters();
 
   // for initializing phiaf_, phiam_ based on the initial field that was
   // set for phinp_, phin_ in the TimInt base class constructor;
@@ -270,7 +271,7 @@ void SCATRA::TimIntGenAlpha::DynamicComputationOfCs()
     {
       const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
       DynSmag_->ApplyFilterForDynamicComputationOfPrt(
-          phiaf_, 0.0, dirichtoggle, *extraparams_, nds_vel_);
+          phiaf_, 0.0, dirichtoggle, *extraparams_, NdsVel());
     }
     else
     {
@@ -287,7 +288,7 @@ void SCATRA::TimIntGenAlpha::DynamicComputationOfCv()
   if (turbmodel_ == INPAR::FLUID::dynamic_vreman)
   {
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
-    Vrem_->ApplyFilterForDynamicComputationOfDt(phiaf_, 0.0, dirichtoggle, *extraparams_, nds_vel_);
+    Vrem_->ApplyFilterForDynamicComputationOfDt(phiaf_, 0.0, dirichtoggle, *extraparams_, NdsVel());
   }
 }
 

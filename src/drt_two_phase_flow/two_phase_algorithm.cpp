@@ -674,7 +674,7 @@ void TWOPHASEFLOW::Algorithm::SetFluidValuesInScaTra(bool init)
     if (Comm().MyPID() == 0)
       std::cout << "CORRECT THESE LINES WHEN LEVEL-SET ALOGITHM SUPPORTS GEN-ALPHA" << std::endl;
 
-    ScaTraField()->SetVelocityField(convel, Teuchos::null, Teuchos::null, FluidField()->FsVel(), 1);
+    ScaTraField()->SetVelocityField(convel, Teuchos::null, Teuchos::null, FluidField()->FsVel());
   }
 
   return;

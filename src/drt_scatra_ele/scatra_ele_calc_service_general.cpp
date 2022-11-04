@@ -87,7 +87,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     case SCATRA::Action::calc_flux_domain:
     {
       // get number of dofset associated with velocity related dofs
-      const int ndsvel = params.get<int>("ndsvel");
+      const int ndsvel = scatrapara_->NdsVel();
 
       // get velocity values at nodes
       const Teuchos::RCP<const Epetra_Vector> convel =
@@ -320,7 +320,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     case SCATRA::Action::calc_mean_Cai:
     {
       // get number of dofset associated with velocity related dofs
-      const int ndsvel = params.get<int>("ndsvel");
+      const int ndsvel = scatrapara_->NdsVel();
 
       // get convective (velocity - mesh displacement) velocity at nodes
       Teuchos::RCP<const Epetra_Vector> convel =
@@ -828,7 +828,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(DRT::Element
   if (scatrapara_->IsAle() and action != SCATRA::Action::micro_scale_read_restart)
   {
     // get number of dofset associated with displacement related dofs
-    const int ndsdisp = params.get<int>("ndsdisp");
+    const int ndsdisp = scatrapara_->NdsDisp();
 
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
     if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
@@ -1198,7 +1198,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcBoxFilter(DRT::Element*
   DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*scalar, ephinp_, la[0].lm_);
 
   // get number of dofset associated with velocity related dofs
-  const int ndsvel = params.get<int>("ndsvel");
+  const int ndsvel = scatrapara_->NdsVel();
 
   // get convective (velocity - mesh displacement) velocity at nodes
   Teuchos::RCP<const Epetra_Vector> convel =

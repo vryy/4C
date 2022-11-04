@@ -179,7 +179,6 @@ void SCATRA::TimIntCardiacMonodomain::ElementMaterialTimeUpdate()
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp", phinp_);
-  if (isale_) p.set<int>("ndsdisp", nds_disp_);
 
   // go to elements
   discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);

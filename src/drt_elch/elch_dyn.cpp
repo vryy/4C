@@ -95,6 +95,7 @@ void elch_dyn(int restart)
       // scatra time integrator is constructed and initialized inside
       scatraonly->Init(
           scatradyn, scatradyn, DRT::Problem::Instance()->SolverParams(linsolvernumber));
+      scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
       // now me may redistribute or ghost the scatra discretization
       // finalize discretization
@@ -113,7 +114,7 @@ void elch_dyn(int restart)
       // note: The order ReadRestart() before SetVelocityField() is important here!!
       // for time-dependent velocity fields, SetVelocityField() is additionally called in each
       // PrepareTimeStep()-call
-      (scatraonly->ScaTraField())->SetVelocityField(1);
+      (scatraonly->ScaTraField())->SetVelocityField();
 
       // enter time loop to solve problem with given convective velocity
       (scatraonly->ScaTraField())->TimeLoop();
@@ -209,6 +210,7 @@ void elch_dyn(int restart)
         // now we must call Init()
         // NOTE : elch reads time parameters from scatra dynamic section !
         elch->Init(scatradyn, scatradyn, problem->SolverParams(linsolvernumber), "scatra", true);
+        elch->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
         // NOTE : At this point we may redistribute and/or
         //        ghost our discretizations at will.
@@ -258,6 +260,7 @@ void elch_dyn(int restart)
         // now we must call Init()
         // NOTE : elch reads time parameters from scatra dynamic section !
         elch->Init(scatradyn, scatradyn, problem->SolverParams(linsolvernumber));
+        elch->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
         // NOTE : At this point we may redistribute and/or
         //        ghost our discretizations at will.

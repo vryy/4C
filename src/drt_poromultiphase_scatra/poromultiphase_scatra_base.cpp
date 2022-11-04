@@ -131,6 +131,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
   // scatra time integrator is constructed and initialized inside.
   scatra_->Init(
       globaltimeparams, scatraparams, problem->SolverParams(linsolvernumber), scatra_disname, true);
+  scatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
+  scatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
+  scatra_->ScaTraField()->SetNumberOfDofSetPressure(2);
 
   // do we perform coupling with 1D artery
   if (artery_coupl_)
@@ -288,15 +291,15 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetPoroSolution()
   if (poroscatra == Teuchos::null) dserror("cast to ScaTraTimIntPoroMulti failed!");
 
   // set displacements
-  poroscatra->ApplyMeshMovement(poromulti_->StructDispnp(), 1);
+  poroscatra->ApplyMeshMovement(poromulti_->StructDispnp());
 
   // set the fluid solution
   poroscatra->SetSolutionFieldOfMultiFluid(
-      poromulti_->RelaxedFluidPhinp(), poromulti_->FluidField()->Phin(), 2);
+      poromulti_->RelaxedFluidPhinp(), poromulti_->FluidField()->Phin());
 
   // additionally, set nodal flux if L2-projection is desired
   if (fluxreconmethod_ == INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod::gradreco_l2)
-    poroscatra->SetL2FluxOfMultiFluid(poromulti_->FluidFlux(), 1);
+    poroscatra->SetL2FluxOfMultiFluid(poromulti_->FluidFlux());
 
   if (artery_coupl_)
   {

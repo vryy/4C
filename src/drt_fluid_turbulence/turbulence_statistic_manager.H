@@ -253,9 +253,6 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector> myscatrahist_;
     Teuchos::RCP<Epetra_Vector> myphidtam_;
 
-    //! number of dofset associated with velocity-related dofs on scatra discretization
-    int myscatrandsvel_;
-
     //! specifies the special flow
     enum SpecialFlow
     {

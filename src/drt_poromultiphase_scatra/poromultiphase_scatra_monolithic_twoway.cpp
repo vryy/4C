@@ -607,11 +607,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ApplyScatraStru
     sparams_struct.set("delta time", Dt());
     sparams_struct.set("total time", Time());
 
-    // provide element parameter list with numbers of dofsets associated with displacement and
-    // velocity dofs on scatra discretization
-    sparams_struct.set<int>("ndsdisp", ScatraAlgo()->ScaTraField()->NdsDisp());
-    sparams_struct.set<int>("ndsvel", ScatraAlgo()->ScaTraField()->NdsVel());
-    sparams_struct.set<int>("ndspres", 2);
     // we cannot employ L2-projection for monolithic coupling yet
     sparams_struct.set<bool>("L2-projection", false);
 
@@ -656,11 +651,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ApplyScatraPoro
   sparams_fluid.set("delta time", Dt());
   sparams_fluid.set("total time", Time());
 
-  // provide element parameter list with numbers of dofsets associated with displacement and
-  // velocity dofs on scatra discretization
-  sparams_fluid.set<int>("ndsdisp", ScatraAlgo()->ScaTraField()->NdsDisp());
-  sparams_fluid.set<int>("ndsvel", ScatraAlgo()->ScaTraField()->NdsVel());
-  sparams_fluid.set<int>("ndspres", 2);
   // we cannot employ L2-projection for monolithic coupling yet
   sparams_fluid.set<bool>("L2-projection", false);
 

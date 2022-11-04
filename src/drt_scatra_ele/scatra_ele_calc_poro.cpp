@@ -20,6 +20,7 @@
 #include "../drt_mat/matlist.H"
 
 #include "scatra_ele.H"
+#include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
 #include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
@@ -213,7 +214,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValuesPoro(
     DRT::Element::LocationArray& la)
 {
   // get number of dofset associated with velocity related dofs
-  const int ndsvel = params.get<int>("ndsvel");
+  const int ndsvel = my::scatrapara_->NdsVel();
 
   // get velocity values at nodes
   const Teuchos::RCP<const Epetra_Vector> convel =
@@ -244,7 +245,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValuesPoro(
     isnodalporosity_ = true;
 
     // get number of dof-set associated with velocity related dofs
-    const int ndsdisp = params.get<int>("ndsdisp");
+    const int ndsdisp = my::scatrapara_->NdsDisp();
 
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(ndsdisp, "dispnp");
 

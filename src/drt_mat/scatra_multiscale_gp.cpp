@@ -210,10 +210,11 @@ void MAT::ScatraMultiScaleGP::Init()
     microdisnum_microtimint_map_[microdisnum_] = Teuchos::rcp(new SCATRA::TimIntOneStepTheta(
         microdis, solver, sdyn_micro, extraparams, Teuchos::null, microdisnum_));
     microdisnum_microtimint_map_[microdisnum_]->Init();
+    microdisnum_microtimint_map_[microdisnum_]->SetNumberOfDofSetVelocity(1);
     microdisnum_microtimint_map_[microdisnum_]->Setup();
 
     // set initial velocity field
-    microdisnum_microtimint_map_[microdisnum_]->SetVelocityField(1);
+    microdisnum_microtimint_map_[microdisnum_]->SetVelocityField();
 
     // create counter for number of macro-scale Gauss points associated with micro-scale time
     // integrator

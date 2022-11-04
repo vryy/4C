@@ -100,7 +100,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(DRT::FaceE
       DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*phinp, ephinp, la[0].lm_);
 
       // get number of dofset associated with velocity related dofs
-      const int ndsvel = params.get<int>("ndsvel");
+      const int ndsvel = my::scatraparams_->NdsVel();
 
       // get convective (velocity - mesh displacement) velocity at nodes
       Teuchos::RCP<const Epetra_Vector> convel =
@@ -140,14 +140,14 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(DRT::FaceE
         isnodalporosity_ = true;
 
         // get number of dofset associated with velocity related dofs
-        const int ndsdisp = params.get<int>("ndsdisp");
+        const int ndsdisp = my::scatraparams_->NdsDisp();
 
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(ndsdisp, "dispnp");
 
         if (disp != Teuchos::null)
         {
-          std::vector<double> mydisp(la[1].lm_.size());
-          DRT::UTILS::ExtractMyValues(*disp, mydisp, la[1].lm_);
+          std::vector<double> mydisp(la[ndsdisp].lm_.size());
+          DRT::UTILS::ExtractMyValues(*disp, mydisp, la[ndsdisp].lm_);
 
           for (int inode = 0; inode < my::nen_; ++inode)  // number of nodes
             eporosity_(inode, 0) = mydisp[my::nsd_ + 1 + (inode * (my::nsd_ + 2))];

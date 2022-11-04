@@ -58,14 +58,16 @@ void ELCH::MovingBoundaryAlgorithm::Init(
 
   // safety check
   if (!ScaTraField()->Discretization()->GetCondition("ScaTraFluxCalc"))
+  {
     dserror(
         "Scalar transport discretization must have boundary condition for flux calculation at FSI "
         "interface!");
+  }
+
+  ScaTraField()->SetNumberOfDofSetDisplacement(2);
 
   pseudotransient_ = (DRT::INPUT::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(elch_params_,
                           "MOVINGBOUNDARY") == INPAR::ELCH::elch_mov_bndry_pseudo_transient);
-
-  return;
 }
 
 
@@ -93,7 +95,7 @@ void ELCH::MovingBoundaryAlgorithm::Setup()
   }
 
   // transfer moving mesh data
-  ScaTraField()->ApplyMeshMovement(AleField()->Dispnp(), 2);
+  ScaTraField()->ApplyMeshMovement(AleField()->Dispnp());
 
   // initialize the multivector for all possible cases
   fluxn_ = ScaTraField()->CalcFluxAtBoundary(false);
@@ -126,11 +128,11 @@ void ELCH::MovingBoundaryAlgorithm::TimeLoop()
   {
     // transfer convective velocity = fluid velocity - grid velocity
     ScaTraField()->SetVelocityField(FluidField()->ConvectiveVel(),  // = velnp - grid velocity
-        FluidField()->Hist(), Teuchos::null, Teuchos::null, 1);
+        FluidField()->Hist(), Teuchos::null, Teuchos::null);
   }
 
   // transfer moving mesh data
-  ScaTraField()->ApplyMeshMovement(AleField()->Dispnp(), 2);
+  ScaTraField()->ApplyMeshMovement(AleField()->Dispnp());
 
   // time loop
   while (NotFinished())
@@ -287,7 +289,7 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
       {
         // transfer convective velocity = fluid velocity - grid velocity
         ScaTraField()->SetVelocityField(FluidField()->ConvectiveVel(),  // = velnp - grid velocity
-            FluidField()->Hist(), Teuchos::null, Teuchos::null, 1);
+            FluidField()->Hist(), Teuchos::null, Teuchos::null);
       }
     }
     break;
@@ -297,7 +299,7 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
   }
 
   // transfer moving mesh data
-  ScaTraField()->ApplyMeshMovement(AleField()->Dispnp(), 2);
+  ScaTraField()->ApplyMeshMovement(AleField()->Dispnp());
 
   // solve coupled electrochemistry equations
   ScaTraField()->Solve();

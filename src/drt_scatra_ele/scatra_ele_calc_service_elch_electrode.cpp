@@ -201,10 +201,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElect
   // additional computations in case of ALE
   if (my::scatrapara_->IsAle())
   {
+    const int ndsvel = my::scatrapara_->NdsVel();
     // extract velocities
-    const Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(1, "velocity field");
+    const Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(ndsvel, "velocity field");
     if (vel == Teuchos::null) dserror("Cannot get state vector \"velocity field\"!");
-    DRT::UTILS::ExtractMyValues(*vel, my::evelnp_, la[1].lm_);
+    DRT::UTILS::ExtractMyValues(*vel, my::evelnp_, la[ndsvel].lm_);
 
     // initialize additional variables for integrals related to velocity divergence
     double intdivv(0.);

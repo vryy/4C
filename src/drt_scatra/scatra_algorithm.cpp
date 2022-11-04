@@ -272,7 +272,7 @@ void SCATRA::ScaTraAlgorithm::PrepareTimeStepConvection()
   //(fluid initial field was set inside the constructor of fluid base class)
   if (Step() == 1)
     ScaTraField()->SetVelocityField(
-        FluidField()->Velnp(), FluidField()->Hist(), Teuchos::null, Teuchos::null, 1);
+        FluidField()->Velnp(), FluidField()->Hist(), Teuchos::null, Teuchos::null);
 
   // prepare time step (+ initialize one-step-theta scheme correctly with
   // velocity given above)
@@ -355,7 +355,7 @@ void SCATRA::ScaTraAlgorithm::SetVelocityField()
     case INPAR::FLUID::timeint_afgenalpha:
     {
       ScaTraField()->SetVelocityField(FluidToScatra(FluidField()->Velaf()),
-          FluidToScatra(FluidField()->Accam()), FluidToScatra(FluidField()->Velaf()), fsvel, 1);
+          FluidToScatra(FluidField()->Accam()), FluidToScatra(FluidField()->Velaf()), fsvel);
       break;
     }
     case INPAR::FLUID::timeint_one_step_theta:
@@ -363,7 +363,7 @@ void SCATRA::ScaTraAlgorithm::SetVelocityField()
     case INPAR::FLUID::timeint_stationary:
     {
       ScaTraField()->SetVelocityField(FluidToScatra(FluidField()->Velnp()),
-          FluidToScatra(FluidField()->Hist()), FluidToScatra(FluidField()->Velnp()), fsvel, 1);
+          FluidToScatra(FluidField()->Hist()), FluidToScatra(FluidField()->Velnp()), fsvel);
       break;
     }
     default:
@@ -449,8 +449,6 @@ void SCATRA::ScaTraAlgorithm::OuterIterationConvection()
       printf("\n");
     }
 
-    //#ifdef OUTPUT
-    // iteration number (only after that data output is possible)
     myoutput->NewStep(natconvitnum, natconvitnum);
     myoutput->WriteVector("phinp", ScaTraField().Phinp());
     myoutput->WriteVector("convec_velocity", ScaTraField().ConVel());
