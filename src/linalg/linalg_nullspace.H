@@ -14,39 +14,36 @@
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_elementtype.H"
 
-namespace LINALG
+namespace LINALG::NULLSPACE
 {
-  namespace NULLSPACE
-  {
-    /*!
-       \brief Calculate the nullspace based on a given discretization
+  /*!
+     \brief Calculate the nullspace based on a given discretization
 
-       The nullspace is build by looping over all nodes of a discretization and stored
-       in the respective variable.
+     The nullspace is build by looping over all nodes of a discretization and stored
+     in the respective variable.
 
-       \param dis (in): discretization
-       \param numdf (in): number of degrees of freedom
-       \param dimns (in): nullspace dimension
-       \param map (in): nullspace map
-    */
-    Teuchos::RCP<Epetra_MultiVector> ComputeNullSpace(const DRT::Discretization& dis,
-        const int numdf, const int dimns, const Teuchos::RCP<Epetra_Map> dofmap);
+     \param dis (in): discretization
+     \param numdf (in): number of degrees of freedom
+     \param dimns (in): nullspace dimension
+     \param map (in): nullspace map
+  */
+  Teuchos::RCP<Epetra_MultiVector> ComputeNullSpace(const DRT::Discretization& dis, const int numdf,
+      const int dimns, const Teuchos::RCP<Epetra_Map> dofmap);
 
-    /*!
-       \brief Fix the nullspace to match a new given map
+  /*!
+     \brief Fix the nullspace to match a new given map
 
-       The nullspace is looked for in the parameter list. If found, it is assumed that
-       it matches the oldmap. Then it is fixed to match the new map.
+     The nullspace is looked for in the parameter list. If found, it is assumed that
+     it matches the oldmap. Then it is fixed to match the new map.
 
-       \param field (in): field name (just used for output)
-       \param oldmap (in): row map of nullspace
-       \param newmap (in): row map of nullspace upon exit
-       \param solveparams (in): parameterlist including nullspace vector
-    */
-    void FixNullSpace(std::string field, const Epetra_Map& oldmap, const Epetra_Map& newmap,
-        Teuchos::ParameterList& solveparams);
+     \param field (in): field name (just used for output)
+     \param oldmap (in): row map of nullspace
+     \param newmap (in): row map of nullspace upon exit
+     \param solveparams (in): parameterlist including nullspace vector
+  */
+  void FixNullSpace(std::string field, const Epetra_Map& oldmap, const Epetra_Map& newmap,
+      Teuchos::ParameterList& solveparams);
 
-  }  // namespace NULLSPACE
-}  // namespace LINALG
+}  // namespace LINALG::NULLSPACE
 
 #endif

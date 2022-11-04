@@ -9,6 +9,7 @@
 #ifndef MORTAR_ELEMENT_H
 #define MORTAR_ELEMENT_H
 
+#include <Teuchos_SerialDenseMatrix.hpp>
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_inpar/inpar_mortar.H"
@@ -47,8 +48,8 @@ namespace MORTAR
     virtual void NodalBlockInformation(
         DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
-    virtual Epetra_SerialDenseMatrix ComputeNullSpace(
-        DRT::Node& node, const double* x0, int numdof, int dimnsp);
+    virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+        DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
 
    private:
     static MortarElementType instance_;

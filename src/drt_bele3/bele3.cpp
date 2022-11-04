@@ -77,11 +77,10 @@ void DRT::ELEMENTS::Bele3Type::NodalBlockInformation(
   nv = 3;
 }
 
-Epetra_SerialDenseMatrix DRT::ELEMENTS::Bele3Type::ComputeNullSpace(
-    DRT::Node& node, const double* x0, int numdof, int dimnsp)
+Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Bele3Type::ComputeNullSpace(
+    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid3DNullSpace(node, x0);
-  return nullspace;
+  return LINALG::ComputeSolid3DNullSpace(node, x0);
 }
 
 void DRT::ELEMENTS::Bele3Type::SetupElementDefinition(

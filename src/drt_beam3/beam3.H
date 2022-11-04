@@ -13,6 +13,7 @@
 #define BEAM3_H
 
 
+#include <Teuchos_SerialDenseMatrix.hpp>
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -49,7 +50,7 @@ namespace DRT
 
       virtual void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
-      virtual Epetra_SerialDenseMatrix ComputeNullSpace(
+      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
 
       virtual void SetupElementDefinition(

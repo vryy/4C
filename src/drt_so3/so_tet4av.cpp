@@ -66,11 +66,10 @@ void DRT::ELEMENTS::So_tet4avType::NodalBlockInformation(
 }
 
 //------------------------------------------------------------------------
-Epetra_SerialDenseMatrix DRT::ELEMENTS::So_tet4avType::ComputeNullSpace(
+Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::So_tet4avType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid3DNullSpace(node, x0);
-  return nullspace;
+  return LINALG::ComputeSolid3DNullSpace(node, x0);
 }
 
 //------------------------------------------------------------------------

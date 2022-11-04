@@ -11,6 +11,7 @@
 #ifndef DRT_MESHFREE_MESHFREEMULTIBIN_H
 #define DRT_MESHFREE_MESHFREEMULTIBIN_H
 
+#include <Teuchos_SerialDenseMatrix.hpp>
 #include "../drt_binstrategy/binning_strategy_utils.H"
 #include "../drt_binstrategy/drt_meshfree_bin.H"
 #include "../drt_lib/drt_elementtype.H"
@@ -52,10 +53,10 @@ namespace DRT
       {
       }
 
-      virtual Epetra_SerialDenseMatrix ComputeNullSpace(
+      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Epetra_SerialDenseMatrix nullspace;
+        Teuchos::SerialDenseMatrix<int, double> nullspace;
         dserror("method ComputeNullSpace not implemented!");
         return nullspace;
       }

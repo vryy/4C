@@ -50,10 +50,10 @@ void DRT::ELEMENTS::Vele3Type::NodalBlockInformation(
 {
 }
 
-Epetra_SerialDenseMatrix DRT::ELEMENTS::Vele3Type::ComputeNullSpace(
+Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Vele3Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace;
+  Teuchos::SerialDenseMatrix<int, double> nullspace;
   dserror("method ComputeNullSpace not implemented for element type vele3!");
   return nullspace;
 }

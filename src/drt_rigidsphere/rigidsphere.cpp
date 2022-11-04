@@ -8,6 +8,7 @@
 */
 /*----------------------------------------------------------------------------*/
 
+#include <Teuchos_SerialDenseMatrix.hpp>
 #include "rigidsphere.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
@@ -71,10 +72,10 @@ void DRT::ELEMENTS::RigidsphereType::NodalBlockInformation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Epetra_SerialDenseMatrix DRT::ELEMENTS::RigidsphereType::ComputeNullSpace(
+Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::RigidsphereType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace;
+  Teuchos::SerialDenseMatrix<int, double> nullspace;
   dserror("method ComputeNullSpace not implemented!");
   return nullspace;
 }

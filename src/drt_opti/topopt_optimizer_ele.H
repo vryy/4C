@@ -13,6 +13,7 @@
 #define TOPOPT_OPTIMIZER_ELE_H_
 
 
+#include <Teuchos_SerialDenseMatrix.hpp>
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
 
@@ -49,10 +50,10 @@ namespace DRT
         dserror("used?");
       }
 
-      virtual Epetra_SerialDenseMatrix ComputeNullSpace(
+      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Epetra_SerialDenseMatrix nullspace;
+        Teuchos::SerialDenseMatrix<int, double> nullspace;
         dserror("method ComputeNullSpace not implemented");
         return nullspace;
       }
@@ -350,10 +351,10 @@ namespace DRT
         dserror("used?");
       }
 
-      virtual Epetra_SerialDenseMatrix ComputeNullSpace(
+      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Epetra_SerialDenseMatrix nullspace;
+        Teuchos::SerialDenseMatrix<int, double> nullspace;
         dserror("method ComputeNullSpace not implemented");
         return nullspace;
       }
