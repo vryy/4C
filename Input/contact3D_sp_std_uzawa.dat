@@ -108,7 +108,7 @@ MAT 10 ELAST_CoupNeoHooke YOUNG 1.0e-2 NUE 0.0
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 20 DENS 1.0e-6
 MAT 20 ELAST_CoupNeoHooke YOUNG 1.0e-2 NUE 0.0
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION down
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME down
 VARIABLE 0 NAME down TYPE linearinterpolation NUMPOINTS 2 TIMES 0.0 1.0 VALUES 0.0 0.3
 ----------------------------------------------------------RESULT DESCRIPTION
 // Check displacement of node on master side of the contact interface

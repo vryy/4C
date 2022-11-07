@@ -109,7 +109,7 @@ KIMMOIN-RHS MAT 1 ISSTAT 0 ISSTOKES 0
 ----------------------------------FUNCT2 // exact velocity/pressure solution
 KIMMOIN-UP MAT 1 ISSTAT 0
 ----------------------------------------------------------------------FUNCT3 //levelset
-COMPONENT 0 FUNCTION  ((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5)-0.1)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME  ((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5)-0.1)
 ----------------------------------------------------------------------FUNCT4
 KIMMOIN-STRESS MAT 1 ISSTAT 0 AMPLITUDE 1.0
 ----------------------------------------------------------RESULT DESCRIPTION

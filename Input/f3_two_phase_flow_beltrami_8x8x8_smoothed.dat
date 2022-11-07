@@ -128,7 +128,7 @@ BELTRAMI c1 1.0
 BELTRAMI c1 2.0
 ----------------------------------------------------------------------FUNCT3
 // initial G-function outside of domain -> no cut, no interface
-FUNCTION x+100
+SYMBOLIC_FUNCTION_OF_SPACE_TIME x+100
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 12 QUANTITY velx VALUE 5.30071156915332548e-02 TOLERANCE 1e-10
 FLUID DIS fluid NODE 12 QUANTITY vely VALUE -4.43364656009460970e-02 TOLERANCE 1e-10

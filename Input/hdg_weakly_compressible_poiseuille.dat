@@ -40,9 +40,9 @@ SOLVER           Superlu
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid_weakly_compressible VISCOSITY 1 REFDENSITY 1 REFPRESSURE 0 COMPRCOEFF 0.033333333333333
 ------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1 // r
-COMPONENT 1 FUNCTION 0 // wx
-COMPONENT 2 FUNCTION 0 // wy
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1 // r
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0 // wx
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0 // wy
 ------------------------------------------------------------FUNCT2
 WEAKLYCOMPRESSIBLE_POISEUILLE MAT 1 L 10 R 1 U 1
 ------------------------------------------------------------FUNCT3

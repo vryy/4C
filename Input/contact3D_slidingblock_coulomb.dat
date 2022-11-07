@@ -76,10 +76,10 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000000 NUE 0.0 DENS 1 THEXPANS 0.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 7 VALUES 0 1 1
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 5 TIMES 0 1 3 4 7 DESCRIPTION 0 (t-1)/2 1 0
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 246 QUANTITY dispx VALUE 4.5234589836608396e-03 TOLERANCE 1e-6

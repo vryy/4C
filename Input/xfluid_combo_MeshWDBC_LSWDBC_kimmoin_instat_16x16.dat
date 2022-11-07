@@ -111,7 +111,7 @@ KIMMOIN-RHS MAT 1 ISSTAT 0 ISSTOKES 0
 ----------------------------------FUNCT2 // exact velocity/pressure solution
 KIMMOIN-UP MAT 1 ISSTAT 0
 ----------------------------------------------------------------------FUNCT3
-FUNCTION 1.0*((x-0.25)*(x-0.25)+(y-0.5)*(y-0.5)-0.01)
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0*((x-0.25)*(x-0.25)+(y-0.5)*(y-0.5)-0.01)
 ----------------------------------------------------------RESULT DESCRIPTION
 XFLUID DIS fluid NODE 1664 QUANTITY velx VALUE -2.40342711871819326e-01 TOLERANCE 1e-8
 XFLUID DIS fluid NODE 1664 QUANTITY vely VALUE -5.74648454463830505e-01 TOLERANCE 1e-8

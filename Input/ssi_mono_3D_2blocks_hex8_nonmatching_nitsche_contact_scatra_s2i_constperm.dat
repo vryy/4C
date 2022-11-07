@@ -70,11 +70,11 @@ MAT 6 MAT_InelasticDefgradNoGrowth
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
 SRC_FIELD structure SRC_MAT 5 TAR_FIELD scatra TAR_MAT 1
 ------------------------------------------------------------FUNCT1
-FUNCTION 0.0
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ------------------------------------------------------------FUNCT2
-FUNCTION 1.0
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
 ------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 5.0 20.0 DESCRIPTION 0.5*cos(pi*(t/5.0-1.0))+0.5 1
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 12 QUANTITY phi VALUE  2.26418832964960931e-01 TOLERANCE 2.3e-09

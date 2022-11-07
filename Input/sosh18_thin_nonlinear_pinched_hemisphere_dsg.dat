@@ -60,7 +60,7 @@ MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 7.8e-6
 MAT 3 ELAST_CoupNeoHooke YOUNG 6.825e7 NUE 0.3
 MAT 10 MAT_Struct_StVenantKirchhoff YOUNG 6.825e7 NUE 0.3 DENS 0.001
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t*2.5
+SYMBOLIC_FUNCTION_OF_TIME t*2.5
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         3
 NDLINE                          0

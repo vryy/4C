@@ -840,17 +840,17 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateAll(const int func
 {
   r = DRT::Problem::Instance()
           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-          .Evaluate(0, xyz.A(), t);
+          .Evaluate(xyz.A(), t, 0);
 
   for (unsigned int d = 0; d < nsd_; ++d)
     w(d) = DRT::Problem::Instance()
                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-               .Evaluate(1 + d, xyz.A(), t);
+               .Evaluate(xyz.A(), t, 1 + d);
 
   for (unsigned int m = 0; m < msd_; ++m)
     L(m) = DRT::Problem::Instance()
                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-               .Evaluate(1 + nsd_ + m, xyz.A(), t);
+               .Evaluate(xyz.A(), t, 1 + nsd_ + m);
 }
 
 
@@ -861,12 +861,12 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateDensityMomentum(co
 {
   r = DRT::Problem::Instance()
           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-          .Evaluate(0, xyz.A(), t);
+          .Evaluate(xyz.A(), t, 0);
 
   for (unsigned int d = 0; d < nsd_; ++d)
     w(d) = DRT::Problem::Instance()
                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-               .Evaluate(1 + d, xyz.A(), t);
+               .Evaluate(xyz.A(), t, 1 + d);
 }
 
 
@@ -1079,7 +1079,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeMateri
     // get viscosity
     double mu = DRT::Problem::Instance()
                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(varviscfuncnum - 1)
-                    .Evaluate(0, xyz.A(), time);
+                    .Evaluate(xyz.A(), time, 0);
 
     // evaluate Dw
     for (unsigned int d = 0; d < nsd_; ++d) Dw(d, d) = 2.0 * mu;
@@ -1196,7 +1196,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteri
         for (unsigned int dmod = 0; dmod < (1 + nsd_); ++dmod)
           feg(dmod, q) = DRT::Problem::Instance()
                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(forcefuncnum - 1)
-                             .Evaluate(dmod, xyzeg.A(), time);
+                             .Evaluate(xyzeg.A(), time, dmod);
 
       drdteg(q) += N(i, q) * drdte(i);
 

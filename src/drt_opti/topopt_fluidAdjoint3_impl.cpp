@@ -1622,7 +1622,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::FluidBodyForce(
           // in some fancy turbulance stuff.
           functionfac = DRT::Problem::Instance()
                             ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                            .Evaluate(isd, (ele_->Nodes()[jnode])->X(), time);
+                            .Evaluate((ele_->Nodes()[jnode])->X(), time, isd);
         }
         else
           functionfac = 1.0;

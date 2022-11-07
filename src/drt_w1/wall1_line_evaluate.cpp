@@ -224,7 +224,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
               // evaluate function at current gauss point
               functfac = DRT::Problem::Instance()
                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                             .Evaluate(i, coordgpref, time);
+                             .Evaluate(coordgpref, time, i);
             }
             else
               functfac = 1.0;
@@ -279,7 +279,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
           // evaluate function at current gauss point
           functfac = DRT::Problem::Instance()
                          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                         .Evaluate(0, coordgpref, time);
+                         .Evaluate(coordgpref, time, 0);
         }
 
         // constant factor for integration

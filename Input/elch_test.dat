@@ -53,9 +53,9 @@ MAT 1 MAT_ion DIFFUSIVITY 5.0 VALENCE 1.0
 MAT 2 MAT_ion DIFFUSIVITY 5.0 VALENCE -1.0
 MAT 3 MAT_matlist LOCAL No NUMMAT 2 MATIDS 1 2 END
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1.0 //initial concentration
-COMPONENT 1 FUNCTION 1.0 //initial concentration
-COMPONENT 2 FUNCTION -x+1.0 //initial pot. field
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0 //initial concentration
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0 //initial concentration
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME -x+1.0 //initial pot. field
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 691 QUANTITY flux_domain_1_x VALUE 5.99575747103953671e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 691 QUANTITY flux_domain_1_y VALUE 0.0e+00 TOLERANCE 1e-09

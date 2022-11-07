@@ -134,7 +134,7 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::AddStressAnisoPrincipal(
   double stressFact_ =
       DRT::Problem::Instance()
           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
-          .Evaluate(0, coordgpref_, time_);
+          .Evaluate(coordgpref_, time_, 0);
 
 
   // double stressFact_=params.get<double>("scalar");

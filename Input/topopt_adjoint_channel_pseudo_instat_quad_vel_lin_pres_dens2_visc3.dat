@@ -103,23 +103,23 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD opti TAR_MAT 2
 MAT 1 MAT_fluid DYNVISCOSITY 3.0 DENSITY 2.0
 MAT 2 MAT_opti MINPORO 0 MAXPORO 25000 SMEARFAC 1
 ------------------------------------------------FUNCT1 // initial flow field
-COMPONENT 0 FUNCTION x+2*y
-COMPONENT 1 FUNCTION -y
-COMPONENT 2 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME x+2*y
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME -y
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ---------------------------------------------FUNCT2 // initial density field
-COMPONENT 0 FUNCTION 0.0 // 1=fluid,0=no fluid
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 // 1=fluid,0=no fluid
 ---------------------------------------------FUNCT3 // initial adjoint field
-COMPONENT 0 FUNCTION x*x+x*y
-COMPONENT 1 FUNCTION 2*y*y-3*x*x
-COMPONENT 2 FUNCTION -12*x-9*y
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME x*x+x*y
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2*y*y-3*x*x
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME -12*x-9*y
 -------------------------------FUNCT4 // x-component of fluid inflow profile
-COMPONENT 0 FUNCTION x+2*y
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME x+2*y
 -------------------------------FUNCT5 // y-component of fluid inflow profile
-COMPONENT 0 FUNCTION -y
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME -y
 ------------------------------------------FUNCT6 // bodyforce in x-direction
-COMPONENT 0 FUNCTION (25002*x+50000*y)/2.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (25002*x+50000*y)/2.0
 ------------------------------------------FUNCT7 // bodyforce in y-direction
-COMPONENT 0  FUNCTION (-24998*y)/2.0
+COMPONENT 0  SYMBOLIC_FUNCTION_OF_SPACE_TIME (-24998*y)/2.0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          3

@@ -131,16 +131,16 @@ MAT 5 ELAST_CoupNeoHooke YOUNG 2.5e6 NUE 0.35
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-y)*(y)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1/0.4)*(1/0.4)*(0.8-y)*(y)
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-y)*(y)
-COMPONENT 1 FUNCTION 0
-COMPONENT 2 FUNCTION 0
-COMPONENT 3 FUNCTION (1/0.4)*(1/0.4)*(0.8-2*y)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1/0.4)*(1/0.4)*(0.8-y)*(y)
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1/0.4)*(1/0.4)*(0.8-2*y)
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-2*y)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1/0.4)*(1/0.4)*(0.8-2*y)
 ----------------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 5 TIMES 0 2.5 3.5 10.5 1000000000023 DESCRIPTION 1/2(sin(pi/2.0*t/2.5-pi/2)+1) 1 cos((t/3.5-1)*pi/2) -1
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2

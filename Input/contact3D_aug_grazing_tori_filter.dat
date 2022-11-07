@@ -268,9 +268,9 @@ Status Test Check Type          = Complete
 MAT 100   MAT_ElastHyper   NUMMAT 1 MATIDS 101 DENS 0.1
 MAT 101   ELAST_CoupNeoHooke YOUNG 2250.0 NUE 0.3               // C1 = E, C2 = nu
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 30.0       // initial velocity in x-direction
-COMPONENT 1 FUNCTION 0.0        // initial velocity in y-direction
-COMPONENT 2 FUNCTION 23.0       // initial velocity in z-direction
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 30.0       // initial velocity in x-direction
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0        // initial velocity in y-direction
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 23.0       // initial velocity in z-direction
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE SPECIAL QUANTITY num_iter_step_1 VALUE 2.0 TOLERANCE 1.0e-20
 STRUCTURE SPECIAL QUANTITY num_iter_step_2 VALUE 12.0 TOLERANCE 1.0e-20

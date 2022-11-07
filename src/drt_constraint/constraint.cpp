@@ -15,6 +15,7 @@ Thomas Kloeppel
 
 #include "constraint.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/function_of_time.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 
 
@@ -257,9 +258,9 @@ void UTILS::Constraint::EvaluateConstraint(Teuchos::ParameterList& params,
       if (curve) curvenum = (*curve)[0];
       double curvefac = 1.0;
       if (curvenum >= 0)
-        curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
-                       .EvaluateTime(time);
+        curvefac =
+            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
+                time);
 
       // global and local ID of this bc in the redundant vectors
       const int offsetID = params.get<int>("OffsetID");

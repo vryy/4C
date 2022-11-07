@@ -59,7 +59,7 @@ NODE 2 COORD  1.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_LinElast1D YOUNG 1.0 DENS 1.0
 -------------------------------------------------------------FUNCT1
-FUNCTION a
+SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 10.0 500000.0 DESCRIPTION cos(2.0*pi*t)-1.0 cos(2.0*pi*10)-1.0
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE -1.97327157172844103e-03 TOLERANCE 1e-12

@@ -143,7 +143,7 @@ MAT 3 MAT_Consolidation SOLIDUS 1548.15 LIQUIDUS 1773.15 LATENTHEAT 0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 1
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 293.15
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 293.15
 ----------------------------------------------------------------------FUNCT2
 FASTPOLYNOMIAL NUMCOEFF 1 COEFF 23e+03
 ----------------------------------------------------------------------FUNCT3
@@ -153,13 +153,13 @@ FASTPOLYNOMIAL NUMCOEFF 1 COEFF 190e+06
 ----------------------------------------------------------------------FUNCT5
 FASTPOLYNOMIAL                  NUMCOEFF 1 COEFF 17e-06
 ----------------------------------------------------------------------FUNCT6
-COMPONENT                       0 FUNCTION x_beam
-COMPONENT                       1 FUNCTION y_beam
-COMPONENT                       2 FUNCTION 0
+COMPONENT                       0 SYMBOLIC_FUNCTION_OF_SPACE_TIME x_beam
+COMPONENT                       1 SYMBOLIC_FUNCTION_OF_SPACE_TIME y_beam
+COMPONENT                       2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
 VARIABLE                        0 NAME x_beam TYPE linearinterpolation NUMPOINTS 2 TIMES 0 0.1 VALUES 1 11
 VARIABLE                        1 NAME y_beam TYPE linearinterpolation NUMPOINTS 2 TIMES 0 0.1 VALUES 1.5 1.5
 ----------------------------------------------------------------------FUNCT7
-COMPONENT                       0 FUNCTION (2*A*P)/(pi*w^2*L)*exp(-2*(x^2+y^2)/(w^2))
+COMPONENT                       0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (2*A*P)/(pi*w^2*L)*exp(-2*(x^2+y^2)/(w^2))
 VARIABLE                        0 NAME P TYPE expression DESCRIPTION 5000e+06  // laser power: P=100W
 VARIABLE                        1 NAME A TYPE expression DESCRIPTION 0.3  // absorptivity A=1-lambda=1-0.7
 VARIABLE                        2 NAME w TYPE expression DESCRIPTION 0.5  // radius where I=I_0*exp(-2), half laser spot size

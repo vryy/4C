@@ -115,7 +115,7 @@ MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 2 3 DENS 0.001 POLYCONVEX 1
 MAT 2 ELAST_VolSussmanBathe KAPPA 10000
 MAT 3 ELAST_IsoTestMaterial C1 1000 C2 1000
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.1 7 VALUES 0 1000 1000
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -4.46782216985193714e-01 TOLERANCE 1e-9

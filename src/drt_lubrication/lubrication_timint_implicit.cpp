@@ -298,7 +298,7 @@ void LUBRICATION::TimIntImpl::SetHeightFieldPureLub(const int nds)
     {
       double heightfuncvalue = DRT::Problem::Instance()
                                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(heightfuncno - 1)
-                                   .Evaluate(index, lnode->X(), time_);
+                                   .Evaluate(lnode->X(), time_, index);
 
       // get global and local dof IDs
       const int gid = nodedofs[index];
@@ -341,7 +341,7 @@ void LUBRICATION::TimIntImpl::SetAverageVelocityFieldPureLub(const int nds)
     {
       double velfuncvalue = DRT::Problem::Instance()
                                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
-                                .Evaluate(index, lnode->X(), time_);
+                                .Evaluate(lnode->X(), time_, index);
 
       // get global and local dof IDs
       const int gid = nodedofs[index];

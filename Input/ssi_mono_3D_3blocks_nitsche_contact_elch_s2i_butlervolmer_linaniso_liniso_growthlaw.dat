@@ -102,18 +102,18 @@ SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
 SRC_FIELD structure SRC_MAT 8 TAR_FIELD scatra TAR_MAT 5
 SRC_FIELD structure SRC_MAT 12 TAR_FIELD scatra TAR_MAT 11
 ------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1.0e3
-COMPONENT 1 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0e3
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 1.2e3
-COMPONENT 1 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.2e3
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION 4.0e4
-COMPONENT 1 FUNCTION 4.17
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 4.0e4
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 4.17
 ------------------------------------------------------------FUNCT4
-FUNCTION -5.0e-4*(t/6.0e3*(1-heaviside(t-6.0e3))+heaviside(t-6.0e3))
+SYMBOLIC_FUNCTION_OF_SPACE_TIME -5.0e-4*(t/6.0e3*(1-heaviside(t-6.0e3))+heaviside(t-6.0e3))
 ------------------------------------------------------------FUNCT5
-FUNCTION 2.0e-4*heaviside(t-7.9e3)
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 2.0e-4*heaviside(t-7.9e3)
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 22 QUANTITY phi1 VALUE  3.60117597957792168e+03 TOLERANCE 3.6e-05
 SCATRA DIS scatra NODE 36 QUANTITY phi1 VALUE  1.34112523278505728e+03 TOLERANCE 1.3e-05

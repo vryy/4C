@@ -200,9 +200,9 @@ MAT 13 MAT_scatra_reaction NUMSCAL 3 STOICH 0 -1 1 REACCOEFF 0.0 COUPLING simple
 MAT 22 MAT_scatra_reaction NUMSCAL 3 STOICH 0 -1 1 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 0 1 0
 MAT 32 MAT_scatra_reaction NUMSCAL 3 STOICH 0 -1 1 REACCOEFF 0.0 COUPLING simple_multiplicative ROLE 0 1 0
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1.0
-COMPONENT 1 FUNCTION 1.0
-COMPONENT 2  FUNCTION 1.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
+COMPONENT 2  SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
 -------------------------------------------------------------FUNCT2
 VARFUNCTION phi2
 -------------------------------------------------------------FUNCT3

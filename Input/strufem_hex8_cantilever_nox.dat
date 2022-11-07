@@ -171,10 +171,10 @@ MAT 2 ELAST_CoupNeoHooke YOUNG 1000000.0 NUE 0.45
 STRUCTURE DIS structure NODE 404 QUANTITY dispy VALUE -9.63895922308403286e+00 TOLERANCE 1e-7
 STRUCTURE DIS structure NODE 404 QUANTITY vely VALUE -6.73648028909550760e+01 TOLERANCE 1e-6
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION v
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME v
 VARIABLE 0 NAME v TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.1 0.11 1.0 VALUES 0.0 2.0 0.0 0.0
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION v
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME v
 VARIABLE 0 NAME v TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.1 0.11 1.0 VALUES 0.0 6.0 0.0 0.0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8

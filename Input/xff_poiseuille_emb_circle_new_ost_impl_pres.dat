@@ -97,12 +97,12 @@ INTERFACE_TERMS_PREVIOUS_STATE  PreviousState_only_consistency
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION (1.0/0.4)*(1.0/0.4)*(-0.4+y)*(y+0.4)
-COMPONENT 1 FUNCTION 0.0
-COMPONENT 2 FUNCTION 0.0
-COMPONENT 3 FUNCTION (x-3.0)*0.001*2.0*(1.0/0.4)*(1.0/0.4)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1.0/0.4)*(1.0/0.4)*(-0.4+y)*(y+0.4)
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME (x-3.0)*0.001*2.0*(1.0/0.4)*(1.0/0.4)
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION (1.0/0.4)*(1.0/0.4)*2.0*y
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1.0/0.4)*(1.0/0.4)*2.0*y
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  0

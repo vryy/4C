@@ -2130,13 +2130,13 @@ NODE 765 COORD 0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
 //                              MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 10.0 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION-5.0*x
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME-5.0*x
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION-5.0*(y^4)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME-5.0*(y^4)
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION(y^5)-0.5
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME(y^5)-0.5
 ----------------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION(5.0*x*(y^8))+(10.0*x*(y^3))+(60.0*10.0*x*y*y)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME(5.0*x*(y^8))+(10.0*x*(y^3))+(60.0*10.0*x*y*y)
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 1 QUANTITY pressure VALUE 5.0811477001e+01 TOLERANCE 1e-8
 FLUID DIS fluid NODE 583 QUANTITY pressure VALUE 4.842131474e+01 TOLERANCE 1e-8

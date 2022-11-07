@@ -117,14 +117,14 @@ MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10000000.0 NUE 0.4 DENS 2.0 THEXPANS 0.
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION (1/0.35)*(-1/0.35)*(0.35-y)*(-0.35-y)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1/0.35)*(-1/0.35)*(0.35-y)*(-0.35-y)
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION (1.0/0.8)*y
-COMPONENT 1 FUNCTION 0
-COMPONENT 2 FUNCTION 0
-COMPONENT 3 FUNCTION 9
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1.0/0.8)*y
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 9
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION (1.0/0.8)*y
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1.0/0.8)*y
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE 0

@@ -2554,7 +2554,7 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
             (*nodeNormals)[dofsLocalInd[i]] =
                 (DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
                      nodeNormalFunct - 1))
-                    .Evaluate(i, &currPos[0], 0.0);
+                    .Evaluate(&currPos[0], 0.0, i);
           }
         }
       }
@@ -4131,7 +4131,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
 
         double initialval = DRT::Problem::Instance()
                                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                .Evaluate(index, lnode->X(), time_);
+                                .Evaluate(lnode->X(), time_, index);
 
         velnp_->ReplaceGlobalValues(1, &initialval, &gid);
       }

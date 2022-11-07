@@ -13,6 +13,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_parameter_list.H"
+#include "../drt_lib/function_of_time.H"
 
 #include "../drt_mat/ion.H"
 #include "../drt_mat/matlist.H"
@@ -2197,7 +2198,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       ComputeTimeDerivative();
 
       double targetcurrent =
-          problem_->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum - 1).EvaluateTime(time_);
+          problem_->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum - 1).Evaluate(time_);
       double timefacrhs = 1.0 / ResidualScaling();
 
       double currtangent_anode(0.0);
@@ -3337,8 +3338,8 @@ void SCATRA::ScaTraTimIntElch::ReduceDimensionNullSpaceBlocks(
  *-----------------------------------------------------------------------------*/
 double SCATRA::ScaTraTimIntElch::ComputeTemperatureFromFunction() const
 {
-  return problem_->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(temperature_funct_num_ - 1)
-      .EvaluateTime(time_);
+  return problem_->FunctionById<DRT::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
+      .Evaluate(time_);
 }
 
 /*-----------------------------------------------------------------------------*

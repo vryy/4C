@@ -77,13 +77,13 @@ MAT 101 ELAST_CoupLogNeoHooke MODE YN C1 2.5e4 C2 0.27
 MAT 102 ELAST_CoupAnisoExpo K1 1.666666666666e4 K2 10.0 GAMMA 0.0 K1COMP 0.833333333333e4 K2COMP 10.0 ADAPT_ANGLE No INIT 0 STR_TENS_ID 1000
 MAT 1000 ELAST_StructuralTensor STRATEGY Standard
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 3 VALUES 0 1 1
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 1 2 3 VALUES 0 0 1 1
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 2 3 VALUES 0 0 1
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 17 QUANTITY dispx VALUE 3.28978533155475025e-02 TOLERANCE 1e-9

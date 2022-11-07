@@ -39,7 +39,7 @@ NDVOL                           0
 MAT 1 MAT_fluid DYNVISCOSITY 0.04 DENSITY 0.000001176 GAMMA 1.0
 MAT 2 MAT_0D_MAXWELL_ACINUS_EXPONENTIAL Stiffness1 1.0e-3 Stiffness2 1.0e-3 Viscosity1 1.0e-3 Viscosity2 1.0e-3
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 15*(sin(pi*t/50-pi/2)+1)
+SYMBOLIC_FUNCTION_OF_TIME 15*(sin(pi*t/50-pi/2)+1)
 -------------------------DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS
 DPOINT                          3
 E 1 - pressure 1.0 1 none none

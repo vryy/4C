@@ -80,10 +80,10 @@ MAT 2 ELAST_CoupNeoHooke YOUNG 1 NUE 0.32
 MAT 10 MAT_PlasticElastHyper NUMMAT 1 MATIDS 20 DENS 7.8e-6 INITYIELD -1
 MAT 20 ELAST_CoupNeoHooke YOUNG 10 NUE 0.32
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 51 VALUES 0 0 1
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION b
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME b
 VARIABLE 0 NAME b TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 51 VALUES 0 0.3 0.3
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0

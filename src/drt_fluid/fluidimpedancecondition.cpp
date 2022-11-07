@@ -14,8 +14,6 @@
 
 #include "../drt_fluid_ele/fluid_ele_action.H"
 
-#include "../linalg/linalg_blocksparsematrix.H"
-#include "../linalg/linalg_sparsematrixbase.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../linalg/linalg_utils_densematrix_communication.H"
@@ -23,7 +21,7 @@
 #include "../drt_io/io.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/function_of_time.H"
 
 /*----------------------------------------------------------------------*
  | Constructor (public)                                      Thon 07/16 |
@@ -356,8 +354,8 @@ void FLD::UTILS::FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualA
   else if (treetype_ == "pressure_by_funct")
   {
     pressure = DRT::Problem::Instance()
-                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum_ - 1)
-                   .EvaluateTime(time);
+                   ->FunctionById<DRT::UTILS::FunctionOfTime>(functnum_ - 1)
+                   .Evaluate(time);
     Q_np_fac = 0.0;
   }
   else

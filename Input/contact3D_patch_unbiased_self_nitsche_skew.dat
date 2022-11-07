@@ -56,7 +56,7 @@ SOLVER                          UMFPACK
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 10 DENS 0.1
 MAT 10 ELAST_CoupSVK YOUNG 4000 NUE 0.0
 ------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1.5 5.0 VALUES 0 0.015 0.015
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0

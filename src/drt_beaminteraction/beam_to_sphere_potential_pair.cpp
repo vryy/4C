@@ -16,6 +16,7 @@
 #include "../linalg/linalg_serialdensevector.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/function_of_time.H"
 
 // Todo get rid of outdated header inclusions
 #include "../drt_beaminteraction/beam3contact_utils.H"
@@ -260,15 +261,15 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
 
   if (function_number != -1)
     q1 *= DRT::Problem::Instance()
-              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(function_number - 1)
-              .EvaluateTime(time_);
+              ->FunctionById<DRT::UTILS::FunctionOfTime>(function_number - 1)
+              .Evaluate(time_);
 
   function_number = chargeconds_[1]->GetInt("funct");
 
   if (function_number != -1)
     q2 *= DRT::Problem::Instance()
-              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(function_number - 1)
-              .EvaluateTime(time_);
+              ->FunctionById<DRT::UTILS::FunctionOfTime>(function_number - 1)
+              .Evaluate(time_);
 
 
   // auxiliary variable

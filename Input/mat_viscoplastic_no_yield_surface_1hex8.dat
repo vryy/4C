@@ -38,7 +38,7 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_Viscoplastic_No_Yield_Surface YOUNG 7810.0e-4 NUE 0.38 DENS 5.34e-4 TEMPERATURE 298.0 PRE_EXP_FAC 42.5 ACTIVATION_ENERGY 37000.0 GAS_CONSTANT 8.314 STRAIN_RATE_SENS 0.15 INIT_FLOW_RES 0.95 FLOW_RES_PRE_FAC 10.0 FLOW_RES_EXP 2.0 FLOW_RES_SAT_FAC 2.0 FLOW_RES_SAT_EXP 0.05
 -------------------------------------------------------------FUNCT1
-FUNCTION a
+SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 2 TIMES 0.0 50e3 DESCRIPTION (exp(2.0e-5*t)-1.0)
 ------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 4 QUANTITY dispy VALUE -9.06271329067010051e-02 TOLERANCE 9.1e-10

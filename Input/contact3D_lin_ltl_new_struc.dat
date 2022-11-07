@@ -74,10 +74,10 @@ SOLVER               Superlu
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2250000 NUE 0.0 DENS 0.1 THEXPANS 0.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 2250000 NUE 0.0 DENS 0.1 THEXPANS 0.0
 ------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 5 25 VALUES 0 0.06 0.06
 ------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION b
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME b
 VARIABLE 0 NAME b TYPE linearinterpolation NUMPOINTS 3 TIMES 0 5 25 VALUES 0 0.0 0.3
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0

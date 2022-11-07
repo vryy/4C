@@ -41,31 +41,11 @@ namespace STR
    public:
     WeaklyCompressibleEtienneFSIStructureFunction(const MAT::PAR::StVenantKirchhoff& fparams);
 
-    /*!
-     *  \brief evaluate function at given position in space
-     *
-     * \param index (i) index defines the function-component which will be evaluated
-     * \param x     (i) The point in space in which the function will be evaluated
-     */
-    double Evaluate(const int index, const double* x, double t) override;
+    double Evaluate(const double* x, double t, std::size_t component) override;
 
-    /*!
-     *  \brief evaluate first or second time derivative
-     *
-     * \param index (i) index defines the function-component which will be evaluated
-     * \param x     (i) The point in space in which the time derivative will be evaluated
-     * \param t     (i) The point in time in which the time derivative will be evaluated
-     * \param deg   (i) The degree of the time derivative
-     */
     std::vector<double> EvaluateTimeDerivative(
-        const int index, const double* x, const double t, const unsigned deg) override;
+        const double* x, double t, unsigned deg, std::size_t component) override;
 
-    /*!
-     *  \brief Return the number of components of this spatial function (This is a vector-valued
-     * function)
-     *
-     * \return number of components
-     */
     std::size_t NumberComponents() override { return (2); };
 
    private:
@@ -78,31 +58,11 @@ namespace STR
    public:
     WeaklyCompressibleEtienneFSIStructureForceFunction(const MAT::PAR::StVenantKirchhoff& fparams);
 
-    /*!
-     *  \brief evaluate function at given position in space
-     *
-     * \param index (i) index defines the function-component which will be evaluated
-     * \param x     (i) The point in space in which the function will be evaluated
-     */
-    double Evaluate(const int index, const double* x, double t) override;
+    double Evaluate(const double* x, double t, std::size_t component) override;
 
-    /*!
-     *  \brief evaluate first or second time derivative
-     *
-     * \param index (i) index defines the function-component which will be evaluated
-     * \param x     (i) The point in space in which the time derivative will be evaluated
-     * \param t     (i) The point in time in which the time derivative will be evaluated
-     * \param deg   (i) The degree of the time derivative
-     */
     std::vector<double> EvaluateTimeDerivative(
-        const int index, const double* x, const double t, const unsigned deg) override;
+        const double* x, double t, unsigned deg, std::size_t component) override;
 
-    /*!
-     *  \brief Return the number of components of this spatial function (This is a vector-valued
-     * function)
-     *
-     * \return number of components
-     */
     std::size_t NumberComponents() override { return (2); };
 
    private:

@@ -129,9 +129,9 @@ MAT 2 THERM_FourierIso CAPA 3297000.0 CONDUCT 52.0
 // cloning from same source to target id --> copy str material instance to thermo
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 1
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 300.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 300.0
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 500000.0 DESCRIPTION (-4.0e10*t) (-4.0e10*1)
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0

@@ -99,7 +99,7 @@ THETA                           0.5
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 10.0 NUE 0.3 DENS 2.0e-6
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 15*t
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 15*t
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE -2.35921093210501032e-01 TOLERANCE 1e-5
 STRUCTURE DIS structure NODE 13 QUANTITY dispx VALUE -7.49662115025704397e-03 TOLERANCE 1e-5

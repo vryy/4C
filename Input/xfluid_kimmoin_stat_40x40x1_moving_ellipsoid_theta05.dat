@@ -148,7 +148,7 @@ KIMMOIN-RHS MAT 1 ISSTAT 1 ISSTOKES 0
 ----------------------------------FUNCT2 // exact velocity/pressure solution
 KIMMOIN-UP MAT 1 ISSTAT 1
 ----------------------------------------------------------------------FUNCT3
-FUNCTION -1.0*(sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5))-0.45)
+SYMBOLIC_FUNCTION_OF_SPACE_TIME -1.0*(sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5))-0.45)
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE 0

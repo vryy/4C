@@ -88,10 +88,10 @@ MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 1.0
 MAT 3 ELAST_CoupNeoHooke YOUNG 100.0 NUE 0.3
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100 NUE 0.3 DENS 1 THEXPANS 0.0
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES 0 1 51 53 DESCRIPTION 0 sin(2*pi/10*(t-1)) 0
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES 0 1 51 53 DESCRIPTION t 1 1-(t-51)
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 37 QUANTITY dispmx VALUE 1.44493563827397440e-05 TOLERANCE 1e-8

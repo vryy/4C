@@ -230,7 +230,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
                   functfac =
                       (DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
                            (*funct)[j] - 1))
-                          .Evaluate(j, &currPos[0], time);
+                          .Evaluate(&currPos[0], time, j);
                 }
                 else
                 {
@@ -238,7 +238,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
                   functfac =
                       (DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
                            (*funct)[j] - 1))
-                          .Evaluate(j, node->X(), time);
+                          .Evaluate(node->X(), time, j);
                 }
               }
               currotangle(j) = (*rotangle)[j] * functfac;

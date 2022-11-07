@@ -128,7 +128,7 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_carreauyasuda NU_0 1.5238 NU_INF 0.03333 LAMBDA 8.2 APARAM 1.23 BPARAM 0.64 DENSITY 1.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION y*(1-y)*a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME y*(1-y)*a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 0.5 1000000 DESCRIPTION (1-cos(2*t*pi))/2.0 1
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8

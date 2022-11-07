@@ -68,14 +68,14 @@ SOLVER                          UMFPACK
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.1
 MAT 2 ELAST_CoupNeoHooke YOUNG 2250 NUE 0.3
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 30.0
-COMPONENT 1 FUNCTION 23.0
-COMPONENT 2 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 30.0
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 23.0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.1 1 VALUES 0 0.05 0.05
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.1 1 VALUES 0 0 0.3
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1

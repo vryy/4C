@@ -326,7 +326,8 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateXfluidFunctio
 
 DRT::UTILS::GerstenbergerForwardfacingStep::GerstenbergerForwardfacingStep() {}
 
-double DRT::UTILS::GerstenbergerForwardfacingStep::Evaluate(int index, const double* xp, double t)
+double DRT::UTILS::GerstenbergerForwardfacingStep::Evaluate(
+    const double* xp, const double t, const std::size_t component)
 {
   //  //cube_Gerstenberger:
   //  //1.6x1.6
@@ -428,7 +429,8 @@ DRT::UTILS::MovingLevelSetCylinder::MovingLevelSetCylinder(std::vector<double>* 
   // std::cout << "T_halfcycle: " << (L/2)/maxspeed * PI; //i.e. -d/2 -> d/2
 }
 
-double DRT::UTILS::MovingLevelSetCylinder::Evaluate(int index, const double* xp, double t)
+double DRT::UTILS::MovingLevelSetCylinder::Evaluate(
+    const double* xp, const double t, const std::size_t component)
 {
   // d = L/2 * sin(f*t-PI/2)
   // v = L*f/2 * cos(f*t-PI/2) = maxspeed * cos( (maxspeed*2/L)*t-PI/2 )
@@ -563,7 +565,8 @@ DRT::UTILS::MovingLevelSetTorus::MovingLevelSetTorus(std::vector<double>* origin
 {
 }
 
-double DRT::UTILS::MovingLevelSetTorus::Evaluate(int index, const double* xp, double t)
+double DRT::UTILS::MovingLevelSetTorus::Evaluate(
+    const double* xp, const double t, const std::size_t component)
 {
   // d = L/2 * sin(f*t-PI/2)
   // v = L*f/2 * cos(f*t-PI/2) = maxspeed * cos( (maxspeed*2/L)*t-PI/2 )
@@ -674,7 +677,8 @@ DRT::UTILS::MovingLevelSetTorusVelocity::MovingLevelSetTorusVelocity(std::vector
 {
 }
 
-double DRT::UTILS::MovingLevelSetTorusVelocity::Evaluate(int index, const double* xp, double t)
+double DRT::UTILS::MovingLevelSetTorusVelocity::Evaluate(
+    const double* xp, const double t, const std::size_t component)
 {
   // d = L/2 * sin(f*t-PI/2)
   // v = L*f/2 * cos(f*t-PI/2) = maxspeed * cos( (maxspeed*2/L)*t-PI/2 )
@@ -747,7 +751,7 @@ double DRT::UTILS::MovingLevelSetTorusVelocity::Evaluate(int index, const double
     }
   }
 
-  switch (index)
+  switch (component)
   {
     case 0:
       return (vel_translation[0] + vel_rotation[0]);
@@ -803,7 +807,8 @@ DRT::UTILS::MovingLevelSetTorusSliplength::MovingLevelSetTorusSliplength(
   }
 }
 
-double DRT::UTILS::MovingLevelSetTorusSliplength::Evaluate(int index, const double* xp, double t)
+double DRT::UTILS::MovingLevelSetTorusSliplength::Evaluate(
+    const double* xp, const double t, const std::size_t component)
 {
   // coefficient for sinus.
   double dist;
@@ -989,13 +994,14 @@ DRT::UTILS::TaylorCouetteFlow::TaylorCouetteFlow(double radius_inner, double rad
         (0.5 * ((radius_outer * radius_outer) - (radius_inner * radius_inner)));
 }
 
-double DRT::UTILS::TaylorCouetteFlow::Evaluate(int index, const double* xp, double t)
+double DRT::UTILS::TaylorCouetteFlow::Evaluate(
+    const double* xp, const double t, const std::size_t component)
 {
   double radius = sqrt(xp[0] * xp[0] + xp[1] * xp[1]);
 
   double u_theta = c1_ * radius + c2_ / radius;
 
-  switch (index)
+  switch (component)
   {
     case 0:                              // u,x
       return -u_theta * xp[1] / radius;  // sin(theta);
@@ -1007,7 +1013,7 @@ double DRT::UTILS::TaylorCouetteFlow::Evaluate(int index, const double* xp, doub
       return (c1_ * c1_) * (radius * radius) * 0.5 + 2.0 * c1_ * c2_ * log(radius) -
              (c2_ * c2_) / (2.0 * (radius * radius)) + c3_;
     default:
-      dserror("wrong index %d", index);
+      dserror("wrong component %d", component);
       break;
   }
 
@@ -1016,7 +1022,7 @@ double DRT::UTILS::TaylorCouetteFlow::Evaluate(int index, const double* xp, doub
 }
 
 std::vector<double> DRT::UTILS::TaylorCouetteFlow::EvaluateSpatialDerivative(
-    int index, const double* xp, const double t)
+    const double* xp, const double t, const std::size_t component)
 {
   // u_x = -(c1_*r + c2_/r)*y/r = -(c1_*y + c2_*y/(x^2+y^2))
   // d u_x /dx = c2_ * 2*x*y/((x^2+y^2)^2)
@@ -1039,7 +1045,7 @@ std::vector<double> DRT::UTILS::TaylorCouetteFlow::EvaluateSpatialDerivative(
   double r_sqaured2 =
       (xp[0] * xp[0] + xp[1] * xp[1]) * (xp[0] * xp[0] + xp[1] * xp[1]);  //(x^2+y^2)^2
 
-  switch (index)
+  switch (component)
   {
     case 0:
     {
@@ -1063,7 +1069,7 @@ std::vector<double> DRT::UTILS::TaylorCouetteFlow::EvaluateSpatialDerivative(
       break;
     }
     default:
-      dserror("wrong index %d", index);
+      dserror("wrong component %d", component);
       break;
   }
 
@@ -1117,7 +1123,8 @@ DRT::UTILS::UrquizaBoxFlow::UrquizaBoxFlow(double lengthx, double lengthy, doubl
   (rotvector_[1])[1] = cos(rotation_);
 }
 
-double DRT::UTILS::UrquizaBoxFlow::Evaluate(int index, const double* xp, double t)
+double DRT::UTILS::UrquizaBoxFlow::Evaluate(
+    const double* xp, const double t, const std::size_t component)
 {
   // CASE 1:
   //  u =
@@ -1249,7 +1256,7 @@ double DRT::UTILS::UrquizaBoxFlow::Evaluate(int index, const double* xp, double 
   }
 
   // Rotate the traction back!
-  switch (index)
+  switch (component)
   {
     case 0:  // u_x
       return uX[0];
@@ -1260,7 +1267,7 @@ double DRT::UTILS::UrquizaBoxFlow::Evaluate(int index, const double* xp, double 
     case 3:  // pressure
       return px;
     default:
-      dserror("wrong index %d", index);
+      dserror("wrong component %d", component);
       break;
   }
 
@@ -1269,7 +1276,7 @@ double DRT::UTILS::UrquizaBoxFlow::Evaluate(int index, const double* xp, double 
 }
 
 std::vector<double> DRT::UTILS::UrquizaBoxFlow::EvaluateSpatialDerivative(
-    int index, const double* xp, const double t)
+    const double* xp, const double t, const std::size_t component)
 {
   //  CASE 1:
   //  du_i/dx_j =
@@ -1302,7 +1309,7 @@ std::vector<double> DRT::UTILS::UrquizaBoxFlow::EvaluateSpatialDerivative(
 
   std::vector<double> tmp_vec(3, 0.0);
 
-  switch (index)
+  switch (component)
   {
     case 0:
     {
@@ -1355,7 +1362,7 @@ std::vector<double> DRT::UTILS::UrquizaBoxFlow::EvaluateSpatialDerivative(
       break;
     }
     default:
-      dserror("wrong index %d", index);
+      dserror("wrong component %d", component);
       break;
   }
 
@@ -1369,7 +1376,8 @@ DRT::UTILS::UrquizaBoxFlowForce::UrquizaBoxFlowForce(double lengthx, double leng
 {
 }
 
-double DRT::UTILS::UrquizaBoxFlowForce::Evaluate(int index, const double* xp, double t)
+double DRT::UTILS::UrquizaBoxFlowForce::Evaluate(
+    const double* xp, const double t, const std::size_t component)
 {
   double x = xp[0];
   double y = xp[1];
@@ -1399,7 +1407,7 @@ double DRT::UTILS::UrquizaBoxFlowForce::Evaluate(int index, const double* xp, do
 
 
   // Rotate the traction back!
-  switch (index)
+  switch (component)
   {
     case 0:  // (2*nu*D(u)*n)_x
     {
@@ -1508,7 +1516,7 @@ double DRT::UTILS::UrquizaBoxFlowForce::Evaluate(int index, const double* xp, do
     case 2:  // z-dir = 0.0
       return 0.0;
     default:
-      dserror("wrong index %d", index);
+      dserror("wrong component %d", component);
       break;
   }
 
@@ -1522,7 +1530,8 @@ DRT::UTILS::UrquizaBoxFlowTraction::UrquizaBoxFlowTraction(double lengthx, doubl
 {
 }
 
-double DRT::UTILS::UrquizaBoxFlowTraction::Evaluate(int index, const double* xp, double t)
+double DRT::UTILS::UrquizaBoxFlowTraction::Evaluate(
+    const double* xp, const double t, const std::size_t component)
 {
   double tol = 1e-13;
 
@@ -1679,7 +1688,7 @@ double DRT::UTILS::UrquizaBoxFlowTraction::Evaluate(int index, const double* xp,
 
 
   // Rotate the traction back!
-  switch (index)
+  switch (component)
   {
     case 0:  // (2*nu*D(u)*n)_x
       return kinvisc_ * surfvisctrac[0];
@@ -1688,7 +1697,7 @@ double DRT::UTILS::UrquizaBoxFlowTraction::Evaluate(int index, const double* xp,
     case 2:  // z-dir = 0.0
       return 0.0;
     default:
-      dserror("wrong index %d", index);
+      dserror("wrong component %d", component);
       break;
   }
 

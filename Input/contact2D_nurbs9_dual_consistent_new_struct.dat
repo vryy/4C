@@ -60,10 +60,10 @@ SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff  YOUNG 100 NUE 0.0 DENS 0.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 1 2 100 VALUES 0 1.5 1.5 1.5
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 1 5 100 VALUES 0 0 11.5 11.5
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          0

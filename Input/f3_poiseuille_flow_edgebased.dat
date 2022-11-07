@@ -75,12 +75,12 @@ AZOUTPUT                        50
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1.25-5.0*y*y
-COMPONENT 1 FUNCTION 0.0
-COMPONENT 2 FUNCTION 0.0
-COMPONENT 3 FUNCTION 0.0 // pressure
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.25-5.0*y*y
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 // pressure
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION -10.0*y*0.1
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME -10.0*y*0.1
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          11

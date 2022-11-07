@@ -913,7 +913,7 @@ NODE 153 COORD 15.384277327635500 -3.538764756847727 1.992206690338861
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.00000001
 MAT 2 ELAST_CoupNeoHooke YOUNG 1000000.0 NUE 0.499
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 5 TIMES 0 0.1 0.11 0.2 0.35 VALUES 0 1000 1100 1600 0
 -------------------------------------------------------------------------END
 //                              END

@@ -159,10 +159,10 @@ MAT 4 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 0.5 // plus side
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
-FUNCTION                        (y+0.5)
+SYMBOLIC_FUNCTION_OF_SPACE_TIME                        (y+0.5)
 ----------------------------------------------------------------------FUNCT2
 // initial G-function field
-FUNCTION                        sqrt((x+0.0)*(x+0.0)+(y+0.45)*(y+0.45))-0.25
+SYMBOLIC_FUNCTION_OF_SPACE_TIME                        sqrt((x+0.0)*(x+0.0)+(y+0.45)*(y+0.45))-0.25
 ----------------------------------------------------------RESULT DESCRIPTION
 XFLUID DIS fluid NODE 5445 QUANTITY velx VALUE  8.12130265897656606e-02 TOLERANCE 1e-12
 XFLUID DIS fluid NODE 5445 QUANTITY vely VALUE -5.18805150328230207e-03 TOLERANCE 1e-12

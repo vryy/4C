@@ -525,18 +525,18 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 10
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra1 TAR_MAT 11
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra2 TAR_MAT 12
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION ((1-(((x)^2+(y)^2)^4)/(18^8)))
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME ((1-(((x)^2+(y)^2)^4)/(18^8)))
 -------------------------------------------------------------FUNCT2 //initfunc fluid scatra
-COMPONENT 0 FUNCTION 1.0
-COMPONENT 1 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 -------------------------------------------------------------FUNCT3 //initfunc structure scatra
-COMPONENT 0 FUNCTION 0.0
-COMPONENT 1 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 -------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION ((1-(((x)^2+(y)^2)^4)/(18^8)))*a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME ((1-(((x)^2+(y)^2)^4)/(18^8)))*a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES 0.0 0.02999 100 500000.0 DESCRIPTION ((1-cos(2*pi*t/0.06))*0.5) (1.5-cos(2*pi*t/0.03)*0.5) (1.5-cos(2*pi*100/0.03)*0.5)
 -------------------------------------------------------------FUNCT5
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.15 500000000.0 DESCRIPTION ((1-cos(2*pi*t/0.3))*0.5*1.0) 1
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra2 NODE 4146 QUANTITY phi VALUE 3.99394686537986654e-01 TOLERANCE 1e-6

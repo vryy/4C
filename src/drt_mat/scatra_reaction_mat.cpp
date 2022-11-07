@@ -331,7 +331,7 @@ double MAT::ScatraReactionMat::ReacCoeff(const std::vector<std::pair<std::string
 
     reaccoeff *= (DRT::Problem::Instance()
                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(DisFunctReacCoeffID() - 1)
-                      .Evaluate(0, gpcoord, time));
+                      .Evaluate(gpcoord, time, 0));
 
     // TODO:(thon) the following is nicer but works only for VARFUNCTION Function :(
     //    try

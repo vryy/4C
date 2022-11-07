@@ -16,6 +16,7 @@
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/function_of_time.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1073,8 +1074,8 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateFlowrate(
   if (functnum > 0)
   {
     functfac = DRT::Problem::Instance()
-                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                   .EvaluateTime(time);
+                   ->FunctionById<DRT::UTILS::FunctionOfTime>(functnum - 1)
+                   .Evaluate(time);
     flowrate = val * functfac;
   }
 

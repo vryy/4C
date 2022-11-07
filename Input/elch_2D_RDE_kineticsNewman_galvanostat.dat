@@ -83,17 +83,17 @@ MAT 3 MAT_ion DIFFUSIVITY 5e-3 VALENCE 1.0 //DENSIFICATION 0.7 //H+
 MAT 4 MAT_ion DIFFUSIVITY 1e-3 VALENCE -1.0 //DENSIFICATION 0.7 //HSO4-
 MAT 5 MAT_matlist LOCAL No NUMMAT 4 MATIDS 1 2 3 4 END
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.00995 //initial concentration field:A+ mmol/cm^3 = mol/l = M
-COMPONENT 1 FUNCTION 0.0001 //initial concentration field A
-COMPONENT 2 FUNCTION 0.990 //initial concentration field B-
-COMPONENT 3 FUNCTION 1.010 //initial concentration field HSO4-
-COMPONENT 4 FUNCTION 0.0 //initial pot. field
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.00995 //initial concentration field:A+ mmol/cm^3 = mol/l = M
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0001 //initial concentration field A
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.990 //initial concentration field B-
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.010 //initial concentration field HSO4-
+COMPONENT 4 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial pot. field
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION (52.35987756*2)^0.5*(-0.51023*(52.35987756*2)*((x+0.05)/1)^2+0.333*(52.35987756*2)^1.5*((x+0.05)/1)^3-0.103*(52.35987756*2)^2*((x+0.05)/1)^4) //initial x-vel. field
-COMPONENT 1 FUNCTION 0.0 //initial y-vel. field
-COMPONENT 2 FUNCTION 0.0 //initial pres. field
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (52.35987756*2)^0.5*(-0.51023*(52.35987756*2)*((x+0.05)/1)^2+0.333*(52.35987756*2)^1.5*((x+0.05)/1)^3-0.103*(52.35987756*2)^2*((x+0.05)/1)^4) //initial x-vel. field
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial y-vel. field
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial pres. field
 -------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.1 1000000 DESCRIPTION -50*1e-6*(0.5*(sin((t*pi/0.1)-(pi/2)))+0.5) -50*1e-6*(0.5*(sin((0.1*pi/0.1)-(pi/2)))+0.5)
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 5.31781680112694902e-03 TOLERANCE 1e-12

@@ -100,10 +100,10 @@ MAT 3 ELAST_CoupNeoHooke YOUNG 1000000.0 NUE 0.45
 // with NUMSTEP=30
 STRUCTURE DIS structure NODE 404 QUANTITY dispy VALUE -1.698069512864041286 TOLERANCE 1e-5
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.1 0.11 1.5 VALUES 0 2 0 0
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.1 0.11 1.5 VALUES 0 6 0 0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4

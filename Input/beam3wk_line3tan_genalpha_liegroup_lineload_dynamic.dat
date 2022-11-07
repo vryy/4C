@@ -405,12 +405,12 @@ STRUCTURE SPECIAL QUANTITY internal_energy VALUE 4.10454396442570e-02 TOLERANCE 
 STRUCTURE SPECIAL QUANTITY kinetic_energy VALUE 6.61469302529215e-02 TOLERANCE 1e-11
 STRUCTURE SPECIAL QUANTITY total_energy VALUE 1.07192369897179e-01 TOLERANCE 1e-11
 --------------------------------------------------------------------------FUNCT1
-FUNCTION sin(x*3.14/500.0)*1.0*a
+SYMBOLIC_FUNCTION_OF_SPACE_TIME sin(x*3.14/500.0)*1.0*a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.5 1.0 10.0 VALUES 0.0 0.1 0.0 0.0
 --------------------------------------------------------------------------FUNCT2
-FUNCTION cos(x*3.14/500.0)*1.0*a
+SYMBOLIC_FUNCTION_OF_SPACE_TIME cos(x*3.14/500.0)*1.0*a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.5 1.0 10.0 VALUES 0.0 0.1 0.0 0.0
 --------------------------------------------------------------------------FUNCT3
-FUNCTION 1*a
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 1*a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.5 1.0 10.0 VALUES 0.0 0.1 0.0 0.0
 -----------------------------------------------------------------------------END

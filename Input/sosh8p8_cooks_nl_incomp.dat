@@ -76,7 +76,7 @@ SOLVER                          UMFPACK
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 1.0
 MAT 2 ELAST_CoupLogNeoHooke MODE Lame C1 80.1884537 C2 0.
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 50 QUANTITY dispx VALUE -1.9480759634533324e+01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 50 QUANTITY dispy VALUE 2.0321732340972484e+01 TOLERANCE 1e-8

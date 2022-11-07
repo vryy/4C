@@ -189,12 +189,12 @@ MAT 2 MAT_scatra DIFFUSIVITY 0.0018519 REACOEFF 0.0 SCNUM 3.0 // Sc=3
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION (1-y*y)*20.3
-COMPONENT 1 FUNCTION 0
-COMPONENT 2 FUNCTION 0
-COMPONENT 3 FUNCTION 0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1-y*y)*20.3
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION y //initial temperature field
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME y //initial temperature field
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0

@@ -34,7 +34,7 @@ MAT 103 ELAST_CoupAnisoExpoTwoCoup A4 18.472 B4 16.026 A6 2.481 B6 11.120 A8 0.2
 MAT 104 ELAST_AnisoActiveStress_Evolution SIGMA 150.0 TAUC0 0.0 MAX_ACTIVATION 5.0 MIN_ACTIVATION -30.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0 STR_TENS_ID 9999 INIT 3
 MAT 9999 ELAST_StructuralTensor STRATEGY Standard
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0

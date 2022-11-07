@@ -64,7 +64,7 @@ SOLVER                          UMFPACK
 MAT 1 MAT_PlasticElastHyper NUMMAT 1 MATIDS 2 DENS 1.0 INITYIELD 248
 MAT 2 ELAST_CoupNeoHooke YOUNG 6.9e4 NUE 0.3
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 60*t
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 60*t
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2
 NDLINE                          2

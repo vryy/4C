@@ -40,14 +40,9 @@ namespace DRT
     class FunctionManager;
 
     /*!
-     * \brief abstract interface for space- and time-dependent functions.
+     * \brief interface for space- and time-dependent functions.
      *
      * Functions can be defined either scalar-valued or vector-valued.
-     *
-     * There exist function definitions using explicitly defined spatial functions
-     * for test problems (beltrami, kim-moin etc).
-     *
-     * Spatial function based on parsed expressions are provided as well.
      */
     class FunctionOfSpaceTime
     {
@@ -56,48 +51,30 @@ namespace DRT
       virtual ~FunctionOfSpaceTime() = default;
 
       /*!
-       * @brief Evaluation of time and space dependent FUNCT
+       * @brief Evaluation of time and space dependent function
        *
        * Evaluate the specified component of the function at the specified position and point in
        * time.
        *
-       * @param index (i) For vector-valued functions, index defines the function-component which
-       *                  should be evaluated
        * @param x  (i) The point in 3-dimensional space in which the function will be evaluated
        * @param t  (i) The point in time in which the function will be evaluated
+       * @param component (i) For vector-valued functions, index defines the function-component
+       *                      which should be evaluated
        * @return function value
        */
-      virtual double Evaluate(const int index, const double* x, double t) = 0;
+      virtual double Evaluate(const double* x, double t, std::size_t component) = 0;
 
       /*!
-       * @brief Evaluation of time dependent FUNCT
+       * \brief Evaluation of first spatial derivative of time and space dependent function
        *
-       * @param t  (i) The point in time in which the function will be evaluated
-       */
-      double EvaluateTime(double t)
-      {
-        std::array<double, 3> dummy = {0.0};
-
-#ifdef DEBUG
-        std::array<double, 3> dummy2 = {123.456};
-        if (std::abs(Evaluate(0, dummy.data(), t) - Evaluate(0, dummy2.data(), t)) > 1.0e-14)
-          dserror("You evaluate a FUNCT solely by time even if it dependents on x,y or z!");
-#endif
-
-        return Evaluate(0, dummy.data(), t);
-      }
-
-      /*!
-       * \brief Evaluation of first spatial derivatives of time and space dependent FUNCT
-       *
-       * \param index (i) For vector-valued functions, index defines the function-component which
-       *                  should be evaluated. For scalar functions, index is always set to 0
        * \param x  (i) The point in 3-dimensional space in which the function will be evaluated
-       * \param t  (i) Absolute time in which the function will be evaluated
-       * \return first spatial derivative of FUNCT
+       * \param t  (i) The point in time in which the function will be evaluated
+       * @param component (i) For vector-valued functions, index defines the function-component
+       *                      which should be evaluated
+       * \return first spatial derivative of function
        */
       virtual std::vector<double> EvaluateSpatialDerivative(
-          const int index, const double* x, const double t)
+          const double* x, double t, std::size_t component)
       {
         dserror("The evaluation of the derivative is not implemented for this function");
         std::vector<double> emptyvector;
@@ -105,56 +82,27 @@ namespace DRT
       };
 
       /*!
-       * \brief Evaluation of time derivatives and value of the time and space dependent FUNCT
+       * \brief Evaluation of time derivatives and value of the time and space dependent function
        *
        * Evaluate the specified component of the function at the specified position and point in
-       * time and calculate the time derivative(s).
+       * time and calculate the time derivative(s) up to degree @p deg.
        *
-       * @param index (i) For vector-valued functions, index defines the function-component which
-       *                  should be evaluated
        * @param x  (i) The point in 3-dimensional space in which the function will be evaluated
        * @param t  (i) The point in time in which the function will be evaluated
        * @param deg   (i) maximum time derivative degree
+       * @param component (i) For vector-valued functions, index defines the function-component
+       *                      which should be evaluated
        * @return vector containing value and time derivative(s)
        */
       virtual std::vector<double> EvaluateTimeDerivative(
-          const int index, const double* x, const double t, const unsigned deg)
+          const double* x, double t, unsigned deg, std::size_t component)
       {
         dserror("The evaluation of the time derivative is not implemented for this function");
         std::vector<double> emptyvector;
         return emptyvector;
       };
 
-      /*!
-       * \brief Evaluation of time derivatives of time dependent FUNCT
-       *
-       * @param t  (i) The point in time in which the function will be evaluated
-       * @param deg   (i) maximum time derivative degree
-       * @return vector containing value and time derivative(s)
-       */
-      std::vector<double> EvaluateTimeDerivative(const double t, const unsigned deg)
-      {
-        std::array<double, 3> dummy = {0.0};
-
-#ifdef DEBUG
-        std::vector<double> res1 = EvaluateTimeDerivative(0, dummy.data(), t, deg);
-        std::array<double, 3> dummy2 = {123.456};
-        std::vector<double> res2 = EvaluateTimeDerivative(0, dummy2.data(), t, deg);
-        for (unsigned int i = 0; i < deg; i++)
-        {
-          if (std::abs(res1[deg] - res2[deg]) > 1.0e-14)
-          {
-            dserror(
-                "You evaluate the time derivative of a FUNCT solely by time even if it dependents "
-                "on x,y or z!");
-          }
-        }
-#endif
-
-        return EvaluateTimeDerivative(0, dummy.data(), t, deg);
-      };
-
-      /// Return number of components of FUNCT
+      /// Return number of components of function
       virtual std::size_t NumberComponents() { return 0; }
     };
 
@@ -179,15 +127,14 @@ namespace DRT
       ExprFunction(const std::vector<std::string>& expressions,
           std::vector<Teuchos::RCP<FunctionVariable>> variables);
 
-      double Evaluate(const int index, const double* x, double t) override;
+      double Evaluate(const double* x, double t, std::size_t component) override;
 
       std::vector<double> EvaluateSpatialDerivative(
-          const int index, const double* x, const double t) override;
+          const double* x, double t, std::size_t component) override;
 
       std::vector<double> EvaluateTimeDerivative(
-          const int index, const double* x, const double t, const unsigned deg) override;
+          const double* x, double t, unsigned deg, std::size_t component) override;
 
-      /// return the number of components
       std::size_t NumberComponents() override { return (expr_.size()); }
 
      private:
@@ -221,7 +168,7 @@ namespace DRT
       virtual void AddExpr(
           const std::string& buf, const std::vector<std::pair<std::string, double>>& constants);
 
-      double Evaluate(const int index, const double* x, const double t) override;
+      double Evaluate(const double* x, double t, std::size_t component) override;
 
       /*!
        * \brief evaluate function for a given set of variables
@@ -249,7 +196,7 @@ namespace DRT
           const std::vector<std::pair<std::string, double>>& constants);
 
       std::vector<double> EvaluateSpatialDerivative(
-          const int index, const double* x, const double t) override;
+          const double* x, double t, std::size_t component) override;
 
       /*!
        *\brief evaluate the derivative at given position in space for a given set of variables

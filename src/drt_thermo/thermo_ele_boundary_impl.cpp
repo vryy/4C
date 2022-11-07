@@ -15,6 +15,8 @@
 #include "../drt_inpar/inpar_thermo.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/function_of_time.H"
+
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_geometry/position_array.H"
@@ -211,9 +213,9 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
     double curvefac = 1.0;
     if (curvenum >= 0)
     {
-      curvefac = DRT::Problem::Instance()
-                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
-                     .EvaluateTime(time);
+      curvefac =
+          DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
+              time);
     }
     // multiply heat convection coefficient with the timecurve factor
     coeff *= curvefac;
@@ -225,8 +227,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
     if (surtempcurvenum >= 0)
     {
       surtempcurvefac = DRT::Problem::Instance()
-                            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(surtempcurvenum)
-                            .EvaluateTime(time);
+                            ->FunctionById<DRT::UTILS::FunctionOfTime>(surtempcurvenum)
+                            .Evaluate(time);
     }
     // complete surrounding temperatures T_oo: multiply with the timecurve factor
     surtemp *= surtempcurvefac;
@@ -424,9 +426,9 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         double curvefac = 1.0;
         if (curvenum >= 0)
         {
-          curvefac = DRT::Problem::Instance()
-                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
-                         .EvaluateTime(time);
+          curvefac =
+              DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
+                  time);
         }
         // multiply heat convection coefficient with the timecurve factor
         coeff *= curvefac;
@@ -438,8 +440,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         if (surtempcurvenum >= 0)
         {
           surtempcurvefac = DRT::Problem::Instance()
-                                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(surtempcurvenum)
-                                .EvaluateTime(time);
+                                ->FunctionById<DRT::UTILS::FunctionOfTime>(surtempcurvenum)
+                                .Evaluate(time);
         }
         // complete surrounding temperatures T_oo: multiply with the timecurve factor
         surtemp *= surtempcurvefac;
@@ -623,7 +625,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(DRT::Element* el
             // evaluate function at current gauss point
             functfac = DRT::Problem::Instance()
                            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                           .Evaluate(dof, coordgpref, time);
+                           .Evaluate(coordgpref, time, dof);
           }
           else
             functfac = 1.0;

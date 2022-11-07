@@ -70,10 +70,10 @@ SOLVER                          UMFPACK
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 21000 NUE 0.0 DENS 1 THEXPANS 0.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 210 NUE 0.0 DENS 1 THEXPANS 0.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 2 4 VALUES -0.02 -0.22 -0.22
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 2 4 VALUES 0 0 1
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE 9.37612422664331341e-02 TOLERANCE 1e-7

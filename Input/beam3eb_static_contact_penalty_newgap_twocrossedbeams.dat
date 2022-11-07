@@ -122,7 +122,7 @@ NODE 13 COORD  0.4  0.1000000000000e+00  0.5e+00
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_BeamKirchhoffTorsionFreeElastHyper YOUNG 1e9 DENS 0 CROSSAREA 0.00000001 MOMIN 8.3333333333e-18
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ----------------------------------------------------------RESULT DESCRIPTION
 //Results with ANS and 4 GP
 STRUCTURE DIS structure NODE 11 QUANTITY dispx VALUE -1.58421976019983111e-02 TOLERANCE 1e-8

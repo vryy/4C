@@ -41,7 +41,7 @@ SOLVER                          UMFPACK
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 5 DENS 500
 MAT 5 ELAST_CoupNeoHooke YOUNG 250.0 NUE 0.3
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 -------------------------------------------------RESULT DESCRIPTION
 ALE DIS ale NODE 3 QUANTITY dispx VALUE -6.30239865266813970e-02 TOLERANCE 1e-12
 ALE DIS ale NODE 3 QUANTITY dispy VALUE 2.50000000000000000e-01 TOLERANCE 1e-12

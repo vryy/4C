@@ -995,7 +995,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocity(
             // in some fancy turbulance stuff.
             functfac = DRT::Problem::Instance()
                            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                           .Evaluate(isd, (ele->Nodes()[jnode])->X(), scatraparatimint_->Time());
+                           .Evaluate((ele->Nodes()[jnode])->X(), scatraparatimint_->Time(), isd);
           }
           else
             dserror("Negative time value in body force calculation: time = %f",

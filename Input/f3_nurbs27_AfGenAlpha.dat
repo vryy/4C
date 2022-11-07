@@ -205,18 +205,18 @@ DSURF                           0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.125 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION -1.0*y*a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME -1.0*y*a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.1 500000.0 DESCRIPTION t/0.1 1
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION x*a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME x*a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.1 500000.0 DESCRIPTION t/0.1 1
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION -1.0*y/sqrt(x*x+y*y)*(1.0/sqrt(x*x+y*y)-1.0/2.0*(sqrt(x*x+y*y)-1.0))*1
-COMPONENT 1 FUNCTION x/sqrt(x*x+y*y)*(1.0/sqrt(x*x+y*y)-1.0/2.0*(sqrt(x*x+y*y)-1.0))*1
-COMPONENT 2 FUNCTION 0
-COMPONENT 3 FUNCTION 0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME -1.0*y/sqrt(x*x+y*y)*(1.0/sqrt(x*x+y*y)-1.0/2.0*(sqrt(x*x+y*y)-1.0))*1
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME x/sqrt(x*x+y*y)*(1.0/sqrt(x*x+y*y)-1.0/2.0*(sqrt(x*x+y*y)-1.0))*1
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
 ----------------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.1 500000.0 DESCRIPTION t/0.1 1
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 2421 QUANTITY velx VALUE -5.998083857e-01 TOLERANCE 1e-9

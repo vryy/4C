@@ -55,13 +55,13 @@ MAT 3   MAT_ElastHyper   NUMMAT 2 MATIDS 30 31 DENS 0.1
 MAT 30   ELAST_CoupNeoHooke YOUNG 10 NUE 0.25
 MAT 31 ELAST_CoupAnisoExpoShear K1 100.0 K2 1.0 GAMMA 0.0 K1COMP 100.0 K2COMP 1.0 INIT 3 FIBER_IDS 1 2
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0 1 VALUES 0 1
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0 1 VALUES 0 1
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0 1 VALUES 0 1
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 23 QUANTITY dispx VALUE 4.98818310683149302e-01 TOLERANCE 1e-9

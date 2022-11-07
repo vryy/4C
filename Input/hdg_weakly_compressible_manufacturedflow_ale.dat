@@ -53,8 +53,8 @@ WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW MAT 1
 ------------------------------------------------------------FUNCT2
 WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE MAT 1
 ------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION 1/8*sin(2*pi*x)*(cos(2*pi*y)-1)*(cos(2*pi*t)-1)/4 // ux
-COMPONENT 1 FUNCTION 1/8*sin(2*pi*y)*(cos(2*pi*x)-1)*(cos(2*pi*t)-1)/4 // uy
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1/8*sin(2*pi*x)*(cos(2*pi*y)-1)*(cos(2*pi*t)-1)/4 // ux
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1/8*sin(2*pi*y)*(cos(2*pi*x)-1)*(cos(2*pi*t)-1)/4 // uy
 ------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 1 QUANTITY L2errmix VALUE 3.53212223648203191e-02 TOLERANCE 1e-12
 FLUID DIS fluid NODE 1 QUANTITY L2errden VALUE 3.22046223924164331e-03 TOLERANCE 1e-12

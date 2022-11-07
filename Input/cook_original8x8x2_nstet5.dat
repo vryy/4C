@@ -104,7 +104,7 @@ ML_DAMPCOARSE                   1.0                           // damping coarse 
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.001
 MAT 2 ELAST_CoupNeoHooke YOUNG 1 NUE 0.3333
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.5*(1-cos(1/50*t*pi))
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.5*(1-cos(1/50*t*pi))
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 73 QUANTITY dispy VALUE 1.73660488522828977e+01 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION

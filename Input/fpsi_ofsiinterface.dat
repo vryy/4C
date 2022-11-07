@@ -291,9 +291,9 @@ MAT 8 ELAST_CoupNeoHooke YOUNG 100.0 NUE 0.3 //Seal
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 SRC_FIELD fluid SRC_MAT 4 TAR_FIELD ale TAR_MAT 5
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 20*(y-1)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 20*(y-1)
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION v
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.5 10.0 DESCRIPTION 0.5*(1-cos(2*t*pi)) 1.0
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0

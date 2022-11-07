@@ -468,7 +468,8 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> FLD::TryCreateFluidFunction(
 FLD::BeltramiFunction::BeltramiFunction(double c1) : c1_(c1) {}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FLD::BeltramiFunction::Evaluate(const int index, const double* xp, double t)
+double FLD::BeltramiFunction::Evaluate(
+    const double* xp, const double t, const std::size_t component)
 {
   double a = M_PI / 4.0;
   double d = M_PI / 2.0;
@@ -482,7 +483,7 @@ double FLD::BeltramiFunction::Evaluate(const int index, const double* xp, double
   double kinvisc = dynvisc / dens;
   double tempfac = exp(-c1_ * kinvisc * d * d * t);
 
-  switch (index)
+  switch (component)
   {
     case 0:
       return -a *
@@ -516,7 +517,7 @@ double FLD::BeltramiFunction::Evaluate(const int index, const double* xp, double
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::BeltramiFunction::EvaluateTimeDerivative(
-    const int index, const double* xp, const double t, const unsigned deg)
+    const double* xp, const double t, const unsigned deg, const std::size_t component)
 {
   double a = M_PI / 4.0;
   double d = M_PI / 2.0;
@@ -536,12 +537,12 @@ std::vector<double> FLD::BeltramiFunction::EvaluateTimeDerivative(
   std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index, xp, t);
+  res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
   {
-    switch (index)
+    switch (component)
     {
       case 0:
         res[1] = -a *
@@ -576,7 +577,7 @@ std::vector<double> FLD::BeltramiFunction::EvaluateTimeDerivative(
   // add the 2nd time derivative at time t
   if (deg >= 2)
   {
-    switch (index)
+    switch (component)
     {
       case 0:
         res[2] = -a *
@@ -619,7 +620,8 @@ std::vector<double> FLD::BeltramiFunction::EvaluateTimeDerivative(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FLD::ChannelWeaklyCompressibleFunction::Evaluate(int index, const double* xp, double t)
+double FLD::ChannelWeaklyCompressibleFunction::Evaluate(
+    const double* xp, const double t, const std::size_t component)
 {
   int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid_murnaghantait);
   if (id == -1)
@@ -734,7 +736,7 @@ double FLD::ChannelWeaklyCompressibleFunction::Evaluate(int index, const double*
                     (3.0 * std::tanh(B * lambda) - 2.0 * B) +
                 p_0_hat * h * std::exp(lambda * beta * (1.0 - z)) - h_1);
 
-    switch (index)
+    switch (component)
     {
       case 0:
         return u(0) * mean_velocity_channel_exit;
@@ -802,7 +804,7 @@ double FLD::ChannelWeaklyCompressibleFunction::Evaluate(int index, const double*
     dervel(1, 0) = dervel(1, 0) * mean_velocity_channel_exit * radius / length;
     dervel(1, 1) = dervel(1, 1) * mean_velocity_channel_exit * radius / length;
 
-    switch (index)
+    switch (component)
     {
       case 0:
         return u(0);
@@ -827,13 +829,13 @@ double FLD::ChannelWeaklyCompressibleFunction::Evaluate(int index, const double*
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::ChannelWeaklyCompressibleFunction::EvaluateTimeDerivative(
-    const int index, const double* xp, const double t, const unsigned deg)
+    const double* xp, const double t, const unsigned deg, const std::size_t component)
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index, xp, t);
+  res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
@@ -859,7 +861,7 @@ std::vector<double> FLD::ChannelWeaklyCompressibleFunction::EvaluateTimeDerivati
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::CorrectionTermChannelWeaklyCompressibleFunction::Evaluate(
-    int index, const double* xp, double t)
+    const double* xp, const double t, const std::size_t component)
 {
   int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid_murnaghantait);
   if (id == -1)
@@ -914,7 +916,7 @@ double FLD::CorrectionTermChannelWeaklyCompressibleFunction::Evaluate(
                 6.0 * std::pow(R, 4.0) * std::pow(U, 2.0) * std::pow(mu, 2.0) * std::pow(y, 2.0)) *
                 K0);
 
-    switch (index)
+    switch (component)
     {
       case 0:
         return Corrterm;
@@ -969,7 +971,7 @@ double FLD::CorrectionTermChannelWeaklyCompressibleFunction::Evaluate(
                 6.0 * std::pow(R, 4.0) * std::pow(U, 2.0) * std::pow(mu, 2.0) * std::pow(y, 2.0)) *
                 K0);
 
-    switch (index)
+    switch (component)
     {
       case 0:
         return Corrterm;
@@ -982,13 +984,13 @@ double FLD::CorrectionTermChannelWeaklyCompressibleFunction::Evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::CorrectionTermChannelWeaklyCompressibleFunction::EvaluateTimeDerivative(
-    const int index, const double* xp, const double t, const unsigned deg)
+    const double* xp, const double t, const unsigned deg, const std::size_t component)
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index, xp, t);
+  res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
@@ -1026,7 +1028,8 @@ FLD::WeaklyCompressiblePoiseuilleFunction::WeaklyCompressiblePoiseuilleFunction(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FLD::WeaklyCompressiblePoiseuilleFunction::Evaluate(int index, const double* xp, double t)
+double FLD::WeaklyCompressiblePoiseuilleFunction::Evaluate(
+    const double* xp, const double t, const std::size_t component)
 {
   // ease notation
   double x = xp[0];
@@ -1066,7 +1069,7 @@ double FLD::WeaklyCompressiblePoiseuilleFunction::Evaluate(int index, const doub
   w_ex(0) = r_ex * v_ex(0);
   w_ex(1) = r_ex * v_ex(1);
 
-  switch (index)
+  switch (component)
   {
     case 0:
       return r_ex;
@@ -1088,13 +1091,13 @@ double FLD::WeaklyCompressiblePoiseuilleFunction::Evaluate(int index, const doub
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::WeaklyCompressiblePoiseuilleFunction::EvaluateTimeDerivative(
-    const int index, const double* xp, const double t, const unsigned deg)
+    const double* xp, const double t, const unsigned deg, const std::size_t component)
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index, xp, t);
+  res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
@@ -1133,7 +1136,7 @@ FLD::WeaklyCompressiblePoiseuilleForceFunction::WeaklyCompressiblePoiseuilleForc
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::WeaklyCompressiblePoiseuilleForceFunction::Evaluate(
-    int index, const double* xp, double t)
+    const double* xp, const double t, const std::size_t component)
 {
   // ease notation
   double x = xp[0];
@@ -1163,7 +1166,7 @@ double FLD::WeaklyCompressiblePoiseuilleForceFunction::Evaluate(
   f_w_ex(0) = 0.0;
   f_w_ex(1) = 0.0;
 
-  switch (index)
+  switch (component)
   {
     case 0:
       return f_r_ex;
@@ -1179,13 +1182,13 @@ double FLD::WeaklyCompressiblePoiseuilleForceFunction::Evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::WeaklyCompressiblePoiseuilleForceFunction::EvaluateTimeDerivative(
-    const int index, const double* xp, const double t, const unsigned deg)
+    const double* xp, const double t, const unsigned deg, const std::size_t component)
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index, xp, t);
+  res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
@@ -1221,7 +1224,7 @@ FLD::WeaklyCompressibleManufacturedFlowFunction::WeaklyCompressibleManufacturedF
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::WeaklyCompressibleManufacturedFlowFunction::Evaluate(
-    int index, const double* xp, double t)
+    const double* xp, const double t, const std::size_t component)
 {
   // ease notation
   double x = xp[0];
@@ -1300,7 +1303,7 @@ double FLD::WeaklyCompressibleManufacturedFlowFunction::Evaluate(
   w_ex(0) = r_ex * v_ex(0);
   w_ex(1) = r_ex * v_ex(1);
 
-  switch (index)
+  switch (component)
   {
     case 0:
       return r_ex;
@@ -1322,13 +1325,13 @@ double FLD::WeaklyCompressibleManufacturedFlowFunction::Evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::WeaklyCompressibleManufacturedFlowFunction::EvaluateTimeDerivative(
-    const int index, const double* xp, const double t, const unsigned deg)
+    const double* xp, const double t, const unsigned deg, const std::size_t component)
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index, xp, t);
+  res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
@@ -1365,7 +1368,7 @@ FLD::WeaklyCompressibleManufacturedFlowForceFunction::
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::WeaklyCompressibleManufacturedFlowForceFunction::Evaluate(
-    int index, const double* xp, double t)
+    const double* xp, const double t, const std::size_t component)
 {
   // ease notation
   double x = xp[0];
@@ -1571,7 +1574,7 @@ double FLD::WeaklyCompressibleManufacturedFlowForceFunction::Evaluate(
                          (PI * cos(PI * t) * cos(PI * x) * cos(PI * y)) / (2. * r0)) -
               cos(PI * x) * cos(PI * y) * sin(PI * t));
 
-  switch (index)
+  switch (component)
   {
     case 0:
       return f_r_ex;
@@ -1587,13 +1590,13 @@ double FLD::WeaklyCompressibleManufacturedFlowForceFunction::Evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::WeaklyCompressibleManufacturedFlowForceFunction::EvaluateTimeDerivative(
-    const int index, const double* xp, const double t, const unsigned deg)
+    const double* xp, const double t, const unsigned deg, const std::size_t component)
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index, xp, t);
+  res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
@@ -1627,7 +1630,8 @@ FLD::WeaklyCompressibleEtienneCFDFunction::WeaklyCompressibleEtienneCFDFunction(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FLD::WeaklyCompressibleEtienneCFDFunction::Evaluate(int index, const double* xp, double t)
+double FLD::WeaklyCompressibleEtienneCFDFunction::Evaluate(
+    const double* xp, const double t, const std::size_t component)
 {
   // ease notation
   double x = xp[0];
@@ -1718,7 +1722,7 @@ double FLD::WeaklyCompressibleEtienneCFDFunction::Evaluate(int index, const doub
   w_ex(0) = r_ex * v_ex(0);
   w_ex(1) = r_ex * v_ex(1);
 
-  switch (index)
+  switch (component)
   {
     case 0:
       return r_ex;
@@ -1740,13 +1744,13 @@ double FLD::WeaklyCompressibleEtienneCFDFunction::Evaluate(int index, const doub
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::WeaklyCompressibleEtienneCFDFunction::EvaluateTimeDerivative(
-    const int index, const double* xp, const double t, const unsigned deg)
+    const double* xp, const double t, const unsigned deg, const std::size_t component)
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index, xp, t);
+  res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
@@ -1781,7 +1785,7 @@ FLD::WeaklyCompressibleEtienneCFDForceFunction::WeaklyCompressibleEtienneCFDForc
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::WeaklyCompressibleEtienneCFDForceFunction::Evaluate(
-    int index, const double* xp, double t)
+    const double* xp, const double t, const std::size_t component)
 {
   // ease notation
   double x = xp[0];
@@ -2142,7 +2146,7 @@ double FLD::WeaklyCompressibleEtienneCFDForceFunction::Evaluate(
           (10. * (std::pow(x, 5.)) - 25. * (std::pow(x, 4.)) + 20. * (std::pow(x, 3.)) -
               5. * (std::pow(x, 2.)) + y - 1.);
 
-  switch (index)
+  switch (component)
   {
     case 0:
       return f_r_ex;
@@ -2158,13 +2162,13 @@ double FLD::WeaklyCompressibleEtienneCFDForceFunction::Evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::WeaklyCompressibleEtienneCFDForceFunction::EvaluateTimeDerivative(
-    const int index, const double* xp, const double t, const unsigned deg)
+    const double* xp, const double t, const unsigned deg, const std::size_t component)
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index, xp, t);
+  res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
@@ -2199,7 +2203,7 @@ FLD::WeaklyCompressibleEtienneCFDViscosityFunction::WeaklyCompressibleEtienneCFD
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::WeaklyCompressibleEtienneCFDViscosityFunction::Evaluate(
-    int index, const double* xp, double t)
+    const double* xp, const double t, const std::size_t component)
 {
   // ease notation
   double x = xp[0];
@@ -2211,7 +2215,7 @@ double FLD::WeaklyCompressibleEtienneCFDViscosityFunction::Evaluate(
   // evaluate variables
   mu_ex = (1. + (std::pow(x, 2.)) + (std::pow(y, 2.))) / 10.;
 
-  switch (index)
+  switch (component)
   {
     case 0:
       return mu_ex;
@@ -2223,13 +2227,13 @@ double FLD::WeaklyCompressibleEtienneCFDViscosityFunction::Evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::WeaklyCompressibleEtienneCFDViscosityFunction::EvaluateTimeDerivative(
-    const int index, const double* xp, const double t, const unsigned deg)
+    const double* xp, const double t, const unsigned deg, const std::size_t component)
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index, xp, t);
+  res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
@@ -2276,7 +2280,7 @@ FLD::WeaklyCompressibleEtienneFSIFluidFunction::WeaklyCompressibleEtienneFSIFlui
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::WeaklyCompressibleEtienneFSIFluidFunction::Evaluate(
-    int index, const double* xp, double t)
+    const double* xp, const double t, const std::size_t component)
 {
   // ease notation
   double x = xp[0];
@@ -2528,7 +2532,7 @@ double FLD::WeaklyCompressibleEtienneFSIFluidFunction::Evaluate(
   w_ex(0) = r_ex * v_ex(0);
   w_ex(1) = r_ex * v_ex(1);
 
-  switch (index)
+  switch (component)
   {
     case 0:
       return r_ex;
@@ -2550,13 +2554,13 @@ double FLD::WeaklyCompressibleEtienneFSIFluidFunction::Evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::WeaklyCompressibleEtienneFSIFluidFunction::EvaluateTimeDerivative(
-    const int index, const double* xp, const double t, const unsigned deg)
+    const double* xp, const double t, const unsigned deg, const std::size_t component)
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index, xp, t);
+  res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
@@ -2603,7 +2607,7 @@ FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::WeaklyCompressibleEtienneFS
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::Evaluate(
-    int index, const double* xp, double t)
+    const double* xp, const double t, const std::size_t component)
 {
   // ease notation
   double x = xp[0];
@@ -6099,7 +6103,7 @@ double FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::Evaluate(
                                          2.)) +
                                  100.))));
 
-  switch (index)
+  switch (component)
   {
     case 0:
       return f_r_ex;
@@ -6115,13 +6119,13 @@ double FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::Evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::EvaluateTimeDerivative(
-    const int index, const double* xp, const double t, const unsigned deg)
+    const double* xp, const double t, const unsigned deg, const std::size_t component)
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index, xp, t);
+  res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
@@ -6169,7 +6173,7 @@ FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::Evaluate(
-    int index, const double* xp, double t)
+    const double* xp, const double t, const std::size_t component)
 {
   // ease notation
   double x = xp[0];
@@ -6294,7 +6298,7 @@ double FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::Evaluate(
                                      2.)) +
                              100.))));
 
-  switch (index)
+  switch (component)
   {
     case 0:
       return mu_ex;
@@ -6306,13 +6310,13 @@ double FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::Evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::EvaluateTimeDerivative(
-    const int index, const double* xp, const double t, const unsigned deg)
+    const double* xp, const double t, const unsigned deg, const std::size_t component)
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index, xp, t);
+  res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
@@ -6343,7 +6347,7 @@ FLD::BeltramiUP::BeltramiUP(const MAT::PAR::NewtonianFluid& fparams)
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FLD::BeltramiUP::Evaluate(const int index, const double* xp, double t)
+double FLD::BeltramiUP::Evaluate(const double* xp, const double t, const std::size_t component)
 {
   double x = xp[0];
   double y = xp[1];
@@ -6358,7 +6362,7 @@ double FLD::BeltramiUP::Evaluate(const int index, const double* xp, double t)
   double K3 = exp(a * (y - x) + b * (z - x));  // =K6
 
 
-  switch (index)
+  switch (component)
   {
     case 0:
       return b * K1 - a * K2;
@@ -6369,7 +6373,7 @@ double FLD::BeltramiUP::Evaluate(const int index, const double* xp, double t)
     case 3:
       return c * (1.0 / K3 + 1.0 / K2 + 1.0 / K1) * density_;
     default:
-      dserror("wrong index %d", index);
+      dserror("wrong component %d", component);
       break;
   }
 
@@ -6378,18 +6382,18 @@ double FLD::BeltramiUP::Evaluate(const int index, const double* xp, double t)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::BeltramiUP::EvaluateTimeDerivative(
-    const int index, const double* xp, const double t, const unsigned deg)
+    const double* xp, const double t, const unsigned deg, const std::size_t component)
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index, xp, t);
+  res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
   {
-    switch (index)
+    switch (component)
     {
       case 0:
         res[1] = 0;
@@ -6400,7 +6404,7 @@ std::vector<double> FLD::BeltramiUP::EvaluateTimeDerivative(
       case 3:
         res[1] = 0;
       default:
-        dserror("wrong index %d", index);
+        dserror("wrong component %d", component);
         break;
     }
   }
@@ -6408,7 +6412,7 @@ std::vector<double> FLD::BeltramiUP::EvaluateTimeDerivative(
   // add the 2nd time derivative at time t
   if (deg >= 2)
   {
-    switch (index)
+    switch (component)
     {
       case 0:
         res[2] = 0;
@@ -6419,7 +6423,7 @@ std::vector<double> FLD::BeltramiUP::EvaluateTimeDerivative(
       case 3:
         res[2] = 0;
       default:
-        dserror("wrong index %d", index);
+        dserror("wrong component %d", component);
         break;
     }
   }
@@ -6441,7 +6445,7 @@ FLD::BeltramiGradU::BeltramiGradU(const MAT::PAR::NewtonianFluid& fparams)
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FLD::BeltramiGradU::Evaluate(const int index, const double* xp, double t)
+double FLD::BeltramiGradU::Evaluate(const double* xp, const double t, const std::size_t component)
 {
   double x = xp[0];
   double y = xp[1];
@@ -6455,7 +6459,7 @@ double FLD::BeltramiGradU::Evaluate(const int index, const double* xp, double t)
   double K3 = exp(a * (y - x) + b * (z - x));  // =K6
 
 
-  switch (index)
+  switch (component)
   {
     case 0:  // u,x
       return a * b * (K1 - K2);
@@ -6476,7 +6480,7 @@ double FLD::BeltramiGradU::Evaluate(const int index, const double* xp, double t)
     case 8:  // w,z
       return a * b * (K2 - K3);
     default:
-      dserror("wrong index %d", index);
+      dserror("wrong component %d", component);
       break;
   }
 
@@ -6485,18 +6489,18 @@ double FLD::BeltramiGradU::Evaluate(const int index, const double* xp, double t)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::BeltramiGradU::EvaluateTimeDerivative(
-    const int index, const double* xp, const double t, const unsigned deg)
+    const double* xp, const double t, const unsigned deg, const std::size_t component)
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index, xp, t);
+  res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
   {
-    switch (index)
+    switch (component)
     {
       case 0:
         res[1] = 0;
@@ -6517,7 +6521,7 @@ std::vector<double> FLD::BeltramiGradU::EvaluateTimeDerivative(
       case 8:
         res[1] = 0;
       default:
-        dserror("wrong index %d", index);
+        dserror("wrong component %d", component);
         break;
     }
   }
@@ -6525,7 +6529,7 @@ std::vector<double> FLD::BeltramiGradU::EvaluateTimeDerivative(
   // add the 2nd time derivative at time t
   if (deg >= 2)
   {
-    switch (index)
+    switch (component)
     {
       case 0:
         res[2] = 0;
@@ -6546,7 +6550,7 @@ std::vector<double> FLD::BeltramiGradU::EvaluateTimeDerivative(
       case 8:
         res[2] = 0;
       default:
-        dserror("wrong index %d", index);
+        dserror("wrong component %d", component);
         break;
     }
   }
@@ -6568,7 +6572,7 @@ FLD::BeltramiRHS::BeltramiRHS(const MAT::PAR::NewtonianFluid& fparams, bool is_s
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FLD::BeltramiRHS::Evaluate(const int index, const double* xp, double t)
+double FLD::BeltramiRHS::Evaluate(const double* xp, const double t, const std::size_t component)
 {
   double x = xp[0];
   double y = xp[1];
@@ -6600,7 +6604,7 @@ double FLD::BeltramiRHS::Evaluate(const int index, const double* xp, double t)
              t3 * (a * b * K2 - a * b * K3);
   }
 
-  switch (index)
+  switch (component)
   {
     case 0:
       return c * ((a + b) / K3 - b / K2 - a / K1 - 2. * kinviscosity_ * (b * K1 - a * K2)) + conv_x;
@@ -6611,7 +6615,7 @@ double FLD::BeltramiRHS::Evaluate(const int index, const double* xp, double t)
       return c * (-b / K3 - a / K2 + (a + b) / K1 - 2. * kinviscosity_ * (b * K2 - a * K3)) +
              conv_z;
     default:
-      dserror("wrong index %d", index);
+      dserror("wrong component %d", component);
       break;
   }
 
@@ -6620,18 +6624,18 @@ double FLD::BeltramiRHS::Evaluate(const int index, const double* xp, double t)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::BeltramiRHS::EvaluateTimeDerivative(
-    const int index, const double* xp, const double t, const unsigned deg)
+    const double* xp, const double t, const unsigned deg, const std::size_t component)
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index, xp, t);
+  res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
   {
-    switch (index)
+    switch (component)
     {
       case 0:
         res[1] = 0;
@@ -6640,7 +6644,7 @@ std::vector<double> FLD::BeltramiRHS::EvaluateTimeDerivative(
       case 2:
         res[1] = 0;
       default:
-        dserror("wrong index %d", index);
+        dserror("wrong component %d", component);
         break;
     }
   }
@@ -6648,7 +6652,7 @@ std::vector<double> FLD::BeltramiRHS::EvaluateTimeDerivative(
   // add the 2nd time derivative at time t
   if (deg >= 2)
   {
-    switch (index)
+    switch (component)
     {
       case 0:
         res[2] = 0;
@@ -6657,7 +6661,7 @@ std::vector<double> FLD::BeltramiRHS::EvaluateTimeDerivative(
       case 2:
         res[2] = 0;
       default:
-        dserror("wrong index %d", index);
+        dserror("wrong component %d", component);
         break;
     }
   }
@@ -6681,7 +6685,7 @@ FLD::KimMoinUP::KimMoinUP(const MAT::PAR::NewtonianFluid& fparams, bool is_stati
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FLD::KimMoinUP::Evaluate(const int index, const double* xp, double t)
+double FLD::KimMoinUP::Evaluate(const double* xp, const double t, const std::size_t component)
 {
   double x = xp[0];
   double y = xp[1];
@@ -6702,7 +6706,7 @@ double FLD::KimMoinUP::Evaluate(const int index, const double* xp, double t)
     gp = exp(-4.0 * a * a * PI * PI * t * kinviscosity_);
   }
 
-  switch (index)
+  switch (component)
   {
     case 0:
       return -cos(a_pi_x) * sin(a_pi_y) * gu;
@@ -6713,7 +6717,7 @@ double FLD::KimMoinUP::Evaluate(const int index, const double* xp, double t)
     case 3:
       return -1. / 4. * (cos(2.0 * a_pi_x) + cos(2.0 * a_pi_y)) * gp * density_;
     default:
-      dserror("wrong index %d", index);
+      dserror("wrong component %d", component);
       break;
   }
 
@@ -6722,7 +6726,7 @@ double FLD::KimMoinUP::Evaluate(const int index, const double* xp, double t)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::KimMoinUP::EvaluateTimeDerivative(
-    const int index, const double* xp, const double t, const unsigned deg)
+    const double* xp, const double t, const unsigned deg, const std::size_t component)
 {
   double x = xp[0];
   double y = xp[1];
@@ -6737,7 +6741,7 @@ std::vector<double> FLD::KimMoinUP::EvaluateTimeDerivative(
   std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index, xp, t);
+  res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
@@ -6754,7 +6758,7 @@ std::vector<double> FLD::KimMoinUP::EvaluateTimeDerivative(
            exp(-4.0 * a * a * PI * PI * t * kinviscosity_);
     }
 
-    switch (index)
+    switch (component)
     {
       case 0:
         res[1] = -cos(a_pi_x) * sin(a_pi_y) * gu;
@@ -6765,7 +6769,7 @@ std::vector<double> FLD::KimMoinUP::EvaluateTimeDerivative(
       case 3:
         res[1] = -1. / 4. * (cos(2.0 * a_pi_x) + cos(2.0 * a_pi_y)) * gp * density_;
       default:
-        dserror("wrong index %d", index);
+        dserror("wrong component %d", component);
         break;
     }
   }
@@ -6785,7 +6789,7 @@ std::vector<double> FLD::KimMoinUP::EvaluateTimeDerivative(
            exp(-4.0 * a * a * PI * PI * t * kinviscosity_);
     }
 
-    switch (index)
+    switch (component)
     {
       case 0:
         res[2] = -cos(a_pi_x) * sin(a_pi_y) * gu;
@@ -6796,7 +6800,7 @@ std::vector<double> FLD::KimMoinUP::EvaluateTimeDerivative(
       case 3:
         res[2] = -1. / 4. * (cos(2.0 * a_pi_x) + cos(2.0 * a_pi_y)) * gp * density_;
       default:
-        dserror("wrong index %d", index);
+        dserror("wrong component %d", component);
         break;
     }
   }
@@ -6818,7 +6822,7 @@ FLD::KimMoinGradU::KimMoinGradU(const MAT::PAR::NewtonianFluid& fparams, bool is
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FLD::KimMoinGradU::Evaluate(const int index, const double* xp, double t)
+double FLD::KimMoinGradU::Evaluate(const double* xp, const double t, const std::size_t component)
 {
   // double visc = 1.0;
 
@@ -6840,7 +6844,7 @@ double FLD::KimMoinGradU::Evaluate(const int index, const double* xp, double t)
   }
 
 
-  switch (index)
+  switch (component)
   {
     case 0:  // u,x
       return sin(a_pi_x) * sin(a_pi_y) * a * PI * gu;
@@ -6861,7 +6865,7 @@ double FLD::KimMoinGradU::Evaluate(const int index, const double* xp, double t)
     case 8:  // w,z
       return 0.0;
     default:
-      dserror("wrong index %d", index);
+      dserror("wrong component %d", component);
       break;
   }
 
@@ -6870,7 +6874,7 @@ double FLD::KimMoinGradU::Evaluate(const int index, const double* xp, double t)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::KimMoinGradU::EvaluateTimeDerivative(
-    const int index, const double* xp, const double t, const unsigned deg)
+    const double* xp, const double t, const unsigned deg, const std::size_t component)
 {
   // double visc = 1.0;
 
@@ -6887,7 +6891,7 @@ std::vector<double> FLD::KimMoinGradU::EvaluateTimeDerivative(
   std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index, xp, t);
+  res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
@@ -6901,7 +6905,7 @@ std::vector<double> FLD::KimMoinGradU::EvaluateTimeDerivative(
            exp(-2.0 * a * a * PI * PI * t * kinviscosity_);
     }
 
-    switch (index)
+    switch (component)
     {
       case 0:  // u,x
         res[1] = sin(a_pi_x) * sin(a_pi_y) * a * PI * gu;
@@ -6922,7 +6926,7 @@ std::vector<double> FLD::KimMoinGradU::EvaluateTimeDerivative(
       case 8:  // w,z
         res[1] = 0.0;
       default:
-        dserror("wrong index %d", index);
+        dserror("wrong component %d", component);
         break;
     }
   }
@@ -6939,7 +6943,7 @@ std::vector<double> FLD::KimMoinGradU::EvaluateTimeDerivative(
            exp(-2.0 * a * a * PI * PI * t * kinviscosity_);
     }
 
-    switch (index)
+    switch (component)
     {
       case 0:  // u,x
         res[2] = sin(a_pi_x) * sin(a_pi_y) * a * PI * gu;
@@ -6960,7 +6964,7 @@ std::vector<double> FLD::KimMoinGradU::EvaluateTimeDerivative(
       case 8:  // w,z
         res[2] = 0.0;
       default:
-        dserror("wrong index %d", index);
+        dserror("wrong component %d", component);
         break;
     }
   }
@@ -6985,7 +6989,7 @@ FLD::KimMoinRHS::KimMoinRHS(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FLD::KimMoinRHS::Evaluate(const int index, const double* xp, double t)
+double FLD::KimMoinRHS::Evaluate(const double* xp, const double t, const std::size_t component)
 {
   double x = xp[0];
   double y = xp[1];
@@ -7030,7 +7034,7 @@ double FLD::KimMoinRHS::Evaluate(const int index, const double* xp, double t)
 
   // in case of instationary: du/dt - \nu \laplacian(u) = 0
 
-  switch (index)
+  switch (component)
   {
     case 0:
       return 0.5 * a * PI * sin(2. * a_pi_x) * gp + visc_x + conv_x * gu * gu;
@@ -7039,7 +7043,7 @@ double FLD::KimMoinRHS::Evaluate(const int index, const double* xp, double t)
     case 2:
       return 0.0;
     default:
-      dserror("wrong index %d", index);
+      dserror("wrong component %d", component);
       break;
   }
 
@@ -7048,7 +7052,7 @@ double FLD::KimMoinRHS::Evaluate(const int index, const double* xp, double t)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::KimMoinRHS::EvaluateTimeDerivative(
-    const int index, const double* xp, const double t, const unsigned deg)
+    const double* xp, const double t, const unsigned deg, const std::size_t component)
 {
   double x = xp[0];
   double y = xp[1];
@@ -7060,7 +7064,7 @@ std::vector<double> FLD::KimMoinRHS::EvaluateTimeDerivative(
   std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index, xp, t);
+  res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
   if (deg >= 1)
@@ -7092,7 +7096,7 @@ std::vector<double> FLD::KimMoinRHS::EvaluateTimeDerivative(
 
     // in case of instationary: du/dt - \nu \laplacian(u) = 0
 
-    switch (index)
+    switch (component)
     {
       case 0:
         res[1] = 0.5 * a * PI * sin(2. * a_pi_x) * gp + conv_x * gu;
@@ -7101,7 +7105,7 @@ std::vector<double> FLD::KimMoinRHS::EvaluateTimeDerivative(
       case 2:
         res[1] = 0.0;
       default:
-        dserror("wrong index %d", index);
+        dserror("wrong component %d", component);
         break;
     }
   }
@@ -7136,7 +7140,7 @@ std::vector<double> FLD::KimMoinRHS::EvaluateTimeDerivative(
 
     // in case of instationary: du/dt - \nu \laplacian(u) = 0
 
-    switch (index)
+    switch (component)
     {
       case 0:
         res[2] = 0.5 * a * PI * sin(2. * a_pi_x) * gp + conv_x * gu;
@@ -7145,7 +7149,7 @@ std::vector<double> FLD::KimMoinRHS::EvaluateTimeDerivative(
       case 2:
         res[2] = 0.0;
       default:
-        dserror("wrong index %d", index);
+        dserror("wrong component %d", component);
         break;
     }
   }
@@ -7175,7 +7179,7 @@ FLD::KimMoinStress::KimMoinStress(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FLD::KimMoinStress::Evaluate(int index, const double* xp, double t)
+double FLD::KimMoinStress::Evaluate(const double* xp, const double t, const std::size_t component)
 {
   // double visc = 1.0;
 
@@ -7203,7 +7207,7 @@ double FLD::KimMoinStress::Evaluate(int index, const double* xp, double t)
   double p = -1. / 4. * (cos(2.0 * a_pi_x) + cos(2.0 * a_pi_y)) * gp * density_;
 
 
-  switch (index)
+  switch (component)
   {
     case 0:  // sigma_xx
       return (fac - p);
@@ -7218,7 +7222,7 @@ double FLD::KimMoinStress::Evaluate(int index, const double* xp, double t)
     case 5:  // sigma_zx
       return 0.0;
     default:
-      dserror("wrong index %d", index);
+      dserror("wrong component %d", component);
       break;
   }
 

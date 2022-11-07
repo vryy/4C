@@ -20,6 +20,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_lib/function_of_time.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
@@ -266,9 +267,8 @@ void UTILS::SurfStressManager::StiffnessAndInternalForces(const int curvenum, co
 
   /*------------gradual application of surface stresses via time curve*/
   if (time <= t_end)
-    curvefac = DRT::Problem::Instance()
-                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
-                   .EvaluateTime(time);
+    curvefac =
+        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(time);
 
   double ndof = Adiff->Length();
 

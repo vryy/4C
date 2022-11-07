@@ -62,10 +62,10 @@ MAT 4 MAT_InelasticDefgradNoGrowth
 ----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
 ------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 43196.78-1.0e10*x^2
-COMPONENT 1 FUNCTION 3.7
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 43196.78-1.0e10*x^2
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 3.7
 ------------------------------------------------------------FUNCT2
-FUNCTION (-0.5*(1+cos((t-1.0001)*pi/40))*heaviside(41.0001-t)+1)*heaviside(t-1.0001)/2.0e3
+SYMBOLIC_FUNCTION_OF_SPACE_TIME (-0.5*(1+cos((t-1.0001)*pi/40))*heaviside(41.0001-t)+1)*heaviside(t-1.0001)/2.0e3
 ------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE  2.51812950121877788e-04 TOLERANCE 2.5e-12
 STRUCTURE DIS structure NODE 4 QUANTITY dispy VALUE -2.39951476339892196e-06 TOLERANCE 2.4e-14

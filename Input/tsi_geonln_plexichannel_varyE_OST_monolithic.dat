@@ -184,9 +184,9 @@ MAT 2 THERM_FourierIso CAPA 1737210 CONDUCT 0.2
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 50.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 50.0
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 500 500000.0 DESCRIPTION (1-cos(t*pi/500.0)) (1-cos(500*pi/500.0))
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0

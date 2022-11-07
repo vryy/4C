@@ -86,13 +86,13 @@ MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 3
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION (0.5+y)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (0.5+y)
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 0.0 //initial x-vel. field
-COMPONENT 1 FUNCTION 0.0 //initial y-vel. field
-COMPONENT 2 FUNCTION 1.0 //initial pres. field
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial x-vel. field
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial y-vel. field
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0 //initial pres. field
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION 0.1*sin(t*pi)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.1*sin(t*pi)
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 1.88575684484251603e-04 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -1.13628756981931081e-05 TOLERANCE 1e-10

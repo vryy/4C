@@ -66,11 +66,11 @@ E 6  - NUMDOF 3 ONOFF 1 1 1 VAL -0.65 -0.7 -0.5 FUNCT 0 0 0
 DVOL 1
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1 1 1 FUNCT 1 2 3
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1e-1
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1e-1
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 2e-1
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2e-1
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION 3e-1
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 3e-1
 -------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF  2
 E 5 - 1 Slave Active

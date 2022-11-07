@@ -1593,10 +1593,10 @@ NODE            451    COORD   0.0 35.0  35.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_BeamReissnerElastHyper YOUNG 2.07e2 POISSONRATIO 0.0 DENS 0.001 CROSSAREA 0.03141592653589793 SHEARCORR 1.1 MOMINPOL 0.0001570796326794897 MOMIN2 7.853981633974485e-05 MOMIN3 7.853981633974485e-05
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 0.2 1.0 VALUES 0.0 1.0 1.0
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 0.2 1.0 VALUES 0.0 0.0 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 199 QUANTITY dispx VALUE  0.00000000000000000e+00 TOLERANCE 1e-10

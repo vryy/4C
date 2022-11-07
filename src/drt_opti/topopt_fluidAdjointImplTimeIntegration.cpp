@@ -822,7 +822,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetInitialAdjointField(
           int gid = nodedofset[index];
           double initialval = DRT::Problem::Instance()
                                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .Evaluate(index, lnode->X(), time_);
+                                  .Evaluate(lnode->X(), time_, index);
           veln_->ReplaceGlobalValues(1, &initialval, &gid);
         }
       }

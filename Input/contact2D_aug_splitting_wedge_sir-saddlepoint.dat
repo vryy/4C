@@ -157,7 +157,7 @@ MAT 101 ELAST_CoupLogNeoHooke MODE YN C1 250.0  C2 0.25                    // C1
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 201 DENS 0.001
 MAT 201 ELAST_CoupLogNeoHooke MODE YN C1 2500.0  C2 0.25
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION  -6.7*t // 1*(1.5-y)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME  -6.7*t // 1*(1.5-y)
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 60 QUANTITY dispx VALUE 4.05347919334885842e-01 TOLERANCE 1.0e-08
 STRUCTURE DIS structure NODE 60 QUANTITY dispy VALUE -2.20083872271309522e+00 TOLERANCE 1.0e-08

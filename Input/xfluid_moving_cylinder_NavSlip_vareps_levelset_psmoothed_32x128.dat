@@ -131,9 +131,9 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
 MOVINGLEVELSETCYLINDER ORIGIN 0.0 -1.0 0.0 RADIUS 0.3 DIRECTION 0.0 1.0 0.0 DISTANCE 2.0 MAXSPEED 2.0
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 2.0*sin((2.0*2.0/2.0)*t)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2.0*sin((2.0*2.0/2.0)*t)
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION 2.71^(x/0.03)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2.71^(x/0.03)
 ----------------------------------------------------------RESULT DESCRIPTION
 //node: 4222 is top of bubble
 XFLUID DIS fluid NODE 4222 QUANTITY velx VALUE 1.74144242269582902e-02 TOLERANCE 1e-8

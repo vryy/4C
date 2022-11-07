@@ -601,7 +601,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
           if (funct_num > 0)
             u(d) = DRT::Problem::Instance()
                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funct_num - 1)
-                       .Evaluate(d, xyz.A(), *time);
+                       .Evaluate(xyz.A(), *time, d);
         }
       }
 
@@ -1271,13 +1271,13 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateAll(const int startfunc,
     {
       FLD::ChannelWeaklyCompressibleFunction* channelfunc =
           new FLD::ChannelWeaklyCompressibleFunction;
-      u(0) = channelfunc->Evaluate(0, xyz.A(), 0);
-      u(1) = channelfunc->Evaluate(1, xyz.A(), 0);
-      p = channelfunc->Evaluate(2, xyz.A(), 0);
-      grad(0, 0) = channelfunc->Evaluate(3, xyz.A(), 0);
-      grad(0, 1) = channelfunc->Evaluate(4, xyz.A(), 0);
-      grad(1, 0) = channelfunc->Evaluate(5, xyz.A(), 0);
-      grad(1, 1) = channelfunc->Evaluate(6, xyz.A(), 0);
+      u(0) = channelfunc->Evaluate(xyz.A(), 0, 0);
+      u(1) = channelfunc->Evaluate(xyz.A(), 0, 1);
+      p = channelfunc->Evaluate(xyz.A(), 0, 2);
+      grad(0, 0) = channelfunc->Evaluate(xyz.A(), 0, 3);
+      grad(0, 1) = channelfunc->Evaluate(xyz.A(), 0, 4);
+      grad(1, 0) = channelfunc->Evaluate(xyz.A(), 0, 5);
+      grad(1, 1) = channelfunc->Evaluate(xyz.A(), 0, 6);
     }
     break;
 
@@ -1287,10 +1287,10 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateAll(const int startfunc,
       for (unsigned int index = 0; index < nsd_; ++index)
         u(index) = DRT::Problem::Instance()
                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfunc - 1)
-                       .Evaluate(index, xyz.A(), 0);
+                       .Evaluate(xyz.A(), 0, index);
       p = DRT::Problem::Instance()
               ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfunc - 1)
-              .Evaluate(nsd_, xyz.A(), 0);
+              .Evaluate(xyz.A(), 0, nsd_);
     }
     break;
 
@@ -2483,7 +2483,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeCorrectionTerm
     interiorecorrectionterm[i] =
         DRT::Problem::Instance()
             ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(corrtermfuncnum - 1)
-            .Evaluate(0, x, 0.0);
+            .Evaluate(x, 0.0, 0);
   }
 }
 
@@ -2500,7 +2500,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeBodyForce(
       interiorebodyforce[d * ndofs_ + i] =
           DRT::Problem::Instance()
               ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(bodyforcefuncnum - 1)
-              .Evaluate(d, x, 0.0);
+              .Evaluate(x, 0.0, d);
   }
 }
 

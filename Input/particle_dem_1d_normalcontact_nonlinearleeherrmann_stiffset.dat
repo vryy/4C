@@ -29,9 +29,9 @@ NORMAL_STIFF                    3.5e-5
 NORMAL_DAMP                     1.0e-1
 TENSION_CUTOFF                  No
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1.0e-2*(2.0*heaviside(-x)-heaviside(x))
-COMPONENT 1 FUNCTION 0.0
-COMPONENT 2 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0e-2*(2.0*heaviside(-x)-heaviside(x))
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ParticleDEM INITRADIUS 0.01 INITDENSITY 5.0e-3
 ----------------------------------------------------------RESULT DESCRIPTION

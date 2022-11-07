@@ -460,12 +460,12 @@ MAT 2 MAT_scatra DIFFUSIVITY 0.05
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 4.0*y*(1.0-y)*a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 4.0*y*(1.0-y)*a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 5.0 500000.0 DESCRIPTION sin(t/5*pi/2) 1
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION 1.0-sin(t*pi/(5.0*2.0))
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0-sin(t*pi/(5.0*2.0))
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 79 QUANTITY velx VALUE 9.854030450e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 79 QUANTITY vely VALUE 7.232560390e-04 TOLERANCE 1e-9

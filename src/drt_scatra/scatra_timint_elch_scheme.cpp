@@ -13,6 +13,7 @@
 #include "../drt_io/io.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/function_of_time.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     ehrl 01/14 |
@@ -283,7 +284,7 @@ void SCATRA::ScaTraTimIntElchOST::ComputeTimeDerivPot0(const bool init)
       if (functnum >= 0)
       {
         const double functfac =
-            problem_->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum).EvaluateTime(time_);
+            problem_->FunctionById<DRT::UTILS::FunctionOfTime>(functnum).Evaluate(time_);
 
         // adjust potential at metal side accordingly
         pot0np *= functfac;
@@ -848,7 +849,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ComputeTimeDerivPot0(const bool init)
       if (functnum >= 0)
       {
         const double functfac =
-            problem_->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum).EvaluateTime(time_);
+            problem_->FunctionById<DRT::UTILS::FunctionOfTime>(functnum).Evaluate(time_);
         // adjust potential at metal side accordingly
 
         pot0np *= functfac;

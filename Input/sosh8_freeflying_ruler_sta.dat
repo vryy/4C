@@ -77,7 +77,7 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2.06E11 NUE 0.0 DENS 7.8E3
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 2e-3 4e-3 100000 VALUES 0 20 0 0
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 96 QUANTITY dispx VALUE -5.64866202053773622e-02 TOLERANCE 1e-11

@@ -18,6 +18,7 @@
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/function_of_time.H"
 #include "../drt_truss3/truss3.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
@@ -234,24 +235,24 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<LINALG::SparseMatrix> stif
           // compute stiffness, viscosity, and initial offset from functions
           const double dof_stiffness =
               (*numfuncstiff)[dof] != 0
-                  ? (*springstiff)[dof] * DRT::Problem::Instance()
-                                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
-                                                  (*numfuncstiff)[dof] - 1)
-                                              .EvaluateTime(total_time)
+                  ? (*springstiff)[dof] *
+                        DRT::Problem::Instance()
+                            ->FunctionById<DRT::UTILS::FunctionOfTime>((*numfuncstiff)[dof] - 1)
+                            .Evaluate(total_time)
                   : (*springstiff)[dof];
           const double dof_viscosity =
               (*numfuncvisco)[dof] != 0
-                  ? (*dashpotvisc)[dof] * DRT::Problem::Instance()
-                                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
-                                                  (*numfuncvisco)[dof] - 1)
-                                              .EvaluateTime(total_time)
+                  ? (*dashpotvisc)[dof] *
+                        DRT::Problem::Instance()
+                            ->FunctionById<DRT::UTILS::FunctionOfTime>((*numfuncvisco)[dof] - 1)
+                            .Evaluate(total_time)
                   : (*dashpotvisc)[dof];
           const double dof_disploffset =
               (*numfuncdisploffset)[dof] != 0
                   ? (*disploffset)[dof] * DRT::Problem::Instance()
-                                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                              ->FunctionById<DRT::UTILS::FunctionOfTime>(
                                                   (*numfuncdisploffset)[dof] - 1)
-                                              .EvaluateTime(total_time)
+                                              .Evaluate(total_time)
                   : (*disploffset)[dof];
 
           // displacement related forces and derivatives
@@ -268,12 +269,12 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<LINALG::SparseMatrix> stif
             force_disp =
                 DRT::Problem::Instance()
                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*numfuncnonlinstiff)[dof] - 1)
-                    .Evaluate(0, displ.data(), total_time);
+                    .Evaluate(displ.data(), total_time, 0);
 
             force_disp_deriv = (DRT::Problem::Instance()
                                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
                                         (*numfuncnonlinstiff)[dof] - 1)
-                                    .EvaluateSpatialDerivative(0, displ.data(), total_time))[dof];
+                                    .EvaluateSpatialDerivative(displ.data(), total_time, 0))[dof];
           }
 
           // velocity related forces and derivatives

@@ -114,7 +114,7 @@ XML File                            = beam3eb_static_beam_to_solid_volume_meshty
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 0.0
 MAT 2 MAT_BeamKirchhoffTorsionFreeElastHyper YOUNG 100 DENS 0.0 CROSSAREA 0.031415926535897934 MOMIN 7.853981633974484e-05
 --------------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 --------------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE 1

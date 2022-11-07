@@ -414,10 +414,10 @@ NODE 92 COORD 0.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
 //                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 21000.0 NUE 0.3 DENS 7.8E-6 THEXPANS 0.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 6 VALUES 0 0 6
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 6 VALUES 0 1.2 1.2
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 59 QUANTITY dispx VALUE 5.97974069947988629e-01 TOLERANCE 1e-8

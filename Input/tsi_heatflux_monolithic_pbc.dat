@@ -234,9 +234,9 @@ MAT 2 THERM_FourierIso CAPA 3.4715e-2 CONDUCT 48.9e-04
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 273.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 273.0
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION (2.0)*(z-4)+4 // some linear function in z-direction
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (2.0)*(z-4)+4 // some linear function in z-direction
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  1

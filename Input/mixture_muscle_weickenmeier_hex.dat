@@ -156,7 +156,7 @@ NDSURF  0
 NDVOL   0
 ----------------------------------------------------------------------FUNCT1
 // function for application of Dirichlet conditions on top surface of cube 1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.005 0.006 0.015 VALUES 0 -0.5 -0.5 0.4
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT		40

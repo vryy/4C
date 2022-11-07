@@ -3513,7 +3513,7 @@ NODE 1089 COORD 0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1.0 GAMMA 1.0
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 10.0 500000.0 DESCRIPTION sin(t/2*pi/2) 1
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 27 QUANTITY vely VALUE -6.555244537e-01 TOLERANCE 1e-7

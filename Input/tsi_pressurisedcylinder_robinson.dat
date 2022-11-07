@@ -160,9 +160,9 @@ MAT 2 THERM_FourierIso CAPA 3.375e3 CONDUCT 5.2e4
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 699.81667 // = 800°F
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 699.81667 // = 800°F
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 5 500000.0 DESCRIPTION 0.5*(sin((t*pi/5)-(pi/2)))+0.5 0.5*(sin((5*pi/5)-(pi/2)))+0.5
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0

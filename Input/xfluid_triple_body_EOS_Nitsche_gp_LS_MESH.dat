@@ -100,15 +100,15 @@ SOLVER                          UMFPACK
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100000000000.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 4.0*(0.5+y)*(0.5-y)
-COMPONENT 1 FUNCTION 0.0
-COMPONENT 2 FUNCTION 0.0
-COMPONENT 3 FUNCTION 0.0 // pressure
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 4.0*(0.5+y)*(0.5-y)
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 // pressure
 ----------------------------------------------------------------------FUNCT2
 // initial G-function outside of domain -> no cut, no interface, no XFEM dofs
-//FUNCTION sqrt((x-0.45)*(x-0.45)+(y+0.45)*(y+0.45))-0.04 // outside bb
-//FUNCTION sqrt((x-0.25)*(x-0.25)+(y+0.25)*(y+0.25))-0.04 // inside bb
-COMPONENT 0 FUNCTION sqrt((x-0.35)*(x-0.35)+(y+0.35)*(y+0.35))-0.04 // boarder of bb
+//SYMBOLIC_FUNCTION_OF_SPACE_TIME sqrt((x-0.45)*(x-0.45)+(y+0.45)*(y+0.45))-0.04 // outside bb
+//SYMBOLIC_FUNCTION_OF_SPACE_TIME sqrt((x-0.25)*(x-0.25)+(y+0.25)*(y+0.25))-0.04 // inside bb
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME sqrt((x-0.35)*(x-0.35)+(y+0.35)*(y+0.35))-0.04 // boarder of bb
 ----------------------------------------------------------RESULT DESCRIPTION
 XFLUID DIS fluid NODE 1103 QUANTITY velx VALUE 1.21966433254415230e+00 TOLERANCE 1e-10
 XFLUID DIS fluid NODE 1103 QUANTITY vely VALUE -6.45876222007083833e-01 TOLERANCE 1e-10

@@ -992,7 +992,7 @@ int DRT::ELEMENTS::Shell8::EvaluateNeumann(Teuchos::ParameterList& params,
                 (sp_functnum > 0)
                     ? DRT::Problem::Instance()
                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(sp_functnum - 1)
-                          .Evaluate(dim, xrefegp.A(), time)
+                          .Evaluate(xrefegp.A(), time, dim)
                     : 1.0;
           }
         }

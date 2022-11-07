@@ -87,7 +87,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::PreEvaluate(Teuchos::ParameterLi
       const double* coordgpref = &xrefe[0];
       double functfac =
           DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(num).Evaluate(
-              0, coordgpref, time);
+              coordgpref, time, 0);
       params.set<double>("scalar", functfac);
     }
   }

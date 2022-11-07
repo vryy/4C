@@ -1339,12 +1339,12 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalErrorComparedToAnal
 
         pre_exact = DRT::Problem::Instance()
                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
-                        .Evaluate(0, position, t);
+                        .Evaluate(position, t, 0);
 
         std::vector<double> gradpre_exact_vec =
             DRT::Problem::Instance()
                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
-                .EvaluateSpatialDerivative(0, position, t);
+                .EvaluateSpatialDerivative(position, t, 0);
 
         if (gradpre_exact_vec.size())
         {

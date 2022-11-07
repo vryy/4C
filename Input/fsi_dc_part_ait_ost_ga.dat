@@ -7063,7 +7063,7 @@ MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 250.0 NUE 0.0 DENS 500.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1-cos(2*pi*0.2*t)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1-cos(2*pi*0.2*t)
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 2155 QUANTITY vely VALUE -1.71275443257200065e-05 TOLERANCE 1e-10
 FLUID DIS fluid NODE 2155 QUANTITY pressure VALUE 2.87137919358414889e-04 TOLERANCE 1e-10

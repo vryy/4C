@@ -87,7 +87,7 @@ void MIXTURE::MixtureConstituent_ElastHyperDamage::Update(LINALG::Matrix<3, 3> c
   current_reference_growth_[gp] =
       DRT::Problem::Instance()
           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(params_->damage_function_id_ - 1)
-          .Evaluate(0, gprefecoord.A(), totaltime);
+          .Evaluate(gprefecoord.A(), totaltime, 0);
 
   MixtureConstituent_ElastHyperBase::Update(defgrd, params, gp, eleGID);
 }

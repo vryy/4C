@@ -208,28 +208,28 @@ MAT 5 MAT_matlist LOCAL No NUMMAT 3 MATIDS 2 3 4 END
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.75*64*(0.125-y)*(0.125+y)*a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.75*64*(0.125-y)*(0.125+y)*a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 10.0 10000.0 DESCRIPTION -0.5*cos(pi*t/10)+0.5 1
 //inflow velocity profile with U_max = 0.75
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 0.0*0.75*64.0*(0.125-y)*(0.125+y) // zero initial field
-COMPONENT 1 FUNCTION 0.0
-COMPONENT 2 FUNCTION 0.0
-COMPONENT 3 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0*0.75*64.0*(0.125-y)*(0.125+y) // zero initial field
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION 1.0 //initial concentration field
-COMPONENT 1 FUNCTION 0.5 //initial concentration field
-COMPONENT 2 FUNCTION 1.0 //initial concentration field
-COMPONENT 3 FUNCTION 0.0 //initial pot. field
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0 //initial concentration field
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.5 //initial concentration field
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0 //initial concentration field
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial pot. field
 ----------------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION 0.0 //magnetic field
-COMPONENT 1 FUNCTION 0.0 //magnetic field
-COMPONENT 2 FUNCTION 1.0 //magnetic field
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //magnetic field
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //magnetic field
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0 //magnetic field
 ----------------------------------------------------------------------FUNCT5
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 6.0 10000.0 DESCRIPTION -0.5*cos(pi*t/6)+0.5 1
 ----------------------------------------------------------------------FUNCT6
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 6 10000.0 DESCRIPTION 0.5*cos(pi*t/6.0)+0.5 0.5*cos(pi*6/6.0)+0.5
 ----------------------------------------------------------RESULT DESCRIPTION
 // these results have to be the same for

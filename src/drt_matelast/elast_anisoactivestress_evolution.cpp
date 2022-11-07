@@ -143,7 +143,7 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::AddStressAnisoPrincipal(
     activationFunction =
         DRT::Problem::Instance()
             ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
-            .Evaluate(0, coordgpref_, totaltime);
+            .Evaluate(coordgpref_, totaltime, 0);
   }
 
   double lambda = 0.0;

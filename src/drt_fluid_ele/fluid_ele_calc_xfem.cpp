@@ -398,10 +398,10 @@ namespace DRT
 
           if (my::nsd_ == 3)
           {
-            u(0) = function->Evaluate(0, position, t);
-            u(1) = function->Evaluate(1, position, t);
-            u(2) = function->Evaluate(2, position, t);
-            p = function->Evaluate(3, position, t);
+            u(0) = function->Evaluate(position, t, 0);
+            u(1) = function->Evaluate(position, t, 1);
+            u(2) = function->Evaluate(position, t, 2);
+            p = function->Evaluate(position, t, 3);
           }
           else
             dserror("case 'kimmoin_stat' is a 3D specific case");
@@ -409,17 +409,17 @@ namespace DRT
 
           if (my::nsd_ == 3)
           {
-            grad_u(0, 0) = function_grad->Evaluate(0, position, t);  // u,x
-            grad_u(0, 1) = function_grad->Evaluate(1, position, t);  // u,y
-            grad_u(0, 2) = function_grad->Evaluate(2, position, t);  // u,z
+            grad_u(0, 0) = function_grad->Evaluate(position, t, 0);  // u,x
+            grad_u(0, 1) = function_grad->Evaluate(position, t, 1);  // u,y
+            grad_u(0, 2) = function_grad->Evaluate(position, t, 2);  // u,z
 
-            grad_u(1, 0) = function_grad->Evaluate(3, position, t);  // v,x
-            grad_u(1, 1) = function_grad->Evaluate(4, position, t);  // v,y
-            grad_u(1, 2) = function_grad->Evaluate(5, position, t);  // v,z
+            grad_u(1, 0) = function_grad->Evaluate(position, t, 3);  // v,x
+            grad_u(1, 1) = function_grad->Evaluate(position, t, 4);  // v,y
+            grad_u(1, 2) = function_grad->Evaluate(position, t, 5);  // v,z
 
-            grad_u(2, 0) = function_grad->Evaluate(6, position, t);  // w,x
-            grad_u(2, 1) = function_grad->Evaluate(7, position, t);  // w,y
-            grad_u(2, 2) = function_grad->Evaluate(8, position, t);  // w,z
+            grad_u(2, 0) = function_grad->Evaluate(position, t, 6);  // w,x
+            grad_u(2, 1) = function_grad->Evaluate(position, t, 7);  // w,y
+            grad_u(2, 2) = function_grad->Evaluate(position, t, 8);  // w,z
           }
           else
             dserror("case 'kimmoin_stat' is a 3D specific case");
@@ -537,10 +537,10 @@ namespace DRT
 
           if (my::nsd_ == 3)
           {
-            u(0) = function->Evaluate(0, position, t);
-            u(1) = function->Evaluate(1, position, t);
-            u(2) = function->Evaluate(2, position, t);
-            p = function->Evaluate(3, position, t);
+            u(0) = function->Evaluate(position, t, 0);
+            u(1) = function->Evaluate(position, t, 1);
+            u(2) = function->Evaluate(position, t, 2);
+            p = function->Evaluate(position, t, 3);
           }
           else
             dserror("case 'kimmoin_stat' is a 3D specific case");
@@ -548,17 +548,17 @@ namespace DRT
 
           if (my::nsd_ == 3)
           {
-            grad_u(0, 0) = function_grad->Evaluate(0, position, t);  // u,x
-            grad_u(0, 1) = function_grad->Evaluate(1, position, t);  // u,y
-            grad_u(0, 2) = function_grad->Evaluate(2, position, t);  // u,z
+            grad_u(0, 0) = function_grad->Evaluate(position, t, 0);  // u,x
+            grad_u(0, 1) = function_grad->Evaluate(position, t, 1);  // u,y
+            grad_u(0, 2) = function_grad->Evaluate(position, t, 2);  // u,z
 
-            grad_u(1, 0) = function_grad->Evaluate(3, position, t);  // v,x
-            grad_u(1, 1) = function_grad->Evaluate(4, position, t);  // v,y
-            grad_u(1, 2) = function_grad->Evaluate(5, position, t);  // v,z
+            grad_u(1, 0) = function_grad->Evaluate(position, t, 3);  // v,x
+            grad_u(1, 1) = function_grad->Evaluate(position, t, 4);  // v,y
+            grad_u(1, 2) = function_grad->Evaluate(position, t, 5);  // v,z
 
-            grad_u(2, 0) = function_grad->Evaluate(6, position, t);  // w,x
-            grad_u(2, 1) = function_grad->Evaluate(7, position, t);  // w,y
-            grad_u(2, 2) = function_grad->Evaluate(8, position, t);  // w,z
+            grad_u(2, 0) = function_grad->Evaluate(position, t, 6);  // w,x
+            grad_u(2, 1) = function_grad->Evaluate(position, t, 7);  // w,y
+            grad_u(2, 2) = function_grad->Evaluate(position, t, 8);  // w,z
           }
           else
             dserror("case 'kimmoin_stat' is a 3D specific case");
@@ -658,15 +658,15 @@ namespace DRT
             const double u_exact_x =
                 DRT::Problem::Instance()
                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .Evaluate(0, position, t);
+                    .Evaluate(position, t, 0);
             const double u_exact_y =
                 DRT::Problem::Instance()
                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .Evaluate(1, position, t);
+                    .Evaluate(position, t, 1);
             const double p_exact =
                 DRT::Problem::Instance()
                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .Evaluate(2, position, t);
+                    .Evaluate(position, t, 2);
 
             u(0) = u_exact_x;
             u(1) = u_exact_y;
@@ -676,11 +676,11 @@ namespace DRT
             std::vector<double> uder_exact_x =
                 DRT::Problem::Instance()
                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .EvaluateSpatialDerivative(0, position, t);
+                    .EvaluateSpatialDerivative(position, t, 0);
             std::vector<double> uder_exact_y =
                 DRT::Problem::Instance()
                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .EvaluateSpatialDerivative(1, position, t);
+                    .EvaluateSpatialDerivative(position, t, 1);
             // std::vector<double> pder_exact   =
             // DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(func_no-1).EvaluateSpatialDerivative(2,position,t,1);
 
@@ -701,19 +701,19 @@ namespace DRT
             const double u_exact_x =
                 DRT::Problem::Instance()
                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .Evaluate(0, position, t);
+                    .Evaluate(position, t, 0);
             const double u_exact_y =
                 DRT::Problem::Instance()
                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .Evaluate(1, position, t);
+                    .Evaluate(position, t, 1);
             const double u_exact_z =
                 DRT::Problem::Instance()
                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .Evaluate(2, position, t);
+                    .Evaluate(position, t, 2);
             const double p_exact =
                 DRT::Problem::Instance()
                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .Evaluate(3, position, t);
+                    .Evaluate(position, t, 3);
 
             u(0) = u_exact_x;
             u(1) = u_exact_y;
@@ -723,15 +723,15 @@ namespace DRT
             std::vector<double> uder_exact_x =
                 DRT::Problem::Instance()
                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .EvaluateSpatialDerivative(0, position, t);
+                    .EvaluateSpatialDerivative(position, t, 0);
             std::vector<double> uder_exact_y =
                 DRT::Problem::Instance()
                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .EvaluateSpatialDerivative(1, position, t);
+                    .EvaluateSpatialDerivative(position, t, 1);
             std::vector<double> uder_exact_z =
                 DRT::Problem::Instance()
                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                    .EvaluateSpatialDerivative(2, position, t);
+                    .EvaluateSpatialDerivative(position, t, 2);
 
             if (uder_exact_x.size())
             {

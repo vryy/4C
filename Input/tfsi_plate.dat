@@ -516,21 +516,21 @@ SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra2 TAR_MAT 2
 
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 3
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.1
-COMPONENT 1 FUNCTION 0.0
-COMPONENT 2 FUNCTION 0.0
-COMPONENT 3 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.1
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 -------------------------------------------------------------FUNCT2  // Initial temp structure
-FUNCTION 293
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 293
 -------------------------------------------------------------FUNCT3  // Initial temp fluid
-FUNCTION 293
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 293
 -------------------------------------------------------------FUNCT4  // Inflow velocity, Poiseuille Flow 0.5*(1-cos(pi/5*t))* *cos(0.5*pi*y/0.2)
-COMPONENT 0 FUNCTION 1*v
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1*v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0 5 800.1 DESCRIPTION 0.5*(1-cos(pi/5*t))*0.1 0.1
 -------------------------------------------------------------FUNCT5  // Inflow temperature
-FUNCTION 1000
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 1000
 -------------------------------------------------------------FUNCT6  // Linear convection boundary condition
-FUNCTION 1508*(x-0.5)^2+473
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 1508*(x-0.5)^2+473
 
 
 ------------------------------------------------DESIGN DESCRIPTION

@@ -51,11 +51,11 @@ CONVTOL                         1e-15
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 0.1
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 10.0*x
-COMPONENT 1 FUNCTION 10.0
-COMPONENT 2 FUNCTION 0.0
-COMPONENT 3 FUNCTION 0.0
-COMPONENT 4 FUNCTION 10.0*x
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 10.0*x
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 10.0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 4 SYMBOLIC_FUNCTION_OF_SPACE_TIME 10.0*x
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0

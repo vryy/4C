@@ -86,12 +86,12 @@ MAT 13 ELAST_VolSussmanBathe KAPPA 1000.0
 MAT 14 ELAST_AnisoActiveStress_Evolution SIGMA 70.0 TAUC0 0.0 MAX_ACTIVATION 20.0 MIN_ACTIVATION -30.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0 STR_TENS_ID 100
 MAT 100 ELAST_StructuralTensor STRATEGY Standard
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION (5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0)))))+1.0)*heaviside(5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0)))))+1.0)-5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0)))))*heaviside(5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0))))))-5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0)))))*heaviside(5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0))))))+(5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0)))))-1.0)*heaviside(5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0)))))-1.0)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0)))))+1.0)*heaviside(5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0)))))+1.0)-5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0)))))*heaviside(5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0))))))-5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0)))))*heaviside(5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0))))))+(5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0)))))-1.0)*heaviside(5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0)))))-1.0)
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION v
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 999.0 DESCRIPTION 0.599950804034 0.0
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION v
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 999.0 DESCRIPTION 0.0933256806275 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 226 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-6

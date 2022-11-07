@@ -192,13 +192,13 @@ MAT 4 MAT_fluid DYNVISCOSITY 2.88 DENSITY 0.157 GAMMA 0.0  // minus  (slave),   
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
-FUNCTION -y+100.0 // here you phi-field: it holds that normal(xfluid) = normal(outside) = -(normal(cut) = grad(phi)) pointing from + to - (i.e. from outside to inside)
+SYMBOLIC_FUNCTION_OF_SPACE_TIME -y+100.0 // here you phi-field: it holds that normal(xfluid) = normal(outside) = -(normal(cut) = grad(phi)) pointing from + to - (i.e. from outside to inside)
 ----------------------------------------------------------------------FUNCT2 // initial field
-FUNCTION -1.0*(1.256637*y+0.6*z)-1.2
+SYMBOLIC_FUNCTION_OF_SPACE_TIME -1.0*(1.256637*y+0.6*z)-1.2
 ----------------------------------------------------------------------FUNCT3
-FUNCTION ((x*x+y*y)*(1.0*sqrt(x*x+y*y)-0.2)*(1.0*sqrt(x*x+y*y)-0.2)+z*z*(x*x+y*y))-0.1*0.1*(x*x+y*y)
+SYMBOLIC_FUNCTION_OF_SPACE_TIME ((x*x+y*y)*(1.0*sqrt(x*x+y*y)-0.2)*(1.0*sqrt(x*x+y*y)-0.2)+z*z*(x*x+y*y))-0.1*0.1*(x*x+y*y)
 ----------------------------------------------------------------------FUNCT4
-FUNCTION 0.5*(1.0-cos(pi/0.1*t))
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.5*(1.0-cos(pi/0.1*t))
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 8
 NDLINE  12
