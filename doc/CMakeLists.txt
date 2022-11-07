@@ -13,13 +13,9 @@ if(BUILD_DOXYGEN)
   set(DOXYGEN_OUT_DIRECTORY ${CMAKE_BINARY_DIR}/doc/)
   set(DOXYGEN_CONFIG_OUT ${DOXYGEN_OUT_DIRECTORY}/Doxyfile)
 
-  # find mathjax if desired
-  if(DOXYGEN_USE_MATHJAX)
-    message(STATUS "Doxygen: Use mathjax for math equations")
-    find_package(MathJax REQUIRED)
-  else()
-    message(STATUS "Doxygen: Use latex for math equations")
-  endif()
+  # find mathjax
+  message(STATUS "Doxygen: Use mathjax for math equations")
+  find_package(MathJax REQUIRED)
 
   # configure doxygen configuration
   configure_file(${DOXYGEN_CONFIG_IN} ${DOXYGEN_CONFIG_OUT} @ONLY)
