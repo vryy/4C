@@ -1,33 +1,33 @@
 #
 # Build routine/test for doxygen documentation
+option(BUILD_DOXYGEN "Build doxygen documentation" ON)
+if(BUILD_DOXYGEN)
 
-#
-### General Setup
+  # add doc-specific cmake modules
+  list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-cmake_minimum_required(VERSION 3.17)
-project(documentation CXX C)
+  find_package(Doxygen REQUIRED dot)
 
-# generates documentation in build folder
-# Dependencies: Doxyfile <- Doxyfile.defs <- gen_doxygen_defs.py
-add_custom_command(
-  OUTPUT Doxyfile
-  COMMAND
-    cat ${CMAKE_SOURCE_DIR}/doc/Doxyfile.tmpl Doxyfile.defs > Doxyfile && sed -i -e
-    "s/####REVISION####/${baci_WC_REVISION}/" -e "s:####SOURCE####:${CMAKE_SOURCE_DIR}:" Doxyfile
-  MAIN_DEPENDENCY ${PROJECT_BINARY_DIR}/Doxyfile.defs
-  )
-add_custom_command(
-  OUTPUT Doxyfile.defs
-  COMMAND
-    ${CMAKE_SOURCE_DIR}/utilities/baci-python-venv/bin/python
-    ${CMAKE_SOURCE_DIR}/gen_doxygen_defs.py "${PROJECT_BINARY_DIR}/../" "${PROJECT_BINARY_DIR}"
-  )
+  # set input and output files
+  set(DOXYGEN_CONFIG_IN ${CMAKE_SOURCE_DIR}/doc/Doxyfile.in)
+  set(DOXYGEN_OUT_DIRECTORY ${CMAKE_BINARY_DIR}/doc/)
+  set(DOXYGEN_CONFIG_OUT ${DOXYGEN_OUT_DIRECTORY}/Doxyfile)
 
-# start build with "make documentation"
-# N.B. this target is always considered out of date and therefore doxygen always runs
-add_custom_target(
-  documentation ALL
-  echo
-  COMMAND doxygen Doxyfile
-  DEPENDS ${PROJECT_BINARY_DIR}/Doxyfile
-  )
+  # find mathjax
+  find_package(MathJax REQUIRED)
+
+  # configure doxygen configuration
+  configure_file(${DOXYGEN_CONFIG_IN} ${DOXYGEN_CONFIG_OUT} @ONLY)
+
+  add_custom_target(
+    documentation ALL
+    COMMAND Doxygen::doxygen ${DOXYGEN_CONFIG_OUT}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    VERBATIM
+    COMMENT "Build doxygen"
+    )
+
+  add_dependencies(documentation setup_mathjax)
+
+  list(REMOVE_ITEM CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+endif()
