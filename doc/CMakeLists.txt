@@ -6,7 +6,7 @@ if(BUILD_DOXYGEN)
   # add doc-specific cmake modules
   list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-  find_package(Doxygen REQUIRED)
+  find_package(Doxygen REQUIRED dot)
 
   # set input and output files
   set(DOXYGEN_CONFIG_IN ${CMAKE_SOURCE_DIR}/doc/Doxyfile.in)
@@ -14,7 +14,6 @@ if(BUILD_DOXYGEN)
   set(DOXYGEN_CONFIG_OUT ${DOXYGEN_OUT_DIRECTORY}/Doxyfile)
 
   # find mathjax
-  message(STATUS "Doxygen: Use mathjax for math equations")
   find_package(MathJax REQUIRED)
 
   # configure doxygen configuration

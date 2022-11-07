@@ -25,7 +25,7 @@ if(DOXYGEN_USE_LOCAL_MATHJAX)
     )
 
 else()
-  set(DOXYGEN_MATHJAX_RELPATH https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/)
+  set(DOXYGEN_MATHJAX_RELPATH https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/)
   message(STATUS "Doxygen: Use Mathjax from CDN")
 
   add_custom_target(setup_mathjax COMMENT "Use Mathjax from CDN, no setup necessary")
