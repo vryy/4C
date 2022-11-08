@@ -94,8 +94,7 @@ Teuchos::RCP<const DRT::NURBS::Knotvector> DRT::NURBS::NurbsDiscretization::GetK
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::DbcNurbs::Evaluate(const DRT::DiscretizationInterface& discret, const double& time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, Epetra_Vector& toggle,
-    Epetra_Vector& hierarchy, Epetra_Vector& values,
-    Teuchos::RCP<std::set<int>>* dbcgids) const
+    Epetra_Vector& hierarchy, Epetra_Vector& values, Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // --------------------------- Step 1 ---------------------------------------
   DRT::UTILS::Dbc::Evaluate(discret, time, systemvectors, toggle, hierarchy, values, dbcgids);

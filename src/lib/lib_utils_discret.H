@@ -195,10 +195,12 @@ namespace DRT
           const Teuchos::RCP<Epetra_Vector>* systemvectors) const;
 
       /// create the hierarchy vector based on the toggle vector
-      Teuchos::RCP<Epetra_Vector> CreateHierarchyVector(const Teuchos::RCP<Epetra_Vector> toggle) const;
+      Teuchos::RCP<Epetra_Vector> CreateHierarchyVector(
+          const Teuchos::RCP<Epetra_Vector> toggle) const;
 
       /// create the values vector based on the toggle vector
-      Teuchos::RCP<Epetra_Vector> CreateValuesVector(const Teuchos::RCP<Epetra_Vector> toggle) const;
+      Teuchos::RCP<Epetra_Vector> CreateValuesVector(
+          const Teuchos::RCP<Epetra_Vector> toggle) const;
 
       /** \brief Evaluate Dirichlet boundary conditions
        *
@@ -318,9 +320,9 @@ namespace DRT
        *
        *  \author rauch \date 06/16 */
       virtual void ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
-          const DRT::Condition& cond, Epetra_Vector& toggle,
-          Epetra_Vector& hierarchy, Epetra_Vector& values,
-          const Teuchos::RCP<std::set<int>>* dbcgids, const int& hierarchical_order) const;
+          const DRT::Condition& cond, Epetra_Vector& toggle, Epetra_Vector& hierarchy,
+          Epetra_Vector& values, const Teuchos::RCP<std::set<int>>* dbcgids,
+          const int& hierarchical_order) const;
 
       /** \brief Assignment of the values to the system vectors.
        *
