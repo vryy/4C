@@ -1969,12 +1969,6 @@ void EnsightWriter::WriteElementDOFResultStep(std::ofstream& file, PostResult& r
   Teuchos::RCP<Epetra_Map> epetradatamap;
   epetradatamap = Teuchos::rcp(new Epetra_Map(datamap.NumGlobalElements(), datamap.NumMyElements(),
       datamap.MyGlobalElements(), 0, datamap.Comm()));
-#if 0
-  if (datamap->PointSameAs(*proc0map_))
-    std::cout<<"INFO: proc0map and datamap are identical."<<std::endl;
-  // check if the data is distributed over several processors
-  bool isdistributed = (data->DistributedGlobal());
-#endif
 
   //------------------------------------------------------
   // each processor provides its result values for proc 0
