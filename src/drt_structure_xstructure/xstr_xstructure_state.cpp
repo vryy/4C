@@ -178,14 +178,6 @@ void XSTR::XStructureState::TransferToNewState(
 
     NaturalExtensionOfNonStandardDofValues(cit->first, new_discret, new_xstate_vec);
 
-#if 0
-    std::cout << StateVectorName2String( cit->first ) << " [OLD]" << std::endl;
-    std::cout << xstate_vec << std::endl;
-
-    std::cout << StateVectorName2String( it_new_state->first ) << " [NEW]" << std::endl;
-    std::cout << new_xstate_vec << std::endl;
-#endif
-
     // increase counter
     ++it_new_state;
   }
