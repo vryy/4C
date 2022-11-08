@@ -42,17 +42,6 @@ Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
 {
   if (DRT::Problem::Instance()->DoesExistDis("artery") == false)
   {
-#if 0
-    if (actdis->Comm().MyPID()==0)
-    {
-      std::cout<<"+--------------------- WARNING ---------------------+"<<std::endl;
-      std::cout<<"|                                                   |"<<std::endl;
-      std::cout<<"| One-dimesional arterial network is compiled, but  |"<<std::endl;
-      std::cout<<"| no artery elements are defined!                   |"<<std::endl;
-      std::cout<<"|                                                   |"<<std::endl;
-      std::cout<<"+---------------------------------------------------+"<<std::endl;
-    }
-#endif
     return Teuchos::null;
   }
 
