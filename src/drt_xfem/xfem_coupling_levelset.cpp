@@ -1855,12 +1855,6 @@ const Teuchos::RCP<const Epetra_Vector> XFEM::LevelSetCouplingTwoPhase::ComputeT
       const int err = cutter_transport_vel_->ReplaceMyValues(1, &tmp, &lid);
       if (err) dserror("could not replace values for convective velocity");
     }
-
-#if (0)
-    std::cout << "flvelconv" << flvelconv << std::endl;
-    std::cout << "flvelrel" << flvelrel << std::endl;
-    std::cout << "computed flvelabs" << flvelabs << std::endl;
-#endif
   }
 
   return cutter_transport_vel_;

@@ -1198,15 +1198,6 @@ void XFEM::XFluid_Contact_Comm::RegisterSideProc(int sid)
 void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
     int sid, Epetra_SerialDenseMatrix& coords, std::vector<double>& weights, int& npg)
 {
-#if (0)
-  static int counter = 0;
-  ++counter;
-  std::stringstream str;
-  str << "ContactIntegration_" << counter << "_" << fluiddis_->Comm().MyPID() << ".pos";
-  std::ofstream file(str.str().c_str());
-  GEO::CUT::OUTPUT::GmshNewSection(file, "BoundaryCells");
-#endif
-
   GEO::CUT::SideHandle* sh = cutwizard_->GetCutSide(GetSurfSid(sid));
   if (!sh) dserror("Couldn't get SideHandle!");
   if (sh->Shape() != DRT::Element::quad4) dserror("Not a quad4!");
@@ -1245,9 +1236,6 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
             p->Coordinates(coord);
             coord += 3;
           }
-#if (0)
-          GEO::CUT::OUTPUT::GmshTriSideDump(file, facet->Triangulation()[triangle]);
-#endif
           Teuchos::RCP<GEO::CUT::Tri3BoundaryCell> tmp_bc = Teuchos::rcp(
               new GEO::CUT::Tri3BoundaryCell(tcoords, facet, facet->Triangulation()[triangle]));
           tmp_bc->Normal(LINALG::Matrix<2, 1>(true), normal_bc);
@@ -1275,9 +1263,6 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
       else if (facet->Points().size() == 3)
       {
         facet->Coordinates(tcoords.A());
-#if (0)
-        GEO::CUT::OUTPUT::GmshTriSideDump(file, facet->Points());
-#endif
         Teuchos::RCP<GEO::CUT::Tri3BoundaryCell> tmp_bc =
             Teuchos::rcp(new GEO::CUT::Tri3BoundaryCell(tcoords, facet, facet->Points()));
         tmp_bc->Normal(LINALG::Matrix<2, 1>(true), normal_bc);
@@ -1324,9 +1309,6 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
         side->Coordinates(tcoords.A());
         std::vector<GEO::CUT::Point*> points;
         for (unsigned p = 0; p < side->NumNodes(); ++p) points.push_back(side->Nodes()[p]->point());
-#if (0)
-        GEO::CUT::OUTPUT::GmshTriSideDump(file, points);
-#endif
         Teuchos::RCP<GEO::CUT::Tri3BoundaryCell> tmp_bc =
             Teuchos::rcp(new GEO::CUT::Tri3BoundaryCell(tcoords, NULL, points));
         tmp_bc->Normal(LINALG::Matrix<2, 1>(true), normal_bc);
@@ -1355,10 +1337,6 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
     }
   }
 
-#if (0)
-  GEO::CUT::OUTPUT::GmshNewSection(file, "Gps", true);
-#endif
-
   weights.clear();
   LINALG::Matrix<3, 1> x_gp_lin(true);
   LINALG::Matrix<3, 1> normal(true);
@@ -1376,19 +1354,6 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
       {
         const LINALG::Matrix<2, 1> eta(iquad.Point(), false);
         XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin, normal, bcs[bc].getRawPtr(), eta);
-
-#if (0)
-        file << "SP (";
-        GEO::CUT::OUTPUT::GmshWriteCoords(file, x_gp_lin);
-        file << "){";
-        file << 0;
-        file << "};\n";
-        std::vector<double> vector;
-        vector.push_back(normal(0));
-        vector.push_back(normal(1));
-        vector.push_back(normal(2));
-        GEO::CUT::OUTPUT::GmshVector(file, x_gp_lin, vector);
-#endif
 
         // find element local position of gauss point
         const LINALG::Matrix<3, numnodes_sh> xquad_m(xquad.A(), true);
@@ -1410,11 +1375,6 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
   }
 
   npg = weights.size() - 1;
-
-#if (0)
-  GEO::CUT::OUTPUT::GmshEndSection(file, true);
-#endif
-
   return;
 }
 
