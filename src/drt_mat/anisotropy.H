@@ -12,6 +12,7 @@
 #ifndef BACI_ANISOTROPY_H
 #define BACI_ANISOTROPY_H
 
+#include <optional>
 #include <Teuchos_RCPDecl.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include "../linalg/linalg_fixedsizematrix.H"
