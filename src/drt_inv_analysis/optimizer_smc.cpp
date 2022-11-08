@@ -9,29 +9,6 @@
 
 #include "optimizer_smc.H"
 
-#include "particle_group.H"
-#include "particle_comm.H"
-#include "particle_data.H"
-#include "invana_base.H"
-#include "objective_funct.H"
-#include "likelihood_evaluation.H"
-#include "matpar_manager.H"
-#include "invana_utils.H"
-#include "initial_guess.H"
-
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_comm/comm_utils.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_timestepping/timintmstep.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-
-#include "Epetra_CrsMatrix.h"
-#include "DcsMatrix.H"
-
-#include "math.h"
-#include <string>
 
 /*----------------------------------------------------------------------*/
 INVANA::OptimizerSMC::OptimizerSMC(const Teuchos::ParameterList& invp)

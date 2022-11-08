@@ -11,28 +11,6 @@
 
 #include "particle_group.H"
 
-#include "particle_data.H"
-#include "particle_comm.H"
-#include "likelihood_evaluation.H"
-#include "invana_base.H"
-#include "metropolis_kernel.H"
-#include "invana_utils.H"
-
-#include "../drt_comm/comm_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-
-#include "Epetra_MpiComm.h"
-
-#include <random>
-#include <array>
-#include <errno.h>
-#include <limits>
-#include <stdexcept>
-#include <iomanip>
-
-#include <fenv.h>
-
 
 /*----------------------------------------------------------------------*/
 INVANA::ParticleGroup::ParticleGroup(const Teuchos::ParameterList& invp)

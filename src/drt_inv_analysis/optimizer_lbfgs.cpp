@@ -8,23 +8,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "optimizer_lbfgs.H"
-#include "invana_base.H"
-#include "matpar_manager.H"
-#include "matpar_manager_elementwise.H"
-#include "DcsMatrix.H"
-#include "objective_funct.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "invana_utils.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_timestepping/timintmstep.H"
-#include "../drt_comm/comm_utils.H"
-#include "../drt_inpar/inpar_parameterlist_utils.H"
-
-#include <stdlib.h>
-#include <stdio.h>
 
 /*----------------------------------------------------------------------*/
 /* constructor */
