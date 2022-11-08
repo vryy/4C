@@ -215,22 +215,6 @@ void DRT::ELEMENTS::RedAirBloodScatra::VisNames(std::map<std::string, int>& name
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);
-
-#if 0
-  // see whether we have additional data for visualization in our container
-  std::ostringstream temp;
-  temp << 1;
-
-  // in flow of volumetric flow profile
-  string name = "flow_in";
-  names.insert(std::pair<string,int>(name,1));
-
-  // out flow of volumetric flow profile
-  name = "flow_out";
-  names.insert(std::pair<string,int>(name,1));
-#endif
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

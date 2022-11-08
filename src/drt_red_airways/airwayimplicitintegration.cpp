@@ -982,29 +982,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
 
   }  // end time measurement for element
 
-#if 0  // Exporting some values for debugging purposes
-  {
-    std::cout << "CR NLN. pnp_ " << std::endl;
-    pnp_->Print(std::cout);
-    std::cout << "CR NLN. acini_e_volumenp_ " << std::endl;
-    acini_e_volumenp_->Print(std::cout);
-    std::cout << "CR NLN. qin_np_ " << std::endl;
-    qin_np_->Print(std::cout);
-    std::cout << "CR NLN. qout_np_ " << std::endl;
-    qout_np_->Print(std::cout);
-
-    std::cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<std::endl;
-    Teuchos::RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
-    if (A_debug != Teuchos::null)
-    {
-      // print to screen
-      (A_debug->EpetraMatrix())->Print(std::cout);
-    }
-    std::cout<<"Map is: ("<<myrank_<<")"<<std::endl<<*(discret_->DofRowMap())<<std::endl;
-    std::cout<<"---------------------------------------("<<myrank_<<"------------------------"<<std::endl;
-  }
-#endif
-
   /***
    * 2. Solve the boundary conditions
    ***/
