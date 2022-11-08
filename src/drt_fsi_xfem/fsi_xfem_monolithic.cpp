@@ -1877,16 +1877,6 @@ void FSI::MonolithicXFEM::BuildFluidPermutation()
       next_it = permutation_map.find(next_gid);
     }
 
-#if (0)
-    // print cycle
-
-    std::cout << " new cycle: " << std::endl;
-
-    for (int i = 0; i < (int)new_cycle.size(); i++) std::cout << " " << new_cycle[i];
-
-    std::cout << std::endl;
-#endif
-
     if ((int)new_cycle.size() > 2)
       dserror(
           "this is the first time that we permute more than two ghost dofsets! Check if the "
@@ -2318,20 +2308,6 @@ void FSI::MonolithicXFEM::LinearSolve()
   // reset the solver (frees the pointer to the LINALG:: matrix' EpetraOperator and vectors also!)
   // std::cout << "reset the solver" << std::endl;
   solver_->Reset();
-
-#if 0
-    {
-      // DEBUG output
-      Teuchos::RCP<ADAPTER::XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(FluidField(), true);
-
-      // Remark that GMSH-output of rhs and iterinc have to be written w.r.t current fluid
-      // dofsets based on the respective cut/vc-data before the vectors are permuted to the reference dofset ordering
-      xfluid->GmshOutput("DEBUG_MONOLITIC_RESIDUAL",  Step(), iter_ , Extractor().ExtractVector(rhs_,1), Teuchos::null);
-      xfluid->GmshOutput("DEBUG_MONOLITIC_INC",  Step(), iter_ , Extractor().ExtractVector(iterinc_,1), Teuchos::null);
-    }
-#endif
-
-
 
   //---------------------------------------------
   // permute the increment and rhs vector back to the reference configuration w.r.t which iterinc_
