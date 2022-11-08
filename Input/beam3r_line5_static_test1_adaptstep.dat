@@ -108,5 +108,5 @@ STRUCTURE SPECIAL QUANTITY num_iter_step_4 VALUE 7.0 TOLERANCE 1.0e-20
 STRUCTURE SPECIAL QUANTITY num_iter_step_5 VALUE 7.0 TOLERANCE 1.0e-20
 STRUCTURE SPECIAL QUANTITY num_iter_step_6 VALUE 8.0 TOLERANCE 1.0e-20
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+SYMBOLIC_FUNCTION_OF_TIME t
 ---------------------------------------------------------------END

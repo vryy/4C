@@ -101,7 +101,7 @@ THETA                           0.5
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0e3 NUE 0.3 DENS 2.0e-6
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.7 1.2 1.5 VALUES 0 50 60 60
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 2101 QUANTITY dispx VALUE -1.56698396153426156e+00 TOLERANCE 1e-5

@@ -303,7 +303,7 @@ AZTOL                                 1e-05
 MAT 1 MAT_fluid DYNVISCOSITY 0.004 DENSITY 1.0
 MAT 2 MAT_BeamKirchhoffTorsionFreeElastHyper YOUNG 1e+06 DENS 1e-01 CROSSAREA 0.0079 MOMIN 4.9087e-06
 --------------------------------------------------------------------------FUNCT1
-FUNCTION 0.1*a
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.1*a
 VARIABLE 0 NAME a TYPE expression DESCRIPTION heaviside(0.005-t)*0.5*(1-cos(pi*t*0.2e+03))+heaviside(t-0.005)
 --------------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1

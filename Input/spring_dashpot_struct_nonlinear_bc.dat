@@ -29,9 +29,9 @@ SOLVER                          UMFPACK
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 1000
 MAT 2 ELAST_CoupSVK YOUNG 1e9 NUE 0.2
 ------------------------------------------------------------FUNCT1
-FUNCTION                        0.5*(1-cos(t*pi/25))*heaviside(25.000001-t)
+SYMBOLIC_FUNCTION_OF_SPACE_TIME                        0.5*(1-cos(t*pi/25))*heaviside(25.000001-t)
 ------------------------------------------------------------FUNCT2
-FUNCTION                        x*x*1e9
+SYMBOLIC_FUNCTION_OF_SPACE_TIME                        x*x*1e9
 ------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE  8.72422822155921041e-02 TOLERANCE 8.7e-10
 STRUCTURE DIS structure NODE 15 QUANTITY dispx VALUE  8.72422822155920069e-02 TOLERANCE 8.7e-10

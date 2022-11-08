@@ -63,7 +63,7 @@ E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 1.0 FUNCT 0 1
 E 3 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 FUNCT 1 0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT                          1
-E 1 - NUMDOF 1 ONOFF 1 VAL 2.261946710584651e+03 FUNCT 1
+E 1 - NUMDOF 1 ONOFF 1 VAL 2.261946710584651e+03 FUNCT 7
 -----------------------------DESIGN POINT INITIAL FIELD CONDITIONS
 // just to test initial conditions
 DPOINT   3
@@ -136,20 +136,22 @@ MAT 4 MAT_matlist LOCAL No NUMMAT 2 MATIDS 2 3 END
 SRC_FIELD artery SRC_MAT 1 TAR_FIELD artery_scatra TAR_MAT 4
 SRC_FIELD artery SRC_MAT 5 TAR_FIELD artery_scatra TAR_MAT 4
 ----------------------------------------------------------------------FUNCT1
-FUNCTION 1.0*t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0*t
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 0.0
-COMPONENT 1 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION 0.0
-COMPONENT 1 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION 0.0
-COMPONENT 1 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------------------FUNCT5
-COMPONENT 0 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------------------FUNCT6
-COMPONENT 0 FUNCTION 1.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
+----------------------------------------------------------------------FUNCT7
+SYMBOLIC_FUNCTION_OF_TIME 1.0*t
 ----------------------------------------------------------RESULT DESCRIPTION
 ARTNET DIS artery NODE 8 QUANTITY pressure VALUE 3.33333333333333441e-03 TOLERANCE 1e-13
 // note: this would be the mathematically exact solution

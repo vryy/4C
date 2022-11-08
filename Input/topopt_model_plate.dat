@@ -83,17 +83,17 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD opti TAR_MAT 2
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0
 MAT 2 MAT_opti MINPORO 1 MAXPORO 1 SMEARFAC 1
 ------------------------------------------------FUNCT1 // initial flow field
-COMPONENT 0 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ---------------------------------------------FUNCT2 // initial density field
-COMPONENT 0 FUNCTION 1.0 // 1=fluid,0=no fluid
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0 // 1=fluid,0=no fluid
 -----------------------------------------FUNCT3 // velocity field - x values
-COMPONENT 0 FUNCTION x
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME x
 -----------------------------------------FUNCT4 // velocity field - y values
-COMPONENT 0 FUNCTION -y
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME -y
 -------------------FUNCT5 // normal tension on right boundary in x-direction
-COMPONENT 0 FUNCTION x*x+2 // 1=fluid,0=no fluid
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME x*x+2 // 1=fluid,0=no fluid
 -------------------FUNCT6 // normal tension on upper boundary in y-direction
-COMPONENT 0 FUNCTION x*x-2 // 1=fluid,0=no fluid
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME x*x-2 // 1=fluid,0=no fluid
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         3
 NDLINE                          4

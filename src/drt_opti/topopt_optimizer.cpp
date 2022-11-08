@@ -314,7 +314,7 @@ void TOPOPT::Optimizer::SetInitialDensityField(
           // evaluate component k of spatial function
           double initialval = DRT::Problem::Instance()
                                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .Evaluate(0, lnode->X(), 0.0);       // scalar
+                                  .Evaluate(lnode->X(), 0.0, 0);       // scalar
           int err = dens_->ReplaceMyValues(1, &initialval, &lnodeid);  // lnodeid = ldofid
           if (err != 0) dserror("dof not on proc");
           break;
@@ -416,7 +416,7 @@ void TOPOPT::Optimizer::SetInitialDensityField(
           // evaluate component k of spatial function
           double initialval = DRT::Problem::Instance()
                                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .Evaluate(0, coords.A(), 0.0);      // scalar
+                                  .Evaluate(coords.A(), 0.0, 0);      // scalar
           int err = dens_->ReplaceMyValues(1, &initialval, &leleid);  // lnodeid = ldofid
           if (err != 0) dserror("dof not on proc");
           break;

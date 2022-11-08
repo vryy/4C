@@ -134,7 +134,7 @@ int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList
               // evaluate function at current gauss point
               functfac = DRT::Problem::Instance()
                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                             .Evaluate(i, coordgpref, time);
+                             .Evaluate(coordgpref, time, i);
             }
 
             const double fac = (*val)[i] * gpweight * dL * functfac;

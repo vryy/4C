@@ -39,7 +39,7 @@ CONVTOL                         1e-15
 -------------------------------------------------------------------MATERIALS
 MAT 0 MAT_scatra DIFFUSIVITY 0.1
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 2*x
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2*x
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY abs_L2error_phi VALUE 0.0 TOLERANCE 1E-10
 SCATRA DIS scatra NODE 1 QUANTITY abs_L2error_gradPhi VALUE 0.0 TOLERANCE 1E-10

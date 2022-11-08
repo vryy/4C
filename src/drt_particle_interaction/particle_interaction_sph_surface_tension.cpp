@@ -27,6 +27,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/function_of_time.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -785,8 +786,8 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeSurfaceTensionContribution()
   double timefac = 1.0;
   if (timerampfct_ > 0)
     timefac = DRT::Problem::Instance()
-                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(timerampfct_ - 1)
-                  .EvaluateTime(time_);
+                  ->FunctionById<DRT::UTILS::FunctionOfTime>(timerampfct_ - 1)
+                  .Evaluate(time_);
 
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
@@ -836,8 +837,8 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeTempGradDrivenContribution()
   double timefac = 1.0;
   if (timerampfct_ > 0)
     timefac = DRT::Problem::Instance()
-                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(timerampfct_ - 1)
-                  .EvaluateTime(time_);
+                  ->FunctionById<DRT::UTILS::FunctionOfTime>(timerampfct_ - 1)
+                  .Evaluate(time_);
 
   // temperature in transition from linear to constant regime of surface tension coefficient
   const double transitiontemp = surf_ref_temp_ + (alphamin_ - alpha0_) / alphaT_;

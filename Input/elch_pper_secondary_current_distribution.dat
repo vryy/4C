@@ -108,9 +108,9 @@ MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 2 3 END
 MAT 2 MAT_ion DIFFUSIVITY 1.0 VALENCE 1.0
 MAT 3 MAT_ion DIFFUSIVITY 1.0 VALENCE -1.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1.0   // fictive initial concentration field for positive dummy ion
-COMPONENT 1 FUNCTION 1.0   // fictive initial concentration field for negative dummy ion
-COMPONENT 2 FUNCTION 0.0   // initial potential field
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0   // fictive initial concentration field for positive dummy ion
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0   // fictive initial concentration field for negative dummy ion
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0   // initial potential field
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 451 QUANTITY phi3 VALUE 0.0e+00 TOLERANCE 1e-14
 SCATRA DIS scatra NODE 22 QUANTITY phi3 VALUE 0.0e+00 TOLERANCE 1e-14

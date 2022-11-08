@@ -148,9 +148,9 @@ MAT 31 ELAST_IsoNeoHooke MUE 72.0
 MAT 41 ELAST_IsoNeoHooke MUE 72.0
 MAT 51 ELAST_VolSussmanBathe KAPPA 720.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0
-COMPONENT 1 FUNCTION 0
-COMPONENT 2 FUNCTION atan(x/y)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME atan(x/y)
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1
 NDLINE                          1

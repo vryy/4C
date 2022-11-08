@@ -68,7 +68,7 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 6.825E7 NUE 0.3 DENS 0.0
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+SYMBOLIC_FUNCTION_OF_TIME t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 971 QUANTITY dispy VALUE 2.923119248553171179e+00 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 972 QUANTITY dispy VALUE 2.921368517560620770e+00 TOLERANCE 1e-8

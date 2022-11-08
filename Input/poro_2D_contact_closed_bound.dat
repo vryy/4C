@@ -148,10 +148,10 @@ MAT 5 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 1.0 TYPE Darcy
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 5
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 500000.0 DESCRIPTION 1.3*0.5*(1-cos((t*pi/1.0))) 1.3
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1 50000000 DESCRIPTION 0 12.5*0.5*(1-cos(2*pi/5*(t-1)))
 -------------------------------------------------RESULT DESCRIPTION
 FLUID DIS porofluid NODE 160 QUANTITY vely VALUE -1.08529440348016237e+00 TOLERANCE 1e-8

@@ -64,7 +64,7 @@ SOLVER                          Superlu
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 1
 MAT 2 ELAST_CoupNeoHooke YOUNG 2.4e+0 NUE 0.3
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION -5.1e-2*t
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME -5.1e-2*t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 4445 QUANTITY dispx VALUE -7.51798284885298179e-02 TOLERANCE 1e-11
 STRUCTURE DIS structure NODE 4445 QUANTITY dispy VALUE -5.03359477299942237e-02 TOLERANCE 1e-11

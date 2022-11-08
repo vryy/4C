@@ -38,17 +38,17 @@ SOLVER                          UMFPACK
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 10 DENS 1e-5
 MAT 10 ELAST_CoupNeoHooke YOUNG 10 NUE 0.25
 -------------------------------------------------------------------FUNCT1
-FUNCTION                        t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME                        t
 -------------------------------------------------------------------FUNCT2
-FUNCTION                        0.5*t
+SYMBOLIC_FUNCTION_OF_TIME          0.5*t
 -------------------------------------------------------------------FUNCT3
-FUNCTION                        1.0*x*0.5*t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME                        1.0*x*0.5*t
 -------------------------------------------------------------------FUNCT4
-FUNCTION                        1.0*y*0.5*t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME                        1.0*y*0.5*t
 -------------------------------------------------------------------FUNCT5
-FUNCTION                        1.0*z*0.5*t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME                        1.0*z*0.5*t
 -------------------------------------------------------------------FUNCT6
-FUNCTION                        1.0*x*0.5*t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME                        1.0*x*0.5*t
 --------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 6
 E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.2 0.1 0.1 FUNCT 1 1 1

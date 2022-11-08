@@ -8,6 +8,7 @@
 */
 /*----------------------------------------------------------------------------*/
 
+#include <Teuchos_SerialDenseMatrix.hpp>
 #include "beam3eb.H"
 
 #include "../drt_beaminteraction/periodic_boundingbox.H"
@@ -56,7 +57,7 @@ void DRT::ELEMENTS::Beam3ebType::NodalBlockInformation(
 }
 
 
-Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
+Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   if (numdof != 6)
@@ -147,7 +148,7 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
   rotTangOne.CrossProduct(omegaOne, tangent);
   rotTangTwo.CrossProduct(omegaTwo, tangent);
 
-  Epetra_SerialDenseMatrix nullspace = Epetra_SerialDenseMatrix(numdof, dimnsp);
+  Teuchos::SerialDenseMatrix<int, double> nullspace(numdof, dimnsp);
   // x-modes
   nullspace(0, 0) = 1.0;
   nullspace(0, 1) = 0.0;

@@ -85,10 +85,10 @@ MAT 2 ELAST_CoupAnisoExpo K1 3E+04 K2 127.0 GAMMA 0.0 K1COMP 0.0 K2COMP 0.0 STR_
 MAT 3 ELAST_CoupNeoHooke YOUNG 10.0 NUE 0.49
 MAT 100 ELAST_StructuralTensor STRATEGY ByDistributionFunction DISTR Bingham C1 11.6 C2 9.7 C3 0.0 C4 1000.0 //6.61303987e+05
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 6.5 50000.0 DESCRIPTION t/6.5 t/6.5
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION b
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME b
 VARIABLE 0 NAME b TYPE multifunction NUMPOINTS 3 TIMES 0.0 10.0 50000.0 DESCRIPTION 0.5*(1.0-cos((t*pi/10.0))) 0.5*(1.0-cos((t*pi/10.0)))
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 18 QUANTITY dispy VALUE 4.30701915619418862e-05 TOLERANCE 1e-09

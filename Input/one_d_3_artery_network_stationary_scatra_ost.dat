@@ -115,18 +115,18 @@ MAT 2 MAT_scatra DIFFUSIVITY 2.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD artery SRC_MAT 1 TAR_FIELD artery_scatra TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
-FUNCTION 1.0*t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0*t
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 0.0
-COMPONENT 1 FUNCTION 1.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION 1.0
-COMPONENT 1 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION 0.0
-COMPONENT 1 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------------------FUNCT5
-COMPONENT 0 FUNCTION 1.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
 ARTNET DIS artery NODE 8 QUANTITY pressure VALUE 3.33333333333333441e-03 TOLERANCE 1e-13
 SCATRA DIS artery_scatra NODE 10 QUANTITY phi VALUE 2.42315150765949477e-01 TOLERANCE 1e-09

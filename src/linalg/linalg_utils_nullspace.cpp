@@ -10,12 +10,14 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include <Teuchos_SerialDenseMatrix.hpp>
 #include "linalg_utils_nullspace.H"
 #include "../drt_s8/shell8.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Epetra_SerialDenseMatrix LINALG::ComputeSolid3DNullSpace(const DRT::Node& node, const double* x0)
+Teuchos::SerialDenseMatrix<int, double> LINALG::ComputeSolid3DNullSpace(
+    const DRT::Node& node, const double* x0)
 {
   /* the rigid body modes for structures are:
 
@@ -32,7 +34,7 @@ Epetra_SerialDenseMatrix LINALG::ComputeSolid3DNullSpace(const DRT::Node& node, 
 
   const double* x = node.X();
 
-  Epetra_SerialDenseMatrix nullspace = Epetra_SerialDenseMatrix(3, 6);
+  Teuchos::SerialDenseMatrix<int, double> nullspace(3, 6);
   // x-modes
   nullspace(0, 0) = 1.0;
   nullspace(0, 1) = 0.0;
@@ -60,7 +62,8 @@ Epetra_SerialDenseMatrix LINALG::ComputeSolid3DNullSpace(const DRT::Node& node, 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Epetra_SerialDenseMatrix LINALG::ComputeSolid2DNullSpace(const DRT::Node& node, const double* x0)
+Teuchos::SerialDenseMatrix<int, double> LINALG::ComputeSolid2DNullSpace(
+    const DRT::Node& node, const double* x0)
 {
   /* the rigid body modes for structures are:
 
@@ -76,7 +79,7 @@ Epetra_SerialDenseMatrix LINALG::ComputeSolid2DNullSpace(const DRT::Node& node, 
 
   const double* x = node.X();
 
-  Epetra_SerialDenseMatrix nullspace = Epetra_SerialDenseMatrix(2, 3);
+  Teuchos::SerialDenseMatrix<int, double> nullspace(2, 3);
   // x-modes
   nullspace(0, 0) = 1.0;
   nullspace(0, 1) = 0.0;
@@ -91,7 +94,8 @@ Epetra_SerialDenseMatrix LINALG::ComputeSolid2DNullSpace(const DRT::Node& node, 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Epetra_SerialDenseMatrix LINALG::ComputeShell3DNullSpace(DRT::Node& node, const double* x0)
+Teuchos::SerialDenseMatrix<int, double> LINALG::ComputeShell3DNullSpace(
+    DRT::Node& node, const double* x0)
 {
   /* the rigid body modes for structures are:
 
@@ -109,7 +113,7 @@ Epetra_SerialDenseMatrix LINALG::ComputeShell3DNullSpace(DRT::Node& node, const 
 
    */
 
-  Epetra_SerialDenseMatrix dir(1, 3);
+  LINALG::Matrix<1, 3> dir;
 
   DRT::ELEMENTS::Shell8* s8 = dynamic_cast<DRT::ELEMENTS::Shell8*>(node.Elements()[0]);
   if (!s8) dserror("Cannot cast to Shell8");
@@ -127,7 +131,7 @@ Epetra_SerialDenseMatrix LINALG::ComputeShell3DNullSpace(DRT::Node& node, const 
 
   const double* x = node.X();
 
-  Epetra_SerialDenseMatrix nullspace = Epetra_SerialDenseMatrix(6, 6);
+  Teuchos::SerialDenseMatrix<int, double> nullspace(6, 6);
   // x-modes
   nullspace(0, 0) = 1.0;
   nullspace(0, 1) = 0.0;
@@ -176,7 +180,7 @@ Epetra_SerialDenseMatrix LINALG::ComputeShell3DNullSpace(DRT::Node& node, const 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Epetra_SerialDenseMatrix LINALG::ComputeFluidNullSpace(
+Teuchos::SerialDenseMatrix<int, double> LINALG::ComputeFluidNullSpace(
     const DRT::Node& node, const int numdof, const int dimnsp)
 {
   /* the rigid body modes for fluids are:
@@ -194,7 +198,7 @@ Epetra_SerialDenseMatrix LINALG::ComputeFluidNullSpace(
 
   if (numdof > 10) dserror("Cannot define more than 10 degrees of freedom!");
 
-  Epetra_SerialDenseMatrix nullspace = Epetra_SerialDenseMatrix(numdof, dimnsp);
+  Teuchos::SerialDenseMatrix<int, double> nullspace(numdof, dimnsp);
   for (int i = 0; i < numdof; i++)
   {
     for (int j = 0; j < dimnsp; j++)

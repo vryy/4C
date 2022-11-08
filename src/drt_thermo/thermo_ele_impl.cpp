@@ -2892,7 +2892,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
     const double functfac = (functnum > 0)
                                 ? DRT::Problem::Instance()
                                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                      .Evaluate(0, xrefegp.A(), time)
+                                      .Evaluate(xrefegp.A(), time, 0)
                                 : 1.0;
 
     // get values and switches from the condition
@@ -3427,14 +3427,14 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
 
         const double T_exact = DRT::Problem::Instance()
                                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
-                                   .Evaluate(0, position, t);
+                                   .Evaluate(position, t, 0);
 
         T_analytical(0, 0) = T_exact;
 
         std::vector<double> Tder_exact =
             DRT::Problem::Instance()
                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
-                .EvaluateSpatialDerivative(0, position, t);
+                .EvaluateSpatialDerivative(position, t, 0);
 
         if (Tder_exact.size())
         {

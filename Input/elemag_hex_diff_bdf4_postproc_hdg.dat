@@ -38,12 +38,12 @@ AZREUSE                         1000
 MAT 0   MAT_Electromagnetic   CONDUCTIVITY 50 PERMITTIVITY 0 PERMEABILITY 1
 
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION sin(pi*x)*cos(pi*y)*cos(pi*z)*exp(-3*pi*pi*t/50)
-COMPONENT 1 FUNCTION 0
-COMPONENT 2 FUNCTION -cos(pi*x)*cos(pi*y)*sin(pi*z)*exp(-3*pi*pi*t/50)
-COMPONENT 3 FUNCTION pi*cos(pi*x)*sin(pi*y)*sin(pi*z)*exp(-3*pi*pi*t/50)
-COMPONENT 4 FUNCTION -2*pi*sin(pi*x)*cos(pi*y)*sin(pi*z)*exp(-3*pi*pi*t/50)
-COMPONENT 5 FUNCTION pi*sin(pi*x)*sin(pi*y)*cos(pi*z)*exp(-3*pi*pi*t/50)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME sin(pi*x)*cos(pi*y)*cos(pi*z)*exp(-3*pi*pi*t/50)
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME -cos(pi*x)*cos(pi*y)*sin(pi*z)*exp(-3*pi*pi*t/50)
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME pi*cos(pi*x)*sin(pi*y)*sin(pi*z)*exp(-3*pi*pi*t/50)
+COMPONENT 4 SYMBOLIC_FUNCTION_OF_SPACE_TIME -2*pi*sin(pi*x)*cos(pi*y)*sin(pi*z)*exp(-3*pi*pi*t/50)
+COMPONENT 5 SYMBOLIC_FUNCTION_OF_SPACE_TIME pi*sin(pi*x)*sin(pi*y)*cos(pi*z)*exp(-3*pi*pi*t/50)
 
 ------------------------------------------------RESULT DESCRIPTION
 ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric-post VALUE 5.93060389256918653e-03 TOLERANCE 1e-6

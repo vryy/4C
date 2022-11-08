@@ -9,6 +9,7 @@
 *----------------------------------------------------------------------*/
 #include "immersed_base.H"
 #include "../drt_io/io_control.H"
+#include "../drt_lib/function_of_time.H"
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_adapter/ad_fld_wrapper.H"
 #include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
@@ -462,9 +463,9 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition(
         if (curve) curvenum = (*curve)[0];
         double curvefac = 1.0;
         if (curvenum >= 0 && usetime)
-          curvefac = DRT::Problem::Instance()
-                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
-                         .EvaluateTime(time);
+          curvefac =
+              DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
+                  time);
 
         // Get ConditionID of current condition if defined and write value in parameterlist
         const std::vector<int>* CondIDVec = cond.Get<std::vector<int>>("ConditionID");

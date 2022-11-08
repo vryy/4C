@@ -55,11 +55,10 @@ namespace DRT
         nv = numdf;
       }
 
-      virtual Epetra_SerialDenseMatrix ComputeNullSpace(
+      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Epetra_SerialDenseMatrix nullspace = LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
-        return nullspace;
+        return LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
       }
 
       virtual void SetupElementDefinition(

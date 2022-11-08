@@ -129,13 +129,13 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.5+y
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.5+y
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 0.0 //initial x-vel. field
-COMPONENT 1 FUNCTION 0.0 //initial y-vel. field
-COMPONENT 2 FUNCTION 1.0 //initial pres. field
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial x-vel. field
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial y-vel. field
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0 //initial pres. field
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 1 1000000 DESCRIPTION 0.5*(sin((t*pi/1)-(pi/2)))+0.5 0.5*(sin((1*pi/1)-(pi/2)))+0.5
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 58 QUANTITY velx VALUE 4.999999796e-01 TOLERANCE 1e-09

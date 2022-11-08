@@ -185,10 +185,10 @@ MAT 104 MAT_scatra_reaction NUMSCAL 2 STOICH 0 -1 REACCOEFF 0.0 COUPLING simple_
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 10
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.0 //(2*y) //y+0.2
-COMPONENT 1 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //(2*y) //y+0.2
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 500000.0 DESCRIPTION ((1-cos(pi*t))*0.5) 1
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE 1.10201828804365777e-02 TOLERANCE 1e-6

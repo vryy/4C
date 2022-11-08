@@ -11,6 +11,7 @@
 #define SONURBS27_H
 
 
+#include <Teuchos_SerialDenseMatrix.hpp>
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
 #include "Epetra_SerialDenseVector.h"
@@ -66,7 +67,7 @@ namespace DRT
         void NodalBlockInformation(
             DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-        Epetra_SerialDenseMatrix ComputeNullSpace(
+        Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
             DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
         void SetupElementDefinition(

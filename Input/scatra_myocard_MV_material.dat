@@ -74,7 +74,7 @@ NODE  6  DVOL 1
 NODE  7  DVOL 1
 NODE  8  DVOL 1
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 7 TIMES 0 2 350 352 850 852 500000.0 DESCRIPTION 1 0 1 0 1 0
 -----------------------------------------------------------------NODE COORDS
 NODE 1   COORD   0.0000000000000001e-03  -5.0000000000000001e-03   5.0000000000000001e-03

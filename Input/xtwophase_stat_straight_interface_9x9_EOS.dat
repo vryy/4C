@@ -156,16 +156,16 @@ MAT       4 MAT_fluid   DYNVISCOSITY 5.0 DENSITY 10.0  //Slave   negative dom. (
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ------------------------------------------------------------FUNCT1
-FUNCTION y-0.5
+SYMBOLIC_FUNCTION_OF_SPACE_TIME y-0.5
 ------------------------------------------------------------FUNCT2
-FUNCTION 1-x
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 1-x
 ------------------------------------------------------------FUNCT3
-FUNCTION y
+SYMBOLIC_FUNCTION_OF_SPACE_TIME y
 ------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION (1-x)
-COMPONENT 1 FUNCTION y
-COMPONENT 2 FUNCTION 0
-COMPONENT 3 FUNCTION 0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1-x)
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME y
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
 ----------------------------------------------------------RESULT DESCRIPTION
 
 //Is close to interface on the negative side (larger mu)

@@ -83,7 +83,7 @@ SOLVER                          UMFPACK  // Aztec_MSR,Superlu
 ----------------------------------------------------------MATERIALS
 MAT 1   THERM_FourierIso   CAPA 420 CONDUCT 52
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 4 500000.0 DESCRIPTION t/4 1
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0

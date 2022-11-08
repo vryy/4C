@@ -11,7 +11,7 @@
 #ifndef LINALG_UTILS_NULLSPACE_H
 #define LINALG_UTILS_NULLSPACE_H
 
-#include <vector>
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 #include "../drt_lib/drt_discret.H"
 
@@ -26,7 +26,8 @@ namespace LINALG
      \param node (in):    node to calculate the nullspace on
      \param x0 (in):      center of discretization
   */
-  Epetra_SerialDenseMatrix ComputeSolid3DNullSpace(const DRT::Node& node, const double* x0);
+  Teuchos::SerialDenseMatrix<int, double> ComputeSolid3DNullSpace(
+      const DRT::Node& node, const double* x0);
 
   /*!
    \brief Helper function for the nodal nullspace of solid elements in 2D
@@ -34,7 +35,8 @@ namespace LINALG
     \param node (in):    node to calculate the nullspace on
     \param x0 (in):      center of discretization
   */
-  Epetra_SerialDenseMatrix ComputeSolid2DNullSpace(const DRT::Node& node, const double* x0);
+  Teuchos::SerialDenseMatrix<int, double> ComputeSolid2DNullSpace(
+      const DRT::Node& node, const double* x0);
 
   /*!
     \brief Helper function for the nodal nullspace of shell elements in 3D
@@ -42,7 +44,8 @@ namespace LINALG
     \param node (in):    node to calculate the nullspace on
     \param x0 (in):      center of discretization
   */
-  Epetra_SerialDenseMatrix ComputeShell3DNullSpace(DRT::Node& node, const double* x0);
+  Teuchos::SerialDenseMatrix<int, double> ComputeShell3DNullSpace(
+      DRT::Node& node, const double* x0);
 
   /*!
     \brief Helper function for the nodal nullspace of fluid elements
@@ -51,7 +54,7 @@ namespace LINALG
     \param numdof (in):  number of degrees of freedom
     \param dimnsp (in):  dimension of the nullspace
   */
-  Epetra_SerialDenseMatrix ComputeFluidNullSpace(
+  Teuchos::SerialDenseMatrix<int, double> ComputeFluidNullSpace(
       const DRT::Node& node, const int numdof, const int dimnsp);
 
 }  // namespace LINALG

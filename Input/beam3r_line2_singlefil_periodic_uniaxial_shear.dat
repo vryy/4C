@@ -101,7 +101,7 @@ DSURF  2
 E 1 - NUMDOF 9 ONOFF 1 0 0 0 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0 0 0 0
 E 2 - NUMDOF 9 ONOFF 1 0 0 0 0 0 0 0 0 VAL  1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0 0 0 0
 ----------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE expression DESCRIPTION t/2.0
 --------------------------------------------------DESIGN LINE BEAM FILAMENT CONDITIONS
 DLINE 1

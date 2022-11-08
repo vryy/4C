@@ -65,7 +65,9 @@ XML File                            = structure_solid_beam_element_gid_runtime_o
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 10.0 NUE 0.0 DENS 0.0
 MAT 2 MAT_BeamReissnerElastHyper YOUNG 10.0 POISSONRATIO 0.0 DENS 0.0 CROSSAREA 0.0915291232863769 SHEARCORR 1 MOMINPOL 0.0013333333333333335 MOMIN2 0.0006666666666666668 MOMIN3 0.0006666666666666668
 --------------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME t
+--------------------------------------------------------------------------FUNCT2
+SYMBOLIC_FUNCTION_OF_TIME t
 --------------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE 0
@@ -79,7 +81,7 @@ DSURF 1
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0 FUNCT 0 0 0
 -------------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 1
-E 2 - NUMDOF 9 ONOFF 0 0 1 0 0 0 0 0 0 VAL 0 0 0.001 0 0 0 0 0 0 FUNCT 0 0 1 0 0 0 0 0 0
+E 2 - NUMDOF 9 ONOFF 0 0 1 0 0 0 0 0 0 VAL 0 0 0.001 0 0 0 0 0 0 FUNCT 0 0 2 0 0 0 0 0 0
 --------------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0 0 0.005 FUNCT 0 0 1

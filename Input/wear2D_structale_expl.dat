@@ -89,10 +89,10 @@ MAT 3 ELAST_CoupNeoHooke YOUNG 100.0 NUE 0.3
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 1.0
 MAT 4 ELAST_CoupNeoHooke YOUNG 100.0 NUE 0.3
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 5 VALUES 0 0 -2.2
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 5 VALUES 0 1.2 1.2
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 43 QUANTITY dispmx VALUE 1.17124112817166282e-02 TOLERANCE 1e-8

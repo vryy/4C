@@ -172,14 +172,14 @@ MAT       4 MAT_fluid   DYNVISCOSITY 100.0 DENSITY 1000.0  //Slave   negative do
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 -------------------------------------------------------------FUNCT1
-FUNCTION y-1.01 //1.0 makes it seem to land on a node exactly (which leads to problems with SL)
+SYMBOLIC_FUNCTION_OF_SPACE_TIME y-1.01 //1.0 makes it seem to land on a node exactly (which leads to problems with SL)
 // -------------------------------------------------------------FUNCT2
 // -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 0.0 //(1-x)
-COMPONENT 1 FUNCTION 2.5 //(1-x)*0.1 //y
-COMPONENT 2 FUNCTION 0
-COMPONENT 3 FUNCTION 0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //(1-x)
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2.5 //(1-x)*0.1 //y
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
 -------------------------------------------------RESULT DESCRIPTION
 //close to interface
 XFLUID DIS fluid NODE 2070 QUANTITY velx VALUE 0.0 TOLERANCE 3e-14

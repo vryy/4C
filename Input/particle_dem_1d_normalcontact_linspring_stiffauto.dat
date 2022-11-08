@@ -27,9 +27,9 @@ MAX_RADIUS                      0.01
 MAX_VELOCITY                    3.0e-2
 REL_PENETRATION                 0.05
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1.0e-2*(2.0*heaviside(-x)-heaviside(x))
-COMPONENT 1 FUNCTION 0.0
-COMPONENT 2 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0e-2*(2.0*heaviside(-x)-heaviside(x))
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ParticleDEM INITRADIUS 0.01 INITDENSITY 5.0e-3
 ----------------------------------------------------------RESULT DESCRIPTION

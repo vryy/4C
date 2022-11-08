@@ -14,6 +14,7 @@
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/function_of_time.H"
 #include "../drt_lib/standardtypes_cpp.H"
 
 #include "../drt_mat/elchmat.H"
@@ -309,9 +310,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
   // this feature can be also used for stationary "pseudo time loops"
   if (curvenum >= 0)
   {
-    const double curvefac = DRT::Problem::Instance()
-                                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
-                                .EvaluateTime(time);
+    const double curvefac =
+        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(time);
     // adjust potential at metal side accordingly
     pot0 *= curvefac;
   }

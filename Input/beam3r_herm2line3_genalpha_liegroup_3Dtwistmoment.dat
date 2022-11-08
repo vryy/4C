@@ -271,5 +271,5 @@ STRUCTURE DIS structure NODE 129 QUANTITY dispx VALUE -5.07603763762558913e+02 T
 STRUCTURE DIS structure NODE 129 QUANTITY dispy VALUE  6.80357363336445701e+02 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 129 QUANTITY dispz VALUE -1.72753599573885992e+02 TOLERANCE 1e-8
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.1*t
+SYMBOLIC_FUNCTION_OF_TIME 0.1*t
 -----------------------------------------------------------------------------END

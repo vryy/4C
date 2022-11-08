@@ -412,7 +412,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectDirichField(DRT::E
     // evaluate function at current Gauss point (provide always 3D coordinates!)
     const double functfac = DRT::Problem::Instance()
                                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*func)[0] - 1)
-                                .Evaluate(0, coordgp, time);
+                                .Evaluate(coordgp, time, 0);
 
     // Creating the mass matrix and the RHS vector
     for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
@@ -1129,7 +1129,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeSour
           source += shapes_->shderxy(j * nsd_ + d, q) *
                     DRT::Problem::Instance()
                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcno - 1)
-                        .Evaluate(d, xyz.A(), time);
+                        .Evaluate(xyz.A(), time, d);
         elevec1(i) += shapes_->shfunct(i, q) * source * shapes_->jfac(q);
       }
   }
@@ -1329,7 +1329,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeNeum
         // evaluate function at current Gauss point (provide always 3D coordinates!)
         functfac = DRT::Problem::Instance()
                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                       .Evaluate(0, coordgpref, time);
+                       .Evaluate(coordgpref, time, 0);
       }
       else
         functfac = 1.;
@@ -1642,11 +1642,11 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT
 
       phi = DRT::Problem::Instance()
                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(*start_func - 1)
-                .Evaluate(0, xyz, 0);
+                .Evaluate(xyz, 0, 0);
       for (unsigned int i = 0; i < nsd_; ++i)
         gradphi[i] = DRT::Problem::Instance()
                          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(*start_func - 1)
-                         .Evaluate(1 + i, xyz, 0);
+                         .Evaluate(xyz, 0, 1 + i);
 
       // now fill the components in the one-sided mass matrix and the right hand side
       for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
@@ -1697,7 +1697,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT
       double trphi;
       trphi = DRT::Problem::Instance()
                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(*start_func - 1)
-                  .Evaluate(nsd_ + 1, xyz, 0);
+                  .Evaluate(xyz, 0, nsd_ + 1);
 
       // now fill the components in the mass matrix and the right hand side
       for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
@@ -2170,10 +2170,10 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = highshapes.xyzreal(idim, q);
     double funct =
         DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(func - 1).Evaluate(
-            0, xsi.A(), time);
+            xsi.A(), time, 0);
     std::vector<double> deriv = DRT::Problem::Instance()
                                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(func - 1)
-                                    .EvaluateSpatialDerivative(0, xsi.A(), time);
+                                    .EvaluateSpatialDerivative(xsi.A(), time, 0);
 
     error_phi += std::pow((funct - phi), 2) * highshapes.jfac(q);
     exact_phi += std::pow(funct, 2) * highshapes.jfac(q);

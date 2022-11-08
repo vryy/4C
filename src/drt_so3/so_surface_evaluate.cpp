@@ -15,6 +15,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/function_of_time.H"
 #include "../drt_lib/prestress_service.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -326,7 +327,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
               // evaluate function at current gauss point
               functfac = DRT::Problem::Instance()
                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                             .Evaluate(dof, coordgpref, time);
+                             .Evaluate(coordgpref, time, dof);
             }
             else
               functfac = 1.0;
@@ -373,7 +374,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
           // evaluate function at current gauss point
           functfac = DRT::Problem::Instance()
                          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                         .Evaluate(0, coordgpref, time);
+                         .Evaluate(coordgpref, time, 0);
         }
 
         const double fac = intpoints.qwgt[gp] * functfac * ortho_value * normalfac;
@@ -449,7 +450,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
             // evaluate function at current gauss point
             functfac = DRT::Problem::Instance()
                            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                           .Evaluate(0, coordgpref, time);
+                           .Evaluate(coordgpref, time, 0);
           }
           else
             functfac = 1.0;
@@ -1705,30 +1706,29 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       {
         if ((*numfuncnonlinstiff)[i] == 0)
         {
-          springstiff[i] =
-              (*numfuncstiff)[i] != 0
-                  ? springstiff[i] *
-                        DRT::Problem::Instance()
-                            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*numfuncstiff)[i] - 1)
-                            .EvaluateTime(time)
-                  : springstiff[i];
+          springstiff[i] = (*numfuncstiff)[i] != 0
+                               ? springstiff[i] * DRT::Problem::Instance()
+                                                      ->FunctionById<DRT::UTILS::FunctionOfTime>(
+                                                          (*numfuncstiff)[i] - 1)
+                                                      .Evaluate(time)
+                               : springstiff[i];
         }
       }
 
       for (auto i = 0U; i < numfuncvisco->size(); ++i)
         dashpotvisc[i] = (*numfuncvisco)[i] != 0
                              ? dashpotvisc[i] * DRT::Problem::Instance()
-                                                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                                    ->FunctionById<DRT::UTILS::FunctionOfTime>(
                                                         (*numfuncvisco)[i] - 1)
-                                                    .EvaluateTime(time)
+                                                    .Evaluate(time)
                              : dashpotvisc[i];
 
       for (auto i = 0U; i < numfuncdisploffset->size(); ++i)
         disploffset[i] = (*numfuncdisploffset)[i] != 0
                              ? disploffset[i] * DRT::Problem::Instance()
-                                                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                                    ->FunctionById<DRT::UTILS::FunctionOfTime>(
                                                         (*numfuncdisploffset)[i] - 1)
-                                                    .EvaluateTime(time)
+                                                    .Evaluate(time)
                              : disploffset[i];
 
       // type of Robin conditions
@@ -1936,12 +1936,12 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
                   force_disp = DRT::Problem::Instance()
                                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
                                        (*numfuncnonlinstiff)[dim] - 1)
-                                   .Evaluate(0, displ, time);
+                                   .Evaluate(displ, time, 0);
 
                   force_disp_deriv = (DRT::Problem::Instance()
                                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
                                               (*numfuncnonlinstiff)[dim] - 1)
-                                          .EvaluateSpatialDerivative(0, displ, time))[dim];
+                                          .EvaluateSpatialDerivative(displ, time, 0))[dim];
                 }
 
                 // velocity related forces and derivatives
@@ -2016,12 +2016,12 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
                 force_disp = DRT::Problem::Instance()
                                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
                                      (*numfuncnonlinstiff)[0] - 1)
-                                 .Evaluate(0, displ, time);
+                                 .Evaluate(displ, time, 0);
 
                 force_disp_deriv = (DRT::Problem::Instance()
                                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
                                             (*numfuncnonlinstiff)[0] - 1)
-                                        .EvaluateSpatialDerivative(0, displ, time))[0];
+                                        .EvaluateSpatialDerivative(displ, time, 0))[0];
               }
 
               // velocity related forces

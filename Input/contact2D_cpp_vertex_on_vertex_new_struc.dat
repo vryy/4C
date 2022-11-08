@@ -97,10 +97,10 @@ MAT 3 ELAST_CoupNeoHooke YOUNG 10000.0 NUE 0.22//0.22205
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 1.0
 MAT 4 ELAST_CoupNeoHooke YOUNG 10000.0 NUE 0.22//0.22205
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.2 1 VALUES 0 10 10
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 4 VALUES 0 0 10
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1

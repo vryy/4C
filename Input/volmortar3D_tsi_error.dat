@@ -208,9 +208,9 @@ MAT 2 THERM_FourierIso CAPA 1.0 CONDUCT 1030.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 20*(1-exp(-0.1*x*x-0.1*y*y))
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 20*(1-exp(-0.1*x*x-0.1*y*y))
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 273.15 //0°C
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 273.15 //0°C
 ----------------------------------------------------------RESULT DESCRIPTION
 THERMAL DIS thermo NODE 1611 QUANTITY temp VALUE 1.29069907586992461e+01 TOLERANCE 1.0e-8 NAME temp_out
 THERMAL DIS thermo NODE 1741 QUANTITY temp VALUE 8.39156169718515343e+00 TOLERANCE 1.0e-8 NAME temp_in

@@ -58,10 +58,10 @@ void DRT::ELEMENTS::So_sh8p8Type::NodalBlockInformation(
   np = 1;
 }
 
-Epetra_SerialDenseMatrix DRT::ELEMENTS::So_sh8p8Type::ComputeNullSpace(
+Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::So_sh8p8Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace;
+  Teuchos::SerialDenseMatrix<int, double> nullspace;
   dserror("method ComputeNullSpace not implemented!");
   return nullspace;
 }

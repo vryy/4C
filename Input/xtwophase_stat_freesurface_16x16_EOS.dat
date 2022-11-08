@@ -205,12 +205,12 @@ MAT 4 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1000.0 GAMMA 0.0 //Slave   negative d
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
 // Levelset cut
-FUNCTION y-0.8
+SYMBOLIC_FUNCTION_OF_SPACE_TIME y-0.8
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 0.0
-COMPONENT 1 FUNCTION 0.0
-COMPONENT 2 FUNCTION 0.0
-COMPONENT 3 FUNCTION 0.0 // pressure
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 // pressure
 ----------------------------------------------------------RESULT DESCRIPTION
 //In air
 XFLUID DIS fluid NODE 87 QUANTITY velx VALUE 0.0 TOLERANCE 1e-9

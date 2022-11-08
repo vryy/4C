@@ -59,23 +59,10 @@ namespace DRT::UTILS
     TranslatedFunction(
         Teuchos::RCP<FunctionOfSpaceTime> origin, Teuchos::RCP<FunctionOfSpaceTime> local);
 
-    double Evaluate(int index, const double* x, double t) override;
+    double Evaluate(const double* x, double t, std::size_t component) override;
 
-    /**
-     * \brief Evaluate time derivative and value of the translated function
-     *
-     * Evaluate the specified component of the translated function at the specified position and
-     * point in time and calculate the time derivative.
-     *
-     * @param index (i) For vector-valued functions, index defines the function-component which
-     *                  should be evaluated
-     * @param x     (i) The point in 3-dimensional space in which the function will be evaluated
-     * @param t     (i) The point in time in which the function will be evaluated
-     * @param deg   (i) maximum time derivative degree, has to be 0 or 1 for this implementation
-       @return vector containing value and derivative
-     */
     std::vector<double> EvaluateTimeDerivative(
-        int index, const double* x, double t, unsigned deg) override;
+        const double* x, double t, unsigned deg, std::size_t component) override;
 
     //! number of spatial dimensions required to shift the origin
     const static int nsd_originTranslation = 3;

@@ -39,13 +39,13 @@ SOLVER                          UMFPACK
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.02
 MAT 2 ELAST_CoupNeoHooke YOUNG 3.0E2 NUE 0.3
 ------------------------------------------------------------FUNCT1
-FUNCTION (cos(y/(1.5+20.0*(1-t)))-1)*(1.5+20.0*(1-t))
+SYMBOLIC_FUNCTION_OF_SPACE_TIME (cos(y/(1.5+20.0*(1-t)))-1)*(1.5+20.0*(1-t))
 ------------------------------------------------------------FUNCT2
-FUNCTION sin(y/(1.5+20.0*(1-t)))*(1.5+20.0*(1-t))-y
+SYMBOLIC_FUNCTION_OF_SPACE_TIME sin(y/(1.5+20.0*(1-t)))*(1.5+20.0*(1-t))-y
 ------------------------------------------------------------FUNCT3
-FUNCTION y/(1.5+20.0*(1-t))
+SYMBOLIC_FUNCTION_OF_SPACE_TIME y/(1.5+20.0*(1-t))
 ------------------------------------------------------------FUNCT4
-FUNCTION -(-sin(y/(1.5+20.0*(1-t)))*(1.5+x+(1-t)*20.0)+cos(y/(1.5+20.0*(1-t)))*y)
+SYMBOLIC_FUNCTION_OF_SPACE_TIME -(-sin(y/(1.5+20.0*(1-t)))*(1.5+x+(1-t)*20.0)+cos(y/(1.5+20.0*(1-t)))*y)
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 88 QUANTITY dispx VALUE -3.58183735546291418e-02 TOLERANCE 3.6e-10
 STRUCTURE DIS structure NODE 88 QUANTITY dispy VALUE  4.99458755738765997e-02 TOLERANCE 5.0e-10

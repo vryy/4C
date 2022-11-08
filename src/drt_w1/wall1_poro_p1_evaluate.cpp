@@ -953,7 +953,7 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList
           // evaluate function at current gauss point
           functfac = DRT::Problem::Instance()
                          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                         .Evaluate(i, coordgpref, time);
+                         .Evaluate(coordgpref, time, i);
         }
 
         ar[i] = fac * (*val)[i] * functfac;

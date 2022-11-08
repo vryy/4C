@@ -182,14 +182,14 @@ MAT 2 MAT_scatra DIFFUSIVITY 0.0
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
 // initial G-function
-FUNCTION sqrt((x-0.8)*(x-0.8)+(y-0.8)*(y-0.8))-0.4
+SYMBOLIC_FUNCTION_OF_SPACE_TIME sqrt((x-0.8)*(x-0.8)+(y-0.8)*(y-0.8))-0.4
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION y*(1.6-y)/(0.8*0.8)
-COMPONENT 1 FUNCTION 0.0 //0.01*x // 0.0100051*x
-COMPONENT 2 FUNCTION 0.0
-COMPONENT 3 FUNCTION 4.5-2.0*x/(0.8*0.8)*0.1 // pressure
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME y*(1.6-y)/(0.8*0.8)
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //0.01*x // 0.0100051*x
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 4.5-2.0*x/(0.8*0.8)*0.1 // pressure
 ----------------------------------------------------------------------FUNCT3
-FUNCTION (-2.0*y+1.6)/(0.8*0.8)*0.1
+SYMBOLIC_FUNCTION_OF_SPACE_TIME (-2.0*y+1.6)/(0.8*0.8)*0.1
 ----------------------------------------------------------RESULT DESCRIPTION
 //This test case should give same result as xfluid_forward_facing_step_stationary_16x16.dat
 XFLUID DIS fluid NODE 255 QUANTITY velx VALUE 9.99961073052980987e-01 TOLERANCE 1e-11

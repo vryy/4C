@@ -16,6 +16,7 @@
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_utils_densematrix_eigen.H"
 #include "../drt_lib/tensor_transformation.H"
+#include "../drt_lib/function_of_time.H"
 
 #include "../drt_mat/material.H"
 #include "../drt_mat/membrane_elasthyper.H"
@@ -575,8 +576,8 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
     const int functnum = (tmp_funct) ? (*tmp_funct)[i] : -1;
     if (functnum > 0)
       functfacs[i] = DRT::Problem::Instance()
-                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                         .EvaluateTime(time);
+                         ->FunctionById<DRT::UTILS::FunctionOfTime>(functnum - 1)
+                         .Evaluate(time);
   }
 
   // determine current pressure

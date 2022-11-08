@@ -88,15 +88,15 @@ MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 // MAT_Struct_StVenantKirchhoff
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0 THEXPANS 0.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 5.0// -1.0 //101.0 //0.01*(-y) // 0.0100051*(-y)
-COMPONENT 1 FUNCTION 0.0 //0.01*x // 0.0100051*x
-COMPONENT 2 FUNCTION 0.0
-COMPONENT 3 FUNCTION 0.0 // pressure
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 5.0// -1.0 //101.0 //0.01*(-y) // 0.0100051*(-y)
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //0.01*x // 0.0100051*x
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 // pressure
 --------------------------------------------FUNCT2 // initial solid velocity
-                         COMPONENT 0 FUNCTION 5.0// -1.0  //101.0 //0.01*(-y) // 0.0100051*(-y)
-                         COMPONENT 1 FUNCTION 0.0  //0.01*x // 0.0100051*x
-                         COMPONENT 2 FUNCTION 0.0
-                         COMPONENT 3 FUNCTION 0.0  // pressure
+                         COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 5.0// -1.0  //101.0 //0.01*(-y) // 0.0100051*(-y)
+                         COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0  //0.01*x // 0.0100051*x
+                         COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+                         COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0  // pressure
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4
 NDLINE 10

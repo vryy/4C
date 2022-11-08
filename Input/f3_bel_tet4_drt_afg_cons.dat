@@ -5860,10 +5860,10 @@ BELTRAMI c1 1.0
 ------------------------------------------------------------FUNCT2
 BELTRAMI c1 2.0
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION -pi/4.0*(exp(pi/4.0*x)*sin(pi/4.0*y+pi/2.0*z)+exp(pi/4.0*z)*cos(pi/4.0*x+pi/2.0*y))*exp(-0.001*pi*pi/4.0*t)
-COMPONENT 1 FUNCTION -pi/4.0*(exp(pi/4.0*y)*sin(pi/4.0*z+pi/2.0*x)+exp(pi/4.0*x)*cos(pi/4.0*y+pi/2.0*z))*exp(-0.001*pi*pi/4.0*t)
-COMPONENT 2 FUNCTION -pi/4.0*(exp(pi/4.0*z)*sin(pi/4.0*x+pi/2.0*y)+exp(pi/4.0*y)*cos(pi/4.0*z+pi/2.0*x))*exp(-0.001*pi*pi/4.0*t)
-COMPONENT 3 FUNCTION -pi*pi/32.0*1.0*(exp(2*pi/4.0*x)+exp(2*pi/4.0*y)+exp(2*pi/4.0*z)+2*sin(pi/4.0*x+pi/2.0*y)*cos(pi/4.0*z+pi/2.0*x)*exp(pi/4.0*(y+z))+2*sin(pi/4.0*y+pi/2.0*z)*cos(pi/4.0*x+pi/2.0*y)*exp(pi/4.0*(z+x))+2*sin(pi/4.0*z+pi/2.0*x)*cos(pi/4.0*y+pi/2.0*z)*exp(pi/4.0*(x+y)))*exp(-2.0*0.001*pi*pi/4.0*t)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME -pi/4.0*(exp(pi/4.0*x)*sin(pi/4.0*y+pi/2.0*z)+exp(pi/4.0*z)*cos(pi/4.0*x+pi/2.0*y))*exp(-0.001*pi*pi/4.0*t)
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME -pi/4.0*(exp(pi/4.0*y)*sin(pi/4.0*z+pi/2.0*x)+exp(pi/4.0*x)*cos(pi/4.0*y+pi/2.0*z))*exp(-0.001*pi*pi/4.0*t)
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME -pi/4.0*(exp(pi/4.0*z)*sin(pi/4.0*x+pi/2.0*y)+exp(pi/4.0*y)*cos(pi/4.0*z+pi/2.0*x))*exp(-0.001*pi*pi/4.0*t)
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME -pi*pi/32.0*1.0*(exp(2*pi/4.0*x)+exp(2*pi/4.0*y)+exp(2*pi/4.0*z)+2*sin(pi/4.0*x+pi/2.0*y)*cos(pi/4.0*z+pi/2.0*x)*exp(pi/4.0*(y+z))+2*sin(pi/4.0*y+pi/2.0*z)*cos(pi/4.0*x+pi/2.0*y)*exp(pi/4.0*(z+x))+2*sin(pi/4.0*z+pi/2.0*x)*cos(pi/4.0*y+pi/2.0*z)*exp(pi/4.0*(x+y)))*exp(-2.0*0.001*pi*pi/4.0*t)
 ----------------------------------------------------------RESULT DESCRIPTION
 //FLUID SPECIAL 1
 FLUID DIS fluid NODE 39 QUANTITY velx VALUE -7.87401035739955346e-01 TOLERANCE 1e-8

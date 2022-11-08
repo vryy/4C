@@ -19,6 +19,7 @@
 #include "../drt_lib/drt_discret.H"  // for time curve in body force
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"  // consistency check of formulation and material
+#include "../drt_lib/function_of_time.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
 
@@ -410,9 +411,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
   // this feature can be also used for stationary "pseudo time loops"
   if (functnum >= 0)
   {
-    const double functfac = DRT::Problem::Instance()
-                                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum)
-                                .EvaluateTime(time);
+    const double functfac =
+        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(functnum).Evaluate(time);
 
     // adjust potential at metal side accordingly
     pot0 *= functfac;

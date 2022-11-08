@@ -35,7 +35,8 @@ For a detailed description see:
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"  // for debug plotting with gmsh
 #include "../drt_fem_general/drt_utils_integration.H"         // for debug plotting with gmsh
 #include "../drt_lib/drt_utils.H"                             // for debug plotting with gmsh
-#include "../drt_inpar/inpar_structure.H"                     // for pstime
+#include "../drt_lib/function_of_time.H"
+#include "../drt_inpar/inpar_structure.H"  // for pstime
 #include "../drt_lib/prestress_service.H"
 
 /*----------------------------------------------------------------------*
@@ -998,8 +999,8 @@ void MAT::ConstraintMixture::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
       // numbering starts from zero here, thus use curvenum-1
       if (curvenum)
         curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum - 1)
-                       .EvaluateTime(time);
+                       ->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum - 1)
+                       .Evaluate(time);
       if (curvefac > (1.0 + eps) || curvefac < (0.0 - eps))
         dserror("correct your time curve for prestretch, just values in [0,1] are allowed %f",
             curvefac);
@@ -1480,8 +1481,8 @@ void MAT::ConstraintMixture::EvaluateElastin(const LINALG::Matrix<NUM_STRESS_3D,
     // numbering starts from zero here, thus use curvenum-1
     if (curvenum)
       curvefac = DRT::Problem::Instance()
-                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum - 1)
-                     .EvaluateTime(time);
+                     ->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum - 1)
+                     .Evaluate(time);
     if (curvefac > 1.0 || curvefac < 0.0)
       dserror(
           "correct your time curve for prestretch, just values in [0,1] are allowed %f", curvefac);

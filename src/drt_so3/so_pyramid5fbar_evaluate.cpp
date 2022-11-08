@@ -718,7 +718,7 @@ int DRT::ELEMENTS::So_pyramid5fbar::EvaluateNeumann(Teuchos::ParameterList& para
       const double functfac =
           (functnum > 0) ? DRT::Problem::Instance()
                                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                               .Evaluate(dim, xrefegp.A(), time)
+                               .Evaluate(xrefegp.A(), time, dim)
                          : 1.0;
       const double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * functfac;
       for (int nodid = 0; nodid < NUMNOD_SOP5; ++nodid)

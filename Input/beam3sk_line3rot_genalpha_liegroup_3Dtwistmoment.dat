@@ -402,6 +402,6 @@ STRUCTURE DIS structure NODE 129 QUANTITY dispx VALUE -5.07603761554488869e+02 T
 STRUCTURE DIS structure NODE 129 QUANTITY dispy VALUE  6.80357363025804716e+02 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 129 QUANTITY dispz VALUE -1.72753599003603767e+02 TOLERANCE 1e-8
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1.0 10.0 VALUES 0 0.1 0.1
 ---------------------------------------------------------------END

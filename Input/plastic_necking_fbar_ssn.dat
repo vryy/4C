@@ -68,7 +68,7 @@ MAT 1 MAT_PlasticElastHyper NUMMAT 2 MATIDS 2 3 DENS 1.0 INITYIELD 0.45 ISOHARD 
 MAT 2 ELAST_IsoNeoHooke MUE 80.19379845
 MAT 3 ELAST_VolOgden KAPPA 164.2063492 BETA -2.0
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  5

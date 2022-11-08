@@ -153,7 +153,7 @@ MAT 30 ELAST_CoupNeoHooke YOUNG 2.1e4 NUE 0.0
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 SRC_FIELD structure SRC_MAT 3 TAR_FIELD thermo TAR_MAT 4
 ------------------------------------------------------------FUNCT1
-FUNCTION 293.0
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 293.0
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0

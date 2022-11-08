@@ -183,7 +183,7 @@ SUB_SOLVER2                     3
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 7.8e-6
 MAT 2 ELAST_CoupNeoHooke YOUNG 10 NUE 0.3
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 2000 VALUES 0 2 2
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 180 QUANTITY dispx VALUE 3.92176628029872298e-01 TOLERANCE 1e-10

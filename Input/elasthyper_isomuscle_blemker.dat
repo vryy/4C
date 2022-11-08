@@ -97,7 +97,7 @@ NDLINE  0
 NDSURF  2
 NDVOL   0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.001 0.002 VALUES 0 0 0.1
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2

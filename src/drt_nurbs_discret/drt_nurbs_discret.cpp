@@ -605,7 +605,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
         // important: position has to have always three components!!
         functimederivfac = DRT::Problem::Instance()
                                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
-                               .EvaluateTimeDerivative(rr, position.Values(), time, deg);
+                               .EvaluateTimeDerivative(position.Values(), time, deg, rr);
       }
 
       // apply factors to Dirichlet value
@@ -755,11 +755,11 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
         // important: position has to have always three components!!
         functimederivfac = DRT::Problem::Instance()
                                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
-                               .EvaluateTimeDerivative(rr, position.Values(), time, deg);
+                               .EvaluateTimeDerivative(position.Values(), time, deg, rr);
 
         functfac = DRT::Problem::Instance()
                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
-                       .Evaluate(rr, position.Values(), time);
+                       .Evaluate(position.Values(), time, rr);
       }
 
       // apply factors to Dirichlet value

@@ -51,9 +51,9 @@ MAT 110 MAT_scatra_reaction NUMSCAL 3 STOICH 1 0 0 REACCOEFF 1.0  COUPLING simpl
 MAT 111 MAT_scatra_reaction NUMSCAL 3 STOICH 0 1 0 REACCOEFF 1.0  COUPLING simple_multiplicative ROLE 0 0 1
 MAT 112 MAT_scatra_reaction NUMSCAL 3 STOICH 0 0 1 REACCOEFF -12.0  COUPLING simple_multiplicative ROLE 0 1 0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.795774715459477*(sin(x)*sin(y))
-COMPONENT 1 FUNCTION 0.795774715459477*3*(cos(x+3*t)*sin(y+3*t)+sin(x+3*t)*cos(y+3*t))
-COMPONENT 2 FUNCTION (0.795774715459477*18)*(-sin(x+3*t)*sin(y+3*t)+cos(x+3*t)*cos(y+3*t))
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.795774715459477*(sin(x)*sin(y))
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.795774715459477*3*(cos(x+3*t)*sin(y+3*t)+sin(x+3*t)*cos(y+3*t))
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME (0.795774715459477*18)*(-sin(x+3*t)*sin(y+3*t)+cos(x+3*t)*cos(y+3*t))
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  0.0000000000000000e+00  0.0000000000000000e+00  0.0000000000000000e+00
 NODE         2 COORD  5.0000000000000000e-01  0.0000000000000000e+00  0.0000000000000000e+00

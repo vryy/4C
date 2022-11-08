@@ -48,7 +48,7 @@ MAT 121 ELAST_CoupAnisoExpoActive K1 7.6 K2 11.4 GAMMA 0.0 K1COMP 7.6 K2COMP 11.
 MAT 41 ELAST_IsoNeoHooke MUE 72.0
 MAT 100 ELAST_StructuralTensor STRATEGY Standard
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 10.0 500000.0 DESCRIPTION 0.1*t 1
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1609 QUANTITY dispy VALUE -3.36250169344546430e-05 TOLERANCE 1e-8

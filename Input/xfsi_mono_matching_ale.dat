@@ -121,9 +121,9 @@ MAT 3 MAT_ElastHyper NUMMAT 1 MATIDS 13 DENS 1 //Seal_EH
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 3
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t*2000
+SYMBOLIC_FUNCTION_OF_SPACE_TIME t*2000
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION y-0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME y-0.0
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  0

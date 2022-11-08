@@ -115,7 +115,7 @@ STRUCTURE SPECIAL QUANTITY num_iter_step_1 VALUE 5.0 TOLERANCE 1.0e-20
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.1
 MAT 2 ELAST_CoupLogNeoHooke MODE YN C1 1 C2 0.0       // C1 = Young, C2 = nue
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION ramp
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME ramp
 VARIABLE 0 NAME ramp TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1.0 10.0 VALUES 0 1.2 1.2
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2

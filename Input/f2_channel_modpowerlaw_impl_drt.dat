@@ -93,7 +93,7 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_modpowerlaw MCONS 0.42 DELTA 0.001 AEXP 0.39 DENSITY 1.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION y*(1-y)*v
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME y*(1-y)*v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0 0.5 10000 DESCRIPTION (1-cos(2*t*pi))/2.0 1
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4

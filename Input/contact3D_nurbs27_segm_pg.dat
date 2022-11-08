@@ -61,15 +61,15 @@ MAT 10   ELAST_CoupNeoHooke YOUNG 2 NUE 0.3
 MAT 2   MAT_ElastHyper   NUMMAT 1 MATIDS 20 DENS 0.1
 MAT 20   ELAST_CoupNeoHooke YOUNG 1 NUE 0.3
 ------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION (x*cos(1.0*(t-1.0))+y*sin(1.0*(-t+1.0))-x)*v
-COMPONENT 1 FUNCTION (x*sin(1.0*(t-1.0))+y*cos(1.0*(t-1.0))-y)*v
-COMPONENT 2 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (x*cos(1.0*(t-1.0))+y*sin(1.0*(-t+1.0))-x)*v
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME (x*sin(1.0*(t-1.0))+y*cos(1.0*(t-1.0))-y)*v
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 10.0 DESCRIPTION 0.0 1.0
 ------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION v
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 10.0 DESCRIPTION 5.0*t 5.0
 ------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION v
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 10.0 DESCRIPTION 0.0 1.0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2

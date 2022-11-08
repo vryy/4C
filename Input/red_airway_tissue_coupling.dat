@@ -85,7 +85,7 @@ MAT 5 ELAST_Iso1Pow C 10000 D 3
 //MAT 5 ELAST_IsoCub C 10000
 MAT 3 MAT_fluid DYNVISCOSITY 0.00001523 DENSITY 0.000001176 GAMMA 1.0
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1000*(1-cos(3*pi*t/3))
+SYMBOLIC_FUNCTION_OF_TIME 1000*(1-cos(3*pi*t/3))
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         3
 NDLINE                          0

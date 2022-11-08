@@ -62,9 +62,9 @@ SOLVER                          UMFPACK                         // Aztec_MSR vm3
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 0.01
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.5
-COMPONENT 1 FUNCTION 0.5
-COMPONENT 2 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.5
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.5
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1265 QUANTITY phi1 VALUE 5.65262708281948911e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 569 QUANTITY phi1 VALUE 4.86300567208149848e-01 TOLERANCE 1e-10

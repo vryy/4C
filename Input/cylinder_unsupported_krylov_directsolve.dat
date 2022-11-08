@@ -28,7 +28,7 @@ MAT 5 ELAST_IsoAnisoExpo K1 917.175E3 K2 10.6 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 I
 MAT 6 ELAST_IsoAnisoExpo K1 917.175E3 K2 10.6 GAMMA -35.0 K1COMP 0.0 K2COMP 1.0 INIT 1 ADAPT_ANGLE No STR_TENS_ID 100
 MAT 100 ELAST_StructuralTensor STRATEGY Standard
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 5 100 VALUES 0 1 1
 ----------------------------------------------------------RESULT DESCRIPTION
 // free at top/bottom

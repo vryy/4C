@@ -642,7 +642,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
               uanalyt(d, 0) =
                   DRT::Problem::Instance()
                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                      .Evaluate(d, xgp.A(), finaltime);
+                      .Evaluate(xgp.A(), finaltime, d);
 
             // set strains to zero
             strainanalyt(0, 0) = 0.0;
@@ -1126,7 +1126,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
         // evaluate function at current gauss point
         functfac = DRT::Problem::Instance()
                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                       .Evaluate(i, coordgpref, time);
+                       .Evaluate(coordgpref, time, i);
       }
 
       ar[i] = fac * (*onoff)[i] * (*val)[i] * functfac;

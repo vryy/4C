@@ -74,11 +74,10 @@ void DRT::ELEMENTS::WallQuad4PoroP1Type::NodalBlockInformation(
   nv = 2;
 }
 
-Epetra_SerialDenseMatrix DRT::ELEMENTS::WallQuad4PoroP1Type::ComputeNullSpace(
+Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::WallQuad4PoroP1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
-  return nullspace;
+  return LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
 int DRT::ELEMENTS::WallQuad4PoroP1Type::Initialize(DRT::Discretization& dis)
@@ -154,11 +153,10 @@ void DRT::ELEMENTS::WallQuad9PoroP1Type::NodalBlockInformation(
   nv = 2;
 }
 
-Epetra_SerialDenseMatrix DRT::ELEMENTS::WallQuad9PoroP1Type::ComputeNullSpace(
+Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::WallQuad9PoroP1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
-  return nullspace;
+  return LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
 int DRT::ELEMENTS::WallQuad9PoroP1Type::Initialize(DRT::Discretization& dis)
@@ -235,11 +233,10 @@ void DRT::ELEMENTS::WallTri3PoroP1Type::NodalBlockInformation(
   nv = 2;
 }
 
-Epetra_SerialDenseMatrix DRT::ELEMENTS::WallTri3PoroP1Type::ComputeNullSpace(
+Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::WallTri3PoroP1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
-  return nullspace;
+  return LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
 int DRT::ELEMENTS::WallTri3PoroP1Type::Initialize(DRT::Discretization& dis)

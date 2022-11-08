@@ -100,7 +100,7 @@ SOLVER                          Aztec_MSR
 MAT 1 THERM_FourierVar CAPAFUNCT 3 2 3 CONDUCTFUNCT 5 4 5 CONSOLMAT 2
 MAT 2 MAT_Consolidation SOLIDUS 17 LIQUIDUS 23 LATENTHEAT 338e6
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 10
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 10
 ----------------------------------------------------------------------FUNCT2
 // melt capa
 FASTPOLYNOMIAL NUMCOEFF 1 COEFF 1.7620e+06

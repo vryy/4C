@@ -417,7 +417,7 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::DiscretizationInterface& d
         if (funct_num > 0)
           functimederivfac = DRT::Problem::Instance()
                                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funct_num - 1)
-                                 .EvaluateTimeDerivative(onesetj, actnode->X(), time, deg);
+                                 .EvaluateTimeDerivative(actnode->X(), time, deg, onesetj);
       }
 
       // apply factors to Dirichlet value

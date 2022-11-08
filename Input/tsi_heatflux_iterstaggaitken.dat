@@ -153,7 +153,7 @@ MAT 2 THERM_FourierIso CAPA 420 CONDUCT 52
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t*1000/5
+SYMBOLIC_FUNCTION_OF_SPACE_TIME t*1000/5
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0

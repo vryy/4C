@@ -13,6 +13,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/function_of_time.H"
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_mat/stvenantkirchhoff.H"
@@ -212,9 +213,8 @@ int DRT::ELEMENTS::Truss3CL::EvaluateNeumann(Teuchos::ParameterList& params,
   // amplitude of load curve at current time called
   double functfac = 1.0;
   if (functnum >= 0)  // notation for this function similar to Crisfield, Volume 1;
-    functfac = DRT::Problem::Instance()
-                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum)
-                   .EvaluateTime(time);
+    functfac =
+        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(functnum).Evaluate(time);
 
   // jacobian determinant
   double det = lrefe_ / 2;

@@ -336,7 +336,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
                 initialval(rr) =
                     DRT::Problem::Instance()
                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                        .Evaluate(rr, position.Values(), 0.0);
+                        .Evaluate(position.Values(), 0.0, rr);
               }
 
 
@@ -464,7 +464,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
                 initialval(rr) =
                     DRT::Problem::Instance()
                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                        .Evaluate(rr, position.Values(), 0.0);
+                        .Evaluate(position.Values(), 0.0, rr);
               }
 
               // check for degenerated elements

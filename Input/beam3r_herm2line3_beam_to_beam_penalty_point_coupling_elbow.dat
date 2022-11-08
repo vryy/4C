@@ -68,7 +68,7 @@ XML File                            = beam3r_herm2line3_beam_to_beam_penalty_poi
 -----------------------------------------------------------------------MATERIALS
 MAT 1 MAT_BeamReissnerElastHyper YOUNG 1000 POISSONRATIO 0.0 DENS 0.0 CROSSAREA 0.031415926535897934 SHEARCORR 1 MOMINPOL 0.00015707963267948968 MOMIN2 7.853981633974484e-05 MOMIN3 7.853981633974484e-05
 --------------------------------------------------------------------------FUNCT1
-FUNCTION t
+SYMBOLIC_FUNCTION_OF_TIME t
 --------------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 6
 NDLINE 1

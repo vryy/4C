@@ -16,6 +16,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/function_of_time.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_inpar/inpar_structure.H"
@@ -346,8 +347,8 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
 
       if (functnum >= 0)
         functfac[i] = DRT::Problem::Instance()
-                          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                          .EvaluateTime(time);
+                          ->FunctionById<DRT::UTILS::FunctionOfTime>(functnum - 1)
+                          .Evaluate(time);
     }
 
 
@@ -548,7 +549,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
           // evaluate function at the position of the current node       --> dof here correct?
           functionfac = DRT::Problem::Instance()
                             ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                            .Evaluate(dof, &X_ref[0], time);
+                            .Evaluate(&X_ref[0], time, dof);
         }
         else
           functionfac = 1.0;
@@ -3116,8 +3117,8 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
 
     if (functnum >= 0)
       functfac[i] = DRT::Problem::Instance()
-                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                        .EvaluateTime(time);
+                        ->FunctionById<DRT::UTILS::FunctionOfTime>(functnum - 1)
+                        .Evaluate(time);
   }
 
   // get values and switches from the condition

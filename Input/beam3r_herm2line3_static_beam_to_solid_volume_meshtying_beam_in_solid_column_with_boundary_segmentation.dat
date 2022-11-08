@@ -239,5 +239,5 @@ NODE   53   COORD   0   0   1.24
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0e+09 NUE 0.0 DENS 7.80E-6 THEXPANS 0.0
 MAT 2 MAT_BeamReissnerElastHyper  YOUNG 1.0e+09 POISSONRATIO 0.3 DENS 1.0 CROSSAREA 7.853981634e-5 SHEARCORR 1.0 MOMINPOL 9.817477e-8 MOMIN2 4.90874e-10 MOMIN3 4.90874e-10
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ---------------------------------------------------------------END

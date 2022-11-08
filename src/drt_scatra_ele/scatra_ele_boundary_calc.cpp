@@ -450,7 +450,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateNeumann(DRT::FaceElem
           // evaluate function at current Gauss point (provide always 3D coordinates!)
           functfac = DRT::Problem::Instance()
                          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                         .Evaluate(dof, coordgpref, time);
+                         .Evaluate(coordgpref, time, dof);
         }
         else
           functfac = 1.;
@@ -2258,7 +2258,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WeakDirichlet(DRT::FaceEleme
 
       functfac = DRT::Problem::Instance()
                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-                     .Evaluate(0, &(coordgp3D[0]), time);
+                     .Evaluate(&(coordgp3D[0]), time, 0);
     }
     else
       functfac = 1.0;

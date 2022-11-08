@@ -87,11 +87,11 @@ MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10 NUE 0.35 DENS 0.1
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 4*pi
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 4*pi
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION (x+0.5)*t
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (x+0.5)*t
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi VALUE 0.4 TOLERANCE 1e-7
 SCATRA DIS scatra NODE 2 QUANTITY phi VALUE 0.4 TOLERANCE 1e-7

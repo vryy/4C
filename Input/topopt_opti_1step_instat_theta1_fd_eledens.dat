@@ -104,29 +104,29 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD opti TAR_MAT 2
 MAT 1 MAT_fluid DYNVISCOSITY 2.0 DENSITY 3.0
 MAT 2 MAT_opti MINPORO 0 MAXPORO 5 SMEARFAC 1
 ------------------------------------------------FUNCT1 // initial flow field
-COMPONENT 0 FUNCTION x*x+2*x*y*t
-COMPONENT 1 FUNCTION -y*y*t-2*x*y
-COMPONENT 2 FUNCTION 2*x*x*t-x*y
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME x*x+2*x*y*t
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME -y*y*t-2*x*y
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2*x*x*t-x*y
 ---------------------------------------------FUNCT2 // initial density field
-COMPONENT 0 FUNCTION 0.0 // 1=fluid,0=no fluid
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 // 1=fluid,0=no fluid
 ---------------------------------------------FUNCT3 // initial adjoint field
-COMPONENT 0 FUNCTION 0
-COMPONENT 1 FUNCTION 0
-COMPONENT 2 FUNCTION 0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
 -------------------------------FUNCT4 // x-component of fluid inflow profile
-COMPONENT 0 FUNCTION x*x+2*x*y*t
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME x*x+2*x*y*t
 -------------------------------FUNCT5 // y-component of fluid inflow profile
-COMPONENT 0 FUNCTION -y*y*t-2*x*y
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME -y*y*t-2*x*y
 ------------------------------------------FUNCT6 // bodyforce in x-direction
-COMPONENT 0  FUNCTION (5*x*x+10*x*y*t+4*x*t-y-2*2)/3+2*x*y+(2*x+2*y*t)*(x*x+2*x*y*t)+2*x*t*(-y*y*t-2*x*y)
+COMPONENT 0  SYMBOLIC_FUNCTION_OF_SPACE_TIME (5*x*x+10*x*y*t+4*x*t-y-2*2)/3+2*x*y+(2*x+2*y*t)*(x*x+2*x*y*t)+2*x*t*(-y*y*t-2*x*y)
 ------------------------------------------FUNCT7 // bodyforce in y-direction
-COMPONENT 0  FUNCTION (-5*y*y*t-10*x*y-x+2*2*t)/3-y*y-2*y*(x*x+2*x*y*t)+(-2*x-2*y*t)*(-y*y*t-2*x*y)
+COMPONENT 0  SYMBOLIC_FUNCTION_OF_SPACE_TIME (-5*y*y*t-10*x*y-x+2*2*t)/3-y*y-2*y*(x*x+2*x*y*t)+(-2*x-2*y*t)*(-y*y*t-2*x*y)
 ------------------------------------------------FUNCT8 // NBC in x-direction
-COMPONENT 0  FUNCTION -2*x*x*t+x*y+2*(4*x+4*y*t)
+COMPONENT 0  SYMBOLIC_FUNCTION_OF_SPACE_TIME -2*x*x*t+x*y+2*(4*x+4*y*t)
 ------------------------------------------------FUNCT9 // NBC in y-direction
-COMPONENT 0  FUNCTION 2*(2*x*t-2*y)
+COMPONENT 0  SYMBOLIC_FUNCTION_OF_SPACE_TIME 2*(2*x*t-2*y)
 ------------------------------------------------FUNCT10 // pressure
-COMPONENT 0  FUNCTION 2*x*x*t-x*y
+COMPONENT 0  SYMBOLIC_FUNCTION_OF_SPACE_TIME 2*x*x*t-x*y
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          3

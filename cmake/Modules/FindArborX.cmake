@@ -8,7 +8,7 @@ if(BACI_WITH_ARBORX)
   fetchcontent_declare(
     arborx
     GIT_REPOSITORY https://github.com/arborx/ArborX.git
-    GIT_TAG v1.2
+    GIT_TAG dc372874ce4d1ec756de2503a30c293e2fd0776b #v1.2
     )
   fetchcontent_makeavailable(arborx)
 

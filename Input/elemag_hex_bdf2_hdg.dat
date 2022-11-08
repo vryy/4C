@@ -43,16 +43,16 @@ AZREUSE                         5
 MAT 0   MAT_Electromagnetic   CONDUCTIVITY 0 PERMITTIVITY 1.732050808 PERMEABILITY 1.732050808
 
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0
-COMPONENT 1 FUNCTION 0
-COMPONENT 2 FUNCTION 0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION -sin(pi*x)*cos(pi*y)*cos(pi*z)*cos(pi*t)
-COMPONENT 1 FUNCTION 2*cos(pi*x)*sin(pi*y)*cos(pi*z)*cos(pi*t)
-COMPONENT 2 FUNCTION -cos(pi*x)*cos(pi*y)*sin(pi*z)*cos(pi*t)
-COMPONENT 3 FUNCTION -sqrt(3)*cos(pi*x)*sin(pi*y)*sin(pi*z)*sin(pi*t)
-COMPONENT 4 FUNCTION 0
-COMPONENT 5 FUNCTION sqrt(3)*sin(pi*x)*sin(pi*y)*cos(pi*z)*sin(pi*t)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME -sin(pi*x)*cos(pi*y)*cos(pi*z)*cos(pi*t)
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2*cos(pi*x)*sin(pi*y)*cos(pi*z)*cos(pi*t)
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME -cos(pi*x)*cos(pi*y)*sin(pi*z)*cos(pi*t)
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME -sqrt(3)*cos(pi*x)*sin(pi*y)*sin(pi*z)*sin(pi*t)
+COMPONENT 4 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 5 SYMBOLIC_FUNCTION_OF_SPACE_TIME sqrt(3)*sin(pi*x)*sin(pi*y)*cos(pi*z)*sin(pi*t)
 
 ------------------------------------------------RESULT DESCRIPTION
 ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric-rel VALUE 2.52651704990570991e-01 TOLERANCE 1e-6

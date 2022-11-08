@@ -13,6 +13,7 @@
 
 #include "constraintpenalty.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/function_of_time.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_densematrix_communication.H"
 
@@ -217,9 +218,9 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& params
       if (curve) curvenum = (*curve)[0];
       double curvefac = 1.0;
       if (curvenum >= 0)
-        curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenum)
-                       .EvaluateTime(time);
+        curvefac =
+            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
+                time);
 
       double diff = (curvefac * (*initerror_)[condID - 1] - (*acterror_)[condID - 1]);
 

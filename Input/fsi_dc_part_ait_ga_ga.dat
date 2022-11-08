@@ -7054,7 +7054,7 @@ MAT 5 ELAST_CoupNeoHooke YOUNG 250.0 NUE 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1-cos(2*pi*0.2*t)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1-cos(2*pi*0.2*t)
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1834 QUANTITY dispx VALUE -3.34920672276418737e-05 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 1834 QUANTITY dispy VALUE -3.63727504237473982e-04 TOLERANCE 1e-12

@@ -77,9 +77,9 @@ SOLVER                          UMFPACK
 MAT 1 MAT_PlasticElastHyper NUMMAT 1 MATIDS 2 DENS 1.0  INITYIELD 0.275 ISOHARD 0.1 PL_SPIN_CHI -50 rY_11 1.0 rY_22 0.99544 rY_33 0.99544 rY_12 0.65161 rY_23 0.57385 rY_13 0.65161
 MAT 2 ELAST_CoupNeoHooke YOUNG 210.0 NUE 0.3
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION (-x/sqrt(x*x+y*y))*t
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (-x/sqrt(x*x+y*y))*t
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION (-y/sqrt(x*x+y*y))*t
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (-y/sqrt(x*x+y*y))*t
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  5

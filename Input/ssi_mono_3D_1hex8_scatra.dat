@@ -51,11 +51,11 @@ MAT 4 MAT_InelasticDefgradNoGrowth
 ----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
 ------------------------------------------------------------FUNCT1
-FUNCTION 1.0
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
 ------------------------------------------------------------FUNCT2
-FUNCTION 0.5*(1.0-cos(pi*t))*heaviside(1.0-t)+heaviside(t-1.0)
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.5*(1.0-cos(pi*t))*heaviside(1.0-t)+heaviside(t-1.0)
 ------------------------------------------------------------FUNCT3
-FUNCTION heaviside(t-1.0)
+SYMBOLIC_FUNCTION_OF_SPACE_TIME heaviside(t-1.0)
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi VALUE  1.45286725596158783e+00 TOLERANCE 1.5e-08
 SCATRA DIS scatra NODE 2 QUANTITY phi VALUE  1.45286725596158828e+00 TOLERANCE 1.5e-08

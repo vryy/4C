@@ -33,9 +33,9 @@ BOUNDARYPARTICLEFORMULATION     AdamiBoundaryFormulation
 BOUNDARYPARTICLEINTERACTION     NoSlipBoundaryParticle
 TRANSPORTVELOCITYFORMULATION    StandardTransportVelocity
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION (a*x-b*y)+0.2*t
-COMPONENT 1 FUNCTION (b*x+a*y)
-COMPONENT 2 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (a*x-b*y)+0.2*t
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME (b*x+a*y)
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 2 TIMES 0.0 100.0 DESCRIPTION cos(2.0*t)-1.0
 VARIABLE 1 NAME b TYPE multifunction NUMPOINTS 2 TIMES 0.0 100.0 DESCRIPTION sin(2.0*t)
 -------------------------------------------------------------------MATERIALS

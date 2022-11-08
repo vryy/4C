@@ -56,11 +56,10 @@ void DRT::ELEMENTS::So_hex18Type::NodalBlockInformation(
   nv = 3;
 }
 
-Epetra_SerialDenseMatrix DRT::ELEMENTS::So_hex18Type::ComputeNullSpace(
+Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::So_hex18Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Epetra_SerialDenseMatrix nullspace = LINALG::ComputeSolid3DNullSpace(node, x0);
-  return nullspace;
+  return LINALG::ComputeSolid3DNullSpace(node, x0);
 }
 
 void DRT::ELEMENTS::So_hex18Type::SetupElementDefinition(
@@ -678,7 +677,7 @@ int DRT::ELEMENTS::So_hex18::EvaluateNeumann(Teuchos::ParameterList& params,
         const double functfac =
             (functnum > 0) ? DRT::Problem::Instance()
                                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                 .Evaluate(dim, xrefegp.A(), time)
+                                 .Evaluate(xrefegp.A(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
         for (int nodid = 0; nodid < NUMNOD_SOH18; ++nodid)

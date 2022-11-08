@@ -165,7 +165,7 @@ MAT 4 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1.0  //0.0022 or 1.0 (for convergence
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
 // initial G-function field
-FUNCTION sqrt((x-0.0)*(x-0.0)+(y+1.0)*(y+1.0))-0.3 //y-0.05*cos(2*pi*x)
+SYMBOLIC_FUNCTION_OF_SPACE_TIME sqrt((x-0.0)*(x-0.0)+(y+1.0)*(y+1.0))-0.3 //y-0.05*cos(2*pi*x)
 ----------------------------------------------------------RESULT DESCRIPTION
 //node: 4213 is top of bubble
 XFLUID DIS fluid NODE 4213 QUANTITY velx VALUE 0.0000000000e+00 TOLERANCE 1e-8

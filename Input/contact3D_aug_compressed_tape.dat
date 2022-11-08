@@ -109,7 +109,7 @@ MAT 203 ELAST_StructuralTensor STRATEGY Standard
 MAT 3 MAT_ElastHyper NUMMAT 1 MATIDS 101 DENS 0.001
 MAT 301 ELAST_CoupLogNeoHooke MODE YN C1 1.0  C2 0.0                       // C1 = E, C2 = nu
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.3*t
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.3*t
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 2638 QUANTITY dispx VALUE -8.43946679652821477e-04 TOLERANCE 1.0e-08
 STRUCTURE DIS structure NODE 2638 QUANTITY dispy VALUE 6.24831930369289246e-02 TOLERANCE 1.0e-08

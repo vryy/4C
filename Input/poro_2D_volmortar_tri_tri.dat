@@ -110,22 +110,22 @@ MAT 3 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 0.01 TYPE Darcy
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1.0/(0.5-0.2*sin(0.2*pi*x))
-COMPONENT 1 FUNCTION 0.0
-COMPONENT 2 FUNCTION 0.5-0.2*sin(0.2*pi*x)-0.5/(1.0+0.1*pi*sin(0.2*pi*x))
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0/(0.5-0.2*sin(0.2*pi*x))
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.5-0.2*sin(0.2*pi*x)-0.5/(1.0+0.1*pi*sin(0.2*pi*x))
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION (1+pi/10*sin(pi/5*x)-0.04*cos(pi/5*x)*pi+1/100*pi^2*cos(pi/5*x)/(1+pi/10*sin(0.2*pi*x))^2)*a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1+pi/10*sin(pi/5*x)-0.04*cos(pi/5*x)*pi+1/100*pi^2*cos(pi/5*x)/(1+pi/10*sin(0.2*pi*x))^2)*a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.02 1 5000000 VALUES 0 1 1 1
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION 0.5
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.5
 ----------------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION 0.5*(1+cos(pi/5*x))
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.5*(1+cos(pi/5*x))
 ----------------------------------------------------------------------FUNCT5
-                         COMPONENT 0 FUNCTION 0.5*(1+cos(pi/5*x))
-                         COMPONENT 1 FUNCTION 0.0
-                         COMPONENT 2 FUNCTION 0.5-0.2*sin(pi/5*x)
+                         COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.5*(1+cos(pi/5*x))
+                         COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
+                         COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.5-0.2*sin(pi/5*x)
 ----------------------------------------------------------------------FUNCT6
-COMPONENT 0 FUNCTION 0.02*0.16*pi
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.02*0.16*pi
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS porofluid NODE 400 QUANTITY velx VALUE 1.62194513642199212e+00 TOLERANCE 1e-8
 FLUID DIS porofluid NODE 500 QUANTITY pressure VALUE -1.55677849836899761e-02 TOLERANCE 1e-8

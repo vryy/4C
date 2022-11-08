@@ -97,10 +97,10 @@ XML File                            = beam3eb_static_beam_to_solid_volume_meshty
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 0.0
 MAT 2 MAT_BeamKirchhoffTorsionFreeElastHyper YOUNG 100 DENS 0.0 CROSSAREA 0.12566370614359174 MOMIN 0.0012566370614359175
 --------------------------------------------------------------------------FUNCT1
-FUNCTION 1*a
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 1*a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.5 1.0 11.0 VALUES 0.0 0.0 10.0
 --------------------------------------------------------------------------FUNCT2
-FUNCTION 1*a
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 1*a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0.0 0.5 VALUES 0.0 1.0
 --------------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2

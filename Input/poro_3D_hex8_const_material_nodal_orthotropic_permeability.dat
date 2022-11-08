@@ -91,7 +91,7 @@ MAT 3 MAT_FluidPoro DYNVISCOSITY 1.0e-6 DENSITY 1.0e3 TYPE Darcy PERMEABILITYFUN
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t/0.2
+SYMBOLIC_FUNCTION_OF_SPACE_TIME t/0.2
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2

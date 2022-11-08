@@ -50,9 +50,9 @@ MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 1.0
 ----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1 // r
-COMPONENT 1 FUNCTION 0 // wx
-COMPONENT 2 FUNCTION 0 // wy
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1 // r
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0 // wx
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0 // wy
 ------------------------------------------------------------FUNCT2
 WEAKLYCOMPRESSIBLE_ETIENNE_CFD MAT 1
 ------------------------------------------------------------FUNCT3
@@ -60,8 +60,8 @@ WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE MAT 1
 ------------------------------------------------------------FUNCT4
 WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY MAT 1
 ------------------------------------------------------------FUNCT5
-COMPONENT 0 FUNCTION 0                                // ux
-COMPONENT 1 FUNCTION ((1-10*x^2*(x-1/2)*(x-1)^2)-1)*y // uy
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0                                // ux
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME ((1-10*x^2*(x-1/2)*(x-1)^2)-1)*y // uy
 ------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 1 QUANTITY L2errmix VALUE 3.09082364982271422e-02 TOLERANCE 1e-09
 FLUID DIS fluid NODE 1 QUANTITY L2errden VALUE 4.58185598265013781e-09 TOLERANCE 1e-12

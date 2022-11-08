@@ -61,16 +61,16 @@ MAT 3 MAT_ion DIFFUSIVITY 1.0e-4 VALENCE  1.0
 MAT 4 MAT_ion DIFFUSIVITY 5.0e-4 VALENCE -2.0
 MAT 5 MAT_ion DIFFUSIVITY 1.0e-3 VALENCE  1.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.1 //initial concentration field: µmol/mm^3
-COMPONENT 1 FUNCTION 0.15 //initial concentration field: µmol/mm^3
-COMPONENT 2 FUNCTION 0.2 //initial concentration field: µmol/mm^3
-COMPONENT 3 FUNCTION 0.0 //initial potential field:
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.1 //initial concentration field: µmol/mm³
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.15 //initial concentration field: µmol/mm³
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.2 //initial concentration field: µmol/mm³
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial potential field:
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 0.0 //initial x-vel. field
-COMPONENT 1 FUNCTION 0.0 //initial y-vel. field
-COMPONENT 2 FUNCTION 0.0 //initial pres. field
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial x-vel. field
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial y-vel. field
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial pres. field
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES -1 0.0 0.1 123456789 DESCRIPTION 0 0.5*(sin((t*pi/0.1)-(pi/2)))+0.5 0.5*(sin((0.1*pi/0.1)-(pi/2)))+0.5
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 9.09810445767753190e-02 TOLERANCE 1e-11

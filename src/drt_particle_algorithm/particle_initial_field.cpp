@@ -112,7 +112,7 @@ void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
       {
         // evaluate function to set initial field
         for (int dim = 0; dim < statedim; ++dim)
-          state[statedim * i + dim] = function.Evaluate(dim, &(pos[posstatedim * i]), 0.0);
+          state[statedim * i + dim] = function.Evaluate(&(pos[posstatedim * i]), 0.0, dim);
       }
     }
   }

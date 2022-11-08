@@ -30,7 +30,7 @@ CALCFLUX_BOUNDARY_LUMPED        No
 -----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 1.0e-3 REACOEFF 0 SCNUM 0 DENSIFICATION 0
 -------------------------------------------------RESULT DESCRIPTION

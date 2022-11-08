@@ -52,7 +52,7 @@ SOLVER                          Superlu//UMFPACK
 // Exponential model
 MAT 1 MAT_Struct_SuperElastSMA YOUNG 60000 DENS 0.0001 NUE 0.3 EPSILON_L 0.005 T_AS_s 0 T_AS_f 0 T_SA_s 0 T_SA_f 0 C_AS 0 C_SA 0 SIGMA_AS_s 520 SIGMA_AS_f 750 SIGMA_SA_s 550 SIGMA_SA_f 200 ALPHA 0.15 MODEL 1 BETA_AS 250 BETA_SA 20
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.005 0.01 VALUES 0 1 0
 ------------------------------------------------DESIGN DESCRIPTION
 NDLINE  0

@@ -205,13 +205,13 @@ MAT 2 MAT_scatra DIFFUSIVITY 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION -(sqrt((x+0.0)*(x+0.0)+(y-0.0)*(y-0.0))-0.45)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME -(sqrt((x+0.0)*(x+0.0)+(y-0.0)*(y-0.0))-0.45)
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION sqrt((x+0.0)*(x+0.0)+(y-0.0)*(y-0.0))-0.205
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME sqrt((x+0.0)*(x+0.0)+(y-0.0)*(y-0.0))-0.205
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION -1.0*(x+0.0)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME -1.0*(x+0.0)
 ----------------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION 1.0*y
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0*y
 ----------------------------------------------------------------------FUNCT5
 TAYLORCOUETTEFLOW RADIUS_I 0.205 RADIUS_O 0.45 VEL_THETA_I 0.0 VEL_THETA_O 0.45 SLIPLENGTH_I 1.0 SLIPLENGTH_O 0.0 TRACTION_THETA_I 0.0 TRACTION_THETA_O 0.0 VISCOSITY 1.0
 ----------------------------------------------------------RESULT DESCRIPTION

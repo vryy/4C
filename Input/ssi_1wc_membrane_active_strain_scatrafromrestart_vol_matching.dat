@@ -86,9 +86,9 @@ MAT 112 MAT_scatra_reaction NUMSCAL 3 STOICH 0 0 1 REACCOEFF -12.0  COUPLING sim
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 11
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.795774715459477*(sin(x)*sin(y))
-COMPONENT 1 FUNCTION 0.795774715459477*3*(cos(x+3*t)*sin(y+3*t)+sin(x+3*t)*cos(y+3*t))
-COMPONENT 2 FUNCTION (0.795774715459477*18)*(-sin(x+3*t)*sin(y+3*t)+cos(x+3*t)*cos(y+3*t))
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.795774715459477*(sin(x)*sin(y))
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.795774715459477*3*(cos(x+3*t)*sin(y+3*t)+sin(x+3*t)*cos(y+3*t))
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME (0.795774715459477*18)*(-sin(x+3*t)*sin(y+3*t)+cos(x+3*t)*cos(y+3*t))
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  4

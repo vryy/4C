@@ -26,7 +26,7 @@ TRANSFER_EVERY                  no
 PHASE_TO_DYNLOADBALFAC          phase1 1.0 phase2 1.0
 PARTICLE_WALL_SOURCE            DiscretCondition
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 1 1000 DESCRIPTION 0.5*(1.0-cos((t*pi)/1.0)) 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
 PARTICLEWALL DIS particlewalls NODE 17 QUANTITY posx VALUE 1.3333333333333341e-01 TOLERANCE 1.e-10

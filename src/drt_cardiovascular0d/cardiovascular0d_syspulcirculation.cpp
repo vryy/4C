@@ -14,6 +14,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/function_of_time.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -152,12 +153,12 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
   double y_at_r_np = 0.0;
   if (Atrium_act_curve_l_ >= 0 && usetime)
     y_at_l_np = DRT::Problem::Instance()
-                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(Atrium_act_curve_l_ - 1)
-                    .EvaluateTime(tim);
+                    ->FunctionById<DRT::UTILS::FunctionOfTime>(Atrium_act_curve_l_ - 1)
+                    .Evaluate(tim);
   if (Atrium_act_curve_r_ >= 0 && usetime)
     y_at_r_np = DRT::Problem::Instance()
-                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(Atrium_act_curve_r_ - 1)
-                    .EvaluateTime(tim);
+                    ->FunctionById<DRT::UTILS::FunctionOfTime>(Atrium_act_curve_r_ - 1)
+                    .Evaluate(tim);
   // 0D time-varying atrial elastance
   double E_at_l_np = 0.;
   double E_at_r_np = 0.;
@@ -167,12 +168,12 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
   double y_v_r_np = 0.0;
   if (Ventricle_act_curve_l_ >= 0 && usetime)
     y_v_l_np = DRT::Problem::Instance()
-                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(Ventricle_act_curve_l_ - 1)
-                   .EvaluateTime(tim);
+                   ->FunctionById<DRT::UTILS::FunctionOfTime>(Ventricle_act_curve_l_ - 1)
+                   .Evaluate(tim);
   if (Ventricle_act_curve_r_ >= 0 && usetime)
     y_v_r_np = DRT::Problem::Instance()
-                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(Ventricle_act_curve_r_ - 1)
-                   .EvaluateTime(tim);
+                   ->FunctionById<DRT::UTILS::FunctionOfTime>(Ventricle_act_curve_r_ - 1)
+                   .Evaluate(tim);
   // 0D time-varying ventricular elastance
   double E_v_l_np = 0.;
   double E_v_r_np = 0.;
@@ -181,28 +182,26 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
   double E_at_l_prescr_np = 0.0;
   double E_at_r_prescr_np = 0.0;
   if (Atrium_prescr_E_curve_l_ >= 0 && usetime)
-    E_at_l_prescr_np =
-        DRT::Problem::Instance()
-            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(Atrium_prescr_E_curve_l_ - 1)
-            .EvaluateTime(tim);
+    E_at_l_prescr_np = DRT::Problem::Instance()
+                           ->FunctionById<DRT::UTILS::FunctionOfTime>(Atrium_prescr_E_curve_l_ - 1)
+                           .Evaluate(tim);
   if (Atrium_prescr_E_curve_r_ >= 0 && usetime)
-    E_at_r_prescr_np =
-        DRT::Problem::Instance()
-            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(Atrium_prescr_E_curve_r_ - 1)
-            .EvaluateTime(tim);
+    E_at_r_prescr_np = DRT::Problem::Instance()
+                           ->FunctionById<DRT::UTILS::FunctionOfTime>(Atrium_prescr_E_curve_r_ - 1)
+                           .Evaluate(tim);
   // prescribed ventricular elastances
   double E_v_l_prescr_np = 0.0;
   double E_v_r_prescr_np = 0.0;
   if (Ventricle_prescr_E_curve_l_ >= 0 && usetime)
     E_v_l_prescr_np =
         DRT::Problem::Instance()
-            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(Ventricle_prescr_E_curve_l_ - 1)
-            .EvaluateTime(tim);
+            ->FunctionById<DRT::UTILS::FunctionOfTime>(Ventricle_prescr_E_curve_l_ - 1)
+            .Evaluate(tim);
   if (Ventricle_prescr_E_curve_r_ >= 0 && usetime)
     E_v_r_prescr_np =
         DRT::Problem::Instance()
-            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(Ventricle_prescr_E_curve_r_ - 1)
-            .EvaluateTime(tim);
+            ->FunctionById<DRT::UTILS::FunctionOfTime>(Ventricle_prescr_E_curve_r_ - 1)
+            .Evaluate(tim);
 
 
   switch (atrium_model_)

@@ -184,13 +184,13 @@ NODE 34 COORD -9.5e-03  0.0  5.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_BeamKirchhoffElastHyper YOUNG 1.0e+09 SHEARMOD 5.0e+08 DENS 0.001 CROSSAREA 3.1415926535897936e-04 MOMINPOL 1.5707963267948969e-08 MOMIN2 7.8539816339744844e-09 MOMIN3 7.8539816339744844e-09 FAD yes
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 5.0 DESCRIPTION 0 1.0-cos(0.25*2*pi*(t-1.0)/1.0)
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 5.0 DESCRIPTION 0 sin(0.25*2*pi*(t-1.0)/1.0)
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1 5 VALUES 0 1 1
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE -1.89945342754654807e-02 TOLERANCE 1e-8

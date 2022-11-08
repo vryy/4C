@@ -127,13 +127,13 @@ VARFUNCTION gamma_t_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1
 ----------------------------------------------------------------------FUNCT2
 VARFUNCTION gamma_t_necr*(w_nl_crit-phi1)/(w_nl_env-w_nl_crit)*heaviside((w_nl_crit-phi1)/(w_nl_env-w_nl_crit))*(1-phi2)*porosity*S1*heaviside(S1-0.1) NUMCONSTANTS 3 CONSTANTS gamma_t_necr 5.5e-9 w_nl_crit 1e-06 w_nl_env 4.2e-06
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION 50/(1.0+exp(-600.0*(-sqrt(x*x)+3.0)))
-COMPONENT 1 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 50/(1.0+exp(-600.0*(-sqrt(x*x)+3.0)))
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION 4.2e-06
-COMPONENT 1 FUNCTION 0.0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 4.2e-06
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------------------FUNCT5
-COMPONENT 0 FUNCTION 250/(1.0+exp(-600.0*(-sqrt(x*x)+3.0)))*l
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 250/(1.0+exp(-600.0*(-sqrt(x*x)+3.0)))*l
 VARIABLE 0 NAME l TYPE multifunction NUMPOINTS 2 TIMES 0.0 9000 DESCRIPTION t/(1800*5)
 VARIABLE 0 NAME l TYPE multifunction NUMPOINTS 2 TIMES 9000 12600 DESCRIPTION 1
 ------------------------------------------------DESIGN DESCRIPTION

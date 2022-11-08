@@ -95,7 +95,7 @@ SOLVER                          UMFPACK                       //Aztec_MSR
 MAT 1 THERM_FourierVar CAPAFUNCT 2 3 2 CONDUCTFUNCT 5 4 5 CONSOLMAT 2
 MAT 2 MAT_Consolidation SOLIDUS 17 LIQUIDUS 23 LATENTHEAT 338e6
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 10
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 10
 ----------------------------------------------------------------------FUNCT2
 FASTPOLYNOMIAL NUMCOEFF 1 COEFF 4.2260e+06
 //VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 9 TIMES -1000 17.00 18.00 19.00 20.00 21.00 22.00 23.00 100000 DESCRIPTION 4.2260e+06 2.78586667e+07*t^2+(-9.47194667e+08)*t+(8.05538067e+09) 5.57173333e+07*t+(-9.70827333e+08) -2.78586667e+07*t^2+(1.11434667e+09)*t+(-1.10278060e+10) -2.84746667e+07*t^2+(1.13898667e+09)*t+(-1.12742060e+10) -5.69493333e+07*t+(1.28312200e+09) 2.84746667e+07*t^2+(-1.30983467e+09)*t+(1.50648607e+10) 1.7620e+06
@@ -106,7 +106,7 @@ FASTPOLYNOMIAL NUMCOEFF 1 COEFF 2.22
 ----------------------------------------------------------------------FUNCT5
 FASTPOLYNOMIAL                  NUMCOEFF 1 COEFF 0.556
 ----------------------------------------------------------------------FUNCT6
-COMPONENT                       0 FUNCTION 20000*(0.5-x)
+COMPONENT                       0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 20000*(0.5-x)
 ----------------------------------------------------------RESULT DESCRIPTION
 THERMAL DIS thermo NODE 1 QUANTITY temp VALUE  1.99462527522632314e+02 TOLERANCE 1e-11
 THERMAL DIS thermo NODE 10 QUANTITY temp VALUE  1.64757707973687246e+02 TOLERANCE 1e-12

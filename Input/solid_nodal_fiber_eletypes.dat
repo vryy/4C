@@ -30,7 +30,7 @@ MAT 20   ELAST_CoupNeoHooke YOUNG 10 NUE 0.25
 // Structural tensor strategy
 MAT 1000 ELAST_StructuralTensor STRATEGY Standard
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE 1.72871863594663866e+00 TOLERANCE 1e-7
 STRUCTURE DIS structure NODE 9 QUANTITY dispy VALUE 1.35485950493457880e-01 TOLERANCE 1e-7

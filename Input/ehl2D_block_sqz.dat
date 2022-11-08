@@ -235,9 +235,9 @@ MAT 20 ELAST_CoupNeoHooke YOUNG 1.0e1 NUE 0.0
 MAT 3 MAT_lubrication LUBRICATIONLAWID 30 DENSITY 1.0
 MAT 30 MAT_lubrication_law_constant VISCOSITY 8.0E-8
 ------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION  t*t
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME  t*t
 ------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 0.2*t
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.2*t
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  1

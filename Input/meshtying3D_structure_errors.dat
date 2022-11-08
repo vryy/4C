@@ -130,7 +130,7 @@ ML_DAMPCOARSE                   1.0                           // damping coarse 
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.3 DENS 0.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION y
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME y
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1000 QUANTITY dispx VALUE -6.12072407984568315e-03 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 1000 QUANTITY dispy VALUE -3.42035348413691626e-02 TOLERANCE 1e-8

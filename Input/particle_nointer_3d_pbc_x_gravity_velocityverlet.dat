@@ -26,7 +26,7 @@ GRAVITY_RAMP_FUNCT              1
 TRANSFER_EVERY                  no
 PHASE_TO_DYNLOADBALFAC          phase1 1.0 phase2 1.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
+SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 1 1000 DESCRIPTION 0.5*(1.0-cos((t*pi)/1.0)) 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
 PARTICLE ID 2 QUANTITY posx VALUE -3.63212669757120077e-01 TOLERANCE 1.0e-12

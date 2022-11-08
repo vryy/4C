@@ -68,11 +68,11 @@ MAT 162 ELAST_IsoNeoHooke MUE 72.0
 MAT 163 ELAST_VolSussmanBathe KAPPA 720.0 // penalty parameter needed for incompressibility !!! The penalty parameter will be multiplicated with the mass fraction !!!
 MAT 169 MIX_Prestress_Strategy_Cylinder INNER_RADIUS 10.0e-3 WALL_THICKNESS 1.4099822832e-3 AXIAL_PRESTRETCH 1.25 CIRCUMFERENTIAL_PRESTRETCH 1.34 PRESSURE 13332.2668
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0
-COMPONENT 1 FUNCTION 0
-COMPONENT 2 FUNCTION atan(x/y)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME atan(x/y)
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION exp(-(t/(101*365.25)))-0.5*(1.0-exp(-(t/40.0)))*exp(-0.5*(100*(fabs(z)-0.09))^2)
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME exp(-(t/(101*365.25)))-0.5*(1.0-exp(-(t/40.0)))*exp(-0.5*(100*(fabs(z)-0.09))^2)
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1
 NDLINE                          1

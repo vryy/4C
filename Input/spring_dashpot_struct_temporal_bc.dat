@@ -35,9 +35,9 @@ SOLVER                          UMFPACK
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 1000
 MAT 2 ELAST_CoupSVK YOUNG 1e9 NUE 0.2
 ------------------------------------------------------------FUNCT1
-FUNCTION 0.5*(1-cos(t*pi/25))
+SYMBOLIC_FUNCTION_OF_TIME 0.5*(1-cos(t*pi/25))
 ------------------------------------------------------------FUNCT2
-FUNCTION heaviside(25-t)*(1-1/25*t)
+SYMBOLIC_FUNCTION_OF_TIME heaviside(25-t)*(1-1/25*t)
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  5

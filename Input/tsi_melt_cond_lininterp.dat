@@ -144,7 +144,7 @@ MAT 3 MAT_Consolidation SOLIDUS 60 LIQUIDUS 80
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 1
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 10
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 10
 ----------------------------------------------------------------------FUNCT2
 FASTPOLYNOMIAL NUMCOEFF 1 COEFF 10
 ----------------------------------------------------------------------FUNCT3
@@ -155,7 +155,7 @@ FASTPOLYNOMIAL NUMCOEFF 1 COEFF 50
 FASTPOLYNOMIAL                  NUMCOEFF 1 COEFF 100
 ----------------------------------------------------------------------FUNCT6
 // left thermo dirichlet
-COMPONENT                       0 FUNCTION 20*sin(7*t)+70
+COMPONENT                       0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 20*sin(7*t)+70
 ----------------------------------------------------------------------FUNCT7
 FASTPOLYNOMIAL NUMCOEFF 1 COEFF 0
 ----------------------------------------------------------RESULT DESCRIPTION
