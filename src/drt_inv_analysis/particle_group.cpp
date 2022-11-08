@@ -206,11 +206,6 @@ void INVANA::ParticleGroup::DrawInitialStates()
     // if successfull set to ParticleData
     it->second->SetState(sample);
     it->second->SetData(posterior, prior);
-
-#if INVANA_DEBUG_PRINTING
-    std::string name = "sample" + std::to_string(it->first) + ".mtl";
-    LINALG::PrintVectorInMatlabFormat(name, sample);
-#endif
   }
 
   // lets wait here

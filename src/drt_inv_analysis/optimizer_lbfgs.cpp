@@ -63,18 +63,6 @@ void INVANA::OptimizerLBFGS::Integrate()
 
   // solve initially to get quantities:
   Evaluate(GetObjFunctVal(), GetGradient());
-
-  // check gradient by fd:
-#if 0
-    std::cout << "gradient: " << std::endl;
-    PrintDataToScreen(*GetGradient());
-    EvaluateGradientFD();
-
-    std::cout << "gradient approx: " << std::endl;
-    PrintDataToScreen(*GetGradient());
-    exit(0);
-#endif
-
   UpdateGradient();
 
   // get search direction from gradient:

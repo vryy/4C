@@ -563,18 +563,6 @@ void INVANA::MatParManagerPerPatch::MakeHistogram()
       if ((data[j] >= histvalues_[i]) && (data[j] < histvalues_[i + 1])) histbins_[i] += 1;
     }
   }
-
-#if 0
-  // print histogram
-  std::cout << "histogram: ";
-  for (int i=0; i<nbins; i++)
-    std::cout << histbins_[i] << ", ";
-  std::cout << std::endl;
-  for (int i=0; i<nbins; i++)
-    std::cout << histvalues_[i] << " " << histvalues_[i+1] << ", ";
-  std::cout << std::endl;
-#endif
-
   return;
 }
 

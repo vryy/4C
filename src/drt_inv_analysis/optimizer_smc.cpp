@@ -93,10 +93,6 @@ void INVANA::OptimizerSMC::SetupParticles()
   Teuchos::RCP<Epetra_Vector> mean =
       Teuchos::rcp(new Epetra_Vector(*(*OptProb()->InitialGuess()->Mean())(0)));
 
-#if INVANA_DEBUG_PRINTING
-  LINALG::PrintVectorInMatlabFormat("mean.mtl", *mean);
-#endif
-
   // construct the prior evaluator
   double covscale = Inpar().get<double>("MAP_PRIOR_SCALE");
   Teuchos::RCP<INVANA::LogLikePrior> prior = Teuchos::rcp(new INVANA::LogLikePrior());

@@ -9,12 +9,6 @@
 #ifndef INVANA_UTILS_H
 #define INVANA_UTILS_H
 
-#if 0
-#define INVANA_DEBUG_PRINTING 1
-#else
-#define INVANA_DEBUG_PRINTING 0
-#endif
-
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
 #include "chol_factor_base.H"
