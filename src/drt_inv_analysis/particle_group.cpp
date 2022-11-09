@@ -7,9 +7,23 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <list>
-
 #include "particle_group.H"
+
+#include "invana_base.H"
+#include "invana_utils.H"
+#include "likelihood_evaluation.H"
+#include "metropolis_kernel.H"
+#include "particle_comm.H"
+#include "particle_data.H"
+
+#include "../drt_lib/drt_globalproblem.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
+
+#include <iomanip>
+#include <list>
+#include <random>
+#include <stdexcept>
+#include <cfenv>
 
 
 /*----------------------------------------------------------------------*/

@@ -12,28 +12,12 @@
 
 #include <map>
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
-#include "Epetra_Map.h"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
+#include <Epetra_Map.h>
+#include <Teuchos_ParameterList.hpp>
 
 #include "mpi.h"
-
-#include "particle_data.H"
-#include "particle_comm.H"
-#include "likelihood_evaluation.H"
-#include "invana_base.H"
-#include "metropolis_kernel.H"
-#include "invana_utils.H"
-
-#include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-
-#include <random>
-#include <stdexcept>
-#include <iomanip>
-
-#include <fenv.h>
 
 namespace INVANA
 {

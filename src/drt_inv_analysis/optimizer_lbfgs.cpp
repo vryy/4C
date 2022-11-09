@@ -7,8 +7,19 @@
 */
 /*----------------------------------------------------------------------*/
 
+#include "DcsMatrix.H"
+#include "invana_base.H"
+#include "invana_utils.H"
+#include "matpar_manager.H"
+#include "objective_funct.H"
 #include "optimizer_lbfgs.H"
 
+#include "../drt_io/io_control.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_comm/comm_utils.H"
+#include "../linalg/linalg_utils_sparse_algebra_math.H"
+
+#include <stdio.h>
 
 /*----------------------------------------------------------------------*/
 /* constructor */
