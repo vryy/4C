@@ -236,7 +236,7 @@ namespace DRT
                           key names of data it wants to visualize and with int dimensions
                           of that data.
       */
-      virtual void VisNames(std::map<std::string, int>& names);
+      virtual void VisNames(std::map<std::string, int>& names){};
 
       /*!
       \brief Query data to be visualized using BINIO of a given name

@@ -233,10 +233,6 @@ void DRT::ELEMENTS::RedAirway::Print(std::ostream& os) const
   Element::Print(os);
 }
 
-/*----------------------------------------------------------------------*
- |  Return names of visualization data                     ismail 01/10 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirway::VisNames(std::map<std::string, int>& names) {}
 
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                     ismail 02/10 |
