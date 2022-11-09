@@ -10,7 +10,7 @@
 #include "solid_ele_factory.H"
 #include <memory>
 #include "solid_ele_calc.H"
-#include "solid_ele_calc_eas.H"
+// #include "solid_ele_calc_eas.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "solid_ele.H"
 
@@ -64,7 +64,7 @@ std::unique_ptr<DRT::ELEMENTS::SolidEleInterface> DRT::ELEMENTS::SolidFactory::P
       switch (*ele->GetEleTech().begin())
       {
         case INPAR::STR::EleTech::eas:
-          switch (ele->GetEAStype())
+          /* switch (ele->GetEAStype())
           {
             case ::STR::ELEMENTS::EASType::eastype_h8_9:
               if constexpr (distype != DRT::Element::hex8)
@@ -83,7 +83,7 @@ std::unique_ptr<DRT::ELEMENTS::SolidEleInterface> DRT::ELEMENTS::SolidFactory::P
             default:
               dserror("eastype not implemented %d", (int)ele->GetEAStype());
               break;
-          }
+          } */
           break;
         default:
           dserror("unknown element technology");

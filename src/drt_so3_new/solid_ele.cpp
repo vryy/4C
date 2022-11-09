@@ -414,7 +414,7 @@ bool DRT::ELEMENTS::Solid::ReadElement(
       dserror("no EAS allowed for this element shape");
   }
 
-  DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->Setup(this, linedef);
+  DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->Setup(*this, linedef);
   return true;
 }
 

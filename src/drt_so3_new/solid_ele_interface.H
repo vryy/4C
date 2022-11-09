@@ -43,252 +43,86 @@ namespace DRT
     class SolidEleInterface
     {
      public:
-      /*!
-      \brief Evaluate an element
+      virtual ~SolidEleInterface() = default;
 
-      \param params (in/out): ParameterList for communication between control routine
-                              and elements
-      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-                              the controling method does not epxect the element to fill
-                              this matrix.
-      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-                              the controling method does not epxect the element to fill
-                              this matrix.
-      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-                              the controlling method does not epxect the element
-                              to fill this vector
-      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                              the controlling method does not epxect the element
-                              to fill this vector
-      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                              the controlling method does not epxect the element
-                              to fill this vector
-      \return 0 if successful, negative otherwise
-      */
-      virtual int Evaluate(DRT::ELEMENTS::Solid* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-          Epetra_SerialDenseVector& elevec3) = 0;
-
-      /// Evaluate the element
       /*!
-        This class does not provide a definition for this function; it
-        must be defined in SolidEleCalc.
+       * @brief Setup routine for the element
+       *
+       * @param ele (in) : reference to the element
+       * @param linedef (in) : 778
        */
-      virtual int nln_force_stiff_mass(DRT::ELEMENTS::Solid* ele,
-          DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::ParameterList& params, Epetra_SerialDenseMatrix* elemat1_epetra,
-          Epetra_SerialDenseMatrix* elemat2_epetra, Epetra_SerialDenseVector* elevec1_epetra,
-          Epetra_SerialDenseVector* elevec2_epetra, Epetra_SerialDenseVector* elevec3_epetra,
-          DRT::UTILS::GaussIntegration* intpoints = nullptr) = 0;
+      virtual void Setup(const DRT::ELEMENTS::Solid& ele, DRT::INPUT::LineDefinition* linedef) = 0;
 
-      /// Evaluate the element for GEMM time integration
       /*!
-        This class does not provide a definition for this function; it
-        must be defined in SolidEleCalc.
+       * @brief A setup routine for the materials after the whole input is read before evaluation.
+       *
+       * @param ele (in) : reference to the element
        */
-      virtual int nln_force_stiff_mass_gemm(DRT::ELEMENTS::Solid* ele,
-          DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::ParameterList& params, Epetra_SerialDenseMatrix* elemat1_epetra,
-          Epetra_SerialDenseMatrix* elemat2_epetra, Epetra_SerialDenseVector* elevec1_epetra,
-          Epetra_SerialDenseVector* elevec2_epetra, Epetra_SerialDenseVector* elevec3_epetra,
-          DRT::UTILS::GaussIntegration* intpoints = nullptr)
-      {
-        dserror("Not implemented for this element evaluation");
-        return 0;
-      }
-
-      /// Evaluate Neumann condition on this element
-      virtual int EvaluateNeumann(DRT::ELEMENTS::Solid* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          const DRT::UTILS::GaussIntegration* intpoints, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseMatrix* elemat1 = nullptr) = 0;
-
-      /// calculate stress for output
-      virtual int CalcStress(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Epetra_SerialDenseMatrix* elemat1_epetra, Epetra_SerialDenseMatrix* elemat2_epetra,
-          Epetra_SerialDenseVector* elevec1_epetra, Epetra_SerialDenseVector* elevec2_epetra,
-          Epetra_SerialDenseVector* elevec3_epetra) = 0;
-
-      /// Update the element at converged time step
-      virtual int UpdateElement(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Epetra_SerialDenseMatrix* elemat1_epetra, Epetra_SerialDenseMatrix* elemat2_epetra,
-          Epetra_SerialDenseVector* elevec1_epetra, Epetra_SerialDenseVector* elevec2_epetra,
-          Epetra_SerialDenseVector* elevec3_epetra) = 0;
-
-      virtual int ResetStep(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Epetra_SerialDenseMatrix* elemat1_epetra, Epetra_SerialDenseMatrix* elemat2_epetra,
-          Epetra_SerialDenseVector* elevec1_epetra, Epetra_SerialDenseVector* elevec2_epetra,
-          Epetra_SerialDenseVector* elevec3_epetra) = 0;
-
-      virtual int StoreStep(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Epetra_SerialDenseMatrix* elemat1_epetra, Epetra_SerialDenseMatrix* elemat2_epetra,
-          Epetra_SerialDenseVector* elevec1_epetra, Epetra_SerialDenseVector* elevec2_epetra,
-          Epetra_SerialDenseVector* elevec3_epetra) = 0;
-
-      virtual int RecoverStep(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Epetra_SerialDenseMatrix* elemat1_epetra, Epetra_SerialDenseMatrix* elemat2_epetra,
-          Epetra_SerialDenseVector* elevec1_epetra, Epetra_SerialDenseVector* elevec2_epetra,
-          Epetra_SerialDenseVector* elevec3_epetra) = 0;
-
-      virtual int ResetIstep(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Epetra_SerialDenseMatrix* elemat1_epetra, Epetra_SerialDenseMatrix* elemat2_epetra,
-          Epetra_SerialDenseVector* elevec1_epetra, Epetra_SerialDenseVector* elevec2_epetra,
-          Epetra_SerialDenseVector* elevec3_epetra) = 0;
-
-      virtual int CalcEnergy(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Epetra_SerialDenseMatrix* elemat1_epetra, Epetra_SerialDenseMatrix* elemat2_epetra,
-          Epetra_SerialDenseVector* elevec1_epetra, Epetra_SerialDenseVector* elevec2_epetra,
-          Epetra_SerialDenseVector* elevec3_epetra)
-      {
-        dserror("Not implemented for this element evaluation");
-        return 0;
-      }
-
-      virtual int CalcErrorNorms(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Epetra_SerialDenseMatrix* elemat1_epetra, Epetra_SerialDenseMatrix* elemat2_epetra,
-          Epetra_SerialDenseVector* elevec1_epetra, Epetra_SerialDenseVector* elevec2_epetra,
-          Epetra_SerialDenseVector* elevec3_epetra)
-      {
-        dserror("Not implemented for this element evaluation");
-        return 0;
-      }
-
-      virtual int SetMultiEAS(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Epetra_SerialDenseMatrix* elemat1_epetra, Epetra_SerialDenseMatrix* elemat2_epetra,
-          Epetra_SerialDenseVector* elevec1_epetra, Epetra_SerialDenseVector* elevec2_epetra,
-          Epetra_SerialDenseVector* elevec3_epetra)
-      {
-        dserror("Not implemented for this element evaluation");
-        return 0;
-      }
-
-      virtual int ReadMultiRestart(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Epetra_SerialDenseMatrix* elemat1_epetra, Epetra_SerialDenseMatrix* elemat2_epetra,
-          Epetra_SerialDenseVector* elevec1_epetra, Epetra_SerialDenseVector* elevec2_epetra,
-          Epetra_SerialDenseVector* elevec3_epetra)
-      {
-        dserror("Not implemented for this element evaluation");
-        return 0;
-      }
-
-      virtual int CalcMultiDens(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Epetra_SerialDenseMatrix* elemat1_epetra, Epetra_SerialDenseMatrix* elemat2_epetra,
-          Epetra_SerialDenseVector* elevec1_epetra, Epetra_SerialDenseVector* elevec2_epetra,
-          Epetra_SerialDenseVector* elevec3_epetra)
-      {
-        dserror("Not implemented for this element evaluation");
-        return 0;
-      }
-
-      virtual int PostProcessStress(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Epetra_SerialDenseMatrix* elemat1_epetra, Epetra_SerialDenseMatrix* elemat2_epetra,
-          Epetra_SerialDenseVector* elevec1_epetra, Epetra_SerialDenseVector* elevec2_epetra,
-          Epetra_SerialDenseVector* elevec3_epetra)
-      {
-        dserror("Not implemented for this element evaluation");
-        return 0;
-      }
-
-      virtual int UpdateInverseDesign(DRT::ELEMENTS::Solid* ele,
-          DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::ParameterList& params, Epetra_SerialDenseMatrix* elemat1_epetra,
-          Epetra_SerialDenseMatrix* elemat2_epetra, Epetra_SerialDenseVector* elevec1_epetra,
-          Epetra_SerialDenseVector* elevec2_epetra, Epetra_SerialDenseVector* elevec3_epetra)
-      {
-        dserror("Not implemented for this element evaluation");
-        return 0;
-      }
-
-      virtual int UpdatePrestress(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Epetra_SerialDenseMatrix* elemat1_epetra, Epetra_SerialDenseMatrix* elemat2_epetra,
-          Epetra_SerialDenseVector* elevec1_epetra, Epetra_SerialDenseVector* elevec2_epetra,
-          Epetra_SerialDenseVector* elevec3_epetra)
-      {
-        dserror("Not implemented for this element evaluation");
-        return 0;
-      }
-
-      virtual int SwitchInverseDesign(DRT::ELEMENTS::Solid* ele,
-          DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::ParameterList& params, Epetra_SerialDenseMatrix* elemat1_epetra,
-          Epetra_SerialDenseMatrix* elemat2_epetra, Epetra_SerialDenseVector* elevec1_epetra,
-          Epetra_SerialDenseVector* elevec2_epetra, Epetra_SerialDenseVector* elevec3_epetra)
-      {
-        dserror("Not implemented for this element evaluation");
-        return 0;
-      }
-
-      virtual int GlobalGPstressMap(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Epetra_SerialDenseMatrix* elemat1_epetra, Epetra_SerialDenseMatrix* elemat2_epetra,
-          Epetra_SerialDenseVector* elevec1_epetra, Epetra_SerialDenseVector* elevec2_epetra,
-          Epetra_SerialDenseVector* elevec3_epetra) = 0;
-
-      virtual int InterpolatePoroVelocityToPoint(DRT::ELEMENTS::Solid* ele,
-          DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::ParameterList& params, Epetra_SerialDenseMatrix* elemat1_epetra,
-          Epetra_SerialDenseMatrix* elemat2_epetra, Epetra_SerialDenseVector* elevec1_epetra,
-          Epetra_SerialDenseVector* elevec2_epetra, Epetra_SerialDenseVector* elevec3_epetra)
-      {
-        dserror("Not implemented for this element evaluation");
-        return 0;
-      }
-
-      virtual int CalcMassVolume(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Epetra_SerialDenseMatrix* elemat1_epetra, Epetra_SerialDenseMatrix* elemat2_epetra,
-          Epetra_SerialDenseVector* elevec1_epetra, Epetra_SerialDenseVector* elevec2_epetra,
-          Epetra_SerialDenseVector* elevec3_epetra)
-      {
-        dserror("Not implemented for this element evaluation");
-        return 0;
-      }
-
-      /// recover variables condensed at element level
-      virtual int RecoverCondensed(DRT::ELEMENTS::Solid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Epetra_SerialDenseMatrix* elemat1_epetra, Epetra_SerialDenseMatrix* elemat2_epetra,
-          Epetra_SerialDenseVector* elevec1_epetra, Epetra_SerialDenseVector* elevec2_epetra,
-          Epetra_SerialDenseVector* elevec3_epetra) = 0;
-
-      /// lump mass matrix
-      virtual void LumpMass(Epetra_SerialDenseMatrix* mass) = 0;
-
-      /// setup element data
-      virtual void Setup(DRT::ELEMENTS::Solid* ele, DRT::INPUT::LineDefinition* linedef) = 0;
-
       virtual void MaterialPostSetup(const DRT::ELEMENTS::Solid& ele) = 0;
 
-      /// get stuff from the STR::ELEMENTS::ParamsInterface and write it in the parameter list
-      /// todo: for now, we need this, since the solid materials still rely on it.
-      ///       in a next step they should start using the paramsInterface as well
-      virtual void ParamsInterfaceToList(
-          const STR::ELEMENTS::ParamsInterface& pi, Teuchos::ParameterList& pl) const;
+      /*!
+       * @brief Evaluate the force vector, stiffness matrix and mass matrix of the element
+       *
+       * @param ele (in) : reference to the element
+       * @param discretization  (in) : Reference to the discretization
+       * @param lm (in) : Location vector
+       * @param params (in) : ParameterList for communication between control routine, elements and
+       * materials
+       * @param force_vector (out) : pointer to force vector or nullptr
+       * @param stiffness_matrix (out) : pointer to stiffness matrix or nullptr
+       * @param mass_matrix (out) : pointer to mass matrix or nullptr
+       */
+      virtual void EvaluateNonlinearForceStiffnessMass(const DRT::ELEMENTS::Solid& ele,
+          const DRT::Discretization& discretization, const std::vector<int>& lm,
+          Teuchos::ParameterList& params, Epetra_SerialDenseVector* force_vector,
+          Epetra_SerialDenseMatrix* stiffness_matrix, Epetra_SerialDenseMatrix* mass_matrix) = 0;
 
-      virtual void InitializeGaussPointDataOutput(DRT::ELEMENTS::Solid& ele,
-          const std::optional<DRT::UTILS::GaussIntegration>& intpoints) const = 0;
+      virtual void Recover(const DRT::ELEMENTS::Solid& ele,
+          const DRT::Discretization& discretization, const std::vector<int>& lm,
+          Teuchos::ParameterList& params) = 0;
 
-      virtual void EvaluateGaussPointDataOutput(DRT::ELEMENTS::Solid& ele,
-          const std::optional<DRT::UTILS::GaussIntegration>& intpoints) const = 0;
+      virtual void CalculateStress(const DRT::ELEMENTS::Solid& ele,
+          const DRT::Discretization& discretization, const std::vector<int>& lm,
+          Teuchos::ParameterList& params) = 0;
 
-     protected:
-      //! ctor
-      SolidEleInterface() = default;
+      virtual void PostProcessStressStrain(const DRT::ELEMENTS::Solid& ele,
+          const DRT::Discretization& discretization, const std::vector<int>& lm,
+          Teuchos::ParameterList& params) = 0;
+
+      /*!
+       * @brief The update routine of the element
+       *
+       * @param ele  (in) : Reference to the solid element
+       * @param discretization (in) : Reference to the discretization
+       * @param lm (in) : The location array of the owned dofs
+       * @param params (in/[out]) : A ParameterList to pass values from the time integrator to the
+       * elements/materials
+       */
+      virtual void Update(const DRT::ELEMENTS::Solid& ele,
+          const DRT::Discretization& discretization, const std::vector<int>& lm,
+          Teuchos::ParameterList& params) = 0;
+
+      /*!
+       * @brief Initializes the Gauss point data output
+       *
+       * The element must register the number of used Gauss points, the names and the the rank of
+       * each quantity. It is also supposed to ask the material about their quantities.
+       *
+       * @param ele (in) : Reference to the solid element
+       */
+      virtual void InitializeGaussPointDataOutput(const DRT::ELEMENTS::Solid& ele) const = 0;
+
+      /*!
+       * @brief Evaluation of the Gauss point data output
+       *
+       * The element must go over all quantities and check whether it has some of the values. In
+       * case there are some values, they must be provided at the specified location (element
+       * center, nodes or gauss points)
+       *
+       * @param ele (in) : Reference to the solid element
+       */
+      virtual void EvaluateGaussPointDataOutput(const DRT::ELEMENTS::Solid& ele) const = 0;
+
 
     };  // class SolidEleInterface
   }     // namespace ELEMENTS
