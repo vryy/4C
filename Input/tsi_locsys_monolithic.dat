@@ -70,7 +70,7 @@ TOLRES                          1e-08
 THETA                           0.66  // 0.5
 --------------------------------------------------------------------SOLVER 1
 NAME                            STRUCT_SOLVER
-SOLVER                          UMFPACK  // UMFPACK,Superlu,undefined,Aztec_MSR
+SOLVER                          UMFPACK  // UMFPACK,Superlu,undefined,Belos
 -------------------------------------------------------------THERMAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
@@ -105,7 +105,7 @@ GENAVG                          TrLike
 THETA                           0.66  // 0.5
 --------------------------------------------------------------------SOLVER 2
 NAME                            THERMAL_SOLVER
-SOLVER                          UMFPACK  // UMFPACK,Superlu,undefined,Aztec_MSR
+SOLVER                          UMFPACK  // UMFPACK,Superlu,undefined,Belos
 -----------------------------------------------------------------TSI DYNAMIC
 COUPALGO                        tsi_monolithic  // tsi_{oneway,sequstagg,iterstagg_{aitken,aitkenirons,fixedrelax},monolithic}
 ITEMAX                          10
@@ -156,7 +156,7 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 NAME                            TSI_MONOLITHIC_SOLVER
 SIMPLE_DAMPING                  1
-SOLVER                          Aztec_MSR  // UMFPACK,Superlu,undefined
+SOLVER                          Belos  // UMFPACK,Superlu,undefined
 MUELU_XML_ENFORCE               No
 VERBOSITY                       0
 -------------------------------------------------------------------MATERIALS

@@ -70,7 +70,7 @@ LINEAR_SOLVER                   2
 ----------------------------------------------SSI CONTROL/ELCH
 INITPOTCALC                     Yes
 ----------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 ssi_mono_3D_tet4_elch_s2i_butlervolmer_manifold_BGS-AMG_3x3.xml

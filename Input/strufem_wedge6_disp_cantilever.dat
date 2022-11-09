@@ -59,7 +59,7 @@ GAMMA                           0.581
 RHO_INF                         -1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        0
 AZSOLVE                         CG
 AZPREC                          ML

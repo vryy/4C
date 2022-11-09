@@ -133,9 +133,8 @@ Minimum                         Trust Region Radius = 1e-06
 Recovery                        Step = 1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Aztec_MSR
-AZOUTPUT                        0
-AZSOLVE                         CG
+SOLVER                          Belos
+AZSOLVE                         GMRES
 AZPREC                          ML
 AZREUSE                         10
 IFPACKGFILL                     0
@@ -154,8 +153,8 @@ ML_COARSEN                      UC
 ML_AGG_SIZE                     27
 ML_PROLONG_SMO                  1.33
 ML_PROLONG_THRES                0.0
-ML_SMOOTHERFINE                 Chebychev
-ML_SMOOTHERMED                  Chebychev
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
 ML_SMOOTHERCOARSE               KLU
 ML_SMOTIMES                     3 1
 ML_DAMPFINE                     1.0

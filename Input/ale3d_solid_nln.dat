@@ -27,7 +27,7 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------------SOLVER 1
 NAME                            Solver_Ale
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        1
 AZSOLVE                         GMRES
 AZPREC                          MLFLUID2

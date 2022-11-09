@@ -66,7 +66,7 @@ TOL_PRES_RES                    1.0
 TOL_PRES_INC                    1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        0
 AZSOLVE                         GMRES
 AZPREC                          MLFLUID2

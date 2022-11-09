@@ -128,7 +128,7 @@ VSTAB                                 vstab_gls
 ------------------------------------------------------------------------SOLVER 1
 SOLVER                                Superlu
 ------------------------------------------------------------------------SOLVER 2
-SOLVER         Aztec_MSR
+SOLVER         Belos
 AZOUTPUT       0
 AZSOLVE        GMRES
 AZPREC         ILU
@@ -143,7 +143,7 @@ AZOMEGA        1.0
 AZGRAPH        1
 AZSCAL         none
 ---------------------------------------------------------SOLVER 3
-SOLVER         Aztec_MSR
+SOLVER         Belos
 AZOUTPUT       0
 AZSOLVE        GMRES
 AZPREC         BGS2x2
@@ -159,7 +159,7 @@ AZGRAPH        1
 AZSCAL         none
 ---------------------------------------------------------------------SOLVER 4
 NAME           2,2 block solver/smoothers
-SOLVER         Aztec_MSR
+SOLVER         Belos
 AZOUTPUT       0
 AZSOLVE        GMRES
 AZPREC         ML

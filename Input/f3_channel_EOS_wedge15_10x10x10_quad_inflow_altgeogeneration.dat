@@ -82,7 +82,7 @@ EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino_wo_dt //Burman_Fern
 EOS_H_DEFINITION                EOS_he_surf_with_max_diameter// EOS_he_max_dist_to_opp_surf //EOS_he_surf_with_max_diameter // EOS_he_surf_with_max_diameter
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR                       // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Belos                       // vm3 Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        50                              // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
 ML_PRINT                        5

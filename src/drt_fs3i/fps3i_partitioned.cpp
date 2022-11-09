@@ -525,11 +525,17 @@ void FS3I::PartFPS3I::SetupSystem()
         "DYNAMIC to a valid number!");
   const Teuchos::ParameterList& coupledscatrasolvparams =
       DRT::Problem::Instance()->SolverParams(linsolvernumber);
+
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(coupledscatrasolvparams, "SOLVER");
-  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr) dserror("aztec solver expected");
+
+  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr and
+      solvertype != INPAR::SOLVER::SolverType::belos)
+    dserror("aztec or belos solver expected");
+
   const auto azprectype = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
       coupledscatrasolvparams, "AZPREC");
+
   if (azprectype != INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2)
     dserror("Block Gauss-Seidel preconditioner expected");
 

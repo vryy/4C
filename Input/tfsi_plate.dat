@@ -277,7 +277,7 @@ CONSISTENCY                     no
 TAU_VALUE                       0
 -----------------------------------------------------------SOLVER 1
 NAME              Fluid_Solver
-SOLVER            Aztec_MSR    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER            Belos    // Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT          0            // output every so often, 0 no output
 AZSOLVE           GMRES        // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC            MLFLUID2     // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
@@ -307,7 +307,7 @@ ML_DAMPMED        0.67         // damping med grids
 ML_DAMPCOARSE     1.0          // damping coarse grid
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
-SOLVER                          Aztec_MSR                      // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Belos                      // Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                              // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ML                        // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
@@ -338,7 +338,7 @@ ML_DAMPMED                      0.79                            // damping med g
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 --------------------------------------------------------------------SOLVER 3
 NAME                            Ale_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        0
 AZSOLVE                         CG
 AZPREC                          ML
@@ -368,7 +368,7 @@ ML_DAMPMED                      0.79
 ML_DAMPCOARSE                   1.0
 --------------------------------------------------------------------SOLVER 4
 NAME                            COUPLED_FS3I_SOLVER
-SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Belos                     // Belos vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          BGS2x2                        // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -398,7 +398,7 @@ ML_DAMPMED                      0.79
 ML_DAMPCOARSE                   1.0
 -----------------------------------------------------------SOLVER 5
 NAME                            Scalar_Fluid_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZSOLVE                         GMRES
 AZPREC                          ML
 IFPACKOVERLAP                   0
@@ -442,7 +442,7 @@ AMGNXN_TYPE                     AMG(BGS)
 AMGNXN_XML_FILE                 none
 -----------------------------------------------------------SOLVER 6
 NAME                            Scalar_Structure_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZSOLVE                         GMRES
 AZPREC                          ML
 IFPACKOVERLAP                   0
@@ -7583,9 +7583,9 @@ NODE      2912 COORD  5.0000000000000000e-01  2.0000000000000001e-01 -2.00000000
    2099 FLUID HEX8  2261 2260 2286 2287 1975 1974 2000 2001    MAT 1 NA ALE
    2100 FLUID HEX8  2262 2261 2287 2288 1976 1975 2001 2002    MAT 1 NA ALE
 -------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra2 NODE 2602 QUANTITY phi VALUE 2.94504363872015062e+02 TOLERANCE 4.44e-6
+SCATRA DIS scatra2 NODE 2602 QUANTITY phi VALUE 2.94504363872015062e+02 TOLERANCE 5.5e-6
 STRUCTURE DIS structure NODE 2627 QUANTITY dispy VALUE -5.98911737547906117e-05 TOLERANCE 1e-6
 SCATRA DIS scatra1 NODE 1418 QUANTITY phi VALUE 2.92999992597311973e+02 TOLERANCE 1e-6
-FLUID DIS fluid NODE 1430 QUANTITY velx VALUE 8.07308276556975984e-02 TOLERANCE 1.1e-6
+FLUID DIS fluid NODE 1430 QUANTITY velx VALUE 8.07308276556975984e-02 TOLERANCE 1.5e-6
 ---------------------------------------------------------------END
 // END

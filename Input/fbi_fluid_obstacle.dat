@@ -118,7 +118,7 @@ EOS_H_DEFINITION                      EOS_he_surf_with_max_diameter
 ------------------------------------------------------------------------SOLVER 1
 SOLVER                                Superlu
 ------------------------------------------------------------------------SOLVER 2
-SOLVER                                Aztec_MSR
+SOLVER                                Belos
 AZREUSE                              10
 AZTOL                                 1e-05
 ------------------------------------------------------------------FLUID ELEMENTS

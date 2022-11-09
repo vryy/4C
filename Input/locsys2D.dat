@@ -48,7 +48,7 @@ TOLDISP                         1.0E-08
 MAXITER                         50
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          UMFPACK                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK                       // SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         CG                            // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann

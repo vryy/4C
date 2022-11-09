@@ -32,7 +32,7 @@ DIVERCONT                             continue
 LOADLIN                               yes
 ------------------------------------------------------------------------SOLVER 1
 NAME                                  Beam_AMG
-SOLVER                                Aztec_MSR
+SOLVER                                Belos
 AZOUTPUT                              10
 AZTOL                                 1.0e-2
 AZCONV                                AZ_r0
@@ -56,8 +56,8 @@ MAT 1 MAT_BeamKirchhoffTorsionFreeElastHyper YOUNG 1.0 DENS 0.0 CROSSAREA 0.0078
 --------------------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 --------------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 50 QUANTITY dispx VALUE 2.34429464027713363e-02 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 50 QUANTITY dispy VALUE 4.13031197682212223e+01 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 50 QUANTITY dispx VALUE 2.34429292233588882e-02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 50 QUANTITY dispy VALUE 4.13031197521486320e+01 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 50 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-10
 --------------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2

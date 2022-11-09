@@ -118,7 +118,7 @@ ML_SMOOTHERCOARSE               KLU
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Pressure_Solver
 SOLVER                          UMFPACK

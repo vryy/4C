@@ -97,6 +97,21 @@ namespace INPAR::SOLVER
     }
 
     // Aztecoo / Belos options
+
+    /* Iterative solver options translator: AztecOO <-> Belos
+     *
+     * Options available for every iterative solver:
+     * AZTOL: "Convergence Tolerance" <-> AZ_tol: convergence tolerance used for iterative solver
+     * AZCONV: "Implicit Residual Scaling" <-> AZ_conv: residual scaling approach
+     * AZITER: "Maximum Iterations" <-> AZ_max_iter: maximum iteration count
+     * AZREUSE: "reuse": how often to recompute the preconditioner (counts on solver calls)
+     * AZOUTPUT: "Output frequency" <-> AZ_output: number of iterations written to screen
+     * VERBOSITY: "Verbosity", general output level (not in AztecOO)
+     *
+     * Options additionally available for gmres:
+     * AZSUB: "Num Blocks" <-> AZ_kspace: maximum size of krylov subspace before a restart is done
+     */
+
     {
       IntParameter("AZSUB", 50,
           "The maximum size of the Krylov subspace used with \"GMRES\" before\n"

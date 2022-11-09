@@ -60,8 +60,8 @@ CROSS-STRESS                    yes_cross
 REYNOLDS-STRESS                 yes_reynolds
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-//SOLVER                        Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-SOLVER                          Aztec_MSR
+//SOLVER                        Belos                       // Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Belos
 AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          MLFLUID2                        // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann

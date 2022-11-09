@@ -67,7 +67,7 @@ ALE_TYPE                        solid_linear
 UPDATEMATRIX                    no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Freesurface_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        0
 AZSOLVE                         GMRES
 AZPREC                          ILU
@@ -83,7 +83,7 @@ IFPACKOVERLAP                   0
 AZSCAL                          none
 --------------------------------------------------------------------SOLVER 2
 NAME                            Ale_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        0
 AZSOLVE                         CG
 AZPREC                          ML

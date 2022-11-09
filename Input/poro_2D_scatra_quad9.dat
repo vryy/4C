@@ -96,7 +96,7 @@ SOLVER                          UMFPACK
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 4
 NAME                            Sca_Tra_Solver
-SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym
+SOLVER                          Belos                     // Belos vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym
 AZTOL                           1.0E-11                       // tolerance in (un)scaled residual
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material

@@ -137,7 +137,7 @@ void LINALG::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator> matrix,
     bool reset)
 {
   std::string solvertype = solver_->Params().get("solver", "none");
-  if (solvertype == "aztec")
+  if (solvertype == "aztec" or solvertype == "belos")
   {
     // do just the preconditioner from iterative solver
 

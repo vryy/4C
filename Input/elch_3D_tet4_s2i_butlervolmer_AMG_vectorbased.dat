@@ -36,7 +36,7 @@ EQUPOT                          divi
 ---------------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          MueLu
 MUELU_XML_FILE                  elch_3D_tet4_s2i_butlervolmer_AMG_vectorbased.xml
 -------------------------------------------------------------------MATERIALS

@@ -85,7 +85,7 @@ ML_SMOOTHERCOARSE               KLU
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 SUB_SOLVER1                     4
 SUB_SOLVER2                     3
 --------------------------------------------------------------------SOLVER 1
@@ -118,7 +118,7 @@ ML_SMOOTHERCOARSE               KLU
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 --------------------------------------------------------------------SOLVER 3
 NAME                            Contact SIMPLER solver (used for constraint simpler)
 AZBDIAG                         0
@@ -149,7 +149,7 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 --------------------------------------------------------------------SOLVER 4
 NAME                            SIMPLE_predict
 AZBDIAG                         0
@@ -180,7 +180,7 @@ ML_SMOOTHERCOARSE               KLU
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.02
 MAT 2 ELAST_CoupNeoHooke YOUNG 3.0E2 NUE 0.49

@@ -94,7 +94,7 @@ Debug                           = No
 XML File                        = shell8_eas_new_struc.xml
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        0
 AZSOLVE                         CG
 AZPREC                          ML

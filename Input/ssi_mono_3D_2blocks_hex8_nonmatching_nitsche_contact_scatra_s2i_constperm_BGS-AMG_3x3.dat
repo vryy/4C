@@ -59,12 +59,12 @@ MATRIXTYPE                      block
 EQUILIBRATION                   rows_maindiag
 ABSTOLRES                       0
 ----------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 ssi_mono_3D_2blocks_hex8_nonmatching_nitsche_contact_scatra_s2i_constperm_BGS-AMG_3x3.xml
 ----------------------------------------------------------SOLVER 2
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 ssi_mono_3D_2blocks_hex8_nonmatching_nitsche_contact_scatra_s2i_constperm_BGS-AMG_3x3_scatra.xml

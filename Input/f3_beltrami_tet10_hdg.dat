@@ -44,7 +44,7 @@ TOL_PRES_RES	  1.0E-4
 TOL_PRES_INC	  1.0E-4
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZSOLVE                         GMRES
 AZPREC                          ILU
 AZREUSE                         0
@@ -53,8 +53,7 @@ AZCONV                          AZ_r0
 AZTOL                           1.0E-3
 AZITER                          200
 AZSUB                           100
-AZOMEGA                         1.0
-AZGRAPH                         1
+AZOUTPUT                        1
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0

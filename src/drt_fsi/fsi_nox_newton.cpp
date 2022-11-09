@@ -83,7 +83,7 @@ bool NOX::FSI::Newton::compute(
 
   if (verbosity_ >= INPAR::FSI::verbosity_medium)
   {
-    utils_->out() << "                --- Aztec input   relative tolerance " << plaintol_ << "\n";
+    utils_->out() << "                --- Solver input   relative tolerance " << plaintol_ << "\n";
   }
 
   // Always reset. To be sure.
@@ -100,7 +100,7 @@ bool NOX::FSI::Newton::compute(
         lsParams.set<double>("Tolerance", tol);
         if (verbosity_ >= INPAR::FSI::verbosity_medium)
         {
-          utils_->out() << "                *** Aztec adapted relative tolerance " << tol << "\n";
+          utils_->out() << "                *** Solver adapted relative tolerance " << tol << "\n";
         }
       }
     }

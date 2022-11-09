@@ -114,7 +114,7 @@ GHOST_PENALTY_TRANSIENT_FAC     0.001
 IS_PSEUDO_2D                    yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        50
 AZSOLVE                         GMRES
 AZPREC                          MLFLUID2

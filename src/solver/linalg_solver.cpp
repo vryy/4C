@@ -104,25 +104,55 @@ int LINALG::Solver::getNumIters() const { return solver_->getNumIters(); }
 void LINALG::Solver::AdaptTolerance(
     const double desirednlnres, const double currentnlnres, const double better)
 {
-  if (!Params().isSublist("Aztec Parameters")) return;
+  Teuchos::ParameterList* solverParams = nullptr;
+  if (Params().isSublist("Aztec Parameters"))
+  {
+    Teuchos::ParameterList& refSolverParams = Params().sublist("Aztec Parameters");
+    solverParams = &refSolverParams;
+  }
+  else if (Params().isSublist("Belos Parameters"))
+  {
+    Teuchos::ParameterList& refSolverParams = Params().sublist("Belos Parameters");
+    solverParams = &refSolverParams;
+  }
+  else
+    return;
+
   const int myrank = Comm().MyPID();
-  Teuchos::ParameterList& azlist = Params().sublist("Aztec Parameters");
-  int output = azlist.get<int>("AZ_output", 1);
-  int convtest = azlist.get<int>("AZ_conv", AZ_noscaled);
-  if (convtest != AZ_r0) dserror("Using convergence adaptivity: Use AZ_r0 in input file");
-  bool havesavedvalue = azlist.isParameter("AZ_tol save");
+
+  int output = solverParams->get<int>("AZ_output", 1);
+  int convtest_aztec = 0;
+  std::string convtest_belos;
+  if (Params().isSublist("Aztec Parameters"))
+    convtest_aztec = solverParams->get<int>("AZ_conv", AZ_noscaled);
+  else if (Params().isSublist("Belos Parameters"))
+    convtest_belos = solverParams->get<std::string>(
+        "Implicit Residual Scaling", Belos::convertScaleTypeToString(Belos::ScaleType::None));
+
+  if (convtest_aztec != AZ_r0 or
+      convtest_belos != Belos::convertScaleTypeToString(Belos::ScaleType::NormOfInitRes))
+    dserror("Using convergence adaptivity: Use AZ_r0 in input file");
+
+  bool havesavedvalue = solverParams->isParameter("AZ_tol save");
   if (!havesavedvalue)
   {
-    if (!azlist.isParameter("AZ_tol"))
+    if (!solverParams->isParameter("AZ_tol") and
+        !solverParams->isParameter("Convergence Tolerance"))
     {
-      std::cout << azlist;
-      dserror("No Aztec tolerance in ParameterList");
+      std::cout << solverParams;
+      dserror("No iterative solver tolerance in ParameterList");
     }
-    azlist.set<double>("AZ_tol save", azlist.get<double>("AZ_tol", 1.e-8));
+    if (Params().isSublist("Aztec Parameters"))
+      solverParams->set<double>("AZ_tol save", solverParams->get<double>("AZ_tol", 1.e-8));
+    else if (Params().isSublist("Belos Parameters"))
+      solverParams->set<double>(
+          "AZ_tol save", solverParams->get<double>("Convergence Tolerance", 1.e-8));
   }
-  double tol = azlist.get<double>("AZ_tol save", 1.e-8);
+
+  double tol = solverParams->get<double>("AZ_tol save", 1.e-8);
+
   if (!myrank && output)
-    printf("                --- Aztec input   relative tolerance %10.3E\n", tol);
+    printf("                --- Solver input   relative tolerance %10.3E\n", tol);
   if (currentnlnres * tol < desirednlnres)
   {
     double tolnew = desirednlnres * better / currentnlnres;
@@ -138,8 +168,12 @@ void LINALG::Solver::AdaptTolerance(
     }
     if (tolnew < tol) tolnew = tol;
     if (!myrank && output && tolnew > tol)
-      printf("                *** Aztec adapted relative tolerance %10.3E\n", tolnew);
-    azlist.set<double>("AZ_tol", tolnew);
+      printf("                *** Solver adapted relative tolerance %10.3E\n", tolnew);
+
+    if (Params().isSublist("Aztec Parameters"))
+      solverParams->set<double>("AZ_tol", tolnew);
+    else if (Params().isSublist("Belos Parameters"))
+      solverParams->set<double>("Convergence Tolerance", tolnew);
   }
 }
 
@@ -147,12 +181,28 @@ void LINALG::Solver::AdaptTolerance(
  *----------------------------------------------------------------------*/
 void LINALG::Solver::ResetTolerance()
 {
-  if (!Params().isSublist("Aztec Parameters")) return;
-  Teuchos::ParameterList& azlist = Params().sublist("Aztec Parameters");
-  bool havesavedvalue = azlist.isParameter("AZ_tol save");
+  Teuchos::ParameterList* solverParams = nullptr;
+  if (Params().isSublist("Aztec Parameters"))
+  {
+    Teuchos::ParameterList& refSolverParams = Params().sublist("Aztec Parameters");
+    solverParams = &refSolverParams;
+  }
+  else if (Params().isSublist("Belos Parameters"))
+  {
+    Teuchos::ParameterList& refSolverParams = Params().sublist("Belos Parameters");
+    solverParams = &refSolverParams;
+  }
+  else
+    return;
+
+  bool havesavedvalue = solverParams->isParameter("AZ_tol save");
   if (!havesavedvalue) return;
-  azlist.set<double>("AZ_tol", azlist.get<double>("AZ_tol save", 1.e-8));
-  return;
+
+  if (Params().isSublist("Aztec Parameters"))
+    solverParams->set<double>("AZ_tol", solverParams->get<double>("AZ_tol save", 1.e-8));
+  else if (Params().isSublist("Belos Parameters"))
+    solverParams->set<double>(
+        "Convergence Tolerance", solverParams->get<double>("AZ_tol save", 1.e-8));
 }
 
 /*----------------------------------------------------------------------*
@@ -677,6 +727,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
     case INPAR::SOLVER::PreconditionerType::multigrid_muelu_beamsolid:
       beloslist.set("Preconditioner Type", "BeamSolid");
       break;
+    case INPAR::SOLVER::PreconditionerType::multigrid_nxn:
+      beloslist.set("Preconditioner Type", "AMGnxn");
+      break;
     case INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2:
       beloslist.set("Preconditioner Type", "ML");
       break;
@@ -691,10 +744,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
 
   //------------------------------------- set other belos parameters
   beloslist.set("Num Blocks", inparams.get<int>("AZSUB"));
-  // beloslist.set("Block Size", 1); // TODO blocksize
-  beloslist.set("Orthogonalization", /*"DGKS"*/ /* ICGS,*/ "IMGS");
-  beloslist.set("Maximum Iterations", inparams.get<int>("AZITER"));
-  // beloslist.set("Adaptive Block Size",true);
+
   int outputfrequency = inparams.get<int>("AZOUTPUT");
   beloslist.set("Output Frequency", outputfrequency);
   int verbosity = inparams.get<int>("VERBOSITY");
@@ -707,7 +757,21 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
     beloslist.set("Verbosity", Belos::Errors + Belos::Warnings);
   else if (verbosity > 0)
     beloslist.set("Verbosity", Belos::Errors);
-  // beloslist.set("allow permutation", DRT::INPUT::IntegralValue<int>(inparams,"PERMUTE_SYSTEM"));
+
+  beloslist.set("Output Style", Belos::Brief);
+  beloslist.set("Convergence Tolerance", inparams.get<double>("AZTOL"));
+
+  if (DRT::INPUT::IntegralValue<int>(inparams, "AZCONV") == AZ_r0)
+    beloslist.set("Implicit Residual Scaling",
+        Belos::convertScaleTypeToString(Belos::ScaleType::NormOfInitRes));
+  else
+    beloslist.set(
+        "Implicit Residual Scaling", Belos::convertScaleTypeToString(Belos::ScaleType::None));
+  beloslist.set("Maximum Iterations", inparams.get<int>("AZITER"));
+  // set reuse parameters
+  beloslist.set("ncall", 0);                             // counting number of solver calls
+  beloslist.set("reuse", inparams.get<int>("AZREUSE"));  // reuse info for n solver calls
+
   const auto PermutationStrategy =
       Teuchos::getIntegralValue<INPAR::SOLVER::PermutationStrategy>(inparams, "PERMUTE_SYSTEM");
 
@@ -724,11 +788,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
       beloslist.set("permutation strategy", "none");
       break;
   }
-  // beloslist.set("allow permutation", bAllowPermutation);
   double nonDiagDominance = inparams.get<double>("NON_DIAGDOMINANCE_RATIO");
   beloslist.set("diagonal dominance ratio", nonDiagDominance);
-  beloslist.set("Output Style", Belos::Brief);
-  beloslist.set("Convergence Tolerance", inparams.get<double>("AZTOL"));
 
   //-------------------------------- set parameters for Ifpack if used
   if (azprectyp == INPAR::SOLVER::PreconditionerType::ilu ||
@@ -807,6 +868,14 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
     bgslist.set("block1_omega", inparams.get<double>("BGS2X2_BLOCK1_DAMPING"));
     bgslist.set("block2_iter", 1);
     bgslist.set("block2_omega", inparams.get<double>("BGS2X2_BLOCK2_DAMPING"));
+  }
+  if (azprectyp == INPAR::SOLVER::PreconditionerType::multigrid_nxn)
+  {
+    Teuchos::ParameterList& amgnxnlist = outparams.sublist("AMGnxn Parameters");
+    std::string amgnxn_xml = inparams.get<std::string>("AMGNXN_XML_FILE");
+    amgnxnlist.set<std::string>("AMGNXN_XML_FILE", amgnxn_xml);
+    std::string amgnxn_type = inparams.get<std::string>("AMGNXN_TYPE");
+    amgnxnlist.set<std::string>("AMGNXN_TYPE", amgnxn_type);
   }
 
   return outparams;
@@ -915,7 +984,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToAztec(
   azlist.set("AZ_type_overlap", AZ_symmetric);
   const int azoutput = inparams.get<int>("AZOUTPUT");
   if (!azoutput)
-    azlist.set("AZ_output", AZ_none);  // AZ_none AZ_all AZ_warnings AZ_last 10
+    azlist.set("AZ_output", AZ_all);  // AZ_none AZ_all AZ_warnings AZ_last 10
   else
     azlist.set("AZ_output", azoutput);
   azlist.set("AZ_diagnostics", inparams.get<int>("AZBDIAG"));  // AZ_none AZ_all
@@ -926,8 +995,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToAztec(
   // set reuse parameters
   azlist.set("ncall", 0);                             // counting number of solver calls
   azlist.set("reuse", inparams.get<int>("AZREUSE"));  // reuse info for n solver calls
-  // bool bAllowPermutation = DRT::INPUT::IntegralValue<bool>(inparams,"PERMUTE_SYSTEM");
-  // azlist.set("allow permutation", bAllowPermutation);
+
   const auto PermutationStrategy =
       Teuchos::getIntegralValue<INPAR::SOLVER::PermutationStrategy>(inparams, "PERMUTE_SYSTEM");
 
@@ -1061,6 +1129,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(
       outparams.set("solver", "superlu");
       break;
     case INPAR::SOLVER::SolverType::aztec_msr:
+      std::cout << "\nWARNING: The linear solver interface Aztec is deprecated and will be"
+                   "removed soon! Use Belos instead and adapt your input file."
+                << std::endl;
       outparams = LINALG::Solver::TranslateBACIToAztec(inparams);
       break;
     case INPAR::SOLVER::SolverType::belos:
