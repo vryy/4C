@@ -145,11 +145,10 @@ namespace SSI
      other possible coupling objects in derived
      classes
 
-    \return int
+    \return RedistributionType
     \date 08/16
     \author vuong, rauch  */
-    virtual RedistributionType InitFieldCoupling(const Epetra_Comm& comm,
-        const std::string& struct_disname, const std::string& scatra_disname);
+    virtual RedistributionType InitFieldCoupling(const std::string& struct_disname);
 
     /*! \brief Setup discretizations
 
