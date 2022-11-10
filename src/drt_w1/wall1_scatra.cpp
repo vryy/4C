@@ -10,8 +10,8 @@
 
 #include "wall1_scatra.H"
 
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_linedefinition.H"
+#include "drt_discret.H"
 
 DRT::ELEMENTS::Wall1ScatraType DRT::ELEMENTS::Wall1ScatraType::instance_;
 

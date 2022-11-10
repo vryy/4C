@@ -18,7 +18,7 @@
 #include <ArborX_KDOP.hpp>
 #endif
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 #ifdef HAVE_ARBORX
 namespace ArborX::Details

@@ -10,9 +10,9 @@
 #define SRC_DRT_POROMULTIPHASE_POROMULTIPHASE_BASE_H_
 
 
-#include "../drt_adapter/adapter_algorithmbase.H"
-#include "../drt_adapter/ad_poromultiphase.H"
-#include "../drt_lib/drt_dserror.H"
+#include "adapter_algorithmbase.H"
+#include "ad_poromultiphase.H"
+#include "drt_dserror.H"
 
 namespace ADAPTER
 {

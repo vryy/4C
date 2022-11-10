@@ -14,22 +14,22 @@
 #include "post_drt_common.H"
 
 #include <stack>
-#include "../drt_lib/drt_exporter.H"
+#include "drt_exporter.H"
 #include <EpetraExt_Transpose_CrsGraph.h>
 #include <Epetra_MpiComm.h>
-#include "../drt_lib/drt_parobjectregister.H"
-#include "../drt_lib/drt_parobject.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_periodicbc.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_lib/drt_dofset_independent.H"
-#include "../drt_rigidsphere/rigidsphere.H"
-#include "../drt_inpar/inpar_problemtype.H"
+#include "drt_parobjectregister.H"
+#include "drt_parobject.H"
+#include "drt_condition_utils.H"
+#include "drt_periodicbc.H"
+#include "drt_nurbs_discret.H"
+#include "drt_dofset_independent.H"
+#include "rigidsphere.H"
+#include "inpar_problemtype.H"
 
-#include "../pss_full/pss_cpp.h"
+#include "pss_cpp.h"
 extern "C"
 {
-#include "../pss_full/pss_table_iter.h"
+#include "pss_table_iter.h"
 }
 
 /*----------------------------------------------------------------------*

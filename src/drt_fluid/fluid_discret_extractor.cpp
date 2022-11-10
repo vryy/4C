@@ -9,12 +9,12 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "../drt_fluid/fluid_discret_extractor.H"
-#include "../drt_lib/drt_periodicbc.H"
-#include "../drt_lib/drt_dofset_transparent.H"
-#include "../drt_lib/drt_utils_rebalancing.H"
-#include "../drt_io/io.H"
-#include "../drt_lib/drt_discret_xwall.H"
+#include "fluid_discret_extractor.H"
+#include "drt_periodicbc.H"
+#include "drt_dofset_transparent.H"
+#include "drt_utils_rebalancing.H"
+#include "io.H"
+#include "drt_discret_xwall.H"
 
 
 /*----------------------------------------------------------------------*

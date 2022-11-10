@@ -14,19 +14,19 @@
 
 #include <sstream>
 
-#include "../drt_lib/drt_element_vtk_cell_type_register.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../post_drt_common/post_drt_common.H"
+#include "drt_element_vtk_cell_type_register.H"
+#include "drt_discret.H"
+#include "drt_dserror.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "post_drt_common.H"
 
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-#include "../drt_lib/drt_element.H"
+#include "drt_nurbs_discret.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_nurbs_shapefunctions.H"
+#include "drt_element.H"
 
-#include "../drt_beam3/beam3_base.H"
+#include "beam3_base.H"
 
 
 PostVtuWriterNode::PostVtuWriterNode(PostField* field, const std::string& filename)

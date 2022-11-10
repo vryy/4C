@@ -13,7 +13,7 @@
 #include "fluid_ele_calc.H"
 #include "fluid_ele_parameter.H"
 
-#include "../drt_inpar/inpar_topopt.H"
+#include "inpar_topopt.H"
 
 
 /*----------------------------------------------------------------------*

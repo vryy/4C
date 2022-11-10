@@ -15,8 +15,8 @@
 #include <string>
 
 #include "geometry_pair_utility_classes.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../headers/FAD_utils.H"
+#include "linalg_fixedsizematrix.H"
+#include "FAD_utils.H"
 
 
 // Forward declarations.

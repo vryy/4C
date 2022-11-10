@@ -12,11 +12,11 @@
 #include "drt_utils_discret.H"
 
 #include "drt_discret_hdg.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "drt_nurbs_discret.H"
 
 #include "drt_globalproblem.H"
 
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_mapextractor.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

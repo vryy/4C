@@ -14,24 +14,24 @@ algorithms
 #include "ehl_partitioned.H"
 #include "ehl_utils.H"
 
-#include "../drt_adapter/ad_str_wrapper.H"
-#include "../drt_adapter/adapter_lubrication.H"
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/adapter_coupling_ehl_mortar.H"
-#include "../drt_contact/contact_interface.H"
-#include "../drt_contact/contact_node.H"
-#include "../drt_lib/drt_dofset_predefineddofnumber.H"
+#include "ad_str_wrapper.H"
+#include "adapter_lubrication.H"
+#include "adapter_coupling.H"
+#include "adapter_coupling_ehl_mortar.H"
+#include "contact_interface.H"
+#include "contact_node.H"
+#include "drt_dofset_predefineddofnumber.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lubrication/lubrication_timint_implicit.H"
-#include "../drt_mat/lubrication_mat.H"
+#include "drt_globalproblem.H"
+#include "lubrication_timint_implicit.H"
+#include "lubrication_mat.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
-#include "../drt_lib/drt_matchingoctree.H"
+#include "drt_matchingoctree.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_gmsh.H"
+#include "io.H"
+#include "io_gmsh.H"
 
 #include "Epetra_MultiVector.h"
 

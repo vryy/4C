@@ -13,7 +13,7 @@
 #define FSI_STRUCTURE_WRAPPER_IMMERSED_H
 
 #include "ad_str_fpsiwrapper.H"
-#include "../drt_structure_new/str_dbc.H"
+#include "str_dbc.H"
 
 // forward declarations
 namespace STR

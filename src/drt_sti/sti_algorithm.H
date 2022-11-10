@@ -10,8 +10,8 @@
 #ifndef STI_ALGORITHM_H
 #define STI_ALGORITHM_H
 
-#include "../drt_adapter/adapter_algorithmbase.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "adapter_algorithmbase.H"
+#include "adapter_scatra_base_algorithm.H"
 
 // forward declarations
 class Epetra_Time;

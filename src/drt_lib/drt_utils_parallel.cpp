@@ -12,16 +12,16 @@
 
 #include "drt_utils_parallel.H"
 
-#include "../drt_binstrategy/binning_strategy.H"
+#include "binning_strategy.H"
 #include "drt_utils_createdis.H"
 #include "drt_node.H"
 #include "drt_discret.H"
 #include "drt_dserror.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../drt_lib/drt_matchingoctree.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "drt_matchingoctree.H"
 
 #include <Epetra_IntVector.h>
 

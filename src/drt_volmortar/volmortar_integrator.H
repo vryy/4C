@@ -17,10 +17,10 @@
 /*---------------------------------------------------------------------*
  | headers                                                 farah 01/14 |
  *---------------------------------------------------------------------*/
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_fem_general/drt_utils_gausspoints.H"
-#include "../drt_cut/cut_utils.H"
-#include "../drt_inpar/inpar_volmortar.H"
+#include "drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_gausspoints.H"
+#include "cut_utils.H"
+#include "inpar_volmortar.H"
 
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 01/14 |

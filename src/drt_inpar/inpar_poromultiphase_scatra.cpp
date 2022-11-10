@@ -14,9 +14,9 @@
 #include "inpar_poromultiphase_scatra.H"
 #include "inpar_scatra.H"
 #include "inpar_poroelast.H"
-#include "../drt_lib/drt_conditiondefinition.H"
+#include "drt_conditiondefinition.H"
 
-#include "../linalg/linalg_equilibrate.H"
+#include "linalg_equilibrate.H"
 
 
 void INPAR::POROMULTIPHASESCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)

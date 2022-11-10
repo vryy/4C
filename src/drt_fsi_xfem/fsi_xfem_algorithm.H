@@ -13,9 +13,9 @@
 #define FSI_ALGORITHMXFEM_H
 
 
-#include "../drt_adapter/adapter_algorithmbase.H"
+#include "adapter_algorithmbase.H"
 #include <Epetra_Vector.h>
-#include "../drt_adapter/ad_field_wrapper.H"
+#include "ad_field_wrapper.H"
 
 namespace DRT
 {

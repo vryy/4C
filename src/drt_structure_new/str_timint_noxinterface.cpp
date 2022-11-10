@@ -17,17 +17,17 @@
 #include "str_impl_generic.H"
 #include "str_utils.H"
 
-#include "../solver_nonlin_nox/nox_nln_aux.H"
-#include "../solver_nonlin_nox/nox_nln_constraint_group.H"
+#include "nox_nln_aux.H"
+#include "nox_nln_constraint_group.H"
 
-#include "../linalg/linalg_sparseoperator.H"
-#include "../drt_lib/drt_discret.H"
+#include "linalg_sparseoperator.H"
+#include "drt_discret.H"
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 #include <NOX_Epetra_Vector.H>
 
-#include "../linalg/linalg_sparsematrix.H"
+#include "linalg_sparsematrix.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

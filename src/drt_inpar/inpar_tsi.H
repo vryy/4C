@@ -13,7 +13,7 @@
 #define INPAR_TSI_H
 
 #include "inpar_parameterlist_utils.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 /*----------------------------------------------------------------------*
  |                                                           dano 11/09 |

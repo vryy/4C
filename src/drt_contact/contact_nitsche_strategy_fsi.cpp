@@ -15,9 +15,9 @@
 #include "contact_interface.H"
 #include "contact_nitsche_integrator_fsi.H"
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
-#include "../drt_mortar/mortar_projector.H"
+#include "mortar_projector.H"
 
 void CONTACT::CoNitscheStrategyFsi::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,

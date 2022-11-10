@@ -9,20 +9,20 @@
 
 
 #include "levelset_intersection_utils.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_cut/cut_levelsetintersection.H"
-#include "../drt_cut/cut_integrationcell.H"
-#include "../drt_cut/cut_volumecell.H"
-#include "../drt_geometry/position_array.H"
-#include "../drt_geometry/integrationcell.H"
-#include "../drt_geometry/element_volume.H"
-#include "../drt_geometry/element_coordtrafo.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_exporter.H"
+#include "drt_utils.H"
+#include "cut_levelsetintersection.H"
+#include "cut_integrationcell.H"
+#include "cut_volumecell.H"
+#include "position_array.H"
+#include "integrationcell.H"
+#include "element_volume.H"
+#include "element_coordtrafo.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_scatra_ele/scatra_ele_parameter_std.H"
+#include "scatra_ele_parameter_std.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

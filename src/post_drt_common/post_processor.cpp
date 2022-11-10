@@ -14,13 +14,13 @@
 #include "post_writer_base.H"
 #include "post_single_field_writers.H"
 
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_dserror.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
 
-#include "../drt_so3/so_base.H"
+#include "so_base.H"
 
-#include "../drt_scatra_ele/scatra_ele.H"
+#include "scatra_ele.H"
 
 
 void runEnsightVtuFilter(PostProblem& problem)

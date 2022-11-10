@@ -13,10 +13,10 @@ Kloeppel
 
 #include <iostream>
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../drt_io/io.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "io.H"
 
 #include "constraint_manager.H"
 #include "constraint.H"

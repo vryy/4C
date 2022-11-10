@@ -10,7 +10,7 @@ law, modified from Pioletti, 1997
 #ifndef VISCO_ISORATEDEP_H_
 #define VISCO_ISORATEDEP_H_
 
-#include "../drt_mat/matpar_parameter.H"
+#include "matpar_parameter.H"
 #include "elast_summand.H"
 
 namespace MAT

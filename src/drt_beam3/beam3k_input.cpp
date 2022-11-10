@@ -10,12 +10,12 @@
 
 #include "beam3k.H"
 
-#include "../drt_mat/material.H"
-#include "../drt_mat/matpar_parameter.H"
+#include "material.H"
+#include "matpar_parameter.H"
 
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
-#include "../drt_fem_general/largerotations.H"
+#include "largerotations.H"
 
 
 /*------------------------------------------------------------------------------------------------*

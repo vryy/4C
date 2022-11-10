@@ -17,9 +17,9 @@ with different parameters in more than one fluid field is not yet supported.
 #define FLUID_ELE_PARAMETER_TIMINT_H
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../drt_inpar/inpar_fluid.H"
+#include "inpar_fluid.H"
 
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 namespace DRT
 {

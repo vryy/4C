@@ -11,11 +11,11 @@
 #ifndef SCATRA_TIMINT_ELCH_SERVICE_H
 #define SCATRA_TIMINT_ELCH_SERVICE_H
 
-#include "../drt_inpar/inpar_elch.H"
+#include "inpar_elch.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "scatra_timint_implicit.H"
 
-#include "../drt_lib/drt_condition.H"
+#include "drt_condition.H"
 
 /*==========================================================================*/
 // forward declarations

@@ -19,8 +19,8 @@ The functions in this file are not problem-specific and may be useful for a numb
 #include "drt_linedefinition.H"
 #include "Teuchos_RCP.hpp"
 
-#include "../drt_io/csv_reader.H"
-#include "../drt_io/io_control.H"
+#include "csv_reader.H"
+#include "io_control.H"
 
 
 /*----------------------------------------------------------------------*/

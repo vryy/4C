@@ -12,10 +12,10 @@ approach for Fluid-beam interaction.
 #include "partitioned_penaltycoupling_assembly_manager_indirect.H"
 #include "beam_to_fluid_assembly_manager_factory.H"
 #include "beam_to_fluid_meshtying_params.H"
-#include "../drt_beaminteraction/beam_contact_pair.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_sparseoperator.H"
+#include "beam_contact_pair.H"
+#include "drt_discret.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_sparseoperator.H"
 #include <Epetra_FEVector.h>
 
 void ADAPTER::FBIConstraintBridgePenalty::Setup(const Epetra_Map* beam_map,

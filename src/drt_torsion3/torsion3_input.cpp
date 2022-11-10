@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------------*/
 
 #include "torsion3.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
 
 

@@ -11,7 +11,7 @@
 #ifndef POST_DRT_FILTER_BASE_H_
 #define POST_DRT_FILTER_BASE_H_
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <Teuchos_RCP.hpp>
 

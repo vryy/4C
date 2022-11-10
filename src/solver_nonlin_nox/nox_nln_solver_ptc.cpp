@@ -21,12 +21,12 @@
 #include "nox_nln_group_prepostoperator.H"
 #include "nox_nln_linearsystem_prepostoperator.H"
 
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
-#include "../drt_geometry/intersection_math.H"
+#include "intersection_math.H"
 
 #include <NOX_Solver_SolverUtils.H>
 #include <NOX_Direction_Generic.H>

@@ -9,8 +9,8 @@
 
 #include "porofluidmultiphase_resulttest.H"
 
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_linedefinition.H"
+#include "drt_discret.H"
 #include "porofluidmultiphase_timint_implicit.H"
 #include "porofluidmultiphase_meshtying_strategy_base.H"
 

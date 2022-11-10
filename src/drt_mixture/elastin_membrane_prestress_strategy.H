@@ -10,7 +10,7 @@
 #ifndef BACI_MIXTURE_ELASTIN_MEMBRANE_PRESTRESS_STRATEGY_H
 #define BACI_MIXTURE_ELASTIN_MEMBRANE_PRESTRESS_STRATEGY_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 // forward declarations
 namespace Teuchos

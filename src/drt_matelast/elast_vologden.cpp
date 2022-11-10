@@ -9,7 +9,7 @@ Mechanics, 2000"
 /*----------------------------------------------------------------------*/
 
 #include "elast_vologden.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 
 MAT::ELASTIC::PAR::VolOgden::VolOgden(const Teuchos::RCP<MAT::PAR::Material>& matdata)

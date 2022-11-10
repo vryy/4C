@@ -13,7 +13,7 @@
 #define STR_TIMINT_BASEDATAIO_RUNTIME_VTP_OUTPUT_H_
 
 
-#include "../drt_inpar/inpar_IO_runtime_vtp_output_structure.H"
+#include "inpar_IO_runtime_vtp_output_structure.H"
 
 namespace Teuchos
 {

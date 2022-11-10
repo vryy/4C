@@ -22,23 +22,23 @@
 #include "contact_line_coupling.H"
 #include "friction_node.H"
 
-#include "../drt_mortar/mortar_binarytree.H"
-#include "../drt_mortar/mortar_defines.H"
-#include "../drt_mortar/mortar_dofset.H"
-#include "../drt_mortar/mortar_projector.H"
+#include "mortar_binarytree.H"
+#include "mortar_defines.H"
+#include "mortar_dofset.H"
+#include "mortar_projector.H"
 
-#include "../drt_binstrategy/binning_strategy.H"
+#include "binning_strategy.H"
 
-#include "../drt_scatra_ele/scatra_ele_parameter_boundary.H"
+#include "scatra_ele_parameter_boundary.H"
 
-#include "../drt_lib/drt_utils_rebalancing.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "drt_utils_rebalancing.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 #include "contact_nitsche_utils.H"
 
-#include "../drt_io/io.H"
+#include "io.H"
 
 #include "selfcontact_binarytree_unbiased.H"
 

@@ -18,25 +18,25 @@
  *----------------------------------------------------------------------*/
 #include "biofilm_fsi.H"
 #include "biofilm_fsi_utils.H"
-#include "../drt_io/io_gmsh.H"
-#include "../drt_fsi/fsi_monolithicfluidsplit.H"
-#include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_utils_materials.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../drt_structure/stru_aux.H"
-#include "../drt_ale/ale_utils_clonestrategy.H"
-#include "../drt_ale/ale_utils_mapextractor.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/ad_ale_fsi.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_io/io.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/ad_fld_fluid_fsi.H"
-#include "../drt_adapter/ad_ale_fsi.H"
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "io_gmsh.H"
+#include "fsi_monolithicfluidsplit.H"
+#include "drt_utils_createdis.H"
+#include "drt_utils_materials.H"
+#include "fluid_utils_mapextractor.H"
+#include "stru_aux.H"
+#include "ale_utils_clonestrategy.H"
+#include "ale_utils_mapextractor.H"
+#include "adapter_scatra_base_algorithm.H"
+#include "adapter_coupling.H"
+#include "ad_ale_fsi.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "io.H"
+#include "ad_str_fsiwrapper.H"
+#include "ad_fld_fluid_fsi.H"
+#include "ad_ale_fsi.H"
+#include "scatra_timint_implicit.H"
 
-//#define SCATRABLOCKMATRIXMERGE
+// #define SCATRABLOCKMATRIXMERGE
 
 
 /*----------------------------------------------------------------------*/

@@ -13,7 +13,7 @@
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include <Teuchos_LAPACK.hpp>
-#include "../drt_lib/drt_exporter.H"
+#include "drt_exporter.H"
 
 namespace LINALG
 {

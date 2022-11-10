@@ -10,7 +10,7 @@
 #include <Teuchos_ScalarTraits.hpp>
 
 #include "linalg_utils_densematrix_svd.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 void LINALG::SVD(const Epetra_SerialDenseMatrix& A, LINALG::SerialDenseMatrix& Q,
     LINALG::SerialDenseMatrix& S, LINALG::SerialDenseMatrix& VT)

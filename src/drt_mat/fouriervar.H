@@ -19,7 +19,7 @@
 #include "material_thermo.H"
 #include "consolidation.H"
 
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |

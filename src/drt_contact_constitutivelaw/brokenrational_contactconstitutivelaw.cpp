@@ -11,7 +11,7 @@
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseVector.h>
 #include "brokenrational_contactconstitutivelaw.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*/

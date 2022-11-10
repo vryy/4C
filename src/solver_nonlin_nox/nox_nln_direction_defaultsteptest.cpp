@@ -11,8 +11,8 @@
 #include "nox_nln_direction_defaultsteptest.H"
 #include "nox_nln_group.H"
 
-#include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "drt_dserror.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>

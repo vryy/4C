@@ -14,9 +14,9 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_SerialDenseMatrix.hpp>
 
-#include "../drt_beaminteraction/beam3contact_defines.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "beam3contact_defines.H"
+#include "linalg_fixedsizematrix.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
 namespace CONTACT
 {

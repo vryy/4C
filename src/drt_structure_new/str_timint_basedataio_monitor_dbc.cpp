@@ -10,9 +10,9 @@
 
 #include "str_timint_basedataio_monitor_dbc.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
-#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "inpar_parameterlist_utils.H"
 
 
 /*-----------------------------------------------------------------------------------------------*

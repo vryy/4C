@@ -11,7 +11,7 @@ corresponding volumetric contribution.
 #define ELAST_ISOVOLAAAGASSER_H_
 
 #include "elast_summand.H"
-#include "../drt_mat/matpar_parameter.H"
+#include "matpar_parameter.H"
 
 namespace MAT
 {

@@ -9,12 +9,12 @@
 #include "so_utils.H"
 #include <algorithm>
 #include <utility>
-#include "../linalg/linalg_utils_densematrix_svd.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fiber/drt_fiber_node.H"
-#include "../drt_fiber/nodal_fiber_holder.H"
+#include "linalg_utils_densematrix_svd.H"
+#include "drt_element.H"
+#include "standardtypes_cpp.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_fiber_node.H"
+#include "nodal_fiber_holder.H"
 #include "prestress.H"
 
 template <DRT::Element::DiscretizationType distype>

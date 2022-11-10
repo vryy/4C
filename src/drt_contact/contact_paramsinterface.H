@@ -13,7 +13,7 @@
 #ifndef SRC_DRT_CONTACT_CONTACT_PARAMSINTERFACE_H_
 #define SRC_DRT_CONTACT_CONTACT_PARAMSINTERFACE_H_
 
-#include "../drt_mortar/mortar_paramsinterface.H"
+#include "mortar_paramsinterface.H"
 
 namespace NOX
 {

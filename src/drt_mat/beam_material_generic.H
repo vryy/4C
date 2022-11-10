@@ -11,11 +11,11 @@
 #define MAT_BEAM_H_
 
 #include "material.H"
-#include "../drt_inpar/inpar_material.H"
+#include "inpar_material.H"
 
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Sacado.hpp>

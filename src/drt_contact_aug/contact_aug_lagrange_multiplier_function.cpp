@@ -11,20 +11,20 @@
 #include "contact_augmented_strategy.H"
 #include "contact_augmented_interface.H"
 
-#include "../drt_mortar/mortar_matrix_transform.H"
+#include "mortar_matrix_transform.H"
 
-#include "../drt_contact/contact_paramsinterface.H"
+#include "contact_paramsinterface.H"
 
-#include "../drt_structure_new/str_model_evaluator_contact.H"
+#include "str_model_evaluator_contact.H"
 
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_multiply.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_solver.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_multiply.H"
 
-#include "../drt_io/io_control.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "io_control.H"
+#include "drt_globalproblem.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

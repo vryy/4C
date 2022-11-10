@@ -15,7 +15,7 @@
 #include "drt_validparameters.H"
 #include "inpar_parameterlist_utils.H"
 
-#include "../drt_lib/drt_conditiondefinition.H"
+#include "drt_conditiondefinition.H"
 
 /*---------------------------------------------------------------------------*
  | set the particle parameters                                sfuchs 03/2018 |

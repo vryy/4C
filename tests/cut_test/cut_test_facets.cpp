@@ -13,8 +13,8 @@
 
 #include "cut_test_utils.H"
 
-#include "../../src/drt_cut/cut_meshintersection.H"
-#include "../../src/drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "cut_meshintersection.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
 unsigned FindNextCornerPoint(const std::vector<LINALG::Matrix<3, 1>>& points,
     LINALG::Matrix<3, 1>& x1, LINALG::Matrix<3, 1>& x2, LINALG::Matrix<3, 1>& x3,

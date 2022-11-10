@@ -12,27 +12,27 @@
 #include "xfluid_state_creator.H"
 #include "xfluid_state.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_parallel.H"
-#include "../drt_lib/drt_discret_xfem.H"
-#include "../drt_lib/drt_dofset_transparent_independent.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_parallel.H"
+#include "drt_discret_xfem.H"
+#include "drt_dofset_transparent_independent.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
-#include "../drt_xfem/xfem_condition_manager.H"
-#include "../drt_xfem/xfem_discretization_utils.H"
-#include "../drt_xfem/xfem_edgestab.H"
+#include "xfem_condition_manager.H"
+#include "xfem_discretization_utils.H"
+#include "xfem_edgestab.H"
 
-#include "../drt_cut/cut_elementhandle.H"
-#include "../drt_cut/cut_sidehandle.H"
-#include "../drt_cut/cut_volumecell.H"
-#include "../drt_cut/cut_integrationcell.H"
-#include "../drt_cut/cut_cutwizard.H"
+#include "cut_elementhandle.H"
+#include "cut_sidehandle.H"
+#include "cut_volumecell.H"
+#include "cut_integrationcell.H"
+#include "cut_cutwizard.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_gmsh.H"
+#include "io.H"
+#include "io_gmsh.H"
 
-#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "inpar_parameterlist_utils.H"
 
 FLD::XFluidOutputService::XFluidOutputService(const Teuchos::RCP<DRT::DiscretizationXFEM>& discret,
     const Teuchos::RCP<XFEM::ConditionManager>& cond_manager)

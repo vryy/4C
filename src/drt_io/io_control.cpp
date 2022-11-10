@@ -17,14 +17,14 @@
 #include <unistd.h>
 #include <vector>
 
-#include "../drt_inpar/inpar_problemtype.H"
+#include "inpar_problemtype.H"
 
 extern "C"
 {
 #include "compile_settings.h"  // for printing current revision number
 }
 
-#include "../pss_full/pss_cpp.h"  // access to legacy parser module
+#include "pss_cpp.h"  // access to legacy parser module
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

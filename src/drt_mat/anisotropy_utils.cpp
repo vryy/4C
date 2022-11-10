@@ -8,10 +8,10 @@
 */
 /*----------------------------------------------------------------------*/
 #include "anisotropy_utils.H"
-#include "../drt_lib/drt_pack_buffer.H"
-#include "../drt_lib/drt_parobject.H"
-#include "../drt_matelast/elast_aniso_structuraltensor_strategy.H"
-#include "../drt_lib/drt_inputreader.H"
+#include "drt_pack_buffer.H"
+#include "drt_parobject.H"
+#include "elast_aniso_structuraltensor_strategy.H"
+#include "drt_inputreader.H"
 
 void MAT::ReadAnisotropyFiber(
     DRT::INPUT::LineDefinition* linedef, std::string specifier, LINALG::Matrix<3, 1>& fiber_vector)

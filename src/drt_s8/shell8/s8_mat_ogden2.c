@@ -9,8 +9,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "shell8.h"
-#include "../../headers/standardtypes.h"
-#include "../../drt_lib/drt_dserror.H"
+#include "standardtypes.h"
+#include "drt_dserror.H"
 
 /* declaration of fortran routine*/
 void fortranpow(double *, double *, double *);

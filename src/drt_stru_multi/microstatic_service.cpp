@@ -11,8 +11,8 @@
 
 
 #include "microstatic.H"
-#include "../drt_structure/stru_aux.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "stru_aux.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
 
 //-----------------------------------------------------------------------

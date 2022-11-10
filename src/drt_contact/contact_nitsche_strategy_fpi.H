@@ -15,7 +15,7 @@
 
 #include "contact_nitsche_strategy_poro.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 namespace CONTACT
 {

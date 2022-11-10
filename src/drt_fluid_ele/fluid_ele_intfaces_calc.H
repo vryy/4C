@@ -13,10 +13,10 @@
 #define FLUID_ELE_INTFACES_CALC_H
 
 
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_inpar/inpar_xfem.H"
+#include "drt_utils_local_connectivity_matrices.H"
+#include "inpar_xfem.H"
 
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 // forward declarations
 namespace LINALG

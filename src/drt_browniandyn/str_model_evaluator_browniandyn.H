@@ -16,9 +16,9 @@
 #ifndef STR_MODEL_EVALUATOR_BROWNIANDYN_H_
 #define STR_MODEL_EVALUATOR_BROWNIANDYN_H_
 
-#include "../drt_structure_new/str_model_evaluator_generic.H"  // base class
+#include "str_model_evaluator_generic.H"  // base class
 #include <Teuchos_RCP.hpp>
-#include "../drt_structure_new/str_elements_paramsinterface.H"  // interface to the element evaluation
+#include "str_elements_paramsinterface.H"  // interface to the element evaluation
 
 
 // forward declaration ...

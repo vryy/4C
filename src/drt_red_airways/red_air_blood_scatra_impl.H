@@ -15,8 +15,8 @@
 #define RED_AIR_BLOOD_SCATRA_IMPL_H_
 
 #include "red_airway.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "drt_utils_local_connectivity_matrices.H"
+#include "linalg_fixedsizematrix.H"
 
 
 namespace DRT

@@ -13,7 +13,7 @@ linear spring (Stiffness1) only (Neo Hookean), inherits from Maxwell_0d_acinus
 
 
 #include "maxwell_0d_acinus.H"
-#include "../drt_red_airways/red_airway.H"
+#include "red_airway.H"
 
 
 namespace MAT

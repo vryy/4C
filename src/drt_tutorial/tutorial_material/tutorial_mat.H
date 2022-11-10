@@ -14,7 +14,7 @@
 #ifndef TUTORIAL_MAT_H
 #define TUTORIAL_MAT_H
 
-#include "../../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 namespace TUTORIAL
 {

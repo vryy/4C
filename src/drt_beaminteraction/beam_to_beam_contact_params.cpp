@@ -10,7 +10,7 @@
 
 #include "beam_to_beam_contact_params.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------------*

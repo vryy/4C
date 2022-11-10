@@ -12,12 +12,12 @@
 #include "beam_to_solid_vtu_output_writer_base.H"
 #include "beam_to_solid_vtu_output_writer_visualization.H"
 
-#include "../drt_geometry_pair/geometry_pair_element_functions.H"
-#include "../drt_geometry_pair/geometry_pair_scalar_types.H"
-#include "../drt_beam3/beam3.H"
-#include "../drt_beam3/beam3r.H"
-#include "../drt_beam3/beam3k.H"
-#include "../drt_beam3/beam3eb.H"
+#include "geometry_pair_element_functions.H"
+#include "geometry_pair_scalar_types.H"
+#include "beam3.H"
+#include "beam3r.H"
+#include "beam3k.H"
+#include "beam3eb.H"
 
 #include "Sacado.hpp"
 

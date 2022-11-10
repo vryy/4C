@@ -10,8 +10,8 @@
 #ifndef SRC_DRT_CONTACT_AUG_CONTACT_AUG_PROJECTOR_H_
 #define SRC_DRT_CONTACT_AUG_CONTACT_AUG_PROJECTOR_H_
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "drt_element.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
 
 namespace MORTAR

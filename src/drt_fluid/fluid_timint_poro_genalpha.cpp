@@ -10,7 +10,7 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_timint_poro_genalpha.H"
-#include "../drt_io/io.H"
+#include "io.H"
 
 
 FLD::TimIntPoroGenAlpha::TimIntPoroGenAlpha(const Teuchos::RCP<DRT::Discretization>& actdis,

@@ -20,7 +20,7 @@
 
 #include <NOX_StatusTest_NormF.H>
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

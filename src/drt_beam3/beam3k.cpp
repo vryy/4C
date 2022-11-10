@@ -12,24 +12,24 @@
 
 #include "triad_interpolation_local_rotation_vectors.H"
 
-#include "../drt_beaminteraction/periodic_boundingbox.H"
+#include "periodic_boundingbox.H"
 
-#include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "str_elements_paramsinterface.H"
 
 // Todo @grill: check for obsolete header inclusions
-#include "../headers/FAD_utils.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../drt_fem_general/largerotations.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_beaminteraction/periodic_boundingbox.H"
+#include "FAD_utils.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
+#include "drt_dserror.H"
+#include "drt_globalproblem.H"
+#include "drt_validparameters.H"
+#include "linalg_fixedsizematrix.H"
+#include "linalg_serialdensevector.H"
+#include "largerotations.H"
+#include "drt_linedefinition.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_integration.H"
+#include "periodic_boundingbox.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_SerialDenseMatrix.hpp>

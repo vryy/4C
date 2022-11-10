@@ -15,7 +15,7 @@
 #include "str_model_evaluator_generic.H"
 #include <Teuchos_RCP.hpp>
 
-#include "../drt_cardiovascular0d/cardiovascular0d_manager.H"
+#include "cardiovascular0d_manager.H"
 
 // forward declarations
 namespace LINALG

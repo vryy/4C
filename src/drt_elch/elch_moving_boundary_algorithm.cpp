@@ -9,12 +9,12 @@
 
 
 #include "elch_moving_boundary_algorithm.H"
-#include "../drt_inpar/inpar_elch.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_io/io.H"
+#include "inpar_elch.H"
+#include "fluid_utils_mapextractor.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "io.H"
 
-#include "../drt_scatra/scatra_timint_elch.H"
+#include "scatra_timint_elch.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

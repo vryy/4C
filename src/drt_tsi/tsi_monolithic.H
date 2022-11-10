@@ -20,9 +20,9 @@
  | headers                                                   dano 11/10 |
  *----------------------------------------------------------------------*/
 #include "tsi_algorithm.H"
-#include "../drt_inpar/inpar_tsi.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_inpar/inpar_thermo.H"
+#include "inpar_tsi.H"
+#include "inpar_structure.H"
+#include "inpar_thermo.H"
 
 #include <Epetra_Time.h>
 

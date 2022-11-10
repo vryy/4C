@@ -8,9 +8,9 @@
 */
 /*----------------------------------------------------------------------*/
 #include "ad_fld_fbi_wrapper.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_sparseoperator.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "drt_globalproblem.H"
+#include "linalg_sparseoperator.H"
+#include "drt_validparameters.H"
 #include "ad_fld_fbi_movingboundary.H"
 #include "ad_fld_base_algorithm.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>

@@ -12,8 +12,8 @@
 #ifndef CONSTRAINTMIXTURE_HISTORY_H_
 #define CONSTRAINTMIXTURE_HISTORY_H_
 
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_lib/drt_parobject.H"
+#include "drt_parobjectfactory.H"
+#include "drt_parobject.H"
 
 namespace MAT
 {

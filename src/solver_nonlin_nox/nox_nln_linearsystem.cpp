@@ -16,12 +16,12 @@
 #include "nox_nln_linearsystem_prepostoperator.H"
 #include "nox_nln_solver_ptc.H"
 #include "nox_nln_aux.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_solver.H"
+#include "linalg_serialdensevector.H"
 
-#include "../drt_lib/epetra_utils.H"
+#include "epetra_utils.H"
 
 #include <unordered_map>
 
@@ -33,7 +33,7 @@
 
 #include <NOX_Epetra_Scaling.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>
-#include "../drt_structure_new/str_nln_linearsystem_scaling.H"
+#include "str_nln_linearsystem_scaling.H"
 
 
 /*----------------------------------------------------------------------*

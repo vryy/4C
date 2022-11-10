@@ -14,7 +14,7 @@
 #define FPSI_MONOLITHICPLAIN_H
 
 #include "fpsi_monolithic.H"
-#include "../drt_inpar/inpar_fpsi.H"
+#include "inpar_fpsi.H"
 
 
 namespace ADAPTER

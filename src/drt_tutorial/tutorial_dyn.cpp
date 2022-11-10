@@ -16,7 +16,7 @@
 #include "tutorial_fixedpoint_scheme.H"
 #include "tutorial_struct_ale_coupling.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 
 void tutorial_drt()

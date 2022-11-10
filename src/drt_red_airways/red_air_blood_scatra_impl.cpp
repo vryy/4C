@@ -13,18 +13,18 @@
 
 #include "red_air_blood_scatra_impl.H"
 
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/matlist.H"
-#include "../drt_mat/air_0d_O2_saturation.H"
-#include "../drt_mat/hemoglobin_0d_O2_saturation.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_function.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_gder2.H"
+#include "newtonianfluid.H"
+#include "matpar_bundle.H"
+#include "matlist.H"
+#include "air_0d_O2_saturation.H"
+#include "hemoglobin_0d_O2_saturation.H"
+#include "drt_discret.H"
+#include "drt_function.H"
+#include "drt_utils.H"
+#include "drt_globalproblem.H"
+#include "standardtypes_cpp.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_gder2.H"
 #include <fstream>
 #include <iomanip>
 

@@ -8,23 +8,23 @@
  */
 /*----------------------------------------------------------------------*/
 
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_discret_xfem.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_condition_utils.H"
+#include "drt_discret.H"
+#include "drt_discret_xfem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_cut/cut_cutwizard.H"
+#include "cut_cutwizard.H"
 
-#include "../drt_xfem/xfem_condition_manager.H"
-#include "../drt_xfem/xfem_dofset.H"
+#include "xfem_condition_manager.H"
+#include "xfem_dofset.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
+#include "io.H"
+#include "io_control.H"
 
-#include "../drt_xfem/xfield_state_utils.H"
+#include "xfield_state_utils.H"
 
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
 #include "xfluid_state.H"
 

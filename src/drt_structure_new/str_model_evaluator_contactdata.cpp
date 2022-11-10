@@ -14,7 +14,7 @@
 #include "str_timint_implicit.H"
 #include "str_integrator.H"
 #include "str_nln_solver_nox.H"
-#include "../drt_inpar/inpar_contact.H"
+#include "inpar_contact.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

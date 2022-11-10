@@ -11,7 +11,7 @@
 #include "wall1_poro_p1.H"
 #include "wall1_poro_p1_eletypes.H"
 
-#include "../drt_lib/drt_utils_factory.H"
+#include "drt_utils_factory.H"
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Wall1_PoroP1<distype>::Wall1_PoroP1(int id, int owner)

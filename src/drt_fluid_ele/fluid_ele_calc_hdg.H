@@ -15,10 +15,10 @@
 
 #include "fluid_ele_interface.H"
 #include "fluid_ele_hdg.H"
-#include "../drt_inpar/inpar_fluid.H"
-#include "../drt_fem_general/drt_utils_shapevalues_hdg.H"
+#include "inpar_fluid.H"
+#include "drt_utils_shapevalues_hdg.H"
 
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 namespace DRT
 {

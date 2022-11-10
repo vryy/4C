@@ -14,7 +14,7 @@
 #include "elast_summand.H"
 #include "elast_coupanisoexpo.H"
 #include "elast_coupanisoexpoactive.H"
-#include "../drt_mat/matpar_parameter.H"
+#include "matpar_parameter.H"
 
 namespace MAT
 {

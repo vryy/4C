@@ -13,7 +13,7 @@
 #include "membrane.H"
 #include "membrane_scatra_eletypes.H"
 
-#include "../drt_inpar/inpar_scatra.H"
+#include "inpar_scatra.H"
 
 
 namespace DRT

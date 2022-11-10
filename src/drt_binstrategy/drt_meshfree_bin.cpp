@@ -9,7 +9,7 @@
 
 #include "drt_meshfree_bin.H"
 
-#include "../drt_mortar/mortar_element.H"
+#include "mortar_element.H"
 
 /*--------------------------------------------------------------------------*
  |  ctor                                               (public) ghamm 11/12 |

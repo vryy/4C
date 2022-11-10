@@ -17,10 +17,10 @@ thereby builds the bridge between the xfluid class and the cut-library
 #include <vector>
 #include <Teuchos_RCP.hpp>
 //
-#include "../drt_inpar/inpar_xfem.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "inpar_xfem.H"
+#include "drt_dserror.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
 
 #include <Epetra_Vector.h>
 

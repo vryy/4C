@@ -25,7 +25,7 @@
 #include "nox_nln_statustest_activeset.H"
 #include "nox_nln_group.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <Teuchos_Time.hpp>
 #include <NOX_MeritFunction_Generic.H>

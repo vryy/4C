@@ -11,8 +11,8 @@
 
 #include "opti_resulttest.H"
 #include "opti_GCMMA.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_discret.H"
+#include "drt_linedefinition.H"
 
 
 /*----------------------------------------------------------------------*/

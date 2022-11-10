@@ -11,15 +11,15 @@
 
 #include "poro_base.H"
 
-#include "../drt_adapter/ad_str_fpsiwrapper.H"
-#include "../drt_adapter/ad_fld_poro.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "ad_str_fpsiwrapper.H"
+#include "ad_fld_poro.H"
+#include "adapter_scatra_base_algorithm.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "scatra_timint_implicit.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |

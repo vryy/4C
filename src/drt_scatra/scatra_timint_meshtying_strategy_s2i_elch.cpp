@@ -9,29 +9,29 @@
 *----------------------------------------------------------------------*/
 #include "scatra_timint_meshtying_strategy_s2i_elch.H"
 
-#include "../drt_adapter/adapter_coupling.H"
+#include "adapter_coupling.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_parameter_list.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_parameter_list.H"
 
-#include "../drt_mat/electrode.H"
-#include "../drt_mat/soret.H"
+#include "electrode.H"
+#include "soret.H"
 
-#include "../drt_mortar/mortar_element.H"
+#include "mortar_element.H"
 
-#include "../drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode.H"
-#include "../drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode_sti_thermo.H"
-#include "../drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode_utils.H"
-#include "../drt_scatra_ele/scatra_ele_boundary_calc_sti_electrode.H"
-#include "../drt_scatra_ele/scatra_ele_parameter_elch.H"
-#include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
-#include "../drt_scatra_ele/scatra_ele_parameter_boundary.H"
+#include "scatra_ele_boundary_calc_elch_electrode.H"
+#include "scatra_ele_boundary_calc_elch_electrode_sti_thermo.H"
+#include "scatra_ele_boundary_calc_elch_electrode_utils.H"
+#include "scatra_ele_boundary_calc_sti_electrode.H"
+#include "scatra_ele_parameter_elch.H"
+#include "scatra_ele_parameter_timint.H"
+#include "scatra_ele_parameter_boundary.H"
 
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_sparseoperator.H"
-#include "../linalg/linalg_solver.H"
-#include "../headers/singleton_owner.H"
+#include "linalg_mapextractor.H"
+#include "linalg_sparseoperator.H"
+#include "linalg_solver.H"
+#include "singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |

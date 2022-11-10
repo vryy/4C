@@ -16,7 +16,7 @@ exponential pressure-volume relation (derivation: see Ismail Mahmoud's dissertat
 
 
 #include "maxwell_0d_acinus.H"
-#include "../drt_red_airways/red_airway.H"
+#include "red_airway.H"
 
 
 namespace MAT

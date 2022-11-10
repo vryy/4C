@@ -13,9 +13,9 @@
 #include <mpi.h>
 #include <Teuchos_RCPDecl.hpp>
 #include "str_model_evaluator.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_comm/comm_utils.H"
-#include "../drt_lib/drt_exporter.H"
+#include "drt_globalproblem.H"
+#include "comm_utils.H"
+#include "drt_exporter.H"
 
 STR::MODELEVALUATOR::GaussPointDataOutputManager::GaussPointDataOutputManager(
     INPAR::STR::GaussPointDataOutputType output_type)

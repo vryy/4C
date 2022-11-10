@@ -13,7 +13,7 @@
 #ifndef SRC_DRT_XFEM_XFIELD_FIELD_COUPLING_DOFSET_H_
 #define SRC_DRT_XFEM_XFIELD_FIELD_COUPLING_DOFSET_H_
 
-#include "../drt_lib/drt_dofset_fixed_size.H"
+#include "drt_dofset_fixed_size.H"
 
 
 namespace XFEM

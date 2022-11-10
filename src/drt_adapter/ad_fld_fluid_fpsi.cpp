@@ -10,10 +10,10 @@
 #include "ad_fld_fluid_fpsi.H"
 #include "ad_fld_fluid_fsi.H"
 
-#include "../drt_fpsi/fpsi_utils.H"
+#include "fpsi_utils.H"
 
-#include "../drt_fluid/fluidimplicitintegration.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "fluidimplicitintegration.H"
+#include "fluid_utils_mapextractor.H"
 
 
 /* constructor */

@@ -15,19 +15,19 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_utils_elch.H"
 
-#include "../drt_geometry/position_array.H"
-#include "../drt_lib/drt_discret.H"  // for time curve in body force
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_globalproblem.H"  // consistency check of formulation and material
-#include "../drt_lib/function_of_time.H"
+#include "position_array.H"
+#include "drt_discret.H"  // for time curve in body force
+#include "drt_utils.H"
+#include "drt_globalproblem.H"  // consistency check of formulation and material
+#include "function_of_time.H"
 
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+#include "drt_nurbs_utils.H"
 
-#include "../drt_mat/elchmat.H"
+#include "elchmat.H"
 
 #include "scatra_ele_calc_elch.H"
 
-#include "../drt_fluid/fluid_rotsym_periodicbc.H"
+#include "fluid_rotsym_periodicbc.H"
 
 
 /*----------------------------------------------------------------------*

@@ -12,12 +12,12 @@ multi-scale framework
 #include "scatra_ele_calc_elch_diffcond_multiscale.H"
 #include "scatra_ele_parameter_std.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
 
-#include "../drt_mat/elchmat.H"
-#include "../drt_mat/elchphase.H"
-#include "../drt_mat/newman_multiscale.H"
+#include "elchmat.H"
+#include "elchphase.H"
+#include "newman_multiscale.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

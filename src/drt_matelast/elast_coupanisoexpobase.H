@@ -10,9 +10,9 @@
 #define ELAST_COUPANISOEXPOBASE_H_
 
 #include "elast_summand.H"
-#include "../drt_mat/matpar_parameter.H"
-#include "../drt_mat/anisotropy_extension_base.H"
-#include "../drt_mat/anisotropy_extension_provider.H"
+#include "matpar_parameter.H"
+#include "anisotropy_extension_base.H"
+#include "anisotropy_extension_provider.H"
 
 
 namespace MAT

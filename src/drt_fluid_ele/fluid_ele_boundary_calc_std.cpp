@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "fluid_ele_boundary_calc_std.H"
-#include "../drt_lib/drt_elementtype.H"
+#include "drt_elementtype.H"
 #include "fluid_ele_parameter_std.H"
 
 template <DRT::Element::DiscretizationType distype>

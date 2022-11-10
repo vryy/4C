@@ -10,10 +10,10 @@
 #ifndef BEAMLINKPINJOINTED_H
 #define BEAMLINKPINJOINTED_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_lib/drt_parobject.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_inpar/inpar_beaminteraction.H"
+#include "linalg_fixedsizematrix.H"
+#include "drt_parobject.H"
+#include "drt_parobjectfactory.H"
+#include "inpar_beaminteraction.H"
 #include "beam_link.H"
 
 //#include <Teuchos_RCP.hpp>

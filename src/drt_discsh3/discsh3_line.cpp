@@ -6,12 +6,12 @@
 
 */
 /*----------------------------------------------------------------------*/
-//#ifdef DISCSH3_H
+// #ifdef DISCSH3_H
 
 #include "discsh3.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "drt_discret.H"
+#include "drt_dserror.H"
 
 
 DRT::ELEMENTS::DiscSh3LineType DRT::ELEMENTS::DiscSh3LineType::instance_;
@@ -794,4 +794,4 @@ LINALG::Matrix<1, 6> DRT::ELEMENTS::DiscSh3Line::SpatialConfiguration(
   return coord;
 }
 
-//#endif // #ifdef DISCSH3_H
+// #endif // #ifdef DISCSH3_H

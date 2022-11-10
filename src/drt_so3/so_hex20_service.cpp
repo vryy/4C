@@ -5,8 +5,8 @@
 
 *----------------------------------------------------------------------*/
 #include "so_hex20.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_lib/drt_node.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_node.H"
 
 
 /*----------------------------------------------------------------------*

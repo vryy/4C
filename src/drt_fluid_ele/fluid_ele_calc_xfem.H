@@ -12,13 +12,13 @@
 #ifndef FLUID_ELE_CALC_XFEM_H
 #define FLUID_ELE_CALC_XFEM_H
 
-#include "../drt_lib/drt_utils.H"
+#include "drt_utils.H"
 
 #include "fluid_ele_calc.H"
 #include "fluid_ele_calc_xfem_coupling.H"
-#include "../drt_xfem/xfem_condition_manager.H"
+#include "xfem_condition_manager.H"
 
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 namespace XFEM
 {

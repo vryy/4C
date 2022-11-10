@@ -12,7 +12,7 @@
 #ifndef STR_PREDICT_FACTORY_H_
 #define STR_PREDICT_FACTORY_H_
 
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 
 // forward declaration
 namespace STR

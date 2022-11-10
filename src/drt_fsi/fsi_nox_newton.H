@@ -18,7 +18,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
-#include "../drt_inpar/inpar_fsi.H"
+#include "inpar_fsi.H"
 
 namespace NOX
 {

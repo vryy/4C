@@ -13,7 +13,7 @@
 #define BACI_MIXTURE_PRESTRESS_STRATEGY_ISOCYL_H
 
 #include <NOX_LAPACK.H>
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include "mixture_prestress_strategy.H"
 #include "elastin_membrane_prestress_strategy.H"
 

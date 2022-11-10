@@ -17,7 +17,7 @@
 #include "drt_parobject.H"
 #include "drt_element.H"
 #include "drt_parobjectfactory.H"
-#include "../linalg/linalg_sparsematrix.H"
+#include "linalg_sparsematrix.H"
 
 
 

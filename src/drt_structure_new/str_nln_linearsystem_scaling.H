@@ -11,7 +11,7 @@
 
 #include <NOX_Epetra_Scaling.H>
 #include "Epetra_Map.h"
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 
 // forward declarations
 namespace STR

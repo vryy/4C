@@ -17,9 +17,9 @@
 #include <Teuchos_ParameterList.hpp>
 
 #include "ad_fld_fluid_fpsi.H"
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_mapextractor.H"
 
-#include "../drt_poroelast/poroelast_utils.H"
+#include "poroelast_utils.H"
 
 namespace DRT
 {

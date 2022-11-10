@@ -13,10 +13,10 @@
 #define TOPOPT_OPTIMIZER_ELE_IMPL_H_
 
 
-#include "../drt_fem_general/drt_utils_gausspoints.H"
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "drt_utils_gausspoints.H"
+#include "drt_utils_integration.H"
 
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 namespace DRT
 {

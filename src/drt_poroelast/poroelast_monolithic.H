@@ -10,8 +10,8 @@
 #ifndef POROELAST_MONOLITHIC_H_
 #define POROELAST_MONOLITHIC_H_
 
-#include "../drt_inpar/inpar_poroelast.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_poroelast.H"
+#include "inpar_structure.H"
 #include "poro_base.H"
 #include "poroelast_utils.H"
 

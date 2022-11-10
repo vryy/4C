@@ -10,7 +10,7 @@
 #include "linalg_projected_precond.H"
 #include "Epetra_MultiVector.h"
 #include "linalg_krylov_projector.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 /* --------------------------------------------------------------------
                           Constructor

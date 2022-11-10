@@ -12,7 +12,7 @@
 #define FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_H_
 
 #include "fsi_monolithicfluidsplit.H"
-#include "../drt_inpar/inpar_xfem.H"
+#include "inpar_xfem.H"
 
 namespace ADAPTER
 {

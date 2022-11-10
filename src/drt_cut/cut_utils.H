@@ -16,13 +16,13 @@
 #include <set>
 #include <cstring>
 
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_fem_shapefunctions.H"
 
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "drt_utils_boundary_integration.H"
 
 
-//#define DRT_CUT_DUMPCREATION    // dump object creation to generate test case
+// #define DRT_CUT_DUMPCREATION    // dump object creation to generate test case
 #define CUT_USE_SORTED_VECTOR
 
 #ifdef CUT_USE_SORTED_VECTOR

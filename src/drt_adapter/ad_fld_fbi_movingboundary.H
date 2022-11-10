@@ -13,7 +13,7 @@
 #define ADAPTER_FLUIDBEAM_IMMERSED_H
 
 #include "ad_fld_moving_boundary.H"
-#include "../drt_fluid/fluid_meshtying.H"
+#include "fluid_meshtying.H"
 
 // forward declarations
 

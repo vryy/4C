@@ -14,8 +14,8 @@ See the header file for a detailed description.
 #include "crystal_plasticity.H"
 #include "matpar_bundle.H"
 #include "material_service.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/voigt_notation.H"
+#include "drt_globalproblem.H"
+#include "voigt_notation.H"
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                      			|

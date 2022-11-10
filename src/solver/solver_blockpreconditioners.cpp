@@ -10,8 +10,8 @@
 
 #include <Xpetra_MultiVectorFactory.hpp>
 
-#include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "drt_dserror.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 #include "solver_blockpreconditioners.H"
 #include "bgs2x2_operator.H"                   // Lena's BGS implementation

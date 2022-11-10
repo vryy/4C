@@ -14,9 +14,9 @@
 #include "fluid_ele_factory.H"
 #include "fluid_ele_interface.H"
 
-#include "../drt_inpar/inpar_fluid.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_discret_faces.H"
+#include "inpar_fluid.H"
+#include "drt_linedefinition.H"
+#include "drt_discret_faces.H"
 
 
 // initialize static variable

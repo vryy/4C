@@ -13,10 +13,10 @@
 
 #include "drt_resulttest.H"
 #include "drt_dserror.H"
-#include "../drt_lib/drt_colors.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_pstream.H"
+#include "drt_colors.H"
+#include "drt_globalproblem.H"
+#include "io_control.H"
+#include "io_pstream.H"
 #include "drt_linedefinition.H"
 #include "drt_inputreader.H"
 

@@ -12,13 +12,13 @@
 #define XFEM_INTERFACE_UTILS_H_
 
 // forward declaration of enums not possible
-#include "../drt_inpar/inpar_xfem.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_element_integration_select.H"
-#include "../drt_cut/cut_utils.H"
+#include "inpar_xfem.H"
+#include "drt_element.H"
+#include "drt_element_integration_select.H"
+#include "cut_utils.H"
 
 // avoid forward declaration for templated class
-#include "../drt_fluid_ele/fluid_ele_calc_xfem_coupling.H"
+#include "fluid_ele_calc_xfem_coupling.H"
 
 // forward declarations
 namespace DRT

@@ -17,12 +17,12 @@
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Operator.h>
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_so3/so3_plast/so3_ssn_plast.H"
+#include "so3_ssn_plast.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------------*
  | global evaluation method called from time integrator     seitz 10/16 |

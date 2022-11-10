@@ -10,26 +10,26 @@
 /*----------------------------------------------------------------------*/
 
 #include "fluid_ele.H"
-#include "../drt_lib/drt_element_integration_select.H"
+#include "drt_element_integration_select.H"
 #include "fluid_ele_action.H"
 #include "fluid_ele_parameter_poro.H"
 
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "drt_utils_boundary_integration.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+#include "drt_nurbs_utils.H"
 
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/fluidporo.H"
-#include "../drt_mat/structporo.H"
+#include "newtonianfluid.H"
+#include "fluidporo.H"
+#include "structporo.H"
 
-#include "../drt_poroelast/poroelast_utils.H"
+#include "poroelast_utils.H"
 
 #include "fluid_ele_boundary_calc_poro.H"
 
 // for dual shape functions
-#include "../drt_volmortar/volmortar_shape.H"
+#include "volmortar_shape.H"
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>*

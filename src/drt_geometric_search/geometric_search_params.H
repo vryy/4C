@@ -11,7 +11,7 @@
 #ifndef GEOMETRIC_SEARCH_PARAMS_H
 #define GEOMETRIC_SEARCH_PARAMS_H
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 namespace GEOMETRICSEARCH
 {

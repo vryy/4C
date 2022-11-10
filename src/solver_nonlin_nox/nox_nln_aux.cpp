@@ -20,14 +20,14 @@
 #include "nox_nln_statustest_normwrms.H"
 #include "nox_nln_statustest_activeset.H"
 
-#include "../linalg/linalg_blocksparsematrix.H"
+#include "linalg_blocksparsematrix.H"
 
 #include <Epetra_Vector.h>
 
 #include <NOX_Abstract_ImplicitWeighting.H>
 #include <NOX_Observer_Vector.hpp>
 
-#include "../drt_inpar/drt_boolifyparameters.H"
+#include "drt_boolifyparameters.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

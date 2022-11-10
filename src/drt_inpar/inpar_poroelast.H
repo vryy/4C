@@ -10,7 +10,7 @@
 #define INPAR_POROELAST_H_
 
 #include "inpar_parameterlist_utils.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |

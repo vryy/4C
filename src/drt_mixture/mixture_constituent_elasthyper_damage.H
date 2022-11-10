@@ -12,7 +12,7 @@
 #define BACI_MIXTURE_CONSTITUENT_ELASTHYPER_DAMAGE_H
 
 #include "mixture_constituent_elasthyperbase.H"
-#include "../drt_mat/anisotropy_extension.H"
+#include "anisotropy_extension.H"
 #include "elastin_membrane_prestress_strategy.H"
 
 namespace MAT

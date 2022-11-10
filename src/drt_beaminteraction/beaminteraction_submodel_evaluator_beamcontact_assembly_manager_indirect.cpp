@@ -18,10 +18,10 @@ coupling matrices M and D first.
 #include "beam_to_solid_mortar_manager.H"
 #include "str_model_evaluator_beaminteraction_datastate.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_element.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "drt_discret.H"
+#include "drt_element.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
 
 
 /**

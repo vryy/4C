@@ -12,7 +12,7 @@
 #ifndef BEAMTOSPHERECONTACTPARAMS_H
 #define BEAMTOSPHERECONTACTPARAMS_H
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 namespace BEAMINTERACTION
 {

@@ -12,7 +12,7 @@
 #define SRC_DRT_CONTACT_AUG_CONTACT_AUG_POTENTIAL_H_
 
 #include <Teuchos_RCP.hpp>
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 class Epetra_Vector;
 

@@ -9,13 +9,13 @@
 /*---------------------------------------------------------------------------*/
 
 #include "shell8.H"
-#include "../linalg/linalg_utils_densematrix_inverse.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/function_of_time.H"
-#include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "linalg_utils_densematrix_inverse.H"
+#include "drt_discret.H"
+#include "drt_dserror.H"
+#include "drt_globalproblem.H"
+#include "drt_utils.H"
+#include "function_of_time.H"
+#include "str_elements_paramsinterface.H"
 
 extern "C"
 {

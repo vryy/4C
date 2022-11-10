@@ -8,7 +8,7 @@
 
 #include "scatra_reaction_coupling.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  * factory method                                            vuong 09/16

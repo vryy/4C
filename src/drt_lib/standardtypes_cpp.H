@@ -19,7 +19,7 @@ extern "C" /* stuff which is c and is accessed from c++ */
 {
 #endif
 
-#include "../headers/standardtypes.h"
+#include "standardtypes.h"
 
 #ifdef __cplusplus
 }

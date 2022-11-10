@@ -7,41 +7,41 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "../drt_beaminteraction/beaminteraction_submodel_evaluator_crosslinking.H"
-#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
-#include "../drt_beaminteraction/beaminteraction_data.H"
-#include "../drt_beaminteraction/drt_utils_parallel_proctoproc.H"
-#include "../drt_beaminteraction/crosslinking_params.H"
-#include "../drt_beaminteraction/str_model_evaluator_beaminteraction_datastate.H"
-#include "../drt_beaminteraction/crosslinker_node.H"
-#include "../drt_beaminteraction/periodic_boundingbox.H"
-#include "../drt_beaminteraction/beam_link.H"
-#include "../drt_beaminteraction/beam_link_beam3r_line2_rigidjointed.H"
-#include "../drt_beaminteraction/beam_link_beam3r_line2_pinjointed.H"
+#include "beaminteraction_submodel_evaluator_crosslinking.H"
+#include "beaminteraction_calc_utils.H"
+#include "beaminteraction_data.H"
+#include "drt_utils_parallel_proctoproc.H"
+#include "crosslinking_params.H"
+#include "str_model_evaluator_beaminteraction_datastate.H"
+#include "crosslinker_node.H"
+#include "periodic_boundingbox.H"
+#include "beam_link.H"
+#include "beam_link_beam3r_line2_rigidjointed.H"
+#include "beam_link_beam3r_line2_pinjointed.H"
 
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_dserror.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_io/runtime_vtp_writer.H"
-#include "../drt_io/discretization_runtime_vtp_writer.H"
+#include "io.H"
+#include "io_pstream.H"
+#include "runtime_vtp_writer.H"
+#include "discretization_runtime_vtp_writer.H"
 
-#include "../drt_structure_new/str_timint_basedataglobalstate.H"
-#include "../drt_structure_new/str_timint_basedataio.H"
-#include "../drt_structure_new/str_timint_basedataio_runtime_vtp_output.H"
+#include "str_timint_basedataglobalstate.H"
+#include "str_timint_basedataio.H"
+#include "str_timint_basedataio_runtime_vtp_output.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
 
-#include "../drt_geometry/intersection_math.H"
+#include "intersection_math.H"
 
-#include "../drt_binstrategy/drt_meshfree_multibin.H"
+#include "drt_meshfree_multibin.H"
 
-#include "../drt_mat/crosslinkermat.H"
+#include "crosslinkermat.H"
 
-#include "../drt_beam3/beam3_base.H"
+#include "beam3_base.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

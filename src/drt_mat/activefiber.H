@@ -31,7 +31,7 @@ SIGMAX 3.9E-03 EPSNULL 2.8E-04
 
 #include "so3_material.H"
 #include "matpar_parameter.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 
 #define numbgp 10
 #define twice 20

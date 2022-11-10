@@ -10,7 +10,7 @@
 #ifndef STI_RESULTTEST_H
 #define STI_RESULTTEST_H
 
-#include "../drt_lib/drt_resulttest.H"
+#include "drt_resulttest.H"
 
 namespace STI
 {

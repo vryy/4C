@@ -10,13 +10,13 @@
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_material_handler.H"
 
-#include "../drt_particle_algorithm/particle_algorithm_utils.H"
+#include "particle_algorithm_utils.H"
 
-#include "../drt_mat/matpar_bundle.H"
+#include "matpar_bundle.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

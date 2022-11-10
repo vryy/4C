@@ -13,39 +13,39 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_fsi/fsi_dyn.H"
-#include "../drt_fsi/fs_monolithic.H"
-#include "../drt_fsi/fsi_monolithicfluidsplit.H"
-#include "../drt_fsi/fsi_monolithicstructuresplit.H"
-#include "../drt_lib/drt_condition_selector.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_solver.H"
-#include "../drt_fsi/fsi_utils.H"
+#include "fsi_dyn.H"
+#include "fs_monolithic.H"
+#include "fsi_monolithicfluidsplit.H"
+#include "fsi_monolithicstructuresplit.H"
+#include "drt_condition_selector.H"
+#include "drt_condition_utils.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_solver.H"
+#include "fsi_utils.H"
 
-#include "../drt_lib/drt_condition_selector.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_inpar/inpar_fs3i.H"
+#include "drt_condition_selector.H"
+#include "drt_condition_utils.H"
+#include "drt_globalproblem.H"
+#include "drt_validparameters.H"
+#include "inpar_fs3i.H"
 
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "adapter_coupling.H"
+#include "ad_str_fsiwrapper.H"
 
-#include "../drt_scatra/scatra_algorithm.H"
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "scatra_algorithm.H"
+#include "scatra_timint_implicit.H"
 
-#include "../drt_fluid/fluidimplicitintegration.H"
-#include "../drt_fluid/fluid_utils.H"
-#include "../drt_fluid/fluidresulttest.H"
+#include "fluidimplicitintegration.H"
+#include "fluid_utils.H"
+#include "fluidresulttest.H"
 
-#include "../drt_ssi/ssi_clonestrategy.H"
+#include "ssi_clonestrategy.H"
 
 #include "fs3i.H"
 
-#include "../linalg/linalg_matrixtransform.H"
+#include "linalg_matrixtransform.H"
 
-#include "../drt_lib/prestress_service.H"
+#include "prestress_service.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -519,13 +519,13 @@ void FS3I::FS3I_Base::SetMembraneConcentration() const
 void FS3I::FS3I_Base::ExtractMembraneConcentration(
     std::vector<Teuchos::RCP<Epetra_Vector>>& MembraneConcentration) const
 {
-  //############ Fluid Field ###############
+  // ############ Fluid Field ###############
   Teuchos::RCP<Epetra_Vector> MembraneConcentration1 = CalcMembraneConcentration();
   MembraneConcentration.push_back(MembraneConcentration1);
 
-  //############ Poro Field ###############
-  // Hint: The mean concentration is not calculated again; we just map the values from the
-  // Fluid-Scatra Field into the Structure-Scatra Field
+  // ############ Poro Field ###############
+  //  Hint: The mean concentration is not calculated again; we just map the values from the
+  //  Fluid-Scatra Field into the Structure-Scatra Field
 
   // extract interface values
   Teuchos::RCP<Epetra_Vector> interface_phin =

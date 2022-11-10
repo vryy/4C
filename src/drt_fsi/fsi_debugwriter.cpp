@@ -7,19 +7,19 @@
 #include <sstream>
 
 #include "fsi_debugwriter.H"
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/ad_fld_fluid_fsi.H"
-#include "../drt_adapter/ad_ale_fsi.H"
+#include "adapter_coupling.H"
+#include "ad_str_fsiwrapper.H"
+#include "ad_fld_fluid_fsi.H"
+#include "ad_ale_fsi.H"
 #include "fsi_monolithic.H"
 
-#include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_utils_createdis.H"
+#include "drt_discret.H"
 
-#include "../drt_io/io_control.H"
-#include "../drt_io/io.H"
+#include "io_control.H"
+#include "io.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

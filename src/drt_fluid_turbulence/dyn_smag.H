@@ -31,8 +31,8 @@ References are
 #define DYN_SMAG_H
 
 
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "drt_discret.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 
 #include "Epetra_Vector.h"
@@ -41,8 +41,8 @@ References are
 #include "Teuchos_TimeMonitor.hpp"
 #include "Teuchos_ParameterList.hpp"
 
-#include "../drt_inpar/inpar_fluid.H"
-#include "../drt_inpar/inpar_scatra.H"
+#include "inpar_fluid.H"
+#include "inpar_scatra.H"
 
 
 

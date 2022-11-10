@@ -17,8 +17,8 @@
 #include "particle_enums.H"
 #include "particle_typedefs.H"
 
-#include "../drt_lib/drt_parobject.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobject.H"
+#include "drt_parobjectfactory.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |

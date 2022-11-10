@@ -52,16 +52,16 @@
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseVector.h>
 #include "robinson.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_mat/matpar_bundle.H"
+#include "drt_linedefinition.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "drt_globalproblem.H"
+#include "standardtypes_cpp.H"
+#include "matpar_bundle.H"
 
-#include "../drt_tsi/tsi_defines.H"
+#include "tsi_defines.H"
 
 // include this header needed for KinematicType
-#include "../drt_so3/so_hex8.H"
+#include "so_hex8.H"
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 11/11 |

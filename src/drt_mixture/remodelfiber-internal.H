@@ -12,7 +12,7 @@
 #include <memory>
 #include <vector>
 #include "growth_evolution.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 namespace DRT
 {

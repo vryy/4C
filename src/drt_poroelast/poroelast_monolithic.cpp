@@ -16,39 +16,39 @@
 #include "poroelast_defines.H"
 
 // adapters
-#include "../drt_adapter/adapter_coupling_volmortar.H"
-#include "../drt_adapter/ad_fld_base_algorithm.H"
-#include "../drt_adapter/ad_fld_poro.H"
-#include "../drt_adapter/ad_str_fpsiwrapper.H"
+#include "adapter_coupling_volmortar.H"
+#include "ad_fld_base_algorithm.H"
+#include "ad_fld_poro.H"
+#include "ad_str_fpsiwrapper.H"
 
 // contact
-#include "../drt_contact/contact_poro_lagrange_strategy.H"
-#include "../drt_contact/meshtying_poro_lagrange_strategy.H"
-#include "../drt_contact/meshtying_contact_bridge.H"
-#include "../drt_contact/contact_nitsche_strategy_poro.H"
+#include "contact_poro_lagrange_strategy.H"
+#include "meshtying_poro_lagrange_strategy.H"
+#include "meshtying_contact_bridge.H"
+#include "contact_nitsche_strategy_poro.H"
 
-#include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "fluid_ele_action.H"
+#include "fluid_utils_mapextractor.H"
 
 // include this header for coupling stiffness terms
-#include "../drt_lib/drt_assemblestrategy.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_condition_utils.H"
+#include "drt_assemblestrategy.H"
+#include "drt_globalproblem.H"
+#include "drt_condition_utils.H"
 
-#include "../drt_io/io_control.H"
-#include "../drt_inpar/inpar_solver.H"
+#include "io_control.H"
+#include "inpar_solver.H"
 
-#include "../drt_structure/stru_aux.H"
+#include "stru_aux.H"
 
-#include "../drt_mortar/mortar_manager_base.H"
+#include "mortar_manager_base.H"
 
-#include "../linalg/linalg_equilibrate.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_solver.H"
+#include "linalg_equilibrate.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_solver.H"
 
-#include "../drt_lib/drt_elements_paramsminimal.H"
+#include "drt_elements_paramsminimal.H"
 
 POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : PoroBase(comm, timeparams),

@@ -13,7 +13,7 @@
 #include "intersection_service.H"
 #include "intersection_service_templates.H"
 #include "position_array.H"
-#include "../drt_io/io_gmsh.H"
+#include "io_gmsh.H"
 #include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*

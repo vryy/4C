@@ -9,12 +9,12 @@
 /*----------------------------------------------------------------------------*/
 
 #include "beam3contact_octtree.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/inpar_beamcontact.H"
-#include "../drt_inpar/inpar_contact.H"
+#include "drt_discret.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "drt_globalproblem.H"
+#include "inpar_beamcontact.H"
+#include "inpar_contact.H"
 #include <Teuchos_Time.hpp>
 
 #include <iostream>
@@ -29,15 +29,15 @@
 #include <map>
 #include <math.h>
 
-#include "../drt_beam3/beam3.H"
-#include "../drt_beam3/beam3r.H"
-#include "../drt_beam3/beam3eb.H"
-#include "../drt_beam3/beam3_base.H"
-#include "../drt_beaminteraction/beam3contact_defines.H"
-#include "../drt_rigidsphere/rigidsphere.H"
+#include "beam3.H"
+#include "beam3r.H"
+#include "beam3eb.H"
+#include "beam3_base.H"
+#include "beam3contact_defines.H"
+#include "rigidsphere.H"
 #include "beam3contact_manager.H"
 
-//#define OCTREEDEBUG
+// #define OCTREEDEBUG
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     meier 01/11|

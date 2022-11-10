@@ -11,13 +11,13 @@
 
 #include "fsi_algorithm.H"
 #include "fsi_str_model_evaluator_partitioned.H"
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/ad_str_structure_new.H"
-#include "../drt_adapter/ad_str_factory.H"
-#include "../drt_io/io.H"
+#include "adapter_coupling.H"
+#include "drt_globalproblem.H"
+#include "drt_validparameters.H"
+#include "ad_str_fsiwrapper.H"
+#include "ad_str_structure_new.H"
+#include "ad_str_factory.H"
+#include "io.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

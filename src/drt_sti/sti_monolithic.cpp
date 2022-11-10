@@ -12,25 +12,25 @@
 #include "sti_monolithic_evaluate_OffDiag.H"
 #include <Epetra_Time.h>
 
-#include "../drt_adapter/adapter_coupling.H"
-#include "../linalg/linalg_matrixtransform.H"
+#include "adapter_coupling.H"
+#include "linalg_matrixtransform.H"
 
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
-#include "../drt_lib/drt_assemblestrategy.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_assemblestrategy.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
+#include "scatra_timint_implicit.H"
+#include "scatra_timint_meshtying_strategy_s2i.H"
 
-#include "../linalg/linalg_equilibrate.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_nullspace.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "linalg_equilibrate.H"
+#include "linalg_mapextractor.H"
+#include "linalg_multiply.H"
+#include "linalg_nullspace.H"
+#include "linalg_solver.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_densematrix_communication.H"
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/

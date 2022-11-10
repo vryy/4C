@@ -16,8 +16,8 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_inpar/inpar_solver.H"
+#include "drt_dserror.H"
+#include "inpar_solver.H"
 
 // forward declarations
 class Epetra_LinearProblem;

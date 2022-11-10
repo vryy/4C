@@ -10,9 +10,9 @@ coupling terms are evaluated using FAD.
 
 #include "beam_to_solid_surface_meshtying_pair_gauss_point_FAD.H"
 
-#include "../drt_geometry_pair/geometry_pair_line_to_surface.H"
-#include "../drt_geometry_pair/geometry_pair_element_faces.H"
-#include "../drt_geometry_pair/geometry_pair_scalar_types.H"
+#include "geometry_pair_line_to_surface.H"
+#include "geometry_pair_element_faces.H"
+#include "geometry_pair_scalar_types.H"
 
 #include "Epetra_FEVector.h"
 

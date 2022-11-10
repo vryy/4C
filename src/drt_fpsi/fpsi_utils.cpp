@@ -18,20 +18,20 @@
 #include "fpsi_monolithic_plain.H"
 
 // POROELAST includes
-#include "../drt_poroelast/poroelast_utils_setup.H"
-#include "../drt_poroelast/poro_utils_clonestrategy.H"
+#include "poroelast_utils_setup.H"
+#include "poro_utils_clonestrategy.H"
 
 // FSI includes
-#include "../drt_fsi/fsi_utils.H"
-#include "../drt_ale/ale_utils_clonestrategy.H"
+#include "fsi_utils.H"
+#include "ale_utils_clonestrategy.H"
 
 // INPAR includes
-#include "../drt_inpar/inpar_fpsi.H"
+#include "inpar_fpsi.H"
 
 // lib includes
-#include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_condition_selector.H"
+#include "drt_utils_createdis.H"
+#include "drt_globalproblem.H"
+#include "drt_condition_selector.H"
 
 
 Teuchos::RCP<FPSI::Utils> FPSI::Utils::instance_;

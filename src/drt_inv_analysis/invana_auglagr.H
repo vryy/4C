@@ -13,7 +13,7 @@
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_MultiVector.h"
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 
 // forward declarations
 namespace TIMINT

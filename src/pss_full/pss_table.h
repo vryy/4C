@@ -40,9 +40,9 @@ table. This table can be queried for those values quite easily.
 #ifndef PSS_TABLE_H
 #define PSS_TABLE_H
 
-#include "../headers/standardtypes.h"
-#include "../headers/am.h"
-#include "../pss_full/pss_types.h"
+#include "standardtypes.h"
+#include "am.h"
+#include "pss_types.h"
 #include <mpi.h> /* Be careful: this is the C mpi header */
 
 

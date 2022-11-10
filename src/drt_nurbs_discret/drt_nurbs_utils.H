@@ -11,7 +11,7 @@
 #ifndef DRT_NURBS_UTILS_H
 #define DRT_NURBS_UTILS_H
 
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "drt_nurbs_discret.H"
 
 namespace DRT
 {

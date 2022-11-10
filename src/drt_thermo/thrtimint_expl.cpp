@@ -14,7 +14,7 @@
 
 #include "thrtimint.H"
 #include "thrtimint_expl.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 
 /*----------------------------------------------------------------------*

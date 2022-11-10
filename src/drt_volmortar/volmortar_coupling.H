@@ -14,9 +14,9 @@
  *---------------------------------------------------------------------*/
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Comm.h>
-#include "../drt_mortar/mortar_coupling3d_classes.H"
-#include "../drt_cut/cut_utils.H"
-#include "../drt_inpar/inpar_volmortar.H"
+#include "mortar_coupling3d_classes.H"
+#include "cut_utils.H"
+#include "inpar_volmortar.H"
 
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 01/14 |

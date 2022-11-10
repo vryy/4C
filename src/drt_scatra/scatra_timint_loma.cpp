@@ -3,19 +3,19 @@
 \brief scatra time integration for loma
 \level 2
  *------------------------------------------------------------------------------------------------*/
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_parameter_list.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_parameter_list.H"
 
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/sutherland.H"
+#include "matpar_bundle.H"
+#include "sutherland.H"
 
-#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "scatra_ele_action.H"
 
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "linalg_mapextractor.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
 #include "scatra_timint_loma.H"
 

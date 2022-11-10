@@ -12,8 +12,8 @@
 #include "porofluidmultiphase_ele_boundary_factory.H"
 #include "porofluidmultiphase_ele_interface.H"
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_element.H"
+#include "drt_discret.H"
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             vuong 08/16 |

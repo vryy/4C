@@ -11,20 +11,20 @@
  *----------------------------------------------------------------------*/
 #include "so3_ssn_plast.H"
 
-#include "../../drt_lib/drt_linedefinition.H"
-#include "../../drt_fem_general/drt_utils_shapefunctions_service.H"
-#include "../../drt_lib/drt_utils_factory.H"
-#include "../../drt_lib/drt_utils_parameter_list.H"
-#include "../../drt_mat/plasticelasthyper.H"
-#include "../so_surface.H"
-#include "../so_line.H"
-#include "../../drt_inpar/inpar_tsi.H"
-#include "../../linalg/linalg_serialdensevector.H"
+#include "drt_linedefinition.H"
+#include "drt_utils_shapefunctions_service.H"
+#include "drt_utils_factory.H"
+#include "drt_utils_parameter_list.H"
+#include "plasticelasthyper.H"
+#include "so_surface.H"
+#include "so_line.H"
+#include "inpar_tsi.H"
+#include "linalg_serialdensevector.H"
 
 // include this thermo-implementation to make sure, that the same Gauss-rule
 // is used in the structural and the thermal part in a TSI problem
-#include "../../drt_thermo/thermo_ele_impl_utils.H"
-#include "../../drt_lib/drt_globalproblem.H"
+#include "thermo_ele_impl_utils.H"
+#include "drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                            seitz 07/13 |

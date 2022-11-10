@@ -16,7 +16,7 @@
 #include <Teuchos_RCPDecl.hpp>
 #include <vector>
 #include <memory>
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 // forward declarations
 namespace MAT

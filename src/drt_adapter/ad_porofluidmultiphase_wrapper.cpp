@@ -8,16 +8,16 @@
 
 #include "ad_porofluidmultiphase_wrapper.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_solver.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "linalg_solver.H"
+#include "drt_validparameters.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 // general time integration schemes
-#include "../drt_porofluidmultiphase/porofluidmultiphase_timint_implicit.H"
-#include "../drt_porofluidmultiphase/porofluidmultiphase_timint_ost.H"
+#include "porofluidmultiphase_timint_implicit.H"
+#include "porofluidmultiphase_timint_ost.H"
 
 
 /*----------------------------------------------------------------------*/

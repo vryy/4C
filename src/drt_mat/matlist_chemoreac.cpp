@@ -12,8 +12,8 @@ which govern the actual doings
 
 #include <vector>
 #include "matlist_chemoreac.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
 
 
 /*----------------------------------------------------------------------*

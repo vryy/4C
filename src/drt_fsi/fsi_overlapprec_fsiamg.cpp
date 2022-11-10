@@ -9,16 +9,16 @@
 /*----------------------------------------------------------------------*/
 
 #include "fsi_overlapprec_fsiamg.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/ad_fld_fluid.H"
-#include "../linalg/linalg_precond.H"
-#include "../linalg/linalg_solver.H"
+#include "ad_str_fsiwrapper.H"
+#include "ad_fld_fluid.H"
+#include "linalg_precond.H"
+#include "linalg_solver.H"
 
 #include "fsi_overlapprec_hybrid.H"
 
 // needed for dserror nested parallelism AMG FSI
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_comm/comm_utils.H"
+#include "drt_globalproblem.H"
+#include "comm_utils.H"
 
 #include <Epetra_Time.h>
 #include <ml_MultiLevelPreconditioner.h>

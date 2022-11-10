@@ -11,7 +11,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "scatra_timint_implicit.H"
 
 
 namespace SCATRA

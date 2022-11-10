@@ -16,9 +16,9 @@
  *----------------------------------------------------------------------*/
 #include "poro_scatra_base.H"
 
-#include "../drt_inpar/inpar_poroscatra.H"
+#include "inpar_poroscatra.H"
 
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_mapextractor.H"
 
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Time.h>

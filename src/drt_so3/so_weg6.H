@@ -10,12 +10,12 @@
 
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include "Teuchos_RCP.hpp"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementtype.H"
+#include "linalg_fixedsizematrix.H"
+#include "drt_element.H"
+#include "drt_elementtype.H"
 
-#include "../drt_mat/material.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "material.H"
+#include "inpar_structure.H"
 
 #include "so_base.H"
 

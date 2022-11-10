@@ -14,7 +14,7 @@
 #define STR_MODEL_EVALUATOR_SPRINGDASHPOT_H
 
 #include "str_model_evaluator_generic.H"
-#include "../drt_constraint/springdashpot.H"
+#include "springdashpot.H"
 #include <Teuchos_RCP.hpp>
 
 // forward declarations

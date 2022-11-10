@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 #include "matpar_parameter.H"
 #include "matpar_bundle.H"
 

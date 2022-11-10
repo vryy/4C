@@ -10,7 +10,7 @@
  *---------------------------------------------------------------------------*/
 #include "particle_input_generator.H"
 
-#include "../drt_particle_engine/particle_object.H"
+#include "particle_object.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

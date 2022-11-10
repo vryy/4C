@@ -12,22 +12,22 @@
 
 /*----------------------------------------------------------------------*/
 // headers
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../linalg/linalg_utils_densematrix_inverse.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "drt_discret.H"
+#include "drt_exporter.H"
+#include "drt_dserror.H"
+#include "standardtypes_cpp.H"
+#include "linalg_utils_densematrix_inverse.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
+#include "drt_element.H"
+#include "drt_utils_fem_shapefunctions.H"
 #include "Epetra_SerialDenseSolver.h"
 
-#include "../drt_mat/stvenantkirchhoff.H"
-#include "../drt_mat/elasthyper.H"
-#include "../drt_mat/structporo.H"
+#include "stvenantkirchhoff.H"
+#include "elasthyper.H"
+#include "structporo.H"
 
-#include "../drt_poroelast/poroelast_utils.H"
+#include "poroelast_utils.H"
 
 #include "wall1.H"
 

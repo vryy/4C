@@ -17,8 +17,8 @@
 #include <Amesos_Superludist.h>
 #endif
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../linalg/linalg_krylov_projector.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "linalg_krylov_projector.H"
 
 #include "solver_directsolver.H"
 

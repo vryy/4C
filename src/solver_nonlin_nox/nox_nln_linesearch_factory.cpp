@@ -12,7 +12,7 @@
 
 #include "nox_nln_linesearch_factory.H"  // class definition
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <NOX_Common.H>
 #include <NOX_StatusTest_Generic.H>

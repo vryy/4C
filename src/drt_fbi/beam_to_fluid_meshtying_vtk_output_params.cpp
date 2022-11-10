@@ -10,8 +10,8 @@
 
 #include "beam_to_fluid_meshtying_vtk_output_params.H"
 
-#include "../drt_inpar/inpar_IO_runtime_vtk_output.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "inpar_IO_runtime_vtk_output.H"
+#include "drt_globalproblem.H"
 
 FBI::BeamToFluidMeshtyingVtkOutputParams::BeamToFluidMeshtyingVtkOutputParams()
     : BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams(), constraint_violation_(false)

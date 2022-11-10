@@ -13,8 +13,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
 
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
-#include "../drt_inpar/inpar_s2i.H"
+#include "adapter_scatra_base_algorithm.H"
+#include "inpar_s2i.H"
 
 namespace ADAPTER
 {

@@ -25,7 +25,7 @@
 
 #include "wear_algorithm.H"
 
-#include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "ad_str_fsiwrapper.H"
 
 /*----------------------------------------------------------------------*
  | forward declarations                                     farah 11/13 |

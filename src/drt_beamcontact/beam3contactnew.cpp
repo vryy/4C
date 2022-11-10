@@ -9,24 +9,24 @@
 /*----------------------------------------------------------------------*/
 
 #include "beam3contactnew.H"
-#include "../drt_beaminteraction/beam3contact_utils.H"
-#include "../drt_inpar/inpar_beamcontact.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "beam3contact_utils.H"
+#include "inpar_beamcontact.H"
+#include "inpar_contact.H"
+#include "drt_discret.H"
+#include "drt_exporter.H"
+#include "drt_dserror.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_structure/strtimint_impl.H"
-#include "../drt_beam3/beam3.H"
-#include "../drt_beam3/beam3r.H"
-#include "../drt_beam3/beam3eb.H"
+#include "strtimint_impl.H"
+#include "beam3.H"
+#include "beam3r.H"
+#include "beam3eb.H"
 
 #include "Teuchos_TimeMonitor.hpp"
-#include "../drt_beaminteraction/beam3contact_defines.H"
-#include "../drt_beaminteraction/beam3contact_tangentsmoothing.H"
+#include "beam3contact_defines.H"
+#include "beam3contact_tangentsmoothing.H"
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     meier 01/14|
@@ -3978,7 +3978,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::FADCheckLinOrthogonalit
 /*----------------------------------------------------------------------*
  |  End: FAD-Check for Linearizations of CPP
  *----------------------------------------------------------------------*/
-#endif  //#ifdef FADCHECKS
+#endif  // #ifdef FADCHECKS
 
 // Possible template cases: this is necessary for the compiler
 template class CONTACT::Beam3contactnew<2, 1>;

@@ -12,8 +12,8 @@
 #ifndef STR_TIMINT_BASE_H_
 #define STR_TIMINT_BASE_H_
 
-#include "../drt_adapter/ad_str_structure_new.H"
-#include "../drt_io/every_iteration_writer.H"
+#include "ad_str_structure_new.H"
+#include "every_iteration_writer.H"
 
 // structural data containers
 #include "str_timint_basedataio.H"

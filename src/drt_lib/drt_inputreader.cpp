@@ -12,13 +12,13 @@
 
 #include "drt_inputreader.H"
 #include "drt_linedefinition.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "linalg_utils_densematrix_communication.H"
 #include "standardtypes_cpp.H"
 #include "drt_globalproblem.H"
-#include "../drt_comm/comm_utils.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_nurbs_discret/drt_knotvector.H"
+#include "comm_utils.H"
+#include "io_control.H"
+#include "io_pstream.H"
+#include "drt_knotvector.H"
 
 #include "drt_utils_reader.H"
 

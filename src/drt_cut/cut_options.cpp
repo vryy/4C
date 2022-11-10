@@ -11,7 +11,7 @@
 #include "cut_options.H"
 
 #include "cut_position.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 /// Initializes Cut Parameters by Parameterlist (typically from *.dat-file section CUT GENERAL)
 void GEO::CUT::Options::Init_by_Paramlist()

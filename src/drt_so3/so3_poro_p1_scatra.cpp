@@ -11,7 +11,7 @@
 #include "so3_poro_p1_scatra.H"
 #include "so3_poro_p1_scatra_eletypes.H"
 
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                         schmidt 09/17 |

@@ -8,12 +8,12 @@
 /* headers */
 #include "strtimint_statics.H"
 #include "stru_aux.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/prestress_service.H"
+#include "io.H"
+#include "io_pstream.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "drt_globalproblem.H"
+#include "prestress_service.H"
 
 
 /*======================================================================*/

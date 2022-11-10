@@ -10,11 +10,11 @@
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_dem_history_pairs.H"
 
-#include "../drt_particle_engine/particle_engine_interface.H"
-#include "../drt_particle_engine/particle_communication_utils.H"
+#include "particle_engine_interface.H"
+#include "particle_communication_utils.H"
 
-#include "../drt_io/io.H"
-#include "../drt_lib/drt_pack_buffer.H"
+#include "io.H"
+#include "drt_pack_buffer.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

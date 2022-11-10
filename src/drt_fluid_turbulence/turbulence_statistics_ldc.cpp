@@ -13,7 +13,7 @@ lid-driven cavity.
 
 #include "turbulence_statistics_ldc.H"
 
-#include "../drt_io/io.H"
+#include "io.H"
 
 /*----------------------------------------------------------------------*/
 /*!

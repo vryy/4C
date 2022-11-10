@@ -13,23 +13,23 @@
 
 
 #include "drt_discret_faces.H"
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_mapextractor.H"
 
 #include "drt_exporter.H"
 
 #include "drt_utils.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_fluid_ele/fluid_ele.H"
-#include "../drt_fluid_ele/fluid_ele_intfaces_calc.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_discsh3/discsh3.H"
+#include "fluid_ele.H"
+#include "fluid_ele_intfaces_calc.H"
+#include "fluid_ele_action.H"
+#include "discsh3.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/material.H"
+#include "drt_globalproblem.H"
+#include "material.H"
 
-#include "../drt_inpar/inpar_xfem.H"
+#include "inpar_xfem.H"
 
 
 /*----------------------------------------------------------------------*

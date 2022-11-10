@@ -8,7 +8,7 @@
 #ifndef UTILS_GDER2_H
 #define UTILS_GDER2_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 
 namespace DRT

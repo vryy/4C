@@ -13,7 +13,7 @@
 
 #include "inpar_fbi.H"
 #include "drt_validparameters.H"
-#include "../drt_lib/drt_conditiondefinition.H"
+#include "drt_conditiondefinition.H"
 #include "inpar_geometry_pair.H"
 
 void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)

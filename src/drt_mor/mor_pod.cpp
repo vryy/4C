@@ -15,16 +15,16 @@
 #include <stdio.h>
 #include <iostream>
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_multiply.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "linalg_solver.H"
+#include "linalg_mapextractor.H"
+#include "linalg_multiply.H"
 
-#include "../drt_adapter/ad_str_structure.H"
-#include "../drt_io/io.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_condition.H"
-#include "../drt_io/io_control.H"
+#include "ad_str_structure.H"
+#include "io.H"
+#include "drt_globalproblem.H"
+#include "drt_condition.H"
+#include "io_control.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                            pfaller Oct17 |

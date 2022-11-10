@@ -13,9 +13,9 @@
 
 
 #include "nox_nln_scatra_linearsystem.H"
-#include "../solver_nonlin_nox/nox_nln_interface_required.H"
+#include "nox_nln_interface_required.H"
 
-#include "../linalg/linalg_solver.H"
+#include "linalg_solver.H"
 
 #include <Teuchos_ParameterList.hpp>
 

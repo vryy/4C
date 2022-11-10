@@ -10,7 +10,7 @@
 
 #include "drt_validparameters.H"
 
-#include "../drt_lib/drt_conditiondefinition.H"
+#include "drt_conditiondefinition.H"
 
 void INPAR::EP::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {

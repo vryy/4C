@@ -10,14 +10,14 @@
 /*----------------------------------------------------------------------*/
 #include "mixture_prestress_strategy_constant.H"
 #include <memory>
-#include "../drt_mat/matpar_bundle.H"
+#include "matpar_bundle.H"
 #include "mixture_constituent_elasthyper.H"
-#include "../drt_matelast/elast_isoneohooke.H"
-#include "../drt_matelast/elast_volsussmanbathe.H"
-#include "../drt_mat/anisotropy.H"
-#include "../drt_mat/material_service.H"
-#include "../drt_mat/anisotropy_coordinate_system_provider.H"
-#include "../drt_lib/voigt_notation.H"
+#include "elast_isoneohooke.H"
+#include "elast_volsussmanbathe.H"
+#include "anisotropy.H"
+#include "material_service.H"
+#include "anisotropy_coordinate_system_provider.H"
+#include "voigt_notation.H"
 #include "mixture_rule.H"
 
 MIXTURE::PAR::ConstantPrestressStrategy::ConstantPrestressStrategy(

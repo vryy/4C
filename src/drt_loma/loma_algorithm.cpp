@@ -12,18 +12,18 @@
 
 #include "loma_algorithm.H"
 
-#include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_lib/drt_assemblestrategy.H"
-#include "../drt_io/io_control.H"
-#include "../drt_inpar/inpar_solver.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_blocksparsematrix.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_fluid/fluid_timint_loma.H"
+#include "fluid_ele_action.H"
+#include "drt_assemblestrategy.H"
+#include "io_control.H"
+#include "inpar_solver.H"
+#include "linalg_solver.H"
+#include "linalg_blocksparsematrix.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "drt_globalproblem.H"
+#include "fluid_timint_loma.H"
 
-#include "../drt_scatra/scatra_timint_loma.H"
+#include "scatra_timint_loma.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

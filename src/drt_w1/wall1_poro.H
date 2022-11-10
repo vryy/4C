@@ -11,8 +11,8 @@
 #ifndef WALL1_PORO_H_
 #define WALL1_PORO_H_
 
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_fem_general/drt_utils_gausspoints.H"
+#include "inpar_structure.H"
+#include "drt_utils_gausspoints.H"
 
 #include "wall1.H"
 #include "wall1_poro_eletypes.H"

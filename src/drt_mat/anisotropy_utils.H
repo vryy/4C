@@ -14,8 +14,8 @@
 
 #include <string>
 #include <Teuchos_RCPDecl.hpp>
-#include "../drt_lib/drt_linedefinition.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "drt_linedefinition.H"
+#include "linalg_fixedsizematrix.H"
 
 // forward declaration
 namespace DRT

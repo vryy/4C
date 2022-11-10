@@ -14,9 +14,9 @@
 
 #include "lagpenconstraint_noxinterface.H"
 
-#include "../solver_nonlin_nox/nox_nln_aux.H"
+#include "nox_nln_aux.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 #include <NOX_Epetra_Vector.H>
 #include <Epetra_Vector.h>

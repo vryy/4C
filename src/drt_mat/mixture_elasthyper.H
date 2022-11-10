@@ -12,11 +12,11 @@
 
 
 #include "matpar_parameter.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 #include "so3_material.H"
-#include "../drt_mixture/mixture_constituent.H"
-#include "../drt_mixture/mixture_rule.H"
-#include "../drt_matelast/elast_summand.H"
+#include "mixture_constituent.H"
+#include "mixture_rule.H"
+#include "elast_summand.H"
 #include "anisotropy.H"
 
 namespace MAT

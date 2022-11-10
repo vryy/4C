@@ -11,7 +11,7 @@
 #define DRT_UTILS_SHAPEFUNCTION_SERVICE
 
 
-#include "../drt_lib/drt_element.H"
+#include "drt_element.H"
 
 
 namespace DRT

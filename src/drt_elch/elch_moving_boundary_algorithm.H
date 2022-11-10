@@ -11,7 +11,7 @@
 #ifndef ELCH_MOVING_BOUNDARY_ALGORITHM_H
 #define ELCH_MOVING_BOUNDARY_ALGORITHM_H
 
-#include "../drt_adapter/adapter_scatra_fluid_ale_coupling_algo.H"
+#include "adapter_scatra_fluid_ale_coupling_algo.H"
 
 namespace ELCH
 {

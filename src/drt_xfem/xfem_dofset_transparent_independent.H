@@ -11,7 +11,7 @@
 #ifndef XFEMTRANSPARENTINDEPENDENTDOFSET_H
 #define XFEMTRANSPARENTINDEPENDENTDOFSET_H
 
-#include "../drt_lib/drt_dofset_transparent_independent.H"
+#include "drt_dofset_transparent_independent.H"
 
 namespace DRT
 {

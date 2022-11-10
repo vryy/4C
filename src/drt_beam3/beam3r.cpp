@@ -14,17 +14,17 @@
 #include "beam_spatial_discretization_utils.H"
 
 // Todo @grill: check for obsolete header inclusions
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
-#include "../linalg/linalg_utils_nullspace.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../drt_fem_general/largerotations.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_beaminteraction/periodic_boundingbox.H"
+#include "drt_discret.H"
+#include "drt_dserror.H"
+#include "drt_globalproblem.H"
+#include "drt_validparameters.H"
+#include "linalg_utils_nullspace.H"
+#include "linalg_fixedsizematrix.H"
+#include "linalg_serialdensematrix.H"
+#include "largerotations.H"
+#include "drt_linedefinition.H"
+#include "inpar_structure.H"
+#include "periodic_boundingbox.H"
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/

@@ -11,7 +11,7 @@
 
 #include "porofluidmultiphase_ele_factory.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 #include "porofluidmultiphase_ele_calc.H"
 
 /*--------------------------------------------------------------------------*

@@ -20,7 +20,7 @@ equations
 #include "cut_enum.H"
 #include <Epetra_MultiVector.h>
 
-#include "../drt_lib/drt_colors.H"
+#include "drt_colors.H"
 
 /*--------------------------------------------------------------------------*
          compute the rhs of the moment fitting equations

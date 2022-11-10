@@ -26,13 +26,13 @@
 
 #include <set>
 
-#include "../drt_adapter/ad_scatra_wrapper.H"
+#include "ad_scatra_wrapper.H"
 
 #include <Epetra_MultiVector.h>
 #include <Epetra_SerialDenseVector.h>
 
-#include "../drt_inpar/inpar_fluid.H"
-#include "../drt_inpar/inpar_scatra.H"
+#include "inpar_fluid.H"
+#include "inpar_scatra.H"
 
 #include <memory>
 

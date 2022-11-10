@@ -13,12 +13,12 @@
 #include <Epetra_SerialDenseMatrix.h>
 #include <cmath>
 #include <iosfwd>
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 #include <algorithm>
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_mat/matpar_material.H"
+#include "drt_dserror.H"
+#include "matpar_material.H"
 #include "mixture_constituent.H"
 #include "mixture_growth_strategy.H"
 

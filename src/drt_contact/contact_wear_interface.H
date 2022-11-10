@@ -9,8 +9,8 @@
 #ifndef CONTACT_WEAR_INTERFACE_H_
 #define CONTACT_WEAR_INTERFACE_H_
 
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_inpar/inpar_wear.H"
+#include "inpar_contact.H"
+#include "inpar_wear.H"
 #include "contact_interface.H"
 #include <Epetra_FEVector.h>
 

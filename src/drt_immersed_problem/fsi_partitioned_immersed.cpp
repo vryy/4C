@@ -9,9 +9,9 @@
 *----------------------------------------------------------------------*/
 #include "fsi_partitioned_immersed.H"
 
-#include "../drt_fsi/fsi_debugwriter.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "fsi_debugwriter.H"
+#include "drt_globalproblem.H"
+#include "ad_str_fsiwrapper.H"
 
 
 FSI::PartitionedImmersed::PartitionedImmersed(const Epetra_Comm& comm) : Partitioned(comm)

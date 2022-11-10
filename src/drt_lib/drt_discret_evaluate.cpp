@@ -16,10 +16,10 @@
 #include "drt_function.H"
 #include "drt_parobjectfactory.H"
 #include "drt_elements_paramsinterface.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_sparsematrix.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_sparsematrix.H"
 #include "drt_assemblestrategy.H"
-#include "../drt_lib/function_of_time.H"
+#include "function_of_time.H"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 

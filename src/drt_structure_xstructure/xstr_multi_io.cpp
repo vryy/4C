@@ -11,11 +11,11 @@
 #include "xstr_multi_io.H"
 #include "xstr_multi_discretization_wrapper.H"
 
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
-#include "../pss_full/pss_cpp.h"
+#include "pss_cpp.h"
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

@@ -12,16 +12,16 @@
 #include "ssi_monolithic.H"
 #include "ssi_utils.H"
 
-#include "../drt_adapter/ad_str_ssiwrapper.H"
+#include "ad_str_ssiwrapper.H"
 
-#include "../drt_lib/drt_locsys.H"
+#include "drt_locsys.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "scatra_timint_implicit.H"
 
-#include "../linalg/linalg_blocksparsematrix.H"
-#include "../linalg/linalg_matrixtransform.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_blocksparsematrix.H"
+#include "linalg_matrixtransform.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/

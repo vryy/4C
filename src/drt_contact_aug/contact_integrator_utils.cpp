@@ -11,13 +11,13 @@
 #include "contact_aug_utils.H"
 #include "contact_aug_projector.H"
 #include "contact_aug_element_utils.H"
-#include "../drt_mortar/mortar_element.H"
-#include "../drt_contact/contact_node.H"
-#include "../drt_contact/contact_integrator.H"
+#include "mortar_element.H"
+#include "contact_node.H"
+#include "contact_integrator.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 #include "contact_aug_integrator_policy.H"
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 //#define DEBUG_FIND_FEASIBLE_MASTER_ELEMENT
 

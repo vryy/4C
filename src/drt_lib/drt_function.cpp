@@ -14,7 +14,7 @@
 #include "drt_functionvariables.H"
 #include "drt_linedefinition.H"
 #include "drt_parser.H"
-#include "../drt_io/io.H"
+#include "io.H"
 
 namespace
 {

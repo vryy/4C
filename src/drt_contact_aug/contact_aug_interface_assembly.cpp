@@ -12,10 +12,10 @@ sparse matrices and parallel distributed vectors
 #include "contact_augmented_interface.H"
 #include "contact_aug_steepest_ascent_interface.H"
 #include "contact_integrator_utils.H"
-#include "../drt_contact/contact_node.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "contact_node.H"
+#include "drt_discret.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
 
 #include <Epetra_Export.h>
 

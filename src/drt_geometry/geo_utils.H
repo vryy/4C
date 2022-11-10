@@ -16,7 +16,7 @@ header file
 
 
 #include <vector>
-#include "../drt_geometry/integrationcell.H"
+#include "integrationcell.H"
 
 
 // forward declarations

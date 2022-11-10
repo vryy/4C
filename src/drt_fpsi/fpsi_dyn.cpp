@@ -12,9 +12,9 @@
 #include "fpsi_utils.H"
 //#include "fpsi_monolithic.H"
 //#include "fpsi_monolithic_plain.H"
-#include "../drt_inpar/inpar_fpsi.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
+#include "inpar_fpsi.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

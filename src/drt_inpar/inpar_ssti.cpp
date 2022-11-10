@@ -12,9 +12,9 @@
 #include "inpar_ssti.H"
 #include "inpar_s2i.H"
 #include "inpar_scatra.H"
-#include "../drt_lib/drt_conditiondefinition.H"
-#include "../linalg/linalg_equilibrate.H"
-#include "../linalg/linalg_sparseoperator.H"
+#include "drt_conditiondefinition.H"
+#include "linalg_equilibrate.H"
+#include "linalg_sparseoperator.H"
 
 void INPAR::SSTI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {

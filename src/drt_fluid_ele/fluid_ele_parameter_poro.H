@@ -13,9 +13,9 @@
 #define FLUID_ELE_PARAMETER_PORO_H
 
 #include "fluid_ele_parameter.H"
-#include "../drt_inpar/inpar_poroelast.H"
+#include "inpar_poroelast.H"
 
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 namespace DRT
 {

@@ -18,18 +18,18 @@
 #include "particle_unique_global_id.H"
 #include "particle_runtime_vtp_writer.H"
 
-#include "../drt_particle_algorithm/particle_algorithm_utils.H"
+#include "particle_algorithm_utils.H"
 
-#include "../drt_binstrategy/binning_strategy.H"
+#include "binning_strategy.H"
 
-#include "../drt_inpar/inpar_particle.H"
+#include "inpar_particle.H"
 
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils_factory.H"
+#include "drt_dserror.H"
+#include "drt_discret.H"
+#include "drt_utils_factory.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
+#include "io.H"
+#include "io_pstream.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

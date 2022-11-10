@@ -16,7 +16,7 @@ continuous interior penalty) scheme
 #include <vector>
 #include <Teuchos_RCP.hpp>
 
-#include "../drt_inpar/inpar_xfem.H"
+#include "inpar_xfem.H"
 
 #include <Epetra_Vector.h>
 

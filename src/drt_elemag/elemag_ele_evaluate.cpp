@@ -8,7 +8,7 @@
 /*--------------------------------------------------------------------------*/
 
 #include "elemag_ele_factory.H"
-#include "../drt_inpar/inpar_elemag.H"
+#include "inpar_elemag.H"
 #include "elemag_ele_interface.H"
 #include "elemag_ele.H"
 #include "elemag_diff_ele.H"

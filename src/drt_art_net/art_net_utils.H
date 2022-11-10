@@ -10,8 +10,8 @@
 #ifndef SRC_DRT_ART_NET_ART_NET_UTILS_H_
 #define SRC_DRT_ART_NET_ART_NET_UTILS_H_
 
-#include "../drt_io/io.H"
-#include "../drt_inpar/inpar_bio.H"
+#include "io.H"
+#include "inpar_bio.H"
 
 // forward declarations
 namespace ADAPTER

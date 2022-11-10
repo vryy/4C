@@ -15,7 +15,7 @@
 #include <MueLu_Hierarchy.hpp>
 #include <MueLu_UseDefaultTypes.hpp>
 
-#include "../linalg/linalg_blocksparsematrix.H"
+#include "linalg_blocksparsematrix.H"
 
 #include "solver_preconditionertype.H"
 

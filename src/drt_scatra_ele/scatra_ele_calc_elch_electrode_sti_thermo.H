@@ -15,7 +15,7 @@ within thermodynamic electrodes
 #include "scatra_ele_calc_elch_electrode.H"
 #include "scatra_ele_calc_sti_electrode.H"
 
-#include "../drt_mat/material.H"
+#include "material.H"
 
 namespace DRT
 {

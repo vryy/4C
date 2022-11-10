@@ -15,19 +15,19 @@
 #include "particle_rigidbody_affiliation_pairs.H"
 #include "particle_rigidbody_utils.H"
 
-#include "../drt_particle_interaction/particle_interaction_utils.H"
+#include "particle_interaction_utils.H"
 
-#include "../drt_particle_engine/particle_engine_interface.H"
-#include "../drt_particle_engine/particle_communication_utils.H"
-#include "../drt_particle_engine/particle_unique_global_id.H"
+#include "particle_engine_interface.H"
+#include "particle_communication_utils.H"
+#include "particle_unique_global_id.H"
 
-#include "../drt_inpar/inpar_particle.H"
+#include "inpar_particle.H"
 
-#include "../drt_lib/drt_pack_buffer.H"
-#include "../drt_lib/drt_parobject.H"
+#include "drt_pack_buffer.H"
+#include "drt_parobject.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
+#include "io.H"
+#include "io_pstream.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

@@ -10,16 +10,16 @@
 
 /*----------------------------------------------------------------------------*/
 #include "ale_utils_clonestrategy.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_material.H"
-#include "../drt_mat/matpar_bundle.H"
+#include "drt_globalproblem.H"
+#include "matpar_material.H"
+#include "matpar_bundle.H"
 
 // we need to know all element types for the ale mesh creation
-#include "../drt_fluid_ele/fluid_ele.H"
-#include "../drt_ale2/ale2.H"
-#include "../drt_ale2/ale2_nurbs.H"
-#include "../drt_ale3/ale3.H"
-#include "../drt_ale3/ale3_nurbs.H"
+#include "fluid_ele.H"
+#include "ale2.H"
+#include "ale2_nurbs.H"
+#include "ale3.H"
+#include "ale3_nurbs.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

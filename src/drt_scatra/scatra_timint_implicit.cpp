@@ -30,40 +30,40 @@
 #include "turbulence_hit_initial_scalar_field.H"
 #include "turbulence_hit_scalar_forcing.H"
 
-#include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
+#include "fluid_rotsym_periodicbc_utils.H"
 
-#include "../drt_fluid_turbulence/dyn_vreman.H"
+#include "dyn_vreman.H"
 
-#include "../drt_inpar/drt_validparameters.H"
+#include "drt_validparameters.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_io/io_control.H"
+#include "io.H"
+#include "io_pstream.H"
+#include "io_control.H"
 
-#include "../drt_lib/drt_assemblestrategy.H"
-#include "../drt_lib/drt_condition_selector.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_periodicbc.H"
-#include "../drt_lib/drt_utils_gid_vector.H"
-#include "../drt_lib/drt_utils_vector.H"
-#include "../drt_lib/drt_utils_parameter_list.H"
+#include "drt_assemblestrategy.H"
+#include "drt_condition_selector.H"
+#include "drt_globalproblem.H"
+#include "drt_periodicbc.H"
+#include "drt_utils_gid_vector.H"
+#include "drt_utils_vector.H"
+#include "drt_utils_parameter_list.H"
 
-#include "../drt_mat/elchmat.H"
-#include "../drt_mat/electrode.H"
-#include "../drt_mat/matlist.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/scatra_mat.H"
+#include "elchmat.H"
+#include "electrode.H"
+#include "matlist.H"
+#include "matpar_bundle.H"
+#include "scatra_mat.H"
 
-#include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "drt_apply_nurbs_initial_condition.H"
+#include "drt_nurbs_discret.H"
 
-#include "../drt_scatra_ele/scatra_ele_action.H"
-#include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
+#include "scatra_ele_action.H"
+#include "scatra_ele_parameter_timint.H"
 
-#include "../linalg/linalg_krylov_projector.H"
-#include "../linalg/linalg_nullspace.H"
-#include "../linalg/linalg_solver.H"
-#include "../drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode_utils.H"
+#include "linalg_krylov_projector.H"
+#include "linalg_nullspace.H"
+#include "linalg_solver.H"
+#include "scatra_ele_boundary_calc_elch_electrode_utils.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

@@ -18,7 +18,7 @@
 
 
 #include "fs3i.H"
-#include "../drt_inpar/inpar_fs3i.H"
+#include "inpar_fs3i.H"
 #include <Teuchos_ParameterList.hpp>
 
 

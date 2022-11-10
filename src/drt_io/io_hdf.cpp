@@ -11,7 +11,7 @@
 
 #include <iostream>
 #include "io_hdf.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 
 /*----------------------------------------------------------------------*

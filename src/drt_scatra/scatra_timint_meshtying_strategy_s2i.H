@@ -12,10 +12,10 @@
 
 #include "scatra_timint_meshtying_strategy_base.H"
 
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
-#include "../drt_inpar/inpar_s2i.H"
-#include "../drt_inpar/inpar_scatra.H"
+#include "inpar_s2i.H"
+#include "inpar_scatra.H"
 
 #include <Epetra_FEVector.h>
 #include <Epetra_IntVector.h>

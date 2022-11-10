@@ -11,7 +11,7 @@
 
 #include <vector>
 #include "Epetra_Comm.h"
-#include "../drt_inpar/inpar_mortar.H"
+#include "inpar_mortar.H"
 
 // forward declarations
 namespace DRT

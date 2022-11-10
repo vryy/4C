@@ -8,7 +8,7 @@ Implementation of a coupled Saint-Venant-Kirchhoff material
 /*----------------------------------------------------------------------*/
 
 #include "elast_coupSaintVenantKirchhoff.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 
 MAT::ELASTIC::PAR::CoupSVK::CoupSVK(const Teuchos::RCP<MAT::PAR::Material>& matdata)

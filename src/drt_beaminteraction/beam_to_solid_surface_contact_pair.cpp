@@ -16,11 +16,11 @@
 #include "beam_to_solid_surface_vtk_output_params.H"
 #include "beam_to_solid_utils.H"
 #include "beaminteraction_calc_utils.H"
-#include "../drt_geometry_pair/geometry_pair_line_to_surface.H"
-#include "../drt_geometry_pair/geometry_pair_element_functions.H"
-#include "../drt_geometry_pair/geometry_pair_factory.H"
-#include "../drt_geometry_pair/geometry_pair_element_faces.H"
-#include "../drt_geometry_pair/geometry_pair_scalar_types.H"
+#include "geometry_pair_line_to_surface.H"
+#include "geometry_pair_element_functions.H"
+#include "geometry_pair_factory.H"
+#include "geometry_pair_element_faces.H"
+#include "geometry_pair_scalar_types.H"
 
 #include <Epetra_FEVector.h>
 

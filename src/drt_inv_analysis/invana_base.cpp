@@ -13,12 +13,12 @@
 #include "optimizer_base.H"
 #include "initial_guess.H"
 #include "invana_resulttest.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
 // to modify the IO
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io.H"
+#include "drt_globalproblem.H"
+#include "io_control.H"
+#include "io.H"
 
 
 /*----------------------------------------------------------------------*/

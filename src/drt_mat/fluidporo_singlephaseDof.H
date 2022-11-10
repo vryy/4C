@@ -11,7 +11,7 @@
 
 
 #include "matpar_parameter.H"
-#include "../drt_inpar/inpar_material.H"
+#include "inpar_material.H"
 
 #include <Epetra_SerialDenseMatrix.h>
 

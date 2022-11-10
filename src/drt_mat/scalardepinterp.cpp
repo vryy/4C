@@ -19,9 +19,9 @@ MAT 1 MAT_ScalarDepInterp IDMATZEROSC 2 IDMATUNITSC 3
 /*----------------------------------------------------------------------*/
 
 #include "scalardepinterp.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_lib/drt_utils_factory.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
+#include "drt_utils_factory.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

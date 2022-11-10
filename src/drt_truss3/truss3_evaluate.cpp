@@ -11,14 +11,14 @@ adapts assembly automatically according to the thereby changed number of nodal d
 
 #include "truss3.H"
 
-#include "../drt_beam3/beam3eb.H"
+#include "beam3eb.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "drt_globalproblem.H"
+#include "standardtypes_cpp.H"
 
-#include "../drt_mat/lin_elast_1D.H"
+#include "lin_elast_1D.H"
 
-#include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "str_elements_paramsinterface.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) cyron 08/08|

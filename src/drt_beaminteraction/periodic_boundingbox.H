@@ -12,7 +12,7 @@
 #ifndef PERIODIC_BOUNDINGBOX_H
 #define PERIODIC_BOUNDINGBOX_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include <Teuchos_RCP.hpp>
 
 

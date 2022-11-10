@@ -9,25 +9,25 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 // Todo check for obsolete header inclusions
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/function_of_time.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_fem_general/largerotations.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_structure_new/str_elements_paramsinterface.H"
-#include "../drt_structure_new/str_model_evaluator_data.H"
-#include "../drt_structure_new/str_timint_basedatasdyn.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_exporter.H"
+#include "drt_dserror.H"
+#include "function_of_time.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "linalg_fixedsizematrix.H"
+#include "largerotations.H"
+#include "drt_utils_integration.H"
+#include "inpar_structure.H"
+#include "str_elements_paramsinterface.H"
+#include "str_model_evaluator_data.H"
+#include "str_timint_basedatasdyn.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_beaminteraction/periodic_boundingbox.H"
+#include "periodic_boundingbox.H"
 #include "beam3k.H"
 
 #include "triad_interpolation_local_rotation_vectors.H"

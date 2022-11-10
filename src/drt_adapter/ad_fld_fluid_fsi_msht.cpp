@@ -10,7 +10,7 @@
 
 #include "ad_fld_fluid_fsi_msht.H"
 
-#include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "fluid_utils_mapextractor.H"
 
 /*======================================================================*/
 /* constructor */

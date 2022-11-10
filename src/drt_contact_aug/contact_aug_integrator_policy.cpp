@@ -11,9 +11,9 @@
 
 #include "contact_aug_integrator_policy.H"
 
-#include "../drt_mortar/mortar_element.H"
-#include "../drt_contact/contact_node.H"
-#include "../drt_io/io_pstream.H"
+#include "mortar_element.H"
+#include "contact_node.H"
+#include "io_pstream.H"
 
 
 /*----------------------------------------------------------------------------*

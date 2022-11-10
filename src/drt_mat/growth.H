@@ -12,7 +12,7 @@ growth laws.
 
 #include "so3_material.H"
 #include "matpar_parameter.H"
-#include "../drt_lib/drt_container.H"
+#include "drt_container.H"
 
 /*------------------------------------------------------------------------*/
 /* forward declarations */

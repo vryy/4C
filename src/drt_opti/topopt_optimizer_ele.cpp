@@ -11,9 +11,9 @@
 
 
 #include "topopt_optimizer_ele.H"
-#include "../drt_lib/drt_utils_factory.H"
-#include "../drt_mat/material.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_utils_factory.H"
+#include "material.H"
+#include "drt_linedefinition.H"
 
 
 DRT::ELEMENTS::TopOptType DRT::ELEMENTS::TopOptType::instance_;

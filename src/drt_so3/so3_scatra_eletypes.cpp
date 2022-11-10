@@ -10,7 +10,7 @@
 
 #include "so3_scatra.H"
 
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
 /*----------------------------------------------------------------------*
  |  HEX 8 Element                                       |

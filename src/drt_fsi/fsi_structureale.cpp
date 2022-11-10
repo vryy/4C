@@ -11,18 +11,18 @@
 
 #include "fsi_structureale.H"
 
-#include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/adapter_coupling_mortar.H"
-#include "../drt_adapter/ad_ale_fluid.H"
+#include "ad_str_fsiwrapper.H"
+#include "adapter_coupling.H"
+#include "adapter_coupling_mortar.H"
+#include "ad_ale_fluid.H"
 
 #include "fsi_utils.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_structure/stru_aux.H"
+#include "fluid_utils_mapextractor.H"
+#include "drt_globalproblem.H"
+#include "drt_validparameters.H"
+#include "stru_aux.H"
 
-#include "../drt_lib/drt_colors.H"
+#include "drt_colors.H"
 
 #include <string>
 #include <Epetra_Time.h>

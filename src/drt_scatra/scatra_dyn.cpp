@@ -8,15 +8,15 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "adapter_scatra_base_algorithm.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_utils_parallel.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_createdis.H"
+#include "drt_utils_parallel.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "scatra_timint_implicit.H"
 
-#include "../drt_scatra_ele/scatra_ele.H"
+#include "scatra_ele.H"
 
 #include <iostream>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -26,7 +26,7 @@
 #include "scatra_resulttest.H"
 #include "scatra_utils_clonestrategy.H"
 #include "scatra_dyn.H"
-#include "../drt_lib/drt_dofset_predefineddofnumber.H"
+#include "drt_dofset_predefineddofnumber.H"
 
 
 /*----------------------------------------------------------------------*

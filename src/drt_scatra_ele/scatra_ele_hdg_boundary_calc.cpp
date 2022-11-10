@@ -11,8 +11,8 @@
 
 #include "scatra_ele_hdg_boundary_calc.H"
 #include "scatra_ele_hdg.H"
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_utils_parameter_list.H"
+#include "drt_node.H"
+#include "drt_utils_parameter_list.H"
 #include "scatra_ele_action.H"
 
 

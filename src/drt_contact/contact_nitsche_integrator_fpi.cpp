@@ -14,7 +14,7 @@
 #include "contact_element.H"
 #include "contact_node.H"
 
-#include "../drt_xfem/xfem_xfluid_contact_communicator.H"
+#include "xfem_xfluid_contact_communicator.H"
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::CoIntegratorNitscheFpi::CoIntegratorNitscheFpi(Teuchos::ParameterList& params,

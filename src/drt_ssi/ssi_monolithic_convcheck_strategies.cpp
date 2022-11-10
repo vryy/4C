@@ -18,12 +18,12 @@ derived from an abstract, purely virtual interface class.
 #include "ssi_monolithic_convcheck_strategies.H"
 #include "ssi_utils.H"
 
-#include "../drt_adapter/ad_str_ssiwrapper.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "ad_str_ssiwrapper.H"
+#include "adapter_scatra_base_algorithm.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "scatra_timint_implicit.H"
 
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_mapextractor.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

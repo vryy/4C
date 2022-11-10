@@ -14,18 +14,18 @@
 #include "drt_discret.H"
 #include "drt_dserror.H"
 #include "drt_condition.H"
-#include "../drt_lib/drt_utils_factory.H"
+#include "drt_utils_factory.H"
 #include "drt_linedefinition.H"
 
-#include "../drt_mat/material.H"
+#include "material.H"
 
-#include "../drt_lib/drt_element_vtk_cell_type_register.H"
+#include "drt_element_vtk_cell_type_register.H"
 
 #include <Shards_BasicTopologies.hpp>
 #include <utility>
 
-#include "../drt_geometric_search/bounding_volume.H"
-#include "../drt_geometric_search/geometric_search_params.H"
+#include "bounding_volume.H"
+#include "geometric_search_params.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

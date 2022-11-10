@@ -17,23 +17,23 @@
 #include "fpsi_coupling.H"
 
 // FSI includes
-#include "../drt_fsi/fsi_monolithic.H"
+#include "fsi_monolithic.H"
 
 // POROELAST includes
-#include "../drt_poroelast/poro_base.H"
+#include "poro_base.H"
 
 // ALE includes
-#include "../drt_ale/ale.H"
-#include "../drt_adapter/ad_ale_fpsi.H"
+#include "ale.H"
+#include "ad_ale_fpsi.H"
 
 // ADAPTER includes
-#include "../drt_adapter/ad_fld_fluid_fpsi.H"
+#include "ad_fld_fluid_fpsi.H"
 
 // LINALG includes
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_mapextractor.H"
 
 // INPAR includes
-#include "../drt_inpar/inpar_fpsi.H"
+#include "inpar_fpsi.H"
 
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |

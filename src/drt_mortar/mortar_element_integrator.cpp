@@ -8,7 +8,7 @@
 /*---------------------------------------------------------------------*/
 
 #include "mortar_element.H"
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "drt_utils_integration.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 08/08|

@@ -12,8 +12,8 @@
 #ifndef MEMBRANE_ELASTHYPER_SERVICE_H
 #define MEMBRANE_ELASTHYPER_SERVICE_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_matelast/elast_summand.H"
+#include "linalg_fixedsizematrix.H"
+#include "elast_summand.H"
 namespace MAT
 {
   // Forward declaration

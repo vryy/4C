@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_timint_ac.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io.H"
+#include "drt_globalproblem.H"
+#include "io.H"
 
 
 /*----------------------------------------------------------------------*

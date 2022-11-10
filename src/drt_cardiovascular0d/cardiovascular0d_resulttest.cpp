@@ -11,8 +11,8 @@
 #include "cardiovascular0d_resulttest.H"
 #include "cardiovascular0d_manager.H"
 #include "cardiovascular0d.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_linedefinition.H"
+#include "drt_discret.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

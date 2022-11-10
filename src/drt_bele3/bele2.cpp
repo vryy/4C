@@ -9,11 +9,11 @@
 /*----------------------------------------------------------------------*/
 
 #include "bele2.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_discret.H"
+#include "drt_dserror.H"
+#include "drt_linedefinition.H"
 
-#include "../linalg/linalg_utils_nullspace.H"
+#include "linalg_utils_nullspace.H"
 
 DRT::ELEMENTS::Bele2Type DRT::ELEMENTS::Bele2Type::instance_;
 

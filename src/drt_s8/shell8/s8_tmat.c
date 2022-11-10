@@ -7,10 +7,10 @@
 
 */
 /*---------------------------------------------------------------------------*/
-#include "../../headers/standardtypes.h"
+#include "standardtypes.h"
 #include "shell8.h"
 
-#include "../../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 /*----------------------------------------------------------------------*
  | get density out of material law                        m.gee 2/02    |

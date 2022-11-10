@@ -10,9 +10,9 @@
 
 
 #include "contact_aug_steepest_ascent_interface.H"
-#include "../drt_contact/contact_node.H"
+#include "contact_node.H"
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

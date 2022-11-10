@@ -12,11 +12,11 @@ conjunction with XFluidFluid!
 
 #include "ad_fld_fluid_fluid_xfsi.H"
 
-#include "../drt_fluid_xfluid/xfluidfluid.H"
-#include "../drt_lib/drt_discret_xfem.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_xfem/xfem_condition_manager.H"
+#include "xfluidfluid.H"
+#include "drt_discret_xfem.H"
+#include "linalg_mapextractor.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "xfem_condition_manager.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>

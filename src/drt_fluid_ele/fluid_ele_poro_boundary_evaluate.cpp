@@ -14,7 +14,7 @@
 #include "fluid_ele_boundary_calc.H"
 #include "fluid_ele_boundary_factory.H"
 
-#include "../drt_inpar/inpar_fluid.H"
+#include "inpar_fluid.H"
 
 int DRT::ELEMENTS::FluidPoroBoundary::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,

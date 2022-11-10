@@ -20,7 +20,7 @@ which govern the actual doings
 #include "matlist.H"
 #include "matlist_reactions.H"
 #include "matlist_chemotaxis.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 
 namespace MAT
 {

@@ -20,10 +20,10 @@
 #include "fluid_utils_mapextractor.H"
 #include "fluid_utils.H"
 #include "Teuchos_RCP.hpp"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../drt_io/io.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "drt_discret.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "io.H"
+#include "fluid_ele_action.H"
 
 
 namespace FLD

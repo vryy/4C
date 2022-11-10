@@ -15,7 +15,7 @@
 #include <optional>
 #include <Teuchos_RCPDecl.hpp>
 #include <Teuchos_ParameterList.hpp>
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include "anisotropy_cylinder_coordinate_system_manager.H"
 
 // forward declarations

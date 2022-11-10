@@ -23,10 +23,10 @@ E1_LIN 0 TAU 0
 
 #include <vector>
 #include "maxwell_0d_acinus_Exponential.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_red_airways/red_airway.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
+#include "red_airway.H"
+#include "drt_linedefinition.H"
 
 
 

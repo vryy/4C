@@ -14,24 +14,24 @@
 #include "xfluid_state.H"
 #include "xfluidfluid_state.H"
 
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret_xfem.H"
+#include "drt_condition_utils.H"
+#include "drt_linedefinition.H"
+#include "drt_globalproblem.H"
+#include "drt_discret_xfem.H"
 
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_mapextractor.H"
 
-#include "../drt_cut/cut_cutwizard.H"
+#include "cut_cutwizard.H"
 
-#include "../drt_xfem/xfem_condition_manager.H"
-#include "../drt_xfem/xfem_dofset.H"
+#include "xfem_condition_manager.H"
+#include "xfem_dofset.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
+#include "io.H"
+#include "io_control.H"
 
-#include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "fluid_utils_mapextractor.H"
 
-#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "inpar_parameterlist_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

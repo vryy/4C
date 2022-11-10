@@ -12,8 +12,8 @@
 #include "geometry_pair_line_to_3D_evaluation_data.H"
 #include "geometry_pair_utility_classes.H"
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "drt_element.H"
+#include "drt_utils_integration.H"
 
 
 #include "geometry_pair_line_projection.H"

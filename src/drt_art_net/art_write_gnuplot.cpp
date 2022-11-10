@@ -10,7 +10,7 @@
 
 
 #include "art_write_gnuplot.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_utils.H"
 #include <fstream>
 #include <sstream>
 

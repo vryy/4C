@@ -6,21 +6,21 @@
             089/28915236
 
 *----------------------------------------------------------------------*/
-#include "../drt_fluid_xfluid/xfluid_levelset_coupling_algorithm.H"
+#include "xfluid_levelset_coupling_algorithm.H"
 
-#include "../drt_inpar/drt_validparameters.H"
+#include "drt_validparameters.H"
 
-#include "../drt_lib/drt_discret_xfem.H"
-#include "../drt_lib/drt_dofset_fixed_size.H"
-#include "../drt_lib/drt_dofset_proxy.H"
-#include "../drt_lib/drt_dofset_interface.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_createdis.H"
+#include "drt_discret_xfem.H"
+#include "drt_dofset_fixed_size.H"
+#include "drt_dofset_proxy.H"
+#include "drt_dofset_interface.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_createdis.H"
 
-#include "../drt_scatra/scatra_utils_clonestrategy.H"
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "scatra_utils_clonestrategy.H"
+#include "scatra_timint_implicit.H"
 
-#include "../drt_scatra_ele/scatra_ele.H"
+#include "scatra_ele.H"
 
 #include <Epetra_Time.h>
 #include <iostream>
@@ -31,10 +31,10 @@
 #include "two_phase_algorithm.H"
 #include "two_phase_dyn.H"
 
-#include "../drt_lib/drt_dofset_predefineddofnumber.H"
+#include "drt_dofset_predefineddofnumber.H"
 
-#include "../drt_adapter/ad_fld_fluid.H"
-#include "../drt_fluid_xfluid/xfluid.H"
+#include "ad_fld_fluid.H"
+#include "xfluid.H"
 
 
 

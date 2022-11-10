@@ -11,7 +11,7 @@
 #ifndef LINALG_GAUSS_H
 #define LINALG_GAUSS_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 namespace LINALG
 {

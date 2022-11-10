@@ -11,19 +11,19 @@
  *----------------------------------------------------------------------*/
 #include "adapter_coupling_ehl_mortar.H"
 
-#include "../drt_contact/contact_interface.H"
-#include "../drt_contact/friction_node.H"
+#include "contact_interface.H"
+#include "friction_node.H"
 
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_contact/contact_tsi_lagrange_strategy.H"
+#include "contact_tsi_lagrange_strategy.H"
 
-#include "../linalg/linalg_multiply.H"
-#include "../drt_io/io.H"
+#include "linalg_multiply.H"
+#include "io.H"
 
 ADAPTER::CouplingEhlMortar::CouplingEhlMortar()
     : CouplingNonLinMortar(),

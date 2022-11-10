@@ -11,13 +11,13 @@
 #include "immersed_base.H"
 #include "immersed_partitioned_fsi_dirichletneumann.H"
 
-#include "../drt_lib/drt_utils_parallel.H"
-#include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/inpar_immersed.H"
-#include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
-#include "../drt_fsi/fsi_utils.H"
-#include "../drt_ale/ale_utils_clonestrategy.H"
+#include "drt_utils_parallel.H"
+#include "drt_utils_createdis.H"
+#include "drt_globalproblem.H"
+#include "inpar_immersed.H"
+#include "ad_str_fsiwrapper_immersed.H"
+#include "fsi_utils.H"
+#include "ale_utils_clonestrategy.H"
 
 
 

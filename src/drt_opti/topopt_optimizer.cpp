@@ -14,15 +14,15 @@
 #include "opti_GCMMA.H"
 #include "opti_resulttest.H"
 
-#include "../drt_inpar/inpar_parameterlist_utils.H"
-#include "../drt_io/io.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/optimization_density.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "inpar_parameterlist_utils.H"
+#include "io.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "matpar_bundle.H"
+#include "newtonianfluid.H"
+#include "optimization_density.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_fixedsizematrix.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

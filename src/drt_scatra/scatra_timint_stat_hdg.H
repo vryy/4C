@@ -11,7 +11,7 @@
 
 #include "scatra_timint_hdg.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
 namespace SCATRA
 {

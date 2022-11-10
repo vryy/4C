@@ -11,12 +11,12 @@
 
 #include "so3_scatra.H"
 
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 // needed for Gauss integration
-#include "../drt_lib/drt_element_integration_select.H"
+#include "drt_element_integration_select.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/inpar_ssi.H"
+#include "drt_globalproblem.H"
+#include "inpar_ssi.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            vuong 03/12|

@@ -9,19 +9,19 @@ transport problems
 /*----------------------------------------------------------------------*/
 #include "scatra_multiscale_gp.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
+#include "io.H"
+#include "io_control.H"
 
-#include "../drt_lib/drt_dofset_predefineddofnumber.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_parameter_list.H"
+#include "drt_dofset_predefineddofnumber.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_parameter_list.H"
 
-#include "../drt_scatra/scatra_timint_ost.H"
+#include "scatra_timint_ost.H"
 
-#include "../drt_scatra_ele/scatra_ele_action.H"
-#include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
+#include "scatra_ele_action.H"
+#include "scatra_ele_parameter_timint.H"
 
-#include "../linalg/linalg_solver.H"
+#include "linalg_solver.H"
 
 #include <filesystem>
 

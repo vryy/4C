@@ -16,47 +16,47 @@
 #include "tsi_monolithic.H"
 #include "tsi_defines.H"
 #include "tsi_utils.H"
-#include "../drt_thermo/thrtimint.H"
+#include "thrtimint.H"
 
-#include "../drt_thermo/thermo_ele_action.H"
+#include "thermo_ele_action.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_adapter/ad_str_structure_new.H"
-#include "../drt_lib/drt_assemblestrategy.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_locsys.H"
+#include "ad_str_structure_new.H"
+#include "drt_assemblestrategy.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_locsys.H"
 
-#include "../linalg/linalg_blocksparsematrix.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_blocksparsematrix.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_solver.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_inpar/inpar_solver.H"
+#include "inpar_solver.H"
 
 // contact
-#include "../drt_contact/contact_abstract_strategy.H"
-#include "../drt_contact/contact_tsi_lagrange_strategy.H"
-#include "../drt_contact/contact_nitsche_strategy_tsi.H"
-#include "../drt_contact/contact_interface.H"
-#include "../drt_contact/contact_tsi_interface.H"
-#include "../drt_contact/contact_node.H"
-#include "../drt_contact/meshtying_contact_bridge.H"
-#include "../drt_mortar/mortar_manager_base.H"
+#include "contact_abstract_strategy.H"
+#include "contact_tsi_lagrange_strategy.H"
+#include "contact_nitsche_strategy_tsi.H"
+#include "contact_interface.H"
+#include "contact_tsi_interface.H"
+#include "contact_node.H"
+#include "meshtying_contact_bridge.H"
+#include "mortar_manager_base.H"
 
 // for coupling of nonmatching meshes
-#include "../drt_adapter/adapter_coupling_volmortar.H"
+#include "adapter_coupling_volmortar.H"
 
-#include "../drt_structure_new/str_timint_base.H"
-#include "../drt_structure_new/str_model_evaluator_contact.H"
-#include "../drt_structure_new/str_model_evaluator_structure.H"
-#include "../drt_structure_new/str_model_evaluator_data.H"
-#include "../drt_lib/drt_elements_paramsminimal.H"
+#include "str_timint_base.H"
+#include "str_model_evaluator_contact.H"
+#include "str_model_evaluator_structure.H"
+#include "str_model_evaluator_data.H"
+#include "drt_elements_paramsminimal.H"
 
-#include "../drt_mortar/mortar_multifield_coupling.H"
+#include "mortar_multifield_coupling.H"
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries

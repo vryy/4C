@@ -15,14 +15,14 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "Epetra_Vector.h"
 
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_inpar/inpar_beaminteraction.H"
-#include "../drt_lib/drt_element.H"
+#include "drt_elementtype.H"
+#include "drt_discret.H"
+#include "inpar_structure.H"
+#include "inpar_beaminteraction.H"
+#include "drt_element.H"
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_integration.H"
 
 #include "beam_spatial_discretization_utils.H"
 

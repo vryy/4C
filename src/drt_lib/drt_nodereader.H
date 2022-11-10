@@ -15,7 +15,7 @@
 #include "drt_inputreader.H"
 #include "drt_elementreader.H"
 #include "drt_domainreader.H"
-#include "../drt_inpar/inpar.H"
+#include "inpar.H"
 
 namespace DRT
 {

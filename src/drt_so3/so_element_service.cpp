@@ -11,7 +11,7 @@
 #include "so_hex8.H"
 #include "so_tet10.H"
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "drt_utils_fem_shapefunctions.H"
 
 template <class T>
 void DRT::ELEMENTS::AssembleExtrapolatedNodalValues(Epetra_MultiVector& global_data,

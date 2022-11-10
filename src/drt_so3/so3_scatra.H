@@ -13,10 +13,10 @@
 
 #include "so3_scatra_eletypes.H"
 
-#include "../drt_fem_general/drt_utils_gausspoints.H"
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "drt_utils_gausspoints.H"
+#include "drt_utils_integration.H"
 
-#include "../drt_inpar/inpar_scatra.H"
+#include "inpar_scatra.H"
 
 namespace DRT
 {

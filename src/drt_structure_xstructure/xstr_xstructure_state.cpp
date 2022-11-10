@@ -11,12 +11,12 @@
 
 #include "xstr_xstructure_state.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
 
-#include "../drt_xfem/xfield_state_utils.H"
+#include "xfield_state_utils.H"
 
-#include "../drt_lib/drt_discret_interface.H"
-#include "../drt_lib/drt_node.H"
+#include "drt_discret_interface.H"
+#include "drt_node.H"
 
 #include <Epetra_Export.h>
 

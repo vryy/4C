@@ -14,9 +14,9 @@
 #include "scatra_ele_calc_elch_electrode.H"
 #include "scatra_ele_sti_elch.H"
 
-#include "../drt_inpar/inpar_elch.H"
+#include "inpar_elch.H"
 
-#include "../drt_mat/electrode.H"
+#include "electrode.H"
 
 namespace DRT
 {

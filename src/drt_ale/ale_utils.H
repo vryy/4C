@@ -11,8 +11,8 @@
 #define SRC_DRT_ALE_ALE_UTILS_H_
 
 
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "drt_discret.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 
 namespace DRT

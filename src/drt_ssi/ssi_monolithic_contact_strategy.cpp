@@ -11,9 +11,9 @@
 #include "ssi_monolithic.H"
 #include "ssi_utils.H"
 
-#include "../drt_contact/contact_nitsche_strategy_ssi.H"
+#include "contact_nitsche_strategy_ssi.H"
 
-#include "../linalg/linalg_blocksparsematrix.H"
+#include "linalg_blocksparsematrix.H"
 
 
 /*-------------------------------------------------------------------------*

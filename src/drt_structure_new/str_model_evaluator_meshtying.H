@@ -13,7 +13,7 @@
 #define SRC_DRT_STRUCTURE_NEW_STR_MODEL_EVALUATOR_MESHTYING_H_
 
 #include "str_model_evaluator_generic.H"
-#include "../drt_lib/drt_utils_matrix_vector_enums.H"
+#include "drt_utils_matrix_vector_enums.H"
 
 // forward declarations
 namespace CONTACT

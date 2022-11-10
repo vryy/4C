@@ -13,11 +13,11 @@
 #define FLUID_ELE_CALC_PORO_H
 
 
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 
 #include "fluid_ele_calc.H"
 
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 namespace MAT
 {

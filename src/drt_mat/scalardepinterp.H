@@ -22,7 +22,7 @@ parameters or totally different strain energy function).
 #include "matpar_parameter.H"
 #include "matpar_material.H"
 #include "so3_material.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 
 // forward declaration due to avoid header definition
 namespace MAT

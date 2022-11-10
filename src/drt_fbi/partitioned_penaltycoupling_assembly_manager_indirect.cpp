@@ -14,16 +14,16 @@ coupling matrices M and D first.
 #include "partitioned_penaltycoupling_assembly_manager_indirect.H"
 #include "beam_to_fluid_mortar_manager.H"
 #include "beam_to_fluid_meshtying_params.H"
-#include "../drt_fbi/fbi_calc_utils.H"
+#include "fbi_calc_utils.H"
 
-#include "../drt_beaminteraction/beam_contact_pair.H"
-#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
+#include "beam_contact_pair.H"
+#include "beaminteraction_calc_utils.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_element.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_sparsematrix.H"
+#include "drt_discret.H"
+#include "drt_element.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
+#include "linalg_sparsematrix.H"
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 

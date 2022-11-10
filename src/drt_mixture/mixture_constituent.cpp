@@ -11,10 +11,10 @@
 /*----------------------------------------------------------------------*/
 
 #include "mixture_constituent.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_material.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/material_service.H"
+#include "drt_globalproblem.H"
+#include "matpar_material.H"
+#include "matpar_bundle.H"
+#include "material_service.H"
 #include "mixture_constituent_elasthyper.H"
 #include "mixture_constituent_elasthyper_damage.H"
 #include "mixture_constituent_elasthyper_elastin_membrane.H"

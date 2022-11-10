@@ -15,7 +15,7 @@ species
 
 #include "elchsinglemat.H"
 
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 
 namespace MAT
 {

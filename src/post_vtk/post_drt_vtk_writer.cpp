@@ -13,13 +13,13 @@
 #include <iomanip>
 #include <filesystem>
 
-#include "../post_drt_common/post_drt_common.H"
-#include "../pss_full/pss_cpp.h"
-#include "../drt_lib/drt_discret.H"
+#include "post_drt_common.H"
+#include "pss_cpp.h"
+#include "drt_discret.H"
 
 
 // deactivate for ascii output. Only do this for debugging.
-//#define BIN_VTK_OUT
+// #define BIN_VTK_OUT
 
 PostVtkWriter::PostVtkWriter(PostField *field, const std::string &filename)
     : PostWriterBase(field, filename),

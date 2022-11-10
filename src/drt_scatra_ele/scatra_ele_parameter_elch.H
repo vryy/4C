@@ -17,7 +17,7 @@ general static parameters required for scalar transport element evaluation.
 #ifndef SCATRA_ELE_PARAMETER_ELCH_H
 #define SCATRA_ELE_PARAMETER_ELCH_H
 
-#include "../drt_inpar/inpar_elch.H"
+#include "inpar_elch.H"
 
 #include "scatra_ele_parameter_base.H"
 

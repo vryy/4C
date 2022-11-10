@@ -8,14 +8,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "../drt_fem_general/largerotations.H"
+#include "largerotations.H"
 
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
-#include "../drt_inpar/inpar_beaminteraction.H"
+#include "inpar_beaminteraction.H"
 
 #include <Teuchos_RCP.hpp>
 

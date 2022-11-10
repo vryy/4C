@@ -11,7 +11,7 @@
 
 #include "inpar_tutorial.H"
 
-#include "../drt_inpar/drt_validparameters.H"
+#include "drt_validparameters.H"
 
 
 void INPAR::TUTORIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)

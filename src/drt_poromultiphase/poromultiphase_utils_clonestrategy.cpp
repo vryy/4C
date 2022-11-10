@@ -8,11 +8,11 @@
 
 
 #include "poromultiphase_utils_clonestrategy.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_material.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele.H"
-#include "../drt_lib/drt_element.H"
+#include "drt_globalproblem.H"
+#include "matpar_material.H"
+#include "matpar_bundle.H"
+#include "porofluidmultiphase_ele.H"
+#include "drt_element.H"
 
 
 /*----------------------------------------------------------------------*

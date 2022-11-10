@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "../drt_particle_engine/particle_typedefs.H"
+#include "particle_typedefs.H"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>

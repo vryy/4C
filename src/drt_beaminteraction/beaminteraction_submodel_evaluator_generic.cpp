@@ -10,14 +10,14 @@
 /*-----------------------------------------------------------*/
 
 
-#include "../drt_beaminteraction/beaminteraction_submodel_evaluator_generic.H"
-#include "../drt_beaminteraction/str_model_evaluator_beaminteraction_datastate.H"
-#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
+#include "beaminteraction_submodel_evaluator_generic.H"
+#include "str_model_evaluator_beaminteraction_datastate.H"
+#include "beaminteraction_calc_utils.H"
 
-#include "../drt_beaminteraction/periodic_boundingbox.H"
-#include "../drt_lib/drt_dserror.H"
+#include "periodic_boundingbox.H"
+#include "drt_dserror.H"
 
-#include "../drt_beaminteraction/beam_crosslinker_handler.H"
+#include "beam_crosslinker_handler.H"
 
 
 

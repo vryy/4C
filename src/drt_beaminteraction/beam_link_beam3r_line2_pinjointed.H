@@ -11,7 +11,7 @@
 #ifndef BeamLinkBeam3rLine2PinJointed_H
 #define BeamLinkBeam3rLine2PinJointed_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include "beam_link_pinjointed.H"
 
 // forward declarations

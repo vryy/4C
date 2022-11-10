@@ -16,7 +16,7 @@ Pack, Unpack, NumDofPerNode etc.
 #ifndef FLUID_ELE_PORO_H_
 #define FLUID_ELE_PORO_H_
 
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 #include "fluid_ele.H"
 
 namespace DRT

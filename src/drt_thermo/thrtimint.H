@@ -16,20 +16,20 @@
  | headers                                                  bborn 06/08 |
  *----------------------------------------------------------------------*/
 
-#include "../drt_adapter/adapter_thermo.H"
+#include "adapter_thermo.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_timestepping/timintmstep.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "timintmstep.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
+#include "io.H"
+#include "io_control.H"
 
-#include "../drt_inpar/drt_validparameters.H"
+#include "drt_validparameters.H"
 
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "linalg_solver.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
 // forward declaration
 namespace CONTACT

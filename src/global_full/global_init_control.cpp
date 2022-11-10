@@ -12,8 +12,8 @@
 #include <sstream>
 
 #include "global_init_control.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_comm/comm_utils.H"
+#include "drt_globalproblem.H"
+#include "comm_utils.H"
 
 /*----------------------------------------------------------------------*/
 /*

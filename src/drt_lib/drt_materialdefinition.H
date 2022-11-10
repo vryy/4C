@@ -16,10 +16,10 @@
 /* headers */
 #include <Teuchos_RCP.hpp>
 
-#include "../drt_inpar/inpar_material.H"
-#include "../drt_mat/matpar_material.H"
+#include "inpar_material.H"
+#include "matpar_material.H"
 #include "drt_inputreader.H"
-#include "../drt_mat/matpar_bundle.H"
+#include "matpar_bundle.H"
 
 namespace DRT
 {

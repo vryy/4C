@@ -12,8 +12,8 @@
 #ifndef CONTACT_AUGMENTED_INTEGRATOR_H_
 #define CONTACT_AUGMENTED_INTEGRATOR_H_
 
-#include "../drt_contact/contact_integrator.H"
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "contact_integrator.H"
+#include "drt_utils_integration.H"
 #include "contact_aug_integrator_policy.H"
 
 namespace MORTAR

@@ -15,8 +15,8 @@
 
 #include "fsi_monolithic.H"
 
-#include "../drt_inpar/inpar_fsi.H"
-#include "../drt_inpar/inpar_xfem.H"
+#include "inpar_fsi.H"
+#include "inpar_xfem.H"
 
 namespace ADAPTER
 {

@@ -25,10 +25,10 @@ MAT 3 MAT_0D_MAXWELL_ACINUS_OGDEN Stiffness1 1.0 Stiffness2 5249.1 Viscosity1 32
 
 #include <vector>
 #include "maxwell_0d_acinus_Ogden.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_red_airways/red_airway.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
+#include "red_airway.H"
+#include "drt_linedefinition.H"
 
 
 /*----------------------------------------------------------------------*/

@@ -15,8 +15,8 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include <Teuchos_RCP.hpp>
-#include "../drt_inpar/inpar_material.H"
-#include "../drt_lib/drt_dserror.H"
+#include "inpar_material.H"
+#include "drt_dserror.H"
 #include "Epetra_Vector.h"
 
 /*----------------------------------------------------------------------*/

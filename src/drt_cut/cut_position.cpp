@@ -12,7 +12,7 @@
 
 #include "cut_position.H"
 #include "cut_boundingbox.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

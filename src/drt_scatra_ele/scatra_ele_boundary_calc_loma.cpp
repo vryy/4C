@@ -7,26 +7,26 @@
 
  */
 /*----------------------------------------------------------------------*/
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
 
-#include "../drt_mat/arrhenius_pv.H"
-#include "../drt_mat/arrhenius_temp.H"
-#include "../drt_mat/ferech_pv.H"
-#include "../drt_mat/material.H"
-#include "../drt_mat/matlist.H"
-#include "../drt_mat/mixfrac.H"
-#include "../drt_mat/sutherland.H"
-#include "../drt_mat/tempdepwater.H"
-#include "../drt_mat/thermostvenantkirchhoff.H"
-#include "../drt_mat/yoghurt.H"
+#include "arrhenius_pv.H"
+#include "arrhenius_temp.H"
+#include "ferech_pv.H"
+#include "material.H"
+#include "matlist.H"
+#include "mixfrac.H"
+#include "sutherland.H"
+#include "tempdepwater.H"
+#include "thermostvenantkirchhoff.H"
+#include "yoghurt.H"
 
 #include "scatra_ele.H"
 #include "scatra_ele_boundary_calc_loma.H"
 #include "scatra_ele_parameter_std.H"
 
-#include "../drt_fluid/fluid_rotsym_periodicbc.H"
-#include "../headers/singleton_owner.H"
+#include "fluid_rotsym_periodicbc.H"
+#include "singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*

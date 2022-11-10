@@ -11,7 +11,7 @@
 #define SSI_STRUCTURE_WRAPPER_H
 
 #include "ad_str_wrapper.H"
-#include "../drt_ssi/ssi_str_model_evaluator_partitioned.H"
+#include "ssi_str_model_evaluator_partitioned.H"
 
 // forward declarations
 namespace STR

@@ -13,9 +13,9 @@
 #define SRC_DRT_STRUCTURE_NEW_STR_INTEGRATOR_H_
 
 #include <Teuchos_RCP.hpp>
-#include "../drt_inpar/inpar_structure.H"             // enumerators
-#include "../solver_nonlin_nox/nox_nln_enum_lists.H"  // enumerators
-#include <NOX_Abstract_Vector.H>                      // enumerators
+#include "inpar_structure.H"      // enumerators
+#include "nox_nln_enum_lists.H"   // enumerators
+#include <NOX_Abstract_Vector.H>  // enumerators
 
 // forward declarations
 class Epetra_Vector;

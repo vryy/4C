@@ -11,7 +11,7 @@
 #define OBJECTIVE_FUNCT_DISP_H
 
 #include "objective_funct.H"
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_mapextractor.H"
 
 
 // forward declarations

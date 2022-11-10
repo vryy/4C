@@ -11,15 +11,15 @@
 
 #include "dyn_vreman.H"
 #include "boxfilter.H"
-#include "../drt_scatra_ele/scatra_ele_action.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "scatra_ele_action.H"
+#include "fluid_ele_action.H"
 
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/scatra_mat.H"
+#include "matpar_bundle.H"
+#include "newtonianfluid.H"
+#include "scatra_mat.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_parameter_list.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_parameter_list.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     krank 09/13|

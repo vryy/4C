@@ -13,15 +13,15 @@
 #include "beam_to_fluid_meshtying_params.H"
 #include "fbi_calc_utils.H"
 
-#include "../drt_beaminteraction/beam_contact_pair.H"
-#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
+#include "beam_contact_pair.H"
+#include "beaminteraction_calc_utils.H"
 
-#include "../drt_inpar/inpar_fbi.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "inpar_fbi.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "linalg_multiply.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_serialdensevector.H"
 
 #include <Epetra_FEVector.h>
 

@@ -8,9 +8,9 @@
  *------------------------------------------------------------------------------------------------*/
 
 #include "xfluid_functions_combust.H"
-#include "../drt_lib/drt_discret_interface.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_discret_interface.H"
+#include "standardtypes_cpp.H"
+#include "drt_linedefinition.H"
 
 
 void DRT::UTILS::AddValidCombustFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)

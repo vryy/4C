@@ -14,8 +14,8 @@
 *----------------------------------------------------------------------*/
 
 
-#include "../drt_geometry/intersection_math.H"
-#include "../linalg/linalg_serialdensematrix.H"
+#include "intersection_math.H"
+#include "linalg_serialdensematrix.H"
 
 
 void GEO::test_svdcmp(LINALG::Matrix<3, 3>& A, LINALG::Matrix<3, 3>& U, LINALG::Matrix<3, 1>& W,

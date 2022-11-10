@@ -17,8 +17,8 @@
 #include "topopt_dyn.H"
 #include "topopt_algorithm.H"
 #include "topopt_optimizer.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_createdis.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_createdis.H"
 #include "topopt_utils.H"
 
 

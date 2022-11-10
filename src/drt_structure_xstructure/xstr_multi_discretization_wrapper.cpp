@@ -13,11 +13,11 @@
 #include "xstr_multi_discretization_wrapper.H"
 #include "xstr_multi_io.H"
 
-#include "../drt_lib/drt_node.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_blocksparsematrix.H"
+#include "drt_node.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_blocksparsematrix.H"
 
-#include "../drt_lib/drt_utils_discret.H"
+#include "drt_utils_discret.H"
 
 #include <functional>
 #include <Epetra_SerialDenseVector.h>

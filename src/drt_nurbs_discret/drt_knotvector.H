@@ -10,8 +10,8 @@
 #ifndef KNOTVECTOR_H
 #define KNOTVECTOR_H
 
-#include "../drt_lib/drt_parobject.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobject.H"
+#include "drt_parobjectfactory.H"
 
 #include <Teuchos_RCP.hpp>
 

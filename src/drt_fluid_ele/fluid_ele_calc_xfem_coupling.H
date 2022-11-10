@@ -27,11 +27,11 @@
  * kruse, 08/14
  */
 
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
-#include "../linalg/linalg_fixedsizeblockmatrix.H"
+#include "linalg_fixedsizeblockmatrix.H"
 
-#include "../drt_inpar/inpar_xfem.H"
+#include "inpar_xfem.H"
 
 namespace DRT
 {

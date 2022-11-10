@@ -14,9 +14,9 @@ bridge between the xfluid class and the cut-library
 #define XFEM_COUPLING_LEVELSET_H_
 
 #include "xfem_coupling_base.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_inpar/inpar_twophase.H"
-#include "../drt_cut/cut_point.H"
+#include "drt_utils_local_connectivity_matrices.H"
+#include "inpar_twophase.H"
+#include "cut_point.H"
 
 #include "xfem_utils.H"
 

@@ -13,8 +13,8 @@
 #include <Epetra_Operator.h>
 #include <Epetra_MultiVector.h>
 
-#include "../linalg/linalg_krylov_projector.H"
-#include "../linalg/linalg_projected_operator.H"
+#include "linalg_krylov_projector.H"
+#include "linalg_projected_operator.H"
 
 #include "solver_preconditionertype.H"
 

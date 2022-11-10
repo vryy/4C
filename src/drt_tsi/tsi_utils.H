@@ -18,7 +18,7 @@
  *----------------------------------------------------------------------*/
 #include <Teuchos_RCP.hpp>
 
-#include "../drt_volmortar/volmortar_utils.H"
+#include "volmortar_utils.H"
 
 namespace DRT
 {

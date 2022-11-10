@@ -14,16 +14,16 @@ thereby builds the bridge between the xfluid class and the cut-library
 
 #include "xfem_coupling_base.H"
 
-#include "../drt_lib/drt_condition_utils.H"
+#include "drt_condition_utils.H"
 #include "xfem_utils.H"
 #include "xfem_interface_utils.H"
 
 // Needed for Master Fluid
-#include "../drt_mat/newtonianfluid.H"
+#include "newtonianfluid.H"
 
 // finally this parameter list should go and all interface relevant parameters should be stored in
 // the condition mangager or coupling objects
-#include "../drt_fluid_ele/fluid_ele_parameter_xfem.H"
+#include "fluid_ele_parameter_xfem.H"
 
 INPAR::XFEM::EleCouplingCondType XFEM::CondType_stringToEnum(const std::string& condname)
 {

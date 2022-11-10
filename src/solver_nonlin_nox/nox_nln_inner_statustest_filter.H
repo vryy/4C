@@ -26,7 +26,7 @@
 #include "nox_nln_meritfunction_infeasibility.H"
 #include "nox_nln_enum_lists.H"
 
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_serialdensevector.H"
 
 #include <Teuchos_RCP.hpp>
 

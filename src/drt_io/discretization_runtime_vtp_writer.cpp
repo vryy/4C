@@ -15,11 +15,11 @@
 
 #include "io_control.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_node.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 
 /*-----------------------------------------------------------------------------------------------*

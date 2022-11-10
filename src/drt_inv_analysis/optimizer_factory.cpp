@@ -14,8 +14,8 @@
 #include "optimizer_mh.H"
 #include "optimizer_smc_predict.H"
 #include "invana_base.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_inpar/inpar_statinvanalysis.H"
+#include "drt_dserror.H"
+#include "inpar_statinvanalysis.H"
 
 #include "Teuchos_ParameterList.hpp"
 

@@ -11,9 +11,9 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_cut/cut_position.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_xfem/xfem_interface_utils.H"
+#include "cut_position.H"
+#include "drt_utils.H"
+#include "xfem_interface_utils.H"
 #include "fluid_ele_calc_xfem_coupling_impl.H"
 
 namespace DRT

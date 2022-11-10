@@ -13,9 +13,9 @@
 #include "nox_nln_linearsystem_factory.H"
 #include "nox_nln_globaldata.H"
 
-#include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_sparseoperator.H"
+#include "drt_dserror.H"
+#include "linalg_solver.H"
+#include "linalg_sparseoperator.H"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -26,12 +26,12 @@
 #include <NOX_Epetra_Scaling.H>
 
 //// header files for different linearSystems
-#include "../drt_contact_aug/nox_nln_contact_linearsystem.H"
-#include "../drt_contact/nox_nln_meshtying_linearsystem.H"
-#include "../drt_cardiovascular0d/nox_nln_cardiovascular0d_linearsystem.H"
-#include "../drt_constraint/nox_nln_lagpenconstraint_linearsystem.H"
-#include "../drt_structure_new/nox_nln_str_linearsystem.H"
-#include "../drt_scatra/nox_nln_scatra_linearsystem.H"
+#include "nox_nln_contact_linearsystem.H"
+#include "nox_nln_meshtying_linearsystem.H"
+#include "nox_nln_cardiovascular0d_linearsystem.H"
+#include "nox_nln_lagpenconstraint_linearsystem.H"
+#include "nox_nln_str_linearsystem.H"
+#include "nox_nln_scatra_linearsystem.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

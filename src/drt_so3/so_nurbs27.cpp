@@ -11,13 +11,13 @@
 #include "so_line.H"
 #include "so_surface.H"
 #include "so_nurbs27.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_utils_factory.H"
+#include "drt_dserror.H"
+#include "drt_linedefinition.H"
+#include "drt_globalproblem.H"
 
-#include "../linalg/linalg_utils_nullspace.H"
+#include "linalg_utils_nullspace.H"
 
 #include "so_utils.H"
 

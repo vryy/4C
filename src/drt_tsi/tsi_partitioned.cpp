@@ -14,18 +14,18 @@
 #include "tsi_partitioned.H"
 #include "tsi_defines.H"
 #include "tsi_utils.H"
-#include "../drt_inpar/inpar_tsi.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../drt_adapter/adapter_thermo.H"
-#include "../drt_adapter/ad_str_structure.H"
+#include "inpar_tsi.H"
+#include "inpar_structure.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "adapter_thermo.H"
+#include "ad_str_structure.H"
 
 // contact
-#include "../drt_contact/contact_abstract_strategy.H"
-#include "../drt_mortar/mortar_manager_base.H"
-#include "../drt_contact/meshtying_contact_bridge.H"
+#include "contact_abstract_strategy.H"
+#include "mortar_manager_base.H"
+#include "meshtying_contact_bridge.H"
 
 //! Note: The order of calling the two BasePartitioned-constructors is
 //! important here! In here control file entries are written. And these entries

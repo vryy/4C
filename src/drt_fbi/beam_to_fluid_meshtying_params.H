@@ -11,8 +11,8 @@
 #ifndef BEAM_TO_FLUID_MESHTYING_PARAMS_H
 #define BEAM_TO_FLUID_MESHTYING_PARAMS_H
 
-#include "../drt_beaminteraction/beam_contact_params.H"
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "beam_contact_params.H"
+#include "drt_utils_integration.H"
 
 namespace INPAR
 {

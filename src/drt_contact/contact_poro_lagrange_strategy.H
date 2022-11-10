@@ -12,7 +12,7 @@ interface
 #define CONTACT_PORO_LAGRANGE_STRATEGY_H
 
 #include "contact_monocoupled_lagrange_strategy.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 namespace ADAPTER
 {

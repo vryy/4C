@@ -11,10 +11,10 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "../drt_lib/drt_matchingoctree.H"
-#include "../drt_lib/drt_condition_utils.H"
+#include "drt_matchingoctree.H"
+#include "drt_condition_utils.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 #include <Epetra_Export.h>
 #include "drt_dofset_merged_wrapper.H"

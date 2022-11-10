@@ -9,12 +9,12 @@
 
 #include "invana_utils.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "Epetra_SerialDenseVector.h"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 #include "DcsMatrix.H"
 #include "chol_factory.H"
-#include "../drt_inpar/inpar_statinvanalysis.H"
+#include "inpar_statinvanalysis.H"
 
 #include "Teuchos_ParameterList.hpp"
 #include "Teuchos_StandardParameterEntryValidators.hpp"

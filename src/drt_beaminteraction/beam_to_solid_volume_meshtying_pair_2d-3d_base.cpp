@@ -9,10 +9,10 @@
 
 #include "beam_to_solid_volume_meshtying_pair_2d-3d_base.H"
 
-#include "../drt_geometry_pair/geometry_pair_element_functions.H"
-#include "../drt_geometry_pair/geometry_pair_utility_classes.H"
-#include "../drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
-#include "../drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection_cross_section.H"
+#include "geometry_pair_element_functions.H"
+#include "geometry_pair_utility_classes.H"
+#include "geometry_pair_line_to_3D_evaluation_data.H"
+#include "geometry_pair_line_to_volume_gauss_point_projection_cross_section.H"
 
 
 /**

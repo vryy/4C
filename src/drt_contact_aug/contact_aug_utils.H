@@ -10,14 +10,14 @@
 #ifndef SRC_DRT_CONTACT_AUG_CONTACT_AUG_UTILS_H_
 #define SRC_DRT_CONTACT_AUG_CONTACT_AUG_UTILS_H_
 
-#include "../drt_inpar/inpar_contact.H"
+#include "inpar_contact.H"
 #include <ext/mt_allocator.h>
 
-#include "../headers/pairedmatrix.H"
+#include "pairedmatrix.H"
 
 namespace GEN_DATA = GEN;
 
-//#define INSERT_AND_SORT
+// #define INSERT_AND_SORT
 #define QUICK_INSERT
 
 

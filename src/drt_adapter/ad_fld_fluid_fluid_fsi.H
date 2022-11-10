@@ -17,7 +17,7 @@
 #include <Epetra_Map.h>
 
 #include "ad_fld_fluid_fsi.H"
-#include "../drt_inpar/inpar_xfem.H"
+#include "inpar_xfem.H"
 
 namespace DRT
 {

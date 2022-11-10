@@ -12,9 +12,9 @@ constraint discretization approach
 #include "partitioned_penaltycoupling_assembly_manager_direct.H"
 #include "partitioned_penaltycoupling_assembly_manager_indirect.H"
 #include "beam_to_fluid_meshtying_params.H"
-#include "../drt_beaminteraction/beam_contact_pair.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_inpar/inpar_fbi.H"
+#include "beam_contact_pair.H"
+#include "drt_discret.H"
+#include "inpar_fbi.H"
 /**
  *
  */

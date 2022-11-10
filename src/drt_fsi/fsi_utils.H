@@ -23,8 +23,8 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_inpar/inpar_fsi.H"
+#include "drt_discret.H"
+#include "inpar_fsi.H"
 
 // forward declarations
 namespace ADAPTER

@@ -8,22 +8,22 @@
 
 #include "poromultiphase_utils.H"
 
-#include "../drt_lib/drt_dofset_predefineddofnumber.H"
+#include "drt_dofset_predefineddofnumber.H"
 #include "poromultiphase_utils_clonestrategy.H"
 
-#include "../drt_adapter/ad_poromultiphase.H"
+#include "ad_poromultiphase.H"
 
 #include "poromultiphase_partitioned.H"
 #include "poromultiphase_partitioned_twoway.H"
 #include "poromultiphase_monolithic.H"
 #include "poromultiphase_monolithic_twoway.H"
 
-#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele.H"
-#include "../drt_porofluidmultiphase/porofluidmultiphase_utils.H"
-#include "../drt_poroelast/poroelast_utils.H"
-#include "../drt_inpar/inpar_bio.H"
+#include "porofluidmultiphase_ele.H"
+#include "porofluidmultiphase_utils.H"
+#include "poroelast_utils.H"
+#include "inpar_bio.H"
 
-#include "../drt_lib/drt_utils_createdis.H"
+#include "drt_utils_createdis.H"
 
 /*----------------------------------------------------------------------*
  | setup discretizations and dofsets                         vuong 08/16 |

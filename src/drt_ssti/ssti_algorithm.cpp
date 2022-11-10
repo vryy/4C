@@ -12,25 +12,25 @@
 #include "ssti_resulttest.H"
 #include "ssti_utils.H"
 
-#include "../drt_adapter/ad_str_factory.H"
-#include "../drt_adapter/ad_str_ssiwrapper.H"
-#include "../drt_adapter/ad_str_structure_new.H"
+#include "ad_str_factory.H"
+#include "ad_str_ssiwrapper.H"
+#include "ad_str_structure_new.H"
 
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "adapter_scatra_base_algorithm.H"
 
-#include "../drt_inpar/inpar_ssti.H"
+#include "inpar_ssti.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_createdis.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_createdis.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
-#include "../drt_scatra/scatra_utils.H"
+#include "scatra_timint_implicit.H"
+#include "scatra_timint_meshtying_strategy_s2i.H"
+#include "scatra_utils.H"
 
-#include "../drt_ssi/ssi_utils.H"
+#include "ssi_utils.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

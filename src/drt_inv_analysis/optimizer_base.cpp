@@ -11,9 +11,9 @@
 #include "invana_base.H"
 #include "initial_guess.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io.H"
+#include "drt_globalproblem.H"
+#include "io_control.H"
+#include "io.H"
 
 #include <Teuchos_ParameterList.hpp>
 

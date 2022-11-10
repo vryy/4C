@@ -15,26 +15,26 @@
 #include "meshtying_penalty_strategy.H"
 #include "meshtying_strategy_factory.H"
 
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_inpar/inpar_contact.H"
+#include "drt_validparameters.H"
+#include "inpar_contact.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
+#include "io.H"
+#include "io_pstream.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_dserror.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_mortar/mortar_element.H"
-#include "../drt_mortar/mortar_node.H"
-#include "../drt_mortar/mortar_utils.H"
+#include "mortar_element.H"
+#include "mortar_node.H"
+#include "mortar_utils.H"
 
-#include "../drt_structure_new/str_timint_basedataglobalstate.H"
-#include "../drt_structure_new/str_utils.H"
+#include "str_timint_basedataglobalstate.H"
+#include "str_utils.H"
 
-#include "../drt_structure_xstructure/xstr_multi_discretization_wrapper.H"
+#include "xstr_multi_discretization_wrapper.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 #include <Teuchos_ParameterList.hpp>
 

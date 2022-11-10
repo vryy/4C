@@ -10,10 +10,10 @@
  *---------------------------------------------------------------------------*/
 #include "pasi_partitioned_onewaycoup.H"
 
-#include "../drt_particle_algorithm/particle_algorithm.H"
+#include "particle_algorithm.H"
 
-#include "../drt_particle_wall/particle_wall_interface.H"
-#include "../drt_particle_wall/particle_wall_datastate.H"
+#include "particle_wall_interface.H"
+#include "particle_wall_datastate.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

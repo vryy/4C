@@ -11,13 +11,13 @@
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include "beam3eb.H"
 
-#include "../drt_beaminteraction/periodic_boundingbox.H"
+#include "periodic_boundingbox.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_discret.H"
+#include "drt_dserror.H"
+#include "drt_linedefinition.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 DRT::ELEMENTS::Beam3ebType DRT::ELEMENTS::Beam3ebType::instance_;
 

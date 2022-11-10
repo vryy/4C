@@ -22,8 +22,8 @@
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 
-#include "../drt_contact/contact_poro_lagrange_strategy.H"
-#include "../drt_adapter/adapter_coupling_nonlin_mortar.H"
+#include "contact_poro_lagrange_strategy.H"
+#include "adapter_coupling_nonlin_mortar.H"
 /*---------------------------------------------------------------------*
  | forward declarations                                     ager 10/15 |
  *---------------------------------------------------------------------*/

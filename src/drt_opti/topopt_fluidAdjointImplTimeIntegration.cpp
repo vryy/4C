@@ -14,19 +14,19 @@
 #include "topopt_fluidAdjointResulttest.H"
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_fluid/fluid_utils.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_gmsh.H"
-#include "../drt_io/io.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/optimization_density.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../drt_opti/topopt_optimizer.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "fluid_utils.H"
+#include "fluid_ele_action.H"
+#include "io_control.H"
+#include "io_gmsh.H"
+#include "io.H"
+#include "matpar_bundle.H"
+#include "newtonianfluid.H"
+#include "optimization_density.H"
+#include "linalg_solver.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "topopt_optimizer.H"
+#include "drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*

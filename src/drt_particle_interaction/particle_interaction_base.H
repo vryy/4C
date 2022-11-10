@@ -14,10 +14,10 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "../drt_particle_engine/particle_enums.H"
-#include "../drt_particle_engine/particle_typedefs.H"
+#include "particle_enums.H"
+#include "particle_typedefs.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>

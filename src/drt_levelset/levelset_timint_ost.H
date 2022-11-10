@@ -11,7 +11,7 @@
 #ifndef LEVELSET_TIMINT_OST_H
 #define LEVELSET_TIMINT_OST_H
 
-#include "../drt_scatra/scatra_timint_ost.H"
+#include "scatra_timint_ost.H"
 #include "levelset_algorithm.H"
 
 

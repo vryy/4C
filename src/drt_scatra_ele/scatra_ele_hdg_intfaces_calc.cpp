@@ -14,9 +14,9 @@ Integrate internal face terms on an internal faces element
 #include "scatra_ele_action.H"
 #include "scatra_ele_hdg_intfaces_calc.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
-#include "../drt_lib/drt_discret_faces.H"
+#include "drt_discret_faces.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

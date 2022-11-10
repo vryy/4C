@@ -8,14 +8,14 @@
  *------------------------------------------------------------------------------------------------*/
 
 #include "ssi_partitioned_2wc.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "drt_globalproblem.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
-#include "../drt_adapter/ad_str_ssiwrapper.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "ad_str_ssiwrapper.H"
+#include "adapter_scatra_base_algorithm.H"
 
-#include "../drt_scatra_ele/scatra_ele.H"
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "scatra_ele.H"
+#include "scatra_timint_implicit.H"
 #include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*

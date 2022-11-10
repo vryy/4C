@@ -8,13 +8,13 @@
 */
 
 #include "ad_str_fbiwrapper.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_structure/stru_aux.H"
-#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
-#include "../drt_fsi/fsi_str_model_evaluator_partitioned.H"
-#include "../drt_structure_new/str_timint_basedataio_runtime_vtk_output.H"
-#include "../drt_structure_new/str_timint_basedataio.H"
-#include "../drt_lib/prestress_service.H"
+#include "drt_globalproblem.H"
+#include "stru_aux.H"
+#include "beaminteraction_calc_utils.H"
+#include "fsi_str_model_evaluator_partitioned.H"
+#include "str_timint_basedataio_runtime_vtk_output.H"
+#include "str_timint_basedataio.H"
+#include "prestress_service.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

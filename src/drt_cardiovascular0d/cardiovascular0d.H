@@ -17,8 +17,8 @@
 #include <Epetra_RowMatrix.h>
 #include <Teuchos_ParameterList.hpp>
 #include "Epetra_FECrsMatrix.h"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_inpar/inpar_cardiovascular0d.H"
+#include "drt_utils_integration.H"
+#include "inpar_cardiovascular0d.H"
 
 
 // forward declarations

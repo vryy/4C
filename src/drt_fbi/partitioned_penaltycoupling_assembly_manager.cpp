@@ -12,7 +12,7 @@
 
 #include "partitioned_penaltycoupling_assembly_manager.H"
 
-#include "../drt_beaminteraction/beam_contact_pair.H"
+#include "beam_contact_pair.H"
 
 
 /**

@@ -11,7 +11,7 @@
 #ifndef BEAM_CROSSLINKER_HANDLER_H
 #define BEAM_CROSSLINKER_HANDLER_H
 
-#include "../drt_binstrategy/binning_strategy.H"
+#include "binning_strategy.H"
 
 // forward declarations
 namespace DRT

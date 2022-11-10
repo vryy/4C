@@ -14,9 +14,9 @@
 
 
 #include "topopt_fluidAdjoint3_interface.H"
-#include "../drt_fem_general/drt_utils_gausspoints.H"
+#include "drt_utils_gausspoints.H"
 
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 namespace FLD
 {

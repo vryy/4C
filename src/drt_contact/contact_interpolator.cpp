@@ -17,12 +17,12 @@
 #include "contact_defines.H"
 #include "friction_node.H"
 
-#include "../drt_mortar/mortar_shape_utils.H"
-#include "../drt_mortar/mortar_projector.H"
-#include "../drt_mortar/mortar_defines.H"
+#include "mortar_shape_utils.H"
+#include "mortar_projector.H"
+#include "mortar_defines.H"
 
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 09/14|

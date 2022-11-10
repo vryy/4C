@@ -6,7 +6,7 @@
 #ifndef VOIGT_NOTATION_H
 #define VOIGT_NOTATION_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 
 namespace UTILS

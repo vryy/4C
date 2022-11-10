@@ -14,17 +14,17 @@
 
 #include "so3_ssn_plast_fwd.hpp"
 
-#include "../../drt_lib/drt_globalproblem.H"
-#include "../../drt_lib/voigt_notation.H"
-#include "../../drt_mat/plasticelasthyper.H"
+#include "drt_globalproblem.H"
+#include "voigt_notation.H"
+#include "plasticelasthyper.H"
 #include "Epetra_SerialDenseSolver.h"
-#include "../../drt_mat/material_service.H"
-#include "../../drt_structure_new/str_elements_paramsinterface.H"
-#include "../../drt_structure_new/gauss_point_data_output_manager.H"
-#include "../../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "material_service.H"
+#include "str_elements_paramsinterface.H"
+#include "gauss_point_data_output_manager.H"
+#include "drt_nurbs_discret.H"
 
-#include "../../drt_mat/fourieriso.H"
-#include "../so_element_service.H"
+#include "fourieriso.H"
+#include "so_element_service.H"
 
 using VoigtMapping = UTILS::VOIGT::IndexMappings;
 

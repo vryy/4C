@@ -14,7 +14,7 @@
 
 #include "beam_to_solid_volume_meshtying_pair_base.H"
 
-#include "../drt_beam3/triad_interpolation_local_rotation_vectors.H"
+#include "triad_interpolation_local_rotation_vectors.H"
 
 // Forward declaration.
 namespace GEOMETRYPAIR

@@ -10,7 +10,7 @@
 #ifndef SCATRA_ELE_BOUNDARY_CALC_ELCH_ELECTRODE_STI_THERMO_H
 #define SCATRA_ELE_BOUNDARY_CALC_ELCH_ELECTRODE_STI_THERMO_H
 
-#include "../drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode.H"
+#include "scatra_ele_boundary_calc_elch_electrode.H"
 
 namespace DRT
 {

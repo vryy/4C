@@ -8,13 +8,13 @@
 
 #include "elast_isomuscle_blemker.H"
 #include "elast_aniso_structuraltensor_strategy.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/voigt_notation.H"
-#include "../drt_mat/elasthyper_service.H"
-#include "../drt_mat/material_service.H"
-#include "../drt_mat/matpar_material.H"
+#include "drt_globalproblem.H"
+#include "standardtypes_cpp.H"
+#include "drt_linedefinition.H"
+#include "voigt_notation.H"
+#include "elasthyper_service.H"
+#include "material_service.H"
+#include "matpar_material.H"
 
 
 MAT::ELASTIC::PAR::IsoMuscleBlemker::IsoMuscleBlemker(

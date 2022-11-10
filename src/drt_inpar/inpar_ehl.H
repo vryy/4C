@@ -12,7 +12,7 @@
 
 
 #include "inpar_parameterlist_utils.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 // forward declaration
 namespace DRT

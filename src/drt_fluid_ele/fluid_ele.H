@@ -24,8 +24,8 @@ of errors, turbulence statistics etc.).
 #include "Teuchos_RCP.hpp"
 
 
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "drt_elementtype.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
 
 // forward declarations

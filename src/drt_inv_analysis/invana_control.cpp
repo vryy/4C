@@ -24,12 +24,12 @@
 #include "optimizer_base.H"
 
 // BACI
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_inpar/inpar_statinvanalysis.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
-#include "../drt_timestepping/timintmstep.H"
+#include "drt_dserror.H"
+#include "inpar_statinvanalysis.H"
+#include "drt_globalproblem.H"
+#include "io.H"
+#include "io_control.H"
+#include "timintmstep.H"
 
 
 /*----------------------------------------------------------------------------*/

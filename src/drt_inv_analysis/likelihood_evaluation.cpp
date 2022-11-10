@@ -13,9 +13,9 @@
 #include "objective_funct.H"
 #include "chol_factor_base.H"  // for the prior evaluation
 #include "Epetra_CrsMatrix.h"
-#include "../drt_inpar/inpar_invanalysis.H"
+#include "inpar_invanalysis.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include <random>
 #include <chrono>
 

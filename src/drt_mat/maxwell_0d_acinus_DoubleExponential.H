@@ -17,7 +17,7 @@ chapter 3.4)
 
 
 #include "maxwell_0d_acinus.H"
-#include "../drt_red_airways/red_airway.H"
+#include "red_airway.H"
 
 
 namespace MAT

@@ -11,8 +11,8 @@
 #define POST_DRT_VTK_H
 
 
-#include "../post_drt_common/post_writer_base.H"
-#include "../drt_io/vtk_writer_base.H"  // LIBB64
+#include "post_writer_base.H"
+#include "vtk_writer_base.H"  // LIBB64
 
 #include <string>
 #include <map>
@@ -23,7 +23,7 @@
 #include <zlib.h>
 #include <Teuchos_RCP.hpp>
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 
 

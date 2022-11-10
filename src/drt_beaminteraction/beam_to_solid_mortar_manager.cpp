@@ -17,12 +17,12 @@
 #include "beaminteraction_calc_utils.H"
 #include "str_model_evaluator_beaminteraction_datastate.H"
 
-#include "../drt_geometry_pair/geometry_pair.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "geometry_pair.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "linalg_multiply.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_serialdensevector.H"
 
 #include <Epetra_FEVector.h>
 

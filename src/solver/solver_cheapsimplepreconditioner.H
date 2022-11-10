@@ -12,12 +12,12 @@
 
 #include "solver_preconditionertype.H"
 
-#include "../linalg/linalg_ana.H"
-#include "../linalg/linalg_blocksparsematrix.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_ana.H"
+#include "linalg_blocksparsematrix.H"
+#include "linalg_solver.H"
+#include "linalg_mapextractor.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 namespace LINALG::SOLVER
 {

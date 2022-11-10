@@ -12,10 +12,10 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_utils_elch.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/function_of_time.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "function_of_time.H"
+#include "standardtypes_cpp.H"
 
 /*----------------------------------------------------------------------*
  | protected constructor for singletons                      fang 01/15 |

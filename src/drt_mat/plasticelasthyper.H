@@ -22,9 +22,9 @@ rY_13 0.7
 
 #include "matpar_parameter.H"
 #include "so3_material.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 #include "elasthyper.H"
-#include "../drt_inpar/inpar_tsi.H"
+#include "inpar_tsi.H"
 
 #define AS_CONVERGENCE_TOL 1.e-12
 

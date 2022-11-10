@@ -10,8 +10,8 @@
 #include "beam_to_solid_surface_meshtying_params.H"
 
 #include "beam_to_solid_surface_vtk_output_params.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/inpar_geometry_pair.H"
+#include "drt_globalproblem.H"
+#include "inpar_geometry_pair.H"
 
 
 /**

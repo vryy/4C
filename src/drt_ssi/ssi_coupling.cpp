@@ -10,23 +10,23 @@
 #include "ssi_coupling.H"
 
 // for coupling of nonmatching meshes
-#include "../drt_adapter/adapter_coupling_volmortar.H"
-#include "../drt_adapter/adapter_coupling_mortar.H"
+#include "adapter_coupling_volmortar.H"
+#include "adapter_coupling_mortar.H"
 
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
-#include "../drt_adapter/ad_str_wrapper.H"
+#include "adapter_scatra_base_algorithm.H"
+#include "ad_str_wrapper.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "scatra_timint_implicit.H"
 
-#include "../drt_volmortar/volmortar_utils.H"
+#include "volmortar_utils.H"
 
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_dofset_definedmapping_wrapper.H"
-#include "../drt_lib/drt_dofset_gidbased_wrapper.H"
-#include "../drt_lib/drt_dofset_predefineddofnumber.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_condition_utils.H"
+#include "drt_dofset_definedmapping_wrapper.H"
+#include "drt_dofset_gidbased_wrapper.H"
+#include "drt_dofset_predefineddofnumber.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_mat/matpar_bundle.H"
+#include "matpar_bundle.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

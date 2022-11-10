@@ -19,14 +19,14 @@
 #include "particle_interaction_dem_contact.H"
 #include "particle_interaction_dem_adhesion.H"
 
-#include "../drt_particle_engine/particle_engine_interface.H"
-#include "../drt_particle_engine/particle_container.H"
+#include "particle_engine_interface.H"
+#include "particle_container.H"
 
-#include "../drt_particle_wall/particle_wall_interface.H"
+#include "particle_wall_interface.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_io/runtime_csv_writer.H"
+#include "runtime_csv_writer.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

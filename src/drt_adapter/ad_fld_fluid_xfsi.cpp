@@ -11,14 +11,14 @@
 
 #include "ad_fld_fluid_xfsi.H"
 
-#include "../drt_adapter/ad_fld_fluid.H"
-#include "../drt_fluid_xfluid/xfluid.H"
-#include "../drt_fluid_xfluid/xfluidfluid.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../drt_lib/drt_discret_xfem.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../drt_xfem/xfem_condition_manager.H"
+#include "ad_fld_fluid.H"
+#include "xfluid.H"
+#include "xfluidfluid.H"
+#include "fluid_utils_mapextractor.H"
+#include "drt_discret_xfem.H"
+#include "linalg_mapextractor.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "xfem_condition_manager.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>

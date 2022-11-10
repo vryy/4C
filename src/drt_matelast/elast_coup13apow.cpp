@@ -9,7 +9,7 @@ and the Jacobi determinant
 
 #include "elast_coup13apow.H"
 
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 MAT::ELASTIC::PAR::Coup13aPow::Coup13aPow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),

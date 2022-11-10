@@ -9,11 +9,11 @@
 #ifndef CONTACT_AUGMENTED_INTERFACE_H_
 #define CONTACT_AUGMENTED_INTERFACE_H_
 
-#include "../drt_contact/contact_interface.H"
+#include "contact_interface.H"
 #include "contact_aug_utils.H"
 #include "contact_aug_enum_lists.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 namespace CONTACT
 {

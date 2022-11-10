@@ -12,7 +12,7 @@
 
 #include "poromultiphase_partitioned.H"
 
-#include "../drt_inpar/inpar_poromultiphase.H"
+#include "inpar_poromultiphase.H"
 
 namespace POROMULTIPHASE
 {

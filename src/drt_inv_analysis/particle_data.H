@@ -12,8 +12,8 @@
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
-#include "../drt_lib/drt_parobject.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobject.H"
+#include "drt_parobjectfactory.H"
 
 namespace INVANA
 {

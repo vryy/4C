@@ -13,9 +13,9 @@
 
 #include <vector>
 #include "myocard.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
+#include "drt_linedefinition.H"
 #include <fstream>  // For plotting ion concentrations
 // Possible Cell models
 #include "myocard_minimal.H"

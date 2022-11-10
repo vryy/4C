@@ -15,14 +15,14 @@
 
 #include "cut_test_utils.H"
 
-#include "../../src/drt_cut/cut_side.H"
-#include "../../src/drt_cut/cut_meshintersection.H"
-#include "../../src/drt_cut/cut_tetmeshintersection.H"
-#include "../../src/drt_cut/cut_options.H"
-#include "../../src/drt_cut/cut_volumecell.H"
-#include "../../src/drt_cut/cut_combintersection.H"
+#include "cut_side.H"
+#include "cut_meshintersection.H"
+#include "cut_tetmeshintersection.H"
+#include "cut_options.H"
+#include "cut_volumecell.H"
+#include "cut_combintersection.H"
 
-#include "../../src/drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
 // Tests the new line implementation
 //(to sides with 3 common cut points - because of tolerances!)

@@ -10,11 +10,11 @@
 #ifndef BACI_MIXTURE_CONSTITUENT_MUSCLE_WEICKENMEIER_H
 #define BACI_MIXTURE_CONSTITUENT_MUSCLE_WEICKENMEIER_H
 
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_mat/matpar_parameter.H"
-#include "../drt_mat/anisotropy.H"
-#include "../drt_mat/anisotropy_extension_default.H"
-#include "../drt_mat/anisotropy_extension_provider.H"
+#include "drt_parobjectfactory.H"
+#include "matpar_parameter.H"
+#include "anisotropy.H"
+#include "anisotropy_extension_default.H"
+#include "anisotropy_extension_provider.H"
 #include "mixture_constituent.H"
 #include <Teuchos_RCP.hpp>
 namespace MIXTURE

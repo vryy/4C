@@ -15,7 +15,7 @@
 #include "cut_kernel.H"
 #include "cut_point.H"
 #include "cut_position.H"
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 #include <iostream>
 #include <unordered_map>
 

@@ -12,7 +12,7 @@
 #include "matpar_parameter.H"
 #include "material.H"
 #include "scatra_reaction_mat.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 
 namespace DRT
 {

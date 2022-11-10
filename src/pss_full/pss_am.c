@@ -12,9 +12,9 @@
 /*!----------------------------------------------------------------------
 \brief the header of everything
 *----------------------------------------------------------------------*/
-#include "../headers/standardtypes.h"
-#include "../drt_lib/drt_dserror.H"
-#include "../headers/am.h"
+#include "standardtypes.h"
+#include "drt_dserror.H"
+#include "am.h"
 #include "pss_prototypes.h"
 
 

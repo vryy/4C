@@ -14,8 +14,8 @@ is just a "control instance".
 
 #include <vector>
 #include "matlist_chemotaxis.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
 
 
 /*----------------------------------------------------------------------*

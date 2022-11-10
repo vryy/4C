@@ -11,13 +11,13 @@ analysis for supporting processors
 /*---------------------------------------------------------------------*/
 
 #include "microstatic_npsupport.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_comm/comm_utils.H"
-#include "../drt_mat/micromaterial.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_lib/drt_container.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "drt_globalproblem.H"
+#include "comm_utils.H"
+#include "micromaterial.H"
+#include "linalg_fixedsizematrix.H"
+#include "drt_container.H"
+#include "drt_exporter.H"
+#include "linalg_utils_densematrix_communication.H"
 
 #include <hdf5.h>
 

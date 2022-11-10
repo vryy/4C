@@ -13,7 +13,7 @@
 #define BEAM_TO_SOLID_VTU_OUTPUT_WRITER_VISUALIZATION_H
 
 
-#include "../drt_io/runtime_vtu_writer.H"
+#include "runtime_vtu_writer.H"
 
 #include <Teuchos_RCP.hpp>
 

@@ -10,9 +10,9 @@
 #ifndef BEAMLINKRIGIDJOINTED_H
 #define BEAMLINKRIGIDJOINTED_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_lib/drt_parobject.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "linalg_fixedsizematrix.H"
+#include "drt_parobject.H"
+#include "drt_parobjectfactory.H"
 #include "beam_link.H"
 
 //#include <Teuchos_RCP.hpp>

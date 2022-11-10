@@ -18,7 +18,7 @@
 #include <vector>
 
 #include "nox_nln_enum_lists.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <NOX_Epetra_Interface_Required.H>  // base class
 #include <NOX_Epetra_Vector.H>

@@ -12,30 +12,30 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils_parameter_list.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_utils_parameter_list.H"
 
-#include "../drt_poromultiphase/poromultiphase_base.H"
-#include "../drt_poromultiphase/poromultiphase_monolithic_twoway.H"
-#include "../drt_adapter/ad_porofluidmultiphase_wrapper.H"
-#include "../drt_adapter/ad_str_structure.H"
+#include "poromultiphase_base.H"
+#include "poromultiphase_monolithic_twoway.H"
+#include "ad_porofluidmultiphase_wrapper.H"
+#include "ad_str_structure.H"
 
-#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "scatra_ele_action.H"
 
-#include "../drt_lib/drt_assemblestrategy.H"
+#include "drt_assemblestrategy.H"
 
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
-#include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_io/io_control.H"
-#include "../linalg/linalg_solver.H"
+#include "adapter_scatra_base_algorithm.H"
+#include "scatra_timint_implicit.H"
+#include "io_control.H"
+#include "linalg_solver.H"
 
-#include "../drt_scatra/scatra_timint_meshtying_strategy_artery.H"
-#include "../drt_adapter/ad_art_net.H"
+#include "scatra_timint_meshtying_strategy_artery.H"
+#include "ad_art_net.H"
 
-#include "../linalg/linalg_equilibrate.H"
-#include "../linalg/linalg_nullspace.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_equilibrate.H"
+#include "linalg_nullspace.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 
 /*----------------------------------------------------------------------*

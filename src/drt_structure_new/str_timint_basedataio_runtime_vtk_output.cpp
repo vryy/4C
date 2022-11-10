@@ -11,11 +11,11 @@
 #include "str_timint_basedataio_runtime_vtk_output.H"
 #include "str_discretization_runtime_vtu_output_params.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
-#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "inpar_parameterlist_utils.H"
 
-#include "../drt_beam3/beam_discretization_runtime_vtu_output_params.H"
+#include "beam_discretization_runtime_vtu_output_params.H"
 
 
 /*-----------------------------------------------------------------------------------------------*

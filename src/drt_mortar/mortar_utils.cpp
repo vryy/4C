@@ -8,17 +8,17 @@
 /*-----------------------------------------------------------------------*/
 
 #include "mortar_utils.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_multiply.H"
+#include "drt_dserror.H"
+#include "drt_exporter.H"
+#include "drt_globalproblem.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_multiply.H"
 
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_nurbs_discret/drt_control_point.H"
-#include "../drt_nurbs_discret/drt_knotvector.H"
+#include "drt_nurbs_discret.H"
+#include "drt_control_point.H"
+#include "drt_knotvector.H"
 
 /*!
 \brief Sort vector in ascending order

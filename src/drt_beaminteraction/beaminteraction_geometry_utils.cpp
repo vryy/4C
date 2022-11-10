@@ -10,11 +10,11 @@
 
 #include "beaminteraction_geometry_utils.H"
 
-#include "../drt_beam3/beam_spatial_discretization_utils.H"
+#include "beam_spatial_discretization_utils.H"
 
-#include "../headers/FAD_utils.H"
+#include "FAD_utils.H"
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 #include <Sacado.hpp>
 

@@ -21,29 +21,29 @@
 #include "ad_str_fsiwrapper_immersed.H"
 #include "ad_str_invana.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
+#include "linalg_multiply.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_comm/comm_utils.H"
+#include "comm_utils.H"
 
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_inpar/inpar_fsi.H"
-#include "../drt_inpar/inpar_poroelast.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "drt_validparameters.H"
+#include "inpar_contact.H"
+#include "inpar_fsi.H"
+#include "inpar_poroelast.H"
+#include "inpar_structure.H"
 
-#include "../drt_structure/strtimada_create.H"
-#include "../drt_structure/strtimint_create.H"
-#include "../drt_structure/strtimint_impl.H"
+#include "strtimada_create.H"
+#include "strtimint_create.H"
+#include "strtimint_impl.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_pstream.H"
+#include "io.H"
+#include "io_control.H"
+#include "io_pstream.H"
 
-#include "../linalg/linalg_solver.H"
+#include "linalg_solver.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>

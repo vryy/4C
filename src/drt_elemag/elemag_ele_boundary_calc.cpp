@@ -10,9 +10,9 @@
 #include "elemag_ele_boundary_calc.H"
 #include "elemag_ele.H"
 #include "elemag_ele_action.H"
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "drt_node.H"
+#include "drt_globalproblem.H"
+#include "inpar_parameterlist_utils.H"
 
 
 /*----------------------------------------------------------------------*

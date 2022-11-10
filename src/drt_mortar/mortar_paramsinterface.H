@@ -10,7 +10,7 @@
 #ifndef SRC_DRT_MORTAR_MORTAR_PARAMSINTERFACE_H_
 #define SRC_DRT_MORTAR_MORTAR_PARAMSINTERFACE_H_
 
-#include "../headers/any_data_container.H"
+#include "any_data_container.H"
 
 namespace MORTAR
 {

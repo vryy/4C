@@ -10,16 +10,16 @@
 
 /*----------------------------------------------------------------------------*/
 #include "elemag_utils_clonestrategy.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_material.H"
-#include "../drt_mat/matpar_bundle.H"
+#include "drt_globalproblem.H"
+#include "matpar_material.H"
+#include "matpar_bundle.H"
 
 // we need to know all element types for the scatra mesh creation
-#include "../drt_elemag/elemag_ele.H"
-#include "../drt_scatra_ele/scatra_ele.H"
-#include "../drt_scatra_ele/scatra_ele_hdg.H"
+#include "elemag_ele.H"
+#include "scatra_ele.H"
+#include "scatra_ele_hdg.H"
 
-#include "../drt_lib/drt_globalproblem_enums.H"
+#include "drt_globalproblem_enums.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

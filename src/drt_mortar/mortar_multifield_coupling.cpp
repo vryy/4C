@@ -10,9 +10,9 @@
 */
 /*----------------------------------------------------------------------*/
 #include "mortar_multifield_coupling.H"
-#include "../linalg/linalg_blocksparsematrix.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_adapter/adapter_coupling_mortar.H"
+#include "linalg_blocksparsematrix.H"
+#include "drt_discret.H"
+#include "adapter_coupling_mortar.H"
 #include "mortar_utils.H"
 
 /*-----------------------------------------------------------------------*/

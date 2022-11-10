@@ -12,7 +12,7 @@
 
 #include "inpar_beaminteraction.H"
 #include "drt_validparameters.H"
-#include "../drt_lib/drt_conditiondefinition.H"
+#include "drt_conditiondefinition.H"
 #include "inpar_beamcontact.H"
 #include "inpar_beam_to_solid.H"
 

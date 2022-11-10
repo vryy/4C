@@ -12,7 +12,7 @@
 #include "drt_validparameters.H"
 #include "inpar_structure.H"
 #include "inpar.H"
-#include "../drt_lib/drt_conditiondefinition.H"
+#include "drt_conditiondefinition.H"
 
 namespace INPAR
 {

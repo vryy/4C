@@ -16,8 +16,8 @@
 #include "immersed_geometry_coupler_fbi.H"
 #include "immersedcoupler_factory.H"
 
-#include "../drt_inpar/inpar_fbi.H"
-#include "../drt_inpar/inpar_fsi.H"
+#include "inpar_fbi.H"
+#include "inpar_fsi.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 /*----------------------------------------------------------------------*/

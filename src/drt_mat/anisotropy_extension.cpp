@@ -11,7 +11,7 @@
 #include <Epetra_SerialDenseSolver.h>
 #include "anisotropy_extension.H"
 #include "anisotropy_utils.H"
-#include "../drt_lib/drt_parobject.H"
+#include "drt_parobject.H"
 
 template <unsigned int numfib>
 MAT::FiberAnisotropyExtension<numfib>::FiberAnisotropyExtension(

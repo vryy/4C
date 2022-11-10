@@ -13,7 +13,7 @@
 #include "drt_validparameters.H"
 #include "inpar_solver_nonlin.H"
 
-#include "../solver_nonlin_nox/nox_nln_enum_lists.H"
+#include "nox_nln_enum_lists.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

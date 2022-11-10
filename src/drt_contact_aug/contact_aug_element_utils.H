@@ -11,9 +11,9 @@
 #define SRC_DRT_CONTACT_AUG_CONTACT_AUG_ELEMENT_UTILS_H_
 
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-#include "../drt_mortar/mortar_element.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_nurbs_shapefunctions.H"
+#include "mortar_element.H"
 
 namespace CONTACT
 {

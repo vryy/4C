@@ -9,9 +9,9 @@
 
 #include "poromultiphase_scatra_function.H"
 #include "poromultiphase_scatra_utils.H"
-#include "../headers/FAD_utils.H"
+#include "FAD_utils.H"
 #include "Teuchos_RCP.hpp"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -16,8 +16,8 @@
 #include <set>
 
 #include <NOX_Abstract_Vector.H>
-#include "../solver_nonlin_nox/nox_nln_enum_lists.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "nox_nln_enum_lists.H"
+#include "inpar_structure.H"
 
 // forward declaration
 class Epetra_Vector;

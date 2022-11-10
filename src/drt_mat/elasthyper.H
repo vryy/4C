@@ -20,9 +20,9 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 
 #include "matpar_parameter.H"
 #include "so3_material.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 #include "elasthyper_service.H"
-#include "../drt_mat/anisotropy.H"
+#include "anisotropy.H"
 
 // forward declaration due to avoid header definition
 namespace MAT

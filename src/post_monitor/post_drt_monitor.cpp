@@ -18,11 +18,11 @@
 #include <string>
 #include <Teuchos_CommandLineProcessor.hpp>
 
-#include "../post_drt_common/post_drt_common.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../pss_full/pss_cpp.h"
-#include "../drt_thermo/thermo_ele_action.H"
+#include "post_drt_common.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "pss_cpp.h"
+#include "thermo_ele_action.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

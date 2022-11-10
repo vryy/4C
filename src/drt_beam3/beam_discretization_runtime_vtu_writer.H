@@ -17,7 +17,7 @@
 
 #include <Teuchos_RCP.hpp>
 
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "drt_utils_integration.H"
 
 /*-----------------------------------------------------------------------------------------------*/
 /* forward declarations */

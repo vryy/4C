@@ -13,7 +13,7 @@
 #define FLUID_ELE_CALC_H
 
 #include "fluid_ele_interface.H"
-#include "../drt_inpar/inpar_fluid.H"
+#include "inpar_fluid.H"
 #include "fluid_ele.H"
 
 // forward declarations

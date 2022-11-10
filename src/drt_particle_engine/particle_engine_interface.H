@@ -16,7 +16,7 @@
  *---------------------------------------------------------------------------*/
 #include "particle_container_bundle.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>

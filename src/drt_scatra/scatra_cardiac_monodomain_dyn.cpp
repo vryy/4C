@@ -10,21 +10,21 @@
 /*----------------------------------------------------------------------*/
 #include "scatra_cardiac_monodomain_dyn.H"
 
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "adapter_scatra_base_algorithm.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_binstrategy/binning_strategy.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_createdis.H"
+#include "binning_strategy.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "scatra_timint_implicit.H"
 
-#include "../drt_scatra_ele/scatra_ele.H"
+#include "scatra_ele.H"
 
 #include <iostream>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_lib/drt_dofset_predefineddofnumber.H"
+#include "drt_dofset_predefineddofnumber.H"
 #include "scatra_algorithm.H"
 #include "scatra_resulttest.H"
 #include "scatra_utils_clonestrategy.H"

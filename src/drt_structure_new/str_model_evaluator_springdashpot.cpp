@@ -17,20 +17,20 @@
 #include <Epetra_Time.h>
 #include <Teuchos_ParameterList.hpp>
 
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 
-#include "../linalg/linalg_sparseoperator.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_sparseoperator.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
 
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/prestress_service.H"
+#include "drt_dserror.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "prestress_service.H"
 
-#include "../drt_io/io.H"
+#include "io.H"
 
-#include "../drt_structure_new/str_model_evaluator_data.H"
+#include "str_model_evaluator_data.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

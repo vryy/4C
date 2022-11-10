@@ -10,11 +10,11 @@
  *---------------------------------------------------------------------------*/
 #include "particle_result_test.H"
 
-#include "../drt_particle_engine/particle_engine_interface.H"
-#include "../drt_particle_engine/particle_container_bundle.H"
-#include "../drt_particle_engine/particle_container.H"
+#include "particle_engine_interface.H"
+#include "particle_container_bundle.H"
+#include "particle_container.H"
 
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

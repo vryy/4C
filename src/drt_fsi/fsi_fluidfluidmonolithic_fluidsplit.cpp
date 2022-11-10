@@ -10,25 +10,25 @@
 
 #include "fsi_fluidfluidmonolithic_fluidsplit.H"
 
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../drt_structure/stru_aux.H"
-#include "../drt_ale/ale_utils_mapextractor.H"
-#include "../drt_adapter/ad_ale_xffsi.H"
+#include "fluid_utils_mapextractor.H"
+#include "stru_aux.H"
+#include "ale_utils_mapextractor.H"
+#include "ad_ale_xffsi.H"
 
-#include "../drt_inpar/inpar_fsi.H"
-#include "../drt_inpar/inpar_ale.H"
+#include "inpar_fsi.H"
+#include "inpar_ale.H"
 
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/ad_fld_fluid_fluid_fsi.H"
+#include "adapter_coupling.H"
+#include "ad_str_fsiwrapper.H"
+#include "ad_fld_fluid_fluid_fsi.H"
 
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_io/io.H"
+#include "io_control.H"
+#include "io_pstream.H"
+#include "io.H"
 
-#include "../drt_constraint/constraint_manager.H"
+#include "constraint_manager.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

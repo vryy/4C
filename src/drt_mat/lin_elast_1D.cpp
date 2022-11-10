@@ -11,9 +11,9 @@ quantity (e.g. concentration)
 
 #include "lin_elast_1D.H"
 
-#include "../drt_lib/drt_function_library.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
+#include "drt_function_library.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

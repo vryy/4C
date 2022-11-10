@@ -8,9 +8,9 @@
 
 #include "drt_utils_shapevalues_hdg.H"
 #include "drt_utils_boundary_integration.H"
-#include "../drt_geometry/position_array.H"
-#include "../drt_fluid_ele/fluid_ele.H"
-#include "../headers/singleton_owner.H"
+#include "position_array.H"
+#include "fluid_ele.H"
+#include "singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*

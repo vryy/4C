@@ -7,15 +7,15 @@
 
 */
 
-#include "../drt_lubrication_ele/lubrication_ele_action.H"
+#include "lubrication_ele_action.H"
 
-#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "inpar_parameterlist_utils.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lubrication_ele/lubrication_ele.H"
-#include "../drt_lubrication_ele/lubrication_ele_factory.H"
-#include "../drt_lubrication_ele/lubrication_ele_interface.H"
-#include "../drt_lubrication_ele/lubrication_ele_parameter.H"
+#include "drt_discret.H"
+#include "lubrication_ele.H"
+#include "lubrication_ele_factory.H"
+#include "lubrication_ele_interface.H"
+#include "lubrication_ele_parameter.H"
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                           wirtz 10/15 |

@@ -19,12 +19,12 @@
 #include "beam_to_solid_surface_meshtying_params.H"
 #include "beam_to_solid_surface_contact_params.H"
 
-#include "../drt_inpar/inpar_beam_to_solid.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_condition.H"
-#include "../drt_geometry_pair/geometry_pair_element.H"
-#include "../drt_geometry_pair/geometry_pair_evaluation_data_base.H"
-#include "../drt_so3/so_base.H"
+#include "inpar_beam_to_solid.H"
+#include "drt_discret.H"
+#include "drt_condition.H"
+#include "geometry_pair_element.H"
+#include "geometry_pair_evaluation_data_base.H"
+#include "so_base.H"
 
 
 /**

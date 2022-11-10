@@ -12,11 +12,11 @@ means are computed as time averages
 
 
 #include "turbulence_statistics_mean_general.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../drt_lib/drt_dofset.H"
-#include "../drt_io/io.H"
+#include "drt_discret.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "drt_dofset.H"
+#include "io.H"
 
 //----------------------------------------------------------------------
 //

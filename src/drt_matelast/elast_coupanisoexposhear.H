@@ -9,9 +9,9 @@
 #ifndef ELAST_COUPANISOEXPOSHEAR_H_
 #define ELAST_COUPANISOEXPOSHEAR_H_
 
-#include "../drt_matelast/elast_coupanisoexpobase.H"
-#include "../drt_mat/anisotropy_extension_default.H"
-#include "../drt_mat/anisotropy_extension_provider.H"
+#include "elast_coupanisoexpobase.H"
+#include "anisotropy_extension_default.H"
+#include "anisotropy_extension_provider.H"
 
 
 namespace MAT

@@ -13,10 +13,10 @@
 #include "drt_discret.H"
 #include "drt_nodereader.H"
 #include "drt_globalproblem.H"
-#include "../drt_nurbs_discret/drt_control_point.H"
-#include "../drt_immersed_problem/immersed_node.H"
-#include "../drt_fiber/drt_fiber_node.H"
-#include "../drt_io/io_pstream.H"
+#include "drt_control_point.H"
+#include "immersed_node.H"
+#include "drt_fiber_node.H"
+#include "io_pstream.H"
 
 #include <Epetra_Time.h>
 #include <istream>

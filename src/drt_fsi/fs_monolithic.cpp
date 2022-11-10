@@ -10,33 +10,33 @@
 
 /*----------------------------------------------------------------------------*/
 #include "fs_monolithic.H"
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/ad_ale_fluid.H"
+#include "adapter_coupling.H"
+#include "ad_ale_fluid.H"
 
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
 #include "fsi_monolithic_linearsystem.H"
 #include "fsi_nox_newton.H"
 
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../drt_ale/ale_utils_mapextractor.H"
+#include "fluid_utils_mapextractor.H"
+#include "ale_utils_mapextractor.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_inpar/inpar_fsi.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "inpar_fsi.H"
 
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 #include <Epetra_Time.h>
 
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_lib/drt_colors.H"
+#include "drt_validparameters.H"
+#include "drt_colors.H"
 
-#include "../linalg/linalg_precond.H"
-#include "../linalg/linalg_matrixtransform.H"
+#include "linalg_precond.H"
+#include "linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

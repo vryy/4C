@@ -9,10 +9,10 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "../drt_structure_new/str_timint_base.H"
-#include "../drt_xfem/xfield_state.H"
+#include "str_timint_base.H"
+#include "xfield_state.H"
 
-#include "../drt_structure_new/str_timint_factory.H"
+#include "str_timint_factory.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

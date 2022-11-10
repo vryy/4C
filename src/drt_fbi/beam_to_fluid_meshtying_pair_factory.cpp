@@ -12,9 +12,9 @@
 #include "beam_to_fluid_meshtying_pair_mortar.H"
 #include "beam_to_fluid_meshtying_params.H"
 
-#include "../drt_fluid_ele/fluid_ele.H"
-#include "../drt_inpar/inpar_fbi.H"
-#include "../drt_geometry_pair/geometry_pair_element_functions.H"
+#include "fluid_ele.H"
+#include "inpar_fbi.H"
+#include "geometry_pair_element_functions.H"
 
 /**
  *

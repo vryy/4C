@@ -19,8 +19,8 @@
 #include "Epetra_Vector.h"
 #include "Epetra_Comm.h"
 
-#include "../drt_beaminteraction/beam3contact_defines.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "beam3contact_defines.H"
+#include "linalg_fixedsizematrix.H"
 #include "beam3contactnew.H"
 #include "beam3contact.H"
 #include "beam3tosolidcontact.H"
@@ -28,9 +28,9 @@
 #include "beam3tospherecontact.H"
 #include "beam3tobeampotential.H"
 #include "beam3tospherepotential.H"
-#include "../drt_contact/contact_element.H"
-#include "../drt_contact/contact_node.H"
-#include "../drt_io/io.H"
+#include "contact_element.H"
+#include "contact_node.H"
+#include "io.H"
 
 // forward declarations
 namespace LINALG

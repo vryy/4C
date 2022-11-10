@@ -15,14 +15,14 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 /*----------------------------------------------------------------------*/
 
 #include "elasthyper.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/material_service.H"
-#include "../drt_comm/comm_utils.H"              // for stat inverse analysis
-#include "../drt_inpar/inpar_statinvanalysis.H"  // for stat inverse analysis
+#include "standardtypes_cpp.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
+#include "material_service.H"
+#include "comm_utils.H"             // for stat inverse analysis
+#include "inpar_statinvanalysis.H"  // for stat inverse analysis
 #include "elasthyper_service.H"
-#include "../drt_lib/voigt_notation.H"
+#include "voigt_notation.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

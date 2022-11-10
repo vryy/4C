@@ -13,7 +13,7 @@
 #define FSI_LUNG_MONOLITHICSTRUCTURESPLIT_H
 
 #include "fsi_lungmonolithic.H"
-#include "../linalg/linalg_matrixtransform.H"
+#include "linalg_matrixtransform.H"
 
 namespace FSI
 {

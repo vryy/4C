@@ -16,10 +16,10 @@
 #define SRC_DRT_LAGPENCONSTRAINT_LAGPENCONSTRAINT_NOXINTERFACE_H_
 
 
-#include "../solver_nonlin_nox/nox_nln_constraint_interface_required.H"
-#include "../solver_nonlin_nox/nox_nln_constraint_interface_preconditioner.H"
+#include "nox_nln_constraint_interface_required.H"
+#include "nox_nln_constraint_interface_preconditioner.H"
 
-#include "../drt_structure_new/str_timint_basedataglobalstate.H"
+#include "str_timint_basedataglobalstate.H"
 
 
 namespace LAGPENCONSTRAINT

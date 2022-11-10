@@ -12,10 +12,10 @@
 #include "topopt_algorithm.H"
 #include "topopt_fluidAdjoint_timeint.H"
 #include "topopt_optimizer.H"
-#include "../drt_fluid/fluid_timint_topopt.H"
+#include "fluid_timint_topopt.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

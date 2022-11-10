@@ -19,7 +19,7 @@
  | headers                                                              |
  *----------------------------------------------------------------------*/
 #include "ad_str_wrapper.H"
-#include "../drt_pasi/pasi_str_model_evaluator_partitioned.H"
+#include "pasi_str_model_evaluator_partitioned.H"
 
 /*----------------------------------------------------------------------*
  | forward declarations                                                 |

@@ -10,8 +10,8 @@
 #ifndef SOLVER_SOLVERTYPE_H_
 #define SOLVER_SOLVERTYPE_H_
 
-#include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_krylov_projector.H"
+#include "drt_dserror.H"
+#include "linalg_krylov_projector.H"
 
 namespace LINALG::SOLVER
 {

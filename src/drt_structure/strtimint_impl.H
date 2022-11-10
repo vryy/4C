@@ -18,7 +18,7 @@
 #include <NOX_Epetra_Group.H>
 
 #include "strtimint.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
 // forward declarations
 namespace DRT

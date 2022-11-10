@@ -44,6 +44,11 @@ include(CheckCXXSourceRuns)
 include(CheckCXXSourceCompiles)
 include(FetchContent)
 
+# include our own macros
+include(Deprecated_BACIAddLibraryLinkedWithEverything)
+include(BACILinkDefaultLibraries)
+include(BACIAddLibrary)
+
 #
 ### Build in default values
 
@@ -160,55 +165,6 @@ set(OBJS_DRT_ALE_LIB
     src/drt_ale3/ale3_nurbs.cpp
     src/drt_ale3/ale3_surface.cpp
     src/drt_ale3/ale3_surface_evaluate.cpp
-    )
-set(OBJS_DRT_LIB
-    src/drt_lib/drt_periodicbc.cpp
-    src/drt_lib/drt_assemblestrategy.cpp
-    src/drt_lib/drt_condition.cpp
-    src/drt_lib/drt_conditiondefinition.cpp
-    src/drt_lib/drt_container.cpp
-    src/drt_lib/drt_cubic_spline_interpolation.cpp
-    src/drt_lib/drt_discret.cpp
-    src/drt_lib/drt_discret_faces.cpp
-    src/drt_lib/drt_discret_hdg.cpp
-    src/drt_lib/drt_discret_xwall.cpp
-    src/drt_lib/drt_discret_xfem.cpp
-    src/drt_lib/drt_discret_conditions.cpp
-    src/drt_lib/drt_discret_evaluate.cpp
-    src/drt_lib/drt_discret_fillcomplete.cpp
-    src/drt_lib/drt_discret_partition.cpp
-    src/drt_lib/drt_discret_utils.cpp
-    src/drt_lib/drt_dofset.cpp
-    src/drt_lib/drt_dofset_base.cpp
-    src/drt_lib/drt_dofset_proxy.cpp
-    src/drt_lib/drt_dofset_gidbased_wrapper.cpp
-    src/drt_lib/drt_dofset_merged_wrapper.cpp
-    src/drt_lib/drt_dofset_definedmapping_wrapper.cpp
-    src/drt_lib/drt_dofset_transparent.cpp
-    src/drt_lib/drt_dofset_transparent_independent.cpp
-    src/drt_lib/drt_dofset_pbc.cpp
-    src/drt_lib/drt_dofset_independent.cpp
-    src/drt_lib/drt_dofset_independent_pbc.cpp
-    src/drt_lib/drt_element.cpp
-    src/drt_lib/drt_function.cpp
-    src/drt_lib/drt_functionvariables.cpp
-    src/drt_lib/drt_function_library.cpp
-    src/drt_lib/drt_function_manager.cpp
-    src/drt_lib/function_of_time.cpp
-    src/drt_lib/drt_globalproblem.cpp
-    src/drt_lib/drt_locsys.cpp
-    src/drt_lib/drt_node.cpp
-    src/drt_lib/drt_parobject.cpp
-    src/drt_lib/drt_parobjectfactory.cpp
-    src/drt_lib/drt_utils_createdis.cpp
-    src/drt_lib/drt_utils_materials.cpp
-    src/drt_lib/drt_utils_factory.cpp
-    src/drt_lib/drt_utils_gid_vector.cpp
-    src/drt_lib/drt_utils_discret.cpp
-    src/drt_lib/drt_utils_discret_dbc.cpp
-    src/drt_lib/drt_utils_discret_evaluate.cpp
-    src/drt_lib/connectivity.cpp
-    src/drt_lib/tensor_transformation.cpp
     )
 set(OBJS_DRT_MAT_LIB
     src/drt_matelast/elast_aniso_structuraltensor_strategy.cpp
@@ -836,7 +792,6 @@ set(OBJS_DRT_BELE3_LIB
     src/drt_bele3/vele3_surface.cpp
     src/drt_bele3/vele3_surface_evaluate.cpp
     )
-set(OBJS_DRT_COMM src/drt_comm/comm_utils.cpp)
 
 set(OBJS_DRT_UTILS
     src/drt_binstrategy/binning_strategy_utils.cpp
@@ -885,7 +840,6 @@ set(OBJS_DRT_UTILS
     src/pss_full/pss_table_iter.c
     src/drt_lib/voigt_notation.cpp
     )
-set(OBJS_DRT_ERROR src/drt_lib/drt_dserror.cpp)
 set(OBJS_DRT_EHL
     src/drt_ehl/ehl_base.cpp
     src/drt_ehl/ehl_dyn.cpp
@@ -2353,6 +2307,138 @@ set(OBJS_DRT_MIXTURE
     src/drt_mixture/remodelfiber.cpp
     )
 
+### LEAGCY
+# Define variables that gather the names of all to-be-created libraries. These will be used within
+# deprecated_baci_add_library_linked_with_everything() to link every target with everything.
+
+set(ELEMENT_LIBRARIES
+    ele_ale
+    ele_b3
+    ele_rigidsphere
+    ele_bele3
+    ele_discsh3
+    ele_fluid
+    ele_opti
+    ele_s8
+    ele_membrane
+    ele_lubrication
+    ele_porofluidmultiphase
+    ele_scatra
+    ele_sp3
+    ele_so
+    ele_t3
+    ele_t3cl
+    ele_thermo
+    ele_to3
+    ele_w1
+    ele_elemag
+    )
+
+set(MULTIFIELD_LIBRARIES
+    alg_elch
+    alg_fsi
+    alg_fbi
+    alg_fsi_xfem
+    alg_loma
+    alg_two_phase
+    alg_tsi
+    alg_sti
+    alg_wear
+    alg_poroelast
+    alg_poromultiphase
+    alg_immersed_problem
+    alg_fpsi
+    alg_fs3i
+    alg_topopt
+    alg_ssi
+    alg_ssti
+    alg_ehl
+    alg_pasi
+    )
+
+set(SINGLEFIELD_LIBRARIES
+    alg_ale
+    alg_artnet
+    alg_fluid
+    alg_fluid_turbulence
+    alg_fluid
+    alg_xfluid
+    alg_redairways
+    alg_lubrication
+    alg_porofluidmultiphase
+    alg_scatra
+    alg_structure
+    alg_xstructure
+    alg_statinvanalysis
+    alg_thermo
+    alg_contact
+    alg_contact_aug
+    alg_fluid_adjoint
+    alg_opti
+    alg_particle_algorithm
+    alg_particle_engine
+    alg_particle_interaction
+    alg_particle_rigidbody
+    alg_particle_wall
+    alg_elemag
+    alg_tutorial
+    )
+
+set(SUPPORT_LIBRARIES
+    drt_lib_xfem_manag
+    drt_lib
+    drt_lib_artnet
+    drt_lib_redairways
+    drt_lib_mortar
+    drt_lib_constraint
+    drt_lib_contact
+    drt_lib_beaminteraction
+    drt_lib_poromulti_art_coupl
+    # Libraries needed by elements
+    drt_lib_surfstress
+    drt_lib_xfem
+    drt_lib_cut
+    drt_lib_inpar
+    drt_lib_io
+    drt_lib_roughcontact
+    drt_lib_nurbs
+    drt_lib_binstrategy
+    drt_lib_particleengine
+    drt_lib_statinv_ana
+    drt_lib_immersed
+    drt_lib_fiber
+    drt_lib_geometric_search
+    drt_lib_geometry_pair
+    )
+
+set(BACI_LIBRARIES
+    ${MULTIFIELD_LIBRARIES}
+    drt_adapter
+    ${SINGLEFIELD_LIBRARIES}
+    drt_nurbs
+    drt_mortar
+    drt_volmortar
+    drt_constraint
+    drt_cardiovascular0d
+    drt_mor
+    drt_lib_register
+    ${ELEMENT_LIBRARIES}
+    ${SUPPORT_LIBRARIES}
+    drt_micromat
+    drt_scatra_multi
+    drt_mat
+    drt_lib_utils
+    locacontinuation
+    nlnsolver_nox
+    libsolver
+    linalg
+    drt_comm
+    headers
+    drt_timestepping
+    )
+
+###
+
 ###------------------------------------------------------------------ Binaries
 
 # hide libraries
@@ -2361,9 +2447,11 @@ if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/src)
 endif(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
 
-include(Deprecated_BACIAddLibraryLinkedWithEverything)
+add_library(headers INTERFACE)
+target_include_directories(headers INTERFACE ${PROJECT_SOURCE_DIR}/src/headers)
 
-# Define the libraries. The link order is important!
+add_library(drt_timestepping INTERFACE)
+target_include_directories(drt_timestepping INTERFACE ${PROJECT_SOURCE_DIR}/src/drt_timestepping)
 
 # Compile element libraries first. There are files that take time to compile.
 deprecated_baci_add_library_linked_with_everything(ele_fluid ${OBJS_DRT_FLUID_ELE_LIB})
@@ -2389,29 +2477,6 @@ deprecated_baci_add_library_linked_with_everything(ele_to3 ${OBJS_DRT_TO3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_w1 ${OBJS_DRT_W1_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_elemag ${OBJS_DRT_ELEMAG_LIB})
 
-set(ELEMENT_LIBRARIES
-    ele_ale
-    ele_b3
-    ele_rigidsphere
-    ele_bele3
-    ele_discsh3
-    ele_fluid
-    ele_opti
-    ele_s8
-    ele_membrane
-    ele_lubrication
-    ele_porofluidmultiphase
-    ele_scatra
-    ele_sp3
-    ele_so
-    ele_t3
-    ele_t3cl
-    ele_thermo
-    ele_to3
-    ele_w1
-    ele_elemag
-    )
-
 # algorithm libraries that depend on adapters
 deprecated_baci_add_library_linked_with_everything(alg_elch ${OBJS_DRT_ELCH})
 deprecated_baci_add_library_linked_with_everything(alg_fbi ${OBJS_DRT_FBI})
@@ -2434,28 +2499,6 @@ deprecated_baci_add_library_linked_with_everything(alg_ssi ${OBJS_DRT_SSI})
 deprecated_baci_add_library_linked_with_everything(alg_ssti ${OBJS_DRT_SSTI})
 deprecated_baci_add_library_linked_with_everything(alg_ehl ${OBJS_DRT_EHL})
 deprecated_baci_add_library_linked_with_everything(alg_pasi ${OBJS_DRT_PASI})
-
-set(MULTIFIELD_LIBRARIES
-    alg_elch
-    alg_fsi
-    alg_fbi
-    alg_fsi_xfem
-    alg_loma
-    alg_two_phase
-    alg_tsi
-    alg_sti
-    alg_wear
-    alg_poroelast
-    alg_poromultiphase
-    alg_immersed_problem
-    alg_fpsi
-    alg_fs3i
-    alg_topopt
-    alg_ssi
-    alg_ssti
-    alg_ehl
-    alg_pasi
-    )
 
 # the adapter layer
 deprecated_baci_add_library_linked_with_everything(drt_adapter ${OBJS_DRT_ADAPT})
@@ -2496,34 +2539,6 @@ deprecated_baci_add_library_linked_with_everything(alg_particle_wall ${OBJS_DRT_
 deprecated_baci_add_library_linked_with_everything(alg_elemag ${OBJS_DRT_ELEMAG})
 deprecated_baci_add_library_linked_with_everything(alg_tutorial ${OBJS_DRT_TUTORIAL})
 
-set(SINGLEFIELD_LIBRARIES
-    alg_ale
-    alg_artnet
-    alg_fluid
-    alg_fluid_turbulence
-    alg_fluid
-    alg_xfluid
-    alg_redairways
-    alg_lubrication
-    alg_porofluidmultiphase
-    alg_scatra
-    alg_structure
-    alg_xstructure
-    alg_statinvanalysis
-    alg_thermo
-    alg_contact
-    alg_contact_aug
-    alg_fluid_adjoint
-    alg_opti
-    alg_particle_algorithm
-    alg_particle_engine
-    alg_particle_interaction
-    alg_particle_rigidbody
-    alg_particle_wall
-    alg_elemag
-    alg_tutorial
-    )
-
 # general framework
 deprecated_baci_add_library_linked_with_everything(drt_nurbs ${OBJS_DRT_NURBS_DISCRET})
 deprecated_baci_add_library_linked_with_everything(drt_constraint ${OBJS_DRT_CONSTRAINT})
@@ -2545,8 +2560,6 @@ deprecated_baci_add_library_linked_with_everything(drt_scatra_multi ${OBJS_DRT_M
 deprecated_baci_add_library_linked_with_everything(drt_lib_register ${OBJS_DRT_REGISTER})
 
 # libraries that are used by baci and by filters
-deprecated_baci_add_library_linked_with_everything(drt_comm ${OBJS_DRT_COMM})
-deprecated_baci_add_library_linked_with_everything(drt_lib ${OBJS_DRT_LIB})
 deprecated_baci_add_library_linked_with_everything(drt_lib_inpar ${OBJS_DRT_INPAR})
 deprecated_baci_add_library_linked_with_everything(drt_lib_constraint ${OBJS_DRT_CONSTRAINT_LIB})
 deprecated_baci_add_library_linked_with_everything(
@@ -2584,40 +2597,13 @@ deprecated_baci_add_library_linked_with_everything(
 deprecated_baci_add_library_linked_with_everything(drt_lib_geometry_pair ${OBJS_DRT_GEOMETRY_PAIR})
 deprecated_baci_add_library_linked_with_everything(alg_mor ${OBJS_DRT_MOR})
 
-set(SUPPORT_LIBRARIES
-    drt_lib_xfem_manag
-    drt_lib
-    drt_lib_artnet
-    drt_lib_redairways
-    drt_lib_mortar
-    drt_lib_constraint
-    drt_lib_contact
-    drt_lib_beaminteraction
-    drt_lib_poromulti_art_coupl
-    # Libraries needed by elements
-    drt_lib_surfstress
-    drt_lib_xfem
-    drt_lib_cut
-    drt_lib_inpar
-    drt_lib_io
-    drt_lib_roughcontact
-    drt_lib_nurbs
-    drt_lib_binstrategy
-    drt_lib_particleengine
-    drt_lib_statinv_ana
-    drt_lib_immersed
-    drt_lib_fiber
-    drt_lib_geometric_search
-    drt_lib_geometry_pair
-    )
-
-# separate library as it does not play well with testing
-deprecated_baci_add_library_linked_with_everything(drt_error ${OBJS_DRT_ERROR})
-
 # filter framework
 deprecated_baci_add_library_linked_with_everything(post_drt_common ${OBJS_POST_DRT_COMMON})
 deprecated_baci_add_library_linked_with_everything(post_drt_ensight_lib ${OBJS_POST_DRT_ENSIGHT})
 deprecated_baci_add_library_linked_with_everything(post_drt_vtk_lib ${OBJS_POST_DRT_VTK})
+
+target_link_libraries(post_drt_vtk_lib PUBLIC post_drt_common)
+target_link_libraries(post_drt_ensight_lib PUBLIC post_drt_common)
 
 # linear algebra objects
 deprecated_baci_add_library_linked_with_everything(linalg ${OBJS_LINALG})
@@ -2641,39 +2627,9 @@ add_executable(post_drt_s8convert EXCLUDE_FROM_ALL ${OBJS_POST_DRT_S8CONVERT})
 add_executable(pre_exodus EXCLUDE_FROM_ALL ${OBJS_PRE_EXODUS})
 add_executable(pre_locsys EXCLUDE_FROM_ALL ${OBJS_PRE_LOCSYS})
 
-set(BACI_LIBRARIES
-    ${MULTIFIELD_LIBRARIES}
-    drt_adapter
-    ${SINGLEFIELD_LIBRARIES}
-    drt_nurbs
-    drt_mortar
-    drt_volmortar
-    drt_constraint
-    drt_cardiovascular0d
-    drt_mor
-    drt_lib_register
-    ${ELEMENT_LIBRARIES}
-    ${SUPPORT_LIBRARIES}
-    drt_micromat
-    drt_scatra_multi
-    drt_mat
-    drt_lib_utils
-    locacontinuation
-    nlnsolver_nox
-    libsolver
-    linalg
-    drt_comm
-    )
+target_link_libraries(${baciname} ${BACI_LIBRARIES})
 
-target_link_libraries(${baciname} ${BACI_LIBRARIES} drt_error)
-
-set(FILTER_LIBRARIES
-    post_drt_common
-    -Wl,--start-group
-    ${BACI_LIBRARIES}
-    -Wl,--end-group
-    drt_error
-    )
+set(FILTER_LIBRARIES post_drt_common ${BACI_LIBRARIES})
 
 target_link_libraries(post_processor post_drt_ensight_lib post_drt_vtk_lib ${FILTER_LIBRARIES})
 target_link_libraries(post_drt_monitor ${FILTER_LIBRARIES})
@@ -2707,6 +2663,8 @@ add_custom_command(
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/scripts/baci_create_post_scripts.cmake
   )
 
+add_subdirectory(src)
+
 add_subdirectory(doc EXCLUDE_FROM_ALL)
 
 ###------------------------------------------------------------------ Tests
@@ -2721,9 +2679,7 @@ target_link_libraries(
   drt_lib_cut
   ${QHULL_LIBRARIES}
   ${LAPACK_LIBRARIES}
-  -Wl,--start-group
   ${BACI_LIBRARIES}
-  -Wl,--end-group
   )
 
 include(TestingFramework.cmake)

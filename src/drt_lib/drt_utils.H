@@ -23,7 +23,7 @@
 #include "drt_node.H"
 #include "drt_element.H"
 
-#include "../drt_inpar/inpar_scatra.H"
+#include "inpar_scatra.H"
 
 // forward declarations
 namespace LINALG

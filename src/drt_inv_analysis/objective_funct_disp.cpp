@@ -10,11 +10,11 @@
 
 #include "objective_funct_disp.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
-#include "../drt_inpar/inpar_parameterlist_utils.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "io_control.H"
+#include "inpar_parameterlist_utils.H"
+#include "drt_utils.H"
 
 /*----------------------------------------------------------------------*/
 /* standard constructor                                                 */

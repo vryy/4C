@@ -12,19 +12,19 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_boundary.H"
 
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "drt_utils_boundary_integration.H"
 
-#include "../drt_lib/drt_globalproblem.H"  // for curves and functions
-#include "../drt_lib/standardtypes_cpp.H"  // for EPS12 and so on
+#include "drt_globalproblem.H"  // for curves and functions
+#include "standardtypes_cpp.H"  // for EPS12 and so on
 
-#include "../drt_mat/fourieriso.H"
-#include "../drt_mat/matlist.H"
-#include "../drt_mat/scatra_mat.H"
-#include "../drt_mat/thermostvenantkirchhoff.H"
+#include "fourieriso.H"
+#include "matlist.H"
+#include "scatra_mat.H"
+#include "thermostvenantkirchhoff.H"
 
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+#include "drt_nurbs_utils.H"
 
-#include "../drt_fluid/fluid_rotsym_periodicbc.H"
+#include "fluid_rotsym_periodicbc.H"
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>

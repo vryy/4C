@@ -9,10 +9,10 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "../drt_lib/drt_function.H"
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/fluid_weakly_compressible.H"
-#include "../drt_mat/stvenantkirchhoff.H"
+#include "drt_function.H"
+#include "newtonianfluid.H"
+#include "fluid_weakly_compressible.H"
+#include "stvenantkirchhoff.H"
 
 #ifndef FLUID_FUNCTION_H
 #define FLUID_FUNCTION_H

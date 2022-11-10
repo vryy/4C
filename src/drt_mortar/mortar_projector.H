@@ -9,12 +9,12 @@
 #ifndef MORTAR_PROJECTOR_H
 #define MORTAR_PROJECTOR_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_lib/drt_element.H"
-#include "../headers/pairedvector.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "linalg_fixedsizematrix.H"
+#include "drt_element.H"
+#include "pairedvector.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 namespace MORTAR
 {

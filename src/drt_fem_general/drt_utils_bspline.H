@@ -16,7 +16,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_serialdensevector.H"
 
 
 namespace DRT

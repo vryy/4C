@@ -13,9 +13,9 @@
 #include "mortar_element.H"
 #include "mortar_node.H"
 
-#include "../drt_contact/contact_defines.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "contact_defines.H"
+#include "drt_discret.H"
+#include "linalg_fixedsizematrix.H"
 
 
 /*----------------------------------------------------------------------*

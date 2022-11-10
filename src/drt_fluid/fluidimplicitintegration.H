@@ -31,17 +31,17 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
 
-#include "../drt_fluid/fluid_timint.H"
+#include "fluid_timint.H"
 
-#include "../drt_inpar/inpar_fluid.H"
-#include "../drt_inpar/inpar_turbulence.H"
+#include "inpar_fluid.H"
+#include "inpar_turbulence.H"
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
-#include "../linalg/linalg_blocksparsematrix.H"
+#include "linalg_blocksparsematrix.H"
 
 
 // forward declarations

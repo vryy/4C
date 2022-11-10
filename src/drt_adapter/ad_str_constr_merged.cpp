@@ -10,19 +10,19 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "../drt_structure/strtimint_create.H"
+#include "strtimint_create.H"
 #include "ad_str_constr_merged.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../drt_constraint/constraint_manager.H"
-#include "../drt_structure/stru_aux.H"
+#include "drt_globalproblem.H"
+#include "drt_condition_utils.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "constraint_manager.H"
+#include "stru_aux.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 // further includes for StructureBaseAlgorithm:
-#include "../drt_inpar/drt_validparameters.H"
+#include "drt_validparameters.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 

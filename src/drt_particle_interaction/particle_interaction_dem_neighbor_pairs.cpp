@@ -12,16 +12,16 @@
 
 #include "particle_interaction_utils.H"
 
-#include "../drt_particle_engine/particle_engine_interface.H"
-#include "../drt_particle_engine/particle_container.H"
+#include "particle_engine_interface.H"
+#include "particle_container.H"
 
-#include "../drt_particle_wall/particle_wall_interface.H"
+#include "particle_wall_interface.H"
 
-#include "../drt_mat/particle_wall_material_dem.H"
+#include "particle_wall_material_dem.H"
 
-#include "../drt_geometry/searchtree_geometry_service.H"
-#include "../drt_geometry/position_array.H"
-#include "../drt_geometry/element_coordtrafo.H"
+#include "searchtree_geometry_service.H"
+#include "position_array.H"
+#include "element_coordtrafo.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

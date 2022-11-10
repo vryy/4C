@@ -16,7 +16,7 @@
 #include <string>
 
 #include "thr_resulttest.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
 /*----------------------------------------------------------------------*
  |                                                           dano 08/09 |

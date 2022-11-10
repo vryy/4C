@@ -14,9 +14,9 @@
 #define FLUID_ELE_BOUNDARY_CALC_H
 
 #include "fluid_ele_boundary_interface.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "drt_element.H"
+#include "drt_utils_integration.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
 
 namespace DRT

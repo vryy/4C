@@ -15,9 +15,9 @@ equations
 #include <vector>
 #include "cut_enum.H"
 #include "cut_clnwrapper.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
-#include "../../src/drt_fem_general/drt_utils_gausspoints.H"
+#include "drt_utils_gausspoints.H"
 
 /*!
 \brief Performs integration of  base functions along the line using the standard Gaussian rule

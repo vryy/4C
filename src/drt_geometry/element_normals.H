@@ -12,7 +12,7 @@
 #define ELEMENT_NORMALS_H_
 
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "drt_utils_fem_shapefunctions.H"
 
 
 namespace GEO

@@ -12,35 +12,35 @@
 
 #include "fluid_ele_boundary_calc.H"
 #include "fluid_ele.H"
-#include "../drt_lib/drt_element_integration_select.H"
+#include "drt_element_integration_select.H"
 #include "fluid_ele_action.H"
 
 #include "fluid_ele_parameter_std.H"
 #include "fluid_ele_parameter_timint.H"
 
-#include "../drt_inpar/inpar_material.H"
+#include "inpar_material.H"
 
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "drt_utils_boundary_integration.H"
 
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+#include "drt_nurbs_utils.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "drt_globalproblem.H"
+#include "standardtypes_cpp.H"
 
-#include "../drt_mat/arrhenius_pv.H"
-#include "../drt_mat/carreauyasuda.H"
-#include "../drt_mat/ferech_pv.H"
-#include "../drt_mat/herschelbulkley.H"
-#include "../drt_mat/mixfrac.H"
-#include "../drt_mat/modpowerlaw.H"
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/permeablefluid.H"
-#include "../drt_mat/sutherland.H"
-#include "../drt_mat/fluid_linear_density_viscosity.H"
-#include "../drt_mat/fluid_murnaghantait.H"
-#include "../drt_mat/tempdepwater.H"
-#include "../drt_mat/yoghurt.H"
-#include "../drt_mat/fluidporo.H"
+#include "arrhenius_pv.H"
+#include "carreauyasuda.H"
+#include "ferech_pv.H"
+#include "herschelbulkley.H"
+#include "mixfrac.H"
+#include "modpowerlaw.H"
+#include "newtonianfluid.H"
+#include "permeablefluid.H"
+#include "sutherland.H"
+#include "fluid_linear_density_viscosity.H"
+#include "fluid_murnaghantait.H"
+#include "tempdepwater.H"
+#include "yoghurt.H"
+#include "fluidporo.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

@@ -15,15 +15,15 @@
 #include "fsi_dirichletneumannslideale.H"
 #include "fsi_debugwriter.H"
 #include "fsi_utils.H"
-#include "../drt_geometry/searchtree.H"
-#include "../drt_mortar/mortar_interface.H"
-#include "../drt_inpar/inpar_fsi.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/adapter_coupling_mortar.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "searchtree.H"
+#include "mortar_interface.H"
+#include "inpar_fsi.H"
+#include "ad_str_fsiwrapper.H"
+#include "adapter_coupling.H"
+#include "adapter_coupling_mortar.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_inpar/inpar_fsi.H"
+#include "inpar_fsi.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

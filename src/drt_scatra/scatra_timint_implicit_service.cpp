@@ -12,22 +12,22 @@
 #include "scatra_timint_meshtying_strategy_base.H"
 #include "scatra_utils.H"
 
-#include "../drt_adapter/adapter_coupling.H"
+#include "adapter_coupling.H"
 
-#include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
-#include "../drt_fluid_turbulence/dyn_smag.H"
-#include "../drt_fluid_turbulence/dyn_vreman.H"
+#include "fluid_rotsym_periodicbc_utils.H"
+#include "dyn_smag.H"
+#include "dyn_vreman.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_parameter_list.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_parameter_list.H"
 
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "drt_nurbs_discret.H"
 
-#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "scatra_ele_action.H"
 
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "linalg_solver.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
 #include "turbulence_hit_scalar_forcing.H"
 
@@ -36,11 +36,11 @@
 #include <MLAPI_Aggregation.h>
 
 // for printing electrode status to file
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_gmsh.H"
+#include "io.H"
+#include "io_control.H"
+#include "io_gmsh.H"
 
-#include "../drt_io/runtime_csv_writer.H"
+#include "runtime_csv_writer.H"
 
 
 /*==========================================================================*

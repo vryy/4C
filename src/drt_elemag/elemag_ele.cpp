@@ -12,13 +12,13 @@
 #include "elemag_ele.H"
 #include "elemag_ele_boundary_calc.H"
 #include "elemag_ele_intfaces_calc.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_discret_faces.H"
-#include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_discret_faces.H"
+#include "drt_utils_factory.H"
+#include "drt_linedefinition.H"
+#include "drt_globalproblem.H"
 
-#include "../linalg/linalg_utils_nullspace.H"
+#include "linalg_utils_nullspace.H"
 
 
 DRT::ELEMENTS::ElemagType DRT::ELEMENTS::ElemagType::instance_;

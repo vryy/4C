@@ -9,7 +9,7 @@
 #ifndef GEOMETRYCOUPLER_FBI_H
 #define GEOMETRYCOUPLER_FBI_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include <Teuchos_RCP.hpp>
 #include <map>
 #include <vector>

@@ -15,7 +15,7 @@
 #include <NOX_Abstract_Group.H>
 #include <NOX_Utils.H>
 
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_mapextractor.H"
 
 // forward declarations
 namespace ADAPTER

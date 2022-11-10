@@ -6,10 +6,10 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 #include "invana_cal_drt.H"
-#include "../drt_inpar/inpar_statinvanalysis.H"
-#include "../drt_inpar/inpar_invanalysis.H"
+#include "inpar_statinvanalysis.H"
+#include "inpar_invanalysis.H"
 
 // the new inverse analysis
 #include "invana_control.H"

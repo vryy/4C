@@ -6,9 +6,9 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
-#include "../drt_mat/myocard.H"
+#include "myocard.H"
 
 #include "scatra_ele.H"
 

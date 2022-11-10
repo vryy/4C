@@ -12,11 +12,11 @@
 #ifndef XFLUID_LEVELSET_ALGORITHM_H
 #define XFLUID_LEVELSET_ALGORITHM_H
 
-#include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
-#include "../linalg/linalg_mapextractor.H"
+#include "adapter_scatra_fluid_coupling_algorithm.H"
+#include "linalg_mapextractor.H"
 
 // Needed for input parameter
-#include "../drt_inpar/inpar_twophase.H"
+#include "inpar_twophase.H"
 
 
 namespace XFLUIDLEVELSET

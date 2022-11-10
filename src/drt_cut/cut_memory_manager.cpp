@@ -13,7 +13,7 @@
 #include <stdexcept>  // for std_runtime_error
 #include <iostream>
 #include <iomanip>  // for std::setw
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include <unordered_map>
 
 

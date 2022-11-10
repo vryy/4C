@@ -10,13 +10,13 @@
 
 #include "spherebeamlinking_params.H"
 
-#include "../drt_structure_new/str_timint_basedataglobalstate.H"
+#include "str_timint_basedataglobalstate.H"
 
-#include "../drt_inpar/inpar_beaminteraction.H"
+#include "inpar_beaminteraction.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_mat/crosslinkermat.H"
+#include "crosslinkermat.H"
 
 
 /*----------------------------------------------------------------------------*

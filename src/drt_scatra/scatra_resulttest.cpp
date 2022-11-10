@@ -12,10 +12,10 @@
 #include "scatra_timint_implicit.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_discret.H"
+#include "drt_linedefinition.H"
 
-#include "../linalg/linalg_solver.H"
+#include "linalg_solver.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

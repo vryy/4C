@@ -15,9 +15,9 @@
 #ifndef NOX_LAGPENCONSTRAINT_LINEARSYSTEM_H_
 #define NOX_LAGPENCONSTRAINT_LINEARSYSTEM_H_
 
-#include "../solver_nonlin_nox/nox_nln_linearsystem.H"
-#include "../solver_nonlin_nox/nox_nln_constraint_interface_required.H"
-#include "../solver_nonlin_nox/nox_nln_constraint_interface_preconditioner.H"
+#include "nox_nln_linearsystem.H"
+#include "nox_nln_constraint_interface_required.H"
+#include "nox_nln_constraint_interface_preconditioner.H"
 
 namespace NOX
 {

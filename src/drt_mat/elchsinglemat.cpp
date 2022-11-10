@@ -7,9 +7,9 @@ electric potential as degrees of freedom
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/function_of_time.H"
-#include "../drt_mat/matpar_bundle.H"
+#include "drt_globalproblem.H"
+#include "function_of_time.H"
+#include "matpar_bundle.H"
 
 #include "elchsinglemat.H"
 

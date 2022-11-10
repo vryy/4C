@@ -13,7 +13,7 @@
 #include "so_surface.H"
 #include "so_line.H"
 
-#include "../drt_lib/drt_utils_factory.H"
+#include "drt_utils_factory.H"
 
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::So3_Poro_P1(int id, int owner)

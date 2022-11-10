@@ -12,9 +12,9 @@
 #define BEAM_INTERACTION_CONDITIONS_H_
 
 
-#include "../drt_inpar/inpar_beaminteraction.H"
+#include "inpar_beaminteraction.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <map>
 #include <set>

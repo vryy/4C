@@ -9,9 +9,9 @@
 *----------------------------------------------------------------------*/
 #include "scatra_timint_meshtying_strategy_std_elch.H"
 
-#include "../drt_scatra/scatra_utils_splitstrategy.H"
+#include "scatra_utils_splitstrategy.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |

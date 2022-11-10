@@ -13,7 +13,7 @@
 #define UTILS_FACTORY_H
 
 #include "drt_discret.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
 namespace DRT
 {

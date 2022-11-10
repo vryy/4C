@@ -14,7 +14,7 @@
 #define SRC_DRT_STRUCTURE_NEW_STR_TIMINT_LOCAINTERFACE_H_
 
 #include "str_timint_noxinterface.H"
-#include "../loca_continuation/loca_nln_interface_required.H"
+#include "loca_nln_interface_required.H"
 
 namespace STR
 {

@@ -15,26 +15,26 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_adapter/ad_str_factory.H"
-#include "../drt_adapter/ad_str_structure_new.H"
-#include "../drt_adapter/ad_str_structure.H"
+#include "ad_str_factory.H"
+#include "ad_str_structure_new.H"
+#include "ad_str_structure.H"
 #include "stru_dyn_nln_drt.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
-#include "../drt_lib/drt_colors.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_comm/comm_utils.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_inpar/inpar_invanalysis.H"
-#include "../drt_inpar/inpar_statinvanalysis.H"
+#include "io.H"
+#include "io_control.H"
+#include "drt_colors.H"
+#include "drt_globalproblem.H"
+#include "comm_utils.H"
+#include "inpar_structure.H"
+#include "inpar_invanalysis.H"
+#include "inpar_statinvanalysis.H"
 #include "stru_resulttest.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../linalg/linalg_solver.H"
+#include "drt_discret.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "linalg_solver.H"
 
 // periodic boundary conditions
-#include "../drt_lib/drt_periodicbc.H"
+#include "drt_periodicbc.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

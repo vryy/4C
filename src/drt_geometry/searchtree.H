@@ -14,7 +14,7 @@
 
 #include <Teuchos_RCP.hpp>
 #include "searchtree_nearestobject.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 // forward declarations
 namespace DRT

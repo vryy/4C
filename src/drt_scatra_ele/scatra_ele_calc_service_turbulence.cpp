@@ -13,18 +13,18 @@
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_turbulence.H"
-#include "../drt_inpar/inpar_fluid.H"
+#include "inpar_fluid.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/matlist.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
+#include "standardtypes_cpp.H"
+#include "newtonianfluid.H"
+#include "matlist.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
-#include "../drt_fluid/fluid_rotsym_periodicbc.H"
+#include "fluid_rotsym_periodicbc.H"
 
 
 /*-----------------------------------------------------------------------------*

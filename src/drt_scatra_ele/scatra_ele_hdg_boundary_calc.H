@@ -12,10 +12,10 @@
 #ifndef SCATRA_ELE_HDG_BOUNDARY_CALC_H
 #define SCATRA_ELE_HDG_BOUNDARY_CALC_H
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "drt_element.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 namespace DRT
 {

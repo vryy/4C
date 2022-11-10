@@ -15,24 +15,24 @@
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_element.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_element.H"
 
-#include "../drt_lib/drt_globalproblem.H"  // for time curve in body force
-#include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
-#include "../drt_lib/drt_utils.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
-#include "../drt_fem_general/drt_utils_gder2.H"
-#include "../drt_geometry/position_array.H"
-#include "../drt_lib/drt_condition_utils.H"
+#include "drt_globalproblem.H"  // for time curve in body force
+#include "standardtypes_cpp.H"  // for EPS13 and so on
+#include "drt_utils.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_nurbs_shapefunctions.H"
+#include "drt_nurbs_utils.H"
+#include "drt_utils_gder2.H"
+#include "position_array.H"
+#include "drt_condition_utils.H"
 
-#include "../drt_mat/matlist.H"
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/scatra_mat_aniso.H"
-#include "../headers/singleton_owner.H"
+#include "matlist.H"
+#include "newtonianfluid.H"
+#include "scatra_mat_aniso.H"
+#include "singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

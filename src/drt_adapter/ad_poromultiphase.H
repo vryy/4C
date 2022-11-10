@@ -11,7 +11,7 @@
 
 #include "Teuchos_RCP.hpp"
 #include <Epetra_Vector.h>
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 // forward declarations
 namespace ADAPTER

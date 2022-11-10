@@ -17,8 +17,8 @@
 #include <MueLu_MLParameterListInterpreter_decl.hpp>
 #include <MueLu_ParameterListInterpreter.hpp>
 #include "EpetraExt_RowMatrixOut.h"
-#include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "drt_dserror.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 #include "solver_amgnxn_preconditioner.H"
 #include "solver_amgnxn_vcycle.H"
 

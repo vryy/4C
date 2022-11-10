@@ -13,7 +13,7 @@
 #include "drt_dofset_transparent_independent.H"
 #include "drt_dofset.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 
 

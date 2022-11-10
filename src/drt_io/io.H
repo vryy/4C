@@ -23,7 +23,7 @@
 
 extern "C"
 {
-#include "../pss_full/pss_types.h"  // typedef struct MAP etc.
+#include "pss_types.h"  // typedef struct MAP etc.
 }
 
 

@@ -16,32 +16,32 @@
 #include "ssi_str_model_evaluator_partitioned.H"
 #include "ssi_utils.H"
 
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
-#include "../drt_adapter/ad_str_factory.H"
-#include "../drt_adapter/ad_str_ssiwrapper.H"
-#include "../drt_adapter/ad_str_structure_new.H"
+#include "adapter_coupling.H"
+#include "adapter_scatra_base_algorithm.H"
+#include "ad_str_factory.H"
+#include "ad_str_ssiwrapper.H"
+#include "ad_str_structure_new.H"
 
-#include "../drt_inpar/inpar_volmortar.H"
-#include "../drt_inpar/inpar_ssi.H"
+#include "inpar_volmortar.H"
+#include "inpar_ssi.H"
 
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
-#include "../drt_lib/drt_inputreader.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_utils_parallel.H"
-#include "../drt_lib/function_of_time.H"
+#include "drt_inputreader.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_createdis.H"
+#include "drt_utils_parallel.H"
+#include "function_of_time.H"
 
-#include "../drt_mat/matpar_bundle.H"
+#include "matpar_bundle.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
-#include "../drt_scatra/scatra_utils.H"
+#include "scatra_timint_implicit.H"
+#include "scatra_timint_meshtying_strategy_s2i.H"
+#include "scatra_utils.H"
 
-#include "../drt_scatra_ele/scatra_ele.H"
+#include "scatra_ele.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

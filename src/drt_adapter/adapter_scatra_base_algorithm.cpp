@@ -10,46 +10,46 @@
 /*----------------------------------------------------------------------*/
 
 #include "adapter_scatra_base_algorithm.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io.H"
-#include "../linalg/linalg_solver.H"
-#include "../drt_inpar/inpar_elch.H"
-#include "../drt_inpar/inpar_ssi.H"
-#include "../drt_inpar/inpar_ssti.H"
-#include "../drt_inpar/inpar_sti.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "io_control.H"
+#include "io.H"
+#include "linalg_solver.H"
+#include "inpar_elch.H"
+#include "inpar_ssi.H"
+#include "inpar_ssti.H"
+#include "inpar_sti.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 // general time integration schemes
-#include "../drt_scatra/scatra_timint_stat.H"
-#include "../drt_scatra/scatra_timint_ost.H"
-#include "../drt_scatra/scatra_timint_bdf2.H"
-#include "../drt_scatra/scatra_timint_genalpha.H"
+#include "scatra_timint_stat.H"
+#include "scatra_timint_ost.H"
+#include "scatra_timint_bdf2.H"
+#include "scatra_timint_genalpha.H"
 
 // HDG time integration schemes
-#include "../drt_scatra/scatra_timint_cardiac_monodomain_scheme_hdg.H"
-#include "../drt_scatra/scatra_timint_stat_hdg.H"
-#include "../drt_scatra/scatra_resulttest_hdg.H"
+#include "scatra_timint_cardiac_monodomain_scheme_hdg.H"
+#include "scatra_timint_stat_hdg.H"
+#include "scatra_resulttest_hdg.H"
 
 // loma specific files
-#include "../drt_scatra/scatra_timint_loma_genalpha.H"
-#include "../drt_scatra/scatra_timint_loma_ost.H"
+#include "scatra_timint_loma_genalpha.H"
+#include "scatra_timint_loma_ost.H"
 
 // elch specific files
-#include "../drt_scatra/scatra_resulttest_elch.H"
-#include "../drt_scatra/scatra_timint_elch_scheme.H"
+#include "scatra_resulttest_elch.H"
+#include "scatra_timint_elch_scheme.H"
 
 // level set specific files
-#include "../drt_levelset/levelset_timint_ost.H"
-#include "../drt_levelset/levelset_timint_stat.H"
+#include "levelset_timint_ost.H"
+#include "levelset_timint_stat.H"
 
 // cardiac monodomain specific files
-#include "../drt_scatra/scatra_timint_cardiac_monodomain_scheme.H"
+#include "scatra_timint_cardiac_monodomain_scheme.H"
 
 // poro multiphase files
-#include "../drt_scatra/scatra_timint_poromulti.H"
+#include "scatra_timint_poromulti.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -15,7 +15,7 @@
 #include "inpar_xfem.H"
 #include "inpar_twophase.H"
 #include "inpar_cut.H"
-#include "../drt_lib/drt_conditiondefinition.H"
+#include "drt_conditiondefinition.H"
 
 
 

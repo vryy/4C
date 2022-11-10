@@ -8,24 +8,24 @@
 
 #include "poromultiphase_scatra_base.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
 
-#include "../drt_adapter/ad_poromultiphase.H"
-#include "../drt_poromultiphase/poromultiphase_utils.H"
+#include "ad_poromultiphase.H"
+#include "poromultiphase_utils.H"
 #include "poromultiphase_scatra_utils.H"
 
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
-#include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_scatra/scatra_timint_poromulti.H"
+#include "adapter_scatra_base_algorithm.H"
+#include "scatra_timint_implicit.H"
+#include "scatra_timint_poromulti.H"
 
-#include "../drt_adapter/ad_art_net.H"
-#include "../drt_adapter/ad_porofluidmultiphase_wrapper.H"
+#include "ad_art_net.H"
+#include "ad_porofluidmultiphase_wrapper.H"
 
-#include "../drt_scatra/scatra_timint_meshtying_strategy_artery.H"
-#include "../drt_scatra_ele/scatra_ele.H"
-#include "../drt_mat/fluidporo_multiphase.H"
-#include "../drt_mat/scatra_mat_multiporo.H"
+#include "scatra_timint_meshtying_strategy_artery.H"
+#include "scatra_ele.H"
+#include "fluidporo_multiphase.H"
+#include "scatra_mat_multiporo.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

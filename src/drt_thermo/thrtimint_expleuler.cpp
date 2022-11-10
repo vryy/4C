@@ -10,9 +10,9 @@
  *----------------------------------------------------------------------*/
 #include "thrtimint_expleuler.H"
 #include "thermo_ele_action.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_io/io.H"
+#include "linalg_solver.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "io.H"
 
 
 /*----------------------------------------------------------------------*

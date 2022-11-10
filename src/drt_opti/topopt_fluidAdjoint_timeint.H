@@ -14,9 +14,9 @@
 #define TOPOPT_FLUID_ADJOINT_TIMEINT_H_
 
 
-#include "../drt_inpar/inpar_fluid.H"
-#include "../drt_inpar/inpar_topopt.H"
-#include "../drt_lib/drt_dserror.H"
+#include "inpar_fluid.H"
+#include "inpar_topopt.H"
+#include "drt_dserror.H"
 
 
 // forward declarations

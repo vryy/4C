@@ -6,9 +6,9 @@
 */
 /*----------------------------------------------------------------------*/
 #include "mixture_growth_strategy.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/material_service.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
+#include "material_service.H"
 #include "mixture_growth_strategy_anisotropic.H"
 #include "mixture_growth_strategy_isotropic.H"
 #include "mixture_growth_strategy_stiffness.H"

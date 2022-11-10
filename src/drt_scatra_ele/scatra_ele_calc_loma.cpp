@@ -14,27 +14,27 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_turbulence.H"
 
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "drt_utils_nurbs_shapefunctions.H"
 
-#include "../drt_geometry/position_array.H"
+#include "position_array.H"
 
-#include "../drt_inpar/inpar_fluid.H"
+#include "inpar_fluid.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
 
-#include "../drt_mat/mixfrac.H"
-#include "../drt_mat/sutherland.H"
-#include "../drt_mat/tempdepwater.H"
-#include "../drt_mat/arrhenius_spec.H"
-#include "../drt_mat/arrhenius_temp.H"
-#include "../drt_mat/arrhenius_pv.H"
-#include "../drt_mat/ferech_pv.H"
-#include "../drt_mat/thermostvenantkirchhoff.H"
-#include "../drt_mat/yoghurt.H"
+#include "mixfrac.H"
+#include "sutherland.H"
+#include "tempdepwater.H"
+#include "arrhenius_spec.H"
+#include "arrhenius_temp.H"
+#include "arrhenius_pv.H"
+#include "ferech_pv.H"
+#include "thermostvenantkirchhoff.H"
+#include "yoghurt.H"
 
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
-#include "../headers/singleton_owner.H"
+#include "drt_nurbs_utils.H"
+#include "singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

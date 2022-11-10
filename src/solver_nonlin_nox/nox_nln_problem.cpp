@@ -28,7 +28,7 @@
 #include <Teuchos_ParameterList.hpp>
 
 #include <Epetra_Operator.h>
-#include "../linalg/linalg_solver.H"
+#include "linalg_solver.H"
 
 #include <NOX_Utils.H>
 #include <NOX_Epetra_Scaling.H>

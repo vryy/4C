@@ -37,10 +37,10 @@
 #include "matpar_bundle.H"
 #include "material_service.H"
 
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_utils_densematrix_eigen.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/voigt_notation.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "linalg_utils_densematrix_eigen.H"
+#include "drt_globalproblem.H"
+#include "voigt_notation.H"
 
 using VoigtMapping = UTILS::VOIGT::IndexMappings;
 

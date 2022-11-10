@@ -13,8 +13,8 @@
 #define XFIELD_STATE_UTILS_H_
 
 
-#include "../linalg/linalg_blocksparsematrix.H"
-#include "../solver_nonlin_nox/nox_nln_aux.H"
+#include "linalg_blocksparsematrix.H"
+#include "nox_nln_aux.H"
 #include <Teuchos_RCP.hpp>
 
 

@@ -8,9 +8,9 @@
 */
 /*----------------------------------------------------------------------*/
 #include "drt_validmaterials.H"
-#include "../drt_lib/drt_materialdefinition.H"
+#include "drt_materialdefinition.H"
 #include "inpar_material.H"
-#include "../drt_lib/drt_colors.H"
+#include "drt_colors.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

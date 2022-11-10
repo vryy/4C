@@ -11,7 +11,7 @@
 
 #include "drt_validparameters.H"
 
-#include "../drt_lib/drt_conditiondefinition.H"
+#include "drt_conditiondefinition.H"
 
 /*------------------------------------------------------------------------*
  | set valid parameters for scatra-scatra interface coupling   fang 01/16 |

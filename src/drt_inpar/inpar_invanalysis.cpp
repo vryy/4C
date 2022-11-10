@@ -14,9 +14,9 @@
 #include "inpar_invanalysis.H"
 #include "inpar_statinvanalysis.H"
 #include "inpar_structure.H"
-#include "../drt_lib/drt_conditiondefinition.H"
+#include "drt_conditiondefinition.H"
 
-#include "../drt_lib/drt_globalproblem_enums.H"
+#include "drt_globalproblem_enums.H"
 #include "inpar_problemtype.H"
 
 

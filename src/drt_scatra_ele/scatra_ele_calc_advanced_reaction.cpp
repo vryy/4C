@@ -11,18 +11,18 @@
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_element.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_element.H"
 
 // MATERIALS
-#include "../drt_mat/scatra_mat.H"
-#include "../drt_mat/scatra_reaction_mat.H"
-#include "../drt_mat/matlist.H"
-#include "../drt_mat/matlist_reactions.H"
-#include "../drt_mat/so3_material.H"
-#include "../drt_mat/growth_law.H"
-#include "../headers/singleton_owner.H"
+#include "scatra_mat.H"
+#include "scatra_reaction_mat.H"
+#include "matlist.H"
+#include "matlist_reactions.H"
+#include "so3_material.H"
+#include "growth_law.H"
+#include "singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

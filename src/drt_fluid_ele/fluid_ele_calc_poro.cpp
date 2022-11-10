@@ -10,26 +10,26 @@
 /*----------------------------------------------------------------------*/
 
 #include "fluid_ele_poro.H"
-#include "../drt_lib/drt_element_integration_select.H"
+#include "drt_element_integration_select.H"
 #include "fluid_ele_action.H"
 #include "fluid_ele_parameter_poro.H"
 
-#include "../drt_fluid/fluid_rotsym_periodicbc.H"
+#include "fluid_rotsym_periodicbc.H"
 
-#include "../drt_fem_general/drt_utils_gder2.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "drt_utils_gder2.H"
+#include "drt_utils_nurbs_shapefunctions.H"
 
-#include "../drt_geometry/position_array.H"
+#include "position_array.H"
 
-#include "../drt_mat/fluidporo.H"
-#include "../drt_mat/structporo.H"
-#include "../drt_mat/stvenantkirchhoff.H"
-#include "../drt_mat/elasthyper.H"
+#include "fluidporo.H"
+#include "structporo.H"
+#include "stvenantkirchhoff.H"
+#include "elasthyper.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "drt_globalproblem.H"
+#include "standardtypes_cpp.H"
 
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+#include "drt_nurbs_utils.H"
 
 #include "fluid_ele_calc_poro.H"
 

@@ -13,17 +13,17 @@
  *----------------------------------------------------------------------*/
 #include "wear_dyn.H"
 #include "wear_partitioned.H"
-#include "../drt_fsi/fsi_utils.H"
+#include "fsi_utils.H"
 
-#include "../drt_ale/ale_utils_clonestrategy.H"
+#include "ale_utils_clonestrategy.H"
 
-#include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_condition_utils.H"
+#include "drt_utils_createdis.H"
+#include "drt_globalproblem.H"
+#include "drt_condition_utils.H"
 
-#include "../drt_inpar/inpar_wear.H"
+#include "inpar_wear.H"
 
-#include "../drt_lib/drt_utils_parallel.H"
+#include "drt_utils_parallel.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_MpiComm.h>

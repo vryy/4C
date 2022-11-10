@@ -12,8 +12,8 @@
 #include <vector>
 #include "Epetra_Comm.h"
 #include "mortar_coupling3d_classes.H"
-#include "../drt_inpar/inpar_mortar.H"
-#include "../headers/pairedvector.H"
+#include "inpar_mortar.H"
+#include "pairedvector.H"
 
 // forward declarations
 namespace DRT

@@ -12,7 +12,7 @@
 #include "Teuchos_RCPDecl.hpp"
 #include "vector"
 
-#include "../linalg/linalg_sparseoperator.H"
+#include "linalg_sparseoperator.H"
 
 namespace LINALG
 {

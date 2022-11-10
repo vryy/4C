@@ -10,14 +10,14 @@ performed afterwards
 *----------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>
 #include "immersed_geometry_coupler_fbi_binning.H"
-#include "../drt_binstrategy/binning_strategy.H"
-#include "../drt_binstrategy/binning_strategy_utils.H"
-#include "../drt_inpar/inpar_fluid.H"
-#include "../drt_lib/drt_discret_faces.H"
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_utils.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "binning_strategy.H"
+#include "binning_strategy_utils.H"
+#include "inpar_fluid.H"
+#include "drt_discret_faces.H"
+#include "drt_node.H"
+#include "drt_element.H"
+#include "drt_utils.H"
+#include "linalg_fixedsizematrix.H"
 /*----------------------------------------------------------------------*/
 
 FBI::FBIBinningGeometryCoupler::FBIBinningGeometryCoupler()

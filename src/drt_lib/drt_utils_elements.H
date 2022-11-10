@@ -12,7 +12,7 @@
 #ifndef SRC_DRT_LIB_DRT_UTILS_ELEMENTS_H_
 #define SRC_DRT_LIB_DRT_UTILS_ELEMENTS_H_
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "drt_utils_fem_shapefunctions.H"
 
 namespace DRT
 {

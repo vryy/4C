@@ -10,7 +10,7 @@ distributions
 
 
 #include "mortar_matrix_transform.H"
-#include "../linalg/linalg_sparsematrix.H"
+#include "linalg_sparsematrix.H"
 
 #include <Epetra_Export.h>
 #include <Epetra_Distributor.h>

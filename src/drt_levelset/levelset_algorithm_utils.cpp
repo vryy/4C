@@ -12,16 +12,16 @@
 
 #include "levelset_algorithm.H"
 #include "levelset_intersection_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_parameter_list.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_scatra_ele/scatra_ele_action.H"
-#include "../drt_scatra_ele/scatra_ele_calc_utils.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_solver.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_parameter_list.H"
+#include "io_control.H"
+#include "io_pstream.H"
+#include "scatra_ele_action.H"
+#include "scatra_ele_calc_utils.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "linalg_solver.H"
 
 
 /*----------------------------------------------------------------------*

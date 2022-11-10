@@ -9,11 +9,11 @@ materials
 
 #include "elast_aniso_structuraltensor_strategy.H"
 
-#include "../drt_mat/matpar_material.H"
-#include "../drt_mat/material_service.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_lib/voigt_notation.H"
+#include "matpar_material.H"
+#include "material_service.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_integration.H"
+#include "voigt_notation.H"
 
 
 MAT::ELASTIC::PAR::StructuralTensorParameter::StructuralTensorParameter(

@@ -8,7 +8,7 @@ mesh
  *------------------------------------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
 #include "cut_mesh.H"
 
@@ -20,12 +20,12 @@ mesh
 #include "cut_output.H"
 #include "cut_parallel.H"
 
-#include "../drt_geometry/element_volume.H"
+#include "element_volume.H"
 
 // search
-#include "../drt_geometry/searchtree.H"
+#include "searchtree.H"
 
-#include "../drt_lib/drt_colors.H"
+#include "drt_colors.H"
 
 /*-------------------------------------------------------------------------------------*
  * constructor
@@ -1769,7 +1769,7 @@ void GEO::CUT::Mesh::TestElementVolume(DRT::Element::DiscretizationType shape, E
 
     double volume_error = (ev - cv) / ev;
     // Uncomment for a lot of output.
-    //#ifdef DEBUGCUTLIBRARY
+    // #ifdef DEBUGCUTLIBRARY
     //    std::cout << "#vc=" << cells.size()
     //              << " #ic=" << numic
     //              << " #bc=" << numbc
@@ -1782,7 +1782,7 @@ void GEO::CUT::Mesh::TestElementVolume(DRT::Element::DiscretizationType shape, E
     //              << " \t-- "
     //              << ba
     //              << "\n";
-    //#endif
+    // #endif
 
 
 
@@ -2085,7 +2085,7 @@ void GEO::CUT::Mesh::DumpGmsh(std::string name)
   std::ofstream file(name.c_str());
   // file.precision(32); //higher precision!
 
-  //###############write all elements & shadow elements###############
+  // ###############write all elements & shadow elements###############
   if (elements_.size() > 0 || shadow_elements_.size() > 0)
   {
     GEO::CUT::OUTPUT::GmshNewSection(file, "Elements");
@@ -2099,7 +2099,7 @@ void GEO::CUT::Mesh::DumpGmsh(std::string name)
     GEO::CUT::OUTPUT::GmshEndSection(file);
   }
 
-  //###############write all sides###############
+  // ###############write all sides###############
   if (sides_.size() > 0)
   {
     GEO::CUT::OUTPUT::GmshNewSection(file, "Sides");
@@ -2109,7 +2109,7 @@ void GEO::CUT::Mesh::DumpGmsh(std::string name)
     GEO::CUT::OUTPUT::GmshEndSection(file);
   }
 
-  //###############write all nodes###############
+  // ###############write all nodes###############
   if (sides_.size() > 0)
   {
     GEO::CUT::OUTPUT::GmshNewSection(file, "Nodes");
@@ -2118,7 +2118,7 @@ void GEO::CUT::Mesh::DumpGmsh(std::string name)
     GEO::CUT::OUTPUT::GmshEndSection(file);
   }
 
-  //###############write all points in pointpool###############
+  // ###############write all points in pointpool###############
   if (pp_->GetPoints().size() > 0)
   {
     GEO::CUT::OUTPUT::GmshNewSection(file, "PoolPoints");
@@ -2128,7 +2128,7 @@ void GEO::CUT::Mesh::DumpGmsh(std::string name)
     GEO::CUT::OUTPUT::GmshEndSection(file);
   }
 
-  //###############write all edges###############
+  // ###############write all edges###############
   if (edges_.size() > 0)
   {
     GEO::CUT::OUTPUT::GmshNewSection(file, "Edges");
@@ -2138,7 +2138,7 @@ void GEO::CUT::Mesh::DumpGmsh(std::string name)
     GEO::CUT::OUTPUT::GmshEndSection(file);
   }
 
-  //###############write all lines###############
+  // ###############write all lines###############
   if (lines_.size() > 0)
   {
     GEO::CUT::OUTPUT::GmshNewSection(file, "Lines");
@@ -2147,7 +2147,7 @@ void GEO::CUT::Mesh::DumpGmsh(std::string name)
     GEO::CUT::OUTPUT::GmshEndSection(file);
   }
 
-  //###############write all facets (or bacially the facet points)###############
+  // ###############write all facets (or bacially the facet points)###############
   if (facets_.size() > 0)
   {
     //    GEO::CUT::OUTPUT::GmshNewSection(file,"Facet_Points");
@@ -2156,19 +2156,19 @@ void GEO::CUT::Mesh::DumpGmsh(std::string name)
     //      GEO::CUT::OUTPUT::GmshFacetDump(file,&(**i),"points");
     //    GEO::CUT::OUTPUT::GmshEndSection(file);
 
-    //###############write all facets (or bacially the facet lines)###############
+    // ###############write all facets (or bacially the facet lines)###############
     GEO::CUT::OUTPUT::GmshNewSection(file, "Facet_Lines");
     for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
       GEO::CUT::OUTPUT::GmshFacetDump(file, &(**i), "lines");
     GEO::CUT::OUTPUT::GmshEndSection(file);
 
-    //###############write all triangulated facets ###############
+    // ###############write all triangulated facets ###############
     GEO::CUT::OUTPUT::GmshNewSection(file, "Facets");
     for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
       GEO::CUT::OUTPUT::GmshFacetDump(file, &(**i), "sides");
     GEO::CUT::OUTPUT::GmshEndSection(file);
 
-    //###############write all cut facets all ###############
+    // ###############write all cut facets all ###############
     GEO::CUT::OUTPUT::GmshNewSection(file, "cut_Facets");
     for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
     {
@@ -2177,7 +2177,7 @@ void GEO::CUT::Mesh::DumpGmsh(std::string name)
     }
     GEO::CUT::OUTPUT::GmshEndSection(file);
 
-    //###############write all triangulated facets all ###############
+    // ###############write all triangulated facets all ###############
     GEO::CUT::OUTPUT::GmshNewSection(file, "ele_Facets");
     for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
     {
@@ -2187,7 +2187,7 @@ void GEO::CUT::Mesh::DumpGmsh(std::string name)
     GEO::CUT::OUTPUT::GmshEndSection(file);
   }
 
-  //#############write level set information from cut if level set side exists ################
+  // #############write level set information from cut if level set side exists ################
   bool haslevelsetside = false;
   // Does one element have a level set side?
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();

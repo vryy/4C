@@ -14,7 +14,7 @@
 #include "inpar_cardiovascular0d.H"
 
 #include "drt_validparameters.H"
-#include "../drt_lib/drt_conditiondefinition.H"
+#include "drt_conditiondefinition.H"
 
 
 

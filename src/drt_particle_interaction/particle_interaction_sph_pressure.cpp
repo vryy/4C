@@ -14,10 +14,10 @@
 #include "particle_interaction_sph_equationofstate.H"
 #include "particle_interaction_sph_equationofstate_bundle.H"
 
-#include "../drt_particle_engine/particle_engine_interface.H"
-#include "../drt_particle_engine/particle_container.H"
+#include "particle_engine_interface.H"
+#include "particle_container.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

@@ -21,8 +21,8 @@
 #include <Epetra_Vector.h>
 #include <Epetra_Comm.h>
 #include <NOX_Epetra_Vector.H>
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
+#include "drt_globalproblem.H"
+#include "io_control.H"
 
 NOX::FSI::AitkenRelaxation::AitkenRelaxation(
     const Teuchos::RCP<NOX::Utils>& utils, Teuchos::ParameterList& params)

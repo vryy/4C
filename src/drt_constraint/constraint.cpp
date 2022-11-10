@@ -14,9 +14,9 @@ Thomas Kloeppel
 #include <iostream>
 
 #include "constraint.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/function_of_time.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "drt_globalproblem.H"
+#include "function_of_time.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
 
 
 /*----------------------------------------------------------------------*

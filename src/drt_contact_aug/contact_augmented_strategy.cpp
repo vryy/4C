@@ -15,27 +15,27 @@
 #include "contact_aug_timemonitor.H"
 #include "contact_aug_parallel_distribution_controller.H"
 
-#include "../drt_mortar/mortar_matrix_transform.H"
+#include "mortar_matrix_transform.H"
 
-#include "../drt_contact/contact_node.H"
-#include "../drt_contact/contact_lagrange_strategy.H"
-#include "../drt_contact/contact_defines.H"
-#include "../drt_contact/contact_paramsinterface.H"
-#include "../drt_contact/contact_utils.H"
-#include "../drt_mortar/mortar_utils.H"
+#include "contact_node.H"
+#include "contact_lagrange_strategy.H"
+#include "contact_defines.H"
+#include "contact_paramsinterface.H"
+#include "contact_utils.H"
+#include "mortar_utils.H"
 
-#include "../drt_lib/drt_utils_parallel.H"
-#include "../drt_lib/epetra_utils.H"
+#include "drt_utils_parallel.H"
+#include "epetra_utils.H"
 
-#include "../drt_io/io_pstream.H"
-#include "../drt_io/io.H"
+#include "io_pstream.H"
+#include "io.H"
 
-#include "../drt_inpar/inpar_contact.H"
+#include "inpar_contact.H"
 
-#include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_multiply.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 #include <unordered_map>
 #include <Teuchos_TimeMonitor.hpp>

@@ -12,9 +12,9 @@
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
+#include "standardtypes_cpp.H"  // for EPS13 and so on
 
-#include "../drt_mat/material.H"
+#include "material.H"
 
 /*----------------------------------------------------------------------------------------------------------*
  | validity check with respect to input parameters, degrees of freedom, number of scalars etc. fang

@@ -9,17 +9,17 @@
  *----------------------------------------------------------------------*/
 
 #include "poromultiphase_scatra_artery_coupling_linebased.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 #include <Epetra_FEVector.h>
 #include <Epetra_IntVector.h>
 
-#include "../drt_porofluidmultiphase/porofluidmultiphase_utils.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "porofluidmultiphase_utils.H"
+#include "linalg_utils_densematrix_communication.H"
 #include "poromultiphase_scatra_artery_coupling_pair.H"
 #include "poromultiphase_scatra_artery_coupling_defines.H"
-#include "../drt_mat/cnst_1d_art.H"
+#include "cnst_1d_art.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

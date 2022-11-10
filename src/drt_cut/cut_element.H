@@ -15,7 +15,7 @@
 #include "cut_utils.H"
 #include "cut_node.H"
 
-#include "../drt_inpar/inpar_cut.H"
+#include "inpar_cut.H"
 
 namespace GEO
 {

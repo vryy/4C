@@ -11,11 +11,11 @@
 
 #include <vector>
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_factory.H"  // for function Factory in Unpack
+#include "drt_globalproblem.H"
+#include "drt_utils_factory.H"  // for function Factory in Unpack
 
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/so3_material.H"
+#include "matpar_bundle.H"
+#include "so3_material.H"
 
 MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),

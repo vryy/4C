@@ -20,17 +20,17 @@
 #include "contact_element.H"
 #include "contact_utils.H"
 #include "friction_node.H"
-#include "../drt_mortar/mortar_defines.H"
-#include "../drt_mortar/mortar_utils.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_io/io.H"
-#include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../drt_lib/epetra_utils.H"
+#include "mortar_defines.H"
+#include "mortar_utils.H"
+#include "inpar_contact.H"
+#include "io.H"
+#include "linalg_multiply.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "epetra_utils.H"
 
-#include "../drt_structure_new/str_model_evaluator_contact.H"
+#include "str_model_evaluator_contact.H"
 
 
 /*----------------------------------------------------------------------*

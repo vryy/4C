@@ -11,24 +11,24 @@
 
 #include "poroelast_utils.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_fluid_ele/fluid_ele_poro.H"
+#include "fluid_ele_poro.H"
 
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/fluidporo.H"
-#include "../drt_mat/structporo.H"
+#include "matpar_bundle.H"
+#include "fluidporo.H"
+#include "structporo.H"
 
-#include "../drt_so3/so_nurbs27.H"
-#include "../drt_so3/so3_scatra.H"
-#include "../drt_so3/so3_poro_scatra.H"
-#include "../drt_so3/so3_poro_p1_scatra.H"
+#include "so_nurbs27.H"
+#include "so3_scatra.H"
+#include "so3_poro_scatra.H"
+#include "so3_poro_p1_scatra.H"
 
-#include "../drt_w1/wall1_scatra.H"
-#include "../drt_w1/wall1_poro_scatra.H"
-#include "../drt_w1/wall1_poro_p1_scatra.H"
+#include "wall1_scatra.H"
+#include "wall1_poro_scatra.H"
+#include "wall1_poro_p1_scatra.H"
 
-#include "../drt_scatra_ele/scatra_ele.H"
+#include "scatra_ele.H"
 
 std::map<std::string, std::string> POROELAST::UTILS::PoroelastCloneStrategy::ConditionsToCopy()
 {

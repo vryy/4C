@@ -11,7 +11,7 @@ created
 
 #include "cut_pointpool.H"
 #include "cut_output.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 
 /*-----------------------------------------------------------------------------------------*

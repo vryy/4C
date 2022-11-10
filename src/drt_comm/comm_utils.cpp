@@ -11,17 +11,17 @@
  | headers                                                  ghamm 01/12 |
  *----------------------------------------------------------------------*/
 #include "comm_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_globalproblem_enums.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_parobject.H"
-#include "../drt_lib/drt_utils_rebalancing.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "drt_globalproblem.H"
+#include "drt_globalproblem_enums.H"
+#include "drt_discret.H"
+#include "drt_nurbs_discret.H"
+#include "drt_exporter.H"
+#include "drt_parobject.H"
+#include "drt_utils_rebalancing.H"
+#include "io.H"
+#include "io_pstream.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Import.h>

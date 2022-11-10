@@ -10,7 +10,7 @@
 #ifndef SSI_RESULTTEST_H
 #define SSI_RESULTTEST_H
 
-#include "../drt_lib/drt_resulttest.H"
+#include "drt_resulttest.H"
 
 // forward declaration
 namespace DRT

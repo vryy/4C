@@ -10,15 +10,15 @@
 
 #include "levelset_timint_ost.H"
 
-#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "scatra_ele_action.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
-#include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
+#include "io.H"
+#include "io_pstream.H"
 
-#include "../drt_inpar/drt_validparameters.H"
+#include "drt_validparameters.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                rasthofer 09/13 |

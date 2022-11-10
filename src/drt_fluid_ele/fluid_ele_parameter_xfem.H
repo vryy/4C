@@ -13,8 +13,8 @@
 #define FLUID_ELE_PARAMETER_XFEM_H
 
 #include "fluid_ele_parameter_std.H"
-#include "../drt_inpar/inpar_xfem.H"
-#include "../drt_inpar/inpar_cut.H"
+#include "inpar_xfem.H"
+#include "inpar_cut.H"
 
 
 namespace DRT
