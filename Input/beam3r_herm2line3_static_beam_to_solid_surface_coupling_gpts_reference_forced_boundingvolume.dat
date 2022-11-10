@@ -64,7 +64,7 @@ AVERAGED_NORMALS                      yes
 UNIQUE_IDS                            yes
 ----------------------------------------------------------------BEAM INTERACTION
 REPARTITIONSTRATEGY                   Everydt
-SEARCH_STRATEGY                       bruteforce_with_proc_boundingvolume
+SEARCH_STRATEGY                       bounding_volume_hierarchy
 --------------------------------------------------------------------BEAM CONTACT
 MODELEVALUATOR                        Standard
 ----------------------------------------------------------------BINNING STRATEGY
