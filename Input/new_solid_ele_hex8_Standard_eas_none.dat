@@ -5,6 +5,18 @@ Time Integration: Standard
 Shape: hex8
 Element-Technology:
 Fibers: none
+----------------------------------------------------------------------------IO
+STRUCT_STRAIN                   gl
+STRUCT_STRESS                   cauchy
+---------------------------------------------------------IO/RUNTIME VTK OUTPUT
+OUTPUT_DATA_FORMAT              ascii
+INTERVAL_STEPS                  1
+EVERY_ITERATION                 no
+-----------------------------------------------IO/RUNTIME VTK OUTPUT/STRUCTURE
+OUTPUT_STRUCTURE                yes
+DISPLACEMENT                    yes
+ELEMENT_OWNER                   no
+STRESS_STRAIN                   no
 -------------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 ----------------------------------------------------------------DISCRETISATION
@@ -28,25 +40,27 @@ MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 10 DENS 0.1
 MAT 10   ELAST_CoupNeoHooke YOUNG 10 NUE 0.25
 ------------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
+------------------------------------------------------------------------FUNCT2
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (x+1)*(y+2)*(z+3)
 ------------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 1.6961590476962642 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE 0.1495045012222479 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 5 QUANTITY dispz VALUE 0.14950450122224804 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE 1.696159047696265 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE -0.14950450122224807 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 6 QUANTITY dispz VALUE 0.1495045012222479 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE 1.6961590476962647 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE -0.149504501222248 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -0.14950450122224798 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE 1.696159047696265 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 7 QUANTITY dispy VALUE 0.14950450122224795 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 7 QUANTITY dispz VALUE -0.14950450122224812 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE 1.6960482092632994 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE -0.10300678017820783 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 6 QUANTITY dispz VALUE 0.19683806843375584 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE 1.6809717642144737 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE -0.1034551253020721 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -0.10069913821129195 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 1.7103349732517719 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE 0.19606023781284362 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 5 QUANTITY dispz VALUE 0.1933124226455237 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE 1.6961231255282125 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 7 QUANTITY dispy VALUE 0.19354157095364627 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 7 QUANTITY dispz VALUE -0.10630318420245054 TOLERANCE 1e-12
 -------------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
-E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 10 0 0 0 0 0 FUNCT 1 0 0 0 0 0 Live Mid
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 10 0.01 0.01 0 0 0 FUNCT 1 2 2 0 0 0 Live Mid
 ------------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        1
 NODES                           8
@@ -59,12 +73,12 @@ NDSURF                          2
 NDVOL                           0
 -----------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 3 DSURFACE 1
-NODE 4 DSURFACE 1
-NODE 2 DSURFACE 1
 NODE 1 DSURFACE 1
-NODE 5 DSURFACE 2
+NODE 2 DSURFACE 1
+NODE 4 DSURFACE 1
 NODE 6 DSURFACE 2
 NODE 8 DSURFACE 2
+NODE 5 DSURFACE 2
 NODE 7 DSURFACE 2
 -------------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.0 0.0 0.0

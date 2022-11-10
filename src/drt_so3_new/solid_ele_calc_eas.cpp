@@ -11,10 +11,10 @@
 #include "solid_ele_calc.H"
 #include "solid_ele_calc_eas.H"
 #include "solid_ele_interface.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_element.H"
+#include "drt_utils.H"
 #include "solid_ele.H"
-#include "../drt_mat/so3_material.H"
+#include "so3_material.H"
 #include "solid_ele_eas_utils.H"
 
 template <DRT::Element::DiscretizationType distype, int neas>

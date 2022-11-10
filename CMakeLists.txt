@@ -666,11 +666,6 @@ set(OBJS_DRT_STRU_MULTI
     src/drt_stru_multi/microstatic_service.cpp
     )
 set(OBJS_SOH8_LIB
-    src/drt_so3_new/solid_ele.cpp
-    src/drt_so3_new/solid_ele_calc.cpp
-    src/drt_so3_new/solid_ele_evaluate.cpp
-    src/drt_so3_new/solid_ele_factory.cpp
-    src/drt_so3_new/solid_utils.cpp
     src/drt_so3/so_utils.cpp
     src/drt_so3/inversedesign.cpp
     src/drt_so3/inversedesign_evaluate.cpp
@@ -2331,6 +2326,7 @@ set(ELEMENT_LIBRARIES
     ele_scatra
     ele_sp3
     ele_so
+    drt_solid_ele_new
     ele_t3
     ele_t3cl
     ele_thermo

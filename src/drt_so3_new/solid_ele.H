@@ -15,10 +15,10 @@ and Gauss point loop as well as some additional service routines.
 #define SO_ELE_H
 
 #include <memory>
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "drt_elementtype.H"
+#include "inpar_structure.H"
+#include "drt_element.H"
+#include "str_elements_paramsinterface.H"
 #include "solid_ele_calc.H"
 #include "solid_ele_eas_utils.H"
 

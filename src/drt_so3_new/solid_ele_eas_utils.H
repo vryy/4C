@@ -10,9 +10,9 @@
 #ifndef SOLID_ELE_EAS_UTILS_H
 #define SOLID_ELE_EAS_UTILS_H
 
-#include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "drt_dserror.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 namespace STR
 {

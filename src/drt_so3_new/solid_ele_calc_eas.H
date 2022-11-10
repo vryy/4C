@@ -11,8 +11,8 @@
 #define SOLID_ELE_CALC_EAS_H
 
 #include "solid_ele_calc.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "drt_element.H"
+#include "inpar_structure.H"
 #include "solid_ele_eas_utils.H"
 
 namespace DRT::ELEMENTS

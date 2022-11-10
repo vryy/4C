@@ -9,12 +9,11 @@ Evaluate(...), EvaluateNeumann(...), etc.
 \level 1
 */
 
-#include "../drt_lib/drt_elements_paramsinterface.H"
-#include "../drt_structure_new/str_elements_paramsinterface.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_elements_paramsinterface.H"
+#include "str_elements_paramsinterface.H"
+#include "drt_dserror.H"
 #include "solid_ele.H"
 #include "solid_ele_factory.H"
-#include "../drt_patspec/patspec.H"
 #include "solid_ele_interface.H"
 
 namespace
@@ -91,7 +90,10 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
       DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->Update(*this, discretization, lm, params);
       return 0;
     case DRT::ELEMENTS::struct_calc_recover:
+    {
       DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->Recover(*this, discretization, lm, params);
+      return 0;
+    }
     case struct_calc_stress:
     {
       DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->CalculateStress(
@@ -111,7 +113,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
     }
     case struct_gauss_point_data_output:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->InitializeGaussPointDataOutput(*this);
+      DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->EvaluateGaussPointDataOutput(*this);
       return 0;
     }
     case DRT::ELEMENTS::struct_calc_predict:

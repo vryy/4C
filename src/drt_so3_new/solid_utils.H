@@ -10,9 +10,9 @@
 #ifndef SOLID_UTILS_H
 #define SOLID_UTILS_H
 
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_lib/drt_element.H"
-#include "../linalg/linalg_utils_densematrix_eigen.H"
+#include "drt_utils_integration.H"
+#include "drt_element.H"
+#include "linalg_utils_densematrix_eigen.H"
 
 namespace STR::UTILS
 {
@@ -66,6 +66,9 @@ namespace STR::UTILS
 
   void Pk2ToCauchy(const LINALG::Matrix<6, 1>& pk2, const LINALG::Matrix<3, 3>& defgrd,
       LINALG::Matrix<6, 1>& cauchy);
+
+  LINALG::Matrix<6, 1> GreenLagrangeToEulerAlmansi(
+      const LINALG::Matrix<6, 1>& gl, const LINALG::Matrix<3, 3>& defgrd);
 
   template <unsigned dim>
   void CalcConsistentDefgrd(const LINALG::Matrix<dim, dim>& defgrd_disp,

@@ -26,7 +26,7 @@ namespace
   inline DRT::Element::DiscretizationType GetGaussPointExtrapolationBaseDistype(unsigned numgp)
   {
     if (numgp < 4) return DRT::Element::DiscretizationType::point1;
-    if (numgp < 9) return DRT::Element::DiscretizationType::tet4;
+    if (numgp < 10) return DRT::Element::DiscretizationType::tet4;
     return DRT::Element::DiscretizationType::tet10;
   }
 
@@ -35,7 +35,7 @@ namespace
   inline DRT::Element::DiscretizationType GetGaussPointExtrapolationBaseDistype(unsigned numgp)
   {
     if (numgp < 8) return DRT::Element::DiscretizationType::point1;
-    if (numgp < 16) return DRT::Element::DiscretizationType::hex8;
+    if (numgp < 20) return DRT::Element::DiscretizationType::hex8;
     if (numgp < 27) return DRT::Element::DiscretizationType::hex20;
     return DRT::Element::DiscretizationType::hex27;
   }
@@ -283,13 +283,15 @@ void DRT::ELEMENTS::ExtrapolateGPQuantityToNodesAndAssemble(const DRT::Element& 
   nodal_quantity.Multiply('N', 'N', 1.0,
       EvaluateGaussPointsToNodesExtrapolationMatrix<distype>(integration), gp_data, 0.0);
 
-  AssembleExtrapolatedNodalValues(global_data, nodal_quantity, ele, false);
+  AssembleExtrapolatedNodalValues(global_data, nodal_quantity, ele, nodal_average);
 }
 
 template <DRT::Element::DiscretizationType distype>
 LINALG::SerialDenseMatrix DRT::ELEMENTS::EvaluateGaussPointsToNodesExtrapolationMatrix(
     const DRT::UTILS::GaussIntegration& intpoints)
 {
+  // TODO: This has to be done only once per simulation (or theoretically during compile time for
+  // every distype)
   DRT::Element::DiscretizationType base_distype =
       GetGaussPointExtrapolationBaseDistype<distype>(intpoints.NumPoints());
 

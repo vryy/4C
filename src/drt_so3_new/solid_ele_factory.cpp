@@ -11,7 +11,7 @@
 #include <memory>
 #include "solid_ele_calc.H"
 // #include "solid_ele_calc_eas.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 #include "solid_ele.H"
 
 

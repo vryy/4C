@@ -12,12 +12,12 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <numeric>
-#include "../drt_lib/drt_element.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "drt_element.H"
+#include "drt_utils_local_connectivity_matrices.H"
 #include "solid_ele.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_mat/so3_material.H"
-#include "../drt_lib/voigt_notation.H"
+#include "drt_utils.H"
+#include "so3_material.H"
+#include "voigt_notation.H"
 
 
 namespace
@@ -38,32 +38,31 @@ namespace
 namespace DRT::ELEMENTS
 {
   template <DRT::Element::DiscretizationType distype>
-  struct NodalPositions
+  struct NodalCoordinates
   {
-    LINALG::Matrix<nen<distype>, nsd<distype>> reference_coordinates_;
-    LINALG::Matrix<nen<distype>, nsd<distype>> current_coordinates_;
+    LINALG::Matrix<nen<distype>, nsd<distype>> reference_;
+    LINALG::Matrix<nen<distype>, nsd<distype>> current_;
   };
 
   template <DRT::Element::DiscretizationType distype>
-  NodalPositions<distype> EvaluateNodalPositions(const DRT::ELEMENTS::Solid& ele,
+  NodalCoordinates<distype> EvaluateNodalCoordinates(const DRT::ELEMENTS::Solid& ele,
       const DRT::Discretization& discretization, const std::vector<int>& lm)
   {
     const Epetra_Vector& displacements = *discretization.GetState("displacement");
     std::vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(displacements, mydisp, lm);
 
-    NodalPositions<distype> positions;
+    NodalCoordinates<distype> coordinates;
     for (int i = 0; i < nen<distype>; ++i)
     {
       for (int d = 0; d < nsd<distype>; ++d)
       {
-        positions.reference_coordinates_(i, d) = ele.Nodes()[i]->X()[d];
-        positions.current_coordinates_(i, d) =
-            positions.reference_coordinates_(i, d) + mydisp[i * nsd<distype> + d];
+        coordinates.reference_(i, d) = ele.Nodes()[i]->X()[d];
+        coordinates.current_(i, d) = coordinates.reference_(i, d) + mydisp[i * nsd<distype> + d];
       }
     }
 
-    return positions;
+    return coordinates;
   }
 
   /*!
@@ -126,7 +125,7 @@ namespace DRT::ELEMENTS
    * @tparam distype : Discretization type
    * @param shapefcns (in) : Shape functions and derivatives evaluated at the respective point in
    * the parameter space
-   * @param nodal_positions (in) : Reference and current coordinates of the nodes of the element
+   * @param nodal_coordniates (in) : Reference and current coordinates of the nodes of the element
    * @param intpoints (in) : Gauss integration rule
    * @param gp (in) : Id of the Gauss point
    * @return JacobianMapping<distype> : An object holding quantities of the jacobian mapping
@@ -136,13 +135,12 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype>
   JacobianMapping<distype> EvaluateJacobianMapping(
       const ShapeFunctionsAndDerivatives<distype>& shapefcns,
-      const NodalPositions<distype>& nodal_positions, const DRT::UTILS::GaussIntegration& intpoints,
-      const int gp)
+      const NodalCoordinates<distype>& nodal_coordniates,
+      const DRT::UTILS::GaussIntegration& intpoints, const int gp)
   {
     JacobianMapping<distype> jacobian;
 
-    jacobian.inverse_jacobian_.Multiply(
-        shapefcns.derivatives_, nodal_positions.reference_coordinates_);
+    jacobian.inverse_jacobian_.Multiply(shapefcns.derivatives_, nodal_coordniates.reference_);
     jacobian.determinant_ = jacobian.inverse_jacobian_.Invert();
     jacobian.integration_factor_ = jacobian.determinant_ * intpoints.Weight(gp);
     jacobian.n_xyz_.Multiply(jacobian.inverse_jacobian_, shapefcns.derivatives_);
@@ -162,18 +160,18 @@ namespace DRT::ELEMENTS
    * @brief Evaluates strain measures
    *
    * @tparam distype
-   * @param nodal_positions (in) : Reference and current coordinates of the nodes of the element
+   * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
    * @param jacobian_mapping (in) : Quantities of the jacobian mapping
    * @return Strains<distype> (out) : Strain measures of the element (deformation gradient, right
    * Cauchy-Green deformation tensor, Green-Lagrange strain tensor)
    */
   template <DRT::Element::DiscretizationType distype, std::enable_if_t<nsd<distype> == 3, int> = 0>
-  Strains<distype> EvaluateStrains(const NodalPositions<distype>& nodal_positions,
+  Strains<distype> EvaluateStrains(const NodalCoordinates<distype>& nodal_coordinates,
       const JacobianMapping<distype>& jacobian_mapping)
   {
     Strains<distype> strains;
 
-    strains.defgrd_.MultiplyTT(nodal_positions.current_coordinates_, jacobian_mapping.n_xyz_);
+    strains.defgrd_.MultiplyTT(nodal_coordinates.current_, jacobian_mapping.n_xyz_);
     strains.rcg_.MultiplyTN(strains.defgrd_, strains.defgrd_);
 
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -373,61 +371,79 @@ namespace DRT::ELEMENTS
     }
   }
 
-  template <DRT::Element::DiscretizationType distype>
-  void SerializeStrain(
-      const Strains<distype>& strains, INPAR::STR::StrainType strain_type, std::vector<char>& data)
+  template <unsigned numstr>
+  void AssembleVectorToMatrixRow(
+      LINALG::Matrix<numstr, 1> vector, Epetra_SerialDenseMatrix& data, int row)
   {
-    DRT::PackBuffer packbuffer;
+    for (unsigned i = 0; i < numstr; ++i) data(row, i) = vector(i);
+  }
+
+  template <DRT::Element::DiscretizationType distype>
+  void AssembleStrainTypeToMatrixRow(const Strains<distype>& strains,
+      INPAR::STR::StrainType strain_type, Epetra_SerialDenseMatrix& data, int row)
+  {
     switch (strain_type)
     {
       case INPAR::STR::strain_gl:
       {
-        DRT::ParObject::AddtoPack(packbuffer, strains.gl_strain_);
+        LINALG::Matrix<numstr<distype>, 1> gl_strain_stress_like;
+        ::UTILS::VOIGT::Strains::ToStressLike(strains.gl_strain_, gl_strain_stress_like);
+        AssembleVectorToMatrixRow(gl_strain_stress_like, data, row);
+        return;
       }
       case INPAR::STR::strain_ea:
       {
-        LINALG::Matrix<numstr<distype>, 1> ea;
-        LINALG::Matrix<nsd<distype>, nsd<distype>> ea_m;
-        ea_m.MultiplyNT(strains.defgrd_, strains.defgrd_);
-        ::UTILS::VOIGT::Strains::MatrixToVector(ea_m, ea);
-        DRT::ParObject::AddtoPack(packbuffer, ea);
+        const LINALG::Matrix<numstr<distype>, 1> ea =
+            STR::UTILS::GreenLagrangeToEulerAlmansi(strains.gl_strain_, strains.defgrd_);
+        LINALG::Matrix<numstr<distype>, 1> ea_stress_like;
+        ::UTILS::VOIGT::Strains::ToStressLike(ea, ea_stress_like);
+        AssembleVectorToMatrixRow(ea_stress_like, data, row);
+        return;
       }
       case INPAR::STR::strain_none:
-        break;
+        return;
       default:
         dserror("strain type not supported");
         break;
     }
-    std::copy(packbuffer().begin(), packbuffer().end(), std::back_inserter(data));
   }
 
 
   template <DRT::Element::DiscretizationType distype>
-  void SerializeStress(const Strains<distype>& strains, const Stress<distype> stress,
-      INPAR::STR::StressType stress_type, std::vector<char>& data)
+  void AssembleStressTypeToMatrixRow(const Strains<distype>& strains, const Stress<distype> stress,
+      INPAR::STR::StressType stress_type, Epetra_SerialDenseMatrix& data, int row)
   {
-    DRT::PackBuffer packbuffer;
     switch (stress_type)
     {
       case INPAR::STR::stress_2pk:
       {
-        DRT::ParObject::AddtoPack(packbuffer, stress.pk2_);
+        AssembleVectorToMatrixRow(stress.pk2_, data, row);
+        return;
       }
       case INPAR::STR::stress_cauchy:
       {
         LINALG::Matrix<numstr<distype>, 1> cauchy;
         STR::UTILS::Pk2ToCauchy(stress.pk2_, strains.defgrd_, cauchy);
-        DRT::ParObject::AddtoPack(packbuffer, cauchy);
+        AssembleVectorToMatrixRow(cauchy, data, row);
+        return;
       }
       case INPAR::STR::stress_none:
-        break;
+
+        return;
       default:
         dserror("stress type not supported");
         break;
     }
-    std::copy(packbuffer().begin(), packbuffer().end(), std::back_inserter(data));
   }
 
+  void Serialize(const Epetra_SerialDenseMatrix& matrix, std::vector<char>& data)
+  {
+    DRT::PackBuffer packBuffer;
+    DRT::ParObject::AddtoPack(packBuffer, matrix);
+    packBuffer.StartPacking();
+    DRT::ParObject::AddtoPack(packBuffer, matrix);
+    std::copy(packBuffer().begin(), packBuffer().end(), std::back_inserter(data));
+  }
 }  // namespace DRT::ELEMENTS
 
 #endif  // SOLID_ELE_CALC_LIB_H

@@ -1,0 +1,138 @@
+-------------------------------------------------------------------------TITLE
+Test of the new solid elements in BACI
+
+Time Integration: Old
+Shape: hex27
+Element-Technology:
+Fibers: none
+----------------------------------------------------------------------------IO
+STRUCT_STRAIN                   gl
+STRUCT_STRESS                   cauchy
+---------------------------------------------------------IO/RUNTIME VTK OUTPUT
+OUTPUT_DATA_FORMAT              ascii
+INTERVAL_STEPS                  1
+EVERY_ITERATION                 no
+-----------------------------------------------IO/RUNTIME VTK OUTPUT/STRUCTURE
+OUTPUT_STRUCTURE                yes
+DISPLACEMENT                    yes
+ELEMENT_OWNER                   no
+STRESS_STRAIN                   yes
+-------------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Structure
+----------------------------------------------------------------DISCRETISATION
+NUMSTRUCDIS                     1
+----------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
+SOLVER                          UMFPACK
+------------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
+INT_STRATEGY                    Old
+DYNAMICTYP                      Statics
+NLNSOL                          fullnewton
+PREDICT                         ConstDis
+TIMESTEP                        0.5
+NUMSTEP                         2
+MAXTIME                         1
+TOLRES                          1.0E-12
+TOLDISP                         1.0E-12
+---------------------------------------------------------------------MATERIALS
+MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 10 DENS 0.1
+MAT 10   ELAST_CoupNeoHooke YOUNG 10 NUE 0.25
+------------------------------------------------------------------------FUNCT1
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
+------------------------------------------------------------------------FUNCT2
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (x+1)*(y+2)*(z+3)
+------------------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 10 QUANTITY dispx VALUE 1.7084178766734412 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 10 QUANTITY dispy VALUE 0.045932688856567275 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 10 QUANTITY dispz VALUE 0.14314084300109145 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 1.7043993934267363 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE 0.14182619677826808 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 5 QUANTITY dispz VALUE 0.13991377457582765 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 15 QUANTITY dispx VALUE 1.6963102666560954 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 15 QUANTITY dispy VALUE -0.050710904422690876 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 15 QUANTITY dispz VALUE 0.04864904026356764 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 23 QUANTITY dispx VALUE 1.7116774796122873 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 23 QUANTITY dispy VALUE 0.04629259641369076 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 23 QUANTITY dispz VALUE 0.04629504649516748 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 14 QUANTITY dispx VALUE 1.7083642298181778 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 14 QUANTITY dispy VALUE 0.14266597003647902 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 14 QUANTITY dispz VALUE 0.04355529028291884 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 18 QUANTITY dispx VALUE 1.6964152614727486 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 18 QUANTITY dispy VALUE 0.04627333360110677 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 18 QUANTITY dispz VALUE -0.05117781972289239 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE 1.693214235458332 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 7 QUANTITY dispy VALUE 0.14198121268563813 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 7 QUANTITY dispz VALUE -0.053423674070428445 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE 1.6931636073968552 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE -0.050581851806181445 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 6 QUANTITY dispz VALUE 0.14482842859972692 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE 1.6803937474697506 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE -0.05008822541473199 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -0.04817838688232863 TOLERANCE 1e-12
+-------------------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF                           1
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+------------------------------------------------DESIGN SURF NEUMANN CONDITIONS
+DSURF  1
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 10 0.01 0.01 0 0 0 FUNCT 1 2 2 0 0 0 Live Mid
+------------------------------------------------------------------PROBLEM SIZE
+ELEMENTS                        1
+NODES                           27
+DIM                             3
+MATERIALS                       9999
+------------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         0
+NDLINE                          0
+NDSURF                          2
+NDVOL                           0
+-----------------------------------------------------------DSURF-NODE TOPOLOGY
+NODE 12 DSURFACE 1
+NODE 3 DSURFACE 1
+NODE 13 DSURFACE 1
+NODE 2 DSURFACE 1
+NODE 1 DSURFACE 1
+NODE 4 DSURFACE 1
+NODE 16 DSURFACE 1
+NODE 20 DSURFACE 1
+NODE 25 DSURFACE 1
+NODE 10 DSURFACE 2
+NODE 5 DSURFACE 2
+NODE 15 DSURFACE 2
+NODE 23 DSURFACE 2
+NODE 14 DSURFACE 2
+NODE 18 DSURFACE 2
+NODE 7 DSURFACE 2
+NODE 6 DSURFACE 2
+NODE 8 DSURFACE 2
+-------------------------------------------------------------------NODE COORDS
+NODE 1 COORD 0.0 0.0 0.0
+NODE 2 COORD 0.0 1.0 0.0
+NODE 3 COORD 0.0 0.0 1.0
+NODE 4 COORD 0.0 1.0 1.0
+NODE 5 COORD 1.0 0.0 0.0
+NODE 6 COORD 1.0 1.0 0.0
+NODE 7 COORD 1.0 0.0 1.0
+NODE 8 COORD 1.0 1.0 1.0
+NODE 9 COORD 0.5 0.0 0.0
+NODE 10 COORD 1.0 0.5 0.0
+NODE 11 COORD 0.5 1.0 0.0
+NODE 12 COORD 0.0 0.5 0.0
+NODE 13 COORD 0.0 0.0 0.5
+NODE 14 COORD 1.0 0.0 0.5
+NODE 15 COORD 1.0 1.0 0.5
+NODE 16 COORD 0.0 1.0 0.5
+NODE 17 COORD 0.5 0.0 1.0
+NODE 18 COORD 1.0 0.5 1.0
+NODE 19 COORD 0.5 1.0 1.0
+NODE 20 COORD 0.0 0.5 1.0
+NODE 21 COORD 0.5 0.5 0.0
+NODE 22 COORD 0.5 0.0 0.5
+NODE 23 COORD 1.0 0.5 0.5
+NODE 24 COORD 0.5 1.0 0.5
+NODE 25 COORD 0.0 0.5 0.5
+NODE 26 COORD 0.5 0.5 1.0
+NODE 27 COORD 0.5 0.5 0.5
+------------------------------------------------------------STRUCTURE ELEMENTS
+1 SOLID HEX27 1 5 6 2 3 7 8 4 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 MAT 1 KINEM nonlinear
+---------------------------------------------------------------------------END

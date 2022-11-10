@@ -11,21 +11,21 @@
 #include <Teuchos_ParameterList.hpp>
 #include <memory>
 #include <optional>
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/voigt_notation.H"
+#include "drt_utils_integration.H"
+#include "drt_utils.H"
+#include "voigt_notation.H"
 #include "solid_ele.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_mat/so3_material.H"
+#include "drt_discret.H"
+#include "so3_material.H"
 #include "solid_ele_calc_lib.H"
 #include "solid_utils.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_fiber/drt_fiber_node.H"
-#include "../drt_fiber/drt_fiber_utils.H"
-#include "../drt_fiber/nodal_fiber_holder.H"
+#include "drt_utils_local_connectivity_matrices.H"
+#include "drt_fiber_node.H"
+#include "drt_fiber_utils.H"
+#include "nodal_fiber_holder.H"
 
-#include "../drt_structure_new/gauss_point_data_output_manager.H"
-#include "../drt_so3/so_element_service.H"
+#include "gauss_point_data_output_manager.H"
+#include "so_element_service.H"
 
 namespace
 {
@@ -53,6 +53,58 @@ namespace
     }
 
     return std::make_unique<DRT::UTILS::GaussIntegration>(gp);
+  }
+
+  std::vector<char>& GetMutableStressData(
+      const DRT::ELEMENTS::Solid& ele, const Teuchos::ParameterList& params)
+  {
+    if (ele.IsParamsInterface())
+    {
+      return *ele.ParamsInterface().MutableStressDataPtr();
+    }
+    else
+    {
+      return *params.get<Teuchos::RCP<std::vector<char>>>("stress");
+    }
+  }
+
+  std::vector<char>& GetMutableStrainData(
+      const DRT::ELEMENTS::Solid& ele, const Teuchos::ParameterList& params)
+  {
+    if (ele.IsParamsInterface())
+    {
+      return *ele.ParamsInterface().MutableStrainDataPtr();
+    }
+    else
+    {
+      return *params.get<Teuchos::RCP<std::vector<char>>>("strain");
+    }
+  }
+
+  INPAR::STR::StressType GetIOStressType(
+      const DRT::ELEMENTS::Solid& ele, const Teuchos::ParameterList& params)
+  {
+    if (ele.IsParamsInterface())
+    {
+      return ele.ParamsInterface().GetStressOutputType();
+    }
+    else
+    {
+      return DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress");
+    }
+  }
+
+  INPAR::STR::StrainType GetIOStrainType(
+      const DRT::ELEMENTS::Solid& ele, const Teuchos::ParameterList& params)
+  {
+    if (ele.IsParamsInterface())
+    {
+      return ele.ParamsInterface().GetStrainOutputType();
+    }
+    else
+    {
+      return DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain");
+    }
   }
 }  // namespace
 
@@ -85,7 +137,14 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::InitializeDefaultQuadrature()
   DRT::UTILS::GaussRule3D rule = DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
   if (distype == DRT::Element::DiscretizationType::tet10)
   {
+    // HACK: Don't use the "OptGaussRule", but use only 4 Gauss points
+    // TODO: for tet-elements we need two different Gauss rules (4 points for force and stiffness
+    // matrix, 11 points for mass matrix)
     rule = DRT::UTILS::GaussRule3D::tet_4point;
+  }
+  else if (distype == DRT::Element::DiscretizationType::tet4)
+  {
+    rule = DRT::UTILS::GaussRule3D::tet_1point;
   }
   // setup default integration
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(rule);
@@ -122,8 +181,8 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
   if (force_vector != nullptr)
     force = std::make_unique<LINALG::Matrix<nsd_ * nen_, 1>>(*force_vector, true);
 
-  const NodalPositions<distype> nodal_positions =
-      EvaluateNodalPositions<distype>(ele, discretization, lm);
+  const NodalCoordinates<distype> nodal_coordinates =
+      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
 
   // Loop over all Gauss points
   for (int gp = 0; gp < default_integration_->NumPoints(); ++gp)
@@ -135,9 +194,9 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
         EvaluateShapeFunctionsAndDerivs<distype>(xi);
 
     const JacobianMapping<distype> jacobian_mapping =
-        EvaluateJacobianMapping(shape_functions, nodal_positions, *default_integration_, gp);
+        EvaluateJacobianMapping(shape_functions, nodal_coordinates, *default_integration_, gp);
 
-    const Strains<distype> strains = EvaluateStrains<distype>(nodal_positions, jacobian_mapping);
+    const Strains<distype> strains = EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
 
     LINALG::Matrix<numstr<distype>, nsd<distype> * nen<distype>> Bop =
         EvaluateStrainGradient(jacobian_mapping, strains);
@@ -178,8 +237,8 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::Update(const DRT::ELEMENTS::Solid& el
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
-  const NodalPositions<distype> nodal_positions =
-      EvaluateNodalPositions<distype>(ele, discretization, lm);
+  const NodalCoordinates<distype> nodal_coordinates =
+      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
 
   // Loop over all Gauss points
   for (int gp = 0; gp < default_integration_->NumPoints(); ++gp)
@@ -191,9 +250,9 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::Update(const DRT::ELEMENTS::Solid& el
         EvaluateShapeFunctionsAndDerivs<distype>(xi);
 
     const JacobianMapping<distype> jacobian_mapping =
-        EvaluateJacobianMapping(shape_functions, nodal_positions, *default_integration_, gp);
+        EvaluateJacobianMapping(shape_functions, nodal_coordinates, *default_integration_, gp);
 
-    const Strains<distype> strains = EvaluateStrains<distype>(nodal_positions, jacobian_mapping);
+    const Strains<distype> strains = EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
 
     ele.SolidMaterial()->Update(strains.defgrd_, gp, params, ele.Id());
   }  // gp loop
@@ -205,7 +264,38 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::PostProcessStressStrain(const DRT::EL
     Teuchos::ParameterList& params)
 {
   // TODO: This method would be much easier if we get rid of post_drt_*
-  dserror("Not implemented yet. This is much easier if post_drt_common is gone.");
+  const Epetra_SerialDenseMatrix gpstress =
+      *(*params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+          "gpstressmap"))[ele.Id()];
+
+  std::string stresstype = params.get<std::string>("stresstype");
+  Epetra_MultiVector& poststress = *params.get<Teuchos::RCP<Epetra_MultiVector>>("poststress");
+
+  if (stresstype == "ndxyz")
+  {
+    ExtrapolateGPQuantityToNodesAndAssemble<distype>(
+        ele, gpstress, poststress, true, *default_integration_);
+  }
+  else if (stresstype == "cxyz")
+  {
+    const Epetra_BlockMap& elemap = poststress.Map();
+    int lid = elemap.LID(ele.Id());
+    if (lid != -1)
+    {
+      for (unsigned i = 0; i < numstr_; ++i)
+      {
+        double& s = (*((poststress)(i)))[lid];  // resolve pointer for faster access
+        s = 0.;
+        for (int j = 0; j < gpstress.M(); ++j)
+        {
+          s += gpstress(j, i);
+        }
+        s *= 1.0 / gpstress.M();
+      }
+    }
+  }
+  else
+    dserror("unknown type of stress/strain output on element level");
 }
 
 template <DRT::Element::DiscretizationType distype>
@@ -217,11 +307,13 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::ELEMENTS::
   // InitializeGaussPointDataOutput and EvaluateGaussPointDataOutput and write the stresses there.
   if (discretization.Comm().MyPID() != ele.Owner()) return;
 
-  std::vector<char>& stress_data = *ele.ParamsInterface().MutableStressDataPtr();
-  std::vector<char>& strain_data = *ele.ParamsInterface().MutableStrainDataPtr();
+  std::vector<char>& serialized_stress_data = GetMutableStressData(ele, params);
+  std::vector<char>& serialized_strain_data = GetMutableStrainData(ele, params);
+  Epetra_SerialDenseMatrix stress_data(default_integration_->NumPoints(), numstr_);
+  Epetra_SerialDenseMatrix strain_data(default_integration_->NumPoints(), numstr_);
 
-  const NodalPositions<distype> nodal_positions =
-      EvaluateNodalPositions<distype>(ele, discretization, lm);
+  const NodalCoordinates<distype> nodal_coordinates =
+      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
 
   // Loop over all Gauss points
   for (int gp = 0; gp < default_integration_->NumPoints(); ++gp)
@@ -233,9 +325,9 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::ELEMENTS::
         EvaluateShapeFunctionsAndDerivs<distype>(xi);
 
     const JacobianMapping<distype> jacobian_mapping =
-        EvaluateJacobianMapping(shape_functions, nodal_positions, *default_integration_, gp);
+        EvaluateJacobianMapping(shape_functions, nodal_coordinates, *default_integration_, gp);
 
-    const Strains<distype> strains = EvaluateStrains<distype>(nodal_positions, jacobian_mapping);
+    const Strains<distype> strains = EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
 
     LINALG::Matrix<numstr<distype>, nsd<distype> * nen<distype>> Bop =
         EvaluateStrainGradient(jacobian_mapping, strains);
@@ -243,13 +335,12 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::ELEMENTS::
     const Stress<distype> stress =
         EvaluateMaterialStress(*ele.SolidMaterial(), strains, params, gp, ele.Id());
 
-    const INPAR::STR::StrainType iostrain = ele.ParamsInterface().GetStrainOutputType();
-    SerializeStrain(strains, iostrain, strain_data);
-
-
-    const INPAR::STR::StressType iostress = ele.ParamsInterface().GetStressOutputType();
-    SerializeStress(strains, stress, iostress, stress_data);
+    AssembleStrainTypeToMatrixRow(strains, GetIOStrainType(ele, params), strain_data, gp);
+    AssembleStressTypeToMatrixRow(strains, stress, GetIOStressType(ele, params), stress_data, gp);
   }  // gp loop
+
+  Serialize(stress_data, serialized_stress_data);
+  Serialize(strain_data, serialized_strain_data);
 }
 
 template <DRT::Element::DiscretizationType distype>

@@ -14,10 +14,10 @@
 #include <string>
 #include <unordered_map>
 #include "solid_ele_interface.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_fem_general/drt_utils_gausspoints.H"
+#include "drt_element.H"
+#include "drt_utils_gausspoints.H"
 #include "solid_utils.H"
-#include "../drt_lib/drt_element_integration_select.H"
+#include "drt_element_integration_select.H"
 
 namespace STR::ELEMENTS
 {
@@ -73,7 +73,7 @@ namespace DRT
       void EvaluateGaussPointDataOutput(const DRT::ELEMENTS::Solid& ele) const override;
 
 
-     protected:
+     private:
       /// static values for matrix sizes
       static constexpr int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
       static constexpr int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;

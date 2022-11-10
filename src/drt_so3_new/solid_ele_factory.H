@@ -10,8 +10,8 @@
 #ifndef SOLID_ELE_FACTORY_H
 #define SOLID_ELE_FACTORY_H
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "drt_element.H"
+#include "inpar_structure.H"
 
 namespace DRT::ELEMENTS
 {

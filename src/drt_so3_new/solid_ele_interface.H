@@ -13,8 +13,8 @@
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_element.H"
+#include "drt_dserror.H"
+#include "drt_element.H"
 
 namespace STR::ELEMENTS
 {
