@@ -844,7 +844,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
     }
   }
   else if (beam_interaction_params_ptr_->GetSearchStrategy() ==
-           INPAR::BEAMINTERACTION::SearchStrategy::bruteforce_with_proc_boundingvolume)
+           INPAR::BEAMINTERACTION::SearchStrategy::bounding_volume_hierarchy)
   {
     // Get vector of all beam element bounding boxes.
     int const numroweles = EleTypeMapExtractorPtr()->BeamMap()->NumMyElements();

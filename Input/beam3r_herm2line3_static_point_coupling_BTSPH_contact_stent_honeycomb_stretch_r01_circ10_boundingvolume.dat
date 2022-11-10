@@ -60,7 +60,7 @@ NAME                            Structure_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------------BEAM INTERACTION
 REPARTITIONSTRATEGY             Everydt
-SEARCH_STRATEGY                 bruteforce_with_proc_boundingvolume
+SEARCH_STRATEGY                 bounding_volume_hierarchy
 ----------------------------------------------------------------BEAM INTERACTION/BEAM TO SPHERE CONTACT
 STRATEGY                        penalty
 ----------------------------------------------------------------BEAM CONTACT
