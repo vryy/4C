@@ -8,23 +8,23 @@
 /*----------------------------------------------------------------------*/
 
 #include "scatra_timint_hdg.H"
-#include "../drt_lib/drt_discret_hdg.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_parameter_list.H"
-#include "../drt_lib/drt_assemblestrategy.H"
-#include "../drt_lib/drt_dofset.H"
+#include "drt_discret_hdg.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_parameter_list.H"
+#include "drt_assemblestrategy.H"
+#include "drt_dofset.H"
 
-#include "../drt_scatra_ele/scatra_ele_hdg.H"
-#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "scatra_ele_hdg.H"
+#include "scatra_ele_action.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "io.H"
+#include "io_control.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-#include "../drt_lib/drt_dofset_predefineddofnumber.H"
+#include "drt_dofset_predefineddofnumber.H"
 
-#include "../drt_binstrategy/binning_strategy.H"
+#include "binning_strategy.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 hoermann 09/15 |

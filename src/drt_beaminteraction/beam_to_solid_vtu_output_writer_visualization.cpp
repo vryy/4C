@@ -10,11 +10,11 @@
 
 #include "beam_to_solid_vtu_output_writer_visualization.H"
 
-#include "../drt_structure_new/str_timint_basedataio_runtime_vtk_output.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "str_timint_basedataio_runtime_vtk_output.H"
+#include "drt_globalproblem.H"
+#include "io_control.H"
+#include "drt_discret.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 #include <mpi.h>
 

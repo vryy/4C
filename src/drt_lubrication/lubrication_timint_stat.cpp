@@ -9,13 +9,13 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "../drt_io/io.H"
+#include "io.H"
 
-#include "../drt_lubrication_ele/lubrication_ele_action.H"
+#include "lubrication_ele_action.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
 #include "lubrication_timint_stat.H"
 

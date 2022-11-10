@@ -13,7 +13,7 @@
 #define SRC_DRT_STRUCTURE_NEW_STR_DBC_H_
 
 #include <Teuchos_RCP.hpp>
-#include "../solver_nonlin_nox/nox_nln_abstract_prepostoperator.H"
+#include "nox_nln_abstract_prepostoperator.H"
 
 // forward declarations
 class Epetra_Map;

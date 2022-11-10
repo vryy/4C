@@ -7,8 +7,8 @@
 /*----------------------------------------------------------------------*/
 
 #include "elast_coupexppol.H"
-#include "../drt_mat/matpar_material.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "matpar_material.H"
+#include "drt_globalproblem.H"
 
 
 MAT::ELASTIC::PAR::CoupExpPol::CoupExpPol(const Teuchos::RCP<MAT::PAR::Material>& matdata)

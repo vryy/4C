@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "../linalg/linalg_mapextractor.H"
-#include "../drt_scatra/scatra_timint_elch.H"
+#include "linalg_mapextractor.H"
+#include "scatra_timint_elch.H"
 #include "elch_algorithm.H"
 
 /*----------------------------------------------------------------------*/

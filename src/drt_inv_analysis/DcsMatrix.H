@@ -12,7 +12,7 @@
 
 #include "Teuchos_RCP.hpp"
 
-#include "../drt_timestepping/timintmstep.H"
+#include "timintmstep.H"
 
 
 namespace INVANA

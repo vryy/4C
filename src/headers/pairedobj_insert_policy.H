@@ -14,7 +14,7 @@
 #ifndef SRC_HEADERS_PAIREDOBJ_INSERT_POLICY_H_
 #define SRC_HEADERS_PAIREDOBJ_INSERT_POLICY_H_
 
-//#define DEBUG_INSERT_POLICY
+// #define DEBUG_INSERT_POLICY
 
 #include <vector>
 #include <utility>
@@ -29,7 +29,7 @@
 #include <limits>
 
 #if defined(DEBUG_INSERT_POLICY) || defined(DEBUG)
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #endif
 
 namespace GEN

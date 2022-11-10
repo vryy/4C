@@ -10,18 +10,18 @@
 
 #include "xfem_discretization_utils.H"
 
-#include "../drt_lib/drt_discret_faces.H"
-#include "../drt_lib/drt_discret_xfem.H"
+#include "drt_discret_faces.H"
+#include "drt_discret_xfem.H"
 
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_utils_parallel.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_utils_rebalancing.H"
-#include "../drt_lib/drt_dofset_fixed_size.H"
+#include "drt_utils.H"
+#include "drt_utils_parallel.H"
+#include "drt_condition_utils.H"
+#include "drt_utils_rebalancing.H"
+#include "drt_dofset_fixed_size.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
-#include "../drt_io/io_gmsh.H"
+#include "io_gmsh.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

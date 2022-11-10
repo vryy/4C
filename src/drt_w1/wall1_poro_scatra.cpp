@@ -11,7 +11,7 @@
 #include "wall1_poro_scatra.H"
 #include "wall1_poro_scatra_eletypes.H"
 
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                         schmidt 09/17 |

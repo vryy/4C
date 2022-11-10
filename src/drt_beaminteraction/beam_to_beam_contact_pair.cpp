@@ -18,26 +18,26 @@
 #include "beam3contact_utils.H"
 
 // Todo check and get rid of outdated header inclusions
-#include "../drt_inpar/inpar_beamcontact.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "inpar_beamcontact.H"
+#include "inpar_contact.H"
+#include "drt_discret.H"
+#include "drt_exporter.H"
+#include "drt_dserror.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_structure/strtimint_impl.H"
-#include "../drt_beam3/beam3.H"
-#include "../drt_beam3/beam3k.H"
-#include "../drt_beam3/beam3r.H"
-#include "../drt_beam3/beam3eb.H"
-#include "../drt_beam3/beam_spatial_discretization_utils.H"
+#include "strtimint_impl.H"
+#include "beam3.H"
+#include "beam3k.H"
+#include "beam3r.H"
+#include "beam3eb.H"
+#include "beam_spatial_discretization_utils.H"
 
 #include "Teuchos_TimeMonitor.hpp"
 
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
 
 #include <Teuchos_RCP.hpp>
 
@@ -5317,7 +5317,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
 /*----------------------------------------------------------------------*
  |  End: FAD-Check for Linearizations of CPP
  *----------------------------------------------------------------------*/
-#endif  //#ifdef FADCHECKS
+#endif  // #ifdef FADCHECKS
 
 /*----------------------------------------------------------------------*
 |  FD-Check of stiffness matrix                              meier 11/14|

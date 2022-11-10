@@ -15,10 +15,10 @@ growth laws.
 #include "growth_law.H"
 #include "material_service.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/voigt_notation.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
+#include "drt_utils_factory.H"
+#include "voigt_notation.H"
 
 /*----------------------------------------------------------------------------*/
 MAT::PAR::Growth::Growth(Teuchos::RCP<MAT::PAR::Material> matdata)

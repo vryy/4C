@@ -16,25 +16,25 @@ and Johannes Kremheller, Originates from ADAPTER::CouplingNonLinMortar
  |  includes                                                  ager 10/15|
  *----------------------------------------------------------------------*/
 // lib
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
 
 // contact
-#include "../drt_contact/contact_element.H"
-#include "../drt_contact/contact_node.H"
-#include "../drt_contact/contact_interface.H"
+#include "contact_element.H"
+#include "contact_node.H"
+#include "contact_interface.H"
 
 // nurbs
-#include "../drt_nurbs_discret/drt_control_point.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_nurbs_discret/drt_knotvector.H"
+#include "drt_control_point.H"
+#include "drt_nurbs_discret.H"
+#include "drt_knotvector.H"
 
 // linalg
-#include "../linalg/linalg_sparsematrix.H"
+#include "linalg_sparsematrix.H"
 
 // inpar
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_contact.H"
+#include "inpar_structure.H"
 
 // header
 #include "adapter_coupling_poro_mortar.H"

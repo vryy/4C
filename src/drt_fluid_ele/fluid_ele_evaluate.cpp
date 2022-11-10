@@ -25,10 +25,10 @@
 #include "fluid_ele_parameter_intface.H"
 #include "fluid_ele_tds.H"
 
-#include "../drt_opti/topopt_fluidAdjoint3_interface.H"
-#include "../drt_opti/topopt_fluidAdjoint3_impl_parameter.H"
+#include "topopt_fluidAdjoint3_interface.H"
+#include "topopt_fluidAdjoint3_impl_parameter.H"
 
-#include "../drt_lib/drt_condition_utils.H"
+#include "drt_condition_utils.H"
 
 
 /*

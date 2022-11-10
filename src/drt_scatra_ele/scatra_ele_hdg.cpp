@@ -11,20 +11,20 @@
 #include "scatra_ele_action.H"
 #include "scatra_ele_factory.H"
 #include "scatra_ele_interface.H"
-#include "../drt_mat/matlist.H"
-#include "../drt_mat/myocard.H"
-#include "../drt_fem_general/drt_utils_gausspoints.H"
+#include "matlist.H"
+#include "myocard.H"
+#include "drt_utils_gausspoints.H"
 
 #include "scatra_ele_hdg_intfaces_calc.H"
 #include "scatra_ele_hdg_boundary_calc.H"
 
-#include "../drt_lib/drt_utils_factory.H"
+#include "drt_utils_factory.H"
 
-#include "../drt_inpar/inpar_scatra.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_discret_faces.H"
-#include "../drt_fem_general/drt_utils_polynomial.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "inpar_scatra.H"
+#include "drt_linedefinition.H"
+#include "drt_discret_faces.H"
+#include "drt_utils_polynomial.H"
+#include "drt_globalproblem.H"
 
 
 // initialize static variable

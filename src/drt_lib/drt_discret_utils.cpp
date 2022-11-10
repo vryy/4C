@@ -14,8 +14,8 @@
 #include "drt_dserror.H"
 #include "drt_elementtype.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../solver/solver_solverparameters.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "solver_solverparameters.H"
 
 /*----------------------------------------------------------------------*
  |  compute nullspace of system (public)                     mwgee 02/07|

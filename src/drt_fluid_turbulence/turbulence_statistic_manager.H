@@ -20,8 +20,8 @@ overhead as possible from the time integration method.
 #include "Epetra_Vector.h"
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
-#include "../drt_inpar/inpar_fluid.H"
-#include "../drt_inpar/inpar_scatra.H"
+#include "inpar_fluid.H"
+#include "inpar_scatra.H"
 
 
 // forward declarations

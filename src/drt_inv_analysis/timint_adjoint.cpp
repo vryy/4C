@@ -8,22 +8,22 @@
 #include "timint_adjoint.H"
 
 #include <iostream>
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 #include "Epetra_SerialDenseVector.h"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
+#include "io.H"
+#include "io_control.H"
 
-#include "../drt_lib/drt_locsys.H"
-#include "../drt_lib/drt_colors.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_comm/comm_utils.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "drt_locsys.H"
+#include "drt_colors.H"
+#include "drt_globalproblem.H"
+#include "comm_utils.H"
+#include "inpar_structure.H"
 
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_solver.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
 #include "Epetra_CrsMatrix.h"
 
 

@@ -14,9 +14,9 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "../drt_particle_engine/particle_typedefs.H"
+#include "particle_typedefs.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>

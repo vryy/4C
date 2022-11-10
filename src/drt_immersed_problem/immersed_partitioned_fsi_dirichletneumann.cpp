@@ -10,22 +10,22 @@
 #include "immersed_partitioned_fsi_dirichletneumann.H"
 #include "fsi_partitioned_immersed.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
-#include "../drt_adapter/ad_fld_fluid_immersed.H"
+#include "ad_str_fsiwrapper_immersed.H"
+#include "ad_fld_fluid_immersed.H"
 
-#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "fluid_ele_action.H"
 
-#include "../drt_structure/stru_aux.H"
+#include "stru_aux.H"
 
-#include "../drt_inpar/inpar_immersed.H"
+#include "inpar_immersed.H"
 
-#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "linalg_utils_densematrix_communication.H"
 
 // search tree related
-#include "../drt_geometry/searchtree.H"
-#include "../drt_geometry/searchtree_geometry_service.H"
+#include "searchtree.H"
+#include "searchtree_geometry_service.H"
 
 // time monitoring
 #include <Teuchos_TimeMonitor.hpp>

@@ -16,12 +16,12 @@
 #include "matpar_material.H"
 #include "matpar_bundle.H"
 
-#include "../drt_matelast/elast_aniso_structuraltensor_strategy.H"
+#include "elast_aniso_structuraltensor_strategy.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::Parameter::Parameter(Teuchos::RCP<const MAT::PAR::Material> matdata)

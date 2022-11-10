@@ -19,12 +19,12 @@ MAT x KINEM nonlinear THICK x STRESS_STRAIN [plane_stress/plane_strain]
 
 #include "membrane_eletypes.H"
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "drt_element.H"
+#include "inpar_structure.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
 // include header because number of Gauss points are determined dependent on distype
-#include "../drt_thermo/thermo_ele_impl_utils.H"
+#include "thermo_ele_impl_utils.H"
 
 
 // forward declaration

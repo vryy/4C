@@ -14,12 +14,12 @@
 
 #include "geometry_pair_element_classes.H"
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_beam3/beam3.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_element.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "beam3.H"
+#include "drt_utils_nurbs_shapefunctions.H"
+#include "drt_nurbs_utils.H"
+#include "drt_globalproblem.H"
 
 
 namespace GEOMETRYPAIR

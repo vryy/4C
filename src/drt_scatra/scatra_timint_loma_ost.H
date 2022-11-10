@@ -15,7 +15,7 @@
 #include "scatra_timint_loma.H"
 #include "scatra_timint_ost.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 
 namespace SCATRA

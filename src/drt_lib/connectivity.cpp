@@ -12,9 +12,9 @@
 
 #include "connectivity.H"
 
-#include "../drt_lib/drt_discret_interface.H"
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_exporter.H"
+#include "drt_discret_interface.H"
+#include "drt_node.H"
+#include "drt_exporter.H"
 
 #include <Epetra_Map.h>
 

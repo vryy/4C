@@ -11,13 +11,13 @@
 #include "matpar_manager_patchwise.H"
 
 #include "invana_utils.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
-#include "../drt_mat/material.H"
-#include "../drt_mat/matpar_bundle.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "drt_globalproblem.H"
+#include "io.H"
+#include "io_control.H"
+#include "material.H"
+#include "matpar_bundle.H"
 
 #include <queue>
 

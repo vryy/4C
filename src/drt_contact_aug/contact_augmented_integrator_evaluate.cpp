@@ -10,8 +10,8 @@
 /*---------------------------------------------------------------------*/
 
 #include "contact_augmented_integrator.H"
-#include "../drt_contact/contact_element.H"
-#include "../drt_contact/contact_node.H"
+#include "contact_element.H"
+#include "contact_node.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

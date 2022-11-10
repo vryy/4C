@@ -14,16 +14,16 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "../drt_particle_engine/particle_enums.H"
-#include "../drt_particle_engine/particle_typedefs.H"
+#include "particle_enums.H"
+#include "particle_typedefs.H"
 
-#include "../drt_mat/particle_material_base.H"
-#include "../drt_mat/particle_material_thermo.H"
-#include "../drt_mat/particle_material_sph_fluid.H"
-#include "../drt_mat/particle_material_sph_boundary.H"
-#include "../drt_mat/particle_material_dem.H"
+#include "particle_material_base.H"
+#include "particle_material_thermo.H"
+#include "particle_material_sph_fluid.H"
+#include "particle_material_sph_boundary.H"
+#include "particle_material_dem.H"
 
-#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "inpar_parameterlist_utils.H"
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |

@@ -12,10 +12,10 @@
 
 #include "poromultiphase_utils.H"
 
-#include "../drt_inpar/inpar_poromultiphase.H"
+#include "inpar_poromultiphase.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

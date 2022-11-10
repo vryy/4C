@@ -10,8 +10,8 @@
 
 #include "artnetexplicitintegration.H"
 #include "artery_resulttest.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_linedefinition.H"
+#include "drt_discret.H"
 #include "art_net_impl_stationary.H"
 
 /*----------------------------------------------------------------------*/

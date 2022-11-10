@@ -11,12 +11,12 @@
 #include "micromaterial.H"
 #include "micromaterialgp_static.H"
 #include "matpar_bundle.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_comm/comm_utils.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_container.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../linalg/linalg_utils_densematrix_svd.H"
+#include "drt_globalproblem.H"
+#include "comm_utils.H"
+#include "drt_discret.H"
+#include "drt_container.H"
+#include "drt_exporter.H"
+#include "linalg_utils_densematrix_svd.H"
 
 
 

@@ -9,21 +9,21 @@
 #ifndef SO_NSTET4_H
 #define SO_NSTET4_H
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "drt_element.H"
+#include "drt_elementtype.H"
+#include "drt_parobjectfactory.H"
+#include "inpar_structure.H"
 
-#include "../drt_mat/material.H"
+#include "material.H"
 
 #include "Epetra_Time.h"
 
-//#define PRINT_NSTET            ///< printout of setup
+// #define PRINT_NSTET            ///< printout of setup
 #define NSTET_NUMGREEDY 2    ///< number of sweeps of greedy patching
 #define MIS_MIN_PATCHSIZE 3  ///< minimum MIS patch size required
 
 // stabilization approach & parameters
-//#define PUSOSOLBERG              ///< run the Puso&Solberg tet
+// #define PUSOSOLBERG              ///< run the Puso&Solberg tet
 #define ALPHA_NSTET 0.01  ///< stabilization parameter for vol-dev split stabilization & Puso-tet
 #define BETA_NSTET 0.9    ///< stabilization parameter for MIS-pressure stabilization
 

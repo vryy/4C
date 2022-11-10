@@ -8,7 +8,7 @@ invariant
 /*----------------------------------------------------------------------*/
 
 #include "elast_coup1pow.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 MAT::ELASTIC::PAR::Coup1Pow::Coup1Pow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), c_(matdata->GetDouble("C")), d_(matdata->GetInt("D"))

@@ -15,8 +15,8 @@
 #include "multiplicative_split_defgrad_elasthyper.H"
 #include <utility>
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/voigt_notation.H"
+#include "drt_globalproblem.H"
+#include "voigt_notation.H"
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/

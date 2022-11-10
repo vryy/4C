@@ -8,7 +8,7 @@ mechanics", 2001.
 /*----------------------------------------------------------------------*/
 
 #include "elast_coupblatzko.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 
 MAT::ELASTIC::PAR::CoupBlatzKo::CoupBlatzKo(const Teuchos::RCP<MAT::PAR::Material>& matdata)

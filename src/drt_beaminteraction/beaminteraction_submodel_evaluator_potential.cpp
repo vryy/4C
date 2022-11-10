@@ -8,27 +8,27 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "../drt_beaminteraction/beaminteraction_submodel_evaluator_potential.H"
+#include "beaminteraction_submodel_evaluator_potential.H"
 
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_io/runtime_vtp_writer.H"
+#include "drt_dserror.H"
+#include "drt_globalproblem.H"
+#include "io.H"
+#include "io_control.H"
+#include "io_pstream.H"
+#include "runtime_vtp_writer.H"
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_structure_new/str_timint_basedataglobalstate.H"
+#include "str_timint_basedataglobalstate.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
+#include "linalg_fixedsizematrix.H"
 
-//#include "../drt_inpar/inpar_beamcontact.H"
-#include "../drt_beam3/beam3_base.H"
-#include "../drt_beaminteraction/beam3contact_utils.H"
-#include "../drt_beaminteraction/str_model_evaluator_beaminteraction_datastate.H"
+//#include "inpar_beamcontact.H"
+#include "beam3_base.H"
+#include "beam3contact_utils.H"
+#include "str_model_evaluator_beaminteraction_datastate.H"
 #include "beam_potential_pair.H"
 #include "beam_potential_params.H"
 #include "beam_potential_runtime_vtk_output_params.H"

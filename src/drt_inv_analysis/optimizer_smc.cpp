@@ -18,10 +18,9 @@
 #include "particle_group.H"
 #include "particle_comm.H"
 #include "particle_data.H"
-
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "drt_globalproblem.H"
+#include "io_control.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 #include "Epetra_CrsMatrix.h"
 

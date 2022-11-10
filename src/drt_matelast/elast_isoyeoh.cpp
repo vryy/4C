@@ -7,7 +7,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "elast_isoyeoh.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 
 MAT::ELASTIC::PAR::IsoYeoh::IsoYeoh(const Teuchos::RCP<MAT::PAR::Material>& matdata)

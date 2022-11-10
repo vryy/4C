@@ -9,7 +9,7 @@ problems
 /*----------------------------------------------------------------------*/
 #include "scatra_multiscale.H"
 
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 /*--------------------------------------------------------------------*
  | constructor                                             fang 07/17 |

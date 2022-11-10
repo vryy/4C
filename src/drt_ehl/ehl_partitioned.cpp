@@ -9,15 +9,15 @@
 /*--------------------------------------------------------------------------*/
 
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_adapter/ad_str_wrapper.H"
-#include "../drt_adapter/adapter_lubrication.H"
-#include "../drt_adapter/adapter_coupling_ehl_mortar.H"
+#include "ad_str_wrapper.H"
+#include "adapter_lubrication.H"
+#include "adapter_coupling_ehl_mortar.H"
 
-#include "../drt_lubrication/lubrication_timint_implicit.H"
+#include "lubrication_timint_implicit.H"
 
 #include "ehl_partitioned.H"
 

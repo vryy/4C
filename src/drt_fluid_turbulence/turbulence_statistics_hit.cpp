@@ -17,15 +17,15 @@
 
 #include "turbulence_statistics_hit.H"
 
-#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "fluid_ele_action.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_exporter.H"
+#include "standardtypes_cpp.H"
 
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/newtonianfluid.H"
+#include "matpar_bundle.H"
+#include "newtonianfluid.H"
 
 namespace FLD
 {

@@ -10,11 +10,11 @@
 
 #include "wall1_scatra.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_mat/material.H"
+#include "drt_discret.H"
+#include "drt_element.H"
+#include "material.H"
 
-#include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "str_elements_paramsinterface.H"
 
 /*----------------------------------------------------------------------*
  |  preevaluate the element (public)                                       |

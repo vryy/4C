@@ -14,7 +14,7 @@
 
 #include "geometry_pair_element_functions.H"
 
-#include "../drt_lib/drt_element.H"
+#include "drt_element.H"
 
 #include <unordered_map>
 

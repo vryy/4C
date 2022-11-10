@@ -13,7 +13,7 @@
 #define SRC_LOCA_CONTINUATION_LOCA_NLN_GROUP_H_
 
 #include <LOCA_Epetra_Group.H>
-#include "../solver_nonlin_nox/nox_nln_group.H"
+#include "nox_nln_group.H"
 
 // forward declaration
 namespace Teuchos

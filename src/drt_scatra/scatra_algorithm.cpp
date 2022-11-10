@@ -9,10 +9,10 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "../drt_fluid_turbulence/turbulence_statistic_manager.H"
+#include "turbulence_statistic_manager.H"
 #include "scatra_timint_implicit.H"
 #include "scatra_algorithm.H"
-#include "../drt_adapter/adapter_coupling_volmortar.H"
+#include "adapter_coupling_volmortar.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -9,8 +9,8 @@
 
 #include "beam_to_solid_params_base.H"
 
-#include "../drt_inpar/inpar_geometry_pair.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "inpar_geometry_pair.H"
+#include "drt_globalproblem.H"
 
 
 /**

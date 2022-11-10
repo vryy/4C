@@ -13,7 +13,7 @@
 #define MESHTYING_PORO_LAGRANGE_STRATEGY_H
 
 #include "meshtying_lagrange_strategy.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 namespace CONTACT
 {

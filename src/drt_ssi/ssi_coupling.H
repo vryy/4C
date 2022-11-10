@@ -10,7 +10,7 @@
 #ifndef SRC_DRT_SSI_SSI_COUPLING_H_
 #define SRC_DRT_SSI_SSI_COUPLING_H_
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
 
 namespace ADAPTER

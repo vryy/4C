@@ -11,16 +11,16 @@ functions.
 #include "beam_to_fluid_meshtying_vtk_output_params.H"
 #include "beam_to_fluid_mortar_manager.H"
 
-#include "../drt_beaminteraction/beam_to_solid_vtu_output_writer_base.H"
-#include "../drt_beaminteraction/beam_to_solid_vtu_output_writer_visualization.H"
+#include "beam_to_solid_vtu_output_writer_base.H"
+#include "beam_to_solid_vtu_output_writer_visualization.H"
 
-#include "../drt_lib/drt_utils.H"
-#include "../linalg/linalg_utils_densematrix_inverse.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "drt_utils.H"
+#include "linalg_utils_densematrix_inverse.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
 
-#include "../drt_geometry_pair/geometry_pair_element_functions.H"
-#include "../drt_geometry_pair/geometry_pair_line_to_volume.H"
+#include "geometry_pair_element_functions.H"
+#include "geometry_pair_line_to_volume.H"
 
 
 /**

@@ -23,11 +23,11 @@
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
 #include <Epetra_CrsGraph.h>
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_inpar/inpar_elemag.H"
+#include "inpar_elemag.H"
 
 /*----------------------------------------------------------------------*
  | forward declarations                                gravemeier 06/17 |

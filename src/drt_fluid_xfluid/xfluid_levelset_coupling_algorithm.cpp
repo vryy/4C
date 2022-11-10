@@ -9,21 +9,21 @@
  */
 /*----------------------------------------------------------------------*/
 
-#include "../drt_levelset/levelset_algorithm.H"
-#include "../drt_levelset/levelset_timint_ost.H"
-#include "../drt_scatra/scatra_timint_ost.H"
+#include "levelset_algorithm.H"
+#include "levelset_timint_ost.H"
+#include "scatra_timint_ost.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_fluid/fluid_utils_mapextractor.H"  //needed?
-#include "../drt_fluid_xfluid/xfluid.H"
+#include "fluid_utils_mapextractor.H"  //needed?
+#include "xfluid.H"
 
-#include "../drt_lib/drt_discret_xfem.H"
+#include "drt_discret_xfem.H"
 
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/matlist.H"
+#include "newtonianfluid.H"
+#include "matlist.H"
 
 #include "xfluid_levelset_coupling_algorithm.H"
 

@@ -7,7 +7,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "elast_isoexpopow.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 
 MAT::ELASTIC::PAR::IsoExpoPow::IsoExpoPow(const Teuchos::RCP<MAT::PAR::Material>& matdata)

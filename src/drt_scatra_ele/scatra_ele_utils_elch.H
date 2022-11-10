@@ -10,9 +10,9 @@
 #ifndef SCATRA_ELE_UTILS_ELCH_H
 #define SCATRA_ELE_UTILS_ELCH_H
 
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
-#include "../drt_inpar/inpar_elch.H"
+#include "inpar_elch.H"
 
 namespace DRT
 {

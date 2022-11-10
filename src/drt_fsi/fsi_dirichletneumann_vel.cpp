@@ -11,24 +11,24 @@
 
 
 #include "fsi_dirichletneumann_vel.H"
-#include "../drt_adapter/ad_str_fbiwrapper.H"
-#include "../drt_binstrategy/binning_strategy.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_dserror.H"
+#include "ad_str_fbiwrapper.H"
+#include "binning_strategy.H"
+#include "drt_globalproblem.H"
+#include "drt_dserror.H"
 
-#include "../drt_inpar/inpar_fsi.H"
-#include "../drt_inpar/inpar_fbi.H"
+#include "inpar_fsi.H"
+#include "inpar_fbi.H"
 
-#include "../drt_fbi/constraintenforcer_fbi.H"
-#include "../drt_fbi/constraintenforcer_fbi_factory.H"
-#include "../drt_fbi/beam_to_fluid_meshtying_vtk_output_writer.H"
-#include "../drt_fbi/ad_fbi_constraintbridge.H"
-#include "../drt_fbi/beam_to_fluid_meshtying_params.H"
-#include "../drt_adapter/ad_fld_fbi_movingboundary.H"
+#include "constraintenforcer_fbi.H"
+#include "constraintenforcer_fbi_factory.H"
+#include "beam_to_fluid_meshtying_vtk_output_writer.H"
+#include "ad_fbi_constraintbridge.H"
+#include "beam_to_fluid_meshtying_params.H"
+#include "ad_fld_fbi_movingboundary.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <iostream>
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
 
 /*----------------------------------------------------------------------*/

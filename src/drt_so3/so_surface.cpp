@@ -9,9 +9,9 @@
 
 #include "so_surface.H"
 #include "so_line.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_discret.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "drt_utils.H"
+#include "drt_discret.H"
 
 DRT::ELEMENTS::StructuralSurfaceType DRT::ELEMENTS::StructuralSurfaceType::instance_;
 

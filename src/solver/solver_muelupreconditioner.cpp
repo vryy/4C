@@ -10,8 +10,8 @@
 // Baci
 #include "solver_muelupreconditioner.H"
 
-#include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "drt_dserror.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 // Teuchos
 #include <Teuchos_RCP.hpp>

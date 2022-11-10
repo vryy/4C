@@ -15,16 +15,16 @@
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
 
-#include "../drt_beaminteraction/beam3contact_defines.H"
-#include "../drt_lib/drt_condition.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../headers/FAD_utils.H"
+#include "beam3contact_defines.H"
+#include "drt_condition.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
+#include "drt_node.H"
+#include "drt_element.H"
+#include "drt_utils_integration.H"
+#include "linalg_fixedsizematrix.H"
+#include "linalg_sparsematrix.H"
+#include "FAD_utils.H"
 
 namespace CONTACT
 {

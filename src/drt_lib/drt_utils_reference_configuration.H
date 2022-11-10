@@ -12,8 +12,8 @@
 #ifndef DRT_UTILS_REFERENCE_CONFIGURATION
 #define DRT_UTILS_REFERENCE_CONFIGURATION
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "linalg_fixedsizematrix.H"
 #include "drt_node.H"
 
 namespace DRT

@@ -17,10 +17,10 @@
 #include "fs3i_partitioned_2wc.H"
 #include "biofilm_fsi.H"
 #include "ac_fsi.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_comm/comm_utils.H"
-#include "../drt_lib/drt_discret.H"
+#include "comm_utils.H"
+#include "drt_discret.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

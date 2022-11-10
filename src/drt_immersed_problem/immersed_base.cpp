@@ -8,11 +8,11 @@
 
 *----------------------------------------------------------------------*/
 #include "immersed_base.H"
-#include "../drt_io/io_control.H"
-#include "../drt_lib/function_of_time.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_adapter/ad_fld_wrapper.H"
-#include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
+#include "io_control.H"
+#include "function_of_time.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "ad_fld_wrapper.H"
+#include "ad_str_fsiwrapper_immersed.H"
 
 
 

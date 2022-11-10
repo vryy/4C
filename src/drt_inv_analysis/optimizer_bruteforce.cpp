@@ -13,7 +13,7 @@
 #include "invana_base.H"
 #include "matpar_manager.H"
 #include "objective_funct.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <fstream>
 

@@ -8,7 +8,7 @@ thesis)
 /*----------------------------------------------------------------------*/
 
 #include "elast_volpenalty.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 
 MAT::ELASTIC::PAR::VolPenalty::VolPenalty(const Teuchos::RCP<MAT::PAR::Material>& matdata)

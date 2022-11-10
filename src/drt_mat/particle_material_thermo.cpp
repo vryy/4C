@@ -13,7 +13,7 @@
  *---------------------------------------------------------------------------*/
 #include "particle_material_thermo.H"
 
-#include "../drt_mat/matpar_bundle.H"
+#include "matpar_bundle.H"
 
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 06/2018 |

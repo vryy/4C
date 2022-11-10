@@ -14,8 +14,8 @@
 #define SRC_DRT_XFEM_XFIELD_FIELD_COUPLING_H_
 
 
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_lib/drt_dserror.H"
+#include "adapter_coupling.H"
+#include "drt_dserror.H"
 // due to enum use ...
 #include "xfem_multi_field_mapextractor.H"
 

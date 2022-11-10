@@ -15,7 +15,7 @@
 #include "position_array.H"
 #include "searchtree_geometry_service.H"
 #include "searchtree_nearestobject.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
 /*----------------------------------------------------------------------*
  | delivers a axis-aligned bounding box for a given          peder 07/08|

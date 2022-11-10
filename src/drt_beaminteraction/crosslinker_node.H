@@ -14,8 +14,8 @@
 #ifndef CROSSLINKER_NODE_H_
 #define CROSSLINKER_NODE_H_
 
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_node.H"
+#include "drt_parobjectfactory.H"
 
 // forward declaration ...
 namespace MAT

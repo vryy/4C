@@ -8,13 +8,13 @@
 /*----------------------------------------------------------------------*/
 
 #include "mixture_constituent_elasthyper_elastin_membrane.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/multiplicative_split_defgrad_elasthyper_service.H"
-#include "../drt_matelast/elast_aniso_structuraltensor_strategy.H"
-#include "../drt_matelast/elast_isoneohooke.H"
+#include "matpar_bundle.H"
+#include "drt_globalproblem.H"
+#include "multiplicative_split_defgrad_elasthyper_service.H"
+#include "elast_aniso_structuraltensor_strategy.H"
+#include "elast_isoneohooke.H"
 #include "elastin_membrane_prestress_strategy.H"
-#include "../drt_mat/anisotropy_extension.H"
+#include "anisotropy_extension.H"
 
 MIXTURE::ElastinMembraneAnisotropyExtension::ElastinMembraneAnisotropyExtension(
     const Teuchos::RCP<MAT::ELASTIC::StructuralTensorStrategyBase>& structuralTensorStrategy)

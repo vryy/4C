@@ -14,7 +14,7 @@
 
 #include <Teuchos_RCP.hpp>
 
-#include "../drt_inpar/inpar_beaminteraction.H"
+#include "inpar_beaminteraction.H"
 
 
 // Forward declarations.

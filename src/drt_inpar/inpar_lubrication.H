@@ -10,7 +10,7 @@
 #define SRC_DRT_INPAR_INPAR_LUBRICATION_H_
 
 #include "inpar_parameterlist_utils.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 namespace INPAR
 {

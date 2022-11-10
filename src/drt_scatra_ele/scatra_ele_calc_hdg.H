@@ -15,8 +15,8 @@
 #include "scatra_ele_interface.H"
 #include "scatra_ele_hdg.H"
 #include "scatra_ele_calc.H"
-#include "../drt_inpar/inpar_scatra.H"
-#include "../drt_fem_general/drt_utils_shapevalues_hdg.H"
+#include "inpar_scatra.H"
+#include "drt_utils_shapevalues_hdg.H"
 
 
 

@@ -12,7 +12,7 @@
 
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include "linalg_utils_nullspace.H"
-#include "../drt_s8/shell8.H"
+#include "shell8.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

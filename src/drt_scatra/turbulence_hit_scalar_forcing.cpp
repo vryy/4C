@@ -20,10 +20,10 @@ passive-scalar transport
 
 #include "scatra_timint_implicit.H"
 #include "scatra_timint_genalpha.H"
-#include "../drt_lib/drt_exporter.H"
+#include "drt_exporter.H"
 
 #define USE_TRAGET_SPECTRUM
-//#define TIME_UPDATE_FORCING_SPECTRUM
+// #define TIME_UPDATE_FORCING_SPECTRUM
 
 namespace SCATRA
 {

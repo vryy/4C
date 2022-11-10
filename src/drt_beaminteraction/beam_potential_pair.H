@@ -10,9 +10,9 @@
 #ifndef BEAMPOTENTIALPAIR_H
 #define BEAMPOTENTIALPAIR_H
 
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "drt_utils_integration.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 #include <Teuchos_RCP.hpp>
 

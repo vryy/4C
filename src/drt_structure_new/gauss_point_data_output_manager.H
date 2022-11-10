@@ -14,7 +14,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Epetra_IntVector.h>
 
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 
 // forward declarations
 class Epetra_MultiVector;

@@ -11,22 +11,22 @@
 #include <Teuchos_RCP.hpp>
 #include "membrane.H"
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_structure_new/str_elements_paramsinterface.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../linalg/linalg_utils_densematrix_eigen.H"
-#include "../drt_lib/tensor_transformation.H"
-#include "../drt_lib/function_of_time.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "str_elements_paramsinterface.H"
+#include "linalg_fixedsizematrix.H"
+#include "linalg_utils_densematrix_eigen.H"
+#include "tensor_transformation.H"
+#include "function_of_time.H"
 
-#include "../drt_mat/material.H"
-#include "../drt_mat/membrane_elasthyper.H"
-#include "../drt_mat/membrane_active_strain.H"
-#include "../drt_mat/growthremodel_elasthyper.H"
+#include "material.H"
+#include "membrane_elasthyper.H"
+#include "membrane_active_strain.H"
+#include "growthremodel_elasthyper.H"
 
-#include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_immersed_problem/immersed_base.H"
+#include "fluid_ele_action.H"
+#include "immersed_base.H"
 
-#include "../drt_mat/membrane_material_interfaces.H"
+#include "membrane_material_interfaces.H"
 #include "membrane_service.H"
 
 

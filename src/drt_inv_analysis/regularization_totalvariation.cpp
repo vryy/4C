@@ -13,11 +13,11 @@
 
 #include "matpar_manager.H"  //for ConnectivityData
 #include "invana_utils.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_utils.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_mapextractor.H"
+#include "drt_discret.H"
+#include "drt_dserror.H"
+#include "drt_utils.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_CombineMode.h"

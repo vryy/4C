@@ -10,9 +10,9 @@
 /*----------------------------------------------------------------------*/
 #include "anisotropy_extension_default.H"
 #include "material_service.H"
-#include "../headers/standardtypes.h"
+#include "standardtypes.h"
 #include "anisotropy_extension.H"
-#include "../drt_lib/drt_parobject.H"
+#include "drt_parobject.H"
 #include <algorithm>
 
 template <unsigned int numfib>

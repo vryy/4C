@@ -11,12 +11,12 @@ muscle material
 #define ELAST_ISOMUSCLEBLEMKER_H_
 
 #include "elast_summand.H"
-#include "../drt_mat/matpar_parameter.H"
-#include "../drt_mat/anisotropy.H"
-#include "../drt_mat/anisotropy_extension_default.H"
-#include "../drt_mat/anisotropy_extension_provider.H"
+#include "matpar_parameter.H"
+#include "anisotropy.H"
+#include "anisotropy_extension_default.H"
+#include "anisotropy_extension_provider.H"
 #include <Teuchos_RCP.hpp>
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 
 namespace MAT
 {

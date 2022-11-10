@@ -6,10 +6,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include "../../src/drt_cut/cut_mesh.H"
-#include "../../src/drt_cut/cut_element.H"
-#include "../../src/drt_fem_general/drt_utils_gausspoints.H"
-#include "../../src/drt_lib/drt_globalproblem.H"
+#include "cut_mesh.H"
+#include "cut_element.H"
+#include "drt_utils_gausspoints.H"
+#include "drt_globalproblem.H"
 #include "cut_test_utils.H"
 
 #include <Teuchos_CommandLineProcessor.hpp>

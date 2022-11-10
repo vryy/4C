@@ -15,10 +15,10 @@
 
 #include "ale_resulttest.H"
 
-#include "../drt_adapter/ad_ale.H"
+#include "ad_ale.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

@@ -12,12 +12,12 @@
 #include "ssti_monolithic.H"
 #include "ssti_utils.H"
 
-#include "../drt_inpar/inpar_ssti.H"
+#include "inpar_ssti.H"
 
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

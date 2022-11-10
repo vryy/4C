@@ -16,8 +16,8 @@
 
 #include "beam3contact_defines.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../linalg/linalg_sparsematrix.H"
+#include "linalg_fixedsizematrix.H"
+#include "linalg_sparsematrix.H"
 
 
 // Forward declarations.

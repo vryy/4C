@@ -21,13 +21,13 @@ Technical Report 034, MEMS, Rice University (2002) 16.
 
 #include "turbulence_hit_initial_field.H"
 
-#include "../drt_fluid/fluidimplicitintegration.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_fluid/fluid_timint_hdg.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "fluidimplicitintegration.H"
+#include "drt_exporter.H"
+#include "drt_globalproblem.H"
+#include "drt_utils.H"
+#include "standardtypes_cpp.H"
+#include "fluid_timint_hdg.H"
+#include "fluid_ele_action.H"
 
 namespace FLD
 {

@@ -16,18 +16,18 @@
 #include "poromultiphase_scatra_artery_coupling_surfbased.H"
 #include "poromultiphase_scatra_artery_coupling_nodetopoint.H"
 
-#include "../drt_poromultiphase/poromultiphase_utils.H"
-#include "../drt_art_net/art_net_utils.H"
+#include "poromultiphase_utils.H"
+#include "art_net_utils.H"
 
-#include "../drt_poroelast/poroelast_utils.H"
+#include "poroelast_utils.H"
 
-#include "../drt_poroelast/poro_utils_clonestrategy.H"
-#include "../drt_scatra_ele/scatra_ele.H"
+#include "poro_utils_clonestrategy.H"
+#include "scatra_ele.H"
 
-#include "../drt_lib/drt_utils_createdis.H"
+#include "drt_utils_createdis.H"
 
-#include "../drt_lib/drt_dofset_predefineddofnumber.H"
-#include "../drt_lib/drt_utils_parallel.H"
+#include "drt_dofset_predefineddofnumber.H"
+#include "drt_utils_parallel.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

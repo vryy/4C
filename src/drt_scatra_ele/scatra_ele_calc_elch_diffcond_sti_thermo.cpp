@@ -11,7 +11,7 @@
 
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_elch.H"
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 11/15 |

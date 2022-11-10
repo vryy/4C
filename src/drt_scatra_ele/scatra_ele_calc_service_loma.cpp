@@ -7,16 +7,16 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#include "../drt_geometry/position_array.H"
+#include "position_array.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
 
-#include "../drt_mat/material.H"
-#include "../drt_mat/matlist.H"
-#include "../drt_mat/arrhenius_temp.H"
-#include "../drt_mat/sutherland.H"
-#include "../drt_mat/tempdepwater.H"
+#include "material.H"
+#include "matlist.H"
+#include "arrhenius_temp.H"
+#include "sutherland.H"
+#include "tempdepwater.H"
 
 #include "scatra_ele.H"
 #include "scatra_ele_action.H"

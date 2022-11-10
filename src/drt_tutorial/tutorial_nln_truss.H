@@ -14,8 +14,8 @@
 #ifndef TUTORIAL_NONLINEAR_TRUSS_H
 #define TUTORIAL_NONLINEAR_TRUSS_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "linalg_fixedsizematrix.H"
+#include "drt_globalproblem.H"
 
 //////////////////////////////////////////////////////
 ///  DEFINE THE NUMBER OF ELEMENTS

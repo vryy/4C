@@ -17,10 +17,10 @@
 
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_inpar/inpar_fluid.H"
-#include "../drt_inpar/inpar_scatra.H"
+#include "drt_discret.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "inpar_fluid.H"
+#include "inpar_scatra.H"
 
 
 namespace FLD

@@ -12,14 +12,14 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "../drt_xfem/xfem_neumann.H"
+#include "xfem_neumann.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/function_of_time.H"
-#include "../drt_fluid_ele/fluid_ele.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "drt_globalproblem.H"
+#include "function_of_time.H"
+#include "fluid_ele.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
 
 
 

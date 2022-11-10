@@ -15,10 +15,10 @@
 /*! header inclusions */
 #include "Epetra_Vector.h"
 
-#include "../drt_inpar/inpar_xfem.H"
-#include "../drt_inpar/inpar_cut.H"
+#include "inpar_xfem.H"
+#include "inpar_cut.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 // forward declarations
 namespace DRT

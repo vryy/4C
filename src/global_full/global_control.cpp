@@ -14,9 +14,9 @@
 
 #include "global_init_control.H"
 #include "global_inp_control.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_comm/comm_utils.H"
+#include "drt_globalproblem.H"
+#include "io_pstream.H"
+#include "comm_utils.H"
 
 
 

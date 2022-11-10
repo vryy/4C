@@ -15,13 +15,13 @@
 #include "contact_defines.H"
 #include "friction_node.H"
 #include "selfcontact_binarytree.H"
-#include "../drt_mortar/mortar_element.H"
-#include "../drt_mortar/mortar_dofset.H"
-#include "../drt_mortar/mortar_integrator.H"
-#include "../drt_mortar/mortar_defines.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_io/io_control.H"
+#include "mortar_element.H"
+#include "mortar_dofset.H"
+#include "mortar_integrator.H"
+#include "mortar_defines.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "inpar_contact.H"
+#include "io_control.H"
 
 
 /*----------------------------------------------------------------------*

@@ -14,11 +14,11 @@
 #define TWO_PHASE_ALGORITHM_H
 
 #include <Epetra_Comm.h>
-#include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
-#include "../linalg/linalg_mapextractor.H"
+#include "adapter_scatra_fluid_coupling_algorithm.H"
+#include "linalg_mapextractor.H"
 
 // Needed for input parameter
-#include "../drt_inpar/inpar_twophase.H"
+#include "inpar_twophase.H"
 
 namespace TWOPHASEFLOW
 {

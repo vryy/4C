@@ -11,7 +11,7 @@
 #include "particle_interaction_sph_kernel.H"
 #include "particle_interaction_utils.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

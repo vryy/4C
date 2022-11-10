@@ -10,18 +10,18 @@
 // Sheared elements needs to be tested separately
 // m.w. 05.2015
 
-#include "../../src/drt_cut/cut_options.H"
-#include "../../src/drt_cut/cut_mesh.H"
-#include "../../src/drt_cut/cut_element.H"
-#include "../../src/drt_cut/cut_levelsetintersection.H"
+#include "cut_options.H"
+#include "cut_mesh.H"
+#include "cut_element.H"
+#include "cut_levelsetintersection.H"
 
 // Added
-#include "../../src/drt_cut/cut_volumecell.H"
-#include "../../src/drt_cut/cut_facet.H"
-#include "../../src/drt_cut/cut_integrationcell.H"
-#include "../../src/drt_cut/cut_utils.H"
-#include "../../src/drt_cut/sorted_vector.H"
-#include "../../src/drt_cut/cut_combintersection.H"
+#include "cut_volumecell.H"
+#include "cut_facet.H"
+#include "cut_integrationcell.H"
+#include "cut_utils.H"
+#include "sorted_vector.H"
+#include "cut_combintersection.H"
 
 
 

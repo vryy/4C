@@ -11,27 +11,27 @@
 #include "porofluidmultiphase_timint_implicit.H"
 #include "porofluidmultiphase_utils.H"
 
-#include "../drt_porofluidmultiphase/porofluidmultiphase_resulttest.H"
+#include "porofluidmultiphase_resulttest.H"
 
 #include "porofluidmultiphase_meshtying_strategy_std.H"
 #include "porofluidmultiphase_meshtying_strategy_artery.H"
-#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_action.H"
-#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele.H"
-#include "../drt_mat/fluidporo_multiphase.H"
+#include "porofluidmultiphase_ele_action.H"
+#include "porofluidmultiphase_ele.H"
+#include "fluidporo_multiphase.H"
 
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_print.H"
+#include "linalg_solver.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_print.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_assemblestrategy.H"
+#include "drt_globalproblem.H"
+#include "drt_assemblestrategy.H"
 
-#include "../drt_inpar/drt_validparameters.H"
+#include "drt_validparameters.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_gmsh.H"
+#include "io.H"
+#include "io_control.H"
+#include "io_gmsh.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

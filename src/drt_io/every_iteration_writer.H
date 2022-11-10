@@ -10,7 +10,7 @@
 #ifndef SRC_DRT_IO_EVERY_ITERATION_WRITER_H_
 #define SRC_DRT_IO_EVERY_ITERATION_WRITER_H_
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include <Teuchos_RCP.hpp>
 
 namespace Teuchos

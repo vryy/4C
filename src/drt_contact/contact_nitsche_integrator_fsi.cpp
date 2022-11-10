@@ -13,12 +13,12 @@
 #include "contact_element.H"
 #include "contact_node.H"
 
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "drt_utils_boundary_integration.H"
 
-#include "../drt_so3/so_hex8.H"
-#include "../drt_so3/so3_poro.H"
+#include "so_hex8.H"
+#include "so3_poro.H"
 
-#include "../drt_xfem/xfem_xfluid_contact_communicator.H"
+#include "xfem_xfluid_contact_communicator.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

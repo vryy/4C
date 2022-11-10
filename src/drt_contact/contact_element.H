@@ -9,7 +9,7 @@
 #ifndef CONTACT_ELEMENT_H
 #define CONTACT_ELEMENT_H
 
-#include "../drt_mortar/mortar_element.H"
+#include "mortar_element.H"
 
 // forward declarations
 

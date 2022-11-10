@@ -14,15 +14,15 @@
 #include "ad_fbi_constraintbridge_penalty.H"
 #include "beam_to_fluid_meshtying_params.H"
 
-#include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "ad_str_fsiwrapper.H"
 
-#include "../drt_beaminteraction/beam_contact_pair.H"
-#include "../drt_fbi/beam_to_fluid_meshtying_vtk_output_params.H"
-#include "../drt_beaminteraction/beam_to_solid_vtu_output_writer_base.H"
-#include "../drt_beaminteraction/beam_to_solid_vtu_output_writer_visualization.H"
-#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "beam_contact_pair.H"
+#include "beam_to_fluid_meshtying_vtk_output_params.H"
+#include "beam_to_solid_vtu_output_writer_base.H"
+#include "beam_to_solid_vtu_output_writer_visualization.H"
+#include "beaminteraction_calc_utils.H"
+#include "drt_discret.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 #include <Epetra_FEVector.h>
 

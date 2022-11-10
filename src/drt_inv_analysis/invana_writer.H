@@ -16,7 +16,7 @@
 #include <Teuchos_RCP.hpp>
 #include "Epetra_MultiVector.h"
 
-#include "../drt_io/io.H"
+#include "io.H"
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */

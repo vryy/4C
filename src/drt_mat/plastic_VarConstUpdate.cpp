@@ -14,16 +14,16 @@ ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0.0
 /*----------------------------------------------------------------------*/
 
 #include "plastic_VarConstUpdate.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_matelast/elast_summand.H"
-#include "../linalg/linalg_utils_densematrix_inverse.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/material_service.H"
+#include "standardtypes_cpp.H"
+#include "elast_summand.H"
+#include "linalg_utils_densematrix_inverse.H"
+#include "drt_linedefinition.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
+#include "material_service.H"
 #include "Epetra_SerialDenseSolver.h"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_lib/voigt_notation.H"
+#include "linalg_fixedsizematrix.H"
+#include "voigt_notation.H"
 
 using vmap = UTILS::VOIGT::IndexMappings;
 

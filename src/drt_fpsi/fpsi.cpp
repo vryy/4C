@@ -13,11 +13,11 @@
 #include "fpsi_utils.H"
 
 // drt_lib includes
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
 
 // POROELAST includes
-#include "../drt_poroelast/poroelast_utils.H"
+#include "poroelast_utils.H"
 
 FPSI::FPSI_Base::FPSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams)
     : AlgorithmBase(comm, fpsidynparams)

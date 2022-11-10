@@ -14,21 +14,21 @@ interface
 #include "contact_interface.H"
 #include "contact_defines.H"
 #include "friction_node.H"
-#include "../drt_mortar/mortar_utils.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_io/io.H"
-#include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "mortar_utils.H"
+#include "inpar_contact.H"
+#include "io.H"
+#include "linalg_multiply.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_adapter/adapter_coupling.H"
-#include "../linalg/linalg_matrixtransform.H"
-#include "../drt_lib/drt_utils.H"
+#include "adapter_coupling.H"
+#include "linalg_matrixtransform.H"
+#include "drt_utils.H"
 
 // this is not nice, but since there is no chance at them moment to set the
 // full displacement during a restart from outside before the contact tries to
 // evaluate I'm force to do this atm...
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                              ager 08/14|

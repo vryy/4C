@@ -19,7 +19,7 @@
 #include "Epetra_Map.h"
 #include "Epetra_CrsGraph.h"
 
-#include "../drt_inpar/inpar_statinvanalysis.H"
+#include "inpar_statinvanalysis.H"
 #include "DcsMatrix.H"
 #include "objective_funct.H"
 

@@ -14,9 +14,9 @@
 #include "fluid_ele_parameter_std.H"
 #include "fluid_ele_parameter_timint.H"
 
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+#include "drt_nurbs_utils.H"
 
-#include "../drt_fluid/fluid_rotsym_periodicbc.H"
+#include "fluid_rotsym_periodicbc.H"
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcLoma<distype>* DRT::ELEMENTS::FluidEleCalcLoma<distype>::Instance(

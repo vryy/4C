@@ -15,12 +15,12 @@
 #include "mortar_defines.H"
 #include "mortar_projector.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_densematrix_inverse.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "drt_discret.H"
+#include "linalg_utils_densematrix_inverse.H"
+#include "linalg_serialdensevector.H"
 
 // for nts-meshtying
-#include "../drt_contact/contact_interpolator.H"  // MT interpolator is located in here
+#include "contact_interpolator.H"  // MT interpolator is located in here
 
 
 /*----------------------------------------------------------------------*

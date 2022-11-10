@@ -7,23 +7,23 @@
 \level 1
 */
 /*----------------------------------------------------------------------------*/
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "drt_globalproblem.H"
+#include "drt_validparameters.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "ad_fld_fluid_ale.H"
 #include "ad_ale_fluid.H"
 
-#include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "fluid_utils_mapextractor.H"
 #include "adapter_coupling.H"
 #include "adapter_coupling_volmortar.H"
 #include "adapter_coupling_mortar.H"
-#include "../drt_inpar/inpar_ale.H"
-#include "../drt_inpar/inpar_fsi.H"
+#include "inpar_ale.H"
+#include "inpar_fsi.H"
 
-#include "../drt_fsi/fsi_dirichletneumann_volcoupl.H"
+#include "fsi_dirichletneumann_volcoupl.H"
 
-#include "../drt_io/io.H"
+#include "io.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

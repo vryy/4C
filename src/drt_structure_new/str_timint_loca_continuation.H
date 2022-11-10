@@ -16,8 +16,8 @@
 
 #include "str_timint_implicitbase.H"  // base class
 
-#include "../loca_continuation/loca_nln_stepper.H"    // enum
-#include "../solver_nonlin_nox/nox_nln_enum_lists.H"  // enum
+#include "loca_nln_stepper.H"    // enum
+#include "nox_nln_enum_lists.H"  // enum
 
 // forward declaration
 namespace LOCA

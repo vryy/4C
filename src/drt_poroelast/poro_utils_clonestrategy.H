@@ -11,7 +11,7 @@
 #ifndef PORO_CLONESTRATEGY_H_
 #define PORO_CLONESTRATEGY_H_
 
-#include "../drt_ssi/ssi_clonestrategy.H"
+#include "ssi_clonestrategy.H"
 
 namespace POROELAST
 {

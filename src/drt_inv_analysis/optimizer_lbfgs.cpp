@@ -13,11 +13,10 @@
 #include "matpar_manager.H"
 #include "objective_funct.H"
 #include "optimizer_lbfgs.H"
-
-#include "../drt_io/io_control.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_comm/comm_utils.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "io_control.H"
+#include "drt_globalproblem.H"
+#include "comm_utils.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 #include <stdio.h>
 

@@ -21,13 +21,13 @@
 
 #include "particle_interaction_utils.H"
 
-#include "../drt_particle_engine/particle_engine_interface.H"
-#include "../drt_particle_engine/particle_container.H"
+#include "particle_engine_interface.H"
+#include "particle_container.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/function_of_time.H"
+#include "drt_globalproblem.H"
+#include "function_of_time.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

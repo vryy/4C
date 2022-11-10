@@ -14,7 +14,7 @@
 #define SRC_DRT_SCATRA_NOX_NLN_SCATRA_LINEARSYSTEM_H_
 
 
-#include "../solver_nonlin_nox/nox_nln_linearsystem.H"
+#include "nox_nln_linearsystem.H"
 
 namespace NOX
 {

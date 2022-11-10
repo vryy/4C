@@ -14,13 +14,13 @@
 #include "fluid_ele_parameter.H"
 #include "fluid_ele_parameter_timint.H"
 
-#include "../drt_mat/arrhenius_pv.H"
-#include "../drt_mat/ferech_pv.H"
-#include "../drt_mat/mixfrac.H"
-#include "../drt_mat/sutherland.H"
-#include "../drt_mat/yoghurt.H"
-#include "../drt_mat/fluid_linear_density_viscosity.H"
-#include "../drt_mat/fluid_murnaghantait.H"
+#include "arrhenius_pv.H"
+#include "ferech_pv.H"
+#include "mixfrac.H"
+#include "sutherland.H"
+#include "yoghurt.H"
+#include "fluid_linear_density_viscosity.H"
+#include "fluid_murnaghantait.H"
 
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>

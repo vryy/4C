@@ -8,7 +8,7 @@
 *----------------------------------------------------------------------*/
 
 #include "prestress.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 
 DRT::ELEMENTS::PreStressType DRT::ELEMENTS::PreStressType::instance_;

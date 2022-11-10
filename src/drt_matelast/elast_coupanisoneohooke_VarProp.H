@@ -10,7 +10,7 @@ with space-time varying coefficients
 #define ELAST_COUPANISONEOHOOKE_VARPROP_H_
 
 #include "elast_summand.H"
-#include "../drt_mat/matpar_parameter.H"
+#include "matpar_parameter.H"
 
 namespace MAT
 {

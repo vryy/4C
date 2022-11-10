@@ -6,17 +6,17 @@
 /*----------------------------------------------------------------------*/
 
 #include "so3_ssn_plast_sosh18.H"
-#include "../../drt_lib/drt_linedefinition.H"
-#include "../../drt_mat/plasticelasthyper.H"
+#include "drt_linedefinition.H"
+#include "plasticelasthyper.H"
 #include "so3_ssn_plast_eletypes.H"
-#include "../so_sh18.H"
-#include "../so_hex18.H"
-#include "../../linalg/linalg_serialdensevector.H"
+#include "so_sh18.H"
+#include "so_hex18.H"
+#include "linalg_serialdensevector.H"
 
-#include "../../drt_structure_new/str_elements_paramsinterface.H"
-#include "../../linalg/linalg_serialdensematrix.H"
-#include "../../drt_lib/drt_globalproblem.H"
-#include "../so_utils.H"
+#include "str_elements_paramsinterface.H"
+#include "linalg_serialdensematrix.H"
+#include "drt_globalproblem.H"
+#include "so_utils.H"
 
 
 /*----------------------------------------------------------------------*

@@ -15,30 +15,30 @@
 #include "fsi_dirichletneumann_volcoupl.H"
 #include "fsi_debugwriter.H"
 
-#include "../drt_inpar/inpar_fsi.H"
+#include "inpar_fsi.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include "../drt_adapter/ad_fld_fluid_xfem.H"
-#include "../drt_adapter/ad_fld_fluid.H"
-#include "../drt_adapter/ad_fld_fluid_xfsi.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/ad_ale_fluid.H"
+#include "ad_fld_fluid_xfem.H"
+#include "ad_fld_fluid.H"
+#include "ad_fld_fluid_xfsi.H"
+#include "ad_str_fsiwrapper.H"
+#include "ad_ale_fluid.H"
 
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_mortar/mortar_calc_utils.H"
+#include "mortar_calc_utils.H"
 
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_condition_utils.H"
+#include "drt_globalproblem.H"
 
 // search
-#include "../drt_geometry/searchtree.H"
-#include "../drt_geometry/searchtree_geometry_service.H"
+#include "searchtree.H"
+#include "searchtree_geometry_service.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

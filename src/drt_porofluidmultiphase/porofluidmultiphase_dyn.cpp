@@ -15,16 +15,16 @@
 #include "porofluidmultiphase_timint_implicit.H"
 #include "porofluidmultiphase_timint_ost.H"
 
-#include "../drt_inpar/inpar_bio.H"
+#include "inpar_bio.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "io.H"
+#include "io_control.H"
 
 
 #include <Teuchos_TimeMonitor.hpp>
-#include "../drt_lib/drt_dofset_predefineddofnumber.H"
+#include "drt_dofset_predefineddofnumber.H"
 
 /*-------------------------------------------------------------------------------*
  | Main control routine for poro fluid multiphase problems           vuong 08/16 |

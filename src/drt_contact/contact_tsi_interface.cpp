@@ -17,14 +17,14 @@
 #include "friction_node.H"
 #include "contact_element.H"
 
-#include "../drt_mortar/mortar_dofset.H"
-#include "../drt_mortar/mortar_node.H"
-#include "../drt_mortar/mortar_element.H"
+#include "mortar_dofset.H"
+#include "mortar_node.H"
+#include "mortar_element.H"
 
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_inpar/inpar_mortar.H"
+#include "inpar_mortar.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            seitz 08/15|

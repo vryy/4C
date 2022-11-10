@@ -13,8 +13,8 @@
 #include "particle_interaction_material_handler.H"
 #include "particle_interaction_runtime_writer.H"
 
-#include "../drt_particle_engine/particle_engine_interface.H"
-#include "../drt_particle_engine/particle_container.H"
+#include "particle_engine_interface.H"
+#include "particle_container.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

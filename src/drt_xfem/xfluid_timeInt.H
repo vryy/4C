@@ -16,10 +16,10 @@
 #define XFLUID_TIMEINTEGRATION_H_
 
 
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_inpar/inpar_xfem.H"
-#include "../drt_cut/cut_utils.H"
-#include "../drt_cut/cut_node.H"
+#include "linalg_fixedsizematrix.H"
+#include "inpar_xfem.H"
+#include "cut_utils.H"
+#include "cut_node.H"
 
 
 class Epetra_Map;

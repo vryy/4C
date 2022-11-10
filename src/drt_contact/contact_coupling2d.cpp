@@ -16,14 +16,14 @@
 #include "contact_node.H"
 #include "contact_interpolator.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_densematrix_inverse.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "drt_discret.H"
+#include "linalg_utils_densematrix_inverse.H"
+#include "linalg_serialdensevector.H"
 
-#include "../drt_mortar/mortar_defines.H"
-#include "../drt_mortar/mortar_element.H"
-#include "../drt_mortar/mortar_node.H"
-#include "../drt_mortar/mortar_projector.H"
+#include "mortar_defines.H"
+#include "mortar_element.H"
+#include "mortar_node.H"
+#include "mortar_projector.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|

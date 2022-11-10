@@ -8,15 +8,15 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "drt_globalproblem.H"
+#include "drt_validparameters.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "adapter_coupling.H"
 #include "ad_fld_fluid_xfem.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "fluid_utils_mapextractor.H"
 
-#include "../drt_adapter/ad_fld_fluid_xfsi.H"
+#include "ad_fld_fluid_xfsi.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

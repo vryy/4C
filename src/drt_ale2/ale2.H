@@ -18,8 +18,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_SerialDenseMatrix.hpp>
 
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "drt_elementtype.H"
+#include "drt_utils_integration.H"
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */

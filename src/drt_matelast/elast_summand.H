@@ -9,10 +9,10 @@
 #ifndef ELAST_SUMMAND_H
 #define ELAST_SUMMAND_H
 
-#include "../drt_inpar/inpar_material.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_lib/drt_parobject.H"
-#include "../headers/FADmatrix_utils.H"
+#include "inpar_material.H"
+#include "linalg_fixedsizematrix.H"
+#include "drt_parobject.H"
+#include "FADmatrix_utils.H"
 
 // forward declarations
 

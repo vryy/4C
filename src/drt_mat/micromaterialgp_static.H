@@ -15,7 +15,7 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 // forward declarations
 

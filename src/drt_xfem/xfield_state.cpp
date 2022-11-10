@@ -12,8 +12,8 @@
 
 #include "xfield_state.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_discret_xfem.H"
+#include "drt_discret.H"
+#include "drt_discret_xfem.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

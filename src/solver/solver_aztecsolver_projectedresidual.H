@@ -14,7 +14,7 @@
 
 #include "AztecOO_StatusTestResNorm.h"
 
-#include "../linalg/linalg_krylov_projector.H"
+#include "linalg_krylov_projector.H"
 
 
 //! AztecOO_StatusTestProjResNorm: An implementation of AztecOO_StatusTestResNorm

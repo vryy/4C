@@ -12,9 +12,9 @@
 #include "drt_validparameters.H"
 #include "inpar_scatra.H"
 
-#include "../drt_lib/drt_conditiondefinition.H"
+#include "drt_conditiondefinition.H"
 
-#include "../linalg/linalg_sparseoperator.H"
+#include "linalg_sparseoperator.H"
 
 /*------------------------------------------------------------------------*
  | set valid parameters for scatra-thermo interaction          fang 10/16 |

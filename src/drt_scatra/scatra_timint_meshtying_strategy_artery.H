@@ -11,9 +11,9 @@
 #define SRC_DRT_SCATRA_SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_H_
 
 #include "scatra_timint_meshtying_strategy_base.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_print.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_print.H"
 
 // forward declaration
 namespace DRT

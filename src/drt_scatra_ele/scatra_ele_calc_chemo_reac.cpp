@@ -9,16 +9,16 @@ reactive scalars
 
 #include "scatra_ele_calc_chemo_reac.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_element.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_element.H"
 
-#include "../drt_mat/matlist_chemoreac.H"
-#include "../drt_mat/matlist_chemotaxis.H"
-#include "../drt_mat/matlist_reactions.H"
-#include "../drt_mat/scatra_mat.H"
-#include "../drt_mat/matlist.H"
-#include "../headers/singleton_owner.H"
+#include "matlist_chemoreac.H"
+#include "matlist_chemotaxis.H"
+#include "matlist_reactions.H"
+#include "scatra_mat.H"
+#include "matlist.H"
+#include "singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*

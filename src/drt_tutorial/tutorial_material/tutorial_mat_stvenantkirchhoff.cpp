@@ -10,7 +10,7 @@
 /*---------------------------------------------------------------------*/
 
 #include "tutorial_mat.H"
-#include "../tutorial_ele/tutorial_ele.H"
+#include "tutorial_ele.H"
 
 
 TUTORIAL::MATERIAL::TutorialMat::TutorialMat(double young) : Young_(young) {}

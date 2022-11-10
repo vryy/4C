@@ -9,14 +9,14 @@
  | headers                                                    gjb 01/08 |
  *----------------------------------------------------------------------*/
 #include "thermo_element.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_utils_factory.H"
+#include "drt_dserror.H"
+#include "drt_globalproblem.H"
 // material headers
-#include "../drt_mat/fourieriso.H"
-#include "../drt_mat/thermostvenantkirchhoff.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "fourieriso.H"
+#include "thermostvenantkirchhoff.H"
+#include "drt_linedefinition.H"
 
 DRT::ELEMENTS::ThermoType DRT::ELEMENTS::ThermoType::instance_;
 

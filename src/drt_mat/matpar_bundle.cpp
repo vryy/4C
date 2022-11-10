@@ -14,7 +14,7 @@
 /* headers */
 #include "matpar_bundle.H"
 #include "material.H"
-#include "../drt_matelast/elast_summand.H"
+#include "elast_summand.H"
 
 /*----------------------------------------------------------------------*/
 MAT::PAR::Bundle::Bundle() : materialreadfromproblem_(0) {}

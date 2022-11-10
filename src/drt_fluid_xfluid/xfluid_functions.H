@@ -8,7 +8,7 @@
  */
 /*----------------------------------------------------------------------*/
 
-#include "../drt_lib/drt_function.H"
+#include "drt_function.H"
 
 #ifndef XFLUID_FUNCTION_H
 #define XFLUID_FUNCTION_H

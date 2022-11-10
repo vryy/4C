@@ -17,9 +17,9 @@
 #include "str_predict_generic.H"
 #include "str_dbc.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
-#include "../linalg/linalg_sparseoperator.H"
+#include "io.H"
+#include "io_pstream.H"
+#include "linalg_sparseoperator.H"
 
 #include <Epetra_Vector.h>
 #include <NOX_Epetra_Vector.H>

@@ -18,36 +18,36 @@
 #include "volmortar_shape.H"
 #include "volmortar_utils.H"
 
-#include "../drt_inpar/inpar_volmortar.H"
+#include "inpar_volmortar.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
 
-#include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_multiply.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_solver.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_mapextractor.H"
 
 // std. interface mortar
-#include "../drt_mortar/mortar_coupling3d.H"
-#include "../drt_mortar/mortar_utils.H"
-#include "../drt_mortar/mortar_calc_utils.H"
-#include "../drt_mortar/mortar_element.H"
+#include "mortar_coupling3d.H"
+#include "mortar_utils.H"
+#include "mortar_calc_utils.H"
+#include "mortar_element.H"
 
 // Cut
-#include "../drt_cut/cut_volumecell.H"
-#include "../drt_cut/cut_elementhandle.H"
-#include "../drt_cut/cut_cutwizard.H"
+#include "cut_volumecell.H"
+#include "cut_elementhandle.H"
+#include "cut_cutwizard.H"
 
 // search
-#include "../drt_geometry/searchtree.H"
-#include "../drt_geometry/searchtree_geometry_service.H"
+#include "searchtree.H"
+#include "searchtree_geometry_service.H"
 
-#include "../headers/pairedvector.H"
+#include "pairedvector.H"
 #include <Teuchos_Time.hpp>
-#include "../drt_lib/drt_dofset_predefineddofnumber.H"
+#include "drt_dofset_predefineddofnumber.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/13|
@@ -2269,7 +2269,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         }
         break;
       }
-      //#######################################################
+      // #######################################################
       case DRT::Element::hex20:
       {
         switch (mele.Shape())
@@ -2337,7 +2337,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         }
         break;
       }
-      //#######################################################
+      // #######################################################
       case DRT::Element::hex27:
       {
         switch (mele.Shape())
@@ -2405,7 +2405,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         }
         break;
       }
-      //#######################################################
+      // #######################################################
       case DRT::Element::tet4:
       {
         switch (mele.Shape())
@@ -2471,7 +2471,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         }
         break;
       }
-      //#######################################################
+      // #######################################################
       case DRT::Element::tet10:
       {
         switch (mele.Shape())
@@ -2539,7 +2539,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         }
         break;
       }
-      //#######################################################
+      // #######################################################
       case DRT::Element::pyramid5:
       {
         switch (mele.Shape())
@@ -3217,7 +3217,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele, DRT::Element& me
       }
       break;
     }
-    //########################################################
+    // ########################################################
     case DRT::Element::hex20:
     {
       switch (mele.Shape())
@@ -3280,7 +3280,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele, DRT::Element& me
       }
       break;
     }
-    //########################################################
+    // ########################################################
     case DRT::Element::hex27:
     {
       switch (mele.Shape())
@@ -3343,7 +3343,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele, DRT::Element& me
       }
       break;
     }
-    //########################################################
+    // ########################################################
     case DRT::Element::tet4:
     {
       switch (mele.Shape())
@@ -3406,7 +3406,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele, DRT::Element& me
       }
       break;
     }
-    //########################################################
+    // ########################################################
     case DRT::Element::tet10:
     {
       switch (mele.Shape())
@@ -3469,7 +3469,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele, DRT::Element& me
       }
       break;
     }
-    //########################################################
+    // ########################################################
     case DRT::Element::pyramid5:
     {
       switch (mele.Shape())

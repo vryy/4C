@@ -16,14 +16,14 @@
 #include "contact_element.H"
 #include "contact_defines.H"
 #include "friction_node.H"
-#include "../drt_mortar/mortar_defines.H"
+#include "mortar_defines.H"
 
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
+#include "linalg_serialdensematrix.H"
 
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_mortar/mortar_projector.H"
-#include "../drt_mortar/mortar_coupling3d_classes.H"
+#include "inpar_contact.H"
+#include "mortar_projector.H"
+#include "mortar_coupling3d_classes.H"
 
 
 /*----------------------------------------------------------------------*

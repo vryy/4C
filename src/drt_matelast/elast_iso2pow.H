@@ -10,7 +10,7 @@ material in terms of the second Cauchy-Green invariant
 #ifndef ELAST_ISO2POW_H_
 #define ELAST_ISO2POW_H_
 
-#include "../drt_mat/matpar_parameter.H"
+#include "matpar_parameter.H"
 #include "elast_summand.H"
 
 namespace MAT

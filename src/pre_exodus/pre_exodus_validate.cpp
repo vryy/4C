@@ -13,11 +13,11 @@ Validate a given BACI input file (after all preprocessing steps)
 
 #include "pre_exodus_validate.H"
 #include "pre_exodus_soshextrusion.H"  //just temporarly for gmsh-plot
-#include "../drt_io/io_control.H"      //for writing to the error file
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_inputreader.H"
+#include "io_control.H"                //for writing to the error file
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_integration.H"
+#include "drt_globalproblem.H"
+#include "drt_inputreader.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

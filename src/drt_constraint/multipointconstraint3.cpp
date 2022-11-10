@@ -11,16 +11,16 @@
 #include "multipointconstraint3.H"
 #include "constraint_element3.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_sparsematrix.H"
+#include "drt_discret.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_sparsematrix.H"
 #include <iostream>
-#include "../drt_lib/drt_dofset_transparent.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_parallel.H"
-#include "../drt_lib/function_of_time.H"
+#include "drt_dofset_transparent.H"
+#include "drt_condition_utils.H"
+#include "drt_utils.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_parallel.H"
+#include "function_of_time.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|

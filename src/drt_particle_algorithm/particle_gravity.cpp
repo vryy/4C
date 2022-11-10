@@ -10,8 +10,8 @@
  *---------------------------------------------------------------------------*/
 #include "particle_gravity.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/function_of_time.H"
+#include "drt_globalproblem.H"
+#include "function_of_time.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

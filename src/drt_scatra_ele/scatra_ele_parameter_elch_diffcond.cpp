@@ -20,11 +20,11 @@ additional static parameters required for scalar transport element evaluation.
 #include <map>
 #include <Teuchos_ParameterList.hpp>
 
-#include "../drt_inpar/inpar_elch.H"
-#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "inpar_elch.H"
+#include "inpar_parameterlist_utils.H"
 
-#include "../drt_lib/drt_dserror.H"
-#include "../headers/singleton_owner.H"
+#include "drt_dserror.H"
+#include "singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |

@@ -14,16 +14,16 @@
 #include "adapter_scatra_fluid_coupling_algorithm.H"
 #include "adapter_coupling_volmortar.H"
 
-#include "../drt_fluid_turbulence/turbulence_statistic_manager.H"
-#include "../drt_io/io.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
+#include "turbulence_statistic_manager.H"
+#include "io.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
 
 // XFEM-specific coupling.
-#include "../drt_fluid_xfluid/xfluid.H"
-#include "../drt_lib/drt_discret_xfem.H"
+#include "xfluid.H"
+#include "drt_discret_xfem.H"
 
-#include "../drt_levelset/levelset_algorithm.H"
+#include "levelset_algorithm.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

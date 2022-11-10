@@ -20,8 +20,8 @@ coexist with this general class.
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "../drt_lib/drt_dserror.H"
-#include "../headers/singleton_owner.H"
+#include "drt_dserror.H"
+#include "singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                             thon/vuong 07/15 |

@@ -14,9 +14,9 @@
 
 #include "Epetra_MpiComm.h"
 
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_blocksparsematrix.H"
-#include "../drt_inpar/inpar_fluid.H"
+#include "drt_discret.H"
+#include "linalg_blocksparsematrix.H"
+#include "inpar_fluid.H"
 #include <Teuchos_TimeMonitor.hpp>
 
 // forward declarations

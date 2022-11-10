@@ -10,9 +10,9 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "../drt_structure/strtimint_create.H"
-#include "../drt_structure/strtimada.H"
-#include "../drt_structure/strtimint.H"
+#include "strtimint_create.H"
+#include "strtimada.H"
+#include "strtimint.H"
 #include "ad_str_timint_adaptive.H"
 
 

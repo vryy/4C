@@ -11,10 +11,10 @@
 #include <vector>
 #include <iterator>
 #include "linalg_matrixtransform.H"
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "adapter_coupling.H"
+#include "drt_dserror.H"
+#include "drt_exporter.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 
 

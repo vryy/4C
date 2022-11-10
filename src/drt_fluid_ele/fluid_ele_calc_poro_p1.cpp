@@ -13,12 +13,12 @@
 
 #include "fluid_ele.H"
 #include "fluid_ele_parameter_poro.H"
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+#include "drt_nurbs_utils.H"
 
-#include "../drt_mat/fluidporo.H"
-#include "../drt_mat/structporo.H"
+#include "fluidporo.H"
+#include "structporo.H"
 
-#include "../drt_fluid/fluid_rotsym_periodicbc.H"
+#include "fluid_rotsym_periodicbc.H"
 
 
 template <DRT::Element::DiscretizationType distype>

@@ -16,19 +16,19 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_turbulence.H"
 
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "drt_utils_boundary_integration.H"
 
-#include "../drt_lib/drt_utils.H"
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+#include "drt_utils.H"
+#include "drt_nurbs_utils.H"
 
-#include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
-#include "../drt_lib/drt_globalproblem.H"
+#include "standardtypes_cpp.H"  // for EPS13 and so on
+#include "drt_globalproblem.H"
 
-#include "../drt_fluid/fluid_rotsym_periodicbc.H"
+#include "fluid_rotsym_periodicbc.H"
 
-#include "../drt_mat/scatra_mat_multiscale.H"
+#include "scatra_mat_multiscale.H"
 
-#include "../drt_volmortar/volmortar_shape.H"
+#include "volmortar_shape.H"
 
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |

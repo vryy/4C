@@ -9,18 +9,18 @@
 
 #include "ssi_monolithic.H"
 
-#include "../drt_adapter/ad_str_ssiwrapper.H"
+#include "ad_str_ssiwrapper.H"
 
-#include "../drt_contact/contact_nitsche_strategy_ssi.H"
+#include "contact_nitsche_strategy_ssi.H"
 
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
-#include "../drt_lib/drt_locsys.H"
+#include "drt_locsys.H"
 
-#include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
+#include "scatra_timint_meshtying_strategy_s2i.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_matrixtransform.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

@@ -25,7 +25,7 @@
 #include "drt_globalproblem.H"
 #include "drt_utils_cond_and_mat_definition.H"
 
-#include "../drt_mat/material.H"
+#include "material.H"
 
 
 /*----------------------------------------------------------------------*

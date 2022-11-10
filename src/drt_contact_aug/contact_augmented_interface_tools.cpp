@@ -8,19 +8,19 @@
 /*---------------------------------------------------------------------*/
 #include "contact_augmented_interface.H"
 #include "contact_integrator_utils.H"
-#include "../drt_contact/contact_integrator.H"
-#include "../drt_contact/contact_defines.H"
-#include "../drt_contact/contact_node.H"
-#include "../drt_contact/contact_paramsinterface.H"
-#include "../drt_mortar/mortar_element.H"
-#include "../drt_mortar/mortar_dofset.H"
-#include "../drt_mortar/mortar_integrator.H"
-#include "../drt_mortar/mortar_defines.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/inpar_contact.H"
+#include "contact_integrator.H"
+#include "contact_defines.H"
+#include "contact_node.H"
+#include "contact_paramsinterface.H"
+#include "mortar_element.H"
+#include "mortar_dofset.H"
+#include "mortar_integrator.H"
+#include "mortar_defines.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "drt_globalproblem.H"
+#include "inpar_contact.H"
 
-#include "../drt_structure_new/str_model_evaluator_data.H"
+#include "str_model_evaluator_data.H"
 
 
 /*----------------------------------------------------------------------------*

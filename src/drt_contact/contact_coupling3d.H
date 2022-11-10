@@ -10,9 +10,9 @@
 #ifndef CONTACT_COUPLING3D_H
 #define CONTACT_COUPLING3D_H
 
-#include "../drt_mortar/mortar_coupling3d.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_inpar/inpar_wear.H"
+#include "mortar_coupling3d.H"
+#include "inpar_contact.H"
+#include "inpar_wear.H"
 
 namespace CONTACT
 {

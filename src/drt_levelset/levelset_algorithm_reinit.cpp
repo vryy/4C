@@ -12,14 +12,14 @@
 
 #include "levelset_algorithm.H"
 #include "levelset_intersection_utils.H"
-#include "../drt_lib/drt_periodicbc.H"
-#include "../drt_lib/drt_utils_parameter_list.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_scatra_ele/scatra_ele_action.H"
-#include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_solver.H"
+#include "drt_periodicbc.H"
+#include "drt_utils_parameter_list.H"
+#include "io_control.H"
+#include "io_pstream.H"
+#include "scatra_ele_action.H"
+#include "standardtypes_cpp.H"  // for EPS13 and so on
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_solver.H"
 #include <list>
 
 

@@ -24,27 +24,27 @@
 #include <Epetra_Time.h>
 #include <Teuchos_ParameterList.hpp>
 
-#include "../linalg/linalg_sparseoperator.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_sparseoperator.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_serialdensevector.H"
 
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils_discret.H"
+#include "drt_dserror.H"
+#include "drt_discret.H"
+#include "drt_utils_discret.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_io/discretization_runtime_vtu_writer.H"
+#include "io.H"
+#include "io_pstream.H"
+#include "discretization_runtime_vtu_writer.H"
 
 #include "str_discretization_runtime_vtu_output_params.H"
-#include "../drt_beam3/beam3.H"
-#include "../drt_beam3/beam_discretization_runtime_vtu_writer.H"
-#include "../drt_beam3/beam_discretization_runtime_vtu_output_params.H"
+#include "beam3.H"
+#include "beam_discretization_runtime_vtu_writer.H"
+#include "beam_discretization_runtime_vtu_output_params.H"
 
-#include "../drt_lib/prestress_service.H"
+#include "prestress_service.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

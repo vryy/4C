@@ -16,27 +16,27 @@
 #include "contact_noxinterface.H"
 #include "contact_utils_parallel.H"
 
-#include "../drt_mortar/mortar_defines.H"
-#include "../drt_mortar/mortar_utils.H"
+#include "mortar_defines.H"
+#include "mortar_utils.H"
 
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "inpar_contact.H"
+#include "inpar_parameterlist_utils.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_colors.H"
+#include "drt_discret.H"
+#include "drt_colors.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
+#include "io.H"
+#include "io_control.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_multiply.H"
+#include "linalg_sparsematrix.H"
+#include "drt_globalproblem.H"
 
-#include "../solver_nonlin_nox/nox_nln_group.H"
+#include "nox_nln_group.H"
 
 
 /*----------------------------------------------------------------------*

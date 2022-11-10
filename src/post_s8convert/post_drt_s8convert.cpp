@@ -8,17 +8,17 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "../post_drt_common/post_drt_common.H"
-#include "../drt_s8/shell8.H"
-#include "../drt_so3/so_hex8.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
+#include "post_drt_common.H"
+#include "shell8.H"
+#include "so_hex8.H"
+#include "io.H"
+#include "io_control.H"
 
 #include <Epetra_SerialComm.h>
 #include <Teuchos_RCP.hpp>
 #include <vector>
 
-#include "../pss_full/pss_cpp.h"
+#include "pss_cpp.h"
 
 class Converter
 {

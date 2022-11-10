@@ -18,18 +18,18 @@
 #include <Epetra_Time.h>
 #include <Teuchos_ParameterList.hpp>
 
-#include "../linalg/linalg_sparseoperator.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_discret.H"
+#include "linalg_sparseoperator.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "drt_dserror.H"
+#include "drt_discret.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_io/io.H"
+#include "io.H"
 
-#include "../drt_constraint/lagpenconstraint_noxinterface.H"
+#include "lagpenconstraint_noxinterface.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

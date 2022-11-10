@@ -21,13 +21,13 @@
 
 #include "drt_utils.H"
 #include "drt_discret.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_solver.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
-#include "../linalg/linalg_gauss.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_solver.H"
+#include "drt_globalproblem.H"
+#include "io_control.H"
+#include "linalg_gauss.H"
 #include "./drt_dserror.H"
 
 

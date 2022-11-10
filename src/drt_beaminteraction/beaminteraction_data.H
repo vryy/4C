@@ -12,8 +12,8 @@
 #ifndef BEAMINTERACTION_DATA_H_
 #define BEAMINTERACTION_DATA_H_
 
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_inpar/inpar_beaminteraction.H"
+#include "linalg_fixedsizematrix.H"
+#include "inpar_beaminteraction.H"
 #include <map>
 #include <set>
 

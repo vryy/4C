@@ -9,16 +9,16 @@
 /*---------------------------------------------------------------------*/
 
 #include "meshtying_contact_bridge.H"
-#include "../drt_contact/meshtying_manager.H"
-#include "../drt_contact/contact_manager.H"
+#include "meshtying_manager.H"
+#include "contact_manager.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_condition.H"
+#include "drt_discret.H"
+#include "drt_condition.H"
 
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_mapextractor.H"
 
-#include "../drt_mortar/mortar_strategy_base.H"
-#include "../drt_mortar/mortar_manager_base.H"
+#include "mortar_strategy_base.H"
+#include "mortar_manager_base.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 06/14|

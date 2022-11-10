@@ -11,8 +11,8 @@
 #include "wall1_poro_eletypes.H"
 #include "wall1_poro.H"
 
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_linedefinition.H"
+#include "drt_discret.H"
 
 /*----------------------------------------------------------------------*
  |  QUAD 4 Element                                       |

@@ -9,8 +9,8 @@
 #include "particle_data.H"
 
 #include "Epetra_Map.h"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_comm/comm_utils.H"
+#include "drt_globalproblem.H"
+#include "comm_utils.H"
 
 /*----------------------------------------------------------------------*/
 INVANA::ParticleDataType INVANA::ParticleDataType::instance_;

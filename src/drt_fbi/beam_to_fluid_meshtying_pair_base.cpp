@@ -10,27 +10,27 @@
 
 #include "beam_to_fluid_meshtying_pair_base.H"
 
-#include "../drt_beaminteraction/beam_contact_pair.H"
-#include "../drt_beaminteraction/beam3contact_defines.H"
-#include "../drt_beaminteraction/beam3contact_utils.H"
-#include "../drt_beaminteraction/beam_to_solid_vtu_output_writer_base.H"
-#include "../drt_beaminteraction/beam_to_solid_vtu_output_writer_visualization.H"
+#include "beam_contact_pair.H"
+#include "beam3contact_defines.H"
+#include "beam3contact_utils.H"
+#include "beam_to_solid_vtu_output_writer_base.H"
+#include "beam_to_solid_vtu_output_writer_visualization.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_fixedsizematrix.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
 
-#include "../drt_beam3/beam3.H"
-#include "../drt_beam3/beam3r.H"
-#include "../drt_beam3/beam3k.H"
-#include "../drt_beam3/beam3eb.H"
+#include "beam3.H"
+#include "beam3r.H"
+#include "beam3k.H"
+#include "beam3eb.H"
 
-#include "../drt_beaminteraction/beam_contact_params.H"
-#include "../drt_beaminteraction/beam_to_solid_volume_meshtying_params.H"
-#include "../drt_geometry_pair/geometry_pair_line_to_volume.H"
-#include "../drt_geometry_pair/geometry_pair_element_functions.H"
-#include "../drt_geometry_pair/geometry_pair_factory.H"
-#include "../drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
+#include "beam_contact_params.H"
+#include "beam_to_solid_volume_meshtying_params.H"
+#include "geometry_pair_line_to_volume.H"
+#include "geometry_pair_element_functions.H"
+#include "geometry_pair_factory.H"
+#include "geometry_pair_line_to_3D_evaluation_data.H"
 
 
 

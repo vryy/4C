@@ -10,7 +10,7 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_timint_poro_stat.H"
-#include "../drt_io/io.H"
+#include "io.H"
 
 
 FLD::TimIntPoroStat::TimIntPoroStat(const Teuchos::RCP<DRT::Discretization>& actdis,

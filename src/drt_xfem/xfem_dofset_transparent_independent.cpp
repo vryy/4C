@@ -10,8 +10,8 @@
 
 #include "xfem_dofset_transparent_independent.H"
 
-#include "../drt_cut/cut_node.H"
-#include "../drt_cut/cut_cutwizard.H"
+#include "cut_node.H"
+#include "cut_cutwizard.H"
 
 
 XFEM::XFEMTransparentIndependentDofSet::XFEMTransparentIndependentDofSet(

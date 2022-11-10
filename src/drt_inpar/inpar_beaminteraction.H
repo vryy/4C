@@ -13,9 +13,9 @@
 
 #include "inpar_parameterlist_utils.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "drt_utils_integration.H"
 
 // forward declaration
 namespace DRT
@@ -39,8 +39,8 @@ namespace INPAR
 
     enum class SearchStrategy
     {
-      bruteforce_with_binning,             ///< coupling pair search based on binning
-      bruteforce_with_proc_boundingvolume  ///< coupling pair search based on bounding boxes
+      bruteforce_with_binning,   ///< coupling pair search based on binning
+      bounding_volume_hierarchy  ///< coupling pair search based on a bounding volume hierarchy
     };
 
     /// type of the used submodel for beaminteraction

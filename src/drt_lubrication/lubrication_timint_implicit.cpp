@@ -11,21 +11,21 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "../drt_lubrication_ele/lubrication_ele_action.H"
+#include "lubrication_ele_action.H"
 
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_print.H"
+#include "linalg_solver.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_print.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_inpar/inpar_lubrication.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "inpar_lubrication.H"
+#include "drt_validparameters.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_gmsh.H"
+#include "io.H"
+#include "io_control.H"
+#include "io_gmsh.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

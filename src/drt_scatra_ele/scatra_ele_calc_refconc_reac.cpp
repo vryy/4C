@@ -9,8 +9,8 @@ concentrations and with advanced reaction terms
 
 
 #include "scatra_ele_calc_refconc_reac.H"
-#include "../drt_mat/matlist_reactions.H"
-#include "../headers/singleton_owner.H"
+#include "matlist_reactions.H"
+#include "singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

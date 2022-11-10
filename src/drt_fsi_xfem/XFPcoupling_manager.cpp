@@ -8,20 +8,20 @@
 *----------------------------------------------------------------------*/
 #include "XFPcoupling_manager.H"
 
-#include "../drt_xfem/xfem_condition_manager.H"
+#include "xfem_condition_manager.H"
 
-#include "../drt_poroelast/poro_base.H"
+#include "poro_base.H"
 
-#include "../drt_adapter/ad_fld_poro.H"
-#include "../drt_adapter/ad_str_fpsiwrapper.H"
+#include "ad_fld_poro.H"
+#include "ad_str_fpsiwrapper.H"
 
-#include "../drt_fluid_xfluid/xfluid.H"
-#include "../drt_io/io.H"
+#include "xfluid.H"
+#include "io.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 // remove me
-#include "../drt_adapter/adapter_coupling.H"
+#include "adapter_coupling.H"
 
 XFEM::XFPCoupling_Manager::XFPCoupling_Manager(Teuchos::RCP<XFEM::ConditionManager> condmanager,
     Teuchos::RCP<POROELAST::PoroBase> poro, Teuchos::RCP<FLD::XFluid> xfluid, std::vector<int> idx)

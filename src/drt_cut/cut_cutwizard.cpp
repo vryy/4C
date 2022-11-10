@@ -11,19 +11,19 @@ surface meshes
 
 #include "cut_cutwizard.H"
 
-#include "../drt_io/io_pstream.H"
-#include "../drt_io/io_control.H"
+#include "io_pstream.H"
+#include "io_control.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_discret_xfem.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_discret_xfem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_cut/cut_combintersection.H"
-#include "../drt_cut/cut_elementhandle.H"
-#include "../drt_cut/cut_node.H"
-#include "../drt_cut/cut_volumecell.H"
-#include "../drt_cut/cut_parallel.H"
-#include "../drt_cut/cut_sidehandle.H"
+#include "cut_combintersection.H"
+#include "cut_elementhandle.H"
+#include "cut_node.H"
+#include "cut_volumecell.H"
+#include "cut_parallel.H"
+#include "cut_sidehandle.H"
 
 
 /*----------------------------------------------------------------------------*

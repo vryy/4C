@@ -14,7 +14,7 @@
 
 #include "ad_field_wrapper.H"
 #include "ad_str_fsiwrapper.H"
-#include "../drt_structure/stru_aux.H"
+#include "stru_aux.H"
 
 namespace DRT
 {

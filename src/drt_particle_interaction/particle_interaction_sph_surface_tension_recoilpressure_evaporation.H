@@ -15,10 +15,10 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "../drt_particle_engine/particle_enums.H"
-#include "../drt_particle_engine/particle_typedefs.H"
+#include "particle_enums.H"
+#include "particle_typedefs.H"
 
-#include "../drt_inpar/inpar_particle.H"
+#include "inpar_particle.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |

@@ -16,14 +16,14 @@
 #include "xfield_field_coupling_dofset.H"
 #include "xfield_field_coupling.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_mapextractor.H"
 
-#include "../drt_lib/drt_discret_xfem.H"
-#include "../drt_lib/drt_parobject.H"
-#include "../drt_lib/drt_exporter.H"
+#include "drt_discret_xfem.H"
+#include "drt_parobject.H"
+#include "drt_exporter.H"
 
-#include "../linalg/linalg_matrixtransform.H"
+#include "linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

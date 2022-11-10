@@ -10,9 +10,9 @@
 #ifndef CROSSLINKINGPARAMS_H
 #define CROSSLINKINGPARAMS_H
 
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_inpar/inpar_beaminteraction.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "drt_dserror.H"
+#include "inpar_beaminteraction.H"
+#include "linalg_fixedsizematrix.H"
 
 // forward declaration
 namespace STR

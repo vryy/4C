@@ -10,7 +10,7 @@
 #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_H
 #define SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_H
 
-#include "../drt_inpar/inpar_fluid.H"
+#include "inpar_fluid.H"
 
 #include "scatra_timint_meshtying_strategy_base.H"
 

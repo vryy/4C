@@ -17,10 +17,10 @@
 #include <Epetra_Operator.h>
 #include <Epetra_CrsGraph.h>
 
-#include "../drt_inpar/inpar_fluid.H"
-#include "../drt_inpar/inpar_poroelast.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "inpar_fluid.H"
+#include "inpar_poroelast.H"
+#include "drt_dserror.H"
+#include "linalg_fixedsizematrix.H"
 
 // forward declarations
 namespace LINALG

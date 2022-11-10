@@ -6,17 +6,17 @@
 
 
 *----------------------------------------------------------------------*/
-#include "../drt_ale/ale_utils_clonestrategy.H"
+#include "ale_utils_clonestrategy.H"
 
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_inpar/inpar_elch.H"
+#include "drt_validparameters.H"
+#include "inpar_elch.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_scatra/scatra_resulttest_elch.H"
-#include "../drt_scatra/scatra_timint_elch.H"
-#include "../drt_scatra/scatra_utils_clonestrategy.H"
-#include "../drt_scatra_ele/scatra_ele.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_createdis.H"
+#include "scatra_resulttest_elch.H"
+#include "scatra_timint_elch.H"
+#include "scatra_utils_clonestrategy.H"
+#include "scatra_ele.H"
 
 #include <Epetra_Time.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -25,7 +25,7 @@
 #include "elch_algorithm.H"
 #include "elch_moving_boundary_algorithm.H"
 #include "elch_dyn.H"
-#include "../drt_lib/drt_dofset_predefineddofnumber.H"
+#include "drt_dofset_predefineddofnumber.H"
 
 
 /*----------------------------------------------------------------------*/

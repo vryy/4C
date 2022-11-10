@@ -20,16 +20,16 @@
 #include "contact_integrator_factory.H"
 #include "friction_node.H"
 
-#include "../drt_mortar/mortar_defines.H"
-#include "../drt_mortar/mortar_projector.H"
+#include "mortar_defines.H"
+#include "mortar_projector.H"
 
-#include "../drt_inpar/inpar_contact.H"
+#include "inpar_contact.H"
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_utils_densematrix_inverse.H"
+#include "linalg_serialdensevector.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_utils_densematrix_inverse.H"
 
 
 /*----------------------------------------------------------------------*

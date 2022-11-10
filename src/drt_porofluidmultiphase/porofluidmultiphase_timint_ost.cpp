@@ -9,9 +9,9 @@
 
 #include "porofluidmultiphase_timint_ost.H"
 
-#include "../drt_io/io.H"
+#include "io.H"
 
-#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_action.H"
+#include "porofluidmultiphase_ele_action.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                   vuong  08/16 |

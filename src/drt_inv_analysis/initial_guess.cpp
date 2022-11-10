@@ -18,15 +18,15 @@
 #include "matpar_manager_patchwise.H"
 #include "matpar_manager_tvsvd.H"
 #include "objective_funct.H"
-#include "../drt_inpar/inpar_invanalysis.H"
-#include "../drt_inpar/inpar_statinvanalysis.H"
+#include "inpar_invanalysis.H"
+#include "inpar_statinvanalysis.H"
 #include "DcsMatrix.H"
 
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io.H"
-#include "../drt_timestepping/timintmstep.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "drt_dserror.H"
+#include "io_control.H"
+#include "io.H"
+#include "timintmstep.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 /*----------------------------------------------------------------------*/
 INVANA::InitialGuess::InitialGuess(const Teuchos::ParameterList& invp)

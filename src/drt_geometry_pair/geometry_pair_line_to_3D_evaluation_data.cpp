@@ -9,7 +9,7 @@
 
 #include "geometry_pair_line_to_3D_evaluation_data.H"
 
-#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "inpar_parameterlist_utils.H"
 
 
 /**

@@ -19,8 +19,8 @@
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Time.h>
 
-#include "../drt_inpar/inpar_structure.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "inpar_structure.H"
+#include "linalg_fixedsizematrix.H"
 
 // forward declarations
 

@@ -9,7 +9,7 @@
 #ifndef SRC_DRT_MORTAR_MORTAR_STRATEGY_FACTORY_H_
 #define SRC_DRT_MORTAR_MORTAR_STRATEGY_FACTORY_H_
 
-#include "../drt_inpar/inpar_contact.H"
+#include "inpar_contact.H"
 
 #include <Teuchos_RCP.hpp>
 

@@ -161,8 +161,8 @@ TWINBYTWIN		- (optional) vector containing NUMTWINSETS
  *----------------------------------------------------------------------*/
 #include "matpar_parameter.H"
 #include "so3_material.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "drt_parobjectfactory.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 /*----------------------------------------------------------------------*
  | class definitions                                           			|

@@ -10,7 +10,7 @@
 #include "beam_elasthyper_parameter.H"
 #include "beam_elasthyper.H"
 
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>

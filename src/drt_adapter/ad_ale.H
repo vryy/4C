@@ -21,8 +21,8 @@
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
 
-#include "../drt_inpar/inpar_ale.H"
-#include "../drt_ale/ale_utils_mapextractor.H"
+#include "inpar_ale.H"
+#include "ale_utils_mapextractor.H"
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */

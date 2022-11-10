@@ -12,10 +12,10 @@
 #include "fluidporo_multiphase.H"
 #include "fluidporo_singlephase.H"
 
-#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_calc_utils.H"
+#include "porofluidmultiphase_ele_calc_utils.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
 
 #include <Epetra_SerialDenseSolver.h>
 

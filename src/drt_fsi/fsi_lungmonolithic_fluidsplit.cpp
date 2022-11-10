@@ -10,17 +10,17 @@
 
 #include "fsi_lungmonolithic_fluidsplit.H"
 #include "fsi_lung_overlapprec.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_adapter/ad_str_lung.H"
-#include "../drt_adapter/ad_fld_lung.H"
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_io/io_control.H"
-#include "../drt_structure/stru_aux.H"
-#include "../drt_ale/ale_utils_mapextractor.H"
-#include "../drt_adapter/ad_ale_fsi.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../linalg/linalg_matrixtransform.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "ad_str_lung.H"
+#include "ad_fld_lung.H"
+#include "adapter_coupling.H"
+#include "io_control.H"
+#include "stru_aux.H"
+#include "ale_utils_mapextractor.H"
+#include "ad_ale_fsi.H"
+#include "fluid_utils_mapextractor.H"
+#include "linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

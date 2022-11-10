@@ -11,10 +11,10 @@
 #define FSI_MONOLITHIC_XFEM_H
 
 
-#include "../drt_inpar/inpar_xfem.H"
-#include "../drt_inpar/inpar_fsi.H"
+#include "inpar_xfem.H"
+#include "inpar_fsi.H"
 
-#include "../drt_fsi_xfem/fsi_xfem_algorithm.H"
+#include "fsi_xfem_algorithm.H"
 
 
 

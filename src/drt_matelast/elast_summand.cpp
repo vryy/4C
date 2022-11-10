@@ -52,9 +52,9 @@
 #include "visco_genmax.H"
 #include "visco_isoratedep.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_mat/matpar_bundle.H"
+#include "drt_globalproblem.H"
+#include "drt_linedefinition.H"
+#include "matpar_bundle.H"
 #include "elast_summand.H"
 
 Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)

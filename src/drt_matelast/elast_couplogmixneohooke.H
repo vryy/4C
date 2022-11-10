@@ -12,7 +12,7 @@ Comput. Methods Appl. Mech. Engrg. 260, 2013"
 #define ELAST_LOGMIXNEOHOOKE_H_
 
 #include "elast_summand.H"
-#include "../drt_mat/matpar_parameter.H"
+#include "matpar_parameter.H"
 
 namespace MAT
 {

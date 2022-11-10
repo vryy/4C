@@ -19,25 +19,25 @@
 #include "ad_ale_fsi.H"
 #include "ad_ale_wear.H"
 #include "ad_ale_xffsi.H"
-#include "../drt_ale/ale.H"
+#include "ale.H"
 
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "drt_validparameters.H"
+#include "inpar_parameterlist_utils.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_pstream.H"
+#include "io.H"
+#include "io_control.H"
+#include "io_pstream.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_solver.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
-#include "../drt_inpar/inpar_ale.H"
-#include "../drt_inpar/inpar_fsi.H"
-#include "../drt_inpar/inpar_fpsi.H"
-#include "../drt_lib/drt_periodicbc.H"
+#include "inpar_ale.H"
+#include "inpar_fsi.H"
+#include "inpar_fpsi.H"
+#include "drt_periodicbc.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

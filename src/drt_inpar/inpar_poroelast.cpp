@@ -15,7 +15,7 @@
 #include "inpar_poroelast.H"
 #include "inpar_fluid.H"
 
-#include "../linalg/linalg_equilibrate.H"
+#include "linalg_equilibrate.H"
 
 
 void INPAR::POROELAST::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)

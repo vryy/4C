@@ -14,7 +14,7 @@
 #include "inpar_structure.H"
 #include "inpar_tsi.H"
 #include "inpar_parameterlist_utils.H"
-#include "../drt_lib/drt_conditiondefinition.H"
+#include "drt_conditiondefinition.H"
 
 
 

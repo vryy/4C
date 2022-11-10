@@ -17,12 +17,12 @@ be set in problem specific parameter lists derived from this class.
 #define FLUID_ELE_PARAMETER_H
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../drt_inpar/inpar_fluid.H"
-#include "../drt_inpar/inpar_twophase.H"
-#include "../drt_inpar/inpar_turbulence.H"
+#include "inpar_fluid.H"
+#include "inpar_twophase.H"
+#include "inpar_turbulence.H"
 #include "fluid_ele_parameter_timint.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 
 

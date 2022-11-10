@@ -12,7 +12,7 @@
 #ifndef BEAM_TO_FLUID_MESHTYING_VTK_OUTPUT_PARAMS_H
 #define BEAM_TO_FLUID_MESHTYING_VTK_OUTPUT_PARAMS_H
 
-#include "../drt_beaminteraction/beam_to_solid_volume_meshtying_vtk_output_params.H"
+#include "beam_to_solid_volume_meshtying_vtk_output_params.H"
 
 
 namespace FBI

@@ -10,8 +10,8 @@
 #ifndef DRT_MESHFREE_MESHFREEBIN_H
 #define DRT_MESHFREE_MESHFREEBIN_H
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_node.H"
+#include "drt_element.H"
+#include "drt_node.H"
 
 namespace DRT
 {

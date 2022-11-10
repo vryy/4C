@@ -16,7 +16,7 @@
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "adapter_coupling_nonlin_mortar.H"
 
 /*---------------------------------------------------------------------*

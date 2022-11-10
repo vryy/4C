@@ -17,7 +17,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include <memory>
 
 // forward declarations

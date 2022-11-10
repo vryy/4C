@@ -13,8 +13,8 @@
 #define BEAM_TO_SOLID_SURFACE_VTK_OUTPUT_PARAMS_H
 
 
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_inpar/inpar_IO_runtime_vtk_output.H"
+#include "drt_dserror.H"
+#include "inpar_IO_runtime_vtk_output.H"
 
 
 namespace BEAMINTERACTION

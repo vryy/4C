@@ -43,45 +43,45 @@
 #include "fsi_utils.H"
 #include "fsi_resulttest.H"
 
-#include "../drt_fsi_xfem/fsi_xfem_fluid.H"
-#include "../drt_fsi_xfem/fsi_xfem_monolithic.H"
+#include "fsi_xfem_fluid.H"
+#include "fsi_xfem_monolithic.H"
 
 #include "fs_monolithic.H"
 
-#include "../drt_fluid_xfluid/xfluid.H"
-#include "../drt_fluid_xfluid/xfluidfluid.H"
+#include "xfluid.H"
+#include "xfluidfluid.H"
 
-#include "../drt_ale/ale_utils_clonestrategy.H"
+#include "ale_utils_clonestrategy.H"
 
-#include "../drt_inpar/inpar_fsi.H"
-#include "../drt_inpar/inpar_fbi.H"
-#include "../drt_lib/drt_resulttest.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "inpar_fsi.H"
+#include "inpar_fbi.H"
+#include "drt_resulttest.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_condition_selector.H"
+#include "drt_condition_utils.H"
+#include "drt_condition_selector.H"
 
-#include "../drt_lib/drt_dofset_fixed_size.H"
+#include "drt_dofset_fixed_size.H"
 
-#include "../drt_adapter/ad_str_structure.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/ad_str_fpsiwrapper.H"
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/adapter_coupling_mortar.H"
-#include "../drt_adapter/ad_fld_fluid_fsi.H"
-#include "../drt_adapter/ad_fld_moving_boundary.H"
-#include "../drt_adapter/ad_fld_fluid_xfsi.H"
-#include "../drt_adapter/ad_ale_fsi.H"
+#include "ad_str_structure.H"
+#include "ad_str_fsiwrapper.H"
+#include "ad_str_fpsiwrapper.H"
+#include "adapter_coupling.H"
+#include "adapter_coupling_mortar.H"
+#include "ad_fld_fluid_fsi.H"
+#include "ad_fld_moving_boundary.H"
+#include "ad_fld_fluid_xfsi.H"
+#include "ad_ale_fsi.H"
 
-#include "../drt_lib/drt_discret_xfem.H"
+#include "drt_discret_xfem.H"
 
-#include "../drt_binstrategy/binning_strategy.H"
+#include "binning_strategy.H"
 
-#include "../drt_poroelast/poro_utils_clonestrategy.H"
-#include "../drt_poroelast/poroelast_utils_setup.H"
-#include "../drt_adapter/ad_str_poro_wrapper.H"
+#include "poro_utils_clonestrategy.H"
+#include "poroelast_utils_setup.H"
+#include "ad_str_poro_wrapper.H"
 /*----------------------------------------------------------------------*/
 // entry point for Fluid on Ale in DRT
 /*----------------------------------------------------------------------*/

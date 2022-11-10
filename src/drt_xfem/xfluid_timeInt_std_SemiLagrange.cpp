@@ -9,23 +9,23 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "../drt_cut/cut_elementhandle.H"
-#include "../drt_cut/cut_integrationcell.H"
-#include "../drt_cut/cut_volumecell.H"
-#include "../drt_cut/cut_cutwizard.H"
+#include "cut_elementhandle.H"
+#include "cut_integrationcell.H"
+#include "cut_volumecell.H"
+#include "cut_cutwizard.H"
 
-#include "../drt_lib/drt_utils.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "drt_utils.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_inpar/inpar_xfem.H"
+#include "inpar_xfem.H"
 
-#include "../drt_xfem/xfem_dofset.H"
+#include "xfem_dofset.H"
 
 #include "xfluid_timeInt_std_SemiLagrange.H"
 
 
 
-//#define DEBUG_SEMILAGRANGE
+// #define DEBUG_SEMILAGRANGE
 
 /*------------------------------------------------------------------------------------------------*
  * Semi-Lagrange Back-Tracking algorithm constructor                                 schott 07/12 *
@@ -1617,10 +1617,10 @@ void XFEM::XFLUID_SemiLagrange::getNodalDofSet(DRT::Element* ele,  /// pointer t
       else
       {
         // the point does not lie inside this vc !
-        //#ifdef DEBUG_SEMILAGRANGE
+        // #ifdef DEBUG_SEMILAGRANGE
         //        IO::cout << "\n\t\t\t -> Position of cell " << cell->Position() << " and
         //        IsThisPointInside "<< cell->IsThisPointInside(x) << IO::endl;
-        //#endif
+        // #endif
       }
     }
 

@@ -10,7 +10,7 @@ Mechanics, 2000"
 /*----------------------------------------------------------------------*/
 
 #include "elast_volsussmanbathe.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 
 MAT::ELASTIC::PAR::VolSussmanBathe::VolSussmanBathe(const Teuchos::RCP<MAT::PAR::Material>& matdata)

@@ -12,10 +12,10 @@
 #include "art_net_impl_stationary.H"
 #include "artnetexplicitintegration.H"
 
-#include "../drt_lib/drt_utils_createdis.H"
+#include "drt_utils_createdis.H"
 #include "artery.H"
-#include "../drt_scatra_ele/scatra_ele.H"
-#include "../drt_mat/matpar_bundle.H"
+#include "scatra_ele.H"
+#include "matpar_bundle.H"
 
 /*----------------------------------------------------------------------*
  | create algorithm                                                      |

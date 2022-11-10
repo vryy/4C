@@ -12,17 +12,17 @@
 #include "porofluid_evaluator.H"
 #include "porofluidmultiphase_ele_parameter.H"
 
-#include "../drt_mat/fluidporo_multiphase.H"
+#include "fluidporo_multiphase.H"
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_gder2.H"
-#include "../drt_geometry/position_array.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_gder2.H"
+#include "position_array.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
 
-#include "../drt_mat/material.H"
-#include "../headers/singleton_owner.H"
+#include "material.H"
+#include "singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*

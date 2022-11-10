@@ -10,14 +10,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_levelset/levelset_algorithm.H"
-#include "../drt_levelset/levelset_timint_ost.H"
-#include "../drt_fluid/fluid_timint_two_phase.H"
-#include "../drt_fluid/fluid_timint_two_phase_genalpha.H"
-#include "../drt_fluid/fluid_timint_two_phase_ost.H"
-#include "../drt_scatra/scatra_timint_ost.H"
+#include "levelset_algorithm.H"
+#include "levelset_timint_ost.H"
+#include "fluid_timint_two_phase.H"
+#include "fluid_timint_two_phase_genalpha.H"
+#include "fluid_timint_two_phase_ost.H"
+#include "scatra_timint_ost.H"
 
 #include "two_phase_algorithm.H"
 

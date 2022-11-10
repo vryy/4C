@@ -8,7 +8,7 @@
 */
 /*---------------------------------------------------------------------------*/
 #include "shell8_scatra.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
 DRT::ELEMENTS::Shell8ScatraType DRT::ELEMENTS::Shell8ScatraType::instance_;
 

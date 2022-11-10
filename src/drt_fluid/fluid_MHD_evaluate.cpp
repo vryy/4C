@@ -10,18 +10,18 @@
 /*-----------------------------------------------------------*/
 
 
-#include "../drt_fluid/fluid_MHD_evaluate.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_periodicbc.H"
-#include "../drt_lib/drt_dofset_transparent.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../drt_lib/drt_utils_rebalancing.H"
-#include "../drt_lib/drt_element.H"
+#include "fluid_MHD_evaluate.H"
+#include "drt_discret.H"
+#include "drt_periodicbc.H"
+#include "drt_dofset_transparent.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "linalg_sparsematrix.H"
+#include "drt_utils_rebalancing.H"
+#include "drt_element.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

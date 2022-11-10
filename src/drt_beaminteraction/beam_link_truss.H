@@ -11,7 +11,7 @@
 #ifndef BeamLinkTruss_H
 #define BeamLinkTruss_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include "beam_link_pinjointed.H"
 
 // forward declarations

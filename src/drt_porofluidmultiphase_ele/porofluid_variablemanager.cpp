@@ -11,10 +11,10 @@
 
 #include "porofluidmultiphase_ele_parameter.H"
 #include "porofluidmultiphase_ele_calc_utils.H"
-#include "../drt_mat/fluidporo_singlephase.H"
+#include "fluidporo_singlephase.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
 
 
 /*----------------------------------------------------------------------*

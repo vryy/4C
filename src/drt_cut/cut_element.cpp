@@ -16,11 +16,11 @@
 #include "cut_facetgraph.H"
 #include "cut_output.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_geometry/element_volume.H"
+#include "element_volume.H"
 
-#include "../drt_inpar/inpar_cut.H"
+#include "inpar_cut.H"
 
 #include <string>
 #include <stack>
@@ -389,7 +389,7 @@ void GEO::CUT::Element::FindNodePositions()
   // DEBUG flag for FindNodePositions
   // compute positions for nodes again, also if already set by other nodes, facets, vcs (safety
   // check)
-  //#define check_for_all_nodes
+  // #define check_for_all_nodes
 
 #if (1)
   //----------------------------------------------------------------------------------------

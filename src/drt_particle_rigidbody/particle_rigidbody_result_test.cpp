@@ -13,8 +13,8 @@
 #include "particle_rigidbody_interface.H"
 #include "particle_rigidbody_datastate.H"
 
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_linedefinition.H"
+#include "drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

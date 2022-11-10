@@ -13,11 +13,11 @@
 #include "contact_element.H"
 #include "friction_node.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_adapter/adapter_coupling.H"
+#include "adapter_coupling.H"
 
 /*----------------------------------------------------------------*
  |  Assemble slave coordinates (xs)                 gitterle 10/09|

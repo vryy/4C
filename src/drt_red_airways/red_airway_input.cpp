@@ -11,9 +11,9 @@ RedAirBloodScatraLine3 elements
 /*---------------------------------------------------------------------*/
 
 #include "red_airway.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_mat/maxwell_0d_acinus.H"
+#include "drt_globalproblem.H"
+#include "drt_linedefinition.H"
+#include "maxwell_0d_acinus.H"
 
 using namespace DRT::UTILS;
 

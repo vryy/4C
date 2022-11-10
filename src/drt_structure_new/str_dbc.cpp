@@ -12,15 +12,15 @@
 #include "str_dbc.H"
 #include "str_timint_base.H"
 
-#include "../solver_nonlin_nox/nox_nln_linearsystem_prepostoperator.H"
+#include "nox_nln_linearsystem_prepostoperator.H"
 
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_mapextractor.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_locsys.H"
+#include "drt_discret.H"
+#include "drt_locsys.H"
 
 #include <Epetra_Vector.h>
 #include <NOX_Epetra_Vector.H>

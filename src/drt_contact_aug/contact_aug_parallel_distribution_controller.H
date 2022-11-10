@@ -11,7 +11,7 @@
 #define SRC_DRT_CONTACT_AUG_CONTACT_AUG_PARALLEL_DISTRIBUTION_CONTROLLER_H_
 
 #include "contact_aug_timemonitor.H"
-#include "../drt_mortar/mortar_paramsinterface.H"
+#include "mortar_paramsinterface.H"
 
 #include <Teuchos_RCP.hpp>
 

@@ -12,10 +12,10 @@
 
 #include "particle_communication_utils.H"
 
-#include "../drt_lib/drt_parobject.H"
+#include "drt_parobject.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
+#include "io.H"
+#include "io_control.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

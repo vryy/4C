@@ -9,7 +9,7 @@
 #include "chol_factory.H"
 
 #include "chol_factor.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include "Epetra_Map.h"
 #include "Epetra_CrsMatrix.h"

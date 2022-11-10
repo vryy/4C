@@ -12,16 +12,16 @@
 #include "fluidimpedancecondition.H"
 #include "fluid_utils.H"
 
-#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "fluid_ele_action.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_densematrix_communication.H"
 
-#include "../drt_io/io.H"
+#include "io.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/function_of_time.H"
+#include "drt_globalproblem.H"
+#include "function_of_time.H"
 
 /*----------------------------------------------------------------------*
  | Constructor (public)                                      Thon 07/16 |

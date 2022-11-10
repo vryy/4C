@@ -16,13 +16,13 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_lib/drt_dofset_predefineddofnumber.H"
-#include "../drt_lib/drt_utils_createdis.H"
+#include "drt_dofset_predefineddofnumber.H"
+#include "drt_utils_createdis.H"
 
-#include "../drt_scatra/scatra_resulttest_elch.H"
-#include "../drt_scatra/scatra_timint_elch.H"
+#include "scatra_resulttest_elch.H"
+#include "scatra_timint_elch.H"
 
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "adapter_scatra_base_algorithm.H"
 
 /*--------------------------------------------------------------------------------*
  | entry point for simulations of scalar-thermo interaction problems   fang 04/15 |

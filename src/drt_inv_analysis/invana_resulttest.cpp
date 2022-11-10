@@ -12,13 +12,13 @@
 #include <string>
 
 #include "invana_resulttest.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 #include "invana_base.H"
 #include "invana_control.H"
 #include "matpar_manager.H"
 #include "optimizer_base.H"
 #include "invana_utils.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

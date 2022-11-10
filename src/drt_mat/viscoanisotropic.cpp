@@ -13,11 +13,11 @@ BETA_ISO 1.E4 BETA_ANISO 1.E4 RELAX_ISO 0.0010001 RELAX_ANISO 0
 
 #include <vector>
 #include "viscoanisotropic.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/material_service.H"
+#include "drt_linedefinition.H"
+#include "drt_globalproblem.H"
+#include "standardtypes_cpp.H"
+#include "matpar_bundle.H"
+#include "material_service.H"
 
 
 /*----------------------------------------------------------------------*

@@ -13,7 +13,7 @@
 
 #include "xfield_field_coupling.H"
 
-#include "../drt_lib/drt_exporter.H"
+#include "drt_exporter.H"
 
 #include "Epetra_Export.h"
 

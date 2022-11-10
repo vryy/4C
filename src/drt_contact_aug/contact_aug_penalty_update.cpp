@@ -13,16 +13,16 @@ parameter cn
 #include "contact_aug_potential.H"
 #include "contact_aug_steepest_ascent_strategy.H"
 #include "contact_aug_lagrange_multiplier_function.H"
-#include "../drt_contact/contact_paramsinterface.H"
+#include "contact_paramsinterface.H"
 
-#include "../drt_structure_new/str_model_evaluator_contact.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "str_model_evaluator_contact.H"
+#include "inpar_structure.H"
 
-#include "../drt_inpar/inpar_contact.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../drt_io/io_pstream.H"
-#include "../linalg/linalg_multiply.H"
-#include "../drt_lib/epetra_utils.H"
+#include "inpar_contact.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "io_pstream.H"
+#include "linalg_multiply.H"
+#include "epetra_utils.H"
 
 #include <Teuchos_ParameterList.hpp>
 

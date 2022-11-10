@@ -12,9 +12,9 @@
 #include "io_control.H"
 #include "io_pstream.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "inpar_parameterlist_utils.H"
 
 #include <filesystem>
 #include <Teuchos_ParameterList.hpp>

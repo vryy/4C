@@ -16,7 +16,7 @@
 #include <vector>
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
-#include "../drt_inpar/inpar_xfem.H"
+#include "inpar_xfem.H"
 
 //#define WRITE_GMSH
 

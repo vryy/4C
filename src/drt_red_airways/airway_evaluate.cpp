@@ -14,13 +14,13 @@
 #include "red_airway.H"
 #include "airway_impl.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/matlist.H"
+#include "drt_discret.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_exporter.H"
+#include "drt_dserror.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "newtonianfluid.H"
+#include "matlist.H"
 
 #include <Epetra_SerialDenseSolver.h>
 

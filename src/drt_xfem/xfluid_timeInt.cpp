@@ -15,31 +15,31 @@
 #include <Teuchos_Time.hpp>
 
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../drt_lib/drt_colors.H"
-#include "../drt_lib/drt_condition_selector.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_gmsh.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "linalg_serialdensevector.H"
+#include "drt_colors.H"
+#include "drt_condition_selector.H"
+#include "drt_discret.H"
+#include "drt_exporter.H"
+#include "drt_globalproblem.H"
+#include "io_gmsh.H"
 
-#include "../drt_cut/cut_boundingbox.H"
-#include "../drt_cut/cut_elementhandle.H"
-#include "../drt_cut/cut_sidehandle.H"
-#include "../drt_cut/cut_position.H"
-#include "../drt_cut/cut_point.H"
-#include "../drt_cut/cut_element.H"
-#include "../drt_cut/cut_volumecell.H"
-#include "../drt_cut/cut_cutwizard.H"
+#include "cut_boundingbox.H"
+#include "cut_elementhandle.H"
+#include "cut_sidehandle.H"
+#include "cut_position.H"
+#include "cut_point.H"
+#include "cut_element.H"
+#include "cut_volumecell.H"
+#include "cut_cutwizard.H"
 
 
-#include "../drt_inpar/inpar_xfem.H"
+#include "inpar_xfem.H"
 
-#include "../drt_lib/drt_element_integration_select.H"
-#include "../drt_fluid_ele/fluid_ele.H"
-#include "../drt_fluid_ele/fluid_ele_interface.H"
-#include "../drt_fluid_ele/fluid_ele_factory.H"
+#include "drt_element_integration_select.H"
+#include "fluid_ele.H"
+#include "fluid_ele_interface.H"
+#include "fluid_ele_factory.H"
 
 #include "xfem_dofset.H"
 #include "xfem_condition_manager.H"
@@ -48,7 +48,7 @@
 #include <iostream>
 
 
-//#define DEBUG_TIMINT
+// #define DEBUG_TIMINT
 
 
 // -------------------------------------------------------------------

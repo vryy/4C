@@ -15,15 +15,15 @@
 #include <Teuchos_RCP.hpp>
 #include <unordered_map>
 
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
-#include "../drt_lib/drt_utils_matrix_vector_enums.H"
+#include "drt_utils_matrix_vector_enums.H"
 
-#include "../drt_mortar/mortar_element.H"
+#include "mortar_element.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_sparsematrix.H"
+#include "linalg_fixedsizematrix.H"
+#include "linalg_serialdensevector.H"
+#include "linalg_sparsematrix.H"
 
 namespace MORTAR
 {

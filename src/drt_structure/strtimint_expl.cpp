@@ -15,15 +15,15 @@
 #include "strtimint.H"
 #include "strtimint_expl.H"
 
-#include "../drt_cardiovascular0d/cardiovascular0d_manager.H"
+#include "cardiovascular0d_manager.H"
 #include "stru_aux.H"
-#include "../drt_constraint/constraint_manager.H"
-#include "../drt_constraint/springdashpot_manager.H"
-#include "../drt_mortar/mortar_manager_base.H"
-#include "../drt_mortar/mortar_strategy_base.H"
-#include "../drt_contact/meshtying_contact_bridge.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "constraint_manager.H"
+#include "springdashpot_manager.H"
+#include "mortar_manager_base.H"
+#include "mortar_strategy_base.H"
+#include "meshtying_contact_bridge.H"
+#include "inpar_contact.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 /*----------------------------------------------------------------------*/
 /* constructor */

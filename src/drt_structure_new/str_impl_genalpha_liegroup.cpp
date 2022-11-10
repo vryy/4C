@@ -17,10 +17,10 @@
 #include "str_model_evaluator_data.H"
 #include "str_timint_base.H"
 
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_io/io.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "drt_dserror.H"
+#include "io.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
 
 #include <Epetra_Vector.h>
 

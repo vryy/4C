@@ -22,14 +22,14 @@
 
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "../drt_lib/drt_node.H"
-#include "../drt_fem_general/largerotations.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "drt_node.H"
+#include "largerotations.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_integration.H"
 #include "Sacado.hpp"
-#include "../headers/FAD_utils.H"
+#include "FAD_utils.H"
 
-#include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "str_elements_paramsinterface.H"
 
 #include "beam_spatial_discretization_utils.H"
 #include "beam3_base.H"
@@ -53,9 +53,10 @@ namespace LARGEROTATIONS
           // length.
 // DEFAULT: 10e-12
 
-//#define BEAM3RCONSTSTOCHFORCE  //Flag in order to hold stochastic forces constant over the element
-// length and to only provide random numbers for the 3 translational DoFs (needed in order to
-// compare with beam3eb)
+// #define BEAM3RCONSTSTOCHFORCE  //Flag in order to hold stochastic forces constant over the
+// element
+//  length and to only provide random numbers for the 3 translational DoFs (needed in order to
+//  compare with beam3eb)
 
 namespace DRT
 {

@@ -13,9 +13,9 @@
 
 #include "ad_str_fpsiwrapper.H"
 #include "ad_fld_poro.H"
-#include "../drt_poroelast/poroelast_monolithic.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_structure/stru_aux.H"
+#include "poroelast_monolithic.H"
+#include "drt_globalproblem.H"
+#include "stru_aux.H"
 
 /// constructor
 ADAPTER::StructurePoroWrapper::StructurePoroWrapper(

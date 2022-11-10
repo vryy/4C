@@ -10,8 +10,8 @@
 #ifndef CONTACT_NODE_H
 #define CONTACT_NODE_H
 
-#include "../drt_mortar/mortar_node.H"
-#include "../drt_contact_aug/contact_aug_utils.H"
+#include "mortar_node.H"
+#include "contact_aug_utils.H"
 #include <unordered_map>
 
 namespace CONTACT

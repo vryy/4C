@@ -8,10 +8,10 @@
 #ifndef SH18_H
 #define SH18_H
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_mat/material.H"
+#include "drt_element.H"
+#include "drt_elementtype.H"
+#include "inpar_structure.H"
+#include "material.H"
 #include "so_hex18.H"
 
 const int num_eas = 9;

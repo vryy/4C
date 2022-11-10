@@ -14,8 +14,8 @@
 #include "intersection_service.H"
 #include "intersection_service_templates.H"
 #include "position_array.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_element.H"
+#include "drt_discret.H"
+#include "drt_element.H"
 
 
 

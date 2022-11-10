@@ -10,31 +10,31 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "../drt_bele3/bele3.H"
+#include "bele3.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_discret.H"
+#include "drt_exporter.H"
+#include "drt_utils.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
-#include "../drt_geometry/position_array.H"
+#include "position_array.H"
 
-#include "../drt_inpar/inpar_xfem.H"
+#include "inpar_xfem.H"
 
-#include "../drt_cut/cut_volumecell.H"
-#include "../drt_cut/cut_sidehandle.H"
-#include "../drt_cut/cut_elementhandle.H"
-#include "../drt_cut/cut_intersection.H"
-#include "../drt_cut/cut_position.H"
-#include "../drt_cut/cut_cutwizard.H"
+#include "cut_volumecell.H"
+#include "cut_sidehandle.H"
+#include "cut_elementhandle.H"
+#include "cut_intersection.H"
+#include "cut_position.H"
+#include "cut_cutwizard.H"
 
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_gmsh.H"
-#include "../drt_io/io_control.H"
+#include "io.H"
+#include "io_gmsh.H"
+#include "io_control.H"
 
-#include "../drt_xfem/xfem_dofset.H"
+#include "xfem_dofset.H"
 
 #include "xfluid_timeInt_base.H"
 

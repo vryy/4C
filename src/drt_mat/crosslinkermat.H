@@ -13,9 +13,9 @@
 #define CROSSLINKER_H_
 
 #include "matpar_parameter.H"
-#include "../drt_inpar/inpar_beaminteraction.H"
+#include "inpar_beaminteraction.H"
 #include "material.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 #include <Teuchos_ParameterList.hpp>
 
 namespace MAT

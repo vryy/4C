@@ -11,8 +11,8 @@
 #ifndef SRC_DRT_STRUCTURE_XSTRUCTURE_XSTR_XSTRUCTURE_STATE_H_
 #define SRC_DRT_STRUCTURE_XSTRUCTURE_XSTR_XSTRUCTURE_STATE_H_
 
-#include "../drt_xfem/xfield_state.H"
-#include "../drt_structure_new/str_timint_basedataglobalstate.H"
+#include "xfield_state.H"
+#include "str_timint_basedataglobalstate.H"
 
 namespace XSTR
 {

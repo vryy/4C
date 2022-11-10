@@ -14,21 +14,21 @@
 #include "xfem_mesh_projector.H"
 #include "xfem_discretization_utils.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "linalg_serialdensevector.H"
 
-#include "../drt_lib/drt_discret_xfem.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_discret_xfem.H"
+#include "drt_exporter.H"
+#include "drt_utils.H"
 
-#include "../drt_io/io_gmsh.H"
-#include "../drt_io/io_pstream.H"
+#include "io_gmsh.H"
+#include "io_pstream.H"
 
-#include "../drt_cut/cut_boundingbox.H"
-#include "../drt_cut/cut_position.H"
+#include "cut_boundingbox.H"
+#include "cut_position.H"
 
-#include "../drt_geometry/searchtree.H"
-#include "../drt_geometry/searchtree_geometry_service.H"
+#include "searchtree.H"
+#include "searchtree_geometry_service.H"
 
 XFEM::MeshProjector::MeshProjector(Teuchos::RCP<const DRT::Discretization> sourcedis,
     Teuchos::RCP<const DRT::Discretization> targetdis, const Teuchos::ParameterList& params,

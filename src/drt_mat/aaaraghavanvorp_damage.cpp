@@ -20,9 +20,9 @@ MAT 3 MAT_Raghavan_Damage BULK 0.120755 ALPHA 0.068632  BETA 5.799445 EQSTRMIN 0
 
 #include <vector>
 #include "aaaraghavanvorp_damage.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/material_service.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
+#include "material_service.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |

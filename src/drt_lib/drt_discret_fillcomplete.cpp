@@ -13,8 +13,8 @@
 #include "drt_exporter.H"
 #include "drt_dserror.H"
 #include "drt_parobjectfactory.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_io/io_pstream.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "io_pstream.H"
 
 
 

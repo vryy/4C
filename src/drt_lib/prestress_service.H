@@ -11,8 +11,8 @@
 #define PRESTRESS_SERVICE_H_
 
 #include <Teuchos_ParameterList.hpp>
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "drt_globalproblem.H"
+#include "inpar_structure.H"
 
 namespace UTILS
 {

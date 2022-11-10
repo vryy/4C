@@ -15,7 +15,7 @@
 #include "fluid_ele_calc_xfem_coupling.H"
 #include "fluid_ele_calc_xfem_coupling_impl.H"
 
-#include "../drt_bele3/bele3.H"
+#include "bele3.H"
 
 using namespace DRT::ELEMENTS::XFLUID;
 

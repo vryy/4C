@@ -11,18 +11,18 @@
 #include "poromultiphase_scatra_artery_coupling_defines.H"
 
 
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_mat/fluidporo_multiphase.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/cnst_1d_art.H"
-#include "../headers/FAD_utils.H"
-#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_parameter.H"
-#include "../drt_geometry/coordinate_system_utils.H"
+#include "drt_elementtype.H"
+#include "fluidporo_multiphase.H"
+#include "drt_utils.H"
+#include "drt_globalproblem.H"
+#include "cnst_1d_art.H"
+#include "FAD_utils.H"
+#include "porofluidmultiphase_ele_parameter.H"
+#include "coordinate_system_utils.H"
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_lib/drt_element_integration_select.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_integration.H"
+#include "drt_element_integration_select.H"
 
 #include <Epetra_MultiVector.h>
 

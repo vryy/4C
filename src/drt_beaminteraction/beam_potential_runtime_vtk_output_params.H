@@ -12,7 +12,7 @@
 #ifndef BEAMPOTENTIALVTKPARAMS_H
 #define BEAMPOTENTIALVTKPARAMS_H
 
-#include "../drt_inpar/inpar_beampotential.H"
+#include "inpar_beampotential.H"
 
 
 namespace BEAMINTERACTION

@@ -10,7 +10,7 @@ parts of the Elasthyper-Toolbox.
 #define ELAST_ISOTESTMATERIAL_H_
 
 #include "elast_summand.H"
-#include "../drt_mat/matpar_parameter.H"
+#include "matpar_parameter.H"
 
 namespace MAT
 {

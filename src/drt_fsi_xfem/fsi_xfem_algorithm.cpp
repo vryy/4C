@@ -9,18 +9,18 @@
 */
 
 
-#include "../drt_adapter/ad_fld_base_algorithm.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_fluid_xfluid/xfluid.H"
-#include "../drt_adapter/ad_ale.H"
-#include "../drt_adapter/ad_ale_fpsi.H"
-#include "../drt_adapter/ad_str_poro_wrapper.H"
-#include "../drt_adapter/ad_ale_fpsi.H"
-#include "../drt_poroelast/poroelast_monolithic.H"
+#include "ad_fld_base_algorithm.H"
+#include "ad_str_fsiwrapper.H"
+#include "xfluid.H"
+#include "ad_ale.H"
+#include "ad_ale_fpsi.H"
+#include "ad_str_poro_wrapper.H"
+#include "ad_ale_fpsi.H"
+#include "poroelast_monolithic.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_globalproblem.H"
+#include "io.H"
+#include "drt_discret.H"
 
 #include "fsi_xfem_algorithm.H"
 

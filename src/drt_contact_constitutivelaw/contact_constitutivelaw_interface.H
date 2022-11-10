@@ -11,7 +11,7 @@
 #ifndef CONTACT_COCONSTLAW_INTERFACE_H
 #define CONTACT_COCONSTLAW_INTERFACE_H
 
-#include "../drt_contact/contact_interface.H"
+#include "contact_interface.H"
 
 // forward declarations
 namespace MORTAR

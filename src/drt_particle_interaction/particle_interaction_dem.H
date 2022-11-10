@@ -16,7 +16,7 @@
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_base.H"
 
-#include "../drt_inpar/inpar_particle.H"
+#include "inpar_particle.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |

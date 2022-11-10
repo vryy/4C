@@ -24,9 +24,9 @@
 #include <Epetra_Vector.h>
 
 #include "strtimint_noxlinsys.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_blocksparsematrix.H"
+#include "drt_globalproblem.H"
+#include "linalg_solver.H"
+#include "linalg_blocksparsematrix.H"
 
 
 /*----------------------------------------------------------------------*

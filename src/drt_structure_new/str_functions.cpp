@@ -10,10 +10,10 @@
 /*-----------------------------------------------------------*/
 
 #include "str_functions.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/stvenantkirchhoff.H"
+#include "drt_globalproblem.H"
+#include "standardtypes_cpp.H"
+#include "matpar_bundle.H"
+#include "stvenantkirchhoff.H"
 
 namespace
 {

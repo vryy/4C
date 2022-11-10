@@ -10,7 +10,7 @@
 #ifndef FSI_PARTITIONED_IMMERSED_H
 #define FSI_PARTITIONED_IMMERSED_H
 
-#include "../drt_fsi/fsi_partitioned.H"
+#include "fsi_partitioned.H"
 
 namespace FSI
 {

@@ -10,13 +10,13 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_timint_loma.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_fluid_turbulence/turbulence_statistic_manager.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/sutherland.H"
-#include "../drt_io/io.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "fluid_ele_action.H"
+#include "turbulence_statistic_manager.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
+#include "sutherland.H"
+#include "io.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 
 /*----------------------------------------------------------------------*

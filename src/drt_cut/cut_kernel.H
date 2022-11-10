@@ -21,9 +21,9 @@
 #include "cut_memory_manager.H"
 #include <unordered_map>
 
-#include "../linalg/linalg_gauss.H"
+#include "linalg_gauss.H"
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "drt_utils_fem_shapefunctions.H"
 
 // activate debug intersection output in cut_kernel
 // #define DEBUG_CUTKERNEL_OUTPUT

@@ -14,7 +14,7 @@
 #define NOX_NLN_STATUSTEST_FACTORY_H_
 
 #include <Teuchos_RCP.hpp>
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 // forward declaration
 namespace Teuchos

@@ -16,7 +16,7 @@
 
 extern "C"
 {
-#include "../pss_full/pss_table.h"  // access to C methods
+#include "pss_table.h"  // access to C methods
 }
 
 #endif

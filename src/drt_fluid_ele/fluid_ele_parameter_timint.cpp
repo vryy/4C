@@ -15,7 +15,7 @@ with different parameters in more than one fluid field is not yet supported.
 
 #include <string>
 #include <iostream>
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 #include "fluid_ele_parameter_timint.H"
 
 DRT::ELEMENTS::FluidEleParameterTimInt* DRT::ELEMENTS::FluidEleParameterTimInt::Instance(

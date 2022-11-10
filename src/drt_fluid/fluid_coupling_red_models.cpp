@@ -8,13 +8,13 @@
 */
 /*-----------------------------------------------------------*/
 
-//#ifdef D_COUPLED_ARTNET
+// #ifdef D_COUPLED_ARTNET
 
 #include <stdio.h>
 #include <math.h>
 
 #include "fluid_coupling_red_models.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "fluid_ele_action.H"
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -476,7 +476,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(
     params->set("reducedD map of values", mapRed_Dnp_);
     double subscale_time = time - (dt_rm_ * double(NumOfSteps - N - 1));
     params->set("time", subscale_time);
-    //#endif
+    // #endif
 
     //    Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::rcp( new Teuchos::ParameterList);
     //    params->set("3D map of values", map3_Dnp_);

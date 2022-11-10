@@ -11,19 +11,19 @@
 
 #include "wall1_poro.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "drt_discret.H"
+#include "linalg_utils_sparse_algebra_math.H"
 #include "Epetra_SerialDenseSolver.h"
 #include <iterator>
 
-#include "../drt_mat/fluidporo.H"
-#include "../drt_mat/structporo.H"
-#include "../drt_mat/matlist.H"
-#include "../drt_mat/fluidporo_multiphase.H"
+#include "fluidporo.H"
+#include "structporo.H"
+#include "matlist.H"
+#include "fluidporo_multiphase.H"
 
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+#include "drt_nurbs_utils.H"
 
-#include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "str_elements_paramsinterface.H"
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::PreEvaluate(Teuchos::ParameterList& params,

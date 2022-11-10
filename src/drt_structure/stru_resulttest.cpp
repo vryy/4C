@@ -13,9 +13,9 @@
 
 #include "stru_resulttest.H"
 #include "strtimint.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_solver.H"
+#include "drt_linedefinition.H"
+#include "drt_discret.H"
+#include "linalg_solver.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

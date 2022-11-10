@@ -14,9 +14,9 @@
 
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "../drt_fem_general/largerotations.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "largerotations.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_integration.H"
 
 #include "beam3_base.H"
 

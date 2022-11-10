@@ -10,9 +10,9 @@
 
 #include "geometry_pair_element_faces.H"
 
-#include "../drt_geometry_pair/geometry_pair_scalar_types.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_inpar/inpar_geometry_pair.H"
+#include "geometry_pair_scalar_types.H"
+#include "drt_utils_local_connectivity_matrices.H"
+#include "inpar_geometry_pair.H"
 
 
 /**

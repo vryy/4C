@@ -7,7 +7,7 @@
 
 
 *----------------------------------------------------------------------*/
-#include "../linalg/linalg_gauss.H"
+#include "linalg_gauss.H"
 
 #include "cut_mesh.H"
 #include "cut_boundarycell.H"
@@ -19,7 +19,7 @@
 
 #include "cut_output.H"
 
-#include "../drt_lib/drt_colors.H"
+#include "drt_colors.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

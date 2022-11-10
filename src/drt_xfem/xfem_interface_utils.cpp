@@ -11,13 +11,13 @@
 #include "xfem_interface_utils.H"
 #include "xfem_condition_manager.H"
 
-#include "../drt_cut/cut_boundarycell.H"
-#include "../drt_cut/cut_volumecell.H"
+#include "cut_boundarycell.H"
+#include "cut_volumecell.H"
 
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_integration.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_nurbs_shapefunctions.H"
 //
 
 /*----------------------------------------------------------------------*

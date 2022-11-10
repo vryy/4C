@@ -12,10 +12,10 @@
 #ifndef STR_MODEL_EVALUATOR_BEAMINTERACTION_H
 #define STR_MODEL_EVALUATOR_BEAMINTERACTION_H
 
-#include "../drt_structure_new/str_model_evaluator_generic.H"  // base class
-#include "../drt_inpar/inpar_beaminteraction.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../drt_structure_new/str_enum_lists.H"
+#include "str_model_evaluator_generic.H"  // base class
+#include "inpar_beaminteraction.H"
+#include "linalg_mapextractor.H"
+#include "str_enum_lists.H"
 
 
 // forward declaration ...

@@ -11,14 +11,14 @@
 #include "triad_interpolation_local_rotation_vectors.H"
 #include "triad_interpolation.H"
 
-#include "../drt_lib/drt_element.H"
+#include "drt_element.H"
 
-#include "../drt_fem_general/largerotations.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "largerotations.H"
+#include "drt_utils_fem_shapefunctions.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
-#include "../headers/FAD_utils.H"
+#include "FAD_utils.H"
 
 #include <Sacado.hpp>
 

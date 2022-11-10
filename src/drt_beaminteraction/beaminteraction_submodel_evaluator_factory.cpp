@@ -12,7 +12,7 @@
 
 #include "beaminteraction_submodel_evaluator_factory.H"
 
-#include "../drt_inpar/inpar_beaminteraction.H"
+#include "inpar_beaminteraction.H"
 
 // supported submodel evaluators
 #include "beaminteraction_submodel_evaluator_beamcontact.H"
@@ -21,7 +21,7 @@
 #include "beaminteraction_submodel_evaluator_spherebeamlinking.H"
 
 // problem types
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

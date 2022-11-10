@@ -11,13 +11,13 @@
 
 #include "fluid_timint_stat.H"
 #include "fluid_volumetric_surfaceFlow_condition.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_fluid_turbulence/dyn_smag.H"
-#include "../drt_fluid_turbulence/dyn_vreman.H"
-#include "../drt_fluid_turbulence/boxfilter.H"
-#include "../drt_fluid/fluid_utils.H"
+#include "fluid_ele_action.H"
+#include "dyn_smag.H"
+#include "dyn_vreman.H"
+#include "boxfilter.H"
+#include "fluid_utils.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |

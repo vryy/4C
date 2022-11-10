@@ -9,7 +9,7 @@
 #define FPSI_H
 
 #include <Epetra_Comm.h>
-#include "../drt_adapter/adapter_algorithmbase.H"
+#include "adapter_algorithmbase.H"
 
 namespace FPSI
 {

@@ -14,7 +14,7 @@ strategy without meshtying)
 
 #include "scatra_timint_convcheck_strategies.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>

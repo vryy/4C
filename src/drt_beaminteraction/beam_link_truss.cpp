@@ -11,14 +11,14 @@
 
 #include "beam_link_truss.H"
 
-#include "../drt_truss3/truss3.H"
+#include "truss3.H"
 
 
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
 
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_utils_factory.H"
+#include "drt_dserror.H"
+#include "drt_utils_factory.H"
 
 #include <Teuchos_RCP.hpp>
 #include "beam_link.H"

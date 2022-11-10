@@ -11,9 +11,9 @@
 #include "beam_to_solid_vtu_output_writer_base.H"
 
 #include "beam_to_solid_vtu_output_writer_visualization.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
+#include "drt_dserror.H"
+#include "drt_globalproblem.H"
+#include "io_control.H"
 
 
 /**

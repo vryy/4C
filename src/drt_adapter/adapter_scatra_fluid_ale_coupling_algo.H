@@ -14,7 +14,7 @@
 #define ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_H
 
 #include "ad_ale_fluid.H"
-#include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
+#include "adapter_scatra_fluid_coupling_algorithm.H"
 
 
 namespace ADAPTER

@@ -17,12 +17,12 @@
 
 #include <Epetra_FEVector.h>
 
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "drt_utils_boundary_integration.H"
 
-#include "../drt_mat/elasthyper.H"
+#include "elasthyper.H"
 
-#include "../drt_so3/so_base.H"
-#include "../drt_so3/so3_plast/so3_ssn_plast.H"
+#include "so_base.H"
+#include "so3_ssn_plast.H"
 
 
 /*----------------------------------------------------------------------*

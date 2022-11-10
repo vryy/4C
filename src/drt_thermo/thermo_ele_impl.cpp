@@ -7,31 +7,31 @@
 
 */
 
-#include "../drt_inpar/inpar_thermo.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_thermo.H"
+#include "inpar_structure.H"
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_geometry/position_array.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "position_array.H"
+#include "drt_condition_utils.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_nurbs_shapefunctions.H"
+#include "drt_nurbs_discret.H"
 
 // material headers
-#include "../drt_mat/fourieriso.H"
-#include "../drt_mat/fouriervar.H"
-#include "../drt_mat/thermostvenantkirchhoff.H"
-#include "../drt_mat/thermoplasticlinelast.H"
-#include "../drt_mat/thermoplastichyperelast.H"
-#include "../drt_mat/plasticelasthyper.H"
+#include "fourieriso.H"
+#include "fouriervar.H"
+#include "thermostvenantkirchhoff.H"
+#include "thermoplasticlinelast.H"
+#include "thermoplastichyperelast.H"
+#include "plasticelasthyper.H"
 
 #include "thermo_element.H"  // only for visualization of element data
 #include "thermo_ele_impl.H"
 #include "thermo_ele_action.H"
 
-#include "../drt_tsi/tsi_defines.H"
-#include "../drt_mat/trait_thermo_solid.H"
+#include "tsi_defines.H"
+#include "trait_thermo_solid.H"
 
 DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT::Element* ele)
 {

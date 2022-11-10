@@ -35,15 +35,15 @@ SIGMAX 3.9E+03 EPSNULL 2.8E-04
 #include "material_service.H"
 #include "matpar_bundle.H"
 
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "drt_utils_integration.H"
 
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../linalg/linalg_utils_densematrix_eigen.H"
-#include "../linalg/linalg_utils_densematrix_svd.H"
-#include "../linalg/linalg_four_tensor.H"
+#include "linalg_utils_densematrix_eigen.H"
+#include "linalg_utils_densematrix_svd.H"
+#include "linalg_four_tensor.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |

@@ -15,7 +15,7 @@
 
 #include <Teuchos_RCP.hpp>
 
-#include "../drt_inpar/inpar_structure.H"  // necessary due to enums
+#include "inpar_structure.H"  // necessary due to enums
 
 // forward declarations
 class Epetra_Vector;

@@ -20,14 +20,14 @@
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseSolver.h"
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_node.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "drt_element.H"
+#include "drt_node.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
+#include "drt_utils_integration.H"
+#include "drt_utils_fem_shapefunctions.H"
 
-#include "../drt_mat/stvenantkirchhoff.H"
+#include "stvenantkirchhoff.H"
 
 #include "wall1.H"
 

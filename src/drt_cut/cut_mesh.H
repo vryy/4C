@@ -18,7 +18,7 @@ mesh
 #include "cut_boundingbox.H"
 #include "cut_facet.H"
 
-#include "../drt_inpar/inpar_cut.H"
+#include "inpar_cut.H"
 
 #ifdef DEBUG
 #include "cut_node.H"

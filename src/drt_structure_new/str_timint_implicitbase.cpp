@@ -15,8 +15,8 @@
 #include "str_timint_implicitbase.H"
 #include "str_integrator.H"
 
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_blocksparsematrix.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_blocksparsematrix.H"
 
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Abstract_Group.H>

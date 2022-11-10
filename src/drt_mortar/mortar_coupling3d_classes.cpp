@@ -15,9 +15,9 @@
 #include "mortar_defines.H"
 #include "mortar_element.H"
 
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../drt_lib/drt_node.H"
+#include "linalg_serialdensevector.H"
+#include "linalg_serialdensematrix.H"
+#include "drt_node.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/09|

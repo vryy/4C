@@ -14,9 +14,9 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "../drt_particle_engine/particle_typedefs.H"
+#include "particle_typedefs.H"
 
-#include "../drt_lib/drt_resulttest.H"
+#include "drt_resulttest.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |

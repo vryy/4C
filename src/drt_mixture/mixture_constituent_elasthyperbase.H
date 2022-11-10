@@ -12,11 +12,11 @@
 #ifndef BACI_MIXTURE_CONSTITUENT_ELASTHYPER_BASE_H
 #define BACI_MIXTURE_CONSTITUENT_ELASTHYPER_BASE_H
 
-#include "../drt_mat/matpar_parameter.H"
+#include "matpar_parameter.H"
 #include "mixture_constituent.H"
-#include "../drt_mat/elasthyper_service.H"
+#include "elasthyper_service.H"
 #include "mixture_prestress_strategy.H"
-#include "../drt_mat/anisotropy_extension_cylinder_cosy.H"
+#include "anisotropy_extension_cylinder_cosy.H"
 
 namespace MAT
 {

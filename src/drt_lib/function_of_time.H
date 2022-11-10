@@ -12,11 +12,11 @@
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include "drt_dserror.H"
 #include "drt_parser.H"
 #include "drt_functionvariables.H"
-#include "../drt_fem_general/drt_utils_polynomial.H"
+#include "drt_utils_polynomial.H"
 #include "drt_function_manager.H"
 
 namespace DRT::UTILS

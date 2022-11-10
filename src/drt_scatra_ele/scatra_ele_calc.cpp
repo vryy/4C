@@ -15,24 +15,24 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_turbulence.H"
 
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
-#include "../drt_fem_general/drt_utils_gder2.H"
+#include "drt_utils_boundary_integration.H"
+#include "drt_utils_gder2.H"
 
-#include "../drt_fluid/fluid_rotsym_periodicbc.H"
+#include "fluid_rotsym_periodicbc.H"
 
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "drt_condition_utils.H"
+#include "drt_globalproblem.H"
+#include "standardtypes_cpp.H"
 
-#include "../drt_mat/electrode.H"
-#include "../drt_mat/scatra_mat.H"
-#include "../drt_mat/scatra_mat_multiscale.H"
-#include "../drt_mat/matlist.H"
-#include "../drt_mat/newtonianfluid.H"
+#include "electrode.H"
+#include "scatra_mat.H"
+#include "scatra_mat_multiscale.H"
+#include "matlist.H"
+#include "newtonianfluid.H"
 
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+#include "drt_nurbs_utils.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

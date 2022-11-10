@@ -9,8 +9,8 @@
 #ifndef SRC_DRT_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_CALC_UTILS_H_
 #define SRC_DRT_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_CALC_UTILS_H_
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "drt_element.H"
+#include "drt_utils_integration.H"
 
 namespace MAT
 {

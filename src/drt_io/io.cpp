@@ -11,15 +11,15 @@
 
 #include "io.H"
 #include "io_control.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_fluid_ele/fluid_ele_immersed_base.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "drt_globalproblem.H"
+#include "drt_dserror.H"
+#include "drt_discret.H"
+#include "drt_nurbs_discret.H"
+#include "fluid_ele_immersed_base.H"
 
-#include "../pss_full/pss_cpp.h"  // access to legacy parser module
+#include "pss_cpp.h"  // access to legacy parser module
 
 
 /*----------------------------------------------------------------------*/

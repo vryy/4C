@@ -15,7 +15,7 @@
 
 
 #include "ad_str_wrapper.H"
-#include "../drt_struct_ale/struct_ale_str_model_evaluator.H"
+#include "struct_ale_str_model_evaluator.H"
 
 
 // forward declarations

@@ -18,11 +18,11 @@ Pack, Unpack, NumDofPerNode etc.
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include "Teuchos_RCP.hpp"
 
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_fem_general/drt_utils_gausspoints.H"
-#include "../drt_fem_general/drt_utils_polynomial.H"
+#include "drt_elementtype.H"
+#include "drt_utils_integration.H"
+#include "drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_gausspoints.H"
+#include "drt_utils_polynomial.H"
 
 const bool trac_with_pml_elemag = false;
 

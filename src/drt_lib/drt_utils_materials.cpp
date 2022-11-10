@@ -19,8 +19,8 @@
 
 #include "drt_utils_materials.H"
 #include "drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "drt_globalproblem.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------------*
  *  Update material configuration of discretization with

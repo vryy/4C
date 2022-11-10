@@ -13,7 +13,7 @@
 #define STR_NLN_SOLVER_FULLNEWTON_H_
 
 #include "str_nln_solver_nox.H"
-#include "../solver_nonlin_nox/nox_nln_statustest_factory.H"
+#include "nox_nln_statustest_factory.H"
 
 namespace Teuchos
 {

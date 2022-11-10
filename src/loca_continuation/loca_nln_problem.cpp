@@ -15,9 +15,9 @@
 #include "loca_nln_interface_required.H"
 #include "loca_nln_group.H"
 
-#include "../solver_nonlin_nox/nox_nln_globaldata.H"
+#include "nox_nln_globaldata.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <Epetra_Vector.h>
 

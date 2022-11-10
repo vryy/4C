@@ -12,18 +12,18 @@
 #include <Epetra_Vector.h>
 #include <Epetra_Time.h>
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "drt_globalproblem.H"
+#include "io_control.H"
+#include "linalg_solver.H"
+#include "linalg_mapextractor.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_serialdensevector.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "drt_utils_integration.H"
+#include "drt_utils_nurbs_shapefunctions.H"
+#include "drt_utils_boundary_integration.H"
 
 #include "drt_nurbs_utils.H"
 #include "drt_nurbs_discret.H"

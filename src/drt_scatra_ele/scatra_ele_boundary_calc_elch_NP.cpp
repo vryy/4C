@@ -7,14 +7,14 @@
 
  */
 /*----------------------------------------------------------------------*/
-#include "../drt_mat/ion.H"
-#include "../drt_mat/material.H"
-#include "../drt_mat/matlist.H"
+#include "ion.H"
+#include "material.H"
+#include "matlist.H"
 
 #include "scatra_ele.H"
 #include "scatra_ele_parameter_elch.H"
 #include "scatra_ele_boundary_calc_elch_NP.H"
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |

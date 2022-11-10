@@ -14,7 +14,7 @@
 #include <iostream>
 #include <cstdlib>
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 namespace DRT
 {

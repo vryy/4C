@@ -14,11 +14,11 @@
 
 #include <functional>
 #include <utility>
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include "anisotropy.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_pack_buffer.H"
+#include "drt_linedefinition.H"
+#include "drt_dserror.H"
+#include "drt_pack_buffer.H"
 #include "anisotropy_extension_base.H"
 #include "anisotropy_fiber_provider.H"
 

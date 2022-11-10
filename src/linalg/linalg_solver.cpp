@@ -19,8 +19,8 @@
 #include <Epetra_MpiComm.h>
 #include <Epetra_LinearProblem.h>
 
-#include "../drt_inpar/inpar_solver.H"
-#include "../drt_lib/drt_globalproblem.H"  // access global problem. can we avoid this?
+#include "inpar_solver.H"
+#include "drt_globalproblem.H"  // access global problem. can we avoid this?
 #include "linalg_solver.H"
 #include "linalg_sparsematrix.H"
 
@@ -30,9 +30,9 @@
 #include <az_aztec_defs.h>                // for translation of parameters
 
 // solver interfaces
-#include "../solver/solver_directsolver.H"  // Amesos
-#include "../solver/solver_aztecsolver.H"   // AztecOO
-#include "../solver/solver_belossolver.H"   // Belos
+#include "solver_directsolver.H"  // Amesos
+#include "solver_aztecsolver.H"   // AztecOO
+#include "solver_belossolver.H"   // Belos
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

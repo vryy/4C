@@ -13,24 +13,24 @@
 #include "fsi_partitioned.H"
 #include "fsi_utils.H"
 
-#include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/adapter_coupling_mortar.H"
-#include "../drt_adapter/ad_fld_fluid_xfem.H"
-#include "../drt_adapter/ad_fld_fluid.H"
-#include "../drt_adapter/ad_fld_fluid_xfsi.H"
-#include "../drt_adapter/ad_ale_fluid.H"
-#include "../drt_adapter/ad_fld_fluid_immersed.H"
-#include "../drt_fluid_xfluid/xfluid.H"
+#include "ad_str_fsiwrapper.H"
+#include "adapter_coupling.H"
+#include "adapter_coupling_mortar.H"
+#include "ad_fld_fluid_xfem.H"
+#include "ad_fld_fluid.H"
+#include "ad_fld_fluid_xfsi.H"
+#include "ad_ale_fluid.H"
+#include "ad_fld_fluid_immersed.H"
+#include "xfluid.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_inpar/inpar_fsi.H"
-#include "../drt_lib/drt_colors.H"
+#include "drt_globalproblem.H"
+#include "drt_validparameters.H"
+#include "inpar_fsi.H"
+#include "drt_colors.H"
 
-#include "../drt_io/io_control.H"
-#include "../drt_structure/stru_aux.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "io_control.H"
+#include "stru_aux.H"
+#include "fluid_utils_mapextractor.H"
 #include "fsi_debugwriter.H"
 
 #include "fsi_nox_aitken.H"
@@ -45,7 +45,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../drt_adapter/ad_fld_fbi_movingboundary.H"
+#include "ad_fld_fbi_movingboundary.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

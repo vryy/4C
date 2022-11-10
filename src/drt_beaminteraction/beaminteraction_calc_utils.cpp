@@ -7,29 +7,29 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
-#include "../drt_beaminteraction/beam_link.H"
-#include "../drt_beaminteraction/periodic_boundingbox.H"
-#include "../drt_beaminteraction/crosslinking_params.H"
-#include "../drt_beaminteraction/spherebeamlinking_params.H"
+#include "beaminteraction_calc_utils.H"
+#include "beam_link.H"
+#include "periodic_boundingbox.H"
+#include "crosslinking_params.H"
+#include "spherebeamlinking_params.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
 
-#include "../drt_binstrategy/binning_strategy.H"
+#include "binning_strategy.H"
 
-#include "../drt_beam3/beam3_base.H"
-#include "../drt_rigidsphere/rigidsphere.H"
-#include "../drt_so3/so_base.H"
+#include "beam3_base.H"
+#include "rigidsphere.H"
+#include "so_base.H"
 
-#include "../drt_geometry/intersection_math.H"
+#include "intersection_math.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 #include <Epetra_FEVector.h>
 

@@ -15,19 +15,19 @@
 #include "contact_defines.H"
 #include "contact_paramsinterface.H"
 #include "friction_node.H"
-#include "../drt_mortar/mortar_defines.H"
-#include "../drt_mortar/mortar_projector.H"
-#include "../drt_mortar/mortar_coupling3d_classes.H"
-#include "../drt_mortar/mortar_calc_utils.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_inpar/inpar_wear.H"
+#include "mortar_defines.H"
+#include "mortar_projector.H"
+#include "mortar_coupling3d_classes.H"
+#include "mortar_calc_utils.H"
+#include "linalg_serialdensevector.H"
+#include "linalg_serialdensematrix.H"
+#include "drt_utils_integration.H"
+#include "inpar_contact.H"
+#include "inpar_wear.H"
 
 // headers for poro contact integration
-#include "../drt_mat/structporo.H"
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "structporo.H"
+#include "drt_utils_boundary_integration.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/13|

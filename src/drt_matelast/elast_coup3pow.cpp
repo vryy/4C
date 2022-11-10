@@ -8,7 +8,7 @@ determinant
 /*----------------------------------------------------------------------*/
 
 #include "elast_coup3pow.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 MAT::ELASTIC::PAR::Coup3Pow::Coup3Pow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), c_(matdata->GetDouble("C")), d_(matdata->GetInt("D"))

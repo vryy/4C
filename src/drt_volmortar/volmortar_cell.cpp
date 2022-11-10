@@ -10,8 +10,8 @@
  | headers                                                 farah 01/14 |
  *---------------------------------------------------------------------*/
 #include "volmortar_cell.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "linalg_serialdensematrix.H"
+#include "drt_utils_fem_shapefunctions.H"
 
 /*---------------------------------------------------------------------*
  | constructor                                             farah 01/14 |

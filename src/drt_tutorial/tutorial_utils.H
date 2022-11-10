@@ -17,8 +17,8 @@
 
 #include <map>
 
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_tutorial/tutorial_ele/tutorial_ele.H"
+#include "linalg_fixedsizematrix.H"
+#include "tutorial_ele.H"
 
 
 namespace TUTORIAL

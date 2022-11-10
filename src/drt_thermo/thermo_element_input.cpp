@@ -8,9 +8,9 @@
  | headers                                                    gjb 01/08 |
  *----------------------------------------------------------------------*/
 #include "thermo_element.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_mat/fouriervar.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "drt_linedefinition.H"
+#include "fouriervar.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
 
 /*----------------------------------------------------------------------*

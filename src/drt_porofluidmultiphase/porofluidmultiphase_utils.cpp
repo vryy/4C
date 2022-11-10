@@ -10,23 +10,23 @@
 
 #include "porofluidmultiphase_timint_ost.H"
 
-#include "../drt_mat/material.H"
-#include "../drt_mat/cnst_1d_art.H"
+#include "material.H"
+#include "cnst_1d_art.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_createdis.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_createdis.H"
 
-#include "../drt_adapter/ad_porofluidmultiphase.H"
-#include "../drt_lib/drt_utils_parallel.H"
+#include "ad_porofluidmultiphase.H"
+#include "drt_utils_parallel.H"
 
-#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "linalg_utils_densematrix_communication.H"
 
-#include "../drt_geometry/searchtree.H"
-#include "../drt_geometry/searchtree_geometry_service.H"
-#include "../drt_geometry/position_array.H"
-#include "../drt_geometry/intersection_service_templates.H"
-#include "../drt_geometry/intersection_service.H"
-#include "../drt_inpar/inpar_bio.H"
+#include "searchtree.H"
+#include "searchtree_geometry_service.H"
+#include "position_array.H"
+#include "intersection_service_templates.H"
+#include "intersection_service.H"
+#include "inpar_bio.H"
 
 
 

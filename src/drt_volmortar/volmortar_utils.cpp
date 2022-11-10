@@ -9,8 +9,8 @@
 
 #include "volmortar_coupling.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
 
 #include "volmortar_utils.H"
 

@@ -59,13 +59,13 @@ output.
 
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-#include "../drt_nurbs_discret/drt_control_point.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../drt_inpar/inpar_fluid.H"
-#include "../drt_inpar/inpar_scatra.H"
+#include "drt_discret.H"
+#include "drt_nurbs_discret.H"
+#include "drt_utils_nurbs_shapefunctions.H"
+#include "drt_control_point.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "inpar_fluid.H"
+#include "inpar_scatra.H"
 
 
 namespace FLD

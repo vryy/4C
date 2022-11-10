@@ -19,7 +19,7 @@ in the Baci guide in the Convention chapter.
 
 *----------------------------------------------------------------------*/
 #include "drt_utils_local_connectivity_matrices.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 /*----------------------------------------------------------------------*
  |  returns the number of nodes                              a.ger 11/07|

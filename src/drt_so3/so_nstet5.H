@@ -9,13 +9,13 @@
 #ifndef SO_NSTET5_H
 #define SO_NSTET5_H
 
-//#include "Sacado.hpp"
+// #include "Sacado.hpp"
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "drt_element.H"
+#include "drt_elementtype.H"
+#include "inpar_structure.H"
 
-//#define PUSO_NSTET5              ///< run the Puso&Solberg style 5-node tet
+// #define PUSO_NSTET5              ///< run the Puso&Solberg style 5-node tet
 #define ALPHA_NSTET5 0.1  ///< stabilization parameter for vol-dev split stabilization & Puso-tet
 
 

@@ -9,10 +9,10 @@ according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium"
 
 #include "elast_coupanisoexpotwocoup.H"
 
-#include "../drt_mat/matpar_material.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_mat/material_service.H"
-#include "../drt_mat/anisotropy_extension.H"
+#include "matpar_material.H"
+#include "standardtypes_cpp.H"
+#include "material_service.H"
+#include "anisotropy_extension.H"
 
 
 MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(

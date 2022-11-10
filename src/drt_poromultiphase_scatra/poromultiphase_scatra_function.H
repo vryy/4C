@@ -10,7 +10,7 @@
 
  *----------------------------------------------------------------------*/
 
-#include "../drt_lib/drt_function.H"
+#include "drt_function.H"
 #include "Sacado.hpp"
 
 

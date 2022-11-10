@@ -12,8 +12,8 @@ Here is everything related with writing a dat-file
 #include "pre_exodus_writedat.H"
 #include "pre_exodus_reader.H"
 #include "pre_exodus_soshextrusion.H"  // to calculate normal
-#include "../drt_inpar/drt_validconditions.H"
-#include "../drt_lib/drt_conditiondefinition.H"
+#include "drt_validconditions.H"
+#include "drt_conditiondefinition.H"
 
 
 /*----------------------------------------------------------------------*/

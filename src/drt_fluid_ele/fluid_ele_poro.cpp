@@ -12,9 +12,9 @@
 
 #include "fluid_ele_poro.H"
 
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_factory.H"
+#include "drt_linedefinition.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_factory.H"
 
 DRT::ELEMENTS::FluidPoroEleType DRT::ELEMENTS::FluidPoroEleType::instance_;
 

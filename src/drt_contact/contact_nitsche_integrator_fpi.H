@@ -13,7 +13,7 @@
 
 #include "contact_nitsche_integrator_poro.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 namespace XFEM
 {

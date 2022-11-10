@@ -13,7 +13,7 @@
 #define STR_IMPL_GENERIC_H_
 
 #include "str_integrator.H"
-#include "../solver_nonlin_nox/nox_nln_abstract_prepostoperator.H"
+#include "nox_nln_abstract_prepostoperator.H"
 // required because of used enums
 #include <NOX_Abstract_Vector.H>
 

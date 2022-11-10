@@ -10,24 +10,24 @@
 
 #include "ssi_clonestrategy.H"
 
-#include "../drt_inpar/inpar_ssi.H"
+#include "inpar_ssi.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_mat/matpar_material.H"
-#include "../drt_mat/matpar_bundle.H"
+#include "matpar_material.H"
+#include "matpar_bundle.H"
 
-#include "../drt_membrane/membrane_scatra.H"
+#include "membrane_scatra.H"
 
-#include "../drt_scatra_ele/scatra_ele.H"
+#include "scatra_ele.H"
 
-#include "../drt_s8/shell8_scatra.H"
+#include "shell8_scatra.H"
 
-#include "../drt_so3/so3_scatra.H"
+#include "so3_scatra.H"
 
-#include "../drt_truss3/truss3_scatra.H"
+#include "truss3_scatra.H"
 
-#include "../drt_w1/wall1_scatra.H"
+#include "wall1_scatra.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

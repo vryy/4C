@@ -9,9 +9,9 @@
 #include "elast_coupanisoneohooke.H"
 #include "elast_aniso_structuraltensor_strategy.H"
 
-#include "../drt_mat/matpar_material.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "matpar_material.H"
+#include "standardtypes_cpp.H"
+#include "drt_linedefinition.H"
 
 
 MAT::ELASTIC::PAR::CoupAnisoNeoHooke::CoupAnisoNeoHooke(

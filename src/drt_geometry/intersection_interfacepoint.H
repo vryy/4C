@@ -12,7 +12,7 @@
 #define INTERSECTION_INTERFACEPOINT_H_
 
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 
 namespace GEO

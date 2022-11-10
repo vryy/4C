@@ -14,13 +14,13 @@
 #include "str_timint_base.H"
 #include "str_utils.H"
 
-#include "../solver_nonlin_nox/nox_nln_problem.H"
-#include "../solver_nonlin_nox/nox_nln_constraint_interface_required.H"
-#include "../solver_nonlin_nox/nox_nln_solver_factory.H"
-#include "../solver_nonlin_nox/nox_nln_globaldata.H"
-#include "../solver_nonlin_nox/nox_nln_linearsystem.H"
+#include "nox_nln_problem.H"
+#include "nox_nln_constraint_interface_required.H"
+#include "nox_nln_solver_factory.H"
+#include "nox_nln_globaldata.H"
+#include "nox_nln_linearsystem.H"
 
-#include "../linalg/linalg_solver.H"
+#include "linalg_solver.H"
 
 #include <NOX_Epetra_LinearSystem.H>
 #include <NOX_Epetra_Vector.H>

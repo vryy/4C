@@ -14,7 +14,7 @@
 
 #include <vector>
 
-#include "../solver_nonlin_nox/nox_nln_constraint_interface_required.H"
+#include "nox_nln_constraint_interface_required.H"
 
 namespace CONTACT
 {

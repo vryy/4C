@@ -10,7 +10,7 @@
 
 
 #include "drt_validconditions.H"
-#include "../drt_lib/drt_conditiondefinition.H"
+#include "drt_conditiondefinition.H"
 #include "inpar_s2i.H"
 #include "inpar_scatra.H"
 #include "inpar_sti.H"

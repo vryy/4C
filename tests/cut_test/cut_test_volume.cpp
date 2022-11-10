@@ -13,8 +13,8 @@
 
 #include "cut_test_utils.H"
 
-#include "../../src/drt_cut/cut_options.H"
-#include "../../src/drt_cut/cut_mesh.H"
+#include "cut_options.H"
+#include "cut_mesh.H"
 
 void test_cut_volumes()
 {

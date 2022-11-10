@@ -16,35 +16,35 @@
 #include "poroelast_defines.H"
 #include "poroelast_utils.H"
 
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/adapter_coupling_volmortar.H"
-#include "../drt_adapter/ad_fld_base_algorithm.H"
-#include "../drt_adapter/ad_fld_poro.H"
-#include "../drt_adapter/ad_str_fpsiwrapper.H"
+#include "adapter_coupling.H"
+#include "adapter_coupling_volmortar.H"
+#include "ad_fld_base_algorithm.H"
+#include "ad_fld_poro.H"
+#include "ad_str_fpsiwrapper.H"
 
 // new structural time integration
-#include "../drt_adapter/ad_str_structure_new.H"
-#include "../drt_adapter/ad_str_factory.H"
+#include "ad_str_structure_new.H"
+#include "ad_str_factory.H"
 
 // contact
-#include "../drt_contact/contact_poro_lagrange_strategy.H"
-#include "../drt_contact/meshtying_contact_bridge.H"
+#include "contact_poro_lagrange_strategy.H"
+#include "meshtying_contact_bridge.H"
 
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
-#include "../drt_lib/drt_assemblestrategy.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_dofset_gidbased_wrapper.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_assemblestrategy.H"
+#include "drt_condition_utils.H"
+#include "drt_dofset_gidbased_wrapper.H"
+#include "drt_globalproblem.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_solver.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_solver.H"
 
 // contact
-#include "../drt_mortar/mortar_manager_base.H"
+#include "mortar_manager_base.H"
 
-#include "../drt_structure/stru_aux.H"
+#include "stru_aux.H"
 
 
 POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)

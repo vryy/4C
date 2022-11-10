@@ -11,7 +11,7 @@
 #ifndef QUADRATURE_COMPRESSION_H_
 #define QUADRATURE_COMPRESSION_H_
 
-#include "../drt_fem_general/drt_utils_gausspoints.H"
+#include "drt_utils_gausspoints.H"
 
 namespace Teuchos
 {

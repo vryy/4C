@@ -11,7 +11,7 @@
 #ifndef CUT_OPTIONS_H
 #define CUT_OPTIONS_H
 
-#include "../drt_inpar/inpar_cut.H"
+#include "inpar_cut.H"
 
 namespace GEO
 {

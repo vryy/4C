@@ -22,7 +22,7 @@
 #include <NOX_StatusTest_NormF.H>
 
 #include "nox_nln_statustest_normupdate.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_serialdensevector.H"
 
 // forward declarations
 class Epetra_BlockMap;

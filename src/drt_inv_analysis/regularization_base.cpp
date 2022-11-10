@@ -12,7 +12,7 @@
 
 #include "initial_guess.H"
 
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_mapextractor.H"
 #include "Teuchos_ParameterList.hpp"
 
 

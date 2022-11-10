@@ -11,10 +11,10 @@
 
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include "so_base.H"
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "drt_elementtype.H"
+#include "inpar_structure.H"
 
-#include "../drt_mat/material.H"
+#include "material.H"
 
 /// Several parameters which are fixed for Solid Pyramid5
 const int NUMNOD_SOP5 = 5;   ///< number of nodes

@@ -17,10 +17,10 @@ factor \f$\vartheta\f$ and its derivative wrt. \f$\frac{\partial \vartheta}{\par
 #include "matpar_material.H"
 #include "material_service.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_comm/comm_utils.H"
-#include "../drt_lib/voigt_notation.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "comm_utils.H"
+#include "voigt_notation.H"
 
 /*----------------------------------------------------------------------------*/
 MAT::GrowthLaw::GrowthLaw() : params_(nullptr) {}

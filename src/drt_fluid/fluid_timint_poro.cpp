@@ -10,13 +10,13 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_timint_poro.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_poroelast/poroelast_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "fluid_ele_action.H"
+#include "poroelast_utils.H"
+#include "drt_globalproblem.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
-#include "../drt_io/io.H"
+#include "io.H"
 
 FLD::TimIntPoro::TimIntPoro(const Teuchos::RCP<DRT::Discretization>& actdis,
     const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,

@@ -10,7 +10,7 @@
 #ifndef MEMBRANE_SERVICE_H
 #define MEMBRANE_SERVICE_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 namespace MEMBRANE
 {

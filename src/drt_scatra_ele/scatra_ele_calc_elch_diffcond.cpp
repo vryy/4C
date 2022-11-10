@@ -12,11 +12,11 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_utils_elch_diffcond.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
 
-#include "../drt_mat/material.H"
-#include "../headers/singleton_owner.H"
+#include "material.H"
+#include "singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*

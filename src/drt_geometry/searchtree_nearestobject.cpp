@@ -8,7 +8,7 @@
  */
 
 
-#include "../drt_geometry/searchtree_nearestobject.H"
+#include "searchtree_nearestobject.H"
 
 
 /*----------------------------------------------------------------------*

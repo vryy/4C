@@ -9,7 +9,7 @@
 #ifndef MIXTURE_GROWTH_STRATEGY_H
 #define MIXTURE_GROWTH_STRATEGY_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include "mixture_rule.H"
 #include <memory>
 

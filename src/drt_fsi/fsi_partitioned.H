@@ -30,7 +30,7 @@
 #include <NOX_Epetra_LinearSystem_AztecOO.H>
 
 #include "fsi_algorithm.H"
-#include "../drt_io/io.H"
+#include "io.H"
 
 // forward declarations
 namespace ADAPTER

@@ -13,7 +13,7 @@
 #include "topopt_optimizer_ele.H"
 #include "topopt_optimizer_ele_impl.H"
 #include "topopt_optimizer_ele_parameter.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
 
 /*---------------------------------------------------------------------*

@@ -12,7 +12,7 @@
 #include "cut_volumecell.H"
 #include "cut_element.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <Teuchos_SerialQRDenseSolver.hpp>
 #include <Teuchos_SerialDenseVector.hpp>
@@ -24,7 +24,7 @@
 // Since we are using only 5th order
 // Quadrature and the base quadrature rule has a very good point distribution (obtained from direct
 // divergence), the problem due to matrix conditioning does not appear
-//#define CHECBYSHEV
+// #define CHECBYSHEV
 
 GEO::CUT::QuadratureCompression::QuadratureCompression() {}
 

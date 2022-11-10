@@ -16,7 +16,7 @@ MAT 0 MAT_Membrane_ElastHyper NUMMAT 2 MATIDS 1 2 DENS 0
 #include "membrane_elasthyper.H"
 #include "membrane_elasthyper_service.H"
 
-#include "../drt_matelast/elast_summand.H"
+#include "elast_summand.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                           sfuchs 08/2017 |

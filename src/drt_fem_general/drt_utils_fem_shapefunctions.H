@@ -14,7 +14,7 @@ the Baci guide in the Convention chapter.
 
 #include <type_traits>
 #include "drt_utils_local_connectivity_matrices.H"
-#include "../drt_cut/cut_clnwrapper.H"
+#include "cut_clnwrapper.H"
 
 #define PY5TOL 1.0e-14
 

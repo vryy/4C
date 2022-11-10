@@ -11,7 +11,7 @@
 
 #include <set>
 
-#include "../drt_inpar/inpar_poromultiphase.H"
+#include "inpar_poromultiphase.H"
 
 #include "Teuchos_RCP.hpp"
 #include <Epetra_Vector.h>

@@ -11,8 +11,8 @@
 
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_Map.h"
-#include "../drt_lib/drt_element.H"
-#include "../drt_mortar/base_binarytree.H"
+#include "drt_element.H"
+#include "base_binarytree.H"
 
 // forward declarations
 namespace DRT

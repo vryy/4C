@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "../drt_io/io_pstream.H"
-#include "../drt_lib/drt_discret.H"
+#include "io_pstream.H"
+#include "drt_discret.H"
 
 #include "str_timint_implicit.H"
 #include "str_impl_generic.H"
@@ -19,18 +19,18 @@
 #include "str_timint_noxinterface.H"
 #include "str_utils.H"
 
-#include "../drt_io/io_gmsh.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_pstream.H"
+#include "io_gmsh.H"
+#include "io.H"
+#include "io_control.H"
+#include "io_pstream.H"
 
 #include <NOX_Abstract_Group.H>
 
-#include "../solver_nonlin_nox/nox_nln_linearsystem.H"
-#include "../solver_nonlin_nox/nox_nln_group.H"
+#include "nox_nln_linearsystem.H"
+#include "nox_nln_group.H"
 
-#include "../linalg/linalg_blocksparsematrix.H"
-#include "../linalg/linalg_utils_sparse_algebra_print.H"
+#include "linalg_blocksparsematrix.H"
+#include "linalg_utils_sparse_algebra_print.H"
 
 // factories
 #include "str_predict_factory.H"

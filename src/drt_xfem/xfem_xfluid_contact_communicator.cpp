@@ -8,35 +8,35 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "../drt_cut/cut_cutwizard.H"
-#include "../drt_cut/cut_sidehandle.H"
-#include "../drt_cut/cut_facet.H"
-#include "../drt_cut/cut_volumecell.H"
-#include "../drt_cut/cut_elementhandle.H"
-#include "../drt_cut/cut_position.H"
-#include "../drt_cut/cut_output.H"
-#include "../drt_cut/cut_element.H"
-#include "../drt_cut/cut_boundingbox.H"
+#include "cut_cutwizard.H"
+#include "cut_sidehandle.H"
+#include "cut_facet.H"
+#include "cut_volumecell.H"
+#include "cut_elementhandle.H"
+#include "cut_position.H"
+#include "cut_output.H"
+#include "cut_element.H"
+#include "cut_boundingbox.H"
 
-#include "../drt_so3/so_surface.H"
-#include "../drt_so3/so_hex8.H"
+#include "so_surface.H"
+#include "so_hex8.H"
 
-#include "../drt_fluid_ele/fluid_ele.H"
+#include "fluid_ele.H"
 
-#include "../drt_mat/newtonianfluid.H"
+#include "newtonianfluid.H"
 
-#include "../drt_lib/drt_utils.H"
+#include "drt_utils.H"
 
 #include "xfem_condition_manager.H"
 
 #include "xfem_xfluid_contact_communicator.H"
 
-#include "../drt_contact/contact_element.H"
-#include "../drt_contact/contact_node.H"
-#include "../drt_contact/contact_nitsche_strategy_fsi.H"
-#include "../drt_contact/contact_nitsche_strategy_fpi.H"
+#include "contact_element.H"
+#include "contact_node.H"
+#include "contact_nitsche_strategy_fsi.H"
+#include "contact_nitsche_strategy_fpi.H"
 
-#include "../drt_mortar/mortar_element.H"
+#include "mortar_element.H"
 
 void XFEM::XFluid_Contact_Comm::InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
     Teuchos::RCP<DRT::Discretization> fluiddis,

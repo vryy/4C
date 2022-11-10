@@ -8,11 +8,11 @@
 
 #include <iostream>
 
-#include "../../src/drt_cut/cut_kernel.H"
-#include "../../src/drt_cut/cut_position.H"
-#include "../../src/drt_cut/cut_output.H"
+#include "cut_kernel.H"
+#include "cut_position.H"
+#include "cut_output.H"
 
-#include "../../src/drt_cut/cut_intersection.H"  // for IntersectionStatus
+#include "cut_intersection.H"  // for IntersectionStatus
 
 void test_geometry_schleifend1()
 {

@@ -13,9 +13,9 @@
 #ifndef BEAMTOBEAMCONTACTPARAMS_H
 #define BEAMTOBEAMCONTACTPARAMS_H
 
-#include "../drt_inpar/inpar_beamcontact.H"
+#include "inpar_beamcontact.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 namespace BEAMINTERACTION
 {

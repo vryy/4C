@@ -14,8 +14,8 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 08/09 |
  *----------------------------------------------------------------------*/
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_lib/drt_element.H"
+#include "drt_utils_integration.H"
+#include "drt_element.H"
 
 /*----------------------------------------------------------------------*
  |                                                           dano 08/09 |

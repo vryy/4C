@@ -14,9 +14,9 @@
 #include "fsi_dirichletneumann_vel.H"
 #include "fsi_dirichletneumann_volcoupl.H"
 #include "fsi_dirichletneumannslideale.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_inpar/inpar_fsi.H"
+#include "inpar_fsi.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

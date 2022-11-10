@@ -16,11 +16,11 @@
 
 #include "drt_condition_utils.H"
 #include "drt_utils_factory.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_immersed_problem/immersed_node.H"
-#include "../drt_mat/material.H"
-#include "../drt_mat/matpar_parameter.H"
-#include "../drt_io/io_pstream.H"
+#include "drt_nurbs_discret.H"
+#include "immersed_node.H"
+#include "material.H"
+#include "matpar_parameter.H"
+#include "io_pstream.H"
 
 // required for utility function CloneDiscretization()
 #include "drt_globalproblem.H"

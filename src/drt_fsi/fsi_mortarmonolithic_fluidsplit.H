@@ -14,7 +14,7 @@ with condensed fluid interface velocities
 #define FSI_MORTARMONOLITHICFLUID_H
 
 #include "fsi_monolithic.H"
-#include "../drt_inpar/inpar_fsi.H"
+#include "inpar_fsi.H"
 
 // forward declarations
 namespace ADAPTER

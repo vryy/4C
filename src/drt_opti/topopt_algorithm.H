@@ -13,8 +13,8 @@
 #define TOPOPT_ALGORITHM_H_
 
 
-#include "../drt_adapter/ad_opt_fluid_algo.H"
-#include "../drt_inpar/inpar_topopt.H"
+#include "ad_opt_fluid_algo.H"
+#include "inpar_topopt.H"
 
 
 namespace TOPOPT

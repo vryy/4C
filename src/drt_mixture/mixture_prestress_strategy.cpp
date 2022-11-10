@@ -9,15 +9,15 @@
 */
 /*----------------------------------------------------------------------*/
 #include "mixture_prestress_strategy.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_material.H"
-#include "../drt_mat/matpar_bundle.H"
+#include "drt_globalproblem.H"
+#include "matpar_material.H"
+#include "matpar_bundle.H"
 #include "mixture_prestress_strategy_constant.H"
 #include "mixture_prestress_strategy_isocyl.H"
 #include "mixture_prestress_strategy_iterative.H"
-#include "../drt_mat/material_service.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_inpar/inpar_material.H"
+#include "material_service.H"
+#include "drt_dserror.H"
+#include "inpar_material.H"
 
 // Prestress stragegy factory generates the prestress strategy for a specific material id
 MIXTURE::PAR::PrestressStrategy* MIXTURE::PAR::PrestressStrategy::Factory(int matid)

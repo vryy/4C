@@ -11,7 +11,7 @@
 
 
 #include "topopt_fluidAdjoint_timeint.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
 
 /*----------------------------------------------------------------------*/

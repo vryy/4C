@@ -23,7 +23,7 @@
 #include "matpar_parameter.H"
 #include "membrane_material_interfaces.H"
 #include "so3_material.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 /*----------------------------------------------------------------------*
  | active strain membrane material                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/

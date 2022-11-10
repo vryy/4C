@@ -10,9 +10,9 @@
 #ifndef SSI_BASE_H_
 #define SSI_BASE_H_
 
-#include "../drt_adapter/adapter_algorithmbase.H"
+#include "adapter_algorithmbase.H"
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
 #include <Epetra_Vector.h>
 

@@ -12,9 +12,9 @@
 #define SRC_DRT_CONTACT_AUG_CONTACT_AUG_COMBO_STRATEGY_H_
 
 #include "contact_aug_utils.H"
-#include "../drt_contact/contact_abstract_strategy.H"
+#include "contact_abstract_strategy.H"
 
-//#define DEBUG_COMBO_STRATEGY
+// #define DEBUG_COMBO_STRATEGY
 
 namespace CONTACT
 {

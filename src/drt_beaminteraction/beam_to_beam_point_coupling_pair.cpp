@@ -9,16 +9,16 @@
 
 #include "beam_to_beam_point_coupling_pair.H"
 
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
 
 #include "beam_to_solid_utils.H"
-#include "../drt_geometry_pair/geometry_pair_element_functions.H"
-#include "../drt_beam3/triad_interpolation_local_rotation_vectors.H"
-#include "../drt_beam3/beam3r.H"
+#include "geometry_pair_element_functions.H"
+#include "triad_interpolation_local_rotation_vectors.H"
+#include "beam3r.H"
 
 #include <Epetra_FEVector.h>
-#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
+#include "beaminteraction_calc_utils.H"
 
 
 /**

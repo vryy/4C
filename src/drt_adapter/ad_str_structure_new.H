@@ -15,7 +15,7 @@
 
 #include <set>
 
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 #include "ad_str_structure.H"
 
 // forward declarations

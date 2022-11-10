@@ -15,18 +15,18 @@ GROWTHTYPE 1 LOCTIMEINT 1 MEMBRANE 0
 /* headers */
 #include "growthremodel_elasthyper.H"
 #include <cmath>
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_matelast/elast_summand.H"
-#include "../drt_matelast/elast_remodelfiber.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/material_service.H"
+#include "standardtypes_cpp.H"
+#include "elast_summand.H"
+#include "elast_remodelfiber.H"
+#include "drt_linedefinition.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
+#include "material_service.H"
 #include "Epetra_SerialDenseSolver.h"
-#include "../drt_matelast/elast_isoneohooke.H"
-#include "../drt_matelast/elast_volsussmanbathe.H"
+#include "elast_isoneohooke.H"
+#include "elast_volsussmanbathe.H"
 #include "elasthyper_service.H"
-#include "../drt_lib/voigt_notation.H"
+#include "voigt_notation.H"
 
 
 /*----------------------------------------------------------------------*/

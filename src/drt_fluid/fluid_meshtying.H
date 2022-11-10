@@ -12,9 +12,9 @@
 #ifndef FLUID_MESHTYING_H_
 #define FLUID_MESHTYING_H_
 
-#include "../drt_inpar/inpar_fluid.H"
+#include "inpar_fluid.H"
 
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_mapextractor.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>

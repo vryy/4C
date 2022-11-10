@@ -8,14 +8,14 @@ volumetric contribution.
 /*----------------------------------------------------------------------*/
 
 #include "elast_isovolaaagasser.H"
-#include "../drt_mat/matpar_material.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "matpar_material.H"
+#include "drt_linedefinition.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_mat/material_service.H"
-#include "../drt_comm/comm_utils.H"
+#include "matpar_bundle.H"
+#include "drt_discret.H"
+#include "material_service.H"
+#include "comm_utils.H"
 
 
 MAT::ELASTIC::PAR::IsoVolAAAGasser::IsoVolAAAGasser(const Teuchos::RCP<MAT::PAR::Material>& matdata)

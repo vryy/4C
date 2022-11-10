@@ -12,9 +12,9 @@
 
 #include <vector>
 #include "myocard_tentusscher.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
+#include "drt_linedefinition.H"
 
 /*----------------------------------------------------------------------*
  |  variables                                                ljag 09/13 |

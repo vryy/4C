@@ -14,9 +14,9 @@
 
 #include "beam_to_solid_pair_base.H"
 
-#include "../drt_geometry_pair/geometry_pair_scalar_types.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../linalg/linalg_sparsematrix.H"
+#include "geometry_pair_scalar_types.H"
+#include "linalg_fixedsizematrix.H"
+#include "linalg_sparsematrix.H"
 
 
 // Forward declarations.

@@ -20,16 +20,16 @@ Refer also to the Semesterarbeit of Alexander Popp, 2006
 
 #include "so3_ssn_plast_sosh8.H"
 #include "so3_ssn_plast.H"
-#include "../../drt_lib/drt_linedefinition.H"
-#include "../../drt_mat/plasticelasthyper.H"
+#include "drt_linedefinition.H"
+#include "plasticelasthyper.H"
 #include "Epetra_SerialDenseSolver.h"
 
-#include "../../drt_structure_new/str_elements_paramsinterface.H"
-#include "../../linalg/linalg_serialdensematrix.H"
-#include "../../linalg/linalg_serialdensevector.H"
-#include "../../drt_lib/drt_globalproblem.H"
-#include "../so_utils.H"
-#include "../../drt_lib/drt_utils_parameter_list.H"
+#include "str_elements_paramsinterface.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
+#include "drt_globalproblem.H"
+#include "so_utils.H"
+#include "drt_utils_parameter_list.H"
 
 /*----------------------------------------------------------------------*
  | build an instance of plast type                         seitz 05/14 |

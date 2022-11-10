@@ -11,16 +11,16 @@
 
 #include "scatra_ele_boundary_calc_elch_electrode_utils.H"
 
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "drt_utils_boundary_integration.H"
 
-#include "../drt_mat/electrode.H"
+#include "electrode.H"
 
-#include "../drt_inpar/inpar_s2i.H"
+#include "inpar_s2i.H"
 
-#include "../drt_scatra_ele/scatra_ele_parameter_elch.H"
-#include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
-#include "../drt_scatra_ele/scatra_ele_parameter_boundary.H"
-#include "../headers/singleton_owner.H"
+#include "scatra_ele_parameter_elch.H"
+#include "scatra_ele_parameter_timint.H"
+#include "scatra_ele_parameter_boundary.H"
+#include "singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 08/15 |

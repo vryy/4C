@@ -15,7 +15,7 @@
 #include "Epetra_CrsMatrix.h"
 #include "Epetra_Vector.h"
 #include "Epetra_MultiVector.h"
-#include "../drt_lib/drt_exporter.H"
+#include "drt_exporter.H"
 
 // Forward declarations
 namespace LINALG

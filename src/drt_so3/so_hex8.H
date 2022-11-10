@@ -12,18 +12,18 @@
 #define SOH8_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_mat/material.H"
+#include "drt_element.H"
+#include "drt_elementtype.H"
+#include "inpar_structure.H"
+#include "material.H"
 
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_lib/drt_element_integration_select.H"
+#include "drt_utils_integration.H"
+#include "drt_element_integration_select.H"
 
 
 #include "so_base.H"
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
 namespace STR
 {

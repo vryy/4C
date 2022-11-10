@@ -10,22 +10,22 @@
 
 #include "beam3_base.H"
 
-#include "../drt_mat/beam_templated_material_generic.H"
+#include "beam_templated_material_generic.H"
 
-#include "../drt_beaminteraction/periodic_boundingbox.H"
-#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
-#include "../drt_geometric_search/bounding_volume.H"
-#include "../drt_geometric_search/geometric_search_params.H"
+#include "periodic_boundingbox.H"
+#include "beaminteraction_calc_utils.H"
+#include "bounding_volume.H"
+#include "geometric_search_params.H"
 
-#include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "str_elements_paramsinterface.H"
 
-#include "../drt_inpar/inpar_browniandyn.H"  // enums
+#include "inpar_browniandyn.H"  // enums
 
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "standardtypes_cpp.H"
+#include "drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../headers/FAD_utils.H"
+#include "FAD_utils.H"
 #include <Sacado.hpp>
 
 /*----------------------------------------------------------------------*

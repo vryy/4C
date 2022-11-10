@@ -18,11 +18,11 @@
 #include <set>
 #include <type_traits>
 #include <string>
-#include "../linalg/linalg_serialdensematrix.H"
+#include "linalg_serialdensematrix.H"
 #include <Epetra_SerialDenseVector.h>
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include "drt_pack_buffer.H"
-#include "../headers/pairedmatrix.H"
+#include "pairedmatrix.H"
 
 namespace DRT
 {

@@ -11,15 +11,15 @@
 #ifndef POROELAST_UTILS_SETUP_H_
 #define POROELAST_UTILS_SETUP_H_
 
-#include "../drt_lib/drt_dofset_gidbased_wrapper.H"
-#include "../drt_lib/drt_dofset_predefineddofnumber.H"
+#include "drt_dofset_gidbased_wrapper.H"
+#include "drt_dofset_predefineddofnumber.H"
 #include "poroelast_utils.H"
 #include "poro_utils_clonestrategy.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_createdis.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_createdis.H"
 
-#include "../drt_lib/drt_utils_parallel.H"
+#include "drt_utils_parallel.H"
 
 
 namespace POROELAST

@@ -12,15 +12,15 @@ parenchyma balloon
 *----------------------------------------------------------------------*/
 
 #include "ad_fld_lung.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../drt_io/io.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "drt_globalproblem.H"
+#include "drt_condition_utils.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_mapextractor.H"
+#include "drt_condition_utils.H"
+#include "fluid_utils_mapextractor.H"
+#include "io.H"
+#include "fluid_ele_action.H"
 
 
 /*======================================================================*/

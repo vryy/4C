@@ -8,14 +8,14 @@
 *----------------------------------------------------------------------*/
 #include "XFFcoupling_manager.H"
 
-#include "../drt_xfem/xfem_condition_manager.H"
-#include "../drt_fluid_xfluid/xfluid.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "xfem_condition_manager.H"
+#include "xfluid.H"
+#include "linalg_mapextractor.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 
-#include "../drt_lib/drt_discret_xfem.H"
-//#include "../drt_io/io.H"
+#include "drt_discret_xfem.H"
+//#include "io.H"
 
 /*-----------------------------------------------------------------------------------------*
 | Constructor                                                                 ager 06/2016 |

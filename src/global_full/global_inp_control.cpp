@@ -8,11 +8,11 @@
 *----------------------------------------------------------------------*/
 
 #include <utility>
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_comm/comm_utils.H"
-#include "../drt_lib/drt_inputreader.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "drt_globalproblem.H"
+#include "comm_utils.H"
+#include "drt_inputreader.H"
+#include "io_pstream.H"
+#include "inpar_parameterlist_utils.H"
 
 void SetupParallelOutput(
     std::string& outputfile_kenner, Teuchos::RCP<Epetra_Comm> lcomm, int group);

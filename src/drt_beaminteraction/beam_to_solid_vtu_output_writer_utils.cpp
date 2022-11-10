@@ -13,10 +13,10 @@
 #include "beam_to_solid_vtu_output_writer_visualization.H"
 #include "beam_to_solid_surface_vtk_output_params.H"
 #include "beaminteraction_calc_utils.H"
-#include "../drt_geometry_pair/geometry_pair_element_faces.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "geometry_pair_element_faces.H"
+#include "drt_discret.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
 
 /**

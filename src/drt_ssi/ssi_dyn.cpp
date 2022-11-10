@@ -12,9 +12,9 @@
 #include "ssi_partitioned_1wc.H"
 #include "ssi_partitioned_2wc.H"
 #include "ssi_utils.H"
-#include "../drt_io/io_control.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_parallel.H"
+#include "io_control.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_parallel.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

@@ -6,9 +6,9 @@
 
 *----------------------------------------------------------------------*/
 
-#include "../../src/drt_cut/cut_mesh.H"
-#include "../../src/drt_cut/cut_element.H"
-#include "../../src/drt_cut/cut_meshintersection.H"
+#include "cut_mesh.H"
+#include "cut_element.H"
+#include "cut_meshintersection.H"
 #include "cut_test_utils.H"
 
 void test_hex8_quad4_double_cut()

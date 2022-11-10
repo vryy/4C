@@ -12,8 +12,8 @@
 #include "lubrication_timint_implicit.H"
 #include "lubrication_resulttest.H"
 
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_linedefinition.H"
+#include "drt_discret.H"
 
 
 /*----------------------------------------------------------------------*

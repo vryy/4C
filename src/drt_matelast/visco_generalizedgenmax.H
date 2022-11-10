@@ -8,8 +8,8 @@
 #ifndef VISCO_GENERALIZEDGENMAX_H_
 #define VISCO_GENERALIZEDGENMAX_H_
 
-#include "../drt_mat/matpar_parameter.H"
-#include "../drt_matelast/elast_summand.H"
+#include "matpar_parameter.H"
+#include "elast_summand.H"
 
 namespace MAT
 {

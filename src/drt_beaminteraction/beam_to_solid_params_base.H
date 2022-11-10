@@ -12,10 +12,10 @@
 #define BEAM_TO_SOLID_PARAMS_BASE_H
 
 
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_inpar/inpar_beam_to_solid.H"
+#include "drt_utils_integration.H"
+#include "inpar_beam_to_solid.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 
 namespace BEAMINTERACTION

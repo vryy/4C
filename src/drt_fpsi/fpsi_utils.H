@@ -14,7 +14,7 @@
 #include <Epetra_Vector.h>
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_mapextractor.H"
 
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |

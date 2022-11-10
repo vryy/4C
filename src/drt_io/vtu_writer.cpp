@@ -8,13 +8,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 #include "vtu_writer.H"
 
 #include "vtk_writer_base.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <sstream>
 #include <iostream>

@@ -16,34 +16,34 @@ Fluid-Poro-Coupling Matrixes!
 #include <Teuchos_ParameterList.hpp>
 //
 // POROELAST includes
-#include "../drt_poroelast/poroelast_monolithic.H"
+#include "poroelast_monolithic.H"
 //
 //// FSI includes
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_blocksparsematrix.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_blocksparsematrix.H"
 //
 // INPAR includes
-#include "../drt_inpar/inpar_fpsi.H"
+#include "inpar_fpsi.H"
 //
 // LIB includes
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_assemblestrategy.H"
-#include "../drt_lib/drt_condition_selector.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_assemblestrategy.H"
+#include "drt_condition_selector.H"
 //
 // ADAPTER includes
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/ad_str_fpsiwrapper.H"
-#include "../drt_adapter/ad_fld_poro.H"
-#include "../drt_adapter/ad_fld_fluid.H"
-#include "../drt_adapter/ad_ale_fpsi.H"
+#include "adapter_coupling.H"
+#include "ad_str_fpsiwrapper.H"
+#include "ad_fld_poro.H"
+#include "ad_fld_fluid.H"
+#include "ad_ale_fpsi.H"
 //
 // STRUCTURE includes
-#include "../drt_structure/stru_aux.H"
+#include "stru_aux.H"
 //
 // FLUID includes
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "fluid_utils_mapextractor.H"
+#include "fluid_ele_action.H"
 
 #include "fpsi_utils.H"
 
@@ -51,7 +51,7 @@ Fluid-Poro-Coupling Matrixes!
 #include "fpsi_coupling.H"
 
 // LINALG include
-#include "../linalg/linalg_matrixtransform.H"
+#include "linalg_matrixtransform.H"
 
 
 /*----------------------------------------------------------------------*/

@@ -10,26 +10,26 @@
 
 #include "ssi_utils.H"
 
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
-#include "../drt_adapter/ad_str_ssiwrapper.H"
-#include "../drt_adapter/adapter_coupling.H"
+#include "adapter_scatra_base_algorithm.H"
+#include "ad_str_ssiwrapper.H"
+#include "adapter_coupling.H"
 
-#include "../drt_lib/drt_assemblestrategy.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils_parameter_list.H"
+#include "drt_assemblestrategy.H"
+#include "drt_discret.H"
+#include "drt_utils_parameter_list.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
+#include "scatra_timint_implicit.H"
+#include "scatra_timint_meshtying_strategy_s2i.H"
 
-#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "scatra_ele_action.H"
 
-#include "../drt_structure_new/str_enum_lists.H"
+#include "str_enum_lists.H"
 
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_matrixtransform.H"
-#include "../linalg/linalg_sparseoperator.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_mapextractor.H"
+#include "linalg_matrixtransform.H"
+#include "linalg_sparseoperator.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

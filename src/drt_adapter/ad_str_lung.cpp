@@ -10,13 +10,13 @@ attached parenchyma balloon
 *----------------------------------------------------------------------*/
 
 #include "ad_str_lung.H"
-#include "../drt_io/io.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_structure/stru_aux.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "io.H"
+#include "drt_condition_utils.H"
+#include "drt_globalproblem.H"
+#include "stru_aux.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 /*======================================================================*/
 /* constructor */

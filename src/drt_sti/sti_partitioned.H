@@ -12,7 +12,7 @@
 
 #include "sti_algorithm.H"
 
-#include "../drt_inpar/inpar_sti.H"
+#include "inpar_sti.H"
 
 namespace STI
 {

@@ -10,7 +10,7 @@
 /*---------------------------------------------------------------------*/
 
 #include "topopt_fluidAdjoint3_impl_parameter.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 
 //----------------------------------------------------------------------*/

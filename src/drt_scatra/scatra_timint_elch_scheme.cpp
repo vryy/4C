@@ -10,10 +10,10 @@
 #include "scatra_timint_elch_scheme.H"
 #include "scatra_timint_meshtying_strategy_base.H"
 
-#include "../drt_io/io.H"
+#include "io.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/function_of_time.H"
+#include "drt_globalproblem.H"
+#include "function_of_time.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     ehrl 01/14 |

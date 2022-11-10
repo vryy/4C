@@ -16,13 +16,13 @@ the input line should read
 
 #include "aaaneohooke.H"
 #include "matpar_bundle.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_mat/material_service.H"
-#include "../drt_comm/comm_utils.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "material_service.H"
+#include "comm_utils.H"
 
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/

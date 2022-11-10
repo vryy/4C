@@ -15,7 +15,7 @@
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialDenseMatrix.h"
-#include "../drt_lib/drt_element.H"
+#include "drt_element.H"
 
 namespace DRT
 {

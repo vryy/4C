@@ -10,9 +10,9 @@
 #ifndef SCATRA_TIMINT_ELCH_H
 #define SCATRA_TIMINT_ELCH_H
 
-#include "../drt_inpar/inpar_elch.H"
+#include "inpar_elch.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "scatra_timint_implicit.H"
 
 /*==========================================================================*/
 // forward declarations

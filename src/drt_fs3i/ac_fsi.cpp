@@ -16,30 +16,30 @@ structures.
 
 #include "ac_fsi.H"
 
-#include "../drt_io/io_control.H"
-#include "../drt_io/io.H"
+#include "io_control.H"
+#include "io.H"
 
-#include "../drt_inpar/inpar_fs3i.H"
-#include "../drt_inpar/inpar_fsi.H"
-#include "../drt_inpar/inpar_scatra.H"
+#include "inpar_fs3i.H"
+#include "inpar_fsi.H"
+#include "inpar_scatra.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
-#include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/ad_fld_fluid_ac_fsi.H"
-#include "../drt_adapter/ad_ale_fsi.H"
+#include "ad_str_fsiwrapper.H"
+#include "ad_fld_fluid_ac_fsi.H"
+#include "ad_ale_fsi.H"
 
-#include "../drt_fsi/fsi_monolithic.H"
+#include "fsi_monolithic.H"
 
-#include "../drt_scatra/scatra_algorithm.H"
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "scatra_algorithm.H"
+#include "scatra_timint_implicit.H"
 
 // FOR WSS CALCULATIONS
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../drt_structure/stru_aux.H"
+#include "fluid_utils_mapextractor.H"
+#include "stru_aux.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               Thon 12/14 |

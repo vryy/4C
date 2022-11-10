@@ -9,7 +9,7 @@ representing the collagen and elastin matrix surrounding the myocardial fiber (c
 #ifndef VISCO_COUPMYOCARD_H_
 #define VISCO_COUPMYOCARD_H_
 
-#include "../drt_mat/matpar_parameter.H"
+#include "matpar_parameter.H"
 #include "elast_summand.H"
 
 namespace MAT

@@ -12,18 +12,18 @@
 
 #include "ad_str_fsiwrapper_immersed.H"
 
-#include "../drt_fsi/fsi_str_model_evaluator_partitioned.H"
+#include "fsi_str_model_evaluator_partitioned.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_structure/stru_aux.H"
-#include "../drt_structure_new/str_timint_base.H"
-#include "../drt_structure_new/str_timint_implicit.H"
+#include "stru_aux.H"
+#include "str_timint_base.H"
+#include "str_timint_implicit.H"
 
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_mapextractor.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
-#include "../drt_io/io.H"
+#include "io.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -13,12 +13,12 @@
 
 #include "xstr_xstructure_structure_state.H"
 
-#include "../drt_xfem/xfield_state_utils.H"
-#include "../drt_xfem/xfem_multi_field_mapextractor.H"
-#include "../drt_xfem/xfem_dofset.H"
+#include "xfield_state_utils.H"
+#include "xfem_multi_field_mapextractor.H"
+#include "xfem_dofset.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_lib/drt_discret_xfem.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "drt_discret_xfem.H"
 
 
 

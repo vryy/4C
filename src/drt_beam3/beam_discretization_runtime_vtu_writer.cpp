@@ -11,22 +11,22 @@
 /* headers */
 #include "beam_discretization_runtime_vtu_writer.H"
 
-#include "../drt_io/runtime_vtu_writer.H"
-#include "../drt_io/io_control.H"
+#include "runtime_vtu_writer.H"
+#include "io_control.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_element.H"
+#include "drt_dserror.H"
+#include "drt_globalproblem.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
-#include "../drt_beam3/beam3_base.H"
-#include "../drt_beam3/beam3r.H"
+#include "beam3_base.H"
+#include "beam3r.H"
 
-#include "../drt_beaminteraction/periodic_boundingbox.H"
-#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
-#include "../drt_io/discretization_runtime_vtu_writer.H"
+#include "periodic_boundingbox.H"
+#include "beaminteraction_calc_utils.H"
+#include "discretization_runtime_vtu_writer.H"
 
 
 /*-----------------------------------------------------------------------------------------------*

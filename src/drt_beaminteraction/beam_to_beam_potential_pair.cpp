@@ -13,23 +13,23 @@
 #include "beam_potential_params.H"
 #include "beaminteraction_geometry_utils.H"
 
-#include "../drt_beam3/beam3_base.H"
-#include "../drt_beam3/beam_spatial_discretization_utils.H"
+#include "beam3_base.H"
+#include "beam_spatial_discretization_utils.H"
 
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/largerotations.H"
+#include "drt_utils_integration.H"
+#include "largerotations.H"
 
-#include "../drt_inpar/inpar_beampotential.H"
+#include "inpar_beampotential.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/function_of_time.H"
+#include "drt_globalproblem.H"
+#include "drt_dserror.H"
+#include "function_of_time.H"
 
-#include "../headers/FAD_utils.H"
+#include "FAD_utils.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_fixedsizematrix.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
 
 #include <Sacado.hpp>
 

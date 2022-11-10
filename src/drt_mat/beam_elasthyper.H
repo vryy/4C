@@ -11,11 +11,11 @@ function)
 #ifndef MAT_BEAM_ELASTHYPER_H_
 #define MAT_BEAM_ELASTHYPER_H_
 
-#include "../drt_inpar/inpar_material.H"
+#include "inpar_material.H"
 
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 #include <Teuchos_RCP.hpp>
 #include "beam_templated_material_generic.H"

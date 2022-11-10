@@ -16,9 +16,9 @@ be directly assembled into the global matrices.
 #include "beaminteraction_calc_utils.H"
 #include "str_model_evaluator_beaminteraction_datastate.H"
 
-#include "../drt_lib/drt_element.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "drt_element.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
 
 
 /**

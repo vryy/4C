@@ -12,7 +12,7 @@
 
 #include "immersed_base.H"
 #include "fsi_partitioned_immersed.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "fluid_ele_action.H"
 
 
 namespace FLD

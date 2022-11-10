@@ -12,10 +12,10 @@
 #include "ad_str_loca.H"
 #include "ad_str_loca_wrapper.H"
 
-#include "../drt_structure_new/str_timint_base.H"
+#include "str_timint_base.H"
 
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_dserror.H"
+#include "drt_globalproblem.H"
 
 #include <Teuchos_ParameterList.hpp>
 

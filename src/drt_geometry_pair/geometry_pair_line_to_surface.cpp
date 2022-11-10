@@ -13,9 +13,9 @@
 #include "geometry_pair_constants.H"
 #include "geometry_pair_scalar_types.H"
 
-#include "../linalg/linalg_utils_densematrix_inverse.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "linalg_utils_densematrix_inverse.H"
+#include "drt_dserror.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
 
 /**

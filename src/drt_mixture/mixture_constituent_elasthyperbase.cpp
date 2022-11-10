@@ -11,11 +11,11 @@
 
 #include "mixture_constituent_elasthyperbase.H"
 #include <Teuchos_RCPDecl.hpp>
-#include "../drt_mat/material_service.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/multiplicative_split_defgrad_elasthyper_service.H"
-#include "../drt_mat/mixture_elasthyper.H"
+#include "material_service.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
+#include "multiplicative_split_defgrad_elasthyper_service.H"
+#include "mixture_elasthyper.H"
 #include "mixture_prestress_strategy.H"
 
 // Constructor for the parameter class

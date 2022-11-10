@@ -12,9 +12,9 @@
 
 #include "so_element_service.H"
 
-#include "../drt_lib/drt_utils.H"
-#include "../drt_mat/so3_material.H"
-#include "../drt_structure_new/str_enum_lists.H"
+#include "drt_utils.H"
+#include "so3_material.H"
+#include "str_enum_lists.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

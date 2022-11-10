@@ -20,9 +20,9 @@
 #include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.H"
 #include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.H"
 #include "beam_to_solid_conditions.H"
-#include "../drt_geometry_pair/geometry_pair_line_to_surface_evaluation_data.H"
+#include "geometry_pair_line_to_surface_evaluation_data.H"
 #include "str_model_evaluator_beaminteraction_datastate.H"
-#include "../drt_structure_new/str_timint_basedataglobalstate.H"
+#include "str_timint_basedataglobalstate.H"
 
 #include <Epetra_FEVector.h>
 #include <unordered_set>

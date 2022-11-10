@@ -30,21 +30,21 @@
 #include "contact_utils.H"
 #include "contact_utils_parallel.H"
 
-#include "../drt_contact_aug/contact_augmented_strategy.H"
-#include "../drt_contact_aug/contact_augmented_interface.H"
+#include "contact_augmented_strategy.H"
+#include "contact_augmented_interface.H"
 
-#include "../drt_mortar/mortar_defines.H"
-#include "../drt_mortar/mortar_utils.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "mortar_defines.H"
+#include "mortar_utils.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_inpar/inpar_mortar.H"
-#include "../drt_inpar/inpar_wear.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "inpar_contact.H"
+#include "inpar_mortar.H"
+#include "inpar_wear.H"
+#include "drt_validparameters.H"
 
-#include "../drt_io/io_control.H"
-#include "../drt_io/io.H"
+#include "io_control.H"
+#include "io.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/08|

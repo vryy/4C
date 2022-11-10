@@ -12,10 +12,10 @@ boundary of the actual domain
 /*----------------------------------------------------------------------*/
 
 #include "drt_transfer_turb_inflow.H"
-#include "../drt_lib/drt_matchingoctree.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/function_of_time.H"
+#include "drt_matchingoctree.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "function_of_time.H"
 
 
 

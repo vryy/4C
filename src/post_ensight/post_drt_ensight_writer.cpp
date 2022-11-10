@@ -10,22 +10,22 @@
 
 
 #include "post_drt_ensight_writer.H"
-#include "../post_drt_common/post_drt_common.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "post_drt_common.H"
+#include "drt_nurbs_discret.H"
+#include "fluid_rotsym_periodicbc_utils.H"
+#include "linalg_utils_densematrix_communication.H"
 
-#include "../drt_inpar/inpar_problemtype.H"
+#include "inpar_problemtype.H"
 
-#include "../drt_lib/drt_discret_xfem.H"
+#include "drt_discret_xfem.H"
 
 #include <string>
 #include <numeric>
 
-#include "../pss_full/pss_cpp.h"
+#include "pss_cpp.h"
 extern "C"
 {
-#include "../pss_full/pss_table_iter.h"
+#include "pss_table_iter.h"
 }
 
 //! 6 Surfaces of a Hex27 element with 9 nodes per surface

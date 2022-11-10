@@ -12,7 +12,7 @@
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
 #include "chol_factor_base.H"
-#include "../drt_timestepping/timintmstep.H"
+#include "timintmstep.H"
 
 
 class Epetra_CrsMatrix;

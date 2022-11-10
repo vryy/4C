@@ -16,15 +16,15 @@
 #include "fluid_ele_parameter_timint.H"
 #include "fluid_ele_action.H"
 
-#include "../drt_fluid/fluid_rotsym_periodicbc.H"
+#include "fluid_rotsym_periodicbc.H"
 
-#include "../drt_fem_general/drt_utils_gder2.H"
+#include "drt_utils_gder2.H"
 
-#include "../drt_mat/newtonianfluid.H"
+#include "newtonianfluid.H"
 
-#include "../drt_lib/drt_condition_utils.H"
+#include "drt_condition_utils.H"
 
-#include "../linalg/linalg_utils_densematrix_eigen.H"
+#include "linalg_utils_densematrix_eigen.H"
 
 
 /*-----------------------------------------------------------------------------*

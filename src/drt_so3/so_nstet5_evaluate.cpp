@@ -6,16 +6,16 @@
 
 *----------------------------------------------------------------------*/
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_utils_densematrix_inverse.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
+#include "drt_dserror.H"
+#include "linalg_utils_densematrix_inverse.H"
 #include "Epetra_SerialDenseSolver.h"
 
-#include "../drt_mat/micromaterial.H"
-#include "../drt_mat/stvenantkirchhoff.H"
-#include "../drt_mat/aaaneohooke.H"
-#include "../drt_mat/elasthyper.H"
+#include "micromaterial.H"
+#include "stvenantkirchhoff.H"
+#include "aaaneohooke.H"
+#include "elasthyper.H"
 
 #include "so_nstet5.H"
 

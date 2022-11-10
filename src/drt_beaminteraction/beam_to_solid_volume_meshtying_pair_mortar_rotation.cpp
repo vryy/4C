@@ -14,10 +14,10 @@
 #include "beaminteraction_calc_utils.H"
 #include "beam_to_solid_utils.H"
 #include "beam_to_solid_mortar_manager.H"
-#include "../drt_geometry_pair/geometry_pair_element_functions.H"
-#include "../drt_geometry_pair/geometry_pair_line_to_volume.H"
-#include "../drt_beam3/beam3r.H"
-#include "../drt_beam3/triad_interpolation_local_rotation_vectors.H"
+#include "geometry_pair_element_functions.H"
+#include "geometry_pair_line_to_volume.H"
+#include "beam3r.H"
+#include "triad_interpolation_local_rotation_vectors.H"
 //
 #include <Epetra_FEVector.h>
 

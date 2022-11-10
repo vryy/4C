@@ -8,11 +8,11 @@
 
 #include "elast_anisoactivestress_evolution.H"
 
-#include "../drt_mat/matpar_material.H"
-#include "../drt_mat/material.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/anisotropy_extension.H"
+#include "matpar_material.H"
+#include "material.H"
+#include "standardtypes_cpp.H"
+#include "drt_globalproblem.H"
+#include "anisotropy_extension.H"
 
 
 MAT::ELASTIC::PAR::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(

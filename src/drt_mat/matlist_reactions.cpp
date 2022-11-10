@@ -14,7 +14,7 @@ is just a "control instance".
 #include "matlist_reactions.H"
 #include "matpar_bundle.H"
 #include "scatra_reaction_mat.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  | standard constructor                                     thon 11/14 |

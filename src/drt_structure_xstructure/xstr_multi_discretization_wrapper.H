@@ -13,10 +13,10 @@
 #ifndef SRC_DRT_STRUCTURE_XSTRUCTURE_XSTR_MULTI_DISCRETIZATION_WRAPPER_H_
 #define SRC_DRT_STRUCTURE_XSTRUCTURE_XSTR_MULTI_DISCRETIZATION_WRAPPER_H_
 
-#include "../drt_lib/drt_discret_interface.H"
+#include "drt_discret_interface.H"
 // necessary due to enum definition
-#include "../drt_xfem/xfem_enum_lists.H"
-#include "../drt_io/io.H"
+#include "xfem_enum_lists.H"
+#include "io.H"
 
 namespace IO
 {

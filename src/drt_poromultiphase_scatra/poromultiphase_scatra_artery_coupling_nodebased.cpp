@@ -9,9 +9,9 @@
 
 #include "poromultiphase_scatra_artery_coupling_nodebased.H"
 
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_lib/drt_condition_selector.H"
-#include "../linalg/linalg_matrixtransform.H"
+#include "adapter_coupling.H"
+#include "drt_condition_selector.H"
+#include "linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

@@ -8,9 +8,9 @@
 */
 /*---------------------------------------------------------------------------*/
 #include "shell8.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "drt_discret.H"
+#include "drt_dserror.H"
 
 
 DRT::ELEMENTS::Shell8LineType DRT::ELEMENTS::Shell8LineType::instance_;

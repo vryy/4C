@@ -11,7 +11,7 @@
 #define SEARCHTREE_GEOMETRY_SERVICE_H_
 
 #include <Teuchos_RCP.hpp>
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include "geo_utils.H"
 #include "searchtree_nearestobject.H"
 

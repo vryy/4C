@@ -14,9 +14,9 @@
  *----------------------------------------------------------------------*/
 #include "ad_str_pasiwrapper.H"
 
-#include "../drt_structure/stru_aux.H"
+#include "stru_aux.H"
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
 /*----------------------------------------------------------------------*
  | definitions                                                          |

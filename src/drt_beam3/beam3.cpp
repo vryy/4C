@@ -10,15 +10,15 @@
 
 #include "beam3.H"
 #include "beam3r.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_inpar/drt_validparameters.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_fem_general/largerotations.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_beaminteraction/periodic_boundingbox.H"
+#include "drt_discret.H"
+#include "drt_dserror.H"
+#include "drt_globalproblem.H"
+#include "drt_element.H"
+#include "drt_validparameters.H"
+#include "linalg_fixedsizematrix.H"
+#include "largerotations.H"
+#include "drt_linedefinition.H"
+#include "periodic_boundingbox.H"
 
 DRT::ELEMENTS::Beam3Type DRT::ELEMENTS::Beam3Type::instance_;
 

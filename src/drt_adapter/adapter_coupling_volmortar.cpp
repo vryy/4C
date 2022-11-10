@@ -12,19 +12,19 @@
  |  headers                                                  farah 10/13|
  *----------------------------------------------------------------------*/
 #include "adapter_coupling_volmortar.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_parallel.H"
-#include "../drt_volmortar/volmortar_coupling.H"
-#include "../drt_volmortar/volmortar_utils.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../linalg/linalg_solver.H"
-#include "../drt_fluid_xfluid/xfluid.H"
-#include "../drt_io/io_gmsh.H"
-#include "../drt_inpar/inpar_volmortar.H"
-#include "../drt_lib/drt_dofset_predefineddofnumber.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_parallel.H"
+#include "volmortar_coupling.H"
+#include "volmortar_utils.H"
+#include "linalg_sparsematrix.H"
+#include "linalg_multiply.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "linalg_solver.H"
+#include "xfluid.H"
+#include "io_gmsh.H"
+#include "inpar_volmortar.H"
+#include "drt_dofset_predefineddofnumber.H"
 
 /*----------------------------------------------------------------------*
  |  ctor                                                     farah 10/13|

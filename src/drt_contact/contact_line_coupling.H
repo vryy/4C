@@ -13,7 +13,7 @@
 #define SRC_DRT_CONTACT_CONTACT_LINE_COUPLING_H_
 
 
-#include "../drt_mortar/mortar_coupling3d_classes.H"
+#include "mortar_coupling3d_classes.H"
 
 namespace MORTAR
 {

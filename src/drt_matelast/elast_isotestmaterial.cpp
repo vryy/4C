@@ -8,7 +8,7 @@ Elasthyper-Toolbox.
 /*----------------------------------------------------------------------*/
 
 #include "elast_isotestmaterial.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 MAT::ELASTIC::PAR::IsoTestMaterial::IsoTestMaterial(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), c1_(matdata->GetDouble("C1")), c2_(matdata->GetDouble("C2"))

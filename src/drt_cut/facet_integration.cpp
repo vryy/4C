@@ -22,7 +22,7 @@ equations
 #include "cut_output.H"
 #endif
 
-#include "../drt_lib/drt_colors.H"
+#include "drt_colors.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

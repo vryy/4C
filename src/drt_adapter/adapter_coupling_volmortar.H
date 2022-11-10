@@ -16,7 +16,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 #include "adapter_coupling.H"
 

@@ -11,7 +11,7 @@ performed afterwards
 #ifndef BINNINGGEOMETRYCOUPLER_FBI_H
 #define BINNINGGEOMETRYCOUPLER_FBI_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 #include <Teuchos_RCP.hpp>
 #include <map>
 #include <vector>
@@ -19,7 +19,7 @@ performed afterwards
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
 #include "immersed_geometry_coupler_fbi.H"
-#include "../drt_binstrategy/binning_strategy.H"
+#include "binning_strategy.H"
 
 namespace BINSTRATEGY
 {

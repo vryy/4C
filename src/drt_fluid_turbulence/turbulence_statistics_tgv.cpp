@@ -12,10 +12,10 @@
 #include <fstream>
 
 #include "turbulence_statistics_tgv.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_fluid/fluid_utils.H"
+#include "drt_globalproblem.H"
+#include "fluid_utils.H"
 
-#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "fluid_ele_action.H"
 
 /*----------------------------------------------------------------------
                   Standard Constructor (public)

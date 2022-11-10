@@ -13,8 +13,8 @@
 #define DRT_ELEMENT_INTEGRATION_SELECT_H
 
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "drt_element.H"
+#include "drt_utils_integration.H"
 
 
 namespace DRT

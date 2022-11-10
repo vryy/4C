@@ -8,12 +8,12 @@
 
 #include "so_hex8.H"
 #include "so_sh8.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
-#include "../drt_io/io_gmsh.H"
-#include "../drt_mat/viscoanisotropic.H"
-#include "../drt_mat/material.H"
+#include "io_gmsh.H"
+#include "viscoanisotropic.H"
+#include "material.H"
 
 
 /*----------------------------------------------------------------------*

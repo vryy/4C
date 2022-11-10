@@ -17,12 +17,12 @@
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_fem_general/largerotations.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "drt_elementtype.H"
+#include "largerotations.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_integration.H"
 
-#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
+#include "beaminteraction_calc_utils.H"
 
 #include <unordered_map>
 

@@ -16,7 +16,7 @@ properties of e.g. one species in a scalar transport problem, or one phase in a 
 
 #include "matpar_parameter.H"
 #include "material.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 
 namespace MAT
 {

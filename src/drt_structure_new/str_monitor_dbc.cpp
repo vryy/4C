@@ -16,17 +16,17 @@
 #include "str_timint_basedataio.H"
 #include "str_timint_basedataio_monitor_dbc.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_io/every_iteration_writer.H"
+#include "io.H"
+#include "io_control.H"
+#include "io_pstream.H"
+#include "every_iteration_writer.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../drt_geometry/element_volume.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "element_volume.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

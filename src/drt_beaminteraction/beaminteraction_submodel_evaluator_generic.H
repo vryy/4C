@@ -13,7 +13,7 @@
 #ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_GENERIC_H_
 #define BEAMINTERACTION_SUBMODEL_EVALUATOR_GENERIC_H_
 
-#include "../drt_inpar/inpar_beaminteraction.H"
+#include "inpar_beaminteraction.H"
 #include "str_model_evaluator_beaminteraction.H"
 
 // forward declaration

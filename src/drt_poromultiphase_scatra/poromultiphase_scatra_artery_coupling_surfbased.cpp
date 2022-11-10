@@ -9,8 +9,8 @@
  *----------------------------------------------------------------------*/
 
 #include "poromultiphase_scatra_artery_coupling_surfbased.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "drt_globalproblem.H"
+#include "linalg_utils_densematrix_communication.H"
 
 #include "poromultiphase_scatra_artery_coupling_pair.H"
 

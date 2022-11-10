@@ -18,12 +18,12 @@
  | headers                                                  farah 12/13 |
  *----------------------------------------------------------------------*/
 #include <Teuchos_RCP.hpp>
-#include "../drt_lib/drt_element.H"
+#include "drt_element.H"
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_lib/drt_utils.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "linalg_serialdensevector.H"
 
 #include "wear_defines.H"
 /*----------------------------------------------------------------------*

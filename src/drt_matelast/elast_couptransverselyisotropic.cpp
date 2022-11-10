@@ -10,16 +10,16 @@ computations
 #include "elast_couptransverselyisotropic.H"
 #include "elast_aniso_structuraltensor_strategy.H"
 
-#include "../drt_mat/matpar_material.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/drt_linedefinition.H"
+#include "matpar_material.H"
+#include "standardtypes_cpp.H"
+#include "drt_linedefinition.H"
 
-#include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "str_elements_paramsinterface.H"
 
-#include "../drt_mat/material_service.H"
-#include "../drt_io/io_pstream.H"
+#include "material_service.H"
+#include "io_pstream.H"
 
-#include "../drt_lib/voigt_notation.H"
+#include "voigt_notation.H"
 
 
 MAT::ELASTIC::PAR::CoupTransverselyIsotropic::CoupTransverselyIsotropic(

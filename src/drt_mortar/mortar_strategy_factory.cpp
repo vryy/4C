@@ -11,16 +11,16 @@
 #include "mortar_element.H"
 #include "mortar_interface.H"
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
+#include "io.H"
+#include "io_pstream.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_nurbs_discret/drt_control_point.H"
-#include "../drt_nurbs_discret/drt_knotvector.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "drt_control_point.H"
+#include "drt_knotvector.H"
+#include "drt_nurbs_discret.H"
 
-#include "../drt_structure_new/str_timint_basedataglobalstate.H"
+#include "str_timint_basedataglobalstate.H"
 
 #include <Epetra_SerialDenseVector.h>
 

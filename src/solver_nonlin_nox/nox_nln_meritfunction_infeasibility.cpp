@@ -15,7 +15,7 @@
 #include "nox_nln_meritfunction_infeasibility.H"
 #include "nox_nln_constraint_group.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <Teuchos_ParameterList.hpp>
 

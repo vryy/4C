@@ -13,8 +13,8 @@
 #define DRT_LOCSYS_H
 
 #include "Teuchos_RCP.hpp"
-#include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_ale3/ale3.H"
+#include "fluid_ele_action.H"
+#include "ale3.H"
 #include "drt_discret_interface.H"
 
 // forward declarations

@@ -18,7 +18,7 @@ of the usual Lagrangian polynomials for standard transport elements
 
 
 #include "scatra_ele.H"
-#include "../drt_fem_general/drt_utils_polynomial.H"
+#include "drt_utils_polynomial.H"
 
 namespace DRT
 {

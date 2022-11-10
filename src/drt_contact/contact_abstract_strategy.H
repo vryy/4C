@@ -15,10 +15,10 @@
 
 #include <Epetra_Operator.h>
 
-#include "../drt_mortar/mortar_strategy_base.H"
-#include "../drt_inpar/inpar_mortar.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_lib/drt_utils_matrix_vector_enums.H"
+#include "mortar_strategy_base.H"
+#include "inpar_mortar.H"
+#include "inpar_contact.H"
+#include "drt_utils_matrix_vector_enums.H"
 
 // forward declarations
 namespace NOX

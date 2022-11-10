@@ -16,25 +16,25 @@
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
 
-#include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/ad_fld_fluid_fsi.H"
-#include "../drt_adapter/ad_ale_fsi.H"
+#include "ad_str_fsiwrapper.H"
+#include "ad_fld_fluid_fsi.H"
+#include "ad_ale_fsi.H"
 
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../drt_ale/ale_utils_mapextractor.H"
-#include "../drt_structure/stru_aux.H"
+#include "fluid_utils_mapextractor.H"
+#include "ale_utils_mapextractor.H"
+#include "stru_aux.H"
 
-#include "../drt_lib/drt_colors.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../drt_inpar/inpar_fsi.H"
+#include "drt_colors.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "linalg_sparsematrix.H"
+#include "inpar_fsi.H"
 
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
-#include "../drt_constraint/constraint_manager.H"
-#include "../drt_adapter/ad_str_structure.H"
-#include "../drt_adapter/adapter_coupling.H"
+#include "constraint_manager.H"
+#include "ad_str_structure.H"
+#include "adapter_coupling.H"
 
 
 /*----------------------------------------------------------------------*/

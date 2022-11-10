@@ -11,7 +11,7 @@
 /*----------------------------------------------------------------------------*/
 #include "ale3_nurbs.H"
 
-#include "../linalg/linalg_utils_nullspace.H"
+#include "linalg_utils_nullspace.H"
 
 DRT::ELEMENTS::NURBS::Ale3_NurbsType DRT::ELEMENTS::NURBS::Ale3_NurbsType::instance_;
 

@@ -15,9 +15,9 @@
 #include "str_impl_generic.H"
 #include "str_model_evaluator.H"
 
-#include "../solver_nonlin_nox/nox_nln_group.H"
+#include "nox_nln_group.H"
 
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

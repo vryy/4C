@@ -15,11 +15,11 @@
 #include "fsi_overlapprec_hybrid.H"
 #include "fsi_overlapprec_fsiamg.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_math.H"  // for debugging: print matrices ToDo (mayr) remove?
+#include "linalg_utils_sparse_algebra_math.H"  // for debugging: print matrices ToDo (mayr) remove?
 
-#include "../solver/solver_ifpackpreconditioner.H"
+#include "solver_ifpackpreconditioner.H"
 
 /*----------------------------------------------------------------------------*/
 FSI::OverlappingBlockMatrixHybridSchwarz::OverlappingBlockMatrixHybridSchwarz(

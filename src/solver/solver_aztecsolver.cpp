@@ -30,10 +30,10 @@
 #include "AztecOO_StatusTestMaxIters.h"
 
 // BACI headers
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 #include "solver_aztecsolver.H"
 #include "solver_aztecsolver_projectedresidual.H"
-#include "../linalg/linalg_krylov_projector.H"
+#include "linalg_krylov_projector.H"
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------

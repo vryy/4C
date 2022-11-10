@@ -14,8 +14,8 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "../drt_particle_engine/particle_enums.H"
-#include "../drt_particle_engine/particle_typedefs.H"
+#include "particle_enums.H"
+#include "particle_typedefs.H"
 
 #include "particle_interaction_sph_neighbor_pair_struct.H"
 

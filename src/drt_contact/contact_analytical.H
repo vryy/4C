@@ -9,7 +9,7 @@
 #ifndef CONTACT_ANALYTICAL_H
 #define CONTACT_ANALYTICAL_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 namespace CONTACT
 {

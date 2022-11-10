@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "nodal_fiber_holder.H"
-#include "../drt_lib/drt_parobject.H"
+#include "drt_parobject.H"
 #include "drt_fiber_node.H"
 
 void DRT::FIBER::NodalFiberHolder::SetCoordinateSystemDirection(

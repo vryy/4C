@@ -14,7 +14,7 @@
 
 #include "beam_to_solid_surface_meshtying_pair_mortar_base.H"
 
-#include "../drt_geometry_pair/geometry_pair_scalar_types.H"
+#include "geometry_pair_scalar_types.H"
 
 
 // Forward declaration.

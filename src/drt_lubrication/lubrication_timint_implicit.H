@@ -19,9 +19,9 @@
 
 #include <Teuchos_ParameterList.hpp>
 
-#include "../drt_inpar/inpar_lubrication.H"
+#include "inpar_lubrication.H"
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
 /*==========================================================================*/
 // Style guide                                                    nis Mar12

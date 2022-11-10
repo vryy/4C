@@ -9,10 +9,10 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "../drt_lubrication_ele/lubrication_ele_factory.H"
+#include "lubrication_ele_factory.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lubrication_ele/lubrication_ele_calc.H"
+#include "drt_globalproblem.H"
+#include "lubrication_ele_calc.H"
 
 /*--------------------------------------------------------------------------*
  |                                                     (public) wirtz 10/15 |

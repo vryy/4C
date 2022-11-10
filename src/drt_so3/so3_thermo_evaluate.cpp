@@ -12,20 +12,20 @@
 #include "so3_thermo.H"
 #include "so3_thermo_fwd.hpp"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_nurbs_shapefunctions.H"
+#include "drt_nurbs_discret.H"
 
-#include "../drt_lib/voigt_notation.H"
+#include "voigt_notation.H"
 
 // headers of thermo-materials
-#include "../drt_mat/thermostvenantkirchhoff.H"
-#include "../drt_mat/thermoplasticlinelast.H"
-#include "../drt_mat/thermoplastichyperelast.H"
-#include "../drt_mat/robinson.H"
+#include "thermostvenantkirchhoff.H"
+#include "thermoplasticlinelast.H"
+#include "thermoplastichyperelast.H"
+#include "robinson.H"
 
-#include "../drt_structure_new/str_elements_paramsinterface.H"
-#include "../drt_mat/trait_thermo_solid.H"
+#include "str_elements_paramsinterface.H"
+#include "trait_thermo_solid.H"
 
 /*----------------------------------------------------------------------*
  | pre-evaluate the element (public)                         dano 08/12 |

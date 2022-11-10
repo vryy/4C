@@ -10,18 +10,18 @@
 /*----------------------------------------------------------------------*/
 #include "nox_nln_meshtying_linearsystem.H"  // base class
 
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_blocksparsematrix.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "linalg_solver.H"
+#include "linalg_blocksparsematrix.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
-#include "../solver_nonlin_nox/nox_nln_interface_jacobian.H"
-#include "../solver_nonlin_nox/nox_nln_interface_required.H"
-#include "../solver_nonlin_nox/nox_nln_aux.H"
+#include "nox_nln_interface_jacobian.H"
+#include "nox_nln_interface_required.H"
+#include "nox_nln_aux.H"
 
-#include "../drt_mortar/mortar_strategy_base.H"
-#include "../drt_contact/contact_abstract_strategy.H"
+#include "mortar_strategy_base.H"
+#include "contact_abstract_strategy.H"
 
-#include "../drt_inpar/inpar_contact.H"
+#include "inpar_contact.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

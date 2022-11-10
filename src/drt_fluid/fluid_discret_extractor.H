@@ -13,7 +13,7 @@ generation
 #ifndef FLUID_DISCRET_EXTRACTOR_H
 #define FLUID_DISCRET_EXTRACTOR_H
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
 namespace FLD
 {

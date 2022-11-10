@@ -10,18 +10,18 @@
 
 #include "scatra_ele_calc_cardiac_monodomain.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_element.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "drt_element.H"
 
 #include "scatra_ele_parameter_timint.H"
 
-#include "../drt_mat/myocard.H"
-#include "../drt_mat/matlist.H"
+#include "myocard.H"
+#include "matlist.H"
 
-#include "../drt_inpar/inpar_cardiac_monodomain.H"
+#include "inpar_cardiac_monodomain.H"
 #include "scatra_ele_parameter_std.H"
-#include "../headers/singleton_owner.H"
+#include "singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*

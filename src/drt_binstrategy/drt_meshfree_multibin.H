@@ -12,10 +12,10 @@
 #define DRT_MESHFREE_MESHFREEMULTIBIN_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "../drt_binstrategy/binning_strategy_utils.H"
-#include "../drt_binstrategy/drt_meshfree_bin.H"
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_node.H"
+#include "binning_strategy_utils.H"
+#include "drt_meshfree_bin.H"
+#include "drt_elementtype.H"
+#include "drt_node.H"
 
 namespace DRT
 {

@@ -9,13 +9,13 @@
 */
 
 #include "ad_str_fsiwrapper.H"
-#include "../drt_fsi/fsi_str_model_evaluator_partitioned.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../drt_structure/stru_aux.H"
+#include "fsi_str_model_evaluator_partitioned.H"
+#include "drt_discret.H"
+#include "drt_globalproblem.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "stru_aux.H"
 
-#include "../drt_lib/prestress_service.H"
+#include "prestress_service.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

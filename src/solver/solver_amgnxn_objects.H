@@ -15,7 +15,7 @@
 #include "Teuchos_RCP.hpp"
 
 // Baci includes
-#include "../linalg/linalg_blocksparsematrix.H"
+#include "linalg_blocksparsematrix.H"
 
 
 namespace LINALG::SOLVER::AMGNXN

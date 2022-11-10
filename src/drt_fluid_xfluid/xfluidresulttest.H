@@ -12,7 +12,7 @@
 #define XFLUIDRESULTTEST_H_
 
 
-#include "../drt_lib/drt_resulttest.H"
+#include "drt_resulttest.H"
 #include <Epetra_Vector.h>
 
 namespace DRT

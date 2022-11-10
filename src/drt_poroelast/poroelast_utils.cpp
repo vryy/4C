@@ -28,25 +28,25 @@
 #include "poro_scatra_monolithic.H"
 
 
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_discret_faces.H"
+#include "drt_condition_utils.H"
+#include "drt_discret_faces.H"
 
-#include "../drt_so3/so3_poro_eletypes.H"
-#include "../drt_so3/so3_poro_scatra_eletypes.H"
-#include "../drt_so3/so3_poro_p1_eletypes.H"
-#include "../drt_so3/so3_poro_p1_scatra_eletypes.H"
+#include "so3_poro_eletypes.H"
+#include "so3_poro_scatra_eletypes.H"
+#include "so3_poro_p1_eletypes.H"
+#include "so3_poro_p1_scatra_eletypes.H"
 
-#include "../drt_w1/wall1_poro_eletypes.H"
-#include "../drt_w1/wall1_poro_scatra_eletypes.H"
-#include "../drt_w1/wall1_poro_p1_eletypes.H"
-#include "../drt_w1/wall1_poro_p1_scatra_eletypes.H"
+#include "wall1_poro_eletypes.H"
+#include "wall1_poro_scatra_eletypes.H"
+#include "wall1_poro_p1_eletypes.H"
+#include "wall1_poro_p1_scatra_eletypes.H"
 
-#include "../drt_fluid_ele/fluid_ele_poro.H"
-#include "../drt_mat/fluidporo.H"
-#include "../drt_mat/structporo.H"
+#include "fluid_ele_poro.H"
+#include "fluidporo.H"
+#include "structporo.H"
 
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
 bool POROELAST::UTILS::CheckPoro(const DRT::Element* actele)
 {

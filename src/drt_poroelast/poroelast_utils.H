@@ -13,10 +13,10 @@
 #include "Epetra_Vector.h"
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
-#include "../drt_inpar/inpar_poroelast.H"
+#include "inpar_poroelast.H"
 
-#include "../drt_volmortar/volmortar_utils.H"
-#include "../drt_lib/drt_element.H"
+#include "volmortar_utils.H"
+#include "drt_element.H"
 
 namespace DRT
 {

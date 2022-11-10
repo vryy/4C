@@ -8,19 +8,19 @@
 *----------------------------------------------------------------------*/
 
 #include "porofluidmultiphase_meshtying_strategy_artery.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_adapter/ad_art_net.H"
-#include "../drt_inpar/inpar_bio.H"
-#include "../drt_art_net/art_net_utils.H"
-#include "../drt_poromultiphase_scatra/poromultiphase_scatra_artery_coupling_base.H"
-#include "../drt_poromultiphase_scatra/poromultiphase_scatra_utils.H"
-#include "../linalg/linalg_solver.H"
+#include "drt_globalproblem.H"
+#include "ad_art_net.H"
+#include "inpar_bio.H"
+#include "art_net_utils.H"
+#include "poromultiphase_scatra_artery_coupling_base.H"
+#include "poromultiphase_scatra_utils.H"
+#include "linalg_solver.H"
 #include "porofluidmultiphase_utils.H"
-#include "../linalg/linalg_utils_sparse_algebra_print.H"
+#include "linalg_utils_sparse_algebra_print.H"
 
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
+#include "io.H"
+#include "io_control.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

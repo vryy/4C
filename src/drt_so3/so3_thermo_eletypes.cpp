@@ -8,7 +8,7 @@
 #include "so3_thermo_eletypes.H"
 #include "so3_thermo.H"
 
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
 /*----------------------------------------------------------------------------*
  *  HEX8 element

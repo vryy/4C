@@ -8,11 +8,11 @@
 *----------------------------------------------------------------------*/
 #include "XFAcoupling_manager.H"
 
-#include "../drt_xfem/xfem_condition_manager.H"
-#include "../drt_fluid_xfluid/xfluid.H"
-#include "../drt_adapter/ad_ale_fpsi.H"
-#include "../drt_adapter/ad_str_structure.H"
-#include "../linalg/linalg_mapextractor.H"
+#include "xfem_condition_manager.H"
+#include "xfluid.H"
+#include "ad_ale_fpsi.H"
+#include "ad_str_structure.H"
+#include "linalg_mapextractor.H"
 
 /*-----------------------------------------------------------------------------------------*
 | Constructor                                                                 ager 06/2016 |

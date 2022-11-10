@@ -11,7 +11,7 @@ strain computations
 #define SRC_DRT_MATELAST_ELAST_COUPTRANSVERSELYISOTROPIC_H_
 
 #include "elast_summand.H"
-#include "../drt_mat/matpar_parameter.H"
+#include "matpar_parameter.H"
 
 namespace MAT
 {

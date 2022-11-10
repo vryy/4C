@@ -11,9 +11,9 @@
 
 #include "porofluidmultiphase_ele_action.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 #include "Teuchos_RCP.hpp"
 

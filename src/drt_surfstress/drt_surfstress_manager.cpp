@@ -13,16 +13,16 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "drt_surfstress_manager.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/function_of_time.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "drt_discret.H"
+#include "io.H"
+#include "io_control.H"
+#include "inpar_structure.H"
+#include "drt_globalproblem.H"
+#include "linalg_sparsematrix.H"
+#include "drt_utils_createdis.H"
+#include "function_of_time.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 /*-------------------------------------------------------------------*
  |  ctor (public)                                            lw 12/07|

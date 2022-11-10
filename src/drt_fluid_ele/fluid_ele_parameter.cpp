@@ -15,8 +15,8 @@ be set in problem specific parameter lists derived from this class.
 
 #include <string>
 #include <iostream>
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_io/io_pstream.H"
+#include "drt_dserror.H"
+#include "io_pstream.H"
 #include "fluid_ele_parameter.H"
 
 

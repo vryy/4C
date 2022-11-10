@@ -12,18 +12,18 @@
 
 #include "topopt_fluidAdjoint3_boundary.H"
 #include "topopt_fluidAdjoint3_impl_parameter.H"
-#include "../drt_fluid_ele/fluid_ele.H"
-#include "../drt_lib/drt_element_integration_select.H"
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_geometry/position_array.H"
-#include "../drt_inpar/inpar_topopt.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_mat/newtonianfluid.H"
+#include "fluid_ele.H"
+#include "drt_element_integration_select.H"
+#include "drt_utils_boundary_integration.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "position_array.H"
+#include "inpar_topopt.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
+#include "standardtypes_cpp.H"
+#include "newtonianfluid.H"
 
-#include "../drt_cut/cut_position.H"
+#include "cut_position.H"
 
 
 /*----------------------------------------------------------------------*

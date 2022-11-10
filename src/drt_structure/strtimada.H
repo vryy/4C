@@ -16,7 +16,7 @@
 #include "Teuchos_ParameterList.hpp"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 
 // forward declarations
 namespace DRT

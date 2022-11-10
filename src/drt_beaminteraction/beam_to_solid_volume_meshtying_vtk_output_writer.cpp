@@ -21,9 +21,9 @@
 #include "str_model_evaluator_beaminteraction_datastate.H"
 #include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.H"
 #include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.H"
-#include "../drt_structure_new/str_timint_basedataglobalstate.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "str_timint_basedataglobalstate.H"
+#include "drt_discret.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 #include <Epetra_FEVector.h>
 #include <unordered_set>

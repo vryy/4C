@@ -7,7 +7,7 @@
 *----------------------------------------------------------------------*/
 
 #include "inversedesign.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 
 DRT::ELEMENTS::InvDesignType DRT::ELEMENTS::InvDesignType::instance_;

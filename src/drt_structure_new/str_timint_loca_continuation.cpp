@@ -18,8 +18,8 @@
 #include "str_utils.H"
 #include "str_impl_generic.H"
 
-#include "../solver_nonlin_nox/nox_nln_globaldata.H"
-#include "../loca_continuation/loca_nln_problem.H"
+#include "nox_nln_globaldata.H"
+#include "loca_nln_problem.H"
 
 #include <LOCA_MultiContinuation_AbstractGroup.H>
 #include <LOCA_Epetra_Factory.H>

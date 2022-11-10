@@ -24,16 +24,16 @@
 
 #include "friction_node.H"
 
-#include "../drt_mortar/mortar_utils.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_inpar/inpar_wear.H"
-#include "../drt_io/io.H"
+#include "mortar_utils.H"
+#include "inpar_contact.H"
+#include "inpar_wear.H"
+#include "io.H"
 
-#include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
+#include "linalg_multiply.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_densematrix_communication.H"
 #include <Epetra_FEVector.h>
 
 /*----------------------------------------------------------------------*

@@ -10,7 +10,7 @@
  *---------------------------------------------------------------------------*/
 #include "particle_communication_utils.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

@@ -10,7 +10,7 @@
 #ifndef SOLVER_KRYLOVSOLVER_H_
 #define SOLVER_KRYLOVSOLVER_H_
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"

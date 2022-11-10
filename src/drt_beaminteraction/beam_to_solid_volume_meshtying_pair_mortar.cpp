@@ -16,13 +16,13 @@ functions for the traction.
 #include "beam_to_solid_mortar_manager.H"
 #include "beam_to_solid_utils.H"
 
-#include "../drt_lib/drt_utils.H"
-#include "../linalg/linalg_utils_densematrix_inverse.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "drt_utils.H"
+#include "linalg_utils_densematrix_inverse.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
 
-#include "../drt_geometry_pair/geometry_pair_element_functions.H"
-#include "../drt_geometry_pair/geometry_pair_line_to_volume.H"
+#include "geometry_pair_element_functions.H"
+#include "geometry_pair_line_to_volume.H"
 
 #include <unordered_set>
 

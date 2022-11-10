@@ -40,9 +40,9 @@
 #include "thermoplasticlinelast.H"
 #include "matpar_bundle.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_tsi/tsi_defines.H"
+#include "tsi_defines.H"
 
 
 /*----------------------------------------------------------------------*

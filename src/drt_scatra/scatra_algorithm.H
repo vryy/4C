@@ -12,7 +12,7 @@
 #ifndef SCATRA_ALGORITHM_H
 #define SCATRA_ALGORITHM_H
 
-#include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
+#include "adapter_scatra_fluid_coupling_algorithm.H"
 
 namespace SCATRA
 {

@@ -8,7 +8,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include "../drt_cardiovascular0d/cardiovascular0d_dofset.H"
+#include "cardiovascular0d_dofset.H"
 
 #include <iostream>
 #include <algorithm>

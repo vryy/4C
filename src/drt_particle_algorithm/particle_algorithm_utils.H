@@ -14,9 +14,9 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "../drt_particle_engine/particle_typedefs.H"
+#include "particle_typedefs.H"
 
-#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "inpar_parameterlist_utils.H"
 
 #include <map>
 

@@ -17,20 +17,20 @@
 #include "poro_base.H"
 #include "poro_utils_clonestrategy.H"
 
-#include "../drt_lib/drt_utils_createdis.H"
+#include "drt_utils_createdis.H"
 
-#include "../drt_adapter/ad_str_fpsiwrapper.H"
-#include "../drt_adapter/ad_fld_poro.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "ad_str_fpsiwrapper.H"
+#include "ad_fld_poro.H"
+#include "adapter_scatra_base_algorithm.H"
 
 // for coupling of nonmatching meshes
-#include "../drt_adapter/adapter_coupling_volmortar.H"
-#include "../drt_volmortar/volmortar_utils.H"
+#include "adapter_coupling_volmortar.H"
+#include "volmortar_utils.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_inpar/inpar_scatra.H"
+#include "scatra_timint_implicit.H"
+#include "inpar_scatra.H"
 
-#include "../drt_lib/drt_dofset_gidbased_wrapper.H"
+#include "drt_dofset_gidbased_wrapper.H"
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 05/13  |

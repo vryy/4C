@@ -12,8 +12,8 @@
 #ifndef SO_BASE_H_
 #define SO_BASE_H_
 
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_lib/drt_element.H"
+#include "inpar_structure.H"
+#include "drt_element.H"
 
 // forward declaration ...
 namespace STR

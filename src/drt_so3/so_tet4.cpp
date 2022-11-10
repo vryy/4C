@@ -11,15 +11,15 @@
 #include "so_tet4.H"
 #include "so_surface.H"
 #include "so_line.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils_factory.H"
-#include "../linalg/linalg_utils_nullspace.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_mat/so3_material.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/prestress_service.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "drt_discret.H"
+#include "drt_utils_factory.H"
+#include "linalg_utils_nullspace.H"
+#include "drt_dserror.H"
+#include "so3_material.H"
+#include "drt_linedefinition.H"
+#include "drt_globalproblem.H"
+#include "prestress_service.H"
+#include "drt_utils_fem_shapefunctions.H"
 #include "so_utils.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -27,10 +27,10 @@
 // inverse design object
 #include "inversedesign.H"
 #include "prestress.H"
-#include "../drt_fiber/drt_fiber_node.H"
-#include "../drt_fiber/drt_fiber_utils.H"
+#include "drt_fiber_node.H"
+#include "drt_fiber_utils.H"
 #include "so_utils.H"
-#include "../drt_fiber/nodal_fiber_holder.H"
+#include "nodal_fiber_holder.H"
 
 
 DRT::ELEMENTS::So_tet4Type DRT::ELEMENTS::So_tet4Type::instance_;

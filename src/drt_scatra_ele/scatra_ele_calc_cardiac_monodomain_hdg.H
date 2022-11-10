@@ -16,7 +16,7 @@
 #include "scatra_ele_hdg.H"
 
 
-#include "../drt_fem_general/drt_utils_polynomial.H"
+#include "drt_utils_polynomial.H"
 
 namespace DRT
 {

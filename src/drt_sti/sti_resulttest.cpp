@@ -11,9 +11,9 @@
 
 #include "sti_monolithic.H"
 
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
-#include "../linalg/linalg_solver.H"
+#include "linalg_solver.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 01/17 |

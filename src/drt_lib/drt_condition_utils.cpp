@@ -20,10 +20,10 @@
 #include "drt_discret_iterator.H"
 #include "drt_globalproblem.H"
 
-#include "../drt_lib/drt_utils_parallel.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../drt_io/io_control.H"
+#include "drt_utils_parallel.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "io_control.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

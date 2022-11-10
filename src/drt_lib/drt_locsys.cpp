@@ -12,11 +12,11 @@ vectors and matrices.
 /*----------------------------------------------------------------------------*/
 
 #include "drt_locsys.H"
-#include "../drt_io/io_pstream.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_multiply.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_fem_general/largerotations.H"
+#include "io_pstream.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_multiply.H"
+#include "drt_globalproblem.H"
+#include "largerotations.H"
 
 
 

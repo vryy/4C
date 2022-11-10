@@ -13,25 +13,25 @@
 #include "ssti_monolithic_evaluate_OffDiag.H"
 #include "ssti_utils.H"
 
-#include "../drt_adapter/ad_str_ssiwrapper.H"
-#include "../drt_adapter/ad_str_structure_new.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "ad_str_ssiwrapper.H"
+#include "ad_str_structure_new.H"
+#include "adapter_scatra_base_algorithm.H"
 
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
+#include "scatra_timint_implicit.H"
+#include "scatra_timint_meshtying_strategy_s2i.H"
 
-#include "../drt_ssi/ssi_monolithic_evaluate_OffDiag.H"
-#include "../drt_ssi/ssi_utils.H"
+#include "ssi_monolithic_evaluate_OffDiag.H"
+#include "ssi_utils.H"
 
-#include "../drt_sti/sti_monolithic_evaluate_OffDiag.H"
+#include "sti_monolithic_evaluate_OffDiag.H"
 
-#include "../linalg/linalg_equilibrate.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_solver.H"
+#include "linalg_equilibrate.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_solver.H"
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/

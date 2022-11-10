@@ -14,8 +14,8 @@ The input line should read
 
 #include "aaa_mixedeffects.H"
 #include "matpar_bundle.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/material_service.H"
+#include "drt_globalproblem.H"
+#include "material_service.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |

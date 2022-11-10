@@ -9,22 +9,22 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "../drt_beaminteraction/periodic_boundingbox.H"
-#include "../drt_binstrategy/binning_strategy_utils.H"
+#include "periodic_boundingbox.H"
+#include "binning_strategy_utils.H"
 
-#include "../drt_io/discretization_runtime_vtu_writer.H"
+#include "discretization_runtime_vtu_writer.H"
 
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_dofset_independent.H"
-#include "../drt_lib/drt_utils_factory.H"
-#include "../drt_io/io.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "drt_dserror.H"
+#include "drt_globalproblem.H"
+#include "drt_dofset_independent.H"
+#include "drt_utils_factory.H"
+#include "io.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_densematrix_communication.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_geometry/intersection_math.H"
-#include "../drt_inpar/inpar_binningstrategy.H"
+#include "intersection_math.H"
+#include "inpar_binningstrategy.H"
 
 
 /*----------------------------------------------------------------------------*

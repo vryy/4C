@@ -8,11 +8,11 @@
 /*----------------------------------------------------------------------------*/
 
 #include "contact_aug_projector.H"
-#include "../drt_mortar/mortar_element.H"
+#include "mortar_element.H"
 #include "contact_aug_element_utils.H"
-#include "../linalg/linalg_gauss.H"
-#include "../drt_mortar/mortar_defines.H"
-#include "../headers/singleton_owner.H"
+#include "linalg_gauss.H"
+#include "mortar_defines.H"
+#include "singleton_owner.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

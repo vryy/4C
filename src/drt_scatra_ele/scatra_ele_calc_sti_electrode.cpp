@@ -14,8 +14,8 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_sti_thermo.H"
 
-#include "../drt_mat/soret.H"
-#include "../headers/singleton_owner.H"
+#include "soret.H"
+#include "singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 11/15 |

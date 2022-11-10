@@ -7,7 +7,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "elast_isoogden.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 
 MAT::ELASTIC::PAR::IsoOgden::IsoOgden(Teuchos::RCP<MAT::PAR::Material> matdata)

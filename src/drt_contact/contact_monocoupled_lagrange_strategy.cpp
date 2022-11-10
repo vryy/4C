@@ -15,8 +15,8 @@ to be called!
 
 #include "Epetra_SerialComm.h"
 #include "contact_monocoupled_lagrange_strategy.H"
-#include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_multiply.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                              ager 02/15|

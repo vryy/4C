@@ -11,18 +11,18 @@
 #ifndef BEAMTOSPHEREPOTENTIALPAIR_H
 #define BEAMTOSPHEREPOTENTIALPAIR_H
 
-#include "../drt_beaminteraction/beam_potential_pair.H"
+#include "beam_potential_pair.H"
 
 // Todo get rid of header inclusions
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "linalg_fixedsizematrix.H"
+#include "linalg_sparsematrix.H"
+#include "drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_integration.H"
 #include <Sacado.hpp>
 
-#include "../drt_beaminteraction/beam3contact_defines.H"
-#include "../drt_beaminteraction/beam3contact_tangentsmoothing.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "beam3contact_defines.H"
+#include "beam3contact_tangentsmoothing.H"
+#include "standardtypes_cpp.H"
 
 // forward declarations
 namespace LINALG

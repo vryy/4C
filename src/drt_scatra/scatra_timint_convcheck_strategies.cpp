@@ -14,9 +14,9 @@
 #include "scatra_timint_meshtying_strategy_s2i.H"
 #include "scatra_timint_meshtying_strategy_artery.H"
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
-#include "../linalg/linalg_mapextractor.H"
+#include "linalg_mapextractor.H"
 
 #include <Epetra_Vector.h>
 

@@ -10,7 +10,7 @@
 #ifndef STRURESULTTEST_H
 #define STRURESULTTEST_H
 
-#include "../drt_lib/drt_resulttest.H"
+#include "drt_resulttest.H"
 
 
 // forward declarations

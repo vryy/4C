@@ -9,7 +9,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
 #include "fluid_ele.H"
 #include "fluid_ele_intfaces_calc.H"

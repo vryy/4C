@@ -10,20 +10,20 @@
  *---------------------------------------------------------------------------*/
 #include "pasi_partitioned_twowaycoup.H"
 
-#include "../drt_adapter/ad_str_pasiwrapper.H"
+#include "ad_str_pasiwrapper.H"
 
-#include "../drt_particle_algorithm/particle_algorithm.H"
+#include "particle_algorithm.H"
 
-#include "../drt_particle_wall/particle_wall_interface.H"
-#include "../drt_particle_wall/particle_wall_datastate.H"
+#include "particle_wall_interface.H"
+#include "particle_wall_datastate.H"
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
-#include "../drt_structure/stru_aux.H"
+#include "stru_aux.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
-#include "../drt_io/io.H"
+#include "io.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

@@ -13,9 +13,9 @@
 
 #include "ssti_utils.H"
 
-#include "../drt_adapter/adapter_coupling.H"
+#include "adapter_coupling.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_assemble.H"
 
 namespace LINALG
 {

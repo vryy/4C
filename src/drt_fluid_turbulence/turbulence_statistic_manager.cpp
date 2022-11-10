@@ -15,24 +15,24 @@ overhead as possible from the time integration method.
 /*----------------------------------------------------------------------*/
 
 #include "turbulence_statistic_manager.H"
-#include "../drt_fluid/fluidimplicitintegration.H"
-#include "../drt_fluid/fluid_timint_hdg.H"
-#include "../drt_fluid/fluid_xwall.H"
-#include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_fluid/fluid_utils.H"  // for LiftDrag
-#include "../drt_lib/drt_dofset_independent_pbc.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_fluid_turbulence/turbulence_statistics_mean_general.H"
-#include "../drt_fluid_turbulence/turbulence_statistics_ccy.H"
-#include "../drt_fluid_turbulence/turbulence_statistics_cha.H"
-#include "../drt_fluid_turbulence/turbulence_statistics_ldc.H"
-#include "../drt_fluid_turbulence/turbulence_statistics_bfs.H"
-#include "../drt_fluid_turbulence/turbulence_statistics_bfda.H"
-#include "../drt_fluid_turbulence/turbulence_statistics_sqc.H"
-#include "../drt_fluid_turbulence/turbulence_statistics_hit.H"
-#include "../drt_fluid_turbulence/turbulence_statistics_tgv.H"
-#include "../drt_fluid_turbulence/turbulence_statistics_ph.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "fluidimplicitintegration.H"
+#include "fluid_timint_hdg.H"
+#include "fluid_xwall.H"
+#include "scatra_timint_implicit.H"
+#include "fluid_utils.H"  // for LiftDrag
+#include "drt_dofset_independent_pbc.H"
+#include "io_pstream.H"
+#include "turbulence_statistics_mean_general.H"
+#include "turbulence_statistics_ccy.H"
+#include "turbulence_statistics_cha.H"
+#include "turbulence_statistics_ldc.H"
+#include "turbulence_statistics_bfs.H"
+#include "turbulence_statistics_bfda.H"
+#include "turbulence_statistics_sqc.H"
+#include "turbulence_statistics_hit.H"
+#include "turbulence_statistics_tgv.H"
+#include "turbulence_statistics_ph.H"
+#include "drt_globalproblem.H"
 
 namespace FLD
 {

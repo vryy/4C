@@ -9,7 +9,7 @@
 #ifndef BEAM_TO_FLUID_VOLUME_MESHTYING_PAIR_BASE_H_
 #define BEAM_TO_FLUID_VOLUME_MESHTYING_PAIR_BASE_H_
 
-#include "../drt_beaminteraction/beam_to_solid_volume_meshtying_pair_base.H"
+#include "beam_to_solid_volume_meshtying_pair_base.H"
 
 // Forward declarations.
 namespace LINALG

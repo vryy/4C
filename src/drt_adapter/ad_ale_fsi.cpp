@@ -13,7 +13,7 @@
 /* header inclusions */
 #include "ad_ale_fsi.H"
 
-#include "../drt_ale/ale_utils_mapextractor.H"
+#include "ale_utils_mapextractor.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

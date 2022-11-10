@@ -7,7 +7,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include "../drt_lib/drt_function.H"
+#include "drt_function.H"
 
 #ifndef XFLUID_FUNCTIONS_COMBUST_H
 #define XFLUID_FUNCTIONS_COMBUST_H

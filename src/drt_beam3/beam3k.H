@@ -48,11 +48,11 @@ no direct physical interpretation. For 2D rotations both variants are identical.
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_node.H"
-#include "../drt_fem_general/largerotations.H"
+#include "drt_elementtype.H"
+#include "drt_node.H"
+#include "largerotations.H"
 #include <Sacado.hpp>
-#include "../headers/FAD_utils.H"
+#include "FAD_utils.H"
 
 #include "beam3_base.H"
 
@@ -104,8 +104,8 @@ dserror(
 #endif
 
 
-//#define CONSISTENTSPINSK        //Apply variationally consistent variant of first spin vector
-// component as test function for strong Kirchhoff
+// #define CONSISTENTSPINSK        //Apply variationally consistent variant of first spin vector
+//  component as test function for strong Kirchhoff
 //-> this interpolation enables exact energy and angular momentum balances
 
 // forward declaration

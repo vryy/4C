@@ -11,10 +11,10 @@
 #ifndef SRC_DRT_SCATRA_ELE_SCATRA_ELE_CALC_ARTERY_H_
 #define SRC_DRT_SCATRA_ELE_SCATRA_ELE_CALC_ARTERY_H_
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
 #include "scatra_ele_calc.H"
-#include "../drt_mat/cnst_1d_art.H"
+#include "cnst_1d_art.H"
 
 
 namespace DRT

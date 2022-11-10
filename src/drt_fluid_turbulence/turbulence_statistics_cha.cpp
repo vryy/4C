@@ -11,19 +11,19 @@
 
 #include "turbulence_statistics_cha.H"
 
-#include "../drt_fluid/fluid_utils.H"
+#include "fluid_utils.H"
 
-#include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_scatra_ele/scatra_ele_action.H"
-#include "../drt_fluid/fluid_xwall.H"
+#include "fluid_ele_action.H"
+#include "scatra_ele_action.H"
+#include "fluid_xwall.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_parameter_list.H"
+#include "drt_globalproblem.H"
+#include "drt_utils_parameter_list.H"
 
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/sutherland.H"
-#include "../drt_mat/scatra_mat.H"
+#include "matpar_bundle.H"
+#include "newtonianfluid.H"
+#include "sutherland.H"
+#include "scatra_mat.H"
 
 #define NODETOL 1e-9
 // turn on if problems with mean values in planes occur

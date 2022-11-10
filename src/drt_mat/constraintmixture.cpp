@@ -24,20 +24,20 @@ For a detailed description see:
 
 #include "constraintmixture.H"
 #include "constraintmixture_history.H"
-#include "../drt_lib/drt_globalproblem.H"
-// #include "../drt_lib/standardtypes_cpp.H" // for PI, not needed here?
+#include "drt_globalproblem.H"
+// #include "standardtypes_cpp.H" // for PI, not needed here?
 #include "matpar_bundle.H"
-#include "../drt_mat/material_service.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_comm/comm_utils.H"
-#include "../drt_io/io_gmsh.H"                                // for debug plotting with gmsh
-#include "../drt_io/io_control.H"                             // for debug plotting with gmsh
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"  // for debug plotting with gmsh
-#include "../drt_fem_general/drt_utils_integration.H"         // for debug plotting with gmsh
-#include "../drt_lib/drt_utils.H"                             // for debug plotting with gmsh
-#include "../drt_lib/function_of_time.H"
-#include "../drt_inpar/inpar_structure.H"  // for pstime
-#include "../drt_lib/prestress_service.H"
+#include "material_service.H"
+#include "drt_linedefinition.H"
+#include "comm_utils.H"
+#include "io_gmsh.H"                       // for debug plotting with gmsh
+#include "io_control.H"                    // for debug plotting with gmsh
+#include "drt_utils_fem_shapefunctions.H"  // for debug plotting with gmsh
+#include "drt_utils_integration.H"         // for debug plotting with gmsh
+#include "drt_utils.H"                     // for debug plotting with gmsh
+#include "inpar_structure.H"               // for pstime
+#include "function_of_time.H"
+#include "prestress_service.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |

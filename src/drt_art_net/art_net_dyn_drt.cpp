@@ -20,15 +20,15 @@
 
 #include "art_net_dyn_drt.H"
 #include "artery_resulttest.H"
-#include "../drt_adapter/ad_art_net.H"
+#include "ad_art_net.H"
 #include "art_net_utils.H"
 
-#include "../drt_lib/drt_resulttest.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "drt_resulttest.H"
+#include "drt_globalproblem.H"
+#include "io_control.H"
+#include "drt_validparameters.H"
 
-#include "../drt_lib/drt_utils_createdis.H"
+#include "drt_utils_createdis.H"
 
 /*----------------------------------------------------------------------*
  * Main control routine for arterial network including various solvers:

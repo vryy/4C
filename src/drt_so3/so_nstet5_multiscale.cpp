@@ -7,10 +7,10 @@
 *----------------------------------------------------------------------*/
 
 #include "so_nstet5.H"
-#include "../drt_mat/micromaterial.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_comm/comm_utils.H"
-#include "../drt_lib/drt_discret.H"
+#include "micromaterial.H"
+#include "drt_globalproblem.H"
+#include "comm_utils.H"
+#include "drt_discret.H"
 
 
 

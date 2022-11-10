@@ -13,18 +13,18 @@
 #include "Epetra_SerialComm.h"
 #include "meshtying_lagrange_strategy.H"
 #include "meshtying_defines.H"
-#include "../drt_mortar/mortar_defines.H"
-#include "../drt_mortar/mortar_interface.H"
-#include "../drt_mortar/mortar_node.H"
-#include "../drt_mortar/mortar_utils.H"
-#include "../drt_inpar/inpar_mortar.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_solver.H"  // mesh initialization :-(
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "mortar_defines.H"
+#include "mortar_interface.H"
+#include "mortar_node.H"
+#include "mortar_utils.H"
+#include "inpar_mortar.H"
+#include "inpar_contact.H"
+#include "drt_globalproblem.H"
+#include "linalg_multiply.H"
+#include "linalg_solver.H"  // mesh initialization :-(
+#include "linalg_utils_sparse_algebra_assemble.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
  *----------------------------------------------------------------------*/

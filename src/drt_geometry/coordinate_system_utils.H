@@ -10,7 +10,7 @@
 #ifndef SRC_DRT_GEOMETRY_COORDINATE_SYSTEM_UTILS_H_
 #define SRC_DRT_GEOMETRY_COORDINATE_SYSTEM_UTILS_H_
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
 namespace GEO
 {

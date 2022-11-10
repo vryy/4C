@@ -19,7 +19,7 @@
 #include "drt_utils_reader.H"
 #include "drt_discret.H"
 #include "drt_parobject.H"
-#include "../drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 #include <Epetra_Time.h>
 #include <algorithm>

@@ -15,7 +15,7 @@
 #include <set>
 
 #include <Teuchos_RCP.hpp>
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 #include "str_model_evaluator.H"  // typedef
 
 namespace STR

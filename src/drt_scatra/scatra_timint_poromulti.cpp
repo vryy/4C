@@ -9,8 +9,8 @@
 
 #include "scatra_timint_poromulti.H"
 
-#include "../drt_io/io.H"
-#include "../drt_poromultiphase_scatra/poromultiphase_scatra_utils.H"
+#include "io.H"
+#include "poromultiphase_scatra_utils.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                             vuong  08/16 |

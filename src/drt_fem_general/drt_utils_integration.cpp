@@ -11,7 +11,7 @@
 #include <iostream>
 
 #include "drt_utils_integration.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 
 namespace internal

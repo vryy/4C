@@ -9,7 +9,7 @@ problem
 */
 /*-----------------------------------------------------------*/
 
-//#ifdef D_COUPLED_ARTNET
+// #ifdef D_COUPLED_ARTNET
 #ifndef FLUID_COUPLING_RED_MODELS_H_
 #define FLUID_COUPLING_RED_MODELS_H_
 
@@ -17,11 +17,11 @@ problem
 #include "Epetra_MpiComm.h"
 
 #include "Teuchos_RCP.hpp"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
-#include "../drt_art_net/art_net_dyn_drt.H"
-#include "../drt_red_airways/red_airways_dyn_drt.H"
-#include "../drt_io/io.H"
+#include "drt_discret.H"
+#include "linalg_utils_sparse_algebra_create.H"
+#include "art_net_dyn_drt.H"
+#include "red_airways_dyn_drt.H"
+#include "io.H"
 
 
 namespace FLD

@@ -11,25 +11,25 @@
 #define IMMERSED_BASE_H
 
 
-#include "../drt_fluid_ele/fluid_ele_immersed_base.H"
-#include "../drt_immersed_problem/immersed_node.H"
-#include "../drt_mortar/mortar_element.H"
-#include "../drt_mortar/mortar_calc_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_assemblestrategy.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_cut/cut_boundingbox.H"
+#include "fluid_ele_immersed_base.H"
+#include "immersed_node.H"
+#include "mortar_element.H"
+#include "mortar_calc_utils.H"
+#include "drt_globalproblem.H"
+#include "drt_assemblestrategy.H"
+#include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_boundary_integration.H"
+#include "drt_exporter.H"
+#include "cut_boundingbox.H"
 
-#include "../drt_geometry/searchtree.H"
-#include "../drt_geometry/searchtree_geometry_service.H"
+#include "searchtree.H"
+#include "searchtree_geometry_service.H"
 
-#include "../drt_inpar/inpar_fluid.H"
+#include "inpar_fluid.H"
 
 // experimental pre cmbe
-#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "scatra_ele_action.H"
 
 
 namespace DRT

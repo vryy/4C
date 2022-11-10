@@ -14,9 +14,9 @@
 
 #include <unordered_map>
 
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 
-#include "../drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
 namespace MAT
 {

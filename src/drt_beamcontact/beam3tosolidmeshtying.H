@@ -11,10 +11,10 @@ element
 #ifndef BEAM3TSMT_H
 #define BEAM3TSMT_H
 
-#include "../drt_beaminteraction/beam3contact_defines.H"
-#include "../drt_beaminteraction/beam3contact_utils.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../linalg/linalg_sparsematrix.H"
+#include "beam3contact_defines.H"
+#include "beam3contact_utils.H"
+#include "linalg_fixedsizematrix.H"
+#include "linalg_sparsematrix.H"
 
 namespace CONTACT
 {

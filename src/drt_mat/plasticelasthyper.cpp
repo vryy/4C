@@ -17,13 +17,13 @@ rY_13 0.7
 /*----------------------------------------------------------------------*/
 
 #include "plasticelasthyper.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../linalg/linalg_utils_densematrix_eigen.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/material_service.H"
+#include "standardtypes_cpp.H"
+#include "linalg_utils_densematrix_eigen.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
+#include "material_service.H"
 #include "Epetra_SerialDenseSolver.h"
-#include "../drt_lib/voigt_notation.H"
+#include "voigt_notation.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

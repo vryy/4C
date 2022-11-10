@@ -18,8 +18,8 @@
 
 // include thermal header because number of Gauss points are determined
 // dependent on distype
-#include "../drt_thermo/thermo_ele_impl_utils.H"
-#include "../drt_fem_general/drt_utils_gausspoints.H"
+#include "thermo_ele_impl_utils.H"
+#include "drt_utils_gausspoints.H"
 
 /*----------------------------------------------------------------------*
  |                                                           dano 11/12 |

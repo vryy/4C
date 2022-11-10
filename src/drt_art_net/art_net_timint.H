@@ -13,9 +13,9 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_adapter/ad_art_net.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_inpar/inpar_bio.H"
+#include "ad_art_net.H"
+#include "drt_discret.H"
+#include "inpar_bio.H"
 
 
 /*==========================================================================*/

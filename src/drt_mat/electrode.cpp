@@ -10,9 +10,9 @@
 
 #include "matpar_bundle.H"
 
-#include "../drt_io/io_control.H"
+#include "io_control.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
 #include <Epetra_SerialDenseSolver.h>
 

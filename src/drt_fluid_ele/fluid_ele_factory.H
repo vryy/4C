@@ -13,7 +13,7 @@
 #ifndef FLUID_ELE_FACTORY_H
 #define FLUID_ELE_FACTORY_H
 
-#include "../drt_lib/drt_element.H"
+#include "drt_element.H"
 
 namespace DRT
 {

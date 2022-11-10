@@ -11,9 +11,9 @@
 #ifndef BEAMINTERACTION_GEO_UTILS_H
 #define BEAMINTERACTION_GEO_UTILS_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
-#include "../drt_lib/drt_element.H"
+#include "drt_element.H"
 
 
 namespace BEAMINTERACTION

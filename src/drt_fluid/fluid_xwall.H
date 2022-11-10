@@ -15,8 +15,8 @@
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
-#include "../drt_inpar/inpar_fluid.H"
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "inpar_fluid.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 // forward declarations
 namespace DRT

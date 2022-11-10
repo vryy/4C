@@ -13,16 +13,16 @@ Fluid-Poro-Coupling Matrixes!
 #define FPSI_COUPLING_H
 
 // ALE includes
-#include "../drt_ale/ale_utils_mapextractor.H"
+#include "ale_utils_mapextractor.H"
 
 // ADAPTER includes
-#include "../drt_adapter/adapter_coupling.H"
+#include "adapter_coupling.H"
 
 // LINALG includes
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 // FLUID includes
-#include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "fluid_utils_mapextractor.H"
 
 // forward declarations
 namespace LINALG

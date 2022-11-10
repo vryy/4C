@@ -9,27 +9,27 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "../drt_lubrication_ele/lubrication_ele_calc.H"
+#include "lubrication_ele_calc.H"
 
-#include "../drt_geometry/position_array.H"
+#include "position_array.H"
 
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_utils.H"
+#include "drt_discret.H"
+#include "drt_condition_utils.H"
+#include "drt_globalproblem.H"
 
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_lubrication_ele/lubrication_ele_parameter.H"
+#include "drt_utils_integration.H"
+#include "lubrication_ele_parameter.H"
 
-#include "../drt_inpar/inpar_lubrication.H"
+#include "inpar_lubrication.H"
 
-#include "../drt_lubrication_ele/lubrication_ele_calc_utils.H"
-#include "../drt_lubrication_ele/lubrication_ele_action.H"
+#include "lubrication_ele_calc_utils.H"
+#include "lubrication_ele_action.H"
 
-#include "../drt_lib/standardtypes_cpp.H"
+#include "standardtypes_cpp.H"
 
-#include "../drt_mat/lubrication_mat.H"
-#include "../headers/singleton_owner.H"
+#include "lubrication_mat.H"
+#include "singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*

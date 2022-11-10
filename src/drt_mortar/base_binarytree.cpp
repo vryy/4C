@@ -7,8 +7,8 @@
 */
 /*---------------------------------------------------------------------*/
 #include "base_binarytree.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_dserror.H"
+#include "drt_discret.H"
 #include "mortar_element.H"
 #include "mortar_node.H"
 

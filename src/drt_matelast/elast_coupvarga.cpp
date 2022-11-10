@@ -6,7 +6,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "elast_coupvarga.H"
-#include "../drt_mat/matpar_material.H"
+#include "matpar_material.H"
 
 
 MAT::ELASTIC::PAR::CoupVarga::CoupVarga(const Teuchos::RCP<MAT::PAR::Material>& matdata)

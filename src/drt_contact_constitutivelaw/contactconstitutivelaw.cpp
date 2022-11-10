@@ -12,7 +12,7 @@
 
 #include "contactconstitutivelaw.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 #include "brokenrational_contactconstitutivelaw.H"
 #include "contact_constitutivelaw_bundle.H"
 #include "contactconstitutivelaw_parameter.H"

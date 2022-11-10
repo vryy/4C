@@ -10,13 +10,13 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_timint_topopt.H"
-#include "../drt_opti/topopt_optimizer.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/optimization_density.H"
-#include "../drt_io/io.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
+#include "topopt_optimizer.H"
+#include "fluid_ele_action.H"
+#include "drt_globalproblem.H"
+#include "matpar_bundle.H"
+#include "optimization_density.H"
+#include "io.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
 
 /*----------------------------------------------------------------------*

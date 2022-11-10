@@ -13,9 +13,9 @@
 #include "contact_element.H"
 #include "friction_node.H"
 
-#include "../drt_lib/drt_discret.H"
+#include "drt_discret.H"
 
-#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------------*
  |  store the required ghosting within a round              farah 10/13 |

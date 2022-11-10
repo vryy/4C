@@ -10,8 +10,8 @@
 #include "poromultiphase_scatra_base.H"
 #include "poromultiphase_scatra_utils.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

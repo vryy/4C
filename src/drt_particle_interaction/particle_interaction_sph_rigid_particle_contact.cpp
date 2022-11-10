@@ -15,19 +15,19 @@
 
 #include "particle_interaction_utils.H"
 
-#include "../drt_particle_engine/particle_engine_interface.H"
-#include "../drt_particle_engine/particle_container.H"
+#include "particle_engine_interface.H"
+#include "particle_container.H"
 
-#include "../drt_particle_wall/particle_wall_interface.H"
-#include "../drt_particle_wall/particle_wall_datastate.H"
+#include "particle_wall_interface.H"
+#include "particle_wall_datastate.H"
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "drt_utils_fem_shapefunctions.H"
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_element.H"
+#include "drt_utils.H"
+#include "drt_dserror.H"
 
-#include "../drt_io/runtime_vtp_writer.H"
+#include "runtime_vtp_writer.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

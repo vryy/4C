@@ -13,9 +13,9 @@
 
 #include "scatra_ele_interface.H"
 
-#include "../drt_inpar/inpar_scatra.H"
+#include "inpar_scatra.H"
 
-#include "../drt_lib/drt_element.H"
+#include "drt_element.H"
 
 namespace DRT
 {

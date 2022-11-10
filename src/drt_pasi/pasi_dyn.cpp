@@ -13,11 +13,11 @@
 #include "pasi_partitioned_twowaycoup.H"
 #include "pasi_utils.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_comm/comm_utils.H"
+#include "drt_globalproblem.H"
+#include "drt_discret.H"
+#include "comm_utils.H"
 
-#include "../drt_inpar/inpar_pasi.H"
+#include "inpar_pasi.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

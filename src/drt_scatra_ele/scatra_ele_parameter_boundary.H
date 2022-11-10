@@ -11,8 +11,8 @@
 #define SCATRA_ELE_PARAMETER_BOUNDARY_H
 
 #include "scatra_ele_parameter_base.H"
-#include "../drt_lib/drt_condition.H"
-#include "../drt_inpar/inpar_s2i.H"
+#include "drt_condition.H"
+#include "inpar_s2i.H"
 #include "vector"
 
 namespace DRT

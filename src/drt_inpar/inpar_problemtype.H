@@ -13,7 +13,7 @@
 
 #include "inpar_parameterlist_utils.H"
 
-#include "../drt_lib/drt_globalproblem_enums.H"
+#include "drt_globalproblem_enums.H"
 
 namespace INPAR
 {

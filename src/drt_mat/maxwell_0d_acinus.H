@@ -19,7 +19,7 @@ spring-dashpot (Stiffness2 and Viscosity1) and dashpot (Viscosity2) element
 
 #include "matpar_parameter.H"
 #include "material.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "drt_parobjectfactory.H"
 
 namespace MAT
 {

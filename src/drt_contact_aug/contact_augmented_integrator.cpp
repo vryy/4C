@@ -12,12 +12,12 @@
 #include "contact_integrator_utils.H"
 #include "contact_aug_element_utils.H"
 
-#include "../drt_contact/contact_node.H"
-#include "../drt_contact/contact_element.H"
-#include "../drt_contact/contact_paramsinterface.H"
-#include "../drt_mortar/mortar_coupling3d_classes.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "contact_node.H"
+#include "contact_element.H"
+#include "contact_paramsinterface.H"
+#include "mortar_coupling3d_classes.H"
+#include "drt_utils_integration.H"
+#include "linalg_serialdensevector.H"
 
 #include <Epetra_Map.h>
 #include <Teuchos_TimeMonitor.hpp>

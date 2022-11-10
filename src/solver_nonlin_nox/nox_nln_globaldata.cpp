@@ -24,15 +24,15 @@
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>
 
-#include "../linalg/linalg_solver.H"
+#include "linalg_solver.H"
 
-#include "../drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_XMLParameterListCoreHelpers.hpp>
 
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_inpar/drt_boolifyparameters.H"
+#include "drt_dserror.H"
+#include "drt_boolifyparameters.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

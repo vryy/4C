@@ -9,7 +9,7 @@
 #ifndef MESHTYING_MANAGER_H
 #define MESHTYING_MANAGER_H
 
-#include "../drt_mortar/mortar_manager_base.H"
+#include "mortar_manager_base.H"
 
 
 // forward declarations

@@ -12,10 +12,10 @@
 #ifndef FLUID_TIMINT_H
 #define FLUID_TIMINT_H
 
-#include "../drt_adapter/ad_fld_fluid.H"
+#include "ad_fld_fluid.H"
 #include "fluid_discretization_runtime_vtu_output_params.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>

@@ -11,15 +11,15 @@
 #include "material_service.H"
 #include "matpar_bundle.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/voigt_notation.H"
+#include "drt_globalproblem.H"
+#include "standardtypes_cpp.H"
+#include "voigt_notation.H"
 
-#include "../drt_so3/so_hex8.H"
+#include "so_hex8.H"
 
-#include "../headers/FAD_utils.H"
+#include "FAD_utils.H"
 
-#include "../linalg/linalg_utils_densematrix_eigen.H"
+#include "linalg_utils_densematrix_eigen.H"
 
 // struct definition
 struct MAT::PreCalculatedTerms

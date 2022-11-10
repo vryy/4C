@@ -17,7 +17,7 @@
 #include <map>
 #include <vector>
 
-#include "../drt_lib/drt_element.H"
+#include "drt_element.H"
 
 
 // forward declarations

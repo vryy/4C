@@ -12,9 +12,9 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "../drt_structure_new/str_model_evaluator_data.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_structure_new/str_timint_base.H"
+#include "str_model_evaluator_data.H"
+#include "drt_globalproblem.H"
+#include "str_timint_base.H"
 
 
 /*----------------------------------------------------------------------*
