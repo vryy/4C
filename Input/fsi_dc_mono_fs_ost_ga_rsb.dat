@@ -98,7 +98,7 @@ DPOINT                          4
 E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 //                              inflow_vertices_top
 E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 2 0 0
-//                              cavity_vertices
+//                              cavity_vertices_at_top_of_wall_and_bottom_of_inflow
 E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              fluid_vertex_fsi_NoDBC_slave
 E 5 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
@@ -133,8 +133,6 @@ NODE 1256 DNODE 2
 NODE 1287 DNODE 2
 NODE 67 DNODE 3
 NODE 131 DNODE 3
-NODE 1124 DNODE 3
-NODE 1155 DNODE 3
 NODE 1124 DNODE 5
 NODE 1155 DNODE 5
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
