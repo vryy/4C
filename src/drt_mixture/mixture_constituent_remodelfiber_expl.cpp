@@ -330,7 +330,7 @@ void MIXTURE::MixtureConstituent_RemodelFiberExpl::UpdateHomeostaticValues(
   const double time = std::invoke(
       [&]()
       {
-        if (params.isParameter("total time"))
+        if (params.isParameter("total time") && params.get<double>("total time") >= 0.0)
         {
           return params.get<double>("total time");
         }
