@@ -2326,7 +2326,7 @@ set(ELEMENT_LIBRARIES
     ele_scatra
     ele_sp3
     ele_so
-    drt_solid_ele_new
+    drt_solid_ele
     ele_t3
     ele_t3cl
     ele_thermo
