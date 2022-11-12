@@ -11,6 +11,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <memory>
 #include <optional>
+#include "drt_dserror.H"
 #include "drt_utils_integration.H"
 #include "drt_utils.H"
 #include "voigt_notation.H"
@@ -29,32 +30,6 @@
 
 namespace
 {
-  template <DRT::Element::DiscretizationType distype>
-  std::unique_ptr<DRT::UTILS::GaussIntegration> CreateDefaultGaussIntegration()
-  {
-    return CreateDefaultGaussIntegration<distype>(
-        DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
-  }
-
-  template <DRT::Element::DiscretizationType distype>
-  std::unique_ptr<DRT::UTILS::GaussIntegration> CreateGaussIntegration(
-      const DRT::UTILS::IntPointsAndWeights<DRT::UTILS::DisTypeToDim<distype>::dim>& intpoints)
-  {
-    // format as DRT::UTILS::GaussIntegration
-    Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> gp =
-        Teuchos::rcp(new DRT::UTILS::CollectedGaussPoints);
-
-    std::array<double, 3> xi = {0., 0., 0.};
-    for (int i = 0; i < intpoints.IP().nquad; ++i)
-    {
-      for (int d = 0; d < DRT::UTILS::DisTypeToDim<distype>::dim; ++d)
-        xi[d] = intpoints.IP().qxg[i][d];
-      gp->Append(xi[0], xi[1], xi[2], intpoints.IP().qwgt[i]);
-    }
-
-    return std::make_unique<DRT::UTILS::GaussIntegration>(gp);
-  }
-
   std::vector<char>& GetMutableStressData(
       const DRT::ELEMENTS::Solid& ele, const Teuchos::ParameterList& params)
   {
@@ -106,6 +81,79 @@ namespace
       return DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain");
     }
   }
+
+  template <DRT::Element::DiscretizationType distype,
+      std::enable_if_t<DRT::UTILS::DisTypeToDim<distype>::dim == 3, int> = 0>
+  constexpr DRT::UTILS::GaussRule3D GetGaussRuleMassMatrix()
+  {
+    return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
+  }
+
+  template <DRT::Element::DiscretizationType distype,
+      std::enable_if_t<DRT::UTILS::DisTypeToDim<distype>::dim == 2, int> = 0>
+  constexpr DRT::UTILS::GaussRule2D GetGaussRuleMassMatrix()
+  {
+    return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
+  }
+
+  template <DRT::Element::DiscretizationType distype,
+      std::enable_if_t<DRT::UTILS::DisTypeToDim<distype>::dim == 1, int> = 0>
+  constexpr DRT::UTILS::GaussRule1D GetGaussRuleMassMatrix()
+  {
+    return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
+  }
+
+  template <DRT::Element::DiscretizationType distype,
+      std::enable_if_t<DRT::UTILS::DisTypeToDim<distype>::dim == 3, int> = 0>
+  constexpr DRT::UTILS::GaussRule3D GetGaussRuleStiffnessMatrix()
+  {
+    if constexpr (distype == DRT::Element::DiscretizationType::tet10)
+    {
+      return DRT::UTILS::GaussRule3D::tet_4point;
+    }
+    else if (distype == DRT::Element::DiscretizationType::tet4)
+    {
+      return DRT::UTILS::GaussRule3D::tet_1point;
+    }
+    return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
+  }
+
+  template <DRT::Element::DiscretizationType distype,
+      std::enable_if_t<DRT::UTILS::DisTypeToDim<distype>::dim == 2, int> = 0>
+  constexpr DRT::UTILS::GaussRule2D GetGaussRuleStiffnessMatrix()
+  {
+    // TODO: Do we need sth special for triangles?
+    return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
+  }
+
+  template <DRT::Element::DiscretizationType distype,
+      std::enable_if_t<DRT::UTILS::DisTypeToDim<distype>::dim == 1, int> = 0>
+  constexpr DRT::UTILS::GaussRule1D GetGaussRuleStiffnessMatrix()
+  {
+    return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
+  }
+
+  template <DRT::Element::DiscretizationType distype, typename GaussRuleType>
+  DRT::UTILS::GaussIntegration CreateGaussIntegration(GaussRuleType rule)
+  {
+    constexpr int nsd = DRT::UTILS::DisTypeToDim<distype>::dim;
+
+    // setup default integration
+    DRT::UTILS::IntPointsAndWeights<nsd> intpoints(rule);
+
+    // format as DRT::UTILS::GaussIntegration
+    Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> gp =
+        Teuchos::rcp(new DRT::UTILS::CollectedGaussPoints);
+
+    std::array<double, 3> xi = {0., 0., 0.};
+    for (int i = 0; i < intpoints.IP().nquad; ++i)
+    {
+      for (int d = 0; d < nsd; ++d) xi[d] = intpoints.IP().qxg[i][d];
+      gp->Append(xi[0], xi[1], xi[2], intpoints.IP().qwgt[i]);
+    }
+
+    return DRT::UTILS::GaussIntegration(gp);
+  }
 }  // namespace
 
 template <DRT::Element::DiscretizationType distype>
@@ -126,42 +174,11 @@ DRT::ELEMENTS::SolidEleCalc<distype>* DRT::ELEMENTS::SolidEleCalc<distype>::Inst
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::SolidEleCalc<distype>::SolidEleCalc()
-    : DRT::ELEMENTS::SolidEleInterface::SolidEleInterface()
+    : DRT::ELEMENTS::SolidEleInterface::SolidEleInterface(),
+      stiffness_matrix_integration_(
+          CreateGaussIntegration<distype>(GetGaussRuleStiffnessMatrix<distype>())),
+      mass_matrix_integration_(CreateGaussIntegration<distype>(GetGaussRuleMassMatrix<distype>()))
 {
-  InitializeDefaultQuadrature();
-}
-
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::SolidEleCalc<distype>::InitializeDefaultQuadrature()
-{
-  DRT::UTILS::GaussRule3D rule = DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
-  if (distype == DRT::Element::DiscretizationType::tet10)
-  {
-    // HACK: Don't use the "OptGaussRule", but use only 4 Gauss points
-    // TODO: for tet-elements we need two different Gauss rules (4 points for force and stiffness
-    // matrix, 11 points for mass matrix)
-    rule = DRT::UTILS::GaussRule3D::tet_4point;
-  }
-  else if (distype == DRT::Element::DiscretizationType::tet4)
-  {
-    rule = DRT::UTILS::GaussRule3D::tet_1point;
-  }
-  // setup default integration
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(rule);
-
-  // format as DRT::UTILS::GaussIntegration
-  Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> gp =
-      Teuchos::rcp(new DRT::UTILS::CollectedGaussPoints);
-
-  std::array<double, 3> xi = {0., 0., 0.};
-  for (int i = 0; i < intpoints.IP().nquad; ++i)
-  {
-    for (int d = 0; d < nsd_; ++d) xi[d] = intpoints.IP().qxg[i][d];
-    gp->Append(xi[0], xi[1], xi[2], intpoints.IP().qwgt[i]);
-  }
-
-  // save default integration rule
-  default_integration_ = Teuchos::rcp(new DRT::UTILS::GaussIntegration(gp));
 }
 
 template <DRT::Element::DiscretizationType distype>
@@ -184,17 +201,23 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
   const NodalCoordinates<distype> nodal_coordinates =
       EvaluateNodalCoordinates<distype>(ele, discretization, lm);
 
+  // TODO: This is a quite unsafe check, whether the same integrations are used
+  bool equal_integration_mass_stiffness =
+      mass_matrix_integration_.NumPoints() == stiffness_matrix_integration_.NumPoints();
+
+  double mean_density = 0.0;
+
   // Loop over all Gauss points
-  for (int gp = 0; gp < default_integration_->NumPoints(); ++gp)
+  for (int gp = 0; gp < stiffness_matrix_integration_.NumPoints(); ++gp)
   {
     const LINALG::Matrix<nsd<distype>, 1> xi =
-        EvaluateParameterCoordinate<distype>(*default_integration_, gp);
+        EvaluateParameterCoordinate<distype>(stiffness_matrix_integration_, gp);
 
     const ShapeFunctionsAndDerivatives<distype> shape_functions =
         EvaluateShapeFunctionsAndDerivs<distype>(xi);
 
-    const JacobianMapping<distype> jacobian_mapping =
-        EvaluateJacobianMapping(shape_functions, nodal_coordinates, *default_integration_, gp);
+    const JacobianMapping<distype> jacobian_mapping = EvaluateJacobianMapping(
+        shape_functions, nodal_coordinates, stiffness_matrix_integration_, gp);
 
     const Strains<distype> strains = EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
 
@@ -215,8 +238,35 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
 
     if (mass != nullptr)
     {
-      AddMassMatrix(shape_functions, jacobian_mapping.integration_factor_,
-          ele.SolidMaterial()->Density(gp), *mass);
+      if (equal_integration_mass_stiffness)
+      {
+        AddMassMatrix(shape_functions, jacobian_mapping.integration_factor_,
+            ele.SolidMaterial()->Density(gp), *mass);
+      }
+      else
+      {
+        mean_density +=
+            ele.SolidMaterial()->Density(gp) / stiffness_matrix_integration_.NumPoints();
+      }
+    }
+  }
+
+  if (mass != nullptr && !equal_integration_mass_stiffness)
+  {  // integrate mass matrix
+    dsassert(mean_density > 0, "It looks like the density is 0.0");
+    for (int gp = 0; gp < mass_matrix_integration_.NumPoints(); ++gp)
+    {
+      const LINALG::Matrix<nsd<distype>, 1> xi =
+          EvaluateParameterCoordinate<distype>(mass_matrix_integration_, gp);
+
+      const ShapeFunctionsAndDerivatives<distype> shape_functions =
+          EvaluateShapeFunctionsAndDerivs<distype>(xi);
+
+      const double integration_factor =
+          EvaluateJacobianDeterminant(shape_functions, nodal_coordinates) *
+          mass_matrix_integration_.Weight(gp);
+
+      AddMassMatrix(shape_functions, integration_factor, mean_density, *mass);
     }
   }
 }
@@ -241,16 +291,16 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::Update(const DRT::ELEMENTS::Solid& el
       EvaluateNodalCoordinates<distype>(ele, discretization, lm);
 
   // Loop over all Gauss points
-  for (int gp = 0; gp < default_integration_->NumPoints(); ++gp)
+  for (int gp = 0; gp < stiffness_matrix_integration_.NumPoints(); ++gp)
   {
     const LINALG::Matrix<nsd<distype>, 1> xi =
-        EvaluateParameterCoordinate<distype>(*default_integration_, gp);
+        EvaluateParameterCoordinate<distype>(stiffness_matrix_integration_, gp);
 
     const ShapeFunctionsAndDerivatives<distype> shape_functions =
         EvaluateShapeFunctionsAndDerivs<distype>(xi);
 
-    const JacobianMapping<distype> jacobian_mapping =
-        EvaluateJacobianMapping(shape_functions, nodal_coordinates, *default_integration_, gp);
+    const JacobianMapping<distype> jacobian_mapping = EvaluateJacobianMapping(
+        shape_functions, nodal_coordinates, stiffness_matrix_integration_, gp);
 
     const Strains<distype> strains = EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
 
@@ -274,7 +324,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::PostProcessStressStrain(const DRT::EL
   if (stresstype == "ndxyz")
   {
     ExtrapolateGPQuantityToNodesAndAssemble<distype>(
-        ele, gpstress, poststress, true, *default_integration_);
+        ele, gpstress, poststress, true, stiffness_matrix_integration_);
   }
   else if (stresstype == "cxyz")
   {
@@ -309,23 +359,23 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::ELEMENTS::
 
   std::vector<char>& serialized_stress_data = GetMutableStressData(ele, params);
   std::vector<char>& serialized_strain_data = GetMutableStrainData(ele, params);
-  Epetra_SerialDenseMatrix stress_data(default_integration_->NumPoints(), numstr_);
-  Epetra_SerialDenseMatrix strain_data(default_integration_->NumPoints(), numstr_);
+  Epetra_SerialDenseMatrix stress_data(stiffness_matrix_integration_.NumPoints(), numstr_);
+  Epetra_SerialDenseMatrix strain_data(stiffness_matrix_integration_.NumPoints(), numstr_);
 
   const NodalCoordinates<distype> nodal_coordinates =
       EvaluateNodalCoordinates<distype>(ele, discretization, lm);
 
   // Loop over all Gauss points
-  for (int gp = 0; gp < default_integration_->NumPoints(); ++gp)
+  for (int gp = 0; gp < stiffness_matrix_integration_.NumPoints(); ++gp)
   {
     const LINALG::Matrix<nsd<distype>, 1> xi =
-        EvaluateParameterCoordinate<distype>(*default_integration_, gp);
+        EvaluateParameterCoordinate<distype>(stiffness_matrix_integration_, gp);
 
     const ShapeFunctionsAndDerivatives<distype> shape_functions =
         EvaluateShapeFunctionsAndDerivs<distype>(xi);
 
-    const JacobianMapping<distype> jacobian_mapping =
-        EvaluateJacobianMapping(shape_functions, nodal_coordinates, *default_integration_, gp);
+    const JacobianMapping<distype> jacobian_mapping = EvaluateJacobianMapping(
+        shape_functions, nodal_coordinates, stiffness_matrix_integration_, gp);
 
     const Strains<distype> strains = EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
 
@@ -347,7 +397,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::SolidEleCalc<distype>::Setup(
     const DRT::ELEMENTS::Solid& ele, DRT::INPUT::LineDefinition* linedef)
 {
-  ele.SolidMaterial()->Setup(default_integration_->NumPoints(), linedef);
+  ele.SolidMaterial()->Setup(stiffness_matrix_integration_.NumPoints(), linedef);
 }
 
 template <DRT::Element::DiscretizationType distype>
@@ -363,12 +413,10 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::MaterialPostSetup(const DRT::ELEMENTS
     const static std::vector<LINALG::Matrix<nen_, 1>> shapefcts = std::invoke(
         [&]
         {
-          const DRT::UTILS::GaussIntegration& integration_rule = *default_integration_;
-
-          std::vector<LINALG::Matrix<nen_, 1>> shapefcns(integration_rule.NumPoints());
-          for (int gp = 0; gp < integration_rule.NumPoints(); ++gp)
+          std::vector<LINALG::Matrix<nen_, 1>> shapefcns(stiffness_matrix_integration_.NumPoints());
+          for (int gp = 0; gp < stiffness_matrix_integration_.NumPoints(); ++gp)
           {
-            LINALG::Matrix<nsd_, 1> xi(integration_rule.Point(gp), true);
+            LINALG::Matrix<nsd_, 1> xi(stiffness_matrix_integration_.Point(gp), true);
             DRT::UTILS::shape_function<distype>(xi, shapefcns[gp]);
           }
           return shapefcns;
@@ -391,14 +439,12 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::SolidEleCalc<distype>::InitializeGaussPointDataOutput(
     const DRT::ELEMENTS::Solid& ele) const
 {
-  const DRT::UTILS::GaussIntegration& integration = *default_integration_;
-
   dsassert(ele.IsParamsInterface(),
       "This action type should only be called from the new time integration framework!");
 
   // Save number of Gauss of the element for gauss point data output
   ele.ParamsInterface().MutableGaussPointDataOutputManagerPtr()->AddElementNumberOfGaussPoints(
-      integration.NumPoints());
+      stiffness_matrix_integration_.NumPoints());
 
   // holder for output quantity names and their size
   std::unordered_map<std::string, int> quantities_map{};
@@ -417,7 +463,6 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateGaussPointDataOutput(
   dsassert(ele.IsParamsInterface(),
       "This action type should only be called from the new time integration framework!");
 
-  const DRT::UTILS::GaussIntegration& integration = *default_integration_;
   // Collection and assembly of gauss point data
   for (const auto& quantity :
       ele.ParamsInterface().MutableGaussPointDataOutputManagerPtr()->GetQuantities())
@@ -426,7 +471,8 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateGaussPointDataOutput(
     const int quantity_size = quantity.second;
 
     // Step 1: Collect the data for each Gauss point for the material
-    LINALG::SerialDenseMatrix gp_data(integration.NumPoints(), quantity_size, true);
+    LINALG::SerialDenseMatrix gp_data(
+        stiffness_matrix_integration_.NumPoints(), quantity_size, true);
     bool data_available = ele.SolidMaterial()->EvaluateVtkOutputData(quantity_name, gp_data);
 
     // Step 3: Assemble data based on output type (elecenter, postprocessed to nodes, Gauss
@@ -461,7 +507,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateGaussPointDataOutput(
                    .at(quantity_name);
 
           ExtrapolateGPQuantityToNodesAndAssemble<distype>(
-              ele, gp_data, *global_data, false, integration);
+              ele, gp_data, *global_data, false, stiffness_matrix_integration_);
           DRT::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, ele);
           break;
         }

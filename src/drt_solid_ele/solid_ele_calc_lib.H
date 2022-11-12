@@ -149,6 +149,16 @@ namespace DRT::ELEMENTS
   }
 
   template <DRT::Element::DiscretizationType distype>
+  double EvaluateJacobianDeterminant(const ShapeFunctionsAndDerivatives<distype>& shapefcns,
+      const NodalCoordinates<distype>& nodal_coordniates)
+  {
+    LINALG::Matrix<nsd<distype>, nsd<distype>> jacobian;
+    jacobian.Multiply(shapefcns.derivatives_, nodal_coordniates.reference_);
+
+    return jacobian.Determinant();
+  }
+
+  template <DRT::Element::DiscretizationType distype>
   struct Strains
   {
     LINALG::Matrix<nsd<distype>, nsd<distype>> defgrd_;

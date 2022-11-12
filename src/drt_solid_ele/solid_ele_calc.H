@@ -80,18 +80,8 @@ namespace DRT
       static constexpr int numdofperelement_ = nen_ * nsd_;
       static constexpr int numstr_ = nsd_ * (nsd_ + 1) / 2;
 
-      std::unique_ptr<DRT::UTILS::GaussIntegration> stiffness_matrix_integration_;
-      std::unique_ptr<DRT::UTILS::GaussIntegration> mass_matrix_integration_;
-
-
-
-      /// initialize default GP locations, shape functions and derivs
-      // todo: replace this with template "distype to default rule"
-      //       once the DRT::UTILS::GaussIntegration does no longer use Intrepid
-      virtual void InitializeDefaultQuadrature();
-
-
-      Teuchos::RCP<DRT::UTILS::GaussIntegration> default_integration_ = Teuchos::null;
+      DRT::UTILS::GaussIntegration stiffness_matrix_integration_;
+      DRT::UTILS::GaussIntegration mass_matrix_integration_;
 
     };  // class SolidEleCalc
   }     // namespace ELEMENTS
