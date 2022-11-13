@@ -1598,38 +1598,7 @@ set(OBJS_DRT_ELEMAG_LIB
     src/drt_elemag/elemag_ele.cpp
     src/drt_elemag/elemag_diff_ele.cpp
     )
-set(OBJS_LINALG
-    src/linalg/linalg_ana.cpp
-    src/linalg/linalg_blocksparsematrix.cpp
-    src/linalg/linalg_condest.cpp
-    src/linalg/linalg_downwindmatrix.cpp
-    src/linalg/linalg_equilibrate.cpp
-    src/linalg/linalg_krylov_projector.cpp
-    src/linalg/linalg_mapextractor.cpp
-    src/linalg/linalg_matrixtransform.cpp
-    src/linalg/linalg_mlapi_operator.cpp
-    src/linalg/linalg_nullspace.cpp
-    src/linalg/linalg_precond.cpp
-    src/linalg/linalg_projected_operator.cpp
-    src/linalg/linalg_projected_precond.cpp
-    src/linalg/linalg_serialdensematrix.cpp
-    src/linalg/linalg_serialdensevector.cpp
-    src/linalg/linalg_sparsematrix.cpp
-    src/linalg/linalg_sparsematrixbase.cpp
-    src/linalg/linalg_gauss.cpp
-    src/linalg/linalg_utils_nullspace.cpp
-    src/linalg/linalg_utils_densematrix_communication.cpp
-    src/linalg/linalg_utils_densematrix_determinant.cpp
-    src/linalg/linalg_utils_densematrix_eigen.cpp
-    src/linalg/linalg_utils_densematrix_inverse.cpp
-    src/linalg/linalg_utils_densematrix_print.cpp
-    src/linalg/linalg_utils_densematrix_svd.cpp
-    src/linalg/linalg_utils_sparse_algebra_assemble.cpp
-    src/linalg/linalg_utils_sparse_algebra_create.cpp
-    src/linalg/linalg_utils_sparse_algebra_manipulation.cpp
-    src/linalg/linalg_utils_sparse_algebra_math.cpp
-    src/linalg/linalg_utils_sparse_algebra_print.cpp
-    )
+
 set(OBJS_SOLVER
     src/linalg/linalg_multiply.cpp
     src/linalg/linalg_solver.cpp
@@ -2606,7 +2575,6 @@ target_link_libraries(post_drt_vtk_lib PUBLIC post_drt_common)
 target_link_libraries(post_drt_ensight_lib PUBLIC post_drt_common)
 
 # linear algebra objects
-deprecated_baci_add_library_linked_with_everything(linalg ${OBJS_LINALG})
 deprecated_baci_add_library_linked_with_everything(libsolver ${OBJS_SOLVER})
 
 # continuation method
