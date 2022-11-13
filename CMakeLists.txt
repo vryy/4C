@@ -1599,29 +1599,6 @@ set(OBJS_DRT_ELEMAG_LIB
     src/drt_elemag/elemag_diff_ele.cpp
     )
 
-set(OBJS_SOLVER
-    src/linalg/linalg_multiply.cpp
-    src/linalg/linalg_solver.cpp
-    src/solver/bgs2x2_operator.cpp
-    src/solver/solver_cheapsimplepreconditioner.cpp
-    src/solver/solver_directsolver.cpp
-    src/solver/solver_krylovsolver.cpp
-    src/solver/solver_pointpreconditioner.cpp
-    src/solver/solver_blockpreconditioners.cpp
-    src/solver/solver_krylovprojectionpreconditioner.cpp
-    src/solver/solver_ifpackpreconditioner.cpp
-    src/solver/solver_mlpreconditioner.cpp
-    src/solver/solver_muelupreconditioner.cpp
-    src/solver/solver_belossolver.cpp
-    src/solver/solver_aztecsolver.cpp
-    src/solver/solver_aztecsolver_projectedresidual.cpp
-    src/solver/solver_amgnxn_preconditioner.cpp
-    src/solver/solver_amgnxn_vcycle.cpp
-    src/solver/solver_amgnxn_hierarchies.cpp
-    src/solver/solver_amgnxn_smoothers.cpp
-    src/solver/solver_amgnxn_objects.cpp
-    )
-
 set(OBJS_SOLVER_NONLIN_NOX
     src/solver_nonlin_nox/nox_nln_aux.cpp
     src/solver_nonlin_nox/nox_nln_floating_point_exception.cpp
@@ -2399,7 +2376,7 @@ set(BACI_LIBRARIES
     drt_lib_utils
     locacontinuation
     nlnsolver_nox
-    libsolver
+    solver
     linalg
     drt_comm
     headers
@@ -2573,9 +2550,6 @@ deprecated_baci_add_library_linked_with_everything(post_drt_vtk_lib ${OBJS_POST_
 
 target_link_libraries(post_drt_vtk_lib PUBLIC post_drt_common)
 target_link_libraries(post_drt_ensight_lib PUBLIC post_drt_common)
-
-# linear algebra objects
-deprecated_baci_add_library_linked_with_everything(libsolver ${OBJS_SOLVER})
 
 # continuation method
 deprecated_baci_add_library_linked_with_everything(locacontinuation ${OBJS_LOCA_CONTINUATION})

@@ -8,6 +8,7 @@ set(OBJS_LINALG
     linalg_mapextractor.cpp
     linalg_matrixtransform.cpp
     linalg_mlapi_operator.cpp
+    linalg_multiply.cpp
     linalg_nullspace.cpp
     linalg_precond.cpp
     linalg_projected_operator.cpp
