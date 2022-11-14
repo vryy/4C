@@ -132,12 +132,10 @@ SOLVER                          Aztec_MSR
 NAME                            Thermo_Structure_Interaction_Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        10
-AZPOLY                          3
 AZPREC                          AMGnxn
 AZREUSE                         0
 AZSCAL                          none

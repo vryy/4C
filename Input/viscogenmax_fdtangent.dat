@@ -20,7 +20,7 @@ STRUCTURE DIS structure NODE 1641 QUANTITY dispy VALUE -1.28734335550589940e-01 
 PROBLEMTYP                      Structure
 RESTART                         0
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          Amesos_KLU_nonsym
+SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha
 LINEAR_SOLVER                   1

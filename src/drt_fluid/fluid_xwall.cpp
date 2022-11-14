@@ -731,28 +731,28 @@ void FLD::XWall::SetupL2Projection()
     // get solver parameter list of linear solver
     const Teuchos::ParameterList& solverparams =
         DRT::Problem::Instance()->SolverParams(solvernumber);
-    const int solvertype =
-        DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
+    const auto solvertype =
+        Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
     solver_ = Teuchos::rcp(new LINALG::Solver(
         solverparams, xwdiscret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
-    if (solvertype != INPAR::SOLVER::umfpack)
+    if (solvertype != INPAR::SOLVER::SolverType::umfpack)
     {
-      if (solvertype != INPAR::SOLVER::belos && myrank_ == 0)
+      if (solvertype != INPAR::SOLVER::SolverType::belos && myrank_ == 0)
         std::cout
             << "\nUse Belos as solver because it can handle several right hand sides at once!\n"
             << std::endl;
-      const int prectyp =
-          DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(solverparams, "AZPREC");
+      const auto prectyp =
+          Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(solverparams, "AZPREC");
       // watch out: only ILU might work right now because of compute nullspace might not work...?
       // ... test!
       switch (prectyp)
       {
-        case INPAR::SOLVER::azprec_ML:
-        case INPAR::SOLVER::azprec_MLfluid:
-        case INPAR::SOLVER::azprec_MLfluid2:
-        case INPAR::SOLVER::azprec_MueLuAMG:
+        case INPAR::SOLVER::PreconditionerType::multigrid_ml:
+        case INPAR::SOLVER::PreconditionerType::multigrid_ml_fluid:
+        case INPAR::SOLVER::PreconditionerType::multigrid_ml_fluid2:
+        case INPAR::SOLVER::PreconditionerType::multigrid_muelu:
         {
           if (proj_)
           {  // has 3 dofs, velocity dofs
@@ -826,10 +826,7 @@ void FLD::XWall::SetupL2Projection()
           }
         }
         break;
-        case INPAR::SOLVER::azprec_ILU:
-        case INPAR::SOLVER::azprec_ILUT:
-        case INPAR::SOLVER::azprec_SymmGaussSeidel:
-        case INPAR::SOLVER::azprec_Jacobi:
+        case INPAR::SOLVER::PreconditionerType::ilu:
           // do nothing
           break;
         default:

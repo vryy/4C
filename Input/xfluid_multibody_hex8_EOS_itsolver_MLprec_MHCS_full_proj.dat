@@ -96,7 +96,6 @@ AZOUTPUT                        10
 AZSOLVE                         GMRES
 AZPREC                          MLFLUID2
 AZREUSE                         1
-AZDROP                          0.0
 AZTOL                           1.0E-08
 AZCONV                          AZ_r0
 AZITER                          1000

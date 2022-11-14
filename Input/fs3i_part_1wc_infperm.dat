@@ -26,8 +26,6 @@ AZOUTPUT                        0                             // output every so
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ML                            // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         100                           // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     2                             // graph fill for ILU
 IFPACKOVERLAP                   2                             // amount of ASM overlap for ILU, ILU, ICC, LU
 IFPACKCOMBINE                   Insert
@@ -37,7 +35,6 @@ AZITER                          2500                          // max iterations
 AZSUB                           25                            // size of krylov space for gmres
 AZOMEGA                         1.0                           // unused
 AZGRAPH                         1                             // unused
-AZPOLY                          5                             // polynomial order for Neumann
 AZSCAL                          none                          // none sym infnorm scaling of the system
 ML_PRINT                        0                             // ML print-out level (0-10)
 ML_MAXCOARSESIZE                10000                         // ML stop coarsening when coarse ndof smaller then this
@@ -110,8 +107,6 @@ AZOUTPUT                        0                             // output every so
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          MLFLUID2                      // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         1                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     3                             // graph fill for ILU
 AZTOL                           1.0E-4                        // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
@@ -119,7 +114,6 @@ AZITER                          1200                          // max iterations
 AZSUB                           50                            // size of krylov space for gmres
 AZOMEGA                         0.69                          // unused
 AZGRAPH                         1                             // unused
-AZPOLY                          5                             // polynomial order for Neumann
 IFPACKOVERLAP                   8
 IFPACKCOMBINE                   Zero
 AZSCAL                          none                          // none sym infnorm scaling of the system
@@ -244,8 +238,6 @@ AZOUTPUT                        1                             // output every so
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          BGS2x2                        // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
 AZREUSE                         0                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      2                             // fill-in for ILUT
 IFPACKGFILL                     2                             // graph fill for ILU
 AZTOL                           1.0E-07                       // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
@@ -253,7 +245,6 @@ AZITER                          1000                          // max iterations
 AZSUB                           25                            // size of krylov space for gmres
 AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
 AZGRAPH                         1                             // unused
-AZPOLY                          1                             // polynomial order for Neumann
 IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL                          infnorm                       // none sym infnorm scaling of the system
 --------------------------------------------------------------------SOLVER 4
@@ -263,8 +254,6 @@ AZOUTPUT                        0                             // output every so
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
 AZREUSE                         0                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
 AZTOL                           1.0E-7                        // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
@@ -272,7 +261,6 @@ AZITER                          1000                          // max iterations
 AZSUB                           25                            // size of krylov space for gmres
 AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
 AZGRAPH                         1                             // unused
-AZPOLY                          1                             // polynomial order for Neumann
 IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL                          none                          // none sym infnorm scaling of the system
 ML_PRINT                        0                             // ML print-out level (0-10)
@@ -296,8 +284,6 @@ AZOUTPUT                        0                             // output every so
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
 AZREUSE                         0                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
 AZTOL                           1.0E-7                        // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
@@ -305,7 +291,6 @@ AZITER                          1000                          // max iterations
 AZSUB                           25                            // size of krylov space for gmres
 AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
 AZGRAPH                         1                             // unused
-AZPOLY                          1                             // polynomial order for Neumann
 IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL                          none                          // none sym infnorm scaling of the system
 ML_PRINT                        0                             // ML print-out level (0-10)
@@ -329,8 +314,6 @@ AZOUTPUT                        0                             // output every so
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ML                            // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         10                            // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     2                             // graph fill for ILU
 IFPACKOVERLAP                   2                             // amount of ASM overlap for ILU, ILU, ICC, LU
 IFPACKCOMBINE                   Insert
@@ -340,7 +323,6 @@ AZITER                          1000                          // max iterations
 AZSUB                           50                            // size of krylov space for gmres
 AZOMEGA                         1.0                           // unused
 AZGRAPH                         1                             // unused
-AZPOLY                          5                             // polynomial order for Neumann
 AZSCAL                          none                          // none sym infnorm scaling of the system
 ML_PRINT                        0                             // ML print-out level (0-10)
 ML_MAXCOARSESIZE                25000                         // ML stop coarsening when coarse ndof smaller then this

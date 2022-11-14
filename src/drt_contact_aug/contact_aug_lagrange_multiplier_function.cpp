@@ -36,7 +36,7 @@ CONTACT::AUG::LagrangeMultiplierFunction::LagrangeMultiplierFunction()
       strategy_(NULL),
       interfaces_(0),
       data_(Teuchos::null),
-      lin_solver_type_(INPAR::SOLVER::undefined),
+      lin_solver_type_(INPAR::SOLVER::SolverType::undefined),
       lin_solver_(Teuchos::null),
       bmat_(Teuchos::null)
 {
@@ -95,12 +95,13 @@ Teuchos::RCP<LINALG::Solver> CONTACT::AUG::LagrangeMultiplierFunction::CreateLin
 
   // get solver parameter list of linear solver
   const Teuchos::ParameterList& solverparams = DRT::Problem::Instance()->SolverParams(lin_sol_id);
-  solver_type = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
+  solver_type = Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
   Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(
       new LINALG::Solver(solverparams, comm, DRT::Problem::Instance()->ErrorFile()->Handle()));
 
-  if (solver_type != INPAR::SOLVER::umfpack and solver_type != INPAR::SOLVER::superlu)
+  if (solver_type != INPAR::SOLVER::SolverType::umfpack and
+      solver_type != INPAR::SOLVER::SolverType::superlu)
     dserror("Currently only direct linear solvers are supported!");
 
   return solver;

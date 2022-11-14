@@ -147,10 +147,7 @@ AZSOLVE                         GMRES
 AZPREC                          MLFLUID2 //ILU
 IFPACKOVERLAP                   0
 IFPACKGFILL                     0
-IFPACKFILL                      1
 IFPACKCOMBINE                   Add
-AZDROP                          0
-AZPOLY                          3
 AZSUB                           80
 AZCONV                          AZ_r0
 AZREUSE                         0

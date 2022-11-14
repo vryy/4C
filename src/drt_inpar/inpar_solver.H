@@ -6,86 +6,97 @@
 \level 1
 
 */
-
 /*----------------------------------------------------------------------*/
+
 #ifndef INPAR_SOLVER_H
 #define INPAR_SOLVER_H
 
 #include "inpar_parameterlist_utils.H"
 
-/*----------------------------------------------------------------------*/
-namespace INPAR
+namespace INPAR::SOLVER
 {
-  namespace SOLVER
+  /* A very good tutorial and explanation on how to choose your linear solver and the related
+   * parameters can be found here:
+   * https://de.mathworks.com/help/matlab/math/iterative-methods-for-linear-systems.html
+   *
+   * The available methods in BACI are very similar to the ones available in MATLAB:
+   *
+   * For small problems e.g. smaller than 50.000 global degrees of freedom, choose a direct solver
+   * (UMFPACK is very popular and also used as direct solver in MATLAB, you just don't see it).
+   *
+   * For bigger problems use an iterative method in combination with a preconditioner. A popular
+   * choice for symmetric systems is ICC + CG, for non-symmetric problems ILU + GMRES. Also try to
+   * use Belos as your iterative solver package of choice!
+   *
+   * For really big problems use a multigrid preconditioner in combination with an iterative
+   * solver. This ensures scalability and realistic computation times. Also try to use MueLU as
+   * your multigrid package of choice!
+   *
+   * In BACI equilibration and reordering is also available, but not for everything yet. An
+   * experimental approach on permuting the system matrix to obtain better conditioning and
+   * faster solution times is given by the permuation strategy.
+   *
+   */
+
+  //! Available solvers in the Amesos package and Iterative methods
+  enum class SolverType
   {
-    /// Available solvers (a few of these are likely out-dated)
-    // TODO: think about which of these are really needed
-    enum SolverType
-    {
-      aztec_msr,          ///< solver package aztec 2.1, matrix in dmsr format
-      lapack_sym,         ///< symmetric lapack LU decomposition, matrix is dense
-      lapack_nonsym,      ///< unsymmetric lapack LU decomposition, matrix is dense
-      umfpack,            ///< solver package umfpack, matrix in compressed column format
-      amesos_klu_sym,     ///< Trilinos' solver interface Amesos using KLU
-      amesos_klu_nonsym,  ///< Trilinos' solver interface Amesos using KLU
-      superlu,            ///< Trilinos' solver interface Amesos using SuperLU_Dist
-      belos,              ///< Belos solver
-      undefined           ///< undefined solver
-    };
+    umfpack,    ///< Amesos direct solver using UMFPACK
+    superlu,    ///< Amesos direct solver using SuperLU_Dist
+    aztec_msr,  ///< AztecOO iterative solver (outdated)
+    belos,      ///< Belos iterative solver (new package, recommended!)
+    undefined   ///< undefined solver
+  };
 
-    /// Different solvers within the Aztec2.1 and Belos library
-    enum AzSolverType
-    {
-      azsolv_CG,             ///< cg-solver
-      azsolv_GMRES,          ///< gmres-solver
-      azsolv_GMRES_CONDEST,  ///< gmres-solver with condition number estimate
-      azsolv_BiCGSTAB        ///< bicgstab-solver
-    };
+  //! Different solvers within the AztecOO and Belos library
+  enum class IterativeSolverType
+  {
+    cg,             ///< cg-solver for symmetric problems
+    gmres,          ///< gmres-solver for non-symmetric problems
+    gmres_condest,  ///< gmres-solver with condition number estimate (only with Aztec!)
+    bicgstab        ///< bicgstab-solver for non-symmetric problems with small storage
+  };
 
-    /// Different preconditioners within the Aztec package
-    // TODO: think about which of these are really needed
-    enum AzPrecType
-    {
-      azprec_none,                ///< no preconditioning
-      azprec_ILUT,                ///< incomplete LU fact. with numerical drop tolerance
-      azprec_ILU,                 ///< incomplete LU fact. with fill in levels
-      azprec_Jacobi,              ///< Jacobi preconditioning
-      azprec_Neumann,             ///< neumann polynomials
-      azprec_Least_Squares,       ///< least squares something
-      azprec_SymmGaussSeidel,     ///< symmetric n-step gauss-seidel preconditioner
-      azprec_GaussSeidel,         ///< symmetric n-step gauss-seidel preconditioner
-      azprec_LU,                  ///< ?
-      azprec_RILU,                ///< relaxed incomplete LU
-      azprec_ICC,                 ///< incomplete cholesky
-      azprec_MLfluid,             ///< ML for Fluids
-      azprec_MLfluid2,            ///< energy optimal unsymmetric ML for Fluids
-      azprec_ML,                  ///< standard ML for structures
-      azprec_BGS2x2,              ///< Block Gauss-Seidel for 2x2 system
-      azprec_CheapSIMPLE,         ///< CheapSIMPLE
-                                  ///< (BACI implementation for contact/meshtying/constraints)
-      azprec_MueLuAMG,            ///< MueLu AMG preconditioner
-      azprec_MueLuAMG_fluid,      ///< MueLu AMG preconditioner for blocked fluid problems
-      azprec_MueLuAMG_tsi,        ///< MueLu AMG preconditioner for blocked tsi problems
-      azprec_MueLuAMG_contactSP,  ///< MueLu AMG preconditioner for blocked contact problems
-      azprec_MueLuAMG_BeamSolid,  ///< MueLu AMG preconditioner for blocked bsi problems
-      azprec_AMGnxn,              ///< AMG preconditioner for a nxn block matrix
-      azprec_Chebyshev            ///< Chebyshev polynomials for preconditioning
-    };
+  //! Different preconditioners within the Aztec, ML, MueLu and Ifpack package
+  enum class PreconditionerType
+  {
+    ilu,           ///< incomplete LU factorization with fill in levels (Ifpack package)
+    icc,           ///< incomplete Cholesky factorization for symmetric problems (Ifpack package)
+    multigrid_ml,  ///< standard multigrid for structures (ML package, outdated)
+    multigrid_ml_fluid,   ///< multigrid for fluid problems (ML package, outdated)
+    multigrid_ml_fluid2,  ///< energy optimal multigrid for unsymmetric fluid problems (ML package,
+                          ///< outdated)
+    multigrid_muelu,      ///< multigrid preconditioner (MueLu package, recommended!)
+    multigrid_muelu_fluid,  ///< multigrid preconditioner for blocked fluid problems (MueLu package)
+    multigrid_muelu_tsi,    ///< multigrid preconditioner for blocked tsi problems (MueLu package)
+    multigrid_muelu_contactsp,  ///< multigrid preconditioner for blocked contact problems in saddle
+                                ///< point formulation (MueLu package)
+    multigrid_muelu_beamsolid,  ///< multigrid preconditioner for blocked beam solid interaction
+                                ///< problems (MueLu package)
+    multigrid_nxn,  ///< multigrid preconditioner for a nxn block matrix (indirectly MueLu package)
+    block_gauss_seidel_2x2,  ///< block Gauss-Seidel for 2x2 system (inhouse implementation)
+    cheap_simple             ///< CheapSIMPLE for 2x2 systems? (inhouse implementation)
+  };
 
-    /// permutation strategies for linear solvers
-    enum PermutationStrategy
-    {
-      Permutation_none,       /// < no permutation, use original linear system
-      Permutation_algebraic,  /// < use algebraic permutation strategy
-      Permutation_local       /// < use local permutations
-    };
+  //! scaling strategies for linear solvers
+  enum class ScalingStrategy
+  {
+    none,       ///< no scaling of the linear system
+    symmetric,  ///< symmetric scaling of the linear system
+    infnorm     ///< infinity-norm scaling of the linear system
+  };
 
-    /// set the parameters for the linear solver
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+  //! permutation strategies for linear solvers
+  enum class PermutationStrategy
+  {
+    none,       /// < no permutation, use original linear system
+    algebraic,  /// < use algebraic permutation strategy
+    local       /// < use local permutations
+  };
 
-  }  // namespace SOLVER
-}  // namespace INPAR
+  //! set the parameters for the linear solver
+  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-/*----------------------------------------------------------------------*/
+}  // namespace INPAR::SOLVER
 
-#endif  // #ifndef INPAR_SOLVER_H
+#endif

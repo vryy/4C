@@ -13,6 +13,7 @@
 #include <Epetra_Time.h>
 
 #include "poromultiphase_scatra_utils.H"
+#include "../drt_inpar/inpar_solver.H"
 
 // forward declarations
 namespace LINALG
@@ -78,7 +79,8 @@ namespace POROMULTIPHASESCATRA
     virtual void BuildBlockNullSpaces();
 
     //! create the linear solver
-    void CreateLinearSolver(const Teuchos::ParameterList& solverparams, const int solvertype);
+    void CreateLinearSolver(
+        const Teuchos::ParameterList& solverparams, const INPAR::SOLVER::SolverType solvertype);
 
     //! full monolithic dof row map
     Teuchos::RCP<const Epetra_Map> DofRowMap();

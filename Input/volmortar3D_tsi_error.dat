@@ -100,12 +100,10 @@ MESH_INIT                       no
 NAME                            TSI_MONOLITHIC_SOLVER
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPOLY                          3
 AZPREC                          BGS2x2
 AZREUSE                         0
 AZSCAL                          none
@@ -114,7 +112,6 @@ AZSUB                           300
 AZTOL                           1e-08
 BGS2X2_FLIPORDER                block1_block0_order
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -136,12 +133,10 @@ SOLVER                          Aztec_MSR
 NAME                            THERMAL_SOLVER
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPOLY                          3
 AZPREC                          MLFLUID2
 AZREUSE                         0
 AZSCAL                          none
@@ -149,7 +144,6 @@ AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -171,12 +165,10 @@ SOLVER                          Aztec_MSR
 NAME                            STRUCTURAL_SOLVER
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPOLY                          3
 AZPREC                          MLFLUID2
 AZREUSE                         0
 AZSCAL                          none
@@ -184,7 +176,6 @@ AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27

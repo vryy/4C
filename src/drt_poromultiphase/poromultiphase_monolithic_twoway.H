@@ -13,6 +13,7 @@
 #include "poromultiphase_monolithic.H"
 #include <Epetra_Time.h>
 
+#include "inpar_solver.H"
 #include "inpar_poromultiphase.H"
 
 // forward declarations
@@ -164,7 +165,7 @@ namespace POROMULTIPHASE
 
     //! Create the linear solver
     virtual void CreateLinearSolver(
-        const Teuchos::ParameterList& solverparams, const int solvertype);
+        const Teuchos::ParameterList& solverparams, const INPAR::SOLVER::SolverType solvertype);
 
     //! Setup Newton-Raphson
     void SetupNewton();
@@ -318,7 +319,7 @@ namespace POROMULTIPHASE
 
     //! Create the linear solver
     virtual void CreateLinearSolver(
-        const Teuchos::ParameterList& solverparams, const int solvertype);
+        const Teuchos::ParameterList& solverparams, const INPAR::SOLVER::SolverType solvertype);
 
     //! build the block null spaces
     virtual void BuildArteryBlockNullSpace(

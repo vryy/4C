@@ -119,12 +119,10 @@ NORM_RESF                       Rel  // Abs,Mix
 NAME                            Thermal_Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0  // AZ_r0,AZ_rhs,AZ_Anorm,AZ_noscaled,AZ_sol,AZ_weighted,AZ_expected_values,AZTECOO_conv_test,AZ_inf_noscaled
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPOLY                          3
 AZPREC                          MLFLUID2  // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
 AZREUSE                         0
 AZSCAL                          none  // none,sym,infnorm
@@ -132,7 +130,6 @@ AZSOLVE                         GMRES  // CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU
 AZSUB                           300
 AZTOL                           1e-08
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -154,12 +151,10 @@ SOLVER                          Aztec_MSR  // UMFPACK,Amesos_KLU_sym,Amesos_KLU_
 NAME                            Structure_Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPOLY                          3
 AZPREC                          ILU
 AZREUSE                         0
 AZSCAL                          none
@@ -167,7 +162,6 @@ AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -189,12 +183,10 @@ SOLVER                          Aztec_MSR  // Amesos_KLU_sym,Amesos_KLU_nonsym,S
 NAME                            Thermo_Structur_Interaction_Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPOLY                          3
 AZPREC                          BGS2x2  // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
 AZREUSE                         0
 AZSCAL                          none
@@ -202,7 +194,6 @@ AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27

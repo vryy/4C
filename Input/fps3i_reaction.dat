@@ -277,12 +277,10 @@ THETA                           0.9
 --------------------------------------------------------------------SOLVER 1
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPOLY                          3
 AZPREC                          BGS2x2                          // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
 AZREUSE                         0
 AZSCAL                          none
@@ -290,7 +288,6 @@ AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -311,12 +308,10 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPOLY                          3
 AZPREC                          MLFLUID2                        // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
 AZREUSE                         0
 AZSCAL                          none
@@ -324,7 +319,6 @@ AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -345,12 +339,10 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPOLY                          3
 AZPREC                          MLFLUID2                  // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
 AZREUSE                         0
 AZSCAL                          none
@@ -358,7 +350,6 @@ AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -383,8 +374,6 @@ AZOUTPUT                        0                             // output every so
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
 AZREUSE                         0                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
 AZTOL                           1.0E-7                        // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
@@ -392,7 +381,6 @@ AZITER                          1000                          // max iterations
 AZSUB                           25                            // size of krylov space for gmres
 AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
 AZGRAPH                         1                             // unused
-AZPOLY                          1                             // polynomial order for Neumann
 IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL                          none                          // none sym infnorm scaling of the system
 ML_PRINT                        0                             // ML print-out level (0-10)
@@ -416,8 +404,6 @@ AZOUTPUT                        0                             // output every so
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          BGS2x2                        // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
 AZREUSE                         0                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      2                             // fill-in for ILUT
 IFPACKGFILL                     2                             // graph fill for ILU
 AZTOL                           1.0E-07                       // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
@@ -425,7 +411,6 @@ AZITER                          1000                          // max iterations
 AZSUB                           25                            // size of krylov space for gmres
 AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
 AZGRAPH                         1                             // unused
-AZPOLY                          1                             // polynomial order for Neumann
 IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL                          infnorm                       // none sym infnorm scaling of the system
 ----------------------------------------------------------MATERIALS

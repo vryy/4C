@@ -140,16 +140,12 @@ void LINALG::SOLVER::DirectSolver<MatrixType, VectorType>::Setup(Teuchos::RCP<Ma
 
     reindexer_ = Teuchos::rcp(new EpetraExt::LinearProblem_Reindex2(NULL));
 
-    if (solvertype_ == "klu")
-    {
-      amesos_ = Teuchos::rcp(new Amesos_Klu((*reindexer_)(*lp_)));
-    }
-    else if (solvertype_ == "umfpack")
+    if (solvertype_ == "umfpack")
     {
 #ifdef HAVE_AMESOS_UMFPACK
       amesos_ = Teuchos::rcp(new Amesos_Umfpack((*reindexer_)(*lp_)));
 #else
-      dserror("no umfpack here");
+      dserror("UMFPACK was chosen as linear solver, but is not available in the configuration!");
 #endif
     }
     else if (solvertype_ == "superlu")
@@ -157,17 +153,12 @@ void LINALG::SOLVER::DirectSolver<MatrixType, VectorType>::Setup(Teuchos::RCP<Ma
 #ifdef HAVE_AMESOS_SUPERLUDIST
       amesos_ = Teuchos::rcp(new Amesos_Superludist((*reindexer_)(*lp_)));
 #else
-      Teuchos::RCP<Teuchos::FancyOStream> fos =
-          Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-      fos->setOutputToRootOnly(0);
-      *fos << "Warning: No SuperLU_dist available. Linear system will be solved with KLU instead..."
-           << std::endl;
-      amesos_ = Teuchos::rcp(new Amesos_Klu((*reindexer_)(*lp_)));
+      dserror("Superlu was chosen as linear solver, but is not available in the configuration!");
 #endif
     }
-    else if (solvertype_ == "lapack")
+    else
     {
-      amesos_ = Teuchos::rcp(new Amesos_Lapack((*reindexer_)(*lp_)));
+      dserror("UMFPACK or Superlu have to be available to use a direct linear solver.");
     }
 
     factored_ = false;

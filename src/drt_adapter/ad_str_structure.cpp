@@ -567,15 +567,15 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
        * Solver can be either a direct solver (UMFPACK, Superlu) or an iterative solver
        * (Aztec_MSR/Belos).
        */
-      INPAR::SOLVER::SolverType sol = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
+      const auto sol = Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(
           DRT::Problem::Instance()->SolverParams(linsolvernumber), "SOLVER");
-      INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
+      const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
           DRT::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
-      if (sol != INPAR::SOLVER::umfpack && sol != INPAR::SOLVER::superlu)
+      if (sol != INPAR::SOLVER::SolverType::umfpack && sol != INPAR::SOLVER::SolverType::superlu)
       {
         // if an iterative solver is chosen we need a block preconditioner
-        if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
-            prec != INPAR::SOLVER::azprec_MueLuAMG_contactSP)
+        if (prec != INPAR::SOLVER::PreconditionerType::cheap_simple &&
+            prec != INPAR::SOLVER::PreconditionerType::multigrid_muelu_contactsp)
           dserror(
               "You have chosen an iterative linear solver. For mortar meshtying/contact problems "
               "in saddle-point formulation, a block preconditioner is required. Choose an "
@@ -615,14 +615,14 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
               "STRUCTURAL DYNAMIC to a valid number!");
 
         // provide null space information
-        if (prec == INPAR::SOLVER::azprec_CheapSIMPLE)
+        if (prec == INPAR::SOLVER::PreconditionerType::cheap_simple)
         {
           actdis->ComputeNullSpaceIfNecessary(
               solver->Params()
                   .sublist("CheapSIMPLE Parameters")
                   .sublist("Inverse1"));  // Inverse2 is created within blockpreconditioners.cpp
         }
-        else if (prec == INPAR::SOLVER::azprec_MueLuAMG_contactSP)
+        else if (prec == INPAR::SOLVER::PreconditionerType::multigrid_muelu_contactsp)
         { /* do nothing here */
         }
       }

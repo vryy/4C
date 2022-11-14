@@ -59,15 +59,12 @@ LINEAR_SOLVER                   2                             // constraint simp
 NAME                            Contact LINEAR solver (used for constraint simpler)
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      2
 IFPACKGFILL                     2
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
 IFPACKOVERLAP                   0
-AZPOLY                          3
 AZPREC                          CheapSIMPLE
 AZREUSE                         0
 AZSCAL                          none
@@ -95,15 +92,12 @@ SUB_SOLVER2                     3
 NAME Struct Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      2
 IFPACKGFILL                     2
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
 IFPACKOVERLAP                   0
-AZPOLY                          3
 AZPREC                          ML                            // ML
 AZREUSE                         0
 AZSCAL                          none
@@ -129,15 +123,12 @@ SOLVER                          Aztec_MSR
 NAME                            Contact SIMPLER solver (used for constraint simpler)
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      1
 IFPACKGFILL                     0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
 IFPACKOVERLAP                   0
-AZPOLY                          3
 AZPREC                          ILU
 AZREUSE                         0
 AZSCAL                          none
@@ -163,15 +154,12 @@ SOLVER                          Aztec_MSR
 NAME                            SIMPLE_predict
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      2
 IFPACKGFILL                     2
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
 IFPACKOVERLAP                   0
-AZPOLY                          3
 AZPREC ILU //ML
 AZREUSE                         0
 AZSCAL                          none

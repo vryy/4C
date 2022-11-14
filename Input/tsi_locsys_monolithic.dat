@@ -126,12 +126,10 @@ TOLINC                          1e-08
 --------------------------------------------------------------------SOLVER 3
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPOLY                          3
 AZPREC                          BGS2x2  // BGSnxn,ILU
 AZREUSE                         0
 AZSCAL                          none
@@ -140,7 +138,6 @@ AZSUB                           300
 AZTOL                           1e-06  // 1e-08
 BGS2X2_FLIPORDER                block1_block0_order  // ThrStr, StrThr:block0_block1_order
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27

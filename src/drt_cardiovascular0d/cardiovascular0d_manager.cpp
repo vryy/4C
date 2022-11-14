@@ -1067,11 +1067,11 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<LINALG::SparseMatrix> mat
       break;
     case INPAR::CARDIOVASCULAR0D::cardvasc0dsolve_simple:
     {
-      INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
+      const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
           DRT::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
       switch (prec)
       {
-        case INPAR::SOLVER::azprec_CheapSIMPLE:
+        case INPAR::SOLVER::PreconditionerType::cheap_simple:
         {
           // add Inverse1 block for "velocity" dofs
           // tell Inverse1 block about NodalBlockInformation

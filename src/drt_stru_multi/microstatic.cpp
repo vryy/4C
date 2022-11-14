@@ -1057,8 +1057,8 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6, 1>* stress,
     const Teuchos::ParameterList& solverparams =
         DRT::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber);
 
-    const int solvertype =
-        DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
+    const auto solvertype =
+        Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
     // create solver
     Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(
@@ -1072,14 +1072,14 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6, 1>* stress,
 
     switch (solvertype)
     {
-      case INPAR::SOLVER::belos:
+      case INPAR::SOLVER::SolverType::belos:
       {
         // solve for 9 rhs at the same time --> thanks to Belos
         solver->Solve(stiff_->EpetraOperator(), iterinc, rhs_, true, true);
         break;
       }
-      case INPAR::SOLVER::aztec_msr:
-      case INPAR::SOLVER::superlu:
+      case INPAR::SOLVER::SolverType::aztec_msr:
+      case INPAR::SOLVER::SolverType::superlu:
       {
         // solve for 9 rhs iteratively
         for (int i = 0; i < rhs_->NumVectors(); i++)

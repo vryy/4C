@@ -72,15 +72,12 @@ AZOUTPUT                        0                             // output every so
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         0                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
 AZTOL                           1.0E-8                        // tolerance in unscaled residual
 AZITER                          1500                          // max iterations
 AZSUB                           50                            // size of krylov space for gmres
 AZOMEGA                         1.0                           // unused
 AZGRAPH                         1                             // unused
-AZPOLY                          5                             // polynomial order for Neumann
 IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL                          none                          // none sym infnorm scaling of the system
 AZCONV                          AZ_r0

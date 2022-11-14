@@ -589,9 +589,9 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
       const Teuchos::RCP<LINALG::Solver>& solver = scatra_->Solver();
 
       const int linsolvernumber = scatradyn->get<int>("LINEAR_SOLVER");
-      auto prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
+      const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
           DRT::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
-      if (prec != INPAR::SOLVER::azprec_CheapSIMPLE)  // TODO adapt error message
+      if (prec != INPAR::SOLVER::PreconditionerType::cheap_simple)  // TODO adapt error message
       {
         dserror(
             "If SIMPLER flag is set to YES you can only use CheapSIMPLE as preconditioner in your "

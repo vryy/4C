@@ -123,12 +123,10 @@ CONVTOL                         1e-06
 NAME                            Thermal_Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0   // AZ_r0,AZ_rhs,AZ_Anorm,AZ_noscaled,AZ_sol,AZ_weighted,AZ_expected_values,AZTECOO_conv_test,AZ_inf_noscaled
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPOLY                          3
 AZPREC                          MLFLUID2  // ML,ILU
 AZREUSE                         0
 AZSCAL                          none  // none,sym,infnorm
@@ -136,7 +134,6 @@ AZSOLVE                         GMRES_CONDEST  // CG,GMRES,GMRESR,CGS,TFQMR,BiCG
 AZSUB                           300
 AZTOL                           1e-08
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -159,12 +156,10 @@ SOLVER                          Aztec_MSR  // UMFPACK,undefined
 NAME                            Structure_Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPOLY                          3
 AZPREC                          MLFLUID2  // ML,ILU
 AZREUSE                         0
 AZSCAL                          none
@@ -172,7 +167,6 @@ AZSOLVE                         GMRES_CONDEST
 AZSUB                           300
 AZTOL                           1e-08
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -195,12 +189,10 @@ SOLVER                          Aztec_MSR  // UMFPACK
 NAME                            Thermo_Structure_Interaction_Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0  // 10// print every 10th step
-AZPOLY                          3
 AZPREC                          BGS2x2  // BGSnxn,ILU
 AZREUSE                         0
 AZSCAL                          none
@@ -209,7 +201,6 @@ AZSUB                           300
 AZTOL                           1e-06
 BGS2X2_FLIPORDER                block1_block0_order  // block0_block1_order,block1_block0_order
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
