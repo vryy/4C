@@ -8,7 +8,6 @@ function(deprecated_baci_add_library_linked_with_everything target)
   list(REMOVE_ITEM _baci_libraries_local_copy ${target})
   # Allow usage of all internal libraries
   target_link_libraries(${target} PUBLIC ${_baci_libraries_local_copy})
-  message(STATUS "Dependencies for ${target}: ${_baci_libraries_local_copy}")
 
   # determine all folders that are used as sources for this library
   foreach(source_file ${ARGN})
@@ -16,7 +15,6 @@ function(deprecated_baci_add_library_linked_with_everything target)
     list(APPEND include_dirs ${PROJECT_SOURCE_DIR}/${_path})
   endforeach()
   list(REMOVE_DUPLICATES include_dirs)
-  message(STATUS "Include dirs for ${target}: ${include_dirs}")
 
   # use these as include directories
   # N.B. due to the legacy linking to all other targets their includes become available as well
