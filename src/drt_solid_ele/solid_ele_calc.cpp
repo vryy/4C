@@ -30,6 +30,18 @@
 
 namespace
 {
+  template <DRT::Element::DiscretizationType distype>
+  inline static constexpr int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+  template <DRT::Element::DiscretizationType distype>
+  inline static constexpr int nsd = DRT::UTILS::DisTypeToDim<distype>::dim;
+
+  template <DRT::Element::DiscretizationType distype>
+  inline static constexpr int numstr = nsd<distype>*(nsd<distype> + 1) / 2;
+
+  template <DRT::Element::DiscretizationType distype>
+  inline static constexpr int numdofperelement = nen<distype>* nsd<distype>;
+
   std::vector<char>& GetMutableStressData(
       const DRT::ELEMENTS::Solid& ele, const Teuchos::ParameterList& params)
   {
@@ -82,56 +94,31 @@ namespace
     }
   }
 
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DRT::UTILS::DisTypeToDim<distype>::dim == 3, int> = 0>
-  constexpr DRT::UTILS::GaussRule3D GetGaussRuleMassMatrix()
+  template <DRT::Element::DiscretizationType distype>
+  constexpr auto GetGaussRuleMassMatrix()
   {
     return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
   }
 
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DRT::UTILS::DisTypeToDim<distype>::dim == 2, int> = 0>
-  constexpr DRT::UTILS::GaussRule2D GetGaussRuleMassMatrix()
+  template <DRT::Element::DiscretizationType distype>
+  constexpr auto GetGaussRuleStiffnessMatrix()
   {
     return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
   }
 
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DRT::UTILS::DisTypeToDim<distype>::dim == 1, int> = 0>
-  constexpr DRT::UTILS::GaussRule1D GetGaussRuleMassMatrix()
+  template <>
+  constexpr auto GetGaussRuleStiffnessMatrix<DRT::Element::DiscretizationType::tet10>()
   {
-    return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
+    return DRT::UTILS::GaussRule3D::tet_4point;
   }
 
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DRT::UTILS::DisTypeToDim<distype>::dim == 3, int> = 0>
-  constexpr DRT::UTILS::GaussRule3D GetGaussRuleStiffnessMatrix()
+  template <>
+  constexpr auto GetGaussRuleStiffnessMatrix<DRT::Element::DiscretizationType::tet4>()
   {
-    if constexpr (distype == DRT::Element::DiscretizationType::tet10)
-    {
-      return DRT::UTILS::GaussRule3D::tet_4point;
-    }
-    else if (distype == DRT::Element::DiscretizationType::tet4)
-    {
-      return DRT::UTILS::GaussRule3D::tet_1point;
-    }
-    return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
+    return DRT::UTILS::GaussRule3D::tet_1point;
   }
 
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DRT::UTILS::DisTypeToDim<distype>::dim == 2, int> = 0>
-  constexpr DRT::UTILS::GaussRule2D GetGaussRuleStiffnessMatrix()
-  {
-    // TODO: Do we need sth special for triangles?
-    return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
-  }
-
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DRT::UTILS::DisTypeToDim<distype>::dim == 1, int> = 0>
-  constexpr DRT::UTILS::GaussRule1D GetGaussRuleStiffnessMatrix()
-  {
-    return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
-  }
+  // TODO: What about the stiffness matrix of tri-elements?
 
   template <DRT::Element::DiscretizationType distype, typename GaussRuleType>
   DRT::UTILS::GaussIntegration CreateGaussIntegration(GaussRuleType rule)
@@ -188,15 +175,13 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
     Epetra_SerialDenseVector* force_vector, Epetra_SerialDenseMatrix* stiffness_matrix,
     Epetra_SerialDenseMatrix* mass_matrix)
 {
-  std::unique_ptr<LINALG::Matrix<nsd_ * nen_, nsd_* nen_>> stiff = nullptr;
-  std::unique_ptr<LINALG::Matrix<nsd_ * nen_, nsd_* nen_>> mass = nullptr;
-  std::unique_ptr<LINALG::Matrix<nsd_ * nen_, 1>> force = nullptr;
-  if (stiffness_matrix != nullptr)
-    stiff = std::make_unique<LINALG::Matrix<nsd_ * nen_, nsd_ * nen_>>(*stiffness_matrix, true);
-  if (mass_matrix != nullptr)
-    mass = std::make_unique<LINALG::Matrix<nsd_ * nen_, nsd_ * nen_>>(*mass_matrix, true);
-  if (force_vector != nullptr)
-    force = std::make_unique<LINALG::Matrix<nsd_ * nen_, 1>>(*force_vector, true);
+  // Create views to SerialDenseMatrices
+  std::optional<LINALG::Matrix<nsd_ * nen_, nsd_* nen_>> stiff = {};
+  std::optional<LINALG::Matrix<nsd_ * nen_, nsd_* nen_>> mass = {};
+  std::optional<LINALG::Matrix<nsd_ * nen_, 1>> force = {};
+  if (stiffness_matrix != nullptr) stiff.emplace(*stiffness_matrix, true);
+  if (mass_matrix != nullptr) mass.emplace(*mass_matrix, true);
+  if (force_vector != nullptr) force.emplace(*force_vector, true);
 
   const NodalCoordinates<distype> nodal_coordinates =
       EvaluateNodalCoordinates<distype>(ele, discretization, lm);
@@ -227,16 +212,16 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
     const Stress<distype> stress =
         EvaluateMaterialStress(*ele.SolidMaterial(), strains, params, gp, ele.Id());
 
-    if (force != nullptr)
+    if (force.has_value())
       AddInternalForceVector(Bop, stress, jacobian_mapping.integration_factor_, *force);
 
-    if (stiff != nullptr)
+    if (stiff.has_value())
     {
       AddElasticStiffnessMatrix(Bop, stress, jacobian_mapping.integration_factor_, *stiff);
       AddGeometricStiffnessMatrix(jacobian_mapping, stress, *stiff);
     }
 
-    if (mass != nullptr)
+    if (mass.has_value())
     {
       if (equal_integration_mass_stiffness)
       {
@@ -251,7 +236,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
     }
   }
 
-  if (mass != nullptr && !equal_integration_mass_stiffness)
+  if (mass.has_value() && !equal_integration_mass_stiffness)
   {  // integrate mass matrix
     dsassert(mean_density > 0, "It looks like the density is 0.0");
     for (int gp = 0; gp < mass_matrix_integration_.NumPoints(); ++gp)

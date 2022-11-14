@@ -20,7 +20,7 @@
 #include "voigt_notation.H"
 
 
-namespace
+namespace DRT::ELEMENTS::DETAIL
 {
   template <DRT::Element::DiscretizationType distype>
   inline static constexpr int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -33,15 +33,15 @@ namespace
 
   template <DRT::Element::DiscretizationType distype>
   inline static constexpr int numdofperelement = nen<distype>* nsd<distype>;
-}  // namespace
+}  // namespace DRT::ELEMENTS::DETAIL
 
 namespace DRT::ELEMENTS
 {
   template <DRT::Element::DiscretizationType distype>
   struct NodalCoordinates
   {
-    LINALG::Matrix<nen<distype>, nsd<distype>> reference_;
-    LINALG::Matrix<nen<distype>, nsd<distype>> current_;
+    LINALG::Matrix<DETAIL::nen<distype>, DETAIL::nsd<distype>> reference_;
+    LINALG::Matrix<DETAIL::nen<distype>, DETAIL::nsd<distype>> current_;
   };
 
   template <DRT::Element::DiscretizationType distype>
@@ -53,12 +53,13 @@ namespace DRT::ELEMENTS
     DRT::UTILS::ExtractMyValues(displacements, mydisp, lm);
 
     NodalCoordinates<distype> coordinates;
-    for (int i = 0; i < nen<distype>; ++i)
+    for (int i = 0; i < DETAIL::nen<distype>; ++i)
     {
-      for (int d = 0; d < nsd<distype>; ++d)
+      for (int d = 0; d < DETAIL::nsd<distype>; ++d)
       {
         coordinates.reference_(i, d) = ele.Nodes()[i]->X()[d];
-        coordinates.current_(i, d) = coordinates.reference_(i, d) + mydisp[i * nsd<distype> + d];
+        coordinates.current_(i, d) =
+            coordinates.reference_(i, d) + mydisp[i * DETAIL::nsd<distype> + d];
       }
     }
 
@@ -74,11 +75,11 @@ namespace DRT::ELEMENTS
    * @return LINALG::Matrix<nsd<distype>, 1> : Coordinates of the Gauss Point in the parameter space
    */
   template <DRT::Element::DiscretizationType distype>
-  LINALG::Matrix<nsd<distype>, 1> EvaluateParameterCoordinate(
+  LINALG::Matrix<DETAIL::nsd<distype>, 1> EvaluateParameterCoordinate(
       const DRT::UTILS::GaussIntegration& intpoints, const int gp)
   {
-    LINALG::Matrix<nsd<distype>, 1> xi;
-    for (int d = 0; d < nsd<distype>; ++d) xi(d) = intpoints.Point(gp)[d];
+    LINALG::Matrix<DETAIL::nsd<distype>, 1> xi;
+    for (int d = 0; d < DETAIL::nsd<distype>; ++d) xi(d) = intpoints.Point(gp)[d];
 
     return xi;
   }
@@ -86,8 +87,8 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype>
   struct ShapeFunctionsAndDerivatives
   {
-    LINALG::Matrix<nen<distype>, 1> shapefunctions_;
-    LINALG::Matrix<nsd<distype>, nen<distype>> derivatives_;
+    LINALG::Matrix<DETAIL::nen<distype>, 1> shapefunctions_;
+    LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nen<distype>> derivatives_;
   };
 
   /*!
@@ -101,7 +102,7 @@ namespace DRT::ELEMENTS
    */
   template <DRT::Element::DiscretizationType distype>
   ShapeFunctionsAndDerivatives<distype> EvaluateShapeFunctionsAndDerivs(
-      const LINALG::Matrix<nsd<distype>, 1>& xi)
+      const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi)
   {
     ShapeFunctionsAndDerivatives<distype> shapefcns;
     DRT::UTILS::shape_function<distype>(xi, shapefcns.shapefunctions_);
@@ -114,8 +115,8 @@ namespace DRT::ELEMENTS
   struct JacobianMapping
   {
     double determinant_;
-    LINALG::Matrix<nsd<distype>, nsd<distype>> inverse_jacobian_;
-    LINALG::Matrix<nsd<distype>, nen<distype>> n_xyz_;
+    LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> inverse_jacobian_;
+    LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nen<distype>> n_xyz_;
     double integration_factor_;
   };
 
@@ -152,7 +153,7 @@ namespace DRT::ELEMENTS
   double EvaluateJacobianDeterminant(const ShapeFunctionsAndDerivatives<distype>& shapefcns,
       const NodalCoordinates<distype>& nodal_coordniates)
   {
-    LINALG::Matrix<nsd<distype>, nsd<distype>> jacobian;
+    LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> jacobian;
     jacobian.Multiply(shapefcns.derivatives_, nodal_coordniates.reference_);
 
     return jacobian.Determinant();
@@ -161,9 +162,9 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype>
   struct Strains
   {
-    LINALG::Matrix<nsd<distype>, nsd<distype>> defgrd_;
-    LINALG::Matrix<nsd<distype>, nsd<distype>> rcg_;
-    LINALG::Matrix<numstr<distype>, 1> gl_strain_;
+    LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> defgrd_;
+    LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> rcg_;
+    LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain_;
   };
 
   /*!
@@ -175,7 +176,8 @@ namespace DRT::ELEMENTS
    * @return Strains<distype> (out) : Strain measures of the element (deformation gradient, right
    * Cauchy-Green deformation tensor, Green-Lagrange strain tensor)
    */
-  template <DRT::Element::DiscretizationType distype, std::enable_if_t<nsd<distype> == 3, int> = 0>
+  template <DRT::Element::DiscretizationType distype,
+      std::enable_if_t<DETAIL::nsd<distype> == 3, int> = 0>
   Strains<distype> EvaluateStrains(const NodalCoordinates<distype>& nodal_coordinates,
       const JacobianMapping<distype>& jacobian_mapping)
   {
@@ -204,37 +206,40 @@ namespace DRT::ELEMENTS
    * @param strains (in) : Strain measures of the element
    * @return LINALG::Matrix<numstr<distype>, nsd<distype> * nen<distype>> : B-Operator
    */
-  template <DRT::Element::DiscretizationType distype, std::enable_if_t<nsd<distype> == 3, int> = 0>
-  LINALG::Matrix<numstr<distype>, nsd<distype> * nen<distype>> EvaluateStrainGradient(
+  template <DRT::Element::DiscretizationType distype,
+      std::enable_if_t<DETAIL::nsd<distype> == 3, int> = 0>
+  LINALG::Matrix<DETAIL::numstr<distype>, DETAIL::nsd<distype> * DETAIL::nen<distype>>
+  EvaluateStrainGradient(
       const JacobianMapping<distype>& jacobian_mapping, const Strains<distype>& strains)
   {
     // B-operator
-    LINALG::Matrix<numstr<distype>, nsd<distype> * nen<distype>> Bop;
-    for (int i = 0; i < nen<distype>; ++i)
+    LINALG::Matrix<DETAIL::numstr<distype>, DETAIL::nsd<distype> * DETAIL::nen<distype>> Bop;
+    for (int i = 0; i < DETAIL::nen<distype>; ++i)
     {
-      for (int d = 0; d < nsd<distype>; ++d)
-        for (int e = 0; e < nsd<distype>; ++e)
-          Bop(d, nsd<distype> * i + e) = strains.defgrd_(e, d) * jacobian_mapping.n_xyz_(d, i);
+      for (int d = 0; d < DETAIL::nsd<distype>; ++d)
+        for (int e = 0; e < DETAIL::nsd<distype>; ++e)
+          Bop(d, DETAIL::nsd<distype> * i + e) =
+              strains.defgrd_(e, d) * jacobian_mapping.n_xyz_(d, i);
 
       // TODO: make this work for 2D
-      Bop(3, nsd<distype> * i + 0) = strains.defgrd_(0, 0) * jacobian_mapping.n_xyz_(1, i) +
-                                     strains.defgrd_(0, 1) * jacobian_mapping.n_xyz_(0, i);
-      Bop(3, nsd<distype> * i + 1) = strains.defgrd_(1, 0) * jacobian_mapping.n_xyz_(1, i) +
-                                     strains.defgrd_(1, 1) * jacobian_mapping.n_xyz_(0, i);
-      Bop(3, nsd<distype> * i + 2) = strains.defgrd_(2, 0) * jacobian_mapping.n_xyz_(1, i) +
-                                     strains.defgrd_(2, 1) * jacobian_mapping.n_xyz_(0, i);
-      Bop(4, nsd<distype> * i + 0) = strains.defgrd_(0, 1) * jacobian_mapping.n_xyz_(2, i) +
-                                     strains.defgrd_(0, 2) * jacobian_mapping.n_xyz_(1, i);
-      Bop(4, nsd<distype> * i + 1) = strains.defgrd_(1, 1) * jacobian_mapping.n_xyz_(2, i) +
-                                     strains.defgrd_(1, 2) * jacobian_mapping.n_xyz_(1, i);
-      Bop(4, nsd<distype> * i + 2) = strains.defgrd_(2, 1) * jacobian_mapping.n_xyz_(2, i) +
-                                     strains.defgrd_(2, 2) * jacobian_mapping.n_xyz_(1, i);
-      Bop(5, nsd<distype> * i + 0) = strains.defgrd_(0, 2) * jacobian_mapping.n_xyz_(0, i) +
-                                     strains.defgrd_(0, 0) * jacobian_mapping.n_xyz_(2, i);
-      Bop(5, nsd<distype> * i + 1) = strains.defgrd_(1, 2) * jacobian_mapping.n_xyz_(0, i) +
-                                     strains.defgrd_(1, 0) * jacobian_mapping.n_xyz_(2, i);
-      Bop(5, nsd<distype> * i + 2) = strains.defgrd_(2, 2) * jacobian_mapping.n_xyz_(0, i) +
-                                     strains.defgrd_(2, 0) * jacobian_mapping.n_xyz_(2, i);
+      Bop(3, DETAIL::nsd<distype> * i + 0) = strains.defgrd_(0, 0) * jacobian_mapping.n_xyz_(1, i) +
+                                             strains.defgrd_(0, 1) * jacobian_mapping.n_xyz_(0, i);
+      Bop(3, DETAIL::nsd<distype> * i + 1) = strains.defgrd_(1, 0) * jacobian_mapping.n_xyz_(1, i) +
+                                             strains.defgrd_(1, 1) * jacobian_mapping.n_xyz_(0, i);
+      Bop(3, DETAIL::nsd<distype> * i + 2) = strains.defgrd_(2, 0) * jacobian_mapping.n_xyz_(1, i) +
+                                             strains.defgrd_(2, 1) * jacobian_mapping.n_xyz_(0, i);
+      Bop(4, DETAIL::nsd<distype> * i + 0) = strains.defgrd_(0, 1) * jacobian_mapping.n_xyz_(2, i) +
+                                             strains.defgrd_(0, 2) * jacobian_mapping.n_xyz_(1, i);
+      Bop(4, DETAIL::nsd<distype> * i + 1) = strains.defgrd_(1, 1) * jacobian_mapping.n_xyz_(2, i) +
+                                             strains.defgrd_(1, 2) * jacobian_mapping.n_xyz_(1, i);
+      Bop(4, DETAIL::nsd<distype> * i + 2) = strains.defgrd_(2, 1) * jacobian_mapping.n_xyz_(2, i) +
+                                             strains.defgrd_(2, 2) * jacobian_mapping.n_xyz_(1, i);
+      Bop(5, DETAIL::nsd<distype> * i + 0) = strains.defgrd_(0, 2) * jacobian_mapping.n_xyz_(0, i) +
+                                             strains.defgrd_(0, 0) * jacobian_mapping.n_xyz_(2, i);
+      Bop(5, DETAIL::nsd<distype> * i + 1) = strains.defgrd_(1, 2) * jacobian_mapping.n_xyz_(0, i) +
+                                             strains.defgrd_(1, 0) * jacobian_mapping.n_xyz_(2, i);
+      Bop(5, DETAIL::nsd<distype> * i + 2) = strains.defgrd_(2, 2) * jacobian_mapping.n_xyz_(0, i) +
+                                             strains.defgrd_(2, 0) * jacobian_mapping.n_xyz_(2, i);
     }
 
     return Bop;
@@ -243,8 +248,8 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype>
   struct Stress
   {
-    LINALG::Matrix<numstr<distype>, 1> pk2_;
-    LINALG::Matrix<numstr<distype>, numstr<distype>> cmat_;
+    LINALG::Matrix<DETAIL::numstr<distype>, 1> pk2_;
+    LINALG::Matrix<DETAIL::numstr<distype>, DETAIL::numstr<distype>> cmat_;
   };
 
   /*!
@@ -284,9 +289,10 @@ namespace DRT::ELEMENTS
    */
   template <DRT::Element::DiscretizationType distype>
   void AddInternalForceVector(
-      const LINALG::Matrix<numstr<distype>, nsd<distype> * nen<distype>>& Bop,
+      const LINALG::Matrix<DETAIL::numstr<distype>, DETAIL::nsd<distype> * DETAIL::nen<distype>>&
+          Bop,
       const Stress<distype> stress, const double integration_fac,
-      LINALG::Matrix<nsd<distype> * nen<distype>, 1>& force_vector)
+      LINALG::Matrix<DETAIL::nsd<distype> * DETAIL::nen<distype>, 1>& force_vector)
   {
     force_vector.MultiplyTN(integration_fac, Bop, stress.pk2_, 1.);
   }
@@ -303,11 +309,13 @@ namespace DRT::ELEMENTS
    */
   template <DRT::Element::DiscretizationType distype>
   void AddElasticStiffnessMatrix(
-      const LINALG::Matrix<numstr<distype>, nsd<distype> * nen<distype>>& Bop,
+      const LINALG::Matrix<DETAIL::numstr<distype>, DETAIL::nsd<distype> * DETAIL::nen<distype>>&
+          Bop,
       const Stress<distype> stress, const double integration_fac,
-      LINALG::Matrix<nsd<distype> * nen<distype>, nsd<distype> * nen<distype>>& stiffness_matrix)
+      LINALG::Matrix<DETAIL::nsd<distype> * DETAIL::nen<distype>,
+          DETAIL::nsd<distype> * DETAIL::nen<distype>>& stiffness_matrix)
   {
-    LINALG::Matrix<numstr<distype>, nen<distype> * nsd<distype>> cb;
+    LINALG::Matrix<DETAIL::numstr<distype>, DETAIL::nen<distype> * DETAIL::nsd<distype>> cb;
     cb.Multiply(stress.cmat_, Bop);
     stiffness_matrix.MultiplyTN(integration_fac, Bop, cb, 1.0);
   }
@@ -323,11 +331,12 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype>
   void AddGeometricStiffnessMatrix(const JacobianMapping<distype>& jacobian_mapping,
       const Stress<distype> stress,
-      LINALG::Matrix<nsd<distype> * nen<distype>, nsd<distype> * nen<distype>>& stiffness_matrix)
+      LINALG::Matrix<DETAIL::nsd<distype> * DETAIL::nen<distype>,
+          DETAIL::nsd<distype> * DETAIL::nen<distype>>& stiffness_matrix)
   {
     std::array<double, 3> SmB_L;  // intermediate Sm.B_L
     // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
-    for (int inod = 0; inod < nen<distype>; ++inod)
+    for (int inod = 0; inod < DETAIL::nen<distype>; ++inod)
     {
       SmB_L[0] = stress.pk2_(0) * jacobian_mapping.n_xyz_(0, inod) +
                  stress.pk2_(3) * jacobian_mapping.n_xyz_(1, inod) +
@@ -339,14 +348,14 @@ namespace DRT::ELEMENTS
                  stress.pk2_(4) * jacobian_mapping.n_xyz_(1, inod) +
                  stress.pk2_(2) * jacobian_mapping.n_xyz_(2, inod);
 
-      for (int jnod = 0; jnod < nen<distype>; ++jnod)
+      for (int jnod = 0; jnod < DETAIL::nen<distype>; ++jnod)
       {
         double bopstrbop = 0.0;  // intermediate value
-        for (int idim = 0; idim < nsd<distype>; ++idim)
+        for (int idim = 0; idim < DETAIL::nsd<distype>; ++idim)
           bopstrbop += jacobian_mapping.n_xyz_(idim, jnod) * SmB_L[idim];
 
-        for (int d = 0; d < nsd<distype>; ++d)
-          stiffness_matrix(nsd<distype> * inod + d, nsd<distype> * jnod + d) +=
+        for (int d = 0; d < DETAIL::nsd<distype>; ++d)
+          stiffness_matrix(DETAIL::nsd<distype> * inod + d, DETAIL::nsd<distype> * jnod + d) +=
               jacobian_mapping.integration_factor_ * bopstrbop;
       }
     }
@@ -366,17 +375,18 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype>
   void AddMassMatrix(const ShapeFunctionsAndDerivatives<distype>& shapefunctions,
       const double integration_factor, const double density,
-      LINALG::Matrix<nsd<distype> * nen<distype>, nsd<distype> * nen<distype>>& mass)
+      LINALG::Matrix<DETAIL::nsd<distype> * DETAIL::nen<distype>,
+          DETAIL::nsd<distype> * DETAIL::nen<distype>>& mass)
   {
-    for (int inod = 0; inod < nen<distype>; ++inod)
+    for (int inod = 0; inod < DETAIL::nen<distype>; ++inod)
     {
       const double ifactor = shapefunctions.shapefunctions_(inod) * integration_factor * density;
-      for (int jnod = 0; jnod < nen<distype>; ++jnod)
+      for (int jnod = 0; jnod < DETAIL::nen<distype>; ++jnod)
       {
         const double massfactor =
             shapefunctions.shapefunctions_(jnod) * ifactor;  // intermediate factor
-        for (int d = 0; d < nsd<distype>; ++d)
-          mass(nsd<distype> * inod + d, nsd<distype> * jnod + d) += massfactor;
+        for (int d = 0; d < DETAIL::nsd<distype>; ++d)
+          mass(DETAIL::nsd<distype> * inod + d, DETAIL::nsd<distype> * jnod + d) += massfactor;
       }
     }
   }
@@ -396,16 +406,16 @@ namespace DRT::ELEMENTS
     {
       case INPAR::STR::strain_gl:
       {
-        LINALG::Matrix<numstr<distype>, 1> gl_strain_stress_like;
+        LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain_stress_like;
         ::UTILS::VOIGT::Strains::ToStressLike(strains.gl_strain_, gl_strain_stress_like);
         AssembleVectorToMatrixRow(gl_strain_stress_like, data, row);
         return;
       }
       case INPAR::STR::strain_ea:
       {
-        const LINALG::Matrix<numstr<distype>, 1> ea =
+        const LINALG::Matrix<DETAIL::numstr<distype>, 1> ea =
             STR::UTILS::GreenLagrangeToEulerAlmansi(strains.gl_strain_, strains.defgrd_);
-        LINALG::Matrix<numstr<distype>, 1> ea_stress_like;
+        LINALG::Matrix<DETAIL::numstr<distype>, 1> ea_stress_like;
         ::UTILS::VOIGT::Strains::ToStressLike(ea, ea_stress_like);
         AssembleVectorToMatrixRow(ea_stress_like, data, row);
         return;
@@ -432,7 +442,7 @@ namespace DRT::ELEMENTS
       }
       case INPAR::STR::stress_cauchy:
       {
-        LINALG::Matrix<numstr<distype>, 1> cauchy;
+        LINALG::Matrix<DETAIL::numstr<distype>, 1> cauchy;
         STR::UTILS::Pk2ToCauchy(stress.pk2_, strains.defgrd_, cauchy);
         AssembleVectorToMatrixRow(cauchy, data, row);
         return;
