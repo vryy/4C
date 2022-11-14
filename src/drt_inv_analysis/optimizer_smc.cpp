@@ -9,26 +9,20 @@
 
 #include "optimizer_smc.H"
 
+#include "invana_base.H"
+#include "initial_guess.H"
+#include "invana_utils.H"
+#include "likelihood_evaluation.H"
+#include "matpar_manager.H"
+#include "objective_funct.H"
 #include "particle_group.H"
 #include "particle_comm.H"
 #include "particle_data.H"
-#include "invana_base.H"
-#include "objective_funct.H"
-#include "likelihood_evaluation.H"
-#include "matpar_manager.H"
-#include "invana_utils.H"
-#include "initial_guess.H"
-
 #include "drt_globalproblem.H"
-#include "comm_utils.H"
-#include "drt_dserror.H"
-#include "timintmstep.H"
-#include "io.H"
 #include "io_control.H"
 #include "linalg_utils_sparse_algebra_math.H"
 
 #include "Epetra_CrsMatrix.h"
-#include "DcsMatrix.H"
 
 #include "math.h"
 #include <string>
@@ -92,10 +86,6 @@ void INVANA::OptimizerSMC::SetupParticles()
   // get the map estimation as mean for the prior likelihood
   Teuchos::RCP<Epetra_Vector> mean =
       Teuchos::rcp(new Epetra_Vector(*(*OptProb()->InitialGuess()->Mean())(0)));
-
-#if INVANA_DEBUG_PRINTING
-  LINALG::PrintVectorInMatlabFormat("mean.mtl", *mean);
-#endif
 
   // construct the prior evaluator
   double covscale = Inpar().get<double>("MAP_PRIOR_SCALE");

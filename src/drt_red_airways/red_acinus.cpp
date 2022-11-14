@@ -275,22 +275,6 @@ void DRT::ELEMENTS::RedAcinus::VisNames(std::map<std::string, int>& names)
   Teuchos::RCP<MAT::Maxwell_0d_acinus> mxwll_0d_acin =
       Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus>(Material());
   mxwll_0d_acin->VisNames(names);
-
-#if 0
-  // see whether we have additional data for visualization in our container
-  std::ostringstream temp;
-  temp << 1;
-
-  // in flow of volumetric flow profile
-  std::string name = "flow_in";
-  names.insert(std::pair<std::string,int>(name,1));
-
-  // out flow of volumetric flow profile
-  name = "flow_out";
-  names.insert(std::pair<std::string,int>(name,1));
-#endif
-
-  return;
 }
 
 

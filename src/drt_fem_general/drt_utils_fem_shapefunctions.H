@@ -341,19 +341,6 @@ namespace DRT
           dserror("distyp unknown\n");
           break;
       } /* end switch(distype) */
-
-#if 0
-  const int numfunct = 15;
-  {
-    T ver=0;
-    for(int i=0;i<numfunct;++i)
-    {
-      ver+=funct(i);
-    }
-    std::cout << "sum funct " << ver << std::endl;
-  }
-#endif
-
       return;
     }
 
@@ -1003,36 +990,6 @@ namespace DRT
           dserror("distyp unknown\n");
           break;
       } /* end switch(distype) */
-
-#if 0
-  const int numfunct = 15;
-
-  {
-    T ver=0;
-    for(int i=0;i<numfunct;++i)
-    {
-      ver+=deriv1(0,i);
-    }
-    std::cout << "sum deriv1(0,.) " << ver << std::endl;
-  }
-  {
-    T ver=0;
-    for(int i=0;i<numfunct;++i)
-    {
-      ver+=deriv1(1,i);
-    }
-    std::cout << "sum deriv1(1,.) " << ver << std::endl;
-  }
-  {
-    T ver=0;
-    for(int i=0;i<numfunct;++i)
-    {
-      ver+=deriv1(2,i);
-    }
-    std::cout << "sum deriv1(2,.) " << ver << std::endl;
-  }
-#endif
-
       return;
     }
 
@@ -2007,59 +1964,6 @@ namespace DRT
           dserror("distyp unknown\n");
           break;
       } /* end switch(distype) */
-
-#if 0
-  const int numfunct = 15;
-  {
-    T ver=0;
-    for(int i=0;i<numfunct;++i)
-    {
-      ver+=deriv2(0,i);
-    }
-    std::cout << "sum deriv2(0,.) " << ver << std::endl;
-  }
-  {
-    T ver=0;
-    for(int i=0;i<numfunct;++i)
-    {
-      ver+=deriv2(1,i);
-    }
-    std::cout << "sum deriv2(1,.) " << ver << std::endl;
-  }
-  {
-    T ver=0;
-    for(int i=0;i<numfunct;++i)
-    {
-      ver+=deriv2(2,i);
-    }
-    std::cout << "sum deriv2(2,.) " << ver << std::endl;
-  }
-  {
-    T ver=0;
-    for(int i=0;i<numfunct;++i)
-    {
-      ver+=deriv2(3,i);
-    }
-    std::cout << "sum deriv2(3,.) " << ver << std::endl;
-  }
-  {
-    T ver=0;
-    for(int i=0;i<numfunct;++i)
-    {
-      ver+=deriv2(4,i);
-    }
-    std::cout << "sum deriv2(4,.) " << ver << std::endl;
-  }
-  {
-    T ver=0;
-    for(int i=0;i<numfunct;++i)
-    {
-      ver+=deriv2(5,i);
-    }
-    std::cout << "sum deriv2(5,.) " << ver << std::endl;
-  }
-#endif
-
       return;
     }
 
@@ -2143,18 +2047,6 @@ namespace DRT
           funct(6) = 0.5 * r2 * sp;
           //(r, s) -> 0.5*(1-s*s)*(1-r)
           funct(7) = 0.5 * s2 * rm;
-
-#if 0
-    {
-      T ver=0;
-      for(int i=0;i<20;++i)
-      {
-        ver+=funct(i);
-      }
-      std::cout << "sum funct " << ver << std::endl;
-    }
-#endif
-
           break;
         }
         case DRT::Element::quad9:
@@ -2320,34 +2212,6 @@ namespace DRT
           deriv1(0, 7) = -0.5 * sm * sp;
           //          (r - 1.0) s
           deriv1(1, 7) = -rm * s;
-
-#if 0
-    {
-      T ver=0;
-      for(int i=0;i<20;++i)
-      {
-        ver+=deriv1(0,i);
-      }
-      std::cout << "sum deriv1(0,.) " << ver << std::endl;
-    }
-    {
-      T ver=0;
-      for(int i=0;i<20;++i)
-      {
-        ver+=deriv1(2,i);
-      }
-      std::cout << "sum deriv1(2,.) " << ver << std::endl;
-    }
-    {
-      T ver=0;
-      for(int i=0;i<20;++i)
-      {
-        ver+=deriv1(1,i);
-      }
-      std::cout << "sum deriv1(1,.) " << ver << std::endl;
-    }
-#endif
-
           break;
         }
         case DRT::Element::quad9:
@@ -2570,57 +2434,6 @@ namespace DRT
           deriv2(dsds, 7) = -rm;
           // s
           deriv2(drds, 7) = s;
-
-#if 0
-    {
-      T ver=0;
-      for(int i=0;i<20;++i)
-      {
-        ver+=deriv2(0,i);
-      }
-      std::cout << "sum deriv2(0,.) " << ver << std::endl;
-    }
-    {
-      T ver=0;
-      for(int i=0;i<20;++i)
-      {
-        ver+=deriv2(1,i);
-      }
-      std::cout << "sum deriv2(1,.) " << ver << std::endl;
-    }
-    {
-      T ver=0;
-      for(int i=0;i<20;++i)
-      {
-        ver+=deriv2(2,i);
-      }
-      std::cout << "sum deriv2(2,.) " << ver << std::endl;
-    }
-    {
-      T ver=0;
-      for(int i=0;i<20;++i)
-      {
-        ver+=deriv2(3,i);
-      }
-      std::cout << "sum deriv2(3,.) " << ver << std::endl;
-    }
-    {
-      T ver=0;
-      for(int i=0;i<20;++i)
-      {
-        ver+=deriv2(4,i);
-      }
-      std::cout << "sum deriv2(4,.) " << ver << std::endl;
-    }
-    {
-      T ver=0;
-      for(int i=0;i<20;++i)
-      {
-        ver+=deriv2(5,i);
-      }
-      std::cout << "sum deriv2(5,.) " << ver << std::endl;
-    }
-#endif
           break;
         }
         case DRT::Element::quad9:

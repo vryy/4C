@@ -279,59 +279,6 @@ namespace DRT
 
       void SetPoints(Teuchos::RCP<GaussPoints> gp) { gp_ = gp; }
 
-#if 0
-  /// create projected gauss points
-  template <DRT::Element::DiscretizationType distype>
-  static Teuchos::RCP<GaussPoints> CreateProjected(
-    const LINALG::Matrix<3, DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement> & xyze,
-    const LINALG::Matrix<2, DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement> & xie,
-    int degree )
-  {
-    Teuchos::RCP<GaussPoints> gp = GaussPointCache::Instance().Create( distype, degree );
-    Teuchos::RCP<CollectedGaussPoints> cgp = Teuchos::rcp( new CollectedGaussPoints( gp->NumPoints() ) );
-
-    const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-
-    LINALG::Matrix<nen,1> funct;
-    LINALG::Matrix<2,nen> deriv;
-
-//     LINALG::Matrix<2,2> xjm;
-    LINALG::Matrix<2,1> xi;
-
-    LINALG::Matrix<2,2> metrictensor;
-
-    GaussIntegration intpoints( gp );
-    for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin();
-          iquad!=intpoints.end();
-          ++iquad )
-    {
-      const double * eta = iquad.Point();
-
-      // cell shape functions and their first derivatives
-      DRT::UTILS::shape_function_2D(funct,eta[0],eta[1],distype);
-      DRT::UTILS::shape_function_2D_deriv1(deriv,eta[0],eta[1],distype);
-
-      double drs;
-
-      // compute measure tensor for surface element, infinitesimal area
-      // element drs
-      DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze,deriv,metrictensor,drs);
-
-      // local coordinates of gauss point
-      xi.Multiply( xie, funct );
-
-//       // get transposed of the jacobian matrix d x / d \xi
-//       // xjm(i,j) = deriv(i,k)*xyze(j,k)
-//       xjm.MultiplyNT( deriv, xyze );
-
-//       double det = xjm.Determinant();
-
-      cgp->Append( xi( 0 ), xi( 1 ), 0., iquad.Weight()*drs );
-    }
-    return cgp;
-  }
-#endif
-
       /// Create Gauss integration rule of given degree
       template <DRT::Element::DiscretizationType distype>
       static Teuchos::RCP<GaussPoints> CreateProjected(

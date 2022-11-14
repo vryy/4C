@@ -25,15 +25,6 @@
 
 void runEnsightVtuFilter(PostProblem& problem)
 {
-#if 0
-    for (int i = 0; i<problem.num_discr(); ++i)
-    {
-        PostField* field = problem.get_discretization(i);
-        StructureFilter writer(field, problem.outname());
-        writer.WriteFiles();
-    }
-#endif
-
   // each problem type is different and writes different results
   switch (problem.Problemtype())
   {

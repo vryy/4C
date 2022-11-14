@@ -1715,58 +1715,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
     data.initial_ele_owner_ = -1;
     data.dMin_ = min_dist;
   }
-
-
-#if (0)
-  // GMSH debug output
-
-  int myrank = 0;  // discret.Comm().MyPID();
-
-  if (myrank == 0) IO::cout << "\n\t ... writing Gmsh output for startvalues ...\n" << IO::flush;
-
-  int step = 0;
-
-  const int step_diff = 100;
-  bool screen_out = true;
-
-  // output for Element and Node IDs
-  std::ostringstream filename_base_startvalues;
-  filename_base_startvalues << "TIMINT"
-                            << "_startvalues_" << n_new->Id() << "_";
-  const std::string filename_startvalues = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
-      filename_base_startvalues.str(), step, step_diff, screen_out, myrank);
-  if (true) std::cout << std::endl;
-  std::ofstream gmshfilecontent_startvalues(filename_startvalues.c_str());
-  gmshfilecontent_startvalues.setf(std::ios::scientific, std::ios::floatfield);
-  gmshfilecontent_startvalues.precision(16);
-
-  gmshfilecontent_startvalues << "View \""
-                              << "SL "
-                              << "node " << n_new->Id() << "\" {\n";
-
-  {
-    // 1. line ( x_np -> x_np projected on side )
-    gmshfilecontent_startvalues << "SL(" << newNodeCoords(0) << "," << newNodeCoords(1) << ","
-                                << newNodeCoords(2) << "," << proj_x_np(0) << "," << proj_x_np(1)
-                                << "," << proj_x_np(2) << ")" << std::endl;
-    gmshfilecontent_startvalues << "{" << 0 << "," << 1 << "};" << std::endl;
-    // 2. line ( x_np projected on side -> x_n projected on side )
-    gmshfilecontent_startvalues << "SL(" << proj_x_np(0) << "," << proj_x_np(1) << ","
-                                << proj_x_np(2) << "," << proj_x_n(0) << "," << proj_x_n(1) << ","
-                                << proj_x_n(2) << ")" << std::endl;
-    gmshfilecontent_startvalues << "{" << 1 << "," << 2 << "};" << std::endl;
-    // 3. line ( x_n projected on side -> start_point)
-    gmshfilecontent_startvalues << "SL(" << proj_x_n(0) << "," << proj_x_n(1) << "," << proj_x_n(2)
-                                << "," << start_point(0) << "," << start_point(1) << ","
-                                << start_point(2) << ")" << std::endl;
-    gmshfilecontent_startvalues << "{" << 2 << "," << 3 << "};" << std::endl;
-  }
-
-  gmshfilecontent_startvalues << "};\n";
-
-#endif
 }
-
 
 bool XFEM::XFLUID_STD::FindNearestSurfPoint(
     LINALG::Matrix<3, 1>& x,       ///< coords of point to be projected
@@ -1817,7 +1766,8 @@ bool XFEM::XFLUID_STD::FindNearestSurfPoint(
 
 
 /*------------------------------------------------------------------------------------------------*
- * Project the current point onto the structural surface given by point and side Ids schott 06/12 *
+ * Project the current point onto the structural surface given by point and side Ids schott 06/12
+ **
  *------------------------------------------------------------------------------------------------*/
 bool XFEM::XFLUID_STD::ProjectToSurface(
     LINALG::Matrix<3, 1>& x,       ///< coords of point to be projected
@@ -1914,14 +1864,14 @@ bool XFEM::XFLUID_STD::ProjectToSurface(
 
     CallProjectOnPoint(node,  ///< pointer to node on which we want to project
         state,
-        x,             ///< node coordinates of point that has to be projected
-        min_dist,      ///< minimal distance, potentially updated
-        proj_nid_np,   ///< nid id of projected point on surface
-        proj_x,        ///< projection of point on this side
-        proj_sid,      ///< id of side that contains the projected point
-        proj_xi_line,  ///< std::map<side ID, local coordinates of projection of point w.r.t to this
-                       ///< line>
-        proj_lineid,   ///< std::map<side ID, local line id>
+        x,              ///< node coordinates of point that has to be projected
+        min_dist,       ///< minimal distance, potentially updated
+        proj_nid_np,    ///< nid id of projected point on surface
+        proj_x,         ///< projection of point on this side
+        proj_sid,       ///< id of side that contains the projected point
+        proj_xi_line,   ///< std::map<side ID, local coordinates of projection of point w.r.t to
+                        ///< this line>
+        proj_lineid,    ///< std::map<side ID, local line id>
         proj_nid_line,  ///< std::map<side ID, vec<line Ids>>
         proj            ///< reference to data
     );
@@ -2093,13 +2043,13 @@ void XFEM::XFLUID_STD::callgetNormalSide_tn(DRT::Element* side,  ///< pointer to
     {
         //      case DRT::Element::tri3:
         //      {
-        //        getNormalSide_tn<DRT::Element::tri3, 3>(normal, side_xyze, lm, proj_x_n, xi_side);
-        //        break;
+        //        getNormalSide_tn<DRT::Element::tri3, 3>(normal, side_xyze, lm, proj_x_n,
+        //        xi_side); break;
         //      }
         //      case DRT::Element::tri6:
         //      {
-        //        getNormalSide_tn<DRT::Element::tri6, 3>(normal, side_xyze, lm, proj_x_n, xi_side);
-        //        break;
+        //        getNormalSide_tn<DRT::Element::tri6, 3>(normal, side_xyze, lm, proj_x_n,
+        //        xi_side); break;
         //      }
       case DRT::Element::quad4:
       {
@@ -2127,13 +2077,13 @@ void XFEM::XFLUID_STD::callgetNormalSide_tn(DRT::Element* side,  ///< pointer to
     {
         //      case DRT::Element::tri3:
         //      {
-        //        getNormalSide_tn<DRT::Element::tri3, 4>(normal, side_xyze, lm, proj_x_n, xi_side);
-        //        break;
+        //        getNormalSide_tn<DRT::Element::tri3, 4>(normal, side_xyze, lm, proj_x_n,
+        //        xi_side); break;
         //      }
         //      case DRT::Element::tri6:
         //      {
-        //        getNormalSide_tn<DRT::Element::tri6, 4>(normal, side_xyze, lm, proj_x_n, xi_side);
-        //        break;
+        //        getNormalSide_tn<DRT::Element::tri6, 4>(normal, side_xyze, lm, proj_x_n,
+        //        xi_side); break;
         //      }
       case DRT::Element::quad4:
       {
@@ -2214,7 +2164,8 @@ void XFEM::XFLUID_STD::getNormalSide_tn(LINALG::Matrix<3, 1>& normal,  ///< norm
 
 
 /*------------------------------------------------------------------------------------------------*
- * call and prepare the projection of point to side                                  schott 07/12 *
+ * call and prepare the projection of point to side                                  schott 07/12
+ **
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_STD::call_get_projxn_Line(
     DRT::Element* side,  ///< pointer to structural side element
@@ -2355,7 +2306,8 @@ void XFEM::XFLUID_STD::addeidisp(
 
 
 /*------------------------------------------------------------------------------------------------*
- * call and prepare the projection of point to side                                  schott 07/12 *
+ * call and prepare the projection of point to side                                  schott 07/12
+ **
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_STD::CallProjectOnSide(
     DRT::Element* side,                   ///< pointer to structural side element
@@ -2508,7 +2460,8 @@ void XFEM::XFLUID_STD::CallProjectOnSide(
 
 
 /*------------------------------------------------------------------------------------------------*
- * call and prepare the projection of point to side                                  schott 07/12 *
+ * call and prepare the projection of point to side                                  schott 07/12
+ **
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_STD::CallProjectOnLine(
     DRT::Element* side,                   ///< pointer to structural side element
@@ -2683,7 +2636,8 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
 }
 
 /*------------------------------------------------------------------------------------------------*
- * call and prepare the projection of point to point (distance computation)          schott 07/12 *
+ * call and prepare the projection of point to point (distance computation)          schott 07/12
+ **
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_STD::CallProjectOnPoint(DRT::Node* node,  ///< pointer to node
     const std::string state,                                ///< state n or np?
@@ -2693,8 +2647,8 @@ void XFEM::XFLUID_STD::CallProjectOnPoint(DRT::Node* node,  ///< pointer to node
     LINALG::Matrix<3, 1>& proj_x_np,      ///< projection of point on this side
     int& proj_sid,                        ///< id of side that contains the projected point
     std::map<std::vector<int>, std::vector<double>>
-        proj_xi_line,  ///< std::map<side ID, local coordinates of projection of point w.r.t to this
-                       ///< line>
+        proj_xi_line,  ///< std::map<side ID, local coordinates of projection of point w.r.t to
+                       ///< this line>
     std::map<std::vector<int>, std::vector<int>> proj_lineid,  ///< std::map<side ID, local line id>
     std::map<std::vector<int>, std::vector<int>>
         proj_nid_line,             ///< std::map<side ID, vec<line Ids>>
@@ -2905,9 +2859,9 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
       converged = true;
     }
 
-    // check ° relative criterion for local coordinates (between [-1,1]^2)
-    //       ° absolute criterion for distance (-> 0)
-    //       ° relative criterion for whole residuum
+    // check relative criterion for local coordinates (between [-1,1]^2)
+    //       absolute criterion for distance (-> 0)
+    //       relative criterion for whole residuum
     if (  // sqrt(incr(0)*incr(0)+incr(1)*incr(1))/sqrt(sol(0)*sol(0)+sol(1)*sol(1)) <  relTolIncr
         sqrt(incr(0) * incr(0) + incr(1) * incr(1)) < absTolIncr && incr(2) < absTOLdist &&
         residuum.Norm2() < absTolRes)
@@ -3185,8 +3139,8 @@ bool XFEM::XFLUID_STD::WithinLimits(LINALG::Matrix<3, 1>& xsi_, const double TOL
 }
 
 /*------------------------------------------------------------------------------------------------*
- * setting the computed data for the standard degrees of freedom into the according               *
- * Epetra Vectors for all handled nodes                                              schott 07/12 *
+ * setting the computed data for the standard degrees of freedom into the according * Epetra
+ *Vectors for all handled nodes                                              schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_STD::setFinalData()
 {
@@ -3237,7 +3191,8 @@ void XFEM::XFLUID_STD::setFinalData()
 
 
 /*------------------------------------------------------------------------------------------------*
- * export start data to neighbour proc                                           winklmaier 06/10 *
+ * export start data to neighbour proc                                           winklmaier 06/10
+ **
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_STD::exportStartData()
 {
@@ -3337,7 +3292,8 @@ void XFEM::XFLUID_STD::exportStartData()
 
 
 /*------------------------------------------------------------------------------------------------*
- * export final data to node's proc                                                  schott 07/12 *
+ * export final data to node's proc                                                  schott 07/12
+ **
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_STD::exportFinalData()
 {
@@ -3375,8 +3331,8 @@ void XFEM::XFLUID_STD::exportFinalData()
        dest = (dest + 1) % numproc_)  // dest is the target processor
   {
     // Initialization
-    int source = myrank_ - (dest - myrank_);  // source proc (sends (dest-myrank_) far and gets from
-                                              // (dest-myrank_) earlier)
+    int source = myrank_ - (dest - myrank_);  // source proc (sends (dest-myrank_) far and gets
+                                              // from (dest-myrank_) earlier)
     if (source < 0)
       source += numproc_;
     else if (source >= numproc_)
@@ -3439,7 +3395,8 @@ void XFEM::XFLUID_STD::exportFinalData()
       if (dispnp_ != Teuchos::null)  // is alefluid
       {
         //------------------------------------------------------- add ale disp
-        // get node location vector, dirichlet flags and ownerships (discret, nds, la, doDirichlet)
+        // get node location vector, dirichlet flags and ownerships (discret, nds, la,
+        // doDirichlet)
         std::vector<int> lm;
         std::vector<int> dofs;
         dofset_new_->Dof(dofs, discret_->gNode(gid), 0);  // dofs for standard dofset

@@ -64,8 +64,8 @@ void XFEM::EvaluateNeumann(Teuchos::ParameterList& params,
 
   //================================================
   // Load Neumann conditions from discretization
-  // REMARK: ° standard volume Neumann conditions are not loaded -> evaluated in Evaluate
-  //         ° for XFEM Neumann boundaries: we assumme only XFEM Surface(!) Neumann conditions
+  // REMARK: standard volume Neumann conditions are not loaded -> evaluated in Evaluate
+  //         for XFEM Neumann boundaries: we assumme only XFEM Surface(!) Neumann conditions
   //================================================
 
   // get standard Point Neumann conditions

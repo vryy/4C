@@ -13,7 +13,7 @@
 #include "optimizer_base.H"  // base class
 #include "io.H"
 
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_ParameterList.hpp>
 
 namespace TIMINT
 {

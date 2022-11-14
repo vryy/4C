@@ -450,18 +450,6 @@ int ART::UTILS::ArtJunctionBc::Solve(Teuchos::ParameterList &params)
     // Intializing x vector; x = [U1 U2 ... Un A1 A2 ... An]^T
     x[i] = Q[i] / A[i];
     x[i + nodes_.size()] = A[i];
-
-#if 0
-    // for debuging reasons
-    std::cout<<"A   ["<<i<<"] is: "<<A[i]<<std::endl;
-    std::cout<<"Q   ["<<i<<"] is: "<<Q[i]<<std::endl;
-    std::cout<<"W   ["<<i<<"] is: "<<W[i]<<std::endl;
-    std::cout<<"Ao  ["<<i<<"] is: "<<Ao[i]<<std::endl;
-    std::cout<<"rho ["<<i<<"] is: "<<rho[i]<<std::endl;
-    std::cout<<"beta["<<i<<"] is: "<<beta[i]<<std::endl;
-    std::cout<<"Pext["<<i<<"] is: "<<Pext[i]<<std::endl;
-    std::cout<<std::endl;
-#endif
   }
 
 
@@ -571,13 +559,6 @@ void ART::UTILS::ArtJunctionBc::Jacobian_Eval(Epetra_SerialDenseMatrix &Jacobian
     Jacobian(i, i) = 1.0;
     Jacobian(i, i + nodes_.size()) =
         double(IOart_flag_[i]) * sqrt(beta[i] / (2.0 * Ao[i] * rho[i])) / pow(A[i], 0.75);
-#if 0
-    std::cout<<"beta["<<i<<"] : "<<beta[i]<<std::endl;
-    std::cout<<"A   ["<<i<<"] : "<<A[i]<<std::endl;
-    std::cout<<"Ao  ["<<i<<"] : "<<Ao[i]<<std::endl;
-    std::cout<<"rho ["<<i<<"] : "<<rho[i]<<std::endl;
-    std::cout<<std::endl;
-#endif
   }
 
   // fill the entities that have to do with the mass conservation
@@ -641,16 +622,9 @@ void ART::UTILS::ArtJunctionBc::Residual_Eval(Epetra_SerialDenseVector &f, std::
 }
 
 
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  |  Update Residual (public)                                ismail 09/09|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::UTILS::ArtJunctionBc::Update_Result(
     Epetra_SerialDenseVector &xn, Epetra_SerialDenseVector &dx)
 {

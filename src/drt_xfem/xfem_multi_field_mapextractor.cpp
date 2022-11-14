@@ -314,27 +314,6 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
     receivedset.clear();
   }
 
-#if 0
-  for (int p=0; p<numprocs; ++p)
-  {
-    if (Comm().MyPID()==p)
-    {
-      std::cout << "--------------- Processor " << p << " ---------------------" << std::endl;
-      std::cout << "---------------  size = " << g_coupled_sl_dis.size() <<
-          " ----------------------" << std::endl;
-      for (cit_map=g_coupled_sl_dis.begin();cit_map!=g_coupled_sl_dis.end();++cit_map)
-      {
-        std::cout << "GID: " << cit_map->first << " | ";
-        for (cit_set=cit_map->second.begin();cit_set!=cit_map->second.end();++cit_set)
-          std::cout << *cit_set << "  ";
-        std::cout << "\n";
-      }
-      std::cout << "\n\n\n\n";
-    }
-    Comm().Barrier();
-  }
-#endif
-
   // ID's for the master/slave coupling maps
   std::vector<std::vector<int>> my_master_inode_gids(SlDisVec().size(), std::vector<int>(0));
 
@@ -616,9 +595,6 @@ void XFEM::MultiFieldMapExtractor::BuildInterfaceCouplingDofSet()
   idiscret_->ReplaceDofSet(0, icoupl_dofset_, true);
 
   idiscret_->FillComplete(true, false, false);
-#if (0)
-  idiscret_->Print(std::cout);
-#endif
 }
 
 /*----------------------------------------------------------------------------*

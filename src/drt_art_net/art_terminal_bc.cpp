@@ -692,15 +692,8 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
         Pout = (*vals)[0];
       }
 
-#if 0
-      // calculate the
-      Rf = (R - dens*co/Ao)/ (R + dens*co/Ao);
-      // calculate the backward charachteristic speed
-      const double Wo = 4.0*sqrt(beta/(2.0*dens*sqrt(Ao)));
-      Wb = -Rf*(Wf - Wo) - Wo;
-#endif
       // ---------------------------------------------------------------
-      // Solve the nonlinear problem using Newton-Raphsn scheme
+      // Solve the nonlinear problem using Newton-Raphson scheme
       // ---------------------------------------------------------------
 
       const double Wo = 4.0 * sqrt(beta / (2.0 * dens * sqrt(Ao)));

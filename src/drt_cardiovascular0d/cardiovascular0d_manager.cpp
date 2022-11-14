@@ -1113,16 +1113,6 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<LINALG::SparseMatrix> mat
       dserror("Unknown 0D cardiovascular-structural solution technique!");
   }
 
-#if 0
-  const int myrank=(actdisc_->Comm().MyPID());
-  const double cond_number = LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*mergedmatrix),Ifpack_GMRES, 100);
-  // computation of significant digits might be completely bogus, so don't take it serious
-  const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
-  const int sign_digits = (int)floor(tmp);
-  if (!myrank)
-    std::cout << " cond est: " << std::scientific << cond_number << ", max.sign.digits: " << sign_digits<<std::endl;
-#endif
-
   linsolveerror_ = 0;
 
   double norm_res_full;

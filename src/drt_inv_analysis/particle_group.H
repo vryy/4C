@@ -12,10 +12,10 @@
 
 #include <map>
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
-#include "Epetra_Map.h"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
+#include <Epetra_Map.h>
+#include <Teuchos_ParameterList.hpp>
 
 #include "mpi.h"
 

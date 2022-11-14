@@ -263,24 +263,8 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraEvaluate(Artery* ele,
     std::cout << "ewbnp(" << i << ") : " << ewbnp(i) << std::endl;
   }
 
-  // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
-  // ---------------------------------------------------------------------
-
-#if 0
-  ScatraSysmat(ele,
-               eqnp,
-               eqn,
-               eareanp,
-               earean,
-               escatran,
-               elemat1,
-               elevec1,
-               mat,
-               dt);
-#else
   ScatraSysmat(ele, escatran, ewfnp, ewbnp, eareanp, earean, elemat1, elevec1, mat, dt);
-#endif
   return 0;
 }
 
@@ -637,19 +621,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Sysmat(Artery* ele,
     dQdxi = my::tderiv_.Dot(qn_);
     dAdxi = my::tderiv_.Dot(an_);
     dpext_dxi = my::tderiv_.Dot(pext_);
-#if 0
-    std::cout<<"th: "<<th<<std::endl;
-    std::cout<<"E : "<<Young<<std::endl;
-    std::cout<<"A : "<<A<<std::endl;
-    std::cout<<"Ao: "<<Ao<<std::endl;
-    std::cout<<"Q : "<<Q<<std::endl;
-    std::cout<<"beta : "<<beta<<std::endl;
-    std::cout<<"dbeta_dxi: "<<dbeta_dxi<<std::endl;
-    std::cout<<"dpext_dxi: "<<dpext_dxi<<std::endl;
-    std::cout<<"dAodx: "<<dAodxi<<std::endl;
-    std::cout<<"dAdx: "<<dAdxi<<std::endl;
-    std::cout<<"dQdxi: "<<dQdxi<<std::endl;
-#endif
+
     //--------------------------------------------------------------
     //                   compute the rhs vector
     //--------------------------------------------------------------
@@ -871,69 +843,9 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Sysmat(Artery* ele,
 
   temp1.Multiply(sysmat, qan);
   rhs += temp1;
-
-#if 0
-  std::cout<<"+-------------------------!!!!!!!!!!!!!!-------------------------+"<<std::endl;
-  std::cout<<"+------------------------ THE FINAL R-LHS------------------------+"<<std::endl;
-  std::cout<<"|+++++++++++++++++++++++++!!!!      !!!!-------------------------|"<<std::endl;
-  std::cout<<"rhs is: "<<rhs<<std::endl;
-  std::cout<<"lhs is: "<<sysmat<<std::endl;
-  std::cout<<"With L= "<<L<<std::endl;
-  std::cout<<"|+++++++++++++++++++++++++!!!!      !!!!-------------------------|"<<std::endl;
-  std::cout<<"+-------------------------!!!!!!!!!!!!!!-------------------------+"<<std::endl;
-#endif
 }
 
-#if 0
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraSysmat(
-  Artery*                                  ele,
-  const LINALG::Matrix<my::iel_,1>&             eqnp,
-  const LINALG::Matrix<my::iel_,1>&             eqn,
-  const LINALG::Matrix<my::iel_,1>&             eareanp,
-  const LINALG::Matrix<my::iel_,1>&             earean,
-  const LINALG::Matrix<my::iel_,1>&             escatran,
-  LINALG::Matrix<my::iel_,my::iel_>&             sysmat,
-  LINALG::Matrix<my::iel_,  1>&             rhs,
-  Teuchos::RCP<const MAT::Material>        material,
-  double                                   dt)
-{
-  // evaluate velocities with in the element
-  LINALG::Matrix<my::iel_,1>   evnp;
-  for (int i=0; i<my::iel_;i++)
-  {
-    evnp(i) = eqnp(i)/eareanp(i);
-  }
 
-  // get the nodal coordinates of the element
-  DRT::Node** nodes = ele->Nodes();
-  LINALG::Matrix<3,my::iel_> xyze;
-  for (int inode=0; inode<my::iel_; inode++)
-  {
-    const double* x = nodes[inode]->X();
-    xyze(0,inode) = x[0];
-    xyze(1,inode) = x[1];
-    xyze(2,inode) = x[2];
-  }
-  // Evaluate element length
-  const double L=sqrt(
-            pow(xyze(0,0) - xyze(0,1),2)
-          + pow(xyze(1,0) - xyze(1,1),2)
-          + pow(xyze(2,0) - xyze(2,1),2));
-
-
-  // evaluate CFL number
-  double cfl_np = 0.5*(evnp(1)+evnp(0))*dt/L;
-
-  // Evaluate the system mass matrix
-  sysmat(0,0) =  0.5+cfl_np;   sysmat(0,1) =  0.5-cfl_np;
-  sysmat(1,0) = -0.5-cfl_np;   sysmat(1,1) = -0.5+cfl_np;
-
-  // Evaluate rhs vector
-  rhs (0) = 0.5*(escatran(1)+escatran(0));
-  rhs (1) =-0.5*(escatran(1)+escatran(0));
-}
-#else
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraSysmat(Artery* ele,
     const LINALG::Matrix<2 * my::iel_, 1>& escatran, const LINALG::Matrix<my::iel_, 1>& ewfnp,
@@ -976,7 +888,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraSysmat(Artery* ele,
   rhs(2) = -0.5 * (escatran(2) + escatran(0));
   rhs(3) = -0.5 * (escatran(3) + escatran(1));
 }
-#endif
+
 
 /*----------------------------------------------------------------------*
  |  Solve the Riemann problem at the terminal elements      ismail 07/09|
@@ -989,7 +901,6 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraSysmat(Artery* ele,
  |    4- If no conditions exist the nodes are not boundary nodes and    |
  |       no Riemann solution is required                                |
  *----------------------------------------------------------------------*/
-
 template <DRT::Element::DiscretizationType distype>
 bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
@@ -1121,24 +1032,6 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
   {
     dserror("CFL number at element %d is %f", ele->Id(), 3.0 / sqrt(3.0) * lambda_max * dt / L);
   }
-
-  // Check whether node 0 or node 1 are described as inlet or outlet of an artery
-  // IO_BC_HERE
-#if 0
-  if(! ele->Nodes()[0]->GetCondition("ArtInOutCond") && ! ele->Nodes()[0]->GetCondition("ArtInOutCond"))
-    return BCnodes;
-  else if (ele->Nodes()[0]->GetCondition("ArtInOutCond") && ele->Nodes()[0]->GetCondition("ArtInOutCond"))
-  {
-    const DRT::Condition *cond1 = ele->Nodes()[0]->GetCondition("ArtInOutCond");
-    const DRT::Condition *cond2 = ele->Nodes()[1]->GetCondition("ArtInOutCond");
-    if (*(cond1->Get<std::string>("terminaltype")) == *(cond2->Get<std::string>("terminaltype")))
-      dserror ("Element has two nodes described with a similar Terminal type: %s",cond1->Get<std::string>("terminaltype"));
-  }
-  else
-  {
-    // proceed with solving the Riemann problem
-  }
-#endif
 
   // Solve Riemann problem at the terminals
   // loop over the terminal nodes
@@ -1761,142 +1654,6 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::CalcPostprocessingValues(Arter
     }
   }  // End of node i has a condition
 }
-#if 0
-{
-  Teuchos::RCP<const Epetra_Vector> qanp  = discretization.GetState("qanp");
-  //  Teuchos::RCP<const Epetra_Vector> Wfnp  = discretization.GetState("Wfnp");
-  //  Teuchos::RCP<const Epetra_Vector> Wbnp  = discretization.GetState("Wbnp");
-
-  Teuchos::RCP<Epetra_Vector>   pn  = params.get<Teuchos::RCP<Epetra_Vector> >("pressure");
-  Teuchos::RCP<Epetra_Vector>   qn  = params.get<Teuchos::RCP<Epetra_Vector> >("flow");
-
-  // get time-step size
-  //  const double dt = params.get<double>("time step size");
-
-  // check here, if we really have an artery !!
-  // Define Geometric variables
-  double Ao1 = 0.0;
-  double Ao2 = 0.0;
-  // Define blood material variables
-  //  double visc=0.0;
-  //  double dens=0.0;
-  // Define artery's material variables
-  double t1 = 0.0;
-  double t2 = 0.0;
-  double E1 = 0.0;
-  double E2 = 0.0;
-  double nue= 0.0;
-  // Define artery's external forces
-  double pext1 =0.0;
-  double pext2 =0.0;
-  // check here, if we really have an artery !!
-  if( material->MaterialType() == INPAR::MAT::m_cnst_art)
-  {
-    const MAT::Cnst_1d_art* actmat = static_cast<const MAT::Cnst_1d_art*>(material.get());
-    // Read in initial cross-sectional area at node 1
-    Ao1    = M_PI*pow(actmat->Diam()/2,2);
-    // Read in initial cross-sectional area at node 2
-    Ao2    = Ao1;
-    // Read in blood density
-    //    dens   = actmat->Density();
-    // Read in blood viscosity
-    //    visc   = actmat->Viscosity();
-    // Read in artery's thickness at node 1
-    t1     = actmat->Th();
-    // Read in artery's thickness at node 2
-    t2     = t1;
-    // Read in artery's Youngs modulus of elasticity thickness at node 1
-    E1     = actmat->Young();
-    // Read in artery's Youngs modulus of elasticity thickness at node 2
-    E2     = E1;
-    // Read in artery's Poisson's ratio
-    nue    = actmat->Nue();
-    // Read in artery's external forces at node 1
-    pext1  = actmat->pext(0);
-    // Read in artery's external forces at node 1
-    pext2  = actmat->pext(1);
-
-    // Set up all the needed vectors for furthur calculations
-    area0_(0,0) = Ao1;
-    area0_(1,0) = Ao2;
-    th_(0,0)    = t1;
-    th_(1,0)    = t2;
-    young_(0,0) = E1;
-    young_(1,0) = E2;
-    pext_(0,0)  = pext1;
-    pext_(1,0)  = pext2;
-  }
-  else
-    dserror("Material law is not an artery");
-
-
-  // the number of nodes
-  const int numnode = my::iel_;
-  std::vector<int>::iterator it_vcr;
-
-  if (qanp==Teuchos::null)
-    dserror("Cannot get state vectors 'qanp'");
-
-  // extract local values from the global vectors
-  std::vector<double> myqanp(lm.size());
-  DRT::UTILS::ExtractMyValues(*qanp,myqanp,lm);
-
-  // create objects for element arrays
-  LINALG::Matrix<numnode,1> eareanp;
-  LINALG::Matrix<numnode,1> eqnp;
-
-  //get time step size
-  //  const double dt = params.get<double>("time step size");
-
-  //get all values at the last computed time step
-  for (int i=0;i<numnode;++i)
-  {
-    // split area and volumetric flow rate, insert into element arrays
-    eqnp(i)    = myqanp[1+(i*2)];
-    qn_(i)     = myqanp[1+(i*2)];
-    eareanp(i) = myqanp[0+(i*2)];
-    an_(i)     = myqanp[0+(i*2)];
-  }
-
-
-  // ---------------------------------------------------------------------------------
-  // Evaluate flowrate and pressure values at both sides of the artery
-  // ---------------------------------------------------------------------------------
-  area0_(0,0) = Ao1;
-  area0_(1,0) = Ao2;
-  th_(0,0)    = t1;
-  th_(1,0)    = t2;
-  young_(0,0) = E1;
-  young_(1,0) = E2;
-  pext_(0,0)  = pext1;
-  pext_(1,0)  = pext2;
-
-  for (int i =0; i<2; i++)
-  {
-    const double beta = sqrt(PI)*young_(i)*th_(i)/(1.0-nue*nue);
-
-    int myrank  = discretization.Comm().MyPID();
-    if(myrank == ele->Nodes()[i]->Owner())
-    {
-      int    gid  = ele->Nodes()[i]->Id();
-      double val;
-
-      // calculating P at node i
-      double pressure = 0.0;
-      pressure = beta*(sqrt(an_(i)) - sqrt(area0_(i)))/area0_(i) + pext_(i);
-
-      gid = ele->Nodes()[i]->Id();
-      val = pressure;
-      pn->ReplaceGlobalValues(1,&val,&gid);
-
-      // calculating Q at node i
-      val = qn_(i);
-      qn->ReplaceGlobalValues(1,&val,&gid);
-
-    }
-  } // End of node i has a condition
-}
-#endif
 
 /*----------------------------------------------------------------------*
  |  Evaluate the values of the scalar transport             ismail 12/12|

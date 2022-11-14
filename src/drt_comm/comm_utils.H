@@ -45,11 +45,6 @@ namespace COMM_UTILS
   //! create a local and a global communicator for the problem
   void CreateComm(int argc, char** argv);
 
-#if (0)
-  //! distribute discretizations from one group to the others
-  void BroadcastDiscretizations(const int bgroup);
-#endif
-
   //! distribute discretizations from one group to the others with ponzi scheme
   void BroadcastDiscretizations(int instance = 0);
 

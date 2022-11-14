@@ -13,18 +13,11 @@
 #include "invana_utils.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_utils_densematrix_communication.H"
-#include "linalg_mapextractor.H"
-#include "drt_discret.H"
 #include "drt_globalproblem.H"
 #include "io.H"
 #include "io_control.H"
-#include "io_pstream.H"
-
-#include "drt_element.H"
-
 #include "material.H"
 #include "matpar_bundle.H"
-#include "comm_utils.H"
 
 #include <queue>
 
@@ -563,18 +556,6 @@ void INVANA::MatParManagerPerPatch::MakeHistogram()
       if ((data[j] >= histvalues_[i]) && (data[j] < histvalues_[i + 1])) histbins_[i] += 1;
     }
   }
-
-#if 0
-  // print histogram
-  std::cout << "histogram: ";
-  for (int i=0; i<nbins; i++)
-    std::cout << histbins_[i] << ", ";
-  std::cout << std::endl;
-  for (int i=0; i<nbins; i++)
-    std::cout << histvalues_[i] << " " << histvalues_[i+1] << ", ";
-  std::cout << std::endl;
-#endif
-
   return;
 }
 

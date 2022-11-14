@@ -841,7 +841,7 @@ bool XFEM::XFLUID_SemiLagrange::continueForChangingSide(
 #endif
   data->state_ = TimeIntData::failedSL_;
   return false;  // leave newton loop if point is on wrong domain side
-  //--------------------------------------------------------------------------------------
+                 //--------------------------------------------------------------------------------------
 #endif
 
   return false;
@@ -1488,11 +1488,7 @@ void XFEM::XFLUID_SemiLagrange::backTracking(DRT::Element*& fittingele,  /// poi
   for (size_t index = 0; index < oldVectors_.size(); index++)
   {
     veln[index].Multiply(nodeveldata[index], shapeFcn);
-
-#if (0)  // use the non-averaged gradients interpolated within the element
-    velnDeriv1[index].MultiplyNT(1.0, nodeveldata[index], shapeFcnDeriv, 1.0);
-    presnDeriv1[index].MultiplyTT(1.0, nodepresdata[index], shapeFcnDeriv, 1.0);
-#else  // use the averaged nodal gradients
+    // use the averaged nodal gradients
     velnDeriv1[index].Clear();
 
     for (int i = 0; i < numnode; i++)
@@ -1500,8 +1496,6 @@ void XFEM::XFLUID_SemiLagrange::backTracking(DRT::Element*& fittingele,  /// poi
       velnDeriv1[index].Update(shapeFcn(i), avg_nodevelgraddata[i][index], 1.0);
       presnDeriv1[index].Update(shapeFcn(i), avg_nodepresgraddata[i][index], 1.0);
     }
-
-#endif
   }  // end loop over vectors to be read from
 
 

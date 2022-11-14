@@ -141,18 +141,8 @@ namespace DRT
           Teuchos::RCP<const MAT::Material> material);
 
       /*!
-       \Essential functions to compute the results of essentail matrices
+       \Essential functions to compute the results of essential matrices
       */
-#if 0
-    LINALG::Matrix<2,1> F    (double xi);
-    LINALG::Matrix<2,1> B    (double xi);
-    LINALG::Matrix<2,2> Bu   (double xi);
-    LINALG::Matrix<2,2> H    (double xi);
-    LINALG::Matrix<2,1> dFdxi(double xi);
-    LINALG::Matrix<2,1> FLW  (double xi, double dt);
-    LINALG::Matrix<2,1> BLW  (double xi, double dt);
-#endif
-
      private:
       //! nodal volumetric flow rate at time step "n"
       LINALG::Matrix<my::iel_, 1> qn_;

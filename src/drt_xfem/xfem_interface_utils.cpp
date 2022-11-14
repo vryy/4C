@@ -125,15 +125,6 @@ void XFEM::UTILS::NIT_Compute_ViscPenalty_Stabfac(
     // corresponding element (compare different weightings)
     double C_T = NIT_getTraceEstimateConstant(ele_distype, is_pseudo_2D);
 
-#if (0)
-    // get a safety factor dependent on the the element shape for cut elements, since the surface
-    // can cut the background element in a bad way when the surface includes sharp corners or small
-    // acute angles
-    // TODO: still to be set
-    double rho_safety = 1.0;
-    NIT_visc_stab_fac *= rho_safety;
-#endif
-
     // build the final viscous scaling
     NIT_visc_stab_fac *= C_T;
   }

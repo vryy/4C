@@ -7,23 +7,17 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "optimizer_lbfgs.H"
-#include "invana_base.H"
-#include "matpar_manager.H"
-#include "matpar_manager_elementwise.H"
 #include "DcsMatrix.H"
-#include "objective_funct.H"
-
-#include "linalg_utils_sparse_algebra_math.H"
+#include "invana_base.H"
 #include "invana_utils.H"
+#include "matpar_manager.H"
+#include "objective_funct.H"
+#include "optimizer_lbfgs.H"
 #include "io_control.H"
-#include "io.H"
 #include "drt_globalproblem.H"
-#include "timintmstep.H"
 #include "comm_utils.H"
-#include "inpar_parameterlist_utils.H"
+#include "linalg_utils_sparse_algebra_math.H"
 
-#include <stdlib.h>
 #include <stdio.h>
 
 /*----------------------------------------------------------------------*/
@@ -63,18 +57,6 @@ void INVANA::OptimizerLBFGS::Integrate()
 
   // solve initially to get quantities:
   Evaluate(GetObjFunctVal(), GetGradient());
-
-  // check gradient by fd:
-#if 0
-    std::cout << "gradient: " << std::endl;
-    PrintDataToScreen(*GetGradient());
-    EvaluateGradientFD();
-
-    std::cout << "gradient approx: " << std::endl;
-    PrintDataToScreen(*GetGradient());
-    exit(0);
-#endif
-
   UpdateGradient();
 
   // get search direction from gradient:

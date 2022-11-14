@@ -7,31 +7,22 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <list>
-
 #include "particle_group.H"
 
-#include "particle_data.H"
-#include "particle_comm.H"
-#include "likelihood_evaluation.H"
 #include "invana_base.H"
-#include "metropolis_kernel.H"
 #include "invana_utils.H"
-
-#include "comm_utils.H"
+#include "likelihood_evaluation.H"
+#include "metropolis_kernel.H"
+#include "particle_comm.H"
+#include "particle_data.H"
 #include "drt_globalproblem.H"
 #include "linalg_utils_sparse_algebra_math.H"
 
-#include "Epetra_MpiComm.h"
-
-#include <random>
-#include <array>
-#include <errno.h>
-#include <limits>
-#include <stdexcept>
 #include <iomanip>
-
-#include <fenv.h>
+#include <list>
+#include <random>
+#include <stdexcept>
+#include <cfenv>
 
 
 /*----------------------------------------------------------------------*/
@@ -206,11 +197,6 @@ void INVANA::ParticleGroup::DrawInitialStates()
     // if successfull set to ParticleData
     it->second->SetState(sample);
     it->second->SetData(posterior, prior);
-
-#if INVANA_DEBUG_PRINTING
-    std::string name = "sample" + std::to_string(it->first) + ".mtl";
-    LINALG::PrintVectorInMatlabFormat(name, sample);
-#endif
   }
 
   // lets wait here

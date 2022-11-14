@@ -262,29 +262,11 @@ void ART::ArtNetExplicitTimeInt::Init(const Teuchos::ParameterList& globaltimepa
     scatra_dbctog_ = LINALG::CreateVector(*dofrowmap, true);
   }
 
-#if 0
-  std::cout<<"|**************************************************************************|"<<std::endl;
-  std::cout<<"|******************** The Initialize Vector qanp is ***********************|"<<std::endl;
-  std::cout<<"|**************************************************************************|"<<std::endl;
-  std::cout<<*qanp_<<std::endl;
-  std::cout<<"|**************************************************************************|"<<std::endl;
-  std::cout<<*Wfnp_<<std::endl;
-#endif
-
 }  // ArtNetExplicitTimeInt::Init
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | the solver for artery                                   ismail 06/09 |
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*
-Some detials!!
-*/
 void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   // time measurement: Artery
@@ -292,7 +274,6 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
   {
     TEUCHOS_FUNC_TIME_MONITOR("   + solving artery");
   }
-
 
   // -------------------------------------------------------------------
   // call elements to calculate system matrix
@@ -363,9 +344,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
     discret_->Evaluate(eleparams, sysmat_, rhs_);
   }
 
-  // -------------------------------------------------------------------
   // Solve the boundary conditions
-  // -------------------------------------------------------------------
   bcval_->PutScalar(0.0);
   dbctog_->PutScalar(0.0);
   // Solve terminal BCs
@@ -410,12 +389,6 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
     {
       TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
     }
-
-#if 0
-    std::cout<<"Boundary values are: "<<std::endl<<*bcval_<<std::endl;
-    std::cout<<"Boundary toggels are: "<<std::endl<<*dbctog_<<std::endl;
-#endif
-
     LINALG::ApplyDirichlettoSystem(sysmat_, qanp_, rhs_, bcval_, dbctog_);
   }
 
@@ -429,23 +402,9 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
       TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
     }
 
-#if 0  // Exporting some values for debugging purposes
-
-
-    Teuchos::RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
-    if (A_debug != Teuchos::null)
-    {
-      // print to screen
-      (A_debug->EpetraMatrix())->Print(std::cout);
-    }
-
-#endif
     // call solver
     solver_->Solve(sysmat_->EpetraOperator(), qanp_, rhs_, true, true);
   }
-
-
-
   // end time measurement for solver
   dtsolve_ = Teuchos::Time::wallTime() - tcpusolve;
 
@@ -476,89 +435,6 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
 
 void ART::ArtNetExplicitTimeInt::SolveScatra()
 {
-#if 0
-  {
-    // set both system matrix and rhs vector to zero
-    scatra_sysmat_->Zero();
-    scatra_rhs_->PutScalar(0.0);
-
-    // create the parameters for the discretization
-    Teuchos::ParameterList eleparams;
-
-    // action for elements
-    eleparams.set<int>("action",ARTERY::calc_scatra_sys_matrix_rhs);
-    eleparams.set("time step size",dta_);
-
-    // other parameters that might be needed by the elements
-    eleparams.set("total time",time_);
-
-    // set vector values needed by elements
-    eleparams.set<Teuchos::RCP<Epetra_Vector> >("qanp",qanp_);
-    eleparams.set<Teuchos::RCP<Epetra_Vector> >("qan",qan_);
-    eleparams.set<Teuchos::RCP<Epetra_Vector> >("Wfnp",Wfnp_);
-    eleparams.set<Teuchos::RCP<Epetra_Vector> >("Wbnp",Wbnp_);
-    eleparams.set<Teuchos::RCP<Epetra_Vector> >("Wfo",Wfo_);
-    eleparams.set<Teuchos::RCP<Epetra_Vector> >("Wbo",Wbo_);
-    eleparams.set<Teuchos::RCP<Epetra_Vector> >("scatran",scatraO2n_);
-
-    // call standard loop over all elements
-#if 0  // Exporting some values for debugging purposes
-    {
-      Teuchos::RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(scatra_sysmat_);
-      if (A_debug != Teuchos::null)
-      {
-        // print to screen
-        (A_debug->EpetraMatrix())->Print(std::cout);
-      }
-    }
-#endif
-
-    discret_->Evaluate(eleparams,scatra_sysmat_,scatra_rhs_);
-    discret_->ClearState();
-
-#if 0  // Exporting some values for debugging purposes
-    {
-      Teuchos::RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(scatra_sysmat_);
-      if (A_debug != Teuchos::null)
-      {
-        // print to screen
-        (A_debug->EpetraMatrix())->Print(std::cout);
-      }
-    }
-#endif
-
-
-    // finalize the complete matrix
-    scatra_sysmat_->Complete();
-
-  }
-  // Solve terminal BCs
-  {
-    scatra_bcval_->PutScalar(0.0);
-    scatra_dbctog_->PutScalar(0.0);
-    // create the parameters for the discretization
-    Teuchos::ParameterList eleparams;
-
-    // action for elements
-    eleparams.set<int>("action",ARTERY::set_scatra_term_bc);
-
-    // set vecotr values needed by elements
-    discret_->ClearState();
-    discret_->SetState("qanp",qanp_);
-
-    eleparams.set("time step size",dta_);
-    eleparams.set("time",time_);
-    eleparams.set("bcval",scatra_bcval_);
-    eleparams.set("dbctog",scatra_dbctog_);
-
-    // call standard loop over all elements
-    discret_->Evaluate(eleparams,scatra_sysmat_,scatra_rhs_);
-
-    LINALG::ApplyDirichlettoSystem(scatra_sysmat_,scatraO2np_,scatra_rhs_,scatra_bcval_,scatra_dbctog_);
-  }
-  solver_.Solve(scatra_sysmat_->EpetraOperator(),scatraO2np_,scatra_rhs_,true,true);
-#else
-
   {
     scatraO2np_->PutScalar(0.0);
     // create the parameters for the discretization
@@ -604,25 +480,14 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
     discret_->Evaluate(eleparams, scatra_sysmat_, scatra_rhs_);
   }
   scatraO2np_->Update(1.0, *scatra_bcval_, 1.0);
-#endif
 }
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | build system matrix and rhs                              ismail 06/09|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::ArtNetExplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> qael) {}
 
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
  |                                                                      |
@@ -631,9 +496,6 @@ void ART::ArtNetExplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> qael
  |                                                                      |
  |                                                          ismail 06/09|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::ArtNetExplicitTimeInt::TimeUpdate()
 {
   // Volumetric Flow rate/Cross-sectional area of this step become most recent
@@ -654,9 +516,6 @@ void ART::ArtNetExplicitTimeInt::TimeUpdate()
 }  // ArtNetExplicitTimeInt::TimeUpdate
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | Initializes state saving vectors                                     |
  |                                                                      |
@@ -664,9 +523,6 @@ void ART::ArtNetExplicitTimeInt::TimeUpdate()
  |                                                                      |
  |                                                          ismail 04/14|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::ArtNetExplicitTimeInt::InitSaveState()
 {
   // get the discretizations DOF row map
@@ -696,9 +552,6 @@ void ART::ArtNetExplicitTimeInt::InitSaveState()
 }  // ArtNetExplicitTimeInt::InitSaveState
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | Saves and backs up the current state.                                |
  |                                                                      |
@@ -709,9 +562,6 @@ void ART::ArtNetExplicitTimeInt::InitSaveState()
  |                                                                      |
  |                                                          ismail 04/14|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::ArtNetExplicitTimeInt::SaveState()
 {
   // Volumetric Flow rate/Cross-sectional area of this step become most recent
@@ -738,10 +588,6 @@ void ART::ArtNetExplicitTimeInt::SaveState()
 }  // ArtNetExplicitTimeInt::SaveState
 
 
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | Loads backed up states.                                              |
  |                                                                      |
@@ -752,9 +598,6 @@ void ART::ArtNetExplicitTimeInt::SaveState()
  |                                                                      |
  |                                                          ismail 04/14|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::ArtNetExplicitTimeInt::LoadState()
 {
   // Volumetric Flow rate/Cross-sectional area of this step become most recent
@@ -781,16 +624,9 @@ void ART::ArtNetExplicitTimeInt::LoadState()
 }  // ArtNetExplicitTimeInt::LoadState
 
 
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | output of solution vector to binio                       ismail 07/09|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::ArtNetExplicitTimeInt::Output(
     bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
 {
@@ -933,15 +769,9 @@ void ART::ArtNetExplicitTimeInt::Output(
 }  // ArteryExplicitTimeInt::Output
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | ReadRestart (public)                                     ismail 07/09|
  -----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::ArtNetExplicitTimeInt::ReadRestart(int step, bool coupledTo3D)
 {
   coupledTo3D_ = coupledTo3D;
