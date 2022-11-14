@@ -27,6 +27,7 @@
 
 #include "gauss_point_data_output_manager.H"
 #include "so_element_service.H"
+#include "singleton_owner.H"
 
 namespace
 {
@@ -144,19 +145,16 @@ namespace
 }  // namespace
 
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::SolidEleCalc<distype>* DRT::ELEMENTS::SolidEleCalc<distype>::Instance(bool create)
+DRT::ELEMENTS::SolidEleCalc<distype>* DRT::ELEMENTS::SolidEleCalc<distype>::Instance(
+    ::UTILS::SingletonAction action)
 {
-  static SolidEleCalc<distype>* instance;
-  if (create)
-  {
-    if (!instance) instance = new SolidEleCalc<distype>();
-  }
-  else
-  {
-    if (instance) delete instance;
-    instance = nullptr;
-  }
-  return instance;
+  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+      []()
+      {
+        return std::unique_ptr<DRT::ELEMENTS::SolidEleCalc<distype>>(
+            new DRT::ELEMENTS::SolidEleCalc<distype>());
+      });
+  return singleton_owner.Instance(action);
 }
 
 template <DRT::Element::DiscretizationType distype>

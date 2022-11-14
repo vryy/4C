@@ -18,6 +18,7 @@
 #include "drt_utils_gausspoints.H"
 #include "solid_utils.H"
 #include "drt_element_integration_select.H"
+#include "singleton_owner.H"
 
 namespace STR::ELEMENTS
 {
@@ -43,7 +44,8 @@ namespace DRT
       SolidEleCalc();
 
       /// Singleton access method
-      static SolidEleCalc<distype>* Instance(bool create = true);
+      static SolidEleCalc<distype>* Instance(
+          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
       void Setup(const DRT::ELEMENTS::Solid& ele, DRT::INPUT::LineDefinition* linedef) override;
       void MaterialPostSetup(const DRT::ELEMENTS::Solid& ele) override;
