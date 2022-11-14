@@ -592,8 +592,8 @@ bool POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSolver()
         "POROMULTIPHASE DYNAMIC to a valid number!");
   const Teuchos::ParameterList& solverparams =
       DRT::Problem::Instance()->SolverParams(linsolvernumber);
-  const int solvertype =
-      DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
+  const auto solvertype =
+      Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
   CreateLinearSolver(solverparams, solvertype);
 
@@ -609,16 +609,17 @@ bool POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSolver()
  | Create linear (iterative) solver                  kremheller 08/17   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::CreateLinearSolver(
-    const Teuchos::ParameterList& solverparams, const int solvertype)
+    const Teuchos::ParameterList& solverparams, const INPAR::SOLVER::SolverType solvertype)
 {
   solver_ = Teuchos::rcp(
       new LINALG::Solver(solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
   // no need to do the rest for direct solvers
-  if (solvertype == INPAR::SOLVER::umfpack or solvertype == INPAR::SOLVER::superlu or
-      solvertype == INPAR::SOLVER::amesos_klu_nonsym)
+  if (solvertype == INPAR::SOLVER::SolverType::umfpack or
+      solvertype == INPAR::SOLVER::SolverType::superlu)
     return;
 
-  if (solvertype != INPAR::SOLVER::aztec_msr && solvertype != INPAR::SOLVER::belos)
+  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr &&
+      solvertype != INPAR::SOLVER::SolverType::belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;
@@ -629,13 +630,13 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::CreateLinearSolver(
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     dserror("aztec solver expected");
   }
-  const int azprectype =
-      DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(solverparams, "AZPREC");
+  const auto azprectype =
+      Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(solverparams, "AZPREC");
 
   // plausibility check
   switch (azprectype)
   {
-    case INPAR::SOLVER::azprec_AMGnxn:
+    case INPAR::SOLVER::PreconditionerType::multigrid_nxn:
     {
       // no plausibility checks here
       // if you forget to declare an xml file you will get an error message anyway
@@ -1464,7 +1465,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::BuildArteryBl
  | Create linear (iterative) solver                    kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::CreateLinearSolver(
-    const Teuchos::ParameterList& solverparams, const int solvertype)
+    const Teuchos::ParameterList& solverparams, const INPAR::SOLVER::SolverType solvertype)
 {
   PoroMultiPhaseMonolithicTwoWay::CreateLinearSolver(solverparams, solvertype);
 

@@ -59,10 +59,7 @@ AZSOLVE                         GMRES
 AZPREC                          ILU
 IFPACKOVERLAP                   0
 IFPACKGFILL                     0
-IFPACKFILL                      0
 IFPACKCOMBINE                   Add
-AZDROP                          0
-AZPOLY                          3
 AZSUB                           100
 AZCONV                          AZ_r0
 AZOUTPUT                        0

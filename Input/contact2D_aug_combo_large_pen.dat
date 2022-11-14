@@ -108,12 +108,10 @@ NAME                            Structure_Solver
 SOLVER                          Aztec_MSR // Aztec_MSR // UMFPACK
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          500
 AZOMEGA                         0
 AZOUTPUT                        10
-AZPOLY                          3
 AZPREC                          MueLu
 AZREUSE                         10
 AZSCAL                          none
@@ -122,7 +120,6 @@ AZSUB                           300
 AZTOL                           1e-08
 BGS2X2_FLIPORDER                block0_block1_order
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     12
@@ -149,8 +146,6 @@ AZOUTPUT                        10
 AZSOLVE                         GMRES
 AZPREC                          CheapSIMPLE
 AZREUSE                         0
-AZDROP                          0.0
-IFPACKFILL                      0.0
 IFPACKGFILL                     0
 AZTOL                           1.0E-9
 AZCONV                          AZ_r0
@@ -158,7 +153,6 @@ AZITER                          1000
 AZSUB                           300
 AZOMEGA                         0.67
 AZGRAPH                         1
-AZPOLY                          5
 IFPACKOVERLAP                   0
 AZSCAL                          none
 SUB_SOLVER1                     3
@@ -170,8 +164,6 @@ AZOUTPUT                        0
 AZSOLVE                         GMRES
 AZPREC                          ML
 AZREUSE                         0
-AZDROP                          0.0
-IFPACKFILL                      0.0
 IFPACKGFILL                     0
 AZTOL                           1.0E-9
 AZCONV                          AZ_r0
@@ -179,7 +171,6 @@ AZITER                          1000
 AZSUB                           50
 AZOMEGA                         0.67
 AZGRAPH                         1
-AZPOLY                          5
 IFPACKOVERLAP                   0
 AZSCAL                          none
 ML_PRINT                        0
@@ -200,12 +191,10 @@ ML_DAMPCOARSE                   1.0
 NAME                            Contact_Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        10
-AZPOLY                          3
 AZPREC                          MueLu
 AZREUSE                         0
 AZSCAL                          none
@@ -214,7 +203,6 @@ AZSUB                           300
 AZTOL                           1e-08
 BGS2X2_FLIPORDER                block0_block1_order
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     9

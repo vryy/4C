@@ -60,12 +60,10 @@ THETA                           1
 NAME                            THERMAL SOLVER
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPOLY                          3
 AZPREC                          ILU
 AZREUSE                         0
 AZSCAL                          none
@@ -74,7 +72,6 @@ AZSUB                           10
 AZTOL                           1e-08
 BGS2X2_FLIPORDER                block0_block1_order
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27

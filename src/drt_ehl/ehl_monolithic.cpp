@@ -187,10 +187,11 @@ void EHL::Monolithic::CreateLinearSolver()
   const Teuchos::ParameterList& ehlsolverparams =
       DRT::Problem::Instance()->SolverParams(linsolvernumber);
 
-  const int solvertype =
-      DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(ehlsolverparams, "SOLVER");
+  const auto solvertype =
+      Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(ehlsolverparams, "SOLVER");
 
-  if ((solvertype != INPAR::SOLVER::aztec_msr) and (solvertype != INPAR::SOLVER::belos))
+  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr and
+      solvertype != INPAR::SOLVER::SolverType::belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;
@@ -201,17 +202,17 @@ void EHL::Monolithic::CreateLinearSolver()
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     dserror("aztec solver expected");
   }
-  const int azprectype =
-      DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(ehlsolverparams, "AZPREC");
+  const auto azprectype =
+      Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(ehlsolverparams, "AZPREC");
 
   // plausibility check
   switch (azprectype)
   {
-    case INPAR::SOLVER::azprec_BGS2x2:
+    case INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2:
       break;
-    case INPAR::SOLVER::azprec_MueLuAMG:
-    case INPAR::SOLVER::azprec_AMGnxn:
-    case INPAR::SOLVER::azprec_CheapSIMPLE:
+    case INPAR::SOLVER::PreconditionerType::multigrid_muelu:
+    case INPAR::SOLVER::PreconditionerType::multigrid_nxn:
+    case INPAR::SOLVER::PreconditionerType::cheap_simple:
     {
       // no plausibility checks here
       // if you forget to declare an xml file you will get an error message anyway
@@ -228,9 +229,9 @@ void EHL::Monolithic::CreateLinearSolver()
   // prepare linear solvers and preconditioners
   switch (azprectype)
   {
-    case INPAR::SOLVER::azprec_BGS2x2:
-    case INPAR::SOLVER::azprec_AMGnxn:
-    case INPAR::SOLVER::azprec_CheapSIMPLE:
+    case INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2:
+    case INPAR::SOLVER::PreconditionerType::multigrid_nxn:
+    case INPAR::SOLVER::PreconditionerType::cheap_simple:
     {
       // This should be the default case (well-tested and used)
       solver_ = Teuchos::rcp(new LINALG::Solver(ehlsolverparams,
@@ -253,7 +254,7 @@ void EHL::Monolithic::CreateLinearSolver()
           solver_->Params().sublist("Inverse2"));
 
 
-      if (azprectype == INPAR::SOLVER::azprec_CheapSIMPLE)
+      if (azprectype == INPAR::SOLVER::PreconditionerType::cheap_simple)
       {
         // Tell to the LINALG::SOLVER::SimplePreconditioner that we use the general implementation
         solver_->Params().set<bool>("GENERAL", true);
@@ -261,7 +262,7 @@ void EHL::Monolithic::CreateLinearSolver()
 
       break;
     }
-    case INPAR::SOLVER::azprec_MueLuAMG:
+    case INPAR::SOLVER::PreconditionerType::multigrid_muelu:
     {
       solver_ = Teuchos::rcp(new LINALG::Solver(ehlsolverparams,
           // ggfs. explizit Comm von STR wie lungscatra

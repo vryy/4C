@@ -657,10 +657,11 @@ void POROELAST::Monolithic::CreateLinearSolver()
   const Teuchos::ParameterList& porosolverparams =
       DRT::Problem::Instance()->SolverParams(linsolvernumber);
 
-  const int solvertype =
-      DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(porosolverparams, "SOLVER");
+  const auto solvertype =
+      Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(porosolverparams, "SOLVER");
 
-  if (solvertype != INPAR::SOLVER::aztec_msr && solvertype != INPAR::SOLVER::belos)
+  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr &&
+      solvertype != INPAR::SOLVER::SolverType::belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;
@@ -671,15 +672,15 @@ void POROELAST::Monolithic::CreateLinearSolver()
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     dserror("aztec solver expected");
   }
-  const int azprectype =
-      DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(porosolverparams, "AZPREC");
+  const auto azprectype =
+      Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(porosolverparams, "AZPREC");
 
   // plausibility check
   switch (azprectype)
   {
-    case INPAR::SOLVER::azprec_BGS2x2:
+    case INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2:
       break;
-    case INPAR::SOLVER::azprec_AMGnxn:
+    case INPAR::SOLVER::PreconditionerType::multigrid_nxn:
     {
       // no plausibility checks here
       // if you forget to declare an xml file you will get an error message anyway
@@ -1584,11 +1585,11 @@ bool POROELAST::Monolithic::SetupSolver()
   }
   const Teuchos::ParameterList& solverparams =
       DRT::Problem::Instance()->SolverParams(linsolvernumber);
-  const int solvertype =
-      DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
+  const auto solvertype =
+      Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
-  directsolve_ = (solvertype == INPAR::SOLVER::umfpack or solvertype == INPAR::SOLVER::superlu or
-                  solvertype == INPAR::SOLVER::amesos_klu_nonsym);
+  directsolve_ = (solvertype == INPAR::SOLVER::SolverType::umfpack or
+                  solvertype == INPAR::SOLVER::SolverType::superlu);
 
   if (directsolve_)
   {

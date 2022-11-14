@@ -573,10 +573,10 @@ bool POROELAST::PoroScatraMono::SetupSolver()
         "in POROSCATRA CONTROL to a valid number!");
   const Teuchos::ParameterList& solverparams =
       DRT::Problem::Instance()->SolverParams(linsolvernumber);
-  const int solvertype =
-      DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
+  const auto solvertype =
+      Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
-  directsolve_ = (solvertype == INPAR::SOLVER::umfpack);
+  directsolve_ = (solvertype == INPAR::SOLVER::SolverType::umfpack);
 
   if (directsolve_)
   {

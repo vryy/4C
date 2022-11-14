@@ -303,10 +303,11 @@ void TSI::Monolithic::CreateLinearSolver()
   const Teuchos::ParameterList& tsisolverparams =
       DRT::Problem::Instance()->SolverParams(linsolvernumber);
 
-  const int solvertype =
-      DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(tsisolverparams, "SOLVER");
+  const auto solvertype =
+      Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(tsisolverparams, "SOLVER");
 
-  if ((solvertype != INPAR::SOLVER::aztec_msr) and (solvertype != INPAR::SOLVER::belos))
+  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr and
+      solvertype != INPAR::SOLVER::SolverType::belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;
@@ -317,17 +318,17 @@ void TSI::Monolithic::CreateLinearSolver()
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     dserror("aztec solver expected");
   }
-  const int azprectype =
-      DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(tsisolverparams, "AZPREC");
+  const auto azprectype =
+      Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(tsisolverparams, "AZPREC");
 
   // plausibility check
   switch (azprectype)
   {
-    case INPAR::SOLVER::azprec_BGS2x2:
+    case INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2:
       break;
-    case INPAR::SOLVER::azprec_MueLuAMG_tsi:
-    case INPAR::SOLVER::azprec_AMGnxn:
-    case INPAR::SOLVER::azprec_CheapSIMPLE:
+    case INPAR::SOLVER::PreconditionerType::multigrid_muelu_tsi:
+    case INPAR::SOLVER::PreconditionerType::multigrid_nxn:
+    case INPAR::SOLVER::PreconditionerType::cheap_simple:
     {
       // no plausibility checks here
       // if you forget to declare an xml file you will get an error message anyway
@@ -344,9 +345,9 @@ void TSI::Monolithic::CreateLinearSolver()
   // prepare linear solvers and preconditioners
   switch (azprectype)
   {
-    case INPAR::SOLVER::azprec_BGS2x2:
-    case INPAR::SOLVER::azprec_AMGnxn:
-    case INPAR::SOLVER::azprec_CheapSIMPLE:
+    case INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2:
+    case INPAR::SOLVER::PreconditionerType::multigrid_nxn:
+    case INPAR::SOLVER::PreconditionerType::cheap_simple:
     {
       // This should be the default case (well-tested and used)
       solver_ = Teuchos::rcp(new LINALG::Solver(tsisolverparams,
@@ -369,7 +370,7 @@ void TSI::Monolithic::CreateLinearSolver()
           solver_->Params().sublist("Inverse2"));
 
 
-      if (azprectype == INPAR::SOLVER::azprec_CheapSIMPLE)
+      if (azprectype == INPAR::SOLVER::PreconditionerType::cheap_simple)
       {
         // Tell to the LINALG::SOLVER::SimplePreconditioner that we use the general implementation
         solver_->Params().set<bool>("GENERAL", true);
@@ -377,7 +378,7 @@ void TSI::Monolithic::CreateLinearSolver()
 
       break;
     }
-    case INPAR::SOLVER::azprec_MueLuAMG_tsi:
+    case INPAR::SOLVER::PreconditionerType::multigrid_muelu_tsi:
     {
       solver_ = Teuchos::rcp(new LINALG::Solver(
           tsisolverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));

@@ -16,6 +16,7 @@
 #include "io_control.H"
 #include "drt_globalproblem.H"
 #include "drt_discret.H"
+#include "drt_utils_parameter_list.H"
 #include "topopt_fluidAdjointImplTimeIntegration.H"
 #include "topopt_utils.H"
 #include "linalg_solver.H"
@@ -159,9 +160,11 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
 
   fluidadjointtimeparams->set<int>(
       "Simple Preconditioner", DRT::INPUT::IntegralValue<int>(fdyn, "SIMPLER"));
-  fluidadjointtimeparams->set<int>("AMG(BS) Preconditioner",
-      DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
-          DRT::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC"));
+  DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::PreconditionerType>(
+      "AMG(BS) Preconditioner",
+      Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
+          DRT::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC"),
+      *fluidadjointtimeparams);
 
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom

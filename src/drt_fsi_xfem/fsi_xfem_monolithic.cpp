@@ -2038,22 +2038,23 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
     dserror("check whether solver with number 1 is the XFSI_SOLVER and has this name!");
 
 
-  const int solvertype =
-      DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(xfsisolverparams, "SOLVER");
+  const auto solvertype =
+      Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(xfsisolverparams, "SOLVER");
 
   //----------------------------------------------
   // create direct solver for merged block matrix
   //----------------------------------------------
-  if (solvertype == INPAR::SOLVER::umfpack || solvertype == INPAR::SOLVER::superlu)
+  if (solvertype == INPAR::SOLVER::SolverType::umfpack ||
+      solvertype == INPAR::SOLVER::SolverType::superlu)
   {
     if (Comm().MyPID() == 0) std::cout << "Merged XFSI block matrix is used!\n" << std::endl;
 
     merge_fsi_blockmatrix_ = true;
 
     Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
-    if (solvertype == INPAR::SOLVER::umfpack)
+    if (solvertype == INPAR::SOLVER::SolverType::umfpack)
       solverparams->set("solver", "umfpack");
-    else if (solvertype == INPAR::SOLVER::superlu)
+    else if (solvertype == INPAR::SOLVER::SolverType::superlu)
       solverparams->set("solver", "superlu");
 
     solver_ = Teuchos::rcp(
@@ -2066,7 +2067,8 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
   // create iterative solver for XFSI block matrix
   //----------------------------------------------
 
-  if ((solvertype != INPAR::SOLVER::aztec_msr) and (solvertype != INPAR::SOLVER::belos))
+  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr and
+      solvertype != INPAR::SOLVER::SolverType::belos)
   {
     dserror("aztec solver expected");
   }
@@ -2108,17 +2110,17 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
   }
 
 
-  const int azprectype =
-      DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(xfsisolverparams, "AZPREC");
+  const auto azprectype =
+      Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(xfsisolverparams, "AZPREC");
 
   // plausibility check
   switch (azprectype)
   {
-    case INPAR::SOLVER::azprec_BGS2x2:
+    case INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2:
       break;
-    case INPAR::SOLVER::azprec_MueLuAMG:
-    case INPAR::SOLVER::azprec_AMGnxn:
-    case INPAR::SOLVER::azprec_CheapSIMPLE:
+    case INPAR::SOLVER::PreconditionerType::multigrid_muelu:
+    case INPAR::SOLVER::PreconditionerType::multigrid_nxn:
+    case INPAR::SOLVER::PreconditionerType::cheap_simple:
     {
       // no plausibility checks here
       // if you forget to declare an xml file you will get an error message anyway
@@ -2135,9 +2137,9 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
   // prepare linear solvers and preconditioners
   switch (azprectype)
   {
-    case INPAR::SOLVER::azprec_BGS2x2:
-    case INPAR::SOLVER::azprec_AMGnxn:
-    case INPAR::SOLVER::azprec_CheapSIMPLE:
+    case INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2:
+    case INPAR::SOLVER::PreconditionerType::multigrid_nxn:
+    case INPAR::SOLVER::PreconditionerType::cheap_simple:
     {
       // This should be the default case (well-tested and used)
       solver_ = Teuchos::rcp(new LINALG::Solver(xfsisolverparams,
@@ -2184,7 +2186,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
           dserror("You have more than 4 Fields? --> add another Inverse 5 here!");
       }
 
-      if (azprectype == INPAR::SOLVER::azprec_CheapSIMPLE)
+      if (azprectype == INPAR::SOLVER::PreconditionerType::cheap_simple)
       {
         // Tell to the LINALG::SOLVER::SimplePreconditioner that we use the general implementation
         solver_->Params().set<bool>("GENERAL", true);
@@ -2192,7 +2194,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
 
       break;
     }
-    case INPAR::SOLVER::azprec_MueLuAMG:
+    case INPAR::SOLVER::PreconditionerType::multigrid_muelu:
     {
       solver_ = Teuchos::rcp(new LINALG::Solver(xfsisolverparams,
           // ggfs. explizit Comm von STR wie lungscatra

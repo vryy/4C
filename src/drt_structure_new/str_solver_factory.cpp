@@ -116,20 +116,20 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildStructureLinSolver(
   Teuchos::RCP<LINALG::Solver> linsolver = Teuchos::rcp(new LINALG::Solver(
       linsolverparams, actdis.Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
-  const int azprectype =
-      DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(linsolverparams, "AZPREC");
+  const auto azprectype =
+      Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(linsolverparams, "AZPREC");
 
   switch (azprectype)
   {
-    case INPAR::SOLVER::azprec_ML:
-    case INPAR::SOLVER::azprec_MLfluid:
-    case INPAR::SOLVER::azprec_MLfluid2:
-    case INPAR::SOLVER::azprec_MueLuAMG:
+    case INPAR::SOLVER::PreconditionerType::multigrid_ml:
+    case INPAR::SOLVER::PreconditionerType::multigrid_ml_fluid:
+    case INPAR::SOLVER::PreconditionerType::multigrid_ml_fluid2:
+    case INPAR::SOLVER::PreconditionerType::multigrid_muelu:
     {
       actdis.ComputeNullSpaceIfNecessary(linsolver->Params());
       break;
     }
-    case INPAR::SOLVER::azprec_MueLuAMG_BeamSolid:
+    case INPAR::SOLVER::PreconditionerType::multigrid_muelu_beamsolid:
     {
       // Create the beam and solid maps
       std::vector<int> solidDofs(0);
@@ -173,6 +173,9 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildStructureLinSolver(
       actdis.ComputeNullSpaceIfNecessary(linsolver->Params().sublist("Inverse2"));
 
       break;
+    }
+    default:
+    {
     }
   }
 
@@ -248,15 +251,16 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLinSolve
       // plausibility check
 
       // solver can be either UMFPACK (direct solver) or an Aztec_MSR/Belos (iterative solver)
-      INPAR::SOLVER::SolverType sol = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
+      const auto sol = Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(
           DRT::Problem::Instance()->SolverParams(lin_solver_id), "SOLVER");
-      INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
+      const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
           DRT::Problem::Instance()->SolverParams(lin_solver_id), "AZPREC");
-      if (sol != INPAR::SOLVER::umfpack && sol != INPAR::SOLVER::superlu)
+      if (sol != INPAR::SOLVER::SolverType::umfpack && sol != INPAR::SOLVER::SolverType::superlu)
       {
         // if an iterative solver is chosen we need a block preconditioner like CheapSIMPLE
-        if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
-            prec != INPAR::SOLVER::azprec_MueLuAMG_contactSP)  // TODO adapt error message
+        if (prec != INPAR::SOLVER::PreconditionerType::cheap_simple &&
+            prec != INPAR::SOLVER::PreconditionerType::multigrid_muelu_contactsp)  // TODO adapt
+                                                                                   // error message
           dserror(
               "You have chosen an iterative linear solver. For mortar/Contact in saddlepoint "
               "formulation you have to choose a block preconditioner such as SIMPLE. Choose "
@@ -288,13 +292,13 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLinSolve
           sol_type == INPAR::CONTACT::solution_steepest_ascent_sp)
       {
         // provide null space information
-        if (prec == INPAR::SOLVER::azprec_CheapSIMPLE)
+        if (prec == INPAR::SOLVER::PreconditionerType::cheap_simple)
         {
           // Inverse2 is created within blockpreconditioners.cpp
           actdis.ComputeNullSpaceIfNecessary(
               linsolver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"));
         }
-        else if (prec == INPAR::SOLVER::azprec_MueLuAMG_contactSP)
+        else if (prec == INPAR::SOLVER::PreconditionerType::multigrid_muelu_contactsp)
         { /* do nothing here */
         }
       }
@@ -382,11 +386,11 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLinSolve
         dserror("Please edit your dat file");
       }
 
-      INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
+      const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
           DRT::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
       switch (prec)
       {
-        case INPAR::SOLVER::azprec_CheapSIMPLE:
+        case INPAR::SOLVER::PreconditionerType::cheap_simple:
         {
           // add Inverse1 block for velocity dofs
           // tell Inverse1 block about NodalBlockInformation
@@ -457,11 +461,11 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildCardiovascular0DLinSolve
       break;
     case INPAR::CARDIOVASCULAR0D::cardvasc0dsolve_simple:
     {
-      INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
+      const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
           DRT::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
       switch (prec)
       {
-        case INPAR::SOLVER::azprec_CheapSIMPLE:
+        case INPAR::SOLVER::PreconditionerType::cheap_simple:
         {
           // add Inverse1 block for velocity dofs
           // tell Inverse1 block about NodalBlockInformation

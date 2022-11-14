@@ -163,12 +163,10 @@ BGS2X2_BLOCK1_DAMPING           1.0
 BGS2X2_BLOCK2_DAMPING           1.0
 AZBDIAG                         0
 AZCONV                          AZ_r0                         // AZ_r0,AZ_rhs,AZ_Anorm,AZ_noscaled,AZ_sol,AZ_weighted,AZ_expected_values,AZTECOO_conv_test,AZ_inf_noscaled
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        50
-AZPOLY                          3
 AZSCAL                          none                          // none,sym,infnorm
 AZSUB                           300
 AZTOL                           1e-08

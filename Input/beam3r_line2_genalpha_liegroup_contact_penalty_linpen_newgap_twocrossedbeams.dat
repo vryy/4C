@@ -69,7 +69,7 @@ BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    2.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Amesos_KLU_nonsym
+SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          2

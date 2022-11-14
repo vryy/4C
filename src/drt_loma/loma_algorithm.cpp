@@ -192,17 +192,17 @@ void LOMA::Algorithm::Setup()
     const Teuchos::ParameterList& lomasolverparams =
         DRT::Problem::Instance()->SolverParams(linsolvernumber);
 
-    const int solvertype =
-        DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(lomasolverparams, "SOLVER");
-    if (solvertype != INPAR::SOLVER::aztec_msr)
+    const auto solvertype =
+        Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(lomasolverparams, "SOLVER");
+    if (solvertype != INPAR::SOLVER::SolverType::aztec_msr)
       dserror(
           "SOLVER %i is not valid for LOMA. It has to be an Aztec Solver (with BGS2x2 block "
           "preconditioner)",
           linsolvernumber);
 
-    const int azprectype =
-        DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(lomasolverparams, "AZPREC");
-    if (azprectype != INPAR::SOLVER::azprec_BGS2x2)
+    const auto azprectype =
+        Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(lomasolverparams, "AZPREC");
+    if (azprectype != INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2)
       dserror(
           "SOLVER %i is not valid for LOMA. It has to be an Aztec Solver with BGS2x2 block "
           "preconditioner",

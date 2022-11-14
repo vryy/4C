@@ -17,12 +17,10 @@ PROBLEMTYP                      Structure
 --------------------------------------------------------------------SOLVER 1
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          2000
 AZOMEGA                         0
 AZOUTPUT                        100
-AZPOLY                          5
 AZPREC                          MLFLUID2
 AZREUSE                         5
 AZSCAL                          none

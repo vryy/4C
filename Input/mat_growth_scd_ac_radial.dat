@@ -137,19 +137,16 @@ MINOMEGA                        0.7
 NAME                            Structure_Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPOLY                          3
 AZPREC                          ILU
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
-IFPACKFILL                      1.0
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 IFPACKCOMBINE                   Add                           // Add Insert Zero

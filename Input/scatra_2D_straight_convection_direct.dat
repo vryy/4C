@@ -36,7 +36,7 @@ VELFUNCNO                       1
 RESULTSEVRY                           1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          LAPACK_nonsym
+SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4

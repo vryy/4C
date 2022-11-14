@@ -59,8 +59,6 @@ AZOUTPUT                        10
 AZSOLVE                         GMRES
 AZPREC                          ML
 AZREUSE                         0
-AZDROP                          0.0
-IFPACKFILL                      1.0
 IFPACKGFILL                     0
 AZTOL                           1.0E-10
 AZCONV                          AZ_r0
@@ -68,7 +66,6 @@ AZITER                          1000
 AZSUB                           200
 AZOMEGA                         0.67
 AZGRAPH                         1
-AZPOLY                          5
 IFPACKOVERLAP                   0
 IFPACKCOMBINE                   Add
 AZSCAL                          none
@@ -93,8 +90,6 @@ AZOUTPUT                        10
 AZSOLVE                         GMRES
 AZPREC                          ML
 AZREUSE                         0
-AZDROP                          0.0
-IFPACKFILL                      1.0
 IFPACKGFILL                     0
 AZTOL                           1.0E-10
 AZCONV                          AZ_r0
@@ -102,7 +97,6 @@ AZITER                          1000
 AZSUB                           200
 AZOMEGA                         0.67
 AZGRAPH                         1
-AZPOLY                          5
 IFPACKOVERLAP                   0
 IFPACKCOMBINE                   Add
 AZSCAL                          none

@@ -521,11 +521,11 @@ void FPSI::Monolithic::SetupSolver()
 
   const Teuchos::ParameterList& solverparams =
       DRT::Problem::Instance()->SolverParams(linsolvernumber);
-  const int solvertype =
-      DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
+  const auto solvertype =
+      Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
-  directsolve_ = (solvertype == INPAR::SOLVER::umfpack or solvertype == INPAR::SOLVER::superlu or
-                  solvertype == INPAR::SOLVER::amesos_klu_nonsym);
+  directsolve_ = (solvertype == INPAR::SOLVER::SolverType::umfpack or
+                  solvertype == INPAR::SOLVER::SolverType::superlu);
 
   if (directsolve_)
     solver_ = Teuchos::rcp(
@@ -630,10 +630,11 @@ void FPSI::Monolithic::CreateLinearSolver()
   const Teuchos::ParameterList& fpsisolverparams =
       DRT::Problem::Instance()->SolverParams(linsolvernumber);
 
-  const int solvertype =
-      DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(fpsisolverparams, "SOLVER");
+  const auto solvertype =
+      Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(fpsisolverparams, "SOLVER");
 
-  if (solvertype != INPAR::SOLVER::aztec_msr && solvertype != INPAR::SOLVER::belos)
+  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr &&
+      solvertype != INPAR::SOLVER::SolverType::belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;
@@ -644,13 +645,13 @@ void FPSI::Monolithic::CreateLinearSolver()
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     dserror("aztec solver expected");
   }
-  const int azprectype =
-      DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(fpsisolverparams, "AZPREC");
+  const auto azprectype =
+      Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(fpsisolverparams, "AZPREC");
 
   // plausibility check
   switch (azprectype)
   {
-    case INPAR::SOLVER::azprec_AMGnxn:
+    case INPAR::SOLVER::PreconditionerType::multigrid_nxn:
     {
       // no plausibility checks here
       // if you forget to declare an xml file you will get an error message anyway

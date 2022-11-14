@@ -96,10 +96,7 @@ AZSOLVE                         GMRES
 AZPREC                          ILU
 IFPACKOVERLAP                   0
 IFPACKGFILL                     0
-IFPACKFILL                      1
 IFPACKCOMBINE                   Add
-AZDROP                          0
-AZPOLY                          3
 AZSUB                           50
 AZCONV                          AZ_r0
 AZOUTPUT                        0
@@ -142,10 +139,7 @@ AZSOLVE                         GMRES
 AZPREC                          ILU
 IFPACKOVERLAP                   0
 IFPACKGFILL                     0
-IFPACKFILL                      1
 IFPACKCOMBINE                   Add
-AZDROP                          0
-AZPOLY                          3
 AZSUB                           50
 AZCONV                          AZ_r0
 AZOUTPUT                        0

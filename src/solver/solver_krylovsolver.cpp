@@ -223,10 +223,6 @@ void LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::CreatePreconditioner(
       dserror("MueLu (BeamSolid) preconditioner only available in Trilinos_Develop.");
 #endif
     }
-    else if (azlist.get<int>("AZ_precond") == AZ_none)  // FIXME Attention: this is dangerous.
-    {
-      preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::NonePreconditioner(outfile_, Params()));
-    }
     else
     {
       dserror("unknown preconditioner");

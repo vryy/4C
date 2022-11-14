@@ -560,13 +560,13 @@ void FS3I::PartFS3I::SetupSystem()
   const Teuchos::ParameterList& coupledscatrasolvparams =
       DRT::Problem::Instance()->SolverParams(linsolvernumber);
 
-  const int solvertype =
-      DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(coupledscatrasolvparams, "SOLVER");
-  if (solvertype != INPAR::SOLVER::aztec_msr) dserror("aztec solver expected");
+  const auto solvertype =
+      Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(coupledscatrasolvparams, "SOLVER");
+  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr) dserror("aztec solver expected");
 
-  const int azprectype =
-      DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(coupledscatrasolvparams, "AZPREC");
-  if (azprectype != INPAR::SOLVER::azprec_BGS2x2)
+  const auto azprectype = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
+      coupledscatrasolvparams, "AZPREC");
+  if (azprectype != INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2)
     dserror("Block Gauss-Seidel preconditioner expected");
 
   // use coupled scatra solver object

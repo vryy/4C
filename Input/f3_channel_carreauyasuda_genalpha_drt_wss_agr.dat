@@ -92,15 +92,12 @@ GMSH_DEBUG_OUT                  No
 NAME                            Fluid_Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      1
 IFPACKGFILL                     0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
 IFPACKOVERLAP                   0
-AZPOLY                          3
 AZPREC                          MLFLUID2
 AZREUSE                         0
 AZSCAL                          none

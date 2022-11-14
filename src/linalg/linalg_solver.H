@@ -54,7 +54,7 @@ namespace LINALG
     \param outfile (in): ptr to an error file on proc 0 only. If NULL on input,
                          no output will be generated.
     */
-    Solver(Teuchos::RCP<Teuchos::ParameterList> params, const Epetra_Comm& comm, FILE* outfile);
+    Solver(Teuchos::RCP<Teuchos::ParameterList>& params, const Epetra_Comm& comm, FILE* outfile);
 
 
     /*!
@@ -247,10 +247,10 @@ namespace LINALG
 
     */
     static const Teuchos::ParameterList TranslateBACIToML(
-        const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist = NULL);
+        const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist = nullptr);
 
     static const Teuchos::ParameterList TranslateBACIToMuelu(
-        const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist = NULL);
+        const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist = nullptr);
 
     static const Teuchos::ParameterList TranslateBACIToIfpack(
         const Teuchos::ParameterList& inparams);
@@ -275,7 +275,6 @@ namespace LINALG
     void PutSolverParamsToSubParams(const std::string name, const Teuchos::ParameterList& inparams)
     {
       (*params_).sublist(name) = TranslateSolverParameters(inparams);
-      return;
     }
     //@}
 
