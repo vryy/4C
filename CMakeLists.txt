@@ -1142,28 +1142,6 @@ set(OBJS_DRT_STI
     src/drt_sti/sti_partitioned.cpp
     src/drt_sti/sti_resulttest.cpp
     )
-set(OBJS_DRT_FLUID_TURBULENCE
-    src/drt_fluid_turbulence/dyn_smag.cpp
-    src/drt_fluid_turbulence/dyn_vreman.cpp
-    src/drt_fluid_turbulence/boxfilter.cpp
-    src/drt_fluid_turbulence/drt_transfer_turb_inflow.cpp
-    src/drt_fluid_turbulence/turbulence_hit_initial_field.cpp
-    src/drt_fluid_turbulence/turbulence_hit_forcing.cpp
-    src/drt_fluid_turbulence/turbulent_flow_algorithm.cpp
-    src/drt_fluid_turbulence/turbulence_statistic_manager.cpp
-    src/drt_fluid_turbulence/turbulence_statistics_bfs.cpp
-    src/drt_fluid_turbulence/turbulence_statistics_ph.cpp
-    src/drt_fluid_turbulence/turbulence_statistics_bfda.cpp
-    #  src/drt_fluid_turbulence/turbulence_statistics_bcf.cpp
-    src/drt_fluid_turbulence/turbulence_statistics_ccy.cpp
-    src/drt_fluid_turbulence/turbulence_statistics_cha.cpp
-    src/drt_fluid_turbulence/turbulence_statistics_hit.cpp
-    src/drt_fluid_turbulence/turbulence_statistics_tgv.cpp
-    src/drt_fluid_turbulence/turbulence_statistics_ldc.cpp
-    src/drt_fluid_turbulence/turbulence_statistics_mean_general.cpp
-    #  src/drt_fluid_turbulence/turbulence_statistics_oracles.cpp
-    src/drt_fluid_turbulence/turbulence_statistics_sqc.cpp
-    )
 set(OBJS_DRT_FLUID_XFLUID
     src/drt_fluid_xfluid/xfluid.cpp
     src/drt_fluid_xfluid/xfluidfluid.cpp
@@ -2146,9 +2124,6 @@ deprecated_baci_add_library_linked_with_everything(drt_adapter ${OBJS_DRT_ADAPT}
 # algorithm libraries the adapters depend uo
 deprecated_baci_add_library_linked_with_everything(alg_ale ${OBJS_DRT_ALEALG})
 deprecated_baci_add_library_linked_with_everything(alg_artnet ${OBJS_DRT_ARTNET})
-deprecated_baci_add_library_linked_with_everything(
-  alg_fluid_turbulence ${OBJS_DRT_FLUID_TURBULENCE}
-  )
 deprecated_baci_add_library_linked_with_everything(alg_xfluid ${OBJS_DRT_FLUID_XFLUID})
 deprecated_baci_add_library_linked_with_everything(alg_statinvanalysis ${OBJS_STATINV_ANALYSIS})
 deprecated_baci_add_library_linked_with_everything(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
