@@ -324,18 +324,17 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface&
         // evaluate the DBC prescribed value based on time curve
         // here we only compute based on time curve and not the derivative, hence degree = 0
         int funct_num = -1;
-        std::vector<double> functimederivfac(1, 1.0);
+        double functfac = 1.0;
         if (funct)
         {
           funct_num = (*funct)[onesetj];
           if (funct_num > 0)
-            functimederivfac = DRT::Problem::Instance()
+            functfac = DRT::Problem::Instance()
                                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funct_num - 1)
-                                   .EvaluateTimeDerivative(actnode->X(), time, 0, onesetj);
+                                   .Evaluate(actnode->X(), time, onesetj);
         }
 
-        double value = (*val)[onesetj];
-        value *= functimederivfac[0];
+        const double value = (*val)[onesetj] * functfac;
 
         // check: if the dof has been fixed before and the DBC set it to a different value, then an
         // inconsistency is detected.
