@@ -1142,16 +1142,6 @@ set(OBJS_DRT_STI
     src/drt_sti/sti_partitioned.cpp
     src/drt_sti/sti_resulttest.cpp
     )
-set(OBJS_DRT_FLUID_XFLUID
-    src/drt_fluid_xfluid/xfluid.cpp
-    src/drt_fluid_xfluid/xfluidfluid.cpp
-    src/drt_fluid_xfluid/xfluidfluid_state.cpp
-    src/drt_fluid_xfluid/xfluidresulttest.cpp
-    src/drt_fluid_xfluid/xfluid_state.cpp
-    src/drt_fluid_xfluid/xfluid_state_creator.cpp
-    src/drt_fluid_xfluid/xfluid_levelset_coupling_algorithm.cpp
-    src/drt_fluid_xfluid/xfluid_outputservice.cpp
-    )
 set(OBJS_PRE_EXODUS
     src/pre_exodus/pre_exodus.cpp
     src/pre_exodus/pre_exodus_centerline.cpp
@@ -2124,7 +2114,6 @@ deprecated_baci_add_library_linked_with_everything(drt_adapter ${OBJS_DRT_ADAPT}
 # algorithm libraries the adapters depend uo
 deprecated_baci_add_library_linked_with_everything(alg_ale ${OBJS_DRT_ALEALG})
 deprecated_baci_add_library_linked_with_everything(alg_artnet ${OBJS_DRT_ARTNET})
-deprecated_baci_add_library_linked_with_everything(alg_xfluid ${OBJS_DRT_FLUID_XFLUID})
 deprecated_baci_add_library_linked_with_everything(alg_statinvanalysis ${OBJS_STATINV_ANALYSIS})
 deprecated_baci_add_library_linked_with_everything(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
 deprecated_baci_add_library_linked_with_everything(alg_lubrication ${OBJS_DRT_LUBRICATION})
