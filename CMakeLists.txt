@@ -1142,54 +1142,6 @@ set(OBJS_DRT_STI
     src/drt_sti/sti_partitioned.cpp
     src/drt_sti/sti_resulttest.cpp
     )
-set(OBJS_DRT_FLUID
-    src/drt_fluid/fluid_discretization_runtime_vtu_output_params.cpp
-    src/drt_fluid/fluid_coupling_red_models.cpp
-    src/drt_fluid/fluid_dyn_nln_drt.cpp
-    src/drt_fluid/fluid_meshtying.cpp
-    src/drt_fluid/fluid_discret_extractor.cpp
-    src/drt_fluid/fluid_utils.cpp
-    src/drt_fluid/fluid_utils_infnormscaling.cpp
-    src/drt_fluid/fluid_utils_mapextractor.cpp
-    src/drt_fluid/fluid_MHD_evaluate.cpp
-    src/drt_fluid/fluid_timint_bdf2.cpp
-    src/drt_fluid/fluid_timint_genalpha.cpp
-    src/drt_fluid/fluid_timint_loma_genalpha.cpp
-    src/drt_fluid/fluid_timint_loma_ost.cpp
-    src/drt_fluid/fluid_timint_loma_bdf2.cpp
-    src/drt_fluid/fluid_timint_loma.cpp
-    src/drt_fluid/fluid_timint_ost.cpp
-    src/drt_fluid/fluid_timint_poro_genalpha.cpp
-    src/drt_fluid/fluid_timint_poro_ost.cpp
-    src/drt_fluid/fluid_timint_poro_stat.cpp
-    src/drt_fluid/fluid_timint_poro.cpp
-    src/drt_fluid/fluid_timint_ac_ost.cpp
-    src/drt_fluid/fluid_timint_ac.cpp
-    src/drt_fluid/fluid_timint_red_ost.cpp
-    src/drt_fluid/fluid_timint_red_bdf2.cpp
-    src/drt_fluid/fluid_timint_red_genalpha.cpp
-    src/drt_fluid/fluid_timint_red_stat.cpp
-    src/drt_fluid/fluid_timint_red.cpp
-    src/drt_fluid/fluid_timint_stat.cpp
-    src/drt_fluid/fluid_timint_topopt_bdf2.cpp
-    src/drt_fluid/fluid_timint_topopt_genalpha.cpp
-    src/drt_fluid/fluid_timint_topopt_ost.cpp
-    src/drt_fluid/fluid_timint_topopt_stat.cpp
-    src/drt_fluid/fluid_timint_topopt.cpp
-    src/drt_fluid/fluid_timint_two_phase_genalpha.cpp
-    src/drt_fluid/fluid_timint_two_phase_ost.cpp
-    src/drt_fluid/fluid_timint_two_phase_stat.cpp
-    src/drt_fluid/fluid_timint_two_phase.cpp
-    src/drt_fluid/fluidimpedancecondition.cpp
-    src/drt_fluid/fluid_volumetric_surfaceFlow_condition.cpp
-    src/drt_fluid/fluidimplicitintegration.cpp
-    src/drt_fluid/fluidresulttest.cpp
-    src/drt_fluid/fluid_timint.cpp
-    src/drt_fluid/fluid_timint_hdg.cpp
-    src/drt_fluid/fluid_timint_hdg_weak_comp.cpp
-    src/drt_fluid/fluid_timint_stat_hdg.cpp
-    src/drt_fluid/fluid_xwall.cpp
-    )
 set(OBJS_DRT_FLUID_TURBULENCE
     src/drt_fluid_turbulence/dyn_smag.cpp
     src/drt_fluid_turbulence/dyn_vreman.cpp
@@ -2278,7 +2230,6 @@ deprecated_baci_add_library_linked_with_everything(drt_adapter ${OBJS_DRT_ADAPT}
 # algorithm libraries the adapters depend uo
 deprecated_baci_add_library_linked_with_everything(alg_ale ${OBJS_DRT_ALEALG})
 deprecated_baci_add_library_linked_with_everything(alg_artnet ${OBJS_DRT_ARTNET})
-deprecated_baci_add_library_linked_with_everything(alg_fluid ${OBJS_DRT_FLUID})
 deprecated_baci_add_library_linked_with_everything(
   alg_fluid_turbulence ${OBJS_DRT_FLUID_TURBULENCE}
   )
