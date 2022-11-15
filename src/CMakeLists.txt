@@ -1,5 +1,7 @@
 add_subdirectory(drt_binstrategy)
 add_subdirectory(drt_comm)
 add_subdirectory(drt_lib)
+add_subdirectory(drt_thermo)
+add_subdirectory(drt_tsi)
 add_subdirectory(linalg)
 add_subdirectory(solver)
