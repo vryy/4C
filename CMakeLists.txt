@@ -899,6 +899,7 @@ set(OBJS_DRT_SCATRA
     src/drt_scatra/scatra_timint_hdg.cpp
     src/drt_scatra/scatra_timint_stat_hdg.cpp
     src/drt_scatra/scatra_timint_cardiac_monodomain_scheme_hdg.cpp
+    src/drt_scatra/nox_nln_scatra_linearsystem.cpp
     )
 set(OBJS_DRT_TSI
     src/drt_tsi/tsi_algorithm.cpp
@@ -1475,6 +1476,7 @@ set(OBJS_DRT_STRUCTURE
     src/drt_structure_new/str_nln_solver_fullnewton.cpp
     src/drt_structure_new/str_nln_solver_nox.cpp
     src/drt_structure_new/str_nln_solver_ptc.cpp
+    src/drt_structure_new/nox_nln_str_linearsystem.cpp
     #  src/drt_structure_new/str_nln_solver_nonlin.cpp
     src/drt_structure_new/str_predict_factory.cpp
     src/drt_structure_new/str_predict_generic.cpp
@@ -1599,52 +1601,6 @@ set(OBJS_DRT_ELEMAG_LIB
     src/drt_elemag/elemag_diff_ele.cpp
     )
 
-set(OBJS_SOLVER_NONLIN_NOX
-    src/solver_nonlin_nox/nox_nln_aux.cpp
-    src/solver_nonlin_nox/nox_nln_floating_point_exception.cpp
-    src/solver_nonlin_nox/nox_nln_globaldata.cpp
-    src/solver_nonlin_nox/nox_nln_problem.cpp
-    src/solver_nonlin_nox/nox_nln_linearsystem.cpp
-    src/solver_nonlin_nox/nox_nln_linearsystem_factory.cpp
-    src/solver_nonlin_nox/nox_nln_linearsystem_prepostoperator.cpp
-    src/solver_nonlin_nox/nox_nln_group.cpp
-    src/solver_nonlin_nox/nox_nln_group_prepostoperator.cpp
-    src/solver_nonlin_nox/nox_nln_linesearch_factory.cpp
-    src/solver_nonlin_nox/nox_nln_linesearch_prepostoperator.cpp
-    src/solver_nonlin_nox/nox_nln_direction_factory.cpp
-    src/solver_nonlin_nox/nox_nln_meritfunction_factory.cpp
-    src/solver_nonlin_nox/nox_nln_solver_factory.cpp
-    src/solver_nonlin_nox/nox_nln_solver_prepostop_generic.cpp
-    src/solver_nonlin_nox/nox_nln_solver_linesearchbased.cpp
-    src/solver_nonlin_nox/nox_nln_solver_ptc.cpp
-    src/solver_nonlin_nox/nox_nln_constraint_group.cpp
-    src/solver_nonlin_nox/nox_nln_linesearch_backtrack.cpp
-    src/solver_nonlin_nox/nox_nln_meritfunction_lagrangian.cpp
-    src/solver_nonlin_nox/nox_nln_meritfunction_infeasibility.cpp
-    src/solver_nonlin_nox/nox_nln_direction_newton.cpp
-    src/solver_nonlin_nox/nox_nln_direction_modified_newton.cpp
-    src/solver_nonlin_nox/nox_nln_direction_defaultsteptest.cpp
-    src/solver_nonlin_nox/nox_nln_statustest_factory.cpp
-    src/solver_nonlin_nox/nox_nln_statustest_combo.cpp
-    src/solver_nonlin_nox/nox_nln_statustest_normf.cpp
-    src/solver_nonlin_nox/nox_nln_statustest_normupdate.cpp
-    src/solver_nonlin_nox/nox_nln_statustest_normwrms.cpp
-    src/solver_nonlin_nox/nox_nln_statustest_activeset.cpp
-    src/solver_nonlin_nox/nox_nln_inner_statustest_factory.cpp
-    src/solver_nonlin_nox/nox_nln_inner_statustest_generic.cpp
-    src/solver_nonlin_nox/nox_nln_inner_statustest_armijo.cpp
-    src/solver_nonlin_nox/nox_nln_inner_statustest_filter.cpp
-    src/solver_nonlin_nox/nox_nln_inner_statustest_upperbound.cpp
-    src/solver_nonlin_nox/nox_nln_inner_statustest_combo.cpp
-    src/solver_nonlin_nox/nox_nln_inner_statustest_volume_change.cpp
-    src/drt_structure_new/nox_nln_str_linearsystem.cpp
-    src/drt_contact_aug/nox_nln_contact_linearsystem.cpp
-    src/drt_contact/nox_nln_meshtying_linearsystem.cpp
-    src/drt_cardiovascular0d/nox_nln_cardiovascular0d_linearsystem.cpp
-    src/drt_constraint/nox_nln_lagpenconstraint_linearsystem.cpp
-    src/drt_scatra/nox_nln_scatra_linearsystem.cpp
-    )
-
 set(OBJS_LOCA_CONTINUATION
     src/loca_continuation/loca_nln_problem.cpp
     src/loca_continuation/loca_nln_group.cpp
@@ -1661,6 +1617,7 @@ set(OBJS_DRT_CARDIOVASCULAR0D
     src/drt_cardiovascular0d/cardiovascular0d_arterialproxdist.cpp
     src/drt_cardiovascular0d/cardiovascular0d_syspulcirculation.cpp
     src/drt_cardiovascular0d/cardiovascularrespiratory0d_syspulperiphcirculation.cpp
+    src/drt_cardiovascular0d/nox_nln_cardiovascular0d_linearsystem.cpp
     )
 
 set(OBJS_DRT_CONSTRAINT
@@ -1677,6 +1634,7 @@ set(OBJS_DRT_CONSTRAINT
     src/drt_constraint/lagpenconstraint_noxinterface.cpp
     src/drt_constraint/springdashpot_manager.cpp
     src/drt_constraint/springdashpot.cpp
+    src/drt_constraint/nox_nln_lagpenconstraint_linearsystem.cpp
     )
 
 set(OBJS_DRT_IO_LIB
@@ -1899,6 +1857,7 @@ set(OBJS_DRT_CONTACT
     src/drt_contact/meshtying_penalty_strategy.cpp
     src/drt_contact/selfcontact_binarytree.cpp
     src/drt_contact/selfcontact_binarytree_unbiased.cpp
+    src/drt_contact/nox_nln_meshtying_linearsystem.cpp
     )
 set(OBJS_DRT_CONTACT_AUG
     src/drt_contact_aug/contact_augmented_strategy.cpp
@@ -1926,6 +1885,7 @@ set(OBJS_DRT_CONTACT_AUG
     src/drt_contact_aug/contact_aug_interface_assembly.cpp
     src/drt_contact_aug/contact_aug_timemonitor.cpp
     src/drt_contact_aug/contact_aug_parallel_distribution_controller.cpp
+    src/drt_contact_aug/nox_nln_contact_linearsystem.cpp
     )
 set(OBJS_DRT_CUT
     src/drt_cut/cut_options.cpp
@@ -2553,9 +2513,6 @@ target_link_libraries(post_drt_ensight_lib PUBLIC post_drt_common)
 
 # continuation method
 deprecated_baci_add_library_linked_with_everything(locacontinuation ${OBJS_LOCA_CONTINUATION})
-
-# nonlinear solver objects
-deprecated_baci_add_library_linked_with_everything(nlnsolver_nox ${OBJS_SOLVER_NONLIN_NOX})
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
 set(baciname baci-${BUILD_TYPE})
