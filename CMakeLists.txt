@@ -658,6 +658,7 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
     src/drt_beaminteraction/beaminteraction_submodel_evaluator_spherebeamlinking.cpp
     src/drt_beaminteraction/beaminteraction_geometry_utils.cpp
     src/drt_beaminteraction/beam_crosslinker_handler.cpp
+    src/drt_beaminteraction/crosslinker_node.cpp
     )
 set(OBJS_DRT_STRU_MULTI
     src/drt_stru_multi/convert_mat.cpp
@@ -794,10 +795,6 @@ set(OBJS_DRT_BELE3_LIB
     )
 
 set(OBJS_DRT_UTILS
-    src/drt_binstrategy/binning_strategy_utils.cpp
-    src/drt_binstrategy/binning_strategy.cpp
-    src/drt_binstrategy/drt_meshfree_bin.cpp
-    src/drt_binstrategy/drt_meshfree_multibin.cpp
     src/drt_fem_general/debug_nan.cpp
     src/drt_fem_general/drt_utils_boundary_integration.cpp
     src/drt_fem_general/drt_utils_fem_shapefunctions.cpp
@@ -1277,7 +1274,7 @@ set(OBJS_DRT_NURBS_DISCRET_LIB
     src/drt_nurbs_discret/drt_knotvector.cpp
     src/drt_nurbs_discret/drt_nurbs_discret.cpp
     )
-set(OBJS_DRT_BINSTRATEGY_DISCRET_LIB src/drt_beaminteraction/crosslinker_node.cpp)
+
 set(OBJS_DRT_TOPOPT
     src/drt_opti/topopt_algorithm.cpp src/drt_opti/topopt_dyn.cpp src/drt_opti/topopt_utils.cpp
     )
@@ -2522,9 +2519,7 @@ deprecated_baci_add_library_linked_with_everything(drt_lib_xfem ${OBJS_DRT_XFEM}
 deprecated_baci_add_library_linked_with_everything(drt_lib_io ${OBJS_DRT_IO_LIB})
 deprecated_baci_add_library_linked_with_everything(drt_lib_mortar ${OBJS_DRT_MORTAR_LIB})
 deprecated_baci_add_library_linked_with_everything(drt_lib_nurbs ${OBJS_DRT_NURBS_DISCRET_LIB})
-deprecated_baci_add_library_linked_with_everything(
-  drt_lib_binstrategy ${OBJS_DRT_BINSTRATEGY_DISCRET_LIB}
-  )
+
 deprecated_baci_add_library_linked_with_everything(
   drt_lib_particleengine ${OBJS_DRT_PARTICLE_ENGINE_LIB}
   )
