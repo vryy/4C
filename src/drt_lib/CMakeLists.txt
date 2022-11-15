@@ -49,7 +49,7 @@ set(OBJS_DRT_LIB
     )
 
 baci_add_library(drt_lib ${OBJS_DRT_LIB})
-target_link_libraries(drt_lib PUBLIC linalg drt_lib_binstrategy)
+target_link_libraries(drt_lib PUBLIC linalg drt_lib_binstrategy drt_lib_geometric_search)
 # TODO this module requires a lot more includes that are currently included transitively from linalg
 
 add_subdirectory(error)
