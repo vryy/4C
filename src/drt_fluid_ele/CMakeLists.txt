@@ -51,9 +51,6 @@ set(OBJS_DRT_FLUID_ELE_LIB
     fluid_ele_hdg_weak_comp.cpp
     fluid_ele_calc_hdg.cpp
     fluid_ele_calc_hdg_weak_comp.cpp
-    ${PROJECT_SOURCE_DIR}/src/drt_opti/topopt_fluidAdjoint3_boundary.cpp
-    ${PROJECT_SOURCE_DIR}/src/drt_opti/topopt_fluidAdjoint3_impl.cpp
-    ${PROJECT_SOURCE_DIR}/src/drt_opti/topopt_fluidAdjoint3_impl_parameter.cpp
     )
 baci_add_library(ele_fluid ${OBJS_DRT_FLUID_ELE_LIB})
-target_link_libraries(ele_fluid PUBLIC drt_lib_inpar)
+target_link_libraries(ele_fluid PUBLIC drt_lib_inpar drt_opti)

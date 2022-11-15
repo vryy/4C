@@ -1197,27 +1197,6 @@ set(OBJS_DRT_NURBS_DISCRET_LIB
     src/drt_nurbs_discret/drt_nurbs_discret.cpp
     )
 
-set(OBJS_DRT_TOPOPT
-    src/drt_opti/topopt_algorithm.cpp src/drt_opti/topopt_dyn.cpp src/drt_opti/topopt_utils.cpp
-    )
-
-set(OBJS_DRT_TOPOPT_LIB
-    src/drt_opti/topopt_optimizer_ele.cpp
-    src/drt_opti/topopt_optimizer_ele_evaluate.cpp
-    src/drt_opti/topopt_optimizer_ele_impl.cpp
-    src/drt_opti/topopt_optimizer_ele_parameter.cpp
-    )
-
-set(OBJS_DRT_TOPOPT_ADJOINT
-    src/drt_opti/topopt_fluidAdjointImplTimeIntegration.cpp
-    src/drt_opti/topopt_fluidAdjointResulttest.cpp
-    src/drt_opti/topopt_fluidAdjoint_timeint.cpp
-    )
-
-set(OBJS_OPTI
-    src/drt_opti/topopt_optimizer.cpp src/drt_opti/opti_GCMMA.cpp src/drt_opti/opti_resulttest.cpp
-    )
-
 set(OBJS_DRT_LOMA src/drt_loma/loma_algorithm.cpp src/drt_loma/loma_dyn.cpp)
 
 set(OBJS_DRT_TWO_PHASE
@@ -1987,7 +1966,6 @@ set(ELEMENT_LIBRARIES
     ele_bele3
     ele_discsh3
     ele_fluid
-    ele_opti
     ele_s8
     ele_membrane
     ele_lubrication
@@ -2018,7 +1996,6 @@ set(MULTIFIELD_LIBRARIES
     alg_immersed_problem
     alg_fpsi
     alg_fs3i
-    alg_topopt
     alg_ssi
     alg_ssti
     alg_ehl
@@ -2042,8 +2019,6 @@ set(SINGLEFIELD_LIBRARIES
     alg_thermo
     alg_contact
     alg_contact_aug
-    alg_fluid_adjoint
-    alg_opti
     alg_particle_algorithm
     alg_particle_engine
     alg_particle_interaction
@@ -2128,7 +2103,6 @@ deprecated_baci_add_library_linked_with_everything(ele_ale ${OBJS_DRT_ALE_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_b3 ${OBJS_DRT_B3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_rigidsphere ${OBJS_DRT_RIGIDSPHERE_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_bele3 ${OBJS_DRT_BELE3_LIB})
-deprecated_baci_add_library_linked_with_everything(ele_opti ${OBJS_DRT_TOPOPT_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_s8 ${OBJS_DRT_S8_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_membrane ${OBJS_DRT_MEMBRANE_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_lubrication ${OBJS_DRT_LUBRICATION_LIB})
@@ -2161,7 +2135,6 @@ deprecated_baci_add_library_linked_with_everything(alg_poroelast ${OBJS_DRT_PORO
 deprecated_baci_add_library_linked_with_everything(alg_poromultiphase ${OBJS_DRT_POROMULTIPHASE})
 deprecated_baci_add_library_linked_with_everything(alg_fpsi ${OBJS_DRT_FPSI})
 deprecated_baci_add_library_linked_with_everything(alg_fs3i ${OBJS_DRT_FS3I})
-deprecated_baci_add_library_linked_with_everything(alg_topopt ${OBJS_DRT_TOPOPT})
 deprecated_baci_add_library_linked_with_everything(alg_ssi ${OBJS_DRT_SSI})
 deprecated_baci_add_library_linked_with_everything(alg_ssti ${OBJS_DRT_SSTI})
 deprecated_baci_add_library_linked_with_everything(alg_ehl ${OBJS_DRT_EHL})
@@ -2186,8 +2159,6 @@ deprecated_baci_add_library_linked_with_everything(
 deprecated_baci_add_library_linked_with_everything(alg_scatra ${OBJS_DRT_SCATRA})
 deprecated_baci_add_library_linked_with_everything(alg_structure ${OBJS_DRT_STRUCTURE})
 deprecated_baci_add_library_linked_with_everything(alg_xstructure ${OBJS_DRT_STRUCTURE_XSTRUCTURE})
-deprecated_baci_add_library_linked_with_everything(alg_fluid_adjoint ${OBJS_DRT_TOPOPT_ADJOINT})
-deprecated_baci_add_library_linked_with_everything(alg_opti ${OBJS_OPTI})
 deprecated_baci_add_library_linked_with_everything(
   alg_particle_algorithm ${OBJS_DRT_PARTICLE_ALGORITHM}
   )
