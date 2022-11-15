@@ -1600,63 +1600,7 @@ set(OBJS_DRT_B3_LIB
     src/drt_beam3/beam3k_evaluate.cpp
     src/drt_beam3/beam3k_input.cpp
     )
-set(OBJS_DRT_FLUID_ELE_LIB
-    src/drt_fluid_ele/fluid_ele.cpp
-    src/drt_fluid_ele/fluid_ele_immersed.cpp
-    src/drt_fluid_ele/fluid_ele_immersed_base.cpp
-    src/drt_fluid_ele/fluid_ele_boundary_calc.cpp
-    src/drt_fluid_ele/fluid_ele_boundary_calc_std.cpp
-    src/drt_fluid_ele/fluid_ele_boundary_calc_poro.cpp
-    src/drt_fluid_ele/fluid_ele_boundary_parent_calc.cpp
-    src/drt_fluid_ele/fluid_ele_boundary.cpp
-    src/drt_fluid_ele/fluid_ele_boundary_evaluate.cpp
-    src/drt_fluid_ele/fluid_ele_poro_boundary.cpp
-    src/drt_fluid_ele/fluid_ele_poro_boundary_evaluate.cpp
-    src/drt_fluid_ele/fluid_ele_calc.cpp
-    src/drt_fluid_ele/fluid_ele_calc_newOST.cpp
-    src/drt_fluid_ele/fluid_ele_calc_xwall_quadrature_service.cpp
-    src/drt_fluid_ele/fluid_ele_calc_xwall.cpp
-    src/drt_fluid_ele/fluid_ele_xwall.cpp
-    src/drt_fluid_ele/fluid_ele_xwall_boundary.cpp
-    src/drt_fluid_ele/fluid_ele_calc_ale_service.cpp
-    src/drt_fluid_ele/fluid_ele_calc_general_service.cpp
-    src/drt_fluid_ele/fluid_ele_calc_loma.cpp
-    src/drt_fluid_ele/fluid_ele_intfaces.cpp
-    src/drt_fluid_ele/fluid_ele_calc_intfaces_stab.cpp
-    src/drt_fluid_ele/fluid_ele_intfaces_calc.cpp
-    src/drt_fluid_ele/fluid_ele_calc_loma_service.cpp
-    src/drt_fluid_ele/fluid_ele_calc_topopt_service.cpp
-    src/drt_fluid_ele/fluid_ele_calc_poro.cpp
-    src/drt_fluid_ele/fluid_ele_calc_poro_p1.cpp
-    src/drt_fluid_ele/fluid_ele_calc_immersed.cpp
-    src/drt_fluid_ele/fluid_ele_calc_std.cpp
-    src/drt_fluid_ele/fluid_ele_calc_turbulence_service.cpp
-    src/drt_fluid_ele/fluid_ele_calc_xfem.cpp
-    src/drt_fluid_ele/fluid_ele_calc_xfem_coupling.cpp
-    src/drt_fluid_ele/fluid_ele_calc_xfem_coupling_impl_nitsche.cpp
-    src/drt_fluid_ele/fluid_ele_calc_xfem_coupling_impl_hybridlm.cpp
-    src/drt_fluid_ele/fluid_ele_calc_xfem_coupling_impl_slave_element.cpp
-    src/drt_fluid_ele/fluid_ele_evaluate.cpp
-    src/drt_fluid_ele/fluid_ele_factory.cpp
-    src/drt_fluid_ele/fluid_ele_boundary_factory.cpp
-    src/drt_fluid_ele/fluid_ele_input.cpp
-    src/drt_fluid_ele/fluid_ele_parameter.cpp
-    src/drt_fluid_ele/fluid_ele_parameter_std.cpp
-    src/drt_fluid_ele/fluid_ele_parameter_poro.cpp
-    src/drt_fluid_ele/fluid_ele_parameter_xfem.cpp
-    src/drt_fluid_ele/fluid_ele_parameter_timint.cpp
-    src/drt_fluid_ele/fluid_ele_parameter_intface.cpp
-    src/drt_fluid_ele/fluid_ele_tds.cpp
-    src/drt_fluid_ele/fluid_ele_poro.cpp
-    src/drt_fluid_ele/fluid_ele_poro_evaluate.cpp
-    src/drt_fluid_ele/fluid_ele_hdg.cpp
-    src/drt_fluid_ele/fluid_ele_hdg_weak_comp.cpp
-    src/drt_fluid_ele/fluid_ele_calc_hdg.cpp
-    src/drt_fluid_ele/fluid_ele_calc_hdg_weak_comp.cpp
-    src/drt_opti/topopt_fluidAdjoint3_boundary.cpp
-    src/drt_opti/topopt_fluidAdjoint3_impl.cpp
-    src/drt_opti/topopt_fluidAdjoint3_impl_parameter.cpp
-    )
+
 set(OBJS_DRT_T3_LIB
     src/drt_truss3/truss3.cpp
     src/drt_truss3/truss3_evaluate.cpp
@@ -2180,7 +2124,6 @@ add_library(drt_timestepping INTERFACE)
 target_include_directories(drt_timestepping INTERFACE ${PROJECT_SOURCE_DIR}/src/drt_timestepping)
 
 # Compile element libraries first. There are files that take time to compile.
-deprecated_baci_add_library_linked_with_everything(ele_fluid ${OBJS_DRT_FLUID_ELE_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_ale ${OBJS_DRT_ALE_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_b3 ${OBJS_DRT_B3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_rigidsphere ${OBJS_DRT_RIGIDSPHERE_LIB})
