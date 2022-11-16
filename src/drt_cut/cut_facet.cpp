@@ -1199,11 +1199,7 @@ void GEO::CUT::Facet::FindCornerPoints()
 {
   if (corner_points_.size() == 0)
   {
-#if 1
     corner_points_ = points_;
-#else
-    KERNEL::FindCornerPoints(points_, corner_points_);
-#endif
   }
 }
 

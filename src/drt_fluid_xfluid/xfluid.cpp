@@ -2497,18 +2497,6 @@ void FLD::XFluid::Solve()
         state_->Zeros(), *(state_->DBCMapExtractor()->CondMap()));
 
 
-    // #if 1
-    //     const double cond_number =
-    //     LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*state_->sysmat_),Ifpack_Cheap, 1000);
-    //     // computation of significant digits might be completely bogus, so don't take it serious
-    //     const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
-    //     const int sign_digits = (int)floor(tmp);
-    //     if (!myrank_)
-    //       IO::cout << " cond est: " << std::scientific << cond_number << ", max.sign.digits: " <<
-    //       sign_digits;
-    // #endif
-
-
     //-------solve for residual displacements to correct incremental displacements
     {
       // get cpu time

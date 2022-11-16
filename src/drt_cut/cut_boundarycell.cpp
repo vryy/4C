@@ -325,7 +325,6 @@ void GEO::CUT::Line2BoundaryCell::Normal(
 void GEO::CUT::Tri3BoundaryCell::Normal(
     const LINALG::Matrix<2, 1>& xsi, LINALG::Matrix<3, 1>& normal) const
 {
-#if 1
   // get derivatives at pos
   LINALG::Matrix<3, 3> side_xyze(xyz_.A(), true);
 
@@ -342,35 +341,6 @@ void GEO::CUT::Tri3BoundaryCell::Normal(
 
   double norm = normal.Norm2();
   normal.Scale(1. / norm);
-#else
-  LINALG::Matrix<3, 1> x1(&xyz_(0, 0));
-  LINALG::Matrix<3, 1> x2(&xyz_(0, 1));
-  LINALG::Matrix<3, 1> x3(&xyz_(0, 2));
-
-  LINALG::Matrix<3, 1> r1(true);
-  LINALG::Matrix<3, 1> r2(true);
-
-  r1.Update(1., x1, -1., x3, 0.);
-  r2.Update(1., x2, -1., x1, 0.);
-
-  //  r1.Update( +1., x3, -1., x2, 0.);
-  //  r2.Update( +1., x1, -1., x3, 0.);
-
-  //  r1.Update( +1., x2, -1., x1, 0.);
-  //  r2.Update( +1., x3, -1., x2, 0.);
-
-
-  r2.Scale(1.0 / r2.Norm2());
-  r1.Scale(1.0 / r1.Norm2());
-
-  // cross product to get the normal at the point
-  normal(0) = r1(1) * r2(2) - r1(2) * r2(1);
-  normal(1) = r1(2) * r2(0) - r1(0) * r2(2);
-  normal(2) = r1(0) * r2(1) - r1(1) * r2(0);
-
-  double norm = normal.Norm2();
-  normal.Scale(1. / norm);
-#endif
 }
 
 /*----------------------------------------------------------------------------*

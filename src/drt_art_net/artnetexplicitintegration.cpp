@@ -801,7 +801,6 @@ ART::ArtNetExplicitTimeInt::~ArtNetExplicitTimeInt() { return; }
  | Calculate the post processing values (public)            ismail 04/10|
  *----------------------------------------------------------------------*/
 void ART::ArtNetExplicitTimeInt::CalcPostprocessingValues()
-#if 1
 {
   //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro values being calculated"<<std::endl;
 
@@ -831,42 +830,6 @@ void ART::ArtNetExplicitTimeInt::CalcPostprocessingValues()
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro done "<<std::endl;
 }  // ART::ArtNetExplicitTimeInt::CalcPostprocessingValues
-#else
-{
-  std::cout << "On proc(" << myrank_ << "): "
-            << "postpro values being calculated" << std::endl;
-
-  // create the parameters for the discretization
-  Teuchos::ParameterList eleparams;
-
-  // action for elements
-  eleparams.set<int>("action", ARTERY::calc_postpro_vals);
-
-  // set vecotr values needed by elements
-  discret_->ClearState();
-  std::cout << "On proc(" << myrank_ << "): "
-            << "postpro setting qanp" << std::endl;
-  discret_->SetState("qanp", qanp_);
-  std::cout << "On proc(" << myrank_ << "): "
-            << "postpro setting wfnp" << std::endl;
-  discret_->SetState("Wfnp", Wfnp_);
-  std::cout << "On proc(" << myrank_ << "): "
-            << "postpro setting wbnp" << std::endl;
-  discret_->SetState("Wbnp", Wbnp_);
-
-  eleparams.set("time step size", dta_);
-  eleparams.set("total time", time_);
-  eleparams.set("pressure", pn_);
-  eleparams.set("flow", qn_);
-  std::cout << "On proc(" << myrank_ << "): "
-            << "postpro evaluat disc" << std::endl;
-  // call standard loop over all elements
-  discret_->Evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-  std::cout << "On proc(" << myrank_ << "): "
-            << "postpro done " << std::endl;
-}  // ART::ArtNetExplicitTimeInt::CalcPostprocessingValues
-#endif
 
 
 void ART::ArtNetExplicitTimeInt::CalcScatraFromScatraFW(

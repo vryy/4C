@@ -619,34 +619,10 @@ void FSI::MonolithicXFEM::ApplyDBC()
   // blocks therefore we apply BCS to the whole system. Just the internal DBCs via the structural
   // evaluate (PrepareSystemForNewtonSolve()) are applied twice
 
-#if (1)
   // apply combined Dirichlet to whole XFSI system
   LINALG::ApplyDirichlettoSystem(systemmatrix_, iterinc_, rhs_,
       Teuchos::null,  // possible trafo?!
       zeros_, *CombinedDBCMap());
-
-#else
-  // TODO: transformations for locsys
-  // be aware of the rhs_Cs-coupling block when using localsys
-
-  // alternatively, when trafos for the structure have to be used, we apply DBC for each field
-  // separately
-  ((*systemmatrix_)(0, 0))
-      .ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(),
-          true);  // set diagonal 1.0 for SS-Block
-  ((*systemmatrix_)(0, 1))
-      .ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(),
-          false);  // do not set diagonal 1.0 for SF-Block
-  ((*systemmatrix_)(1, 0))
-      .ApplyDirichlet(*FluidField()->GetDBCMapExtractor()->CondMap(),
-          false);  // do not set diagonal 1.0 for FS-Block
-  ((*systemmatrix_)(1, 1))
-      .ApplyDirichlet(
-          *FluidField()->GetDBCMapExtractor()->CondMap(), true);  // set diagonal 1.0 for FF-Block
-
-  LINALG::ApplyDirichlettoSystem(rhs_, zeros_, *CombinedDBCMap());
-
-#endif
 
   return;
 }
@@ -1799,11 +1775,9 @@ void FSI::MonolithicXFEM::UpdatePermutationMap(
     }
   }
 
-#if (1)
   std::cout << " adapted permutations        " << count_updates << std::endl;
   std::cout << " removed permutations        " << removed_permutations << std::endl;
   std::cout << " new additional permutations " << permutation_map.size() << std::endl;
-#endif
 
   // second, we have to add all new additional permutations
   permutation_map_.insert(permutation_map.begin(), permutation_map.end());

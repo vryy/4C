@@ -796,13 +796,9 @@ void XFEM::XFluidTimeInt::TransferNodalDofsToNewMap(
             else if (timeint_scheme_ ==
                      INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP)
             {
-#if (1)  // is a copy from ghost->std reasonable or not?
+              // is a copy from ghost->std reasonable or not?
               CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_GHOST,
                   newRowStateVectors, oldRowStateVectors, dbcgids);
-#else
-              MarkDofs(
-                  node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_STD_by_SL, dbcgids);
-#endif
             }
             else if (timeint_scheme_ ==
                      INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP)
@@ -1125,7 +1121,6 @@ void XFEM::XFluidTimeInt::MarkDofs(const DRT::Node* node,  /// drt node
 
         // comment this block if we do not want to reconstruct ghost values of ghost nodes around
         // SL-standard nodes
-#if (1)
         if (dis_->NodeRowMap()->LID(nid) != -1)  // is row node on this proc
         {
           DRT::Node* n = dis_->gNode(nid);
@@ -1136,7 +1131,6 @@ void XFEM::XFluidTimeInt::MarkDofs(const DRT::Node* node,  /// drt node
           // in parallel we have to export the info to other procs
           MarkDofsForExport(nid, dofset, INPAR::XFEM::Xf_TimeInt_GHOST_by_GP);
         }
-#endif
       }
     }
   }
@@ -1391,15 +1385,12 @@ int XFEM::XFluidTimeInt::IdentifyOldSets(const GEO::CUT::Node* n_old,  /// node 
       {
         const int setnumber = old_sets - dof_cellsets_old.begin();
 
-        bool use_old_std_set = false;  // shall the unique standard set be used for further checks?
-
-#if (1)                          // use the standard dofset, however this might be unsafe
-        use_old_std_set = true;  // use the standard set just in case that there is at least a
-                                 // common node which is shared by the two sets of cutsides
-
-        // NOTE: an alternative would be to check if there is at least one common node or a common
-        // edge between the two sets of cutsides, this might be more safe!
-#endif
+        //  the following variable is used to define if the unique standard dofset should be used.
+        //  However, this might be unsafe. Here, the standard set is used since it is assumed that
+        //  there is at least a common node which is shared by the two sets of cutsides
+        //  TODO: an alternative would be to check if there is at least one common node or a common
+        //  edge between the two sets of cutsides, this might be more safe!
+        bool use_old_std_set = true;
 
         if (use_old_std_set)
         {
