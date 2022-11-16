@@ -63,7 +63,6 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
           DRT::INPUT::IntegralValue<INPAR::THR::HeatFluxType>(ioparams, "THERM_HEATFLUX")),
       writetempgrad_(
           DRT::INPUT::IntegralValue<INPAR::THR::TempGradType>(ioparams, "THERM_TEMPGRAD")),
-      writephase_(DRT::INPUT::IntegralValue<INPAR::THR::PhaseType>(ioparams, "THERM_PHASE")),
       writeenergyevery_(tdynparams.get<int>("RESEVRYERGY")),
       energyfile_(NULL),
       calcerror_(DRT::INPUT::IntegralValue<INPAR::THR::CalcError>(tdynparams, "CALCERROR")),
@@ -382,15 +381,6 @@ void THR::TimInt::OutputStep(bool forced_writerestart)
     OutputHeatfluxTempgrad(datawritten);
   }
 
-  if ((writephase_ != INPAR::THR::phase_none) and writeglobevery_ and
-      (step_ % writeglobevery_ == 0))
-    // will write nothing if material has no phase
-    OutputPhase(datawritten);
-
-  // TODO use more flags
-  if (writeglobevery_ and (step_ % writeglobevery_ == 0))
-    OutputConductivityAndCapacity(datawritten);
-
   // output energy
   if (writeenergyevery_ and (step_ % writeenergyevery_ == 0))
   {
@@ -591,91 +581,6 @@ void THR::TimInt::OutputHeatfluxTempgrad(bool& datawritten)
 
 }  // OutputHeatfluxTempgrad()
 
-/*----------------------------------------------------------------------*
- | output phase for SLM                                    proell 05/18 |
- *----------------------------------------------------------------------*/
-void THR::TimInt::OutputPhase(bool& datawritten)
-{
-  // element evaluate copies values into a global vector
-  Teuchos::ParameterList p;
-  p.set<int>("action", THR::calc_thermo_phase);
-  // time information is not actually needed but is queried in Evaluate
-  p.set("total time", (*time_)[0]);
-  p.set("delta time", (*dt_)[0]);
-  //  Teuchos::RCP<std::vector<char> > phasedata
-  //      = Teuchos::rcp(new std::vector<char>());
-  //  p.set("phase", phasedata);
-
-  Teuchos::RCP<Epetra_Vector> phase = LINALG::CreateVector(*(DofRowMap()), true);
-
-  discret_->SetState(0, "temperature", (*temp_)(0));
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null, phase, Teuchos::null, Teuchos::null);
-  discret_->ClearState();
-
-  // Make new step
-  if (not datawritten)
-  {
-    output_->NewStep(step_, (*time_)[0]);
-  }
-  datawritten = true;
-
-  output_->WriteVector("phase", phase, IO::dofvector);
-
-  // info dedicated to user's eyes staring at standard out
-  if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
-  {
-    printf("====== Phase written in step %d\n", step_);
-    // print a beautiful line made exactly of 80 dashes
-    printf(
-        "--------------------------------------------------------------"
-        "------------------\n");
-    fflush(stdout);
-  }
-}
-
-/*----------------------------------------------------------------------*
- | output heat capacity                                    proell 06/18 |
- *----------------------------------------------------------------------*/
-void THR::TimInt::OutputConductivityAndCapacity(bool& datawritten)
-{
-  // element evaluate copies values into a global vector
-  Teuchos::ParameterList p;
-  p.set<int>("action", THR::calc_thermo_condcapa);
-  // time information is not actually needed but is queried in Evaluate
-  p.set("total time", (*time_)[0]);
-  p.set("delta time", (*dt_)[0]);
-  //  Teuchos::RCP<std::vector<char> > phasedata
-  //      = Teuchos::rcp(new std::vector<char>());
-  //  p.set("phase", phasedata);
-
-  Teuchos::RCP<Epetra_Vector> cond = LINALG::CreateVector(*(DofRowMap()), true);
-  Teuchos::RCP<Epetra_Vector> capa = LINALG::CreateVector(*(DofRowMap()), true);
-
-  discret_->SetState(0, "temperature", (*temp_)(0));
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null, cond, capa, Teuchos::null);
-  discret_->ClearState();
-
-  // Make new step
-  if (not datawritten)
-  {
-    output_->NewStep(step_, (*time_)[0]);
-  }
-  datawritten = true;
-
-  output_->WriteVector("conductivity", cond, IO::dofvector);
-  output_->WriteVector("capacity", capa, IO::dofvector);
-
-  // info dedicated to user's eyes staring at standard out
-  if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
-  {
-    printf("====== Conductivity and capacity written in step %d\n", step_);
-    // print a beautiful line made exactly of 80 dashes
-    printf(
-        "--------------------------------------------------------------"
-        "------------------\n");
-    fflush(stdout);
-  }
-}
 
 /*----------------------------------------------------------------------*
  | output system energies                                   bborn 06/08 |

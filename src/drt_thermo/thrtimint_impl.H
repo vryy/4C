@@ -165,9 +165,6 @@ namespace THR
     //! and associated effective tangent matrix #tang_
     virtual INPAR::THR::ConvergenceStatus NewtonFull();
 
-
-    void ApplyLatentHeatIntegration();
-
     //! Blank Dirichlet dofs form residual and reactions
     //! calculate norms for convergence checks
     void BlankDirichletAndCalcNorms();
@@ -397,14 +394,6 @@ namespace THR
     //@{
     Teuchos::RCP<Epetra_Vector> fres_;    //!< force residual used for solution
     Teuchos::RCP<Epetra_Vector> freact_;  //!< reaction force
-    //@}
-
-    //! @name melting stuff
-    //@{
-    Teuchos::RCP<Epetra_Vector> fmelt_;  //!< artificial source term accounting for latent heat
-    const bool heatint_;                 //!< should heat integration be performed
-    const double melttol_;  //!< tolerance until which heat source increments are applied
-
     //@}
 
   };  // class TimIntImpl

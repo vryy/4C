@@ -234,12 +234,6 @@ namespace THR
     //! Energy output
     void OutputEnergy();
 
-    //! phase information in SLM
-    void OutputPhase(bool& datawritten);
-
-    //! postproc output of material parameters
-    void OutputConductivityAndCapacity(bool& datawritten);
-
     //! Write internal and external forces (if necessary for restart)
     virtual void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) = 0;
 
@@ -549,7 +543,6 @@ namespace THR
     int writeglobevery_;     //!< write state every given step
     INPAR::THR::HeatFluxType writeheatflux_;
     INPAR::THR::TempGradType writetempgrad_;
-    INPAR::THR::PhaseType writephase_;
     int writeenergyevery_;             //!< write system energy every given step
     std::ofstream* energyfile_;        //!< outputfile for energy
     INPAR::THR::CalcError calcerror_;  //!< evaluate error compared to analytical solution

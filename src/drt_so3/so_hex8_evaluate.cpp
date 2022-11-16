@@ -56,7 +56,6 @@
 #include "so_hex8_determinant_analysis.H"
 
 #include "drt_utils_local_connectivity_matrices.H"
-#include "thermomech_threephase.H"
 #include "so_utils.H"
 
 using VoigtMapping = UTILS::VOIGT::IndexMappings;

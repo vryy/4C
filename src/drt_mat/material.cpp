@@ -16,7 +16,6 @@
 #include "newtonianfluid.H"
 #include "stvenantkirchhoff.H"
 #include "thermostvenantkirchhoff.H"
-#include "thermomech_threephase.H"
 #include "thermoplasticlinelast.H"
 #include "thermoplastichyperelast.H"
 #include "crystal_plasticity.H"
@@ -66,7 +65,6 @@
 #include "plastic_VarConstUpdate.H"
 #include "cnst_1d_art.H"
 #include "fourieriso.H"
-#include "fouriervar.H"
 #include "soret.H"
 #include "membrane_elasthyper.H"
 #include "membrane_active_strain.H"
@@ -181,13 +179,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ThermoStVenantKirchhoff(curmat));
       auto* params = static_cast<MAT::PAR::ThermoStVenantKirchhoff*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_thermomechthreephase:
-    {
-      if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::ThermoMechThreePhase(curmat));
-      auto* params = dynamic_cast<MAT::PAR::ThermoMechThreePhase*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_thermopllinelast:
@@ -921,18 +912,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::FourierIso(curmat));
       auto* params = static_cast<MAT::PAR::FourierIso*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_th_fourier_var:
-    {
-      if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::FourierVar(curmat));
-      auto* params = static_cast<MAT::PAR::FourierVar*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_consolidation:
-    {
-      if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::Consolidation(curmat));
-      auto* params = static_cast<MAT::PAR::Consolidation*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_soret:

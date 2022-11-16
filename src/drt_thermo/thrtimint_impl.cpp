@@ -49,15 +49,8 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
       tempinc_(Teuchos::null),
       timer_(actdis->Comm()),
       fres_(Teuchos::null),
-      freact_(Teuchos::null),
-      fmelt_(Teuchos::null),
-      heatint_(DRT::INPUT::IntegralValue<int>(tdynparams, "HEATINTEGRATION") == 1),
-      melttol_(tdynparams.get<double>("TOLMELT"))
+      freact_(Teuchos::null)
 {
-  if (heatint_)
-  {
-    if (!lumpcapa_) dserror("Heat integration is only possible with a lumped capacity.");
-  }
   // create empty residual force vector
   fres_ = LINALG::CreateVector(*discret_->DofRowMap(), false);
 
@@ -70,24 +63,6 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
 
   // incremental temperature increments IncT_{n+1}
   tempinc_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
-
-  // artificial melting force accountig for latent heat
-  fmelt_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
-  if (heatint_)
-  {
-    // apply dirichlet BCs first to initialize latent heat history with them
-    ApplyDirichletBC((*time_)[0], (*temp_)(0), (*rate_)(0), false);
-    // trigger evaluation and storage of element-wise available latent heat on element level
-    discret_->ClearState();
-    Teuchos::ParameterList params;
-    params.set<double>("total time", 0);
-    params.set<int>("action", calc_thermo_totallatentheat);
-    params.set<double>("delta time", (*dt_)[0]);
-    discret_->SetState(0, "temperature", (*temp_)(0));
-    // this call is required for correct evaluation of location array
-    discret_->Evaluate(params, Teuchos::null, Teuchos::null);
-  }
-
 
   // setup mortar coupling
   if (DRT::Problem::Instance()->GetProblemType() == ProblemType::thermo)
@@ -103,9 +78,6 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
       adaptermeshtying_->Evaluate();
     }
   }
-
-  // done so far
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -496,8 +468,6 @@ INPAR::THR::ConvergenceStatus THR::TimIntImpl::NewtonFull()
     dserror("Effective tangent matrix must be filled here");
   }
 
-  fmelt_->PutScalar(0);
-
   // initialise equilibrium loop
   iter_ = 1;
   normfres_ = CalcRefNormForce();
@@ -540,26 +510,6 @@ INPAR::THR::ConvergenceStatus THR::TimIntImpl::NewtonFull()
     // update end-point temperatures etc
     UpdateIter(iter_);
 
-    if (heatint_)
-    {
-#ifdef LATENTHEAT_FIXPOINT_ITER
-      EvaluateRhsTangResidual();
-      BlankDirichletAndCalcNorms();
-
-      if (Converged())
-      {
-        std::cout << "inner Newton converged (res=" << normfres_ << ") -> applying latent heat"
-                  << std::endl;
-        ApplyLatentHeatIntegration();
-        // reevlaute residuals and norms
-        EvaluateRhsTangResidual();
-        BlankDirichletAndCalcNorms();
-      }
-#else
-      ApplyLatentHeatIntegration();
-#endif
-    }
-
     // compute residual forces #fres_ and tangent #tang_
     // whose components are globally oriented
     EvaluateRhsTangResidual();
@@ -577,33 +527,6 @@ INPAR::THR::ConvergenceStatus THR::TimIntImpl::NewtonFull()
   iter_ -= 1;
 
   return NewtonFullErrorCheck();
-}
-
-
-void THR::TimIntImpl::ApplyLatentHeatIntegration()
-{
-  Teuchos::ParameterList p;
-  const THR::Action action = THR::calc_thermo_phasechangeinc;
-  p.set<int>("action", action);
-  // other parameters that might be needed by the elements
-  p.set("total time", timen_);
-  p.set("delta time", (*dt_)[0]);
-  p.set("melt tolerance", melttol_);
-  // apply the source term for melting
-  discret_->ClearState();
-  // SetState(0,...) in case of multiple dofsets (e.g. TSI)
-  discret_->SetState(0, "temperature", tempn_);
-  // required for linearization of T-dependent capacity
-  discret_->SetState(0, "last temperature", (*temp_)(0));
-  // TODO create these vectors only once
-  Teuchos::RCP<Epetra_Vector> fmeltinc = LINALG::CreateVector(*discret_->DofRowMap(), true);
-  Teuchos::RCP<Epetra_Vector> tempnmod = LINALG::CreateVector(*discret_->DofRowMap(), true);
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null, fmeltinc, tempnmod, Teuchos::null);
-  discret_->ClearState();
-  fmelt_->Update(1.0, *fmeltinc, 1.0);
-  tempn_->Update(1.0, *tempnmod, 0.0);
-  // reapply Dirichlet to fix possibly modified nodes
-  ApplyDirichletBC(timen_, tempn_, raten_, false);
 }
 
 

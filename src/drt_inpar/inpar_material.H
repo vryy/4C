@@ -65,7 +65,6 @@ namespace INPAR
       m_carreauyasuda,       ///< fluid with nonlinear viscosity according to Carreau-Yasuda
       m_cnst_art,            ///< 1D_Artery constant material properties
       m_compogden,           ///< compressible Ogden material (with shell8)
-      m_consolidation,       ///< material providing a general interface for consolidation
       m_constraintmixture,   ///< growth and remodeling of arteries
       m_crosslinkermat,      ///< material for crosslinker in biopolymer networks
       m_crystplast,          ///< crystal plasticity
@@ -204,19 +203,17 @@ namespace INPAR
       m_structpororeactionECM,  ///< wrapper material for poroelasticity (structure)
       m_superelast,             ///< Superelastic material behaviour of shape memory alloys
       m_stvenant,               ///< St.Venant Kirchhoff material
-      m_sutherland,            ///< material with temperature dependence according to Sutherland law
-      m_tempdepwater,          ///< temperature-dependent water
-      m_th_fourier_iso,        ///< isotropic (linear) Fourier's law of heat conduction
-      m_th_fourier_var,        ///< Fourier's law with variable conductivity
-      m_thermoplhyperelast,    ///< Temperature-dependent hyperelasticity and von Mises plasticity
-      m_thermopllinelast,      ///< Temperature-dependent Hooke elasticity and von Mises plasticity
-      m_thermostvenant,        ///< St.Venant Kirchhoff material with temperature
-      m_thermomechthreephase,  ///< three phase thermo-mechnial material for additive manufacturing
-      m_viscoanisotropic,      ///< Viscous Anisotropic Fiber Material
-      m_viscoelasthyper,       ///< viscohyperelastic material
-      m_visconeohooke,         ///< Viscous NeoHookean Material
-      m_vp_no_yield_surface,   ///< visco-plastic finite strain material law without yield surface
-      m_vp_robinson,           ///< Robinson's visco-plastic material
+      m_sutherland,           ///< material with temperature dependence according to Sutherland law
+      m_tempdepwater,         ///< temperature-dependent water
+      m_th_fourier_iso,       ///< isotropic (linear) Fourier's law of heat conduction
+      m_thermoplhyperelast,   ///< Temperature-dependent hyperelasticity and von Mises plasticity
+      m_thermopllinelast,     ///< Temperature-dependent Hooke elasticity and von Mises plasticity
+      m_thermostvenant,       ///< St.Venant Kirchhoff material with temperature
+      m_viscoanisotropic,     ///< Viscous Anisotropic Fiber Material
+      m_viscoelasthyper,      ///< viscohyperelastic material
+      m_visconeohooke,        ///< Viscous NeoHookean Material
+      m_vp_no_yield_surface,  ///< visco-plastic finite strain material law without yield surface
+      m_vp_robinson,          ///< Robinson's visco-plastic material
       m_yoghurt,  ///< "yoghurt-type" fluid with nonlinear viscosity according to a power law and
                   ///< extended by an Arrhenius-type term to account for temperature dependence
       mes_anisoactivestress_evolution,  ///< anisotropic single fiber summand with active stress

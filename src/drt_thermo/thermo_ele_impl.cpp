@@ -20,7 +20,6 @@
 
 // material headers
 #include "fourieriso.H"
-#include "fouriervar.H"
 #include "thermostvenantkirchhoff.H"
 #include "thermoplasticlinelast.H"
 #include "thermoplastichyperelast.H"
@@ -30,7 +29,6 @@
 #include "thermo_ele_impl.H"
 #include "thermo_ele_action.H"
 
-#include "tsi_defines.H"
 #include "trait_thermo_solid.H"
 
 DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT::Element* ele)
@@ -162,12 +160,6 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     // build the element temperature
     LINALG::Matrix<nen_ * numdofpernode_, 1> etempn(&(mytempnp[0]), true);  // view only!
     etempn_.Update(etempn);                                                 // copy
-  }
-
-  if (action == THR::calc_thermo_totallatentheat)
-  {
-    CalculateTotalLatentHeat(ele, params);
-    return 0;
   }
 
   if (discretization.HasState(0, "last temperature"))
@@ -448,35 +440,6 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   }  // action == THR::calc_thermo_heatflux
 
   //============================================================================
-  // extract phase/consolidation information from material and store at node
-  else if (action == THR::calc_thermo_phase)
-  {
-    LINALG::Matrix<nen_ * numdofpernode_, 1> ephase(elevec1_epetra.A(), true);  // view
-    ExtractPhaseInformation(ele, ephase);
-  }
-
-  else if (action == THR::calc_thermo_condcapa)
-  {
-    // check if material can handle this call
-    if (ele->Material()->MaterialType() != INPAR::MAT::m_th_fourier_var) return 0;
-
-    LINALG::Matrix<nen_ * numdofpernode_, 1> econd(elevec1_epetra.A(), true);  // view
-    LINALG::Matrix<nen_ * numdofpernode_, 1> ecapa(elevec2_epetra.A(), true);  // view
-
-    auto mat = Teuchos::rcp_dynamic_cast<MAT::FourierVar>(ele->Material());
-    mat->NodalConductivityCapacity(etempn_, econd, ecapa);
-
-    // divide out number of node adjacent elements to remove assembly
-    DRT::Node** node = ele->Nodes();
-    for (int i = 0; i < nen_; i++)
-    {
-      int nele = (*(node++))->NumElement();
-      econd(i) /= nele;
-      ecapa(i) /= nele;
-    }
-  }
-
-  //============================================================================
   // Calculate heatflux q and temperature gradients gradtemp at gauss points
   else if (action == THR::postproc_thermo_heatflux)
   {
@@ -562,26 +525,6 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
 
     DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
     if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
-
-    // --------------------------------------- loop over Gauss Points
-    for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
-    {
-      EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad, ele->Id());
-      LINALG::Matrix<1, 1> temp(false);
-      temp.MultiplyTN(funct_, etempn_);
-      const double temperature = temp(0, 0);
-
-      // fixme remove when heat integration is moved to own class
-      if (material->MaterialType() == INPAR::MAT::m_th_fourier_var)
-      {
-        auto fouriermat = Teuchos::rcp_dynamic_cast<MAT::FourierVar>(material, true);
-        fouriermat->Consolidation()->SetFunct(funct_);
-      }
-
-      thermoMat->Reinit(temperature, iquad);
-      thermoMat->CommitCurrentState();
-
-    }  // -------------------------------- end loop over Gauss Points
   }
 
   //==================================================================================
@@ -651,14 +594,6 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     LINALG::Matrix<nen_ * numdofpernode_, 1> evector(elevec1_epetra.A(), true);  // view only!
 
     ComputeError(ele, evector, params);
-  }
-  //============================================================================
-  else if (action == THR::calc_thermo_phasechangeinc)
-  {
-    LINALG::Matrix<nen_ * numdofpernode_, 1> esourceinc(elevec1_epetra.A(), true);  // view only!
-    LINALG::Matrix<nen_ * numdofpernode_, 1> etempmod(elevec2_epetra.A(), true);    // view only!
-
-    CalculatePhaseChangeIncrement(ele, &esourceinc, &etempmod, params);
   }
   //============================================================================
   else
@@ -2713,104 +2648,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateLumpMatrix(
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::CalculateTotalLatentHeat(
-    DRT::Element* ele,  //!< the element whose matrix is calculated
-    Teuchos::ParameterList& params)
-{
-  LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> NN(true);
-  LINALG::Matrix<nen_ * numdofpernode_, 1> nodalfactor(true);
-
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
-  {
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad, ele->Id());
-    // only integrate the shape here, (constant) scaling with latent heat is done in material
-    NN.MultiplyNT(fac_, funct_, funct_, 1.0);
-    //    nodalfactor.Update(-fac_/stepsize, funct_, 1.0);
-  }
-  // lump integrated shape functions (=lumped mass without density scaling)
-  for (int inode = 0; inode < nen_ * numdofpernode_; inode++)
-  {
-    for (int icol = 0; icol < nen_ * numdofpernode_; icol++)
-    {
-      nodalfactor(inode) += NN(inode, icol);
-    }
-  }
-
-  if (ele->Material()->MaterialType() == INPAR::MAT::m_th_fourier_var)
-  {
-    Teuchos::RCP<MAT::FourierVar> mat = Teuchos::rcp_dynamic_cast<MAT::FourierVar>(ele->Material());
-    mat->Consolidation()->SetTotalLatentHeatAvailable(nodalfactor, etempn_);
-  }
-  else
-    dserror("Latent heat as source term only with MAT::FourierVar");
-}
-
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::CalculatePhaseChangeIncrement(
-    DRT::Element* ele,  //!< the element whose matrix is calculated
-    LINALG::Matrix<nen_ * numdofpernode_, 1>* esourceinc,  //!< artificial increment in source term
-    LINALG::Matrix<nen_ * numdofpernode_, 1>*
-        etempmod,  // possibly reset nodal temperatures, number of nodes divided out
-    Teuchos::ParameterList& params)
-{
-  const double stepsize = params.get<double>("delta time");
-  const double melttol = params.get<double>("melt tolerance");
-
-  // copy solution temperatures, might be modified if there is a source term on a node
-  etempmod->Update(1.0, etempn_, 0.0);
-
-  Teuchos::RCP<MAT::FourierVar> mat;
-  if (ele->Material()->MaterialType() == INPAR::MAT::m_th_fourier_var)
-  {
-    mat = Teuchos::rcp_dynamic_cast<MAT::FourierVar>(ele->Material());
-  }
-  else
-    dserror("Latent heat as source term only with MAT::FourierVar");
-
-  LINALG::Matrix<nen_, 1> Tlast;
-  mat->Consolidation()->LastMushyTemperature(Tlast);
-  const MAT::PAR::Consolidation* par =
-      static_cast<const MAT::PAR::Consolidation*>(mat->Consolidation()->Parameter());
-  const double Ts = par->solidustemp_;
-  const double Tl = par->liquidustemp_;
-  const double rhoC = 1 / ((Tl - Ts) / par->latentheat_ + 1 / mat->HeatIntegrationCapacity());
-  // normalization factor for melt tolerance
-  const double tolFactor = par->latentheat_ / rhoC;
-  for (int idof = 0; idof < nen_ * numdofpernode_; idof++)
-  {
-    // TODO different behaviors are intransparent to user
-    // calculate increment
-    (*esourceinc)(idof) = rhoC * (Tlast(idof) - etempn_(idof));
-    // within tolerance: no increment added
-    if (melttol > 0 && abs(etempn_(idof) - Tlast(idof)) < melttol * tolFactor)
-    {
-      (*esourceinc)(idof) = 0;
-    }
-    // no tolerance given: use RB condition
-    else if (melttol == 0)
-    {
-      if ((etemp_(idof) < Ts and etempn_(idof) < Ts) or (etemp_(idof) > Tl and etempn_(idof) > Tl))
-        (*esourceinc)(idof) = 0;
-    }
-  }
-
-  // call material to limit source term based on history
-  mat->Consolidation()->LimitLatentHeatSourceTerm(*esourceinc, *etempmod);
-  esourceinc->Scale(1.0 / stepsize);
-
-  // remove assembly on nodal temperature by dividing out number of elements
-  // source term is ready for assembly due to lumped factor being only from current element
-  DRT::Node** nodes = ele->Nodes();
-  for (int inode = 0; inode < nen_; inode++)
-  {
-    (*etempmod)(inode) /= nodes[inode]->NumElement();
-  }
-}
-
-template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const double time)
 {
   std::vector<DRT::Condition*> myneumcond;
@@ -2916,13 +2753,6 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::Materialize(const DRT::Element* ele, const int gp)
 {
   auto material = ele->Material();
-
-  if (material->MaterialType() == INPAR::MAT::m_th_fourier_var)
-  {
-    // specific operation only for heat integration method
-    auto actmat = Teuchos::rcp_dynamic_cast<MAT::FourierVar>(material);
-    actmat->Consolidation()->SetFunct(funct_);
-  }
 
   // calculate the current temperature at the integration point
   LINALG::Matrix<1, 1> temp;
@@ -3475,21 +3305,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
     // integrate analytical velocity for H1 norm
     elevec1(3) += derT.Dot(derT) * fac_;
   }
-}
-
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::ExtractPhaseInformation(
-    DRT::Element* ele, LINALG::Matrix<nen_ * numdofpernode_, 1>& ephase)
-{
-  // nothing to do if the material does not know phases
-  if (ele->Material()->MaterialType() != INPAR::MAT::m_th_fourier_var) return;
-
-  Teuchos::RCP<MAT::FourierVar> mat = Teuchos::rcp_dynamic_cast<MAT::FourierVar>(ele->Material());
-  mat->NodalPhase(etempn_, ephase);
-
-  // divide out number of node adjacent elements to remove assembly
-  DRT::Node** node = ele->Nodes();
-  for (int i = 0; i < nen_; i++) ephase(i) /= (*(node++))->NumElement();
 }
 
 template <DRT::Element::DiscretizationType distype>

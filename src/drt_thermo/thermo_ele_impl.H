@@ -349,16 +349,6 @@ namespace DRT
           LINALG::Matrix<6, 1>* strainvel  //!< strain rate
       );
 
-      //! post-Newton iteration update of temperatures and source terms to account for latent heat
-      //! of phase change
-      virtual void CalculatePhaseChangeIncrement(
-          DRT::Element* ele,  //!< the element whose matrix is calculated
-          LINALG::Matrix<nen_ * numdofpernode_, 1>*
-              esourceinc,  //!< artificial increment in source term
-          LINALG::Matrix<nen_ * numdofpernode_, 1>* etempi, Teuchos::ParameterList& params);
-
-      virtual void CalculateTotalLatentHeat(DRT::Element* ele, Teuchos::ParameterList& params);
-
       //! determine heat flux and conductivity tensor
       //! based on material law
       virtual void Materialize(const DRT::Element* ele,  //!< current element
@@ -426,10 +416,6 @@ namespace DRT
       //! extract displacement and velocity vector from discretization
       void ExtractDispVel(const Discretization& discretization, Element::LocationArray& la,
           std::vector<double>& mydisp, std::vector<double>& myvel) const;
-
-      // extract the node based phase information
-      void ExtractPhaseInformation(DRT::Element* ele,         ///< current element
-          LINALG::Matrix<nen_ * numdofpernode_, 1>& ephase);  ///< vector to fill, view on elevec1
 
       //! copy matrix contents into character vector
       void CopyMatrixIntoCharVector(std::vector<char>& data, LINALG::Matrix<nquad_, nsd_>& stuff);
