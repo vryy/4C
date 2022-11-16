@@ -57,7 +57,9 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
   LINALG::Matrix<3, 3, scalar_type> J_J_inv;
 
   // Increment of xi.
-  LINALG::Matrix<3, 1, scalar_type> delta_xi(1.0);
+  LINALG::Matrix<3, 1, scalar_type> delta_xi;
+  // Initialize the increment with a value that will not pass the first convergence check.
+  delta_xi.PutScalar(10 * CONSTANTS::projection_xi_eta_tol);
 
   // Residuum.
   LINALG::Matrix<3, 1, scalar_type> residuum;
@@ -144,7 +146,9 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
 
   // Residuum.
   LINALG::Matrix<4, 1, scalar_type> residuum;
-  LINALG::Matrix<4, 1, scalar_type> delta_x(1.0);
+  LINALG::Matrix<4, 1, scalar_type> delta_xi;
+  // Initialize the increment with a value that will not pass the first convergence check.
+  delta_xi.PutScalar(10 * CONSTANTS::projection_xi_eta_tol);
 
   // Jacobian / inverse.
   LINALG::Matrix<4, 4, scalar_type> J_J_inv;
@@ -185,7 +189,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
 
       // Check if tolerance is fulfilled.
       if (residuum.Norm2() < CONSTANTS::local_newton_res_tol &&
-          delta_x.Norm2() < CONSTANTS::projection_xi_eta_tol)
+          delta_xi.Norm2() < CONSTANTS::projection_xi_eta_tol)
       {
         // Check if the parameter coordinates are valid.
         if (ValidParameter1D(eta) && ValidParameter3D<volume>(xi))
@@ -214,11 +218,11 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
 
       // Solve the linearized system.
       if (LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
-              J_J_inv, residuum, delta_x, CONSTANTS::local_newton_det_tol))
+              J_J_inv, residuum, delta_xi, CONSTANTS::local_newton_det_tol))
       {
         // Set the new parameter coordinates.
-        eta -= delta_x(3);
-        for (unsigned int i = 0; i < 3; i++) xi(i) -= delta_x(i);
+        eta -= delta_xi(3);
+        for (unsigned int i = 0; i < 3; i++) xi(i) -= delta_xi(i);
 
         // Advance Newton iteration counter.
         counter++;
