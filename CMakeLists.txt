@@ -898,13 +898,7 @@ set(OBJS_DRT_SCATRA
     src/drt_scatra/scatra_timint_cardiac_monodomain_scheme_hdg.cpp
     src/drt_scatra/nox_nln_scatra_linearsystem.cpp
     )
-set(OBJS_DRT_TSI
-    src/drt_tsi/tsi_algorithm.cpp
-    src/drt_tsi/tsi_monolithic.cpp
-    src/drt_tsi/tsi_partitioned.cpp
-    src/drt_tsi/tsi_dyn.cpp
-    src/drt_tsi/tsi_utils.cpp
-    )
+
 set(OBJS_DRT_S8_LIB
     src/drt_s8/shell8.cpp
     src/drt_s8/shell8_evaluate.cpp
@@ -1042,14 +1036,7 @@ set(OBJS_DRT_RED_AIRWAYS
     src/drt_red_airways/redairway_tissue.cpp
     src/drt_red_airways/red_airways_dyn_drt.cpp
     )
-set(OBJS_DRT_THERMO_LIB
-    src/drt_thermo/thermo_ele_boundary_impl.cpp
-    src/drt_thermo/thermo_ele_impl.cpp
-    src/drt_thermo/thermo_element.cpp
-    src/drt_thermo/thermo_element_boundary_evaluate.cpp
-    src/drt_thermo/thermo_element_evaluate.cpp
-    src/drt_thermo/thermo_element_input.cpp
-    )
+
 set(OBJS_DRT_REGISTER src/drt_lib/drt_parobjectregister.cpp)
 set(OBJS_DRT_LUBRICATION_LIB
     src/drt_lubrication_ele/lubrication_ele.cpp
@@ -1160,18 +1147,6 @@ set(OBJS_DRT_STI
     src/drt_sti/sti_monolithic_evaluate_OffDiag.cpp
     src/drt_sti/sti_partitioned.cpp
     src/drt_sti/sti_resulttest.cpp
-    )
-set(OBJS_DRT_THERMO
-    src/drt_thermo/thr_aux.cpp
-    src/drt_thermo/thr_dyn.cpp
-    src/drt_thermo/thr_resulttest.cpp
-    src/drt_thermo/thrtimint.cpp
-    src/drt_thermo/thrtimint_genalpha.cpp
-    src/drt_thermo/thrtimint_impl.cpp
-    src/drt_thermo/thrtimint_ost.cpp
-    src/drt_thermo/thrtimint_statics.cpp
-    src/drt_thermo/thrtimint_expl.cpp
-    src/drt_thermo/thrtimint_expleuler.cpp
     )
 set(OBJS_DRT_FLUID
     src/drt_fluid/fluid_discretization_runtime_vtu_output_params.cpp
@@ -2375,7 +2350,6 @@ deprecated_baci_add_library_linked_with_everything(ele_sp3 ${OBJS_DRT_SP3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_so ${OBJS_SOH8_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_t3 ${OBJS_DRT_T3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_t3cl ${OBJS_DRT_T3CL_LIB})
-deprecated_baci_add_library_linked_with_everything(ele_thermo ${OBJS_DRT_THERMO_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_to3 ${OBJS_DRT_TO3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_w1 ${OBJS_DRT_W1_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_elemag ${OBJS_DRT_ELEMAG_LIB})
@@ -2390,7 +2364,6 @@ deprecated_baci_add_library_linked_with_everything(
 deprecated_baci_add_library_linked_with_everything(alg_fsi_xfem ${OBJS_DRT_FSI_XFEM})
 deprecated_baci_add_library_linked_with_everything(alg_loma ${OBJS_DRT_LOMA})
 deprecated_baci_add_library_linked_with_everything(alg_two_phase ${OBJS_DRT_TWO_PHASE})
-deprecated_baci_add_library_linked_with_everything(alg_tsi ${OBJS_DRT_TSI})
 deprecated_baci_add_library_linked_with_everything(alg_sti ${OBJS_DRT_STI})
 deprecated_baci_add_library_linked_with_everything(alg_wear ${OBJS_DRT_WEAR})
 deprecated_baci_add_library_linked_with_everything(alg_poroelast ${OBJS_DRT_POROELAST})
@@ -2425,7 +2398,6 @@ deprecated_baci_add_library_linked_with_everything(
 deprecated_baci_add_library_linked_with_everything(alg_scatra ${OBJS_DRT_SCATRA})
 deprecated_baci_add_library_linked_with_everything(alg_structure ${OBJS_DRT_STRUCTURE})
 deprecated_baci_add_library_linked_with_everything(alg_xstructure ${OBJS_DRT_STRUCTURE_XSTRUCTURE})
-deprecated_baci_add_library_linked_with_everything(alg_thermo ${OBJS_DRT_THERMO})
 deprecated_baci_add_library_linked_with_everything(alg_fluid_adjoint ${OBJS_DRT_TOPOPT_ADJOINT})
 deprecated_baci_add_library_linked_with_everything(alg_opti ${OBJS_OPTI})
 deprecated_baci_add_library_linked_with_everything(
