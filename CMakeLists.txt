@@ -1760,16 +1760,6 @@ set(OBJS_DRT_W1_LIB
     src/drt_w1/wall1_scatra.cpp
     src/drt_w1/wall1_scatra_evaluate.cpp
     )
-set(OBJS_DRT_ROUGH_CONTACT
-    src/drt_contact_constitutivelaw/contactconstitutivelaw.cpp
-    src/drt_contact_constitutivelaw/contactconstitutivelaw_parameter.cpp
-    src/drt_contact_constitutivelaw/brokenrational_contactconstitutivelaw.cpp
-    src/drt_contact_constitutivelaw/cubic_contactconstitutivelaw.cpp
-    src/drt_contact_constitutivelaw/linear_contactconstitutivelaw.cpp
-    src/drt_contact_constitutivelaw/power_contactconstitutivelaw.cpp
-    src/drt_contact_constitutivelaw/contact_constitutivelaw_bundle.cpp
-    )
-
 set(OBJS_DRT_CUT
     src/drt_cut/cut_options.cpp
     src/drt_cut/base_vol.cpp
@@ -2184,7 +2174,7 @@ set(SUPPORT_LIBRARIES
     drt_lib_cut
     drt_lib_inpar
     drt_lib_io
-    drt_lib_roughcontact
+    drt_lib_contact_constitutivelaw
     drt_lib_nurbs
     drt_lib_binstrategy
     drt_lib_particleengine
@@ -2341,7 +2331,6 @@ deprecated_baci_add_library_linked_with_everything(drt_lib_register ${OBJS_DRT_R
 # libraries that are used by baci and by filters
 deprecated_baci_add_library_linked_with_everything(drt_lib_inpar ${OBJS_DRT_INPAR})
 deprecated_baci_add_library_linked_with_everything(drt_lib_constraint ${OBJS_DRT_CONSTRAINT_LIB})
-deprecated_baci_add_library_linked_with_everything(drt_lib_roughcontact ${OBJS_DRT_ROUGH_CONTACT})
 deprecated_baci_add_library_linked_with_everything(drt_lib_beamcontact ${OBJS_DRT_BEAMCONTACT_LIB})
 deprecated_baci_add_library_linked_with_everything(
   drt_lib_beaminteraction ${OBJS_DRT_BEAMINTERACTION_LIB}
