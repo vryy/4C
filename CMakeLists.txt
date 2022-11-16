@@ -2133,12 +2133,6 @@ set(OBJS_DRT_FIBER_LIB
     src/drt_fiber/nodal_fiber_holder.cpp
     )
 
-set(OBJS_DRT_GEOMETRIC_SEARCH
-    src/drt_geometric_search/geometric_search.cpp
-    src/drt_geometric_search/geometric_search_params.cpp
-    src/drt_geometric_search/geometric_search_utils.cpp
-    )
-
 set(OBJS_DRT_GEOMETRY_PAIR
     src/drt_geometry_pair/geometry_pair_factory.cpp
     src/drt_geometry_pair/geometry_pair.cpp
@@ -2464,9 +2458,6 @@ deprecated_baci_add_library_linked_with_everything(drt_lib_statinv_ana ${OBJS_ST
 deprecated_baci_add_library_linked_with_everything(drt_lib_immersed ${OBJS_DRT_IMMERSED_LIB})
 deprecated_baci_add_library_linked_with_everything(drt_lib_xfem_manag ${OBJS_DRT_XFEM_MANAG_LIB})
 deprecated_baci_add_library_linked_with_everything(drt_lib_fiber ${OBJS_DRT_FIBER_LIB})
-deprecated_baci_add_library_linked_with_everything(
-  drt_lib_geometric_search ${OBJS_DRT_GEOMETRIC_SEARCH}
-  )
 deprecated_baci_add_library_linked_with_everything(drt_lib_geometry_pair ${OBJS_DRT_GEOMETRY_PAIR})
 deprecated_baci_add_library_linked_with_everything(alg_mor ${OBJS_DRT_MOR})
 
