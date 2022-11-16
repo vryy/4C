@@ -424,12 +424,6 @@ set(OBJS_DRT_ADAPT
     src/drt_adapter/ad_porofluidmultiphase_wrapper.cpp
     src/drt_adapter/ad_scatra_wrapper.cpp
     )
-set(OBJS_DRT_CONTACT_LIB
-    src/drt_contact/contact_analytical.cpp
-    src/drt_contact/contact_element.cpp
-    src/drt_contact/contact_node.cpp
-    src/drt_contact/friction_node.cpp
-    )
 set(OBJS_DRT_RED_AIRWAYS_LIB
     src/drt_red_airways/airway_evaluate.cpp
     src/drt_red_airways/acinus_evaluate.cpp
@@ -1776,61 +1770,6 @@ set(OBJS_DRT_ROUGH_CONTACT
     src/drt_contact_constitutivelaw/contact_constitutivelaw_bundle.cpp
     )
 
-set(OBJS_DRT_CONTACT
-    src/drt_contact_constitutivelaw/contact_constitutivelaw_interface.cpp
-    src/drt_contact/contact_abstract_strategy.cpp
-    src/drt_contact/contact_noxinterface.cpp
-    src/drt_contact/contact_coupling2d.cpp
-    src/drt_contact/contact_coupling3d.cpp
-    src/drt_contact/contact_line_coupling.cpp
-    src/drt_contact/contact_integrator.cpp
-    src/drt_contact/contact_nitsche_integrator.cpp
-    src/drt_contact/contact_nitsche_integrator_poro.cpp
-    src/drt_contact/contact_nitsche_integrator_fsi.cpp
-    src/drt_contact/contact_nitsche_integrator_fpi.cpp
-    src/drt_contact/contact_nitsche_integrator_ssi.cpp
-    src/drt_contact/contact_nitsche_integrator_ssi_elch.cpp
-    src/drt_contact/contact_nitsche_integrator_tsi.cpp
-    src/drt_contact/contact_ehl_integrator.cpp
-    src/drt_contact/contact_integrator_factory.cpp
-    src/drt_contact/contact_integrator_assemble.cpp
-    src/drt_contact/contact_interface.cpp
-    src/drt_contact/contact_interface_roundrobin.cpp
-    src/drt_contact/contact_interface_tools.cpp
-    src/drt_contact/contact_interface_assemble.cpp
-    src/drt_contact/contact_interpolator.cpp
-    src/drt_contact/contact_lagrange_strategy.cpp
-    src/drt_contact/contact_monocoupled_lagrange_strategy.cpp
-    src/drt_contact/contact_poro_lagrange_strategy.cpp
-    src/drt_contact/contact_tsi_lagrange_strategy.cpp
-    src/drt_contact/contact_tsi_interface.cpp
-    src/drt_contact/contact_manager.cpp
-    src/drt_contact/contact_strategy_factory.cpp
-    src/drt_contact/contact_penalty_strategy.cpp
-    src/drt_contact/contact_nitsche_strategy.cpp
-    src/drt_contact/contact_nitsche_strategy_poro.cpp
-    src/drt_contact/contact_nitsche_strategy_fsi.cpp
-    src/drt_contact/contact_nitsche_strategy_fpi.cpp
-    src/drt_contact/contact_nitsche_strategy_ssi.cpp
-    src/drt_contact/contact_nitsche_strategy_ssi_elch.cpp
-    src/drt_contact/contact_nitsche_strategy_tsi.cpp
-    src/drt_contact/contact_utils.cpp
-    src/drt_contact/contact_utils_parallel.cpp
-    src/drt_contact/contact_wear_interface.cpp
-    src/drt_contact/contact_wear_interface_tools.cpp
-    src/drt_contact/contact_wear_lagrange_strategy.cpp
-    src/drt_contact/meshtying_strategy_factory.cpp
-    src/drt_contact/meshtying_abstract_strategy.cpp
-    src/drt_contact/meshtying_noxinterface.cpp
-    src/drt_contact/meshtying_contact_bridge.cpp
-    src/drt_contact/meshtying_lagrange_strategy.cpp
-    src/drt_contact/meshtying_poro_lagrange_strategy.cpp
-    src/drt_contact/meshtying_manager.cpp
-    src/drt_contact/meshtying_penalty_strategy.cpp
-    src/drt_contact/selfcontact_binarytree.cpp
-    src/drt_contact/selfcontact_binarytree_unbiased.cpp
-    src/drt_contact/nox_nln_meshtying_linearsystem.cpp
-    )
 set(OBJS_DRT_CONTACT_AUG
     src/drt_contact_aug/contact_augmented_strategy.cpp
     src/drt_contact_aug/contact_augmented_strategy_tools.cpp
@@ -2264,6 +2203,7 @@ set(SUPPORT_LIBRARIES
     drt_lib_mortar
     drt_lib_constraint
     drt_lib_contact
+    drt_lib_beamcontact
     drt_lib_beaminteraction
     drt_lib_poromulti_art_coupl
     # Libraries needed by elements
@@ -2376,7 +2316,6 @@ deprecated_baci_add_library_linked_with_everything(drt_adapter ${OBJS_DRT_ADAPT}
 # algorithm libraries the adapters depend uo
 deprecated_baci_add_library_linked_with_everything(alg_ale ${OBJS_DRT_ALEALG})
 deprecated_baci_add_library_linked_with_everything(alg_artnet ${OBJS_DRT_ARTNET})
-deprecated_baci_add_library_linked_with_everything(alg_contact ${OBJS_DRT_CONTACT})
 deprecated_baci_add_library_linked_with_everything(alg_contact_aug ${OBJS_DRT_CONTACT_AUG})
 deprecated_baci_add_library_linked_with_everything(alg_fluid ${OBJS_DRT_FLUID})
 deprecated_baci_add_library_linked_with_everything(
@@ -2431,10 +2370,8 @@ deprecated_baci_add_library_linked_with_everything(drt_lib_register ${OBJS_DRT_R
 # libraries that are used by baci and by filters
 deprecated_baci_add_library_linked_with_everything(drt_lib_inpar ${OBJS_DRT_INPAR})
 deprecated_baci_add_library_linked_with_everything(drt_lib_constraint ${OBJS_DRT_CONSTRAINT_LIB})
-deprecated_baci_add_library_linked_with_everything(
-  drt_lib_contact ${OBJS_DRT_CONTACT_LIB} ${OBJS_DRT_BEAMCONTACT_LIB}
-  )
 deprecated_baci_add_library_linked_with_everything(drt_lib_roughcontact ${OBJS_DRT_ROUGH_CONTACT})
+deprecated_baci_add_library_linked_with_everything(drt_lib_beamcontact ${OBJS_DRT_BEAMCONTACT_LIB})
 deprecated_baci_add_library_linked_with_everything(
   drt_lib_beaminteraction ${OBJS_DRT_BEAMINTERACTION_LIB}
   )
