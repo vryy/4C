@@ -1770,34 +1770,6 @@ set(OBJS_DRT_ROUGH_CONTACT
     src/drt_contact_constitutivelaw/contact_constitutivelaw_bundle.cpp
     )
 
-set(OBJS_DRT_CONTACT_AUG
-    src/drt_contact_aug/contact_augmented_strategy.cpp
-    src/drt_contact_aug/contact_augmented_strategy_tools.cpp
-    src/drt_contact_aug/contact_augmented_interface.cpp
-    src/drt_contact_aug/contact_augmented_interface_tools.cpp
-    src/drt_contact_aug/contact_augmented_integrator.cpp
-    src/drt_contact_aug/contact_augmented_integrator_evaluate.cpp
-    src/drt_contact_aug/contact_aug_active_set.cpp
-    src/drt_contact_aug/contact_aug_projector.cpp
-    src/drt_contact_aug/contact_aug_lagrange_strategy.cpp
-    src/drt_contact_aug/contact_aug_lagrange_interface.cpp
-    src/drt_contact_aug/contact_aug_steepest_ascent_sp_strategy.cpp
-    src/drt_contact_aug/contact_aug_steepest_ascent_strategy.cpp
-    src/drt_contact_aug/contact_aug_steepest_ascent_interface.cpp
-    src/drt_contact_aug/contact_aug_penalty_update.cpp
-    src/drt_contact_aug/contact_aug_combo_strategy.cpp
-    src/drt_contact_aug/contact_aug_combo_strategy_switching.cpp
-    src/drt_contact_aug/contact_aug_potential.cpp
-    src/drt_contact_aug/contact_aug_plot.cpp
-    src/drt_contact_aug/contact_integrator_utils.cpp
-    src/drt_contact_aug/contact_aug_integrator_policy.cpp
-    src/drt_contact_aug/contact_aug_integrator_policy_debug.cpp
-    src/drt_contact_aug/contact_aug_lagrange_multiplier_function.cpp
-    src/drt_contact_aug/contact_aug_interface_assembly.cpp
-    src/drt_contact_aug/contact_aug_timemonitor.cpp
-    src/drt_contact_aug/contact_aug_parallel_distribution_controller.cpp
-    src/drt_contact_aug/nox_nln_contact_linearsystem.cpp
-    )
 set(OBJS_DRT_CUT
     src/drt_cut/cut_options.cpp
     src/drt_cut/base_vol.cpp
@@ -2316,7 +2288,6 @@ deprecated_baci_add_library_linked_with_everything(drt_adapter ${OBJS_DRT_ADAPT}
 # algorithm libraries the adapters depend uo
 deprecated_baci_add_library_linked_with_everything(alg_ale ${OBJS_DRT_ALEALG})
 deprecated_baci_add_library_linked_with_everything(alg_artnet ${OBJS_DRT_ARTNET})
-deprecated_baci_add_library_linked_with_everything(alg_contact_aug ${OBJS_DRT_CONTACT_AUG})
 deprecated_baci_add_library_linked_with_everything(alg_fluid ${OBJS_DRT_FLUID})
 deprecated_baci_add_library_linked_with_everything(
   alg_fluid_turbulence ${OBJS_DRT_FLUID_TURBULENCE}

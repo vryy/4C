@@ -1,6 +1,7 @@
 add_subdirectory(drt_binstrategy)
 add_subdirectory(drt_comm)
 add_subdirectory(drt_contact)
+add_subdirectory(drt_contact_aug)
 add_subdirectory(drt_geometric_search)
 add_subdirectory(drt_lib)
 add_subdirectory(drt_thermo)
