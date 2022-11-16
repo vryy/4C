@@ -131,7 +131,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain()
       "action", SCATRA::Action::calc_flux_domain, params);
 
   // provide discretization with state vector
-  discret_->ClearState();
   discret_->SetState("phinp", phinp_);
 
   // evaluate flux vector field inside the whole computational domain (e.g., for visualization of
@@ -186,9 +185,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain()
     // reset solver
     solver_->Reset();
   }
-
-  // clean up
-  discret_->ClearState();
 
   return flux_projected;
 }  // SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
@@ -250,9 +246,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       // the resulting system has to be solved incrementally
       SetElementTimeParameter(true);
 
-      // clear state
-      discret_->ClearState();
-
       // AVM3 separation for incremental solver: get fine-scale part of scalar
       if (incremental_ and (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
                                turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales))
@@ -269,7 +262,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
         // call standard loop over elements
         discret_->Evaluate(
             eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null);
-        discret_->ClearState();
       }
 
       // scaling to get true residual vector for all time integration schemes
@@ -298,8 +290,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     std::vector<DRT::Condition*> cond;
     discret_->GetCondition("ScaTraFluxCalc", cond);
 
-    discret_->ClearState();
-
     Teuchos::ParameterList params;
     DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
         "action", SCATRA::BoundaryAction::add_convective_mass_flux, params);
@@ -309,7 +299,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
     // call loop over boundary elements and add integrated fluxes to trueresidual_
     discret_->EvaluateCondition(params, trueresidual_, "ScaTraFluxCalc");
-    discret_->ClearState();
   }
 
   // vector for effective flux over all defined boundary conditions
@@ -386,9 +375,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       const Teuchos::RCP<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(dofrowmap);
 
       // call loop over elements
-      discret_->ClearState();
       discret_->EvaluateCondition(params, integratedshapefunc, "ScaTraFluxCalc", icond);
-      discret_->ClearState();
 
       // compute normal boundary fluxes
       for (int idof = 0; idof < dofrowmap.NumMyElements(); ++idof)
@@ -410,10 +397,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
           Teuchos::rcp(new LINALG::SparseMatrix(dofrowmap, 27, false));
 
       // call loop over elements
-      discret_->ClearState();
       discret_->EvaluateCondition(params, massmatrix_boundary, Teuchos::null, Teuchos::null,
           Teuchos::null, Teuchos::null, "ScaTraFluxCalc", icond);
-      discret_->ClearState();
 
       // finalize boundary mass matrix
       massmatrix_boundary->Complete();
@@ -435,7 +420,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
       // compute value of boundary integral
       discret_->EvaluateScalars(params, boundaryint_vector, "ScaTraFluxCalc", icond);
-      discret_->ClearState();
 
       // extract value of boundary integral
       boundaryint = (*boundaryint_vector)(0);
@@ -586,8 +570,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
         << "+----------------------------------------------------------------------------------+"
         << std::endl;
   }
-  // clean up
-  discret_->ClearState();
 
   return flux;
 }  // SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary
@@ -642,12 +624,10 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
   AddProblemSpecificParametersAndVectors(eleparams);
 
   // add state vectors according to time integration scheme
-  discret_->ClearState();
   AddTimeIntegrationSpecificVectors();
 
   // modify global system of equations as explained above
   discret_->Evaluate(eleparams, sysmat_, residual_);
-  discret_->ClearState();
 
   // apply condensation to global system of equations if necessary
   strategy_->CondenseMatAndRHS(sysmat_, residual_, true);
@@ -816,9 +796,6 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_fs3i_surface_permeability, condparams);
 
-  // set vector values needed by elements
-  discret_->ClearState();
-
   // add element parameters according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
 
@@ -847,7 +824,6 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
   // Evaluate condition
   discret_->EvaluateCondition(
       condparams, matrix, Teuchos::null, rhs, Teuchos::null, Teuchos::null, "ScaTraCoupling");
-  discret_->ClearState();
 
   matrix->Complete();
 }  // SCATRA::ScaTraTimIntImpl::SurfacePermeability
@@ -869,9 +845,6 @@ void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
   // action for elements
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_fps3i_surface_permeability, condparams);
-
-  // set vector values needed by elements
-  discret_->ClearState();
 
   // add element parameters according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
@@ -895,7 +868,6 @@ void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
   // Evaluate condition
   discret_->EvaluateCondition(
       condparams, matrix, Teuchos::null, rhs, Teuchos::null, Teuchos::null, "ScaTraCoupling");
-  discret_->ClearState();
 
   matrix->Complete();
 }  // SCATRA::ScaTraTimIntImpl::KedemKatchalsky
@@ -955,8 +927,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
   Teuchos::RCP<Epetra_MultiVector> normal =
       Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 3, true));
 
-  discret_->ClearState();
-
   // set action for elements
   Teuchos::ParameterList eleparams;
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
@@ -968,9 +938,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
   {
     discret_->EvaluateCondition(eleparams, condname);
   }
-
-  // clean up
-  discret_->ClearState();
 
   // the normal vector field is not properly scaled up to now. We do this here
   int numrownodes = discret_->NumMyRowNodes();
@@ -1056,9 +1023,6 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_Neumann_inflow, condparams);
 
-  // clear state
-  discret_->ClearState();
-
   // add element parameters and vectors according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
 
@@ -1068,7 +1032,6 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
   std::string condstring("TransportNeumannInflow");
   discret_->EvaluateCondition(
       condparams, matrix, Teuchos::null, rhs, Teuchos::null, Teuchos::null, condstring);
-  discret_->ClearState();
 }  // SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow
 
 /*----------------------------------------------------------------------*
@@ -1087,16 +1050,12 @@ void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_convective_heat_transfer, condparams);
 
-  // clear state
-  discret_->ClearState();
-
   // add element parameters and vectors according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
 
   std::string condstring("TransportThermoConvections");
   discret_->EvaluateCondition(
       condparams, matrix, Teuchos::null, rhs, Teuchos::null, Teuchos::null, condstring);
-  discret_->ClearState();
 }  // SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer
 
 
@@ -1328,7 +1287,6 @@ void SCATRA::ScaTraTimIntImpl::OutputIntegrReac(const int num)
     if (!discret_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
     // set scalar values needed by elements
-    discret_->ClearState();
     discret_->SetState("phinp", phinp_);
     // set action for elements
     Teuchos::ParameterList eleparams;
@@ -1345,7 +1303,6 @@ void SCATRA::ScaTraTimIntImpl::OutputIntegrReac(const int num)
     std::vector<double> intreacterm(NumScal(), 0.0);
     for (int k = 0; k < NumScal(); ++k)
       phinp_->Map().Comm().SumAll(&((*myreacnp)[k]), &intreacterm[k], 1);
-    discret_->ClearState();  // clean up
 
     // print out values
     if (myrank_ == 0)
@@ -1422,7 +1379,6 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
 
   // call loop over elements
   discret_->Evaluate(eleparams, sysmat_sd_, residual_);
-  discret_->ClearState();
 
   // finalize the normalized all-scale subgrid-diffusivity matrix
   sysmat_sd_->Complete();
@@ -1843,7 +1799,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeSuperconvergen
     dserror("input map is not a dof row map of the fluid");
 
   // set given state for element evaluation
-  discret_->ClearState();
   discret_->SetState(statename, state);
 
   switch (dim)
@@ -1956,7 +1911,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNodalL2Project
   tmp->Update(1.0, *state, 0.0);
 
   // set given state for element evaluation
-  discret_->ClearState();
   discret_->SetState(statename, tmp);
 
   return DRT::UTILS::ComputeNodalL2Projection(discret_, statename, numvec, eleparams, solvernumber);
@@ -2379,14 +2333,12 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
       }
 
       // set vector values needed by elements
-      discret_->ClearState();
       discret_->SetState("phinp", phinp_);
 
       // get (squared) error values
       Teuchos::RCP<Epetra_SerialDenseVector> errors =
           Teuchos::rcp(new Epetra_SerialDenseVector(4 * NumDofPerNode()));
       discret_->EvaluateScalars(eleparams, errors);
-      discret_->ClearState();
 
       for (int k = 0; k < NumDofPerNode(); ++k)
       {
@@ -2468,16 +2420,12 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
         eleparams.set<int>("error function number", errorfunctnumber);
 
         // set state vector needed by elements
-        discret_->ClearState();
         discret_->SetState("phinp", phinp_);
 
         // get (squared) error values
         Teuchos::RCP<Epetra_SerialDenseVector> errors =
             Teuchos::rcp(new Epetra_SerialDenseVector(4 * NumDofPerNode()));
         discret_->EvaluateScalars(eleparams, errors, "ScatraRelError", condid);
-
-        // remove state vector from discretization
-        discret_->ClearState();
 
         // compute index offset
         const int offset = condid * NumDofPerNode() * 2;
@@ -2647,11 +2595,9 @@ void SCATRA::ScaTraTimIntImpl::EvaluateInitialTimeDerivative(
   AddProblemSpecificParametersAndVectors(eleparams);
 
   // add state vectors according to time integration scheme
-  discret_->ClearState();
   AddTimeIntegrationSpecificVectors();
   // modify global system of equations as explained above
   discret_->Evaluate(eleparams, matrix, rhs);
-  discret_->ClearState();
 
   // finalize assembly of global mass matrix
   matrix->Complete();
@@ -2665,7 +2611,6 @@ void SCATRA::OutputScalarsStrategyBase::PrepareEvaluate(
   const Teuchos::RCP<DRT::Discretization>& discret = scatratimint->discret_;
 
   // add state vector to discretization
-  discret->ClearState();
   discret->SetState("phinp", scatratimint->phinp_);
 
   // set action for elements
@@ -2716,7 +2661,6 @@ void SCATRA::OutputScalarsStrategyBase::OutputTotalAndMeanScalars(
 {
   // evaluate domain/condition integrals
   EvaluateIntegrals(scatratimint);
-  scatratimint->discret_->ClearState();
 
   // print evaluated data to screen
   PrintHeaderToScreen(scatratimint->discret_->Name());
@@ -3108,16 +3052,12 @@ void SCATRA::OutputDomainIntegralStrategy::EvaluateIntegralsAndPrintResults(
   // loop over all conditions
   for (int condid = 0; condid < static_cast<int>(conditions.size()); ++condid)
   {
-    // clear state vectors on discretization
-    discret->ClearState();
-
     // initialize one-component result vector for value of current domain or boundary integral
     Teuchos::RCP<Epetra_SerialDenseVector> integralvalue =
         Teuchos::rcp(new Epetra_SerialDenseVector(1));
 
     // compute value of current domain or boundary integral
     discret->EvaluateScalars(condparams, integralvalue, condstring, condid);
-    discret->ClearState();
 
     // output results to screen and file
     if (myrank == 0)

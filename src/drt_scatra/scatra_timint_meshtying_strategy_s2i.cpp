@@ -313,7 +313,6 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           "action", SCATRA::BoundaryAction::calc_s2icoupling, condparams);
 
       // set global state vectors according to time-integration scheme
-      scatratimint_->Discretization()->ClearState();
       scatratimint_->AddTimeIntegrationSpecificVectors();
 
       // evaluate scatra-scatra interface coupling at time t_{n+1} or t_{n+alpha_F}
@@ -343,7 +342,6 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           }
         }
       }
-      scatratimint_->Discretization()->ClearState();
 
       // finalize interface matrices
       islavematrix_->Complete();
@@ -892,7 +890,6 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
             "action", SCATRA::BoundaryAction::calc_s2icoupling, conditionparams);
 
         // set global state vectors according to time-integration scheme
-        scatratimint_->Discretization()->ClearState();
         scatratimint_->AddTimeIntegrationSpecificVectors();
 
         // evaluate scatra-scatra interface coupling at time t_{n+1} or t_{n+alpha_F}
@@ -905,7 +902,6 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         // evaluate the condition
         scatratimint_->Discretization()->EvaluateCondition(conditionparams, islavematrix_,
             imastermatrix_, islaveresidual_, Teuchos::null, Teuchos::null, "S2ICouplingGrowth");
-        scatratimint_->Discretization()->ClearState();
 
         // finalize interface matrices
         islavematrix_->Complete();
@@ -1014,7 +1010,6 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                                  ->GetInt("ConditionID");
 
           // set global state vectors according to time-integration scheme
-          scatratimint_->Discretization()->ClearState();
           scatratimint_->AddTimeIntegrationSpecificVectors();
 
           // compute additional linearizations and residuals depending on type of scalar transport
@@ -1331,9 +1326,6 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
             // finalize global matrix block
             growthgrowthblock_->Complete();
           }
-
-          // clear discretization
-          scatratimint_->Discretization()->ClearState();
         }  // monolithic evaluation of scatra-scatra interface layer growth
 
         break;
@@ -1362,7 +1354,6 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateAndAssembleCapacitiveContributions()
       "action", SCATRA::BoundaryAction::calc_s2icoupling_capacitance, capcondparas);
 
   // set global state vectors according to time-integration scheme
-  scatratimint_->Discretization()->ClearState();
   scatratimint_->AddTimeIntegrationSpecificVectors();
 
   // zero out matrices and vectors
@@ -1386,7 +1377,6 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateAndAssembleCapacitiveContributions()
           "S2IKinetics", kinetics_slave_cond_cap.second->GetInt("ConditionID"));
     }
   }
-  scatratimint_->Discretization()->ClearState();
 
   // finalize interface matrices
   islavematrix_->Complete();

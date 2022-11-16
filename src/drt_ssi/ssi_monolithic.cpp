@@ -1195,6 +1195,11 @@ void SSI::SSIMono::PrepareOutput()
  *--------------------------------------------------------------------------------------*/
 void SSI::SSIMono::DistributeSolutionAllFields(const bool restore_velocity)
 {
+  // clear all states before redistributing the new states
+  StructureField()->Discretization()->ClearState(true);
+  ScaTraField()->Discretization()->ClearState(true);
+  if (IsScaTraManifold()) ScaTraManifold()->Discretization()->ClearState(true);
+
   // needed to communicate to NOX state
   if (restore_velocity)
   {

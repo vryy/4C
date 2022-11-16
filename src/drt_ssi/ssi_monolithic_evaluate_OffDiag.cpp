@@ -79,9 +79,6 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureDom
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_scatra_mono_odblock_mesh, eleparams);
 
-  // remove state vectors from scalar transport discretization
-  ScaTraField()->Discretization()->ClearState();
-
   // add state vectors to scalar transport discretization
   ScaTraField()->AddTimeIntegrationSpecificVectors();
 
@@ -97,9 +94,6 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureDom
 
   // assemble scatra-structure matrix block
   ScaTraField()->Discretization()->Evaluate(eleparams, strategyscatrastructure);
-
-  // remove state vectors from scalar transport discretization
-  ScaTraField()->Discretization()->ClearState();
 }
 
 /*-----------------------------------------------------------------------------------*
@@ -122,9 +116,6 @@ void SSI::ScatraManifoldStructureOffDiagCoupling::EvaluateOffDiagBlockScatraMani
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_scatra_mono_odblock_mesh, eleparams);
 
-  // remove state vectors from scalar transport discretization
-  scatra_manifold_->Discretization()->ClearState();
-
   // add state vectors to scalar transport discretization
   scatra_manifold_->AddTimeIntegrationSpecificVectors();
 
@@ -140,9 +131,6 @@ void SSI::ScatraManifoldStructureOffDiagCoupling::EvaluateOffDiagBlockScatraMani
 
   // assemble scatra-structure matrix block
   scatra_manifold_->Discretization()->Evaluate(eleparams, strategyscatrastructure);
-
-  // remove state vectors from scalar transport discretization
-  scatra_manifold_->Discretization()->ClearState();
 }
 
 /*-----------------------------------------------------------------------------------*
@@ -345,9 +333,6 @@ void SSI::ScatraStructureOffDiagCoupling::
   // linearization of boundary flux w.r.t. displacement
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
       "differentiationtype", SCATRA::DifferentiationType::disp, condparams);
-
-  // remove state vectors from scalar transport discretization
-  ScaTraField()->Discretization()->ClearState();
 
   // add state vectors to scalar transport discretization
   ScaTraField()->AddTimeIntegrationSpecificVectors();
@@ -577,9 +562,6 @@ void SSI::ScatraStructureOffDiagCoupling::
       break;
     }
   }
-
-  // remove state vectors from scalar transport discretization
-  ScaTraField()->Discretization()->ClearState();
 }
 
 /*----------------------------------------------------------------------*
@@ -598,9 +580,6 @@ void SSI::ScatraStructureOffDiagCoupling::
   // linearization of boundary flux w.r.t. displacement
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
       "differentiationtype", SCATRA::DifferentiationType::disp, condparams);
-
-  // remove state vectors from scalar transport discretization
-  ScaTraField()->Discretization()->ClearState();
 
   // add state vectors to scalar transport discretization
   ScaTraField()->AddTimeIntegrationSpecificVectors();
@@ -719,9 +698,6 @@ void SSI::ScatraStructureOffDiagCoupling::
       break;
     }
   }
-
-  // remove state vectors from scalar transport discretization
-  ScaTraField()->Discretization()->ClearState();
 }
 
 /*----------------------------------------------------------------------*
