@@ -59,7 +59,9 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
 
   // Vectors in 3D.
   LINALG::Matrix<3, 1, scalar_type> r_surface;
-  LINALG::Matrix<3, 1, scalar_type> delta_xi(1.0);
+  LINALG::Matrix<3, 1, scalar_type> delta_xi;
+  // Initialize the increment with a value that will not pass the first convergence check.
+  delta_xi.PutScalar(10 * CONSTANTS::projection_xi_eta_tol);
   LINALG::Matrix<3, 1, scalar_type> residuum;
 
   // Jacobian / inverse.
@@ -230,7 +232,9 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
 
   // Residuum.
   LINALG::Matrix<4, 1, scalar_type> residuum;
-  LINALG::Matrix<4, 1, scalar_type> delta_x(1.0);
+  LINALG::Matrix<4, 1, scalar_type> delta_xi;
+  // Initialize the increment with a value that will not pass the first convergence check.
+  delta_xi.PutScalar(10 * CONSTANTS::projection_xi_eta_tol);
 
   // Jacobian / inverse.
   LINALG::Matrix<4, 4, scalar_type> J_J_inv;
@@ -277,7 +281,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
         // FAD variables is calculated correctly.
       }
       else if (FADUTILS::VectorNorm(residuum) < CONSTANTS::local_newton_res_tol &&
-               FADUTILS::VectorNorm(delta_x) < CONSTANTS::projection_xi_eta_tol)
+               FADUTILS::VectorNorm(delta_xi) < CONSTANTS::projection_xi_eta_tol)
       {
         // System is solved, now check if the parameter coordinates are valid.
         if (ValidParameter1D(eta) && ValidParameterSurface(xi, surface_size, beam_radius))
@@ -302,11 +306,11 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
 
       // Solve the linearized system.
       if (LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
-              J_J_inv, residuum, delta_x, CONSTANTS::local_newton_det_tol))
+              J_J_inv, residuum, delta_xi, CONSTANTS::local_newton_det_tol))
       {
         // Set the new parameter coordinates.
-        eta -= delta_x(3);
-        for (unsigned int i = 0; i < 3; i++) xi(i) -= delta_x(i);
+        eta -= delta_xi(3);
+        for (unsigned int i = 0; i < 3; i++) xi(i) -= delta_xi(i);
 
         // Advance Newton iteration counter.
         counter++;
