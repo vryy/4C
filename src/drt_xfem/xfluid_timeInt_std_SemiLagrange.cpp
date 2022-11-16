@@ -778,7 +778,6 @@ bool XFEM::XFLUID_SemiLagrange::continueForChangingSide(
         nds_curr  ///< nds-vector of current volumecell the current startpoint approximation lies in
 )
 {
-#if (1)
   //--------------------------------------------------------------------------------------
   // ALTERNATIVE: CONTINUE NEWTON-ALGO when startvalue changed side during newton
   // maybe the newton turns back to the right interface side
@@ -831,18 +830,6 @@ bool XFEM::XFLUID_SemiLagrange::continueForChangingSide(
   }
   else
     dserror("case not possible");
-
-
-#else
-  //--------------------------------------------------------------------------------------
-  // ALTERNATIVE: STOP NEWTON-ALGO when startvalue changed side during newton
-#ifdef DEBUG_SEMILAGRANGE
-  std::cout << "!!! CHANGED SIDE within Newton loop !!!! -> leave newton loop" << std::endl;
-#endif
-  data->state_ = TimeIntData::failedSL_;
-  return false;  // leave newton loop if point is on wrong domain side
-                 //--------------------------------------------------------------------------------------
-#endif
 
   return false;
 }

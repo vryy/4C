@@ -401,24 +401,11 @@ namespace XFEM
 
       if (forcetangvel_)
       {
-#if (1)  // If 0 project in normal direction
+        // We project in the normal direction
         LINALG::Matrix<3, 1> tmp_ivel(true);
         tmp_ivel.MultiplyTN(
             projection_matrix, ivel);  // apply Projection matrix from the right. (u_0 * P^t)
         ivel.Update(1.0, tmp_ivel, 0.0);
-#else
-        // If we want only normal direction for testing it can be "hacked" in here.
-        //      //  itraction_jump_matrix.Print(std::cout);
-        LINALG::Matrix<3, 3> proj_normal(true);
-        //      proj_normal.Scale(0.0);
-        for (unsigned i = 0; i < 3; i++) proj_normal(i, i) = 1.0;
-        proj_normal.Update(-1.0, projection_matrix, 1.0);
-
-        LINALG::Matrix<3, 1> tmp_ivel(true);
-        tmp_ivel.MultiplyTN(
-            proj_normal, ivel);  // apply Projection matrix from the right. (u_0 * P^n)
-        ivel.Update(1.0, tmp_ivel, 0.0);
-#endif
       }
     };
 
