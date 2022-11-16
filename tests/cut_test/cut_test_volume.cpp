@@ -61,13 +61,8 @@ void test_cut_volumes2()
         GEO::CUT::Mesh mesh1(options);
         GEO::CUT::Mesh mesh2(options, 1, mesh1.Points());
 
-#if 1
         create_hex8_mesh(mesh1, 1, 1, 1);
         create_hex8_mesh(mesh2, i, j, k);
-#else
-        create_hex8_mesh(mesh1, 4, 4, 4);
-        create_hex8_mesh(mesh2, 8, 9, 10);
-#endif
 
         mesh2.CreateSideIds_CutTest();
 

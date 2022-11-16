@@ -88,27 +88,6 @@ unsigned GEO::CUT::KERNEL::FindNextCornerPoint(const std::vector<Point*>& points
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::KERNEL::FindCornerPoints(
-    const std::vector<Point*>& points, std::vector<Point*>& corner_points)
-{
-  LINALG::Matrix<3, 1> x1;
-  LINALG::Matrix<3, 1> x2;
-  LINALG::Matrix<3, 1> x3;
-  LINALG::Matrix<3, 1> b1;
-  LINALG::Matrix<3, 1> b2;
-  LINALG::Matrix<3, 1> b3;
-
-  for (unsigned i = FindNextCornerPoint(points, x1, x2, x3, b1, b2, b3, 0); true;
-       i = FindNextCornerPoint(points, x1, x2, x3, b1, b2, b3, i))
-  {
-    Point* p = points[i];
-    if (corner_points.size() > 0 and corner_points.front() == p) break;
-    corner_points.push_back(p);
-  }
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 bool GEO::CUT::KERNEL::IsValidPoint1(const std::vector<Point*>& corner_points)
 {
   return (corner_points.size() == 1);
@@ -145,25 +124,6 @@ bool GEO::CUT::KERNEL::IsValidQuad4(const std::vector<Point*>& points)
     return true;
   }
   return false;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-DRT::Element::DiscretizationType GEO::CUT::KERNEL::CalculateShape(
-    const std::vector<Point*>& points, std::vector<Point*>& line_points)
-{
-  FindCornerPoints(points, line_points);
-
-  if (IsValidTri3(line_points))
-  {
-    return DRT::Element::tri3;
-  }
-  else if (IsValidQuad4(line_points))
-  {
-    return DRT::Element::quad4;
-  }
-
-  return DRT::Element::dis_none;
 }
 
 /*----------------------------------------------------------------------------*

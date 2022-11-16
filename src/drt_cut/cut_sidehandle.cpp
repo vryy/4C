@@ -55,7 +55,6 @@ GEO::CUT::Tri6SideHandle::Tri6SideHandle(Mesh& mesh, int sid, const std::vector<
  *----------------------------------------------------------------------------*/
 GEO::CUT::Quad4SideHandle::Quad4SideHandle(Mesh& mesh, int sid, const std::vector<int>& nodes)
 {
-#if (1)
   subsides_.reserve(4);
 
   LINALG::Matrix<3, 4> xyze;
@@ -103,26 +102,6 @@ GEO::CUT::Quad4SideHandle::Quad4SideHandle(Mesh& mesh, int sid, const std::vecto
   nids[1] = nodes[0];
   nids[2] = middle_id;
   subsides_.push_back(mesh.GetSide(sid, nids, top_data));
-#else
-
-  nodes_.reserve(4);
-  for (int i = 0; i < 4; ++i)
-  {
-    Node* n = mesh.GetNode(nodes[i], static_cast<double*>(NULL));
-    nodes_.push_back(n);
-  }
-  subsides_.reserve(2);
-  const CellTopologyData* top_data = shards::getCellTopologyData<shards::Triangle<3>>();
-  std::vector<int> nids(3);
-  nids[0] = nodes[0];
-  nids[1] = nodes[1];
-  nids[2] = nodes[2];
-  subsides_.push_back(mesh.GetSide(sid, nids, top_data));
-  nids[0] = nodes[2];
-  nids[1] = nodes[3];
-  nids[2] = nodes[0];
-  subsides_.push_back(mesh.GetSide(sid, nids, top_data));
-#endif
 }
 
 /*----------------------------------------------------------------------------*

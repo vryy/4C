@@ -95,8 +95,6 @@ namespace GEO
         bool on_side_;
       };
 
-      void FindCornerPoints(const std::vector<Point*>& points, std::vector<Point*>& corner_points);
-
       unsigned FindNextCornerPoint(const std::vector<Point*>& points, LINALG::Matrix<3, 1>& x1,
           LINALG::Matrix<3, 1>& x2, LINALG::Matrix<3, 1>& x3, LINALG::Matrix<3, 1>& b1,
           LINALG::Matrix<3, 1>& b2, LINALG::Matrix<3, 1>& b3, unsigned i);
@@ -112,9 +110,6 @@ namespace GEO
 
       /// check if the given corner points can belong to a quad4 element
       bool IsValidQuad4(const std::vector<Point*>& points);
-
-      DRT::Element::DiscretizationType CalculateShape(
-          const std::vector<Point*>& points, std::vector<Point*>& line_points);
 
       template <int points>
       double FindL2Scaling(LINALG::Matrix<3, points>& xyze)
