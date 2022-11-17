@@ -1250,18 +1250,6 @@ set(OBJS_LOCA_CONTINUATION
     src/loca_continuation/loca_nln_statustest_factory.cpp
     )
 
-set(OBJS_DRT_CARDIOVASCULAR0D
-    src/drt_cardiovascular0d/cardiovascular0d.cpp
-    src/drt_cardiovascular0d/cardiovascular0d_manager.cpp
-    src/drt_cardiovascular0d/cardiovascular0d_dofset.cpp
-    src/drt_cardiovascular0d/cardiovascular0d_resulttest.cpp
-    src/drt_cardiovascular0d/cardiovascular0d_4elementwindkessel.cpp
-    src/drt_cardiovascular0d/cardiovascular0d_arterialproxdist.cpp
-    src/drt_cardiovascular0d/cardiovascular0d_syspulcirculation.cpp
-    src/drt_cardiovascular0d/cardiovascularrespiratory0d_syspulperiphcirculation.cpp
-    src/drt_cardiovascular0d/nox_nln_cardiovascular0d_linearsystem.cpp
-    )
-
 set(OBJS_DRT_CONSTRAINT
     src/drt_constraint/constraint.cpp
     src/drt_constraint/constraint_manager.cpp
@@ -1881,9 +1869,6 @@ deprecated_baci_add_library_linked_with_everything(alg_tutorial ${OBJS_DRT_TUTOR
 # general framework
 deprecated_baci_add_library_linked_with_everything(drt_nurbs ${OBJS_DRT_NURBS_DISCRET})
 deprecated_baci_add_library_linked_with_everything(drt_constraint ${OBJS_DRT_CONSTRAINT})
-deprecated_baci_add_library_linked_with_everything(
-  drt_cardiovascular0d ${OBJS_DRT_CARDIOVASCULAR0D}
-  )
 deprecated_baci_add_library_linked_with_everything(drt_mortar ${OBJS_DRT_MORTAR})
 deprecated_baci_add_library_linked_with_everything(drt_volmortar ${OBJS_DRT_VOLMORTAR})
 deprecated_baci_add_library_linked_with_everything(drt_mor ${OBJS_DRT_MOR})
