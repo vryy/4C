@@ -34,8 +34,6 @@
 
 #include "volmortar_utils.H"
 
-#include "fouriervar.H"
-
 /*----------------------------------------------------------------------*
  | remove flag thermo from condition                         dano 12/11 |
  *----------------------------------------------------------------------*/
@@ -121,22 +119,6 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
       therm->SetMaterial(matid);
     therm->SetDisType(oldele->Shape());  // set distype as well!
     therm->SetKinematicType(kintype);    // set kintype in cloned thermal element
-    if (therm->Material()->MaterialType() == INPAR::MAT::m_th_fourier_var)
-    {
-      switch (therm->Shape())
-      {
-        case DRT::Element::hex8:
-        {
-          int numgp = THR::DisTypeToNumGaussPoints<DRT::Element::hex8>::nquad;
-          Teuchos::RCP<MAT::FourierVar> thermmat =
-              Teuchos::rcp_dynamic_cast<MAT::FourierVar>(therm->Material(), true);
-          thermmat->Setup(numgp);
-          break;
-        }
-        default:
-          dserror("Shape not implemented.");
-      }
-    }
   }
   else
   {

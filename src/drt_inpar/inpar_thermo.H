@@ -303,13 +303,6 @@ namespace INPAR
       tempgrad_initial   //!< output of thermal gradient in initial configuration
     };
 
-    //! Type of phase output (in SLM)
-    enum PhaseType
-    {
-      phase_none,  //!< no phase output
-      phase_yes    //!< write phase output
-    };
-
     //! Map predictor enum term to std::string
     static inline const std::string TempGradString(const TempGradType& name  //!< identifier
     )

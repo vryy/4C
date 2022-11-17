@@ -85,7 +85,6 @@
 #include "newtonianfluid.H"
 #include "stvenantkirchhoff.H"
 #include "thermostvenantkirchhoff.H"
-#include "thermomech_threephase.H"
 #include "thermoplasticlinelast.H"
 #include "micromaterial.H"
 #include "aaaneohooke.H"
@@ -127,7 +126,6 @@
 #include "viscoelasthyper.H"
 #include "cnst_1d_art.H"
 #include "fourieriso.H"
-#include "fouriervar.H"
 #include "membrane_elasthyper.H"
 #include "membrane_active_strain.H"
 #include "growthremodel_elasthyper.H"
@@ -323,9 +321,8 @@ std::string DRT::ParObjectList()
     << MAT::FluidPoroSingleReactionType::Instance().Name() << " "
     << MAT::FluidPoroMultiPhaseType::Instance().Name() << " "
     << MAT::FluidPoroMultiPhaseReactionsType::Instance().Name() << " "
-    << MAT::FourierIsoType::Instance().Name() << " " << MAT::FourierVarType::Instance().Name()
-    << " " << MAT::GrowthVolumetricType::Instance().Name() << " "
-    << MAT::Membrane_ElastHyperType::Instance().Name() << " "
+    << MAT::FourierIsoType::Instance().Name() << " " << MAT::GrowthVolumetricType::Instance().Name()
+    << " " << MAT::Membrane_ElastHyperType::Instance().Name() << " "
     << MAT::Membrane_ActiveStrainType::Instance().Name() << " "
     << MAT::GrowthRemodel_ElastHyperType::Instance().Name() << " "
     << MAT::Mixture_ElastHyperType::Instance().Name() << " "
@@ -349,9 +346,9 @@ std::string DRT::ParObjectList()
     << MAT::ScatraMatMultiPoroTemperatureType::Instance().Name() << " "
     << MAT::StVenantKirchhoffType::Instance().Name() << " "
     << MAT::LinElast1DType::Instance().Name() << " " << MAT::LinElast1DGrowthType::Instance().Name()
-    << " " << MAT::ThermoMechThreePhaseType::Instance().Name() << " "
-    << MAT::SutherlandType::Instance().Name() << " " << MAT::TempDepWaterType::Instance().Name()
-    << " " << MAT::ThermoStVenantKirchhoffType::Instance().Name() << " "
+    << " " << MAT::SutherlandType::Instance().Name() << " "
+    << MAT::TempDepWaterType::Instance().Name() << " "
+    << MAT::ThermoStVenantKirchhoffType::Instance().Name() << " "
     << MAT::ThermoPlasticLinElastType::Instance().Name() << " "
     << MAT::ViscoAnisotropicType::Instance().Name() << " "
     << MAT::ViscoNeoHookeType::Instance().Name() << " " << MAT::YoghurtType::Instance().Name()

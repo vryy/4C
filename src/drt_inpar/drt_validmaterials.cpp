@@ -954,26 +954,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
-  // Thermo mechanical material with three phases with St.Venant--Kirchhoff and Fourier laws
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_ThermoMech_ThreePhase",
-        "Thermo mechanical material with three phases with thermo St.Venant--Kirchhoff and Fourier "
-        "laws",
-        INPAR::MAT::m_thermomechthreephase));
-
-    AddNamedIntVector(m, "YOUNGFUNCT", "functions for temperature dependent Young's modulus", 3);
-    AddNamedReal(m, "NUE", "Poisson's ratio");
-    AddNamedReal(m, "DENS", "mass density");
-    AddNamedIntVector(
-        m, "THEXPANSFUNCT", "functions for temperature dependent thermal expansion", 3);
-    AddNamedReal(m, "THETAREF", "reference temperature for thermal strain");
-    AddNamedInt(m, "THERMOMAT", "phase dependent thermo material");
-    AddNamedInt(m, "CONSOLMAT", "consolidation material");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*----------------------------------------------------------------------*/
   // Finite strain superelasticity of shape memory alloys
   {
     auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_SuperElastSMA",
@@ -2177,36 +2157,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AddNamedReal(m, "CAPA", "volumetric heat capacity");
     AddNamedReal(m, "CONDUCT", "thermal conductivity");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*--------------------------------------------------------------------*/
-  // Fourier's law for multiple phases with variable conductivity and capacity
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("THERM_FourierVar",
-        "isotropic (linear) Fourier's law of heat conduction with T-dependent conductivity. Use t "
-        "in FUNCT for temperature!",
-        INPAR::MAT::m_th_fourier_var));
-
-    AddNamedIntVector(
-        m, "CAPAFUNCT", "functions for capacity, first for powder-melt, second for solid-melt", 3);
-    AddNamedIntVector(m, "CONDUCTFUNCT",
-        "functions for thermal conductivity, first for powder-melt, second for solid-melt", 3);
-    AddNamedInt(m, "CONSOLMAT",
-        "reference to material handling consolidation, -1 if injected by other material");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*--------------------------------------------------------------------*/
-  // consolidation manager providing all common methods
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_Consolidation", "manager for consolidation tracking", INPAR::MAT::m_consolidation));
-    AddNamedReal(m, "SOLIDUS", "solidus temperature");
-    AddNamedReal(m, "LIQUIDUS", "liquidus temperature (set to liquidus for isothermal)");
-    AddNamedReal(m, "LATENTHEAT", "latent heat of melting", 0.0, true);
 
     AppendMaterialDefinition(matlist, m);
   }

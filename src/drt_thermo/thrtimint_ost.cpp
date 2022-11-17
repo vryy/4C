@@ -163,10 +163,6 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
   fres_->Update(theta_, *fintn_, (1.0 - theta_), *fint_, 1.0);
   // here is the negative sign for the external forces (heatfluxes)
   fres_->Update(-theta_, *fextn_, -(1.0 - theta_), *fext_, 1.0);
-  // add artificial heating for phase change
-
-  // TODO latent heat integration should be refactored out of base thermo stuff
-  fres_->Update(-1.0, *fmelt_, 1.0);
 
   // no further modification on tang_ required
   // tang_ is already effective dynamic tangent matrix
@@ -322,8 +318,6 @@ void THR::TimIntOneStepTheta::UpdateStepState()
   //    F_{cap;n} := F_{cap;n+1}
   fcap_->Update(1.0, *fcapn_, 0.0);
 
-  // reset the melt force //TODO should be moved somewhere else
-  fmelt_->PutScalar(0.0);
 
   // look out
   return;
