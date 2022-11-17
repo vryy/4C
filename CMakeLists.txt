@@ -429,14 +429,6 @@ set(OBJS_DRT_INPAR
     src/drt_inpar/inpar_xfem.cpp
     src/drt_tutorial/inpar_tutorial.cpp
     )
-set(OBJS_DRT_ARTNET
-    src/drt_art_net/art_net_dyn_drt.cpp
-    src/drt_art_net/art_net_utils.cpp
-    src/drt_art_net/art_net_timint.cpp
-    src/drt_art_net/art_net_impl_stationary.cpp
-    src/drt_art_net/artnetexplicitintegration.cpp
-    )
-
 set(OBJS_DRT_XFEM
     src/drt_xfem/xfem_edgestab.cpp
     src/drt_xfem/xfem_discretization_utils.cpp
@@ -466,19 +458,7 @@ set(OBJS_DRT_XFEM_MANAG_LIB
     )
 
 set(OBJS_POST_DRT_MONITOR src/post_monitor/post_drt_monitor.cpp)
-set(OBJS_DRT_ARTNET_LIB
-    src/drt_art_net/artery.cpp
-    src/drt_art_net/artery_ele_calc_lin_exp.cpp
-    src/drt_art_net/artery_ele_calc_pres_based.cpp
-    src/drt_art_net/artery_ele_factory.cpp
-    src/drt_art_net/artery_evaluate.cpp
-    src/drt_art_net/artery_ele_calc.cpp
-    src/drt_art_net/art_junction.cpp
-    src/drt_art_net/art_terminal_bc.cpp
-    src/drt_art_net/art_write_gnuplot.cpp
-    src/drt_art_net/artery_input.cpp
-    src/drt_art_net/artery_resulttest.cpp
-    )
+
 set(OBJS_DRT_STRU_MULTI
     src/drt_stru_multi/convert_mat.cpp
     src/drt_stru_multi/microstatic.cpp
@@ -1877,7 +1857,6 @@ deprecated_baci_add_library_linked_with_everything(alg_ehl ${OBJS_DRT_EHL})
 deprecated_baci_add_library_linked_with_everything(alg_pasi ${OBJS_DRT_PASI})
 
 # algorithm libraries the adapters depend uo
-deprecated_baci_add_library_linked_with_everything(alg_artnet ${OBJS_DRT_ARTNET})
 deprecated_baci_add_library_linked_with_everything(alg_statinvanalysis ${OBJS_STATINV_ANALYSIS})
 deprecated_baci_add_library_linked_with_everything(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
 deprecated_baci_add_library_linked_with_everything(
@@ -1936,7 +1915,6 @@ deprecated_baci_add_library_linked_with_everything(
   )
 deprecated_baci_add_library_linked_with_everything(drt_lib_surfstress ${OBJS_DRT_SURFSTRESS})
 deprecated_baci_add_library_linked_with_everything(drt_lib_utils ${OBJS_DRT_UTILS})
-deprecated_baci_add_library_linked_with_everything(drt_lib_artnet ${OBJS_DRT_ARTNET_LIB})
 deprecated_baci_add_library_linked_with_everything(drt_lib_redairways ${OBJS_DRT_RED_AIRWAYS_LIB})
 deprecated_baci_add_library_linked_with_everything(drt_lib_cut ${OBJS_DRT_CUT})
 deprecated_baci_add_library_linked_with_everything(drt_lib_statinv_ana ${OBJS_STATINV_ANALYSIS_LIB})

@@ -1,5 +1,6 @@
 add_subdirectory(drt_adapter)
 add_subdirectory(drt_ale)
+add_subdirectory(drt_art_net)
 add_subdirectory(drt_beam3)
 add_subdirectory(drt_beamcontact)
 add_subdirectory(drt_beaminteraction)
