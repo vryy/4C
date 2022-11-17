@@ -152,20 +152,6 @@ find_package(AMDLIBM)
 find_package(CLN REQUIRED)
 
 ###------------------------------------------------------------------ List of files
-set(OBJS_DRT_ALE_LIB
-    src/drt_ale2/ale2.cpp
-    src/drt_ale2/ale2_evaluate.cpp
-    src/drt_ale2/ale2_input.cpp
-    src/drt_ale2/ale2_line.cpp
-    src/drt_ale2/ale2_line_evaluate.cpp
-    src/drt_ale2/ale2_nurbs.cpp
-    src/drt_ale3/ale3.cpp
-    src/drt_ale3/ale3_evaluate.cpp
-    src/drt_ale3/ale3_input.cpp
-    src/drt_ale3/ale3_nurbs.cpp
-    src/drt_ale3/ale3_surface.cpp
-    src/drt_ale3/ale3_surface_evaluate.cpp
-    )
 set(OBJS_DRT_MAT_LIB
     src/drt_matelast/elast_aniso_structuraltensor_strategy.cpp
     src/drt_mat/aaa_mixedeffects.cpp
@@ -1571,15 +1557,6 @@ set(OBJS_DRT_T3CL_LIB
     src/drt_truss3cl/truss3cl_evaluate.cpp
     src/drt_truss3cl/truss3cl_input.cpp
     )
-set(OBJS_DRT_ALEALG
-    src/drt_ale/ale.cpp
-    src/drt_ale/ale_dyn.cpp
-    src/drt_ale/ale_meshsliding.cpp
-    src/drt_ale/ale_meshtying.cpp
-    src/drt_ale/ale_resulttest.cpp
-    src/drt_ale/ale_utils_mapextractor.cpp
-    src/drt_ale/ale_utils_clonestrategy.cpp
-    )
 set(OBJS_DRT_W1_LIB
     src/drt_w1/wall1.cpp
     src/drt_w1/wall1_eas.cpp
@@ -2067,7 +2044,6 @@ add_library(drt_timestepping INTERFACE)
 target_include_directories(drt_timestepping INTERFACE ${PROJECT_SOURCE_DIR}/src/drt_timestepping)
 
 # Compile element libraries first. There are files that take time to compile.
-deprecated_baci_add_library_linked_with_everything(ele_ale ${OBJS_DRT_ALE_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_b3 ${OBJS_DRT_B3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_rigidsphere ${OBJS_DRT_RIGIDSPHERE_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_bele3 ${OBJS_DRT_BELE3_LIB})
@@ -2112,7 +2088,6 @@ deprecated_baci_add_library_linked_with_everything(alg_pasi ${OBJS_DRT_PASI})
 deprecated_baci_add_library_linked_with_everything(drt_adapter ${OBJS_DRT_ADAPT})
 
 # algorithm libraries the adapters depend uo
-deprecated_baci_add_library_linked_with_everything(alg_ale ${OBJS_DRT_ALEALG})
 deprecated_baci_add_library_linked_with_everything(alg_artnet ${OBJS_DRT_ARTNET})
 deprecated_baci_add_library_linked_with_everything(alg_statinvanalysis ${OBJS_STATINV_ANALYSIS})
 deprecated_baci_add_library_linked_with_everything(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
