@@ -1102,8 +1102,6 @@ set(OBJS_DRT_STRUCTURE
     src/drt_structure_new/str_model_evaluator.cpp
     src/drt_structure_new/str_model_evaluator_data.cpp
     src/drt_structure_new/str_model_evaluator_contactdata.cpp
-    src/drt_browniandyn/str_model_evaluator_browniandyn.cpp
-    src/drt_browniandyn/str_model_evaluator_browniandyndata.cpp
     src/drt_structure_new/str_model_evaluator_factory.cpp
     src/drt_structure_new/str_model_evaluator_generic.cpp
     src/drt_structure_new/str_model_evaluator_structure.cpp
@@ -1752,6 +1750,7 @@ set(SUPPORT_LIBRARIES
     drt_lib_xfem_manag
     drt_lib
     drt_lib_artnet
+    drt_lib_browniandyn
     drt_lib_redairways
     drt_lib_mortar
     drt_lib_constraint
