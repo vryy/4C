@@ -152,20 +152,6 @@ find_package(AMDLIBM)
 find_package(CLN REQUIRED)
 
 ###------------------------------------------------------------------ List of files
-set(OBJS_DRT_ALE_LIB
-    src/drt_ale2/ale2.cpp
-    src/drt_ale2/ale2_evaluate.cpp
-    src/drt_ale2/ale2_input.cpp
-    src/drt_ale2/ale2_line.cpp
-    src/drt_ale2/ale2_line_evaluate.cpp
-    src/drt_ale2/ale2_nurbs.cpp
-    src/drt_ale3/ale3.cpp
-    src/drt_ale3/ale3_evaluate.cpp
-    src/drt_ale3/ale3_input.cpp
-    src/drt_ale3/ale3_nurbs.cpp
-    src/drt_ale3/ale3_surface.cpp
-    src/drt_ale3/ale3_surface_evaluate.cpp
-    )
 set(OBJS_DRT_MAT_LIB
     src/drt_matelast/elast_aniso_structuraltensor_strategy.cpp
     src/drt_mat/aaa_mixedeffects.cpp
@@ -352,75 +338,6 @@ set(OBJS_DRT_MAT_LIB
     src/drt_mat/activefiber.cpp
     src/drt_matelast/visco_generalizedgenmax.cpp
     )
-
-set(OBJS_DRT_ADAPT
-    src/drt_adapter/adapter_algorithmbase.cpp
-    src/drt_adapter/adapter_coupling.cpp
-    src/drt_adapter/adapter_coupling_mortar.cpp
-    src/drt_adapter/adapter_coupling_nonlin_mortar.cpp
-    src/drt_adapter/adapter_coupling_poro_mortar.cpp
-    src/drt_adapter/adapter_coupling_ehl_mortar.cpp
-    src/drt_adapter/adapter_coupling_volmortar.cpp
-    src/drt_adapter/ad_field_wrapper.cpp
-    src/drt_adapter/ad_fld_fluid.cpp
-    src/drt_adapter/ad_fld_fluid_ale.cpp
-    src/drt_adapter/ad_fld_base_algorithm.cpp
-    src/drt_adapter/ad_fld_lung.cpp
-    src/drt_adapter/ad_fld_moving_boundary.cpp
-    src/drt_adapter/ad_fld_poro.cpp
-    src/drt_adapter/ad_fld_fbi_movingboundary.cpp
-    src/drt_adapter/ad_fld_fbi_wrapper.cpp
-    src/drt_adapter/ad_fld_fluid_fsi_msht.cpp
-    src/drt_adapter/ad_fld_fluid_fsi.cpp
-    src/drt_adapter/ad_fld_fluid_ac_fsi.cpp
-    src/drt_adapter/ad_fld_fluid_fpsi.cpp
-    src/drt_adapter/ad_fld_fluid_fluid_fsi.cpp
-    src/drt_adapter/ad_fld_fluid_xfem.cpp
-    src/drt_adapter/ad_fld_fluid_immersed.cpp
-    src/drt_adapter/ad_fld_fluid_ale_xfem.cpp
-    src/drt_adapter/ad_fld_fluid_xfsi.cpp
-    src/drt_adapter/ad_fld_fluid_fluid_xfsi.cpp
-    src/drt_adapter/ad_opt.cpp
-    src/drt_adapter/ad_opt_fluid_adjoint_base.cpp
-    src/drt_adapter/ad_opt_fluid_algo.cpp
-    src/drt_adapter/adapter_lubrication.cpp
-    src/drt_adapter/adapter_scatra_base_algorithm.cpp
-    src/drt_adapter/adapter_scatra_fluid_ale_coupling_algo.cpp
-    src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.cpp
-    src/drt_adapter/ad_str_structure.cpp
-    src/drt_structure/stru_dyn_nln_drt.cpp
-    src/drt_adapter/ad_str_factory.cpp
-    src/drt_adapter/ad_str_structure_new.cpp
-    src/drt_adapter/ad_str_loca.cpp
-    src/drt_adapter/ad_str_loca_wrapper.cpp
-    src/drt_adapter/ad_str_constr_merged.cpp
-    src/drt_adapter/ad_str_lung.cpp
-    src/drt_adapter/ad_str_redairway.cpp
-    src/drt_adapter/ad_str_timint_adaptive.cpp
-    src/drt_adapter/ad_str_wrapper.cpp
-    src/drt_adapter/ad_str_ssiwrapper.cpp
-    src/drt_adapter/ad_str_fsiwrapper.cpp
-    src/drt_adapter/ad_str_fbiwrapper.cpp
-    src/drt_adapter/ad_str_fpsiwrapper.cpp
-    src/drt_adapter/ad_str_pasiwrapper.cpp
-    src/drt_adapter/ad_str_structalewrapper.cpp
-    src/drt_adapter/ad_str_fsiwrapper_immersed.cpp
-    src/drt_adapter/ad_str_fsi_timint_adaptive.cpp
-    src/drt_adapter/ad_str_poro_wrapper.cpp
-    src/drt_adapter/ad_str_timeloop.cpp
-    src/drt_adapter/ad_str_invana.cpp
-    src/drt_adapter/adapter_thermo.cpp
-    src/drt_adapter/ad_ale.cpp
-    src/drt_adapter/ad_ale_fluid.cpp
-    src/drt_adapter/ad_ale_fpsi.cpp
-    src/drt_adapter/ad_ale_fsi_msht.cpp
-    src/drt_adapter/ad_ale_fsi.cpp
-    src/drt_adapter/ad_ale_wear.cpp
-    src/drt_adapter/ad_ale_wrapper.cpp
-    src/drt_adapter/ad_ale_xffsi.cpp
-    src/drt_adapter/ad_porofluidmultiphase_wrapper.cpp
-    src/drt_adapter/ad_scatra_wrapper.cpp
-    )
 set(OBJS_DRT_RED_AIRWAYS_LIB
     src/drt_red_airways/airway_evaluate.cpp
     src/drt_red_airways/acinus_evaluate.cpp
@@ -509,14 +426,6 @@ set(OBJS_DRT_INPAR
     src/drt_inpar/inpar_xfem.cpp
     src/drt_tutorial/inpar_tutorial.cpp
     )
-set(OBJS_DRT_ARTNET
-    src/drt_art_net/art_net_dyn_drt.cpp
-    src/drt_art_net/art_net_utils.cpp
-    src/drt_art_net/art_net_timint.cpp
-    src/drt_art_net/art_net_impl_stationary.cpp
-    src/drt_art_net/artnetexplicitintegration.cpp
-    )
-
 set(OBJS_DRT_XFEM
     src/drt_xfem/xfem_edgestab.cpp
     src/drt_xfem/xfem_discretization_utils.cpp
@@ -546,111 +455,7 @@ set(OBJS_DRT_XFEM_MANAG_LIB
     )
 
 set(OBJS_POST_DRT_MONITOR src/post_monitor/post_drt_monitor.cpp)
-set(OBJS_DRT_ARTNET_LIB
-    src/drt_art_net/artery.cpp
-    src/drt_art_net/artery_ele_calc_lin_exp.cpp
-    src/drt_art_net/artery_ele_calc_pres_based.cpp
-    src/drt_art_net/artery_ele_factory.cpp
-    src/drt_art_net/artery_evaluate.cpp
-    src/drt_art_net/artery_ele_calc.cpp
-    src/drt_art_net/art_junction.cpp
-    src/drt_art_net/art_terminal_bc.cpp
-    src/drt_art_net/art_write_gnuplot.cpp
-    src/drt_art_net/artery_input.cpp
-    src/drt_art_net/artery_resulttest.cpp
-    )
-set(OBJS_DRT_BEAMCONTACT_LIB
-    src/drt_beamcontact/beam3contact_manager.cpp
-    src/drt_beamcontact/beam3contact_octtree.cpp
-    src/drt_beamcontact/beam3contactnew.cpp
-    src/drt_beamcontact/beam3contactinterface.cpp
-    src/drt_beamcontact/beam3contact.cpp
-    src/drt_beamcontact/beam3contactvariables.cpp
-    src/drt_beamcontact/beam3tospherecontact.cpp
-    src/drt_beamcontact/beam3tosolidcontact.cpp
-    src/drt_beamcontact/beam3tosolidmeshtying.cpp
-    src/drt_beamcontact/beam3tobeampotential.cpp
-    src/drt_beamcontact/beam3tospherepotential.cpp
-    src/drt_beamcontact/str_model_evaluator_beaminteraction_old.cpp
-    )
-set(OBJS_DRT_BEAMINTERACTION_LIB
-    src/drt_beaminteraction/periodic_boundingbox.cpp
-    src/drt_beaminteraction/beam3contact_utils.cpp
-    src/drt_beaminteraction/beam3contact_tangentsmoothing.cpp
-    src/drt_beaminteraction/beam_contact_params.cpp
-    src/drt_beaminteraction/beam_contact_runtime_vtk_output_params.cpp
-    src/drt_beaminteraction/beam_contact_pair.cpp
-    src/drt_beaminteraction/beam_to_beam_contact_pair.cpp
-    src/drt_beaminteraction/beam_to_beam_contact_params.cpp
-    src/drt_beaminteraction/beam_to_beam_contact_variables.cpp
-    src/drt_beaminteraction/beam_to_beam_contact_condition.cpp
-    src/drt_beaminteraction/beam_to_beam_point_coupling_pair.cpp
-    src/drt_beaminteraction/beam_to_beam_point_coupling_pair_condition.cpp
-    src/drt_beaminteraction/beam_to_solid_utils.cpp
-    src/drt_beaminteraction/beam_to_solid_conditions.cpp
-    src/drt_beaminteraction/beam_to_solid_mortar_manager.cpp
-    src/drt_beaminteraction/beam_to_solid_pair_base.cpp
-    src/drt_beaminteraction/beam_to_solid_params_base.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_contact_pair_base.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_contact_pair.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_contact_params.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_base.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_gauss_point_base.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_gauss_point.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_gauss_point_FAD.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_mortar_base.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_mortar.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_mortar_FAD.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_meshtying_params.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_vtk_output_params.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_vtk_output_writer.cpp
-    src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_base.cpp
-    src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_gauss_point.cpp
-    src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_2d-3d_base.cpp
-    src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_2d-3d_full.cpp
-    src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_2d-3d_plane.cpp
-    src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_mortar.cpp
-    src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_mortar_rotation.cpp
-    src/drt_beaminteraction/beam_to_solid_volume_meshtying_params.cpp
-    src/drt_beaminteraction/beam_to_solid_volume_meshtying_vtk_output_params.cpp
-    src/drt_beaminteraction/beam_to_solid_volume_meshtying_vtk_output_writer.cpp
-    src/drt_beaminteraction/beam_to_solid_vtu_output_writer_base.cpp
-    src/drt_beaminteraction/beam_to_solid_vtu_output_writer_visualization.cpp
-    src/drt_beaminteraction/beam_to_solid_vtu_output_writer_utils.cpp
-    src/drt_beaminteraction/beam_to_sphere_contact_pair.cpp
-    src/drt_beaminteraction/beam_to_sphere_contact_params.cpp
-    src/drt_beaminteraction/beam_potential_params.cpp
-    src/drt_beaminteraction/beam_potential_runtime_vtk_output_params.cpp
-    src/drt_beaminteraction/beam_potential_pair.cpp
-    src/drt_beaminteraction/beam_to_beam_potential_pair.cpp
-    src/drt_beaminteraction/beam_to_sphere_potential_pair.cpp
-    src/drt_beaminteraction/beam_link.cpp
-    src/drt_beaminteraction/beam_link_rigidjointed.cpp
-    src/drt_beaminteraction/beam_link_beam3r_line2_rigidjointed.cpp
-    src/drt_beaminteraction/beam_link_pinjointed.cpp
-    src/drt_beaminteraction/beam_link_beam3r_line2_pinjointed.cpp
-    src/drt_beaminteraction/beam_link_truss.cpp
-    src/drt_beaminteraction/str_model_evaluator_beamdata.cpp
-    src/drt_beaminteraction/str_model_evaluator_beaminteraction.cpp
-    src/drt_beaminteraction/str_model_evaluator_beaminteraction_datastate.cpp
-    src/drt_beaminteraction/beaminteraction_submodel_evaluator_factory.cpp
-    src/drt_beaminteraction/beaminteraction_submodel_evaluator_generic.cpp
-    src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact.cpp
-    src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact_assembly_manager.cpp
-    src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.cpp
-    src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.cpp
-    src/drt_beaminteraction/beaminteraction_submodel_evaluator_potential.cpp
-    src/drt_beaminteraction/beaminteraction_calc_utils.cpp
-    src/drt_beaminteraction/beaminteraction_data.cpp
-    src/drt_beaminteraction/beaminteraction_conditions.cpp
-    src/drt_beaminteraction/crosslinking_params.cpp
-    src/drt_beaminteraction/beaminteraction_submodel_evaluator_crosslinking.cpp
-    src/drt_beaminteraction/spherebeamlinking_params.cpp
-    src/drt_beaminteraction/beaminteraction_submodel_evaluator_spherebeamlinking.cpp
-    src/drt_beaminteraction/beaminteraction_geometry_utils.cpp
-    src/drt_beaminteraction/beam_crosslinker_handler.cpp
-    src/drt_beaminteraction/crosslinker_node.cpp
-    )
+
 set(OBJS_DRT_STRU_MULTI
     src/drt_stru_multi/convert_mat.cpp
     src/drt_stru_multi/microstatic.cpp
@@ -770,21 +575,6 @@ set(OBJS_DRT_ELCH
     src/drt_elch/elch_dyn.cpp
     src/drt_elch/elch_moving_boundary_algorithm.cpp
     )
-set(OBJS_DRT_BELE3_LIB
-    src/drt_bele3/bele2.cpp
-    src/drt_bele3/bele2_evaluate.cpp
-    src/drt_bele3/bele3.cpp
-    src/drt_bele3/bele3_evaluate.cpp
-    src/drt_bele3/bele3_line.cpp
-    src/drt_bele3/bele3_line_evaluate.cpp
-    src/drt_bele3/vele3.cpp
-    src/drt_bele3/vele3_evaluate.cpp
-    src/drt_bele3/vele3_line.cpp
-    src/drt_bele3/vele3_line_evaluate.cpp
-    src/drt_bele3/vele3_surface.cpp
-    src/drt_bele3/vele3_surface_evaluate.cpp
-    )
-
 set(OBJS_DRT_UTILS
     src/drt_fem_general/debug_nan.cpp
     src/drt_fem_general/drt_utils_boundary_integration.cpp
@@ -834,12 +624,6 @@ set(OBJS_DRT_EHL
     src/drt_ehl/ehl_monolithic.cpp
     src/drt_ehl/ehl_partitioned.cpp
     src/drt_ehl/ehl_utils.cpp
-    )
-set(OBJS_DRT_LUBRICATION
-    src/drt_lubrication/lubrication_dyn.cpp
-    src/drt_lubrication/lubrication_resulttest.cpp
-    src/drt_lubrication/lubrication_timint_implicit.cpp
-    src/drt_lubrication/lubrication_timint_stat.cpp
     )
 set(OBJS_DRT_SCATRA
     src/drt_scatra/scatra_algorithm.cpp
@@ -1029,13 +813,7 @@ set(OBJS_DRT_RED_AIRWAYS
     )
 
 set(OBJS_DRT_REGISTER src/drt_lib/drt_parobjectregister.cpp)
-set(OBJS_DRT_LUBRICATION_LIB
-    src/drt_lubrication_ele/lubrication_ele.cpp
-    src/drt_lubrication_ele/lubrication_ele_evaluate.cpp
-    src/drt_lubrication_ele/lubrication_ele_factory.cpp
-    src/drt_lubrication_ele/lubrication_ele_calc.cpp
-    src/drt_lubrication_ele/lubrication_ele_parameter.cpp
-    )
+
 set(OBJS_DRT_POROFLUIDMULTIPHASE_LIB
     src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele.cpp
     src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele_calc.cpp
@@ -1147,12 +925,6 @@ set(OBJS_PRE_EXODUS
     src/pre_exodus/pre_exodus_soshextrusion.cpp
     src/pre_exodus/pre_exodus_validate.cpp
     src/pre_exodus/pre_exodus_writedat.cpp
-    )
-set(OBJS_DRT_CONSTRAINT_LIB
-    src/drt_constraint/constraint_element2.cpp
-    src/drt_constraint/constraint_element2_evaluate.cpp
-    src/drt_constraint/constraint_element3.cpp
-    src/drt_constraint/constraint_element3_evaluate.cpp
     )
 set(OBJS_DRT_NURBS_DISCRET_LIB
     src/drt_fem_general/drt_utils_bspline.cpp
@@ -1302,6 +1074,7 @@ set(OBJS_DRT_STRUCTURE
     src/drt_structure/strtimint_prestress.cpp
     src/drt_structure/stru_aux.cpp
     src/drt_structure/stru_resulttest.cpp
+    src/drt_structure/stru_dyn_nln_drt.cpp
     src/drt_structure_new/gauss_point_data_output_manager.cpp
     src/drt_structure_new/str_utils.cpp
     src/drt_structure_new/str_dbc.cpp
@@ -1320,8 +1093,6 @@ set(OBJS_DRT_STRUCTURE
     src/drt_structure_new/str_model_evaluator.cpp
     src/drt_structure_new/str_model_evaluator_data.cpp
     src/drt_structure_new/str_model_evaluator_contactdata.cpp
-    src/drt_browniandyn/str_model_evaluator_browniandyn.cpp
-    src/drt_browniandyn/str_model_evaluator_browniandyndata.cpp
     src/drt_structure_new/str_model_evaluator_factory.cpp
     src/drt_structure_new/str_model_evaluator_generic.cpp
     src/drt_structure_new/str_model_evaluator_structure.cpp
@@ -1470,35 +1241,6 @@ set(OBJS_LOCA_CONTINUATION
     src/loca_continuation/loca_nln_statustest_factory.cpp
     )
 
-set(OBJS_DRT_CARDIOVASCULAR0D
-    src/drt_cardiovascular0d/cardiovascular0d.cpp
-    src/drt_cardiovascular0d/cardiovascular0d_manager.cpp
-    src/drt_cardiovascular0d/cardiovascular0d_dofset.cpp
-    src/drt_cardiovascular0d/cardiovascular0d_resulttest.cpp
-    src/drt_cardiovascular0d/cardiovascular0d_4elementwindkessel.cpp
-    src/drt_cardiovascular0d/cardiovascular0d_arterialproxdist.cpp
-    src/drt_cardiovascular0d/cardiovascular0d_syspulcirculation.cpp
-    src/drt_cardiovascular0d/cardiovascularrespiratory0d_syspulperiphcirculation.cpp
-    src/drt_cardiovascular0d/nox_nln_cardiovascular0d_linearsystem.cpp
-    )
-
-set(OBJS_DRT_CONSTRAINT
-    src/drt_constraint/constraint.cpp
-    src/drt_constraint/constraint_manager.cpp
-    src/drt_constraint/constraintdofset.cpp
-    src/drt_constraint/constraintpenalty.cpp
-    src/drt_constraint/constraintsolver.cpp
-    src/drt_constraint/monitor.cpp
-    src/drt_constraint/multipointconstraint.cpp
-    src/drt_constraint/multipointconstraint2.cpp
-    src/drt_constraint/multipointconstraint3.cpp
-    src/drt_constraint/multipointconstraint3penalty.cpp
-    src/drt_constraint/lagpenconstraint_noxinterface.cpp
-    src/drt_constraint/springdashpot_manager.cpp
-    src/drt_constraint/springdashpot.cpp
-    src/drt_constraint/nox_nln_lagpenconstraint_linearsystem.cpp
-    )
-
 set(OBJS_DRT_IO_LIB
     src/drt_io/csv_reader.cpp
     src/drt_io/io.cpp
@@ -1526,24 +1268,6 @@ set(OBJS_DRT_IO_LIB
     src/drt_lib/drt_particlereader.cpp
     )
 set(OBJS_DRT_NURBS_DISCRET src/drt_nurbs_discret/drt_apply_nurbs_initial_condition.cpp)
-set(OBJS_DRT_B3_LIB
-    src/drt_beam3/beam_discretization_runtime_vtu_output_params.cpp
-    src/drt_beam3/triad_interpolation.cpp
-    src/drt_beam3/triad_interpolation_local_rotation_vectors.cpp
-    src/drt_beam3/beam3_base.cpp
-    src/drt_beam3/beam3.cpp
-    src/drt_beam3/beam3_evaluate.cpp
-    src/drt_beam3/beam3_input.cpp
-    src/drt_beam3/beam3r.cpp
-    src/drt_beam3/beam3r_evaluate.cpp
-    src/drt_beam3/beam3r_input.cpp
-    src/drt_beam3/beam3eb.cpp
-    src/drt_beam3/beam3eb_evaluate.cpp
-    src/drt_beam3/beam3eb_input.cpp
-    src/drt_beam3/beam3k.cpp
-    src/drt_beam3/beam3k_evaluate.cpp
-    src/drt_beam3/beam3k_input.cpp
-    )
 
 set(OBJS_DRT_T3_LIB
     src/drt_truss3/truss3.cpp
@@ -1567,15 +1291,6 @@ set(OBJS_DRT_T3CL_LIB
     src/drt_truss3cl/truss3cl.cpp
     src/drt_truss3cl/truss3cl_evaluate.cpp
     src/drt_truss3cl/truss3cl_input.cpp
-    )
-set(OBJS_DRT_ALEALG
-    src/drt_ale/ale.cpp
-    src/drt_ale/ale_dyn.cpp
-    src/drt_ale/ale_meshsliding.cpp
-    src/drt_ale/ale_meshtying.cpp
-    src/drt_ale/ale_resulttest.cpp
-    src/drt_ale/ale_utils_mapextractor.cpp
-    src/drt_ale/ale_utils_clonestrategy.cpp
     )
 set(OBJS_DRT_W1_LIB
     src/drt_w1/wall1.cpp
@@ -1926,9 +1641,9 @@ set(OBJS_DRT_MIXTURE
 
 set(ELEMENT_LIBRARIES
     ele_ale
-    ele_b3
+    ele_beam3
     ele_rigidsphere
-    ele_bele3
+    ele_bele
     ele_discsh3
     ele_fluid
     ele_s8
@@ -1997,6 +1712,7 @@ set(SUPPORT_LIBRARIES
     drt_lib_xfem_manag
     drt_lib
     drt_lib_artnet
+    drt_lib_browniandyn
     drt_lib_redairways
     drt_lib_mortar
     drt_lib_constraint
@@ -2064,13 +1780,9 @@ add_library(drt_timestepping INTERFACE)
 target_include_directories(drt_timestepping INTERFACE ${PROJECT_SOURCE_DIR}/src/drt_timestepping)
 
 # Compile element libraries first. There are files that take time to compile.
-deprecated_baci_add_library_linked_with_everything(ele_ale ${OBJS_DRT_ALE_LIB})
-deprecated_baci_add_library_linked_with_everything(ele_b3 ${OBJS_DRT_B3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_rigidsphere ${OBJS_DRT_RIGIDSPHERE_LIB})
-deprecated_baci_add_library_linked_with_everything(ele_bele3 ${OBJS_DRT_BELE3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_s8 ${OBJS_DRT_S8_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_membrane ${OBJS_DRT_MEMBRANE_LIB})
-deprecated_baci_add_library_linked_with_everything(ele_lubrication ${OBJS_DRT_LUBRICATION_LIB})
 deprecated_baci_add_library_linked_with_everything(
   ele_porofluidmultiphase ${OBJS_DRT_POROFLUIDMULTIPHASE_LIB}
   )
@@ -2105,15 +1817,9 @@ deprecated_baci_add_library_linked_with_everything(alg_ssti ${OBJS_DRT_SSTI})
 deprecated_baci_add_library_linked_with_everything(alg_ehl ${OBJS_DRT_EHL})
 deprecated_baci_add_library_linked_with_everything(alg_pasi ${OBJS_DRT_PASI})
 
-# the adapter layer
-deprecated_baci_add_library_linked_with_everything(drt_adapter ${OBJS_DRT_ADAPT})
-
 # algorithm libraries the adapters depend uo
-deprecated_baci_add_library_linked_with_everything(alg_ale ${OBJS_DRT_ALEALG})
-deprecated_baci_add_library_linked_with_everything(alg_artnet ${OBJS_DRT_ARTNET})
 deprecated_baci_add_library_linked_with_everything(alg_statinvanalysis ${OBJS_STATINV_ANALYSIS})
 deprecated_baci_add_library_linked_with_everything(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
-deprecated_baci_add_library_linked_with_everything(alg_lubrication ${OBJS_DRT_LUBRICATION})
 deprecated_baci_add_library_linked_with_everything(
   alg_porofluidmultiphase ${OBJS_DRT_POROFLUIDMULTIPHASE}
   )
@@ -2136,10 +1842,6 @@ deprecated_baci_add_library_linked_with_everything(alg_tutorial ${OBJS_DRT_TUTOR
 
 # general framework
 deprecated_baci_add_library_linked_with_everything(drt_nurbs ${OBJS_DRT_NURBS_DISCRET})
-deprecated_baci_add_library_linked_with_everything(drt_constraint ${OBJS_DRT_CONSTRAINT})
-deprecated_baci_add_library_linked_with_everything(
-  drt_cardiovascular0d ${OBJS_DRT_CARDIOVASCULAR0D}
-  )
 deprecated_baci_add_library_linked_with_everything(drt_mortar ${OBJS_DRT_MORTAR})
 deprecated_baci_add_library_linked_with_everything(drt_volmortar ${OBJS_DRT_VOLMORTAR})
 deprecated_baci_add_library_linked_with_everything(drt_mor ${OBJS_DRT_MOR})
@@ -2156,11 +1858,6 @@ deprecated_baci_add_library_linked_with_everything(drt_lib_register ${OBJS_DRT_R
 
 # libraries that are used by baci and by filters
 deprecated_baci_add_library_linked_with_everything(drt_lib_inpar ${OBJS_DRT_INPAR})
-deprecated_baci_add_library_linked_with_everything(drt_lib_constraint ${OBJS_DRT_CONSTRAINT_LIB})
-deprecated_baci_add_library_linked_with_everything(drt_lib_beamcontact ${OBJS_DRT_BEAMCONTACT_LIB})
-deprecated_baci_add_library_linked_with_everything(
-  drt_lib_beaminteraction ${OBJS_DRT_BEAMINTERACTION_LIB}
-  )
 deprecated_baci_add_library_linked_with_everything(
   drt_lib_poromulti_art_coupl ${OBJS_DRT_POROMULTIPHASE_ART_COUPL}
   )
@@ -2174,7 +1871,6 @@ deprecated_baci_add_library_linked_with_everything(
   )
 deprecated_baci_add_library_linked_with_everything(drt_lib_surfstress ${OBJS_DRT_SURFSTRESS})
 deprecated_baci_add_library_linked_with_everything(drt_lib_utils ${OBJS_DRT_UTILS})
-deprecated_baci_add_library_linked_with_everything(drt_lib_artnet ${OBJS_DRT_ARTNET_LIB})
 deprecated_baci_add_library_linked_with_everything(drt_lib_redairways ${OBJS_DRT_RED_AIRWAYS_LIB})
 deprecated_baci_add_library_linked_with_everything(drt_lib_cut ${OBJS_DRT_CUT})
 deprecated_baci_add_library_linked_with_everything(drt_lib_statinv_ana ${OBJS_STATINV_ANALYSIS_LIB})
