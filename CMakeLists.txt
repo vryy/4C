@@ -341,75 +341,6 @@ set(OBJS_DRT_MAT_LIB
     src/drt_mat/activefiber.cpp
     src/drt_matelast/visco_generalizedgenmax.cpp
     )
-
-set(OBJS_DRT_ADAPT
-    src/drt_adapter/adapter_algorithmbase.cpp
-    src/drt_adapter/adapter_coupling.cpp
-    src/drt_adapter/adapter_coupling_mortar.cpp
-    src/drt_adapter/adapter_coupling_nonlin_mortar.cpp
-    src/drt_adapter/adapter_coupling_poro_mortar.cpp
-    src/drt_adapter/adapter_coupling_ehl_mortar.cpp
-    src/drt_adapter/adapter_coupling_volmortar.cpp
-    src/drt_adapter/ad_field_wrapper.cpp
-    src/drt_adapter/ad_fld_fluid.cpp
-    src/drt_adapter/ad_fld_fluid_ale.cpp
-    src/drt_adapter/ad_fld_base_algorithm.cpp
-    src/drt_adapter/ad_fld_lung.cpp
-    src/drt_adapter/ad_fld_moving_boundary.cpp
-    src/drt_adapter/ad_fld_poro.cpp
-    src/drt_adapter/ad_fld_fbi_movingboundary.cpp
-    src/drt_adapter/ad_fld_fbi_wrapper.cpp
-    src/drt_adapter/ad_fld_fluid_fsi_msht.cpp
-    src/drt_adapter/ad_fld_fluid_fsi.cpp
-    src/drt_adapter/ad_fld_fluid_ac_fsi.cpp
-    src/drt_adapter/ad_fld_fluid_fpsi.cpp
-    src/drt_adapter/ad_fld_fluid_fluid_fsi.cpp
-    src/drt_adapter/ad_fld_fluid_xfem.cpp
-    src/drt_adapter/ad_fld_fluid_immersed.cpp
-    src/drt_adapter/ad_fld_fluid_ale_xfem.cpp
-    src/drt_adapter/ad_fld_fluid_xfsi.cpp
-    src/drt_adapter/ad_fld_fluid_fluid_xfsi.cpp
-    src/drt_adapter/ad_opt.cpp
-    src/drt_adapter/ad_opt_fluid_adjoint_base.cpp
-    src/drt_adapter/ad_opt_fluid_algo.cpp
-    src/drt_adapter/adapter_lubrication.cpp
-    src/drt_adapter/adapter_scatra_base_algorithm.cpp
-    src/drt_adapter/adapter_scatra_fluid_ale_coupling_algo.cpp
-    src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.cpp
-    src/drt_adapter/ad_str_structure.cpp
-    src/drt_structure/stru_dyn_nln_drt.cpp
-    src/drt_adapter/ad_str_factory.cpp
-    src/drt_adapter/ad_str_structure_new.cpp
-    src/drt_adapter/ad_str_loca.cpp
-    src/drt_adapter/ad_str_loca_wrapper.cpp
-    src/drt_adapter/ad_str_constr_merged.cpp
-    src/drt_adapter/ad_str_lung.cpp
-    src/drt_adapter/ad_str_redairway.cpp
-    src/drt_adapter/ad_str_timint_adaptive.cpp
-    src/drt_adapter/ad_str_wrapper.cpp
-    src/drt_adapter/ad_str_ssiwrapper.cpp
-    src/drt_adapter/ad_str_fsiwrapper.cpp
-    src/drt_adapter/ad_str_fbiwrapper.cpp
-    src/drt_adapter/ad_str_fpsiwrapper.cpp
-    src/drt_adapter/ad_str_pasiwrapper.cpp
-    src/drt_adapter/ad_str_structalewrapper.cpp
-    src/drt_adapter/ad_str_fsiwrapper_immersed.cpp
-    src/drt_adapter/ad_str_fsi_timint_adaptive.cpp
-    src/drt_adapter/ad_str_poro_wrapper.cpp
-    src/drt_adapter/ad_str_timeloop.cpp
-    src/drt_adapter/ad_str_invana.cpp
-    src/drt_adapter/adapter_thermo.cpp
-    src/drt_adapter/ad_ale.cpp
-    src/drt_adapter/ad_ale_fluid.cpp
-    src/drt_adapter/ad_ale_fpsi.cpp
-    src/drt_adapter/ad_ale_fsi_msht.cpp
-    src/drt_adapter/ad_ale_fsi.cpp
-    src/drt_adapter/ad_ale_wear.cpp
-    src/drt_adapter/ad_ale_wrapper.cpp
-    src/drt_adapter/ad_ale_xffsi.cpp
-    src/drt_adapter/ad_porofluidmultiphase_wrapper.cpp
-    src/drt_adapter/ad_scatra_wrapper.cpp
-    )
 set(OBJS_DRT_RED_AIRWAYS_LIB
     src/drt_red_airways/airway_evaluate.cpp
     src/drt_red_airways/acinus_evaluate.cpp
@@ -1172,6 +1103,7 @@ set(OBJS_DRT_STRUCTURE
     src/drt_structure/strtimint_prestress.cpp
     src/drt_structure/stru_aux.cpp
     src/drt_structure/stru_resulttest.cpp
+    src/drt_structure/stru_dyn_nln_drt.cpp
     src/drt_structure_new/gauss_point_data_output_manager.cpp
     src/drt_structure_new/str_utils.cpp
     src/drt_structure_new/str_dbc.cpp
@@ -1943,9 +1875,6 @@ deprecated_baci_add_library_linked_with_everything(alg_ssi ${OBJS_DRT_SSI})
 deprecated_baci_add_library_linked_with_everything(alg_ssti ${OBJS_DRT_SSTI})
 deprecated_baci_add_library_linked_with_everything(alg_ehl ${OBJS_DRT_EHL})
 deprecated_baci_add_library_linked_with_everything(alg_pasi ${OBJS_DRT_PASI})
-
-# the adapter layer
-deprecated_baci_add_library_linked_with_everything(drt_adapter ${OBJS_DRT_ADAPT})
 
 # algorithm libraries the adapters depend uo
 deprecated_baci_add_library_linked_with_everything(alg_artnet ${OBJS_DRT_ARTNET})
