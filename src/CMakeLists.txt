@@ -1,4 +1,5 @@
 add_subdirectory(drt_ale)
+add_subdirectory(drt_bele)
 add_subdirectory(drt_binstrategy)
 add_subdirectory(drt_comm)
 add_subdirectory(drt_contact)

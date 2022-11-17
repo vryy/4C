@@ -759,21 +759,6 @@ set(OBJS_DRT_ELCH
     src/drt_elch/elch_dyn.cpp
     src/drt_elch/elch_moving_boundary_algorithm.cpp
     )
-set(OBJS_DRT_BELE3_LIB
-    src/drt_bele3/bele2.cpp
-    src/drt_bele3/bele2_evaluate.cpp
-    src/drt_bele3/bele3.cpp
-    src/drt_bele3/bele3_evaluate.cpp
-    src/drt_bele3/bele3_line.cpp
-    src/drt_bele3/bele3_line_evaluate.cpp
-    src/drt_bele3/vele3.cpp
-    src/drt_bele3/vele3_evaluate.cpp
-    src/drt_bele3/vele3_line.cpp
-    src/drt_bele3/vele3_line_evaluate.cpp
-    src/drt_bele3/vele3_surface.cpp
-    src/drt_bele3/vele3_surface_evaluate.cpp
-    )
-
 set(OBJS_DRT_UTILS
     src/drt_fem_general/debug_nan.cpp
     src/drt_fem_general/drt_utils_boundary_integration.cpp
@@ -1896,7 +1881,7 @@ set(ELEMENT_LIBRARIES
     ele_ale
     ele_b3
     ele_rigidsphere
-    ele_bele3
+    ele_bele
     ele_discsh3
     ele_fluid
     ele_s8
@@ -2034,7 +2019,6 @@ target_include_directories(drt_timestepping INTERFACE ${PROJECT_SOURCE_DIR}/src/
 # Compile element libraries first. There are files that take time to compile.
 deprecated_baci_add_library_linked_with_everything(ele_b3 ${OBJS_DRT_B3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_rigidsphere ${OBJS_DRT_RIGIDSPHERE_LIB})
-deprecated_baci_add_library_linked_with_everything(ele_bele3 ${OBJS_DRT_BELE3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_s8 ${OBJS_DRT_S8_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_membrane ${OBJS_DRT_MEMBRANE_LIB})
 deprecated_baci_add_library_linked_with_everything(
