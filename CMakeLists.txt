@@ -548,84 +548,6 @@ set(OBJS_DRT_ARTNET_LIB
     src/drt_art_net/artery_input.cpp
     src/drt_art_net/artery_resulttest.cpp
     )
-set(OBJS_DRT_BEAMINTERACTION_LIB
-    src/drt_beaminteraction/periodic_boundingbox.cpp
-    src/drt_beaminteraction/beam3contact_utils.cpp
-    src/drt_beaminteraction/beam3contact_tangentsmoothing.cpp
-    src/drt_beaminteraction/beam_contact_params.cpp
-    src/drt_beaminteraction/beam_contact_runtime_vtk_output_params.cpp
-    src/drt_beaminteraction/beam_contact_pair.cpp
-    src/drt_beaminteraction/beam_to_beam_contact_pair.cpp
-    src/drt_beaminteraction/beam_to_beam_contact_params.cpp
-    src/drt_beaminteraction/beam_to_beam_contact_variables.cpp
-    src/drt_beaminteraction/beam_to_beam_contact_condition.cpp
-    src/drt_beaminteraction/beam_to_beam_point_coupling_pair.cpp
-    src/drt_beaminteraction/beam_to_beam_point_coupling_pair_condition.cpp
-    src/drt_beaminteraction/beam_to_solid_utils.cpp
-    src/drt_beaminteraction/beam_to_solid_conditions.cpp
-    src/drt_beaminteraction/beam_to_solid_mortar_manager.cpp
-    src/drt_beaminteraction/beam_to_solid_pair_base.cpp
-    src/drt_beaminteraction/beam_to_solid_params_base.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_contact_pair_base.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_contact_pair.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_contact_params.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_base.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_gauss_point_base.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_gauss_point.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_gauss_point_FAD.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_mortar_base.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_mortar.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_meshtying_pair_mortar_FAD.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_meshtying_params.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_vtk_output_params.cpp
-    src/drt_beaminteraction/beam_to_solid_surface_vtk_output_writer.cpp
-    src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_base.cpp
-    src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_gauss_point.cpp
-    src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_2d-3d_base.cpp
-    src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_2d-3d_full.cpp
-    src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_2d-3d_plane.cpp
-    src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_mortar.cpp
-    src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_mortar_rotation.cpp
-    src/drt_beaminteraction/beam_to_solid_volume_meshtying_params.cpp
-    src/drt_beaminteraction/beam_to_solid_volume_meshtying_vtk_output_params.cpp
-    src/drt_beaminteraction/beam_to_solid_volume_meshtying_vtk_output_writer.cpp
-    src/drt_beaminteraction/beam_to_solid_vtu_output_writer_base.cpp
-    src/drt_beaminteraction/beam_to_solid_vtu_output_writer_visualization.cpp
-    src/drt_beaminteraction/beam_to_solid_vtu_output_writer_utils.cpp
-    src/drt_beaminteraction/beam_to_sphere_contact_pair.cpp
-    src/drt_beaminteraction/beam_to_sphere_contact_params.cpp
-    src/drt_beaminteraction/beam_potential_params.cpp
-    src/drt_beaminteraction/beam_potential_runtime_vtk_output_params.cpp
-    src/drt_beaminteraction/beam_potential_pair.cpp
-    src/drt_beaminteraction/beam_to_beam_potential_pair.cpp
-    src/drt_beaminteraction/beam_to_sphere_potential_pair.cpp
-    src/drt_beaminteraction/beam_link.cpp
-    src/drt_beaminteraction/beam_link_rigidjointed.cpp
-    src/drt_beaminteraction/beam_link_beam3r_line2_rigidjointed.cpp
-    src/drt_beaminteraction/beam_link_pinjointed.cpp
-    src/drt_beaminteraction/beam_link_beam3r_line2_pinjointed.cpp
-    src/drt_beaminteraction/beam_link_truss.cpp
-    src/drt_beaminteraction/str_model_evaluator_beamdata.cpp
-    src/drt_beaminteraction/str_model_evaluator_beaminteraction.cpp
-    src/drt_beaminteraction/str_model_evaluator_beaminteraction_datastate.cpp
-    src/drt_beaminteraction/beaminteraction_submodel_evaluator_factory.cpp
-    src/drt_beaminteraction/beaminteraction_submodel_evaluator_generic.cpp
-    src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact.cpp
-    src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact_assembly_manager.cpp
-    src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.cpp
-    src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.cpp
-    src/drt_beaminteraction/beaminteraction_submodel_evaluator_potential.cpp
-    src/drt_beaminteraction/beaminteraction_calc_utils.cpp
-    src/drt_beaminteraction/beaminteraction_data.cpp
-    src/drt_beaminteraction/beaminteraction_conditions.cpp
-    src/drt_beaminteraction/crosslinking_params.cpp
-    src/drt_beaminteraction/beaminteraction_submodel_evaluator_crosslinking.cpp
-    src/drt_beaminteraction/spherebeamlinking_params.cpp
-    src/drt_beaminteraction/beaminteraction_submodel_evaluator_spherebeamlinking.cpp
-    src/drt_beaminteraction/beaminteraction_geometry_utils.cpp
-    src/drt_beaminteraction/beam_crosslinker_handler.cpp
-    src/drt_beaminteraction/crosslinker_node.cpp
-    )
 set(OBJS_DRT_STRU_MULTI
     src/drt_stru_multi/convert_mat.cpp
     src/drt_stru_multi/microstatic.cpp
@@ -2072,9 +1994,6 @@ deprecated_baci_add_library_linked_with_everything(drt_lib_register ${OBJS_DRT_R
 # libraries that are used by baci and by filters
 deprecated_baci_add_library_linked_with_everything(drt_lib_inpar ${OBJS_DRT_INPAR})
 deprecated_baci_add_library_linked_with_everything(drt_lib_constraint ${OBJS_DRT_CONSTRAINT_LIB})
-deprecated_baci_add_library_linked_with_everything(
-  drt_lib_beaminteraction ${OBJS_DRT_BEAMINTERACTION_LIB}
-  )
 deprecated_baci_add_library_linked_with_everything(
   drt_lib_poromulti_art_coupl ${OBJS_DRT_POROMULTIPHASE_ART_COUPL}
   )
