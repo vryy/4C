@@ -929,12 +929,6 @@ set(OBJS_PRE_EXODUS
     src/pre_exodus/pre_exodus_validate.cpp
     src/pre_exodus/pre_exodus_writedat.cpp
     )
-set(OBJS_DRT_CONSTRAINT_LIB
-    src/drt_constraint/constraint_element2.cpp
-    src/drt_constraint/constraint_element2_evaluate.cpp
-    src/drt_constraint/constraint_element3.cpp
-    src/drt_constraint/constraint_element3_evaluate.cpp
-    )
 set(OBJS_DRT_NURBS_DISCRET_LIB
     src/drt_fem_general/drt_utils_bspline.cpp
     src/drt_fem_general/drt_utils_nurbs_shapefunctions.cpp
@@ -1248,23 +1242,6 @@ set(OBJS_LOCA_CONTINUATION
     src/loca_continuation/loca_nln_group.cpp
     src/loca_continuation/loca_nln_stepper.cpp
     src/loca_continuation/loca_nln_statustest_factory.cpp
-    )
-
-set(OBJS_DRT_CONSTRAINT
-    src/drt_constraint/constraint.cpp
-    src/drt_constraint/constraint_manager.cpp
-    src/drt_constraint/constraintdofset.cpp
-    src/drt_constraint/constraintpenalty.cpp
-    src/drt_constraint/constraintsolver.cpp
-    src/drt_constraint/monitor.cpp
-    src/drt_constraint/multipointconstraint.cpp
-    src/drt_constraint/multipointconstraint2.cpp
-    src/drt_constraint/multipointconstraint3.cpp
-    src/drt_constraint/multipointconstraint3penalty.cpp
-    src/drt_constraint/lagpenconstraint_noxinterface.cpp
-    src/drt_constraint/springdashpot_manager.cpp
-    src/drt_constraint/springdashpot.cpp
-    src/drt_constraint/nox_nln_lagpenconstraint_linearsystem.cpp
     )
 
 set(OBJS_DRT_IO_LIB
@@ -1868,7 +1845,6 @@ deprecated_baci_add_library_linked_with_everything(alg_tutorial ${OBJS_DRT_TUTOR
 
 # general framework
 deprecated_baci_add_library_linked_with_everything(drt_nurbs ${OBJS_DRT_NURBS_DISCRET})
-deprecated_baci_add_library_linked_with_everything(drt_constraint ${OBJS_DRT_CONSTRAINT})
 deprecated_baci_add_library_linked_with_everything(drt_mortar ${OBJS_DRT_MORTAR})
 deprecated_baci_add_library_linked_with_everything(drt_volmortar ${OBJS_DRT_VOLMORTAR})
 deprecated_baci_add_library_linked_with_everything(drt_mor ${OBJS_DRT_MOR})
@@ -1885,7 +1861,6 @@ deprecated_baci_add_library_linked_with_everything(drt_lib_register ${OBJS_DRT_R
 
 # libraries that are used by baci and by filters
 deprecated_baci_add_library_linked_with_everything(drt_lib_inpar ${OBJS_DRT_INPAR})
-deprecated_baci_add_library_linked_with_everything(drt_lib_constraint ${OBJS_DRT_CONSTRAINT_LIB})
 deprecated_baci_add_library_linked_with_everything(
   drt_lib_poromulti_art_coupl ${OBJS_DRT_POROMULTIPHASE_ART_COUPL}
   )
