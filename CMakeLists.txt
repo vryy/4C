@@ -424,12 +424,6 @@ set(OBJS_DRT_ADAPT
     src/drt_adapter/ad_porofluidmultiphase_wrapper.cpp
     src/drt_adapter/ad_scatra_wrapper.cpp
     )
-set(OBJS_DRT_CONTACT_LIB
-    src/drt_contact/contact_analytical.cpp
-    src/drt_contact/contact_element.cpp
-    src/drt_contact/contact_node.cpp
-    src/drt_contact/friction_node.cpp
-    )
 set(OBJS_DRT_RED_AIRWAYS_LIB
     src/drt_red_airways/airway_evaluate.cpp
     src/drt_red_airways/acinus_evaluate.cpp
@@ -1148,86 +1142,6 @@ set(OBJS_DRT_STI
     src/drt_sti/sti_partitioned.cpp
     src/drt_sti/sti_resulttest.cpp
     )
-set(OBJS_DRT_FLUID
-    src/drt_fluid/fluid_discretization_runtime_vtu_output_params.cpp
-    src/drt_fluid/fluid_coupling_red_models.cpp
-    src/drt_fluid/fluid_dyn_nln_drt.cpp
-    src/drt_fluid/fluid_meshtying.cpp
-    src/drt_fluid/fluid_discret_extractor.cpp
-    src/drt_fluid/fluid_utils.cpp
-    src/drt_fluid/fluid_utils_infnormscaling.cpp
-    src/drt_fluid/fluid_utils_mapextractor.cpp
-    src/drt_fluid/fluid_MHD_evaluate.cpp
-    src/drt_fluid/fluid_timint_bdf2.cpp
-    src/drt_fluid/fluid_timint_genalpha.cpp
-    src/drt_fluid/fluid_timint_loma_genalpha.cpp
-    src/drt_fluid/fluid_timint_loma_ost.cpp
-    src/drt_fluid/fluid_timint_loma_bdf2.cpp
-    src/drt_fluid/fluid_timint_loma.cpp
-    src/drt_fluid/fluid_timint_ost.cpp
-    src/drt_fluid/fluid_timint_poro_genalpha.cpp
-    src/drt_fluid/fluid_timint_poro_ost.cpp
-    src/drt_fluid/fluid_timint_poro_stat.cpp
-    src/drt_fluid/fluid_timint_poro.cpp
-    src/drt_fluid/fluid_timint_ac_ost.cpp
-    src/drt_fluid/fluid_timint_ac.cpp
-    src/drt_fluid/fluid_timint_red_ost.cpp
-    src/drt_fluid/fluid_timint_red_bdf2.cpp
-    src/drt_fluid/fluid_timint_red_genalpha.cpp
-    src/drt_fluid/fluid_timint_red_stat.cpp
-    src/drt_fluid/fluid_timint_red.cpp
-    src/drt_fluid/fluid_timint_stat.cpp
-    src/drt_fluid/fluid_timint_topopt_bdf2.cpp
-    src/drt_fluid/fluid_timint_topopt_genalpha.cpp
-    src/drt_fluid/fluid_timint_topopt_ost.cpp
-    src/drt_fluid/fluid_timint_topopt_stat.cpp
-    src/drt_fluid/fluid_timint_topopt.cpp
-    src/drt_fluid/fluid_timint_two_phase_genalpha.cpp
-    src/drt_fluid/fluid_timint_two_phase_ost.cpp
-    src/drt_fluid/fluid_timint_two_phase_stat.cpp
-    src/drt_fluid/fluid_timint_two_phase.cpp
-    src/drt_fluid/fluidimpedancecondition.cpp
-    src/drt_fluid/fluid_volumetric_surfaceFlow_condition.cpp
-    src/drt_fluid/fluidimplicitintegration.cpp
-    src/drt_fluid/fluidresulttest.cpp
-    src/drt_fluid/fluid_timint.cpp
-    src/drt_fluid/fluid_timint_hdg.cpp
-    src/drt_fluid/fluid_timint_hdg_weak_comp.cpp
-    src/drt_fluid/fluid_timint_stat_hdg.cpp
-    src/drt_fluid/fluid_xwall.cpp
-    )
-set(OBJS_DRT_FLUID_TURBULENCE
-    src/drt_fluid_turbulence/dyn_smag.cpp
-    src/drt_fluid_turbulence/dyn_vreman.cpp
-    src/drt_fluid_turbulence/boxfilter.cpp
-    src/drt_fluid_turbulence/drt_transfer_turb_inflow.cpp
-    src/drt_fluid_turbulence/turbulence_hit_initial_field.cpp
-    src/drt_fluid_turbulence/turbulence_hit_forcing.cpp
-    src/drt_fluid_turbulence/turbulent_flow_algorithm.cpp
-    src/drt_fluid_turbulence/turbulence_statistic_manager.cpp
-    src/drt_fluid_turbulence/turbulence_statistics_bfs.cpp
-    src/drt_fluid_turbulence/turbulence_statistics_ph.cpp
-    src/drt_fluid_turbulence/turbulence_statistics_bfda.cpp
-    #  src/drt_fluid_turbulence/turbulence_statistics_bcf.cpp
-    src/drt_fluid_turbulence/turbulence_statistics_ccy.cpp
-    src/drt_fluid_turbulence/turbulence_statistics_cha.cpp
-    src/drt_fluid_turbulence/turbulence_statistics_hit.cpp
-    src/drt_fluid_turbulence/turbulence_statistics_tgv.cpp
-    src/drt_fluid_turbulence/turbulence_statistics_ldc.cpp
-    src/drt_fluid_turbulence/turbulence_statistics_mean_general.cpp
-    #  src/drt_fluid_turbulence/turbulence_statistics_oracles.cpp
-    src/drt_fluid_turbulence/turbulence_statistics_sqc.cpp
-    )
-set(OBJS_DRT_FLUID_XFLUID
-    src/drt_fluid_xfluid/xfluid.cpp
-    src/drt_fluid_xfluid/xfluidfluid.cpp
-    src/drt_fluid_xfluid/xfluidfluid_state.cpp
-    src/drt_fluid_xfluid/xfluidresulttest.cpp
-    src/drt_fluid_xfluid/xfluid_state.cpp
-    src/drt_fluid_xfluid/xfluid_state_creator.cpp
-    src/drt_fluid_xfluid/xfluid_levelset_coupling_algorithm.cpp
-    src/drt_fluid_xfluid/xfluid_outputservice.cpp
-    )
 set(OBJS_PRE_EXODUS
     src/pre_exodus/pre_exodus.cpp
     src/pre_exodus/pre_exodus_centerline.cpp
@@ -1249,27 +1163,6 @@ set(OBJS_DRT_NURBS_DISCRET_LIB
     src/drt_nurbs_discret/drt_control_point.cpp
     src/drt_nurbs_discret/drt_knotvector.cpp
     src/drt_nurbs_discret/drt_nurbs_discret.cpp
-    )
-
-set(OBJS_DRT_TOPOPT
-    src/drt_opti/topopt_algorithm.cpp src/drt_opti/topopt_dyn.cpp src/drt_opti/topopt_utils.cpp
-    )
-
-set(OBJS_DRT_TOPOPT_LIB
-    src/drt_opti/topopt_optimizer_ele.cpp
-    src/drt_opti/topopt_optimizer_ele_evaluate.cpp
-    src/drt_opti/topopt_optimizer_ele_impl.cpp
-    src/drt_opti/topopt_optimizer_ele_parameter.cpp
-    )
-
-set(OBJS_DRT_TOPOPT_ADJOINT
-    src/drt_opti/topopt_fluidAdjointImplTimeIntegration.cpp
-    src/drt_opti/topopt_fluidAdjointResulttest.cpp
-    src/drt_opti/topopt_fluidAdjoint_timeint.cpp
-    )
-
-set(OBJS_OPTI
-    src/drt_opti/topopt_optimizer.cpp src/drt_opti/opti_GCMMA.cpp src/drt_opti/opti_resulttest.cpp
     )
 
 set(OBJS_DRT_LOMA src/drt_loma/loma_algorithm.cpp src/drt_loma/loma_dyn.cpp)
@@ -1654,63 +1547,7 @@ set(OBJS_DRT_B3_LIB
     src/drt_beam3/beam3k_evaluate.cpp
     src/drt_beam3/beam3k_input.cpp
     )
-set(OBJS_DRT_FLUID_ELE_LIB
-    src/drt_fluid_ele/fluid_ele.cpp
-    src/drt_fluid_ele/fluid_ele_immersed.cpp
-    src/drt_fluid_ele/fluid_ele_immersed_base.cpp
-    src/drt_fluid_ele/fluid_ele_boundary_calc.cpp
-    src/drt_fluid_ele/fluid_ele_boundary_calc_std.cpp
-    src/drt_fluid_ele/fluid_ele_boundary_calc_poro.cpp
-    src/drt_fluid_ele/fluid_ele_boundary_parent_calc.cpp
-    src/drt_fluid_ele/fluid_ele_boundary.cpp
-    src/drt_fluid_ele/fluid_ele_boundary_evaluate.cpp
-    src/drt_fluid_ele/fluid_ele_poro_boundary.cpp
-    src/drt_fluid_ele/fluid_ele_poro_boundary_evaluate.cpp
-    src/drt_fluid_ele/fluid_ele_calc.cpp
-    src/drt_fluid_ele/fluid_ele_calc_newOST.cpp
-    src/drt_fluid_ele/fluid_ele_calc_xwall_quadrature_service.cpp
-    src/drt_fluid_ele/fluid_ele_calc_xwall.cpp
-    src/drt_fluid_ele/fluid_ele_xwall.cpp
-    src/drt_fluid_ele/fluid_ele_xwall_boundary.cpp
-    src/drt_fluid_ele/fluid_ele_calc_ale_service.cpp
-    src/drt_fluid_ele/fluid_ele_calc_general_service.cpp
-    src/drt_fluid_ele/fluid_ele_calc_loma.cpp
-    src/drt_fluid_ele/fluid_ele_intfaces.cpp
-    src/drt_fluid_ele/fluid_ele_calc_intfaces_stab.cpp
-    src/drt_fluid_ele/fluid_ele_intfaces_calc.cpp
-    src/drt_fluid_ele/fluid_ele_calc_loma_service.cpp
-    src/drt_fluid_ele/fluid_ele_calc_topopt_service.cpp
-    src/drt_fluid_ele/fluid_ele_calc_poro.cpp
-    src/drt_fluid_ele/fluid_ele_calc_poro_p1.cpp
-    src/drt_fluid_ele/fluid_ele_calc_immersed.cpp
-    src/drt_fluid_ele/fluid_ele_calc_std.cpp
-    src/drt_fluid_ele/fluid_ele_calc_turbulence_service.cpp
-    src/drt_fluid_ele/fluid_ele_calc_xfem.cpp
-    src/drt_fluid_ele/fluid_ele_calc_xfem_coupling.cpp
-    src/drt_fluid_ele/fluid_ele_calc_xfem_coupling_impl_nitsche.cpp
-    src/drt_fluid_ele/fluid_ele_calc_xfem_coupling_impl_hybridlm.cpp
-    src/drt_fluid_ele/fluid_ele_calc_xfem_coupling_impl_slave_element.cpp
-    src/drt_fluid_ele/fluid_ele_evaluate.cpp
-    src/drt_fluid_ele/fluid_ele_factory.cpp
-    src/drt_fluid_ele/fluid_ele_boundary_factory.cpp
-    src/drt_fluid_ele/fluid_ele_input.cpp
-    src/drt_fluid_ele/fluid_ele_parameter.cpp
-    src/drt_fluid_ele/fluid_ele_parameter_std.cpp
-    src/drt_fluid_ele/fluid_ele_parameter_poro.cpp
-    src/drt_fluid_ele/fluid_ele_parameter_xfem.cpp
-    src/drt_fluid_ele/fluid_ele_parameter_timint.cpp
-    src/drt_fluid_ele/fluid_ele_parameter_intface.cpp
-    src/drt_fluid_ele/fluid_ele_tds.cpp
-    src/drt_fluid_ele/fluid_ele_poro.cpp
-    src/drt_fluid_ele/fluid_ele_poro_evaluate.cpp
-    src/drt_fluid_ele/fluid_ele_hdg.cpp
-    src/drt_fluid_ele/fluid_ele_hdg_weak_comp.cpp
-    src/drt_fluid_ele/fluid_ele_calc_hdg.cpp
-    src/drt_fluid_ele/fluid_ele_calc_hdg_weak_comp.cpp
-    src/drt_opti/topopt_fluidAdjoint3_boundary.cpp
-    src/drt_opti/topopt_fluidAdjoint3_impl.cpp
-    src/drt_opti/topopt_fluidAdjoint3_impl_parameter.cpp
-    )
+
 set(OBJS_DRT_T3_LIB
     src/drt_truss3/truss3.cpp
     src/drt_truss3/truss3_evaluate.cpp
@@ -1765,99 +1602,6 @@ set(OBJS_DRT_W1_LIB
     src/drt_w1/wall1_poro_scatra_eletypes.cpp
     src/drt_w1/wall1_scatra.cpp
     src/drt_w1/wall1_scatra_evaluate.cpp
-    )
-set(OBJS_DRT_ROUGH_CONTACT
-    src/drt_contact_constitutivelaw/contactconstitutivelaw.cpp
-    src/drt_contact_constitutivelaw/contactconstitutivelaw_parameter.cpp
-    src/drt_contact_constitutivelaw/brokenrational_contactconstitutivelaw.cpp
-    src/drt_contact_constitutivelaw/cubic_contactconstitutivelaw.cpp
-    src/drt_contact_constitutivelaw/linear_contactconstitutivelaw.cpp
-    src/drt_contact_constitutivelaw/power_contactconstitutivelaw.cpp
-    src/drt_contact_constitutivelaw/contact_constitutivelaw_bundle.cpp
-    )
-
-set(OBJS_DRT_CONTACT
-    src/drt_contact_constitutivelaw/contact_constitutivelaw_interface.cpp
-    src/drt_contact/contact_abstract_strategy.cpp
-    src/drt_contact/contact_noxinterface.cpp
-    src/drt_contact/contact_coupling2d.cpp
-    src/drt_contact/contact_coupling3d.cpp
-    src/drt_contact/contact_line_coupling.cpp
-    src/drt_contact/contact_integrator.cpp
-    src/drt_contact/contact_nitsche_integrator.cpp
-    src/drt_contact/contact_nitsche_integrator_poro.cpp
-    src/drt_contact/contact_nitsche_integrator_fsi.cpp
-    src/drt_contact/contact_nitsche_integrator_fpi.cpp
-    src/drt_contact/contact_nitsche_integrator_ssi.cpp
-    src/drt_contact/contact_nitsche_integrator_ssi_elch.cpp
-    src/drt_contact/contact_nitsche_integrator_tsi.cpp
-    src/drt_contact/contact_ehl_integrator.cpp
-    src/drt_contact/contact_integrator_factory.cpp
-    src/drt_contact/contact_integrator_assemble.cpp
-    src/drt_contact/contact_interface.cpp
-    src/drt_contact/contact_interface_roundrobin.cpp
-    src/drt_contact/contact_interface_tools.cpp
-    src/drt_contact/contact_interface_assemble.cpp
-    src/drt_contact/contact_interpolator.cpp
-    src/drt_contact/contact_lagrange_strategy.cpp
-    src/drt_contact/contact_monocoupled_lagrange_strategy.cpp
-    src/drt_contact/contact_poro_lagrange_strategy.cpp
-    src/drt_contact/contact_tsi_lagrange_strategy.cpp
-    src/drt_contact/contact_tsi_interface.cpp
-    src/drt_contact/contact_manager.cpp
-    src/drt_contact/contact_strategy_factory.cpp
-    src/drt_contact/contact_penalty_strategy.cpp
-    src/drt_contact/contact_nitsche_strategy.cpp
-    src/drt_contact/contact_nitsche_strategy_poro.cpp
-    src/drt_contact/contact_nitsche_strategy_fsi.cpp
-    src/drt_contact/contact_nitsche_strategy_fpi.cpp
-    src/drt_contact/contact_nitsche_strategy_ssi.cpp
-    src/drt_contact/contact_nitsche_strategy_ssi_elch.cpp
-    src/drt_contact/contact_nitsche_strategy_tsi.cpp
-    src/drt_contact/contact_utils.cpp
-    src/drt_contact/contact_utils_parallel.cpp
-    src/drt_contact/contact_wear_interface.cpp
-    src/drt_contact/contact_wear_interface_tools.cpp
-    src/drt_contact/contact_wear_lagrange_strategy.cpp
-    src/drt_contact/meshtying_strategy_factory.cpp
-    src/drt_contact/meshtying_abstract_strategy.cpp
-    src/drt_contact/meshtying_noxinterface.cpp
-    src/drt_contact/meshtying_contact_bridge.cpp
-    src/drt_contact/meshtying_lagrange_strategy.cpp
-    src/drt_contact/meshtying_poro_lagrange_strategy.cpp
-    src/drt_contact/meshtying_manager.cpp
-    src/drt_contact/meshtying_penalty_strategy.cpp
-    src/drt_contact/selfcontact_binarytree.cpp
-    src/drt_contact/selfcontact_binarytree_unbiased.cpp
-    src/drt_contact/nox_nln_meshtying_linearsystem.cpp
-    )
-set(OBJS_DRT_CONTACT_AUG
-    src/drt_contact_aug/contact_augmented_strategy.cpp
-    src/drt_contact_aug/contact_augmented_strategy_tools.cpp
-    src/drt_contact_aug/contact_augmented_interface.cpp
-    src/drt_contact_aug/contact_augmented_interface_tools.cpp
-    src/drt_contact_aug/contact_augmented_integrator.cpp
-    src/drt_contact_aug/contact_augmented_integrator_evaluate.cpp
-    src/drt_contact_aug/contact_aug_active_set.cpp
-    src/drt_contact_aug/contact_aug_projector.cpp
-    src/drt_contact_aug/contact_aug_lagrange_strategy.cpp
-    src/drt_contact_aug/contact_aug_lagrange_interface.cpp
-    src/drt_contact_aug/contact_aug_steepest_ascent_sp_strategy.cpp
-    src/drt_contact_aug/contact_aug_steepest_ascent_strategy.cpp
-    src/drt_contact_aug/contact_aug_steepest_ascent_interface.cpp
-    src/drt_contact_aug/contact_aug_penalty_update.cpp
-    src/drt_contact_aug/contact_aug_combo_strategy.cpp
-    src/drt_contact_aug/contact_aug_combo_strategy_switching.cpp
-    src/drt_contact_aug/contact_aug_potential.cpp
-    src/drt_contact_aug/contact_aug_plot.cpp
-    src/drt_contact_aug/contact_integrator_utils.cpp
-    src/drt_contact_aug/contact_aug_integrator_policy.cpp
-    src/drt_contact_aug/contact_aug_integrator_policy_debug.cpp
-    src/drt_contact_aug/contact_aug_lagrange_multiplier_function.cpp
-    src/drt_contact_aug/contact_aug_interface_assembly.cpp
-    src/drt_contact_aug/contact_aug_timemonitor.cpp
-    src/drt_contact_aug/contact_aug_parallel_distribution_controller.cpp
-    src/drt_contact_aug/nox_nln_contact_linearsystem.cpp
     )
 set(OBJS_DRT_CUT
     src/drt_cut/cut_options.cpp
@@ -2190,7 +1934,6 @@ set(ELEMENT_LIBRARIES
     ele_bele3
     ele_discsh3
     ele_fluid
-    ele_opti
     ele_s8
     ele_membrane
     ele_lubrication
@@ -2221,7 +1964,6 @@ set(MULTIFIELD_LIBRARIES
     alg_immersed_problem
     alg_fpsi
     alg_fs3i
-    alg_topopt
     alg_ssi
     alg_ssti
     alg_ehl
@@ -2245,8 +1987,6 @@ set(SINGLEFIELD_LIBRARIES
     alg_thermo
     alg_contact
     alg_contact_aug
-    alg_fluid_adjoint
-    alg_opti
     alg_particle_algorithm
     alg_particle_engine
     alg_particle_interaction
@@ -2264,6 +2004,7 @@ set(SUPPORT_LIBRARIES
     drt_lib_mortar
     drt_lib_constraint
     drt_lib_contact
+    drt_lib_beamcontact
     drt_lib_beaminteraction
     drt_lib_poromulti_art_coupl
     # Libraries needed by elements
@@ -2272,7 +2013,7 @@ set(SUPPORT_LIBRARIES
     drt_lib_cut
     drt_lib_inpar
     drt_lib_io
-    drt_lib_roughcontact
+    drt_lib_contact_constitutivelaw
     drt_lib_nurbs
     drt_lib_binstrategy
     drt_lib_particleengine
@@ -2326,12 +2067,10 @@ add_library(drt_timestepping INTERFACE)
 target_include_directories(drt_timestepping INTERFACE ${PROJECT_SOURCE_DIR}/src/drt_timestepping)
 
 # Compile element libraries first. There are files that take time to compile.
-deprecated_baci_add_library_linked_with_everything(ele_fluid ${OBJS_DRT_FLUID_ELE_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_ale ${OBJS_DRT_ALE_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_b3 ${OBJS_DRT_B3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_rigidsphere ${OBJS_DRT_RIGIDSPHERE_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_bele3 ${OBJS_DRT_BELE3_LIB})
-deprecated_baci_add_library_linked_with_everything(ele_opti ${OBJS_DRT_TOPOPT_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_s8 ${OBJS_DRT_S8_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_membrane ${OBJS_DRT_MEMBRANE_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_lubrication ${OBJS_DRT_LUBRICATION_LIB})
@@ -2364,7 +2103,6 @@ deprecated_baci_add_library_linked_with_everything(alg_poroelast ${OBJS_DRT_PORO
 deprecated_baci_add_library_linked_with_everything(alg_poromultiphase ${OBJS_DRT_POROMULTIPHASE})
 deprecated_baci_add_library_linked_with_everything(alg_fpsi ${OBJS_DRT_FPSI})
 deprecated_baci_add_library_linked_with_everything(alg_fs3i ${OBJS_DRT_FS3I})
-deprecated_baci_add_library_linked_with_everything(alg_topopt ${OBJS_DRT_TOPOPT})
 deprecated_baci_add_library_linked_with_everything(alg_ssi ${OBJS_DRT_SSI})
 deprecated_baci_add_library_linked_with_everything(alg_ssti ${OBJS_DRT_SSTI})
 deprecated_baci_add_library_linked_with_everything(alg_ehl ${OBJS_DRT_EHL})
@@ -2376,13 +2114,6 @@ deprecated_baci_add_library_linked_with_everything(drt_adapter ${OBJS_DRT_ADAPT}
 # algorithm libraries the adapters depend uo
 deprecated_baci_add_library_linked_with_everything(alg_ale ${OBJS_DRT_ALEALG})
 deprecated_baci_add_library_linked_with_everything(alg_artnet ${OBJS_DRT_ARTNET})
-deprecated_baci_add_library_linked_with_everything(alg_contact ${OBJS_DRT_CONTACT})
-deprecated_baci_add_library_linked_with_everything(alg_contact_aug ${OBJS_DRT_CONTACT_AUG})
-deprecated_baci_add_library_linked_with_everything(alg_fluid ${OBJS_DRT_FLUID})
-deprecated_baci_add_library_linked_with_everything(
-  alg_fluid_turbulence ${OBJS_DRT_FLUID_TURBULENCE}
-  )
-deprecated_baci_add_library_linked_with_everything(alg_xfluid ${OBJS_DRT_FLUID_XFLUID})
 deprecated_baci_add_library_linked_with_everything(alg_statinvanalysis ${OBJS_STATINV_ANALYSIS})
 deprecated_baci_add_library_linked_with_everything(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
 deprecated_baci_add_library_linked_with_everything(alg_lubrication ${OBJS_DRT_LUBRICATION})
@@ -2392,8 +2123,6 @@ deprecated_baci_add_library_linked_with_everything(
 deprecated_baci_add_library_linked_with_everything(alg_scatra ${OBJS_DRT_SCATRA})
 deprecated_baci_add_library_linked_with_everything(alg_structure ${OBJS_DRT_STRUCTURE})
 deprecated_baci_add_library_linked_with_everything(alg_xstructure ${OBJS_DRT_STRUCTURE_XSTRUCTURE})
-deprecated_baci_add_library_linked_with_everything(alg_fluid_adjoint ${OBJS_DRT_TOPOPT_ADJOINT})
-deprecated_baci_add_library_linked_with_everything(alg_opti ${OBJS_OPTI})
 deprecated_baci_add_library_linked_with_everything(
   alg_particle_algorithm ${OBJS_DRT_PARTICLE_ALGORITHM}
   )
@@ -2431,10 +2160,7 @@ deprecated_baci_add_library_linked_with_everything(drt_lib_register ${OBJS_DRT_R
 # libraries that are used by baci and by filters
 deprecated_baci_add_library_linked_with_everything(drt_lib_inpar ${OBJS_DRT_INPAR})
 deprecated_baci_add_library_linked_with_everything(drt_lib_constraint ${OBJS_DRT_CONSTRAINT_LIB})
-deprecated_baci_add_library_linked_with_everything(
-  drt_lib_contact ${OBJS_DRT_CONTACT_LIB} ${OBJS_DRT_BEAMCONTACT_LIB}
-  )
-deprecated_baci_add_library_linked_with_everything(drt_lib_roughcontact ${OBJS_DRT_ROUGH_CONTACT})
+deprecated_baci_add_library_linked_with_everything(drt_lib_beamcontact ${OBJS_DRT_BEAMCONTACT_LIB})
 deprecated_baci_add_library_linked_with_everything(
   drt_lib_beaminteraction ${OBJS_DRT_BEAMINTERACTION_LIB}
   )
