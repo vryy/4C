@@ -548,20 +548,6 @@ set(OBJS_DRT_ARTNET_LIB
     src/drt_art_net/artery_input.cpp
     src/drt_art_net/artery_resulttest.cpp
     )
-set(OBJS_DRT_BEAMCONTACT_LIB
-    src/drt_beamcontact/beam3contact_manager.cpp
-    src/drt_beamcontact/beam3contact_octtree.cpp
-    src/drt_beamcontact/beam3contactnew.cpp
-    src/drt_beamcontact/beam3contactinterface.cpp
-    src/drt_beamcontact/beam3contact.cpp
-    src/drt_beamcontact/beam3contactvariables.cpp
-    src/drt_beamcontact/beam3tospherecontact.cpp
-    src/drt_beamcontact/beam3tosolidcontact.cpp
-    src/drt_beamcontact/beam3tosolidmeshtying.cpp
-    src/drt_beamcontact/beam3tobeampotential.cpp
-    src/drt_beamcontact/beam3tospherepotential.cpp
-    src/drt_beamcontact/str_model_evaluator_beaminteraction_old.cpp
-    )
 set(OBJS_DRT_BEAMINTERACTION_LIB
     src/drt_beaminteraction/periodic_boundingbox.cpp
     src/drt_beaminteraction/beam3contact_utils.cpp
@@ -2086,7 +2072,6 @@ deprecated_baci_add_library_linked_with_everything(drt_lib_register ${OBJS_DRT_R
 # libraries that are used by baci and by filters
 deprecated_baci_add_library_linked_with_everything(drt_lib_inpar ${OBJS_DRT_INPAR})
 deprecated_baci_add_library_linked_with_everything(drt_lib_constraint ${OBJS_DRT_CONSTRAINT_LIB})
-deprecated_baci_add_library_linked_with_everything(drt_lib_beamcontact ${OBJS_DRT_BEAMCONTACT_LIB})
 deprecated_baci_add_library_linked_with_everything(
   drt_lib_beaminteraction ${OBJS_DRT_BEAMINTERACTION_LIB}
   )
