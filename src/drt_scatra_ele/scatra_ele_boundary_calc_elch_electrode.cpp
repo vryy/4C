@@ -80,7 +80,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
   std::vector<LINALG::Matrix<my::nen_, 1>> emasterphinp(
       my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
   if (params.isParameter("evaluate_manifold_coupling"))
-    my::ExtractNodeValues(emasterphinp, discretization, la, "manifold_on_scatra", 3);
+    my::ExtractNodeValues(emasterphinp, discretization, la, "manifold_on_scatra");
   else
     my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
@@ -594,7 +594,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
   std::vector<LINALG::Matrix<my::nen_, 1>> emasterphinp(
       my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
   if (params.isParameter("evaluate_manifold_coupling"))
-    my::ExtractNodeValues(emasterphinp, discretization, la, "manifold_on_scatra", 3);
+    my::ExtractNodeValues(emasterphinp, discretization, la, "manifold_on_scatra");
   else
     my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
@@ -1118,7 +1118,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::CalcS2ICoupling
   std::vector<LINALG::Matrix<my::nen_, 1>> emasterphinp(
       my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
   if (params.isParameter("evaluate_manifold_coupling"))
-    my::ExtractNodeValues(emasterphinp, discretization, la, "manifold_on_scatra", 3);
+    my::ExtractNodeValues(emasterphinp, discretization, la, "manifold_on_scatra");
   else
     my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 

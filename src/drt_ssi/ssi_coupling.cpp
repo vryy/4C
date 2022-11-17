@@ -149,14 +149,6 @@ void SSI::SSICouplingMatchingVolume::SetScalarFieldMicro(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingMatchingVolume::SetScaTraManifoldField(
-    DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
-{
-  dserror("Scatra on manifolds only with matching volume and boundaries");
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::SetTemperatureField(
     DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp)
 {
@@ -298,14 +290,6 @@ void SSI::SSICouplingNonMatchingBoundary::SetScalarFieldMicro(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingNonMatchingBoundary::SetScaTraManifoldField(
-    DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
-{
-  dserror("Scatra on manifolds only with matching volume and boundaries");
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingVolume::Init(const int ndim,
     Teuchos::RCP<DRT::Discretization> structdis,
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_integrator,
@@ -417,14 +401,6 @@ void SSI::SSICouplingNonMatchingVolume::SetScalarFieldMicro(
     DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
   dserror("transferring micro scalar state to structure discretization not implemented.");
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void SSI::SSICouplingNonMatchingVolume::SetScaTraManifoldField(
-    DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
-{
-  dserror("Scatra on manifolds only with matching volume and boundaries");
 }
 
 /*----------------------------------------------------------------------*/
@@ -559,19 +535,6 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
       dserror("unexpected dof sets in scatra manifold field");
     scatra_manifold_integrator->SetNumberOfDofSetDisplacement(scatra_manifold_dofset_counter);
     scatra_manifold_integrator->SetNumberOfDofSetVelocity(scatra_manifold_dofset_counter);
-
-    if (scatra_manifold_dis->AddDofSet(proxy_scatra_scatramanifold) !=
-        ++scatra_manifold_dofset_counter)
-      dserror("unexpected dof sets in scatra manifold field");
-
-    if (scatra_manifold_dis->AddDofSet(manifolddofset) != ++scatra_manifold_dofset_counter)
-      dserror("unexpected dof sets in scatra manifold field");
-
-    if (scatradis->AddDofSet(proxy_scatramanifold_scatra) != ++scatra_dofset_counter)
-      dserror("unexpected dof sets in scatra field");
-
-    if (scatradis->AddDofSet(scatradofset) != ++scatra_dofset_counter)
-      dserror("unexpected dof sets in scatra field");
   }
 
   if (DRT::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT") != -1)
@@ -641,12 +604,4 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::SetScalarFieldMicro(
     DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
   dserror("transferring micro scalar state to structure discretization not implemented.");
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void SSI::SSICouplingMatchingVolumeAndBoundary::SetScaTraManifoldField(
-    DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
-{
-  dis.SetState(nds, "manifoldfield", phi);
 }

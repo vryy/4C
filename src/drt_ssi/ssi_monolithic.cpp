@@ -843,9 +843,6 @@ void SSI::SSIMono::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) cons
 
   // set state for contact evaluation
   if (contact_strategy_nitsche_ != Teuchos::null) SetSSIContactStates(phi);
-
-  // set state for evaluation of manifold field
-  if (IsScaTraManifold()) SetSSIManifoldStates(phi);
 }
 
 /*---------------------------------------------------------------------------------*
@@ -853,23 +850,6 @@ void SSI::SSIMono::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) cons
 void SSI::SSIMono::SetSSIContactStates(Teuchos::RCP<const Epetra_Vector> phi) const
 {
   contact_strategy_nitsche_->SetState(MORTAR::state_scalar, *phi);
-}
-
-/*---------------------------------------------------------------------------------*
- *---------------------------------------------------------------------------------*/
-void SSI::SSIMono::SetSSIManifoldStates(Teuchos::RCP<const Epetra_Vector> phi) const
-{
-  // scatra values on master side copied to manifold
-  auto imasterphinp_on_manifold =
-      LINALG::CreateVector(*ScaTraManifold()->Discretization()->DofRowMap(), true);
-
-  for (const auto& coup : manifoldscatraflux_->ScaTraManifoldCouplings())
-  {
-    auto imasterphinp_scatra = coup->ScaTraMapExtractor()->ExtractCondVector(*phi);
-    auto imasterphinp_manifold = coup->CouplingAdapter()->MasterToSlave(imasterphinp_scatra);
-    coup->ManifoldMapExtractor()->AddCondVector(imasterphinp_manifold, imasterphinp_on_manifold);
-  }
-  ScaTraManifold()->Discretization()->SetState(3, "imasterscatra", imasterphinp_on_manifold);
 }
 
 /*---------------------------------------------------------------------------------*
@@ -1687,8 +1667,6 @@ void SSI::SSIMono::PrintSystemMatrixRHSToMatLabFormat()
 /*----------------------------------------------------------------------*/
 void SSI::SSIMono::SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> phi)
 {
-  SSI::SSIBase::SetScatraManifoldSolution(phi);
-
   // scatra values on master side copied to manifold
   auto manifold_on_scatra =
       LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(), true);
@@ -1699,5 +1677,5 @@ void SSI::SSIMono::SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> p
     auto manifold_on_scatra_cond = coup->CouplingAdapter()->SlaveToMaster(manifold_cond);
     coup->ScaTraMapExtractor()->AddCondVector(manifold_on_scatra_cond, manifold_on_scatra);
   }
-  ScaTraField()->Discretization()->SetState(3, "manifold_on_scatra", manifold_on_scatra);
+  ScaTraField()->Discretization()->SetState(0, "manifold_on_scatra", manifold_on_scatra);
 }

@@ -110,8 +110,6 @@ namespace SSI
 
     void ReadRestartfromTime(double restarttime) override;
 
-    void SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> phi) override;
-
     void Setup() override;
 
     void SetupSystem() override;
@@ -224,6 +222,9 @@ namespace SSI
     //! set up a pointer to the contact strategy of the structural field and store it
     void SetupContactStrategy();
 
+    //! set scatra manifold solution on scatra field
+    void SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> phi);
+
     //! set scatra solution on structure field
     void SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const override;
 
@@ -233,11 +234,6 @@ namespace SSI
      * @param[in] phi  scatra state to be set to contact nitsche strategy
      */
     void SetSSIContactStates(Teuchos::RCP<const Epetra_Vector> phi) const;
-
-    //! set states to evaluate scatra-manifold field
-    //!
-    //! \param[in] phi  scatra state to be set
-    void SetSSIManifoldStates(Teuchos::RCP<const Epetra_Vector> phi) const;
 
     //! evaluate time step using Newton-Raphson iteration
     void NewtonLoop();

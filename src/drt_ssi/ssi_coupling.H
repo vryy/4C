@@ -84,14 +84,6 @@ namespace SSI
     virtual void SetScalarFieldMicro(
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) = 0;
 
-    //! \brief set scatra on manifold solution on other field
-    //!
-    //! \param dis    discretization to write scatra on manifold solution on
-    //! \param phi    scalar on manifold field solution
-    //! \param nds    number of dofset to write state on
-    virtual void SetScaTraManifoldField(
-        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) = 0;
-
     //! set temperature field on structure field
     virtual void SetTemperatureField(
         DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) = 0;
@@ -124,9 +116,6 @@ namespace SSI
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
     void SetScalarFieldMicro(
-        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
-
-    void SetScaTraManifoldField(
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
     void SetTemperatureField(
@@ -197,9 +186,6 @@ namespace SSI
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
     void SetScalarFieldMicro(
-        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
-
-    void SetScaTraManifoldField(
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
     void SetTemperatureField(
@@ -288,9 +274,6 @@ namespace SSI
     void SetScalarFieldMicro(
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
-    void SetScaTraManifoldField(
-        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
-
     void SetTemperatureField(
         DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override
     {
@@ -363,9 +346,6 @@ namespace SSI
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
     void SetScalarFieldMicro(
-        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
-
-    void SetScaTraManifoldField(
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
     void SetTemperatureField(

@@ -561,7 +561,6 @@ void SSI::SSIBase::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) cons
   CheckIsSetup();
 
   ssicoupling_->SetScalarField(*StructureField()->Discretization(), phi, 1);
-  if (IsScaTraManifold()) ssicoupling_->SetScalarField(*ScaTraManifold()->Discretization(), phi, 2);
 }
 
 /*----------------------------------------------------------------------*/
@@ -573,16 +572,6 @@ void SSI::SSIBase::SetMicroScatraSolution(Teuchos::RCP<const Epetra_Vector> phi)
   CheckIsSetup();
 
   ssicoupling_->SetScalarFieldMicro(*StructureField()->Discretization(), phi, 2);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void SSI::SSIBase::SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> phi)
-{
-  // safety checks
-  CheckIsInit();
-  CheckIsSetup();
-  ssicoupling_->SetScaTraManifoldField(*ScaTraField()->Discretization(), phi, 2);
 }
 
 /*----------------------------------------------------------------------*/
