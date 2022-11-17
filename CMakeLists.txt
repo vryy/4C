@@ -1488,24 +1488,6 @@ set(OBJS_DRT_IO_LIB
     src/drt_lib/drt_particlereader.cpp
     )
 set(OBJS_DRT_NURBS_DISCRET src/drt_nurbs_discret/drt_apply_nurbs_initial_condition.cpp)
-set(OBJS_DRT_B3_LIB
-    src/drt_beam3/beam_discretization_runtime_vtu_output_params.cpp
-    src/drt_beam3/triad_interpolation.cpp
-    src/drt_beam3/triad_interpolation_local_rotation_vectors.cpp
-    src/drt_beam3/beam3_base.cpp
-    src/drt_beam3/beam3.cpp
-    src/drt_beam3/beam3_evaluate.cpp
-    src/drt_beam3/beam3_input.cpp
-    src/drt_beam3/beam3r.cpp
-    src/drt_beam3/beam3r_evaluate.cpp
-    src/drt_beam3/beam3r_input.cpp
-    src/drt_beam3/beam3eb.cpp
-    src/drt_beam3/beam3eb_evaluate.cpp
-    src/drt_beam3/beam3eb_input.cpp
-    src/drt_beam3/beam3k.cpp
-    src/drt_beam3/beam3k_evaluate.cpp
-    src/drt_beam3/beam3k_input.cpp
-    )
 
 set(OBJS_DRT_T3_LIB
     src/drt_truss3/truss3.cpp
@@ -1879,7 +1861,7 @@ set(OBJS_DRT_MIXTURE
 
 set(ELEMENT_LIBRARIES
     ele_ale
-    ele_b3
+    ele_beam3
     ele_rigidsphere
     ele_bele
     ele_discsh3
@@ -2017,7 +1999,6 @@ add_library(drt_timestepping INTERFACE)
 target_include_directories(drt_timestepping INTERFACE ${PROJECT_SOURCE_DIR}/src/drt_timestepping)
 
 # Compile element libraries first. There are files that take time to compile.
-deprecated_baci_add_library_linked_with_everything(ele_b3 ${OBJS_DRT_B3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_rigidsphere ${OBJS_DRT_RIGIDSPHERE_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_s8 ${OBJS_DRT_S8_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_membrane ${OBJS_DRT_MEMBRANE_LIB})
