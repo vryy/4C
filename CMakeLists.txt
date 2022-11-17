@@ -824,12 +824,6 @@ set(OBJS_DRT_EHL
     src/drt_ehl/ehl_partitioned.cpp
     src/drt_ehl/ehl_utils.cpp
     )
-set(OBJS_DRT_LUBRICATION
-    src/drt_lubrication/lubrication_dyn.cpp
-    src/drt_lubrication/lubrication_resulttest.cpp
-    src/drt_lubrication/lubrication_timint_implicit.cpp
-    src/drt_lubrication/lubrication_timint_stat.cpp
-    )
 set(OBJS_DRT_SCATRA
     src/drt_scatra/scatra_algorithm.cpp
     src/drt_scatra/scatra_dyn.cpp
@@ -1018,13 +1012,7 @@ set(OBJS_DRT_RED_AIRWAYS
     )
 
 set(OBJS_DRT_REGISTER src/drt_lib/drt_parobjectregister.cpp)
-set(OBJS_DRT_LUBRICATION_LIB
-    src/drt_lubrication_ele/lubrication_ele.cpp
-    src/drt_lubrication_ele/lubrication_ele_evaluate.cpp
-    src/drt_lubrication_ele/lubrication_ele_factory.cpp
-    src/drt_lubrication_ele/lubrication_ele_calc.cpp
-    src/drt_lubrication_ele/lubrication_ele_parameter.cpp
-    )
+
 set(OBJS_DRT_POROFLUIDMULTIPHASE_LIB
     src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele.cpp
     src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele_calc.cpp
@@ -2049,7 +2037,6 @@ deprecated_baci_add_library_linked_with_everything(ele_rigidsphere ${OBJS_DRT_RI
 deprecated_baci_add_library_linked_with_everything(ele_bele3 ${OBJS_DRT_BELE3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_s8 ${OBJS_DRT_S8_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_membrane ${OBJS_DRT_MEMBRANE_LIB})
-deprecated_baci_add_library_linked_with_everything(ele_lubrication ${OBJS_DRT_LUBRICATION_LIB})
 deprecated_baci_add_library_linked_with_everything(
   ele_porofluidmultiphase ${OBJS_DRT_POROFLUIDMULTIPHASE_LIB}
   )
@@ -2091,7 +2078,6 @@ deprecated_baci_add_library_linked_with_everything(drt_adapter ${OBJS_DRT_ADAPT}
 deprecated_baci_add_library_linked_with_everything(alg_artnet ${OBJS_DRT_ARTNET})
 deprecated_baci_add_library_linked_with_everything(alg_statinvanalysis ${OBJS_STATINV_ANALYSIS})
 deprecated_baci_add_library_linked_with_everything(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
-deprecated_baci_add_library_linked_with_everything(alg_lubrication ${OBJS_DRT_LUBRICATION})
 deprecated_baci_add_library_linked_with_everything(
   alg_porofluidmultiphase ${OBJS_DRT_POROFLUIDMULTIPHASE}
   )
