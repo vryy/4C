@@ -431,9 +431,11 @@ macro(baci_framework_test name_of_input_file num_proc xml_filename)
       ) # pre_exodus is run to generate a Dat file
 
   if(NOT ${xml_filename} STREQUAL "")
-    file(COPY ${PROJECT_SOURCE_DIR}/Input/${xml_filename} DESTINATION ./${test_directory}/)
-
     # if a XML file name is given, it is copied from the baci input directory to the build directory
+    set(RUNCOPYXML "cp ${PROJECT_SOURCE_DIR}/Input/${xml_filename} ./${test_directory}/")
+  else()
+    # no-op command to do nothing
+    set(RUNCOPYXML :)
   endif(NOT ${xml_filename} STREQUAL "")
 
   set(RUNBACI
@@ -447,7 +449,7 @@ macro(baci_framework_test name_of_input_file num_proc xml_filename)
     NAME ${name_of_test}
     COMMAND
       bash -c
-      "mkdir -p ${PROJECT_BINARY_DIR}/${test_directory} && ${RUNCUBIT} && ${RUNPREEXODUS} && ${RUNBACI} && ${RUNPOSTFILTER}"
+      "mkdir -p ${PROJECT_BINARY_DIR}/${test_directory} && ${RUNCOPYXML} && ${RUNCUBIT} && ${RUNPREEXODUS} && ${RUNBACI} && ${RUNPOSTFILTER}"
     )
 
   require_fixture(${name_of_test} test_cleanup)
