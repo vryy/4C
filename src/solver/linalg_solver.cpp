@@ -598,9 +598,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToMuelu(
       "MUELU_XML_ENFORCE", DRT::INPUT::IntegralValue<bool>(inparams, "MUELU_XML_ENFORCE"));
   muelulist.set<bool>("LINALG::MueLu_Preconditioner", true);
 
-  muelulist.set("aggregation: threshold", inparams.get<double>("ML_PROLONG_THRES"));
-  muelulist.set("aggregation: min nodes per aggregate", inparams.get<int>("MueLu_MIN_AGG_SIZE"));
-
   return muelulist;
 }
 

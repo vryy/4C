@@ -127,7 +127,7 @@ namespace INPAR::SOLVER
           "VERBOSITY", 0, "verbosity level (0=no output,... 10=extreme), for Belos only", &list);
     }
 
-    // ML / Muelu options
+    // ML options
     {
       IntParameter("ML_PRINT", 0, "ML print-out level (0-10)", &list);
       IntParameter(
@@ -179,10 +179,10 @@ namespace INPAR::SOLVER
           "levels, "
           "BS: used for coarse BraessSarazin (BS) level smoother)",
           &list);
+    }
 
-      IntParameter("MueLu_MIN_AGG_SIZE", 6,
-          "Minimal objective size of an aggregate (to influence the coarsening rate)", &list);
-
+    // MueLu options
+    {
       StringParameter(
           "MUELU_XML_FILE", "none", "xml file defining any MueLu preconditioner", &list);
 
