@@ -460,6 +460,35 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
   return graph;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> DRT::Discretization::BuildNodeCoordinates(
+    Teuchos::RCP<const Epetra_Map> noderowmap) const
+{
+  // get nodal row map if not given
+  if (noderowmap == Teuchos::null)
+    noderowmap = Teuchos::rcpFromRef<const Epetra_Map>(*NodeRowMap());
+
+  Teuchos::RCP<Epetra_MultiVector> coordinates =
+      Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 3, true));
+
+  for (const auto& current_element : element_)
+  {
+    const int numnode = current_element.second->NumNode();
+    const int* nodeids = current_element.second->NodeIds();
+    DRT::Node** nodes = current_element.second->Nodes();
+
+    for (int i = 0; i < numnode; i++)
+    {
+      const int rownodeid = noderowmap->MyGID(nodeids[i]);
+      if (!rownodeid) continue;
+      for (int dim = 0; dim < 3; dim++)
+        coordinates->ReplaceMyValue(noderowmap->LID(nodeids[i]), dim, nodes[i]->X()[dim]);
+    }
+  }
+
+  return coordinates;
+}
 
 /*----------------------------------------------------------------------*
  |  build element map from discretization (public)           mwgee 11/06|

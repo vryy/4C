@@ -1349,6 +1349,22 @@ namespace DRT
     */
     virtual Teuchos::RCP<Epetra_CrsGraph> BuildNodeGraph() const;
 
+    /*!
+    \brief Build nodal coordinate vector of this discretization based on a nodal rowmap
+
+    Per default the node map of the underlying discretization is used to build the nodal
+    coordinate vector. The user can specify a node rowmap to calculate the coordinate vector on.
+    The map has to be a submap of the overall full node rowmap of this discretization.
+
+    \pre Discretization does have to be FillComplete().
+
+    @param[in] noderowmap Map representing the nodal distribution of the discretization (can be a
+               submap of the full node rowmap returned from NodeRowMap())
+    @return Vector containing the coordinates of all nodes which are present in the given noderowmap
+     */
+    Teuchos::RCP<Epetra_MultiVector> BuildNodeCoordinates(
+        Teuchos::RCP<const Epetra_Map> noderowmap = Teuchos::null) const;
+
     //@}
 
     //! @name Evaluate methods
