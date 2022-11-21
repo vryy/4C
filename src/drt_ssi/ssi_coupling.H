@@ -11,6 +11,7 @@
 #define SRC_DRT_SSI_SSI_COUPLING_H_
 
 #include "drt_discret.H"
+#include "scatra_timint_implicit.H"
 
 
 namespace ADAPTER
@@ -33,13 +34,13 @@ namespace SSI
     virtual ~SSICouplingBase() = default;
 
     //! \brief init this class
-    //! \param ndim                     dimension of the problem
-    //! \param structdis                underlying structure discretization
-    //! \param scatradis                underlying scatra discretization
-    //! \param scatra_manifold_dis      underlying scatra manifold discretization
+    //! \param ndim                        dimension of the problem
+    //! \param structdis                   underlying structure discretization
+    //! \param scatra_integrator           underlying scatra time integrator
+    //! \param scatra_manifold_integrator  underlying scatra manifold time integrator
     virtual void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
-        Teuchos::RCP<DRT::Discretization> scatradis,
-        Teuchos::RCP<DRT::Discretization> scatra_manifold_dis) = 0;
+        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_integrator,
+        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold_integrator) = 0;
 
     //! \brief setup this class
     virtual void Setup() = 0;
@@ -83,14 +84,6 @@ namespace SSI
     virtual void SetScalarFieldMicro(
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) = 0;
 
-    //! \brief set scatra on manifold solution on other field
-    //!
-    //! \param dis    discretization to write scatra on manifold solution on
-    //! \param phi    scalar on manifold field solution
-    //! \param nds    number of dofset to write state on
-    virtual void SetScaTraManifoldField(
-        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) = 0;
-
     //! set temperature field on structure field
     virtual void SetTemperatureField(
         DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) = 0;
@@ -105,8 +98,8 @@ namespace SSI
     ~SSICouplingMatchingVolume() override = default;
 
     void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
-        Teuchos::RCP<DRT::Discretization> scatradis,
-        Teuchos::RCP<DRT::Discretization> scatra_manifold_dis) override;
+        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_integrator,
+        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold_integrator) override;
 
     void Setup() override;
 
@@ -123,9 +116,6 @@ namespace SSI
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
     void SetScalarFieldMicro(
-        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
-
-    void SetScaTraManifoldField(
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
     void SetTemperatureField(
@@ -178,8 +168,8 @@ namespace SSI
     ~SSICouplingNonMatchingBoundary() override = default;
 
     void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
-        Teuchos::RCP<DRT::Discretization> scatradis,
-        Teuchos::RCP<DRT::Discretization> scatra_manifold_dis) override;
+        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_integrator,
+        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold_integrator) override;
 
     void Setup() override;
 
@@ -196,9 +186,6 @@ namespace SSI
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
     void SetScalarFieldMicro(
-        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
-
-    void SetScaTraManifoldField(
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
     void SetTemperatureField(
@@ -267,8 +254,8 @@ namespace SSI
     ~SSICouplingNonMatchingVolume() override = default;
 
     void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
-        Teuchos::RCP<DRT::Discretization> scatradis,
-        Teuchos::RCP<DRT::Discretization> scatra_manifold_dis) override;
+        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_integrator,
+        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold_integrator) override;
 
     void Setup() override;
 
@@ -285,9 +272,6 @@ namespace SSI
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
     void SetScalarFieldMicro(
-        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
-
-    void SetScaTraManifoldField(
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
     void SetTemperatureField(
@@ -343,9 +327,8 @@ namespace SSI
     ~SSICouplingMatchingVolumeAndBoundary() override = default;
 
     void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
-        Teuchos::RCP<DRT::Discretization> scatradis,
-        Teuchos::RCP<DRT::Discretization> scatra_manifold_dis) override;
-
+        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_integrator,
+        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold_integrator) override;
 
     void Setup() override;
 
@@ -363,9 +346,6 @@ namespace SSI
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
     void SetScalarFieldMicro(
-        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
-
-    void SetScaTraManifoldField(
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
     void SetTemperatureField(

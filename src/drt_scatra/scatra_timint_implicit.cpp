@@ -659,7 +659,6 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
   if (NumScal() < 1) dserror("Error since numscal = %d. Not allowed since < 1", NumScal());
   c0_.resize(NumScal());
 
-  discret_->ClearState();
   discret_->SetState("phinp", phinp_);
 
   // set action for elements
@@ -673,7 +672,6 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
   Teuchos::RCP<Epetra_SerialDenseVector> scalars =
       Teuchos::rcp(new Epetra_SerialDenseVector(NumScal() + 1));
   discret_->EvaluateScalars(eleparams, scalars);
-  discret_->ClearState();  // clean up
 
   // calculate mean concentrations
   const double domint = (*scalars)[NumScal()];
@@ -2366,9 +2364,7 @@ void SCATRA::ScaTraTimIntImpl::ApplyDirichletBC(
 
   // predicted Dirichlet values
   // \c  phinp then also holds prescribed new Dirichlet values
-  discret_->ClearState();
   discret_->EvaluateDirichlet(p, phinp, phidt, Teuchos::null, Teuchos::null, dbcmaps_);
-  discret_->ClearState();
 }
 
 /*----------------------------------------------------------------------*
@@ -2414,7 +2410,6 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
   // evaluate Neumann boundary conditions at time t_{n+alpha_F} (generalized alpha) or time t_{n+1}
   // (otherwise)
   discret_->EvaluateNeumann(condparams, *neumann_loads);
-  discret_->ClearState();
 }
 
 /*----------------------------------------------------------------------------*
@@ -2451,8 +2446,6 @@ void SCATRA::ScaTraTimIntImpl::EvaluateAdditionalSolutionDependingModels(
 void SCATRA::ScaTraTimIntImpl::EvaluateRobinBoundaryConditions(
     Teuchos::RCP<LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs)
 {
-  discret_->ClearState();
-
   // create parameter list
   Teuchos::ParameterList condparams;
 
@@ -2466,7 +2459,6 @@ void SCATRA::ScaTraTimIntImpl::EvaluateRobinBoundaryConditions(
   // evaluate ElchBoundaryKinetics conditions at time t_{n+1} or t_{n+alpha_F}
   discret_->EvaluateCondition(
       condparams, matrix, Teuchos::null, rhs, Teuchos::null, Teuchos::null, "TransportRobin");
-  discret_->ClearState();
 }
 
 /*----------------------------------------------------------------------*
@@ -2516,9 +2508,6 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // this parameter list is required here to get the element-based filtered constants
   eleparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
 
-  // set vector values needed by elements
-  discret_->ClearState();
-
   // AVM3 separation for incremental solver: get fine-scale part of scalar
   if (incremental_ and step_ > 0 and
       (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
@@ -2542,10 +2531,6 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   else
     discret_->Evaluate(eleparams, sysmat_, residual_);
 
-  //  (SystemMatrix()->EpetraMatrix())->Print(std::cout); // kn nis
-
-  discret_->ClearState();
-
   //----------------------------------------------------------------------
   // apply weak Dirichlet boundary conditions
   //----------------------------------------------------------------------
@@ -2564,9 +2549,6 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
 
     discret_->EvaluateCondition(mhdbcparams, sysmat_, Teuchos::null, residual_, Teuchos::null,
         Teuchos::null, "SurfaceWeakDirichlet");
-
-    // clear state
-    discret_->ClearState();
   }
 
   // AVM3 scaling for non-incremental solver: scaling of normalized AVM3-based
@@ -2598,19 +2580,16 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
   CheckIsInit();
   CheckIsSetup();
 
-  // -------------------------------------------------------------------
-  //                        output to screen
-  // -------------------------------------------------------------------
+  // output to screen
   PrintTimeStepInfo();
 
-  // -------------------------------------------------------------------
-  //                     preparations for solve
-  // -------------------------------------------------------------------
+  // clear state vectors
+  discret_->ClearState();
+
+  // preparations for solve
   PrepareLinearSolve();
 
-  // -------------------------------------------------------------------
   // Solve system in incremental or non-incremental case
-  // -------------------------------------------------------------------
   if (incremental_)
   {
     TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + solver calls");
@@ -2701,6 +2680,9 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   // start Newton-Raphson iteration
   while (true)
   {
+    // clear states
+    discret_->ClearState();
+
     iternum_++;
 
     // call elements to calculate system matrix and rhs and assemble
@@ -2855,9 +2837,6 @@ void SCATRA::ScaTraTimIntImpl::NonlinearMultiScaleSolve()
  *-----------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::NonlinearMicroScaleSolve()
 {
-  // clear macro-scale discretization
-  discret_->ClearState();
-
   // initialize parameter list for evaluation of macro-scale elements
   Teuchos::ParameterList eleparams;
 
@@ -2865,15 +2844,15 @@ void SCATRA::ScaTraTimIntImpl::NonlinearMicroScaleSolve()
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::micro_scale_solve, eleparams);
 
+  // clear state vectors
+  discret_->ClearState();
+
   // set state vectors
   AddTimeIntegrationSpecificVectors();
 
   // evaluate macro-scale elements
   discret_->Evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-
-  // clear macro-scale discretization
-  discret_->ClearState();
 }
 
 /*--------------------------------------------------------------------------*
@@ -3559,7 +3538,7 @@ void SCATRA::ScaTraTimIntImpl::CalcMeanMicroConcentration()
   phinp_micro_->PutScalar(0.0);
 
   if (NdsMicro() < 0) dserror("must set number of dofset for micro scale concentrations");
-  discret_->ClearState();
+
   discret_->SetState("phinp", phinp_);
 
   Teuchos::ParameterList eleparams;
@@ -3698,8 +3677,6 @@ void SCATRA::ScaTraTimIntImpl::CalcMeanMicroConcentration()
       phinp_micro_->ReplaceMyValue(lid, 0, corrected_value);
     }
   }
-
-  discret_->ClearState();
 }
 
 /*----------------------------------------------------------------------*

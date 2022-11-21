@@ -105,8 +105,7 @@ void SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
   InitTimeIntegrators(
       globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
-  const RedistributionType redistribution_type =
-      InitFieldCoupling(comm, struct_disname, scatra_disname);
+  const RedistributionType redistribution_type = InitFieldCoupling(struct_disname);
 
   if (redistribution_type != SSI::RedistributionType::none) Redistribute(redistribution_type);
 
@@ -378,23 +377,20 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
 /*----------------------------------------------------------------------*
  | Setup ssi coupling object                                rauch 08/16 |
  *----------------------------------------------------------------------*/
-SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(
-    const Epetra_Comm& comm, const std::string& struct_disname, const std::string& scatra_disname)
+SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struct_disname)
 {
   // initialize return variable
   RedistributionType redistribution_required = SSI::RedistributionType::none;
 
-  DRT::Problem* problem = DRT::Problem::Instance();
-  auto structdis = problem->GetDis(struct_disname);
-  auto scatradis = problem->GetDis(scatra_disname);
-  Teuchos::RCP<DRT::Discretization> scatra_manifold_dis(Teuchos::null);
-  if (IsScaTraManifold()) scatra_manifold_dis = problem->GetDis("scatra_manifold");
+  auto scatra_integrator = ScaTraBaseAlgorithm()->ScaTraField();
+  Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold_integrator(Teuchos::null);
+  if (IsScaTraManifold()) scatra_manifold_integrator = ScaTraManifoldBaseAlgorithm()->ScaTraField();
 
   // safety check
   {
     // check for ssi coupling condition
     std::vector<DRT::Condition*> ssicoupling;
-    scatradis->GetCondition("SSICoupling", ssicoupling);
+    scatra_integrator->Discretization()->GetCondition("SSICoupling", ssicoupling);
     const bool havessicoupling = (ssicoupling.size() > 0);
 
     if (havessicoupling and (fieldcoupling_ != INPAR::SSI::FieldCoupling::boundary_nonmatch and
@@ -445,7 +441,9 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(
   }
 
   // initialize coupling objects including dof sets
-  ssicoupling_->Init(problem->NDim(), structdis, scatradis, scatra_manifold_dis);
+  DRT::Problem* problem = DRT::Problem::Instance();
+  ssicoupling_->Init(problem->NDim(), problem->GetDis(struct_disname), scatra_integrator,
+      scatra_manifold_integrator);
 
   return redistribution_required;
 }
@@ -563,7 +561,6 @@ void SSI::SSIBase::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) cons
   CheckIsSetup();
 
   ssicoupling_->SetScalarField(*StructureField()->Discretization(), phi, 1);
-  if (IsScaTraManifold()) ssicoupling_->SetScalarField(*ScaTraManifold()->Discretization(), phi, 2);
 }
 
 /*----------------------------------------------------------------------*/
@@ -575,16 +572,6 @@ void SSI::SSIBase::SetMicroScatraSolution(Teuchos::RCP<const Epetra_Vector> phi)
   CheckIsSetup();
 
   ssicoupling_->SetScalarFieldMicro(*StructureField()->Discretization(), phi, 2);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void SSI::SSIBase::SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> phi)
-{
-  // safety checks
-  CheckIsInit();
-  CheckIsSetup();
-  ssicoupling_->SetScaTraManifoldField(*ScaTraField()->Discretization(), phi, 2);
 }
 
 /*----------------------------------------------------------------------*/
@@ -794,10 +781,6 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
 
   ScaTraBaseAlgorithm()->Init(*scatratimeparams, SSI::UTILS::ModifyScaTraParams(scatraparams),
       problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), scatra_disname, isAle);
-  ScaTraBaseAlgorithm()->ScaTraField()->SetNumberOfDofSetDisplacement(1);
-  ScaTraBaseAlgorithm()->ScaTraField()->SetNumberOfDofSetVelocity(1);
-
-  if (macro_scale_) ScaTraBaseAlgorithm()->ScaTraField()->SetNumberOfDofSetMicroScale(2);
 
   // create and initialize scatra base algorithm for manifolds
   if (IsScaTraManifold())
@@ -808,8 +791,6 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
         SSI::UTILS::CloneScaTraManifoldParams(scatraparams, globaltimeparams.sublist("MANIFOLD")),
         problem->SolverParams(globaltimeparams.sublist("MANIFOLD").get<int>("LINEAR_SOLVER")),
         "scatra_manifold", isAle);
-    ScaTraManifoldBaseAlgorithm()->ScaTraField()->SetNumberOfDofSetDisplacement(1);
-    ScaTraManifoldBaseAlgorithm()->ScaTraField()->SetNumberOfDofSetVelocity(1);
   }
 
   // do checks if adaptive time stepping is activated

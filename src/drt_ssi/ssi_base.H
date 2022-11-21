@@ -145,11 +145,10 @@ namespace SSI
      other possible coupling objects in derived
      classes
 
-    \return int
+    \return RedistributionType
     \date 08/16
     \author vuong, rauch  */
-    virtual RedistributionType InitFieldCoupling(const Epetra_Comm& comm,
-        const std::string& struct_disname, const std::string& scatra_disname);
+    virtual RedistributionType InitFieldCoupling(const std::string& struct_disname);
 
     /*! \brief Setup discretizations
 
@@ -212,9 +211,6 @@ namespace SSI
 
     /// set micro scatra solution on other fields
     virtual void SetMicroScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const;
-
-    /// set scatra on manifold solution on other fields
-    virtual void SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> phi);
 
     /// set temperature field  by evaluating time dependent function
     void EvaluateAndSetTemperatureField();

@@ -637,13 +637,11 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
       eleparams.set<int>("calcerrorflag", calcerror_);
 
       // set vector values needed by elements
-      discret_->ClearState();
       discret_->SetState("phinp", phinp_);
 
       // get (squared) error values
       Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(3));
       discret_->EvaluateScalars(eleparams, errors);
-      discret_->ClearState();
 
       double conerr1 = 0.0;
       double conerr2 = 0.0;
@@ -686,13 +684,11 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
       eleparams.set<int>("calcerrorflag", calcerror_);
 
       // set vector values needed by elements
-      discret_->ClearState();
       discret_->SetState("phinp", phinp_);
 
       // get (squared) error values
       Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(3));
       discret_->EvaluateScalars(eleparams, errors);
-      discret_->ClearState();
 
       // for the L2 norm, we need the square root
       double conerr1 = sqrt((*errors)[0]);
@@ -719,13 +715,11 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
       eleparams.set<int>("calcerrorflag", calcerror_);
 
       // set vector values needed by elements
-      discret_->ClearState();
       discret_->SetState("phinp", phinp_);
 
       // get (squared) error values
       Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(1));
       discret_->EvaluateScalars(eleparams, errors);
-      discret_->ClearState();
 
       // for the L2 norm, we need the square root
       double err = sqrt((*errors)[0]);
@@ -932,9 +926,6 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
       // print out the net total current for all indicated boundaries
       printf("Net total current over boundary: %10.3E\n\n", sum);
     }
-
-    // clean up
-    discret_->ClearState();
   }
 }
 
@@ -944,7 +935,6 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleE
     const int condid, const std::string& condstring)
 {
   // set vector values needed by elements
-  discret_->ClearState();
   discret_->SetState("phinp", phinp_);
   // needed for double-layer capacity!
   discret_->SetState("phidtnp", phidtnp_);
@@ -988,9 +978,6 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleE
   // evaluate relevant boundary integrals
   discret_->EvaluateScalars(eleparams, scalars, condstring, condid);
 
-  // clean up
-  discret_->ClearState();
-
   return scalars;
 }
 
@@ -999,9 +986,6 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleE
 Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleElectrodeInfoPoint(
     Teuchos::RCP<DRT::Condition> condition)
 {
-  // remove state vectors from discretization
-  discret_->ClearState();
-
   // add state vectors to discretization
   discret_->SetState("phinp", phinp_);
   discret_->SetState("phidtnp", phidtnp_);  // needed for double layer capacity
@@ -1082,9 +1066,6 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleE
     if (error)
       dserror("Element with global ID %d returned error code %d on processor %d!", element->Id(),
           error, discret_->Comm().MyPID());
-
-    // remove state vectors from discretization
-    discret_->ClearState();
   }
 
   // communicate number of processor owning conditioned node
@@ -1242,9 +1223,6 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoDomain()
       // print net total current
       printf("Net total current: %10.3E\n\n", currentsum);
     }
-
-    // clean discretization
-    discret_->ClearState();
   }
 }
 
@@ -1278,7 +1256,6 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
       const int condid = condition->GetInt("ConditionID");
 
       // add state vectors to discretization
-      discret_->ClearState();
       discret_->SetState("phinp", phinp_);
       discret_->SetState("phidtnp", phidtnp_);
 
@@ -1301,7 +1278,6 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
 
       // evaluate current condition for electrode state of charge
       discret_->EvaluateScalars(condparams, scalars, "ElectrodeSOC", condid);
-      discret_->ClearState();
 
       // extract integral of domain
       const double intdomain = (*scalars)(2);
@@ -1429,7 +1405,6 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
       if (conditionspoint.empty())
       {
         // add state vector to discretization
-        discret_->ClearState();
         discret_->SetState("phinp", phinp_);
 
         // create parameter list
@@ -1446,7 +1421,6 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
 
         // evaluate current condition for electrode state of charge
         discret_->EvaluateScalars(condparams, scalars, "CellVoltage", condid);
-        discret_->ClearState();
 
         // extract concentration and domain integrals
         double intpotential = (*scalars)(0);
@@ -1623,7 +1597,6 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
   if (NumScal() < 1) dserror("Error since numscal = %d. Not allowed since < 1", NumScal());
   c0_.resize(NumScal());
 
-  discret_->ClearState();
   discret_->SetState("phinp", phinp_);
 
   // set action for elements
@@ -1637,7 +1610,6 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
   Teuchos::RCP<Epetra_SerialDenseVector> scalars =
       Teuchos::rcp(new Epetra_SerialDenseVector(NumDofPerNode() + 1));
   discret_->EvaluateScalars(eleparams, scalars);
-  discret_->ClearState();  // clean up
 
   // calculate mean concentration
   const double domint = (*scalars)[NumDofPerNode()];
@@ -2083,14 +2055,12 @@ double SCATRA::ScaTraTimIntElch::ComputeConductivity(
   eleparams.set("specresist", specresist);
 
   // set vector values needed by elements
-  discret_->ClearState();
   AddTimeIntegrationSpecificVectors();
 
   // evaluate integrals of scalar(s) and domain
   Teuchos::RCP<Epetra_SerialDenseVector> sigma_domint =
       Teuchos::rcp(new Epetra_SerialDenseVector(NumScal() + 2));
   discret_->EvaluateScalars(eleparams, sigma_domint);
-  discret_->ClearState();  // clean up
   const double domint = (*sigma_domint)[NumScal() + 1];
 
   if (!specresist)
@@ -2585,8 +2555,6 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeKineticsConditions(
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition '" + condstring + "'");
 
-  discret_->ClearState();
-
   // create parameter list
   Teuchos::ParameterList condparams;
 
@@ -2606,7 +2574,6 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeKineticsConditions(
   // evaluate electrode kinetics conditions at time t_{n+1} or t_{n+alpha_F}
   discret_->EvaluateCondition(
       condparams, systemmatrix, Teuchos::null, rhs, Teuchos::null, Teuchos::null, condstring);
-  discret_->ClearState();
 
   // add linearization of NernstCondition to system matrix
   if (ektoggle_ != Teuchos::null) LinearizationNernstCondition();
@@ -2619,9 +2586,6 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
 {
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ElchBoundaryKineticsPoint'");
-
-  // remove state vectors from discretization
-  discret_->ClearState();
 
   // create parameter list
   Teuchos::ParameterList condparams;
@@ -2710,9 +2674,6 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
       LINALG::Assemble(*residual_, elevector, la[0].lm_, la[0].lmowner_);
     }
   }
-
-  // remove state vectors from discretization
-  discret_->ClearState();
 }
 
 /*----------------------------------------------------------------------*
@@ -2724,8 +2685,6 @@ void SCATRA::ScaTraTimIntElch::LinearizationNernstCondition()
   if (!sysmat_->Filled()) sysmat_->Complete();
   sysmat_->ApplyDirichlet(ektoggle_, false);
   LINALG::ApplyDirichlettoSystem(increment_, residual_, zeros_, ektoggle_);
-
-  discret_->ClearState();
 
   // create an parameter list
   Teuchos::ParameterList condparams;
@@ -2744,7 +2703,6 @@ void SCATRA::ScaTraTimIntElch::LinearizationNernstCondition()
   // phinp (view to phinp)
   discret_->EvaluateCondition(
       condparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null, condstring);
-  discret_->ClearState();
 }
 
 /*----------------------------------------------------------------------------*

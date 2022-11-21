@@ -397,7 +397,6 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateBulkSide(
   // First: Set parameters to elements
   PreEvaluate(scatra_manifold_coupling);
 
-  scatra_->ScaTraField()->Discretization()->ClearState();
   scatra_->ScaTraField()->Discretization()->SetState("phinp", scatra_->ScaTraField()->Phinp());
 
   // Second: Evaluate condition
@@ -454,8 +453,6 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateBulkSide(
 
       scatra_->ScaTraField()->Discretization()->EvaluateCondition(condparams, strategyscatra,
           "SSISurfaceManifoldKinetics", scatra_manifold_coupling->KineticsConditionID());
-
-      scatra_manifold_->ScaTraField()->Discretization()->ClearState();
 
       matrix_scatra_structure_cond_slave_side_disp_evaluate->Complete(
           *full_map_structure_, *full_map_scatra_);
@@ -639,7 +636,6 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldInflow()
     // Third: evaluate domain integral
     EvaluateScaTraManifoldDomainIntegral(scatra_manifold_coupling);
   }
-  scatra_->ScaTraField()->Discretization()->ClearState();
 }
 
 /*----------------------------------------------------------------------*
