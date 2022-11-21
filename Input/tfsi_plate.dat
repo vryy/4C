@@ -430,7 +430,6 @@ ML_SMOOTHERMED                  SGS
 ML_SMOOTHERCOARSE               KLU
 SUB_SOLVER1                     -1
 SUB_SOLVER2                     -1
-MueLu_MIN_AGG_SIZE              6
 BGS2X2_FLIPORDER                block0_block1_order
 BGS2X2_GLOBAL_DAMPING           1
 BGS2X2_BLOCK1_DAMPING           1
@@ -475,7 +474,6 @@ ML_SMOOTHERMED                  SGS
 ML_SMOOTHERCOARSE               KLU
 SUB_SOLVER1                     -1
 SUB_SOLVER2                     -1
-MueLu_MIN_AGG_SIZE              6
 BGS2X2_FLIPORDER                block0_block1_order
 BGS2X2_GLOBAL_DAMPING           1
 BGS2X2_BLOCK1_DAMPING           1
