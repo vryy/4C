@@ -47,30 +47,14 @@ NDPOINT                          1
 NDLINE                           3
 NDSURF                           4
 NDVOL                            0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT 0
-//E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 TAG monitor_reaction
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE 0
-//E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0 TAG monitor_reaction
-//E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 TAG monitor_reaction
-//E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 TAG monitor_reaction
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 3
-E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0 TAG monitor_reaction
-E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0 TAG monitor_reaction
-E 4 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 TAG monitor_reaction
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL 0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT 0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE 0
+E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 1.0 0.0 0.0 FUNCT 0 0 0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 7 DNODE 1
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
@@ -97,7 +81,6 @@ NODE 4 DSURFACE 1
 NODE 5 DSURFACE 1
 NODE 6 DSURFACE 1
 NODE 8 DSURFACE 1
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.0000000000 1.0000000000 1.0000000000
 NODE 2 COORD 0.0000000000 0.0000000000 1.0000000000

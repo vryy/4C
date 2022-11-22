@@ -1079,6 +1079,7 @@ vtk_test(pasi_twoway_norelax_particle_sph_3d_piston_virtualwall_densitysummation
 vtk_test(pasi_twoway_norelax_particle_sph_3d_piston_virtualwall_densitysummation_rigidbody-vtk-structure pasi_twoway_norelax_particle_sph_3d_piston_virtualwall_densitysummation_rigidbody 2 xxx-structure.pvd ref/pasi_twoway_norelax_sph_3d_piston_virtualwall_densitysummation_rigidbody-structure.pvd 1e-08)
 baci_test(patch_test_cube_linear_dbc_new 1 "")
 baci_test(patch_test_cube_linear_prescribed_disp_dbc_new 1 "")
+baci_test(patch_test_cube_linear_prescribed_disp_triaxial_dbc_new 1 "")
 baci_test(patch_test_cube_h27_linear_dbc_new 1 "")
 baci_test(plastic_flange_ssn_hill 2 10)
 vtk_test(plastic_flange_ssn_hill_vtk plastic_flange_ssn_hill 2 xxx-structure.pvd ref/plastic_flange_ssn_hill-structure.pvd 1e-08)

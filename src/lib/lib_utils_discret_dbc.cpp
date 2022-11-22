@@ -330,8 +330,8 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface&
           funct_num = (*funct)[onesetj];
           if (funct_num > 0)
             functfac = DRT::Problem::Instance()
-                                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funct_num - 1)
-                                   .Evaluate(actnode->X(), time, onesetj);
+                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funct_num - 1)
+                           .Evaluate(actnode->X(), time, onesetj);
         }
 
         const double value = (*val)[onesetj] * functfac;
@@ -347,9 +347,9 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface&
           // then we found an inconsistency. The basis for this is:
           // Overwriting should be allowed over hierarchies (line overwrites surface, and so on)
           // which is one of the main features of our DBC application work flow. And in such a case
-          // it is fully okay if the line prescribes also an inconsistent value (regarding the surface value).
-          // Of course, an error/warning is given if different values are prescribed on the
-          // same hierarchy level. Here, inconsistency matters.
+          // it is fully okay if the line prescribes also an inconsistent value (regarding the
+          // surface value). Of course, an error/warning is given if different values are prescribed
+          // on the same hierarchy level. Here, inconsistency matters.
           if ((std::abs(current_val) > 1.0e-13) && (std::abs(current_val - value) > 1.0e-13))
           {
             std::string geom_name;
@@ -447,7 +447,8 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::DiscretizationInterface& d
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
   // determine number of conditioned nodes
   const unsigned nnode = (*nodeids).size();
-  // get funct, and val from condition
+  // get onoff, funct, and val from condition
+  const std::vector<int>* onoff = cond.Get<std::vector<int>>("onoff");
   const std::vector<int>* funct = cond.Get<std::vector<int>>("funct");
   const std::vector<double>* val = cond.Get<std::vector<double>>("val");
 
@@ -501,8 +502,8 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::DiscretizationInterface& d
       // get position of label for this dof in condition line
       const int onesetj = j % numdf;
 
-      // check whether dof gid is a dbc gid
-      if (std::abs(toggle[lid] - 1.0) > 1e-13) continue;
+      // check whether dof gid is a dbc gid and is prescribed only by the current condition
+      if ((*onoff)[onesetj] == 0) continue;
 
       std::vector<double> value(deg + 1, (*val)[onesetj]);
 

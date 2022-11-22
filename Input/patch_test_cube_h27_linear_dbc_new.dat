@@ -47,30 +47,14 @@ NDPOINT                          1
 NDLINE                           3
 NDSURF                           4
 NDVOL                            0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT 0
-//E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE 0
-//E 1 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
-//E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
-//E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 3
 E 4 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL 0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT 0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE 0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 1.0 0.0 0.0 FUNCT 0 0 0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
@@ -592,7 +576,6 @@ NODE 1326 DSURFACE 1
 NODE 1328 DSURFACE 1
 NODE 1330 DSURFACE 1
 NODE 1331 DSURFACE 1
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.0000000000 0.0000000000 0.0000000000
 NODE 2 COORD 0.0000000000 0.1000000000 0.0000000000

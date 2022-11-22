@@ -314,9 +314,8 @@ namespace DRT
        *  \author rauch \date 06/16 */
       virtual void ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
           const DRT::Condition& cond, const double& time, Epetra_Vector& toggle,
-          Epetra_IntVector& hierarchy,
-          Epetra_Vector& values, const Teuchos::RCP<std::set<int>>* dbcgids,
-          const int& hierarchical_order) const;
+          Epetra_IntVector& hierarchy, Epetra_Vector& values,
+          const Teuchos::RCP<std::set<int>>* dbcgids, const int& hierarchical_order) const;
 
       /** \brief Assignment of the values to the system vectors.
        *
