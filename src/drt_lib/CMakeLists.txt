@@ -52,4 +52,16 @@ baci_add_library(drt_lib ${OBJS_DRT_LIB})
 target_link_libraries(drt_lib PUBLIC linalg drt_lib_binstrategy drt_lib_geometric_search)
 # TODO this module requires a lot more includes that are currently included transitively from linalg
 
+set(OBJS_DRT_IO_LIB
+    drt_domainreader.cpp
+    drt_elementreader.cpp
+    drt_inputreader.cpp
+    drt_linedefinition.cpp
+    drt_materialdefinition.cpp
+    drt_nodereader.cpp
+    drt_particlereader.cpp
+    )
+baci_add_library(drt_lib_io ${OBJS_DRT_IO_LIB})
+target_link_libraries(drt_lib_io PUBLIC drt_lib)
+
 add_subdirectory(error)

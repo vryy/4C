@@ -629,10 +629,6 @@ set(OBJS_DRT_SCATRA
     src/drt_scatra/scatra_algorithm.cpp
     src/drt_scatra/scatra_dyn.cpp
     src/drt_scatra/scatra_cardiac_monodomain_dyn.cpp
-    src/drt_levelset/levelset_algorithm.cpp
-    src/drt_levelset/levelset_algorithm_utils.cpp
-    src/drt_levelset/levelset_algorithm_reinit.cpp
-    src/drt_levelset/levelset_dyn.cpp
     src/drt_scatra/scatra_resulttest.cpp
     src/drt_scatra/scatra_resulttest_elch.cpp
     src/drt_scatra/scatra_resulttest_hdg.cpp
@@ -665,9 +661,6 @@ set(OBJS_DRT_SCATRA
     src/drt_scatra/scatra_utils.cpp
     src/drt_scatra/turbulence_hit_initial_scalar_field.cpp
     src/drt_scatra/turbulence_hit_scalar_forcing.cpp
-    src/drt_levelset/levelset_intersection_utils.cpp
-    src/drt_levelset/levelset_timint_ost.cpp
-    src/drt_levelset/levelset_timint_stat.cpp
     src/drt_scatra/scatra_timint_hdg.cpp
     src/drt_scatra/scatra_timint_stat_hdg.cpp
     src/drt_scatra/scatra_timint_cardiac_monodomain_scheme_hdg.cpp
@@ -933,8 +926,6 @@ set(OBJS_DRT_NURBS_DISCRET_LIB
     src/drt_nurbs_discret/drt_knotvector.cpp
     src/drt_nurbs_discret/drt_nurbs_discret.cpp
     )
-
-set(OBJS_DRT_LOMA src/drt_loma/loma_algorithm.cpp src/drt_loma/loma_dyn.cpp)
 
 set(OBJS_DRT_TWO_PHASE
     src/drt_two_phase_flow/two_phase_algorithm.cpp src/drt_two_phase_flow/two_phase_dyn.cpp
@@ -1241,32 +1232,6 @@ set(OBJS_LOCA_CONTINUATION
     src/loca_continuation/loca_nln_statustest_factory.cpp
     )
 
-set(OBJS_DRT_IO_LIB
-    src/drt_io/csv_reader.cpp
-    src/drt_io/io.cpp
-    src/drt_io/io_control.cpp
-    src/drt_io/io_hdf.cpp
-    src/drt_io/io_gmsh.cpp
-    src/drt_io/every_iteration_writer.cpp
-    src/drt_io/vtk_writer_base.cpp
-    src/drt_io/vtu_writer.cpp
-    src/drt_io/vtp_writer.cpp
-    src/drt_io/runtime_vtu_writer.cpp
-    src/drt_io/runtime_vtp_writer.cpp
-    src/drt_io/discretization_runtime_vtu_writer.cpp
-    src/drt_io/discretization_runtime_vtp_writer.cpp
-    src/drt_io/runtime_csv_writer.cpp
-    src/drt_beam3/beam_discretization_runtime_vtu_writer.cpp
-    src/drt_io/io_pstream.cpp
-    src/drt_lib/drt_domainreader.cpp
-    src/drt_lib/drt_elementreader.cpp
-    src/drt_lib/drt_inputreader.cpp
-    src/drt_lib/drt_linedefinition.cpp
-    src/drt_contact_constitutivelaw/constitutivelaw_definition.cpp
-    src/drt_lib/drt_materialdefinition.cpp
-    src/drt_lib/drt_nodereader.cpp
-    src/drt_lib/drt_particlereader.cpp
-    )
 set(OBJS_DRT_NURBS_DISCRET src/drt_nurbs_discret/drt_apply_nurbs_initial_condition.cpp)
 
 set(OBJS_DRT_T3_LIB
@@ -1719,6 +1684,7 @@ set(SUPPORT_LIBRARIES
     drt_lib_contact
     drt_lib_beamcontact
     drt_lib_beaminteraction
+    drt_levelset
     drt_lib_poromulti_art_coupl
     # Libraries needed by elements
     drt_lib_surfstress
@@ -1726,6 +1692,7 @@ set(SUPPORT_LIBRARIES
     drt_lib_cut
     drt_lib_inpar
     drt_lib_io
+    drt_io
     drt_lib_contact_constitutivelaw
     drt_lib_nurbs
     drt_lib_binstrategy
@@ -1804,7 +1771,6 @@ deprecated_baci_add_library_linked_with_everything(
   alg_immersed_problem ${OBJS_DRT_IMMERSED_PROBLEM}
   )
 deprecated_baci_add_library_linked_with_everything(alg_fsi_xfem ${OBJS_DRT_FSI_XFEM})
-deprecated_baci_add_library_linked_with_everything(alg_loma ${OBJS_DRT_LOMA})
 deprecated_baci_add_library_linked_with_everything(alg_two_phase ${OBJS_DRT_TWO_PHASE})
 deprecated_baci_add_library_linked_with_everything(alg_sti ${OBJS_DRT_STI})
 deprecated_baci_add_library_linked_with_everything(alg_wear ${OBJS_DRT_WEAR})
@@ -1862,7 +1828,6 @@ deprecated_baci_add_library_linked_with_everything(
   drt_lib_poromulti_art_coupl ${OBJS_DRT_POROMULTIPHASE_ART_COUPL}
   )
 deprecated_baci_add_library_linked_with_everything(drt_lib_xfem ${OBJS_DRT_XFEM})
-deprecated_baci_add_library_linked_with_everything(drt_lib_io ${OBJS_DRT_IO_LIB})
 deprecated_baci_add_library_linked_with_everything(drt_lib_mortar ${OBJS_DRT_MORTAR_LIB})
 deprecated_baci_add_library_linked_with_everything(drt_lib_nurbs ${OBJS_DRT_NURBS_DISCRET_LIB})
 

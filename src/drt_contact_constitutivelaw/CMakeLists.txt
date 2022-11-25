@@ -1,4 +1,5 @@
 set(OBJS_DRT_CONTACT_CONSTITUTIVELAW
+    constitutivelaw_definition.cpp
     contactconstitutivelaw.cpp
     contactconstitutivelaw_parameter.cpp
     brokenrational_contactconstitutivelaw.cpp

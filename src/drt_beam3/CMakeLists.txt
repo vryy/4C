@@ -1,4 +1,5 @@
 set(OBJS_ELE_BEAM3
+    beam_discretization_runtime_vtu_writer.cpp
     beam_discretization_runtime_vtu_output_params.cpp
     triad_interpolation.cpp
     triad_interpolation_local_rotation_vectors.cpp
