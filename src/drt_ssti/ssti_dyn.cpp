@@ -27,8 +27,6 @@ void ssti_drt()
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
-  SSTI::PrintSSTILogo(problem->GetDis("structure")->Comm().MyPID());
-
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 
   auto ssti = SSTI::BuildSSTI(Teuchos::getIntegralValue<INPAR::SSTI::SolutionScheme>(

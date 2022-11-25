@@ -300,7 +300,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
 
       //   G. Bauer, V. Gravemeier, W.A. Wall,
       //   A 3D finite element approach for the coupled numerical simulation of
-      //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339–1359.
+      //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339-1359.
 
       if (my::numscal_ != 2) dserror("Numscal_ != 2 for desired error calculation.");
 
@@ -399,7 +399,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
       // two-ion system with Butler-Volmer kinetics between two concentric cylinders
       //   G. Bauer, V. Gravemeier, W.A. Wall,
       //   A 3D finite element approach for the coupled numerical simulation of
-      //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339–1359.
+      //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339-1359.
 
       if (my::numscal_ != 2) dserror("Numscal_ != 2 for desired error calculation.");
 

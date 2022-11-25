@@ -838,8 +838,8 @@ namespace XFEM
         case INPAR::TWOPHASE::matrix_mixed_smoothed:
         {
           // As suggested by:
-          // S. Groß and A. Reusken. Finite element discretization error analysis of a surface
-          // tension force in two-phase incompressible flows. SIAM J. Numer. Anal., 45(4):1679–1700,
+          // S. Gross and A. Reusken. Finite element discretization error analysis of a surface
+          // tension force in two-phase incompressible flows. SIAM J. Numer. Anal., 45(4):1679-1700,
           // 2007.
           itraction_jump_matrix.Multiply(p_matrix, p_smoothed_matrix);
           break;

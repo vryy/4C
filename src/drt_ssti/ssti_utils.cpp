@@ -725,21 +725,3 @@ std::map<std::string, std::string> SSTI::SSTIScatraThermoCloneStrategy::Conditio
 
   return conditions_to_copy;
 }
-
-/*---------------------------------------------------------------------------------*
- *---------------------------------------------------------------------------------*/
-void SSTI::PrintSSTILogo(int pid)
-{
-  if (pid == 0)
-  {
-    std::cout << "    ██████   ██████ ▄▄▄█████▓ ██▓" << std::endl;
-    std::cout << "  ▒██    ▒ ▒██    ▒ ▓  ██▒ ▓▒▓██▒" << std::endl;
-    std::cout << "  ░ ▓██▄   ░ ▓██▄   ▒ ▓██░ ▒░▒██▒" << std::endl;
-    std::cout << "    ▒   ██▒  ▒   ██▒░ ▓██▓ ░ ░██░" << std::endl;
-    std::cout << "  ▒██████▒▒▒██████▒▒  ▒██▒ ░ ░██░" << std::endl;
-    std::cout << "  ▒ ▒▓▒ ▒ ░▒ ▒▓▒ ▒ ░  ▒ ░░   ░▓" << std::endl;
-    std::cout << "  ░ ░▒  ░ ░░ ░▒  ░ ░    ░     ▒ ░" << std::endl;
-    std::cout << "  ░  ░  ░  ░  ░  ░    ░       ▒ ░" << std::endl;
-    std::cout << "        ░        ░            ░" << std::endl;
-  }
-}

@@ -72,7 +72,7 @@ namespace MAT
 
     //! class for viscosity law modelling cell adherence from
     // G. Sciume, William G. Gray, F. Hussain, M. Ferrari, P. Decuzzi, and B. A. Schrefler.
-    // Three phase flow dynamics in tumor growth. Computational Mechanics, 53:465–484, 2014.
+    // Three phase flow dynamics in tumor growth. Computational Mechanics, 53:465-484, 2014.
     // visc = visc0 / ((1 - xi)*(1 - psi / | grad(pressure) |) * heaviside(1 - psi / |
     // grad(pressure) |) + xi)
     class FluidPoroViscosityLawCellAdherence : public FluidPoroViscosityLaw

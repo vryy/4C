@@ -43,7 +43,7 @@
 
 #include "beam3contact_tangentsmoothing.H"
 
-// TODO: Abfangen, dass Kontaktpunkte am Elementübergang zweimal ausgewertet werden!!!
+// TODO: Abfangen, dass Kontaktpunkte am Elementuebergang zweimal ausgewertet werden!!!
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -1978,8 +1978,8 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CheckSegm
       this->Print(std::cout);
 
       std::cout << "\n\nangle_left= " << angle1 / M_PI * 180
-                << "°, angle_right= " << angle2 / M_PI * 180
-                << "°, segangle= " << segangle / M_PI * 180 << "°";
+                << "degrees, angle_right= " << angle2 / M_PI * 180
+                << "degrees, segangle= " << segangle / M_PI * 180 << "degrees";
       std::cout << "\n\nsegment midpoint position (linear approx)= " << rm_lin;
       std::cout << "\n\nsegment midpoint position                = " << rm;
       std::cout << "\n\ndist= " << dist << ", segdist= " << segdist;
@@ -2388,7 +2388,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ClosestPo
           std::cout << "Element2()->Id(): " << Element2()->Id() << std::endl;
           std::cout << "R2_: " << R2_ << std::endl;
           std::cout << "g_min: " << g_min << std::endl;
-          std::cout << "alpha_g_min: " << alpha_g_min / M_PI * 180 << "°" << std::endl;
+          std::cout << "alpha_g_min: " << alpha_g_min / M_PI * 180 << "degrees" << std::endl;
           std::cout << "numstartpoint: " << numstartpoint << std::endl;
           std::cout << "iter: " << iter << std::endl;
           std::cout << "residual0: " << residual0 << std::endl;

@@ -633,7 +633,7 @@ void FLD::TurbulenceStatisticsBfda::DumpStatistics(int step)
     log = Teuchos::rcp(new std::ofstream(s.c_str(), std::ios::out));
 
     // Output of mean velocity and pressure along z-axis
-    (*log) << "Output file of FDA blood flow benchmark – evaluation of z-axis                \n";
+    (*log) << "Output file of FDA blood flow benchmark - evaluation of z-axis                \n";
     (*log) << "------------------------------------------------------------------------------\n";
     (*log) << "                                                                              \n";
     (*log) << "Number of samples: " << numsamp_ << "                                         \n";
@@ -658,7 +658,7 @@ void FLD::TurbulenceStatisticsBfda::DumpStatistics(int step)
     log_2 = Teuchos::rcp(new std::ofstream(s2.c_str(), std::ios::out));
 
     // Output of mean velocity and pressure of evaluation planes
-    (*log_2) << "Output file of FDA blood flow benchmark – evaluation of evaluation planes     \n";
+    (*log_2) << "Output file of FDA blood flow benchmark - evaluation of evaluation planes     \n";
     (*log_2) << "------------------------------------------------------------------------------\n";
     (*log_2) << "                                                                              \n";
     (*log_2) << "Number_of_samples: " << numsamp_ << "                                         \n";

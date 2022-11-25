@@ -58,8 +58,8 @@ MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 2 3 END
 MAT 2 MAT_ion DIFFUSIVITY 1.71e-5 VALENCE 1.0 // diffusion: mm^2/s
 MAT 3 MAT_ion DIFFUSIVITY 2.18e-5 VALENCE -1.0
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.1 //initial concentration field: µmol/mm³
-COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.1 //initial concentration field: µmol/mm³
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.1 //initial concentration field: micromol/mm^3
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.1 //initial concentration field: micromol/mm^3
 COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //initial concentration field:
 ----------------------------------------------------------------------FUNCT2
 // no velocity field

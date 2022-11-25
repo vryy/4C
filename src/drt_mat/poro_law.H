@@ -116,7 +116,7 @@ namespace MAT
     //! Neo-Hookean like porosity law
     // see   A.-T. Vuong, L. Yoshihara, W.A. Wall :A general approach for modeling interacting flow
     // through porous media under finite deformations, Comput. Methods Appl. Mech. Engrg. 283 (2015)
-    // 1240–1259, equation (39)
+    // 1240-1259, equation (39)
 
     class PoroLawNeoHooke : public PoroLaw
     {

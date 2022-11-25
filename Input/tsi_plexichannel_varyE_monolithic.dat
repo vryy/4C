@@ -10,10 +10,10 @@ SFB-TRR40: design of a Plexiglas channel loaded by a heatflux on the inner side
 compared to design simulation the present mesh (nightly test) is quite coarse
 number of elements in directions: x,y,z = 17,36,1
 curve fitting of E(T) using a polynom of order 6
-polynom valid ONLY for temperatures between [50°C,80°C], according to experimental data
+polynom valid ONLY for temperatures between [50 degrees celsius,80 degrees celsius], according to experimental data
 K.F. Lei, W.J. Li, Y. Yam (2004):
 "Effects of contact-stress on hot-embossed PMMA microchannel wall profile"
-chosen units: [m,kg,°C,s]
+chosen units: [m,kg, degrees celsius,s]
 stationary                      calculation
 t_end = 5000
 STRUCTURE DIS structure NODE 433 QUANTITY dispx VALUE 0 TOLERANCE 1e-9 NAME ux(-3.5,0,0)

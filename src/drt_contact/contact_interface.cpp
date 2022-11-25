@@ -3304,7 +3304,7 @@ void CONTACT::CoInterface::PostEvaluate(const int step, const int iter)
       break;
     }
     //*********************************
-    // Gauß-Point-To-Segment (GPTS)
+    // Gauss-Point-To-Segment (GPTS)
     //*********************************
     case INPAR::MORTAR::algorithm_gpts:
     {

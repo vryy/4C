@@ -63,7 +63,7 @@ namespace MAT
       const int phaseID_;
       /// delta used for modelling dependency of diffusivity on (saturation*porosity)^delta
       //  as in G. Sciume, William G. Gray, F. Hussain, M. Ferrari, P. Decuzzi, and B. A. Schrefler.
-      //  Three phase flow dynamics in tumor growth. Computational Mechanics, 53:465–484,
+      //  Three phase flow dynamics in tumor growth. Computational Mechanics, 53:465-484,
       //  2014.
       const double delta_;
       // minimum saturation under which also corresponding mass fraction is equal to zero
@@ -108,7 +108,7 @@ namespace MAT
       /// (saturation*porosity)^delta
       //  as in G. Sciume, William G. Gray, F. Hussain, M. Ferrari, P. Decuzzi, and
       //  B. A. Schrefler. Three phase flow dynamics in tumor growth. Computational
-      //  Mechanics, 53:465–484, 2014.
+      //  Mechanics, 53:465-484, 2014.
       const double delta_;
     };
     // class Scatra

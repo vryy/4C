@@ -558,8 +558,8 @@ void MAT::ElastHyperCheckPolyconvexity(const LINALG::Matrix<3, 3>& defgrd,
             (-1.0e-10 * EWFreD.NormInf()))  // do not test < 0, but reasonable small value
         {
           std::cout << "\nWARNING: Your system is not polyconvex!" << std::endl;
-          std::cout << "Polyconvexity fails at: Element-Id: " << eleGID << " and Gauß-Point: " << gp
-                    << std::endl;
+          std::cout << "Polyconvexity fails at: Element-Id: " << eleGID
+                    << " and Gauss-Point: " << gp << std::endl;
           std::cout << "Eigenvalues of the Frechet Derivative are: " << EWFreD << std::endl;
         }
 }

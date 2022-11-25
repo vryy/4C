@@ -29,7 +29,7 @@
 
 #include "beam3contact_defines.H"
 #include "beam3contact_tangentsmoothing.H"
-// TODO: Abfangen, dass Kontaktpunkte am Elementübergang zweimal ausgewertet werden!!!
+// TODO: Abfangen, dass Kontaktpunkte am Elementuebergang zweimal ausgewertet werden!!!
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     meier 01/14|
@@ -2340,7 +2340,7 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::ClosestPointProjection(dou
           std::cout << "element2_->Id(): " << element2_->Id() << std::endl;
           std::cout << "R2_: " << R2_ << std::endl;
           std::cout << "g_min: " << g_min << std::endl;
-          std::cout << "alpha_g_min: " << alpha_g_min / M_PI * 180 << "°" << std::endl;
+          std::cout << "alpha_g_min: " << alpha_g_min / M_PI * 180 << "degrees" << std::endl;
           std::cout << "numstartpoint: " << numstartpoint << std::endl;
           std::cout << "iter: " << iter << std::endl;
           std::cout << "residual0: " << residual0 << std::endl;

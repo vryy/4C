@@ -135,9 +135,9 @@ void MAT::ELASTIC::IsoMuscleBlemker::AddStressAnisoModified(const LINALG::Matrix
   // scalar prefactors, gamma_i = derivative of strain-energy function w.r.t. modified
   // invariant i; Psi_iso = W1(modI4, modI5) + W2(mod_I1, modI4, modI5) + W3(modI4)
   double gamma1 = 2.0 * G2 * (B2 / H2) * std::sqrt(modI4);
-  double gamma4_1 = -4.0 * G1 * modI5 / std::pow(modI4, 3.0);  // dW1/dÍ4
-  double gamma4_2 = 4.0 * G2 * (B2 / H2) * H3;                 // dW2/dÍ4
-  double gamma4_3 = sigma_fiber_total / modI4;                 // dW3/dÍ4
+  double gamma4_1 = -4.0 * G1 * modI5 / std::pow(modI4, 3.0);  // dW1/dI4
+  double gamma4_2 = 4.0 * G2 * (B2 / H2) * H3;                 // dW2/dI4
+  double gamma4_3 = sigma_fiber_total / modI4;                 // dW3/dI4
   double gamma4 = gamma4_1 + gamma4_2 + gamma4_3;
   double gamma5 = 2.0 * G1 / std::pow(modI4, 2.0) - 2.0 * G2 * (B2 / H2) / std::sqrt(modI4);
 

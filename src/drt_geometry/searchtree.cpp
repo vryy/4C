@@ -467,7 +467,7 @@ GEO::SearchTree::TreeNode::TreeNode(const TreeNode* const parent, const int dept
  *
  *                      z
  *                      |
- *             4========|================6¨
+ *             4========|================6
  *           //|        |               /||
  *          // |        |              //||
  *         //  |        |             // ||

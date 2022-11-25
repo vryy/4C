@@ -5,7 +5,7 @@ testing:
  - usage of integration point fibers in cardiac materials (ELAST_CoupAnisoExpoTwoCoup,ELAST_AnisoActiveStress_Evolution)
 setup:
  - TET10 cube
- - fibers interpolated using poisson lifting from DSURFACE1 (60°) to DSURFACE2 (-60°)
+ - fibers interpolated using poisson lifting from DSURFACE1 (60 degrees) to DSURFACE2 (-60 degrees)
 --------------------------------------------------------------------------IO
 STRUCT_ELE                      No
 -----------------------------------------------------------------PROBLEM TYP

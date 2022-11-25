@@ -5,7 +5,7 @@ General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
 created by pre_exodus and jou2dat on Wed Jul 18 16:10:44 CEST 2012
-example taken from "VK Arya & A Kaufman, Finite Element Implementation of Robinson’s
+example taken from "VK Arya & A Kaufman, Finite Element Implementation of Robinson's
 unified viscoplastic model and its application to some uniaxial and multiaxial
 problems, NASA-TM-89891, 1987."
 thick-walled cylinder subjected to internal pressure under isothermal conditions
@@ -14,7 +14,7 @@ quarter of a cylinder (r_i=4.06mm, r_a=6.35mm) loaded by an pseudo_orthopressure
 the inner side of the body. The load is applied incrementally in the first 2
 seconds and then held constant at 25.17MPa.
 Due to the softening of the material, the stresses decrease in time.
-constant temperature of the body = 800° F = 699.81667 K
+constant temperature of the body = 800 degrees Fahrenheit = 699.81667 K
 //                              2013-04-05
 // changed convergence criterion from RelIter0 to Rel using new framwork
 ----------------------------------------------------------------PROBLEM SIZE
@@ -157,7 +157,7 @@ MAT 2 THERM_FourierIso CAPA 3.375e3 CONDUCT 5.2e4
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 699.81667 // = 800°F
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 699.81667 // = 800 degrees Fahrenheit
 -------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 5 500000.0 DESCRIPTION 0.5*(sin((t*pi/5)-(pi/2)))+0.5 0.5*(sin((5*pi/5)-(pi/2)))+0.5

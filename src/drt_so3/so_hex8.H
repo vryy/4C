@@ -370,11 +370,11 @@ namespace DRT
           LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> const& xrefe)
           const;  ///< material coord. of element
 
-      /// Evaluate Gauß-Point coordinates in reference system
+      /// Evaluate Gauss-Point coordinates in reference system
       void soh8_GaussPointRefeCoords(
-          LINALG::Matrix<1, NUMDIM_SOH8>& gpcoord,  ///< Gauß-Point coordinates in reference system
+          LINALG::Matrix<1, NUMDIM_SOH8>& gpcoord,  ///< Gauss-Point coordinates in reference system
           LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> const& xrefe,  ///< material coord. of element
-          int gp) const;                                          ///< current Gauß-Point
+          int gp) const;                                          ///< current Gauss-Point
 
       /*!
       \brief Return value how expensive it is to evaluate this element

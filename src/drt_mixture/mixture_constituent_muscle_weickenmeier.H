@@ -97,22 +97,22 @@ namespace MIXTURE
    * This constituent represents the Weickenmeier muscle material. It has to
    * be paired with the MAT::Mixture_ElastHyper material and a MIXTURE::MixtureRule.
    *
-   * Reference for the material model: J. Weickenmeier, M. Itskov, E Mazza and M. Jabareen, ‘A
-   * physically motivated constitutive model for 3D numerical simulation of skeletal muscles’,
+   * Reference for the material model: J. Weickenmeier, M. Itskov, E Mazza and M. Jabareen, 'A
+   * physically motivated constitutive model for 3D numerical simulation of skeletal muscles',
    * International journal for numerical methods in biomedical engineering, vol. 30, no. 5, pp.
-   * 545–562, 2014, doi: 10.1002/cnm.2618.
+   * 545-562, 2014, doi: 10.1002/cnm.2618.
    *
    * Amongst others, the Weickenmeier material accounts for the velocity dependence of the active
    * force production. However, the given function produces unsuitable values - in the sense that it
    * fails to reproduce experimetally observerd force-velocity curves. Thus, a slight modification
-   * of the velocity dependence in the style of Böl et. al. is introduced here. Böl et. al. scale
+   * of the velocity dependence in the style of Boel et. al. is introduced here. Boel et. al. scale
    * and shift the eccentric branch of the velocity dependency using the parameter d. To be able to
    * turn the velocity dependency on and off, this concept is adopted for the concentric branch as
    * well. Choosing de=dc=0 leads to a neglection of the velocity dependence. Choosing dc=1 and
-   * de=d-1 reproduces the function presented by Böl et. al.
+   * de=d-1 reproduces the function presented by Boel et. al.
    *
-   * Reference: M. Böl and S. Reese, ‘Micromechanical modelling of skeletal muscles based on the
-   * finite element method’, Computer Methods in Biomechanics and Biomedical Engineering, vol. 11,
+   * Reference: M. Boel and S. Reese, 'Micromechanical modelling of skeletal muscles based on the
+   * finite element method', Computer Methods in Biomechanics and Biomedical Engineering, vol. 11,
    * no. 5, pp. 489-504, 2008, doi: 10.1080/10255840701771750.
    */
   class MixtureConstituent_Muscle_Weickenmeier : public MIXTURE::MixtureConstituent

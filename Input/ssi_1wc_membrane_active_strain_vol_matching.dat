@@ -33,7 +33,7 @@ The formulation is fully incompressible due to membrane.
 - DBC for structure field such that all displacements are restricted to the xy-plane
 - DBC for structure field such that (at the boundary) only displacements parallel to the four boundary lines is allowed (in the xy-plane)
 
-[2]: Brandstaeter, S. et al. (2018) ‘Computational model of gastric motility with active-strain electromechanics’, ZAMM. Wiley-Blackwell. doi: 10.1002/zamm.201800166.
+[2]: Brandstaeter, S. et al. (2018) 'Computational model of gastric motility with active-strain electromechanics', ZAMM. Wiley-Blackwell. doi: 10.1002/zamm.201800166.
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    100
 //NODES       121

@@ -755,7 +755,7 @@ void MAT::GrowthRemodel_ElastHyper::SetupGR3D(LINALG::Matrix<3, 3> const* const 
     for (auto& k : potsumrf_) k->UpdateFiberDirs(radaxicirc_, dt);
   }
 
-  // Evaluate radial and axial distance between origin and current Gauß-Point
+  // Evaluate radial and axial distance between origin and current Gauss-Point
   for (int i = 0; i < 3; ++i)
   {
     axdir(0, i) = radaxicirc_(i, 1);
@@ -1006,7 +1006,7 @@ void MAT::GrowthRemodel_ElastHyper::SolveForRhoLambr(LINALG::SerialDenseMatrix& 
                 << K_T;
       std::cout << "=================================================================" << std::endl
                 << std::endl;
-      if (iter > 100) dserror("Internal Newton (at Gauß-Point) does not converge!");
+      if (iter > 100) dserror("Internal Newton (at Gauss-Point) does not converge!");
     }
     ++iter;
   }

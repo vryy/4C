@@ -508,7 +508,7 @@ namespace MAT
           LINALG::Matrix<3, 3> const&
               iFgM,                      ///< Inverse inelastic deformation gradient (used in G&R)
           FiberData const& fiberdat,     ///< Type of remodel fiber
-          int const gp,                  ///< Current Gauß-Point
+          int const gp,                  ///< Current Gauss-Point
           int const eleGID,              ///< Element Id
           LINALG::Matrix<6, 1>& stress,  ///< 2nd Piola Kirchhoff stress
           LINALG::Matrix<6, 6>& cmat) const;  ///< Elasticity tenor
@@ -664,7 +664,7 @@ namespace MAT
           LINALG::Matrix<3, 3> const& diFgdrhoM,  ///< Derivative of inverse inelastic growth
                                                   ///< deformation gradient w.r.t. the mass density
           FiberData const& fiberdat,              ///< Data Container of fibers
-          int const gp,                           ///< Current Gauß-Point
+          int const gp,                           ///< Current Gauss-Point
           ForceAnalytical const eleGID,           ///< Element Id
           double& dsigdrho,  ///< Derivative of Cauchy stress w.r.t. the mass density
           LINALG::Matrix<3, 3>& dsigdCedrhoM)
@@ -682,7 +682,7 @@ namespace MAT
           LINALG::Matrix<3, 3> const& diFgdrhoM,  ///< Derivative of inverse inelastic growth
                                                   ///< deformation gradient w.r.t. the mass density
           FiberData const& fiberdat,              ///< Data Container of fibers
-          int const gp,                           ///< Current Gauß-Point
+          int const gp,                           ///< Current Gauss-Point
           int const eleGID,                       ///< Element Id
           double& dsigdrho,  ///< Derivative of Cauchy stress w.r.t. the mass density
           LINALG::Matrix<3, 3>& dsigdCedrhoM)
@@ -697,7 +697,7 @@ namespace MAT
           LINALG::Matrix<3, 3> const& CM,    ///< Right Cauchy-Green tensor
           LINALG::Matrix<3, 3> const& iFgM,  ///< Inverse growth deformation gradient (used in G&R)
           FiberData const& fiberdat,         ///< Data Container of fibers
-          int const gp,                      ///< Current Gauß-Point
+          int const gp,                      ///< Current Gauss-Point
           ForceAnalytical const eleGID,      ///< Element Id
           double& dsigdlambr,  ///< Derivative of Cauchy stress w.r.t. inverse remodel deformation
                                ///< gradient
@@ -712,7 +712,7 @@ namespace MAT
           LINALG::Matrix<3, 3> const& CM,    ///< Right Cauchy-Green tensor
           LINALG::Matrix<3, 3> const& iFgM,  ///< Inverse growth deformation gradient (used in G&R)
           FiberData const& fiberdat,         ///< Data Container of fibers
-          int const gp,                      ///< Current Gauß-Point
+          int const gp,                      ///< Current Gauss-Point
           int const eleGID,                  ///< Element Id
           double& dsigdlambr,  ///< Derivative of Cauchy stress w.r.t. inverse remodel deformation
                                ///< gradient
@@ -727,7 +727,7 @@ namespace MAT
           LINALG::Matrix<3, 3> const& iFgM,  ///< Inverse growth deformation gradient (used in G&R)
           double const& dt,                  ///< Time step size
           FiberData const& fiberdat,         ///< Container with all fiber specific data
-          int const gp,                      ///< Current Gauß-Point
+          int const gp,                      ///< Current Gauss-Point
           int const eleGID) const;           ///< Element Id
 
       /// Evaluates growth and remodeling evolution equation
@@ -748,7 +748,7 @@ namespace MAT
                                                   ///< deformation gradient w.r.t. the mass density
           double const& dt,                       ///< Time step size
           FiberData const& fiberdat,              ///< Container with all fiber specific data
-          int const gp,                           ///< Current Gauß-Point
+          int const gp,                           ///< Current Gauss-Point
           int const eleGID) const;                ///< Element Id
 
       /// Derivative of growth and remodel evolution equation w.r.t. the right Cauchy-Green tensor
@@ -760,7 +760,7 @@ namespace MAT
           double const& dt,                  ///< Time step size
           FiberData const& fiberdat,         ///< Container with all fiber specific data
           int const k,                       ///< k-th fiber family
-          int const gp,                      ///< Current Gauß-Point
+          int const gp,                      ///< Current Gauss-Point
           int const eleGID);                 ///< Element Id
 
       /// Time derivative of mass density and remodel stretch
@@ -770,7 +770,7 @@ namespace MAT
           LINALG::Matrix<3, 3> const& iFgM,  ///< Inverse growth deformation gradient (used in G&R)
           FiberData const& fiberdat,         ///< Container with all fiber specific data
           int const k,                       ///< k-th fiber family
-          int const gp,                      ///< Current Gauß-Point
+          int const gp,                      ///< Current Gauss-Point
           int const eleGID);                 ///< Element Id
 
       /// Derivative of 2nd Piola Kirchhoff stress w.r.t. the current mass density and the
@@ -786,7 +786,7 @@ namespace MAT
               diFgdrhoM,  ///< Derivative of inverse inelastic growth deformation gradient w.r.t.
                           ///< the current mass density
           FiberData const& fiberdat,            ///< Container with all fiber specific data
-          int const gp,                         ///< Current Gauß-Point
+          int const gp,                         ///< Current Gauss-Point
           ForceAnalytical const eleGID) const;  ///< Element Id
 
       /// Derivative of 2nd Piola Kirchhoff stress w.r.t. the current mass density and the
@@ -801,7 +801,7 @@ namespace MAT
               diFgdrhoM,  ///< Derivative of inverse inelastic growth deformation gradient w.r.t.
                           ///< the current mass density
           FiberData const& fiberdat,  ///< Container with all fiber specific data
-          int const gp,               ///< Current Gauß-Point
+          int const gp,               ///< Current Gauss-Point
           int const eleGID) const;    ///< Element Id
 
 

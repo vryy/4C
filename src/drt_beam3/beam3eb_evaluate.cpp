@@ -3439,7 +3439,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmassprec(LINALG::Matrix<12, 1, cl_F>* di
     cl_F xi = xivec[numgp];
     cl_F wgt = wgtvec[numgp];
 
-    // Begin: shape fuction variante für arbitrary precision
+    // Begin: shape fuction variante fuer arbitrary precision
 
     cl_F l = cl_float(2.0, float_format(40)) * jacobiprec_;
     N_i_x(0) = cl_float(0.25, float_format(40)) *
@@ -3462,7 +3462,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmassprec(LINALG::Matrix<12, 1, cl_F>* di
     N_i_xx(3) = l / cl_float(8.0, float_format(40)) *
                 (cl_float(2.0, float_format(40)) + cl_float(6.0, float_format(40)) * xi);
 
-    // end: shape fuction variante für arbitrary precision
+    // end: shape fuction variante fuer arbitrary precision
 
 
     // calculate r' and r''
@@ -3660,7 +3660,7 @@ void DRT::ELEMENTS::Beam3eb::HighPrecissionCalc()
   // End: Referenzgeometrieberechnung
 
 
-  // Globale Groeßen definieren
+  // Globale Groessen definieren
   cl_F resnorm = "10.0_40";
   cl_F dispnorm = "10.0_40";
   cl_F linsolverrornorm = "10.0_40";
@@ -3680,7 +3680,7 @@ void DRT::ELEMENTS::Beam3eb::HighPrecissionCalc()
     dispglobal(i, 0) = cl_F("0.0_40");
     fextglobal(i, 0) = cl_F("0.0_40");
   }
-  // Ende: Globale Groeßen definieren
+  // Ende: Globale Groessen definieren
 
 
   // Loadsteps
@@ -4006,7 +4006,7 @@ void DRT::ELEMENTS::Beam3eb::HighPrecissionCalc()
       // globales deltaDisplacement nullen
 
 
-      // Rückwärtseliminierung
+      // Rueckwaertseliminierung
       for (int zeile = numnode * 6 - 1; zeile > -1; zeile--)
       {
         deltadispglobal(zeile, 0) = resglobalsolv(zeile, 0);
@@ -4016,7 +4016,7 @@ void DRT::ELEMENTS::Beam3eb::HighPrecissionCalc()
         }
         deltadispglobal(zeile, 0) = deltadispglobal(zeile, 0) / stiffglobalsolv(zeile, zeile);
       }
-      // End: Rückwärtseliminierung
+      // End: Rueckwaertseliminierung
 
       // Ermittlung des Fehlers
       LINALG::Matrix<numnode * 6, 1, cl_F> disperror;

@@ -42,7 +42,7 @@ B) Cube 3 and cube 4 test the mixed muscle material
 
 C) Cube 5 tests the mixed muscle material including the velocity dependency
    - active material behaviour with parameters as as in Weickenmeier/Thesis Engelhardt p.46/47
-   - velocity dependent parameters as in Table 3 on p. 502 in "M. Böl and S. Reese, ‘Micromechanical modelling of skeletal muscles based on the finite element method’, Computer Methods in Biomechanics and Biomedical Engineering, vol. 11, no. 5, 2008, doi: 10.1080/10255840701771750"
+   - velocity dependent parameters as in Table 3 on p. 502 in "M. Boel and S. Reese, 'Micromechanical modelling of skeletal muscles based on the finite element method', Computer Methods in Biomechanics and Biomedical Engineering, vol. 11, no. 5, 2008, doi: 10.1080/10255840701771750"
 	* constituent 1 with ACTMUNUM = 0.0052070/2
 	* constituent 2 with	ACTMUNUM = 0.0052070*2
 

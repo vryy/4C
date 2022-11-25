@@ -101,12 +101,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   if (intpoints.IP().nquad != my::nen_)
-    dserror("number of element nodes must equal number of Gauß points for reasonable projection");
+    dserror("number of element nodes must equal number of Gauss points for reasonable projection");
 
-  // matrix of shape functions evaluated at Gauß points
+  // matrix of shape functions evaluated at Gauss points
   Epetra_SerialDenseMatrix N(my::nen_, my::nen_);
 
-  // Gauß point concentration of electrode
+  // Gauss point concentration of electrode
   Epetra_SerialDenseMatrix conc_gp(my::nen_, 1);
 
   // loop over integration points
@@ -115,7 +115,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
     // evaluate values of shape functions and domain integration factor at current integration point
     my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
 
-    // calculate mean concentration at Gauß point and store in vector
+    // calculate mean concentration at Gauss point and store in vector
     const double concentration_gp = newmanmultiscale->EvaluateMeanConcentration(iquad);
     conc_gp(iquad, 0) = concentration_gp;
 

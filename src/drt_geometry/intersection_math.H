@@ -136,7 +136,7 @@ namespace GEO
 
   /*!
       \brief  Given a matrix A[1..m][1..n], this method computes its
-              singular value decomposition, A =U ·W ·V T .
+              singular value decomposition, A = U W V T .
               The matrix U replaces a on output. The diagonal matrix of
               singular values W is output as a vector W[1..n].
               The matrix V (not the transpose V T ) is output as V[1..n][1..n].

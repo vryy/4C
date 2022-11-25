@@ -355,7 +355,7 @@ namespace DRT
 
      private:
       //! number of dofs per node (for systems of thermo equations)
-      //! (storage neccessary because we don´t know the material in the post filters anymore)
+      //! (storage neccessary because we don't know the material in the post filters anymore)
       static const int numdofpernode_ = 1;
       //! the element discretization type
       DRT::Element::DiscretizationType distype_;

@@ -60,7 +60,7 @@ namespace MAT
      * References:
      * [1] G. A. Holzapfel, 'Nonlinear solid mechanics', Wiley, pp. 235-236, 2000.
      * [2] R. W. Ogden, 'Large deformation isotropic elasticity: on the correlation of theory and
-     * experiment for compressible rubberlike solids', Proc. R. Soc. Lond. A, vol. 326, pp. 565–584,
+     * experiment for compressible rubberlike solids', Proc. R. Soc. Lond. A, vol. 326, pp. 565-584,
      * 1972, doi: 10.1098/rspa.1972.0096.
      * [3] S. Budday et. al., 'Mechanical characterization of human brain tissue', Acta
      * Biomaterialia, vol. 48, pp. 319-340, 2017, doi: 10.1016/j.actbio.2016.10.036.

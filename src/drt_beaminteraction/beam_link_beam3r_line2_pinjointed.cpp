@@ -131,7 +131,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Init(int id,
 
   LINALG::Matrix<3, 1> second_base_vecor_linkerele(true);
 
-  // is included angle smaller than 45° ? then avoid singularity at angle=0° ...
+  // is included angle smaller than 45 degrees ? then avoid singularity at angle=0 degrees ...
   if (std::abs(scalarproduct) > 0.5 * std::sqrt(2))
   {
     second_base_vecor_linkerele.CrossProduct(distvec, unit_vector_global_y);
@@ -498,7 +498,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::ResetState(
 
   LINALG::Matrix<3, 1> second_base_vecor_linkerele(true);
 
-  // is included angle smaller than 45° ? then avoid singularity at angle=0° ...
+  // is included angle smaller than 45 degrees ? then avoid singularity at angle=0 degrees ...
   if (std::abs(scalarproduct) > 0.5 * std::sqrt(2))
   {
     second_base_vecor_linkerele.CrossProduct(distvec, unit_vector_global_y);

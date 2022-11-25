@@ -149,7 +149,7 @@ namespace MIXTURE
     /*!
      * Initialize the mixturerule with the element parameters of the input line
      *
-     * @param numgp (in) Number of Gauß-points
+     * @param numgp (in) Number of Gauss-points
      * @param params (in/out) : Parameter list for exchange of parameters
      */
     virtual void ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef);
@@ -225,7 +225,7 @@ namespace MIXTURE
      * @param params (in/out) : Container for additional parameters
      * @param S_stress (out) : 2nd Piola Kirchhoff stress tensor in stress like Voigt-notation
      * @param cmat (out) : Constitutive tensor in Voigt notation
-     * @param gp (in) : Gauß point
+     * @param gp (in) : Gauss point
      * @param eleGID (in) : Global element id
      */
     virtual void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
@@ -281,9 +281,9 @@ namespace MIXTURE
     }
 
     /*!
-     * Get number of Gauß points used
+     * Get number of Gauss points used
      *
-     * @return Number of Gauß points
+     * @return Number of Gauss points
      */
     int NumGP() const { return numgp_; }
 
@@ -291,7 +291,7 @@ namespace MIXTURE
     ///! list of the references to the constituents
     std::shared_ptr<std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>> constituents_;
 
-    ///! Number of Gauß points
+    ///! Number of Gauss points
     int numgp_;
 
     ///! Indicator, whether the constituent has already read the element definition

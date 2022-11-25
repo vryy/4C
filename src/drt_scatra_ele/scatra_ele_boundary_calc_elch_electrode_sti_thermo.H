@@ -55,7 +55,7 @@ namespace DRT
        * @param[in] scatra_parameter_boundary  interface parameter class
        * @param[in] differentiationtype        type of variable for linearization
        * @param[in] timefacfac       time-integration factor times domain-integration factor
-       * @param[in] timefacwgt       time-integration factor times Gauß point weight
+       * @param[in] timefacwgt       time-integration factor times Gauss point weight
        * @param[in] detF             determinant of jacobian at current integration point
        * @param[out] k_ss            linearizations of slave-side residuals w.r.t. slave-side dofs
        * @param[out] k_ms            linearizations of master-side residuals w.r.t. slave-side dofs

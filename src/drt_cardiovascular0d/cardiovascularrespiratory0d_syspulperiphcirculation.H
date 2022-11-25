@@ -16,7 +16,7 @@ coupled closed-loop model of the heart and the vascular system: Experiment-based
 estimation for patient-specific cardiac mechanics", IJNMBE, 2016, extension according to Trenhago et
 al., "An integrated mathematical model of the cardiovascular and respiratory systems", IJNMBE, 2016,
 and Ursino and Magosso, "Acute cardiovascular response to isocapnic hypoxia. I. A mathematical
-model", Am J Physiol Heart Circ Physiol, 279: H149–H165, 2000
+model", Am J Physiol Heart Circ Physiol, 279: H149-H165, 2000
 
 The residual vector reads:
 
@@ -314,7 +314,7 @@ namespace UTILS
     // however we specify it as an input parameter since its decimal power depends on the system of
     // units your whole model is specified in! i.e. if you have kg - mm - s - mmol, it's 6.279485
     // kPa
-    double p_vap_water_37_;  ///< vapor pressure of water at 37 °C
+    double p_vap_water_37_;  ///< vapor pressure of water at 37  degrees celsius
 
     double kappa_CO2_;  ///< diffusion coefficient for CO2 across the hemato-alveolar membrane, in
                         ///< molar value / (time * pressure)

@@ -31,7 +31,7 @@ void THR::TimInt::Logo()
 {
   std::cout << "Welcome to Thermal Time Integration " << std::endl;
   std::cout << "      _______________________________" << std::endl;
-  std::cout << "  ===(_________|_|_|_|_|_37°C_|_|____)" << std::endl;
+  std::cout << "  ===(__|_|_37 degrees celsius__|_|__)" << std::endl;
   std::cout << std::endl;
 
 }  // Logo()

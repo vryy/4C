@@ -196,7 +196,7 @@ namespace MAT
      * fiber orientations.
      *
      * See: T.C. Gasser, R.W. Ogden, and G.A. Holzapfel. Hyperelastic modelling of arterial layers
-     * with distributed collagen fibre orientations. J. R. Soc. Interface, 3:15–35, 2006. doi:
+     * with distributed collagen fibre orientations. J. R. Soc. Interface, 3:15-35, 2006. doi:
      * 10.1098/rsif.2005.0073.
      *
      *
@@ -249,8 +249,8 @@ namespace MAT
      *
      *     See:
      *     T.C. Gasser, S. Gallinetti, X. Xing, C. Forsell, J. Swedenborg, and J. Roy. Spatial
-     *     orientation of collagen fibers in the abdominal aortic aneurysm’s wall and its relation
-     *     to wall mechanics Acta Biomater., 8:3091–3103, 2012. doi:
+     *     orientation of collagen fibers in the abdominal aortic aneurysm's wall and its relation
+     *     to wall mechanics Acta Biomater., 8:3091-3103, 2012. doi:
      *     http://dx.doi.org/10.1016/j.actbio.2012.04.044.
      *
      *
@@ -303,7 +303,7 @@ namespace MAT
      * @brief Class for computing dispersed transversely isotropic structural tensor
      *
      * See: T.C. Gasser, R.W. Ogden, and G.A. Holzapfel. Hyperelastic modelling of arterial layers
-     * with distributed collagen fibre orientations. J. R. Soc. Interface, 3:15–35, 2006.
+     * with distributed collagen fibre orientations. J. R. Soc. Interface, 3:15-35, 2006.
      * doi:10.1098/rsif.2005.0073.
      *
      * <h3>Definiton of Structural Tensor H</h3>

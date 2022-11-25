@@ -5,7 +5,7 @@
 General Data File CCARAT
 ================================================================================
 ---------------------------------------------------------------------------TITLE
-clamped 45° ring segment subject to end force
+clamped 45 degrees ring segment subject to end force
 //  - cubic Hermite interpolation of beam centerline
 //  - cubic Lagrange interpolation of triad field
 --------------------------------------------------------------------PROBLEM SIZE

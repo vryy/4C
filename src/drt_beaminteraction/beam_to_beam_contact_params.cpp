@@ -118,13 +118,13 @@ void BEAMINTERACTION::BeamToBeamContactParams::Init()
         BTB_parallel_shifting_angle1_ < 0.0 or BTB_parallel_shifting_angle2_ < 0.0)
       dserror(
           "You chose all-angle-beam contact algorithm: thus, shifting angles for"
-          " beam-to-beam contact fade must be >= 0°");
+          " beam-to-beam contact fade must be >= 0 degrees");
 
     if (BTB_perp_shifting_angle1_ > 0.5 * M_PI or BTB_perp_shifting_angle2_ > 0.5 * M_PI or
         BTB_parallel_shifting_angle1_ > 0.5 * M_PI or BTB_parallel_shifting_angle2_ > 0.5 * M_PI)
       dserror(
           "You chose all-angle-beam contact algorithm: thus, Shifting angles for"
-          " beam-to-beam contact fade must be <= 90°");
+          " beam-to-beam contact fade must be <= 90 degrees");
 
     if (BTB_parallel_shifting_angle2_ <= BTB_perp_shifting_angle1_)
       dserror("No angle overlap between large-angle and small-angle contact!");

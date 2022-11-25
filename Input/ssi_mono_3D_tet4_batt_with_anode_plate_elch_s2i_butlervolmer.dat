@@ -22,7 +22,7 @@ as well as volumetric change of anode and cathode due to change of lithium conce
 - volume change due to both growth laws is a linear function of the difference of current and
   initial concentration evaluated in the reference configuration
 - 3493 tet4 elements with matching interface nodes
-- used unit system is: mm, µg, nmol, ms, K, µA
+- used unit system is: mm, microg, nmol, ms, K, microA
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    3493
 //NODES       1139

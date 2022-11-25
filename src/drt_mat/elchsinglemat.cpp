@@ -133,7 +133,7 @@ void MAT::PAR::ElchSingleMat::CheckProvidedParams(
       }
       case MAT::ElchSingleMat::DEBYE_HUECKEL:
       {
-        // linear thermodynamic factor including Debye-Hückel theory
+        // linear thermodynamic factor including Debye-Hueckel theory
         functionname = "'function linear thermodynamic factor (including Debye Hueckel theory)'";
         nfunctparams = 2;
         break;
@@ -554,7 +554,7 @@ double MAT::ElchSingleMat::EvalPreDefinedFunct(
       break;
     }
 
-    // linear thermodynamic factor including Debye-Hückel theory
+    // linear thermodynamic factor including Debye-Hueckel theory
     // 1 + a1*0.5*c^0.5 + a2*c
     case DEBYE_HUECKEL:
       functval = 1.0 + functparams[0] * 0.5 * std::pow(scalar, 0.5) + functparams[1] * scalar;
@@ -717,7 +717,7 @@ double MAT::ElchSingleMat::EvalFirstDerivPreDefinedFunct(
       break;
     }
 
-    // linear thermodynamic factor including Debye-Hückel theory
+    // linear thermodynamic factor including Debye-Hueckel theory
     // d/dc: 1 + a1*0.5*c^0.5 + a2*c
     case DEBYE_HUECKEL:
       firstderivfunctval = functparams[0] * 0.5 * 0.5 * std::pow(scalar, -0.5) + functparams[1];

@@ -105,8 +105,8 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
   BoolParameter("SPHEREBEAMLINKING", "No", "Integrins in problem", &spherebeamlink);
 
   // Reading double parameter for contraction rate for active linker
-  DoubleParameter("CONTRACTIONRATE", 0.0, "contraction rate of cell (integrin linker) in [μm/s]",
-      &spherebeamlink);
+  DoubleParameter("CONTRACTIONRATE", 0.0,
+      "contraction rate of cell (integrin linker) in [microm/s]", &spherebeamlink);
   // time step for stochastic events concerning sphere beam linking
   DoubleParameter("TIMESTEP", -1.0,
       "time step for stochastic events concerning sphere beam linking (e.g. catch-slip-bond "

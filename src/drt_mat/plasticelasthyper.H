@@ -390,7 +390,7 @@ namespace MAT
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
     /*!
-     * \brief Post setup routine, will be called after the complete inout is a´ready befire the
+     * \brief Post setup routine, will be called after the complete inout is already befire the
      * first evaluate call
      *
      * \param params Container for additional information

@@ -64,14 +64,14 @@ namespace DRT
        *  reference [1]
        *
        *  The matrix is later used to map the 20 Jacobian determinant values given
-       *  by the 20 computed TET4 volumes (multiplied by 6) to the 27 Bézier
+       *  by the 20 computed TET4 volumes (multiplied by 6) to the 27 Bezier
        *  coefficients.
        *
        *  \author hiermeier \date 09/18 */
       static void buildMapLagrange20ToBezier27();
 
       /** \brief Build the full map from the 2nd order Lagrange coefficients
-       *  to the 2nd-order Bézier coefficients
+       *  to the 2nd-order Bezier coefficients
        *
        *  This is a one-time cost and is only done once during the very first
        *  create call. The computation makes it necessary to invert a 27x27
@@ -81,7 +81,7 @@ namespace DRT
        *  \author hiermeier \date 09/18 */
       static void buildMapLagrangeToBezier();
 
-      /** \brief Build the map from 27 Bézier coefficients to 27 Lagrange
+      /** \brief Build the map from 27 Bezier coefficients to 27 Lagrange
        *  coefficients (both for 2nd order polynomials)
        *
        *  This can be performed cheaply, since only the evaluation of the
@@ -95,7 +95,7 @@ namespace DRT
        *
        *  This routine is important for the potentially necessary subdivision.
        *
-       *  \param map_b2l  Map from Bézier to Lagrange coefficients
+       *  \param map_b2l  Map from Bezier to Lagrange coefficients
        *  \param scale    Array with three scaling values for xi, eta and zeta,
        *                  respectively.
        *  \param shift    Array with three shifting values for xi, eta and zeta,
@@ -105,7 +105,7 @@ namespace DRT
       static void buildMapBezierToLagrange(
           LINALG::Matrix<27, 27>& map_b2l, const double* scale, const double* shift);
 
-      /** \brief Build Sub-map matrix from Bézier to Lagrange coefficients
+      /** \brief Build Sub-map matrix from Bezier to Lagrange coefficients
        *
        *  \param left   Array containing the three left border points of the
        *                sub-cube
@@ -117,11 +117,11 @@ namespace DRT
       void buildSubMapBezierToLagrange(
           const double* left, const double* right, LINALG::Matrix<27, 27>& sub_map_b2l) const;
 
-      /** \brief Compute the Bézier coefficients of the sub-domain
+      /** \brief Compute the Bezier coefficients of the sub-domain
        *
-       *  \param bcoeffs      Bézier coefficients of the original domain
+       *  \param bcoeffs      Bezier coefficients of the original domain
        *  \param subcube      Current sub-domain
-       *  \param sub_bcoeffs  Bézier coefficients of the current sub-domain
+       *  \param sub_bcoeffs  Bezier coefficients of the current sub-domain
        *
        *  \author hiermeier \date 09/18 */
       void getBezierCoeffsOfSubdomain(const LINALG::Matrix<27, 1>& bcoeffs, BezierCube& subcube,
@@ -157,7 +157,7 @@ namespace DRT
       /** \brief Perform a recursive subdivision of the cubes and refine
        *  the estimates for the Jacobian determinant
        *
-       *  \param bcoeffs  Bézier coefficients of the initial Hex8 element
+       *  \param bcoeffs  Bezier coefficients of the initial Hex8 element
        *  \param left     Array containing the three left border coordinates
        *                  of the parent (sub-)cube
        *  \param right    Array containing the three left border coordinates
@@ -264,7 +264,7 @@ namespace DRT
         }
       };
 
-      /** \brief struct containing important necessary information of a Bézier
+      /** \brief struct containing important necessary information of a Bezier
        *  (sub-)cube */
       struct BezierCube
       {
@@ -286,7 +286,7 @@ namespace DRT
       };
 
      private:
-      /** \brief Bézier point coordinates following the scheme in reference [1]
+      /** \brief Bezier point coordinates following the scheme in reference [1]
        *
        *  The first 8 correspond to the eight corners.
        *  The following 12 to the center points of the 12 edges of the Hex8.
@@ -299,16 +299,16 @@ namespace DRT
        *  \author hiermeier \date 09/18 */
       static const double bezier_points_[27][3];
 
-      /// Bézier function indices corresponding to the Bézier point coordinates
+      /// Bezier function indices corresponding to the Bezier point coordinates
       static const unsigned bezier_indices_[27][3];
 
       /// TRUE if all static members have been successfully set-up.
       static bool issetup_;
 
-      /// mapping from 20 Jacobian entries to 27 Bézier coefficients
+      /// mapping from 20 Jacobian entries to 27 Bezier coefficients
       static LINALG::Matrix<27, 20> map_q_;
 
-      // mapping from the Lagrange to the Bézier space
+      // mapping from the Lagrange to the Bezier space
       static LINALG::Matrix<27, 27> map_l2b_;
     };
 

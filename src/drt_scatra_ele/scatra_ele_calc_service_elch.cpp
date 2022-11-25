@@ -418,7 +418,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
     pot0 *= functfac;
   }
 
-  // TODO: Ist es besser über parameter?
+  // TODO: Ist es besser ueber parameter?
   if (!(params.get<bool>("calc_status", false)))
   {
     if (not is_stationary)

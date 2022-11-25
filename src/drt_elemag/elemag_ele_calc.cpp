@@ -1229,9 +1229,9 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::UpdateInteriorVariablesAndComputeRes
   if (localSolver_->dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
     tempVec1.Multiply('N', 'N', -1.0 / 3.0, localSolver_->Amat, ele.eleinteriorMagneticnm1_,
-        0.0);  //  4/3AH^{n−1} - 1/3AH^{n−2}
+        0.0);  //  4/3AH^{n-1} - 1/3AH^{n-2}
     tempVec1.Multiply(
-        'N', 'N', 4.0 / 3.0, localSolver_->Amat, ele.eleinteriorMagnetic_, 1.0);  //  4/3AH^{n−1}
+        'N', 'N', 4.0 / 3.0, localSolver_->Amat, ele.eleinteriorMagnetic_, 1.0);  //  4/3AH^{n-1}
     tempVec2.Multiply('N', 'N', -1.0 / 3.0, localSolver_->Emat, ele.eleinteriorElectricnm1_,
         -1.0);  // -1/3EE^{n-2} - I_s
     tempVec2.Multiply('N', 'N', 4.0 / 3.0, localSolver_->Emat, ele.eleinteriorElectric_,
@@ -1255,7 +1255,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::UpdateInteriorVariablesAndComputeRes
   else
   {
     tempVec1.Multiply(
-        'N', 'N', 1.0, localSolver_->Amat, ele.eleinteriorMagnetic_, 0.0);  //  AH^{n−1}
+        'N', 'N', 1.0, localSolver_->Amat, ele.eleinteriorMagnetic_, 0.0);  //  AH^{n-1}
     tempVec2.Multiply(
         'N', 'N', 1.0, localSolver_->Emat, ele.eleinteriorElectric_, -1.0);  // EE^{n-1} - I_s
   }

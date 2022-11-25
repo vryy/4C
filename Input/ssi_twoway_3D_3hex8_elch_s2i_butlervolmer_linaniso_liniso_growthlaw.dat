@@ -17,7 +17,7 @@ simple, academic test case for partitioned scalar-structure interaction:
 - volume change due to both growth laws is a linear function of the difference of current and
   initial concentration evaluated in the reference configuration
 - dirichlet boundary conditions are applied to the whole structural surface
-- used unit system is: mm, µg, nmol, ms, K, µA
+- used unit system is: mm, microg, nmol, ms, K, microA
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    3
 //NODES       24

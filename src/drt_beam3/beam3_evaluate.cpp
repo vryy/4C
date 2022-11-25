@@ -947,7 +947,7 @@ inline void DRT::ELEMENTS::Beam3::updatecurvature(const LINALG::Matrix<3, 3>& Tn
     omegaprime.Multiply(Aux, deltathetaprime);
     /*we apply the prefactor of (16.147); here we need an angle -PI < theta < PI; note that theta
      * may be assumed to lie within this domain as otherwise the element would rotate at a specific
-     * Gauss point by more that 180° within one single iteration step which would disrupt
+     * Gauss point by more that 180 degrees within one single iteration step which would disrupt
      * convergence anyway; note that one could ensure -PI < theta < PI easily by applying the three
      * code lines
      *

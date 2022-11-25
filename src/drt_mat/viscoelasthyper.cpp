@@ -462,7 +462,7 @@ void MAT::ViscoElastHyper::Update()
   if (viscofract_)
   {
     // To calculate the fractional derivative the history of all previous timesteps is saved in each
-    // gauß-point
+    // gauss-point
 
     // numsteps
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();

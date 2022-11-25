@@ -2199,7 +2199,7 @@ void OPTI::GCMMA::SubSolve()
           lam++;
         }
 
-        // AB HIER BACKUP ALTES VERFARHEN MANCHE GRÖßEN WERDEN NOCH BENÖTIGT, deshalb ins neue
+        // AB HIER BACKUP ALTES VERFARHEN MANCHE GROESSEN WERDEN NOCH BENOETIGT, deshalb ins neue
         // Verfahren gecopypastet
         /*
          * helper data
@@ -2333,7 +2333,7 @@ void OPTI::GCMMA::SubSolve()
         // diagxsi = spdiags(xsi,0,n,n)
         /* "diagxsi = xsi" ist nur zur Umbenennung gedacht, da man mit dem einen eher den
          * Vektor, mit dem anderen aber eher die Diagonalmatrix assoziiert. Das Ganze kann
-         * also ruhig wieder umgebaut werden, falls man es aus Effizienzgründen streichen will.
+         * also ruhig wieder umgebaut werden, falls man es aus Effizienzgruenden streichen will.
          */
         Epetra_Vector diagxsi(x_->Map(), false);
         Epetra_Vector diageta(x_->Map(), false);
@@ -2413,7 +2413,7 @@ void OPTI::GCMMA::SubSolve()
           lamptr++;
         }
 
-        /* Ab hier Hilfsgrößen für rechte Seite
+        /* Ab hier Hilfsgroessen fuer rechte Seite
          * und Aufstellen der rechten Seite
          */
         Epetra_Vector delx(x_->Map(), false);
@@ -2504,8 +2504,8 @@ void OPTI::GCMMA::SubSolve()
         delzet = zet_ * z_mma_ - tol_sub;
 
 
-        /* Aufstellen der Blöcke der Matrix:
-         * Zuerst ein paar Hilfsgrößen, dann die Matrixblöcke
+        /* Aufstellen der Bloecke der Matrix:
+         * Zuerst ein paar Hilfsgroessen, dann die Matrixbloecke
          */
         Epetra_Vector temp1(x_->Map(), false);
 
@@ -2552,12 +2552,12 @@ void OPTI::GCMMA::SubSolve()
         }
 
         /* help2 = diagd*(diagymma + diagdinv*diagmu)*GG*diagpsiinv; % ist eine m x n
-         * Matrix(Multivektor). Interpretiere diesen Term wie folgt: Zunächst (durch die
+         * Matrix(Multivektor). Interpretiere diesen Term wie folgt: Zunaechst (durch die
          * Multiplikation von links) werden die ZEILEN von GG mit den entsprechenden Zahlen aus der
          * linken Matrix skaliert. Danach werden die entsprechenden Zeilen SPALTEN so skaliert. In
          * Ahnlehnung an das Konzept der Multivektoren folgt also die folgende
          * Programmierung.
-         * Definiere leftmat die Matrix links von GG, nur hilfsgröße
+         * Definiere leftmat die Matrix links von GG, nur hilfsgroesse
          */
 
         Epetra_MultiVector help2(x_->Map(), m_);
@@ -2614,7 +2614,7 @@ void OPTI::GCMMA::SubSolve()
           }
         }
 
-        /* Gehe für diesen Term analog zu "help2" vor: Also zuerst
+        /* Gehe fuer diesen Term analog zu "help2" vor: Also zuerst
          * Zusammenfassen aller Diagonalmatrizen, Dann Multiplikation der
          * Diagonalmatrizen mit GG'; also skalierung der SPALTEN von GG mit dem
          * jeweiligen Eintrag der Diagonalmatrix.
@@ -2652,7 +2652,7 @@ void OPTI::GCMMA::SubSolve()
         /* Vorgehen wieder analog zu oben. Ergebnis ist eine vollbesetzte m x m Matrix
          * help5 = diagdinv*diagmu + diagd*(diagymma + diagdinv*diagmu)*(-GG*diagpsiinv*GG' -
          * diagdinv); %test ausgabe help5 = zeros(m,m); % initialisieren m x m Matrizen sind klein
-         * und werden deshalb werden diese hier gelegentlich seriell ausgeführt
+         * und werden deshalb werden diese hier gelegentlich seriell ausgefuehrt
          */
 
         Epetra_SerialDenseMatrix help5(m_, m_);
@@ -2663,12 +2663,12 @@ void OPTI::GCMMA::SubSolve()
         diagymmaptr = diagymma.Values();
         diagmuptr = diagmu.Values();
 
-        // Schleife über alle Spalten
+        // Schleife ueber alle Spalten
         for (int icol = 0; icol < m_; icol++)
         {
           Epetra_Vector Gcol(View, GG, icol);
 
-          // Schleife über alle Zeilen
+          // Schleife ueber alle Zeilen
           for (int irow = 0; irow < m_; irow++)
           {
             double* Gcolptr = Gcol.Values();
@@ -2771,13 +2771,13 @@ void OPTI::GCMMA::SubSolve()
         double* help8ptr = help8.A();
         help5ptr = help5.A();
 
-        // Schleife über alle Spalten
+        // Schleife ueber alle Spalten
         for (int icol = 0; icol < m_; icol++)
         {
           Epetra_Vector colvec1(View, GG, icol);
           Epetra_Vector colvec2(View, help4, icol);
 
-          // Schleife über alle Zeilen
+          // Schleife ueber alle Zeilen
           for (int irow = 0; irow < m_; irow++)
           {
             double* colvec1ptr = colvec1.Values();
@@ -2870,7 +2870,7 @@ void OPTI::GCMMA::SubSolve()
           A16ptr++;
         }
 
-        // A18 = GG'; % einfach übernehmen
+        // A18 = GG'; % einfach uebernehmen
         Epetra_MultiVector A18(x_->Map(), m_);
 
         for (int i = 0; i < m_; i++)
@@ -2991,15 +2991,15 @@ void OPTI::GCMMA::SubSolve()
 
 
         // A38 = -GG*diagpsiinv*GG' - diagdinv; % muss Umgeschrieben werden, code kann teilweise von
-        // help8 übernommen werden, ergibt mxm dense
+        // help8 uebernommen werden, ergibt mxm dense
         Epetra_SerialDenseMatrix A38(m_, m_);
         double* A38ptr = A38.A();
         diagdinvptr = diagd.Values();
 
-        // Schleife über alle Spalten
+        // Schleife ueber alle Spalten
         for (int icol = 0; icol < m_; icol++)
         {
-          // Schleife über alle Zeilen
+          // Schleife ueber alle Zeilen
           for (int irow = 0; irow < m_; irow++)
           {
             Epetra_Vector ggcol(View, GG, icol);
@@ -3060,7 +3060,7 @@ void OPTI::GCMMA::SubSolve()
         }
 
 
-        // A55 = diagxmina + diagpsiinv*diagxsi; % als Vektor übernehmen, minimal umschreiben
+        // A55 = diagxmina + diagpsiinv*diagxsi; % als Vektor uebernehmen, minimal umschreiben
         Epetra_Vector A55(x_->Map(), false);
 
         double* A55ptr = A55.Values();
@@ -3176,7 +3176,7 @@ void OPTI::GCMMA::SubSolve()
         }
 
 
-        // A79 = zeros(1,m); % Braucht man für kleines LGS
+        // A79 = zeros(1,m); % Braucht man fuer kleines LGS
         Epetra_SerialDenseVector A79(*y_mma_);
         double* A79ptr = A79.Values();
 
@@ -3235,7 +3235,7 @@ void OPTI::GCMMA::SubSolve()
         }
 
 
-        // A97 = zeros(m,1); %braucht man für kleines Gleichungssystem
+        // A97 = zeros(m,1); %braucht man fuer kleines Gleichungssystem
         Epetra_SerialDenseVector A97(*y_mma_);
         double* A97ptr = A97.Values();
 
@@ -3325,9 +3325,9 @@ void OPTI::GCMMA::SubSolve()
         double A44inv = 1.0 / A44;
 
 
-        // Hilfsgrößen zum Aufstellen der rechten Seite///////////////////////////
+        // Hilfsgroessen zum Aufstellen der rechten Seite///////////////////////////
 
-        // rhs1 = temp1*diagpsiinv*diageta*(-delxsi + diagpsiinv*diagxsi*delx); % muss geändert
+        // rhs1 = temp1*diagpsiinv*diageta*(-delxsi + diagpsiinv*diagxsi*delx); % muss geaendert
         // werden. ergibt nx1
         Epetra_Vector rhs1(x_->Map());
 
@@ -3355,7 +3355,7 @@ void OPTI::GCMMA::SubSolve()
 
 
         // rhs2 = diagd*(diagymma + diagdinv*diagmu)*(-dellam + GG*diagpsiinv*delx - diagdinv*dely);
-        // % muss geändert werden, ergibt mx1
+        // % muss geaendert werden, ergibt mx1
         Epetra_SerialDenseVector rhs2(*y_mma_);
 
         double* rhs2ptr = rhs2.Values();
@@ -3732,7 +3732,7 @@ void OPTI::GCMMA::SubSolve()
         solver.SetVectors(solut, bb);
         solver.Solve();
 
-        // Neudefinition der Lösungskomponenten
+        // Neudefinition der Loesungskomponenten
         double sol7 = solut(0);
 
         Epetra_SerialDenseVector sol8(*y_mma_);
@@ -3745,7 +3745,7 @@ void OPTI::GCMMA::SubSolve()
         }
 
 
-        // AB HIER RÜCKWÄRTSSUBSTITUTION
+        // AB HIER RUECKWAERTSSUBSTITUTION
 
         // sol6 = A66inv*(b6 - A68*sol8);
 
@@ -3835,7 +3835,7 @@ void OPTI::GCMMA::SubSolve()
 
         // sol4 = A44inv*(b4 - A48*sol8);
 
-        // Hilfsgröße: A48*sol8;
+        // Hilfsgroesse: A48*sol8;
         A48ptr = A48.Values();
         sol8ptr = sol8.Values();
         double A48sol8 = 0.0;
@@ -4006,7 +4006,7 @@ void OPTI::GCMMA::SubSolve()
         }
 
 
-        // Lösungsvektoren noch umbenennen
+        // Loesungsvektoren noch umbenennen
 
         Epetra_Vector dx(x_->Map(), false);
         Epetra_Vector dxsi(x_->Map(), false);

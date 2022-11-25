@@ -248,10 +248,6 @@ namespace SSTI
     /// returns condition names to be copied (source and target name)
     std::map<std::string, std::string> ConditionsToCopy() override;
   };
-
-  /*---------------------------------------------------------------------------------*
-   *---------------------------------------------------------------------------------*/
-  void PrintSSTILogo(int pid);
 }  // namespace SSTI
 
 #endif /* SSTI_UTILS_H_ */

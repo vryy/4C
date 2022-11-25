@@ -691,7 +691,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalErrorCompare
 
       //   G. Bauer, V. Gravemeier, W.A. Wall,
       //   A 3D finite element approach for the coupled numerical simulation of
-      //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339–1359.
+      //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339-1359.
 
       // safety checks
       if (Teuchos::getIntegralValue<SCATRA::Action>(params, "action") != SCATRA::Action::calc_error)

@@ -3792,7 +3792,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedBool(
         m, "INELASTIC_GROWTH", "Mixture rule has inelastic growth (default false)", false, true);
     AddNamedInt(m, "INIT", "Initialization mode for fibers (1=element fibers, 2=nodal fibers)");
-    AddNamedReal(m, "GAMMA", "Angle of fiber alignment in degree (default = 0.0°)", 0.0, true);
+    AddNamedReal(
+        m, "GAMMA", "Angle of fiber alignment in degree (default = 0.0 degrees)", 0.0, true);
 
     AppendMaterialDefinition(matlist, m);
   }

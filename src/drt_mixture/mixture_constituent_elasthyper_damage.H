@@ -100,7 +100,7 @@ namespace MIXTURE
     /*!
      * Initialize the constituent with the parameters of the input line
      *
-     * @param numgp (in) Number of Gauß-points
+     * @param numgp (in) Number of Gauss-points
      * @param params (in/out) Parameter list for exchange of parameters
      */
     void ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef) override;
@@ -113,7 +113,7 @@ namespace MIXTURE
      *
      * @param defgrd Deformation gradient
      * @param params Container for additional information
-     * @param gp Gauß point
+     * @param gp Gauss point
      * @param eleGID Global element identifier
      */
     void Update(LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp,

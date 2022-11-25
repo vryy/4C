@@ -3354,7 +3354,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CalcBellsForceDependentUn
   /* characteristic vond length (=nodereldis)
    * from B. Gui and W. Guilford: Mechanics of actomyosin bonds in different nucleotide states are
    * tuned to muscle contraction Fig 2: slip pathway, ADP, delta = 0.0004; Note: delta < 0 -> catch
-   * bond, delta > 0 -> bond-weakening see Kai Müller Dis p. 67/68 */
+   * bond, delta > 0 -> bond-weakening see Kai Mueller Dis p. 67/68 */
   double const delta = linker->GetMaterial()->DeltaBellEq();
   double const kt = crosslinking_params_ptr_->KT();
   double const koff = linker->GetMaterial()->KOff();
