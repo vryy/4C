@@ -16,7 +16,6 @@
 #include "scatra_timint_ost.H"
 #include "scatra_timint_bdf2.H"
 #include "scatra_timint_genalpha.H"
-//#include "scatra_timint_stat.H"
 
 
 namespace SCATRA

@@ -25,7 +25,6 @@ For a detailed description see:
 #include "constraintmixture.H"
 #include "constraintmixture_history.H"
 #include "drt_globalproblem.H"
-// #include "standardtypes_cpp.H" // for PI, not needed here?
 #include "matpar_bundle.H"
 #include "material_service.H"
 #include "drt_linedefinition.H"

@@ -16,7 +16,6 @@
 #include "so_tet4.H"
 #include "so_tet10.H"
 #include "so_weg6.H"
-// #include "so_nstet5.H"
 
 namespace DRT
 {

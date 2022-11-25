@@ -21,7 +21,6 @@
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
 */
-// #include "myocard_minimal.H"
 
 /// \date 08/13
 

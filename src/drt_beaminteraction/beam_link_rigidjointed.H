@@ -15,7 +15,6 @@
 #include "drt_parobjectfactory.H"
 #include "beam_link.H"
 
-//#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace DRT

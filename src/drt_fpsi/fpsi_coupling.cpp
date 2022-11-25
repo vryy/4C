@@ -9,9 +9,7 @@ Fluid-Poro-Coupling Matrixes!
 */
 ///*----------------------------------------------------------------------*/
 // GENERAL includes
-// #include <sstream>
 #include <Teuchos_TimeMonitor.hpp>
-// #include <Teuchos_Time.hpp>
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 //

@@ -8,7 +8,6 @@
 /*----------------------------------------------------------------------*/
 // #ifdef DISCSH3_H
 #include <Teuchos_TimeMonitor.hpp>
-// #include <algorithm>
 #include "discsh3.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "drt_discret.H"

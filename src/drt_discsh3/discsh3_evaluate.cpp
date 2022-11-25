@@ -10,7 +10,6 @@
 #include "discsh3.H"
 #include "drt_utils.H"
 #include "drt_discret.H"
-// #include "drt_element.H"
 #include "drt_globalproblem.H"
 #include "drt_dserror.H"
 #include "linalg_utils_sparse_algebra_math.H"

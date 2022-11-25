@@ -14,10 +14,6 @@
 #define BEAMCONTACTPARAMS_H
 
 #include "inpar_beamcontact.H"
-// #include "beam_to_beam_contact_params.H"
-// #include "beam_to_sphere_contact_params.H"
-// #include "beam_to_solid_volume_meshtying_params.H"
-// #include "beam_contact_runtime_vtk_output_params.H"
 
 
 namespace BEAMINTERACTION

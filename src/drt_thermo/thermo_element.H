@@ -24,7 +24,6 @@ Pack, Unpack, NumDofPerNode etc.
 
 #include "drt_utils_local_connectivity_matrices.H"
 
-// #include "kinematictype.H"
 #include "inpar_structure.H"
 
 

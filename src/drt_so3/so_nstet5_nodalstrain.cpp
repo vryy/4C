@@ -17,10 +17,8 @@
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "Epetra_FECrsMatrix.h"
-// #include "Sacado.hpp"
 #include "Teuchos_SerialDenseMatrix.hpp"
 #include "linalg_serialdensevector.H"
-// #include "linalg_fixedsizematrix.H"
 
 #include "material_service.H"
 #include "micromaterial.H"
