@@ -12,7 +12,7 @@ function(deprecated_baci_add_library_linked_with_everything target)
   # determine all folders that are used as sources for this library
   foreach(source_file ${ARGN})
     get_filename_component(_path ${source_file} DIRECTORY)
-    list(APPEND include_dirs ${PROJECT_SOURCE_DIR}/${_path})
+    list(APPEND include_dirs ${_path})
   endforeach()
   list(REMOVE_DUPLICATES include_dirs)
 
