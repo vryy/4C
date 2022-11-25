@@ -510,23 +510,22 @@ unsigned int GEO::CUT::TriangulateFacet::FindSecondBestEar(
     dserror("Could find suitable ear for triangulation");
   }
 
-  // now out of the filtered ears we try to find
-  // the "thinnest"
-  double ear_head_proximity;
-  unsigned int best_index;
-  for (unsigned int index : filtered_ears)
-  {
-    std::vector<Point*> tri = ears[index].first;
-    double tri_ear_head_proximity = GEO::CUT::DistanceBetweenPoints(tri[1], tri[0]) +
-                                    GEO::CUT::DistanceBetweenPoints(tri[1], tri[2]);
-    if (tri_ear_head_proximity < ear_head_proximity or index == 0)
-    {
-      best_index = index;
-      ear_head_proximity = tri_ear_head_proximity;
-    }
-  }
+  // now out of the filtered ears we try to find the "thinnest"
+  return *std::min_element(filtered_ears.begin(), filtered_ears.end(),
+      [&](const int& a, const int& b)
+      {
+        std::vector<Point*> tri_a = ears[a].first;
+        const double tri_ear_head_proximity_a =
+            GEO::CUT::DistanceBetweenPoints(tri_a[1], tri_a[0]) +
+            GEO::CUT::DistanceBetweenPoints(tri_a[1], tri_a[2]);
 
-  return best_index;
+        std::vector<Point*> tri_b = ears[b].first;
+        const double tri_ear_head_proximity_b =
+            GEO::CUT::DistanceBetweenPoints(tri_b[1], tri_b[0]) +
+            GEO::CUT::DistanceBetweenPoints(tri_b[1], tri_b[2]);
+
+        return tri_ear_head_proximity_a < tri_ear_head_proximity_b;
+      });
 }
 
 /*-------------------------------------------------------------------------------------------------*
@@ -579,7 +578,7 @@ void GEO::CUT::TriangulateFacet::EarClipping(
   std::vector<Point*> last_added_ear;
   int last_added_ear_head;
 
-  while (1)
+  while (true)
   {
     unsigned int split_size = split_.size();
     std::vector<int> reflex(ptConcavity);
@@ -756,12 +755,11 @@ void GEO::CUT::TriangulateFacet::EarClipping(
             last_added_ear_head = discarded_ears[0].second;
 
           // if last ear was convex, which it should be
-          unsigned int split_start;
-          if (std::find(ptConcavity.begin(), ptConcavity.end(), last_added_ear_head) ==
+          if (std::find(ptConcavity.begin(), ptConcavity.end(), last_added_ear_head) !=
               ptConcavity.end())
-            split_start = last_added_ear_head;
-          else
             dserror("Unknown case!");
+
+          const unsigned int split_start = last_added_ear_head;
 
           SplitTriangleWithPointsOnLine(split_start);
           return;

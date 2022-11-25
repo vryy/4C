@@ -122,8 +122,7 @@ void ADAPTER::FBIPenaltyConstraintenforcer::PrintViolation(double time, int step
     err = violation->Update(1.0, *AssembleFluidCouplingResidual(), -1.0);
     if (err != 0) dserror(" Epetra_Vector update threw error code %i ", err);
 
-    double norm, normf, norms;
-    double norm_vel;
+    double norm = 0.0, normf = 0.0, norms = 0.0, norm_vel = 0.0;
 
     GetVelocityPressureSplitter()
         ->ExtractOtherVector(

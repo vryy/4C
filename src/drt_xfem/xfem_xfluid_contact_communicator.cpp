@@ -514,11 +514,11 @@ void XFEM::XFluid_Contact_Comm::Get_Penalty_Param(DRT::Element* fluidele,
       penalty_fac = 0.0;
       return;
     }
-    if (fluidele->Shape() == DRT::Element::hex8)
-      h_k = XFEM::UTILS::ComputeCharEleLength<DRT::Element::hex8>(
-          fluidele, ele_xyze, condition_manager_, cells, bcells, bintpoints, visc_stab_hk_);
-    else
-      dserror("Add shapes != hex8 here!");
+    if (fluidele->Shape() != DRT::Element::hex8) dserror("Add hex8 shapes here!");
+
+    h_k = XFEM::UTILS::ComputeCharEleLength<DRT::Element::hex8>(
+        fluidele, ele_xyze, condition_manager_, cells, bcells, bintpoints, visc_stab_hk_);
+
     inv_h_k = 1.0 / h_k;
     last_ele_h_ = std::pair<int, double>(fluidele->Id(), h_k);
   }
@@ -1165,15 +1165,15 @@ GEO::CUT::Element* XFEM::XFluid_Contact_Comm::GetNextElement(
       }
       std::cout << "==| Doing the expensive Version of finding an element! |==" << lastid
                 << std::endl;
-      GEO::CUT::Element* element;
+
       GEO::CUT::ElementHandle* elementh = cutwizard_->GetElement(lastid);
       if (elementh == NULL) continue;
       GEO::CUT::plain_element_set pes;
       elementh->CollectElements(pes);
-      if (pes.size() != 1)
-        dserror("Collected Elements != 1");
-      else
-        element = pes[0];
+
+      if (pes.size() != 1) dserror("Collected Elements != 1");
+
+      GEO::CUT::Element* element = pes[0];
 
       if (performed_elements.find(element) != performed_elements.end())
         continue;

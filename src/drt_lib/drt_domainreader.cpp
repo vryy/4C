@@ -416,7 +416,7 @@ namespace DRT
       // correct processors
 
       // Compute midpoint for rotations of the box geometry
-      double coordm[3];
+      std::vector<double> coordm(3, 0.0);
       if (rotation_angle_[0] != 0.0 || rotation_angle_[1] != 0.0 || rotation_angle_[2] != 0.0)
       {
         coordm[0] = (upper_bound_[0] + lower_bound_[0]) / 2.;
