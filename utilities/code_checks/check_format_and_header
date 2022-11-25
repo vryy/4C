@@ -64,18 +64,22 @@ fi
 # set the field separator to new line
 IFS=$'\n'
 
+# test all files
 echo "Start test for code format ..."
 for line in $(git ls-files)
 do
 
-# 1) check if there are non-ascii characters in the file
-non_ascii_chars=`(git diff HEAD $line | grep ^+[^+] | tr -d "\000-\011\013-\177" | tr -d '\n')`
-if [ -n "$non_ascii_chars" ]; then
-  cnt=${#non_ascii_chars}
-  for ((i=0; i < cnt; i++)); do
-    char=${non_ascii_chars:$i:1}
-    uncompliant_files+="$(pwd)/${line} contains non-ascii character '$char'\n"
-  done
+# 1) check if there are non-ascii characters in the file (excluding *.md files)
+if [[ "$line" != *.md ]]
+then
+  non_ascii_chars=`(grep --perl-regex --no-filename --only-matching --binary-files=without-match "[^\x00-\x7F]" $line | sort --unique | tr --delete '\n')`
+  if [ -n "$non_ascii_chars" ]; then
+    cnt=${#non_ascii_chars}
+    for ((i=0; i < cnt; i++)); do
+      char=${non_ascii_chars:$i:1}
+      uncompliant_files+="$(pwd)/${line} contains non-ascii character '$char'\n"
+    done
+  fi
 fi
 
 # 2) check if the file is a c or cpp file
