@@ -570,11 +570,6 @@ set(OBJS_SOH8_LIB
     src/drt_so3/so3_plast/so3_ssn_plast_sosh8.cpp
     src/drt_so3/so3_plast/so3_ssn_plast_sosh18.cpp
     )
-set(OBJS_DRT_ELCH
-    src/drt_elch/elch_algorithm.cpp
-    src/drt_elch/elch_dyn.cpp
-    src/drt_elch/elch_moving_boundary_algorithm.cpp
-    )
 set(OBJS_DRT_UTILS
     src/drt_fem_general/debug_nan.cpp
     src/drt_fem_general/drt_utils_boundary_integration.cpp
@@ -617,13 +612,6 @@ set(OBJS_DRT_UTILS
     src/pss_full/pss_table.c
     src/pss_full/pss_table_iter.c
     src/drt_lib/voigt_notation.cpp
-    )
-set(OBJS_DRT_EHL
-    src/drt_ehl/ehl_base.cpp
-    src/drt_ehl/ehl_dyn.cpp
-    src/drt_ehl/ehl_monolithic.cpp
-    src/drt_ehl/ehl_partitioned.cpp
-    src/drt_ehl/ehl_utils.cpp
     )
 set(OBJS_DRT_SCATRA
     src/drt_scatra/scatra_algorithm.cpp
@@ -1208,22 +1196,6 @@ set(OBJS_DRT_PARTICLE_WALL
     src/drt_particle_wall/particle_wall_result_test.cpp
     src/drt_particle_wall/particle_wall.cpp
     )
-set(OBJS_DRT_ELEMAG
-    src/drt_elemag/elemag_dyn.cpp
-    src/drt_elemag/elemag_timeint.cpp
-    src/drt_elemag/elemag_resulttest.cpp
-    src/drt_elemag/elemag_utils_clonestrategy.cpp
-    )
-set(OBJS_DRT_ELEMAG_LIB
-    src/drt_elemag/elemag_ele_boundary_calc.cpp
-    src/drt_elemag/elemag_ele_calc.cpp
-    src/drt_elemag/elemag_diff_ele_calc.cpp
-    src/drt_elemag/elemag_ele_evaluate.cpp
-    src/drt_elemag/elemag_ele_factory.cpp
-    src/drt_elemag/elemag_ele_intfaces_calc.cpp
-    src/drt_elemag/elemag_ele.cpp
-    src/drt_elemag/elemag_diff_ele.cpp
-    )
 
 set(OBJS_LOCA_CONTINUATION
     src/loca_continuation/loca_nln_problem.cpp
@@ -1239,13 +1211,6 @@ set(OBJS_DRT_T3_LIB
     src/drt_truss3/truss3_evaluate.cpp
     src/drt_truss3/truss3_input.cpp
     src/drt_truss3/truss3_scatra.cpp
-    )
-set(OBJS_DRT_DISCSH3_LIB
-    src/drt_discsh3/discsh3.cpp
-    src/drt_discsh3/discsh3_line.cpp
-    src/drt_discsh3/discsh3_evaluate.cpp
-    src/drt_discsh3/discsh3_line_evaluate.cpp
-    src/drt_discsh3/discsh3_input.cpp
     )
 set(OBJS_DRT_SP3_LIB
     src/drt_spring3/spring3.cpp
@@ -1279,59 +1244,6 @@ set(OBJS_DRT_W1_LIB
     src/drt_w1/wall1_poro_scatra_eletypes.cpp
     src/drt_w1/wall1_scatra.cpp
     src/drt_w1/wall1_scatra_evaluate.cpp
-    )
-set(OBJS_DRT_CUT
-    src/drt_cut/cut_options.cpp
-    src/drt_cut/base_vol.cpp
-    src/drt_cut/cut_boundarycell.cpp
-    src/drt_cut/cut_boundingbox.cpp
-    src/drt_cut/cut_coloredgraph.cpp
-    src/drt_cut/cut_cycle.cpp
-    src/drt_cut/direct_divergence.cpp
-    src/drt_cut/direct_divergence_refplane.cpp
-    src/drt_cut/cut_edge.cpp
-    src/drt_cut/cut_element.cpp
-    src/drt_cut/cut_position.cpp
-    src/drt_cut/cut_intersection.cpp
-    src/drt_cut/cut_elementhandle.cpp
-    src/drt_cut/cut_facet.cpp
-    src/drt_cut/cut_facetgraph.cpp
-    src/drt_cut/cut_find_cycles.cpp
-    src/drt_cut/cut_integrationcell.cpp
-    src/drt_cut/cut_integrationcellcreator.cpp
-    src/drt_cut/cut_kernel.cpp
-    src/drt_cut/cut_combintersection.cpp
-    src/drt_cut/cut_levelsetintersection.cpp
-    src/drt_cut/cut_levelsetside.cpp
-    src/drt_cut/cut_line.cpp
-    src/drt_cut/cut_mesh.cpp
-    src/drt_cut/cut_meshhandle.cpp
-    src/drt_cut/cut_meshintersection.cpp
-    src/drt_cut/cut_node.cpp
-    src/drt_cut/cut_output.cpp
-    src/drt_cut/cut_parallel.cpp
-    src/drt_cut/cut_parentintersection.cpp
-    src/drt_cut/cut_point.cpp
-    src/drt_cut/cut_pointgraph.cpp
-    src/drt_cut/cut_pointpool.cpp
-    src/drt_cut/cut_selfcut.cpp
-    src/drt_cut/cut_side.cpp
-    src/drt_cut/cut_sidehandle.cpp
-    src/drt_cut/cut_tetmesh.cpp
-    src/drt_cut/cut_tetmeshintersection.cpp
-    src/drt_cut/cut_triangulateFacet.cpp
-    src/drt_cut/cut_volumecell.cpp
-    src/drt_cut/line_integration.cpp
-    src/drt_cut/facet_integration.cpp
-    src/drt_cut/boundarycell_integration.cpp
-    src/drt_cut/volume_integration.cpp
-    src/drt_cut/least_squares.cpp
-    src/drt_cut/quadrature_compression.cpp
-    src/drt_cut/cut_cutwizard.cpp
-    src/drt_cut/cut_pointgraph_simple.cpp
-    src/drt_cut/cut_facetgraph_simple.cpp
-    src/drt_cut/cut_clnwrapper.cpp
-    src/drt_cut/cut_memory_manager.cpp
     )
 set(OBJS_CUT_TEST
     tests/cut_test/cut_test_double.cpp
@@ -1754,17 +1666,14 @@ deprecated_baci_add_library_linked_with_everything(
   ele_porofluidmultiphase ${OBJS_DRT_POROFLUIDMULTIPHASE_LIB}
   )
 deprecated_baci_add_library_linked_with_everything(ele_scatra ${OBJS_DRT_SCATRA_LIB})
-deprecated_baci_add_library_linked_with_everything(ele_discsh3 ${OBJS_DRT_DISCSH3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_sp3 ${OBJS_DRT_SP3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_so ${OBJS_SOH8_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_t3 ${OBJS_DRT_T3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_t3cl ${OBJS_DRT_T3CL_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_to3 ${OBJS_DRT_TO3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_w1 ${OBJS_DRT_W1_LIB})
-deprecated_baci_add_library_linked_with_everything(ele_elemag ${OBJS_DRT_ELEMAG_LIB})
 
 # algorithm libraries that depend on adapters
-deprecated_baci_add_library_linked_with_everything(alg_elch ${OBJS_DRT_ELCH})
 deprecated_baci_add_library_linked_with_everything(alg_fbi ${OBJS_DRT_FBI})
 deprecated_baci_add_library_linked_with_everything(alg_fsi ${OBJS_DRT_FSI})
 deprecated_baci_add_library_linked_with_everything(
@@ -1780,7 +1689,6 @@ deprecated_baci_add_library_linked_with_everything(alg_fpsi ${OBJS_DRT_FPSI})
 deprecated_baci_add_library_linked_with_everything(alg_fs3i ${OBJS_DRT_FS3I})
 deprecated_baci_add_library_linked_with_everything(alg_ssi ${OBJS_DRT_SSI})
 deprecated_baci_add_library_linked_with_everything(alg_ssti ${OBJS_DRT_SSTI})
-deprecated_baci_add_library_linked_with_everything(alg_ehl ${OBJS_DRT_EHL})
 deprecated_baci_add_library_linked_with_everything(alg_pasi ${OBJS_DRT_PASI})
 
 # algorithm libraries the adapters depend uo
@@ -1803,7 +1711,6 @@ deprecated_baci_add_library_linked_with_everything(
   alg_particle_rigidbody ${OBJS_DRT_PARTICLE_RIGIDBODY}
   )
 deprecated_baci_add_library_linked_with_everything(alg_particle_wall ${OBJS_DRT_PARTICLE_WALL})
-deprecated_baci_add_library_linked_with_everything(alg_elemag ${OBJS_DRT_ELEMAG})
 deprecated_baci_add_library_linked_with_everything(alg_tutorial ${OBJS_DRT_TUTORIAL})
 
 # general framework
@@ -1837,7 +1744,6 @@ deprecated_baci_add_library_linked_with_everything(
 deprecated_baci_add_library_linked_with_everything(drt_lib_surfstress ${OBJS_DRT_SURFSTRESS})
 deprecated_baci_add_library_linked_with_everything(drt_lib_utils ${OBJS_DRT_UTILS})
 deprecated_baci_add_library_linked_with_everything(drt_lib_redairways ${OBJS_DRT_RED_AIRWAYS_LIB})
-deprecated_baci_add_library_linked_with_everything(drt_lib_cut ${OBJS_DRT_CUT})
 deprecated_baci_add_library_linked_with_everything(drt_lib_statinv_ana ${OBJS_STATINV_ANALYSIS_LIB})
 deprecated_baci_add_library_linked_with_everything(drt_lib_immersed ${OBJS_DRT_IMMERSED_LIB})
 deprecated_baci_add_library_linked_with_everything(drt_lib_xfem_manag ${OBJS_DRT_XFEM_MANAG_LIB})
