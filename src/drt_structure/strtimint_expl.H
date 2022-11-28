@@ -273,7 +273,7 @@ namespace STR
       PreOutput();
       OutputStep(forced_writerestart);
       // write Gmsh output
-      writeGmshStrucOutputStep();
+      WriteGmshStrucOutputStep();
       return;
     }
 

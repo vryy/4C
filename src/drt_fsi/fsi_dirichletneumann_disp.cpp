@@ -89,7 +89,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::StructOp(
       StructureField()->ApplyInterfaceForcesTemporaryDeprecated(
           iforce);  // todo remove this line as soon as possible!
     StructureField()->Solve();
-    StructureField()->writeGmshStrucOutputStep();
+    StructureField()->WriteGmshStrucOutputStep();
     return StructureField()->ExtractInterfaceDispnp();
   }
 }

@@ -479,7 +479,7 @@ void STR::TIMINT::Base::Output(bool forced_writerestart)
   PreOutput();
   OutputStep(forced_writerestart);
   // write Gmsh output
-  writeGmshStrucOutputStep();
+  WriteGmshStrucOutputStep();
   int_ptr_->PostOutput();
 }
 
@@ -918,7 +918,7 @@ void STR::TIMINT::Base::AddRestartToOutputState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::writeGmshStrucOutputStep()
+void STR::TIMINT::Base::WriteGmshStrucOutputStep()
 {
   CheckInitSetup();
   if (!dataio_->IsGmsh()) return;

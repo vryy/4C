@@ -119,7 +119,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructOp(
   }
 
   StructureField()->Solve();
-  StructureField()->writeGmshStrucOutputStep();
+  StructureField()->WriteGmshStrucOutputStep();
 
   if (fbi.get<int>("STARTSTEP") < Step())
   {

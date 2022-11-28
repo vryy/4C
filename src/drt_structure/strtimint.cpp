@@ -2145,7 +2145,7 @@ void STR::TimInt::OutputStep(const bool forced_writerestart)
 /*-----------------------------------------------------------------------------*
  * write GMSH output of displacement field
  *-----------------------------------------------------------------------------*/
-void STR::TimInt::writeGmshStrucOutputStep()
+void STR::TimInt::WriteGmshStrucOutputStep()
 {
   if (not gmsh_out_) return;
 

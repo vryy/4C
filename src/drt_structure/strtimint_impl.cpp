@@ -325,7 +325,7 @@ void STR::TimIntImpl::Output(const bool forced_writerestart)
   OutputStep(forced_writerestart);
 
   // write Gmsh output
-  writeGmshStrucOutputStep();
+  WriteGmshStrucOutputStep();
 }
 
 /*----------------------------------------------------------------------------*

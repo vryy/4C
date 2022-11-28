@@ -28,7 +28,6 @@ namespace DRT
   namespace UTILS
   {
     class LocsysManager;
-    class PlastSsnManager;
   }  // namespace UTILS
 }  // namespace DRT
 
@@ -64,13 +63,10 @@ namespace TIMINT
   class TimIntMStep;
 }
 
-namespace STR
+namespace STR::MODELEVALUATOR
 {
-  namespace MODELEVALUATOR
-  {
-    class Generic;
-  }
-}  // namespace STR
+  class Generic;
+}  // namespace STR::MODELEVALUATOR
 
 namespace ADAPTER
 {
@@ -120,9 +116,6 @@ namespace ADAPTER
   class Structure : public Field
   {
    public:
-    /// virtual to get polymorph destruction
-    virtual ~Structure();
-
     //! @name Construction
     //@{
 
@@ -155,28 +148,28 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
 
     /// rhs of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
+    Teuchos::RCP<const Epetra_Vector> RHS() override = 0;
 
     /// unknown displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const = 0;
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const = 0;
 
     /// known displacements at \f$t_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Dispn() const = 0;
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> Dispn() const = 0;
 
     /// unknown velocity at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Velnp() const = 0;
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> Velnp() const = 0;
 
     /// known velocity at \f$t_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Veln() const = 0;
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> Veln() const = 0;
 
     /// known velocity at \f$t_{n-1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Velnm() const = 0;
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> Velnm() const = 0;
 
     /// unknown acceleration at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Accnp() const = 0;
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> Accnp() const = 0;
 
     /// known acceleration at \f$t_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Accn() const = 0;
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> Accn() const = 0;
 
     virtual void ResizeMStepTimAda() = 0;
 
@@ -185,7 +178,7 @@ namespace ADAPTER
     //! @name Misc
 
     /// dof map of vector of unknowns
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap() = 0;
+    Teuchos::RCP<const Epetra_Map> DofRowMap() override = 0;
 
     /// DOF map of vector of unknowns for multiple dofsets
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) = 0;
@@ -194,13 +187,13 @@ namespace ADAPTER
     virtual const Epetra_Map* DofRowMapView() = 0;
 
     /// domain map of system matrix (do we really need this?)
-    virtual const Epetra_Map& DomainMap() const = 0;
+    [[nodiscard]] virtual const Epetra_Map& DomainMap() const = 0;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;
+    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() override = 0;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override = 0;
 
     /// switch structure field to block matrix
     virtual void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
@@ -267,31 +260,31 @@ namespace ADAPTER
     //@{
 
     /// return time integration factor
-    virtual double TimIntParam() const = 0;
+    [[nodiscard]] virtual double TimIntParam() const = 0;
 
     //! Return current time \f$t_{n}\f$
-    virtual double TimeOld() const = 0;
+    [[nodiscard]] virtual double TimeOld() const = 0;
 
     //! Return target time \f$t_{n+1}\f$
-    virtual double Time() const = 0;
+    [[nodiscard]] virtual double Time() const = 0;
 
     /// Get upper limit of time range of interest
-    virtual double GetTimeEnd() const = 0;
+    [[nodiscard]] virtual double GetTimeEnd() const = 0;
 
     //! Set upper limit of time range of interest
     virtual void SetTimeEnd(double timemax) = 0;
 
     /// Get time step size \f$\Delta t_n\f$
-    virtual double Dt() const = 0;
+    [[nodiscard]] virtual double Dt() const = 0;
 
     /// Return current step number $n$
-    virtual int StepOld() const = 0;
+    [[nodiscard]] virtual int StepOld() const = 0;
 
     /// Return current step number $n+1$
-    virtual int Step() const = 0;
+    [[nodiscard]] virtual int Step() const = 0;
 
     /// Get number of time steps
-    virtual int NumStep() const = 0;
+    [[nodiscard]] virtual int NumStep() const = 0;
 
     /// Take the time and integrate (time loop)
     /// \date 11/08
@@ -302,10 +295,10 @@ namespace ADAPTER
         INPAR::STR::ConvergenceStatus nonlinsoldiv) = 0;
 
     /// tests if there are more time steps to do
-    virtual bool NotFinished() const = 0;
+    [[nodiscard]] virtual bool NotFinished() const = 0;
 
     /// start new time step
-    virtual void PrepareTimeStep() = 0;
+    void PrepareTimeStep() override = 0;
 
     /// set time step size
     virtual void SetDt(const double dtnew) = 0;
@@ -337,9 +330,9 @@ namespace ADAPTER
     In case the StructureNOXCorrectionWrapper is applied, the step increment is expected
     which is then transformed into an iteration increment
     */
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector>
+    void Evaluate(Teuchos::RCP<const Epetra_Vector>
             disiterinc  ///< displacement increment between Newton iteration i and i+1
-        ) = 0;
+        ) override = 0;
 
     /// don't update displacement but evaluate elements (implicit only)
     virtual void Evaluate() = 0;
@@ -348,7 +341,7 @@ namespace ADAPTER
     virtual void DetermineStressStrain() = 0;
 
     /// update at time step end
-    virtual void Update() = 0;
+    void Update() override = 0;
 
     /// update at time step end in case of FSI time adaptivity
     virtual void Update(double endtime) = 0;
@@ -374,13 +367,13 @@ namespace ADAPTER
         Teuchos::RCP<std::vector<char>> nodedata) = 0;
 
     /// output results
-    virtual void Output(bool forced_writerestart = false) = 0;
+    void Output(bool forced_writerestart = false) override = 0;
 
     /// output results to screen
     virtual void PrintStep() = 0;
 
     /// read restart information for given time step
-    virtual void ReadRestart(const int step) = 0;
+    void ReadRestart(const int step) override = 0;
 
     /*!
     \brief Reset time step
@@ -521,13 +514,13 @@ namespace ADAPTER
     virtual void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) = 0;
 
     /// Write Gmsh output for structural field
-    virtual void writeGmshStrucOutputStep() = 0;
+    virtual void WriteGmshStrucOutputStep() = 0;
 
     /// bool indicating if micro material is used
     virtual bool HaveMicroMat() = 0;
 
     /// \brief Returns true if the final state has been written
-    virtual bool HasFinalStateBeenWritten() const = 0;
+    [[nodiscard]] virtual bool HasFinalStateBeenWritten() const = 0;
   };
 
 
