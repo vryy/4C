@@ -1196,22 +1196,6 @@ set(OBJS_DRT_PARTICLE_WALL
     src/drt_particle_wall/particle_wall_result_test.cpp
     src/drt_particle_wall/particle_wall.cpp
     )
-set(OBJS_DRT_ELEMAG
-    src/drt_elemag/elemag_dyn.cpp
-    src/drt_elemag/elemag_timeint.cpp
-    src/drt_elemag/elemag_resulttest.cpp
-    src/drt_elemag/elemag_utils_clonestrategy.cpp
-    )
-set(OBJS_DRT_ELEMAG_LIB
-    src/drt_elemag/elemag_ele_boundary_calc.cpp
-    src/drt_elemag/elemag_ele_calc.cpp
-    src/drt_elemag/elemag_diff_ele_calc.cpp
-    src/drt_elemag/elemag_ele_evaluate.cpp
-    src/drt_elemag/elemag_ele_factory.cpp
-    src/drt_elemag/elemag_ele_intfaces_calc.cpp
-    src/drt_elemag/elemag_ele.cpp
-    src/drt_elemag/elemag_diff_ele.cpp
-    )
 
 set(OBJS_LOCA_CONTINUATION
     src/loca_continuation/loca_nln_problem.cpp
@@ -1688,7 +1672,6 @@ deprecated_baci_add_library_linked_with_everything(ele_t3 ${OBJS_DRT_T3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_t3cl ${OBJS_DRT_T3CL_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_to3 ${OBJS_DRT_TO3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_w1 ${OBJS_DRT_W1_LIB})
-deprecated_baci_add_library_linked_with_everything(ele_elemag ${OBJS_DRT_ELEMAG_LIB})
 
 # algorithm libraries that depend on adapters
 deprecated_baci_add_library_linked_with_everything(alg_fbi ${OBJS_DRT_FBI})
@@ -1728,7 +1711,6 @@ deprecated_baci_add_library_linked_with_everything(
   alg_particle_rigidbody ${OBJS_DRT_PARTICLE_RIGIDBODY}
   )
 deprecated_baci_add_library_linked_with_everything(alg_particle_wall ${OBJS_DRT_PARTICLE_WALL})
-deprecated_baci_add_library_linked_with_everything(alg_elemag ${OBJS_DRT_ELEMAG})
 deprecated_baci_add_library_linked_with_everything(alg_tutorial ${OBJS_DRT_TUTORIAL})
 
 # general framework
