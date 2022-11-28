@@ -1240,13 +1240,6 @@ set(OBJS_DRT_T3_LIB
     src/drt_truss3/truss3_input.cpp
     src/drt_truss3/truss3_scatra.cpp
     )
-set(OBJS_DRT_DISCSH3_LIB
-    src/drt_discsh3/discsh3.cpp
-    src/drt_discsh3/discsh3_line.cpp
-    src/drt_discsh3/discsh3_evaluate.cpp
-    src/drt_discsh3/discsh3_line_evaluate.cpp
-    src/drt_discsh3/discsh3_input.cpp
-    )
 set(OBJS_DRT_SP3_LIB
     src/drt_spring3/spring3.cpp
     src/drt_spring3/spring3_evaluate.cpp
@@ -1701,7 +1694,6 @@ deprecated_baci_add_library_linked_with_everything(
   ele_porofluidmultiphase ${OBJS_DRT_POROFLUIDMULTIPHASE_LIB}
   )
 deprecated_baci_add_library_linked_with_everything(ele_scatra ${OBJS_DRT_SCATRA_LIB})
-deprecated_baci_add_library_linked_with_everything(ele_discsh3 ${OBJS_DRT_DISCSH3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_sp3 ${OBJS_DRT_SP3_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_so ${OBJS_SOH8_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_t3 ${OBJS_DRT_T3_LIB})
