@@ -338,25 +338,6 @@ set(OBJS_DRT_MAT_LIB
     src/drt_mat/activefiber.cpp
     src/drt_matelast/visco_generalizedgenmax.cpp
     )
-set(OBJS_DRT_RED_AIRWAYS_LIB
-    src/drt_red_airways/airway_evaluate.cpp
-    src/drt_red_airways/acinus_evaluate.cpp
-    src/drt_red_airways/inter_acinar_dep_evaluate.cpp
-    src/drt_red_airways/red_air_blood_scatra_evaluate.cpp
-    src/drt_red_airways/red_air_blood_scatraLine3_evaluate.cpp
-    src/drt_red_airways/airway_impl.cpp
-    src/drt_red_airways/acinus_impl.cpp
-    src/drt_red_airways/inter_acinar_dep_impl.cpp
-    src/drt_red_airways/red_air_blood_scatra_impl.cpp
-    src/drt_red_airways/red_air_blood_scatraLine3_impl.cpp
-    src/drt_red_airways/red_airway.cpp
-    src/drt_red_airways/red_acinus.cpp
-    src/drt_red_airways/red_inter_acinar_dep.cpp
-    src/drt_red_airways/red_air_blood_scatra.cpp
-    src/drt_red_airways/red_air_blood_scatraLine3.cpp
-    src/drt_red_airways/red_airway_input.cpp
-    src/drt_red_airways/red_airway_resulttest.cpp
-    )
 set(OBJS_DRT_INPAR
     src/drt_inpar/drt_boolifyparameters.cpp
     src/drt_inpar/drt_validconditions.cpp
@@ -536,12 +517,6 @@ set(OBJS_DRT_MEMBRANE_LIB
     src/drt_membrane/membrane_scatra_eletypes.cpp
     src/drt_membrane/membrane_scatra.cpp
     src/drt_membrane/membrane_scatra_evaluate.cpp
-    )
-
-set(OBJS_DRT_RED_AIRWAYS
-    src/drt_red_airways/airwayimplicitintegration.cpp
-    src/drt_red_airways/redairway_tissue.cpp
-    src/drt_red_airways/red_airways_dyn_drt.cpp
     )
 
 set(OBJS_DRT_REGISTER src/drt_lib/drt_parobjectregister.cpp)
@@ -1021,7 +996,6 @@ set(SINGLEFIELD_LIBRARIES
     alg_fluid_turbulence
     alg_fluid
     alg_xfluid
-    alg_redairways
     alg_lubrication
     alg_porofluidmultiphase
     alg_scatra
@@ -1046,7 +1020,7 @@ set(SUPPORT_LIBRARIES
     drt_lib
     drt_lib_artnet
     drt_lib_browniandyn
-    drt_lib_redairways
+    drt_red_airways
     drt_lib_mortar
     drt_lib_constraint
     drt_lib_contact
@@ -1128,7 +1102,6 @@ deprecated_baci_add_library_linked_with_everything(alg_pasi ${OBJS_DRT_PASI})
 
 # algorithm libraries the adapters depend uo
 deprecated_baci_add_library_linked_with_everything(alg_statinvanalysis ${OBJS_STATINV_ANALYSIS})
-deprecated_baci_add_library_linked_with_everything(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
 deprecated_baci_add_library_linked_with_everything(alg_scatra ${OBJS_DRT_SCATRA})
 deprecated_baci_add_library_linked_with_everything(
   alg_particle_algorithm ${OBJS_DRT_PARTICLE_ALGORITHM}
@@ -1162,7 +1135,6 @@ deprecated_baci_add_library_linked_with_everything(
   drt_lib_particleengine ${OBJS_DRT_PARTICLE_ENGINE_LIB}
   )
 deprecated_baci_add_library_linked_with_everything(drt_lib_utils ${OBJS_DRT_UTILS})
-deprecated_baci_add_library_linked_with_everything(drt_lib_redairways ${OBJS_DRT_RED_AIRWAYS_LIB})
 deprecated_baci_add_library_linked_with_everything(drt_lib_statinv_ana ${OBJS_STATINV_ANALYSIS_LIB})
 deprecated_baci_add_library_linked_with_everything(alg_mor ${OBJS_DRT_MOR})
 
