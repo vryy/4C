@@ -1,0 +1,57 @@
+set(OBJS_DRT_CUT
+    cut_options.cpp
+    base_vol.cpp
+    cut_boundarycell.cpp
+    cut_boundingbox.cpp
+    cut_coloredgraph.cpp
+    cut_cycle.cpp
+    direct_divergence.cpp
+    direct_divergence_refplane.cpp
+    cut_edge.cpp
+    cut_element.cpp
+    cut_position.cpp
+    cut_intersection.cpp
+    cut_elementhandle.cpp
+    cut_facet.cpp
+    cut_facetgraph.cpp
+    cut_find_cycles.cpp
+    cut_integrationcell.cpp
+    cut_integrationcellcreator.cpp
+    cut_kernel.cpp
+    cut_combintersection.cpp
+    cut_levelsetintersection.cpp
+    cut_levelsetside.cpp
+    cut_line.cpp
+    cut_mesh.cpp
+    cut_meshhandle.cpp
+    cut_meshintersection.cpp
+    cut_node.cpp
+    cut_output.cpp
+    cut_parallel.cpp
+    cut_parentintersection.cpp
+    cut_point.cpp
+    cut_pointgraph.cpp
+    cut_pointpool.cpp
+    cut_selfcut.cpp
+    cut_side.cpp
+    cut_sidehandle.cpp
+    cut_tetmesh.cpp
+    cut_tetmeshintersection.cpp
+    cut_triangulateFacet.cpp
+    cut_volumecell.cpp
+    line_integration.cpp
+    facet_integration.cpp
+    boundarycell_integration.cpp
+    volume_integration.cpp
+    least_squares.cpp
+    quadrature_compression.cpp
+    cut_cutwizard.cpp
+    cut_pointgraph_simple.cpp
+    cut_facetgraph_simple.cpp
+    cut_clnwrapper.cpp
+    cut_memory_manager.cpp
+    )
+
+baci_add_library(drt_lib_cut ${OBJS_DRT_CUT})
+
+target_link_libraries(drt_lib_cut PUBLIC linalg)

@@ -1280,59 +1280,6 @@ set(OBJS_DRT_W1_LIB
     src/drt_w1/wall1_scatra.cpp
     src/drt_w1/wall1_scatra_evaluate.cpp
     )
-set(OBJS_DRT_CUT
-    src/drt_cut/cut_options.cpp
-    src/drt_cut/base_vol.cpp
-    src/drt_cut/cut_boundarycell.cpp
-    src/drt_cut/cut_boundingbox.cpp
-    src/drt_cut/cut_coloredgraph.cpp
-    src/drt_cut/cut_cycle.cpp
-    src/drt_cut/direct_divergence.cpp
-    src/drt_cut/direct_divergence_refplane.cpp
-    src/drt_cut/cut_edge.cpp
-    src/drt_cut/cut_element.cpp
-    src/drt_cut/cut_position.cpp
-    src/drt_cut/cut_intersection.cpp
-    src/drt_cut/cut_elementhandle.cpp
-    src/drt_cut/cut_facet.cpp
-    src/drt_cut/cut_facetgraph.cpp
-    src/drt_cut/cut_find_cycles.cpp
-    src/drt_cut/cut_integrationcell.cpp
-    src/drt_cut/cut_integrationcellcreator.cpp
-    src/drt_cut/cut_kernel.cpp
-    src/drt_cut/cut_combintersection.cpp
-    src/drt_cut/cut_levelsetintersection.cpp
-    src/drt_cut/cut_levelsetside.cpp
-    src/drt_cut/cut_line.cpp
-    src/drt_cut/cut_mesh.cpp
-    src/drt_cut/cut_meshhandle.cpp
-    src/drt_cut/cut_meshintersection.cpp
-    src/drt_cut/cut_node.cpp
-    src/drt_cut/cut_output.cpp
-    src/drt_cut/cut_parallel.cpp
-    src/drt_cut/cut_parentintersection.cpp
-    src/drt_cut/cut_point.cpp
-    src/drt_cut/cut_pointgraph.cpp
-    src/drt_cut/cut_pointpool.cpp
-    src/drt_cut/cut_selfcut.cpp
-    src/drt_cut/cut_side.cpp
-    src/drt_cut/cut_sidehandle.cpp
-    src/drt_cut/cut_tetmesh.cpp
-    src/drt_cut/cut_tetmeshintersection.cpp
-    src/drt_cut/cut_triangulateFacet.cpp
-    src/drt_cut/cut_volumecell.cpp
-    src/drt_cut/line_integration.cpp
-    src/drt_cut/facet_integration.cpp
-    src/drt_cut/boundarycell_integration.cpp
-    src/drt_cut/volume_integration.cpp
-    src/drt_cut/least_squares.cpp
-    src/drt_cut/quadrature_compression.cpp
-    src/drt_cut/cut_cutwizard.cpp
-    src/drt_cut/cut_pointgraph_simple.cpp
-    src/drt_cut/cut_facetgraph_simple.cpp
-    src/drt_cut/cut_clnwrapper.cpp
-    src/drt_cut/cut_memory_manager.cpp
-    )
 set(OBJS_CUT_TEST
     tests/cut_test/cut_test_double.cpp
     tests/cut_test/cut_test_geometry.cpp
@@ -1837,7 +1784,6 @@ deprecated_baci_add_library_linked_with_everything(
 deprecated_baci_add_library_linked_with_everything(drt_lib_surfstress ${OBJS_DRT_SURFSTRESS})
 deprecated_baci_add_library_linked_with_everything(drt_lib_utils ${OBJS_DRT_UTILS})
 deprecated_baci_add_library_linked_with_everything(drt_lib_redairways ${OBJS_DRT_RED_AIRWAYS_LIB})
-deprecated_baci_add_library_linked_with_everything(drt_lib_cut ${OBJS_DRT_CUT})
 deprecated_baci_add_library_linked_with_everything(drt_lib_statinv_ana ${OBJS_STATINV_ANALYSIS_LIB})
 deprecated_baci_add_library_linked_with_everything(drt_lib_immersed ${OBJS_DRT_IMMERSED_LIB})
 deprecated_baci_add_library_linked_with_everything(drt_lib_xfem_manag ${OBJS_DRT_XFEM_MANAG_LIB})
