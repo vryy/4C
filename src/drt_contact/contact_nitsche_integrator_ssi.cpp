@@ -458,3 +458,13 @@ void CONTACT::CoIntegratorNitscheSsi::IntegrateScaTraTest(const double fac,
     }
   }
 }
+
+template void CONTACT::CoIntegratorNitscheSsi::SoEleCauchyStruct<3>(
+    MORTAR::MortarElement& mortar_ele, double* gp_coord,
+    const std::vector<GEN::pairedvector<int, double>>& d_gp_coord_dd, const double gp_wgt,
+    const LINALG::Matrix<3, 1>& gp_normal,
+    const std::vector<GEN::pairedvector<int, double>>& d_gp_normal_dd,
+    const LINALG::Matrix<3, 1>& test_dir,
+    const std::vector<GEN::pairedvector<int, double>>& d_test_dir_dd, double nitsche_wgt,
+    double& cauchy_nt_wgt, GEN::pairedvector<int, double>& d_cauchy_nt_dd,
+    Epetra_SerialDenseMatrix* d_sigma_nt_ds);
