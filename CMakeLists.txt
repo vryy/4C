@@ -618,13 +618,6 @@ set(OBJS_DRT_UTILS
     src/pss_full/pss_table_iter.c
     src/drt_lib/voigt_notation.cpp
     )
-set(OBJS_DRT_EHL
-    src/drt_ehl/ehl_base.cpp
-    src/drt_ehl/ehl_dyn.cpp
-    src/drt_ehl/ehl_monolithic.cpp
-    src/drt_ehl/ehl_partitioned.cpp
-    src/drt_ehl/ehl_utils.cpp
-    )
 set(OBJS_DRT_SCATRA
     src/drt_scatra/scatra_algorithm.cpp
     src/drt_scatra/scatra_dyn.cpp
@@ -1719,7 +1712,6 @@ deprecated_baci_add_library_linked_with_everything(alg_fpsi ${OBJS_DRT_FPSI})
 deprecated_baci_add_library_linked_with_everything(alg_fs3i ${OBJS_DRT_FS3I})
 deprecated_baci_add_library_linked_with_everything(alg_ssi ${OBJS_DRT_SSI})
 deprecated_baci_add_library_linked_with_everything(alg_ssti ${OBJS_DRT_SSTI})
-deprecated_baci_add_library_linked_with_everything(alg_ehl ${OBJS_DRT_EHL})
 deprecated_baci_add_library_linked_with_everything(alg_pasi ${OBJS_DRT_PASI})
 
 # algorithm libraries the adapters depend uo
