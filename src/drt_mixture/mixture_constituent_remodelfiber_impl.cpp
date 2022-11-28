@@ -333,17 +333,18 @@ double MIXTURE::MixtureConstituent_RemodelFiberImpl::EvaluateDepositionStretch(
       .Evaluate(time);
 }
 void MIXTURE::MixtureConstituent_RemodelFiberImpl::UpdateHomeostaticValues(
-    Teuchos::ParameterList& params, const int eleGID)
+    const Teuchos::ParameterList& params, const int eleGID)
 {
   // Update deposition stretch / prestretch of fiber depending on time function
-  double time = params.get<double>("total time");
-  if (time < 0.0)
-  {
-    // Time has not yet been set by the time integrator during Setup
-    time = 0.0;
-  }
+  const double time = std::invoke(
+      [&params]()
+      {
+        double time = params.get<double>("total time");
+        if (time < 0) return 0.0;  // Time has not been set by the time integrator during setup
+        return time;
+      });
 
-  double new_lambda_pre = EvaluateDepositionStretch(time);
+  const double new_lambda_pre = EvaluateDepositionStretch(time);
 
   for (auto& fiber : remodel_fiber_)
   {
