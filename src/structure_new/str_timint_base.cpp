@@ -1018,7 +1018,7 @@ void STR::TIMINT::Base::SetActionType(const DRT::ELEMENTS::ActionType& action)
  *----------------------------------------------------------------------------*/
 int STR::TIMINT::Base::GroupId() const
 {
-  Teuchos::RCP<COMM_UTILS::NestedParGroup> group = DRT::Problem::Instance()->GetNPGroup();
+  Teuchos::RCP<COMM_UTILS::Communicators> group = DRT::Problem::Instance()->GetCommunicators();
   return group->GroupId();
 }
 /*----------------------------------------------------------------------------*

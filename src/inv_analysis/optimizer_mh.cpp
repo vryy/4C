@@ -75,14 +75,14 @@ void INVANA::OptimizerMH::Setup()
     dserror("Switch off OUTPUT_BIN for stable computations.");
 
   // get some global numbers and validate
-  ngroups_ = problem->GetNPGroup()->NumGroups();
-  mygroup_ = problem->GetNPGroup()->GroupId();
+  ngroups_ = problem->GetCommunicators()->NumGroups();
+  mygroup_ = problem->GetCommunicators()->GroupId();
 
   // setup particles
   SetupParticles();
 
-  Teuchos::RCP<Epetra_Comm> gcomm = problem->GetNPGroup()->GlobalComm();
-  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = problem->GetCommunicators()->GlobalComm();
+  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetCommunicators()->LocalComm();
 
   // Construct inter group communicator
   pcomm_ = Teuchos::rcp(new ParticleComm());

@@ -100,7 +100,10 @@ void DRT::Problem::Done()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::Problem::Problem()
-    : probtype_(ProblemType::none), restartstep_(0), restarttime_(0.0), npgroup_(Teuchos::null)
+    : probtype_(ProblemType::none),
+      restartstep_(0),
+      restarttime_(0.0),
+      communicators_(Teuchos::null)
 {
   materials_ = Teuchos::rcp(new MAT::PAR::Bundle());
   contactconstitutivelaws_ = Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::Bundle());
@@ -459,7 +462,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   {
     int rs = type.get<int>("RANDSEED");
     if (rs < 0)
-      rs = (int)time(nullptr) + 42 * DRT::Problem::Instance(0)->GetNPGroup()->GlobalComm()->MyPID();
+      rs = static_cast<int>(time(nullptr)) +
+           42 * DRT::Problem::Instance(0)->GetCommunicators()->GlobalComm()->MyPID();
 
     srand((unsigned int)rs);  // Set random seed for stdlibrary. This is deprecated, as it does not
                               // produce random numbers on some platforms!
@@ -491,28 +495,18 @@ const Teuchos::ParameterList& DRT::Problem::UMFPACKSolverParams()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::NPGroup(int groupId, int ngroup, std::map<int, int> lpidgpid,
-    Teuchos::RCP<Epetra_Comm> lcomm, Teuchos::RCP<Epetra_Comm> gcomm, NestedParallelismType npType)
+void DRT::Problem::SetCommunicators(Teuchos::RCP<COMM_UTILS::Communicators> communicators)
 {
-  if (npgroup_ != Teuchos::null) dserror("NPGroup was already set.");
-  npgroup_ = Teuchos::rcp(
-      new COMM_UTILS::NestedParGroup(groupId, ngroup, std::move(lpidgpid), lcomm, gcomm, npType));
+  if (communicators_ != Teuchos::null) dserror("Communicators were already set.");
+  communicators_ = communicators;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::NPGroup(COMM_UTILS::NestedParGroup& npgroup)
+Teuchos::RCP<COMM_UTILS::Communicators> DRT::Problem::GetCommunicators() const
 {
-  if (npgroup_ != Teuchos::null) dserror("NPGroup was already set.");
-  npgroup_ = Teuchos::rcp(new COMM_UTILS::NestedParGroup(npgroup));
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<COMM_UTILS::NestedParGroup> DRT::Problem::GetNPGroup()
-{
-  if (npgroup_ == Teuchos::null) dserror("No NPGroup allocated yet.");
-  return npgroup_;
+  if (communicators_ == Teuchos::null) dserror("No communicators allocated yet.");
+  return communicators_;
 }
 
 /*----------------------------------------------------------------------*/
@@ -2158,7 +2152,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     // we read nodes and elements for the desired fields as specified above
     nodereader.Read();
 
-    NestedParallelismType npType = DRT::Problem::Instance()->GetNPGroup()->NpType();
+    NestedParallelismType npType = DRT::Problem::Instance()->GetCommunicators()->NpType();
     // care for special applications
     switch (GetProblemType())
     {
@@ -2220,8 +2214,8 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
     macro_dis_name = "scatra";
 
   // fetch communicators
-  Teuchos::RCP<Epetra_Comm> lcomm = npgroup_->LocalComm();
-  Teuchos::RCP<Epetra_Comm> gcomm = npgroup_->GlobalComm();
+  Teuchos::RCP<Epetra_Comm> lcomm = communicators_->LocalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = communicators_->GlobalComm();
 
   DRT::Problem* macro_problem = DRT::Problem::Instance();
   Teuchos::RCP<DRT::Discretization> macro_dis = macro_problem->GetDis(macro_dis_name);
@@ -2310,7 +2304,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
   {
     // create the sub communicator that includes one macro proc and some supporting procs
     Teuchos::RCP<Epetra_Comm> subgroupcomm = Teuchos::rcp(new Epetra_MpiComm(mpi_local_comm));
-    npgroup_->SetSubComm(subgroupcomm);
+    communicators_->SetSubComm(subgroupcomm);
 
     // find out how many micro problems have to be solved on this macro proc
     int microcount = 0;
@@ -2409,7 +2403,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
         // replace standard dofset inside micro discretization by independent dofset
         // to avoid inconsistent dof numbering in non-nested parallel settings with more than one
         // micro discretization
-        if (npgroup_->NpType() == no_nested_parallelism)
+        if (communicators_->NpType() == no_nested_parallelism)
           dis_micro->ReplaceDofSet(Teuchos::rcp(new DRT::IndependentDofSet()));
 
         // create discretization writer - in constructor set into and owned by corresponding discret
@@ -2470,8 +2464,8 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 void DRT::Problem::ReadMicrofieldsNPsupport()
 {
   DRT::Problem* problem = DRT::Problem::Instance();
-  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
-  Teuchos::RCP<Epetra_Comm> gcomm = problem->GetNPGroup()->GlobalComm();
+  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetCommunicators()->LocalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = problem->GetCommunicators()->GlobalComm();
 
   // receive number of procs that have micro material
   int nummicromat = 0;
@@ -2507,7 +2501,7 @@ void DRT::Problem::ReadMicrofieldsNPsupport()
 
   // create the sub communicator that includes one macro proc and some supporting procs
   Teuchos::RCP<Epetra_Comm> subgroupcomm = Teuchos::rcp(new Epetra_MpiComm(mpi_local_comm));
-  npgroup_->SetSubComm(subgroupcomm);
+  communicators_->SetSubComm(subgroupcomm);
 
   // number of micro problems for this sub group
   int microcount = 0;

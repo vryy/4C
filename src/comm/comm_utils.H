@@ -28,47 +28,66 @@
 #include "dserror.H"
 #include "globalproblem_enums.H"
 
-namespace DRT
-{
-  class Discretization;
-  class Problem;
-}  // namespace DRT
-
 /*----------------------------------------------------------------------*
  |                                                          ghamm 01/12 |
  *----------------------------------------------------------------------*/
 namespace COMM_UTILS
 {
   // forward declaration
-  class NestedParGroup;
+  class Communicators;
 
   //! create a local and a global communicator for the problem
-  void CreateComm(int argc, char** argv);
+  Teuchos::RCP<COMM_UTILS::Communicators> CreateComm(std::vector<std::string> argv);
 
-  //! distribute discretizations from one group to the others with ponzi scheme
-  void BroadcastDiscretizations(int instance = 0);
-
-  //! distribute a discretization from one group to one other
-  void NPDuplicateDiscretization(const int sgroup, const int rgroup,
-      Teuchos::RCP<NestedParGroup> group, Teuchos::RCP<DRT::Discretization> dis,
-      Teuchos::RCP<Epetra_MpiComm> icomm);
-
-  //! distribute a discretization from one group to one other
-  //! if the groups have the same size. In this special case it is desirable
-  //! that the parallel distribution is the same for all groups. Hence,
-  //! a different braodcasting scheme is used
-  void NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rgroup,
-      Teuchos::RCP<NestedParGroup> group, Teuchos::RCP<DRT::Discretization> dis,
-      Teuchos::RCP<Epetra_MpiComm> icomm);
-
-  //! comparison of two vectors from parallel baci runs for debugging reason using the given
-  //! tolerance for each entry
-  void CompareVectors(
+  /*! \brief debug routine to compare vectors from different parallel baci runs
+   *
+   * You can add COMM_UTILS::AreDistributedVectorsIdentical in your code which will lead to a
+   * comparison of the given vector for different executables and/or configurations.
+   * Command for using this feature: \n
+   * mpirun -np 1 ./baci-release -nptype=diffgroup0 input.dat xxx_ser : -np 3 ./other-baci-release
+   * -nptype=diffgroup1 other-input.dat xxx_par \n
+   * Do not forget to include the header (#include "comm_utils.H"), otherwise it won't compile.
+   *
+   * A further nice option is to compare results from different executables used for
+   * running the same simulation.
+   *
+   * \note You need to add the AreDistributedVectorsIdentical method in both executables at the same
+   * position in the code
+   *
+   * \param communicators (in): communicators containing local and global comm
+   * \param vec           (in): vector to compare
+   * \param name          (in): user given name for the vector (needs to match within gcomm)
+   * \param tol           (in): comparison tolerance for infinity norm
+   * \return boolean to indicate if compared vectors are identical
+   */
+  bool AreDistributedVectorsIdentical(const COMM_UTILS::Communicators& communicators,
       Teuchos::RCP<const Epetra_MultiVector> vec, const char* name, double tol = 1.0e-14);
 
-  //! comparison of two sparse matrices from parallel baci runs for debugging reason using the given
-  //! tolerance for each entry
-  void CompareSparseMatrices(
+  /*! \brief debug routine to compare sparse matrices from different parallel baci runs
+   *
+   * You can add COMM_UTILS::AreDistributedSparseMatricesIdentical in your code which will lead to a
+   * comparison of the given sparse matrices for different executables and/or configurations.
+   * Command for using this feature: \n
+   * mpirun -np 1 ./baci-release -nptype=diffgroup0 input.dat xxx_ser : -np 3 ./other-baci-release
+   * -nptype=diffgroup1 other-input.dat xxx_par \n
+   * Do not forget to include the header (#include "comm_utils.H"), otherwise it won't compile.
+   *
+   * A further nice option is to compare results from different executables used for
+   * running the same simulation.
+   *
+   * \note You need to add the AreDistributedSparseMatricesIdentical method in both executables at
+   * the same position in the code.
+   *
+   * \note From LINALG::SparseOperator to CrsMatrix, just do:
+   * Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(yoursparseoperator)->EpetraMatrix()
+   *
+   * \param communicators (in): communicators containing local and global comm
+   * \param matrix        (in): matrix to compare
+   * \param name          (in): user given name for the matrix (needs to match within gcomm)
+   * \param tol           (in): comparison tolerance for infinity norm
+   * \return boolean to indicate if compared vectors are identical
+   */
+  bool AreDistributedSparseMatricesIdentical(const COMM_UTILS::Communicators& communicators,
       Teuchos::RCP<Epetra_CrsMatrix> matrix, const char* name, double tol = 1.0e-14);
 
   //! transform Epetra_Comm to Teuchos::Comm, Teuchos::RCP version
@@ -95,25 +114,21 @@ namespace COMM_UTILS
   }
 
 
-  class NestedParGroup
+  class Communicators
   {
    public:
-    NestedParGroup(int groupId, int ngroup, std::map<int, int> lpidgpid,
+    Communicators(int groupId, int ngroup, std::map<int, int> lpidgpid,
         Teuchos::RCP<Epetra_Comm> lcomm, Teuchos::RCP<Epetra_Comm> gcomm,
         NestedParallelismType npType);
 
-    NestedParGroup(NestedParGroup& npgroup);
-
-    virtual ~NestedParGroup(){};
-
     /// return group id
-    int GroupId() { return groupId_; }
+    int GroupId() const { return groupId_; }
 
     /// return number of groups
-    int NumGroups() { return ngroup_; }
+    int NumGroups() const { return ngroup_; }
 
     /// return group size
-    int GroupSize() { return lcomm_->NumProc(); }
+    int GroupSize() const { return lcomm_->NumProc(); }
 
     /// return global processor id of local processor id
     int GPID(int LPID) { return lpidgpid_[LPID]; }
@@ -122,19 +137,19 @@ namespace COMM_UTILS
     int LPID(int GPID);
 
     /// return local communicator
-    Teuchos::RCP<Epetra_Comm> LocalComm() { return lcomm_; }
+    Teuchos::RCP<Epetra_Comm> LocalComm() const { return lcomm_; }
 
     /// return local communicator
-    Teuchos::RCP<Epetra_Comm> GlobalComm() { return gcomm_; }
+    Teuchos::RCP<Epetra_Comm> GlobalComm() const { return gcomm_; }
 
     /// set a sub group communicator
     void SetSubComm(Teuchos::RCP<Epetra_Comm> subcomm);
 
     /// return sub group communicator
-    Teuchos::RCP<Epetra_Comm> SubComm() { return subcomm_; }
+    Teuchos::RCP<Epetra_Comm> SubComm() const { return subcomm_; }
 
     /// return nested parallelism type
-    NestedParallelismType NpType() { return npType_; }
+    NestedParallelismType NpType() const { return npType_; }
 
    private:
     /// group id

@@ -13,6 +13,7 @@
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Comm.h>
+#include <Epetra_MpiComm.h>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 #include <Epetra_CrsGraph.h>
@@ -22,8 +23,14 @@
 #include "node.H"
 #include "dofset_interface.H"
 #include "dserror.H"
+#include "globalproblem_enums.H"
 
 // forward declarations
+namespace COMM_UTILS
+{
+  class Communicators;
+}
+
 namespace LINALG
 {
   class SparseOperator;
@@ -41,6 +48,7 @@ namespace DRT
 {
   class AssembleStrategy;
   class DofSetProxy;
+  class Problem;
 
   /*!
   \brief A class to manage a discretization in parallel
@@ -2056,6 +2064,23 @@ namespace DRT
     //! Vector of DofSets
     std::vector<Teuchos::RCP<DofSetInterface>> dofsets_;
   };  // class Discretization
+
+  //! distribute discretizations from one group to the others with ponzi scheme
+  void BroadcastDiscretizations(DRT::Problem& problem);
+
+  //! distribute a discretization from one group to one other
+  void NPDuplicateDiscretization(const int sgroup, const int rgroup,
+      Teuchos::RCP<COMM_UTILS::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
+      ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm);
+
+  //! distribute a discretization from one group to one other
+  //! if the groups have the same size. In this special case it is desirable
+  //! that the parallel distribution is the same for all groups. Hence,
+  //! a different braodcasting scheme is used
+  void NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rgroup,
+      Teuchos::RCP<COMM_UTILS::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
+      ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm);
+
 }  // namespace DRT
 
 

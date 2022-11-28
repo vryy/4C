@@ -578,7 +578,7 @@ const Epetra_Comm& INVANA::MatParManager::Comm() { return discret_->Comm(); }
 /*----------------------------------------------------------------------*/
 const Epetra_Comm& INVANA::MatParManager::GComm()
 {
-  Epetra_Comm& gcomm = *(DRT::Problem::Instance()->GetNPGroup()->GlobalComm());
+  Epetra_Comm& gcomm = *(DRT::Problem::Instance()->GetCommunicators()->GlobalComm());
   return gcomm;
 }
 

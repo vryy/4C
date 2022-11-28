@@ -49,8 +49,8 @@ BINSTRATEGY::BinningStrategy::BinningStrategy()
       writebinstype_(DRT::INPUT::IntegralValue<INPAR::BINSTRATEGY::writebins>(
           DRT::Problem::Instance()->BinningStrategyParams(), ("WRITEBINS"))),
       havepbc_(false),
-      myrank_(DRT::Problem::Instance()->GetNPGroup()->GlobalComm()->MyPID()),
-      comm_(DRT::Problem::Instance()->GetNPGroup()->LocalComm()->Clone())
+      myrank_(DRT::Problem::Instance()->GetCommunicators()->GlobalComm()->MyPID()),
+      comm_(DRT::Problem::Instance()->GetCommunicators()->LocalComm()->Clone())
 {
   // initialize arrays
   for (int idim = 0; idim < 3; ++idim)

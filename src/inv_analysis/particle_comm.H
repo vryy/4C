@@ -23,7 +23,7 @@ namespace INVANA
    * the INVANA::ParticleGroup
    *
    * It just provides the global communicator gcomm_ and the local communicator
-   * lcomm_ from the DRT::NestedParGroup given upon Init(). Furthermore, since
+   * lcomm_ from the COMM_UTILS::Communicators given upon Init(). Furthermore, since
    * INVANA::ParticleData might be locally distributed, it furthermore provides
    * an intergroup communicator icomm_ to communicate between the respective
    * i-th local procs of each group. Equal group size is required therefore!

@@ -63,8 +63,8 @@ void INVANA::ParticleGroup::Setup()
   DRT::Problem* problem = DRT::Problem::Instance();
 
   // get some global numbers and validate
-  ngroups_ = problem->GetNPGroup()->NumGroups();
-  mygroup_ = problem->GetNPGroup()->GroupId();
+  ngroups_ = problem->GetCommunicators()->NumGroups();
+  mygroup_ = problem->GetCommunicators()->GroupId();
   gnumparticles_ = params_.get<int>("NUM_PARTICLES");
 
   // only allow for euqally distributed particles among groups
@@ -88,8 +88,8 @@ void INVANA::ParticleGroup::SetupComms()
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
-  Teuchos::RCP<Epetra_Comm> gcomm = problem->GetNPGroup()->GlobalComm();
-  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = problem->GetCommunicators()->GlobalComm();
+  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetCommunicators()->LocalComm();
 
   // Construct inter group communicator
   pcomm_ = Teuchos::rcp(new ParticleComm());

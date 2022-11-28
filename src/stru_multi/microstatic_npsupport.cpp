@@ -52,7 +52,7 @@ void STRUMULTI::np_support_drt()
   H5Fcreate("xxxdummyHDF5file", H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
   // get sub communicator including the master proc
-  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetNPGroup()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetCommunicators()->SubComm();
 
   // bool for checking whether restart has already been called
   bool restart = false;

@@ -22,7 +22,7 @@ MAT::ELASTIC::PAR::IsoVolAAAGasser::IsoVolAAAGasser(const Teuchos::RCP<MAT::PAR:
     : Parameter(matdata), isinit_(false)
 {
   // new style
-  Epetra_Map dummy_map(1, 1, 0, *(DRT::Problem::Instance()->GetNPGroup()->LocalComm()));
+  Epetra_Map dummy_map(1, 1, 0, *(DRT::Problem::Instance()->GetCommunicators()->LocalComm()));
 
   // Epetra_Map dummy_map(1, 1, 0,
   // *(DRT::Problem::Instance()->GetDis("Structure")->ElementColMap()));

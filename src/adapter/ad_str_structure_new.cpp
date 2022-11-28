@@ -757,7 +757,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(Teuchos::ParameterList& iofla
     // birzle 02/2017
     case ProblemType::invana:
     {
-      Teuchos::RCP<COMM_UTILS::NestedParGroup> group = DRT::Problem::Instance()->GetNPGroup();
+      Teuchos::RCP<COMM_UTILS::Communicators> group = DRT::Problem::Instance()->GetCommunicators();
 
       const int groupid = group->GroupId();
 

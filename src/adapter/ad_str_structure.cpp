@@ -281,7 +281,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
   // birzle 02/2017
   if (probtype == ProblemType::invana)
   {
-    Teuchos::RCP<COMM_UTILS::NestedParGroup> group = DRT::Problem::Instance()->GetNPGroup();
+    Teuchos::RCP<COMM_UTILS::Communicators> group = DRT::Problem::Instance()->GetCommunicators();
     const int groupid = group->GroupId();
 
     if (groupid != 0)

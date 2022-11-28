@@ -34,7 +34,7 @@ namespace IO
 
 namespace COMM_UTILS
 {
-  class NestedParGroup;
+  class Communicators;
 }
 
 namespace MAT
@@ -285,23 +285,13 @@ namespace DRT
     /// this->setParameterList(...) will accept.
     Teuchos::RCP<const Teuchos::ParameterList> getValidParameters() const override;
 
-    /// @name Nested parallelism group
+    /// @name Communicators and their parallel groups
 
-    /// nested parallelism group is initialized
-    void NPGroup(int groupId,             //!< group id
-        int ngroup,                       //!< number of groups in nested parallelism
-        std::map<int, int> lpidgpid,      //!< map of local and global proc ids
-        Teuchos::RCP<Epetra_Comm> lcomm,  //!< local communicator
-        Teuchos::RCP<Epetra_Comm> gcomm,  //!< global communicator
-        NestedParallelismType npType      //!< nested parallelism type
-    );
+    /// set communicators
+    void SetCommunicators(Teuchos::RCP<COMM_UTILS::Communicators> communicators);
 
-    /// nested parallelism group initialized from an existing NPgroup
-    void NPGroup(COMM_UTILS::NestedParGroup& npgroup  //!< copy from npgroup
-    );
-
-    /// return nested parallelism group
-    Teuchos::RCP<COMM_UTILS::NestedParGroup> GetNPGroup();
+    /// return communicators
+    Teuchos::RCP<COMM_UTILS::Communicators> GetCommunicators() const;
 
     //@}
 
@@ -684,8 +674,8 @@ namespace DRT
     /// of discretizations)
     std::map<std::pair<std::string, std::string>, std::map<int, int>> clonefieldmatmap_;
 
-    /// nested parallelism group
-    Teuchos::RCP<COMM_UTILS::NestedParGroup> npgroup_;
+    /// communicators
+    Teuchos::RCP<COMM_UTILS::Communicators> communicators_;
 
     /// @name File IO
 

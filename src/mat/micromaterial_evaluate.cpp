@@ -91,7 +91,7 @@ void MAT::MicroMaterial::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
       DRT::Problem::Instance(0)->GetDis("structure")->ElementRowMap()->MyGID(eleGID);
 
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetNPGroup()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetCommunicators()->SubComm();
 
   // tell the supporting procs that the micro material will be evaluated
   int task[2] = {0, eleGID};
@@ -175,7 +175,7 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3, 3>* defgrd, LINALG::Matrix<6
 void MAT::MicroMaterial::Update()
 {
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetNPGroup()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetCommunicators()->SubComm();
   if (subcomm->MyPID() == 0)
   {
     // tell the supporting procs that the micro material will be evaluated for the element with id
@@ -198,7 +198,7 @@ void MAT::MicroMaterial::Update()
 void MAT::MicroMaterial::PrepareOutput()
 {
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetNPGroup()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetCommunicators()->SubComm();
   if (subcomm->MyPID() == 0)
   {
     // tell the supporting procs that the micro material will be prepared for output
@@ -220,7 +220,7 @@ void MAT::MicroMaterial::PrepareOutput()
 void MAT::MicroMaterial::Output()
 {
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetNPGroup()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetCommunicators()->SubComm();
   if (subcomm->MyPID() == 0)
   {
     // tell the supporting procs that the micro material will be output
@@ -245,7 +245,7 @@ void MAT::MicroMaterial::ReadRestart(const int gp, const int eleID, const bool e
   double V0 = InitVol();
 
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetNPGroup()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetCommunicators()->SubComm();
 
   // tell the supporting procs that the micro material will restart
   int task[2] = {4, eleID};
@@ -294,7 +294,7 @@ void MAT::MicroMaterial::ReadRestart(
 void MAT::MicroMaterial::InvAnaInit(bool eleowner, int eleID)
 {
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetNPGroup()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetCommunicators()->SubComm();
   if (subcomm->MyPID() == 0)
   {
     // tell the supporting procs that the micro material initializes inverse analysis
