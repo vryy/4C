@@ -497,3 +497,20 @@ template void CONTACT::CoIntegratorNitschePoro::IntegrateTest<3>(const double,
     const GEN::pairedvector<int, double>&, const GEN::pairedvector<int, double>&,
     const LINALG::Matrix<3, 1>& test_dir,
     const std::vector<GEN::pairedvector<int, double>>& test_dir_deriv);
+
+template void CONTACT::CoIntegratorNitschePoro::IntegratePoroNoOutFlow<3>(const double fac,
+    MORTAR::MortarElement& ele, double* xi, const LINALG::SerialDenseVector& shape,
+    const LINALG::SerialDenseMatrix& deriv, const double jac,
+    const GEN::pairedvector<int, double>& jacintcellmap, const double wgt,
+    const LINALG::Matrix<3, 1>& normal,
+    const std::vector<GEN::pairedvector<int, double>>& normal_deriv,
+    MORTAR::MortarElement& otherele, const LINALG::SerialDenseVector& othershape);
+
+template void CONTACT::CoIntegratorNitschePoro::SoEleCauchy<3>(MORTAR::MortarElement& moEle,
+    double* boundary_gpcoord, std::vector<GEN::pairedvector<int, double>> boundary_gpcoord_lin,
+    const double gp_wgt, const LINALG::Matrix<3, 1>& normal,
+    std::vector<GEN::pairedvector<int, double>>& normal_deriv,
+    const LINALG::Matrix<3, 1>& direction,
+    std::vector<GEN::pairedvector<int, double>>& direction_deriv, const double w, double& cauchy_nt,
+    GEN::pairedvector<int, double>& deriv_sigma_nt_d,
+    GEN::pairedvector<int, double>& deriv_sigma_nt_p);
