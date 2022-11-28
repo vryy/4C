@@ -627,7 +627,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
       //   G. Bauer, V. Gravemeier, W.A. Wall, A 3D finite element approach for the coupled
       //   numerical simulation of electrochemical systems and fluid flow,
       //   International Journal for Numerical Methods in Engineering, 86
-      //   (2011) 1339–1359. DOI: 10.1002/nme.3107
+      //   (2011) 1339-1359. DOI: 10.1002/nme.3107
 
       // create the parameters for the error calculation
       Teuchos::ParameterList eleparams;

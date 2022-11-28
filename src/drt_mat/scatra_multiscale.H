@@ -80,7 +80,7 @@ namespace MAT
      * @param[in] phinp_macro  macro-scale state variables
      * @param[out] q_micro        micro-scale flux
      * @param[out] dq_dphi_micro  derivatives of micro-scale flux w.r.t. macro-scale state variables
-     * @param[in] detF       determinant of deformation gradient of macro dis at current Gauß point
+     * @param[in] detF       determinant of deformation gradient of macro dis at current Gauss point
      * @param[in] solve      flag indicating whether micro-scale problem should be solved
      */
     void Evaluate(const int gp_id, const std::vector<double>& phinp_macro, double& q_micro,
@@ -131,7 +131,7 @@ namespace MAT
 
     //! return specific micro-scale surface area A_s
     //!
-    //! \param detF determinant of deformation gradient of macro dis at current Gauß point
+    //! \param detF determinant of deformation gradient of macro dis at current Gauss point
     //! \return  specific area between micro and macro dis
     double SpecificMicroScaleSurfaceArea(const double detF) const
     {

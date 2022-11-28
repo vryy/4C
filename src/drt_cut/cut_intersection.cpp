@@ -254,13 +254,13 @@ bool GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside
   // the edge
 
   const double inner_product = dedge.Dot(normal_center);
-  /* If the angle between the normal and the edge is smaller than 89°
-   * ( cos( 89° ) = 0.017472406... ), the vectors are definitely not parallel,
+  /* If the angle between the normal and the edge is smaller than 89 degrees
+   * ( cos( 89 degrees ) = 0.017472406... ), the vectors are definitely not parallel,
    * otherwise it's possible and we do another test. Note, that both vectors have
    * unit length! */
   {
     double a = std::acos(std::abs(inner_product)) * 180 / (2.0 * std::acos(0.0));
-    std::cout << "angle between side normal and edge = " << a << "°" << std::endl;
+    std::cout << "angle between side normal and edge = " << a << "degrees" << std::endl;
   }
   return (std::abs(inner_product) <= 0.01747);
 }
@@ -413,7 +413,7 @@ bool GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside
   if (s_nrm2 == 0.0) dserror("The 2-nd edge length is zero!");
 
   const double inner_product = deedge.Dot(dsedge);
-  /* If the angle between the two lines is larger than 1° ( cos( 1° ) = 0.99866695... ),
+  /* If the angle between the two lines is larger than 1 degree ( cos( 1 degree ) = 0.99866695... ),
    * the two edges are definitely not parallel, otherwise it's possible and
    * we take a closer look. */
   if (debug)
@@ -421,7 +421,7 @@ bool GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside
     std::cout << e_nrm2 << ", " << s_nrm2 << ", " << inner_product << std::endl;
     double a = std::abs(inner_product) / (e_nrm2 * s_nrm2);
     a = std::acos((a > 1.0 ? 1.0 : a)) * 180 / (2.0 * std::acos(0.0));
-    std::cout << "angle between edge and edge = " << a << "°" << std::endl;
+    std::cout << "angle between edge and edge = " << a << "degrees" << std::endl;
   }
   return (std::abs(inner_product) >= e_nrm2 * s_nrm2 * 0.9998);
 }

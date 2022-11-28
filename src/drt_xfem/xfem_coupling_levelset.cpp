@@ -683,7 +683,7 @@ double XFEM::LevelSetCoupling::FunctImplementation(
         {
           if (l > 0) armijo *= 0.5;
 
-          // d(t+armijo*dt) < d(t) !!! and armijo (0,1] möglichst nahe an 1
+          // d(t+armijo*dt) < d(t) !!! and armijo (0,1] moeglichst nahe an 1
           double t_new = t_0 + armijo * dt;
           double arc_new = two_PI * t_new;
           double cosine_new = cos(arc_new);

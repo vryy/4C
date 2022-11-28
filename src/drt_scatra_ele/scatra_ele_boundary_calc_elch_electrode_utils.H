@@ -90,7 +90,7 @@ namespace DRT
        * @param [in] frt          Faraday/(gasconstant * temperature)
        * @param [in] j0           exchange mass flux density
        * @param [in] eta          electrode-electrolyte overpotential
-       * @param [in] timefacwgt   time-integration factor times Gauß point weight
+       * @param [in] timefacwgt   time-integration factor times Gauss point weight
        * @param [out] dj_dd_slave_timefacwgt [out] linearization of Butler-Volmer mass flux density
        *                                            w.r.t. slave side displacements times timefacwgt
        */

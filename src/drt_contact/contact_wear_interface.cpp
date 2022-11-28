@@ -1908,7 +1908,7 @@ void WEAR::WearInterface::AssembleLinSlip_W(LINALG::SparseMatrix& linslipWglobal
         // function when applied to the limit case frcoeff=0 (frictionless).
         // In this case, the simple frictionless sliding condition should
         // be consistently recovered, which unfortunately is not the case.
-        // This fact is well-known (see PhD thesis S. Hüeber) and now
+        // This fact is well-known (see PhD thesis S. Hueeber) and now
         // taken care of by a special treatment as can be seen below
         //
         //****************************************************************
@@ -2098,7 +2098,7 @@ void WEAR::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
       // function when applied to the limit case frcoeff=0 (frictionless).
       // In this case, the simple frictionless sliding condition should
       // be consistently recovered, which unfortunately is not the case.
-      // This fact is well-known (see PhD thesis S. Hüeber) and now
+      // This fact is well-known (see PhD thesis S. Hueeber) and now
       // taken care of by a special treatment as can be seen below
       //
       //****************************************************************

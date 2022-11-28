@@ -81,7 +81,7 @@ namespace INPAR
       initital_relaxation  //!< initial relaxation mode
     };
 
-    // permittivität (not a general definition, but only once used)
+    // permittivitaet (not a general definition, but only once used)
     const double epsilon_const = 1.e-4;
 
     /// set the elch parameters

@@ -194,7 +194,7 @@ namespace MAT
     //! Materials that use this method need to return true in UsesExtendedUpdate()
     //!
     //! \param defgrd deformation gradient
-    //! \param gp Gauß point
+    //! \param gp Gauss point
     //! \param params Container for additional information
     //! \param eleGID Element id
     virtual void Update(LINALG::Matrix<3, 3> const& defgrd, int const gp,

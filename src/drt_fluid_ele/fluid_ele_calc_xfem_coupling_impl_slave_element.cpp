@@ -538,9 +538,9 @@ namespace DRT
           // update solution
           proj_sol_.Update(1.0, proj_incr_, 1.0);
 
-          // check ° absolute criterion for local coordinates (between [-1,1]^2)
-          //       ° absolute criterion for distance (-> 0)
-          //       ° absolute criterion for whole residuum
+          // check 1) absolute criterion for local coordinates (between [-1,1]^2)
+          //       2) absolute criterion for distance (-> 0)
+          //       3) absolute criterion for whole residuum
           if (proj_incr_(2) < absTOLdist &&
               sqrt(proj_incr_(0) * proj_incr_(0) + proj_incr_(1) * proj_incr_(1)) < absTolIncr &&
               proj_residuum_.Norm2() < absTolRes)

@@ -28,8 +28,8 @@ namespace STR
      *  members of the special orthogonal group SO3 which is no
      *  vector space!
      *
-     *  The implementation is based on [Arnold, Brüls (2007)],
-     *  [Brüls, Cardona, 2010] and [Brüls, Cardona, Arnold (2012)].
+     *  The implementation is based on [Arnold, Bruels (2007)],
+     *  [Bruels, Cardona, 2010] and [Bruels, Cardona, Arnold (2012)].
      *  See also Christoph Meier's dissertation for explanations,
      *  governing equations, differences to classical GenAlpha,
      *  comments on why we chose this time discretization, ...

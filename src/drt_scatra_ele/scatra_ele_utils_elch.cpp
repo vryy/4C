@@ -497,7 +497,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
 
       for (int vi = 0; vi < nen_; ++vi)
       {
-        // see Wittmann, Erweiterte Reaktionsmodelle für die numerische Simulation von
+        // see Wittmann, Erweiterte Reaktionsmodelle fuer die numerische Simulation von
         // elektrochemischen Systemen, p.20, equ. 3.4
         const double fac_fns_funct_vi = scalar * faraday * nume * fac * fns * funct(vi);
         for (int ui = 0; ui < nen_; ++ui)

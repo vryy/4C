@@ -1729,7 +1729,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
     LINALG::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal)
 {
   // FIXGIT: Assemble LinStick is containing a matrix for the de-
-  // rivatives of the Lagrange multipliers. This is according to Hüeber.
+  // rivatives of the Lagrange multipliers. This is according to Hueeber.
   // Because of worse convergence, this is not implemented, but the
   // code is commented after the algorithm.
 
@@ -1832,7 +1832,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
     // function when applied to the limit case frcoeff=0 (frictionless).
     // In this case, the simple frictionless sliding condition should
     // be consistently recovered, which unfortunately is not the case.
-    // This fact is well-known (see PhD thesis S. Hüeber) and now
+    // This fact is well-known (see PhD thesis S. Hueeber) and now
     // taken care of by a special treatment as can be seen below
     //
     // seitz 11/2013
@@ -2703,7 +2703,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       // function when applied to the limit case frcoeff=0 (frictionless).
       // In this case, the simple frictionless sliding condition should
       // be consistently recovered, which unfortunately is not the case.
-      // This fact is well-known (see PhD thesis S. Hüeber) and now
+      // This fact is well-known (see PhD thesis S. Hueeber) and now
       // taken care of by a special treatment as can be seen below
       //
       // seitz11/13
@@ -3693,7 +3693,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       // function when applied to the limit case frbound=0 (frictionless).
       // In this case, the simple frictionless sliding condition should
       // be consistently recovered, which unfortunately is not the case.
-      // This fact is well-known (see PhD thesis S. Hüeber) and now
+      // This fact is well-known (see PhD thesis S. Hueeber) and now
       // taken care of by a special treatment as can be seen below
       //
       //****************************************************************
@@ -4462,7 +4462,7 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
       // function when applied to the limit case frcoeff=0 (frictionless).
       // In this case, the simple frictionless sliding condition should
       // be consistently recovered, which unfortunately is not the case.
-      // This fact is well-known (see PhD thesis S. Hüeber) and now
+      // This fact is well-known (see PhD thesis S. Hueeber) and now
       // taken care of by a special treatment as can be seen below
       //
       // seitz11/13

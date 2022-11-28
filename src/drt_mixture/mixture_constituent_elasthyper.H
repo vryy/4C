@@ -57,7 +57,7 @@ namespace MIXTURE
 
     /*!
      * Evaluates the constituents. Needs to compute the stress contribution of the constituent out
-     * of the displacements. Will be called for each Gauß point
+     * of the displacements. Will be called for each Gauss point
      *
      * @param F Deformation gradient
      * @param E_strain Green-Lagrange strain in strain-like Voigt notation

@@ -595,7 +595,7 @@ void MAT::GrowthLawAnisoStress::EvaluateGrowthFunctionDerivTheta(double& dgrowth
   }
 
   // derivative of trace of Mandel stress tensor w.r.t. theta
-  // cf. Göktepe et al. J Theor Biol (2010), eq. 26 ff.
+  // cf. Goektepe et al. J Theor Biol (2010), eq. 26 ff.
   const double dgrowthtrig = dCdachdthetavec(0) * Sdachvec(0) + dCdachdthetavec(1) * Sdachvec(1) +
                              dCdachdthetavec(2) * Sdachvec(2) + dCdachdthetavec(3) * Sdachvec(3) +
                              dCdachdthetavec(4) * Sdachvec(4) + dCdachdthetavec(5) * Sdachvec(5)
@@ -1300,7 +1300,7 @@ void MAT::GrowthLawACRadialRefConc::Evaluate(double* theta, const double& thetao
     const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
-  // get pointer to vector containing the scalar values at the Gauß points
+  // get pointer to vector containing the scalar values at the Gauss points
   Teuchos::RCP<std::vector<std::vector<double>>> concentrations =
       params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc",
           Teuchos::rcp(new std::vector<std::vector<double>>(30, std::vector<double>(20, 0.0))));

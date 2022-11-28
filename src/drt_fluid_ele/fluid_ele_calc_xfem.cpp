@@ -4529,7 +4529,7 @@ namespace DRT
         // evaluate shape functions and derivatives at integration point
         my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
 
-        // Summe über alle Knoten
+        // Summe ueber alle Knoten
         for (int ui = 0; ui < my::nen_; ++ui)
         {
           for (int idim = 0; idim < my::nsd_; ++idim)

@@ -29,7 +29,7 @@ namespace LINALG::SOLVER
    *
    * MueLu User's Guide: L. Berger-Vergiat, C. A. Glusa, J. J. Hu, M. Mayr,
    * A. Prokopenko, C. M. Siefert, R. S. Tuminaro, T. A. Wiesner:
-   * MueLu User’s Guide, Technical Report, Sandia National Laboratories, SAND2019-0537, 2019
+   * MueLu User's Guide, Technical Report, Sandia National Laboratories, SAND2019-0537, 2019
    */
   class MueLuPreconditioner : public PreconditionerType
   {

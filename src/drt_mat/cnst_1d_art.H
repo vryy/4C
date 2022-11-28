@@ -225,7 +225,7 @@ namespace MAT
      *
      *  Calculate blood viscosity based on empirical law by
      *  Pries AR, Secomb TW. 2005. Microvascular blood viscosity in vivo and the endothelial surface
-     *  layer. Am. J. Physiol. Heart Circ. Physiol. 289:H2657–64
+     *  layer. Am. J. Physiol. Heart Circ. Physiol. 289:H2657-64
      *  https://doi.org/10.1152/ajpheart.00297.2005
      *  hematocrit of 0.45 (blood fully saturated with oxygen) is assumed
      *

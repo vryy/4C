@@ -84,7 +84,7 @@ namespace BINSTRATEGY
    * - M. P. Allen and D. J. Tildesley, Computer simulation of liquids, Oxford University Press, New
    *   York, 1991.
    * - Allen S. Plimpton, Fast parallel algorithms for short-range molecular dynamics, Journal of
-   *   Computational Physics 117, 1–19, 1995.
+   *   Computational Physics 117, 1-19, 1995.
    * - T. Poschel and T. Schwager, Computational Granular Dynamics, Springer-Verlag,
    *   Berlin,Heidelberg, 2005.
 

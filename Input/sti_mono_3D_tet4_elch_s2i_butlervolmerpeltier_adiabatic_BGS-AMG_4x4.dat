@@ -12,7 +12,7 @@ Test case for scatra-thermo interaction involving electrochemistry and electrode
 - charge transfer kinetics characterized by Butler-Volmer-Peltier kinetics
 - discharge from fully charged state at C rate of 10
 - 1560 tet4 elements with matching interface nodes
-- cf. bachelor thesis by Tobias Crönert (2015) and term paper by Maximilian Wurzer (2016) for details
+- cf. bachelor thesis by Tobias Croenert (2015) and term paper by Maximilian Wurzer (2016) for details
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    1560
 //NODES       533

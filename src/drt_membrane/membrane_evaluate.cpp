@@ -809,7 +809,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
     // The growth remodel elast hyper material needs some special quantities for its evaluation
     if (Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
     {
-      // Gauß-point coordinates in reference configuration
+      // Gauss-point coordinates in reference configuration
       LINALG::Matrix<1, noddof_> gprefecoord(true);
       gprefecoord.MultiplyTN(shapefcts, xrefe);
       params.set("gprefecoord", gprefecoord);

@@ -2243,7 +2243,7 @@ void MORTAR::MortarInterface::EvaluateCoupling(const Epetra_Map& selecolmap,
   {
     //*********************************
     // Mortar Coupling (STS)    (2D/3D)
-    // Gauß-Point-To-Segment (GPTS)
+    // Gauss-Point-To-Segment (GPTS)
     //*********************************
     case INPAR::MORTAR::algorithm_mortar:
     case INPAR::MORTAR::algorithm_gpts:

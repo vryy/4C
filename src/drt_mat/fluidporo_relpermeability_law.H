@@ -77,7 +77,7 @@ namespace MAT
     //! class for varying relative permeability
     // relative permeabilty of phase i is calculated via saturation_i^exponent as in
     // G. Sciume, William G. Gray, F. Hussain, M. Ferrari, P. Decuzzi, and B. A. Schrefler.
-    // Three phase flow dynamics in tumor growth. Computational Mechanics, 53:465–484, 2014
+    // Three phase flow dynamics in tumor growth. Computational Mechanics, 53:465-484, 2014
     class FluidPoroRelPermeabilityLawExponent : public FluidPoroRelPermeabilityLaw
     {
      public:

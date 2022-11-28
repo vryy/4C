@@ -8,7 +8,7 @@
        implementation is based on
        Simo and Miehe: "Associative coupled thermoplasticity at finite strains:
        Formulation, numerical analysis and implementation", in Computer Methods
-       in Applied Mechanics and Engineering, 98:41–104, 1992.
+       in Applied Mechanics and Engineering, 98:41-104, 1992.
 
        geometrically nonlinear, finite strains, rate-independent, thermo-plasticity
 

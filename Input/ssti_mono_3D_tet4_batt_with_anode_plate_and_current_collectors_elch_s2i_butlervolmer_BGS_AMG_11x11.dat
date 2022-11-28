@@ -22,7 +22,7 @@ as well as volumetric change of anode and cathode due to change of lithium conce
 - Adiabatic system
 - Generation of heat due to internal resistances
 - 5079 tet4 elements with matching interface nodes
-- used unit system is: mm, µg, nmol, ms, K, µA
+- used unit system is: mm, microg, nmol, ms, K, microA
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    3212
 //NODES       1078

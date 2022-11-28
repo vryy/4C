@@ -382,7 +382,8 @@ void CONTACT::AnalyticalSolutions3D(const LINALG::Matrix<3, 1>& pos, LINALG::Mat
 
     // std::cout << "\nA: " << A << " B: " << B << " u: " << usphere(0,0) << std::endl;
     // std::cout << "x: " << pos(0,0) << " y: " << pos(1,0) << " z: " << pos(2,0) << std::endl;
-    // std::cout << "r: " << r << " phi: " << phi*180/M_PI << "° theta: " << theta*180/M_PI << "°"
+    // std::cout << "r: " << r << " phi: " << phi*180/M_PI << "degrees theta: " << theta*180/M_PI <<
+    // "degrees"
     // << std::endl; std::cout << "u: " << usphere(0,0) << " v: " << usphere(1,0) << "w: " <<
     // usphere(2,0) << std::endl; std::cout << trafo << std::endl << std::endl;
   }

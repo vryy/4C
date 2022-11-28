@@ -38,7 +38,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
         dserror(
             "The Solidscatra elements are only tested for the Hex8, Hex27, Tet4, and Tet10 case. "
             "The following should work, but keep your eyes open (especially with the order of the "
-            "Gauß points)");
+            "Gauss points)");
       }
 
       /* =========================================================================*/
@@ -78,10 +78,10 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
 
         volume_ref += detJrefpar_wgp;
 
-        // concentrations at current gauß point
+        // concentrations at current gauss point
         std::vector<double> conc_gp_k(numscal, 0.0);
 
-        // shape functions evaluated at current gauß point
+        // shape functions evaluated at current gauss point
         LINALG::Matrix<numnod_, 1> shapefunct_gp(true);
         DRT::UTILS::shape_function<distype>(xsi_[igp], shapefunct_gp);
 
@@ -118,7 +118,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
           dserror(
               "The Solidscatra elements are only tested for the Hex8, Hex27, Tet4, and Tet10 case. "
               "The following should work, but keep your eyes open (especially with the order of "
-              "the Gauß points");
+              "the Gauss points");
         }
 
         /* =========================================================================*/
@@ -147,11 +147,11 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
 
         for (int igp = 0; igp < numgpt_; ++igp)
         {
-          // shape functions evaluated at current gauß point
+          // shape functions evaluated at current gauss point
           LINALG::Matrix<numnod_, 1> shapefunct_gp(true);
           DRT::UTILS::shape_function<distype>(xsi_[igp], shapefunct_gp);
 
-          // temperature at Gauß point withidentical shapefunctions for displacements and
+          // temperature at Gauss point withidentical shapefunctions for displacements and
           // temperatures
           gptemp->at(igp) = shapefunct_gp.Dot(etemp);
         }

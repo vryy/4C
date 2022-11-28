@@ -56,7 +56,7 @@ namespace MAT
     //! \param dq_dphi_micro   derivatives of micro-scale coupling flux w.r.t. macro-scale state
     //!                        variables
     //! \param detF            determinant of deformation gradient of macro dis at current
-    //!                        Gauß point
+    //!                        Gauss point
     //! \param solve           flag indicating whether micro-scale problem should be
     //!                        solved
     void Evaluate(const std::vector<double>& phinp_macro, double& q_micro,

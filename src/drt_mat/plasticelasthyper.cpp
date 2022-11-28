@@ -1908,7 +1908,7 @@ void MAT::PlasticElastHyper::EvaluateCauchyTempDeriv(const LINALG::Matrix<3, 1>&
     potsum_[p]->AddCoupDerivVol(sqI3, &dPmodI, &ddPmodII, &dddPmodIII, NULL);
 
   // those are actually the temperature derivatives of the coefficients
-  // then we plug them into the cauchy stress derivative and voilà
+  // then we plug them into the cauchy stress derivative and voila
   // we keep many zero entries here for possible future extension to more
   // than just thermal expansion
   static LINALG::Matrix<3, 1> dPI(true);

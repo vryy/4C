@@ -102,10 +102,10 @@ namespace MAT
      * <ul>
      * <li> [1] 2012 Chapelle, Le Tallec, Moireau, Sorine - An energy-preserving muscle tissue
      * model: formulation and compatible discretizations, Journal for Multiscale Computational
-     * Engineering 10(2):189-211 (2012) <li> [2] 2001 Bestel, Clément, Sorine - A Biomechanical
+     * Engineering 10(2):189-211 (2012) <li> [2] 2001 Bestel, Clement, Sorine - A Biomechanical
      * Model of Muscle Contraction (2001), Medical Image Computing and Computer-Assisted
      * Intervention (MICCAI'01), vol. 2208, Springer-Verlag Berlin, 1159-1161 <li> [3] 2002
-     * Sermesant, Coudièr, Delingette, Ayache - Progress towards an electromechanical model of the
+     * Sermesant, Coudier, Delingette, Ayache - Progress towards an electromechanical model of the
      * heart for cardiac image analysis. (2002) IEEE International Symposium on Biomedical Imaging,
      * 10-13 <li> [4] 1998 Hunter, McCulloch, ter Keurs - Modelling the mechanical properties of
      * cardiac muscle (1998), Progress in Biophysics and Molecular Biology

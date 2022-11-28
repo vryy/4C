@@ -105,7 +105,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::CalcJatIntPoint
     DRT::Discretization& discretization  ///< discretization
 )
 {
-  // NOTE: we want to evaluate J=det(F) on the current gauß point of the current boundary element.
+  // NOTE: we want to evaluate J=det(F) on the current gauss point of the current boundary element.
   // Since this does depend on ALL values of the involved element this is quite a hassle :(
 
   // number of parent spatial dimensions

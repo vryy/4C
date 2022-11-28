@@ -1456,7 +1456,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
       //************************** DEBUG ******************************************
-      //    std::cout << "\nalpha: " << FADUTILS::CastToDouble(alpha * 180 / M_PI) << "°";
+      //    std::cout << "\nalpha: " << FADUTILS::CastToDouble(alpha * 180 / M_PI) <<  "degrees";
       //    std::cout << "\ncos(alpha): " << FADUTILS::CastToDouble( cos_alpha );
       //    std::cout << "\nsin(alpha): " << FADUTILS::CastToDouble( sin_alpha );
       //*********************** END DEBUG *****************************************
@@ -1530,7 +1530,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           this->Print(std::cout);
 
           std::cout << "\ngap_ul: " << FADUTILS::CastToDouble(gap_ul);
-          std::cout << "\nalpha: " << FADUTILS::CastToDouble(alpha * 180 / M_PI) << "°";
+          std::cout << "\nalpha: " << FADUTILS::CastToDouble(alpha * 180 / M_PI) << "degrees";
 
           dserror(
               "gap_ul=%f is negative or very close to zero! Fatal error. Use regularization to"
@@ -2714,7 +2714,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   {
     //************************** DEBUG ******************************************
     //      std::cout << "\n\nINFO: Enclosed angle is close to zero: alpha="
-    //          << FADUTILS::CastToDouble(alpha)*180/M_PI << "°\n"
+    //          << FADUTILS::CastToDouble(alpha)*180/M_PI << "degrees\n"
     //          << std::endl;
     //*********************** END DEBUG *****************************************
 
@@ -2755,8 +2755,8 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     // Element2()->Id()
     //          << ": iGP " << igp_total
     //          << ") with alpha=" << FADUTILS::CastToDouble(alpha) * 180 / M_PI
-    //          << "° >= " << BEAMSCOLINEARANGLETHRESHOLD * 180 / M_PI
-    //          << "° and gap_bl/R=" << FADUTILS::CastToDouble(gap_bl) / radius2_ << " < "
+    //          << "degrees >= " << BEAMSCOLINEARANGLETHRESHOLD * 180 / M_PI
+    //          << "degrees and gap_bl/R=" << FADUTILS::CastToDouble(gap_bl) / radius2_ << " < "
     //          << MAXNEGATIVEBILATERALGAP / radius2_
     //          << " and x/R=" << FADUTILS::CastToDouble(x) / radius2_ << std::endl;
     //*********************** END DEBUG *********************************************
@@ -2810,7 +2810,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   //      std::cout << "\nINFO: GP with negative gap_bl (ele GIDs " << Element1()->Id() << "&"
   //                << Element2()->Id() << ": iGP " << igp_total
   //                << ") with alpha=" << FADUTILS::CastToDouble(alpha) * 180 / M_PI
-  //                << "° and gap_bl/R=" << FADUTILS::CastToDouble(gap_bl) / radius2_
+  //                << "degrees and gap_bl/R=" << FADUTILS::CastToDouble(gap_bl) / radius2_
   //                << " and x/R=" << FADUTILS::CastToDouble(x) / radius2_;
   //
   //      std::cout << "\n|dist_ul|: " << FADUTILS::CastToDouble(FADUTILS::Norm(dist_ul));
@@ -2833,7 +2833,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     this->Print(std::cout);
 
     std::cout << "\ngap_bl: " << FADUTILS::CastToDouble(gap_bl);
-    std::cout << "\nalpha: " << FADUTILS::CastToDouble(alpha * 180 / M_PI) << "°";
+    std::cout << "\nalpha: " << FADUTILS::CastToDouble(alpha * 180 / M_PI) << "degrees";
     std::cout << "\nx: " << FADUTILS::CastToDouble(x) << std::endl;
 
     std::cout << "\nbeta: " << FADUTILS::CastToDouble(beta);
@@ -2858,7 +2858,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     // std::cout << "\nigp_total: " << igp_total;
     //
     // std::cout << "\ngap_bl: " << FADUTILS::CastToDouble(gap_bl);
-    // std::cout << "\nalpha: " << FADUTILS::CastToDouble(alpha * 180 / M_PI) << "°";
+    // std::cout << "\nalpha: " << FADUTILS::CastToDouble(alpha * 180 / M_PI) <<  "degrees";
     // std::cout << "\nx: " << FADUTILS::CastToDouble(x) << std::endl;
     //
     // std::cout << "\nbeta: " << FADUTILS::CastToDouble(beta);

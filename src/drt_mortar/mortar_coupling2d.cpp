@@ -85,7 +85,7 @@ bool MORTAR::Coupling2d::Project()
 
   // rough check of orientation of element centers
   // if slave and master element center normals form an
-  // angle > 90° the pair will not be considered further
+  // angle > 90 degrees the pair will not be considered further
   bool orient = RoughCheckOrient();
   if (!orient) return false;
 

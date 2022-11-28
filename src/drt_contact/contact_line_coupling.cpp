@@ -3385,7 +3385,7 @@ double CONTACT::LineToLineCouplingPoint3d::CalcCurrentAngle(
 
   // check if we used the right angle
   bool switchSign = false;
-  if (angleRad > 0.5 * M_PI)  // if angle is > 90°
+  if (angleRad > 0.5 * M_PI)  // if angle is > 90 degrees
   {
     switchSign = true;
 

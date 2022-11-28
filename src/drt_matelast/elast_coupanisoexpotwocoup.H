@@ -89,7 +89,7 @@ namespace MAT
       void PackAnisotropy(DRT::PackBuffer& data) const override;
 
       /*!
-       * \brief Unpüack data from the pack from parallel distribution and restart
+       * \brief Unpack data from the pack from parallel distribution and restart
        *
        * \param data data array to unpack from
        * \param position position of the data

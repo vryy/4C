@@ -161,7 +161,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics
     pot0 *= curvefac;
   }
 
-  // TODO: Ist es besser über parameter?
+  // TODO: Ist es besser ueber parameter?
   if (!(params.get<bool>("calc_status", false)))
   {
     if (not is_stationary)

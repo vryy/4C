@@ -9,7 +9,7 @@ created by pre_exodus on Tue 22th of november 2011
 Configuration according to
 "D. Kuhl, J. Riccius, and O. J. Haidn. Thermomechanical analysis and
 optimization of cryogenic liquid rocket engines. Journal of
-Propulsion and Power, 18:835–846, 2002."
+Propulsion and Power, 18:835-846, 2002."
 
 The structural model (circular ring without cooling channels) is
 composed of a copper alloy wall and a nickel jacket (thickness: 4 mm).
@@ -20,7 +20,7 @@ outer radius ra = 148.2 mm.
 
 The model is loaded by a mechanical and a thermal load which vary in time.
 The time-dependent loading represents a reduced load cycle possibly
-occurring in a realstic rocket nozzle. Moreover, no heat ﬂuxes are applied
+occurring in a realstic rocket nozzle. Moreover, no heat fluxes are applied
 at the surrounding surface of the body, such that q = 0 W/m2.
 
 discretisation: circumferential x radial(Cu) x radial(Ni) x depth = 100x10x10x2

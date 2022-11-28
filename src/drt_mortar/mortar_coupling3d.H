@@ -212,7 +212,7 @@ namespace MORTAR
      This methods checks the orientation of slave and master element.
      Projection and overlap detection only make sense if the scalar
      product of the two center normals is negative (i.e. if the two
-     elements form an angle smaller than 90°).
+     elements form an angle smaller than 90 degrees).
 
      */
     virtual bool RoughCheckOrient();

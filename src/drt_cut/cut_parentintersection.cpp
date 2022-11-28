@@ -42,8 +42,8 @@ void GEO::CUT::ParentIntersection::CreateNodalDofSet(
   // STEP 1: create for each node involved in CUT nodal cell sets for all nodes of adjacent elements
   // of this element
   //         nodal cell sets are sets of volumecells, that are connected via subelements in a real
-  //         element ° for linear elements a set contains just one single volumecell in its
-  //         plain_volumecell_set(with usually more than one integrationcells) ° for quadratic
+  //         element degrees for linear elements a set contains just one single volumecell in its
+  //         plain_volumecell_set(with usually more than one integrationcells) degrees for quadratic
   //         elements a set contains connected volumecell sets (sorted for inside and outside
   //         connections)
   //

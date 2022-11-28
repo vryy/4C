@@ -218,7 +218,7 @@ void MAT::Mixture_ElastHyper::Unpack(const std::vector<char>& data)
   }
 }
 
-// Read element and create arrays for the quantities at the Gauß points
+// Read element and create arrays for the quantities at the Gauss points
 void MAT::Mixture_ElastHyper::Setup(const int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   So3Material::Setup(numgp, linedef);

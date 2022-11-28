@@ -209,7 +209,7 @@ MAT 2 THERM_FourierIso CAPA 6.445 CONDUCT 1031.2
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 273.15 // 0°C
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 273.15 // 0 degrees celsius
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0

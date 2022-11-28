@@ -1019,7 +1019,7 @@ void DRT::ELEMENTS::Beam3k::Calculate_length(const std::vector<LINALG::Matrix<3,
       }
       deriv_length += gausspoints.qwgt[numgp] * deriv_int / r_xi.Norm2();
     }
-    // cout << endl << "Länge:" << length_ << "\tIntegral:" << int_length << "\tAbleitung:" <<
+    // cout << endl << "Laenge:" << length_ << "\tIntegral:" << int_length << "\tAbleitung:" <<
     // deriv_length << endl;
     res = length_ - int_length;
     // Update

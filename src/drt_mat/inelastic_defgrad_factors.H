@@ -398,14 +398,14 @@ namespace MAT
     virtual PAR::InelasticSource GetInelasticSource() = 0;
 
    protected:
-    //! Get ID of current Gauß point
+    //! Get ID of current Gauss point
     int GetGP() const { return gp_; };
 
-    //! Set ID of current Gauß point
+    //! Set ID of current Gauss point
     void SetGP(int gp) { gp_ = gp; };
 
    private:
-    //! ID of current Gauß point
+    //! ID of current Gauss point
     int gp_;
 
     /// material parameters
@@ -488,7 +488,7 @@ namespace MAT
     }
 
    protected:
-    //! Get vector of concentration at current Gauß point
+    //! Get vector of concentration at current Gauss point
     std::vector<double>& GetConcentrationGP() const { return concentrations_->at(GetGP()); };
 
    private:
@@ -818,7 +818,7 @@ namespace MAT
     void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
 
    private:
-    //! Get temperature at current Gauß point
+    //! Get temperature at current Gauss point
     double GetTemperatureGP() const { return temperatures_->at(GetGP()); };
 
     /// store vector of gauss point temperature calculated in the pre-evaluate of the so3_scatra

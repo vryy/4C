@@ -188,7 +188,8 @@ UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::
   // should be 47.1 mmHg = 6.279485 kPa !
   // however we specify it as an input parameter since its decimal power depends on the system of
   // units your whole model is specified in! i.e. if you have kg - mm - s - mmol, it's 6.279485 kPa
-  p_vap_water_37_ = respirpar.get("p_vap_water_37", 6.279485);  // vapor pressure of water at 37 °C
+  p_vap_water_37_ =
+      respirpar.get("p_vap_water_37", 6.279485);  // vapor pressure of water at 37  degrees celsius
 
 
   kappa_CO2_ =
@@ -8916,7 +8917,7 @@ double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::d2ctCO2_dppCO2
 
 // double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::y(double ppCO2,double ppO2)
 //{
-//  const double T_blood = 37.; // in °C !
+//  const double T_blood = 37.; // in  degrees celsius !
 //  // ppO2 in log10 in kPa!!
 //  const double y_val = 1.875 + log10(ppO2) - (1.946 + a(ppCO2,ppO2) + 0.055(T_blood-37.));
 //

@@ -125,7 +125,7 @@ namespace MIXTURE
     /*!
      * Initialize the constituent with the parameters of the input line
      *
-     * @param numgp (in) Number of Gauß-points
+     * @param numgp (in) Number of Gauss-points
      * @param params (in/out) Parameter list for exchange of parameters
      */
     virtual void ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef);
@@ -139,7 +139,7 @@ namespace MIXTURE
     /*!
      * \brief Setup the constituent
      *
-     * This method is called once for Gauß point at the beginning of the simulation.
+     * This method is called once for Gauss point at the beginning of the simulation.
      * The constituent should setup all internal variables and materials.
      *
      * @param params Container for additional information
@@ -150,12 +150,12 @@ namespace MIXTURE
     /*!
      * \brief Update of the internal variables
      *
-     * This method is called once per Gauß point between each time step to update the internal
+     * This method is called once per Gauss point between each time step to update the internal
      * variables. (Not needed for simple constituents)
      *
      * @param defgrd Deformation gradient of the previous timestep
      * @param params Container for additional information
-     * @param gp Gauß point
+     * @param gp Gauss point
      * @param eleGID Global element identifier
      */
     virtual void Update(LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
@@ -264,7 +264,7 @@ namespace MIXTURE
 
     /*!
      * Evaluates the constituents. Needs to compute the stress contribution of the constituent out
-     * of the displacements. Will be called for each Gauß point
+     * of the displacements. Will be called for each Gauss point
      *
      * @note S_stress and the linearization are specific quantities. They have to be multiplied with
      * the density of the constituent to obtain the real stress oder linearization.
@@ -275,7 +275,7 @@ namespace MIXTURE
      * @param S_stress (out) : 2nd specific Piola Kirchhoff stress tensor in stress like
      * Voigt-notation
      * @param cmat (out) : specific constitutive tensor in Voigt notation
-     * @param gp (in) : Number of Gauß point
+     * @param gp (in) : Number of Gauss point
      * @param eleGID (in) : Global element id
      */
     virtual void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
@@ -315,9 +315,9 @@ namespace MIXTURE
 
    protected:
     /*!
-     * Get number of Gauß points used
+     * Get number of Gauss points used
      *
-     * @return Number of Gauß points
+     * @return Number of Gauss points
      */
     int NumGP() const { return numgp_; }
 
@@ -325,7 +325,7 @@ namespace MIXTURE
     /// my material parameters
     const MIXTURE::PAR::MixtureConstituent* params_;
 
-    ///! Number of Gauß points
+    ///! Number of Gauss points
     int numgp_;
 
     ///! Indicator, whether the constituent has already read the element

@@ -573,7 +573,7 @@ void MAT::AAAraghavanvorp_damage::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
     hgc = 1 - a * (1 - exp(-b * (eqstr - eqstrmin)));  // damage parameter evaluation
     gdot = -a * b * exp(-b * (eqstr - eqstrmin)) /
-           eqstr;  // derivative of damage function, it�s used to scale cmatisodam
+           eqstr;  // derivative of damage function, it's used to scale cmatisodam
 
     histgcurr_->at(gp)(0, 0) = hgc;     // storing of actual damage parameter value
     histeqstrmaxcurr_->at(gp) = eqstr;  // storing of actual maximum equivalent strain

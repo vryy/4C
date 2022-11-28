@@ -200,7 +200,7 @@ bool DRT::ELEMENTS::So_Hex8_Determinant_Analysis::isValid(
   LINALG::Matrix<27, 1> bcoeffs(false);
   bcoeffs.Multiply(map_q_, tet4_volumes);
 
-  // Check the remaining Bézier coefficients. If all are positive, return TRUE.
+  // Check the remaining Bezier coefficients. If all are positive, return TRUE.
   if (not hasInvalidEntry(bcoeffs.A() + 8, 19)) return true;
 
   // init recursion counter
@@ -336,7 +336,7 @@ bool DRT::ELEMENTS::So_Hex8_Determinant_Analysis::recursiveSubdivision(
     // check first 8 entries of each column
     if (hasInvalidEntry(sub_bcoeffs.A(), 8)) return false;
 
-    /* If none of the remaining Bézier coefficients is invalid, erase the
+    /* If none of the remaining Bezier coefficients is invalid, erase the
      * corresponding sub-cube. */
     if (not hasInvalidEntry(&sub_bcoeffs(8, 0), 19))
     {

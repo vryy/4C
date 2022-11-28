@@ -86,7 +86,7 @@ namespace BEAMINTERACTION
       return deltatime_;
     };
 
-    /// contraction rate of cell (integrin linker) in [μm/s]
+    /// contraction rate of cell (integrin linker) in [microm/s]
     double ContractionRate(INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
     {
       CheckInitSetup();
@@ -152,7 +152,7 @@ namespace BEAMINTERACTION
     /// time step for stochastic events concerning integrins, e.g. catch-slip-bond behavior
     double deltatime_;
     bool own_deltatime_;
-    /// contraction rate of cell (integrin linker) in [μm/s]
+    /// contraction rate of cell (integrin linker) in [microm/s]
     std::map<INPAR::BEAMINTERACTION::CrosslinkerType, double> contractionrate_;
     /// crosslinker material
     std::vector<Teuchos::RCP<MAT::CrosslinkerMat>> mat_;

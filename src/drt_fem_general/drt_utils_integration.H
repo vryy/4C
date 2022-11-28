@@ -435,7 +435,7 @@ namespace DRT
                     ///< A SET OF SYMMETRIC QUADRATURE RULES ON TRIANGLES
                     ///<                                   AND TETRAHEDRA, Journal of
                     ///<                                   Computational Mathematics,
-                    ///<                                   Vol.27, No.1, 2009, 89–96.)
+                    ///<                                   Vol.27, No.1, 2009, 89-96.)
       tri_37point,  ///< degree of precision: 13 (open)   (rule from ACM TOMS algorithm
                     ///< #706)
       tri_64point   ///< degree of precision: 15 (open)   (essentially a product of two 8

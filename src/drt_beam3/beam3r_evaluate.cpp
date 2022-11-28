@@ -1166,7 +1166,7 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
    * acceleration vector is meaningless from a physical point of view. For these reasons, we
    * have to apply our own time integration scheme at element level. Up to now, the only
    * implemented integration scheme is the gen-alpha Lie group time integration according to
-   * [Arnold, Brüls (2007)], [Brüls, Cardona, 2010] and [Brüls, Cardona, Arnold (2012)] in
+   * [Arnold, Bruels (2007)], [Bruels, Cardona, 2010] and [Bruels, Cardona, Arnold (2012)] in
    * combination with a constdisvelacc predictor. (Christoph Meier, 04.14)*/
 
   /* Update:
@@ -1299,8 +1299,8 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
     /* update angular velocities and accelerations according to Newmark time integration scheme in
      * material description (see Jelenic, 1999, p. 146, equations (2.8) and (2.9)).
      * The corresponding equations are adapted according to the gen-alpha Lie group time
-     * integration scheme proposed in [Arnold, Brüls (2007)], [Brüls, Cardona, 2010] and
-     * [Brüls, Cardona, Arnold (2012)].
+     * integration scheme proposed in [Arnold, Bruels (2007)], [Bruels, Cardona, 2010] and
+     * [Bruels, Cardona, Arnold (2012)].
      * In the predictor step of the time integration the following formulas automatically
      * deliver a constant displacement (deltatheta=0), consistent velocity and consistent
      * acceleration predictor. This fact has to be reflected in a consistent manner by

@@ -168,7 +168,7 @@ namespace MAT
      *
      * This method will be called during reading of the elements. Here, we create all local tensors.
      *
-     * @param numgp Number of Gauß-points
+     * @param numgp Number of Gauss-points
      * @param linedef Line definition of the element
      */
     void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
@@ -186,7 +186,7 @@ namespace MAT
      * This method will be called between each timestep.
      *
      * @param defgrd Deformation gradient
-     * @param gp Gauß point
+     * @param gp Gauss point
      * @param params Container for additional information
      * @param eleGID Global element id
      */
