@@ -570,11 +570,6 @@ set(OBJS_SOH8_LIB
     src/drt_so3/so3_plast/so3_ssn_plast_sosh8.cpp
     src/drt_so3/so3_plast/so3_ssn_plast_sosh18.cpp
     )
-set(OBJS_DRT_ELCH
-    src/drt_elch/elch_algorithm.cpp
-    src/drt_elch/elch_dyn.cpp
-    src/drt_elch/elch_moving_boundary_algorithm.cpp
-    )
 set(OBJS_DRT_UTILS
     src/drt_fem_general/debug_nan.cpp
     src/drt_fem_general/drt_utils_boundary_integration.cpp
@@ -1696,7 +1691,6 @@ deprecated_baci_add_library_linked_with_everything(ele_w1 ${OBJS_DRT_W1_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_elemag ${OBJS_DRT_ELEMAG_LIB})
 
 # algorithm libraries that depend on adapters
-deprecated_baci_add_library_linked_with_everything(alg_elch ${OBJS_DRT_ELCH})
 deprecated_baci_add_library_linked_with_everything(alg_fbi ${OBJS_DRT_FBI})
 deprecated_baci_add_library_linked_with_everything(alg_fsi ${OBJS_DRT_FSI})
 deprecated_baci_add_library_linked_with_everything(
