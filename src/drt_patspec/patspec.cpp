@@ -22,7 +22,6 @@
 #include "io.H"
 #include <Epetra_Time.h>
 
-// #include "matpar_material.H"
 #include "matpar_bundle.H"
 #include "matpar_parameter.H"
 #include "elast_summand.H"

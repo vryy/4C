@@ -15,7 +15,6 @@
 #include <Teuchos_RCP.hpp>
 #include "drt_parobject.H"
 #include "inpar_material.H"
-// #include "material_service.H"
 
 
 /// MAT: materials

@@ -11,7 +11,6 @@
 #define OBJECTIVE_FUNCT_SURFCURR_H
 
 #include "objective_funct.H"
-// #include "drt_globalproblem.H"
 
 #include "Epetra_Map.h"
 

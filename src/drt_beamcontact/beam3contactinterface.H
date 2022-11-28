@@ -10,13 +10,10 @@
 #ifndef BEAM3CIF_H
 #define BEAM3CIF_H
 
-// #include "beam3contact_utils.H"
-// #include "beam3contact_tangentsmoothing.H"
 #include "beam3contact_defines.H"
 #include "linalg_fixedsizematrix.H"
 #include "linalg_sparsematrix.H"
 #include "drt_utils_local_connectivity_matrices.H"
-// #include "Sacado.hpp"
 
 #include "standardtypes_cpp.H"
 

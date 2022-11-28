@@ -9,7 +9,6 @@
 #ifndef SO_NSTET5_H
 #define SO_NSTET5_H
 
-// #include "Sacado.hpp"
 
 #include "drt_element.H"
 #include "drt_elementtype.H"

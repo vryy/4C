@@ -64,7 +64,6 @@ interface
 #include "matlist.H"
 #include "matpar_bundle.H"
 
-// #include "xfem_coupling_mesh.H"
 
 #include <Epetra_Time.h>
 

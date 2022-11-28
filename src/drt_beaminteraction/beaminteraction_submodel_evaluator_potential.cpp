@@ -25,7 +25,6 @@
 #include "linalg_serialdensevector.H"
 #include "linalg_fixedsizematrix.H"
 
-//#include "inpar_beamcontact.H"
 #include "beam3_base.H"
 #include "beam3contact_utils.H"
 #include "str_model_evaluator_beaminteraction_datastate.H"
