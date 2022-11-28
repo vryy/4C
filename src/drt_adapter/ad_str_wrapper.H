@@ -277,6 +277,8 @@ namespace ADAPTER
       structure_->UpdateStateIncrementally(disi);
     }
 
+    void DetermineStressStrain() override { structure_->DetermineStressStrain(); }
+
     /// update displacement and evaluate elements (implicit only)
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
     {

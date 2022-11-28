@@ -66,6 +66,8 @@ namespace STR
       /// don't update displacement but evaluate elements (implicit only)
       void Evaluate() override;
 
+      void DetermineStressStrain() override { dserror("Currently unsupported!"); }
+
       /// set the state of the nox group and the global state data container
       void SetState(const Teuchos::RCP<Epetra_Vector>& x) override;
 

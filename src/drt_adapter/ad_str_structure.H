@@ -344,6 +344,9 @@ namespace ADAPTER
     /// don't update displacement but evaluate elements (implicit only)
     virtual void Evaluate() = 0;
 
+    //! Calculate stresses and strains
+    virtual void DetermineStressStrain() = 0;
+
     /// update at time step end
     virtual void Update() = 0;
 

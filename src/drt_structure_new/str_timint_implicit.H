@@ -126,6 +126,8 @@ namespace STR
       /// Update State Incrementally for coupled problems with monolithic approach
       void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
 
+      void DetermineStressStrain() override;
+
       ///  Evaluate routine for coupled problems with monolithic approach
       void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
       void Evaluate() override;
