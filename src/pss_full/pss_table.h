@@ -106,13 +106,6 @@ void map_insert_real(MAP* map, DOUBLE real, CHAR* key);
 void map_insert_map(MAP* map, MAP* dir, CHAR* key);
 
 
-/* Insert a new symbol. Make a copy of all strings. */
-void map_insert_string_cpy(MAP* map, CHAR* string, CHAR* key);
-void map_insert_int_cpy(MAP* map, INT integer, CHAR* key);
-void map_insert_real_cpy(MAP* map, DOUBLE real, CHAR* key);
-void map_insert_map_cpy(MAP* map, MAP* dir, CHAR* key);
-
-
 /* Tell the number of symbols under this key. */
 INT map_symbol_count(MAP* map, const CHAR* key);
 
@@ -126,9 +119,6 @@ void map_prepend_symbols(MAP* map, const CHAR* key, SYMBOL* symbol, INT count);
 
 
 /* Tell whether this symbol has the given type. */
-INT symbol_is_string(const SYMBOL* symbol);
-INT symbol_is_int(const SYMBOL* symbol);
-INT symbol_is_real(const SYMBOL* symbol);
 INT symbol_is_map(const SYMBOL* symbol);
 
 
@@ -141,16 +131,7 @@ INT symbol_get_map(const SYMBOL* symbol, MAP** map);
 
 
 /* Extract the value of this symbol. Call dserror on failure. */
-CHAR* symbol_string(const SYMBOL* symbol);
-INT symbol_int(const SYMBOL* symbol);
-DOUBLE symbol_real(const SYMBOL* symbol);
 MAP* symbol_map(const SYMBOL* symbol);
-
-
-/* Write the map to file f in a readable way. */
-void map_print(FILE* f, MAP* map, INT indent);
-void map_node_print(FILE* f, MAP_NODE* node, INT indent);
-void symbol_print(FILE* f, CHAR* key, SYMBOL* symbol, INT indent);
 
 
 /* Read the control file given by name. Put its contents into the map. */
