@@ -491,22 +491,6 @@ set(OBJS_DRT_SCATRA
     src/drt_scatra/scatra_timint_cardiac_monodomain_scheme_hdg.cpp
     src/drt_scatra/nox_nln_scatra_linearsystem.cpp
     )
-
-set(OBJS_DRT_S8_LIB
-    src/drt_s8/shell8.cpp
-    src/drt_s8/shell8_evaluate.cpp
-    src/drt_s8/shell8_input.cpp
-    src/drt_s8/shell8_line.cpp
-    src/drt_s8/shell8_line_evaluate.cpp
-    src/drt_s8/shell8_scatra.cpp
-    src/fortran/s8_fserv.f
-    src/drt_s8/shell8/s8_mat_linel.c
-    src/drt_s8/shell8/s8_mat_ogden.c
-    src/drt_s8/shell8/s8_mat_ogden2.c
-    src/drt_s8/shell8/s8_mat_ogden3.c
-    src/drt_s8/shell8/s8_mattransform.c
-    src/drt_s8/shell8/s8_tmat.c
-    )
 set(OBJS_DRT_MEMBRANE_LIB
     src/drt_membrane/membrane_eletypes.cpp
     src/drt_membrane/membrane.cpp
@@ -1065,6 +1049,7 @@ set(BACI_LIBRARIES
     solver
     linalg
     drt_comm
+    fortran
     headers
     drt_timestepping
     )
@@ -1083,7 +1068,7 @@ add_library(headers INTERFACE)
 target_include_directories(headers INTERFACE ${PROJECT_SOURCE_DIR}/src/headers)
 
 # Compile element libraries first. There are files that take time to compile.
-deprecated_baci_add_library_linked_with_everything(ele_s8 ${OBJS_DRT_S8_LIB})
+
 deprecated_baci_add_library_linked_with_everything(ele_membrane ${OBJS_DRT_MEMBRANE_LIB})
 
 deprecated_baci_add_library_linked_with_everything(ele_scatra ${OBJS_DRT_SCATRA_LIB})
