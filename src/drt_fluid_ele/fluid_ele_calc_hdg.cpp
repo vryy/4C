@@ -1522,11 +1522,11 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorResidu
           force[d] += shapes_.shfunct(i, q) * interiorebodyforce[d * ndofs_ + i];
 
     // get material properties
-    double viscosity;
-    double density;
-    double RefPressure;
-    double RefBulkModulus;
-    double MatParameter;
+    double viscosity = 0.0;
+    double density = 0.0;
+    double RefPressure = 0.0;
+    double RefBulkModulus = 0.0;
+    double MatParameter = 0.0;
     if (mat->MaterialType() == INPAR::MAT::m_fluid)
     {
       const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
@@ -1682,11 +1682,15 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorMatric
       for (unsigned int i = 0; i < nsd_ * ndofs_; ++i) ufMat(i, f) = 0.;
   }
 
-  double viscosity;
-  double density;
-  double RefPressure;
-  double RefBulkModulus;
-  double MatParameter;
+  if (mat->MaterialType() != INPAR::MAT::m_fluid and
+      mat->MaterialType() != INPAR::MAT::m_fluid_murnaghantait)
+    dserror("Only m_fluid and m_fluid_murnaghantait supported as materials");
+
+  double viscosity = 0.0;
+  double density = 0.0;
+  double RefPressure = 0.0;
+  double RefBulkModulus = 0.0;
+  double MatParameter = 0.0;
 
   // loop over interior quadrature points
   for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
@@ -1963,8 +1967,12 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceResidual(c
     }
 
     // get material properties
-    double viscosity;
-    double density;
+    if (mat->MaterialType() != INPAR::MAT::m_fluid and
+        mat->MaterialType() != INPAR::MAT::m_fluid_murnaghantait)
+      dserror("Only m_fluid and m_fluid_murnaghantait supported as materials");
+
+    double viscosity = 0.0;
+    double density = 0.0;
     if (mat->MaterialType() == INPAR::MAT::m_fluid)
     {
       const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
@@ -2057,8 +2065,12 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceMatrices(c
   trMat.Shape(ndofs_ * nsd_, shapesface_.nfdofs_);
   trMatAvg.Shape(ndofs_ * nsd_, shapesface_.nfdofs_);
 
-  double viscosity;
-  double density;
+  if (mat->MaterialType() != INPAR::MAT::m_fluid and
+      mat->MaterialType() != INPAR::MAT::m_fluid_murnaghantait)
+    dserror("Only m_fluid and m_fluid_murnaghantait supported as materials");
+
+  double viscosity = 0.0;
+  double density = 0.0;
 
   // perform face quadrature
   for (unsigned int q = 0; q < shapesface_.nqpoints_; ++q)

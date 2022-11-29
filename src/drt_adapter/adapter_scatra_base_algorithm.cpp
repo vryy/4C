@@ -626,7 +626,7 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::ScaTraBaseAlgorithm::CreateScaTraFieldTes
 {
   const ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
 
-  bool is_elch_timeint;
+  bool is_elch_timeint = false;
   if (probtype == ProblemType::ssi)
   {
     is_elch_timeint = Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(

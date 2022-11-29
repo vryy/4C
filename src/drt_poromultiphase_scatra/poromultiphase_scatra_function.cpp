@@ -1104,7 +1104,7 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::EvaluateDerivativ
 
   const double fac_if = rho_oxy / rho_if * alpha_IF;
 
-  double VF1, oxy_mass_frac_if;
+  double VF1 = 0.0, oxy_mass_frac_if = 0.0;
 
   // define Fad object for evaluation
   using FAD = Sacado::Fad::DFad<double>;
@@ -1532,7 +1532,7 @@ std::vector<double> POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::EvaluateDe
   FAD oxy_mass_frac_bl = 0.0;
   oxy_mass_frac_bl.diff(0, 1);  // independent variable 0 out of a total of 1
 
-  double oxy_mass_frac_air, P_air;
+  double oxy_mass_frac_air = 0.0, P_air = 0.0;
 
   if (variables[0].first == "phi1")  // maindiag-derivative
   {

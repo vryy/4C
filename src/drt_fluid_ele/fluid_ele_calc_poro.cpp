@@ -1936,13 +1936,9 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(const double
   //**************************************************************************
   if (Base::fldpara_->RStab() != INPAR::FLUID::reactive_stab_none)
   {
-    double reac_tau;
-    if (Base::fldpara_->Tds() == INPAR::FLUID::subscales_quasistatic)
-      reac_tau = Base::fldpara_->ViscReaStabFac() * Base::reacoeff_ * Base::tau_(1);
-    else
-    {
+    if (Base::fldpara_->Tds() != INPAR::FLUID::subscales_quasistatic)
       dserror("Is this factor correct? Check for bugs!");
-    }
+    const double reac_tau = Base::fldpara_->ViscReaStabFac() * Base::reacoeff_ * Base::tau_(1);
 
     for (int vi = 0; vi < Base::nen_; ++vi)
     {
