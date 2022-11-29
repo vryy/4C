@@ -235,7 +235,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
       double djdT_master_timefacfac(0.0);
 
       // Part 1: Energy flux from mass flux
-      const double etempint = (eslavetempint + emastertempint) / 2;
+      const double etempint = (eslavetempint + emastertempint) / 2.0;
       const double frt = faraday / (etempint * gasconstant);
 
       // equilibrium electric potential difference at electrode surface
@@ -302,7 +302,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
         r_s[vi] -= funct_slave(vi) * j_timefacrhsfac;
 
         for (int ui = 0; ui < nen_master; ++ui)
-          k_sm(vi, ui) -= funct_slave(vi) * djdT_master_timefacfac * funct_master(ui);
+          k_sm(vi, ui) += funct_slave(vi) * djdT_master_timefacfac * funct_master(ui);
       }
 
       break;
@@ -750,7 +750,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateAction(
     case SCATRA::BoundaryAction::calc_s2icoupling:
     {
       EvaluateS2ICoupling(
-          ele, params, discretization, la, elemat1_epetra, elemat1_epetra, elevec1_epetra);
+          ele, params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra);
       break;
     }
 
