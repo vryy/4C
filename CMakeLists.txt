@@ -695,11 +695,6 @@ set(OBJS_BACI_MAIN
     src/global_full/global_control.cpp
     src/global_full/baci.cpp
     )
-set(OBJS_DRT_RIGIDSPHERE_LIB
-    src/drt_rigidsphere/rigidsphere.cpp
-    src/drt_rigidsphere/rigidsphere_evaluate.cpp
-    src/drt_rigidsphere/rigidsphere_input.cpp
-    )
 set(OBJS_PRE_LOCSYS src/pre_locsys/pre_locsys.cpp)
 set(OBJS_POST_DRT_S8CONVERT src/post_s8convert/post_drt_s8convert.cpp)
 set(OBJS_DRT_PARTICLE_ALGORITHM
@@ -1088,7 +1083,6 @@ add_library(headers INTERFACE)
 target_include_directories(headers INTERFACE ${PROJECT_SOURCE_DIR}/src/headers)
 
 # Compile element libraries first. There are files that take time to compile.
-deprecated_baci_add_library_linked_with_everything(ele_rigidsphere ${OBJS_DRT_RIGIDSPHERE_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_s8 ${OBJS_DRT_S8_LIB})
 deprecated_baci_add_library_linked_with_everything(ele_membrane ${OBJS_DRT_MEMBRANE_LIB})
 
