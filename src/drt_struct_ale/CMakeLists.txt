@@ -1,0 +1,4 @@
+set(OBJS_DRT_STRUCT_ALE struct_ale_str_model_evaluator.cpp)
+
+baci_add_library(drt_lib_struct_ale ${OBJS_DRT_STRUCT_ALE})
+target_link_libraries(drt_lib_struct_ale PUBLIC alg_structure_new)

@@ -1,0 +1,4 @@
+set(OBJS_DRT_TUTORIAL_MATERIAL tutorial_mat_stvenantkirchhoff.cpp)
+
+baci_add_library(alg_tutorial_material ${OBJS_DRT_TUTORIAL_MATERIAL})
+target_link_libraries(alg_tutorial_material PUBLIC alg_tutorial)

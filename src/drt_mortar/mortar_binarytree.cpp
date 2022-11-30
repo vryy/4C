@@ -9,11 +9,9 @@
 
 #include "mortar_binarytree.H"
 
-#include "mortar_defines.H"
 #include "mortar_element.H"
 #include "mortar_node.H"
 
-#include "contact_defines.H"
 #include "drt_discret.H"
 #include "linalg_fixedsizematrix.H"
 
