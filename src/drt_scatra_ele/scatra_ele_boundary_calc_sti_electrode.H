@@ -39,11 +39,6 @@ namespace DRT
       static ScaTraEleBoundaryCalcSTIElectrode<distype>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
-      //! destructor
-      virtual ~ScaTraEleBoundaryCalcSTIElectrode() { return; };
-
-
-
       /*!
        * \brief evaluate scatra-scatra interface coupling condition at integration point
        *

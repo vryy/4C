@@ -13,7 +13,6 @@
 #include "drt_utils_boundary_integration.H"
 
 #include "drt_discret.H"
-#include "drt_utils.H"
 
 #include "electrode.H"
 #include "soret.H"
@@ -26,7 +25,6 @@
 #include "singleton_owner.H"
 
 /*----------------------------------------------------------------------*
- | singleton access method                                   fang 11/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>*
@@ -44,9 +42,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::Instance(
       ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
-
 /*----------------------------------------------------------------------*
- | private constructor for singletons                        fang 11/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::ScaTraEleBoundaryCalcSTIElectrode(
@@ -57,24 +53,16 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::ScaTraEleBoundaryCalc
       // initialize member variable
       eelchnp_(2, LINALG::Matrix<my::nen_, 1>(true))
 {
-  return;
 }
 
-
-/*----------------------------------------------------------------------------------------------------------------------------*
- | evaluate main-diagonal system matrix contributions associated with scatra-scatra interface
- coupling condition   fang 08/15 |
- *----------------------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupling(
-    const DRT::FaceElement* ele,              ///< current boundary element
-    Teuchos::ParameterList& params,           ///< parameter list
-    DRT::Discretization& discretization,      ///< discretization
-    DRT::Element::LocationArray& la,          ///< location array
-    Epetra_SerialDenseMatrix& eslavematrix,   ///< element matrix for slave side
-    Epetra_SerialDenseMatrix& emastermatrix,  ///< element matrix for master side
-    Epetra_SerialDenseVector& eslaveresidual  ///< element residual for slave side
-)
+    const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix,
+    Epetra_SerialDenseVector& eslaveresidual)
 {
   // access primary and secondary materials of parent element
   Teuchos::RCP<const MAT::Soret> matsoret =
@@ -123,13 +111,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupl
     EvaluateS2ICouplingAtIntegrationPoint<distype>(matelectrode, my::ephinp_[0], emastertemp,
         eelchnp_, emasterscatra, my::funct_, my::funct_, my::scatraparamsboundary_, timefacfac,
         timefacrhsfac, detF, eslavematrix, emastermatrix, eslaveresidual);
-  }  // loop over integration points
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupling
+  }
+}
 
-
-/*---------------------------------------------------------------------------------------*
- | evaluate scatra-scatra interface coupling condition at integration point   fang 01/17 |
- *---------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType distype_master>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
@@ -142,7 +128,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
     const std::vector<
         LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
         emasterphinp,
-    const LINALG::Matrix<my::nen_, 1>& funct_slave,  //!< slave-side shape function values
+    const LINALG::Matrix<my::nen_, 1>& funct_slave,
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
         funct_master,
     const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
@@ -235,7 +221,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
       double djdT_master_timefacfac(0.0);
 
       // Part 1: Energy flux from mass flux
-      const double etempint = (eslavetempint + emastertempint) / 2;
+      const double etempint = (eslavetempint + emastertempint) / 2.0;
       const double frt = faraday / (etempint * gasconstant);
 
       // equilibrium electric potential difference at electrode surface
@@ -302,7 +288,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
         r_s[vi] -= funct_slave(vi) * j_timefacrhsfac;
 
         for (int ui = 0; ui < nen_master; ++ui)
-          k_sm(vi, ui) -= funct_slave(vi) * djdT_master_timefacfac * funct_master(ui);
+          k_sm(vi, ui) += funct_slave(vi) * djdT_master_timefacfac * funct_master(ui);
       }
 
       break;
@@ -320,25 +306,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
       dserror("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
       break;
     }
-  }  // select kinetic model
+  }
+}
 
-  return;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICouplingAtIntegrationPoint
-
-
-/*---------------------------------------------------------------------------------------------------------------------------*
- | evaluate off-diagonal system matrix contributions associated with scatra-scatra interface
- coupling condition   fang 08/15 |
- *---------------------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICouplingOD(
-    const DRT::FaceElement* ele,             ///< current boundary element
-    Teuchos::ParameterList& params,          ///< parameter list
-    DRT::Discretization& discretization,     ///< discretization
-    DRT::Element::LocationArray& la,         ///< location array
-    Epetra_SerialDenseMatrix& eslavematrix,  ///< element matrix for slave side
-    Epetra_SerialDenseMatrix& emastermatrix  ///< element matrix for master side
-)
+    const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix)
 {
   // access primary and secondary materials of parent element
   Teuchos::RCP<const MAT::Soret> matsoret =
@@ -395,14 +372,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupl
     EvaluateS2ICouplingODAtIntegrationPoint<distype>(matelectrode, my::ephinp_[0], emastertemp,
         eelchnp_, emasterscatra, my::funct_, my::funct_, my::scatraparamsboundary_, timefacfac,
         timefacwgt, detF, differentiationtype, shapederivatives, eslavematrix, emastermatrix);
-  }  // loop over integration points
+  }
 }
 
-
-/*------------------------------------------------------------------------------------------------------------------------------------------------*
- | evaluate off-diagonal system matrix contributions associated with scatra-scatra interface
- coupling condition at integration point   fang 01/17 |
- *------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType distype_master>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
@@ -492,9 +466,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
 
           // safety check
           if (std::abs(expterm) > 1.e5)
+          {
             dserror(
                 "Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
                 expterm);
+          }
 
           // core linearizations w.r.t. master-side and slave-side concentrations and electric
           // potentials
@@ -723,26 +699,18 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
       dserror("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
       break;
     }
-  }  // select kinetic model
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICouplingODAtIntegrationPoint
-
+  }
+}
 
 /*----------------------------------------------------------------------*
- | evaluate action                                           fang 11/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateAction(
-    DRT::FaceElement* ele,                     //!< boundary element
-    Teuchos::ParameterList& params,            //!< parameter list
-    DRT::Discretization& discretization,       //!< discretization
-    SCATRA::BoundaryAction action,             //!< action
-    DRT::Element::LocationArray& la,           //!< location array
-    Epetra_SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
-    Epetra_SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
-    Epetra_SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
-    Epetra_SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
-    Epetra_SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
-)
+int DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateAction(DRT::FaceElement* ele,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    SCATRA::BoundaryAction action, DRT::Element::LocationArray& la,
+    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
+    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
+    Epetra_SerialDenseVector& elevec3_epetra)
 {
   // determine and evaluate action
   switch (action)
@@ -750,7 +718,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateAction(
     case SCATRA::BoundaryAction::calc_s2icoupling:
     {
       EvaluateS2ICoupling(
-          ele, params, discretization, la, elemat1_epetra, elemat1_epetra, elevec1_epetra);
+          ele, params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra);
       break;
     }
 
@@ -766,28 +734,22 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateAction(
           elevec1_epetra, elevec2_epetra, elevec3_epetra);
       break;
     }
-  }  // switch action
+  }
 
   return 0;
 }
 
-
-/*-----------------------------------------------------------------------------*
- | extract nodal state variables associated with boundary element   fang 01/17 |
- *-----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::ExtractNodeValues(
-    const DRT::Discretization& discretization,  //!< discretization
-    DRT::Element::LocationArray& la             //!< location array
-)
+    const DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
   // call base class routine
   my::ExtractNodeValues(discretization, la);
 
   // extract nodal electrochemistry variables associated with time t_{n+1} or t_{n+alpha_f}
   my::ExtractNodeValues(eelchnp_, discretization, la, "scatra", 2);
-
-  return;
 }
 
 
