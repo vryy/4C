@@ -35,6 +35,7 @@ set(OBJS_DRT_CONTACT
     contact_nitsche_strategy_ssi.cpp
     contact_nitsche_strategy_ssi_elch.cpp
     contact_nitsche_strategy_tsi.cpp
+    contact_nitsche_utils.cpp
     contact_utils.cpp
     contact_utils_parallel.cpp
     contact_wear_interface.cpp
