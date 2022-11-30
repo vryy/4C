@@ -147,7 +147,7 @@ namespace MAT
       const Epetra_SerialDenseMatrix& A, const Epetra_SerialDenseMatrix& B,
       const double ScalarThis);
 
-  /*! 
+  /*!
    * @brief Multiply two 2nd order tensors A o B and add the result to a 4th order symmetric
    * material tensor in matrix notation.
    *
@@ -172,7 +172,7 @@ namespace MAT
       const LINALG::Matrix<3, 3>& A, const LINALG::Matrix<3, 3>& B, const double ScalarThis);
 
 
-  /*! 
+  /*!
    * @brief Add 'Holzapfel product' contribution to constitutive tensor using Voigt notation
    *
    * This function adds the following contribution to the given constitutive
@@ -601,21 +601,6 @@ namespace MAT
   template <int dim>
   void TransposeFourTensor12(
       LINALG::FourTensor<dim>& resultTensor, const LINALG::FourTensor<dim>& inputTensor);
-
-  /// print four tensor
-  template <int dim>
-  void PrintFourTensor(const LINALG::FourTensor<dim>& fourTensor);
-
-  /*!
-   * @brief Get the symmetric part of a matrix
-   *
-   * @tparam dim dimension of the matrix
-   * @param inputM non-symmetric input matrix
-   * @param outputM symmetric output matrix
-   */
-  template <int dim>
-  void GetSymmetricPart(const LINALG::Matrix<dim, dim>& inputM, LINALG::Matrix<dim, dim>& outputM);
-
 }  // namespace MAT
 
 #endif
