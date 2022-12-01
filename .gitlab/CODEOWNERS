@@ -252,6 +252,8 @@ drt_scatra_ele/scatra_ele_calc_poro*           @baci/team_scatra @baci/team_poro
 drt_so3/                       @baci/team_structure
 drt_so3/so3_poro*              @baci/team_structure @baci/team_poro
 
+drt_solid_ele/                  @baci/team_structure
+
 drt_spring3/                   @baci/team_structure
 
 drt_ssi/                       @baci/team_scatra
@@ -360,6 +362,8 @@ solver_nonlin_nox/             @baci/team_solvers
 /Input/meshtying*                  @baci/team_contact
 
 /Input/mixture*                    @baci/team_structure
+
+/Input/new_solid_ele*              @baci/team_structure
 
 /Input/one_d_3_artery*             @baci/team_reduced_fluid_models
 
