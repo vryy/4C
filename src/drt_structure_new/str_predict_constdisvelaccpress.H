@@ -28,10 +28,10 @@ namespace STR
       virtual ~ConstDisVelAccPress(){};
 
       //! setup class specific stuff
-      virtual void Setup();
+      void Setup() override;
 
       //! do the class specific predictor step
-      virtual void Compute(NOX::Abstract::Group& grp);
+      void Compute(NOX::Abstract::Group& grp) override;
 
      private:
       Teuchos::RCP<STR::PREDICT::Generic> tangdis_ptr_;

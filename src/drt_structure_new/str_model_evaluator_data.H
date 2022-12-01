@@ -98,66 +98,66 @@ namespace STR
       //!@{
 
       //! get the desired action type [derived]
-      virtual inline enum DRT::ELEMENTS::ActionType GetActionType() const
+      [[nodiscard]] inline enum DRT::ELEMENTS::ActionType GetActionType() const override
       {
         CheckInitSetup();
         return ele_action_;
       }
 
       //! get the total time for the element evaluation [derived]
-      virtual inline double GetTotalTime() const
+      [[nodiscard]] inline double GetTotalTime() const override
       {
         CheckInitSetup();
         return total_time_;
       }
 
       //! get the current time step for the element evaluation [derived]
-      virtual inline double GetDeltaTime() const
+      [[nodiscard]] inline double GetDeltaTime() const override
       {
         CheckInitSetup();
         return delta_time_;
       }
 
       //! get the current step length [derived]
-      virtual inline double GetStepLength() const
+      [[nodiscard]] inline double GetStepLength() const override
       {
         CheckInitSetup();
         return step_length_;
       }
 
       //! get the is_default_step indicator [derived]
-      virtual inline bool IsDefaultStep() const
+      [[nodiscard]] inline bool IsDefaultStep() const override
       {
         CheckInitSetup();
         return is_default_step_;
       }
 
       //! get the current damping type [derived]
-      virtual enum INPAR::STR::DampKind GetDampingType() const;
+      [[nodiscard]] enum INPAR::STR::DampKind GetDampingType() const override;
 
       //! get the tolerate errors indicator [derived]
-      virtual inline bool IsTolerateErrors() const
+      [[nodiscard]] inline bool IsTolerateErrors() const override
       {
         CheckInitSetup();
         return is_tolerate_errors_;
       }
 
       //! get the structural time integration factor for the displacement [derived]
-      virtual inline double GetTimIntFactorDisp() const
+      [[nodiscard]] inline double GetTimIntFactorDisp() const override
       {
         CheckInitSetup();
         return timintfactor_disp_;
       }
 
       //! get the structural time integration factor for the velocities [derived]
-      virtual inline double GetTimIntFactorVel() const
+      [[nodiscard]] inline double GetTimIntFactorVel() const override
       {
         CheckInitSetup();
         return timintfactor_vel_;
       }
 
       //! get the predictor type of the structural time integration
-      virtual enum INPAR::STR::PredEnum GetPredictorType() const
+      [[nodiscard]] enum INPAR::STR::PredEnum GetPredictorType() const override
       {
         CheckInitSetup();
         return predict_type_;
@@ -167,31 +167,31 @@ namespace STR
       bool IsPredictorState() const;
 
       //! mutable access to the stress data vector
-      virtual Teuchos::RCP<std::vector<char>>& MutableStressDataPtr();
+      Teuchos::RCP<std::vector<char>>& MutableStressDataPtr() override;
 
       //! mutable access to the strain data vector
-      virtual Teuchos::RCP<std::vector<char>>& MutableStrainDataPtr();
+      Teuchos::RCP<std::vector<char>>& MutableStrainDataPtr() override;
 
       //! mutable access to the plastic strain data vector
-      virtual Teuchos::RCP<std::vector<char>>& MutablePlasticStrainDataPtr();
+      Teuchos::RCP<std::vector<char>>& MutablePlasticStrainDataPtr() override;
 
       //! mutable access to the stress data vector
-      virtual Teuchos::RCP<std::vector<char>>& MutableCouplingStressDataPtr();
+      Teuchos::RCP<std::vector<char>>& MutableCouplingStressDataPtr() override;
 
       //! mutable access to the optional quantity data vector
-      virtual Teuchos::RCP<std::vector<char>>& MutableOptQuantityDataPtr();
+      Teuchos::RCP<std::vector<char>>& MutableOptQuantityDataPtr() override;
 
       //! get the current stress type [derived]
-      virtual enum INPAR::STR::StressType GetStressOutputType() const;
+      [[nodiscard]] enum INPAR::STR::StressType GetStressOutputType() const override;
 
       //! get the current strain type [derived]
-      virtual enum INPAR::STR::StrainType GetStrainOutputType() const;
+      [[nodiscard]] enum INPAR::STR::StrainType GetStrainOutputType() const override;
 
       //! get the current plastic strain type [derived]
-      virtual enum INPAR::STR::StrainType GetPlasticStrainOutputType() const;
+      [[nodiscard]] enum INPAR::STR::StrainType GetPlasticStrainOutputType() const override;
 
       //! get the current coupling stress type [derived]
-      virtual enum INPAR::STR::StressType GetCouplingStressOutputType() const;
+      [[nodiscard]] enum INPAR::STR::StressType GetCouplingStressOutputType() const override;
 
       //! get the current strain type [derived]
       virtual enum INPAR::STR::OptQuantityType GetOptQuantityOutputType() const;
@@ -226,16 +226,16 @@ namespace STR
           const double value, const enum STR::EnergyType type) override;
 
       //! get Interface to brownian dyn data [derived]
-      virtual inline const Teuchos::RCP<BROWNIANDYN::ParamsInterface> GetBrownianDynParamInterface()
-          const
+      [[nodiscard]] inline const Teuchos::RCP<BROWNIANDYN::ParamsInterface>
+      GetBrownianDynParamInterface() const override
       {
         CheckInitSetup();
         return browniandyn_data_ptr_;
       }
 
       //! get special parameter interface for beam elements [derived]
-      virtual inline const Teuchos::RCP<STR::ELEMENTS::BeamParamsInterface>
-      GetBeamParamsInterfacePtr() const
+      [[nodiscard]] inline const Teuchos::RCP<STR::ELEMENTS::BeamParamsInterface>
+      GetBeamParamsInterfacePtr() const override
       {
         if (beam_data_ptr_.is_null()) dserror("pointer to beam data container not set!");
         return beam_data_ptr_;
@@ -273,7 +273,7 @@ namespace STR
        *
        * @param[in] error_flag Error flag to be set
        */
-      virtual inline void SetEleEvalErrorFlag(const enum STR::ELEMENTS::EvalErrorFlag& error_flag)
+      inline void SetEleEvalErrorFlag(const enum STR::ELEMENTS::EvalErrorFlag& error_flag) override
       {
         ele_eval_error_flag_ = error_flag;
       }
@@ -298,9 +298,9 @@ namespace STR
        *
        * \sa SumIntoMyPreviousSolNorm
        */
-      virtual void SumIntoMyUpdateNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
+      void SumIntoMyUpdateNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
           const int& numentries, const double* my_update_values, const double* my_new_sol_values,
-          const double& step_length, const int& owner);
+          const double& step_length, const int& owner) override;
 
       /*! brief Collect and calculate solution norm of previous accepted Newton step on current proc
        *
@@ -992,25 +992,25 @@ namespace STR
       //!@{
 
       //! get the Lie group GenAlpha time integration parameters [derived]
-      virtual inline double GetBeta() const
+      [[nodiscard]] inline double GetBeta() const override
       {
         CheckInitSetup();
         return beta_;
       }
 
-      virtual inline double GetGamma() const
+      [[nodiscard]] inline double GetGamma() const override
       {
         CheckInitSetup();
         return gamma_;
       }
 
-      virtual inline double GetAlphaf() const
+      [[nodiscard]] inline double GetAlphaf() const override
       {
         CheckInitSetup();
         return alphaf_;
       }
 
-      virtual inline double GetAlpham() const
+      [[nodiscard]] inline double GetAlpham() const override
       {
         CheckInitSetup();
         return alpham_;
@@ -1098,27 +1098,27 @@ namespace STR
       void Setup();
 
       //! returns the mortar/contact action type
-      virtual inline enum MORTAR::ActionType GetActionType() const
+      [[nodiscard]] inline enum MORTAR::ActionType GetActionType() const override
       {
         CheckInitSetup();
         return mortar_action_;
       };
 
       //! get the nonlinear iteration number
-      virtual int GetNlnIter() const
+      [[nodiscard]] int GetNlnIter() const override
       {
         CheckInit();
         return str_data_ptr_->GetNlnIter();
       };
 
       //! get the current step counter \f$(n+1)\f$
-      virtual int GetStepNp() const
+      [[nodiscard]] int GetStepNp() const override
       {
         CheckInit();
         return str_data_ptr_->GetStepNp();
       };
 
-      virtual bool IsPredictor() const
+      [[nodiscard]] bool IsPredictor() const override
       {
         CheckInit();
         return str_data_ptr_->IsPredictor();
@@ -1145,21 +1145,21 @@ namespace STR
        * @return Type of predictor
        *
        * \author hiermeier \date 02/18 */
-      virtual enum INPAR::STR::PredEnum GetPredictorType() const
+      [[nodiscard]] enum INPAR::STR::PredEnum GetPredictorType() const override
       {
         CheckInit();
         return str_data_ptr_->GetPredictorType();
       }
 
       //! get the current step length [derived]
-      virtual inline double GetStepLength() const
+      [[nodiscard]] inline double GetStepLength() const override
       {
         CheckInit();
         return str_data_ptr_->GetStepLength();
       };
 
       //! get the is_default_step indicator [derived]
-      virtual inline bool IsDefaultStep() const
+      [[nodiscard]] inline bool IsDefaultStep() const override
       {
         CheckInit();
         return str_data_ptr_->IsDefaultStep();
@@ -1173,31 +1173,32 @@ namespace STR
       }
 
       //! get the current time step [derived]
-      virtual inline double GetDeltaTime() const
+      [[nodiscard]] inline double GetDeltaTime() const override
       {
         CheckInit();
         return str_data_ptr_->GetDeltaTime();
       }
 
       //! get reference to the set model evaluator
-      virtual const Generic& GetModelEvaluator() const
+      [[nodiscard]] const Generic& GetModelEvaluator() const override
       {
         CheckInit();
         return str_data_ptr_->GetModelEvaluator();
       }
 
       //! get output file name
-      virtual std::string GetOutputFilePath() const;
+      [[nodiscard]] std::string GetOutputFilePath() const override;
 
       //! get variational approach enumerator
-      virtual enum INPAR::CONTACT::VariationalApproach GetVariationalApproachType() const
+      [[nodiscard]] enum INPAR::CONTACT::VariationalApproach GetVariationalApproachType()
+          const override
       {
         return var_type_;
       }
 
       //! set variational approach enumerator
-      virtual void SetVariationalApproachType(
-          const enum INPAR::CONTACT::VariationalApproach var_type)
+      void SetVariationalApproachType(
+          const enum INPAR::CONTACT::VariationalApproach var_type) override
       {
         var_type_ = var_type;
       }
@@ -1206,7 +1207,7 @@ namespace STR
        *
        * Equal to 0 if no restart has been performed.
        */
-      virtual int GetRestartStep() const
+      [[nodiscard]] int GetRestartStep() const override
       {
         CheckInit();
         return str_data_ptr_->GetRestartStep();
@@ -1361,22 +1362,24 @@ namespace STR
       };
 
       /// the way how damping coefficient values for beams are specified
-      virtual INPAR::BROWNIANDYN::BeamDampingCoefficientSpecificationType
-      HowBeamDampingCoefficientsAreSpecified() const
+      [[nodiscard]] INPAR::BROWNIANDYN::BeamDampingCoefficientSpecificationType
+      HowBeamDampingCoefficientsAreSpecified() const override
       {
         CheckInitSetup();
         return beam_damping_coeff_specified_via_;
       }
 
       /// get prefactors for damping coefficients of beams if they are specified via input file
-      virtual std::vector<double> const& GetBeamDampingCoefficientPrefactorsFromInputFile() const
+      [[nodiscard]] std::vector<double> const& GetBeamDampingCoefficientPrefactorsFromInputFile()
+          const override
       {
         CheckInitSetup();
         return beams_damping_coefficient_prefactors_perunitlength_;
       };
 
       //! get vector holding periodic bounding box object
-      virtual Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& GetPeriodicBoundingBox() const
+      [[nodiscard]] Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& GetPeriodicBoundingBox()
+          const override
       {
         CheckInitSetup();
         return str_data_ptr_->SDyn().GetPeriodicBoundingBox();

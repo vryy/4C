@@ -39,7 +39,7 @@ namespace STR
         virtual ~FullNewton(){};
 
         //! derived from the base class
-        virtual void Setup();
+        void Setup() override;
 
        private:
         //! set the full newton parameters in the nox parameter list

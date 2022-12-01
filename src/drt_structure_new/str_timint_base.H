@@ -62,38 +62,38 @@ namespace STR
           const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> dataglobalstate);
 
       /// setup of the new class variables
-      virtual void Setup();
+      void Setup() override;
 
       /// tests if there are more time steps to do
-      virtual bool NotFinished() const;
+      bool NotFinished() const override;
 
       /// reset everything (needed for biofilm simulations)
-      virtual void Reset();
+      void Reset() override;
 
       /** \brief reset step configuration after time step
        *
        *  This function is supposed to reset all variables which are directly related
        *  to the current new step n+1. To be more precise all variables ending with "Np"
        *  have to be reseted. */
-      virtual void ResetStep();
+      void ResetStep() override;
 
       /// wrapper for things that should be done before PrepareTimeStep is called
-      virtual void PrePredict(){};
+      void PrePredict() override{};
 
       /// wrapper for things that should be done after PrepareTimeStep is called
-      virtual void PostPredict(){};
+      void PostPredict() override{};
 
       /// wrapper for things that should be done before solving the nonlinear iterations
-      virtual void PreSolve(){};
+      void PreSolve() override{};
 
       /// wrapper for things that should be done after solving the nonlinear iterations
-      virtual void PostSolve(){};
+      void PostSolve() override{};
 
       /// wrapper for things that should be done before the output
-      virtual void PreOutput(){};
+      void PreOutput() override{};
 
       /// wrapper for things that should be done after convergence of Newton scheme
-      virtual void PostOutput(){};
+      void PostOutput() override{};
 
       /// things that should be done after the actual time loop is finished
       void PostTimeLoop() override;
@@ -101,20 +101,20 @@ namespace STR
       /// @name General access methods
       ///@{
       /// Access discretization (structure only)
-      virtual Teuchos::RCP<DRT::Discretization> Discretization();
+      Teuchos::RCP<DRT::Discretization> Discretization() override;
 
       /// Access generic discretization pointer
-      virtual Teuchos::RCP<DRT::DiscretizationInterface> DiscretizationInterface();
+      Teuchos::RCP<DRT::DiscretizationInterface> DiscretizationInterface() override;
 
       /// Access to pointer to DoF row map of the discretization (structure only)
-      virtual const Epetra_Map* DofRowMapView()
+      const Epetra_Map* DofRowMapView() override
       {
         CheckInit();
         return dataglobalstate_->DofRowMapView();
       }
 
       /// DoF map of structural vector of unknowns
-      virtual Teuchos::RCP<const Epetra_Map> DofRowMap()
+      Teuchos::RCP<const Epetra_Map> DofRowMap() override
       {
         CheckInit();
         return dataglobalstate_->DofRowMap();
@@ -122,56 +122,57 @@ namespace STR
 
       //! DoF map of vector of unknowns
       // Alternative method capable of multiple DoF sets
-      virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds)
+      Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) override
       {
         CheckInit();
         return dataglobalstate_->DofRowMap(nds);
       }
 
       /// Access linear structural solver
-      virtual Teuchos::RCP<LINALG::Solver> LinearSolver()
+      Teuchos::RCP<LINALG::Solver> LinearSolver() override
       {
         CheckInit();
         return datasdyn_->GetMutableLinSolvers()[INPAR::STR::model_structure];
       }
 
       /// Return MapExtractor for Dirichlet boundary conditions
-      virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor();
+      const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() override;
       Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const;
 
       //! Return locsys manager
-      virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager();
+      Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() override;
 
       //! Return the desired model evaluator (read-only)
-      virtual const STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) const;
+      const STR::MODELEVALUATOR::Generic& ModelEvaluator(
+          INPAR::STR::ModelType mtype) const override;
 
       //! Return the desired model evaluator (read and write)
-      virtual STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype);
+      STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) override;
 
       ///@}
 
       /// Return domain map of the mass matrix (implicit and explicit)
-      virtual const Epetra_Map& GetMassDomainMap() const;
+      const Epetra_Map& GetMassDomainMap() const override;
 
       /// @name Coupled problem routines
       /// @{
       /// wrapper for things that should be done before updating
-      virtual void PreUpdate(){};
+      void PreUpdate() override{};
 
       /// Update routine for coupled problems with monolithic approach
-      virtual void Update();
+      void Update() override;
 
       /// Update time and step counter
       virtual void UpdateStepTime();
 
       /// wrapper for things that should be done after solving the update
-      virtual void PostUpdate();
+      void PostUpdate() override;
       /// @}
 
       /// @name Access global state from outside via adapter (needed for coupled problems)
       ///@{
       /// unknown displacements at \f$t_{n+1}\f$
-      virtual Teuchos::RCP<const Epetra_Vector> DispNp() const
+      Teuchos::RCP<const Epetra_Vector> DispNp() const override
       {
         CheckInit();
         return dataglobalstate_->GetDisNp();
@@ -190,7 +191,7 @@ namespace STR
        *
        * See also \ref ADAPTER::StructureNew::SetState
        */
-      virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispNp()
+      Teuchos::RCP<Epetra_Vector> WriteAccessDispNp() override
       {
         CheckInit();
         SetStateInSyncWithNOXGroup(false);
@@ -198,63 +199,63 @@ namespace STR
       }
 
       /// known displacements at \f$t_{n}\f$
-      virtual Teuchos::RCP<const Epetra_Vector> DispN() const
+      Teuchos::RCP<const Epetra_Vector> DispN() const override
       {
         CheckInit();
         return dataglobalstate_->GetDisN();
       }
 
       /// write access to displacements at \f$t^{n}\f$
-      virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispN()
+      Teuchos::RCP<Epetra_Vector> WriteAccessDispN() override
       {
         CheckInit();
         return dataglobalstate_->GetMutableDisN();
       }
 
       /// unknown velocities at \f$t_{n+1}\f$
-      virtual Teuchos::RCP<const Epetra_Vector> VelNp() const
+      Teuchos::RCP<const Epetra_Vector> VelNp() const override
       {
         CheckInit();
         return dataglobalstate_->GetVelNp();
       }
 
       /// write access to velocities at \f$t^{n+1}\f$
-      virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelNp()
+      Teuchos::RCP<Epetra_Vector> WriteAccessVelNp() override
       {
         CheckInit();
         return dataglobalstate_->GetMutableVelNp();
       }
 
       /// unknown velocities at \f$t_{n}\f$
-      virtual Teuchos::RCP<const Epetra_Vector> VelN() const
+      Teuchos::RCP<const Epetra_Vector> VelN() const override
       {
         CheckInit();
         return dataglobalstate_->GetVelN();
       }
 
       /// write access to velocities at \f$t^{n}\f$
-      virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelN()
+      Teuchos::RCP<Epetra_Vector> WriteAccessVelN() override
       {
         CheckInit();
         return dataglobalstate_->GetMutableVelN();
       }
 
       /// known velocities at \f$t_{n-1}\f$
-      virtual Teuchos::RCP<const Epetra_Vector> VelNm() const
+      Teuchos::RCP<const Epetra_Vector> VelNm() const override
       {
         CheckInit();
         return dataglobalstate_->GetVelNm();
       }
 
       /// unknown accelerations at \f$t_{n+1}\f$
-      virtual Teuchos::RCP<const Epetra_Vector> AccNp() const
+      Teuchos::RCP<const Epetra_Vector> AccNp() const override
       {
         CheckInit();
         return dataglobalstate_->GetAccNp();
       }
 
       //! known accelerations at \f$t_{n}\f$
-      virtual Teuchos::RCP<const Epetra_Vector> AccN() const
+      Teuchos::RCP<const Epetra_Vector> AccN() const override
       {
         CheckInit();
         return dataglobalstate_->GetAccN();
@@ -264,7 +265,7 @@ namespace STR
       /// @name access and modify model evaluator stuff via adapter
       /// @{
       /// are there any algebraic constraints?
-      virtual bool HaveConstraint()
+      bool HaveConstraint() override
       {
         CheckInitSetup();
         return datasdyn_->HaveModelType(INPAR::STR::model_lag_pen_constraint);
@@ -278,28 +279,28 @@ namespace STR
       }
 
       /// FixMe get constraint manager defined in the structure
-      virtual const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager()
+      const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override
       {
         dserror("Not yet implemented!");
         return Teuchos::null;
       }
 
       /// FixMe get contact/meshtying manager
-      virtual Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge()
+      Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge() override
       {
         dserror("Not yet implemented!");
         return Teuchos::null;
       }
 
       /// do we have this model
-      virtual bool HaveModel(INPAR::STR::ModelType model)
+      bool HaveModel(INPAR::STR::ModelType model) override
       {
         return datasdyn_->HaveModelType(model);
       }
 
       /// Add residual increment to Lagrange multipliers stored in Constraint manager (derived)
       /// FixMe Different behavior for the implicit and explicit case!!!
-      virtual void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr)
+      void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr) override
       {
         dserror("Not yet implemented!");
         return;
@@ -307,7 +308,7 @@ namespace STR
 
       /// Add residual increment to pressures stored in Cardiovascular0D manager (derived)
       /// FixMe Different behavior for the implicit and explicit case!!!
-      virtual void UpdateIterIncrCardiovascular0D(Teuchos::RCP<Epetra_Vector> presincr)
+      void UpdateIterIncrCardiovascular0D(Teuchos::RCP<Epetra_Vector> presincr) override
       {
         dserror("Not yet implemented!");
         return;
@@ -317,101 +318,101 @@ namespace STR
       /// @name Time step helpers
       ///@{
       /// Return current time \f$t_{n}\f$ (derived)
-      virtual double GetTimeN() const
+      double GetTimeN() const override
       {
         CheckInit();
         return dataglobalstate_->GetTimeN();
       }
 
       /// Sets the current time \f$t_{n}\f$ (derived)
-      virtual void SetTimeN(const double time_n)
+      void SetTimeN(const double time_n) override
       {
         CheckInit();
         dataglobalstate_->GetMutableTimeN() = time_n;
       }
 
       /// Return target time \f$t_{n+1}\f$ (derived)
-      virtual double GetTimeNp() const
+      double GetTimeNp() const override
       {
         CheckInit();
         return dataglobalstate_->GetTimeNp();
       }
 
       /// Sets the target time \f$t_{n+1}\f$ of this time step (derived)
-      virtual void SetTimeNp(const double time_np)
+      void SetTimeNp(const double time_np) override
       {
         CheckInit();
         dataglobalstate_->GetMutableTimeNp() = time_np;
       }
 
       /// Get upper limit of time range of interest (derived)
-      virtual double GetTimeEnd() const
+      double GetTimeEnd() const override
       {
         CheckInit();
         return datasdyn_->GetTimeMax();
       }
 
       /// Get upper limit of time range of interest (derived)
-      virtual void SetTimeEnd(double timemax)
+      void SetTimeEnd(double timemax) override
       {
         CheckInit();
         datasdyn_->GetMutableTimeMax() = timemax;
       }
 
       /// Get time step size \f$\Delta t_n\f$
-      virtual double GetDeltaTime() const
+      double GetDeltaTime() const override
       {
         CheckInit();
         return (*dataglobalstate_->GetDeltaTime())[0];
       }
 
       /// Set time step size \f$\Delta t_n\f$
-      virtual void SetDeltaTime(const double dt)
+      void SetDeltaTime(const double dt) override
       {
         CheckInit();
         (*dataglobalstate_->GetMutableDeltaTime())[0] = dt;
       }
 
       /// Return time integration factor
-      virtual double TimIntParam() const;
+      double TimIntParam() const override;
 
       /// Return current step number \f$n\f$
-      virtual int GetStepN() const
+      int GetStepN() const override
       {
         CheckInit();
         return dataglobalstate_->GetStepN();
       }
 
       /// Sets the current step \f$n\f$
-      virtual void SetStepN(int step_n)
+      void SetStepN(int step_n) override
       {
         CheckInit();
         dataglobalstate_->GetMutableStepN() = step_n;
       }
 
       /// Return current step number $n+1$
-      virtual int GetStepNp() const
+      int GetStepNp() const override
       {
         CheckInit();
         return dataglobalstate_->GetStepNp();
       }
 
       /// Sets the current step number \f$n+1\f$
-      virtual void SetStepNp(int step_np)
+      void SetStepNp(int step_np) override
       {
         CheckInitSetup();
         dataglobalstate_->GetMutableStepNp() = step_np;
       }
 
       //! Get number of time steps
-      virtual int GetStepEnd() const
+      int GetStepEnd() const override
       {
         CheckInit();
         return datasdyn_->GetStepMax();
       }
 
       /// Sets number of time steps
-      virtual void SetStepEnd(int step_end)
+      void SetStepEnd(int step_end) override
       {
         CheckInitSetup();
         datasdyn_->GetMutableStepMax() = step_end;
@@ -474,7 +475,7 @@ namespace STR
       }
 
       /// set evaluation action
-      virtual void SetActionType(const DRT::ELEMENTS::ActionType& action);
+      void SetActionType(const DRT::ELEMENTS::ActionType& action) override;
 
       // group id in nested parallelity
       int GroupId() const;
@@ -483,13 +484,13 @@ namespace STR
       /// @name Structure with ale specific methods
       ///@{
       /// FixMe set/apply material displacements to structure field (structure with ale)
-      virtual void SetDispMatNp(Teuchos::RCP<Epetra_Vector> dispmatnp)
+      void SetDispMatNp(Teuchos::RCP<Epetra_Vector> dispmatnp) override
       {
         dserror("Not supported at the moment!");
       }
 
       /// FixMe write access to material displacements (strutcure with ale) at \f$t^{n+1}\f$
-      virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispMatNp()
+      Teuchos::RCP<Epetra_Vector> WriteAccessDispMatNp() override
       {
         CheckInitSetup();
         dserror("Not yet supported!");
@@ -501,14 +502,14 @@ namespace STR
       /// Time adaptivity (derived pure virtual functionality)
       /// @{
       /// Resize MStep Object due to time adaptivity in FSI (derived)
-      virtual void ResizeMStepTimAda();
+      void ResizeMStepTimAda() override;
 
       /// @}
 
       /// Output writer related routines (file and screen output)
       /// @{
       /// Access output object
-      virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter()
+      Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() override
       {
         return DataIO().GetMutableOutputPtr();
       }
@@ -519,57 +520,57 @@ namespace STR
 
       /// output results (implicit and explicit)
       virtual void Output() { Output(false); };
-      virtual void Output(bool forced_writerestart);
+      void Output(bool forced_writerestart) override;
 
       /// output error norms
       virtual void OutputErrorNorms();
 
       /// Write Gmsh output for structural field
-      virtual void writeGmshStrucOutputStep();
+      void writeGmshStrucOutputStep() override;
 
       /// FixMe Check if there are any elements with the micro material definition.
       /// Maybe the detection can be moved to the element loop in the ad_str_structure_new.cpp.
       /// There is already one.
-      virtual bool HaveMicroMat()
+      bool HaveMicroMat() override
       {
         dserror("Not yet considered!");
         return false;
       };
 
       /// create result test for encapsulated structure algorithm
-      virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+      Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
 
       /** \brief Get data that is written during restart
        *
        *  This routine is only for simple structure problems!
        *  \date 06/13
        *  \author biehler */
-      virtual void GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
+      void GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
           Teuchos::RCP<Epetra_Vector> disnp, Teuchos::RCP<Epetra_Vector> velnp,
           Teuchos::RCP<Epetra_Vector> accnp, Teuchos::RCP<std::vector<char>> elementdata,
-          Teuchos::RCP<std::vector<char>> nodedata);
+          Teuchos::RCP<std::vector<char>> nodedata) override;
 
       /** Read restart values
        *
        * \param stepn (in): restart step at \f${n}\f$
        */
-      virtual void ReadRestart(const int stepn);
+      void ReadRestart(const int stepn) override;
 
       /// Set restart values (deprecated)
-      virtual void SetRestart(int stepn,                //!< restart step at \f${n}\f$
+      void SetRestart(int stepn,                        //!< restart step at \f${n}\f$
           double timen,                                 //!< restart time at \f$t_{n}\f$
           Teuchos::RCP<Epetra_Vector> disn,             //!< restart displacements at \f$t_{n}\f$
           Teuchos::RCP<Epetra_Vector> veln,             //!< restart velocities at \f$t_{n}\f$
           Teuchos::RCP<Epetra_Vector> accn,             //!< restart accelerations at \f$t_{n}\f$
           Teuchos::RCP<std::vector<char>> elementdata,  //!< restart element data
           Teuchos::RCP<std::vector<char>> nodedata      //!< restart element data
-      );
+          ) override;
       /// @}
 
       /// Biofilm related stuff
       /// @{
       /// FixMe set structure displacement vector due to biofilm growth
-      virtual void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp)
+      void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) override
       {
         dserror("Currently unsupported!");
       }
@@ -577,72 +578,34 @@ namespace STR
 
       /// @name Pure virtual adapter functions (have to be implemented in the derived classes)
       /// @{
-      /// Take the time and integrate (time loop) (implicit and explicit)
-      virtual int Integrate() = 0;
       /// integrate the current step (implicit and explicit)
       virtual int IntegrateStep() = 0;
-      /// nonlinear solve (implicit and explicit)
-      virtual INPAR::STR::ConvergenceStatus Solve() = 0;
-      //! print summary after step (implicit and explicit)
-      virtual void PrintStep() = 0;
-      /// start new time step (implicit and explicit)
-      virtual void PrepareTimeStep() = 0;
-      /// specific method for iterative staggered partitioned TSI (implicit and explicit)
-      virtual void PreparePartitionStep() = 0;
-      /// set the state of the nox group and the global state data container
-      /// see class \ref ADAPTER::StructureNew for detailed documentation.
-      /// \note implemented only for implicit
-      virtual void SetState(const Teuchos::RCP<Epetra_Vector>& x) = 0;
-      /// update displacement (implicit only)
-      void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override = 0;
-      /// update displacement and evaluate elements (implicit only)
-      virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) = 0;
-      /// don't update displacement but evaluate elements (implicit only)
-      virtual void Evaluate() = 0;
-      /// Update routine for coupled problems with monolithic approach with time adaptivity
-      /// (implicit only)
-      virtual void Update(double endtime) = 0;
-      /// Get type of thickness scaling for thin shell structures (implicit only)
-      virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;
-      /// Access to scaling matrix for STC (implicit only)
-      virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() = 0;
-      /// initial guess of Newton's method (implicit only)
-      virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
       /// right-hand-side of Newton's method (implicit only)
-      virtual Teuchos::RCP<const Epetra_Vector> RHS() { return GetF(); };
+      Teuchos::RCP<const Epetra_Vector> RHS() override { return GetF(); };
       virtual Teuchos::RCP<const Epetra_Vector> GetF() const = 0;
-      /// Return reaction forces at \f$t_{n+1}\f$ (read and write) (implicit only)
-      virtual Teuchos::RCP<Epetra_Vector> Freact() = 0;
-      //! Return stiffness (implicit only)
-      virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;
-      /// Return stiffness (implicit only)
-      virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
-      ///! Switch structure field to block matrix in fsi simulations (implicit only)
-      virtual void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-          Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps) = 0;
       /// @}
 
       /// @name XFEM/XSTR related methods
       ///@{
 
       /// access the xfield state pointer
-      virtual Teuchos::RCP<XFEM::XFieldState> XFieldState();
-      virtual Teuchos::RCP<const XFEM::XFieldState> XFieldState() const;
+      Teuchos::RCP<XFEM::XFieldState> XFieldState() override;
+      Teuchos::RCP<const XFEM::XFieldState> XFieldState() const override;
 
       /** \brief create a new XFieldState object by transferring the information to the new dofs
        *
        *  \author hiermeier \date 02/17 */
-      virtual void CreateNewXFieldState(const Teuchos::RCP<XFEM::XFieldState>& new_xstate) const;
+      void CreateNewXFieldState(const Teuchos::RCP<XFEM::XFieldState>& new_xstate) const override;
 
       /** \brief reset the non-standard / enrichment dofs of the xfield state object
        *
        *  \author hiermeier \date 02/17 */
-      virtual void ResetXFieldNonStandardDofs();
+      void ResetXFieldNonStandardDofs() override;
 
       /** \brief destroy the current state
        *
        *  \author hiermeier \date 02/17 */
-      virtual bool DestroyState();
+      bool DestroyState() override;
 
       /** \brief destroy the nonlinear solver state
        *

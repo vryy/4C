@@ -88,8 +88,8 @@ namespace STR
      *  \param[out] uneval_test_count  updated number of unevaluated tests
      *
      *  \author hiermeier \date 11/17 */
-    virtual void TestSpecial(
-        DRT::INPUT::LineDefinition& res, int& nerr, int& test_count, int& uneval_test_count);
+    void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count,
+        int& uneval_test_count) override;
 
    protected:
     /// get the indicator state

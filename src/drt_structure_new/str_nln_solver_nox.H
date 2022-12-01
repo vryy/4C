@@ -63,13 +63,13 @@ namespace STR
         virtual ~Nox(){};
 
         //! derived from the base class
-        virtual void Setup();
+        void Setup() override;
 
         //! derived from the base class
-        virtual void Reset();
+        void Reset() override;
 
         //! derived from the base class
-        virtual INPAR::STR::ConvergenceStatus Solve();
+        INPAR::STR::ConvergenceStatus Solve() override;
 
         //! returns the outer status test object pointer
         const NOX::StatusTest::Generic& GetOStatusTest() const
@@ -87,7 +87,7 @@ namespace STR
         }
 
         //! get number of nonlinear iterations (derived)
-        virtual int GetNumNlnIterations() const;
+        int GetNumNlnIterations() const override;
 
        protected:
         //! Reset the non-linear solver parameters and variables

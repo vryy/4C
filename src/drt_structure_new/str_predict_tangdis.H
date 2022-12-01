@@ -37,10 +37,10 @@ namespace STR
       virtual ~TangDis(){};
 
       //! setup class specific stuff
-      virtual void Setup();
+      void Setup() override;
 
       //! do the class specific predictor step
-      virtual void Compute(NOX::Abstract::Group& grp);
+      void Compute(NOX::Abstract::Group& grp) override;
 
       //! return the dbc increment
       const Epetra_Vector& GetDbcIncr() const;
@@ -85,7 +85,7 @@ namespace NOX
           virtual ~TangDis(){};
 
           //! add the linear reaction forces
-          virtual void runPostComputeF(Epetra_Vector& F, const NOX::NLN::Group& grp);
+          void runPostComputeF(Epetra_Vector& F, const NOX::NLN::Group& grp) override;
 
          private:
           //! pointer to the tangdis object (read-only)

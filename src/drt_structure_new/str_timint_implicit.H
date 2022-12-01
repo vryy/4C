@@ -65,22 +65,22 @@ namespace STR
       //! destructor
       virtual ~Implicit(){};
 
-      virtual void Setup();
+      void Setup() override;
 
-      virtual int Integrate();
+      int Integrate() override;
 
-      virtual int IntegrateStep();
+      int IntegrateStep() override;
 
       /// set the state of the nox group and the global state data container
       /// see class \ref ADAPTER::StructureNew for a detailed documentation.
-      virtual void SetState(const Teuchos::RCP<Epetra_Vector>& x);
+      void SetState(const Teuchos::RCP<Epetra_Vector>& x) override;
 
       /*! \brief nonlinear solve
        *
        *  Do the nonlinear solve, i.e. (multiple) corrector,
        *  for the time step. All boundary conditions have
        *  been set. */
-      virtual INPAR::STR::ConvergenceStatus Solve();
+      INPAR::STR::ConvergenceStatus Solve() override;
 
       /** \brief Identify residual
        *
@@ -89,10 +89,10 @@ namespace STR
        *  In partitioned solution schemes, it is better to keep the current
        *  solution instead of evaluating the initial guess (as the predictor)
        *  does. */
-      virtual void PreparePartitionStep();
+      void PreparePartitionStep() override;
 
       //! Prepare time step
-      virtual void PrepareTimeStep();
+      void PrepareTimeStep() override;
 
       //! @name Accessors
       //! @{
@@ -127,8 +127,8 @@ namespace STR
       void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
 
       ///  Evaluate routine for coupled problems with monolithic approach
-      virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
-      virtual void Evaluate();
+      void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
+      void Evaluate() override;
 
       /** \brief Print structural jacobian matrix into a text file for later use
        *  in MATLAB
@@ -150,10 +150,10 @@ namespace STR
 
      protected:
       //! returns the current solution group
-      virtual const NOX::Abstract::Group& GetSolutionGroup() const;
+      const NOX::Abstract::Group& GetSolutionGroup() const override;
 
       //! returns the current solution group ptr
-      virtual Teuchos::RCP<NOX::Abstract::Group> SolutionGroupPtr();
+      Teuchos::RCP<NOX::Abstract::Group> SolutionGroupPtr() override;
 
       STR::IMPLICIT::Generic& ImplInt()
       {

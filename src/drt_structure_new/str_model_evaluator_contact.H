@@ -67,84 +67,84 @@ namespace STR
       void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) override;
 
       //! [derived]
-      virtual bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const;
+      bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
 
       //! Assemble the jacobian at \f$t_{n+1}\f$
-      virtual bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const;
+      bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       //! Perform a correction of adaptive parameters
-      virtual bool CorrectParameters(NOX::NLN::CorrectionType type);
+      bool CorrectParameters(NOX::NLN::CorrectionType type) override;
 
       //! [derived]
-      virtual void WriteRestart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const;
+      void WriteRestart(
+          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! [derived]
-      virtual void ReadRestart(IO::DiscretizationReader& ioreader);
+      void ReadRestart(IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      virtual void Predict(const INPAR::STR::PredEnum& pred_type) { return; };
+      void Predict(const INPAR::STR::PredEnum& pred_type) override { return; };
 
       //! recover condensed Lagrange multipliers
-      virtual void RunPostComputeX(
-          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew);
+      void RunPostComputeX(
+          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
       //! [derived]
-      virtual void RunPreComputeX(
-          const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const NOX::NLN::Group& curr_grp);
+      void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+          const NOX::NLN::Group& curr_grp) override;
 
       //! [derived]
-      virtual void RunPostIterate(const NOX::Solver::Generic& solver);
+      void RunPostIterate(const NOX::Solver::Generic& solver) override;
 
       /// [derived]
       void RunPreSolve(const NOX::Solver::Generic& solver) override;
 
       //! [derived]
-      virtual void RunPostApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
-          const Epetra_Vector& xold, const NOX::NLN::Group& grp);
+      void RunPostApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
+          const Epetra_Vector& xold, const NOX::NLN::Group& grp) override;
 
       //! [derived]
-      virtual void RunPreApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
-          const Epetra_Vector& xold, const NOX::NLN::Group& grp);
+      void RunPreApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
+          const Epetra_Vector& xold, const NOX::NLN::Group& grp) override;
 
       //! [derived]
-      virtual void UpdateStepState(const double& timefac_n);
+      void UpdateStepState(const double& timefac_n) override;
 
       //! [derived]
-      virtual void UpdateStepElement();
+      void UpdateStepElement() override;
 
       //! [derived]
-      virtual void DetermineStressStrain();
+      void DetermineStressStrain() override;
 
       //! [derived]
-      virtual void DetermineEnergy();
+      void DetermineEnergy() override;
 
       //! [derived]
-      virtual void DetermineOptionalQuantity() override;
+      void DetermineOptionalQuantity() override;
 
       //! [derived]
-      virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
+      void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
 
       //! [derived]
-      virtual void ResetStepState();
+      void ResetStepState() override;
 
       //! [derived]
-      virtual Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const;
+      Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override;
 
       //! [derived]
-      virtual Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const;
+      Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const override;
 
       //! [derived]
-      virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const;
+      Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const override;
 
       //! [derived]
-      virtual void PostOutput();
+      void PostOutput() override;
 
       //! [derived]
-      virtual bool EvaluateCheapSOCRhs();
+      bool EvaluateCheapSOCRhs() override;
 
       //! [derived]
-      virtual bool AssembleCheapSOCRhs(Epetra_Vector& f, const double& timefac_np) const;
+      bool AssembleCheapSOCRhs(Epetra_Vector& f, const double& timefac_np) const override;
 
       //! @}
 

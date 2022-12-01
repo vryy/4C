@@ -49,46 +49,46 @@ namespace STR
       virtual ~LOCAContinuation(){};
 
       //! derived setup routine
-      virtual void Setup();
+      void Setup() override;
 
       //! call of the stepper run() routine (derived)
-      virtual int Integrate();
+      int Integrate() override;
 
       /// integrate the current step (derived)
-      virtual int IntegrateStep();
+      int IntegrateStep() override;
 
       /// Update State Incrementally for coupled problems with monolithic approach
       void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
 
       ///  Evaluate routine for coupled problems with monolithic approach
-      virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
+      void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
 
       /// don't update displacement but evaluate elements (implicit only)
-      virtual void Evaluate();
+      void Evaluate() override;
 
       /// set the state of the nox group and the global state data container
-      virtual void SetState(const Teuchos::RCP<Epetra_Vector>& x);
+      void SetState(const Teuchos::RCP<Epetra_Vector>& x) override;
 
       /*! \brief nonlinear solve
        *
        *  Do the nonlinear solve, i.e. (multiple) corrector,
        *  for the time step. All boundary conditions have
        *  been set. */
-      virtual INPAR::STR::ConvergenceStatus Solve();
+      INPAR::STR::ConvergenceStatus Solve() override;
 
       //! start new time step (derived)
-      virtual void PrepareTimeStep();
+      void PrepareTimeStep() override;
 
       //! start new partitioned step
-      virtual void PreparePartitionStep();
+      void PreparePartitionStep() override;
 
 
      protected:
       //! Returns the current solution group
-      virtual const NOX::Abstract::Group& GetSolutionGroup() const;
+      const NOX::Abstract::Group& GetSolutionGroup() const override;
 
       //! Returns the current solution group ptr
-      virtual Teuchos::RCP<NOX::Abstract::Group> SolutionGroupPtr();
+      Teuchos::RCP<NOX::Abstract::Group> SolutionGroupPtr() override;
 
       //! Check for necessary parameters which have to be supplied by the user.
       void CheckForNecessaryParameters() const;

@@ -45,66 +45,49 @@ namespace STR
       virtual ~ImplicitBase(){};
 
       /// Get type of thickness scaling for thin shell structures (derived)
-      virtual INPAR::STR::STC_Scale GetSTCAlgo();
+      INPAR::STR::STC_Scale GetSTCAlgo() override;
 
       /// Get stc matrix (derived)
-      virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat();
+      Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() override;
 
       /// Update routine for coupled problems with monolithic approach with time adaptivity
-      virtual void Update(double endtime);
+      void Update(double endtime) override;
 
       /// @name Access linear system of equation via adapter (implicit only!)
       /// @{
       /// initial guess of Newton's method
-      virtual Teuchos::RCP<const Epetra_Vector> InitialGuess();
+      Teuchos::RCP<const Epetra_Vector> InitialGuess() override;
 
       /// right-hand-side of Newton's method
-      virtual Teuchos::RCP<const Epetra_Vector> GetF() const;
+      Teuchos::RCP<const Epetra_Vector> GetF() const override;
 
       /// Return reaction forces at \f$t_{n+1}\f$ (read and write)
-      virtual Teuchos::RCP<Epetra_Vector> Freact();
+      Teuchos::RCP<Epetra_Vector> Freact() override;
 
       //! Return stiffness,
       //! i.e. force residual differentiated by displacements
       //!      (structural block only)
-      virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+      Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() override;
 
       /// Return stiffness,
       /// i.e. force residual differentiated by displacements
-      virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+      Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override;
 
       ///! FixMe switch structure field to block matrix in fsi simulations
-      virtual void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-          Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps);
+      void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
+          Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps) override;
       /// @}
 
       /// @name XFEM/XSTR related methods
       ///@{
 
       /// destroy the nonlinear solver state and all internal stored state variables
-      virtual bool DestroyNoxState();
+      bool DestroyNoxState() override;
 
       ///@}
 
       //! print summary after step
-      virtual void PrintStep();
-
-      /// @name Pure virtual routines (have to be implemented in the derived implicit classes)
-      /// @{
-      /// Take the time and integrate (time loop) (pure virtual)
-      virtual int Integrate() = 0;
-      /// integrate the current step (pure virtual)
-      virtual int IntegrateStep() = 0;
-      /// nonlinear solve (pure virtual)
-      virtual INPAR::STR::ConvergenceStatus Solve() = 0;
-      /// start new time step
-      virtual void PrepareTimeStep() = 0;
-      /// specific method for iterative staggered partitioned TSI
-      virtual void PreparePartitionStep() = 0;
-      /// set the state of the nox group and the global state data container
-      /// see class \ref ADAPTER::StructureNew for detailed documentation.
-      virtual void SetState(const Teuchos::RCP<Epetra_Vector>& x) = 0;
-      /// @}
+      void PrintStep() override;
 
      protected:
       /// Returns the current solution group (pure virtual)

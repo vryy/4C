@@ -66,13 +66,13 @@ namespace NOX
         virtual ~LinearSystem(){};
 
         //! sets the options of the underlying solver
-        virtual void SetSolverOptions(Teuchos::ParameterList& p,
-            Teuchos::RCP<LINALG::Solver>& solverPtr, const NOX::NLN::SolutionType& solverType);
+        void SetSolverOptions(Teuchos::ParameterList& p, Teuchos::RCP<LINALG::Solver>& solverPtr,
+            const NOX::NLN::SolutionType& solverType) override;
 
         //! Returns a pointer to the linear solver, which has to be used
-        virtual NOX::NLN::SolutionType GetActiveLinSolver(
+        NOX::NLN::SolutionType GetActiveLinSolver(
             const std::map<NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>& solvers,
-            Teuchos::RCP<LINALG::Solver>& currSolver);
+            Teuchos::RCP<LINALG::Solver>& currSolver) override;
 
       };  // class LinearSystem
     }     // namespace STR

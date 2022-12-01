@@ -42,39 +42,7 @@ namespace STR
       virtual ~Generic(){};
 
       //! Setup (has to be implemented by the derived classes)
-      virtual void Setup();
-
-      /*! \brief Set state variables (derived)
-       *
-       * \param[in] x State to be set
-       */
-      virtual void SetState(const Epetra_Vector& x) = 0;
-
-      /*! \brief Add the viscous and mass contributions to the right hand side (TR-rule)
-       *
-       * \remark The remaining contributions have been considered in the corresponding model
-       *         evaluators. This is due to the fact, that some models use a different
-       *         time integration scheme for their terms (e.g. GenAlpha for the structure
-       *         and OST for the remaining things).
-       *
-       * \param[in/out] f Right-hand side vector
-       */
-      virtual void AddViscoMassContributions(Epetra_Vector& f) const = 0;
-
-      /*! \brief Add the viscous and mass contributions to the Jacobian (TR-rule)
-       *
-       * \remark The remaining blocks have been considered in the corresponding model
-       *         evaluators. This is due to the fact, that some models use a different
-       *         time integration scheme for their terms (e.g. GenAlpha for the structure
-       *         and OST for the remaining things). Furthermore, constraint/Lagrange
-       *         multiplier blocks need no scaling anyway.
-       *
-       * \param[in/out] jac Jacobian matrix
-       */
-      virtual void AddViscoMassContributions(LINALG::SparseOperator& jac) const = 0;
-
-      //! derived
-      virtual bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) = 0;
+      void Setup() override;
 
       /*! \brief Apply the stiffness only
        *
@@ -102,22 +70,11 @@ namespace STR
       void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const;
 
       //! derived
-      virtual bool AssembleForce(Epetra_Vector& f,
-          const std::vector<INPAR::STR::ModelType>* without_these_models = NULL) const = 0;
-
-      //! derived
-      virtual bool AssembleJac(LINALG::SparseOperator& jac,
-          const std::vector<INPAR::STR::ModelType>* without_these_models = NULL) const
+      bool AssembleJac(LINALG::SparseOperator& jac,
+          const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr) const override
       {
         return false;
       };
-
-      //! derived
-      virtual void WriteRestart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const = 0;
-
-      //! derived
-      virtual void ReadRestart(IO::DiscretizationReader& ioreader) = 0;
 
       /*! \brief Calculate characteristic/reference norms for forces
        *
@@ -128,28 +85,19 @@ namespace STR
        *  points within the time-step (end point, generalized midpoint). */
       virtual double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) = 0;
 
-      //! return time integration factor
-      virtual double GetIntParam() const = 0;
-
       //! return the default step length of the used NOX::LineSearch method
       double GetDefaultStepLength() const;
 
       //! @name Monolithic update routines
       //! @{
       //! things that should be done before updating (derived)
-      virtual void PreUpdate(){/* do nothing for now */};
-
-      //! Update configuration after time step (derived)
-      virtual void UpdateStepState() = 0;
-
-      //! Update everything on element level after time step and after output (derived)
-      virtual void UpdateStepElement() = 0;
+      void PreUpdate() override{/* do nothing for now */};
 
       //! things that should be done after updating (derived)
-      virtual void PostUpdate(){/* do nothing for now */};
+      void PostUpdate() override{/* do nothing for now */};
 
       //! update constant contributions of the current state for the new time step \f$t_{n+1}\f$
-      virtual void UpdateConstantStateContributions(){/* do nothing for some integrators */};
+      void UpdateConstantStateContributions() override{/* do nothing for some integrators */};
       //! @}
 
       //! @name Predictor routines (dependent on the implicit integration scheme)
@@ -228,7 +176,7 @@ namespace STR
 
      protected:
       //! reset the time step dependent parameters for the element evaluation [derived]
-      virtual void ResetEvalParams();
+      void ResetEvalParams() override;
 
      private:
       /*! \brief Flag indicating if the current state is the predictor state.
@@ -342,9 +290,9 @@ namespace NOX
            *  \param grp    : read only access to the group object
            *
            *  \author seitz \date 04/18 */
-          virtual void runPreApplyJacobianInverse(const NOX::Abstract::Vector& rhs,
+          void runPreApplyJacobianInverse(const NOX::Abstract::Vector& rhs,
               NOX::Abstract::Vector& result, const NOX::Abstract::Vector& xold,
-              const NOX::NLN::Group& grp);
+              const NOX::NLN::Group& grp) override;
 
          private:
           /*! \brief Convert NOX::Abstract::Vector to Epetra_Vector

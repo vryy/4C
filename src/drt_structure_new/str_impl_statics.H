@@ -30,37 +30,37 @@ namespace STR
       virtual ~Statics(){};
 
       //! Setup the class variables
-      virtual void Setup();
+      void Setup() override;
 
       //! Reset state variables (derived)
-      virtual void SetState(const Epetra_Vector& x);
+      void SetState(const Epetra_Vector& x) override;
 
       //! Apply the rhs only (derived)
-      virtual bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f);
+      bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) override;
 
       //! Apply the stiffness only (derived)
-      virtual bool ApplyStiff(const Epetra_Vector& x, LINALG::SparseOperator& jac);
+      bool ApplyStiff(const Epetra_Vector& x, LINALG::SparseOperator& jac) override;
 
       //! Apply force and stiff at once (derived)
-      virtual bool ApplyForceStiff(
-          const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac);
+      bool ApplyForceStiff(
+          const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac) override;
 
       //! (derived)
-      virtual bool AssembleForce(Epetra_Vector& f,
-          const std::vector<INPAR::STR::ModelType>* without_these_models = NULL) const;
+      bool AssembleForce(Epetra_Vector& f,
+          const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr) const override;
 
       //! (derived)
-      virtual void WriteRestart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const;
+      void WriteRestart(
+          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! (derived)
-      virtual void ReadRestart(IO::DiscretizationReader& ioreader);
+      void ReadRestart(IO::DiscretizationReader& ioreader) override;
 
       //! (derived)
-      virtual double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type);
+      double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) override;
 
       //! return time integration factor (derived)
-      virtual double GetIntParam() const;
+      [[nodiscard]] double GetIntParam() const override;
 
       //! derived
       double GetModelValue(const Epetra_Vector& x) override;
@@ -68,45 +68,45 @@ namespace STR
       //! @name Monolithic update routines
       //! @{
       //! things that should be done before updating (derived)
-      virtual void PreUpdate();
+      void PreUpdate() override;
 
       //! Update configuration after time step (derived)
-      virtual void UpdateStepState();
+      void UpdateStepState() override;
 
       //! Update everything on element level after time step and after output (derived)
-      virtual void UpdateStepElement();
+      void UpdateStepElement() override;
       //! @}
 
       //! @name Predictor routines (dependent on the implicit integration scheme)
       //! @{
       /*! Predict constant displacements, consistent velocities and accelerations (derived) */
-      virtual void PredictConstDisConsistVelAcc(
-          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const;
+      void PredictConstDisConsistVelAcc(
+          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
       /*! Predict displacements based on constant velocities and consistent accelerations (derived)
        */
-      virtual bool PredictConstVelConsistAcc(
-          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const;
+      bool PredictConstVelConsistAcc(
+          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
       /*! Predict displacements based on constant accelerations and consistent velocities (derived)
        */
-      virtual bool PredictConstAcc(
-          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const;
+      bool PredictConstAcc(
+          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
       //! @}
 
      protected:
       /*! \brief Add the viscous and mass contributions to the right hand side (TR-rule)
        *
        * \remark Nothing needs to be done in the static case. */
-      virtual void AddViscoMassContributions(Epetra_Vector& f) const { return; };
+      void AddViscoMassContributions(Epetra_Vector& f) const override{};
 
       /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
        *
        * \remark Nothing needs to be done in the static case. */
-      virtual void AddViscoMassContributions(LINALG::SparseOperator& jac) const { return; };
+      void AddViscoMassContributions(LINALG::SparseOperator& jac) const override{};
 
       //! reset the time step dependent parameters for the element evaluation [derived]
-      virtual void ResetEvalParams();
+      void ResetEvalParams() override;
     };
   }  // namespace IMPLICIT
 }  // namespace STR

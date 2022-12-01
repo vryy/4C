@@ -41,40 +41,40 @@ namespace STR
       virtual ~GenAlpha(){};
 
       //! Setup the class variables
-      virtual void Setup();
+      void Setup() override;
 
       //! Reset state variables [derived]
-      virtual void SetState(const Epetra_Vector& x);
+      void SetState(const Epetra_Vector& x) override;
 
       //! Apply the rhs only [derived]
-      virtual bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f);
+      bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) override;
 
       //! Apply the stiffness only [derived]
-      virtual bool ApplyStiff(const Epetra_Vector& x, LINALG::SparseOperator& jac);
+      bool ApplyStiff(const Epetra_Vector& x, LINALG::SparseOperator& jac) override;
 
       //! Apply force and stiff at once [derived]
-      virtual bool ApplyForceStiff(
-          const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac);
+      bool ApplyForceStiff(
+          const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac) override;
 
       //! [derived]
-      virtual bool AssembleForce(Epetra_Vector& f,
-          const std::vector<INPAR::STR::ModelType>* without_these_models = NULL) const;
+      bool AssembleForce(Epetra_Vector& f,
+          const std::vector<INPAR::STR::ModelType>* without_these_models = NULL) const override;
 
-      virtual bool AssembleJac(LINALG::SparseOperator& jac,
-          const std::vector<INPAR::STR::ModelType>* without_these_models = NULL) const;
-
-      //! [derived]
-      virtual void WriteRestart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const;
+      bool AssembleJac(LINALG::SparseOperator& jac,
+          const std::vector<INPAR::STR::ModelType>* without_these_models = NULL) const override;
 
       //! [derived]
-      virtual void ReadRestart(IO::DiscretizationReader& ioreader);
+      void WriteRestart(
+          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! [derived]
-      virtual double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type);
+      void ReadRestart(IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      virtual double GetIntParam() const;
+      double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) override;
+
+      //! [derived]
+      double GetIntParam() const override;
 
       /// access the parameter for the accelerations at \f$t_{n}\f$, i.e. alpham
       double GetAccIntParam() const override;
@@ -83,16 +83,16 @@ namespace STR
       //!@{
 
       //! Update configuration after time step [derived]
-      virtual void UpdateStepState();
+      void UpdateStepState() override;
 
       //! Update everything on element level after time step and after output [derived]
-      virtual void UpdateStepElement();
+      void UpdateStepElement() override;
 
       /*! \brief things that should be done after updating [derived]
        *
        *  We use in the GenAlpha case to update constant contributions (during one time step)
        *  of the SetState routine.*/
-      virtual void PostUpdate();
+      void PostUpdate() override;
 
       //!@}
 
@@ -100,16 +100,16 @@ namespace STR
       //!@{
 
       //! Predict constant displacements, consistent velocities and accelerations [derived]
-      virtual void PredictConstDisConsistVelAcc(
-          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const;
+      void PredictConstDisConsistVelAcc(
+          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
       //! Predict displacements based on constant velocities and consistent accelerations [derived]
-      virtual bool PredictConstVelConsistAcc(
-          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const;
+      bool PredictConstVelConsistAcc(
+          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
       //! Predict displacements based on constant accelerations and consistent velocities [derived]
-      virtual bool PredictConstAcc(
-          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const;
+      bool PredictConstAcc(
+          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
       //! Set initial displacement field
       virtual void SetInitialDisplacement(
@@ -151,7 +151,7 @@ namespace STR
       virtual void PostSetup();
 
       //! reset the time step dependent parameters for the element evaluation [derived]
-      virtual void ResetEvalParams();
+      void ResetEvalParams() override;
 
      private:
       /*! \brief Add the viscous and mass contributions to the right hand side (TR-rule)
@@ -171,7 +171,7 @@ namespace STR
        *
        *  \author hiermeier
        *  \date 03/2016 */
-      virtual void AddViscoMassContributions(Epetra_Vector& f) const;
+      void AddViscoMassContributions(Epetra_Vector& f) const override;
 
       /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
        *
@@ -191,7 +191,7 @@ namespace STR
        *
        *  \author hiermeier
        *  \date 03/2016 */
-      virtual void AddViscoMassContributions(LINALG::SparseOperator& jac) const;
+      void AddViscoMassContributions(LINALG::SparseOperator& jac) const override;
 
       /*! \brief Update constant contributions of the current state for the new time step
        * \f$t_{n+1}\f$
@@ -229,7 +229,7 @@ namespace STR
        *
        *  \author hiermeier
        *  \date 03/2016 */
-      virtual void UpdateConstantStateContributions();
+      void UpdateConstantStateContributions() override;
 
       /// set the time integration coefficients
       void SetTimeIntegrationCoefficients(Coefficients& coeffs) const;
