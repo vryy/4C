@@ -31,24 +31,24 @@ namespace STR
       virtual ~LocaInterface(){};
 
       //! setup function
-      virtual void Setup();
+      void Setup() override;
 
       /*! compute the right hand side entries
        *  (derived from NOX::Epetra::Interface::Required) */
-      virtual bool computeF(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag);
+      bool computeF(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag) override;
 
       /*! compute jacobian
        *  ( derived from NOX::Epetra::Inteface::Jacobian) */
-      virtual bool computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac);
+      bool computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac) override;
 
       /*! compute right hand side and jacobian
        *  (derived from NOX::NLN::Interface::Jacobian) */
-      virtual bool computeFandJacobian(
-          const Epetra_Vector& x, Epetra_Vector& rhs, Epetra_Operator& jac);
+      bool computeFandJacobian(
+          const Epetra_Vector& x, Epetra_Vector& rhs, Epetra_Operator& jac) override;
 
       /*! Set the continuation parameters for the compute routines
        *  (derived from LOCA::Epetra::Interface::Required) */
-      virtual void setParameters(const LOCA::ParameterVector& p);
+      void setParameters(const LOCA::ParameterVector& p) override;
 
      protected:
       double displ_fac_;

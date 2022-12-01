@@ -91,49 +91,49 @@ namespace STR
       virtual ~GenAlphaLieGroup(){};
 
       //! Setup the class variables [derived]
-      virtual void Setup();
+      void Setup() override;
 
       //! Reset state variables [derived]
-      virtual void SetState(const Epetra_Vector& x);
+      void SetState(const Epetra_Vector& x) override;
 
       //! [derived]
-      virtual void WriteRestart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const;
+      void WriteRestart(
+          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! [derived]
-      virtual void ReadRestart(IO::DiscretizationReader& ioreader);
+      void ReadRestart(IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      virtual double GetIntParam() const;
+      double GetIntParam() const override;
 
       //! @name Monolithic update routines
       //! @{
       //! Update configuration after time step [derived]
-      virtual void UpdateStepState();
+      void UpdateStepState() override;
       //! @}
 
       //! @name Predictor routines (dependent on the implicit integration scheme)
       //! @{
       /*! Predict constant displacements, consistent velocities and accelerations [derived] */
-      virtual void PredictConstDisConsistVelAcc(
-          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const;
+      void PredictConstDisConsistVelAcc(
+          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
       /*! Predict displacements based on constant velocities
        *  and consistent accelerations [derived] */
-      virtual bool PredictConstVelConsistAcc(
-          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const;
+      bool PredictConstVelConsistAcc(
+          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
       /*! Predict displacements based on constant accelerations
        *  and consistent velocities [derived] */
-      virtual bool PredictConstAcc(
-          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const;
+      bool PredictConstAcc(
+          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
       //! @}
      protected:
       //! run directly after the setup routine has been finished [derived]
       virtual void PostSetup();
 
       //! reset the time step dependent parameters for the element evaluation [derived]
-      virtual void ResetEvalParams();
+      void ResetEvalParams() override;
 
      private:
       /*! \brief Calculate the right-hand-side vector at \f$ t_{n+1} \f$  [derived]
@@ -146,7 +146,7 @@ namespace STR
        *  \f]
        *     * Remark: In the case of a Lie group Gen-Alpha time integration scheme,
        *               all forces are evaluated at the end point n+1. */
-      virtual void AddViscoMassContributions(Epetra_Vector& f) const;
+      void AddViscoMassContributions(Epetra_Vector& f) const override;
 
       /*! \brief Calculate the structural stiffness block at \f$ t_{n+1} \f$  [derived]
        *
@@ -156,7 +156,7 @@ namespace STR
        *                                + \frac{\gamma}{\beta \Delta t} \boldsymbol{C}
        *                                + \boldsymbol{K}_{T}
        *  \f] */
-      virtual void AddViscoMassContributions(LINALG::SparseOperator& jac) const;
+      void AddViscoMassContributions(LINALG::SparseOperator& jac) const override;
 
       /*! \brief Update constant contributions of the current state for the new time step
        * \f$t_{n+1}\f$
@@ -202,7 +202,7 @@ namespace STR
        *
        *  \author grill
        *  \date 07/2016 */
-      virtual void UpdateConstantStateContributions();
+      void UpdateConstantStateContributions() override;
 
      private:
       /*! @name New vectors for internal use only

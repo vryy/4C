@@ -76,11 +76,11 @@ namespace STR
       virtual ~Multiphysics() = default;
 
       //! initialize the class variables
-      virtual void Init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
+      void Init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
           const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
           const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr,
           const Teuchos::RCP<STR::Integrator>& int_ptr,
-          const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr, const int& dof_offset);
+          const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr, const int& dof_offset) override;
 
       //! setup class variables
       void Setup() override;
@@ -101,10 +101,10 @@ namespace STR
       //! @name Functions which are derived from the base generic class
       //! @{
       //! [derived]
-      virtual INPAR::STR::ModelType Type() const { return INPAR::STR::model_partitioned_coupling; }
+      INPAR::STR::ModelType Type() const override { return INPAR::STR::model_partitioned_coupling; }
 
       //! reset class variables (without jacobian) [derived]
-      virtual void Reset(const Epetra_Vector& x);
+      void Reset(const Epetra_Vector& x) override;
 
       //! [derived]
       bool EvaluateForce() override;
@@ -138,7 +138,7 @@ namespace STR
       void ReadRestart(IO::DiscretizationReader& ioreader) override { return; };
 
       //! [derived]
-      virtual void Predict(const INPAR::STR::PredEnum& pred_type) { return; };
+      void Predict(const INPAR::STR::PredEnum& pred_type) override { return; };
 
       //! derived
       void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,

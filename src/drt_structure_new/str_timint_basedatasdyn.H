@@ -974,7 +974,7 @@ namespace STR
       virtual ~GenAlphaDataSDyn(){};
 
       //! Setup function [derived]
-      virtual void Setup();
+      void Setup() override;
 
      public:
       //! @name Read-only accessors
@@ -1060,7 +1060,7 @@ namespace STR
       virtual ~OneStepThetaDataSDyn(){};
 
       //! Setup function [derived]
-      virtual void Setup();
+      void Setup() override;
 
      public:
       //! @name Read-only accessors

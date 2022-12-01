@@ -279,8 +279,8 @@ namespace NOX
           virtual ~Dbc(){};
 
           //! \brief Apply the DBC and rotate the system of equations if necessary (derived)
-          virtual void runPreApplyJacobianInverse(NOX::Abstract::Vector& rhs,
-              LINALG::SparseOperator& jac, const NOX::NLN::LinearSystem& linsys);
+          void runPreApplyJacobianInverse(NOX::Abstract::Vector& rhs, LINALG::SparseOperator& jac,
+              const NOX::NLN::LinearSystem& linsys) override;
 
          private:
           //! pointer to the underlying class, which provides the whole functionality

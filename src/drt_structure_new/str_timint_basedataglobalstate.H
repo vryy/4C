@@ -1082,8 +1082,8 @@ namespace NOX
              * NOX::NLN::Group::computeX()
              *
              *  This method is used to update non-additive rotation vector DoFs */
-            virtual void runPreComputeX(const NOX::NLN::Group& input_grp, const Epetra_Vector& dir,
-                const double& step, const NOX::NLN::Group& curr_grp);
+            void runPreComputeX(const NOX::NLN::Group& input_grp, const Epetra_Vector& dir,
+                const double& step, const NOX::NLN::Group& curr_grp) override;
 
            private:
             //! pointer to the STR::TIMINT::BaseDataGlobalState object (read-only)

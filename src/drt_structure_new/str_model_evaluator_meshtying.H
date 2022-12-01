@@ -54,11 +54,11 @@ namespace STR
        * @param timint_ptr
        * @param dof_offset
        */
-      virtual void Init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
+      void Init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
           const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
           const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr,
           const Teuchos::RCP<STR::Integrator>& int_ptr,
-          const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr, const int& dof_offset);
+          const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr, const int& dof_offset) override;
 
       //! setup class variables [derived]
       void Setup() override;

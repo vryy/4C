@@ -31,68 +31,68 @@ namespace STR
       virtual ~OneStepTheta(){};
 
       //! Setup the class variables
-      virtual void Setup();
+      void Setup() override;
 
       //! Reset state variables (derived)
-      virtual void SetState(const Epetra_Vector& x);
+      void SetState(const Epetra_Vector& x) override;
 
       //! Apply the rhs only (derived)
-      virtual bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f);
+      bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) override;
 
       //! Apply the stiffness only (derived)
-      virtual bool ApplyStiff(const Epetra_Vector& x, LINALG::SparseOperator& jac);
+      bool ApplyStiff(const Epetra_Vector& x, LINALG::SparseOperator& jac) override;
 
       //! Apply force and stiff at once (derived)
-      virtual bool ApplyForceStiff(
-          const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac);
+      bool ApplyForceStiff(
+          const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac) override;
 
       //! (derived)
-      virtual bool AssembleForce(Epetra_Vector& f,
-          const std::vector<INPAR::STR::ModelType>* without_these_models = NULL) const;
+      bool AssembleForce(Epetra_Vector& f,
+          const std::vector<INPAR::STR::ModelType>* without_these_models = NULL) const override;
 
       //! (derived)
-      virtual void WriteRestart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const;
+      void WriteRestart(
+          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! (derived)
-      virtual void ReadRestart(IO::DiscretizationReader& ioreader);
+      void ReadRestart(IO::DiscretizationReader& ioreader) override;
 
       //! (derived)
-      virtual double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type);
+      double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) override;
 
       //! (derived)
-      virtual double GetIntParam() const;
+      double GetIntParam() const override;
 
       //! @name Monolithic update routines
       //! @{
       //! Update configuration after time step (derived)
-      virtual void UpdateStepState();
+      void UpdateStepState() override;
 
       //! Update everything on element level after time step and after output (derived)
-      virtual void UpdateStepElement();
+      void UpdateStepElement() override;
 
       /*! \brief things that should be done after updating [derived]
        *
        *  We use in the OneStepTheta case to update constant contributions (during one time step)
        *  of the SetState routine.*/
-      virtual void PostUpdate();
+      void PostUpdate() override;
       //! @}
 
       //! @name Predictor routines (dependent on the implicit integration scheme)
       //! @{
       /*! Predict constant displacements, consistent velocities and accelerations (derived) */
-      virtual void PredictConstDisConsistVelAcc(
-          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const;
+      void PredictConstDisConsistVelAcc(
+          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
       /*! Predict displacements based on constant velocities and consistent accelerations (derived)
        */
-      virtual bool PredictConstVelConsistAcc(
-          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const;
+      bool PredictConstVelConsistAcc(
+          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
       /*! Predict displacements based on constant accelerations and consistent velocities (derived)
        */
-      virtual bool PredictConstAcc(
-          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const;
+      bool PredictConstAcc(
+          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
       //! @}
 
       /*! \brief Update constant contributions of the current state for the new time step
@@ -138,7 +138,7 @@ namespace STR
       virtual void PostSetup();
 
       //! reset the time step dependent parameters for the element evaluation [derived]
-      virtual void ResetEvalParams();
+      void ResetEvalParams() override;
 
      private:
       /*! \brief Add the viscous and mass contributions to the right hand side (TR-rule)

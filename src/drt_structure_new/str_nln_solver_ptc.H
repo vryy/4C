@@ -51,7 +51,7 @@ namespace STR
         virtual ~PseudoTransient(){};
 
         //! derived from the base class
-        virtual void Setup();
+        void Setup() override;
 
        protected:
         //! Insert PTC configuration into NOX parameter list

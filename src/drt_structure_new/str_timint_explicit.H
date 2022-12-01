@@ -32,76 +32,76 @@ namespace STR
       //! destructor
       virtual ~Explicit(){};
 
-      virtual void Setup();
+      void Setup() override;
 
-      virtual int Integrate();
+      int Integrate() override;
 
-      virtual int IntegrateStep();
+      int IntegrateStep() override;
 
       //! Prepare time step
-      virtual void PrepareTimeStep();
+      void PrepareTimeStep() override;
 
       //!  Update state incrementally for coupled problems with monolithic approach
       void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
 
       //!  Evaluate routine for coupled problems with monolithic approach
-      virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
+      void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
 
       /// set the state of the nox group and the global state data container
       /// see class \ref ADAPTER::StructureNew for detailed documentation.
-      virtual void SetState(const Teuchos::RCP<Epetra_Vector>& x);
+      void SetState(const Teuchos::RCP<Epetra_Vector>& x) override;
 
       /*! Do the nonlinear solve, i.e. (multiple) corrector,
        *  for the time step. All boundary conditions have
        *  been set. */
-      virtual INPAR::STR::ConvergenceStatus Solve();
+      INPAR::STR::ConvergenceStatus Solve() override;
 
       //! prepare partition step
-      virtual void PreparePartitionStep();
+      void PreparePartitionStep() override;
 
       //! Update routine for coupled problems with monolithic approach with time adaptivity
-      virtual void Update(double endtime);
+      void Update(double endtime) override;
 
       //! print summary after step
-      virtual void PrintStep();
+      void PrintStep() override;
 
       //! Get type of thickness scaling for thin shell structures
-      virtual INPAR::STR::STC_Scale GetSTCAlgo();
+      INPAR::STR::STC_Scale GetSTCAlgo() override;
 
       //! Access to scaling matrix for STC
-      virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat();
+      Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() override;
 
       /// @name XFEM/XSTR related methods
       ///@{
 
       /// There is nothing to destroy in the explicit case
-      virtual bool DestroyNoxState() { return true; };
+      bool DestroyNoxState() override { return true; };
 
       ///@}
 
       /// @name Access linear system of equation via adapter (implicit only!)
       ///@{
       /// initial guess of Newton's method
-      virtual Teuchos::RCP<const Epetra_Vector> InitialGuess();
+      Teuchos::RCP<const Epetra_Vector> InitialGuess() override;
 
       /// right-hand-side of Newton's method
-      virtual Teuchos::RCP<const Epetra_Vector> GetF() const;
+      Teuchos::RCP<const Epetra_Vector> GetF() const override;
 
       /// Return reaction forces at \f$t_{n+1}\f$ (read and write)
-      virtual Teuchos::RCP<Epetra_Vector> Freact();
+      Teuchos::RCP<Epetra_Vector> Freact() override;
 
       //! Return stiffness,
       //! i.e. force residual differentiated by displacements
       //!      (structural block only)
-      virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+      Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() override;
 
       /// Return stiffness,
       /// i.e. force residual differentiated by displacements
-      virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+      Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override;
 
       ///! FixMe switch structure field to block matrix in fsi simulations
-      virtual void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-          Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps);
+      void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
+          Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps) override;
 
       ///@}
     };

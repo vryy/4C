@@ -72,70 +72,70 @@ namespace STR
       //!@{
       /*! compute the right hand side entries
        *  (derived from NOX::Epetra::Interface::Required) */
-      virtual bool computeF(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag);
+      bool computeF(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag) override;
 
       /*! compute jacobian
        *  ( derived from NOX::Epetra::Inteface::Jacobian) */
-      virtual bool computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac);
+      bool computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac) override;
 
       /*! compute right hand side and jacobian
        *  (derived from NOX::NLN::Interface::Jacobian) */
-      virtual bool computeFandJacobian(
-          const Epetra_Vector& x, Epetra_Vector& rhs, Epetra_Operator& jac);
+      bool computeFandJacobian(
+          const Epetra_Vector& x, Epetra_Vector& rhs, Epetra_Operator& jac) override;
 
-      virtual bool computeCorrectionSystem(const enum NOX::NLN::CorrectionType type,
+      bool computeCorrectionSystem(const enum NOX::NLN::CorrectionType type,
           const NOX::Abstract::Group& grp, const Epetra_Vector& x, Epetra_Vector& rhs,
-          Epetra_Operator& jac);
+          Epetra_Operator& jac) override;
 
       /*! compute preconditioner
        *  (derived from NOX::Epetra::Interface::Preconditioner) */
-      virtual bool computePreconditioner(
-          const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams = 0);
+      bool computePreconditioner(const Epetra_Vector& x, Epetra_Operator& M,
+          Teuchos::ParameterList* precParams = 0) override;
 
       /*! Get the norm of right hand side rows/entries related to
        *  primary DoFs (derived from NOX::NLN::Interface::Required) */
-      virtual double GetPrimaryRHSNorms(const Epetra_Vector& F,
+      double GetPrimaryRHSNorms(const Epetra_Vector& F,
           const NOX::NLN::StatusTest::QuantityType& checkquantity,
           const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
-          const bool& isscaled = false) const;
+          const bool& isscaled = false) const override;
 
       /*! Get the root mean square of the solution update (vector) entries
        *  (derived from NOX::NLN::Interface::Required) */
-      virtual double GetPrimarySolutionUpdateRMS(const Epetra_Vector& xnew,
-          const Epetra_Vector& xold, const double& aTol, const double& rTol,
+      double GetPrimarySolutionUpdateRMS(const Epetra_Vector& xnew, const Epetra_Vector& xold,
+          const double& aTol, const double& rTol,
           const NOX::NLN::StatusTest::QuantityType& checkQuantity,
-          const bool& disable_implicit_weighting = false) const;
+          const bool& disable_implicit_weighting = false) const override;
 
       /*! Returns the desired norm of the solution update (vector) entries
        *  (derived from NOX::NLN::Interface::Required) */
-      virtual double GetPrimarySolutionUpdateNorms(const Epetra_Vector& xnew,
-          const Epetra_Vector& xold, const NOX::NLN::StatusTest::QuantityType& checkquantity,
+      double GetPrimarySolutionUpdateNorms(const Epetra_Vector& xnew, const Epetra_Vector& xold,
+          const NOX::NLN::StatusTest::QuantityType& checkquantity,
           const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
-          const bool& isscaled = false) const;
+          const bool& isscaled = false) const override;
 
       /*! Returns the previous solution norm of primary DoF fields
        *  (derived from NOX::NLN::Interface::Required) */
-      virtual double GetPreviousPrimarySolutionNorms(const Epetra_Vector& xold,
+      double GetPreviousPrimarySolutionNorms(const Epetra_Vector& xold,
           const NOX::NLN::StatusTest::QuantityType& checkquantity,
           const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
-          const bool& isscaled = false) const;
+          const bool& isscaled = false) const override;
 
       /*! Compute and return some energy representative or any other scalar value
        *  which is capable to describe the solution path progress
        *  (derived from NOX::NLN::Interface::Required) */
-      virtual double GetModelValue(const Epetra_Vector& x, const Epetra_Vector& F,
-          const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type) const;
+      double GetModelValue(const Epetra_Vector& x, const Epetra_Vector& F,
+          const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type) const override;
 
-      virtual double GetLinearizedModelTerms(const NOX::Abstract::Group* group,
-          const Epetra_Vector& dir, const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
+      double GetLinearizedModelTerms(const NOX::Abstract::Group* group, const Epetra_Vector& dir,
+          const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
           const enum NOX::NLN::MeritFunction::LinOrder linorder,
-          const enum NOX::NLN::MeritFunction::LinType lintype) const;
+          const enum NOX::NLN::MeritFunction::LinType lintype) const override;
 
       /*! \brief calculate characteristic/reference norms for forces
        *
        *  Necessary for the LinearSystem objects.
        *  (derived from NOX::NLN::Interface::Required) */
-      virtual double CalcRefNormForce();
+      double CalcRefNormForce() override;
 
       /// create back-up state of condensed solution variables (e.g. EAS)
       void CreateBackupState(const Epetra_Vector& dir) override;
@@ -154,7 +154,7 @@ namespace STR
       //!@}
 
       // Get element based scaling operator
-      virtual Teuchos::RCP<LINALG::SparseMatrix> CalcJacobianContributionsFromElementLevelForPTC();
+      Teuchos::RCP<LINALG::SparseMatrix> CalcJacobianContributionsFromElementLevelForPTC() override;
 
       //! Access the implicit integrator
       STR::IMPLICIT::Generic& ImplInt();

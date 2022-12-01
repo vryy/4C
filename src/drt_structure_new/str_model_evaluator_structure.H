@@ -164,17 +164,17 @@ namespace STR
       void PostOutput() override;
 
       //! [derived]
-      virtual void EvaluateJacobianContributionsFromElementLevelForPTC();
+      void EvaluateJacobianContributionsFromElementLevelForPTC() override;
 
       //! [derived]
-      virtual void AssembleJacobianContributionsFromElementLevelForPTC(
-          Teuchos::RCP<LINALG::SparseMatrix>& modjac, const double& timefac_n);
+      void AssembleJacobianContributionsFromElementLevelForPTC(
+          Teuchos::RCP<LINALG::SparseMatrix>& modjac, const double& timefac_n) override;
 
       //! [derived]
-      virtual void CreateBackupState(const Epetra_Vector& dir);
+      void CreateBackupState(const Epetra_Vector& dir) override;
 
       //! [derived]
-      virtual void RecoverFromBackupState();
+      void RecoverFromBackupState() override;
 
       //! @}
 
