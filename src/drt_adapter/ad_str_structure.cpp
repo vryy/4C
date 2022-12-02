@@ -51,10 +51,6 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::Structure::~Structure() {}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 ADAPTER::StructureBaseAlgorithm::StructureBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
     const Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::Discretization> actdis)
 {

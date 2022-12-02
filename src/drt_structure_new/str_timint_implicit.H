@@ -16,19 +16,10 @@
 #include "str_timint_implicitbase.H"  // base class
 
 // forward declarations ...
-namespace NOX
+namespace NOX::NLN::INNER::StatusTest
 {
-  namespace NLN
-  {
-    namespace INNER
-    {
-      namespace StatusTest
-      {
-        class Generic;
-      }  // namespace StatusTest
-    }    // namespace INNER
-  }      // namespace NLN
-}  // namespace NOX
+  class Generic;
+}  // namespace NOX::NLN::INNER::StatusTest
 namespace STR
 {
   namespace IMPLICIT
@@ -39,17 +30,14 @@ namespace STR
   {
     class Generic;
   }  // namespace PREDICT
-  namespace NLN
+  namespace NLN::SOLVER
   {
-    namespace SOLVER
+    class Generic;
+    namespace INTERFACE
     {
-      class Generic;
-      namespace INTERFACE
-      {
-        class Required;
-      }  // namespace INTERFACE
-    }    // namespace SOLVER
-  }      // namespace NLN
+      class Required;
+    }  // namespace INTERFACE
+  }    // namespace NLN::SOLVER
 
   namespace TIMINT
   {
@@ -59,12 +47,6 @@ namespace STR
     class Implicit : public ImplicitBase
     {
      public:
-      //! constructor
-      Implicit();
-
-      //! destructor
-      virtual ~Implicit(){};
-
       void Setup() override;
 
       int Integrate() override;
@@ -97,20 +79,21 @@ namespace STR
       //! @name Accessors
       //! @{
       //! return the predictor
-      const STR::PREDICT::Generic& Predictor() const
+      [[nodiscard]] const STR::PREDICT::Generic& Predictor() const
       {
         CheckInitSetup();
         return *predictor_ptr_;
       }
 
       //! @}
-      Teuchos::RCP<const STR::NLN::SOLVER::Generic> GetNlnSolverPtr() const
+      [[nodiscard]] Teuchos::RCP<const STR::NLN::SOLVER::Generic> GetNlnSolverPtr() const
       {
         return nlnsolver_ptr_;
       };
 
       //! do something in case nonlinear solution does not converge for some reason
-      INPAR::STR::ConvergenceStatus PerformErrorAction(INPAR::STR::ConvergenceStatus nonlinsoldiv);
+      INPAR::STR::ConvergenceStatus PerformErrorAction(
+          INPAR::STR::ConvergenceStatus nonlinsoldiv) override;
 
 
       //! check, if according to divercont flag time step size can be increased
@@ -125,6 +108,8 @@ namespace STR
 
       /// Update State Incrementally for coupled problems with monolithic approach
       void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
+
+      void DetermineStressStrain() override;
 
       ///  Evaluate routine for coupled problems with monolithic approach
       void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
@@ -150,7 +135,7 @@ namespace STR
 
      protected:
       //! returns the current solution group
-      const NOX::Abstract::Group& GetSolutionGroup() const override;
+      [[nodiscard]] const NOX::Abstract::Group& GetSolutionGroup() const override;
 
       //! returns the current solution group ptr
       Teuchos::RCP<NOX::Abstract::Group> SolutionGroupPtr() override;
@@ -173,7 +158,7 @@ namespace STR
         return predictor_ptr_;
       };
 
-      const STR::NLN::SOLVER::Generic& NlnSolver() const
+      [[nodiscard]] const STR::NLN::SOLVER::Generic& NlnSolver() const
       {
         CheckInitSetup();
         return *nlnsolver_ptr_;

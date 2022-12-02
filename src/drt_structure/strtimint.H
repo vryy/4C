@@ -427,7 +427,7 @@ namespace STR
     void OutputEveryIter(bool nw = false, bool ls = false);
 
     //! write output of step to the Gmsh format
-    void writeGmshStrucOutputStep();
+    void WriteGmshStrucOutputStep();
 
     //! Write restart
     //! \author mwgee (originally) \date 03/07

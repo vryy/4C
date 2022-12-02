@@ -10,7 +10,6 @@
 /*-----------------------------------------------------------*/
 
 #include "io_pstream.H"
-#include "drt_discret.H"
 
 #include "str_timint_implicit.H"
 #include "str_impl_generic.H"
@@ -19,10 +18,8 @@
 #include "str_timint_noxinterface.H"
 #include "str_utils.H"
 
-#include "io_gmsh.H"
 #include "io.H"
 #include "io_control.H"
-#include "io_pstream.H"
 
 #include <NOX_Abstract_Group.H>
 
@@ -35,16 +32,6 @@
 // factories
 #include "str_predict_factory.H"
 #include "str_nln_solver_factory.H"
-
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-STR::TIMINT::Implicit::Implicit()
-    : implint_ptr_(Teuchos::null), nlnsolver_ptr_(Teuchos::null), grp_ptr_(Teuchos::null)
-{
-  // empty
-}
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -88,8 +75,6 @@ void STR::TIMINT::Implicit::Setup()
 
   // set setup flag
   issetup_ = true;
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -125,8 +110,6 @@ void STR::TIMINT::Implicit::PrepareTimeStep()
 
   NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
   Predictor().Predict(grp);
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -175,8 +158,8 @@ void STR::TIMINT::Implicit::UpdateStateIncrementally(Teuchos::RCP<const Epetra_V
   ThrowIfStateNotInSyncWithNOXGroup();
   NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
 
-  NOX::NLN::Group* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
-  if (grp_ptr == NULL) dserror("Dynamic cast failed!");
+  auto* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
+  if (grp_ptr == nullptr) dserror("Dynamic cast failed!");
 
   // cast away const-qualifier for building the Nox Vector
   Teuchos::RCP<Epetra_Vector> mutable_disiterinc =
@@ -190,12 +173,14 @@ void STR::TIMINT::Implicit::UpdateStateIncrementally(Teuchos::RCP<const Epetra_V
   grp_ptr->computeX(*grp_ptr, *nox_disiterinc_ptr, 1.0);
 
   // Reset the state variables
-  const NOX::Epetra::Vector& x_eptra = dynamic_cast<const NOX::Epetra::Vector&>(grp_ptr->getX());
+  const auto& x_eptra = dynamic_cast<const NOX::Epetra::Vector&>(grp_ptr->getX());
   // set the consistent state in the models (e.g. structure and contact models)
   ImplInt().ResetModelStates(x_eptra.getEpetraVector());
-
-  return;
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Implicit::DetermineStressStrain() { ImplInt().DetermineStressStrain(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -204,8 +189,6 @@ void STR::TIMINT::Implicit::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterin
   UpdateStateIncrementally(disiterinc);
 
   Evaluate();
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -216,8 +199,8 @@ void STR::TIMINT::Implicit::Evaluate()
   ThrowIfStateNotInSyncWithNOXGroup();
   NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
 
-  NOX::NLN::Group* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
-  if (grp_ptr == NULL) dserror("Dynamic cast failed!");
+  auto* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
+  if (grp_ptr == nullptr) dserror("Dynamic cast failed!");
 
   // you definitely have to evaluate here. You might be called from a coupled
   // problem and the group might not be aware, that a different state than
@@ -227,8 +210,6 @@ void STR::TIMINT::Implicit::Evaluate()
 
   // compute the rhs vector and the stiffness matrix
   grp_ptr->computeFandJacobian();
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -282,9 +263,11 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
     case INPAR::STR::divcont_continue:
     {
       if (myrank == 0)
+      {
         IO::cout << "\n WARNING: You are continuing your simulation although the nonlinear solver\n"
                     " did not converge in the current time step.\n"
                  << IO::endl;
+      }
       return INPAR::STR::conv_success;
       break;
     }
@@ -302,11 +285,13 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
     case INPAR::STR::divcont_halve_step:
     {
       if (myrank == 0)
+      {
         IO::cout << "Nonlinear solver failed to converge at time t= " << GetTimeNp()
                  << ". Divide timestep in half. "
                  << "Old time step: " << GetDeltaTime() << IO::endl
                  << "New time step: " << 0.5 * GetDeltaTime() << IO::endl
                  << IO::endl;
+      }
 
       // halve the time step size
       SetDeltaTime(GetDeltaTime() * 0.5);
@@ -328,11 +313,13 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
     case INPAR::STR::divcont_adapt_step:
     {
       if (myrank == 0)
+      {
         IO::cout << "Nonlinear solver failed to converge at time t= " << GetTimeNp()
                  << ". Divide timestep in half. "
                  << "Old time step: " << GetDeltaTime() << IO::endl
                  << "New time step: " << 0.5 * GetDeltaTime() << IO::endl
                  << IO::endl;
+      }
 
       // halve the time step size
       SetDeltaTime(GetDeltaTime() * 0.5);
@@ -380,9 +367,11 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
         SetRandomTimeStepFactor(randnum * 1.48 + 0.51);
 
       if (myrank == 0)
+      {
         IO::cout << "Nonlinear solver failed to converge: modifying time-step size by random "
                     "number between 0.51 and 1.99 -> here: "
                  << GetRandomTimeStepFactor() << " !" << IO::endl;
+      }
       // multiply time-step size by random number
       SetDeltaTime(GetDeltaTime() * GetRandomTimeStepFactor());
       // update maximum number of time steps
@@ -410,17 +399,23 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
     case INPAR::STR::divcont_repeat_simulation:
     {
       if (nonlinsoldiv == INPAR::STR::conv_nonlin_fail and myrank == 0)
+      {
         IO::cout << "Nonlinear solver failed to converge and DIVERCONT = "
                     "repeat_simulation, hence leaving structural time integration "
                  << IO::endl;
+      }
       else if (nonlinsoldiv == INPAR::STR::conv_lin_fail and myrank == 0)
+      {
         IO::cout << "Linear solver failed to converge and DIVERCONT = "
                     "repeat_simulation, hence leaving structural time integration "
                  << IO::endl;
+      }
       else if (nonlinsoldiv == INPAR::STR::conv_ele_fail and myrank == 0)
+      {
         IO::cout << "Element failure in form of a negative Jacobian determinant and DIVERCONT = "
                     "repeat_simulation, hence leaving structural time integration "
                  << IO::endl;
+      }
       return nonlinsoldiv;  // so that time loop will be aborted
       break;
     }
