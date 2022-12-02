@@ -78,7 +78,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   else if (solveparams.isSublist("MueLu (Fluid) Parameters"))
     mllist_ptr = &(solveparams.sublist("MueLu (Fluid) Parameters"));
   else if (solveparams.isSublist("MueLu (TSI) Parameters"))
-    mllist_ptr = &(solveparams.sublist("MueLu (TSI) Parameters"));
+    mllist_ptr = &(solveparams);
   else if (solveparams.isSublist("MueLu (BeamSolid) Parameters"))
     mllist_ptr = &(solveparams);
   else
