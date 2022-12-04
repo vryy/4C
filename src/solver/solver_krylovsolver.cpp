@@ -277,8 +277,7 @@ void LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::CreatePreconditioner(
     }
     else if (Params().isSublist("MueLu (TSI) Parameters"))
     {
-      preconditioner_ = Teuchos::rcp(
-          new MueLuTsiBlockPreconditioner(outfile_, Params().sublist("MueLu (TSI) Parameters")));
+      preconditioner_ = Teuchos::rcp(new MueLuTsiBlockPreconditioner(outfile_, Params()));
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {

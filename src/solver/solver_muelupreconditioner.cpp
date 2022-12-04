@@ -320,91 +320,82 @@ void LINALG::SOLVER::MueLuTsiBlockPreconditioner::Setup(
       Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
   if (A == Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
 
-  if (muelulist_.get<bool>("MUELU_XML_ENFORCE"))
+  Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA11 =
+      Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 0).EpetraMatrix()));
+  Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA12 =
+      Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 1).EpetraMatrix()));
+  Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA21 =
+      Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 0).EpetraMatrix()));
+  Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA22 =
+      Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 1).EpetraMatrix()));
+
+  Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> fullrangemap =
+      Teuchos::rcp(new Xpetra::EpetraMapT<GO, NO>(Teuchos::rcpFromRef(A->FullRangeMap())));
+
+  Teuchos::ParameterList solidList = muelulist_.sublist("Inverse1");
+  Teuchos::ParameterList thermoList = muelulist_.sublist("Inverse2");
+
+  int solidDofs = solidList.get<int>("PDE equations");
+  int thermoDofs = thermoList.get<int>("PDE equations");
+
+  // define strided maps
+  std::vector<size_t> solidStriding;
+  std::vector<size_t> thermoStriding;
+  solidStriding.push_back(solidDofs);
+  thermoStriding.push_back(thermoDofs);
+
+  Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> solidmap =
+      Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(
+          xA11->getRowMap(), solidStriding, xA11->getRowMap()->getIndexBase(), -1, 0));
+  Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> thermomap =
+      Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(
+          xA22->getRowMap(), thermoStriding, xA22->getRowMap()->getIndexBase(), -1, 0));
+
+  // build map extractor
+  std::vector<Teuchos::RCP<const Xpetra::Map<LO, GO, NO>>> maps;
+  maps.push_back(solidmap);
+  maps.push_back(thermomap);
+
+  Teuchos::RCP<const Xpetra::MapExtractor<SC, LO, GO, NO>> map_extractor =
+      Xpetra::MapExtractorFactory<SC, LO, GO, NO>::Build(fullrangemap, maps);
+
+  // build blocked Xpetra operator
+  Teuchos::RCP<Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>> bOp =
+      Teuchos::rcp(new Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>(map_extractor, map_extractor, 10));
+
+  bOp->setMatrix(0, 0, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA11)));
+  bOp->setMatrix(0, 1, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA12)));
+  bOp->setMatrix(1, 0, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA21)));
+  bOp->setMatrix(1, 1, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA22)));
+
+  bOp->fillComplete();
+
+  Teuchos::ParameterList mueluParameters = muelulist_.sublist("MueLu (TSI) Parameters");
+  if (mueluParameters.get<bool>("MUELU_XML_ENFORCE"))
   {
     if (create)
     {
-      Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> fullrangemap =
-          Teuchos::rcp(new Xpetra::EpetraMapT<GO, NO>(Teuchos::rcpFromRef(A->FullRangeMap())));
-
-      Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA11 =
-          Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 0).EpetraMatrix()));
-      Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA12 =
-          Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 1).EpetraMatrix()));
-      Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA21 =
-          Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 0).EpetraMatrix()));
-      Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA22 =
-          Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 1).EpetraMatrix()));
-
-      // prepare nullspace vector for MueLu
-      int numdf = muelulist_.get<int>("PDE equations", -1);
-      int dimns = muelulist_.get<int>("null space: dimension", -1);
-      if (dimns == -1 || numdf == -1)
-        dserror("Error: PDE equations or null space dimension wrong.");
-
-      // define strided maps
-      std::vector<size_t> stridingInfo1;
-      std::vector<size_t> stridingInfo2;
-      stridingInfo1.push_back(numdf);
-      stridingInfo2.push_back(1);
-
-      Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> stridedMap1 =
-          Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(
-              xA11->getRowMap(), stridingInfo1, xA11->getRowMap()->getIndexBase(), -1, 0));
-      Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> stridedMap2 =
-          Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(
-              xA22->getRowMap(), stridingInfo2, xA22->getRowMap()->getIndexBase(), -1, 0));
-
-      // build map extractor
-      std::vector<Teuchos::RCP<const Xpetra::Map<LO, GO, NO>>> stridedMaps;
-      stridedMaps.push_back(stridedMap1);
-      stridedMaps.push_back(stridedMap2);
-
-      Teuchos::RCP<const Xpetra::MapExtractor<SC, LO, GO, NO>> map_extractor =
-          Xpetra::MapExtractorFactory<SC, LO, GO, NO>::Build(fullrangemap, stridedMaps);
-
-      // build blocked Xpetra operator
-      Teuchos::RCP<Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>> bOp = Teuchos::rcp(
-          new Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>(map_extractor, map_extractor, 10));
-
-      bOp->setMatrix(0, 0, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA11)));
-      bOp->setMatrix(0, 1, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA12)));
-      bOp->setMatrix(1, 0, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA21)));
-      bOp->setMatrix(1, 1, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA22)));
-
-      bOp->fillComplete();
-
-      // Get/compute nullspace vectors
-      Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace11 = Teuchos::null;
-      Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 = Teuchos::null;
-      {
-        // Extract pre-computed nullspace for block (0,0) from Baci's ML parameter list
-        nullspace11 = LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
-            stridedMap1, muelulist_);
-
-        // Compute default nullspace for block (1,1)
-        {
-          const int dimNS2 = numdf;
-          nullspace22 = Xpetra::MultiVectorFactory<SC, LO, GO, NO>::Build(stridedMap2, dimNS2);
-
-          for (int i = 0; i < dimNS2; ++i)
-          {
-            Teuchos::ArrayRCP<Scalar> nsValues22 = nullspace22->getDataNonConst(i);
-            int numBlocks = nsValues22.size() / dimNS2;
-            for (int j = 0; j < numBlocks; ++j)
-            {
-              nsValues22[j * dimNS2 + i] = 1.0;
-            }
-          }
-        }
-      }
-
-      // use parameters from user-provided XML file
-      if (!muelulist_.isParameter("MUELU_XML_FILE"))
+      if (!mueluParameters.isParameter("MUELU_XML_FILE"))
         dserror(
             "XML-file w/ MueLu preconditioner configuration is missing in solver parameter list. "
             "Please set it as entry 'MUELU_XML_FILE'.");
-      std::string xmlFileName = muelulist_.get<std::string>("MUELU_XML_FILE");
+      std::string xmlFileName = mueluParameters.get<std::string>("MUELU_XML_FILE");
+
+      int solidDimns = solidList.get<int>("null space: dimension", -1);
+      if (solidDimns == -1 || solidDofs == -1)
+        dserror("Error: PDE equations of solid or null space dimension wrong.");
+
+      Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace11 =
+          LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
+              solidmap, muelulist_.sublist("Inverse1"));
+
+      int thermoDimns = thermoList.get<int>("null space: dimension", -1);
+      if (thermoDimns == -1 || solidDofs == -1)
+        dserror("Error: PDE equations of solid or null space dimension wrong.");
+
+      Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 =
+          LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
+              thermomap, muelulist_.sublist("Inverse2"));
 
       MueLu::ParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(
           xmlFileName, *(bOp->getRangeMap()->getComm()));
@@ -418,9 +409,8 @@ void LINALG::SOLVER::MueLuTsiBlockPreconditioner::Setup(
 
       // set multigrid preconditioner
       P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
-
-    }  // else (create)
-  }    // if (xmlfile)
+    }
+  }
   else
   {
     dserror("The MueLu preconditioner for TSI problems only works with an appropriate .xml file");
@@ -828,19 +818,15 @@ void LINALG::SOLVER::MueLuBeamSolidBlockPreconditioner::Setup(
       if (solidDimns == -1 || solidDofs == -1)
         dserror("Error: PDE equations of solid or null space dimension wrong.");
 
+      Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace11 =
+          LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(solidmap, solidList);
+
       int beamDimns = beamList.get<int>("null space: dimension", -1);
       if (beamDimns == -1 || beamDofs == -1)
         dserror("Error: PDE equations of beam or null space dimension wrong.");
 
-      Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace11 = Teuchos::null;
-      Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 = Teuchos::null;
-      {
-        nullspace11 =
-            LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(solidmap, solidList);
-
-        nullspace22 =
-            LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(beammap, beamList);
-      }
+      Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 =
+          LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(beammap, beamList);
 
       MueLu::ParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(
           xmlFileName, *(bOp->getRangeMap()->getComm()));

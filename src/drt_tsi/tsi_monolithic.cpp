@@ -277,28 +277,6 @@ void TSI::Monolithic::CreateLinearSolver()
         "no linear solver defined for monolithic TSI. Please set LINEAR_SOLVER in TSI DYNAMIC to a "
         "valid number!");
 
-  // get parameter list of structural dynamics
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  // use solver blocks for structure
-  // get the solver number used for structural solver
-  const int slinsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
-  // check if the structural solver has a valid solver number
-  if (slinsolvernumber == (-1))
-    dserror(
-        "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
-        "DYNAMIC to a valid number!");
-
-  // get parameter list of thermal dynamics
-  const Teuchos::ParameterList& tdyn = DRT::Problem::Instance()->ThermalDynamicParams();
-  // use solver blocks for temperature (thermal field)
-  // get the solver number used for thermal solver
-  const int tlinsolvernumber = tdyn.get<int>("LINEAR_SOLVER");
-  // check if the TSI solver has a valid solver number
-  if (tlinsolvernumber == (-1))
-    dserror(
-        "no linear solver defined for thermal field. Please set LINEAR_SOLVER in THERMAL DYNAMIC "
-        "to a valid number!");
-
   // get solver parameter list of linear TSI solver
   const Teuchos::ParameterList& tsisolverparams =
       DRT::Problem::Instance()->SolverParams(linsolvernumber);
@@ -318,41 +296,42 @@ void TSI::Monolithic::CreateLinearSolver()
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     dserror("aztec solver expected");
   }
+
+  // prepare linear solvers and preconditioners
+  solver_ = Teuchos::rcp(
+      new LINALG::Solver(tsisolverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(tsisolverparams, "AZPREC");
 
-  // plausibility check
-  switch (azprectype)
-  {
-    case INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2:
-      break;
-    case INPAR::SOLVER::PreconditionerType::multigrid_muelu_tsi:
-    case INPAR::SOLVER::PreconditionerType::multigrid_nxn:
-    case INPAR::SOLVER::PreconditionerType::cheap_simple:
-    {
-      // no plausibility checks here
-      // if you forget to declare an xml file you will get an error message anyway
-    }
-    break;
-    default:
-      dserror(
-          "Block Gauss-Seidel BGS2x2 preconditioner expected. Alternatively you can define your "
-          "own AMG block preconditioner (using an xml file). This is experimental.");
-      break;
-  }
-
-
-  // prepare linear solvers and preconditioners
   switch (azprectype)
   {
     case INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2:
     case INPAR::SOLVER::PreconditionerType::multigrid_nxn:
     case INPAR::SOLVER::PreconditionerType::cheap_simple:
     {
-      // This should be the default case (well-tested and used)
-      solver_ = Teuchos::rcp(new LINALG::Solver(tsisolverparams,
-          // ggfs. explizit Comm von STR wie lungscatra
-          Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+      // get parameter list of structural dynamics
+      const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+      // use solver blocks for structure
+      // get the solver number used for structural solver
+      const int slinsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
+      // check if the structural solver has a valid solver number
+      if (slinsolvernumber == (-1))
+        dserror(
+            "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
+            "DYNAMIC to a valid number!");
+
+      // get parameter list of thermal dynamics
+      const Teuchos::ParameterList& tdyn = DRT::Problem::Instance()->ThermalDynamicParams();
+      // use solver blocks for temperature (thermal field)
+      // get the solver number used for thermal solver
+      const int tlinsolvernumber = tdyn.get<int>("LINEAR_SOLVER");
+      // check if the TSI solver has a valid solver number
+      if (tlinsolvernumber == (-1))
+        dserror(
+            "no linear solver defined for thermal field. Please set LINEAR_SOLVER in THERMAL "
+            "DYNAMIC "
+            "to a valid number!");
 
       // use solver blocks for structure and temperature (thermal field)
       const Teuchos::ParameterList& ssolverparams =
@@ -380,15 +359,20 @@ void TSI::Monolithic::CreateLinearSolver()
     }
     case INPAR::SOLVER::PreconditionerType::multigrid_muelu_tsi:
     {
-      solver_ = Teuchos::rcp(new LINALG::Solver(
-          tsisolverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
-      // Structure Nullspace calculation, Temperature Nullspace is directly set
-      // inside the preconditioner
-      StructureField()->Discretization()->ComputeNullSpaceIfNecessary(solver_->Params());
+      solver_->PutSolverParamsToSubParams("Inverse1", tsisolverparams);
+      StructureField()->Discretization()->ComputeNullSpaceIfNecessary(
+          solver_->Params().sublist("Inverse1"));
+
+      solver_->PutSolverParamsToSubParams("Inverse2", tsisolverparams);
+      ThermoField()->Discretization()->ComputeNullSpaceIfNecessary(
+          solver_->Params().sublist("Inverse2"));
+
       break;
     }
     default:
-      dserror("Block Gauss-Seidel BGS2x2 preconditioner expected");
+      dserror(
+          "Block Gauss-Seidel BGS2x2 preconditioner expected. Alternatively you can define your "
+          "own AMG block preconditioner (using an xml file). This is experimental.");
       break;
   }
 
