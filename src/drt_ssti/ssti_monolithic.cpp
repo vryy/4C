@@ -402,9 +402,11 @@ void SSTI::SSTIMono::NewtonLoop()
   {
     PrepareNewtonStep();
 
+    ssti_matrices_->UnCompleteCouplingMatrices();
+
     EvaluateSubproblems();
 
-    ssti_matrices_->CompleteScaTraStructureMatrices();
+    ssti_matrices_->CompleteCouplingMatrices();
 
     AssembleMatAndRHS();
 

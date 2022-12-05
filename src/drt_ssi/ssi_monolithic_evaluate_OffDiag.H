@@ -49,6 +49,8 @@ namespace SSI
         Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
         Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure);
 
+    virtual ~ScatraStructureOffDiagCoupling() = default;
+
     //! evaluate domain contributions to off-diagonal scatra-structure block of global system matrix
     void EvaluateOffDiagBlockScatraStructureDomain(
         Teuchos::RCP<LINALG::SparseOperator> scatrastructureblock);

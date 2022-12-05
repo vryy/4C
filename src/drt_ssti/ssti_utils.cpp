@@ -360,7 +360,7 @@ void SSTI::SSTIMatrices::ClearMatrices()
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSTI::SSTIMatrices::CompleteScaTraStructureMatrices()
+void SSTI::SSTIMatrices::CompleteCouplingMatrices()
 {
   switch (matrixtype_scatra_)
   {
@@ -368,7 +368,19 @@ void SSTI::SSTIMatrices::CompleteScaTraStructureMatrices()
     case LINALG::MatrixType::block_condition_dof:
     {
       scatrastructuredomain_->Complete();
-      if (interfacemeshtying_) scatrastructureinterface_->Complete();
+      scatrathermodomain_->Complete();
+      structurescatradomain_->Complete();
+      structurethermodomain_->Complete();
+      thermoscatradomain_->Complete();
+      thermostructuredomain_->Complete();
+
+      if (interfacemeshtying_)
+      {
+        scatrastructureinterface_->Complete();
+        scatrathermointerface_->Complete();
+        thermoscatrainterface_->Complete();
+        thermostructureinterface_->Complete();
+      }
       break;
     }
 
@@ -376,10 +388,27 @@ void SSTI::SSTIMatrices::CompleteScaTraStructureMatrices()
     {
       scatrastructuredomain_->Complete(*ssti_maps_mono_->BlockMapStructure()->FullMap(),
           *ssti_maps_mono_->BlockMapScatra()->FullMap());
+      scatrathermodomain_->Complete(*ssti_maps_mono_->BlockMapThermo()->FullMap(),
+          *ssti_maps_mono_->BlockMapScatra()->FullMap());
+      structurescatradomain_->Complete(*ssti_maps_mono_->BlockMapScatra()->FullMap(),
+          *ssti_maps_mono_->BlockMapStructure()->FullMap());
+      structurethermodomain_->Complete(*ssti_maps_mono_->BlockMapThermo()->FullMap(),
+          *ssti_maps_mono_->BlockMapStructure()->FullMap());
+      thermoscatradomain_->Complete(*ssti_maps_mono_->BlockMapScatra()->FullMap(),
+          *ssti_maps_mono_->BlockMapThermo()->FullMap());
+      thermostructuredomain_->Complete(*ssti_maps_mono_->BlockMapStructure()->FullMap(),
+          *ssti_maps_mono_->BlockMapThermo()->FullMap());
+
       if (interfacemeshtying_)
       {
         scatrastructureinterface_->Complete(*ssti_maps_mono_->BlockMapStructure()->FullMap(),
             *ssti_maps_mono_->BlockMapScatra()->FullMap());
+        scatrathermointerface_->Complete(*ssti_maps_mono_->BlockMapThermo()->FullMap(),
+            *ssti_maps_mono_->BlockMapScatra()->FullMap());
+        thermoscatrainterface_->Complete(*ssti_maps_mono_->BlockMapScatra()->FullMap(),
+            *ssti_maps_mono_->BlockMapThermo()->FullMap());
+        thermostructureinterface_->Complete(*ssti_maps_mono_->BlockMapStructure()->FullMap(),
+            *ssti_maps_mono_->BlockMapThermo()->FullMap());
       }
       break;
     }
@@ -389,6 +418,26 @@ void SSTI::SSTIMatrices::CompleteScaTraStructureMatrices()
       dserror("Invalid matrix type associated with scalar transport field!");
       break;
     }
+  }
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSTI::SSTIMatrices::UnCompleteCouplingMatrices()
+{
+  scatrastructuredomain_->UnComplete();
+  scatrathermodomain_->UnComplete();
+  structurescatradomain_->UnComplete();
+  structurethermodomain_->UnComplete();
+  thermoscatradomain_->UnComplete();
+  thermostructuredomain_->UnComplete();
+
+  if (interfacemeshtying_)
+  {
+    scatrastructureinterface_->UnComplete();
+    scatrathermointerface_->UnComplete();
+    thermoscatrainterface_->UnComplete();
+    thermostructureinterface_->UnComplete();
   }
 }
 

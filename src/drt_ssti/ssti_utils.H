@@ -143,8 +143,11 @@ namespace SSTI
     //! method that clears all ssi matrices
     void ClearMatrices();
 
-    //! call complete on the scalar transport - structure off-diagonal matrices
-    void CompleteScaTraStructureMatrices();
+    //! call complete on all coupling matrices
+    void CompleteCouplingMatrices();
+
+    //! call uncomplete on all coupling matrices
+    void UnCompleteCouplingMatrices();
 
     Teuchos::RCP<LINALG::SparseOperator> SystemMatrix() { return systemmatrix_; };
 
