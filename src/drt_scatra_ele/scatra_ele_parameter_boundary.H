@@ -24,7 +24,7 @@ namespace DRT
     {
      public:
       //! singleton access method
-      static ScaTraEleParameterBoundary* Instance(const std::string& disname = nullptr);
+      static ScaTraEleParameterBoundary* Instance(const std::string& disname);
 
       //! set parameters for specific kintetic model
       void SetParameters(Teuchos::ParameterList& parameters) override;
@@ -64,7 +64,7 @@ namespace DRT
       double MolarMass() const { return molarmass_; }
       int NumElectrons() const { return numelectrons_; }
       int NumScal() const { return numscal_; }
-      std::vector<bool>* OnOff() const { return onoff_; }
+      std::vector<int>* OnOff() const { return onoff_; }
       double Peltier() const { return peltier_; }
       std::vector<double>* Permeabilities() const { return permeabilities_; }
       double RegularizationParameter() const { return regularizationparameter_; }
@@ -119,7 +119,7 @@ namespace DRT
       int numscal_;
 
       /// which dofs are constrained by this condition
-      std::vector<bool>* onoff_;
+      std::vector<int>* onoff_;
 
       /// peltier coefficient
       double peltier_;
