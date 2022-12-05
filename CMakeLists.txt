@@ -338,25 +338,6 @@ set(OBJS_DRT_MAT_LIB
     src/drt_mat/activefiber.cpp
     src/drt_matelast/visco_generalizedgenmax.cpp
     )
-set(OBJS_DRT_RED_AIRWAYS_LIB
-    src/drt_red_airways/airway_evaluate.cpp
-    src/drt_red_airways/acinus_evaluate.cpp
-    src/drt_red_airways/inter_acinar_dep_evaluate.cpp
-    src/drt_red_airways/red_air_blood_scatra_evaluate.cpp
-    src/drt_red_airways/red_air_blood_scatraLine3_evaluate.cpp
-    src/drt_red_airways/airway_impl.cpp
-    src/drt_red_airways/acinus_impl.cpp
-    src/drt_red_airways/inter_acinar_dep_impl.cpp
-    src/drt_red_airways/red_air_blood_scatra_impl.cpp
-    src/drt_red_airways/red_air_blood_scatraLine3_impl.cpp
-    src/drt_red_airways/red_airway.cpp
-    src/drt_red_airways/red_acinus.cpp
-    src/drt_red_airways/red_inter_acinar_dep.cpp
-    src/drt_red_airways/red_air_blood_scatra.cpp
-    src/drt_red_airways/red_air_blood_scatraLine3.cpp
-    src/drt_red_airways/red_airway_input.cpp
-    src/drt_red_airways/red_airway_resulttest.cpp
-    )
 set(OBJS_DRT_INPAR
     src/drt_inpar/drt_boolifyparameters.cpp
     src/drt_inpar/drt_validconditions.cpp
@@ -510,22 +491,6 @@ set(OBJS_DRT_SCATRA
     src/drt_scatra/scatra_timint_cardiac_monodomain_scheme_hdg.cpp
     src/drt_scatra/nox_nln_scatra_linearsystem.cpp
     )
-
-set(OBJS_DRT_S8_LIB
-    src/drt_s8/shell8.cpp
-    src/drt_s8/shell8_evaluate.cpp
-    src/drt_s8/shell8_input.cpp
-    src/drt_s8/shell8_line.cpp
-    src/drt_s8/shell8_line_evaluate.cpp
-    src/drt_s8/shell8_scatra.cpp
-    src/fortran/s8_fserv.f
-    src/drt_s8/shell8/s8_mat_linel.c
-    src/drt_s8/shell8/s8_mat_ogden.c
-    src/drt_s8/shell8/s8_mat_ogden2.c
-    src/drt_s8/shell8/s8_mat_ogden3.c
-    src/drt_s8/shell8/s8_mattransform.c
-    src/drt_s8/shell8/s8_tmat.c
-    )
 set(OBJS_DRT_MEMBRANE_LIB
     src/drt_membrane/membrane_eletypes.cpp
     src/drt_membrane/membrane.cpp
@@ -536,12 +501,6 @@ set(OBJS_DRT_MEMBRANE_LIB
     src/drt_membrane/membrane_scatra_eletypes.cpp
     src/drt_membrane/membrane_scatra.cpp
     src/drt_membrane/membrane_scatra_evaluate.cpp
-    )
-
-set(OBJS_DRT_RED_AIRWAYS
-    src/drt_red_airways/airwayimplicitintegration.cpp
-    src/drt_red_airways/redairway_tissue.cpp
-    src/drt_red_airways/red_airways_dyn_drt.cpp
     )
 
 set(OBJS_DRT_REGISTER src/drt_lib/drt_parobjectregister.cpp)
@@ -719,11 +678,6 @@ set(OBJS_BACI_MAIN
     src/global_full/global_cal_control.cpp
     src/global_full/global_control.cpp
     src/global_full/baci.cpp
-    )
-set(OBJS_DRT_RIGIDSPHERE_LIB
-    src/drt_rigidsphere/rigidsphere.cpp
-    src/drt_rigidsphere/rigidsphere_evaluate.cpp
-    src/drt_rigidsphere/rigidsphere_input.cpp
     )
 set(OBJS_PRE_LOCSYS src/pre_locsys/pre_locsys.cpp)
 set(OBJS_POST_DRT_S8CONVERT src/post_s8convert/post_drt_s8convert.cpp)
@@ -1021,7 +975,6 @@ set(SINGLEFIELD_LIBRARIES
     alg_fluid_turbulence
     alg_fluid
     alg_xfluid
-    alg_redairways
     alg_lubrication
     alg_porofluidmultiphase
     alg_scatra
@@ -1046,7 +999,7 @@ set(SUPPORT_LIBRARIES
     drt_lib
     drt_lib_artnet
     drt_lib_browniandyn
-    drt_lib_redairways
+    drt_red_airways
     drt_lib_mortar
     drt_lib_constraint
     drt_lib_contact
@@ -1096,6 +1049,7 @@ set(BACI_LIBRARIES
     solver
     linalg
     drt_comm
+    fortran
     headers
     drt_timestepping
     )
@@ -1114,8 +1068,7 @@ add_library(headers INTERFACE)
 target_include_directories(headers INTERFACE ${PROJECT_SOURCE_DIR}/src/headers)
 
 # Compile element libraries first. There are files that take time to compile.
-deprecated_baci_add_library_linked_with_everything(ele_rigidsphere ${OBJS_DRT_RIGIDSPHERE_LIB})
-deprecated_baci_add_library_linked_with_everything(ele_s8 ${OBJS_DRT_S8_LIB})
+
 deprecated_baci_add_library_linked_with_everything(ele_membrane ${OBJS_DRT_MEMBRANE_LIB})
 
 deprecated_baci_add_library_linked_with_everything(ele_scatra ${OBJS_DRT_SCATRA_LIB})
@@ -1128,7 +1081,6 @@ deprecated_baci_add_library_linked_with_everything(alg_pasi ${OBJS_DRT_PASI})
 
 # algorithm libraries the adapters depend uo
 deprecated_baci_add_library_linked_with_everything(alg_statinvanalysis ${OBJS_STATINV_ANALYSIS})
-deprecated_baci_add_library_linked_with_everything(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
 deprecated_baci_add_library_linked_with_everything(alg_scatra ${OBJS_DRT_SCATRA})
 deprecated_baci_add_library_linked_with_everything(
   alg_particle_algorithm ${OBJS_DRT_PARTICLE_ALGORITHM}
@@ -1162,7 +1114,6 @@ deprecated_baci_add_library_linked_with_everything(
   drt_lib_particleengine ${OBJS_DRT_PARTICLE_ENGINE_LIB}
   )
 deprecated_baci_add_library_linked_with_everything(drt_lib_utils ${OBJS_DRT_UTILS})
-deprecated_baci_add_library_linked_with_everything(drt_lib_redairways ${OBJS_DRT_RED_AIRWAYS_LIB})
 deprecated_baci_add_library_linked_with_everything(drt_lib_statinv_ana ${OBJS_STATINV_ANALYSIS_LIB})
 deprecated_baci_add_library_linked_with_everything(alg_mor ${OBJS_DRT_MOR})
 
