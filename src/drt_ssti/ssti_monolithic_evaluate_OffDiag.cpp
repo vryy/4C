@@ -82,28 +82,6 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockThermoStructureDo
 
   thermo_->ScaTraField()->Discretization()->Evaluate(eleparams, strategyscatrastructure);
 
-  // finalize thermo-structure matrix block
-  switch (thermo_->ScaTraField()->MatrixType())
-  {
-    case LINALG::MatrixType::block_condition:
-    {
-      thermostructuredomain->Complete();
-      break;
-    }
-
-    case LINALG::MatrixType::sparse:
-    {
-      thermostructuredomain->Complete(*full_map_structure_, *full_map_thermo_);
-      break;
-    }
-
-    default:
-    {
-      dserror("Invalid matrix type associated with scalar transport field!");
-      break;
-    }
-  }
-
   thermo_->ScaTraField()->Discretization()->ClearState();
 }
 /*-----------------------------------------------------------------------------------*
@@ -205,28 +183,6 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockStructureThermoDo
 
   // need to scale structurethermoblock_ with 'timefac' to getcorrect implementation
   structurethermodomain->Scale(1.0 - structure_->TimIntParam());
-
-  // finalize structure-thermo matrix block
-  switch (thermo_->ScaTraField()->MatrixType())
-  {
-    case LINALG::MatrixType::block_condition:
-    {
-      structurethermodomain->Complete();
-      break;
-    }
-
-    case LINALG::MatrixType::sparse:
-    {
-      structurethermodomain->Complete(*full_map_thermo_, *full_map_structure_);
-      break;
-    }
-
-    default:
-    {
-      dserror("Invalid matrix type associated with scalar transport field!");
-      break;
-    }
-  }
 
   structure_->Discretization()->ClearState();
 }
