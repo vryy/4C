@@ -105,7 +105,7 @@ namespace MIXTURE
     [[nodiscard]] LINALG::Matrix<6, 6> EvaluateCurrentCmat(int gp, int eleGID) const;
 
     [[nodiscard]] double EvaluateDepositionStretch(double time) const;
-    void UpdateHomeostaticValues(Teuchos::ParameterList& params, int eleGID);
+    void UpdateHomeostaticValues(const Teuchos::ParameterList& params, int eleGID);
 
     void Initialize();
 
