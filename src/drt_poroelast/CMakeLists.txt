@@ -17,4 +17,4 @@ set(OBJS_DRT_POROELAST
     poro_scatra_monolithic.cpp
     )
 baci_add_library(alg_poroelast ${OBJS_DRT_POROELAST})
-target_link_libraries(alg_poroelast PUBLIC drt_lib_inpar)
+target_link_libraries(alg_poroelast PUBLIC drt_inpar)

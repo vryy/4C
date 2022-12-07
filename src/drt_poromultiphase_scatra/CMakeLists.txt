@@ -4,6 +4,7 @@ set(OBJS_DRT_POROMULTIPHASE_SCATRA
     poromultiphase_scatra_base.cpp
     poromultiphase_scatra_partitioned_twoway.cpp
     poromultiphase_scatra_monolithic_twoway.cpp
+    poromultiphase_scatra_function.cpp
     )
 
 baci_add_library(alg_poromultiphase_scatra ${OBJS_DRT_POROMULTIPHASE_SCATRA})

@@ -16,5 +16,5 @@ set(OBJS_DRT_GEOMETRY_PAIR
     geometry_pair_utility_functions.cpp
     )
 
-baci_add_library(drt_lib_geometry_pair ${OBJS_DRT_GEOMETRY_PAIR})
-target_link_libraries(drt_lib_geometry_pair PUBLIC linalg)
+baci_add_library(drt_geometry_pair ${OBJS_DRT_GEOMETRY_PAIR})
+target_link_libraries(drt_geometry_pair PUBLIC linalg)

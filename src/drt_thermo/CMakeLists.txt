@@ -8,7 +8,7 @@ set(OBJS_DRT_THERMO_ELE
     )
 
 baci_add_library(ele_thermo ${OBJS_DRT_THERMO_ELE})
-target_link_libraries(ele_thermo PUBLIC drt_lib drt_lib_inpar)
+target_link_libraries(ele_thermo PUBLIC drt_lib drt_inpar)
 
 set(OBJS_DRT_THERMO
     thr_aux.cpp
@@ -24,4 +24,4 @@ set(OBJS_DRT_THERMO
     )
 
 baci_add_library(alg_thermo ${OBJS_DRT_THERMO})
-target_link_libraries(alg_thermo PUBLIC drt_lib_inpar drt_adapter)
+target_link_libraries(alg_thermo PUBLIC drt_inpar drt_adapter)

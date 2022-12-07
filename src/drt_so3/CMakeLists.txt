@@ -103,4 +103,4 @@ set(OBJS_SOH8_LIB
 
 add_subdirectory(so3_plast)
 baci_add_library(ele_so ${OBJS_SOH8_LIB})
-target_link_libraries(ele_so PUBLIC ele_so_plast drt_lib_utils)
+target_link_libraries(ele_so PUBLIC ele_so_plast drt_lib_utils drt_patspec)
