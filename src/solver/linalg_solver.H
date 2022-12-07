@@ -9,12 +9,11 @@
 #ifndef LINALG_SOLVER_H
 #define LINALG_SOLVER_H
 
-#include <string>  // this can probably removed
-
-#include <Ifpack.h>  // for condest
-
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
+
+#include <Epetra_MultiVector.h>
+#include <Epetra_Operator.h>
 
 #include "drt_dserror.H"
 #include "inpar_solver.H"
@@ -56,6 +55,11 @@ namespace LINALG
     */
     Solver(Teuchos::RCP<Teuchos::ParameterList>& params, const Epetra_Comm& comm, FILE* outfile);
 
+    /*!
+    \brief Destructor
+
+    */
+    virtual ~Solver();
 
     /*!
     \brief Constructor with default solver Amesos_KLU
@@ -93,13 +97,6 @@ namespace LINALG
     */
     void Setup();
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~Solver();
-
-
     //! @name Solve and ApplyInverse methods
 
     /*!
@@ -122,13 +119,6 @@ namespace LINALG
 
     /// solve linear system after setup has been done
     int Solve();
-
-    /// Apply inverse of the preconditioner
-    /*!
-      For krylov solver, only the preconditioner is called here. Direct solvers
-      do a direct solve. Setup needs to be called before.
-     */
-    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
     /*!
     \brief Solve system of equations in one go
@@ -281,12 +271,6 @@ namespace LINALG
     //! @name Query methods
 
     /*!
-    \brief Print solver configuration (ostream << also supported)
-
-    */
-    virtual void Print(std::ostream& os) const;
-
-    /*!
     \brief Get communicator
 
     */
@@ -332,28 +316,6 @@ namespace LINALG
 
   };  // class Solver
 
-  /*!
-    \brief Compute a condition number estimate of given matrix A
-
-    condition number kappa of a matrix A is defined as kappa(A) = ||A|| * ||A^-1||
-    for A = singulaer, kappa = infinity
-
-    \return kappa
-
-    copied and adapted from
-    Trilinos/packages/ifpack/src/Ifpack_Condest.h and Ifpack_Condest.cpp
-  */
-  double Condest(SparseMatrix& A,  ///< sparse matrix
-      const Ifpack_CondestType CT =
-          Ifpack_Cheap,           ///< select approach for computing condition number estimate
-      const int MaxIters = 1000,  ///< maximum number of linear iterations
-      const double Tol = 1e-9     ///< tolerance
-  );
-
 }  // namespace LINALG
-
-
-//! << operator
-std::ostream& operator<<(std::ostream& os, const LINALG::Solver& solver);
 
 #endif  // #ifndef LINALG_SOLVER_H

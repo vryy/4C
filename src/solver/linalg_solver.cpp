@@ -77,26 +77,6 @@ void LINALG::Solver::Reset() { solver_ = Teuchos::null; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::ostream& operator<<(std::ostream& os, const LINALG::Solver& solver)
-{
-  solver.Print(os);
-  return os;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void LINALG::Solver::Print(std::ostream& os) const
-{
-  if (Comm().MyPID() == 0)
-  {
-    os << "============================LINALG::Solver Parameter List\n";
-    os << *params_;
-    os << "========================end LINALG::Solver Parameter List\n";
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 int LINALG::Solver::getNumIters() const { return solver_->getNumIters(); }
 
 /*----------------------------------------------------------------------*
@@ -203,13 +183,6 @@ int LINALG::Solver::Solve()
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::Solver:  2)   Solve");
   return solver_->Solve();
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int LINALG::Solver::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
-{
-  return solver_->ApplyInverse(X, Y);
 }
 
 /*----------------------------------------------------------------------*
