@@ -33,4 +33,4 @@ set(OBJS_LINALG
     )
 
 baci_add_library(linalg ${OBJS_LINALG})
-target_link_libraries(linalg PUBLIC drt_lib_inpar drt_lib_utils)
+target_link_libraries(linalg PUBLIC drt_inpar drt_lib_utils)

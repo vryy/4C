@@ -3,4 +3,4 @@ set(OBJS_DRT_STRU_MULTI
     )
 
 baci_add_library(drt_stru_multi ${OBJS_DRT_STRU_MULTI})
-target_link_libraries(drt_stru_multi PUBLIC drt_lib drt_lib_inpar)
+target_link_libraries(drt_stru_multi PUBLIC drt_lib drt_inpar)

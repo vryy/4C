@@ -56,4 +56,4 @@ set(OBJS_DRT_STRUCTURE_NEW
     )
 
 baci_add_library(alg_structure_new ${OBJS_DRT_STRUCTURE_NEW})
-target_link_libraries(alg_structure_new PUBLIC drt_lib drt_lib_inpar)
+target_link_libraries(alg_structure_new PUBLIC drt_lib drt_inpar)

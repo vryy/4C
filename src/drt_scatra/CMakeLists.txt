@@ -1,0 +1,43 @@
+set(OBJS_DRT_SCATRA
+    scatra_algorithm.cpp
+    scatra_dyn.cpp
+    scatra_cardiac_monodomain_dyn.cpp
+    scatra_resulttest.cpp
+    scatra_resulttest_elch.cpp
+    scatra_resulttest_hdg.cpp
+    scatra_timint_bdf2.cpp
+    scatra_timint_cardiac_monodomain_scheme.cpp
+    scatra_timint_cardiac_monodomain.cpp
+    scatra_timint_convcheck_strategies.cpp
+    scatra_timint_genalpha.cpp
+    scatra_timint_implicit.cpp
+    scatra_timint_implicit_service.cpp
+    scatra_timint_ost.cpp
+    scatra_timint_stat.cpp
+    scatra_timint_loma.cpp
+    scatra_timint_loma_genalpha.cpp
+    scatra_timint_loma_ost.cpp
+    scatra_timint_meshtying_strategy_fluid.cpp
+    scatra_timint_heterogeneous_reaction_strategy.cpp
+    scatra_timint_meshtying_strategy_fluid_elch.cpp
+    scatra_timint_meshtying_strategy_s2i.cpp
+    scatra_timint_meshtying_strategy_s2i_elch.cpp
+    scatra_timint_meshtying_strategy_std.cpp
+    scatra_timint_meshtying_strategy_std_elch.cpp
+    scatra_timint_meshtying_strategy_artery.cpp
+    scatra_timint_elch.cpp
+    scatra_timint_elch_scheme.cpp
+    scatra_timint_elch_service.cpp
+    scatra_timint_poromulti.cpp
+    scatra_utils_clonestrategy.cpp
+    scatra_utils.cpp
+    turbulence_hit_initial_scalar_field.cpp
+    turbulence_hit_scalar_forcing.cpp
+    scatra_timint_hdg.cpp
+    scatra_timint_stat_hdg.cpp
+    scatra_timint_cardiac_monodomain_scheme_hdg.cpp
+    nox_nln_scatra_linearsystem.cpp
+    )
+
+baci_add_library(alg_scatra ${OBJS_DRT_SCATRA})
+target_link_libraries(alg_scatra PUBLIC drt_adapter drt_inpar alg_fluid_turbulence drt_lib)

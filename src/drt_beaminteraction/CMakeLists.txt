@@ -78,4 +78,4 @@ set(OBJS_DRT_LIB_BEAMINTERACTION
     )
 
 baci_add_library(drt_lib_beaminteraction ${OBJS_DRT_LIB_BEAMINTERACTION})
-target_link_libraries(drt_lib_beaminteraction PUBLIC linalg drt_lib_inpar)
+target_link_libraries(drt_lib_beaminteraction PUBLIC linalg drt_inpar)

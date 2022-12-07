@@ -49,7 +49,9 @@ set(OBJS_DRT_LIB
     )
 
 baci_add_library(drt_lib ${OBJS_DRT_LIB})
-target_link_libraries(drt_lib PUBLIC linalg drt_lib_binstrategy drt_lib_geometric_search)
+target_link_libraries(
+  drt_lib PUBLIC linalg drt_lib_binstrategy drt_lib_geometric_search drt_fem_general
+  )
 # TODO this module requires a lot more includes that are currently included transitively from linalg
 
 set(OBJS_DRT_IO_LIB
@@ -63,5 +65,9 @@ set(OBJS_DRT_IO_LIB
     )
 baci_add_library(drt_lib_io ${OBJS_DRT_IO_LIB})
 target_link_libraries(drt_lib_io PUBLIC drt_lib)
+
+set(OBJS_DRT_REGISTER drt_parobjectregister.cpp)
+baci_add_library(drt_lib_register ${OBJS_DRT_REGISTER})
+target_link_libraries(drt_lib_register PUBLIC drt_nurbs_discret)
 
 add_subdirectory(error)

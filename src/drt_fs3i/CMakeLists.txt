@@ -13,4 +13,4 @@ set(OBJS_DRT_FS3I
     )
 
 baci_add_library(alg_fs3i ${OBJS_DRT_FS3I})
-target_link_libraries(alg_fs3i PUBLIC drt_lib_inpar)
+target_link_libraries(alg_fs3i PUBLIC drt_inpar)

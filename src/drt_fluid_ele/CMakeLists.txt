@@ -53,4 +53,4 @@ set(OBJS_DRT_FLUID_ELE_LIB
     fluid_ele_calc_hdg_weak_comp.cpp
     )
 baci_add_library(ele_fluid ${OBJS_DRT_FLUID_ELE_LIB})
-target_link_libraries(ele_fluid PUBLIC drt_lib_inpar drt_opti)
+target_link_libraries(ele_fluid PUBLIC drt_inpar drt_opti)

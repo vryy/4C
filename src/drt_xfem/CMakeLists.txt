@@ -17,7 +17,7 @@ set(OBJS_DRT_XFEM
     )
 
 baci_add_library(drt_lib_xfem ${OBJS_DRT_XFEM})
-target_link_libraries(drt_lib_xfem PUBLIC linalg drt_lib drt_lib_inpar)
+target_link_libraries(drt_lib_xfem PUBLIC linalg drt_lib drt_inpar)
 
 set(OBJS_DRT_XFEM_MANAG_LIB
     xfem_coupling_levelset.cpp
@@ -30,4 +30,4 @@ set(OBJS_DRT_XFEM_MANAG_LIB
     )
 
 baci_add_library(drt_lib_xfem_manag ${OBJS_DRT_XFEM_MANAG_LIB})
-target_link_libraries(drt_lib_xfem_manag PUBLIC linalg drt_lib drt_lib_inpar)
+target_link_libraries(drt_lib_xfem_manag PUBLIC linalg drt_lib drt_inpar)

@@ -23,4 +23,4 @@ set(OBJS_DRT_STRUCTURE
     )
 
 baci_add_library(alg_structure ${OBJS_DRT_STRUCTURE})
-target_link_libraries(alg_structure PUBLIC drt_lib drt_lib_inpar drt_adapter)
+target_link_libraries(alg_structure PUBLIC drt_lib drt_inpar drt_adapter)

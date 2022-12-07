@@ -11,6 +11,4 @@ add_subdirectory(tutorial_ele)
 add_subdirectory(tutorial_material)
 
 baci_add_library(alg_tutorial ${OBJS_DRT_TUTORIAL})
-target_link_libraries(
-  alg_tutorial PUBLIC alg_tutorial_material alg_tutorial_ele drt_lib_inpar linalg
-  )
+target_link_libraries(alg_tutorial PUBLIC alg_tutorial_material alg_tutorial_ele drt_inpar linalg)

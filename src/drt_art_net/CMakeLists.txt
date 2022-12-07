@@ -24,4 +24,4 @@ set(OBJS_DRT_ARTNET_LIB
     )
 
 baci_add_library(drt_lib_artnet ${OBJS_DRT_ARTNET_LIB})
-target_link_libraries(drt_lib_artnet PUBLIC drt_lib_inpar)
+target_link_libraries(drt_lib_artnet PUBLIC drt_inpar drt_lib)

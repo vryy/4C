@@ -9,7 +9,7 @@ set(OBJS_ALG_ALE
     )
 
 baci_add_library(alg_ale ${OBJS_ALG_ALE})
-target_link_libraries(alg_ale PUBLIC drt_lib_inpar drt_adapter)
+target_link_libraries(alg_ale PUBLIC drt_inpar drt_adapter)
 
 set(OBJS_ELE_ALE
     ale2.cpp

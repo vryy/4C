@@ -19,4 +19,4 @@ set(OBJS_ELE_BEAM3
     )
 
 baci_add_library(ele_beam3 ${OBJS_ELE_BEAM3})
-target_link_libraries(ele_beam3 PUBLIC drt_lib linalg)
+target_link_libraries(ele_beam3 PUBLIC drt_lib linalg drt_fem_general)

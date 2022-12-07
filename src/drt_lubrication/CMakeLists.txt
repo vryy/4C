@@ -6,4 +6,4 @@ set(OBJS_DRT_LUBRICATION
     )
 
 baci_add_library(alg_lubrication ${OBJS_DRT_LUBRICATION})
-target_link_libraries(alg_lubrication PUBLIC drt_lib_inpar drt_adapter ele_lubrication)
+target_link_libraries(alg_lubrication PUBLIC drt_inpar drt_adapter ele_lubrication)
