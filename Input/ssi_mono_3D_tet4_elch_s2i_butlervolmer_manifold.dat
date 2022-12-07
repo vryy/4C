@@ -212,9 +212,9 @@ E 6 - ID 1
 -------------------------------DESIGN SSI MANIFOLD SURF CONDITIONS
 DSURF  2
 // electrolyte side
-E 3 - 1 ImplType ElchDiffCond
+E 3 - 1 ImplType ElchDiffCond thickness 1.0
 // electrolyte side
-E 4 - 2 ImplType ElchDiffCond
+E 4 - 2 ImplType ElchDiffCond thickness 1.0
 ----------------------DESIGN SSI MANIFOLD KINETICS SURF CONDITIONS
 DSURF  2
 // electrolyte side

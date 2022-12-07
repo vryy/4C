@@ -44,12 +44,13 @@ SSI::ManifoldScaTraCoupling::ManifoldScaTraCoupling(Teuchos::RCP<DRT::Discretiza
     : condition_kinetics_(condition_kinetics),
       condition_manifold_(condition_manifold),
       coupling_adapter_(Teuchos::rcp(new ADAPTER::Coupling())),
+      inv_thickness_(1.0 / condition_manifold->GetDouble("thickness")),
       manifold_conditionID_(condition_manifold->GetInt("ConditionID")),
       kinetics_conditionID_(condition_kinetics->GetInt("ConditionID")),
       manifold_map_extractor_(Teuchos::null),
+      master_converter_(Teuchos::null),
       scatra_map_extractor_(Teuchos::null),
-      size_matrix_graph_(),
-      master_converter_(Teuchos::null)
+      size_matrix_graph_()
 {
   std::vector<int> inodegidvec_manifold;
   DRT::UTILS::AddOwnedNodeGIDVector(
@@ -357,7 +358,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::Evaluate()
   rhs_scatra_->PutScalar(0.0);
 
   // evaluate all scatra-manifold coupling conditions
-  for (auto scatra_manifold_coupling : scatra_manifold_couplings_)
+  for (const auto& scatra_manifold_coupling : scatra_manifold_couplings_)
   {
     // clear matrices and rhs from last condition. Maps are different for each condition (need for
     // UnComplete()).
@@ -504,6 +505,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateBulkSide(
 void SSI::ScaTraManifoldScaTraFluxEvaluator::CopyScaTraScaTraManifoldSide(
     Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling)
 {
+  const double inv_thickness = scatra_manifold_coupling->InvThickness();
   {
     auto rhs_scatra_cond_extract =
         scatra_manifold_coupling->ScaTraMapExtractor()->ExtractCondVector(rhs_scatra_cond_);
@@ -513,26 +515,26 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::CopyScaTraScaTraManifoldSide(
 
     scatra_manifold_coupling->ManifoldMapExtractor()->AddCondVector(
         rhs_manifold_cond_extract, rhs_manifold_cond_);
-    rhs_manifold_cond_->Scale(-1.0);
+    rhs_manifold_cond_->Scale(-inv_thickness);
   }
 
   // dmanifold_dscatra: scatra rows are transformed to manifold side (flux is scaled by -1.0)
   LINALG::MatrixLogicalSplitAndTransform()(*systemmatrix_scatra_cond_, *full_map_scatra_,
-      *full_map_scatra_, -1.0, &*scatra_manifold_coupling->MasterConverter(), nullptr,
+      *full_map_scatra_, -inv_thickness, &*scatra_manifold_coupling->MasterConverter(), nullptr,
       *matrix_manifold_scatra_cond_, true, true);
 
   matrix_manifold_scatra_cond_->Complete(*full_map_scatra_, *full_map_manifold_);
 
   // dmanifold_dmanifold: scatra rows are transformed to manifold side (flux is scaled by -1.0)
   LINALG::MatrixLogicalSplitAndTransform()(*matrix_scatra_manifold_cond_, *full_map_scatra_,
-      *full_map_manifold_, -1.0, &*scatra_manifold_coupling->MasterConverter(), nullptr,
+      *full_map_manifold_, -inv_thickness, &*scatra_manifold_coupling->MasterConverter(), nullptr,
       *systemmatrix_manifold_cond_, true, true);
 
   systemmatrix_manifold_cond_->Complete();
 
   // dmanifold_dstructure: scatra rows are transformed to manifold side (flux is scaled by -1.0)
   LINALG::MatrixLogicalSplitAndTransform()(*matrix_scatra_structure_cond_, *full_map_scatra_,
-      *full_map_structure_, -1.0, &*scatra_manifold_coupling->MasterConverter(), nullptr,
+      *full_map_structure_, -inv_thickness, &*scatra_manifold_coupling->MasterConverter(), nullptr,
       *matrix_manifold_structure_cond_, true, true);
 
   matrix_manifold_structure_cond_->Complete(*full_map_structure_, *full_map_manifold_);

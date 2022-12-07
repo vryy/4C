@@ -86,8 +86,17 @@ namespace SSI
     //! coupling adapter between manifold (slave) and scatra (master)
     Teuchos::RCP<ADAPTER::Coupling> CouplingAdapter() const { return coupling_adapter_; }
 
+    //! inverse of thickness of manifold
+    double InvThickness() const { return inv_thickness_; }
+
     //! condition ID of manifold condition
     int ManifoldConditionID() const { return manifold_conditionID_; }
+
+    //! from master to slave side
+    Teuchos::RCP<ADAPTER::CouplingMasterConverter> MasterConverter() const
+    {
+      return master_converter_;
+    }
 
     //! condition ID of kinetics condition
     int KineticsConditionID() const { return kinetics_conditionID_; }
@@ -101,12 +110,6 @@ namespace SSI
     //! Map exctractor for dofs in this kinetics condition
     Teuchos::RCP<LINALG::MapExtractor> ScaTraMapExtractor() const { return scatra_map_extractor_; }
 
-    //! from master to slave side
-    Teuchos::RCP<ADAPTER::CouplingMasterConverter> MasterConverter() const
-    {
-      return master_converter_;
-    }
-
    private:
     //! Kinetics condition on scatra dis
     DRT::Condition* condition_kinetics_;
@@ -117,6 +120,9 @@ namespace SSI
     //! coupling adapter between manifold (slave) and scatra (master)
     Teuchos::RCP<ADAPTER::Coupling> coupling_adapter_;
 
+    //! inverse of thickness of manifold
+    const double inv_thickness_;
+
     //! condition ID of manifold condition
     const int manifold_conditionID_;
 
@@ -126,14 +132,14 @@ namespace SSI
     //! Map exctractor for dofs in this manifold condition
     Teuchos::RCP<LINALG::MapExtractor> manifold_map_extractor_;
 
+    //! Master converter for scatra - manifold coupling
+    Teuchos::RCP<ADAPTER::CouplingMasterConverter> master_converter_;
+
     //! Map exctractor for dofs in this kinetics condition
     Teuchos::RCP<LINALG::MapExtractor> scatra_map_extractor_;
 
     //! map with the size of the graph of each matrix
     std::map<BlockMatrixType, int> size_matrix_graph_;
-
-    //! Master converter for scatra - manifold coupling
-    Teuchos::RCP<ADAPTER::CouplingMasterConverter> master_converter_;
   };
 
   /*---------------------------------------------------------------------------------*
