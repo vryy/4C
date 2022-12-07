@@ -1,7 +1,6 @@
 set(OBJS_LINALG
     linalg_ana.cpp
     linalg_blocksparsematrix.cpp
-    linalg_condest.cpp
     linalg_downwindmatrix.cpp
     linalg_equilibrate.cpp
     linalg_krylov_projector.cpp
