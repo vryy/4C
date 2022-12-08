@@ -39,15 +39,10 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator> matrix,
   timer.ResetStartTime();
 
   std::string solvertype = solver_->Params().get("solver", "none");
-  if (solvertype == "aztec" || solvertype == "belos")
+  if (solvertype == "belos")
   {
-    Teuchos::ParameterList* azlist_ptr = NULL;
-    if (solvertype == "aztec")
-      azlist_ptr = &(solver_->Params().sublist("Aztec Parameters"));
-    else
-      azlist_ptr = &(solver_->Params().sublist("Belos Parameters"));
-    Teuchos::ParameterList& azlist = *azlist_ptr;
-    // Teuchos::ParameterList& azlist = solver_->Params().sublist("Aztec Parameters");
+    Teuchos::ParameterList& solverlist = solver_->Params().sublist("Belos Parameters");
+
     // see whether Operator is a Epetra_CrsMatrix
     Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(&*matrix);
 
@@ -77,9 +72,9 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator> matrix,
       // create a copy of the scaled matrix
       // so we can reuse the preconditioner
       Pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
-      // get the type of ifpack preconditioner from aztec
-      std::string prectype = azlist.get("preconditioner", "ILU");
-      int overlap = azlist.get("AZ_overlap", 0);
+      // get the type of ifpack preconditioner from iterative solver
+      std::string prectype = solverlist.get("preconditioner", "ILU");
+      int overlap = solverlist.get("AZ_overlap", 0);
       Ifpack Factory;
       Ifpack_Preconditioner* prec = Factory.Create(prectype, Pmatrix_.get(), overlap);
       prec->SetParameters(ifpacklist);
@@ -124,7 +119,7 @@ void LINALG::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator> matrix,
     bool reset)
 {
   std::string solvertype = solver_->Params().get("solver", "none");
-  if (solvertype == "aztec" or solvertype == "belos")
+  if (solvertype == "belos")
   {
     // do just the preconditioner from iterative solver
 

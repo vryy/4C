@@ -27,7 +27,6 @@
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_CrsMatrix.h>
-#include <az_aztec_defs.h>  // for AZ_none (provokes compiler warning due to redeclaration of HAVE_SYS_TIME_H in mpi.h and AztecOO_config.h -> AztecOO problem)
 
 #include "dserror.H"
 
@@ -96,19 +95,9 @@ bool LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::AllowReusePreconditio
   bool bAllowReuse = true;  // default: allow reuse of preconditioner
 
   // first, check some parameters with information that has to be updated
-  Teuchos::ParameterList* linSysParams = NULL;
-  if (Params().isSublist("Aztec Parameters"))
-  {
-    Teuchos::ParameterList& reflinSysParams = Params().sublist("Aztec Parameters");
-    linSysParams = &reflinSysParams;
-  }
-  else if (Params().isSublist("Belos Parameters"))
-  {
-    Teuchos::ParameterList& reflinSysParams = Params().sublist("Belos Parameters");
-    linSysParams = &reflinSysParams;
-  }
+  const Teuchos::ParameterList& linSysParams = Params().sublist("Belos Parameters");
 
-  CheckReuseStatusOfActiveSet(bAllowReuse, linSysParams);
+  CheckReuseStatusOfActiveSet(bAllowReuse, &linSysParams);
 
   // true, if preconditioner must not reused but is to re-created!
   const bool create = reset or not Ncall() or not reuse or (Ncall() % reuse) == 0;
@@ -384,7 +373,7 @@ void LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::PermuteLinearSystem(
 {
   if (!data_->IsAvailable("A", PermFact_.get()) || !data_->IsAvailable("permP", PermFact_.get()) ||
       !data_->IsAvailable("permScaling", PermFact_.get()))
-    dserror("PermutedAztecSolver: call BuildPermutationOperator before PermuteLinearSystem");
+    dserror("PermutedIterativeSolver: call BuildPermutationOperator before PermuteLinearSystem");
 
   // extract permutation operators from data_
   Teuchos::RCP<Epetra_CrsMatrix> xEpPermCrsMat = GetOperatorNonConst("A", PermFact_);
@@ -443,7 +432,8 @@ void LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::PermuteNullSpace(
                   .template get<int>("null space: dimension", -1);
   if (dimns == -1 || numdf == -1)
     dserror(
-        "PermutedAztecSolver: Error in MueLu/ML parameters: PDE equations or null space dimension "
+        "PermutedIterativeSolver: Error in MueLu/ML parameters: PDE equations or null space "
+        "dimension "
         "wrong.");
   Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> rowMap = xOp->getRowMap();
 
@@ -685,7 +675,7 @@ LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::ExtractPermutationMap(
     const std::string solverSublist, const std::string mapName)
 {
   // extract (user-given) additional information about linear system from
-  // "Aztec/Belos Parameters" -> "Linear System properties"
+  // "Belos Parameters" -> "Linear System properties"
   Teuchos::RCP<Epetra_Map> epSlaveDofMap = Teuchos::null;
   if (Params().isSublist(solverSublist) &&
       Params().sublist(solverSublist).isSublist("Linear System properties"))
@@ -786,7 +776,7 @@ bool LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::DecideAboutPermutatio
 
   // set data depending on decision whether the permuted or the original matrix
   // shall be used
-  // used for output in permutedAztecSolver
+  // used for output in permutedIterativeSolver
   if (bPermutationRecommended)
   {
     data_->Set("nonDiagDomRows", Teuchos::as<int>(PermutedNonDiagMap->getGlobalNumElements()));

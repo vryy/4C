@@ -617,8 +617,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::CreateLinearSolver(
       solvertype == INPAR::SOLVER::SolverType::superlu)
     return;
 
-  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr &&
-      solvertype != INPAR::SOLVER::SolverType::belos)
+  if (solvertype != INPAR::SOLVER::SolverType::belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;
@@ -627,7 +626,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::CreateLinearSolver(
     std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries " << std::endl;
     std::cout << " in the dat files!" << std::endl;
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
-    dserror("aztec solver expected");
+    dserror("Iterative solver expected");
   }
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(solverparams, "AZPREC");
@@ -659,7 +658,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::BuildBlockNullSpaces(
   // equip smoother for structure matrix block with empty parameter sublists to trigger null space
   // computation
   Teuchos::ParameterList& blocksmootherparams = solver->Params().sublist("Inverse1");
-  blocksmootherparams.sublist("Aztec Parameters");
+  blocksmootherparams.sublist("Belos Parameters");
   blocksmootherparams.sublist("MueLu Parameters");
 
   StructureField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
@@ -667,7 +666,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::BuildBlockNullSpaces(
   // equip smoother for fluid matrix block with empty parameter sublists to trigger null space
   // computation
   Teuchos::ParameterList& blocksmootherparams2 = solver->Params().sublist("Inverse2");
-  blocksmootherparams2.sublist("Aztec Parameters");
+  blocksmootherparams2.sublist("Belos Parameters");
   blocksmootherparams2.sublist("MueLu Parameters");
 
   FluidField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams2);
@@ -1447,7 +1446,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::BuildArteryBl
   // computation
   Teuchos::ParameterList& blocksmootherparams3 =
       solver->Params().sublist("Inverse" + std::to_string(arteryblocknum));
-  blocksmootherparams3.sublist("Aztec Parameters");
+  blocksmootherparams3.sublist("Belos Parameters");
   blocksmootherparams3.sublist("MueLu Parameters");
 
   // build null space of complete discretization

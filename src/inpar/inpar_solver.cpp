@@ -11,7 +11,7 @@
 #include "inpar_solver.H"
 #include "validparameters.H"
 
-#include <AztecOO.h>
+#include <BelosTypes.hpp>
 
 namespace INPAR::SOLVER
 {
@@ -25,9 +25,8 @@ namespace INPAR::SOLVER
     {
       setStringToIntegralParameter<SolverType>("SOLVER", "undefined",
           "The solver to attack the system of linear equations arising of FE approach with.",
-          tuple<std::string>("UMFPACK", "Superlu", "Aztec_MSR", "Belos", "undefined"),
-          tuple<SolverType>(SolverType::umfpack, SolverType::superlu, SolverType::aztec_msr,
-              SolverType::belos, SolverType::undefined),
+          tuple<std::string>("UMFPACK", "Superlu", "Belos", "undefined"),
+          tuple<SolverType>(SolverType::umfpack, SolverType::superlu, SolverType::belos, SolverType::undefined),
           &list);
     }
 
@@ -35,9 +34,8 @@ namespace INPAR::SOLVER
     {
       setStringToIntegralParameter<IterativeSolverType>("AZSOLVE", "GMRES",
           "Type of linear solver algorithm to use.",
-          tuple<std::string>("CG", "GMRES", "GMRES_CONDEST", "BiCGSTAB"),
-          tuple<IterativeSolverType>(IterativeSolverType::cg, IterativeSolverType::gmres,
-              IterativeSolverType::gmres_condest, IterativeSolverType::bicgstab),
+          tuple<std::string>("CG", "GMRES", "BiCGSTAB"),
+          tuple<IterativeSolverType>(IterativeSolverType::cg, IterativeSolverType::gmres, IterativeSolverType::bicgstab),
           &list);
     }
 
@@ -98,48 +96,40 @@ namespace INPAR::SOLVER
 
     // Aztecoo / Belos options
 
-    /* Iterative solver options translator: AztecOO <-> Belos
+    /* Iterative solver options
      *
      * Options available for every iterative solver:
-     * AZTOL: "Convergence Tolerance" <-> AZ_tol: convergence tolerance used for iterative solver
-     * AZCONV: "Implicit Residual Scaling" <-> AZ_conv: residual scaling approach
-     * AZITER: "Maximum Iterations" <-> AZ_max_iter: maximum iteration count
+     * AZTOL: "Convergence Tolerance": convergence tolerance used for iterative solver
+     * AZCONV: "Implicit Residual Scaling": residual scaling approach
+     * AZITER: "Maximum Iterations": maximum iteration count
      * AZREUSE: "reuse": how often to recompute the preconditioner (counts on solver calls)
-     * AZOUTPUT: "Output frequency" <-> AZ_output: number of iterations written to screen
-     * VERBOSITY: "Verbosity", general output level (not in AztecOO)
+     * AZOUTPUT: "Output frequency": number of iterations written to screen
      *
      * Options additionally available for gmres:
      * AZSUB: "Num Blocks" <-> AZ_kspace: maximum size of krylov subspace before a restart is done
      */
-
     {
+      IntParameter("AZITER", 1000, "max iterations", &list);
+
+      DoubleParameter("AZTOL", 1e-8, "tolerance in (un)scaled residual", &list);
+
+      setStringToIntegralParameter<Belos::ScaleType>("AZCONV", "AZ_r0",
+          "The convergence test to use for terminating the iterative solver.",
+          tuple<std::string>("AZ_r0", "AZ_noscaled"),
+          tuple<Belos::ScaleType>(Belos::ScaleType::NormOfInitRes, Belos::ScaleType::None), &list);
+
+      IntParameter("AZOUTPUT", 0,
+          "The number of iterations between each output of the solver's progress.", &list);
+      IntParameter("AZREUSE", 0, "how often to recompute some preconditioners", &list);
+
       IntParameter("AZSUB", 50,
           "The maximum size of the Krylov subspace used with \"GMRES\" before\n"
           "a restart is performed.",
           &list);
 
-      setStringToIntegralParameter<int>("AZCONV", "AZ_r0",  // Same as "rhs" when x=0
-          "The convergence test to use for terminating the iterative solver.",
-          tuple<std::string>("AZ_r0", "AZ_rhs", "AZ_Anorm", "AZ_noscaled", "AZ_sol", "AZ_weighted",
-              "AZ_expected_values", "AZTECOO_conv_test", "AZ_inf_noscaled"),
-          tuple<int>(AZ_r0, AZ_rhs, AZ_Anorm, AZ_noscaled, AZ_sol, AZ_weighted, AZ_expected_values,
-              AZTECOO_conv_test, AZ_inf_noscaled),
-          &list);
-
-      IntParameter("AZOUTPUT", 0,  // By default, no output from Aztec!
-          "The number of iterations between each output of the solver's progress.", &list);
-
-      IntParameter("AZREUSE", 0, "how often to recompute some preconditioners", &list);
-      IntParameter("AZITER", 1000, "max iterations", &list);
       IntParameter("AZGRAPH", 0, "unused", &list);
-      IntParameter("AZBDIAG", 0, "", &list);
-
-      DoubleParameter("AZTOL", 1e-8, "tolerance in (un)scaled residual", &list);
-      DoubleParameter("AZOMEGA", 0.0, "damping for GaussSeidel and jacobi type methods", &list);
-
-      // verbosity flag (for Belos)
-      IntParameter(
-          "VERBOSITY", 0, "verbosity level (0=no output,... 10=extreme), for Belos only", &list);
+      IntParameter("AZBDIAG", 0, "unused", &list);
+      DoubleParameter("AZOMEGA", 0.0, "unused", &list);
     }
 
     // ML options

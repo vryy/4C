@@ -234,7 +234,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::BuildBlockNullS
     // equip smoother for fluid matrix block with empty parameter sublists to trigger null space
     // computation
     Teuchos::ParameterList& blocksmootherparams1 = solver_->Params().sublist("Inverse1");
-    blocksmootherparams1.sublist("Aztec Parameters");
+    blocksmootherparams1.sublist("Belos Parameters");
     blocksmootherparams1.sublist("MueLu Parameters");
 
     PoroField()->FluidField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams1);
@@ -244,7 +244,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::BuildBlockNullS
   // computation
   Teuchos::ParameterList& blocksmootherparams =
       solver_->Params().sublist("Inverse" + std::to_string(struct_offset_ + 2));
-  blocksmootherparams.sublist("Aztec Parameters");
+  blocksmootherparams.sublist("Belos Parameters");
   blocksmootherparams.sublist("MueLu Parameters");
 
   ScatraAlgo()->ScaTraField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
@@ -291,8 +291,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::CreateLinearSol
       solvertype == INPAR::SOLVER::SolverType::superlu)
     return;
 
-  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr &&
-      solvertype != INPAR::SOLVER::SolverType::belos)
+  if (solvertype != INPAR::SOLVER::SolverType::belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;
@@ -301,7 +300,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::CreateLinearSol
     std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries " << std::endl;
     std::cout << " in the dat files!" << std::endl;
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
-    dserror("aztec solver expected");
+    dserror("Iterative solver expected");
   }
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(solverparams, "AZPREC");
@@ -1651,7 +1650,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
   // artery-scatra
   Teuchos::ParameterList& blocksmootherparams5 =
       solver_->Params().sublist("Inverse" + std::to_string(struct_offset_ + 4));
-  blocksmootherparams5.sublist("Aztec Parameters");
+  blocksmootherparams5.sublist("Belos Parameters");
   blocksmootherparams5.sublist("MueLu Parameters");
 
   // build null space of complete discretization

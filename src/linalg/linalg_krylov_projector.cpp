@@ -415,7 +415,7 @@ int LINALG::KrylovProjector::ApplyProjector(Epetra_MultiVector& Y,
   // vector index is zero
   if (Y.NumVectors() != 1)
   {
-    dserror("expecting only one solution vector during AZTEC Apply call\n");
+    dserror("expecting only one solution vector during iterative solver Apply call\n");
   }
 
   /*

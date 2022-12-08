@@ -52,7 +52,7 @@ FILESTEPS                       1000
 WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 LIMIT_OUTP_TO_PROC              0
-VERBOSITY                       debug
+VERBOSITY                       standard
 RESTARTWALLTIMEINTERVAL         -1
 RESTARTEVRY                     -1
 -------------------------------------------------IO/EVERY ITERATION

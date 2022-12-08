@@ -138,7 +138,6 @@ ML_SMOOTHERMED                  SGS
 ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
 MUELU_XML_ENFORCE               No
-VERBOSITY                       0
 --------------------------------------------------------------------SOLVER 2
 NAME                            Contact_Solver
 SOLVER                          Belos
@@ -222,7 +221,6 @@ ML_SMOTIMES                     6 6 6 6 1
 SIMPLE_DAMPING                  1
 MUELU_XML_ENFORCE               No
 SOLVER                          Belos
-VERBOSITY                       1
 PERMUTE_SYSTEM                  local
 ----------------------------------------------------------MATERIALS
 //MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2500  NUE 0.25 DENS 7.8e-3 THEXPANS 0.0

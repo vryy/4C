@@ -188,7 +188,7 @@ namespace LINALG
     \note This is a rule of thumb method - not a true adaptivity in the
           field of inexact Newton methods.
 
-    \note This method works with Aztec only - it does nothing for all other
+    \note This method works with iterative solvers only - it does nothing for all other
           solvers configured.
 
     \sa ResetTolerance
@@ -208,7 +208,7 @@ namespace LINALG
     Reset the tolerance read from input file. Can only be used after a call to
     AdaptTolerance.
 
-    \note This method works with Aztec only - it does nothing for all other
+    \note This method works with iterative solvers only - it does nothing for all other
           solvers configured.
 
     \sa AdaptTolerance
@@ -246,9 +246,6 @@ namespace LINALG
         const Teuchos::ParameterList& inparams);
 
     static const Teuchos::ParameterList TranslateBACIToBelos(
-        const Teuchos::ParameterList& inparams);
-
-    static const Teuchos::ParameterList TranslateBACIToAztec(
         const Teuchos::ParameterList& inparams);
 
     /*!

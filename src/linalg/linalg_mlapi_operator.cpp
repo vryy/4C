@@ -304,7 +304,7 @@ int LINALG::AMG_Operator::ApplyInverse(const Epetra_MultiVector& X, Epetra_Multi
   space.Reshape(bmap.NumGlobalElements(), bmap.NumMyElements(), bmap.MyGlobalElements());
 
   // wrap incoming and outgoing vectors as MLAPI::MultiVector
-  // note: Aztec might pass X and Y as physically identical objects,
+  // note: iterative solver might pass X and Y as physically identical objects,
   // so we deep copy here
   MLAPI::MultiVector in(space, X.Pointers(), 1);
   MLAPI::MultiVector out(space, Y.Pointers(), 1);

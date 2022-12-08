@@ -2031,12 +2031,8 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
   // create iterative solver for XFSI block matrix
   //----------------------------------------------
 
-  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr and
-      solvertype != INPAR::SOLVER::SolverType::belos)
-  {
-    dserror("aztec solver expected");
-  }
-
+  if (solvertype != INPAR::SOLVER::SolverType::belos)
+    dserror("Iterative solver expected");
 
   // get parameter list of structural dynamics
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -2260,7 +2256,7 @@ void FSI::MonolithicXFEM::LinearSolve()
     UnscaleSolution(*systemmatrix_, *iterinc_, *rhs_);
 
 
-    // Adapt solver tolerance (important if Aztec solver is picked)
+    // Adapt solver tolerance
     // TODO: does or how does this work for changing Newton systems
     solver_->ResetTolerance();
 

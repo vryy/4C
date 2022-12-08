@@ -72,7 +72,7 @@ namespace NOX
       typedef std::map<NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>> SolverMap;
 
      protected:
-      //! Source of the RowMatrix if using an AztecOO native preconditioner
+      //! Source of the RowMatrix if using a native preconditioner
       enum PreconditionerMatrixSourceType
       {
         UseJacobian,
@@ -82,7 +82,6 @@ namespace NOX
       enum PreconditionerType
       {
         None,
-        AztecOO,
         Ifpack,
         NewIfpack,
         ML,
