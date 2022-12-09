@@ -124,7 +124,7 @@ E 3 - 1 Master Inactive
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  2
 // left_block_side_of_interface
-E 2 - 1 Slave KineticModel ConstantPermeability numscal 1 permeabilities 5.0e-2
+E 2 - 1 Slave KineticModel ConstantPermeability numscal 1 permeabilities 5.0e-2 is_pseudo_contact 0
 // right_block_side_of_interface
 E 3 - 1 Master
 -----------------------------------------------DSURF-NODE TOPOLOGY

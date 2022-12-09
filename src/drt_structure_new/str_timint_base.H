@@ -241,7 +241,6 @@ namespace STR
       }
 
       /// known velocities at \f$t_{n-1}\f$
-
       [[nodiscard]] Teuchos::RCP<const Epetra_Vector> VelNm() const override
       {
         CheckInit();

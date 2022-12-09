@@ -160,6 +160,9 @@ namespace DRT
        *
        * @param[in] eslavephinp     state variables at slave-side nodes
        * @param[in] emasterphinp    state variables at master-side nodes
+       * @param[in] pseudo_contact_fac  factor, modeling pseudo contact by considering the
+       *                                mechanical stress state at the interface (1.0 if under
+       *                                compressive stresses, 0.0 if under tensile stresses)
        * @param[in] funct_slave     slave-side shape function values
        * @param[in] funct_master    master-side shape function values
        * @param[in] test_slave      slave-side test function values
@@ -184,7 +187,7 @@ namespace DRT
           const std::vector<LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
-          const LINALG::Matrix<nen_, 1>& funct_slave,
+          double pseudo_contact_fac, const LINALG::Matrix<nen_, 1>& funct_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
@@ -192,12 +195,30 @@ namespace DRT
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
-          const int numscal,
+          int numscal,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
-          const double timefacfac, const double timefacrhsfac, Epetra_SerialDenseMatrix& k_ss,
+          double timefacfac, double timefacrhsfac, Epetra_SerialDenseMatrix& k_ss,
           Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
           Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s,
           Epetra_SerialDenseVector& r_m);
+
+      /*!
+       * @brief Method that calculates the prefactor indicating if interface at current gauss point
+       *        is under tensile or compressive stresses. If it is under tensile stresses no flux is
+       *        allowed and the prefactor is set to zero, otherwise it is set to one.
+       *
+       * @param[in] is_pseudo_contact           flag indicating if pseudo contact interface model
+       *                                        should be evaluated
+       * @param[in] eslavestress_vector         vector containing the stress contributions at the
+       *                                        current gauss point
+       * @param[in] gp_normal                   normal at the current gauss point
+       * @param[in] funct_slave                 slave-side shape function values
+       * @return prefactor indicating if interface at current gauss point is under tensile (0.0) or
+       *         compressive stresses (1.0)
+       */
+      double CalculatePseudoContactFactor(bool is_pseudo_contact,
+          const std::vector<LINALG::Matrix<nen_, 1>>& eslavestress_vector,
+          const LINALG::Matrix<nsd_ + 1, 1>& gp_normal, const LINALG::Matrix<nen_, 1>& funct_slave);
 
      private:
       // add nodal displacements to point coordinates

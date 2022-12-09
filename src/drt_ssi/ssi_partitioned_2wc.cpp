@@ -157,8 +157,11 @@ void SSI::SSIPart2WC::DoStructStep()
   // Newton-Raphson iteration
   StructureField()->Solve();
 
-  // set mesh displacement and velocity fields
-  return SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
+  if (IsS2IKineticsWithPseudoContact()) StructureField()->DetermineStressStrain();
+
+  //  set mesh displacement and velocity fields
+  return SetStructSolution(
+      StructureField()->Dispnp(), StructureField()->Velnp(), IsS2IKineticsWithPseudoContact());
 }
 
 /*----------------------------------------------------------------------*
@@ -208,7 +211,7 @@ void SSI::SSIPart2WC::PrepareTimeLoop()
   constexpr bool force_prepare = true;
   StructureField()->PrepareOutput(force_prepare);
   StructureField()->Output();
-  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
+  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp(), false);
   ScaTraField()->PrepareTimeLoop();
 }
 
@@ -219,7 +222,7 @@ void SSI::SSIPart2WC::PrepareTimeStep(bool printheader)
 {
   IncrementTimeAndStep();
 
-  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
+  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp(), false);
   ScaTraField()->PrepareTimeStep();
 
   // if adaptive time stepping and different time step size: calculate time step in scatra
@@ -505,7 +508,7 @@ void SSI::SSIPart2WCSolidToScatraRelax::OuterLoop()
     // begin nonlinear solver / outer iteration ***************************
 
     // set relaxed mesh displacements and velocity field
-    SetStructSolution(dispnp, velnp);
+    SetStructSolution(dispnp, velnp, IsS2IKineticsWithPseudoContact());
 
     // solve scalar transport equation
     DoScatraStep();

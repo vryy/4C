@@ -116,8 +116,8 @@ E 3 - 1 Master S2IKineticsID 1
 E 4 - 0 Master S2IKineticsID 0
 -------------------------------DESIGN S2I KINETICS LINE CONDITIONS
 DLINE  4
-E 1 - 1 Slave KineticModel ConstantPermeability numscal 3 permeabilities 1.0 0.0 0.01
-E 2 - 0 Slave KineticModel ConstantPermeability numscal 3 permeabilities 0.01 0.0 1.0
+E 1 - 1 Slave KineticModel ConstantPermeability numscal 3 permeabilities 1.0 0.0 0.01 is_pseudo_contact 0
+E 2 - 0 Slave KineticModel ConstantPermeability numscal 3 permeabilities 0.01 0.0 1.0 is_pseudo_contact 0
 E 3 - 1 Master
 E 4 - 0 Master
 ----------------------------------SCATRA FLUX CALC LINE CONDITIONS

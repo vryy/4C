@@ -19,13 +19,10 @@ namespace CONTACT
   class CoNitscheStrategySsi;
 }
 
-namespace INPAR
+namespace INPAR::SSI
 {
-  namespace SSI
-  {
-    enum class ScaTraTimIntType;
-  }
-}  // namespace INPAR
+  enum class ScaTraTimIntType;
+}  // namespace INPAR::SSI
 
 namespace LINALG
 {
@@ -103,7 +100,7 @@ namespace SSI
     //! return map extractor associated with blocks of global system matrix
     Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapSystemMatrix() const;
 
-    // Return matrix type of global system matrix
+    //! Return matrix type of global system matrix
     LINALG::MatrixType MatrixType() const { return matrixtype_; };
 
     void ReadRestart(int restart) override;
@@ -131,7 +128,7 @@ namespace SSI
     void Timeloop() override;
 
    private:
-    // strategies for Newton-Raphson convergence check
+    //! strategies for Newton-Raphson convergence check
     class ConvCheckStrategyBase;
     class ConvCheckStrategyElch;
     class ConvCheckStrategyElchScaTraManifold;
@@ -182,10 +179,10 @@ namespace SSI
     //! evaluate all off-diagonal matrix contributions
     void EvaluateOffDiagContributions();
 
-    // Evaluate ScaTra including copy to corresponding ssi matrix
+    //! Evaluate ScaTra including copy to corresponding ssi matrix
     void EvaluateScaTra();
 
-    // Evaluate ScaTra on manifold incl. coupling with scatra
+    //! Evaluate ScaTra on manifold incl. coupling with scatra
     void EvaluateScaTraManifold();
 
     //! get matrix and right-hand-side for all subproblems incl. coupling
@@ -225,7 +222,6 @@ namespace SSI
     //! set scatra manifold solution on scatra field
     void SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> phi);
 
-    //! set scatra solution on structure field
     void SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const override;
 
     /*!

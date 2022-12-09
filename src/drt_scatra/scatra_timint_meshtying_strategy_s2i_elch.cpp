@@ -617,6 +617,8 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
   // dummy matrix of nodal temperature values
   LINALG::Matrix<my::nen_slave_, 1> dummy_slave_temp(true);
   LINALG::Matrix<my::nen_master_, 1> dummy_master_temp(true);
+  // always in contact
+  const double pseudo_contact_fac = 1.0;
 
   // loop over all integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -637,9 +639,9 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
     DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
         distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
         my::ephinp_slave_, my::ephinp_master_, dummy_slave_temp, dummy_master_temp,
-        my::funct_slave_, my::funct_master_, my::test_lm_slave_, my::test_lm_master_,
-        my::scatraparamsboundary_, timefacfac, timefacrhsfac, dummy_detF, GetFRT(), k_ss, k_sm,
-        k_ms, k_mm, r_s, r_m);
+        pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::test_lm_slave_,
+        my::test_lm_master_, my::scatraparamsboundary_, timefacfac, timefacrhsfac, dummy_detF,
+        GetFRT(), k_ss, k_sm, k_ms, k_mm, r_s, r_m);
   }
 }
 
@@ -675,6 +677,8 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(DRT::C
   // dummy matrix of nodal temperature values
   LINALG::Matrix<my::nen_slave_, 1> dummy_slave_temp(true);
   LINALG::Matrix<my::nen_master_, 1> dummy_master_temp(true);
+  // always in contact
+  const double pseudo_contact_fac = 1.0;
 
   // overall integration factors
   const double timefacfac =
@@ -688,10 +692,11 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(DRT::C
 
   DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
       distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
-      ephinp_slave, ephinp_master, dummy_slave_temp, dummy_master_temp, my::funct_slave_,
-      my::funct_master_, my::funct_slave_, my::funct_master_, my::scatraparamsboundary_, timefacfac,
-      timefacrhsfac, dummy_detF, DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(),
-      k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+      ephinp_slave, ephinp_master, dummy_slave_temp, dummy_master_temp, pseudo_contact_fac,
+      my::funct_slave_, my::funct_master_, my::funct_slave_, my::funct_master_,
+      my::scatraparamsboundary_, timefacfac, timefacrhsfac, dummy_detF,
+      DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(), k_ss, k_sm, k_ms, k_mm, r_s,
+      r_m);
 }
 
 
@@ -845,6 +850,8 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
   // dummy matrix of nodal master temperature values and shape derivatives
   LINALG::Matrix<my::nen_master_, 1> dummy_master_temp(true);
   LINALG::Matrix<my::nsd_slave_ + 1, my::nen_slave_> dummy_shapederivatives(true);
+  // always in contact
+  const double pseudo_contact_fac = 1.0;
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
@@ -865,10 +872,10 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
 
     DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
         distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(matelectrode,
-        my::ephinp_slave_, etempnp_slave_, dummy_master_temp, my::ephinp_master_, my::funct_slave_,
-        my::funct_master_, my::test_lm_slave_, my::test_lm_master_, dummy_shapederivatives,
-        my::scatraparamsboundary_, SCATRA::DifferentiationType::temp, timefacfac, timefacwgt,
-        dummy_detF, k_ss, k_ms);
+        my::ephinp_slave_, etempnp_slave_, dummy_master_temp, my::ephinp_master_,
+        pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::test_lm_slave_,
+        my::test_lm_master_, dummy_shapederivatives, my::scatraparamsboundary_,
+        SCATRA::DifferentiationType::temp, timefacfac, timefacwgt, dummy_detF, k_ss, k_ms);
   }  // loop over integration points
 }
 
@@ -1061,6 +1068,8 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
 
   // dummy matrix for derivative of slave fluxes w.r.t. master side temperatures
   Epetra_SerialDenseMatrix dummy_ksm;
+  // always in contact
+  const double pseudo_contact_fac = 1.0;
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
@@ -1082,8 +1091,8 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
     DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
         distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
         my::ephinp_slave_[0], my::ephinp_master_[0], eelchnp_slave_, eelchnp_master_,
-        my::funct_slave_, my::funct_master_, my::scatraparamsboundary_, timefacfac, timefacrhsfac,
-        dummy_detF, k_ss, dummy_ksm, r_s);
+        pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::scatraparamsboundary_,
+        timefacfac, timefacrhsfac, dummy_detF, k_ss, dummy_ksm, r_s);
   }  // loop over integration points
 }
 
@@ -1134,6 +1143,8 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
 
   // dummy matrix for shape derivatives
   LINALG::Matrix<3, my::nen_slave_> dummy_shape_deriv;
+  // always in contact
+  const double pseudo_contact_fac = 1.0;
 
   // loop over all integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -1153,8 +1164,9 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
     DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
         distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(matelectrode,
         my::ephinp_slave_[0], my::ephinp_master_[0], eelchnp_slave_, eelchnp_master_,
-        my::funct_slave_, my::funct_master_, my::scatraparamsboundary_, timefacfac, fac, dummy_detF,
-        SCATRA::DifferentiationType::elch, dummy_shape_deriv, k_ss, k_sm);
+        pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::scatraparamsboundary_,
+        timefacfac, fac, dummy_detF, SCATRA::DifferentiationType::elch, dummy_shape_deriv, k_ss,
+        k_sm);
   }  // loop over integration points
 }
 

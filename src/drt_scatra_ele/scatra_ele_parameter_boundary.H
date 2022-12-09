@@ -37,6 +37,7 @@ namespace DRT
       void SetConvTolIterNum(Teuchos::ParameterList& parameters);
       void SetDensityMolarMass(Teuchos::ParameterList& parameters);
       void SetEnergySubstanceRatio(Teuchos::ParameterList& parameters);
+      void SetIsPseudoContact(Teuchos::ParameterList& parameters);
       void SetNumElectrons(Teuchos::ParameterList& parameters);
       void SetNumScal(Teuchos::ParameterList& parameters);
       void SetOnOff(Teuchos::ParameterList& parameters);
@@ -58,7 +59,8 @@ namespace DRT
       DRT::Condition::ConditionType ConditionType() const { return conditiontype_; }
       double ConvtolimplicitBV() const { return convtolimplicitBV_; }
       double Density() const { return density_; }
-      double ItemaximplicitBV() const { return itemaxmimplicitBV_; }
+      bool IsPseudoContact() const { return is_pseudo_contact_; }
+      int ItemaximplicitBV() const { return itemaxmimplicitBV_; }
       int KineticModel() const { return kineticmodel_; }
       double MolarHeatCapacity() const { return molar_heat_capacity_; }
       double MolarMass() const { return molarmass_; }
@@ -98,6 +100,10 @@ namespace DRT
 
       /// ratio between flux of species (amount) and flux of energy
       double molar_heat_capacity_;
+
+      /// indicating if pseudo contact is considered at the s2i interface, i.e. no flux if interface
+      /// is under tensile stresses
+      bool is_pseudo_contact_;
 
       /// maximum number of iterations of local Newton-Raphson iteration for modified Butler-Volmer
       /// equation

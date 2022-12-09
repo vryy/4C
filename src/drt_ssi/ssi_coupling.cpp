@@ -16,8 +16,6 @@
 #include "adapter_scatra_base_algorithm.H"
 #include "ad_str_wrapper.H"
 
-#include "scatra_timint_implicit.H"
-
 #include "volmortar_utils.H"
 
 #include "drt_condition_utils.H"
@@ -31,15 +29,14 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::Init(const int ndim,
-    Teuchos::RCP<DRT::Discretization> structdis,
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_integrator,
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold_integrator)
+    Teuchos::RCP<DRT::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
 {
   SetIsSetup(false);
 
   int scatra_dofset_counter = 0;
   int structure_dofset_counter = 0;
 
+  auto scatra_integrator = ssi_base->ScaTraField();
   auto scatradis = scatra_integrator->Discretization();
   // build a proxy of the structure discretization for the scatra field
   Teuchos::RCP<DRT::DofSetInterface> structdofset = structdis->GetDofSetProxy();
@@ -67,13 +64,25 @@ void SSI::SSICouplingMatchingVolume::Init(const int ndim,
   if (DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_scatra_multiscale) != -1 or
       DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_newman_multiscale) != -1)
   {
-    Teuchos::RCP<DRT::DofSetInterface> dofsetmicro =
-        Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(1, 0, 0, true));
+    auto dofsetmicro = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(1, 0, 0, true));
     if (scatradis->AddDofSet(dofsetmicro) != ++scatra_dofset_counter)
       dserror("unexpected dof sets in scatra field");
     scatra_integrator->SetNumberOfDofSetMicroScale(scatra_dofset_counter);
     if (structdis->AddDofSet(dofsetmicro) != ++structure_dofset_counter)
       dserror("unexpected dof sets in structure field");
+  }
+
+  if (ssi_base->IsS2IKineticsWithPseudoContact())
+  {
+    const int numDofsPerNodeStresses = 6;
+    Teuchos::RCP<DRT::DofSetInterface> dofsetstresses =
+        Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(numDofsPerNodeStresses, 0, 0, true));
+    if (structdis->AddDofSet(dofsetstresses) != ++structure_dofset_counter)
+      dserror("unexpected dof sets in structure field");
+    if (scatradis->AddDofSet(structdis->GetDofSetProxy(structure_dofset_counter)) !=
+        ++scatra_dofset_counter)
+      dserror("unexpected dof sets in scatra field");
+    scatra_integrator->SetNumberOfDofSetTwoTensorQuantity(scatra_dofset_counter);
   }
 
   AssignMaterialPointers(structdis, scatradis);
@@ -108,6 +117,14 @@ void SSI::SSICouplingMatchingVolume::AssignMaterialPointers(
     scatratele->AddMaterial(structele->Material());
     structele->AddMaterial(scatratele->Material());
   }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSICouplingMatchingVolume::SetMechanicalStressState(
+    DRT::Discretization& scatradis, Teuchos::RCP<const Epetra_Vector> stress_state, unsigned nds)
+{
+  scatradis.SetState(nds, "mechanicalStressState", stress_state);
 }
 
 /*----------------------------------------------------------------------*/
@@ -166,14 +183,14 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::SetTemperatureField(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingBoundary::Init(const int ndim,
-    Teuchos::RCP<DRT::Discretization> structdis,
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_integrator,
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold_integrator)
+    Teuchos::RCP<DRT::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
 {
   SetIsSetup(false);
 
   int scatra_dofset_counter = 0;
   int structure_dofset_counter = 0;
+
+  auto scatra_integrator = ssi_base->ScaTraField();
 
   // set pointers
   structdis_ = structdis;
@@ -291,15 +308,14 @@ void SSI::SSICouplingNonMatchingBoundary::SetScalarFieldMicro(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingVolume::Init(const int ndim,
-    Teuchos::RCP<DRT::Discretization> structdis,
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_integrator,
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold_integrator)
+    Teuchos::RCP<DRT::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
 {
   SetIsSetup(false);
 
   int scatra_dofset_counter = 0;
   int structure_dofset_counter = 0;
 
+  auto scatra_integrator = ssi_base->ScaTraField();
   auto scatradis = scatra_integrator->Discretization();
   // first call FillComplete for single discretizations.
   // This way the physical dofs are numbered successively
@@ -406,22 +422,22 @@ void SSI::SSICouplingNonMatchingVolume::SetScalarFieldMicro(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
-    Teuchos::RCP<DRT::Discretization> structdis,
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_integrator,
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold_integrator)
+    Teuchos::RCP<DRT::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
 {
   SetIsSetup(false);
 
   int scatra_dofset_counter = 0;
   int structure_dofset_counter = 0;
 
+  auto scatra_integrator = ssi_base->ScaTraField();
   auto scatradis = scatra_integrator->Discretization();
+
 
   // Note : We need to make sure that the parallel distribution of Volume and Boundary
   //        is the same externally! The best thing is if you do this in your *_dyn.cpp,
   //        i.e., your global control algorithm.
 
-  if (scatra_manifold_integrator == Teuchos::null)
+  if (ssi_base->ScaTraManifoldBaseAlgorithm() == Teuchos::null)
   {
     {
       // get condition which defines the coupling on target discretization
@@ -489,6 +505,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
   {
     int scatra_manifold_dofset_counter(0);
 
+    auto scatra_manifold_integrator = ssi_base->ScaTraManifold();
     auto scatra_manifold_dis = scatra_manifold_integrator->Discretization();
 
     // build a proxy of the structure discretization for the other fields

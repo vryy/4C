@@ -34,6 +34,7 @@ DRT::ELEMENTS::ScaTraEleParameterBoundary::ScaTraEleParameterBoundary(const std:
       convtolimplicitBV_(-1.0),
       density_(-1.0),
       molar_heat_capacity_(-1.0),
+      is_pseudo_contact_(false),
       itemaxmimplicitBV_(-1),
       kineticmodel_(-1),
       kr_(-1.0),
@@ -71,6 +72,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
       {
         case INPAR::S2I::kinetics_constperm:
         {
+          SetIsPseudoContact(parameters);
           SetNumScal(parameters);
           SetPermeabilities(parameters);
           break;
@@ -78,6 +80,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
 
         case INPAR::S2I::kinetics_constantinterfaceresistance:
         {
+          SetIsPseudoContact(parameters);
           SetResistance(parameters);
           SetNumElectrons(parameters);
           SetOnOff(parameters);
@@ -102,6 +105,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
         {
           SetAlpha(parameters);
           SetChargeTransferConstant(parameters);
+          SetIsPseudoContact(parameters);
           SetNumElectrons(parameters);
           SetNumScal(parameters);
           SetStoichiometries(parameters);
@@ -226,6 +230,15 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetEnergySubstanceRatio(
   molar_heat_capacity_ =
       parameters.get<double>("molar_heat_capacity", std::numeric_limits<double>::infinity());
   if (molar_heat_capacity_ < 0.0) dserror("Ratio of energy- and mass-flux must be positive!");
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetIsPseudoContact(
+    Teuchos::ParameterList& parameters)
+{
+  is_pseudo_contact_ =
+      (parameters.get<int>("is_pseudo_contact", std::numeric_limits<int>::infinity()) == 1);
 }
 
 /*----------------------------------------------------------------------*

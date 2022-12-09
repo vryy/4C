@@ -73,7 +73,7 @@ namespace SSI
 
    private:
     //! set up structural model evaluator for scalar-structure interaction
-    void SetupModelEvaluator() const override;
+    void SetupModelEvaluator() override;
   };
 
 }  // namespace SSI

@@ -19,6 +19,9 @@ namespace
     EXPECT_EQ(INPAR::STR::String2ModelType("SpringDashpot"), INPAR::STR::model_springdashpot);
     EXPECT_EQ(
         INPAR::STR::String2ModelType("Lag-Pen-Constraint"), INPAR::STR::model_lag_pen_constraint);
+    EXPECT_EQ(INPAR::STR::String2ModelType("Basic-Coupling"), INPAR::STR::model_basic_couping);
+    EXPECT_EQ(
+        INPAR::STR::String2ModelType("Monolithic-Coupling"), INPAR::STR::model_monolithic_coupling);
     EXPECT_EQ(INPAR::STR::String2ModelType("Partitioned-Coupling"),
         INPAR::STR::model_partitioned_coupling);
     EXPECT_EQ(
@@ -35,6 +38,9 @@ namespace
     EXPECT_EQ(INPAR::STR::ModelTypeString(INPAR::STR::model_springdashpot), "SpringDashpot");
     EXPECT_EQ(
         INPAR::STR::ModelTypeString(INPAR::STR::model_lag_pen_constraint), "Lag-Pen-Constraint");
+    EXPECT_EQ(INPAR::STR::ModelTypeString(INPAR::STR::model_basic_couping), "Basic-Coupling");
+    EXPECT_EQ(
+        INPAR::STR::ModelTypeString(INPAR::STR::model_monolithic_coupling), "Monolithic-Coupling");
     EXPECT_EQ(INPAR::STR::ModelTypeString(INPAR::STR::model_partitioned_coupling),
         "Partitioned-Coupling");
     EXPECT_EQ(

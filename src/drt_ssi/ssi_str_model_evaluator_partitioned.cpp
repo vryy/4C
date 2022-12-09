@@ -32,17 +32,13 @@
 #include "linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------*
- | constructor                                               fang 01/18 |
  *----------------------------------------------------------------------*/
-STR::MODELEVALUATOR::PartitionedSSI::PartitionedSSI(const Teuchos::RCP<const SSI::SSIPart>
-        ssi_part  //!< partitioned algorithm for scalar-structure interaction
-    )
+STR::MODELEVALUATOR::PartitionedSSI::PartitionedSSI(const Teuchos::RCP<const SSI::SSIPart> ssi_part)
     : ssi_part_(ssi_part)
 {
 }
 
 /*----------------------------------------------------------------------*
- | assemble Jacobian                                         fang 01/18 |
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
     LINALG::SparseOperator& jac, const double& timefac_np) const
@@ -126,7 +122,6 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
 }
 
 /*----------------------------------------------------------------------*
- | pre-compute solution vector                               fang 01/18 |
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::PartitionedSSI::RunPreComputeX(
     const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const NOX::NLN::Group& curr_grp)
@@ -152,37 +147,14 @@ void STR::MODELEVALUATOR::PartitionedSSI::RunPreComputeX(
 void STR::MODELEVALUATOR::PartitionedSSI::Setup()
 {
   CheckInit();
+
+  STR::MODELEVALUATOR::BaseSSI::Setup();
+
   // set flag
   issetup_ = true;
 }
 
 /*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::PartitionedSSI::GetBlockDofRowMapPtr() const
-{
-  CheckInitSetup();
-  return GState().DofRowMap();
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedSSI::GetCurrentSolutionPtr() const
-{
-  CheckInit();
-  return GState().GetDisNp();
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedSSI::GetLastTimeStepSolutionPtr()
-    const
-{
-  CheckInit();
-  return GState().GetDisN();
-}
-
-/*----------------------------------------------------------------------*
- | assemble right-hand side vector                           fang 01/18 |
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::PartitionedSSI::AssembleForce(
     Epetra_Vector& f, const double& timefac_np) const
@@ -205,7 +177,3 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleForce(
 
   return true;
 }
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::PartitionedSSI::UpdateStepState(const double& timefac_n) {}

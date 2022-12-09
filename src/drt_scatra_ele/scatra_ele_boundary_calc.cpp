@@ -979,21 +979,33 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICoupling(const DR
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
+  LINALG::Matrix<nsd_ + 1, 1> normal;
+
+  // element slave mechanical stress tensor
+  const bool is_pseudo_contact = scatraparamsboundary_->IsPseudoContact();
+  std::vector<LINALG::Matrix<nen_, 1>> eslavestress_vector(6, LINALG::Matrix<nen_, 1>(true));
+  if (is_pseudo_contact)
+    ExtractNodeValues(eslavestress_vector, discretization, la, "mechanicalStressState",
+        scatraparams_->NdsTwoTensorQuantity());
+
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
-    const double fac =
-        DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(intpoints, gpid);
+    const double fac = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(
+        intpoints, gpid, &normal);
 
     // evaluate overall integration factors
     const double timefacfac = scatraparamstimint_->TimeFac() * fac;
     const double timefacrhsfac = scatraparamstimint_->TimeFacRhs() * fac;
     if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
 
-    EvaluateS2ICouplingAtIntegrationPoint<distype>(ephinp_, emasterphinp, funct_, funct_, funct_,
-        funct_, numscal_, scatraparamsboundary_, timefacfac, timefacrhsfac, eslavematrix,
-        emastermatrix, dummymatrix, dummymatrix, eslaveresidual, dummyvector);
+    const double pseudo_contact_fac =
+        CalculatePseudoContactFactor(is_pseudo_contact, eslavestress_vector, normal, funct_);
+
+    EvaluateS2ICouplingAtIntegrationPoint<distype>(ephinp_, emasterphinp, pseudo_contact_fac,
+        funct_, funct_, funct_, funct_, numscal_, scatraparamsboundary_, timefacfac, timefacrhsfac,
+        eslavematrix, emastermatrix, dummymatrix, dummymatrix, eslaveresidual, dummyvector);
   }  // end of loop over integration points
 }
 
@@ -1006,7 +1018,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingAtIntegra
     const std::vector<
         LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
         emasterphinp,
-    const LINALG::Matrix<nen_, 1>& funct_slave,
+    const double pseudo_contact_fac, const LINALG::Matrix<nen_, 1>& funct_slave,
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
         funct_master,
     const LINALG::Matrix<nen_, 1>& test_slave,
@@ -1046,11 +1058,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingAtIntegra
           dserror("Number of permeabilities does not match number of scalars!");
 
         // core residual
-        const double N_timefacrhsfac =
-            timefacrhsfac * (*permeabilities)[k] * (slavephiint - masterphiint);
+        const double N_timefacrhsfac = pseudo_contact_fac * timefacrhsfac * (*permeabilities)[k] *
+                                       (slavephiint - masterphiint);
 
         // core linearizations
-        const double dN_dc_slave_timefacfac = timefacfac * (*permeabilities)[k];
+        const double dN_dc_slave_timefacfac =
+            pseudo_contact_fac * timefacfac * (*permeabilities)[k];
         const double dN_dc_master_timefacfac = -dN_dc_slave_timefacfac;
 
         if (k_ss.M() and k_sm.M() and r_s.Length())
@@ -1108,6 +1121,35 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingAtIntegra
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalculatePseudoContactFactor(
+    const bool is_pseudo_contact, const std::vector<LINALG::Matrix<nen_, 1>>& eslavestress_vector,
+    const LINALG::Matrix<nsd_ + 1, 1>& gp_normal, const LINALG::Matrix<nen_, 1>& funct_slave)
+{
+  if (is_pseudo_contact)
+  {
+    static LINALG::Matrix<1, 1> normal_stress_comp_gp;
+    static LINALG::Matrix<nsd_ + 1, nsd_ + 1> current_gp_stresses;
+    static LINALG::Matrix<nsd_ + 1, 1> tmp;
+    current_gp_stresses(0, 0) = funct_slave.Dot(eslavestress_vector[0]);
+    current_gp_stresses(1, 1) = funct_slave.Dot(eslavestress_vector[1]);
+    current_gp_stresses(2, 2) = funct_slave.Dot(eslavestress_vector[2]);
+    current_gp_stresses(0, 1) = current_gp_stresses(1, 0) = funct_slave.Dot(eslavestress_vector[3]);
+    current_gp_stresses(1, 2) = current_gp_stresses(2, 1) = funct_slave.Dot(eslavestress_vector[4]);
+    current_gp_stresses(0, 2) = current_gp_stresses(2, 0) = funct_slave.Dot(eslavestress_vector[5]);
+
+    tmp.MultiplyNN(1.0, current_gp_stresses, gp_normal, 0.0);
+    normal_stress_comp_gp.MultiplyTN(1.0, gp_normal, tmp, 0.0);
+
+    // if tensile stress, i.e. normal stress component > 0 return 0.0, otherwise return 1.0
+    return normal_stress_comp_gp(0) > 0.0 ? 0.0 : 1.0;
+  }
+  else
+    return 1.0;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
@@ -1117,6 +1159,15 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD(
   ExtractNodeValues(discretization, la);
   std::vector<LINALG::Matrix<nen_, 1>> emasterphinp(numscal_, LINALG::Matrix<nen_, 1>(true));
   ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
+
+  LINALG::Matrix<nsd_ + 1, 1> normal;
+
+  // element slave mechanical stress tensor
+  const bool is_pseudo_contact = scatraparamsboundary_->IsPseudoContact();
+  std::vector<LINALG::Matrix<nen_, 1>> eslavestress_vector(6, LINALG::Matrix<nen_, 1>(true));
+  if (is_pseudo_contact)
+    ExtractNodeValues(eslavestress_vector, discretization, la, "mechanicalStressState",
+        scatraparams_->NdsTwoTensorQuantity());
 
   // get current scatra-scatra interface coupling condition
   Teuchos::RCP<DRT::Condition> s2icondition = params.get<Teuchos::RCP<DRT::Condition>>("condition");
@@ -1135,7 +1186,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD(
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
   {
     // evaluate values of shape functions at current integration point
-    EvalShapeFuncAndIntFac(intpoints, gpid);
+    EvalShapeFuncAndIntFac(intpoints, gpid, &normal);
+
+    const double pseudo_contact_fac =
+        CalculatePseudoContactFactor(is_pseudo_contact, eslavestress_vector, normal, funct_);
 
     // evaluate shape derivatives
     static LINALG::Matrix<nsd_ + 1, nen_> shapederivatives;
@@ -1174,8 +1228,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD(
                 dserror("Number of permeabilities does not match number of scalars!");
 
               // core linearization
-              const double dN_dd_slave_timefacwgt =
-                  timefacwgt * (*permeabilities)[k] * (slavephiint - masterphiint);
+              const double dN_dd_slave_timefacwgt = pseudo_contact_fac * timefacwgt *
+                                                    (*permeabilities)[k] *
+                                                    (slavephiint - masterphiint);
 
               // loop over matrix columns
               for (int ui = 0; ui < nen_; ++ui)
@@ -1189,7 +1244,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD(
                   const double vi_dN_dd_slave = funct_(vi) * dN_dd_slave_timefacwgt;
 
                   // loop over spatial dimensions
-                  for (unsigned dim = 0; dim < 3; ++dim)
+                  for (int dim = 0; dim < 3; ++dim)
                     // compute linearizations w.r.t. slave-side structural displacements
                     eslavematrix(fvi, fui + dim) += vi_dN_dd_slave * shapederivatives(dim, ui);
                 }
@@ -2808,7 +2863,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri3>::EvaluateS2ICouplingAtI
     DRT::Element::tri3>(const std::vector<LINALG::Matrix<nen_, 1>>&,
     const std::vector<LINALG::Matrix<
         DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>>&,
-    const LINALG::Matrix<nen_, 1>&,
+    const double, const LINALG::Matrix<nen_, 1>&,
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,
         1>&,
     const LINALG::Matrix<nen_, 1>&,
@@ -2822,7 +2877,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri3>::EvaluateS2ICouplingAtI
     DRT::Element::quad4>(const std::vector<LINALG::Matrix<nen_, 1>>&,
     const std::vector<LINALG::Matrix<
         DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>>&,
-    const LINALG::Matrix<nen_, 1>&,
+    const double, const LINALG::Matrix<nen_, 1>&,
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,
         1>&,
     const LINALG::Matrix<nen_, 1>&,
@@ -2836,7 +2891,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad4>::EvaluateS2ICouplingAt
     DRT::Element::tri3>(const std::vector<LINALG::Matrix<nen_, 1>>&,
     const std::vector<LINALG::Matrix<
         DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>>&,
-    const LINALG::Matrix<nen_, 1>&,
+    const double, const LINALG::Matrix<nen_, 1>&,
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,
         1>&,
     const LINALG::Matrix<nen_, 1>&,
@@ -2850,7 +2905,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad4>::EvaluateS2ICouplingAt
     DRT::Element::quad4>(const std::vector<LINALG::Matrix<nen_, 1>>&,
     const std::vector<LINALG::Matrix<
         DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>>&,
-    const LINALG::Matrix<nen_, 1>&,
+    const double, const LINALG::Matrix<nen_, 1>&,
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,
         1>&,
     const LINALG::Matrix<nen_, 1>&,

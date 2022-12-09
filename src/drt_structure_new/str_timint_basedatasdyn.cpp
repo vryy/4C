@@ -171,6 +171,11 @@ void STR::TIMINT::BaseDataSDyn::Init(const Teuchos::RCP<DRT::DiscretizationInter
       coupling_model_ptr_ =
           sdynparams.get<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>("Monolithic Coupling Model");
     }
+    else if (modeltypes_->find(INPAR::STR::model_basic_couping) != modeltypes->end())
+    {
+      coupling_model_ptr_ =
+          sdynparams.get<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>("Basic Coupling Model");
+    }
   }
   // ---------------------------------------------------------------------------
   // initialize implicit variables

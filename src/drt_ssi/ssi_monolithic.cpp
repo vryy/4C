@@ -16,7 +16,6 @@
 #include "ssi_monolithic_dbc_handler.H"
 #include "ssi_monolithic_evaluate_OffDiag.H"
 #include "ssi_monolithic_meshtying_strategy.H"
-#include "ssi_resulttest.H"
 #include "ssi_utils.H"
 
 #include "ad_str_ssiwrapper.H"
@@ -613,7 +612,8 @@ void SSI::SSIMono::ReadRestartfromTime(double restarttime)
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::PrepareTimeLoop()
 {
-  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
+  SetStructSolution(
+      StructureField()->Dispnp(), StructureField()->Velnp(), IsS2IKineticsWithPseudoContact());
   ScaTraField()->Output();
   if (IsScaTraManifold()) ScaTraManifold()->Output();
 
@@ -632,7 +632,8 @@ void SSI::SSIMono::PrepareTimeStep()
   IncrementTimeAndStep();
 
   // pass structural degrees of freedom to scalar transport discretization
-  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
+  SetStructSolution(
+      StructureField()->Dispnp(), StructureField()->Velnp(), IsS2IKineticsWithPseudoContact());
 
   // prepare time step for scalar transport field
   ScaTraField()->PrepareTimeStep();
@@ -1175,6 +1176,9 @@ void SSI::SSIMono::PrepareOutput()
  *--------------------------------------------------------------------------------------*/
 void SSI::SSIMono::DistributeSolutionAllFields(const bool restore_velocity)
 {
+  // has to be called before the call of 'SetStructSolution()' to have updated stress/strain states
+  if (IsS2IKineticsWithPseudoContact()) StructureField()->DetermineStressStrain();
+
   // clear all states before redistributing the new states
   StructureField()->Discretization()->ClearState(true);
   ScaTraField()->Discretization()->ClearState(true);
@@ -1191,7 +1195,8 @@ void SSI::SSIMono::DistributeSolutionAllFields(const bool restore_velocity)
     StructureField()->SetState(StructureField()->WriteAccessDispnp());
 
   // distribute states to other fields
-  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
+  SetStructSolution(
+      StructureField()->Dispnp(), StructureField()->Velnp(), IsS2IKineticsWithPseudoContact());
   SetScatraSolution(ScaTraField()->Phinp());
   if (IsScaTraManifold()) SetScatraManifoldSolution(ScaTraManifold()->Phinp());
 }
