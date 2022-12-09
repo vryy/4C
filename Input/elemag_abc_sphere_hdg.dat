@@ -33,7 +33,7 @@ ERRORFUNCNO                     2
 EQUILIBRATION                   rowsandcolumns_full
 
 -----------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZSOLVE                         GMRES
 AZTOL                           1e-7
 AZREUSE                         25

@@ -137,10 +137,10 @@ NORMCOMBI_RESFINC               Coupl_Or_Singl  // Or,Coupl_Or_Singl,Coupl_And_S
 NORM_RESF                       Rel  // Abs,Rel,Mix
 --------------------------------------------------------------------SOLVER 1
 NAME                            STRUCTURAL_SOLVER
-SOLVER                          UMFPACK  // Aztec_MSR,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
+SOLVER                          UMFPACK  // Belos,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
 --------------------------------------------------------------------SOLVER 2
 NAME                            THERMAL_SOLVER
-SOLVER                          UMFPACK  // Aztec_MSR,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
+SOLVER                          UMFPACK  // Belos,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
 --------------------------------------------------------------------SOLVER 3
 AZBDIAG                         0
 AZCONV                          AZ_r0
@@ -174,7 +174,7 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 NAME                            TSI_MONOLITHIC_SOLVER
 SIMPLE_DAMPING                  1
-SOLVER                          Aztec_MSR  // Aztec_MSR,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
+SOLVER                          Belos  // Belos,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 6 YOUNG 1.30406e+11 -1.09895e+10 3.64935e+08 -5.88115e+06 45945.7 -139.619 NUE 0.35 DENS 1185 THEXPANS 7.0e-05 CAPA 1737210 CONDUCT 0.2 INITTEMP 50.0
 MAT 2 THERM_FourierIso CAPA 1737210 CONDUCT 0.2

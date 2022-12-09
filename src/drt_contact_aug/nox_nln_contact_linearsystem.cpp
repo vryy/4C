@@ -111,7 +111,17 @@ void NOX::NLN::CONTACT::LinearSystem::SetSolverOptions(Teuchos::ParameterList& p
             "Currently only one constraint preconditioner interface can be handled! \n "
             "Needs to be extended!");
 
-      Teuchos::ParameterList& mueluParams = solverPtr->Params().sublist("Aztec Parameters");
+      Teuchos::ParameterList* mueluParams = nullptr;
+      if (solverPtr->Params().isSublist("Aztec Parameters"))
+      {
+        Teuchos::ParameterList& refMueluParams = solverPtr->Params().sublist("Aztec Parameters");
+        mueluParams = &refMueluParams;
+      }
+      else if (solverPtr->Params().isSublist("Belos Parameters"))
+      {
+        Teuchos::ParameterList& refMueluParams = solverPtr->Params().sublist("Belos Parameters");
+        mueluParams = &refMueluParams;
+      }
       // vector entries:
       // (0) masterDofMap
       // (1) slaveDofMap
@@ -119,7 +129,7 @@ void NOX::NLN::CONTACT::LinearSystem::SetSolverOptions(Teuchos::ParameterList& p
       // (3) activeDofMap
       std::vector<Teuchos::RCP<Epetra_Map>> prec_maps(4, Teuchos::null);
       iConstrPrec_.begin()->second->FillMapsForPreconditioner(prec_maps);
-      Teuchos::ParameterList& linSystemProps = mueluParams.sublist("Linear System properties");
+      Teuchos::ParameterList& linSystemProps = mueluParams->sublist("Linear System properties");
       linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact masterDofMap", prec_maps[0]);
       linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap", prec_maps[1]);
       linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact innerDofMap", prec_maps[2]);

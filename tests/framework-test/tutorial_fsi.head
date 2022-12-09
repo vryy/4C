@@ -1146,7 +1146,7 @@ SIMPLE_DAMPING                  1
 //                              Stratimikos_Aztec
 //                              Stratimikos_Belos
 //                              undefined
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 //
 // sub solver/smoother block number (SIMPLE/C: used for prediction of primary variable on all levels, BS: used for fine and intermedium BraessSarazin (BS) level smoother)
 SUB_SOLVER1                     -1

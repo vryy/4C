@@ -86,7 +86,7 @@ GHOST_PENALTY_STAB              No
 GHOST_PENALTY_FAC               0.001
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZCONV                          AZ_r0
 IFPACKGFILL                     0                             // The amount of fill allowed for the internal "ilu" preconditioner.
 AZGRAPH                         1

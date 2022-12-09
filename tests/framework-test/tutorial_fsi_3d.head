@@ -1020,7 +1020,7 @@ SOLVER                          UMFPACK
 //     Stratimikos_Aztec
 //     Stratimikos_Belos
 //     undefined
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 //
 // Type of linear solver algorithm to use.
 //     CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU,FGMRES

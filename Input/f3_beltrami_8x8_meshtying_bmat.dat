@@ -73,7 +73,7 @@ GHOSTING_STRATEGY               redundant_all
 --------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   1  //definition of solver
 ---------------------------------------------------------SOLVER 1
-SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER         Belos          // Belos vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                  // output every so often, 0 no output
 AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC         BGS2x2             // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -103,7 +103,7 @@ ML_DAMPMED        0.85             // damping med grids
 ML_DAMPCOARSE     1.0             // damping coarse grid
 ---------------------------------------------------------SOLVER 2
 NAME           1,1 block solver/smoothers
-SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER         Belos          // Belos vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                  // output every so often, 0 no output
 AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC         ILU                // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -133,7 +133,7 @@ ML_DAMPMED        0.85             // damping med grids
 ML_DAMPCOARSE     1.0             // damping coarse grid
 --------------------------------------------------------------------SOLVER 3
 NAME           2,2 block solver/smoothers
-SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER         Belos          // Belos vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                  // output every so often, 0 no output
 AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC         ML                // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann

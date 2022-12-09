@@ -153,7 +153,7 @@ EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino
 EOS_H_DEFINITION                EOS_he_max_diameter_to_opp_surf
 --------------------------------------------------------------------SOLVER 1
 NAME                            XFSI_SOLVER
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZSOLVE                         GMRES
 AZPREC                          BGS2x2
 AZREUSE                         0
@@ -172,10 +172,40 @@ AZSUB                           300
 AZTOL                           1e-08
 --------------------------------------------------------------------SOLVER 2
 NAME                            STRUCTURAL_SOLVER
-SOLVER                          Aztec_MSR
+SOLVER                          Belos                     // UMFPACK
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+AZPREC                          MLFLUID2                      // ML,ILU
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+IFPACKCOMBINE                   Add
+IFPACKGFILL                     0
+IFPACKOVERLAP                   0
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                1000                          // 5000
+ML_MAXLEVEL                     5
+ML_PRINT                        0
+ML_PROLONG_SMO                  1.33333                       // 0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES                     1 1 1 1 1
+SIMPLE_DAMPING                  1
 --------------------------------------------------------------------SOLVER 3
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR                     // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Belos                     // vm3 Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        50                            // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          MLFLUID2                      // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann

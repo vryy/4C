@@ -108,10 +108,10 @@ NORMCOMBI_RESFINC               And
 NORM_RESF                       Rel  // Abs,Rel,Mix
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structural Solver
-SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Thermal Solver
-SOLVER                          UMFPACK  // Aztec_MSR,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
+SOLVER                          UMFPACK  // Belos,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
 --------------------------------------------------------------------SOLVER 3
 NAME                            TSI Monolithic Solver
 AZBDIAG                         0
@@ -145,7 +145,7 @@ ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
-SOLVER                          Aztec_MSR //UMFPACK,undefined
+SOLVER                          Belos //UMFPACK,undefined
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_Robinson KIND arya_narloyz YOUNGNUM 1 YOUNG 1.395e8 NUE 0.296 DENS 7.850e-6 THEXPANS 0 INITTEMP 699.81667 HRDN_FACT 2.468e-13 HRDN_EXPO 4 SHRTHRSHLDNUM 1 SHRTHRSHLD 3.196e7 RCVRY 6.37e-11 ACTV_ERGY 0 ACTV_TMPR 0 G0 0.14 M_EXPO 7.73 BETANUM 1 BETA 1.5 H_FACT 6.82e7
 MAT 2 THERM_FourierIso CAPA 3.375e3 CONDUCT 5.2e4

@@ -119,7 +119,7 @@ EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          Aztec_MSR                       // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Belos                       // vm3 Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ML                              // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
@@ -149,7 +149,7 @@ ML_DAMPMED                      0.67                            // damping med g
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR                       // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Belos                       // vm3 Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ML                              // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann

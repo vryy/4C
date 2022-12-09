@@ -55,7 +55,7 @@ LM_SHAPEFCN                     Dual
 LM_QUAD                         quad
 --------------------------------------------------------------------SOLVER 1
 NAME                            Meshtying_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          ILU
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 7.8e-6

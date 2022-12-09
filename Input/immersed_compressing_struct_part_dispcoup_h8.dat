@@ -140,7 +140,7 @@ SOLVER                          Superlu
 NAME                            Structure_Solver
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZSOLVE                         GMRES
 AZPREC                          MLFLUID2
 AZTOL                           1e-05

@@ -47,7 +47,7 @@ NAME                            Structure_Solver
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 9
 NAME                            Micro_Struct_Solver
-SOLVER                          Belos //Aztec_MSR             // Aztec_MSR SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Belos //Belos             // Belos SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        1                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ML                            // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann

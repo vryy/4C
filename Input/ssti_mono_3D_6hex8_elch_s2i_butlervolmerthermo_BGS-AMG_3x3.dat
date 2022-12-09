@@ -68,7 +68,7 @@ EQUILIBRATION_THERMO            none
 LINEAR_SOLVER                   2
 INITIALFIELD                    field_by_condition
 ----------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 ssti_mono_3D_6hex8_elch_s2i_butlervolmerthermo_BGS-AMG_3x3.xml

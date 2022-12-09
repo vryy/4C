@@ -41,7 +41,7 @@ COUPLINGTYPE                    StandardMortar
 -------------------------------------------------------------MORTAR COUPLING
 MESH_RELOCATION                 no
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 elch_3D_tet4_s2i_butlervolmer_mortar_standard_BGS-AMG_3x3.xml

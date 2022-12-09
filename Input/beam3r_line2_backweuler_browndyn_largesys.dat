@@ -54,7 +54,7 @@ VISCOSITY              0.001                 // ~ 1e-3 / 2.27 according to Cyron
 KT                     0.00404531            // thermal energy
 -----------------------------------------------------SOLVER 1  // header_02 begin
 NAME                   Structure_Solver
-SOLVER                 Aztec_MSR             // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym UMFPACK Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                 Belos             // Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym UMFPACK Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT               0                     // output every so often, 0 no output
 AZSOLVE                GMRES                 // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                 ILU                   // none ML MLFLUID MLFLUID2 MLAPI LU ILU ILUT LU ICC Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann

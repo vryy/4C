@@ -103,8 +103,8 @@ namespace LINALG::SOLVER
 
     virtual int SetUseTranspose(bool UseTranspose)
     {
-      dserror("Function not implemented");
-      return -1;
+      // default to false
+      return 0;
     }
 
     virtual int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
@@ -123,7 +123,7 @@ namespace LINALG::SOLVER
 
     virtual bool UseTranspose() const
     {
-      dserror("Function not implemented");
+      // default to false
       return false;
     }
 
@@ -174,8 +174,8 @@ namespace LINALG::SOLVER
 
     virtual int SetUseTranspose(bool UseTranspose)
     {
-      dserror("Function not implemented");
-      return -1;
+      // default to false
+      return 0;
     }
 
     virtual int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
@@ -194,7 +194,7 @@ namespace LINALG::SOLVER
 
     virtual bool UseTranspose() const
     {
-      dserror("Function not implemented");
+      // default to false
       return false;
     }
 
@@ -241,8 +241,8 @@ namespace LINALG::SOLVER
 
     virtual int SetUseTranspose(bool UseTranspose)
     {
-      dserror("Function not implemented");
-      return -1;
+      // default to false
+      return 0;
     }
 
     virtual int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
@@ -261,7 +261,7 @@ namespace LINALG::SOLVER
 
     virtual bool UseTranspose() const
     {
-      dserror("Function not implemented");
+      // default to false
       return false;
     }
 

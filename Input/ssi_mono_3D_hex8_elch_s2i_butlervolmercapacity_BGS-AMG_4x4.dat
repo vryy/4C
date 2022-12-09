@@ -57,19 +57,19 @@ COUPLE_BOUNDARY_FLUXES          No
 ---------------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 ssi_mono_3D_hex8_elch_s2i_butlervolmercapacity_BGS-AMG_4x4.xml
 AZOUTPUT                        10
 --------------------------------------------------------------------SOLVER 2
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 ssi_mono_3D_hex8_elch_s2i_butlervolmercapacity_BGS-AMG_4x4_scatra.xml
 AZOUTPUT                        10
 --------------------------------------------------------------------SOLVER 3
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          MueLu
 MUELU_XML_FILE                  ssi_mono_3D_hex8_elch_s2i_butlervolmercapacity_BGS-AMG_4x4_structure.xml
 AZOUTPUT                        10

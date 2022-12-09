@@ -63,7 +63,7 @@ MAT_NEWMAN_CONST_B              -2.0
 MAT_NEWMAN_CONST_C              -1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        10                              // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ML                              // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann

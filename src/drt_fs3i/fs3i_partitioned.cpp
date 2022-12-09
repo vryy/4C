@@ -562,7 +562,10 @@ void FS3I::PartFS3I::SetupSystem()
 
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(coupledscatrasolvparams, "SOLVER");
-  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr) dserror("aztec solver expected");
+
+  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr and
+      solvertype != INPAR::SOLVER::SolverType::belos)
+    dserror("aztec or belos solver expected");
 
   const auto azprectype = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
       coupledscatrasolvparams, "AZPREC");

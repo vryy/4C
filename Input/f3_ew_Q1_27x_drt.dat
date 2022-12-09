@@ -55,7 +55,7 @@ REYNOLDS-STRESS                 no_reynolds
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 //SOLVER                        UMFPACK
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZSOLVE                         GMRES
 AZPREC                          ILU
 AZREUSE                         0

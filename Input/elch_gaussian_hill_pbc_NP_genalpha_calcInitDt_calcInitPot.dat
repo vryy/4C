@@ -54,7 +54,7 @@ EQUPOT                          ENC_PDE_ELIM
 INITPOTCALC                     yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ILU                             // !!!!!!! // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann

@@ -58,9 +58,9 @@ GENAVG                          TrLike
 RHO_INF                         0.85
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        0
-AZSOLVE                         CG
+AZSOLVE                         GMRES
 AZPREC                          ML
 AZREUSE                         10
 IFPACKGFILL                     0

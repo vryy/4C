@@ -85,7 +85,7 @@ NAME                            solver
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            iterative_poromultiphasescatra_solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        10
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML

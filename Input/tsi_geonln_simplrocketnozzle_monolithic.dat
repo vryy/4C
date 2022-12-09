@@ -148,7 +148,7 @@ ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
-SOLVER                          Aztec_MSR  // UMFPACK,undefined
+SOLVER                          Belos  // UMFPACK,undefined
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
 AZBDIAG                         0
@@ -181,7 +181,7 @@ ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
-SOLVER                          Aztec_MSR  // UMFPACK
+SOLVER                          Belos  // UMFPACK
 --------------------------------------------------------------------SOLVER 3
 NAME                            Thermo_Structure_Interaction_Solver
 AZBDIAG                         0
@@ -215,7 +215,7 @@ ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
-SOLVER                          Aztec_MSR  //UMFPACK,undefined
+SOLVER                          Belos  //UMFPACK,undefined
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1.48e8 NUE 0.3 DENS 9.130e-6 THEXPANS 1.72e-5 CAPA 3405.49 CONDUCT 3.1e5 INITTEMP 293.15 // Cu
 MAT 3 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1.93e8 NUE 0.3 DENS 8.910e-6 THEXPANS 1.22e-5 CAPA 3956.04 CONDUCT 7.5e4 INITTEMP 293.15 // Ni

@@ -48,7 +48,7 @@ MATRIXTYPE                      sparse
 ------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
 -----------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          MLFLUID2
 AZSUB                           100
 ML_MAXCOARSESIZE                1

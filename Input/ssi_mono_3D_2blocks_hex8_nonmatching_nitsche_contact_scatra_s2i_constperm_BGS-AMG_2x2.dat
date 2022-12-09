@@ -58,7 +58,7 @@ MATRIXTYPE                      block
 ABSTOLRES                       0
 EQUILIBRATION                   rows_full
 ----------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 ssi_mono_3D_2blocks_hex8_nonmatching_nitsche_contact_scatra_s2i_constperm_BGS-AMG_2x2.xml

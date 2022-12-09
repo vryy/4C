@@ -139,7 +139,7 @@ DSURF                           0
 DVOL                            0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Belos                     // Belos SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        1                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          MLFLUID2                      // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann

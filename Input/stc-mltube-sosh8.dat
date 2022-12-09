@@ -26,7 +26,7 @@ Outer Iteration StatusTest      = No
 THETA                           1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Belos                     // Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZREUSE                         1                             // how often to recompute some preconditioners
 AZTOL                           1.0E-6                        // tolerance in unscaled residual
 AZSUB                           100                           // size of krylov space for gmres

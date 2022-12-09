@@ -73,18 +73,18 @@ EVALUATION_TAU                  element_center
 STABTYPE                        no_stabilization
 SUGRVEL                         no
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR //UMFPACK Aztec_MSR
+SOLVER                          Belos //UMFPACK Belos
 AZTOL                           1.0E-9
 AZPREC                          BGS2x2
 --------------------------------------------------------------------SOLVER 2
-SOLVER                          Aztec_MSR //UMFPACK
+SOLVER                          Belos //UMFPACK
 AZTOL                           1.0E-9
 --------------------------------------------------------------------SOLVER 3
-SOLVER                          Aztec_MSR //UMFPACK
+SOLVER                          Belos //UMFPACK
 AZTOL                           1.0E-9
 --------------------------------------------------------------------SOLVER 4
 NAME                            Sca_Tra_Solver
-SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym
+SOLVER                          Belos                     // Belos vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym
 AZTOL                           1.0E-11                       // tolerance in (un)scaled residual
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material

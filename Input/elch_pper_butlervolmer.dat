@@ -91,7 +91,7 @@ EQUPOT                          ENC
 BLOCKPRECOND                    Yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          CheapSIMPLE                   // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -123,7 +123,7 @@ SUB_SOLVER1                     3
 SUB_SOLVER2                     4
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -153,7 +153,7 @@ ML_DAMPMED                      1.0                           // damping med gri
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 --------------------------------------------------------------------SOLVER 3
 NAME                            SimplerPredictor
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -183,7 +183,7 @@ ML_DAMPMED                      1.0                           // damping med gri
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 --------------------------------------------------------------------SOLVER 4
 NAME                            Sca_Tra_Electrical_Potential
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann

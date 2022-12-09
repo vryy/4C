@@ -72,10 +72,10 @@ EQUPOT                          Laplace
 TEMPERATURE                     11604.506                     // abused as a scaling factor in order to have: F/RT = 1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ICC                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
 AZREUSE                         0                             // how often to recompute some preconditioners
 IFPACKGFILL                     0                             // graph fill for ILU
 AZTOL                           1.0E-10                       // tolerance in (un)scaled residual

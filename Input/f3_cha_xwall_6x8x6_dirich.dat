@@ -84,7 +84,7 @@ PROJECTION_SOLVER               9
 Treat_Tauw_on_Dirichlet_Inflow  Yes
 ------------------------------------------------------SOLVER 1
 NAME              Fluid_Solver
-SOLVER            UMFPACK//Aztec_MSR
+SOLVER            UMFPACK//Belos
 AZOUTPUT          0
 AZSOLVE           GMRES
 AZPREC            ILU

@@ -91,7 +91,7 @@ SEARCH_PARAM                    1.0
 LM_DUAL_CONSISTENT              none
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        0
 AZSOLVE                         CG
 AZPREC                          ILU
@@ -124,7 +124,7 @@ NAME                            Structure_Solver
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        10
 AZSOLVE                         GMRES
 AZPREC                          ILU

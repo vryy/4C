@@ -105,7 +105,7 @@ ALE_TYPE                        laplace_material
 UPDATEMATRIX                    no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        0
 AZSOLVE                         CG
 AZPREC                          ML
