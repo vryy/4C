@@ -214,8 +214,8 @@ E 1 - ID 0
 E 6 - ID 1
 -------------------------------DESIGN SSI MANIFOLD SURF CONDITIONS
 DSURF  2
-E 2 - 1 ImplType ElchElectrode
-E 5 - 2 ImplType ElchElectrode
+E 2 - 1 ImplType ElchElectrode thickness 1.0
+E 5 - 2 ImplType ElchElectrode thickness 1.0
 ----------------------DESIGN SSI MANIFOLD KINETICS SURF CONDITIONS
 DSURF  4
 // electrode side

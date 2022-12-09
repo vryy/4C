@@ -366,6 +366,8 @@ void INPAR::SSI::SetValidConditions(
           Teuchos::tuple<std::string>("Undefined", "Standard", "ElchElectrode", "ElchDiffCond"),
           Teuchos::tuple<int>(INPAR::SCATRA::impltype_undefined, INPAR::SCATRA::impltype_std,
               INPAR::SCATRA::impltype_elch_electrode, INPAR::SCATRA::impltype_elch_diffcond))));
+  ssisurfacemanifold->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("thickness")));
+  ssisurfacemanifold->AddComponent(Teuchos::rcp(new RealConditionComponent("thickness")));
 
   condlist.emplace_back(ssisurfacemanifold);
 

@@ -226,11 +226,11 @@ E 6 - 2 Slave S2IKineticsID 2
 -------------------------------DESIGN SSI MANIFOLD SURF CONDITIONS
 DSURF  3
 // slave-side_cc-el
-E 1 - 1 ImplType ElchElectrode
+E 1 - 1 ImplType ElchElectrode thickness 1.0
 // master-side_cc-cath
-E 4 - 2 ImplType ElchElectrode
+E 4 - 2 ImplType ElchElectrode thickness 1.0
 // slave-side_el-cath
-E 6 - 3 ImplType ElchElectrode
+E 6 - 3 ImplType ElchElectrode thickness 1.0
 ----------------------DESIGN SSI MANIFOLD KINETICS SURF CONDITIONS
 DSURF  6
 // slave-side_cc-el
