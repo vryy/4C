@@ -13,12 +13,6 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
-// Zoltan / Isorropia
-#include <Isorropia_Epetra.hpp>
-#include <Isorropia_EpetraRedistributor.hpp>
-#include <Isorropia_EpetraPartitioner.hpp>
-#include <Isorropia_EpetraCostDescriber.hpp>
-
 // baci
 #include "fsi_monolithic.H"
 #include "fsi_debugwriter.H"
@@ -28,6 +22,7 @@
 #include "drt_globalproblem.H"
 #include "drt_discret.H"
 #include "drt_condition_utils.H"
+#include "drt_utils_rebalancing.H"
 #include "linalg_blocksparsematrix.H"
 #include "linalg_utils_sparse_algebra_math.H"
 
@@ -179,22 +174,17 @@ void FSI::BlockMonolithic::RedistributeMonolithicGraph(
   BuildMonolithicGraph(monolithicGraph, deletedEdges, insertedEdges, fluidToStructureMap,
       structureToFluidMap, structuredis, fluiddis);
 
-  if (myrank == 0) std::cout << "About to call Zoltan..." << std::endl;
+  if (myrank == 0) std::cout << "About to call Partitioner..." << std::endl;
 
   /******************/
   /* redistribution */
   /******************/
-  // dummy matrix for Zoltan call function
-  Teuchos::RCP<Epetra_CrsMatrix> dummy;
   Teuchos::RCP<Epetra_Vector> crs_hge_weights = Teuchos::rcp(new Epetra_Vector(monolithicMap));
   crs_hge_weights->PutScalar(1.0);
-  //  Teuchos::RCP<Epetra_CrsGraph> bal_graph = CallZoltan(monolithicGraph, dummy,
-  //  crs_hge_weights,"HYPERGRAPH", 0);
 
-  Teuchos::RCP<Epetra_CrsGraph> bal_graph =
-      CallZoltanWithoutWeights(monolithicGraph, "HYPERGRAPH", 0);
+  Teuchos::RCP<Epetra_CrsGraph> bal_graph = CallPartitioner(monolithicGraph, "HYPERGRAPH", 0);
 
-  if (myrank == 0) std::cout << "... returned from Zoltan." << std::endl;
+  if (myrank == 0) std::cout << "... returned from Partitioner." << std::endl;
 
   // get maps of monolithic graph with deleted fluid interface nodes and inserted couplings
 
@@ -412,12 +402,7 @@ void FSI::BlockMonolithic::RedistributeDomainDecomposition(const INPAR::FSI::Red
   /* redistribution */
   /******************/
 
-  // dummy vector for Zoltan call function
-  Teuchos::RCP<Epetra_Vector> dummy;
-  //  Teuchos::RCP<Epetra_CrsGraph> bal_graph = CallZoltan(initgraph_manip,
-  //  crs_ge_weights,dummy,"GRAPH",unbalance);
-
-  Teuchos::RCP<Epetra_CrsGraph> bal_graph = CallZoltanWithoutWeights(initgraph_manip, "GRAPH", 0);
+  Teuchos::RCP<Epetra_CrsGraph> bal_graph = CallPartitioner(initgraph_manip, "GRAPH", 0);
 
   bal_graph->FillComplete();
   bal_graph->OptimizeStorage();
@@ -840,87 +825,14 @@ void FSI::BlockMonolithic::BuildWeightedGraph(Teuchos::RCP<Epetra_CrsMatrix> crs
 }
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::CallZoltan(
-    Teuchos::RCP<const Epetra_CrsGraph> initgraph_manip,
-    Teuchos::RCP<const Epetra_CrsMatrix> matrix_weights, Teuchos::RCP<Epetra_Vector> vector_weights,
-    std::string partitioningMethod, int unbalance)
-{
-  dserror("You should not end up here.");
-
-  Teuchos::ParameterList paramlist;
-
-  Teuchos::RCP<Isorropia::Epetra::CostDescriber> costs =
-      Teuchos::rcp(new Isorropia::Epetra::CostDescriber);
-
-  if (partitioningMethod == "GRAPH") costs->setGraphEdgeWeights(matrix_weights);
-
-  if (partitioningMethod == "HYPERGRAPH") costs->setHypergraphEdgeWeights(vector_weights);
-
-  int numproc = initgraph_manip->Comm().NumProc();
-  std::stringstream ss;
-  ss << numproc - unbalance;
-
-  paramlist.set("PARTITIONING METHOD", partitioningMethod);
-  paramlist.set("PRINT ZOLTAN METRICS", "2");
-  Teuchos::ParameterList& sublist = paramlist.sublist("Zoltan");
-  sublist.set("GRAPH_PACKAGE", "PHG");
-  sublist.set("EDGE_WEIGHT_DIM", "1");  // One weight per edge
-  sublist.set(
-      "LB_APPROACH", "PARTITION");  // Build partition from scratch, in contrast to "REPARTITION"
-  sublist.set("NUM_GLOBAL_PARTS", ss.str());
-
-  //  Teuchos::RCP<Isorropia::Epetra::CostDescriber> costs = Teuchos::rcp(
-  //      new Isorropia::Epetra::CostDescriber);
-  //
-  //  costs->setGraphEdgeWeights(crs_ge_weights);
-
-  Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner =
-      Teuchos::rcp(new Isorropia::Epetra::Partitioner(initgraph_manip, costs, paramlist));
-
-  Isorropia::Epetra::Redistributor rd(partitioner);
-  Teuchos::RCP<Epetra_CrsGraph> bal_graph;
-
-  /* Use a try-catch block because Isorropia will throw an exception
-  if it encounters an error. */
-  try
-  {
-    bal_graph = rd.redistribute(*initgraph_manip, false);
-  }
-  catch (std::exception& exc)
-  {
-    std::cout << "Redistribute domain: Isorropia::Epetra::Redistributor threw "
-              << "exception '" << exc.what() << std::endl;
-    MPI_Finalize();
-  }
-
-  // bal_graph->FillComplete();
-  // bal_graph->OptimizeStorage();
-
-  return bal_graph;
-}
-
-/*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::CallZoltanWithoutWeights(
+Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::CallPartitioner(
     Teuchos::RCP<const Epetra_CrsGraph> initgraph_manip, std::string partitioningMethod,
     int unbalance)
 {
   int numproc = initgraph_manip->Comm().NumProc();
-  std::stringstream ss;
-  ss << numproc - unbalance;
   const int parts = numproc - unbalance;
 
-  //  paramlist.set("PARTITIONING METHOD", partitioningMethod);
-  //  paramlist.set("PRINT ZOLTAN METRICS", "2");
-  //  Teuchos::ParameterList& sublist = paramlist.sublist("Zoltan");
-  //  sublist.set("GRAPH_PACKAGE", "PHG");
-  //  sublist.set("EDGE_WEIGHT_DIM", "1");      // One weight per edge
-  //  sublist.set("LB_APPROACH", "PARTITION");  // Build partition from scratch, in contrast to
-  //  "REPARTITION" sublist.set("NUM_GLOBAL_PARTS", ss.str());
-
   Teuchos::ParameterList paramlist;
-  // No parameters. By default, Isorropia will use Zoltan hypergraph
-  // partitioning, treating the graph columns as hyperedges and the
-  // graph rows as vertices.
 
   // Set imbalance tolerance for relative subdomain sizes to avoid empty procs
   const Teuchos::ParameterList& fsimono =
@@ -928,52 +840,9 @@ Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::CallZoltanWithoutWeights(
   const double imbalance_tol = fsimono.get<double>("HYBRID_IMBALANCE_TOL");
   paramlist.set("IMBALANCE_TOL", imbalance_tol);
 
-  //  paramlist.set("partitioning method", "hypergraph");
-  //  paramlist.set("PARTITIONING METHOD", "HYPERGRAPH");
-  //
-  //  Teuchos::ParameterList& sublist = paramlist.sublist("Zoltan");
-  //  sublist.set("GRAPH_PACKAGE", "PHG");
-  //  sublist.set("HYPERGRAPH_PACKAGE", "PHG");
-  //  sublist.set("EDGE_WEIGHT_DIM", "1");      // One weight per edge
-  //  sublist.set("LB_APPROACH", "PARTITION");  // Build partition from scratch, in contrast to
-  //  "REPARTITION"
-  ////  sublist.set("LB_METHOD", "HYPERGRAPH");
-  //  sublist.set("NUM_GLOBAL_PARTS", ss.str());
+  if (parts != -1) paramlist.set("NUM_PARTS", std::to_string(parts));
 
-  // if the user wants to use less procs than available (as indicated by
-  // the input flag "parts" above) then pass on this information to the
-  // parameter list for Zoltan/Isorropia
-  if (parts != -1)
-  {
-    std::stringstream ss;
-    ss << parts;
-    std::string s = ss.str();
-    paramlist.set("num parts", s);
-  }
-
-  //  Epetra_CrsGraph *bal_graph = NULL;
-  //  try {
-  //    bal_graph =
-  //      Isorropia::Epetra::createBalancedCopy(*initgraph_manip, paramlist);
-  //
-  //  }
-  //  catch(std::exception& exc) {
-  //    std::cout << "Isorropia::createBalancedCopy threw "
-  //         << "exception '" << exc.what() << "' on proc "
-  //         << initgraph_manip->Comm().MyPID() << std::endl;
-  //    dserror("Error within Isorropia (graph balancing)");
-  //  }
-  //
-  //  Teuchos::RCP<Epetra_CrsGraph> rcp_balanced_graph = Teuchos::rcp(bal_graph);
-
-
-  Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner =
-      Teuchos::rcp(new Isorropia::Epetra::Partitioner(initgraph_manip, paramlist, true));
-  Teuchos::RCP<Isorropia::Epetra::Redistributor> rd =
-      Teuchos::rcp(new Isorropia::Epetra::Redistributor(partitioner));
-  Teuchos::RCP<Epetra_CrsGraph> rcp_balanced_graph = rd->redistribute(*initgraph_manip, true);
-
-  return rcp_balanced_graph;
+  return DRT::UTILS::REBALANCING::RebalanceGraph(*initgraph_manip, paramlist);
 }
 
 
