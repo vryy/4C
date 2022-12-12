@@ -388,7 +388,7 @@ namespace FSI
      *  We want to achieve a distribution with matching processor patches at the
      *  FSI interface. Therefore, we analyze the current non-matching
      *  distribution to find a matching node-to-node mapping. Then, we call
-     *  Isorropia/Zoltan to repartition fluid or/and structure field.
+     *  the partitioner for the fluid or/and structure field.
      *
      *  This implementation only works for matching grids at the interface
      *  but produces better results than RedistributeDomainDecomposition.
@@ -402,7 +402,7 @@ namespace FSI
      *  We want to achieve a distribution with matching processor patches at the
      *  FSI interface. Therefore, we analyze the current non-matching
      *  distribution to find a matching node-to-node mapping. Then, we call
-     *  Isorropia/Zoltan to repartition fluid or/and structure field.
+     *  the partitioner for the fluid or/and structure field.
      */
     virtual void RedistributeDomainDecomposition(
         const INPAR::FSI::Redistribute domain,  ///< type of redistribution algorithm
@@ -1083,7 +1083,7 @@ namespace FSI
      *  We want to achieve a distribution with matching processor patches at the
      *  FSI interface. Therefore, we analyze the current non-matching
      *  distribution to find a matching node-to-node mapping. Then, we call
-     *  Isorropia/Zoltan to repartition fluid or/and structure field.
+     *  the partitioner for the fluid or/and structure field.
      *
      *  This implementation only works for matching grids at the interface
      *  but produces better results than RedistributeDomainDecomposition.
@@ -1097,7 +1097,7 @@ namespace FSI
      *  We want to achieve a distribution with matching processor patches at the
      *  FSI interface. Therefore, we analyze the current non-matching
      *  distribution to find a matching node-to-node mapping. Then, we call
-     *  Isorropia/Zoltan to repartition fluid or/and structure field.
+     *  the partitioner for the fluid or/and structure field.
      */
     virtual void RedistributeDomainDecomposition(
         const INPAR::FSI::Redistribute domain,  ///< redistribute structure or fluid
@@ -1177,35 +1177,19 @@ namespace FSI
         const Epetra_Comm& comm  ///< communicator
     );
 
-    /*! \brief Call to ZOLTAN
+    /*! \brief Call to partitioner
      *
-     *  A manipulated graph \c initgraph_manip is passed to Zoltan, that
-     *  represents the desired domain decomposition. To make the desired
-     *  decomposition more 'attractive' for Zoltan, the weighting matrix
-     *  \c crs_ge_weights is used.
+     *  A manipulated graph \c initgraph_manip is passed to the partitioner, that
+     *  represents the desired domain decomposition.
      */
-    virtual Teuchos::RCP<Epetra_CrsGraph> CallZoltan(
-        Teuchos::RCP<const Epetra_CrsGraph> initgraph_manip,  ///< manipulated graph
-        Teuchos::RCP<const Epetra_CrsMatrix> matrix_weights,  ///< matrix with weights
-        Teuchos::RCP<Epetra_Vector> vector_weights,
-        std::string partitioningMethod,  ///< graph or hypergraph partitioning
-        int unbalance);
-
-    /*! \brief Call to ZOLTAN
-     *
-     *  A manipulated graph \c initgraph_manip is passed to Zoltan, that
-     *  represents the desired domain decomposition. To make the desired
-     *  decomposition more 'attractive' for Zoltan, the weighting matrix
-     *  \c crs_ge_weights is used.
-     */
-    virtual Teuchos::RCP<Epetra_CrsGraph> CallZoltanWithoutWeights(
+    virtual Teuchos::RCP<Epetra_CrsGraph> CallPartitioner(
         Teuchos::RCP<const Epetra_CrsGraph> initgraph_manip,  ///< manipulated graph
         std::string partitioningMethod,                       ///< graph or hypergraph partitioning
         int unbalance);
 
     /*! \brief Switch the nodes of the patches between processors
      *
-     *  After the ZOLTAN redistribution the borders of the patches should match
+     *  After the redistribution the borders of the patches should match
      *  at the interface but neighboring patches are in general not on the same
      *  processor after the redistribution. This function switches the patches
      *  among the processors in order to achieve this.

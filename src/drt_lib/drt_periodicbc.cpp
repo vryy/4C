@@ -16,12 +16,6 @@
 */
 /*---------------------------------------------------------------------*/
 
-
-#include <Isorropia_Epetra.hpp>
-#include <Isorropia_EpetraRedistributor.hpp>
-#include <Isorropia_EpetraPartitioner.hpp>
-#include <Isorropia_EpetraCostDescriber.hpp>
-
 #include "drt_periodicbc.H"
 #include "drt_discret.H"
 #include "drt_matchingoctree.H"
@@ -1581,11 +1575,6 @@ void PeriodicBoundaryConditions::BalanceLoad()
         }
       }
 
-      // setup cost describer
-      auto costs = Teuchos::rcp(new Isorropia::Epetra::CostDescriber);
-      costs->setGraphEdgeWeights(edge_weights);
-      costs->setVertexWeights(node_weights);
-
       // setup partitioner
       Teuchos::ParameterList paramlist;
       paramlist.set("PARTITIONING METHOD", "GRAPH");
@@ -1596,8 +1585,8 @@ void PeriodicBoundaryConditions::BalanceLoad()
 
       Teuchos::RCP<const Epetra_CrsGraph> const_nodegraph(nodegraph);
 
-      auto newnodegraph =
-          DRT::UTILS::REBALANCING::RebalanceGraph(const_nodegraph, costs, paramlist);
+      auto newnodegraph = DRT::UTILS::REBALANCING::RebalanceGraph(
+          *const_nodegraph, *node_weights, *edge_weights, paramlist);
       newnodegraph->OptimizeStorage();
 
       // the rowmap will become the new distribution of nodes

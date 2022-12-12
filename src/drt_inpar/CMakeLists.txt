@@ -49,6 +49,7 @@ set(OBJS_DRT_INPAR
     inpar_poromultiphase_scatra.cpp
     inpar_porofluidmultiphase.cpp
     inpar_problemtype.cpp
+    inpar_rebalance.cpp
     inpar_s2i.cpp
     inpar_scatra.cpp
     inpar_searchtree.cpp

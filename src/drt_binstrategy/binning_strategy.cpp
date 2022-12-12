@@ -7,19 +7,6 @@
 
 *----------------------------------------------------------------------*/
 
-
-// Include Isorropia_Exception.hpp only because the helper functions at
-// the bottom of this file (which create the epetra objects) can
-// potentially throw exceptions.
-#include <Isorropia_Exception.hpp>
-
-// The Isorropia symbols being demonstrated are declared
-// in these headers:
-#include <Isorropia_Epetra.hpp>
-#include <Isorropia_EpetraRedistributor.hpp>
-#include <Isorropia_EpetraPartitioner.hpp>
-#include <Isorropia_EpetraCostDescriber.hpp>
-
 #include "binning_strategy.H"
 #include "binning_strategy_utils.H"
 #include "drt_meshfree_multibin.H"
@@ -31,6 +18,7 @@
 #include "drt_globalproblem.H"
 #include "drt_discret.H"
 #include "drt_utils_parallel.H"
+#include "drt_utils_rebalancing.H"
 #include "drt_dofset_independent.H"
 #include "comm_utils.H"
 
@@ -802,11 +790,12 @@ void BINSTRATEGY::BinningStrategy::DistributeBinsRecursCoordBisection(
     Teuchos::RCP<Epetra_Map>& binrowmap, Teuchos::RCP<Epetra_MultiVector>& bincenters,
     Teuchos::RCP<Epetra_MultiVector>& binweights) const
 {
-  // create a parameter list for Zoltan
+  // create a parameter list for partitioner
   Teuchos::ParameterList params;
   params.set("Partitioning Method", "RCB");
 
-  // set low-level Zoltan parameters (see Zoltan Users' Guide: http://www.cs.sandia.gov/zoltan)
+  // set low-level partitioning parameters (see Zoltan Users' Guide:
+  // http://www.cs.sandia.gov/zoltan)
   Teuchos::ParameterList& sublist = params.sublist("Zoltan");
 
   // debug level (see http://www.cs.sandia.gov/zoltan/ug_html/ug_param.html)
@@ -816,24 +805,12 @@ void BINSTRATEGY::BinningStrategy::DistributeBinsRecursCoordBisection(
   sublist.set("RCB_OUTPUT_LEVEL", "0");
   sublist.set("RCB_RECTILINEAR_BLOCKS", "1");
 
-  // create a partitioner, by default this will perform the partitioning as well
-  Teuchos::RCP<const Epetra_MultiVector> bincenters_const = bincenters;
-  Teuchos::RCP<const Epetra_MultiVector> binweights_const = binweights;
-  Teuchos::RCP<Isorropia::Epetra::Partitioner> part =
-      Teuchos::rcp(new Isorropia::Epetra::Partitioner(bincenters_const, binweights_const, params));
-
-  // create a redistributor based on the partitioning
-  Isorropia::Epetra::Redistributor rd(part);
-
-  // redistribute bin center coordinates and bin weights
-  bincenters = rd.redistribute(*bincenters_const);
-  binweights = rd.redistribute(*binweights_const);
+  std::tie(bincenters, binweights) = DRT::UTILS::REBALANCING::RebalanceCoordinates(
+      *bincenters.getConst(), *binweights.getConst(), params);
 
   // create bin row map
   binrowmap = Teuchos::rcp(new Epetra_Map(-1, bincenters->Map().NumMyElements(),
       bincenters->Map().MyGlobalElements(), 0, BinDiscret()->Comm()));
-
-  return;
 }
 
 void BINSTRATEGY::BinningStrategy::FillBinsIntoBinDiscretization(
@@ -1404,11 +1381,6 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedDistributionOfBin
   err = bingraph->OptimizeStorage();
   if (err) dserror("graph->OptimizeStorage() returned err=%d", err);
 
-  // call redistribution of bin graph using bin weights
-  Teuchos::RCP<Isorropia::Epetra::CostDescriber> costs =
-      Teuchos::rcp(new Isorropia::Epetra::CostDescriber);
-  costs->setVertexWeights(vweights);
-
   Teuchos::ParameterList paramlist;
   paramlist.set("PARTITIONING METHOD", "GRAPH");
   Teuchos::ParameterList& sublist = paramlist.sublist("Zoltan");
@@ -1417,16 +1389,8 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedDistributionOfBin
   else
     sublist.set("LB_APPROACH", "PARTITION");
 
-  Teuchos::RCP<const Epetra_CrsGraph> constbingraph(bingraph);
-
-  // Now create the partitioner object
-  Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner =
-      Teuchos::rcp(new Isorropia::Epetra::Partitioner(constbingraph, costs, paramlist));
-
-  Isorropia::Epetra::Redistributor rd(partitioner);
-
-  // redistribute bingraph
-  Teuchos::RCP<Epetra_CrsGraph> balanced_bingraph = rd.redistribute(*bingraph);
+  Teuchos::RCP<Epetra_CrsGraph> balanced_bingraph = DRT::UTILS::REBALANCING::RebalanceGraph(
+      *bingraph.getConst(), *vweights.getConst(), paramlist);
 
   // extract repartitioned bin row map
   const Epetra_BlockMap& rbinstmp = balanced_bingraph->RowMap();

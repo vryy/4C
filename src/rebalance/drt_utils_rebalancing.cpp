@@ -14,15 +14,9 @@
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
-#include <Epetra_Time.h>
+#include <Teuchos_TimeMonitor.hpp>
 
-/* Include Isorropia_Exception.hpp only because the helper functions at
- * the bottom of this file (which create the epetra objects) can
- * potentially throw exceptions.
- */
 #include <Isorropia_Exception.hpp>
-
-// The Isorropia symbols being demonstrated are declared in these headers:
 #include <Isorropia_Epetra.hpp>
 #include <Isorropia_EpetraCostDescriber.hpp>
 #include <Isorropia_EpetraPartitioner.hpp>
@@ -34,11 +28,11 @@ void DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
     Teuchos::RCP<DRT::Discretization> discretization, Teuchos::RCP<const Epetra_Map> elementRowMap,
     Teuchos::RCP<Epetra_Map>& nodeRowMap, Teuchos::RCP<Epetra_Map>& nodeColumnMap,
     Teuchos::RCP<const Epetra_Comm> comm, const bool outflag, const int numPartitions,
-    const double imbalanceTol)
+    const double imbalanceTol, INPAR::REBALANCE::RebalanceType method)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps");
+
   const int myrank = discretization->Comm().MyPID();
-  const Epetra_Time timer(*comm);
-  const double t1 = timer.ElapsedTime();
   if (!myrank && outflag)
     std::cout << "Rebalance nodal maps of discretization '" << discretization->Name() << "'..."
               << std::endl;
@@ -52,19 +46,26 @@ void DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
       CreateRebalancingParameterList(numPartitions, imbalanceTol);
 
   // Compute rebalanced graph
-  Teuchos::RCP<Epetra_CrsGraph> balancedGraph =
-      DRT::UTILS::REBALANCING::RebalanceGraph(initialGraph, *rebalanceParams);
+  Teuchos::RCP<Epetra_CrsGraph> balancedGraph = Teuchos::null;
+  if (method == INPAR::REBALANCE::RebalanceType::none)
+  {
+    dserror("Rebalancing can't be done without an algorithm chosen, use hypergraph!");
+  }
+  else if (method == INPAR::REBALANCE::RebalanceType::hypergraph)
+  {
+    rebalanceParams->set("PARTITIONING METHOD", "HYPERGRAPH");
+    balancedGraph = DRT::UTILS::REBALANCING::RebalanceGraph(*initialGraph, *rebalanceParams);
+  }
+  else
+  {
+    dserror("Unknown rebalancing method.");
+  }
 
   // Extract rebalanced maps
   nodeRowMap = Teuchos::rcp(new Epetra_Map(-1, balancedGraph->RowMap().NumMyElements(),
       balancedGraph->RowMap().MyGlobalElements(), 0, *comm));
   nodeColumnMap = Teuchos::rcp(new Epetra_Map(-1, balancedGraph->ColMap().NumMyElements(),
       balancedGraph->ColMap().MyGlobalElements(), 0, *comm));
-
-  const double t2 = timer.ElapsedTime();
-  if (!myrank && outflag)
-    std::cout << std::setprecision(5) << "Node map rebalancing:    " << t2 - t1 << " secs"
-              << std::endl;
 }
 
 /*----------------------------------------------------------------------*/
@@ -73,9 +74,9 @@ void DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights(
     Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& rownodes,
     Teuchos::RCP<Epetra_Map>& colnodes, const bool outflag)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights");
+
   const int myrank = dis->Comm().MyPID();
-  Epetra_Time timer(dis->Comm());
-  const double t1 = timer.ElapsedTime();
   if (!myrank && outflag)
     std::cout << "Rebalance nodal maps of discretization '" << dis->Name() << "'..." << std::endl;
 
@@ -92,20 +93,13 @@ void DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights(
 
   // Compute rebalanced graph
   Teuchos::RCP<Epetra_CrsGraph> balanced_graph =
-      DRT::UTILS::REBALANCING::RebalanceGraph(initgraph, costs, paramlist);
+      DRT::UTILS::REBALANCING::RebalanceGraph(*initgraph, *costs, paramlist);
 
   // extract repartitioned maps
   rownodes = Teuchos::rcp(new Epetra_Map(-1, balanced_graph->RowMap().NumMyElements(),
       balanced_graph->RowMap().MyGlobalElements(), 0, dis->Comm()));
   colnodes = Teuchos::rcp(new Epetra_Map(-1, balanced_graph->ColMap().NumMyElements(),
       balanced_graph->ColMap().MyGlobalElements(), 0, dis->Comm()));
-
-  const double t2 = timer.ElapsedTime();
-  if (!myrank && outflag)
-    std::cout << std::setprecision(5) << "Node map rebalancing:    " << t2 - t1 << " secs"
-              << std::endl;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -114,9 +108,7 @@ Teuchos::RCP<Isorropia::Epetra::CostDescriber> DRT::UTILS::REBALANCING::SetupCos
     const DRT::Discretization& discretization)
 {
   const Epetra_Map* oldnoderowmap = discretization.NodeRowMap();
-  // Now we're going to create a Epetra_Vector with vertex weights and a Epetra_CrsMatrix
-  // for the edge weights to be used in the partitioning operation.
-  // weights must be at least one for zoltan
+
   Teuchos::RCP<Epetra_CrsMatrix> crs_ge_weights =
       Teuchos::rcp(new Epetra_CrsMatrix(Copy, *oldnoderowmap, 15));
   Teuchos::RCP<Epetra_Vector> vweights = LINALG::CreateVector(*oldnoderowmap, true);
@@ -383,17 +375,17 @@ void DRT::UTILS::REBALANCING::RedistributeAndFillCompleteDiscretizationUsingWeig
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::REBALANCING::RebalanceGraph(
-    Teuchos::RCP<const Epetra_CrsGraph> initialGraph, const Teuchos::ParameterList& rebalanceParams)
+    const Epetra_CrsGraph& initialGraph, const Teuchos::ParameterList& rebalanceParams)
 {
-  Epetra_CrsGraph* balancedGraph = NULL;
+  Epetra_CrsGraph* balancedGraph = nullptr;
   try
   {
-    balancedGraph = Isorropia::Epetra::createBalancedCopy(*initialGraph, rebalanceParams);
+    balancedGraph = Isorropia::Epetra::createBalancedCopy(initialGraph, rebalanceParams);
   }
   catch (std::exception& exc)
   {
     std::cout << "Isorropia::createBalancedCopy threw "
-              << "exception '" << exc.what() << "' on proc " << initialGraph->Comm().MyPID()
+              << "exception '" << exc.what() << "' on proc " << initialGraph.Comm().MyPID()
               << std::endl;
     dserror("Error within Isorropia (graph balancing)");
   }
@@ -407,27 +399,65 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::REBALANCING::RebalanceGraph(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::REBALANCING::RebalanceGraph(
-    Teuchos::RCP<const Epetra_CrsGraph> initialGraph,
-    Teuchos::RCP<Isorropia::Epetra::CostDescriber> costs,
+    const Epetra_CrsGraph& initialGraph, Isorropia::Epetra::CostDescriber& costs,
     const Teuchos::ParameterList& rebalanceParams)
 {
   Teuchos::RCP<Epetra_CrsGraph> balanced_graph = Teuchos::null;
   try
   {
     Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner =
-        Teuchos::rcp(new Isorropia::Epetra::Partitioner(initialGraph, costs, rebalanceParams));
+        Teuchos::rcp(new Isorropia::Epetra::Partitioner(&initialGraph, &costs, rebalanceParams));
 
     Isorropia::Epetra::Redistributor rd(partitioner);
-    balanced_graph = rd.redistribute(*initialGraph, true);
+    balanced_graph = rd.redistribute(initialGraph, true);
   }
   catch (std::exception& exc)
   {
     std::cout << "Isorropia threw exception '" << exc.what() << "' on proc "
-              << initialGraph->Comm().MyPID() << std::endl;
+              << initialGraph.Comm().MyPID() << std::endl;
     dserror("Error within Isorropia (graph balancing)");
   }
 
   return balanced_graph;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::REBALANCING::RebalanceGraph(
+    const Epetra_CrsGraph& initialGraph, const Epetra_Vector& initialNodeWeights,
+    const Teuchos::ParameterList& rebalanceParams)
+{
+  Isorropia::Epetra::CostDescriber costs = Isorropia::Epetra::CostDescriber();
+  costs.setVertexWeights(Teuchos::rcpFromRef(initialNodeWeights));
+
+  return DRT::UTILS::REBALANCING::RebalanceGraph(initialGraph, costs, rebalanceParams);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::REBALANCING::RebalanceGraph(
+    const Epetra_CrsGraph& initialGraph, const Epetra_Vector& initialNodeWeights,
+    const Epetra_CrsMatrix& initialEdgeWeights, const Teuchos::ParameterList& rebalanceParams)
+{
+  Isorropia::Epetra::CostDescriber costs = Isorropia::Epetra::CostDescriber();
+  costs.setVertexWeights(Teuchos::rcpFromRef(initialNodeWeights));
+  costs.setGraphEdgeWeights(Teuchos::rcpFromRef(initialEdgeWeights));
+
+  return DRT::UTILS::REBALANCING::RebalanceGraph(initialGraph, costs, rebalanceParams);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::pair<Teuchos::RCP<Epetra_MultiVector>, Teuchos::RCP<Epetra_MultiVector>>
+DRT::UTILS::REBALANCING::RebalanceCoordinates(const Epetra_MultiVector& initialCoordinates,
+    const Epetra_MultiVector& initialWeights, const Teuchos::ParameterList& rebalanceParams)
+{
+  Teuchos::RCP<Isorropia::Epetra::Partitioner> part = Teuchos::rcp(
+      new Isorropia::Epetra::Partitioner(&initialCoordinates, &initialWeights, rebalanceParams));
+
+  Isorropia::Epetra::Redistributor rd(part);
+
+  return {rd.redistribute(initialCoordinates), rd.redistribute(initialWeights)};
 }
 
 /*----------------------------------------------------------------------*/
@@ -438,7 +468,7 @@ Teuchos::RCP<Teuchos::ParameterList> DRT::UTILS::REBALANCING::CreateRebalancingP
   Teuchos::RCP<Teuchos::ParameterList> rebalancingParams =
       Teuchos::rcp(new Teuchos::ParameterList());
 
-  rebalancingParams->set<std::string>("num parts", std::to_string(numPartitions));
+  rebalancingParams->set<std::string>("NUM_PARTS", std::to_string(numPartitions));
   rebalancingParams->set<std::string>("IMBALANCE_TOL", std::to_string(imbalanceTol));
 
   return rebalancingParams;

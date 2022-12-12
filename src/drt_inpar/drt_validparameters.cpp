@@ -18,6 +18,7 @@
 #include "io_pstream.H"
 #include "inpar.H"
 #include "inpar_ale.H"
+#include "inpar_rebalance.H"
 #include "inpar_solver.H"
 #include "inpar_solver_nonlin.H"
 #include "inpar_fluid.H"
@@ -392,14 +393,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::PROBLEMTYPE::SetValidParameters(list);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& meshpartitioning = list->sublist("MESH PARTITIONING", false, "");
-
-  DoubleParameter("IMBALANCE_TOL", 1.1,
-      "Tolerance for relative imbalance of subdomain sizes for graph partitioning of unstructured "
-      "meshes read from input files.",
-      &meshpartitioning);
-
-  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& design =
       list->sublist("DESIGN DESCRIPTION", false, "number of nodal clouds");
 
@@ -485,6 +478,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::GEOMETRICSEARCH::SetValidParameters(list);
   INPAR::PASI::SetValidParameters(list);
 
+  INPAR::REBALANCE::SetValidParameters(list);
   INPAR::SOLVER::SetValidParameters(list);
   INPAR::NLNSOL::SetValidParameters(list);
 
