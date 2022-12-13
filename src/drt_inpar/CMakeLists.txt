@@ -1,32 +1,32 @@
 set(OBJS_DRT_INPAR
+    # cmake-format: sortable
     drt_boolifyparameters.cpp
     drt_validconditions.cpp
     drt_validcontactconstitutivelaw.cpp
     drt_validmaterials.cpp
     drt_validparameters.cpp
-    inpar_cardiovascular0d.cpp
     inpar_ale.cpp
+    inpar_beam_to_solid.cpp
     inpar_beamcontact.cpp
     inpar_beaminteraction.cpp
     inpar_beampotential.cpp
-    inpar_beam_to_solid.cpp
-    inpar_browniandyn.cpp
-    inpar_geometry_pair.cpp
-    inpar_geometric_search.cpp
+    inpar_binningstrategy.cpp
     inpar_bio.cpp
+    inpar_browniandyn.cpp
     inpar_cardiac_monodomain.cpp
-    inpar_particle.cpp
-    inpar_pasi.cpp
+    inpar_cardiovascular0d.cpp
     inpar_contact.cpp
     inpar_cut.cpp
     inpar_ehl.cpp
-    inpar_elemag.cpp
     inpar_elch.cpp
+    inpar_elemag.cpp
     inpar_fbi.cpp
     inpar_fluid.cpp
     inpar_fpsi.cpp
     inpar_fs3i.cpp
     inpar_fsi.cpp
+    inpar_geometric_search.cpp
+    inpar_geometry_pair.cpp
     inpar_immersed.cpp
     inpar_invanalysis.cpp
     inpar_io.cpp
@@ -39,15 +39,16 @@ set(OBJS_DRT_INPAR
     inpar_levelset.cpp
     inpar_loca_continuation.cpp
     inpar_lubrication.cpp
-    inpar_binningstrategy.cpp
     inpar_mor.cpp
     inpar_mortar.cpp
-    inpar_poroelast.cpp
+    inpar_particle.cpp
+    inpar_pasi.cpp
     inpar_plasticity.cpp
-    inpar_poroscatra.cpp
+    inpar_poroelast.cpp
+    inpar_porofluidmultiphase.cpp
     inpar_poromultiphase.cpp
     inpar_poromultiphase_scatra.cpp
-    inpar_porofluidmultiphase.cpp
+    inpar_poroscatra.cpp
     inpar_problemtype.cpp
     inpar_rebalance.cpp
     inpar_s2i.cpp
@@ -69,4 +70,12 @@ set(OBJS_DRT_INPAR
     )
 
 baci_add_library(drt_inpar ${OBJS_DRT_INPAR})
-target_link_libraries(drt_inpar PUBLIC drt_lib_contact_constitutivelaw drt_lib)
+
+set(LIBS_DRT_INPAR
+    # cmake-format: sortable
+    alg_tutorial
+    drt_lib
+    drt_lib_contact_constitutivelaw
+    )
+
+target_link_libraries(drt_inpar PUBLIC ${LIBS_DRT_INPAR})

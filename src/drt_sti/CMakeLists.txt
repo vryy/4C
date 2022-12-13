@@ -1,4 +1,5 @@
 set(OBJS_DRT_STI
+    # cmake-format: sortable
     sti_algorithm.cpp
     sti_clonestrategy.cpp
     sti_dyn.cpp
@@ -9,4 +10,11 @@ set(OBJS_DRT_STI
     )
 
 baci_add_library(alg_sti ${OBJS_DRT_STI})
-target_link_libraries(alg_sti PUBLIC drt_adapter drt_lib)
+
+set(LIBS_ALG_STI
+    # cmake-format: sortable
+    drt_adapter
+    drt_lib
+    )
+
+target_link_libraries(alg_sti PUBLIC ${LIBS_ALG_STI})

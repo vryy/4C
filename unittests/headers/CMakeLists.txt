@@ -1,6 +1,9 @@
 set(TESTNAME unittests_headers)
 
-set(SOURCE_LIST unit_singleton_owner.cpp)
+set(SOURCE_LIST
+    # cmake-format: sortable
+    unit_singleton_owner.cpp
+    )
 
 baci_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})
 

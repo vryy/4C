@@ -152,30 +152,12 @@ find_package(AMDLIBM)
 find_package(CLN REQUIRED)
 
 ###------------------------------------------------------------------ List of files
-set(OBJS_POST_DRT_MONITOR src/post_monitor/post_drt_monitor.cpp)
-set(OBJS_DRT_UTILS
-    src/drt_fluid/fluid_functions.cpp
-    src/drt_fluid/fluid_rotsym_periodicbc_utils.cpp
-    src/drt_fluid_xfluid/xfluid_functions.cpp
-    src/drt_fluid_xfluid/xfluid_functions_combust.cpp
-    src/drt_lib/drt_condition_selector.cpp
-    src/drt_lib/drt_condition_utils.cpp
-    src/drt_lib/drt_dirichletextractor.cpp
-    src/drt_lib/drt_elementdefinition.cpp
-    src/drt_lib/drt_elementtype.cpp
-    src/drt_lib/drt_exporter.cpp
-    src/drt_lib/drt_matchingoctree.cpp
-    src/drt_lib/drt_parser.cpp
-    src/drt_lib/drt_resulttest.cpp
-    src/drt_lib/drt_utils.cpp
-    src/drt_lib/drt_utils_parallel.cpp
-    src/drt_lib/epetra_utils.cpp
-    src/drt_beaminteraction/drt_utils_parallel_proctoproc.cpp
-    src/rebalance/drt_utils_rebalancing.cpp
-    src/drt_structure_new/str_functions.cpp
-    src/drt_lib/voigt_notation.cpp
+set(OBJS_POST_DRT_MONITOR
+    # cmake-format: sortable
+    src/post_monitor/post_drt_monitor.cpp
     )
 set(OBJS_PRE_EXODUS
+    # cmake-format: sortable
     src/pre_exodus/pre_exodus.cpp
     src/pre_exodus/pre_exodus_centerline.cpp
     src/pre_exodus/pre_exodus_readbc.cpp
@@ -184,48 +166,49 @@ set(OBJS_PRE_EXODUS
     src/pre_exodus/pre_exodus_validate.cpp
     src/pre_exodus/pre_exodus_writedat.cpp
     )
-set(OBJS_POST_DRT_COMMON src/post_drt_common/post_drt_common.cpp)
+set(OBJS_POST_DRT_COMMON
+    # cmake-format: sortable
+    src/post_drt_common/post_drt_common.cpp
+    )
 set(OBJS_POST_PROCESSOR_MAIN
+    # cmake-format: sortable
+    src/post_drt_common/post_filter_base.cpp
     src/post_drt_common/post_processor.cpp
     src/post_drt_common/post_single_field_writers.cpp
     src/post_drt_common/post_structure_stress.cpp
     src/post_drt_common/post_thermo_heatflux.cpp
-    src/post_drt_common/post_filter_base.cpp
     src/post_drt_common/post_writer_base.cpp
     )
 set(OBJS_POST_DRT_ENSIGHT
-    src/post_ensight/post_drt_ensight_writer.cpp src/post_ensight/post_drt_ensight_writer_nurbs.cpp
+    # cmake-format: sortable
+    src/post_ensight/post_drt_ensight_writer.cpp
+    src/post_ensight/post_drt_ensight_writer_nurbs.cpp
     )
 set(OBJS_POST_DRT_VTK
-    src/post_vtk/post_drt_vtu_writer.cpp
-    src/post_vtk/post_drt_vtu_writer_node_based.cpp
+    # cmake-format: sortable
     src/post_vtk/post_drt_vti_writer.cpp
     src/post_vtk/post_drt_vtk_writer.cpp
+    src/post_vtk/post_drt_vtu_writer.cpp
+    src/post_vtk/post_drt_vtu_writer_node_based.cpp
     )
 set(OBJS_BACI_MAIN
-    src/global_full/global_init_control.cpp
-    src/global_full/global_inp_control.cpp
+    # cmake-format: sortable
+    src/global_full/baci.cpp
     src/global_full/global_cal_control.cpp
     src/global_full/global_control.cpp
-    src/global_full/baci.cpp
+    src/global_full/global_init_control.cpp
+    src/global_full/global_inp_control.cpp
     )
-set(OBJS_PRE_LOCSYS src/pre_locsys/pre_locsys.cpp)
-set(OBJS_POST_DRT_S8CONVERT src/post_s8convert/post_drt_s8convert.cpp)
+set(OBJS_PRE_LOCSYS
+    # cmake-format: sortable
+    src/pre_locsys/pre_locsys.cpp
+    )
+set(OBJS_POST_DRT_S8CONVERT
+    # cmake-format: sortable
+    src/post_s8convert/post_drt_s8convert.cpp
+    )
 set(OBJS_CUT_TEST
-    tests/cut_test/cut_test_double.cpp
-    tests/cut_test/cut_test_geometry.cpp
-    tests/cut_test/cut_test_intersection.cpp
-    tests/cut_test/cut_test_levelset.cpp
-    tests/cut_test/cut_test_levelset_no_loc_coord.cpp
-    tests/cut_test/cut_test_loader.cpp
-    tests/cut_test/cut_test_main.cpp
-    tests/cut_test/cut_test_selfcut.cpp
-    tests/cut_test/cut_test_simple.cpp
-    tests/cut_test/cut_test_triangulateFacet.cpp
-    tests/cut_test/cut_test_units.cpp
-    tests/cut_test/cut_test_utils.cpp
-    tests/cut_test/cut_test_fluidfluid.cpp
-    tests/cut_test/cut_test_newlineimplementation.cpp
+    # cmake-format: sortable
     tests/cut_test/cut_test_alex_39.cpp
     tests/cut_test/cut_test_alex_40.cpp
     tests/cut_test/cut_test_alex_41.cpp
@@ -250,53 +233,69 @@ set(OBJS_CUT_TEST
     tests/cut_test/cut_test_alex_60.cpp
     tests/cut_test/cut_test_alex_61.cpp
     tests/cut_test/cut_test_alex_62.cpp
+    tests/cut_test/cut_test_axel_10.cpp
     tests/cut_test/cut_test_axel_8.cpp
     tests/cut_test/cut_test_axel_9.cpp
-    tests/cut_test/cut_test_axel_10.cpp
-    tests/cut_test/cut_test_benedikt_1.cpp
-    tests/cut_test/cut_test_hex8_twintri.cpp
-    tests/cut_test/cut_test_shadan_6.cpp
-    tests/cut_test/cut_test_volume.cpp
-    tests/cut_test/drt_dserror.cpp
-    tests/cut_test/cut_test_intersection.cpp
-    tests/cut_test/cut_test_bacigenerated_1890.cpp
-    tests/cut_test/cut_test_bacigenerated_6890.cpp
     tests/cut_test/cut_test_bacigenerated_1858.cpp
-    tests/cut_test/cut_test_bacigenerated_1970.cpp
-    tests/cut_test/cut_test_bacigenerated_1910.cpp
-    tests/cut_test/cut_test_bacigenerated_2010.cpp
     tests/cut_test/cut_test_bacigenerated_1860.cpp
-    tests/cut_test/cut_test_facet_failed_cln.cpp
-    tests/cut_test/cut_test_bacigenerated_6920.cpp
-    tests/cut_test/cut_test_bacigenerated_7019.cpp
-    tests/cut_test/cut_test_bacigenerated_6923.cpp
+    tests/cut_test/cut_test_bacigenerated_1890.cpp
+    tests/cut_test/cut_test_bacigenerated_1910.cpp
+    tests/cut_test/cut_test_bacigenerated_1970.cpp
+    tests/cut_test/cut_test_bacigenerated_197489.cpp
+    tests/cut_test/cut_test_bacigenerated_2010.cpp
+    tests/cut_test/cut_test_bacigenerated_227469.cpp
+    tests/cut_test/cut_test_bacigenerated_238343.cpp
+    tests/cut_test/cut_test_bacigenerated_238425.cpp
+    tests/cut_test/cut_test_bacigenerated_26182.cpp
+    tests/cut_test/cut_test_bacigenerated_369096.cpp
     tests/cut_test/cut_test_bacigenerated_41534.cpp
     tests/cut_test/cut_test_bacigenerated_43244.cpp
     tests/cut_test/cut_test_bacigenerated_463638.cpp
     tests/cut_test/cut_test_bacigenerated_622320.cpp
-    tests/cut_test/cut_test_bacigenerated_227469.cpp
     tests/cut_test/cut_test_bacigenerated_622829.cpp
     tests/cut_test/cut_test_bacigenerated_627558.cpp
+    tests/cut_test/cut_test_bacigenerated_6890.cpp
+    tests/cut_test/cut_test_bacigenerated_6920.cpp
+    tests/cut_test/cut_test_bacigenerated_6923.cpp
+    tests/cut_test/cut_test_bacigenerated_7019.cpp
     tests/cut_test/cut_test_bacigenerated_7022.cpp
-    tests/cut_test/cut_test_bacigenerated_238425.cpp
-    tests/cut_test/cut_test_bacigenerated_197489.cpp
     tests/cut_test/cut_test_bacigenerated_79216.cpp
-    tests/cut_test/cut_test_bacigenerated_369096.cpp
-    tests/cut_test/cut_test_bacigenerated_238343.cpp
-    tests/cut_test/cut_test_bacigenerated_26182.cpp
+    tests/cut_test/cut_test_benedikt_1.cpp
+    tests/cut_test/cut_test_double.cpp
+    tests/cut_test/cut_test_facet_failed_cln.cpp
+    tests/cut_test/cut_test_fluidfluid.cpp
+    tests/cut_test/cut_test_geometry.cpp
+    tests/cut_test/cut_test_hex8_twintri.cpp
+    tests/cut_test/cut_test_intersection.cpp
+    tests/cut_test/cut_test_intersection.cpp
+    tests/cut_test/cut_test_levelset.cpp
+    tests/cut_test/cut_test_levelset_no_loc_coord.cpp
+    tests/cut_test/cut_test_loader.cpp
+    tests/cut_test/cut_test_main.cpp
+    tests/cut_test/cut_test_newlineimplementation.cpp
+    tests/cut_test/cut_test_selfcut.cpp
+    tests/cut_test/cut_test_shadan_6.cpp
+    tests/cut_test/cut_test_simple.cpp
+    tests/cut_test/cut_test_triangulateFacet.cpp
+    tests/cut_test/cut_test_units.cpp
+    tests/cut_test/cut_test_utils.cpp
+    tests/cut_test/cut_test_volume.cpp
+    tests/cut_test/drt_dserror.cpp
     )
 set(OBJS_GRAPH_TEST
-    tests/graph_test/graph_test_main.cpp
-    tests/graph_test/graph_test_read.cpp
-    tests/graph_test/graph_test_gnuplot.cpp
-    tests/graph_test/graph_test_output.cpp
+    # cmake-format: sortable
     tests/graph_test/graph_test_find_cycles.cpp
+    tests/graph_test/graph_test_gnuplot.cpp
+    tests/graph_test/graph_test_main.cpp
+    tests/graph_test/graph_test_output.cpp
+    tests/graph_test/graph_test_read.cpp
     )
 ### LEGACY
 # Define variables that gather the names of all to-be-created libraries. These will be used within
 # deprecated_baci_add_library_linked_with_everything() to link every target with everything.
 
 set(ELEMENT_LIBRARIES
+    # cmake-format: sortable
     ele_ale
     ele_beam3
     ele_bele
@@ -310,6 +309,7 @@ set(ELEMENT_LIBRARIES
     ele_s8
     ele_scatra
     ele_so
+    ele_so_plast
     ele_sp3
     ele_t3
     ele_t3cl
@@ -319,6 +319,7 @@ set(ELEMENT_LIBRARIES
     )
 
 set(MULTIFIELD_LIBRARIES
+    # cmake-format: sortable
     alg_ehl
     alg_elch
     alg_fbi
@@ -341,12 +342,12 @@ set(MULTIFIELD_LIBRARIES
     )
 
 set(SINGLEFIELD_LIBRARIES
+    # cmake-format: sortable
     alg_ale
     alg_artnet
     alg_contact
     alg_contact_aug
     alg_elemag
-    alg_fluid
     alg_fluid
     alg_fluid_turbulence
     alg_lubrication
@@ -367,7 +368,7 @@ set(SINGLEFIELD_LIBRARIES
     )
 
 set(SUPPORT_LIBRARIES
-    # Libraries needed by elements
+    # cmake-format: sortable
     drt_fem_general
     drt_geometry_pair
     drt_inpar
@@ -400,6 +401,7 @@ set(SUPPORT_LIBRARIES
     )
 
 set(BACI_LIBRARIES
+    # cmake-format: sortable
     ${ELEMENT_LIBRARIES}
     ${MULTIFIELD_LIBRARIES}
     ${SINGLEFIELD_LIBRARIES}
@@ -409,14 +411,13 @@ set(BACI_LIBRARIES
     drt_comm
     drt_constraint
     drt_geometry
-    drt_lib_register
-    drt_lib_utils
     drt_mat
     drt_matelast
     drt_mixture
     drt_mor
     drt_mortar
     drt_nurbs_discret
+    drt_opti
     drt_stru_multi
     drt_timestepping
     drt_volmortar
@@ -441,8 +442,6 @@ endif(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
 add_library(headers INTERFACE)
 target_include_directories(headers INTERFACE ${PROJECT_SOURCE_DIR}/src/headers)
 
-deprecated_baci_add_library_linked_with_everything(drt_lib_utils ${OBJS_DRT_UTILS})
-
 # filter framework
 deprecated_baci_add_library_linked_with_everything(post_drt_common ${OBJS_POST_DRT_COMMON})
 deprecated_baci_add_library_linked_with_everything(post_drt_ensight_lib ${OBJS_POST_DRT_ENSIGHT})
@@ -465,7 +464,7 @@ add_executable(pre_locsys EXCLUDE_FROM_ALL ${OBJS_PRE_LOCSYS})
 
 target_link_libraries(${baciname} ${BACI_LIBRARIES})
 
-set(FILTER_LIBRARIES post_drt_common ${BACI_LIBRARIES})
+set(FILTER_LIBRARIES post_drt_common -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group)
 
 target_link_libraries(post_processor post_drt_ensight_lib post_drt_vtk_lib ${FILTER_LIBRARIES})
 target_link_libraries(post_drt_monitor ${FILTER_LIBRARIES})
@@ -515,7 +514,9 @@ target_link_libraries(
   drt_lib_cut
   ${QHULL_LIBRARIES}
   ${LAPACK_LIBRARIES}
+  -Wl,--start-group
   ${BACI_LIBRARIES}
+  -Wl,--end-group
   )
 
 include(TestingFramework.cmake)

@@ -1,6 +1,7 @@
 set(TESTNAME unittests_linalg)
 
 set(SOURCE_LIST
+    # cmake-format: sortable
     unit_linalg_utils_densematrix_determinant.cpp
     unit_linalg_utils_densematrix_eigen.cpp
     unit_linalg_utils_densematrix_inverse.cpp

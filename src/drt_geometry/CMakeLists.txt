@@ -1,4 +1,5 @@
 set(OBJS_DRT_GEOMETRY
+    # cmake-format: sortable
     integrationcell.cpp
     intersection_interfacepoint.cpp
     intersection_math.cpp
@@ -10,4 +11,11 @@ set(OBJS_DRT_GEOMETRY
     )
 
 baci_add_library(drt_geometry ${OBJS_DRT_GEOMETRY})
-target_link_libraries(drt_geometry PUBLIC linalg drt_lib)
+
+set(LIBS_DRT_GEOMETRY
+    # cmake-format: sortable
+    drt_lib
+    linalg
+    )
+
+target_link_libraries(drt_geometry PUBLIC ${LIBS_DRT_GEOMETRY})

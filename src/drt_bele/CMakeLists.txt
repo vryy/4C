@@ -1,4 +1,5 @@
 set(OBJS_ELE_BELE
+    # cmake-format: sortable
     bele2.cpp
     bele2_evaluate.cpp
     bele3.cpp
@@ -14,4 +15,13 @@ set(OBJS_ELE_BELE
     )
 
 baci_add_library(ele_bele ${OBJS_ELE_BELE})
-target_link_libraries(ele_bele PUBLIC drt_lib)
+
+set(LIBS_ELE_BELE
+    # cmake-format: sortable
+    drt_comm
+    drt_lib
+    ele_scatra
+    ele_so
+    )
+
+target_link_libraries(ele_bele PUBLIC ${LIBS_ELE_BELE})

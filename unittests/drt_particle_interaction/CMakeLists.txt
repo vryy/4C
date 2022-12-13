@@ -1,6 +1,7 @@
 set(TESTNAME unittests_drt_particle_interaction)
 
 set(SOURCE_LIST
+    # cmake-format: sortable
     unit_particle_interaction_dem_contact_normal.cpp
     unit_particle_interaction_dem_contact_rolling.cpp
     unit_particle_interaction_dem_contact_tangential.cpp

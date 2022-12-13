@@ -1,11 +1,12 @@
 set(OBJS_DRT_STRUCTURE
+    # cmake-format: sortable
     strtimada.cpp
     strtimada_create.cpp
     strtimada_zienxie.cpp
     strtimint.cpp
-    strtimint_create.cpp
     strtimint_ab2.cpp
     strtimint_centrdiff.cpp
+    strtimint_create.cpp
     strtimint_expl.cpp
     strtimint_expleuler.cpp
     strtimint_gemm.cpp
@@ -15,12 +16,23 @@ set(OBJS_DRT_STRUCTURE
     strtimint_noxgroup.cpp
     strtimint_noxlinsys.cpp
     strtimint_ost.cpp
-    strtimint_statics.cpp
     strtimint_prestress.cpp
+    strtimint_statics.cpp
     stru_aux.cpp
-    stru_resulttest.cpp
     stru_dyn_nln_drt.cpp
+    stru_resulttest.cpp
     )
 
 baci_add_library(alg_structure ${OBJS_DRT_STRUCTURE})
-target_link_libraries(alg_structure PUBLIC drt_lib drt_inpar drt_adapter)
+
+set(LIBS_ALG_STRUCTURE
+    # cmake-format: sortable
+    drt_adapter
+    drt_cardiovascular0d
+    drt_inpar
+    drt_levelset
+    drt_lib
+    drt_timestepping
+    )
+
+target_link_libraries(alg_structure PUBLIC ${LIBS_ALG_STRUCTURE})

@@ -1,4 +1,5 @@
 set(OBJS_DRT_THERMO_ELE
+    # cmake-format: sortable
     thermo_ele_boundary_impl.cpp
     thermo_ele_impl.cpp
     thermo_element.cpp
@@ -8,20 +9,36 @@ set(OBJS_DRT_THERMO_ELE
     )
 
 baci_add_library(ele_thermo ${OBJS_DRT_THERMO_ELE})
-target_link_libraries(ele_thermo PUBLIC drt_lib drt_inpar)
+
+set(LIBS_ELE_THERMO
+    # cmake-format: sortable
+    drt_inpar
+    drt_lib
+    )
+
+target_link_libraries(ele_thermo PUBLIC ${LIBS_ELE_THERMO})
 
 set(OBJS_DRT_THERMO
+    # cmake-format: sortable
     thr_aux.cpp
     thr_dyn.cpp
     thr_resulttest.cpp
     thrtimint.cpp
+    thrtimint_expl.cpp
+    thrtimint_expleuler.cpp
     thrtimint_genalpha.cpp
     thrtimint_impl.cpp
     thrtimint_ost.cpp
     thrtimint_statics.cpp
-    thrtimint_expl.cpp
-    thrtimint_expleuler.cpp
     )
 
 baci_add_library(alg_thermo ${OBJS_DRT_THERMO})
-target_link_libraries(alg_thermo PUBLIC drt_inpar drt_adapter)
+
+set(LIBS_ALG_THERMO
+    # cmake-format: sortable
+    drt_adapter
+    drt_inpar
+    ele_thermo
+    )
+
+target_link_libraries(alg_thermo PUBLIC ${LIBS_ALG_THERMO})
