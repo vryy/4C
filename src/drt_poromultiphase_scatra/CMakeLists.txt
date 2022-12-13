@@ -1,25 +1,38 @@
 set(OBJS_DRT_POROMULTIPHASE_SCATRA
-    poromultiphase_scatra_dyn.cpp
-    poromultiphase_scatra_utils.cpp
+    # cmake-format: sortable
     poromultiphase_scatra_base.cpp
-    poromultiphase_scatra_partitioned_twoway.cpp
-    poromultiphase_scatra_monolithic_twoway.cpp
+    poromultiphase_scatra_dyn.cpp
     poromultiphase_scatra_function.cpp
+    poromultiphase_scatra_monolithic_twoway.cpp
+    poromultiphase_scatra_partitioned_twoway.cpp
+    poromultiphase_scatra_utils.cpp
     )
 
 baci_add_library(alg_poromultiphase_scatra ${OBJS_DRT_POROMULTIPHASE_SCATRA})
 
-target_link_libraries(alg_poromultiphase_scatra PUBLIC alg_poromultiphase)
+set(LIBS_ALG_PROMULTIPHASE_SCATRA
+    # cmake-format: sortable
+    alg_poromultiphase
+    )
+
+target_link_libraries(alg_poromultiphase_scatra PUBLIC ${LIBS_ALG_PROMULTIPHASE_SCATRA})
 
 set(OBJS_DRT_POROMULTIPHASE_ART_COUPL
+    # cmake-format: sortable
     poromultiphase_scatra_artery_coupling_base.cpp
-    poromultiphase_scatra_artery_coupling_nonconforming.cpp
+    poromultiphase_scatra_artery_coupling_linebased.cpp
     poromultiphase_scatra_artery_coupling_nodebased.cpp
     poromultiphase_scatra_artery_coupling_nodetopoint.cpp
-    poromultiphase_scatra_artery_coupling_linebased.cpp
-    poromultiphase_scatra_artery_coupling_surfbased.cpp
+    poromultiphase_scatra_artery_coupling_nonconforming.cpp
     poromultiphase_scatra_artery_coupling_pair.cpp
+    poromultiphase_scatra_artery_coupling_surfbased.cpp
     )
 
 baci_add_library(drt_lib_poromulti_art_coupl ${OBJS_DRT_POROMULTIPHASE_ART_COUPL})
-target_link_libraries(drt_lib_poromulti_art_coupl PUBLIC linalg)
+
+set(LIBS_DRT_LIB_POROMULTI_ART_COUPL
+    # cmake-format: sortable
+    linalg
+    )
+
+target_link_libraries(drt_lib_poromulti_art_coupl PUBLIC ${LIBS_DRT_LIB_POROMULTI_ART_COUPL})

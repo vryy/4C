@@ -1,6 +1,7 @@
 set(TESTNAME unittests_drt_lib)
 
 set(SOURCE_LIST
+    # cmake-format: sortable
     unit_cubic_spline_interpolation.cpp
     unit_demangle.cpp
     unit_domainreader.cpp
@@ -14,11 +15,16 @@ set(SOURCE_LIST
 
 baci_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})
 
-baci_link_google_test_necessary_libraries(${TESTNAME} ${BACI_LIBRARIES})
+baci_link_google_test_necessary_libraries(
+  ${TESTNAME} -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group
+  )
 
 set(TESTNAME unittests_drt_lib_np_3)
 
-set(SOURCE_LIST unit_gid_vector.cpp)
+set(SOURCE_LIST
+    # cmake-format: sortable
+    unit_gid_vector.cpp
+    )
 
 baci_add_google_test_executable(
   ${TESTNAME}
@@ -28,4 +34,6 @@ baci_add_google_test_executable(
   ${SOURCE_LIST}
   )
 
-baci_link_google_test_necessary_libraries(${TESTNAME} ${BACI_LIBRARIES})
+baci_link_google_test_necessary_libraries(
+  ${TESTNAME} -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group
+  )

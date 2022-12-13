@@ -7,4 +7,10 @@ target_include_directories(
 
 # Define the production implementation.
 add_library(drt_lib_error drt_dserror.cpp)
-target_link_libraries(drt_lib_error PUBLIC drt_lib_error_interface)
+
+set(LIBS_DRT_LIB_ERROR
+    # cmake-format: sortable
+    drt_lib_error_interface
+    )
+
+target_link_libraries(drt_lib_error PUBLIC ${LIBS_DRT_LIB_ERROR})

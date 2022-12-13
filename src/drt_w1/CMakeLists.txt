@@ -1,4 +1,5 @@
 set(OBJS_DRT_W1_LIB
+    # cmake-format: sortable
     wall1.cpp
     wall1_eas.cpp
     wall1_evaluate.cpp
@@ -23,4 +24,11 @@ set(OBJS_DRT_W1_LIB
     )
 
 baci_add_library(ele_w1 ${OBJS_DRT_W1_LIB})
-target_link_libraries(ele_w1 PUBLIC drt_lib)
+
+set(LIBS_ELEW1
+    # cmake-format: sortable
+    drt_lib
+    drt_lib_contact
+    )
+
+target_link_libraries(ele_w1 PUBLIC ${LIBS_ELEW1})

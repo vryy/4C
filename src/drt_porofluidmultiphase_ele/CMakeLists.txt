@@ -1,4 +1,5 @@
 set(OBJS_DRT_POROFLUIDMULTIPHASE_LIB
+    # cmake-format: sortable
     porofluid_evaluator.cpp
     porofluid_phasemanager.cpp
     porofluid_variablemanager.cpp
@@ -14,4 +15,10 @@ set(OBJS_DRT_POROFLUIDMULTIPHASE_LIB
     )
 
 baci_add_library(ele_porofluidmultiphase ${OBJS_DRT_POROFLUIDMULTIPHASE_LIB})
-target_link_libraries(ele_porofluidmultiphase PUBLIC drt_lib)
+
+set(LIBS_ALG_POROFLUIDMULTIPHASE
+    # cmake-format: sortable
+    drt_lib
+    )
+
+target_link_libraries(ele_porofluidmultiphase PUBLIC ${LIBS_ALG_POROFLUIDMULTIPHASE})

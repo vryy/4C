@@ -1,7 +1,12 @@
 set(TESTNAME unittests_drt_inpar)
 
-set(SOURCE_LIST unit_inpar_structure.cpp)
+set(SOURCE_LIST
+    # cmake-format: sortable
+    unit_inpar_structure.cpp
+    )
 
 baci_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})
 
-baci_link_google_test_necessary_libraries(${TESTNAME} drt_inpar)
+baci_link_google_test_necessary_libraries(
+  ${TESTNAME} -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group
+  )

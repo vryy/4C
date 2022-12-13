@@ -1,37 +1,42 @@
 set(OBJS_DRT_CUT
-    cut_options.cpp
+    # cmake-format: sortable
     base_vol.cpp
+    boundarycell_integration.cpp
     cut_boundarycell.cpp
     cut_boundingbox.cpp
+    cut_clnwrapper.cpp
     cut_coloredgraph.cpp
+    cut_combintersection.cpp
+    cut_cutwizard.cpp
     cut_cycle.cpp
-    direct_divergence.cpp
-    direct_divergence_refplane.cpp
     cut_edge.cpp
     cut_element.cpp
-    cut_position.cpp
-    cut_intersection.cpp
     cut_elementhandle.cpp
     cut_facet.cpp
     cut_facetgraph.cpp
+    cut_facetgraph_simple.cpp
     cut_find_cycles.cpp
     cut_integrationcell.cpp
     cut_integrationcellcreator.cpp
+    cut_intersection.cpp
     cut_kernel.cpp
-    cut_combintersection.cpp
     cut_levelsetintersection.cpp
     cut_levelsetside.cpp
     cut_line.cpp
+    cut_memory_manager.cpp
     cut_mesh.cpp
     cut_meshhandle.cpp
     cut_meshintersection.cpp
     cut_node.cpp
+    cut_options.cpp
     cut_output.cpp
     cut_parallel.cpp
     cut_parentintersection.cpp
     cut_point.cpp
     cut_pointgraph.cpp
+    cut_pointgraph_simple.cpp
     cut_pointpool.cpp
+    cut_position.cpp
     cut_selfcut.cpp
     cut_side.cpp
     cut_sidehandle.cpp
@@ -39,19 +44,20 @@ set(OBJS_DRT_CUT
     cut_tetmeshintersection.cpp
     cut_triangulateFacet.cpp
     cut_volumecell.cpp
-    line_integration.cpp
+    direct_divergence.cpp
+    direct_divergence_refplane.cpp
     facet_integration.cpp
-    boundarycell_integration.cpp
-    volume_integration.cpp
     least_squares.cpp
+    line_integration.cpp
     quadrature_compression.cpp
-    cut_cutwizard.cpp
-    cut_pointgraph_simple.cpp
-    cut_facetgraph_simple.cpp
-    cut_clnwrapper.cpp
-    cut_memory_manager.cpp
+    volume_integration.cpp
     )
 
 baci_add_library(drt_lib_cut ${OBJS_DRT_CUT})
 
-target_link_libraries(drt_lib_cut PUBLIC linalg)
+set(LIBS_DRT_LIB_CUT
+    # cmake-format: sortable
+    linalg
+    )
+
+target_link_libraries(drt_lib_cut PUBLIC ${LIBS_DRT_LIB_CUT})

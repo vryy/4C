@@ -1,4 +1,5 @@
 set(OBJS_DRT_POROFLUIDMULTIPHASE
+    # cmake-format: sortable
     porofluidmultiphase_dyn.cpp
     porofluidmultiphase_meshtying_strategy_artery.cpp
     porofluidmultiphase_meshtying_strategy_std.cpp
@@ -9,4 +10,9 @@ set(OBJS_DRT_POROFLUIDMULTIPHASE
     )
 baci_add_library(alg_porofluidmultiphase ${OBJS_DRT_POROFLUIDMULTIPHASE})
 
-target_link_libraries(alg_porofluidmultiphase PUBLIC drt_inpar)
+set(LIBS_ALG_POROFLUIDMULTIPHASE
+    # cmake-format: sortable
+    drt_inpar
+    )
+
+target_link_libraries(alg_porofluidmultiphase PUBLIC ${LIBS_ALG_POROFLUIDMULTIPHASE})

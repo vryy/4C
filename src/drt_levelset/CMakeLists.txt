@@ -1,7 +1,8 @@
 set(SOURCES
+    # cmake-format: sortable
     levelset_algorithm.cpp
-    levelset_algorithm_utils.cpp
     levelset_algorithm_reinit.cpp
+    levelset_algorithm_utils.cpp
     levelset_dyn.cpp
     levelset_intersection_utils.cpp
     levelset_timint_ost.cpp
@@ -9,4 +10,10 @@ set(SOURCES
     )
 
 baci_add_library(drt_levelset ${SOURCES})
-target_link_libraries(drt_levelset PUBLIC linalg)
+
+set(LIBS_DRT_LEVELSET
+    # cmake-format: sortable
+    linalg
+    )
+
+target_link_libraries(drt_levelset PUBLIC ${LIBS_DRT_LEVELSET})

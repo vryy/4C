@@ -1,8 +1,10 @@
 set(OBJS_LINALG
+    # cmake-format: sortable
     linalg_ana.cpp
     linalg_blocksparsematrix.cpp
     linalg_downwindmatrix.cpp
     linalg_equilibrate.cpp
+    linalg_gauss.cpp
     linalg_krylov_projector.cpp
     linalg_mapextractor.cpp
     linalg_matrixtransform.cpp
@@ -16,14 +18,13 @@ set(OBJS_LINALG
     linalg_serialdensevector.cpp
     linalg_sparsematrix.cpp
     linalg_sparsematrixbase.cpp
-    linalg_gauss.cpp
-    linalg_utils_nullspace.cpp
     linalg_utils_densematrix_communication.cpp
     linalg_utils_densematrix_determinant.cpp
     linalg_utils_densematrix_eigen.cpp
     linalg_utils_densematrix_inverse.cpp
     linalg_utils_densematrix_print.cpp
     linalg_utils_densematrix_svd.cpp
+    linalg_utils_nullspace.cpp
     linalg_utils_sparse_algebra_assemble.cpp
     linalg_utils_sparse_algebra_create.cpp
     linalg_utils_sparse_algebra_manipulation.cpp
@@ -32,4 +33,10 @@ set(OBJS_LINALG
     )
 
 baci_add_library(linalg ${OBJS_LINALG})
-target_link_libraries(linalg PUBLIC drt_inpar drt_lib_utils)
+
+set(LIBS_LINALG
+    # cmake-format: sortable
+    drt_inpar
+    )
+
+target_link_libraries(linalg PUBLIC ${LIBS_LINALG})

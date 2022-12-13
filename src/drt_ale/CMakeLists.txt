@@ -1,17 +1,27 @@
 set(OBJS_ALG_ALE
+    # cmake-format: sortable
     ale.cpp
     ale_dyn.cpp
     ale_meshsliding.cpp
     ale_meshtying.cpp
     ale_resulttest.cpp
-    ale_utils_mapextractor.cpp
     ale_utils_clonestrategy.cpp
+    ale_utils_mapextractor.cpp
     )
 
 baci_add_library(alg_ale ${OBJS_ALG_ALE})
-target_link_libraries(alg_ale PUBLIC drt_inpar drt_adapter)
+
+set(LIBS_ALG_ALE
+    # cmake-format: sortable
+    drt_adapter
+    drt_inpar
+    ele_ale
+    )
+
+target_link_libraries(alg_ale PUBLIC ${LIBS_ALG_ALE})
 
 set(OBJS_ELE_ALE
+    # cmake-format: sortable
     ale2.cpp
     ale2_evaluate.cpp
     ale2_input.cpp
@@ -27,4 +37,13 @@ set(OBJS_ELE_ALE
     )
 
 baci_add_library(ele_ale ${OBJS_ELE_ALE})
-target_link_libraries(ele_ale PUBLIC drt_lib)
+
+set(LIBS_ELE_ALE
+    # cmake-format: sortable
+    drt_lib
+    drt_mat
+    drt_nurbs_discret
+    ele_so
+    )
+
+target_link_libraries(ele_ale PUBLIC ${LIBS_ELE_ALE})

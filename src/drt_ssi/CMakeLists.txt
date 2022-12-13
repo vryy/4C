@@ -1,8 +1,9 @@
 set(OBJS_DRT_SSI
-    ssi_dyn.cpp
+    # cmake-format: sortable
     ssi_base.cpp
     ssi_clonestrategy.cpp
     ssi_coupling.cpp
+    ssi_dyn.cpp
     ssi_manifold_utils.cpp
     ssi_monolithic.cpp
     ssi_monolithic_assemble_strategy.cpp
@@ -15,10 +16,18 @@ set(OBJS_DRT_SSI
     ssi_partitioned_1wc.cpp
     ssi_partitioned_2wc.cpp
     ssi_resulttest.cpp
-    ssi_utils.cpp
     ssi_str_model_evaluator_base.cpp
     ssi_str_model_evaluator_partitioned.cpp
+    ssi_utils.cpp
     )
 
 baci_add_library(alg_ssi ${OBJS_DRT_SSI})
-target_link_libraries(alg_ssi PUBLIC drt_inpar drt_lib)
+
+set(LIBS_ALG_SSI
+    # cmake-format: sortable
+    drt_inpar
+    drt_lib
+    ele_membrane
+    )
+
+target_link_libraries(alg_ssi PUBLIC ${LIBS_ALG_SSI})

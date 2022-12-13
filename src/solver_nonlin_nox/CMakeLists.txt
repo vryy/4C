@@ -1,42 +1,49 @@
 set(OBJS_SOLVER_NONLIN_NOX
+    # cmake-format: sortable
     nox_nln_aux.cpp
+    nox_nln_constraint_group.cpp
+    nox_nln_direction_defaultsteptest.cpp
+    nox_nln_direction_factory.cpp
+    nox_nln_direction_modified_newton.cpp
+    nox_nln_direction_newton.cpp
     nox_nln_floating_point_exception.cpp
     nox_nln_globaldata.cpp
-    nox_nln_problem.cpp
+    nox_nln_group.cpp
+    nox_nln_group_prepostoperator.cpp
+    nox_nln_inner_statustest_armijo.cpp
+    nox_nln_inner_statustest_combo.cpp
+    nox_nln_inner_statustest_factory.cpp
+    nox_nln_inner_statustest_filter.cpp
+    nox_nln_inner_statustest_generic.cpp
+    nox_nln_inner_statustest_upperbound.cpp
+    nox_nln_inner_statustest_volume_change.cpp
     nox_nln_linearsystem.cpp
     nox_nln_linearsystem_factory.cpp
     nox_nln_linearsystem_prepostoperator.cpp
-    nox_nln_group.cpp
-    nox_nln_group_prepostoperator.cpp
+    nox_nln_linesearch_backtrack.cpp
     nox_nln_linesearch_factory.cpp
     nox_nln_linesearch_prepostoperator.cpp
-    nox_nln_direction_factory.cpp
     nox_nln_meritfunction_factory.cpp
-    nox_nln_solver_factory.cpp
-    nox_nln_solver_prepostop_generic.cpp
-    nox_nln_solver_linesearchbased.cpp
-    nox_nln_solver_ptc.cpp
-    nox_nln_constraint_group.cpp
-    nox_nln_linesearch_backtrack.cpp
-    nox_nln_meritfunction_lagrangian.cpp
     nox_nln_meritfunction_infeasibility.cpp
-    nox_nln_direction_newton.cpp
-    nox_nln_direction_modified_newton.cpp
-    nox_nln_direction_defaultsteptest.cpp
-    nox_nln_statustest_factory.cpp
+    nox_nln_meritfunction_lagrangian.cpp
+    nox_nln_problem.cpp
+    nox_nln_solver_factory.cpp
+    nox_nln_solver_linesearchbased.cpp
+    nox_nln_solver_prepostop_generic.cpp
+    nox_nln_solver_ptc.cpp
+    nox_nln_statustest_activeset.cpp
     nox_nln_statustest_combo.cpp
+    nox_nln_statustest_factory.cpp
     nox_nln_statustest_normf.cpp
     nox_nln_statustest_normupdate.cpp
     nox_nln_statustest_normwrms.cpp
-    nox_nln_statustest_activeset.cpp
-    nox_nln_inner_statustest_factory.cpp
-    nox_nln_inner_statustest_generic.cpp
-    nox_nln_inner_statustest_armijo.cpp
-    nox_nln_inner_statustest_filter.cpp
-    nox_nln_inner_statustest_upperbound.cpp
-    nox_nln_inner_statustest_combo.cpp
-    nox_nln_inner_statustest_volume_change.cpp
     )
 
 baci_add_library(nlnsolver_nox ${OBJS_SOLVER_NONLIN_NOX})
-target_link_libraries(nlnsolver_nox PUBLIC linalg)
+
+set(LIBS_NLNSOLVER_NOX
+    # cmake-format: sortable
+    linalg
+    )
+
+target_link_libraries(nlnsolver_nox PUBLIC ${LIBS_NLNSOLVER_NOX})

@@ -1,4 +1,5 @@
 set(OBJS_DRT_POROMULTIPHASE
+    # cmake-format: sortable
     poromultiphase_base.cpp
     poromultiphase_dyn.cpp
     poromultiphase_monolithic.cpp
@@ -11,4 +12,9 @@ set(OBJS_DRT_POROMULTIPHASE
 
 baci_add_library(alg_poromultiphase ${OBJS_DRT_POROMULTIPHASE})
 
-target_link_libraries(alg_poromultiphase PUBLIC drt_inpar)
+set(LIBS_ALG_PROMULTIPHASE
+    # cmake-format: sortable
+    drt_inpar
+    )
+
+target_link_libraries(alg_poromultiphase PUBLIC ${LIBS_ALG_PROMULTIPHASE})

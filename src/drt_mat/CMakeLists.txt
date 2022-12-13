@@ -1,4 +1,5 @@
 set(OBJS_DRT_MAT
+    # cmake-format: sortable
     aaa_mixedeffects.cpp
     aaagasser.cpp
     aaaneohooke.cpp
@@ -141,4 +142,19 @@ set(OBJS_DRT_MAT
     )
 
 baci_add_library(drt_mat ${OBJS_DRT_MAT})
-target_link_libraries(drt_mat PUBLIC drt_matelast drt_mixture drt_inpar linalg)
+
+set(LIBS_DRT_MAT
+    # cmake-format: sortable
+    alg_scatra
+    alg_tsi
+    drt_inpar
+    drt_lib_fiber
+    drt_lib_surfstress
+    drt_matelast
+    drt_mixture
+    drt_stru_multi
+    ele_porofluidmultiphase
+    linalg
+    )
+
+target_link_libraries(drt_mat PUBLIC ${LIBS_DRT_MAT})

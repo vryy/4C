@@ -1,11 +1,11 @@
 set(OBJS_DRT_MATELAST
+    # cmake-format: sortable
     elast_aniso_structuraltensor_strategy.cpp
     elast_anisoactivestress_evolution.cpp
     elast_coup13apow.cpp
     elast_coup1pow.cpp
     elast_coup2pow.cpp
     elast_coup3pow.cpp
-    elast_coupSaintVenantKirchhoff.cpp
     elast_coupanisoexpo.cpp
     elast_coupanisoexpoactive.cpp
     elast_coupanisoexpobase.cpp
@@ -20,6 +20,7 @@ set(OBJS_DRT_MATELAST
     elast_couplogneohooke.cpp
     elast_coupmooneyrivlin.cpp
     elast_coupneohooke.cpp
+    elast_coupSaintVenantKirchhoff.cpp
     elast_coupsimopister.cpp
     elast_couptransverselyisotropic.cpp
     elast_coupvarga.cpp
@@ -33,8 +34,8 @@ set(OBJS_DRT_MATELAST
     elast_isoogden.cpp
     elast_isotestmaterial.cpp
     elast_isovarga.cpp
-    elast_isovolHUdependentneohooke.cpp
     elast_isovolaaagasser.cpp
+    elast_isovolHUdependentneohooke.cpp
     elast_isoyeoh.cpp
     elast_remodelfiber.cpp
     elast_summand.cpp
@@ -50,4 +51,11 @@ set(OBJS_DRT_MATELAST
     )
 
 baci_add_library(drt_matelast ${OBJS_DRT_MATELAST})
-target_link_libraries(drt_matelast PUBLIC drt_mat drt_inpar)
+
+set(LIBS_DRT_MATELAST
+    # cmake-format: sortable
+    drt_inpar
+    drt_mat
+    )
+
+target_link_libraries(drt_matelast PUBLIC ${LIBS_DRT_MATELAST})
