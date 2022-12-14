@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Read domain sections of dat files.
+\brief Read domain sections of dat files to create cuboid meshes
 
 \level 0
 
@@ -30,37 +30,9 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*!
-      \brief helper class to read the elements of a discretization
+      \brief Helper class to create meshes of simple geometries at run time
 
-      Together with NodeReader this class constitutes a (almost) parallel
-      and efficient reading mechanism for discretizations from dat files.
-
-      We face the following problem:
-
-      - There are elements and nodes. One set of elements per
-        discretization. One set of nodes with the nodes from all
-        discretizations.
-
-      - Elements and nodes have ids. These are unique but otherwise
-        arbitrary.
-
-      - We cannot afford to read all elements or all nodes on one
-        processor.
-
-      - Only processor 0 can actually read the (ascii) input file
-
-      - We do not want to setup (that is read) elements more than once.
-
-      The idea is to read blocks of elements and nodes and distribute them
-      to different processors at first. Afterwards a reasonable
-      distribution can be calculated and the discretizations can be
-      redistributed. How this work is done is a mere
-      technicality. However, we need to be able to use the discretization
-      in a partially constructed state. In particular we need to read, add
-      and distribute elements even if nodes not yet are available.
-
-      \author u.kue
-      \date 05/07
+      This class creates a cuboid mesh and partitions it based on user input.
      */
     /*----------------------------------------------------------------------*/
     class DomainReader
