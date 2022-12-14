@@ -27,8 +27,6 @@ namespace DRT
       \brief helper class to read all nodes shared by many discretizations
 
       The interface class to the reading subsystem.
-      \author u.kue
-      \date 05/07
      */
     /*----------------------------------------------------------------------*/
     class NodeReader

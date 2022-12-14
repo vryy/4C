@@ -54,9 +54,6 @@ namespace DRT
       technicality. However, we need to be able to use the discretization
       in a partially constructed state. In particular we need to read, add
       and distribute elements even if nodes not yet are available.
-
-      \author u.kue
-      \date 05/07
      */
     /*----------------------------------------------------------------------*/
     class ElementReader
