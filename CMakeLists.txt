@@ -45,7 +45,6 @@ include(CheckCXXSourceCompiles)
 include(FetchContent)
 
 # include our own macros
-include(Deprecated_BACIAddLibraryLinkedWithEverything)
 include(BACILinkDefaultLibraries)
 include(BACIAddLibrary)
 
@@ -154,8 +153,8 @@ find_package(CLN REQUIRED)
 ###------------------------------------------------------------------ List of files
 
 ### LEGACY
-# Define variables that gather the names of all to-be-created libraries. These will be used within
-# deprecated_baci_add_library_linked_with_everything() to link every target with everything.
+# Define variables that gather the names of all to-be-created libraries. These will be used
+# for the executables that link against all libraries.
 
 set(ELEMENT_LIBRARIES
     # cmake-format: sortable
