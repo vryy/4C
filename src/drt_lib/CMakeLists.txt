@@ -45,7 +45,6 @@ set(OBJS_DRT_LIB
     drt_parobject.cpp
     drt_parobjectfactory.cpp
     drt_parobjectregister.cpp
-    drt_parser.cpp
     drt_periodicbc.cpp
     drt_resulttest.cpp
     drt_utils.cpp
@@ -59,6 +58,7 @@ set(OBJS_DRT_LIB
     drt_utils_parallel.cpp
     epetra_utils.cpp
     function_of_time.cpp
+    symbolic_expression.cpp
     tensor_transformation.cpp
     voigt_notation.cpp
     )

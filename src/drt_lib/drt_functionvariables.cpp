@@ -12,7 +12,7 @@
 #include <Sacado.hpp>
 #include <utility>
 #include "drt_functionvariables.H"
-#include "drt_parser.H"
+#include "symbolic_expression.H"
 
 
 DRT::UTILS::FunctionVariable::FunctionVariable(std::string name) : name_(std::move(name)) {}
@@ -20,27 +20,16 @@ DRT::UTILS::FunctionVariable::FunctionVariable(std::string name) : name_(std::mo
 
 DRT::UTILS::ParsedFunctionVariable::ParsedFunctionVariable(std::string name, const std::string& buf)
     : FunctionVariable(std::move(name)),
-      timefunction_(Teuchos::rcp(new DRT::PARSER::Parser<double>(buf))),
-      timederivative_(
-          Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>(buf)))
-{
-  // set the timefunction
-  timefunction_->AddVariable("t", 0);
-  timefunction_->ParseFunction();
+      timefunction_(Teuchos::rcp(new DRT::UTILS::SymbolicExpression<double>(buf)))
 
-  // set the timederivative
-  timederivative_->AddVariable("t", 0);
-  timederivative_->ParseFunction();
+{
 }
 
 
 double DRT::UTILS::ParsedFunctionVariable::Value(const double t)
 {
-  // set the time variable
-  timefunction_->SetValue("t", t);
-
   // evaluate the value of the function
-  double value = timefunction_->Evaluate();
+  double value = timefunction_->Value({{"t", t}});
 
   return value;
 }
@@ -52,8 +41,7 @@ double DRT::UTILS::ParsedFunctionVariable::TimeDerivativeValue(const double t, c
   tfad.val() = Sacado::Fad::DFad<double>(1, 0, t);
   Sacado::Fad::DFad<Sacado::Fad::DFad<double>> vfad;
 
-  timederivative_->SetValue("t", tfad);
-  vfad = timederivative_->Evaluate();
+  vfad = timefunction_->SecondDerivative({{"t", tfad}}, {});
 
   if (deg == 0)
   {
@@ -222,17 +210,9 @@ DRT::UTILS::MultiFunctionVariable::MultiFunctionVariable(std::string name,
 {
   // create vectors of timefunction and timederivative
   timefunction_.resize(times_.size() - 1);
-  timederivative_.resize(times_.size() - 1);
   for (unsigned int n = 0; n < times_.size() - 1; ++n)
   {
-    timefunction_[n] = Teuchos::rcp(new DRT::PARSER::Parser<double>(description_vec[n]));
-    timefunction_[n]->AddVariable("t", 0);
-    timefunction_[n]->ParseFunction();
-
-    timederivative_[n] = Teuchos::rcp(
-        new DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>(description_vec[n]));
-    timederivative_[n]->AddVariable("t", 0);
-    timederivative_[n]->ParseFunction();
+    timefunction_[n] = Teuchos::rcp(new DRT::UTILS::SymbolicExpression<double>(description_vec[n]));
   }
 }
 
@@ -274,13 +254,11 @@ double DRT::UTILS::MultiFunctionVariable::Value(const double t)
   double value;
   if (index == 0)
   {
-    timefunction_[0]->SetValue("t", t_equivalent);
-    value = timefunction_[0]->Evaluate();
+    value = timefunction_[0]->Value({{"t", t_equivalent}});
   }
   else
   {
-    timefunction_[index - 1]->SetValue("t", t_equivalent);
-    value = timefunction_[index - 1]->Evaluate();
+    value = timefunction_[index - 1]->Value({{"t", t_equivalent}});
   }
 
   return value;
@@ -327,13 +305,11 @@ double DRT::UTILS::MultiFunctionVariable::TimeDerivativeValue(const double t, co
   // evaluate the derivative of the function considering the different possibilities
   if (index == 0)
   {
-    timederivative_[0]->SetValue("t", tfad);
-    vfad = timederivative_[0]->Evaluate();
+    vfad = timefunction_[0]->SecondDerivative({{"t", tfad}}, {});
   }
   else
   {
-    timederivative_[index - 1]->SetValue("t", tfad);
-    vfad = timederivative_[index - 1]->Evaluate();
+    vfad = timefunction_[index - 1]->SecondDerivative({{"t", tfad}}, {});
   }
 
   if (deg == 0)

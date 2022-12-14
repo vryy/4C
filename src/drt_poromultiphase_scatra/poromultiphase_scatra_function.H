@@ -29,19 +29,6 @@ namespace POROMULTIPHASESCATRA
    public:
     PoroMultiPhaseScaTraFunction();
 
-    /*!
-     * \brief add expression to an existing ExprFunction in order to extend it to a vector-valued
-     * spatial function.
-     *
-     * Every call to AddExpr adds one more component to the vector-valued function.
-     *
-     * \param buf (i) (c-string) expression to be parsed during evaluation of this component
-     * \param constants   (i) vector containing constants defined by a pair (name and value)
-     */
-    void AddExpr(std::string buf, std::vector<std::pair<std::string, double>> constants)
-    {
-      dserror("PoroMultiPhaseScaTraFunction does not implement AddExpr");
-    }
 
     /*!
      * \brief evaluate function at given time and position
@@ -140,32 +127,6 @@ namespace POROMULTIPHASESCATRA
     virtual void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants) = 0;
 
-    /*!
-     * \brief check if a given name is a variable --> this is just a dummy method overwriting the
-     * one in VariableExprFunction since we do not need it here
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated \param varname (i) Variable name to be checked
-     */
-    bool IsVariable(const int index, const std::string& varname) const { return false; }
-
-    /*!
-     * \brief add a variable to the parser object --> this is just a dummy method overwriting the
-     * one in VariableExprFunction since we do not need it here
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated \param varname (i) Variable name \param varvalue (i) Value of the
-     * variable
-     */
-    void AddVariable(const int index, const std::string& varname, double varvalue) {}
-
-    /*!
-     * \brief parse the underlying expression
-     */
-    void ParseExpressions()
-    {
-      dserror("PoroMultiPhaseScaTraFunction does not implement ParseExpressions");
-    }
 
     /// return the number of components --> Reaction functions always have to have only one
     /// component

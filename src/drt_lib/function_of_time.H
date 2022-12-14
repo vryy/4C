@@ -14,7 +14,7 @@
 
 #include "linalg_fixedsizematrix.H"
 #include "drt_dserror.H"
-#include "drt_parser.H"
+#include "symbolic_expression.H"
 #include "drt_functionvariables.H"
 #include "drt_utils_polynomial.H"
 #include "drt_function_manager.H"
@@ -74,10 +74,8 @@ namespace DRT::UTILS
     using FirstDerivativeType = Sacado::Fad::DFad<double>;
 
     //! vector of parsed expressions
-    std::vector<Teuchos::RCP<DRT::PARSER::Parser<ValueType>>> expr_;
+    std::vector<Teuchos::RCP<DRT::UTILS::SymbolicExpression<ValueType>>> expr_;
 
-    //! vector of parsed first derivatives
-    std::vector<Teuchos::RCP<DRT::PARSER::Parser<FirstDerivativeType>>> dexprdt_;
 
     //! vector of the function variables and all their definitions
     std::vector<Teuchos::RCP<FunctionVariable>> variables_;

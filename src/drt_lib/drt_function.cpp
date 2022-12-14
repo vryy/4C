@@ -9,11 +9,11 @@
 /*----------------------------------------------------------------------*/
 
 #include <Sacado.hpp>
+#include <utility>
 #include "drt_function.H"
 #include "drt_function_manager.H"
 #include "drt_functionvariables.H"
 #include "drt_linedefinition.H"
-#include "drt_parser.H"
 #include "io.H"
 
 namespace
@@ -111,27 +111,14 @@ namespace
     return variables_FAD;
   }
 
-  /// set the values of the variables or constants in expression or in first derivative of
-  /// expression
-  template <typename Expression, typename ValueType>
-  void SetValuesInExpressionOrExpressionFirstDeriv(std::vector<Expression>& expr_or_exprd,
-      const int index, const std::vector<std::pair<std::string, ValueType>>& variables_or_constants)
-  {
-    // set the values of the variables or constants
-    for (const auto& [name, value] : variables_or_constants)
-    {
-      if (expr_or_exprd[index]->IsVariable(name))
-        // set the value in expression
-        expr_or_exprd[index]->SetValue(name, value);
-    }
-  }
+
 
   /// sets the values of the variables in second derivative of expression
   template <int dim>
   void SetValuesInExpressionSecondDeriv(
-      const Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>>& exprdd,
       const std::vector<Teuchos::RCP<DRT::UTILS::FunctionVariable>>& variables, const double* x,
-      const double t)
+      const double t,
+      std::map<std::string, Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>& variable_values)
   {
     static_assert(dim >= 0 && dim <= 3, "Spatial dimension has to be 1, 2 or 3.");
 
@@ -162,34 +149,48 @@ namespace
     }
 
     // initialize spatial variables with zero
-    exprdd->SetValue("x", 0);
-    exprdd->SetValue("y", 0);
-    exprdd->SetValue("z", 0);
 
-    if constexpr (dim > 0) exprdd->SetValue("x", xfad);
-    if constexpr (dim > 1) exprdd->SetValue("y", yfad);
-    if constexpr (dim > 2) exprdd->SetValue("z", zfad);
+    if constexpr (dim == 1)
+    {
+      variable_values.emplace("x", xfad);
+      variable_values.emplace("y", 0);
+      variable_values.emplace("z", 0);
+    }
+    else if constexpr (dim == 2)
+    {
+      variable_values.emplace("x", xfad);
+      variable_values.emplace("y", yfad);
+      variable_values.emplace("z", 0);
+    }
+    if constexpr (dim == 3)
+    {
+      variable_values.emplace("x", xfad);
+      variable_values.emplace("y", yfad);
+      variable_values.emplace("z", zfad);
+    }
 
     // set temporal variable
-    exprdd->SetValue("t", tfad);
+    variable_values.emplace("t", tfad);
 
     // set the values of the variables at time t
     for (unsigned int i = 0; i < variables.size(); ++i)
     {
-      exprdd->SetValue(variables[i]->Name(), fadvectvars[i]);
+      variable_values.emplace(variables[i]->Name(), fadvectvars[i]);
     }
   }
 
+
   /// evaluate an expression and assemble to the result vector
   std::vector<double> EvaluateAndAssembleExpressionToResultVector(
-      const std::vector<std::pair<std::string, double>>& variables, const int index,
-      std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double>>>> exprd)
+      const std::map<std::string, Sacado::Fad::DFad<double>>& variables, const int index,
+      std::vector<Teuchos::RCP<DRT::UTILS::SymbolicExpression<double>>> expr,
+      const std::map<std::string, double>& constant_values)
   {
     // number of variables
     auto numvariables = static_cast<int>(variables.size());
 
     // evaluate the expression
-    Sacado::Fad::DFad<double> fdfad = exprd[index]->Evaluate();
+    Sacado::Fad::DFad<double> fdfad = expr[index]->FirstDerivative(variables, constant_values);
 
     // resulting vector
     std::vector<double> res(numvariables);
@@ -200,40 +201,13 @@ namespace
     return res;
   }
 
-  /// check if index is in range of the dimensions of the expression, otherwise throw an error
-  void AssertVariableIndexInDimensionOfExpression(const int index,
-      const std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>>& expr,
-      const std::string& varName)
-  {
-    if (index > (int)expr.size() - 1 || index < 0)
-      dserror(
-          "Tried to access variable <%s> for expression at index %d but only %d expressions are "
-          "available.",
-          varName.c_str(), index, expr.size());
-  }
-
   /// modifies the index to zero in case the expression is of size one
-  std::size_t FindModifiedIndex(
-      const std::size_t index, const std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>>& expr)
+  std::size_t FindModifiedIndex(const std::size_t index,
+      const std::vector<Teuchos::RCP<DRT::UTILS::SymbolicExpression<double>>>& expr)
   {
-    std::size_t index_mod = index;
-
-    if (expr.size() == 1)
-    {
-      index_mod = 0;
-    }
-
-    return index_mod;
+    return (expr.size() == 1) ? 0 : index;
   }
 
-  template <int dim>
-  Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> CreateVariableExprFunction(
-      const std::string& component, const std::vector<std::pair<std::string, double>>& constants)
-  {
-    auto vecfunc = Teuchos::rcp(new DRT::UTILS::VariableExprFunction<dim>());
-    vecfunc->AddExpr(component, constants);
-    return vecfunc;
-  }
 }  // namespace
 
 template <int dim>
@@ -253,13 +227,14 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateVariableExprF
       function_lin_def->ExtractPairOfStringAndDoubleVector("CONSTANTS", constants);
     }
 
-    return CreateVariableExprFunction<dim>(component, constants);
+    return Teuchos::rcp(new DRT::UTILS::VariableExprFunction<dim>(component, constants));
   }
   else
   {
     return Teuchos::null;
   }
 }
+
 
 
 template <int dim>
@@ -425,30 +400,12 @@ DRT::UTILS::ExprFunction<dim>::ExprFunction(const std::vector<std::string>& expr
     std::vector<Teuchos::RCP<FunctionVariable>> variables)
     : variables_(std::move(variables))
 {
-  const auto addVariablesToParser = [this](auto& parser)
-  {
-    parser->AddVariable("x", 0);
-    parser->AddVariable("y", 0);
-    parser->AddVariable("z", 0);
-    parser->AddVariable("t", 0);
-
-    for (const auto& var : variables_) parser->AddVariable(var->Name(), 0);
-  };
-
   for (const auto& expression : expressions)
   {
     {
-      auto parser = Teuchos::rcp(new DRT::PARSER::Parser<ValueType>(expression));
-      addVariablesToParser(parser);
-      parser->ParseFunction();
-      expr_.push_back(parser);
-    }
-
-    {
-      auto parser = Teuchos::rcp(new DRT::PARSER::Parser<SecondDerivativeType>(expression));
-      addVariablesToParser(parser);
-      parser->ParseFunction();
-      exprdd_.push_back(parser);
+      auto symbolicexpression =
+          Teuchos::rcp(new DRT::UTILS::SymbolicExpression<ValueType>(expression));
+      expr_.push_back(symbolicexpression);
     }
   }
 }
@@ -462,22 +419,25 @@ double DRT::UTILS::ExprFunction<dim>::Evaluate(
   if (component_mod < 0 || component_mod >= expr_.size())
     dserror("There are %d expressions but tried to access index %d", expr_.size(), component);
 
+  // create map for variables
+  std::map<std::string, double> variable_values;
+
   // set spatial variables
-  if constexpr (dim > 0) expr_[component_mod]->SetValue("x", x[0]);
-  if constexpr (dim > 1) expr_[component_mod]->SetValue("y", x[1]);
-  if constexpr (dim > 2) expr_[component_mod]->SetValue("z", x[2]);
+  if constexpr (dim > 0) variable_values.emplace("x", x[0]);
+  if constexpr (dim > 1) variable_values.emplace("y", x[1]);
+  if constexpr (dim > 2) variable_values.emplace("z", x[2]);
 
   // set temporal variable
-  expr_[component_mod]->SetValue("t", t);
+  variable_values.emplace("t", t);
 
   // set the values of the variables at time t
   for (const auto& variable : variables_)
   {
-    expr_[component_mod]->SetValue(variable->Name(), variable->Value(t));
+    variable_values.emplace(variable->Name(), variable->Value(t));
   }
 
   // evaluate F = F ( x, y, z, t, v1, ..., vn )
-  return expr_[component_mod]->Evaluate();
+  return expr_[component_mod]->Value(variable_values);
 }
 
 template <int dim>
@@ -489,10 +449,14 @@ std::vector<double> DRT::UTILS::ExprFunction<dim>::EvaluateSpatialDerivative(
   if (component_mod < 0 || component_mod >= expr_.size())
     dserror("There are %d expressions but tried to access component %d", expr_.size(), component);
 
-  SetValuesInExpressionSecondDeriv<dim>(exprdd_[component_mod], variables_, x, t);
+
+  // variables
+  std::map<std::string, Sacado::Fad::DFad<Sacado::Fad::DFad<double>>> variable_values;
+
+  SetValuesInExpressionSecondDeriv<dim>(variables_, x, t, variable_values);
 
   // The expression evaluates to an FAD object for up to second derivatives
-  SecondDerivativeType fdfad = exprdd_[component_mod]->Evaluate();
+  SecondDerivativeType fdfad = expr_[component_mod]->SecondDerivative(variable_values, {});
 
   // Here we return the first spatial derivatives given by FAD index 0, 1 and 2
   return {fdfad.dx(0).val(), fdfad.dx(1).val(), fdfad.dx(2).val()};
@@ -507,7 +471,10 @@ std::vector<double> DRT::UTILS::ExprFunction<dim>::EvaluateTimeDerivative(
 
   std::size_t component_mod = FindModifiedIndex(component, expr_);
 
-  SetValuesInExpressionSecondDeriv<dim>(exprdd_[component_mod], variables_, x, t);
+  // variables
+  std::map<std::string, Sacado::Fad::DFad<Sacado::Fad::DFad<double>>> variable_values;
+
+  SetValuesInExpressionSecondDeriv<dim>(variables_, x, t, variable_values);
 
   // FAD object for evaluation of derivatives
   Sacado::Fad::DFad<Sacado::Fad::DFad<double>> fdfad;
@@ -521,7 +488,8 @@ std::vector<double> DRT::UTILS::ExprFunction<dim>::EvaluateTimeDerivative(
   if (deg >= 1)
   {
     // evaluation of derivatives
-    fdfad = exprdd_[component_mod]->Evaluate();
+
+    fdfad = expr_[component_mod]->SecondDerivative(variable_values, {});
 
     // evaluation of dF/dt applying the chain rule:
     // dF/dt = dF*/dt + sum_i(dF/dvi*dvi/dt)
@@ -583,59 +551,17 @@ std::vector<double> DRT::UTILS::ExprFunction<dim>::EvaluateTimeDerivative(
 
 
 template <int dim>
-void DRT::UTILS::VariableExprFunction<dim>::AddExpr(
-    const std::string& buf, const std::vector<std::pair<std::string, double>>& constants)
+DRT::UTILS::VariableExprFunction<dim>::VariableExprFunction(
+    const std::string& component, std::vector<std::pair<std::string, double>> constants)
+    : constants_from_input_(std::move(constants))
 {
-  // do the almost same as the expression function (base class) but do not yet parse!
-
   // build the parser for the function evaluation
-  auto parser = Teuchos::rcp(new DRT::PARSER::Parser<double>(buf));
-
-  // build the parser for the function derivative evaluation
-  auto parserd = Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<double>>(buf));
-
-  // add constants
-  for (const auto& constant : constants) parser->AddVariable(constant.first, constant.second);
-  for (const auto& constant : constants) parserd->AddVariable(constant.first, constant.second);
+  auto symbolicexpression = Teuchos::rcp(new DRT::UTILS::SymbolicExpression<double>(component));
 
   // save the parsers
-  expr_.push_back(parser);
-  exprd_.push_back(parserd);
-
-  isparsed_ = false;
+  expr_.push_back(symbolicexpression);
 }
 
-template <int dim>
-bool DRT::UTILS::VariableExprFunction<dim>::IsVariable(int index, const std::string& varname) const
-{
-  AssertVariableIndexInDimensionOfExpression(index, expr_, varname);
-
-  return expr_[index]->IsVariable(varname);
-}
-
-template <int dim>
-void DRT::UTILS::VariableExprFunction<dim>::AddVariable(
-    int index, const std::string& varname, double varvalue)
-{
-  AssertVariableIndexInDimensionOfExpression(index, expr_, varname);
-
-  if (isparsed_) dserror("Function has already been parsed! Variables can no longer be added!");
-
-  expr_[index]->AddVariable(varname, varvalue);
-  exprd_[index]->AddVariable(varname, varvalue);
-}
-
-template <int dim>
-void DRT::UTILS::VariableExprFunction<dim>::ParseExpressions()
-{
-  // loop over expressions and parse them
-  for (auto& parser : expr_) parser->ParseFunction();
-
-  // loop over expressions for derivatives and parse them
-  for (auto& parser : exprd_) parser->ParseFunction();
-
-  isparsed_ = true;
-}
 
 template <int dim>
 double DRT::UTILS::VariableExprFunction<dim>::Evaluate(
@@ -657,6 +583,26 @@ double DRT::UTILS::VariableExprFunction<dim>::Evaluate(
 }
 
 template <int dim>
+double DRT::UTILS::VariableExprFunction<dim>::Evaluate(
+    const int index, const std::vector<std::pair<std::string, double>>& variables)
+{
+  // create map for variables
+  std::map<std::string, double> variable_values;
+
+  // convert vector of pairs to map variables_values
+  std::copy(
+      variables.begin(), variables.end(), std::inserter(variable_values, variable_values.begin()));
+
+  // add constants from input
+  std::copy(constants_from_input_.begin(), constants_from_input_.end(),
+      std::inserter(variable_values, variable_values.end()));
+
+  // evaluate the function and return the result
+  return expr_[index]->Value(variable_values);
+}
+
+
+template <int dim>
 std::vector<double> DRT::UTILS::VariableExprFunction<dim>::EvaluateSpatialDerivative(
     const double* x, const double t, const std::size_t component)
 {
@@ -672,43 +618,57 @@ std::vector<double> DRT::UTILS::VariableExprFunction<dim>::EvaluateSpatialDeriva
   return EvaluateDerivative(component, variables);
 }
 
-template <int dim>
-double DRT::UTILS::VariableExprFunction<dim>::Evaluate(
-    const int index, const std::vector<std::pair<std::string, double>>& variables)
-{
-  if (not isparsed_) ParseExpressions();
-
-  SetValuesInExpressionOrExpressionFirstDeriv(expr_, index, variables);
-
-  // evaluate the function and return the result
-  return expr_[index]->Evaluate();
-}
 
 template <int dim>
 double DRT::UTILS::VariableExprFunction<dim>::Evaluate(const int index,
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
-  if (not isparsed_) ParseExpressions();
+  // create map for variables
+  std::map<std::string, double> variable_values;
 
-  SetValuesInExpressionOrExpressionFirstDeriv(expr_, index, variables);
+  // convert vector of pairs to map variables_values
+  std::copy(
+      variables.begin(), variables.end(), std::inserter(variable_values, variable_values.begin()));
 
-  SetValuesInExpressionOrExpressionFirstDeriv(expr_, index, constants);
+  // add constants
+  std::copy(
+      constants.begin(), constants.end(), std::inserter(variable_values, variable_values.end()));
+
+  // add constants from input
+  if (constants_from_input_.size() != 0)
+  {
+    std::copy(constants_from_input_.begin(), constants_from_input_.end(),
+        std::inserter(variable_values, variable_values.end()));
+  }
 
   // evaluate the function and return the result
-  return expr_[index]->Evaluate();
+  return expr_[index]->Value(variable_values);
 }
 
 template <int dim>
 std::vector<double> DRT::UTILS::VariableExprFunction<dim>::EvaluateDerivative(
     const int index, const std::vector<std::pair<std::string, double>>& variables)
 {
-  if (not isparsed_) ParseExpressions();
-
   auto variables_FAD = ConvertVariableValuesToFADObjects(variables);
-  SetValuesInExpressionOrExpressionFirstDeriv(exprd_, index, variables_FAD);
 
-  return EvaluateAndAssembleExpressionToResultVector(variables, index, exprd_);
+  std::map<std::string, Sacado::Fad::DFad<double>> variable_values;
+
+  std::map<std::string, double> constant_values;
+
+  // convert vector of pairs to map variables_values
+  std::copy(variables_FAD.begin(), variables_FAD.end(),
+      std::inserter(variable_values, variable_values.begin()));
+
+  // add constants from input
+  if (constants_from_input_.size() != 0)
+  {
+    std::copy(constants_from_input_.begin(), constants_from_input_.end(),
+        std::inserter(constant_values, constant_values.begin()));
+  }
+
+  return EvaluateAndAssembleExpressionToResultVector(
+      variable_values, index, expr_, constant_values);
 }
 
 template <int dim>
@@ -716,14 +676,30 @@ std::vector<double> DRT::UTILS::VariableExprFunction<dim>::EvaluateDerivative(in
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants)
 {
-  if (not isparsed_) ParseExpressions();
-
   auto variables_FAD = ConvertVariableValuesToFADObjects(variables);
-  SetValuesInExpressionOrExpressionFirstDeriv(exprd_, index, variables_FAD);
 
-  SetValuesInExpressionOrExpressionFirstDeriv(exprd_, index, constants);
+  std::map<std::string, Sacado::Fad::DFad<double>> variable_values;
 
-  return EvaluateAndAssembleExpressionToResultVector(variables, index, exprd_);
+  std::map<std::string, double> constant_values;
+
+  // convert vector of pairs to map variables_values
+  std::copy(variables_FAD.begin(), variables_FAD.end(),
+      std::inserter(variable_values, variable_values.begin()));
+
+  // add constants
+  std::copy(
+      constants.begin(), constants.end(), std::inserter(constant_values, constant_values.begin()));
+
+  // add constants from input
+  if (constants_from_input_.size() != 0)
+  {
+    std::copy(constants_from_input_.begin(), constants_from_input_.end(),
+        std::inserter(constant_values, constant_values.end()));
+  }
+
+
+  return EvaluateAndAssembleExpressionToResultVector(
+      variable_values, index, expr_, constant_values);
 }
 
 // explicit instantiations

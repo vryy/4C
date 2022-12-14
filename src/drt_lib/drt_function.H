@@ -27,15 +27,12 @@
 
 namespace DRT
 {
-  // forward declarations
-  namespace PARSER
-  {
-    template <typename T>
-    class Parser;
-  }
 
   namespace UTILS
   {
+
+    template <class T>
+    class SymbolicExpression;
 
     class FunctionManager;
 
@@ -139,13 +136,10 @@ namespace DRT
 
      private:
       using ValueType = double;
-      using SecondDerivativeType = Sacado::Fad::DFad<Sacado::Fad::DFad<double>>;
+      using SecondDerivativeType = Sacado::Fad::DFad<Sacado::Fad::DFad<ValueType>>;
 
       /// vector of parsed expressions
-      std::vector<Teuchos::RCP<DRT::PARSER::Parser<ValueType>>> expr_;
-
-      /// vector of parsed 2nd derivatives
-      std::vector<Teuchos::RCP<DRT::PARSER::Parser<SecondDerivativeType>>> exprdd_;
+      std::vector<Teuchos::RCP<DRT::UTILS::SymbolicExpression<ValueType>>> expr_;
 
       /// vector of the function variables and all their definitions
       std::vector<Teuchos::RCP<FunctionVariable>> variables_;
@@ -157,18 +151,14 @@ namespace DRT
     class VariableExprFunction : public FunctionOfSpaceTime
     {
      public:
-      /*!
-       * \brief add expression to an existing ExprFunction in order to extend it to a vector-valued
-       * spatial function.
-       *
-       * Every call to AddExpr adds one more component to the vector-valued function.
-       * \param buf (i) (c-string) expression to be parsed during evaluation of this component
-       * \param constants   (i) vector containing constants defined by a pair (name and value)
-       */
-      virtual void AddExpr(
-          const std::string& buf, const std::vector<std::pair<std::string, double>>& constants);
+      VariableExprFunction(
+          const std::string& component, std::vector<std::pair<std::string, double>> constants);
+
+      VariableExprFunction() = default;
 
       double Evaluate(const double* x, double t, std::size_t component) override;
+
+
 
       /*!
        * \brief evaluate function for a given set of variables
@@ -224,50 +214,28 @@ namespace DRT
           const std::vector<std::pair<std::string, double>>& variables,
           const std::vector<std::pair<std::string, double>>& constants);
 
-      /*!
-       * \brief check if a given name is a variable
-       *
-       * \param index (i) For vector-valued functions, index defines the function-component
-       *                      which should be evaluated
-       * \param varname  (i) Variable name to be checked
-       */
-      virtual bool IsVariable(const int index, const std::string& varname) const;
 
-      /*!
-       * \brief add a variable to the function
-       *
-       * \param index (i) For vector-valued functions, index defines the function-component
-       *                      which should be evaluated
-       * \param varname  (i) Variable name
-       * \param varvalue (i) Value of the variable
-       */
-      virtual void AddVariable(const int index, const std::string& varname, double varvalue);
-
-      /*!
-       * \brief parse the underlying expression
-       */
-      virtual void ParseExpressions();
 
       /// return the number of components
       std::size_t NumberComponents() override { return (expr_.size()); }
 
      private:
-      /// flag indicating whether expression was parsed
-      bool isparsed_{false};
+      using ValueType = double;
+      using FirstDerivativeType = Sacado::Fad::DFad<ValueType>;
 
       /// dimension of the problem
       int dim_;
 
       /// vector of parsed expressions
-      std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>> expr_;
-
-      /// vector of parsed 1st derivatives
-      std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double>>>> exprd_;
+      std::vector<Teuchos::RCP<DRT::UTILS::SymbolicExpression<ValueType>>> expr_;
 
       /// vector of the function variables and all their definitions
       std::vector<std::vector<Teuchos::RCP<FunctionVariable>>> variables_;
-    };
 
+     private:
+      // constants from input
+      std::vector<std::pair<std::string, ValueType>> constants_from_input_;
+    };
 
     /// try to create VariableExprFunction from a given line definition
     template <int dim>

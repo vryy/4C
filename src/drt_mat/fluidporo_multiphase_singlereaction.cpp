@@ -58,80 +58,56 @@ void MAT::PAR::FluidPoroSingleReaction::Initialize()
 template <int dim>
 void MAT::PAR::FluidPoroSingleReaction::InitializeInternal()
 {
-  if (not isinit_)
+  // safety check
+  if (Function<dim>(functID_ - 1).NumberComponents() != 1)
+    dserror("expected only one component for single phase reaction!");
+
+  for (int k = 0; k < numscal_; k++)
   {
-    // safety check
-    if (Function<dim>(functID_ - 1).NumberComponents() != 1)
-      dserror("expected only one component for single phase reaction!");
-
-    for (int k = 0; k < numscal_; k++)
+    // add scalar names
     {
-      // add scalar names
-      {
-        std::ostringstream temp;
-        temp << k + 1;
-        scalarnames_[k] = "phi" + temp.str();
-
-        if (not Function<dim>(functID_ - 1).IsVariable(0, scalarnames_[k]))
-          Function<dim>(functID_ - 1).AddVariable(0, scalarnames_[k], 0.0);
-      }
+      std::ostringstream temp;
+      temp << k + 1;
+      scalarnames_[k] = "phi" + temp.str();
     }
-
-    for (int k = 0; k < numfluidphases_; k++)
-    {
-      // add pressure names
-      {
-        std::ostringstream temp;
-        temp << k + 1;
-        pressurenames_[k] = "p" + temp.str();
-
-        if (not Function<dim>(functID_ - 1).IsVariable(0, pressurenames_[k]))
-          Function<dim>(functID_ - 1).AddVariable(0, pressurenames_[k], 0.0);
-      }
-
-      // add saturation names
-      {
-        std::ostringstream temp;
-        temp << k + 1;
-        saturationnames_[k] = "S" + temp.str();
-
-        if (not Function<dim>(functID_ - 1).IsVariable(0, saturationnames_[k]))
-          Function<dim>(functID_ - 1).AddVariable(0, saturationnames_[k], 0.0);
-      }
-    }
-
-    // add porosity
-    {
-      if (not Function<dim>(functID_ - 1).IsVariable(0, porosityname_))
-        Function<dim>(functID_ - 1).AddVariable(0, porosityname_, 0.0);
-    }
-
-    // add additional volume fractions
-    for (int k = 0; k < numvolfrac_; k++)
-    {
-      // add volume fraction names
-      {
-        std::ostringstream temp;
-        temp << k + 1;
-        volfracnames_[k] = "VF" + temp.str();
-
-        if (not Function<dim>(functID_ - 1).IsVariable(0, volfracnames_[k]))
-          Function<dim>(functID_ - 1).AddVariable(0, volfracnames_[k], 0.0);
-      }
-      // add volume fraction pressure names
-      {
-        std::ostringstream temp;
-        temp << k + 1;
-        volfracpressurenames_[k] = "VFP" + temp.str();
-
-        if (not Function<dim>(functID_ - 1).IsVariable(0, volfracpressurenames_[k]))
-          Function<dim>(functID_ - 1).AddVariable(0, volfracpressurenames_[k], 0.0);
-      }
-    }
-
-    isinit_ = true;
   }
-  return;
+
+  for (int k = 0; k < numfluidphases_; k++)
+  {
+    // add pressure names
+    {
+      std::ostringstream temp;
+      temp << k + 1;
+      pressurenames_[k] = "p" + temp.str();
+    }
+
+    // add saturation names
+    {
+      std::ostringstream temp;
+      temp << k + 1;
+      saturationnames_[k] = "S" + temp.str();
+    }
+  }
+
+
+  // add additional volume fractions
+  for (int k = 0; k < numvolfrac_; k++)
+  {
+    // add volume fraction names
+    {
+      std::ostringstream temp;
+      temp << k + 1;
+      volfracnames_[k] = "VF" + temp.str();
+    }
+    // add volume fraction pressure names
+    {
+      std::ostringstream temp;
+      temp << k + 1;
+      volfracpressurenames_[k] = "VFP" + temp.str();
+    }
+  }
+
+  isinit_ = true;
 }
 
 /*----------------------------------------------------------------------*
@@ -278,6 +254,7 @@ void MAT::PAR::FluidPoroSingleReaction::CheckSizes(std::vector<double>& reacval,
 
   if (numfluidphases_ != (int)pressure.size())
     dserror("Invalid number of pressure values for this fluid poro reaction material!");
+
   if (numfluidphases_ != (int)saturation.size())
     dserror("Invalid number of saturation values for this fluid poro reaction material!");
   if (numscal_ != (int)scalar.size())

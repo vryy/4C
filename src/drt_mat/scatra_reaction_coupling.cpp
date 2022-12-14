@@ -608,30 +608,14 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::InitializeInternal(int numscal,  //
           temp << k + 1;
           std::string name = "phi" + temp.str();
 
-          // add the variable name to the parser
-          if (not Function<dim>(functID - 1).IsVariable(0, name))
-          {
-            Function<dim>(functID - 1).AddVariable(0, name, 0.0);
 
-            // save the phi values with correct name
-            variables_.push_back(std::pair<std::string, double>(name, 0.0));
-          }
+          // save the phi values with correct name
+          variables_.emplace_back(name, 0.0);
         }
-
-        // add possible time dependency
-        if (not Function<dim>(functID - 1).IsVariable(0, "t"))
-          Function<dim>(functID - 1).AddVariable(0, "t", 0.0);
-
-        // add possible spatial dependency
-        if (not Function<dim>(functID - 1).IsVariable(0, "x"))
-          Function<dim>(functID - 1).AddVariable(0, "x", 0.0);
-        if (not Function<dim>(functID - 1).IsVariable(0, "y"))
-          Function<dim>(functID - 1).AddVariable(0, "y", 0.0);
-        if (not Function<dim>(functID - 1).IsVariable(0, "z"))
-          Function<dim>(functID - 1).AddVariable(0, "z", 0.0);
       }
     }
   }
+
 
   // call base class
   ReactionBase::Initialize(numscal, couprole);
@@ -683,8 +667,22 @@ double MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceTermInternal(
 {
   // copy phi vector in different format to be read by the function
   BuildPhiVectorForFunction(phinp, numscal);
+
+  std::vector<std::pair<std::string, double>> variables_for_parser_evaluation = variables_;
+
+  // add possible time dependency
+
+  variables_for_parser_evaluation.emplace_back("t", 0.0);
+
+  // add possible spatial dependency
+
+  variables_for_parser_evaluation.emplace_back("x", 0.0);
+  variables_for_parser_evaluation.emplace_back("y", 0.0);
+  variables_for_parser_evaluation.emplace_back("z", 0.0);
+
   // evaluate reaction term
-  double bftfac = Function<dim>(round(couprole[k]) - 1).Evaluate(0, variables_, constants);
+  double bftfac =
+      Function<dim>(round(couprole[k]) - 1).Evaluate(0, variables_for_parser_evaluation, constants);
 
   return scale_reac * bftfac;
 }
@@ -737,9 +735,24 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivInternal(
 {
   // copy phi vector in different format to be read by the function
   BuildPhiVectorForFunction(phinp, numscal);
+
+  std::vector<std::pair<std::string, double>> constants_for_parser_evaluation = constants;
+
+  // add possible time dependency
+
+  constants_for_parser_evaluation.emplace_back("t", 0.0);
+
+  // add possible spatial dependency
+
+  constants_for_parser_evaluation.emplace_back("x", 0.0);
+  constants_for_parser_evaluation.emplace_back("y", 0.0);
+  constants_for_parser_evaluation.emplace_back("z", 0.0);
+
+
   // evaluate the derivatives of the reaction term
   std::vector<double> myderivs =
-      Function<dim>(round(couprole[k]) - 1).EvaluateDerivative(0, variables_, constants);
+      Function<dim>(round(couprole[k]) - 1)
+          .EvaluateDerivative(0, variables_, constants_for_parser_evaluation);
 
   // add it to derivs
   for (int toderive = 0; toderive < numscal; toderive++)
@@ -839,14 +852,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::AddAdditionalVariablesInternal(
     const std::vector<double>& couprole                            //!< coupling role vector
 )
 {
-  // add the variables
-  for (unsigned j = 0; j < variables.size(); j++)
-  {
-    if (not Function<dim>(round(couprole[k]) - 1).IsVariable(0, variables[j].first))
-    {
-      Function<dim>(round(couprole[k]) - 1).AddVariable(0, variables[j].first, 0.0);
-    }
-  }
+  // nothing to do
 
   return;
 }

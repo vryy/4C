@@ -3608,51 +3608,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 {
   // safety check
   if (funct->NumberComponents() != 1) dserror("expected only one component for coupling function!");
-
-  for (int k = 0; k < numscalcont_; k++)
-  {
-    // add scalar names
-    if (not funct->IsVariable(0, scalarnames_[k])) funct->AddVariable(0, scalarnames_[k], 0.0);
-  }
-
-  for (int k = 0; k < numscalart_; k++)
-  {
-    // add artery-scalar names
-    if (not funct->IsVariable(0, artscalarnames_[k]))
-      funct->AddVariable(0, artscalarnames_[k], 0.0);
-  }
-
-  for (int k = 0; k < numfluidphases_; k++)
-  {
-    // add pressures
-    if (not funct->IsVariable(0, pressurenames_[k])) funct->AddVariable(0, pressurenames_[k], 0.0);
-    // add saturations
-    if (not funct->IsVariable(0, saturationnames_[k]))
-      funct->AddVariable(0, saturationnames_[k], 0.0);
-  }
-
-  // add porosity
-  if (not funct->IsVariable(0, porosityname_)) funct->AddVariable(0, porosityname_, 0.0);
-
-  // add additional volume fractions
-  for (int k = 0; k < numvolfrac_; k++)
-  {
-    // add volume fraction names
-    if (not funct->IsVariable(0, volfracnames_[k])) funct->AddVariable(0, volfracnames_[k], 0.0);
-    // add volume fraction pressure names
-    if (not funct->IsVariable(0, volfracpressurenames_[k]))
-      funct->AddVariable(0, volfracpressurenames_[k], 0.0);
-  }
-
-  // add artery-pressure
-  if (not funct->IsVariable(0, artpressname_)) funct->AddVariable(0, artpressname_, 0.0);
-
-  // add diameter
-  if (not funct->IsVariable(0, "D")) funct->AddVariable(0, "D", 0.0);
-  // add reference diameter
-  if (not funct->IsVariable(0, "D0")) funct->AddVariable(0, "D0", 0.0);
-  // add diameter of previous time step
-  if (not funct->IsVariable(0, "Dprev")) funct->AddVariable(0, "Dprev", 0.0);
 }
 
 /*----------------------------------------------------------------------*
