@@ -12,15 +12,16 @@
 #ifndef DRT_NODEREADER_H
 #define DRT_NODEREADER_H
 
-#include "drt_inputreader.H"
-#include "drt_elementreader.H"
-#include "drt_domainreader.H"
 #include "inpar.H"
 
 namespace DRT
 {
   namespace INPUT
   {
+    class ElementReader;
+    class DomainReader;
+    class DatFileReader;
+
     /*----------------------------------------------------------------------*/
     /*!
       \brief helper class to read all nodes shared by many discretizations

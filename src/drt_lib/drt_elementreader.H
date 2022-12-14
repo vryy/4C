@@ -14,8 +14,7 @@
 
 #include <set>
 #include <Epetra_Map.h>
-
-#include "drt_inputreader.H"
+#include <Teuchos_RCP.hpp>
 
 namespace DRT
 {
@@ -23,6 +22,8 @@ namespace DRT
 
   namespace INPUT
   {
+    class DatFileReader;
+
     /*----------------------------------------------------------------------*/
     /*!
       \brief helper class to read the elements of a discretization

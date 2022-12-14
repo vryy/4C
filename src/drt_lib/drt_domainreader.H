@@ -17,7 +17,6 @@
 #include <set>
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
-
 #include "drt_inputreader.H"
 
 namespace DRT
@@ -26,6 +25,7 @@ namespace DRT
 
   namespace INPUT
   {
+    class DatFileReader;
     class LineDefinition;
 
     /*----------------------------------------------------------------------*/

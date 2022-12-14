@@ -11,6 +11,7 @@
 
 
 #include "drt_elementreader.H"
+#include "drt_inputreader.H"
 #include "standardtypes_cpp.H"
 #include "drt_elementdefinition.H"
 #include "drt_globalproblem.H"

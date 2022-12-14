@@ -12,7 +12,10 @@
 
 #include "drt_discret.H"
 #include "drt_nodereader.H"
+#include "drt_domainreader.H"
+#include "drt_elementreader.H"
 #include "drt_globalproblem.H"
+#include "drt_inputreader.H"
 #include "drt_control_point.H"
 #include "immersed_node.H"
 #include "drt_fiber_node.H"
