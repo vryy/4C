@@ -11,7 +11,7 @@
 
 
 #include "drt_discret.H"
-#include "drt_nodereader.H"
+#include "drt_meshreader.H"
 #include "drt_domainreader.H"
 #include "drt_elementreader.H"
 #include "drt_globalproblem.H"
@@ -31,7 +31,7 @@ namespace DRT
   {
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    NodeReader::NodeReader(const DRT::INPUT::DatFileReader& reader, std::string sectionname)
+    MeshReader::MeshReader(const DRT::INPUT::DatFileReader& reader, std::string sectionname)
         : reader_(reader), comm_(reader.Comm()), sectionname_(sectionname)
     {
     }
@@ -39,7 +39,7 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    void NodeReader::AddAdvancedReader(Teuchos::RCP<Discretization> dis,
+    void MeshReader::AddAdvancedReader(Teuchos::RCP<Discretization> dis,
         const DRT::INPUT::DatFileReader& reader, const std::string& sectionname,
         const std::set<std::string>& elementtypes, const INPAR::GeometryType geometrysource,
         const std::string* geofilepath)
@@ -77,7 +77,7 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    void NodeReader::AddAdvancedReader(Teuchos::RCP<Discretization> dis,
+    void MeshReader::AddAdvancedReader(Teuchos::RCP<Discretization> dis,
         const DRT::INPUT::DatFileReader& reader, const std::string& sectionname,
         const INPAR::GeometryType geometrysource, const std::string* geofilepath)
     {
@@ -89,7 +89,7 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    std::vector<Teuchos::RCP<DRT::Discretization>> NodeReader::FindDisNode(int nodeid)
+    std::vector<Teuchos::RCP<DRT::Discretization>> MeshReader::FindDisNode(int nodeid)
     {
       std::vector<Teuchos::RCP<DRT::Discretization>> v;
       for (unsigned i = 0; i < ereader_.size(); ++i)
@@ -105,7 +105,7 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    void NodeReader::Read()
+    void MeshReader::Read()
     {
       const int myrank = comm_->MyPID();
       const int numproc = comm_->NumProc();
@@ -487,7 +487,7 @@ namespace DRT
       if ((maxnodeid < numproc) && (numnodes != 0))
         dserror("Bad idea: Simulation with %d procs for problem with %d nodes", numproc, maxnodeid);
 
-    }  // NodeReader::Read
+    }  // MeshReader::Read
 
   }  // namespace INPUT
 }  // namespace DRT

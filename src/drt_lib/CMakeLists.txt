@@ -93,7 +93,7 @@ set(OBJS_DRT_IO_LIB
     drt_inputreader.cpp
     drt_linedefinition.cpp
     drt_materialdefinition.cpp
-    drt_nodereader.cpp
+    drt_meshreader.cpp
     drt_particlereader.cpp
     )
 

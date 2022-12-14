@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef DRT_NODEREADER_H
-#define DRT_NODEREADER_H
+#ifndef DRT_MESHREADER_H
+#define DRT_MESHREADER_H
 
 #include "inpar.H"
 
@@ -29,16 +29,16 @@ namespace DRT
       The interface class to the reading subsystem.
      */
     /*----------------------------------------------------------------------*/
-    class NodeReader
+    class MeshReader
     {
      public:
       /// construct a reader that reads a given section
-      NodeReader(const DatFileReader& reader, std::string sectionname);
+      MeshReader(const DatFileReader& reader, std::string sectionname);
 
       /// add an element reader for each discretization
       /*!
         Each discretization needs its own ElementReader. These readers
-        have to be registered at the NodeReader.
+        have to be registered at the MeshReader.
 
         \param er (i) a reader of one discretization that uses (a fraction of) our nodes
        */

@@ -28,7 +28,7 @@ namespace DRT
     /*!
       \brief helper class to read the elements of a discretization
 
-      Together with NodeReader this class constitutes a (almost) parallel
+      Together with MeshReader this class constitutes a (almost) parallel
       and efficient reading mechanism for discretizations from dat files.
 
       We face the following problem:
@@ -58,7 +58,7 @@ namespace DRT
     /*----------------------------------------------------------------------*/
     class ElementReader
     {
-      friend class NodeReader;
+      friend class MeshReader;
 
      public:
       /// construct element reader for a given field that reads a given section

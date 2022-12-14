@@ -37,7 +37,7 @@ namespace DRT
     /*----------------------------------------------------------------------*/
     class DomainReader
     {
-      friend class NodeReader;
+      friend class MeshReader;
 
      public:
       /// construct element reader for a given field that reads a given section
