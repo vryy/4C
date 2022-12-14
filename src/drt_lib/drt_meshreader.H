@@ -94,7 +94,7 @@ namespace DRT
         0. After each block read the discretizations are redistributed.
 
        */
-      void Read();
+      void ReadAndPartition();
 
      private:
       /// find the discretization that contains the given node

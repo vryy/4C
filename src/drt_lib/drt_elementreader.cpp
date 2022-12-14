@@ -71,7 +71,7 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    void ElementReader::Partition()
+    void ElementReader::ReadAndPartition()
     {
       const int myrank = comm_->MyPID();
       const int numproc = comm_->NumProc();

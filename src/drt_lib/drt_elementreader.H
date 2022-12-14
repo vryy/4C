@@ -104,7 +104,7 @@ namespace DRT
 
      protected:
       /// read elements, partition node graph
-      virtual void Partition();
+      virtual void ReadAndPartition();
 
       /// tell whether the given node belongs to us
       /*!

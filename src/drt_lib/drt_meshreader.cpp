@@ -105,7 +105,7 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    void MeshReader::Read()
+    void MeshReader::ReadAndPartition()
     {
       const int myrank = comm_->MyPID();
       const int numproc = comm_->NumProc();
@@ -125,7 +125,7 @@ namespace DRT
       {
         for (unsigned i = 0; i < element_readers_.size(); ++i)
         {
-          element_readers_[i]->Partition();
+          element_readers_[i]->ReadAndPartition();
         }
 
         Epetra_Time time(*comm_);
@@ -487,8 +487,7 @@ namespace DRT
       comm_->MaxAll(&lmaxnodeid, &maxnodeid, 1);
       if ((maxnodeid < numproc) && (numnodes != 0))
         dserror("Bad idea: Simulation with %d procs for problem with %d nodes", numproc, maxnodeid);
-
-    }  // MeshReader::Read
+    }
 
   }  // namespace INPUT
 }  // namespace DRT

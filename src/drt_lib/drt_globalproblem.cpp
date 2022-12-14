@@ -2142,7 +2142,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   if (readmesh)  // now read and allocate!
   {
     // we read nodes and elements for the desired fields as specified above
-    meshreader.Read();
+    meshreader.ReadAndPartition();
 
     NestedParallelismType npType = DRT::Problem::Instance()->GetNPGroup()->NpType();
     // care for special applications
@@ -2427,7 +2427,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
           micromeshreader.AddElementReader(Teuchos::rcp(
               new DRT::INPUT::ElementReader(dis_micro, micro_reader, "--TRANSPORT ELEMENTS")));
 
-        micromeshreader.Read();
+        micromeshreader.ReadAndPartition();
 
         // read conditions of microscale
         // -> note that no time curves and spatial functions can be read!
@@ -2541,7 +2541,7 @@ void DRT::Problem::ReadMicrofieldsNPsupport()
     DRT::INPUT::MeshReader micromeshreader(micro_reader, "--NODE COORDS");
     micromeshreader.AddElementReader(Teuchos::rcp(
         new DRT::INPUT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
-    micromeshreader.Read();
+    micromeshreader.ReadAndPartition();
 
     // read conditions of microscale
     // -> note that no time curves and spatial functions can be read!
