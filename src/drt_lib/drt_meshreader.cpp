@@ -51,7 +51,7 @@ namespace DRT
           std::string fullsectionname("--" + sectionname + " ELEMENTS");
           Teuchos::RCP<ElementReader> er = Teuchos::rcp(
               new DRT::INPUT::ElementReader(dis, reader, fullsectionname, elementtypes));
-          ereader_.push_back(er);
+          element_readers_.push_back(er);
           break;
         }
         case INPAR::geometry_box:
@@ -59,7 +59,7 @@ namespace DRT
           std::string fullsectionname("--" + sectionname + " DOMAIN");
           Teuchos::RCP<DomainReader> dr = Teuchos::rcp(
               new DRT::INPUT::DomainReader(dis, reader, fullsectionname, elementtypes));
-          dreader_.push_back(dr);
+          domain_readers_.push_back(dr);
           break;
         }
         case INPAR::geometry_file:
@@ -92,11 +92,11 @@ namespace DRT
     std::vector<Teuchos::RCP<DRT::Discretization>> MeshReader::FindDisNode(int nodeid)
     {
       std::vector<Teuchos::RCP<DRT::Discretization>> v;
-      for (unsigned i = 0; i < ereader_.size(); ++i)
+      for (unsigned i = 0; i < element_readers_.size(); ++i)
       {
-        if (ereader_[i]->HasNode(nodeid))
+        if (element_readers_[i]->HasNode(nodeid))
         {
-          v.push_back(ereader_[i]->MyDis());
+          v.push_back(element_readers_[i]->MyDis());
         }
       }
       return v;
@@ -123,9 +123,9 @@ namespace DRT
 
       if (numnodes > 0)  // skip it altogether, if no nodes are in the .dat-file
       {
-        for (unsigned i = 0; i < ereader_.size(); ++i)
+        for (unsigned i = 0; i < element_readers_.size(); ++i)
         {
-          ereader_[i]->Partition();
+          element_readers_[i]->Partition();
         }
 
         Epetra_Time time(*comm_);
@@ -434,11 +434,12 @@ namespace DRT
 
           // export block of nodes to other processors as reflected in rownodes,
           // changes ownership of nodes
-          for (unsigned i = 0; i < ereader_.size(); ++i)
+          for (unsigned i = 0; i < element_readers_.size(); ++i)
           {
-            ereader_[i]->dis_->ProcZeroDistributeNodesToAll(*ereader_[i]->rownodes_);
+            element_readers_[i]->dis_->ProcZeroDistributeNodesToAll(
+                *element_readers_[i]->rownodes_);
             // this does the same job but slower
-            // ereader_[i]->dis_->ExportRowNodes(*ereader_[i]->rownodes_);
+            // element_readers_[i]->dis_->ExportRowNodes(*element_readers_[i]->rownodes_);
           }
           double t3 = time.ElapsedTime();
           if (!myrank && !reader_.MyOutputFlag())
@@ -450,36 +451,36 @@ namespace DRT
         }  // for (int block=0; block<nblock; ++block)
 
         // last thing to do here is to produce nodal ghosting/overlap
-        for (unsigned i = 0; i < ereader_.size(); ++i)
+        for (unsigned i = 0; i < element_readers_.size(); ++i)
         {
-          ereader_[i]->dis_->ExportColumnNodes(*ereader_[i]->colnodes_);
+          element_readers_[i]->dis_->ExportColumnNodes(*element_readers_[i]->colnodes_);
         }
 
         if (!myrank && !reader_.MyOutputFlag())
           printf(
               "in............................................. %10.5e secs\n", time.ElapsedTime());
 
-        for (unsigned i = 0; i < ereader_.size(); ++i)
+        for (unsigned i = 0; i < element_readers_.size(); ++i)
         {
-          ereader_[i]->Complete();
+          element_readers_[i]->Complete();
         }
       }
 
       /********************************************************
        * now we process all domains that use the domainreader *
        ********************************************************/
-      for (size_t i = 0; i < dreader_.size(); ++i)
+      for (size_t i = 0; i < domain_readers_.size(); ++i)
       {
         // communicate node offset to all procs
         int lmaxnodeid = maxnodeid;
         comm_->MaxAll(&lmaxnodeid, &maxnodeid, 1);
-        dreader_[i]->Partition(&maxnodeid);
+        domain_readers_[i]->Partition(&maxnodeid);
         maxnodeid++;
       }
 
-      for (size_t i = 0; i < dreader_.size(); ++i)
+      for (size_t i = 0; i < domain_readers_.size(); ++i)
       {
-        dreader_[i]->Complete();
+        domain_readers_[i]->Complete();
       }
 
       int lmaxnodeid = maxnodeid;

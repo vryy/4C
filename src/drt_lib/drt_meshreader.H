@@ -42,7 +42,7 @@ namespace DRT
 
         \param er (i) a reader of one discretization that uses (a fraction of) our nodes
        */
-      void AddElementReader(Teuchos::RCP<ElementReader> er) { ereader_.push_back(er); }
+      void AddElementReader(Teuchos::RCP<ElementReader> er) { element_readers_.push_back(er); }
 
       /*!
        * \brief Adds the selected element/domain/file reader to this nodereader
@@ -110,10 +110,10 @@ namespace DRT
       std::string sectionname_;
 
       /// my element readers
-      std::vector<Teuchos::RCP<ElementReader>> ereader_;
+      std::vector<Teuchos::RCP<ElementReader>> element_readers_;
 
       /// my domain readers
-      std::vector<Teuchos::RCP<DomainReader>> dreader_;
+      std::vector<Teuchos::RCP<DomainReader>> domain_readers_;
     };
 
   }  // namespace INPUT
