@@ -109,7 +109,30 @@ namespace DRT
       /// Return the list of column nodes
       Teuchos::RCP<Epetra_Map> MyColNodes() const { return colnodes_; }
 
-      /// read elements, partition node graph
+      /*! Read elements and partition the node graph
+
+      - read global ids of elements of this discretization
+        (this is one fully redundant vector for elements)
+      - determine a preliminary element distribution. The fully redundant
+        vector is trashed after the construction.
+      - define blocksizes for blocks of elements we read (not necessarily
+        the same as it was used to construct the map --- we may have a
+        smaller blocksize here).
+      - read elements of this discretization and distribute according
+        to a linear map. While reading, remember node gids an assemble
+        them into a second fully redundant vector (mapping vertex id->gid).
+        In addition, we keep them in a fully redundant set (required by
+        node reader). Construct reverse lookup from gids to vertex ids.
+        Again, this is a global, fully redundant map!
+      - define preliminary linear distributed nodal row map
+      - determine adjacency array (i.e. the infos for the node graph)
+        using the nodal row distribution and a round robin communication
+        of element connectivity information.
+        Use adjacency array to build an initial Crsgraph on the linear map.
+      - do partitioning using parmetis
+        Results are distributed to other procs using two global vectors!
+      - build final nodal row map, export graph to the new map
+      */
       virtual void ReadAndPartition();
 
       /*!
