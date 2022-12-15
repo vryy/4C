@@ -104,7 +104,7 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    void DomainReader::Partition(int* nodeoffset)
+    void DomainReader::CreatePartitionedMesh(int* nodeoffset)
     {
       const int myrank = comm_->MyPID();
       const int numproc = comm_->NumProc();

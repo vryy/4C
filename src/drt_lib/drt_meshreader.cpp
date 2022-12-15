@@ -471,7 +471,7 @@ namespace DRT
         int local_max_node_id = max_node_id;
         comm_->MaxAll(&local_max_node_id, &max_node_id, 1);
 
-        domain_reader->Partition(&max_node_id);
+        domain_reader->CreatePartitionedMesh(&max_node_id);
 
         max_node_id++;
       }

@@ -94,7 +94,7 @@ namespace DRT
        *
        * \param nodeoffset [in/out] Node GIDs may not overlap, so this must/will be MaxGID+1
        */
-      virtual void Partition(int* nodeoffset);
+      virtual void CreatePartitionedMesh(int* nodeoffset);
 
       /// finialize reading. FillComplete(false,false,false), that is, do not
       /// initialize elements. This is done later after reading boundary conditions.
