@@ -108,7 +108,7 @@ namespace DRT
     /*----------------------------------------------------------------------*/
     void MeshReader::ReadAndPartition()
     {
-      // we need this as the offset for the domain reader
+      // We need to track the max global node ID to offset node numbering and for sanity checks
       int max_node_id = 0;
 
       ReadMeshFromDatFile(max_node_id);
