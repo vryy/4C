@@ -436,7 +436,8 @@ namespace DRT
         // changes ownership of nodes
         for (unsigned i = 0; i < element_readers_.size(); ++i)
         {
-          element_readers_[i]->dis_->ProcZeroDistributeNodesToAll(*element_readers_[i]->rownodes_);
+          element_readers_[i]->MyDis()->ProcZeroDistributeNodesToAll(
+              *element_readers_[i]->MyRowNodes());
           // this does the same job but slower
           // element_readers_[i]->dis_->ExportRowNodes(*element_readers_[i]->rownodes_);
         }
@@ -451,7 +452,7 @@ namespace DRT
       // last thing to do here is to produce nodal ghosting/overlap
       for (unsigned i = 0; i < element_readers_.size(); ++i)
       {
-        element_readers_[i]->dis_->ExportColumnNodes(*element_readers_[i]->colnodes_);
+        element_readers_[i]->MyDis()->ExportColumnNodes(*element_readers_[i]->MyColNodes());
       }
 
       if (myrank == 0 && !reader_.MyOutputFlag())

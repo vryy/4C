@@ -58,41 +58,42 @@ namespace DRT
     /*----------------------------------------------------------------------*/
     class ElementReader
     {
-      friend class MeshReader;
-
      public:
-      /// construct element reader for a given field that reads a given section
       /*!
-        Create empty discretization and append it to given field.
+      \brief Construct element reader for a given field that reads a given section
 
-        \param dis (i) the new discretization
-        \param comm (i) our communicator
-        \param sectionname (i) the section that contains the element lines
-       */
+      Create empty discretization and append it to given field.
+
+      \param dis (i) the new discretization
+      \param comm (i) our communicator
+      \param sectionname (i) the section that contains the element lines
+      */
       ElementReader(
           Teuchos::RCP<Discretization> dis, const DatFileReader& reader, std::string sectionname);
 
-      /// construct element reader for a given field that reads a given section
       /*!
-        Create empty discretization and append it to given field.
+      \brief Construct element reader for a given field that reads a given section
 
-        \param dis (i) the new discretization
-        \param comm (i) our communicator
-        \param sectionname (i) the section that contains the element lines
-        \param elementtype (i) element type name to read in this discretization
-       */
+      Create empty discretization and append it to given field.
+
+      \param dis (i) the new discretization
+      \param comm (i) our communicator
+      \param sectionname (i) the section that contains the element lines
+      \param elementtype (i) element type name to read in this discretization
+      */
       ElementReader(Teuchos::RCP<Discretization> dis, const DatFileReader& reader,
           std::string sectionname, std::string elementtype);
 
-      /// construct element reader for a given field that reads a given section
       /*!
-        Create empty discretization and append it to given field.
+      \brief Construct element reader for a given field that reads a given section
 
-        \param dis (i) the new discretization
-        \param comm (i) our communicator
-        \param sectionname (i) the section that contains the element lines
-        \param elementtypes (i) element type names to read in this discretization
-       */
+      Create empty discretization and append it to given field.
+
+      \param dis (i) the new discretization
+      \param comm (i) our communicator
+      \param sectionname (i) the section that contains the element lines
+      \param elementtypes (i) element type names to read in this discretization
+      */
       ElementReader(Teuchos::RCP<Discretization> dis, const DatFileReader& reader,
           std::string sectionname, const std::set<std::string>& elementtypes);
 
@@ -102,21 +103,31 @@ namespace DRT
       /// give the discretization this reader fills
       Teuchos::RCP<Discretization> MyDis() const { return dis_; }
 
-     protected:
+      /// Return the list of row nodes
+      Teuchos::RCP<Epetra_Map> MyRowNodes() const { return rownodes_; }
+
+      /// Return the list of column nodes
+      Teuchos::RCP<Epetra_Map> MyColNodes() const { return colnodes_; }
+
       /// read elements, partition node graph
       virtual void ReadAndPartition();
 
-      /// tell whether the given node belongs to us
       /*!
-        \note This is based on the redundant nodes_ set and only available
-        on processor 0.
-       */
+      \brief Tell whether the given node belongs to us
+
+      \note This is based on the redundant nodes_ set and only available on processor 0.
+      */
       bool HasNode(int nodeid) { return nodes_.find(nodeid) != nodes_.end(); }
 
-      /// finialize reading. FillComplete(false,false,false), that is, do not
-      /// initialize elements. This is done later after reading boundary conditions.
+      /*!
+      \brief Finialize reading.
+
+      FillComplete(false,false,false), that is, do not initialize elements. This is done later after
+      reading boundary conditions.
+      */
       void Complete();
 
+     private:
       /// discretization name
       std::string name_;
 
@@ -129,12 +140,13 @@ namespace DRT
       /// my section to read
       std::string sectionname_;
 
-      /// all global node ids of a discretization on processor 0
       /*!
-        This is a redundant set of all node numbers. But it is only valid
-        on processor 0. We need it to easily figure out to which
-        discretization a node belongs.
-       */
+      \brief All global node ids of a discretization on processor 0
+
+      This is a redundant set of all node numbers. But it is only valid
+      on processor 0. We need it to easily figure out to which
+      discretization a node belongs.
+      */
       std::set<int> nodes_;
 
       /// my discretization
