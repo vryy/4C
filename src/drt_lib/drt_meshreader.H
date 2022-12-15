@@ -97,8 +97,13 @@ namespace DRT
       void ReadAndPartition();
 
      private:
-      /// find the discretization that contains the given node
-      std::vector<Teuchos::RCP<DRT::Discretization>> FindDisNode(int nodeid);
+      /*!
+      \brief Find all discretizations that contain the given node
+
+      \param[in] nodeid Global ID of node of interest
+      \return Vector with all discretizations containing the node of interest
+      */
+      std::vector<Teuchos::RCP<DRT::Discretization>> FindDisNode(int global_node_id);
 
       /*!
       \brief Read pre-generated mesh from dat-file

@@ -89,17 +89,18 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    std::vector<Teuchos::RCP<DRT::Discretization>> MeshReader::FindDisNode(int nodeid)
+    std::vector<Teuchos::RCP<DRT::Discretization>> MeshReader::FindDisNode(int global_node_id)
     {
-      std::vector<Teuchos::RCP<DRT::Discretization>> v;
-      for (unsigned i = 0; i < element_readers_.size(); ++i)
+      std::vector<Teuchos::RCP<DRT::Discretization>> list_of_discretizations;
+      for (const auto element_reader : element_readers_)
       {
-        if (element_readers_[i]->HasNode(nodeid))
+        if (element_reader->HasNode(global_node_id))
         {
-          v.push_back(element_readers_[i]->MyDis());
+          list_of_discretizations.emplace_back(element_reader->MyDis());
         }
       }
-      return v;
+
+      return list_of_discretizations;
     }
 
 
