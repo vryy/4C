@@ -136,19 +136,19 @@ namespace DRT
       // so the number of blocks is numproc
       // OR number of blocks is numnodes if less nodes than procs are read in
       // determine a rough blocksize
-      int nblock = std::min(comm_->NumProc(), numnodes);
-      int bsize = std::max(numnodes / nblock, 1);
+      int number_of_blocks = std::min(comm_->NumProc(), numnodes);
+      int blocksize = std::max(numnodes / number_of_blocks, 1);
 
-      // an upper limit for bsize
+      // an upper limit for blocksize
       const int maxblocksize = 200000;
 
-      if (bsize > maxblocksize)
+      if (blocksize > maxblocksize)
       {
-        // without an additional increase of nblock by 1 the last block size
+        // without an additional increase of number_of_blocks by 1 the last block size
         // could reach a maximum value of (2*maxblocksize)-1, potentially
         // violating the intended upper limit!
-        nblock = 1 + static_cast<int>(numnodes / maxblocksize);
-        bsize = maxblocksize;
+        number_of_blocks = 1 + static_cast<int>(numnodes / maxblocksize);
+        blocksize = maxblocksize;
       }
 
       // open input file at the right position
@@ -165,21 +165,22 @@ namespace DRT
 
       if (myrank == 0 && !reader_.MyOutputFlag())
       {
-        printf("numnode %d nblock %d bsize %d\n", numnodes, nblock, bsize);
+        printf(
+            "numnode %d number_of_blocks %d blocksize %d\n", numnodes, number_of_blocks, blocksize);
         fflush(stdout);
       }
 
 
       // note that the last block is special....
       int filecount = 0;
-      for (int block = 0; block < nblock; ++block)
+      for (int block = 0; block < number_of_blocks; ++block)
       {
         double t1 = time.ElapsedTime();
         if (myrank == 0)
         {
           if (!reader_.MyOutputFlag()) printf("block %d ", block);
 
-          int bcount = 0;
+          int block_counter = 0;
           for (; file; ++filecount)
           {
             file >> tmp;
@@ -221,9 +222,9 @@ namespace DRT
                   diss[i]->AddNode(node);
                 }
               }
-              ++bcount;
-              if (block != nblock - 1)  // last block takes all the rest
-                if (bcount == bsize)    // block is full
+              ++block_counter;
+              if (block != number_of_blocks - 1)  // last block takes all the rest
+                if (block_counter == blocksize)   // block is full
                 {
                   ++filecount;
                   break;
@@ -260,9 +261,9 @@ namespace DRT
               {
                 dserror("no valid immersed node definition");
               }
-              ++bcount;
-              if (block != nblock - 1)  // last block takes all the rest
-                if (bcount == bsize)    // block is full
+              ++block_counter;
+              if (block != number_of_blocks - 1)  // last block takes all the rest
+                if (block_counter == blocksize)   // block is full
                 {
                   ++filecount;
                   break;
@@ -291,9 +292,9 @@ namespace DRT
                     Teuchos::rcp(new DRT::NURBS::ControlPoint(cpid, coords, weight, myrank));
                 dis->AddNode(node);
               }
-              ++bcount;
-              if (block != nblock - 1)  // last block takes all the rest
-                if (bcount == bsize)    // block is full
+              ++block_counter;
+              if (block != number_of_blocks - 1)  // last block takes all the rest
+                if (block_counter == blocksize)   // block is full
                 {
                   ++filecount;
                   break;
@@ -411,10 +412,10 @@ namespace DRT
                 dis->AddNode(node);
               }
 
-              ++bcount;
-              if (block != nblock - 1)  // last block takes all the rest
+              ++block_counter;
+              if (block != number_of_blocks - 1)  // last block takes all the rest
               {
-                if (bcount == bsize)  // block is full
+                if (block_counter == blocksize)  // block is full
                 {
                   ++filecount;
                   break;
