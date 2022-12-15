@@ -296,7 +296,6 @@ MAT::PAR::FluidPoroPhaseLawByFunction::FluidPoroPhaseLawByFunction(
   // check if sizes fit
   if (numdof_ != (int)presids_->size())
     dserror("number of dofs %d does not fit to size of dof vector %d", numdof_, presids_->size());
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -326,22 +325,14 @@ void MAT::PAR::FluidPoroPhaseLawByFunction::InitializeInternal()
   if (Function<dim>(functionID_pressure_ - 1).NumberComponents() != 1)
     dserror("expected only one component for the pressure evaluation");
 
-  // define saturation variable
-  if (not Function<dim>(functionID_pressure_ - 1).IsVariable(0, "S"))
-    Function<dim>(functionID_pressure_ - 1).AddVariable(0, "S", 0.0);
-  // define pressure variable
-  if (not Function<dim>(functionID_saturation_ - 1).IsVariable(0, "dp"))
-    Function<dim>(functionID_saturation_ - 1).AddVariable(0, "dp", 0.0);
 
   // initialize pressure vector for function evaluation
   dp_.clear();
-  dp_.push_back(std::pair<std::string, double>("dp", 0.0));
+  dp_.emplace_back("dp", 0.0);
 
   // initialize saturation vector for function evaluation
   S_.clear();
-  S_.push_back(std::pair<std::string, double>("S", 0.0));
-
-  return;
+  S_.emplace_back("S", 0.0);
 }
 
 

@@ -13,6 +13,7 @@
 #define DRT_FUNCTIONVARIABLES_H
 
 #include <Sacado.hpp>
+#include "symbolic_expression.H"
 
 // define periodicstruct
 struct periodicstruct
@@ -22,216 +23,201 @@ struct periodicstruct
   double t2;
 };
 
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-namespace DRT
+namespace DRT::UTILS
 {
-  namespace PARSER
+  /// class that defines the main properties of a time dependent variable
+  class FunctionVariable
   {
-    template <typename>
-    class Parser;
-  }
+   public:
+    /// Base constructor takign the @p name of the FunctionVariable.
+    FunctionVariable(std::string name);
 
-  namespace UTILS
+    /// Virtual destructor.
+    virtual ~FunctionVariable() = default;
+
+    /// evaluate the function at given time
+    virtual double Value(const double t) = 0;
+
+    /// evaluate the time derivative at given time
+    virtual double TimeDerivativeValue(const double t, const unsigned deg = 1) = 0;
+
+    /// check the inclusion of the considered time
+    virtual bool ContainTime(const double t) = 0;
+
+    /// return the name of the variable
+    std::string Name() { return name_; }
+
+   private:
+    /// name of the variable
+    const std::string name_;
+  };
+
+
+  /// variable based on a parsed expression
+  class ParsedFunctionVariable : public FunctionVariable
   {
-    /// class that defines the main properties of a time dependent variable
-    class FunctionVariable
-    {
-     public:
-      /// Base constructor takign the @p name of the FunctionVariable.
-      FunctionVariable(std::string name);
+   public:
+    ParsedFunctionVariable(std::string name, const std::string& buf);
 
-      /// Virtual destructor.
-      virtual ~FunctionVariable() = default;
+    /// evaluate the function at given time
+    double Value(const double t) override;
 
-      /// evaluate the function at given time
-      virtual double Value(const double t) = 0;
+    /// evaluate the time derivative at given time
+    double TimeDerivativeValue(const double t, const unsigned deg = 1) override;
 
-      /// evaluate the time derivative at given time
-      virtual double TimeDerivativeValue(const double t, const unsigned deg = 1) = 0;
+    /// check the inclusion of the considered time
+    bool ContainTime(const double t) override;
 
-      /// check the inclusion of the considered time
-      virtual bool ContainTime(const double t) = 0;
-
-      /// return the name of the variable
-      std::string Name() { return name_; }
-
-     private:
-      /// name of the variable
-      const std::string name_;
-    };
+   private:
+    /// parsed function
+    Teuchos::RCP<DRT::UTILS::SymbolicExpression<double>> timefunction_;
+  };
 
 
-    /// variable based on a parsed expression
-    class ParsedFunctionVariable : public FunctionVariable
-    {
-     public:
-      ParsedFunctionVariable(std::string name, const std::string& buf);
+  /// variable based on a linear interpolation
+  class LinearInterpolationVariable : public FunctionVariable
+  {
+   public:
+    LinearInterpolationVariable(std::string name, std::vector<double> times,
+        std::vector<double> values, struct periodicstruct periodicdata);
 
-      /// evaluate the function at given time
-      double Value(const double t) override;
+    /// evaluate the function at given time
+    double Value(const double t) override;
 
-      /// evaluate the time derivative at given time
-      double TimeDerivativeValue(const double t, const unsigned deg = 1) override;
+    /// templated function to evaluate and to derive from using sacado
+    template <typename ScalarT>
+    ScalarT Value(const ScalarT& t);
 
-      /// check the inclusion of the considered time
-      bool ContainTime(const double t) override;
+    /// evaluate the time derivative at given time
+    double TimeDerivativeValue(const double t, const unsigned deg = 1) override;
 
-     private:
-      /// parsed function
-      Teuchos::RCP<DRT::PARSER::Parser<double>> timefunction_;
+    /// check the inclusion of the considered time
+    bool ContainTime(const double t) override;
 
-      // parsed derivative
-      Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>>
-          timederivative_;
-    };
+   private:
+    /// times for the interpolation
+    const std::vector<double> times_;
 
+    /// values for the interpolation
+    const std::vector<double> values_;
 
-    /// variable based on a linear interpolation
-    class LinearInterpolationVariable : public FunctionVariable
-    {
-     public:
-      LinearInterpolationVariable(std::string name, std::vector<double> times,
-          std::vector<double> values, struct periodicstruct periodicdata);
+    /// flag for periodic repetition
+    const bool periodic_;
 
-      /// evaluate the function at given time
-      double Value(const double t) override;
+    /// initial time of the periodic repetition
+    const double t1_;
 
-      /// templated function to evaluate and to derive from using sacado
-      template <typename ScalarT>
-      ScalarT Value(const ScalarT& t);
-
-      /// evaluate the time derivative at given time
-      double TimeDerivativeValue(const double t, const unsigned deg = 1) override;
-
-      /// check the inclusion of the considered time
-      bool ContainTime(const double t) override;
-
-     private:
-      /// times for the interpolation
-      const std::vector<double> times_;
-
-      /// values for the interpolation
-      const std::vector<double> values_;
-
-      /// flag for periodic repetition
-      const bool periodic_;
-
-      /// initial time of the periodic repetition
-      const double t1_;
-
-      /// final time of the periodic repetition
-      const double t2_;
-    };
+    /// final time of the periodic repetition
+    const double t2_;
+  };
 
 
-    /// variable based on a set of parsed expressions
-    class MultiFunctionVariable : public FunctionVariable
-    {
-     public:
-      MultiFunctionVariable(std::string name, std::vector<double> times,
-          std::vector<std::string> description_vec, struct periodicstruct periodicdata);
+  /// variable based on a set of parsed expressions
+  class MultiFunctionVariable : public FunctionVariable
+  {
+   public:
+    MultiFunctionVariable(std::string name, std::vector<double> times,
+        std::vector<std::string> description_vec, struct periodicstruct periodicdata);
 
-      /// evaluate the function at given time
-      double Value(const double t) override;
+    /// evaluate the function at given time
+    double Value(const double t) override;
 
-      /// evaluate the time derivative at given time
-      double TimeDerivativeValue(const double t, const unsigned deg = 1) override;
+    /// evaluate the time derivative at given time
+    double TimeDerivativeValue(const double t, const unsigned deg = 1) override;
 
-      /// check the inclusion of the considered time
-      bool ContainTime(const double t) override;
+    /// check the inclusion of the considered time
+    bool ContainTime(const double t) override;
 
-     private:
-      /// times defining each interval
-      const std::vector<double> times_;
+   private:
+    /// times defining each interval
+    const std::vector<double> times_;
 
-      /// vector of parsed functions
-      std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>> timefunction_;
-
-      /// vector of parsed derivatives
-      std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>>>
-          timederivative_;
-
-      /// flag for periodic repetition
-      const bool periodic_;
-
-      /// initial time of the periodic repetition
-      const double t1_;
-
-      /// final time of the periodic repetition
-      const double t2_;
-    };
+    /// vector of parsed functions
+    std::vector<Teuchos::RCP<DRT::UTILS::SymbolicExpression<double>>> timefunction_;
 
 
-    /// variable based on a Fourier interpolation
-    class FourierInterpolationVariable : public FunctionVariable
-    {
-     public:
-      FourierInterpolationVariable(std::string name, std::vector<double> times,
-          std::vector<double> values, struct periodicstruct periodicdata);
+    /// flag for periodic repetition
+    const bool periodic_;
 
-      /// evaluate the function at given time
-      double Value(const double t) override;
+    /// initial time of the periodic repetition
+    const double t1_;
 
-      /// templated function to evaluate and to derive from using sacado
-      template <typename ScalarT>
-      ScalarT Value(const ScalarT& t);
-
-      /// evaluate the time derivative at given time
-      double TimeDerivativeValue(const double t, const unsigned deg = 1) override;
-
-      /// check the inclusion of the considered time
-      bool ContainTime(const double t) override;
-
-     private:
-      /// times for the interpolation
-      const std::vector<double> times_;
-
-      /// values for the interpolation
-      const std::vector<double> values_;
-
-      /// flag for periodic repetition
-      const bool periodic_;
-
-      /// initial time of the periodic repetition
-      const double t1_;
-
-      /// final time of the periodic repetition
-      const double t2_;
-    };
+    /// final time of the periodic repetition
+    const double t2_;
+  };
 
 
-    /**
-     * @brief A FunctionVariable constructed piece-wise from other FunctionVariables.
-     *
-     * When the function is evaluated with either a call to Value() or TimeDerivativeValue(), the
-     * first piece that contains the given time will be used for evaluation, even if multiple pieces
-     * would be able to evaluate the time.
-     */
-    class PiecewiseVariable : public FunctionVariable
-    {
-     public:
-      //! Create a PiecewiseVariable from the given @p pieces.
-      PiecewiseVariable(
-          const std::string& name, std::vector<Teuchos::RCP<FunctionVariable>> pieces);
+  /// variable based on a Fourier interpolation
+  class FourierInterpolationVariable : public FunctionVariable
+  {
+   public:
+    FourierInterpolationVariable(std::string name, std::vector<double> times,
+        std::vector<double> values, struct periodicstruct periodicdata);
 
-      double Value(double t) override;
+    /// evaluate the function at given time
+    double Value(const double t) override;
 
-      double TimeDerivativeValue(double t, unsigned int deg) override;
+    /// templated function to evaluate and to derive from using sacado
+    template <typename ScalarT>
+    ScalarT Value(const ScalarT& t);
 
-      bool ContainTime(double t) override;
+    /// evaluate the time derivative at given time
+    double TimeDerivativeValue(const double t, const unsigned deg = 1) override;
 
-     private:
-      //! Helper function to access the piece that contains time @p time. Returns the first
-      //! FunctionVariable that contains the time @p t and does not check if other FunctionVariables
-      //! also contain it.
-      FunctionVariable& FindPieceForTime(double t);
+    /// check the inclusion of the considered time
+    bool ContainTime(const double t) override;
 
-      //! Store the pieces that make up the variable in different time intervals.
-      std::vector<Teuchos::RCP<FunctionVariable>> pieces_;
-    };
+   private:
+    /// times for the interpolation
+    const std::vector<double> times_;
 
-  }  // namespace UTILS
-}  // namespace DRT
+    /// values for the interpolation
+    const std::vector<double> values_;
+
+    /// flag for periodic repetition
+    const bool periodic_;
+
+    /// initial time of the periodic repetition
+    const double t1_;
+
+    /// final time of the periodic repetition
+    const double t2_;
+  };
+
+
+  /**
+   * @brief A FunctionVariable constructed piece-wise from other FunctionVariables.
+   *
+   * When the function is evaluated with either a call to Value() or TimeDerivativeValue(), the
+   * first piece that contains the given time will be used for evaluation, even if multiple pieces
+   * would be able to evaluate the time.
+   */
+  class PiecewiseVariable : public FunctionVariable
+  {
+   public:
+    //! Create a PiecewiseVariable from the given @p pieces.
+    PiecewiseVariable(const std::string& name, std::vector<Teuchos::RCP<FunctionVariable>> pieces);
+
+    double Value(double t) override;
+
+    double TimeDerivativeValue(double t, unsigned int deg) override;
+
+    bool ContainTime(double t) override;
+
+   private:
+    //! Helper function to access the piece that contains time @p time. Returns the first
+    //! FunctionVariable that contains the time @p t and does not check if other FunctionVariables
+    //! also contain it.
+    FunctionVariable& FindPieceForTime(double t);
+
+    //! Store the pieces that make up the variable in different time intervals.
+    std::vector<Teuchos::RCP<FunctionVariable>> pieces_;
+  };
+
+}  // namespace DRT::UTILS
 
 #endif

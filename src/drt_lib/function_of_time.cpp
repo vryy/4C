@@ -6,7 +6,7 @@
 #include "function_of_time.H"
 
 #include "drt_linedefinition.H"
-#include "drt_parser.H"
+#include "symbolic_expression.H"
 
 namespace
 {
@@ -78,27 +78,12 @@ DRT::UTILS::SymbolicFunctionOfTime::SymbolicFunctionOfTime(
     std::vector<Teuchos::RCP<FunctionVariable>> variables)
     : variables_(std::move(variables))
 {
-  const auto addVariablesToParser = [this](auto& parser)
-  {
-    parser->AddVariable("t", 0);
-
-    for (const auto& var : variables_) parser->AddVariable(var->Name(), 0);
-  };
-
   for (const auto& expression : expressions)
   {
     {
-      auto parser = Teuchos::rcp(new DRT::PARSER::Parser<ValueType>(expression));
-      addVariablesToParser(parser);
-      parser->ParseFunction();
-      expr_.push_back(parser);
-    }
-
-    {
-      auto parser = Teuchos::rcp(new DRT::PARSER::Parser<FirstDerivativeType>(expression));
-      addVariablesToParser(parser);
-      parser->ParseFunction();
-      dexprdt_.push_back(parser);
+      auto symbolicexpression =
+          Teuchos::rcp(new DRT::UTILS::SymbolicExpression<ValueType>(expression));
+      expr_.push_back(symbolicexpression);
     }
   }
 }
@@ -106,19 +91,23 @@ DRT::UTILS::SymbolicFunctionOfTime::SymbolicFunctionOfTime(
 double DRT::UTILS::SymbolicFunctionOfTime::Evaluate(
     const double time, const std::size_t component) const
 {
-  expr_[component]->SetValue("t", time);
+  std::map<std::string, ValueType> variable_values;
+
+  variable_values.emplace("t", time);
 
   for (const auto& variable : variables_)
   {
-    expr_[component]->SetValue(variable->Name(), variable->Value(time));
+    variable_values.emplace(variable->Name(), variable->Value(time));
   }
 
-  return expr_[component]->Evaluate();
+  return expr_[component]->Value(variable_values);
 }
 
 double DRT::UTILS::SymbolicFunctionOfTime::EvaluateDerivative(
     const double time, const std::size_t component) const
 {
+  std::map<std::string, FirstDerivativeType> variable_values;
+
   // define FAD variables
   // argument is only time
   const int number_of_arguments = 1;
@@ -135,15 +124,15 @@ double DRT::UTILS::SymbolicFunctionOfTime::EvaluateDerivative(
   }
 
   // set temporal variable
-  dexprdt_[component]->SetValue("t", tfad);
+  variable_values.emplace("t", tfad);
 
   // set the values of the variables at time t
   for (unsigned int i = 0; i < variables_.size(); ++i)
   {
-    dexprdt_[component]->SetValue(variables_[i]->Name(), fadvectvars[i]);
+    variable_values.emplace(variables_[i]->Name(), fadvectvars[i]);
   }
 
-  auto f_dfad = dexprdt_[component]->Evaluate();
+  auto f_dfad = expr_[component]->FirstDerivative(variable_values, {});
 
   double f_dt = f_dfad.dx(0);
   for (int i = 0; i < static_cast<int>(variables_.size()); ++i)
