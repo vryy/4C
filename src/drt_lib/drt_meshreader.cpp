@@ -112,12 +112,7 @@ namespace DRT
 
       ReadMeshFromDatFile(max_node_id);
       CreateInlineMesh(max_node_id);
-
-      int local_max_node_id = max_node_id;
-      comm_->MaxAll(&local_max_node_id, &max_node_id, 1);
-      if ((max_node_id < comm_->NumProc()) && (reader_.ExcludedSectionLength(sectionname_) != 0))
-        dserror("Bad idea: Simulation with %d procs for problem with %d nodes", comm_->NumProc(),
-            max_node_id);
+      ThrowIfNotEnoughNodes(max_node_id);
     }
 
     /*----------------------------------------------------------------------*/
@@ -482,6 +477,18 @@ namespace DRT
       }
 
       for (const auto domain_reader : domain_readers_) domain_reader->Complete();
+    }
+
+    /*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
+    void MeshReader::ThrowIfNotEnoughNodes(int max_node_id) const
+    {
+      int local_max_node_id = max_node_id;
+      comm_->MaxAll(&local_max_node_id, &max_node_id, 1);
+
+      if ((max_node_id < comm_->NumProc()) && (reader_.ExcludedSectionLength(sectionname_) != 0))
+        dserror("Bad idea: Simulation with %d procs for problem with %d nodes", comm_->NumProc(),
+            max_node_id);
     }
 
   }  // namespace INPUT

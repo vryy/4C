@@ -118,6 +118,14 @@ namespace DRT
       */
       void CreateInlineMesh(int& node_id_offset);
 
+      /*!
+      \brief Check for sufficient number of nodes and throw if too few
+
+      We need at least as many nodes as there are processors. If there are not enough nodes, throw
+      an error.
+      */
+      void ThrowIfNotEnoughNodes(int max_node_id) const;
+
       /// the main dat file reader
       const DatFileReader& reader_;
 
