@@ -466,27 +466,30 @@ namespace DRT
         }
       }
 
-      /********************************************************
-       * now we process all domains that use the domainreader *
-       ********************************************************/
-      for (size_t i = 0; i < domain_readers_.size(); ++i)
-      {
-        // communicate node offset to all procs
-        int lmaxnodeid = maxnodeid;
-        comm_->MaxAll(&lmaxnodeid, &maxnodeid, 1);
-        domain_readers_[i]->Partition(&maxnodeid);
-        maxnodeid++;
-      }
-
-      for (size_t i = 0; i < domain_readers_.size(); ++i)
-      {
-        domain_readers_[i]->Complete();
-      }
+      CreateInlineMesh(maxnodeid);
 
       int lmaxnodeid = maxnodeid;
       comm_->MaxAll(&lmaxnodeid, &maxnodeid, 1);
       if ((maxnodeid < numproc) && (numnodes != 0))
         dserror("Bad idea: Simulation with %d procs for problem with %d nodes", numproc, maxnodeid);
+    }
+
+    /*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
+    void MeshReader::CreateInlineMesh(int& node_id_offset)
+    {
+      for (const auto domain_reader : domain_readers_)
+      {
+        // communicate node offset to all procs
+        int local_node_id_offset = node_id_offset;
+        comm_->MaxAll(&local_node_id_offset, &node_id_offset, 1);
+
+        domain_reader->Partition(&node_id_offset);
+
+        node_id_offset++;
+      }
+
+      for (const auto domain_reader : domain_readers_) domain_reader->Complete();
     }
 
   }  // namespace INPUT

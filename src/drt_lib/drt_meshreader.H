@@ -100,6 +100,16 @@ namespace DRT
       /// find the discretization that contains the given node
       std::vector<Teuchos::RCP<DRT::Discretization>> FindDisNode(int nodeid);
 
+      /*!
+      \brief Create inline mesh
+
+      Ask the DomainReader to process input data and create a mesh at runtime.
+
+      \param[in/out] node_id_offset Global offset to start node numbering (based on already existing
+      nodes)
+      */
+      void CreateInlineMesh(int& node_id_offset);
+
       /// the main dat file reader
       const DatFileReader& reader_;
 
