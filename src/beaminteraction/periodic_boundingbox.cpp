@@ -689,7 +689,7 @@ LINALG::Matrix<3, 1> GEO::MESHFREE::BoundingBox::CurrentPositionOfCornerPoint(in
  *----------------------------------------------------------------------------*/
 void GEO::MESHFREE::BoundingBox::UndeformedBoxCornerPointPosition(int i, double* x) const
 {
-  // to get numbering according to baci convention of hex eles ( p.122 global report)
+  // to get numbering according to baci convention of hex eles
   if (i == 2 or i == 6)
     ++i;
   else if (i == 3 or i == 7)
@@ -704,7 +704,7 @@ void GEO::MESHFREE::BoundingBox::UndeformedBoxCornerPointPosition(int i, double*
  *----------------------------------------------------------------------------*/
 LINALG::Matrix<3, 1> GEO::MESHFREE::BoundingBox::UndeformedBoxCornerPointPosition(int i) const
 {
-  // to get numbering according to baci convention of hex eles ( p.122 global report)
+  // to get numbering according to baci convention of hex eles
   if (i == 2 or i == 6)
     ++i;
   else if (i == 3 or i == 7)
