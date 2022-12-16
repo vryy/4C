@@ -10,12 +10,11 @@
 /*---------------------------------------------------------------------*/
 
 
-#include <memory>
-#include <string>
-#include <cstdlib>
-#include <iostream>
-
 #include "drt_utils_cond_and_mat_definition.H"
+
+#include <string>
+
+#include "drt_dserror.H"
 
 // Convert a string to a number, i.e. to an int or a double
 // Perform the appropriate error checks
