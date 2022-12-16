@@ -518,7 +518,7 @@ namespace DRT::UTILS::SYMBOLICEXPRESSIONDETAILS
               { return acc.empty() ? v.first : acc + ", " + v.first; });
 
       std::string evaluate_constant_names =
-          std::accumulate(variable_values.begin(), variable_values.end(), std::string(),
+          std::accumulate(constants.begin(), constants.end(), std::string(),
               [](const std::string& acc, const auto& v)
               { return acc.empty() ? v.first : acc + ", " + v.first; });
 
@@ -534,8 +534,8 @@ namespace DRT::UTILS::SYMBOLICEXPRESSIONDETAILS
 #endif
 
     //! safety check if variable_values_ and constant_values_ are nullptr
-    dsassert(variable_values_ = nullptr, "Internal error");
-    dsassert(constant_values_ = nullptr, "Internal error");
+    dsassert(variable_values_ == nullptr, "Internal error");
+    dsassert(constant_values_ == nullptr, "Internal error");
 
     //! set variable values
     variable_values_ = &variable_values;

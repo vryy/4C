@@ -118,9 +118,7 @@ namespace
     DRT::UTILS::SymbolicExpression<double> symbolicexpression(
         "2*Variable1*Constant1*Variable2*Variable3");
 
-    BACI_EXPECT_THROW_WITH_MESSAGE(
-        symbolicexpression.Value({{"Variable1", 1.0}, {"Constant1", 1.0}}), std::runtime_error,
-        "variable or constant '%s' not given as input in Evaluate()");
+    EXPECT_ANY_THROW(symbolicexpression.Value({{"Variable1", 1.0}, {"Constant1", 1.0}}));
   }
 
   TEST(SymbolicExpressionTest, InvalidOperatorThrows)
