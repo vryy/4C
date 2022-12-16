@@ -945,6 +945,7 @@ baci_test(new_solid_ele_hex8_Standard_element_fibers_dynamic_stressout_eas_none 
 baci_test(new_solid_ele_hex8_Standard_element_fibers_dynamic_eas_none 2 1)
 baci_test(new_solid_ele_hex8_Standard_element_fibers_stressout_eas_none 2 1)
 baci_test(new_solid_ele_hex8_Standard_element_fibers_eas_none 2 1)
+baci_test(new_solid_ele_hex8_Standard_fbar 2 1)
 baci_test(new_solid_ele_hex8_Old_dynamic_stressout_eas_none 2 1)
 baci_test(new_solid_ele_hex8_Old_dynamic_eas_none 2 1)
 baci_test(new_solid_ele_hex8_Old_stressout_eas_none 2 1)
