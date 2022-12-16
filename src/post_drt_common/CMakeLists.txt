@@ -1,0 +1,24 @@
+set(OBJS_POST_DRT_COMMON
+    # cmake-format: sortable
+    post_drt_common.cpp
+    )
+
+baci_add_library(post_drt_common ${OBJS_POST_DRT_COMMON})
+target_link_libraries(post_drt_common PUBLIC drt_inpar)
+
+set(OBJS_POST_PROCESSOR_MAIN
+    # cmake-format: sortable
+    post_filter_base.cpp
+    post_processor.cpp
+    post_single_field_writers.cpp
+    post_structure_stress.cpp
+    post_thermo_heatflux.cpp
+    post_writer_base.cpp
+    )
+
+add_executable(post_processor EXCLUDE_FROM_ALL ${OBJS_POST_PROCESSOR_MAIN})
+set_target_properties(post_processor PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+target_link_libraries(post_processor post_drt_ensight_lib post_drt_vtk_lib ${FILTER_LIBRARIES})
+
+# various post-processing tools
+include(scripts/baci_create_post_scripts.cmake)
