@@ -8,8 +8,8 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 #include <vector>
-#include "src/drt_lib/drt_element.H"
-#include "src/drt_so3/so_element_service.H"
+#include "drt_element.H"
+#include "so_element_service.H"
 
 namespace
 {

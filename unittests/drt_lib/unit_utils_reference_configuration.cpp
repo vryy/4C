@@ -8,11 +8,11 @@
 /*----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "src/drt_lib/drt_utils_reference_configuration.H"
-#include "src/drt_so3/so_tet4.H"
-#include "src/drt_so3/so_hex8.H"
-#include "src/drt_contact/contact_element.H"
-#include "unittests/common/assertions.h"
+#include "drt_utils_reference_configuration.H"
+#include "so_tet4.H"
+#include "so_hex8.H"
+#include "contact_element.H"
+#include "unittests_assertions.h"
 
 #include <Epetra_SerialComm.h>
 

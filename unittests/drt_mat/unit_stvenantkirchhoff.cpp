@@ -8,10 +8,10 @@
 
 #include "gtest/gtest.h"
 
-#include "src/drt_mat/matpar_material.H"
-#include "src/drt_mat/stvenantkirchhoff.H"
+#include "matpar_material.H"
+#include "stvenantkirchhoff.H"
 
-#include "unittests/common/assertions.h"
+#include "unittests_assertions.h"
 
 namespace
 {

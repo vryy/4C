@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "src/drt_lib/drt_linedefinition.H"
+#include "drt_linedefinition.H"
 
 namespace
 {

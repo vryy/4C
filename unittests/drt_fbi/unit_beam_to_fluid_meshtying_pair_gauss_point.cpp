@@ -10,19 +10,17 @@
 #include <gtest/gtest.h>
 #include <vector>
 
-#include "unittests/common/assertions.h"
-#include "src/drt_beam3/beam3eb.H"
-#include "src/drt_fbi/beam_to_fluid_meshtying_pair_gauss_point.H"
-#include "src/drt_fbi/beam_to_fluid_meshtying_params.H"
-#include "src/drt_fluid_ele/fluid_ele.H"
-#include "src/drt_geometry_pair/geometry_pair_element_functions.H"
-#include "src/drt_geometry_pair/geometry_pair_line_to_volume_segmentation.H"
-#include "src/drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
-#include "src/drt_geometry_pair/geometry_pair_utility_classes.H"
-#include "src/drt_lib/drt_globalproblem.H"
-#include "src/drt_lib/drt_element.H"
-#include "src/linalg/linalg_serialdensevector.H"
-#include "src/drt_beaminteraction/beam_contact_pair.H"
+#include "beam3eb.H"
+#include "beam_to_fluid_meshtying_pair_gauss_point.H"
+#include "beam_to_fluid_meshtying_params.H"
+#include "fluid_ele.H"
+#include "geometry_pair_element_functions.H"
+#include "geometry_pair_line_to_volume_segmentation.H"
+#include "geometry_pair_line_to_3D_evaluation_data.H"
+#include "drt_globalproblem.H"
+#include "drt_element.H"
+#include "linalg_serialdensevector.H"
+#include "beam_contact_pair.H"
 
 namespace
 {

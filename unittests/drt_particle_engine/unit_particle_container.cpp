@@ -6,8 +6,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "gtest/gtest.h"
-#include "unittests/common/assertions.h"
-#include "src/drt_particle_engine/particle_container.H"
+#include "unittests_assertions.h"
+#include "particle_container.H"
 
 
 namespace

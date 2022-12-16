@@ -3,13 +3,13 @@
 \brief special assertions for BACI code
 \level 1
 *----------------------------------------------------------------------*/
-#ifndef UNITTESTS_COMMON_ASSERTIONS_H
-#define UNITTESTS_COMMON_ASSERTIONS_H
+#ifndef UNITTESTS_COMMON_UNITTESTS_ASSERTIONS_H
+#define UNITTESTS_COMMON_UNITTESTS_ASSERTIONS_H
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "src/linalg/linalg_fixedsizematrix.H"
-#include "src/linalg/linalg_serialdensematrix.H"
+#include "linalg_fixedsizematrix.H"
+#include "linalg_serialdensematrix.H"
 
 #include <type_traits>
 
@@ -284,4 +284,4 @@ namespace TESTING::INTERNAL
     EXPECT_THROW(find_the_statement_below(), expectedException) << "statement: " << #statement; \
   }
 
-#endif  // UNITTESTS_COMMON_ASSERTIONS_H
+#endif  // UNITTESTS_COMMON_UNITTESTS_ASSERTIONS_H

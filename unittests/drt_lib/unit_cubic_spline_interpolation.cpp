@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 #include <Teuchos_RCP.hpp>
-#include "src/drt_lib/drt_cubic_spline_interpolation.H"
+#include "drt_cubic_spline_interpolation.H"
 
 namespace
 {

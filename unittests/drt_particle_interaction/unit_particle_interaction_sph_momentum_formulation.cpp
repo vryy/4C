@@ -7,8 +7,8 @@
 #include <cmath>
 
 #include "gtest/gtest.h"
-#include "unittests/common/assertions.h"
-#include "src/drt_particle_interaction/particle_interaction_sph_momentum_formulation.H"
+#include "unittests_assertions.h"
+#include "particle_interaction_sph_momentum_formulation.H"
 
 
 namespace

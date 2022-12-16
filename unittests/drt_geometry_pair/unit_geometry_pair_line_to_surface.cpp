@@ -10,13 +10,13 @@
 
 #include <gtest/gtest.h>
 
-#include "src/drt_geometry_pair/geometry_pair_line_to_surface.H"
-#include "src/drt_geometry_pair/geometry_pair_line_to_surface_evaluation_data.H"
-#include "src/drt_geometry_pair/geometry_pair_element_functions.H"
-#include "src/drt_geometry_pair/geometry_pair_utility_classes.H"
-#include "src/drt_so3/so_surface.H"
-#include "src/drt_beam3/beam3r.H"
-#include "src/drt_inpar/inpar_beam_to_solid.H"
+#include "geometry_pair_line_to_surface.H"
+#include "geometry_pair_line_to_surface_evaluation_data.H"
+#include "geometry_pair_element_functions.H"
+#include "geometry_pair_utility_classes.H"
+#include "so_surface.H"
+#include "beam3r.H"
+#include "inpar_beam_to_solid.H"
 
 #include "unit_geometry_pair_line_to_surface_geometry.H"
 

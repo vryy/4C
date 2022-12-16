@@ -6,11 +6,11 @@
 /*---------------------------------------------------------------------------*/
 
 #include "gtest/gtest.h"
-#include "unittests/common/assertions.h"
-#include "src/drt_particle_interaction/particle_interaction_dem_contact_rolling.H"
-#include "src/drt_particle_interaction/particle_interaction_utils.H"
+#include "unittests_assertions.h"
+#include "particle_interaction_dem_contact_rolling.H"
+#include "particle_interaction_utils.H"
 
-#include "src/drt_inpar/drt_validparameters.H"
+#include "drt_validparameters.H"
 
 namespace
 {

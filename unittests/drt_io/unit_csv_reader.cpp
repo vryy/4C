@@ -10,9 +10,9 @@
 
 #include <fstream>
 
-#include "src/drt_io/csv_reader.H"
+#include "csv_reader.H"
 
-#include "unittests/common/assertions.h"
+#include "unittests_assertions.h"
 
 namespace
 {

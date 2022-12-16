@@ -10,15 +10,15 @@
 
 #include <Sacado.hpp>
 
-#include "src/drt_mat/matpar_material.H"
-#include "src/drt_mixture/growth_evolution_linear_cauchy.H"
-#include "src/drt_mixture/remodelfiber.H"
-#include "src/drt_mixture/mixture_constituent_remodelfiber_material_exponential.H"
-#include "src/drt_mixture/remodelfiber-internal.H"
+#include "matpar_material.H"
+#include "growth_evolution_linear_cauchy.H"
+#include "remodelfiber.H"
+#include "mixture_constituent_remodelfiber_material_exponential.H"
+#include "remodelfiber-internal.H"
 
-#include "src/linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
-#include "unittests/common/assertions.h"
+#include "unittests_assertions.h"
 
 namespace
 {

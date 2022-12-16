@@ -8,9 +8,9 @@
 *----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "src/linalg/linalg_utils_densematrix_svd.H"
+#include "linalg_utils_densematrix_svd.H"
 
-#include "unittests/common/assertions.h"
+#include "unittests_assertions.h"
 
 namespace
 {

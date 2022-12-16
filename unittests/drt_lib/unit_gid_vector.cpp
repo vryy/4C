@@ -5,7 +5,7 @@
 */
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
-#include "src/drt_lib/drt_utils_gid_vector.H"
+#include "drt_utils_gid_vector.H"
 #include <Epetra_MpiComm.h>
 
 

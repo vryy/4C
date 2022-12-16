@@ -7,3 +7,7 @@ set(LIBS_DRT_ERROR_FOR_TESTING
     )
 
 target_link_libraries(drt_error_for_testing PUBLIC ${LIBS_DRT_ERROR_FOR_TESTING})
+
+add_library(unittests_common INTERFACE)
+target_include_directories(unittests_common INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(unittests_common INTERFACE linalg)

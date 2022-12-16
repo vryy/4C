@@ -8,16 +8,16 @@
 
 #include "gtest/gtest.h"
 
-#include "src/drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "src/drt_mat/elasthyper_service.H"
-#include "src/drt_mat/matpar_bundle.H"
-#include "src/drt_mat/matpar_material.H"
-#include "src/drt_mat/multiplicative_split_defgrad_elasthyper.H"
+#include "elasthyper_service.H"
+#include "matpar_bundle.H"
+#include "matpar_material.H"
+#include "multiplicative_split_defgrad_elasthyper.H"
 
-#include "src/linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
-#include "unittests/common/assertions.h"
+#include "unittests_assertions.h"
 
 namespace
 {

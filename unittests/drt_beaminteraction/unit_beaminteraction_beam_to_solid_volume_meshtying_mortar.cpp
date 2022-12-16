@@ -9,16 +9,14 @@
 
 #include <gtest/gtest.h>
 
-#include "src/drt_beam3/beam3r.H"
-#include "src/drt_so3/so_hex8.H"
-#include "src/drt_so3/so_hex27.H"
-#include "src/drt_so3/so_tet10.H"
-#include "src/drt_geometry_pair/geometry_pair_element.H"
-#include "src/drt_geometry_pair/geometry_pair_line_to_volume_segmentation.H"
-#include "src/drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
-#include "src/drt_geometry_pair/geometry_pair_utility_classes.H"
-#include "src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_mortar.H"
-#include "src/linalg/linalg_serialdensevector.H"
+#include "beam3r.H"
+#include "so_hex8.H"
+#include "so_hex27.H"
+#include "geometry_pair_element.H"
+#include "geometry_pair_line_to_volume_segmentation.H"
+#include "geometry_pair_line_to_3D_evaluation_data.H"
+#include "beam_to_solid_volume_meshtying_pair_mortar.H"
+#include "linalg_serialdensevector.H"
 
 
 

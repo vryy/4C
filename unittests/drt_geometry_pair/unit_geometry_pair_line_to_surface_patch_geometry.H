@@ -16,10 +16,10 @@
 #include <unordered_map>
 #include <Teuchos_RCP.hpp>
 
-#include "src/drt_lib/drt_discret.H"
-#include "src/drt_so3/so_hex8.H"
-#include "src/drt_so3/so_surface.H"
-#include "src/drt_geometry_pair/geometry_pair_element_faces.H"
+#include "drt_discret.H"
+#include "so_hex8.H"
+#include "so_surface.H"
+#include "geometry_pair_element_faces.H"
 
 
 namespace

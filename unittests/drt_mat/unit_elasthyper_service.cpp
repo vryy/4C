@@ -8,16 +8,16 @@
 
 #include "gtest/gtest.h"
 
-#include "src/drt_mat/elasthyper_service.H"
-#include "src/drt_mat/material_service.H"
-#include "src/drt_mat/matpar_material.H"
+#include "elasthyper_service.H"
+#include "material_service.H"
+#include "matpar_material.H"
 
-#include "src/drt_matelast/elast_coupanisoexpo.H"
-#include "src/drt_matelast/elast_isoneohooke.H"
+#include "elast_coupanisoexpo.H"
+#include "elast_isoneohooke.H"
 
-#include "src/linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
-#include "unittests/common/assertions.h"
+#include "unittests_assertions.h"
 
 namespace
 {

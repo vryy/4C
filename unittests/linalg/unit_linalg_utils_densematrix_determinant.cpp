@@ -8,8 +8,8 @@
 *----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "src/linalg/linalg_serialdensematrix.H"
-#include "src/linalg/linalg_utils_densematrix_determinant.H"
+#include "linalg_serialdensematrix.H"
+#include "linalg_utils_densematrix_determinant.H"
 
 /*
  * \note The values for the matrix used in tests below are generated with Mathematica:

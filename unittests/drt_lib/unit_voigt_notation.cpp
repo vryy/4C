@@ -8,9 +8,9 @@
 /*----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "src/linalg/linalg_fixedsizematrix.H"
-#include "src/drt_lib/voigt_notation.H"
-#include "unittests/common/assertions.h"
+#include "linalg_fixedsizematrix.H"
+#include "voigt_notation.H"
+#include "unittests_assertions.h"
 
 namespace
 {

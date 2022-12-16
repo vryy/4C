@@ -7,7 +7,7 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "src/drt_inpar/inpar_structure.H"
+#include "inpar_structure.H"
 
 namespace
 {
