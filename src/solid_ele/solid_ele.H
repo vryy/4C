@@ -20,6 +20,7 @@ and Gauss point loop as well as some additional service routines.
 #include "element.H"
 #include "str_elements_paramsinterface.H"
 #include "solid_ele_calc.H"
+#include "solid_ele_calc_fbar.H"
 #include "solid_ele_eas_utils.H"
 
 namespace MAT
@@ -298,6 +299,7 @@ namespace DRT::ELEMENTS
     }
 
     virtual ::STR::ELEMENTS::EASType GetEAStype() { return eastype_; }
+    virtual ::INPAR::STR::KinemType GetKinemType() { return kintype_; }
     virtual const std::set<INPAR::STR::EleTech>& GetEleTech() { return eletech_; }
     virtual bool HaveEAS() { return eletech_.find(INPAR::STR::EleTech::eas) != eletech_.end(); }
     void VisNames(std::map<std::string, int>& names) override;
@@ -337,7 +339,7 @@ namespace DRT::ELEMENTS
     //! element techonology
     std::set<INPAR::STR::EleTech> eletech_;
 
-    //! specify EAS type in case  contains EAS
+    //! specify EAS type in case contains EAS
     ::STR::ELEMENTS::EASType eastype_;
 
     /** \brief interface ptr

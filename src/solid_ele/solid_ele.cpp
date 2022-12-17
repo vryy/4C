@@ -34,7 +34,7 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
       .AddNamedInt("MAT")
       .AddNamedString("KINEM")
       .AddOptionalNamedString("EAS")
-      .AddOptionalNamedString("FBAR")
+      .AddOptionalTag("FBAR")
       .AddOptionalNamedDoubleVector("RAD", 3)
       .AddOptionalNamedDoubleVector("AXI", 3)
       .AddOptionalNamedDoubleVector("CIR", 3)
@@ -412,6 +412,11 @@ bool DRT::ELEMENTS::Solid::ReadElement(
     }
     else
       dserror("no EAS allowed for this element shape");
+  }
+
+  if (linedef->HaveNamed("FBAR"))
+  {
+    if (Shape() == DRT::Element::hex8) eletech_.insert(INPAR::STR::EleTech::fbar);
   }
 
   DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->Setup(*this, linedef);
