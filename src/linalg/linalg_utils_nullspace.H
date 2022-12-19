@@ -38,14 +38,6 @@ namespace LINALG
   Teuchos::SerialDenseMatrix<int, double> ComputeSolid2DNullSpace(
       const DRT::Node& node, const double* x0);
 
-  /*!
-    \brief Helper function for the nodal nullspace of shell elements in 3D
-
-    \param node (in):    node to calculate the nullspace on
-    \param x0 (in):      center of discretization
-  */
-  Teuchos::SerialDenseMatrix<int, double> ComputeShell3DNullSpace(
-      DRT::Node& node, const double* x0);
 
   /*!
     \brief Helper function for the nodal nullspace of fluid elements
