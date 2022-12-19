@@ -326,7 +326,7 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Evaluate(const LINALG::Mat
   // compute second Piola-Kirchhoff stress
   LINALG::Matrix<3, 3> stressM(false);
   stressM.Update(expalpha, LomegaaM, 0.0);  // add contributions
-  stressM.Update(-expbeta, invCLinvC, 1.0);
+  stressM.Update(-expbeta * detC, invCLinvC, 1.0);
   stressM.Update(J * expbeta - std::pow(detC, -kappa), invC, 1.0);
   stressM.Scale(0.5 * gamma);
   UTILS::VOIGT::Stresses::MatrixToVector(
