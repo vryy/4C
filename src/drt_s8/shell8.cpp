@@ -20,27 +20,29 @@ namespace
 {
 
   /*!
-    \brief Helper function for the nodal nullspace of shell elements in 3D
+  \brief Helper function for the nodal nullspace of Shell8 elements in 3D
 
-  \param node (in):    node to calculate the nullspace on
-    \param x0 (in):      center of discretization
-                     */
+  This computes the contribution of the given node to the global nullspace vector and will be used
+  to fill one "row" of the global nullspace MultiVector.
+
+  The rigid body modes for structures are:
+
+         | xtrans | ytrans | ztrans |  xrot |  yrot | zrot
+  ----------------------------------------------------------
+   x     |    1   |    0   |    0   |  0    |  z-z0 | -y+y0
+   y     |    0   |    1   |    0   | -z+z0 |  0    |  x-x0
+   z     |    0   |    0   |    1   |  y-y0 | -x+x0 |  0
+   dx    |    0   |    0   |    0   |  0    |  a3   | -a2
+   dy    |    0   |    0   |    0   | -a3   |  0    |  a1
+   dz    |    0   |    0   |    0   |  a2   | -a1   |  0
+
+  \param node (in): node to calculate the nullspace on
+  \param x0 (in): pre-computed geometric center of gravity of the discretization to be used as
+  center of rotation for the rotational modes of the nullspace \return Translational (x,y,z) and
+  rotational (around x,y,z) nullspace contribution for given node
+  */
   Teuchos::SerialDenseMatrix<int, double> ComputeShell3DNullSpace(DRT::Node& node, const double* x0)
   {
-    /* the rigid body modes for structures are:
-
-    xtrans   ytrans  ztrans   xrot       yrot       zrot
-    mode[0]  mode[1] mode[2]  mode[3]    mode[4]    mode[5]
-    -----------------------------------------------------------
-     x   |    1       0       0       0          z-z0      -y+y0
-     y   |    0       1       0      -z+z0       0          x-x0
-     z   |    0       0       1       y-y0      -x+x0       0
-     dx  |    0       0       0       0          a3        -a2
-     dy  |    0       0       0      -a3         0          a1
-     dz  |    0       0       0       a2        -a1         0
-                       element types: shell8
-    */
-
     LINALG::Matrix<1, 3> dir;
 
     DRT::ELEMENTS::Shell8* s8 = dynamic_cast<DRT::ELEMENTS::Shell8*>(node.Elements()[0]);
