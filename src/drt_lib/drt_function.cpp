@@ -593,9 +593,15 @@ double DRT::UTILS::VariableExprFunction<dim>::Evaluate(
   std::copy(
       variables.begin(), variables.end(), std::inserter(variable_values, variable_values.begin()));
 
-  // add constants from input
-  std::copy(constants_from_input_.begin(), constants_from_input_.end(),
-      std::inserter(variable_values, variable_values.end()));
+  if (constants_from_input_.size() != 0)
+  {
+    // check if constants_from_input are valid
+    CheckValidInput<double>(variable_values);
+
+    // add constants from input
+    std::copy(constants_from_input_.begin(), constants_from_input_.end(),
+        std::inserter(variable_values, variable_values.end()));
+  }
 
   // evaluate the function and return the result
   return expr_[index]->Value(variable_values);
@@ -635,9 +641,12 @@ double DRT::UTILS::VariableExprFunction<dim>::Evaluate(const int index,
   std::copy(
       constants.begin(), constants.end(), std::inserter(variable_values, variable_values.end()));
 
-  // add constants from input
   if (constants_from_input_.size() != 0)
   {
+    // check if constants_from_input are valid
+    CheckValidInput<double>(variable_values);
+
+    // add constants from input
     std::copy(constants_from_input_.begin(), constants_from_input_.end(),
         std::inserter(variable_values, variable_values.end()));
   }
@@ -660,9 +669,13 @@ std::vector<double> DRT::UTILS::VariableExprFunction<dim>::EvaluateDerivative(
   std::copy(variables_FAD.begin(), variables_FAD.end(),
       std::inserter(variable_values, variable_values.begin()));
 
-  // add constants from input
+
   if (constants_from_input_.size() != 0)
   {
+    // check if constants_from_input are valid
+    CheckValidInput<Sacado::Fad::DFad<double>>(variable_values);
+
+    // add constants from input
     std::copy(constants_from_input_.begin(), constants_from_input_.end(),
         std::inserter(constant_values, constant_values.begin()));
   }
@@ -690,16 +703,48 @@ std::vector<double> DRT::UTILS::VariableExprFunction<dim>::EvaluateDerivative(in
   std::copy(
       constants.begin(), constants.end(), std::inserter(constant_values, constant_values.begin()));
 
-  // add constants from input
+
   if (constants_from_input_.size() != 0)
   {
+    // check if constants_from_input are valid
+    CheckValidInput<Sacado::Fad::DFad<double>>(variable_values);
+
+    // add constants from input
     std::copy(constants_from_input_.begin(), constants_from_input_.end(),
         std::inserter(constant_values, constant_values.end()));
   }
-
-
   return EvaluateAndAssembleExpressionToResultVector(
       variable_values, index, expr_, constant_values);
+}
+
+template <int dim>
+template <typename T>
+void DRT::UTILS::VariableExprFunction<dim>::CheckValidInput(
+    const std::map<std::string, T>& variable_values) const
+{
+  const bool all_constants_from_input_valid =
+      std::all_of(constants_from_input_.begin(), constants_from_input_.end(),
+          [&](const auto& var_name) { return variable_values.count(var_name.first) == 0; });
+
+  if (!all_constants_from_input_valid)
+  {
+    std::string variable_names =
+        std::accumulate(variable_values.begin(), variable_values.end(), std::string(),
+            [](const std::string& acc, const auto& v)
+            { return acc.empty() ? v.first : acc + ", " + v.first; });
+
+    std::string constant_names =
+        std::accumulate(constants_from_input_.begin(), constants_from_input_.end(), std::string(),
+            [](const std::string& acc, const auto& v)
+            { return acc.empty() ? v.first : acc + ", " + v.first; });
+
+    dserror(
+        "It is not allowed to set primary variables of your problem as constants in the "
+        "VariableExprFunction.\n\n"
+        "Variables passed to Evaluate: %s \n"
+        "Constants from Input: %s",
+        variable_names.c_str(), constant_names.c_str());
+  }
 }
 
 // explicit instantiations
