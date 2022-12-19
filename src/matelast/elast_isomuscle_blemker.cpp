@@ -276,10 +276,10 @@ void MAT::ELASTIC::IsoMuscleBlemker::EvaluateTotalFiberCauchyStressAndDerivative
 
   // compute normalized passive fiber force and derivative w.r.t. fibre stretch
   double f_passive = MAT::UTILS::MUSCLE::EvaluatePassiveForceStretchDependencyBlemker(
-      lambdaM, lambda_ofl, lambda_star, P1, P2);
+      lambdaM, 1.0, lambda_star, P1, P2);
   double deriv_f_passive =
       MAT::UTILS::MUSCLE::EvaluateDerivativePassiveForceStretchDependencyBlemker(
-          lambdaM, lambda_ofl, lambda_star, P1, P2);
+          lambdaM, 1.0, lambda_star, P1, P2);
 
   // compute normalized normalized active fiber force and derivative w.r.t. fibre stretch
   double f_active =
