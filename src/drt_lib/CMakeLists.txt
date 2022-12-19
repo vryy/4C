@@ -48,6 +48,7 @@ set(OBJS_DRT_LIB
     drt_periodicbc.cpp
     drt_resulttest.cpp
     drt_utils.cpp
+    drt_utils_cond_and_mat_definition.cpp
     drt_utils_createdis.cpp
     drt_utils_discret.cpp
     drt_utils_discret_dbc.cpp

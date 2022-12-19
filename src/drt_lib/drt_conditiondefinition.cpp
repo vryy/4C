@@ -17,7 +17,7 @@
 #include "drt_colors.H"
 #include "drt_globalproblem.H"
 #include "drt_discret.H"
-#include "drt_utils_cond_and_mat_definition.cpp"
+#include "drt_utils_cond_and_mat_definition.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
