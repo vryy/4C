@@ -12,7 +12,6 @@
 
 
 #include <Teuchos_RCP.hpp>
-#include <Epetra_SerialDenseVector.h>
 #include "linalg_fixedsizematrix.H"
 
 // forward declarations
@@ -28,29 +27,6 @@ namespace MAT
   {
     class Material;
   }
-  /*! @brief Multiply two 2nd order tensors A x B and add the result to a
-   *         4th order symmetric material tensor in matrix notation
-   *
-   * In tensor index notation this method does
-   * \f[
-   * C_{IJKL} := \text{ScalarThis} \cdot C_{IJKL}
-   *           + \frac{1}{2} \cdot \text{ScalarAB} \cdot \left( A_{IJ} \cdot B_{KL} \right)
-   * \f]
-   *
-   * Compute the "elasticity tensor product" A x B of two 2nd order tensors (in matrix notation) and
-   * add the result to a 4th order tensor (in Voigt matrix notation!) using the symmetry-conditions
-   * inherent to elasticity tensors. The implementation is based on the Epetra-Method
-   * Matrix.Multiply.
-   *
-   * @param[in,out] C       Material tangent matrix to be modified
-   * @param[in] ScalarAB    Scalar to multiply with A x B
-   * @param[in] A           Dense matrix (3 x 3) as 2nd order tensor A
-   * @param[in] B           Dense matrix (3 x 3) as 2nd order tensor B
-   * @param[in] ScalarThis  Scalar to multiply with C before adding A x B
-   */
-  void ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C, const double ScalarAB,
-      const Epetra_SerialDenseMatrix& A, const Epetra_SerialDenseMatrix& B,
-      const double ScalarThis);
 
   /*!
    * @brief Multiply two 2nd order tensors A x B and add the result to a 4th order symmetric
@@ -76,30 +52,6 @@ namespace MAT
   void ElastSymTensorMultiply(LINALG::Matrix<6, 6>& C, const double ScalarAB,
       const LINALG::Matrix<3, 3>& A, const LINALG::Matrix<3, 3>& B, const double ScalarThis);
 
-  /*! @brief Multiply two 2nd order tensors (A x B + B x A) and add the result to a
-   *         4th order symmetric material tensor in matrix notation
-   *
-   * In tensor index notation this method does
-   * \f[
-   * C_{IJKL} := \text{ScalarThis} \cdot C_{IJKL}
-   *          + \text{ScalarAB} \cdot \left( A_{IJ} \cdot B_{KL} + B_{IJ} \cdot A_{KL} \right)
-   * \f]
-   *
-   * compute the "elasticity tensor product" (A x B + B x A) of
-   * two 2nd order tensors (in matrix notation) and add the result to
-   * a 4th order tensor (in Voigt matrix notation!) using the
-   * symmetry-conditions inherent to elasticity tensors
-   *
-   * @param[in,out] C       Material tangent matrix to be modified
-   * @param[in] ScalarAB    Scalar to multiply with (A x B + B x A)
-   * @param[in] A           Dense matrix (3 x 3) as 2nd order tensor A
-   * @param[in] B           Dense matrix (3 x 3) as 2nd order tensor B
-   * @param[in] ScalarThis  Scalar to multiply with C before adding (A x B + B x A)
-   */
-  void ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C, const double ScalarAB,
-      const Epetra_SerialDenseMatrix& A, const Epetra_SerialDenseMatrix& B,
-      const double ScalarThis);
-
   /*!
    * @brief Multiply two 2nd order tensors (A x B + B x A) and add the result to a 4th order
    * symmetric material tensor in matrix notation
@@ -122,30 +74,6 @@ namespace MAT
    */
   void ElastSymTensorMultiplyAddSym(LINALG::Matrix<6, 6>& C, const double ScalarAB,
       const LINALG::Matrix<3, 3>& A, const LINALG::Matrix<3, 3>& B, const double ScalarThis);
-
-  /*! @brief Multiply two 2nd order tensors A o B and add the result to a
-   *         4th order symmetric material tensor in matrix notation
-   *
-   * In tensor index notation this method does
-   * \f[
-   * C_{IJKL} := \text{ScalarThis} \cdot C_{IJKL} + \frac{1}{2} \cdot \text{ScalarAB} \cdot \left(
-   *             A_{IK} \cdot B_{JL} + A_{IL} \cdot B_{JK} \right) \f]
-   *
-   * compute the "material tensor product" A o B (also known as kronecker-tensor-product) of two 2nd
-   * order tensors (in matrix notation) and add the result to a 4th order tensor (also in matrix
-   * notation) using the symmetry-conditions inherent to material tensors, or tangent matrices,
-   * respectively AND the Voigt notation of E,S, and C with the famous factor 2! The implementation
-   * is based on the Epetra-Method Matrix.Multiply.
-   *
-   * @param[in,out] C       Material tangent matrix to be modified
-   * @param[in] ScalarAB    Scalar to multiply with A o B
-   * @param[in] A           Dense matrix (3 x 3) as 2nd order tensor A
-   * @param[in] B           Dense matrix (3 x 3) as 2nd order tensor B
-   * @param[in] ScalarThis  Scalar to multiply with C before adding A o B
-   */
-  void ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C, const double ScalarAB,
-      const Epetra_SerialDenseMatrix& A, const Epetra_SerialDenseMatrix& B,
-      const double ScalarThis);
 
   /*!
    * @brief Multiply two 2nd order tensors A o B and add the result to a 4th order symmetric
@@ -170,39 +98,6 @@ namespace MAT
    */
   void ElastSymTensor_o_Multiply(LINALG::Matrix<6, 6>& C, const double ScalarAB,
       const LINALG::Matrix<3, 3>& A, const LINALG::Matrix<3, 3>& B, const double ScalarThis);
-
-
-  /*!
-   * @brief Add 'Holzapfel product' contribution to constitutive tensor using Voigt notation
-   *
-   * This function adds the following contribution to the given constitutive
-   * matrix \f$\mathbb{C}\f$ (cmat(6,6)) based on the inverse of the right Cauchy-Green vector
-   * \f$\boldsymbol{C}^{-1}\f$ (invc(6)):
-   *
-   * \f[
-   *    \text{scalar} \cdot ( \mathbf{C}^{-1} \odot \mathbf{C}^{-1} )
-   * \f]
-   *
-   * For that purpose we need the derivative of the inverse of the right Cauchy-Green tensor
-   * \f$\mathbf{C}^{-1}\f$ w.r.t. to the right Cauchy-Green vector \f$\mathbf{C}\f$:
-   * \f[
-   *    \frac{ \partial \mathbf{C}^{-1} }{\partial \mathbf{C}}
-   * \f]
-   *
-   * which yields the following product
-   * \f[
-   *    - ( \mathbf{C}^{-1} \odot \mathbf{C}^{-1} )_{abcd} = \frac{1}{2} \cdot \left(
-   \mathbf{C}^{-1}_{ac} \mathbf{C}^{-1}_{bd} + \mathbf{C}^{-1}_{ad} \mathbf{C}^{-1}_{bc} \right)
-   * \f]
-   *
-   * For more details see Holzapfel p. 254
-   *
-   * @param[in,out] cmat    Material tangent matrix(6x6) to be modified
-   * @param[in] invC        Inverse right Cauchy-Green vector(6)
-   * @param[in] scalar      Scalar corresponding to delta7
-   */
-  void AddtoCmatHolzapfelProduct(
-      Epetra_SerialDenseMatrix& cmat, const Epetra_SerialDenseVector& invc, const double scalar);
 
   /*!
    * @brief Add 'Holzapfel product' contribution to constitutive tensor using Voigt notation
