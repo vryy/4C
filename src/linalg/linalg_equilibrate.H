@@ -71,15 +71,15 @@ namespace LINALG
      * @param[in,out] systemmatrix  system matrix
      * @param[in]     blockmaps     (block) map(s) of system matrix
      */
-    virtual void EquilibrateMatrix(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
-        const LINALG::MultiMapExtractor& blockmaps) const = 0;
+    virtual void EquilibrateMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const LINALG::MultiMapExtractor> blockmaps) const = 0;
 
     /*!
      * @brief equilibrate right hand side
      *
      * @param[in,out] residual  residual vector
      */
-    virtual void EquilibrateRHS(const Teuchos::RCP<Epetra_Vector>& residual) const = 0;
+    virtual void EquilibrateRHS(Teuchos::RCP<Epetra_Vector> residual) const = 0;
 
     /*!
      * @brief equilibrate global system of equations if necessary
@@ -88,16 +88,16 @@ namespace LINALG
      * @param[in,out] residual      residual vector
      * @param[in]     blockmaps     (block) map(s) of system matrix
      */
-    void EquilibrateSystem(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
-        const Teuchos::RCP<Epetra_Vector>& residual,
-        const LINALG::MultiMapExtractor& blockmaps) const;
+    void EquilibrateSystem(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<Epetra_Vector> residual,
+        Teuchos::RCP<const LINALG::MultiMapExtractor> blockmaps) const;
 
     /*!
      * @brief unequilibrate global increment vector if necessary
      *
      * @param[in,out] increment  increment vector
      */
-    virtual void UnequilibrateIncrement(const Teuchos::RCP<Epetra_Vector>& increment) const = 0;
+    virtual void UnequilibrateIncrement(Teuchos::RCP<Epetra_Vector> increment) const = 0;
 
    protected:
     /*!
@@ -107,7 +107,7 @@ namespace LINALG
      * @param[out] invcolsums  inverse sums of absolute values of column entries in matrix
      */
     void ComputeInvColSums(const LINALG::SparseMatrix& matrix,
-        const Teuchos::RCP<Epetra_Vector>& invcolsums, const EquilibrationMethod method) const;
+        Teuchos::RCP<Epetra_Vector> invcolsums, const EquilibrationMethod method) const;
 
     /*!
      * @brief compute inverse sums of absolute values of matrix row entries
@@ -116,7 +116,7 @@ namespace LINALG
      * @param[out] invrowsums  inverse sums of absolute values of row entries in matrix
      */
     void ComputeInvRowSums(const LINALG::SparseMatrix& matrix,
-        const Teuchos::RCP<Epetra_Vector>& invrowsums, const EquilibrationMethod method) const;
+        Teuchos::RCP<Epetra_Vector> invrowsums, const EquilibrationMethod method) const;
 
     /*!
      * @brief compute scaling of matrix to keep symmetry
@@ -127,7 +127,7 @@ namespace LINALG
      * @param[out] invsymmetry scale vector to keep symmetry in matrix d
      */
     void ComputeInvSymmetry(
-        const LINALG::SparseMatrix& matrix, const Teuchos::RCP<Epetra_Vector>& invsymmetry) const;
+        const LINALG::SparseMatrix& matrix, Teuchos::RCP<Epetra_Vector> invsymmetry) const;
 
     /*!
      * @brief equilibrate matrix columns
@@ -136,7 +136,7 @@ namespace LINALG
      * @param[in]     invcolsums  sums of absolute values of column entries in matrix
      */
     void EquilibrateMatrixColumns(
-        LINALG::SparseMatrix& matrix, const Teuchos::RCP<Epetra_Vector>& invcolsums) const;
+        LINALG::SparseMatrix& matrix, Teuchos::RCP<const Epetra_Vector> invcolsums) const;
 
     /*!
      * @brief equilibrate matrix rows
@@ -145,7 +145,7 @@ namespace LINALG
      * @param[in]     invrowsums  sums of absolute values of row entries in matrix
      */
     void EquilibrateMatrixRows(
-        LINALG::SparseMatrix& matrix, const Teuchos::RCP<Epetra_Vector>& invrowsums) const;
+        LINALG::SparseMatrix& matrix, Teuchos::RCP<const Epetra_Vector> invrowsums) const;
 
     //! inverse sums of absolute values of column entries in global system matrix
     Teuchos::RCP<Epetra_Vector> invcolsums_;
@@ -167,9 +167,9 @@ namespace LINALG
     //! return equilibration method
     EquilibrationMethod Method() const { return method_; }
 
-    void EquilibrateRHS(const Teuchos::RCP<Epetra_Vector>& residual) const override;
+    void EquilibrateRHS(Teuchos::RCP<Epetra_Vector> residual) const override;
 
-    void UnequilibrateIncrement(const Teuchos::RCP<Epetra_Vector>& increment) const override;
+    void UnequilibrateIncrement(Teuchos::RCP<Epetra_Vector> increment) const override;
 
    private:
     EquilibrationMethod method_;
@@ -185,15 +185,15 @@ namespace LINALG
 
     ~EquilibrationSparse() override = default;
 
-    void EquilibrateMatrix(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
-        const LINALG::MultiMapExtractor& blockmaps) const override;
+    void EquilibrateMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const LINALG::MultiMapExtractor> blockmaps) const override;
 
     /*!
      * @brief equilibrate matrix if necessary
      *
      * @param[in,out] systemmatrix  system matrix
      */
-    void EquilibrateMatrix(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix) const;
+    void EquilibrateMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix) const;
   };
 
   /*----------------------------------------------------------------------*
@@ -206,8 +206,8 @@ namespace LINALG
 
     ~EquilibrationBlock() override = default;
 
-    void EquilibrateMatrix(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
-        const LINALG::MultiMapExtractor& blockmaps) const override;
+    void EquilibrateMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const LINALG::MultiMapExtractor> blockmaps) const override;
   };
 
   /*----------------------------------------------------------------------*
@@ -216,20 +216,20 @@ namespace LINALG
   class EquilibrationBlockSpecific : public Equilibration
   {
    public:
-    EquilibrationBlockSpecific(Teuchos::RCP<std::vector<EquilibrationMethod>> method,
-        Teuchos::RCP<const Epetra_Map> dofrowmap);
+    EquilibrationBlockSpecific(
+        const std::vector<EquilibrationMethod>& method, Teuchos::RCP<const Epetra_Map> dofrowmap);
 
     ~EquilibrationBlockSpecific() override = default;
 
-    void EquilibrateMatrix(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
-        const LINALG::MultiMapExtractor& blockmaps) const override;
+    void EquilibrateMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const LINALG::MultiMapExtractor> blockmaps) const override;
 
-    void EquilibrateRHS(const Teuchos::RCP<Epetra_Vector>& residual) const override;
+    void EquilibrateRHS(const Teuchos::RCP<Epetra_Vector> residual) const override;
 
-    void UnequilibrateIncrement(const Teuchos::RCP<Epetra_Vector>& increment) const override;
+    void UnequilibrateIncrement(Teuchos::RCP<Epetra_Vector> increment) const override;
 
    private:
-    Teuchos::RCP<std::vector<EquilibrationMethod>> method_blocks_;
+    std::vector<EquilibrationMethod> method_blocks_;
   };
 
   /*----------------------------------------------------------------------*
@@ -242,14 +242,14 @@ namespace LINALG
 
     ~EquilibrationNone() override = default;
 
-    void EquilibrateMatrix(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
-        const LINALG::MultiMapExtractor& blockmaps) const override
+    void EquilibrateMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const LINALG::MultiMapExtractor> blockmaps) const override
     {
     }
 
-    void EquilibrateRHS(const Teuchos::RCP<Epetra_Vector>& residual) const override {}
+    void EquilibrateRHS(Teuchos::RCP<Epetra_Vector> residual) const override {}
 
-    void UnequilibrateIncrement(const Teuchos::RCP<Epetra_Vector>& increment) const override {}
+    void UnequilibrateIncrement(Teuchos::RCP<Epetra_Vector> increment) const override {}
   };
 
   /*----------------------------------------------------------------------*
@@ -263,7 +263,6 @@ namespace LINALG
    * @return equilibration method
    */
   Teuchos::RCP<LINALG::Equilibration> BuildEquilibration(MatrixType type,
-      Teuchos::RCP<std::vector<EquilibrationMethod>> method,
-      Teuchos::RCP<const Epetra_Map> dofrowmap);
+      const std::vector<EquilibrationMethod>& method, Teuchos::RCP<const Epetra_Map> dofrowmap);
 }  // namespace LINALG
 #endif

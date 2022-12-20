@@ -3433,7 +3433,8 @@ void SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(
     Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const
 {
   // loop over blocks of global system matrix
-  for (int iblock = init_block_number; iblock < BlockMaps().NumMaps() + init_block_number; ++iblock)
+  for (int iblock = init_block_number; iblock < BlockMaps()->NumMaps() + init_block_number;
+       ++iblock)
   {
     // store number of current block as string, starting from 1
     std::ostringstream iblockstr;
@@ -3452,7 +3453,7 @@ void SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(
 
     // reduce full null space to match degrees of freedom associated with current matrix block
     LINALG::NULLSPACE::FixNullSpace("Block " + iblockstr.str(), *discret_->DofRowMap(),
-        *BlockMaps().Map(iblock - init_block_number), blocksmootherparams);
+        *BlockMaps()->Map(iblock - init_block_number), blocksmootherparams);
   }
 }
 
@@ -3518,7 +3519,7 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::ScaTraTimIntImpl::InitSystemMatrix(
     {
       // initialize system matrix and associated strategy
       systemmatrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-          BlockMaps(), BlockMaps(), 81, false, true));
+          *BlockMaps(), *BlockMaps(), 81, false, true));
 
       break;
     }

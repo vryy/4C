@@ -136,8 +136,8 @@ void SSTI::SSTIMono::BuildNullSpaces()
     case LINALG::MatrixType::block_condition_dof:
     {
       ScaTraField()->BuildBlockNullSpaces(
-          solver_, GetBlockPositions(Subproblem::scalar_transport)->at(0));
-      ThermoField()->BuildBlockNullSpaces(solver_, GetBlockPositions(Subproblem::thermo)->at(0));
+          solver_, GetBlockPositions(Subproblem::scalar_transport).at(0));
+      ThermoField()->BuildBlockNullSpaces(solver_, GetBlockPositions(Subproblem::thermo).at(0));
       break;
     }
     case LINALG::MatrixType::sparse:
@@ -145,7 +145,7 @@ void SSTI::SSTIMono::BuildNullSpaces()
       // equip smoother for scatra matrix block with empty parameter sub lists to trigger null space
       // computation
       std::ostringstream scatrablockstr;
-      scatrablockstr << GetBlockPositions(Subproblem::scalar_transport)->at(0) + 1;
+      scatrablockstr << GetBlockPositions(Subproblem::scalar_transport).at(0) + 1;
       Teuchos::ParameterList& blocksmootherparamsscatra =
           solver_->Params().sublist("Inverse" + scatrablockstr.str());
 
@@ -157,7 +157,7 @@ void SSTI::SSTIMono::BuildNullSpaces()
       ScaTraField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparamsscatra);
 
       std::ostringstream thermoblockstr;
-      thermoblockstr << GetBlockPositions(Subproblem::thermo)->at(0) + 1;
+      thermoblockstr << GetBlockPositions(Subproblem::thermo).at(0) + 1;
       Teuchos::ParameterList& blocksmootherparamsthermo =
           solver_->Params().sublist("Inverse" + thermoblockstr.str());
       blocksmootherparamsthermo.sublist("Aztec Parameters");
@@ -178,7 +178,7 @@ void SSTI::SSTIMono::BuildNullSpaces()
   {
     // store number of matrix block associated with structural field as string
     std::stringstream iblockstr;
-    iblockstr << GetBlockPositions(Subproblem::structure)->at(0) + 1;
+    iblockstr << GetBlockPositions(Subproblem::structure).at(0) + 1;
 
     // equip smoother for structural matrix block with empty parameter sub lists to trigger null
     // space computation
@@ -577,7 +577,7 @@ void SSTI::SSTIMono::LinearSolve()
     dserror("Complete() has not been called on global system matrix yet!");
 
   strategy_equilibration_->EquilibrateSystem(
-      ssti_matrices_->SystemMatrix(), residual_, *AllMaps()->BlockMapSystemMatrix());
+      ssti_matrices_->SystemMatrix(), residual_, AllMaps()->BlockMapSystemMatrix());
 
   solver_->Solve(
       ssti_matrices_->SystemMatrix()->EpetraOperator(), increment_, residual_, true, Iter() == 1);
@@ -616,42 +616,42 @@ void SSTI::SSTIMono::PrepareNewtonStep()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<int>> SSTI::SSTIMono::GetBlockPositions(Subproblem subproblem) const
+std::vector<int> SSTI::SSTIMono::GetBlockPositions(Subproblem subproblem) const
 {
   if (matrixtype_ == LINALG::MatrixType::sparse) dserror("Sparse matrices have just one block");
 
-  Teuchos::RCP<std::vector<int>> block_position = Teuchos::rcp(new std::vector<int>(0));
+  auto block_position = std::vector<int>(0);
 
   switch (subproblem)
   {
     case Subproblem::structure:
     {
       if (ScaTraField()->MatrixType() == LINALG::MatrixType::sparse)
-        block_position->emplace_back(1);
+        block_position.emplace_back(1);
       else
-        block_position->emplace_back(ScaTraField()->BlockMaps().NumMaps());
+        block_position.emplace_back(ScaTraField()->BlockMaps()->NumMaps());
       break;
     }
     case Subproblem::scalar_transport:
     {
       if (ScaTraField()->MatrixType() == LINALG::MatrixType::sparse)
-        block_position->emplace_back(0);
+        block_position.emplace_back(0);
       else
 
       {
-        for (int i = 0; i < static_cast<int>(ScaTraField()->BlockMaps().NumMaps()); ++i)
-          block_position->emplace_back(i);
+        for (int i = 0; i < static_cast<int>(ScaTraField()->BlockMaps()->NumMaps()); ++i)
+          block_position.emplace_back(i);
       }
       break;
     }
     case Subproblem::thermo:
     {
       if (ThermoField()->MatrixType() == LINALG::MatrixType::sparse)
-        block_position->emplace_back(2);
+        block_position.emplace_back(2);
       else
       {
-        for (int i = 0; i < static_cast<int>(ThermoField()->BlockMaps().NumMaps()); ++i)
-          block_position->emplace_back(ScaTraField()->BlockMaps().NumMaps() + 1 + i);
+        for (int i = 0; i < static_cast<int>(ThermoField()->BlockMaps()->NumMaps()); ++i)
+          block_position.emplace_back(ScaTraField()->BlockMaps()->NumMaps() + 1 + i);
       }
       break;
     }
@@ -700,53 +700,50 @@ int SSTI::SSTIMono::GetProblemPosition(Subproblem subproblem) const
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> SSTI::SSTIMono::GetBlockEquilibration()
+std::vector<LINALG::EquilibrationMethod> SSTI::SSTIMono::GetBlockEquilibration()
 {
-  Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> equilibration_method_vector;
+  std::vector<LINALG::EquilibrationMethod> equilibration_method_vector;
   switch (matrixtype_)
   {
     case LINALG::MatrixType::sparse:
     {
-      equilibration_method_vector = Teuchos::rcp(
-          new std::vector<LINALG::EquilibrationMethod>(1, equilibration_method_.global));
+      equilibration_method_vector =
+          std::vector<LINALG::EquilibrationMethod>(1, equilibration_method_.global);
       break;
     }
     case LINALG::MatrixType::block_field:
     {
       if (equilibration_method_.global != LINALG::EquilibrationMethod::local)
       {
-        equilibration_method_vector = Teuchos::rcp(
-            new std::vector<LINALG::EquilibrationMethod>(1, equilibration_method_.global));
+        equilibration_method_vector =
+            std::vector<LINALG::EquilibrationMethod>(1, equilibration_method_.global);
       }
       else if (equilibration_method_.structure == LINALG::EquilibrationMethod::none and
                equilibration_method_.scatra == LINALG::EquilibrationMethod::none and
                equilibration_method_.thermo == LINALG::EquilibrationMethod::none)
       {
-        equilibration_method_vector = Teuchos::rcp(
-            new std::vector<LINALG::EquilibrationMethod>(1, LINALG::EquilibrationMethod::none));
+        equilibration_method_vector =
+            std::vector<LINALG::EquilibrationMethod>(1, LINALG::EquilibrationMethod::none);
       }
       else
       {
-        Teuchos::RCP<std::vector<int>> block_positions_scatra =
-            GetBlockPositions(Subproblem::scalar_transport);
-        Teuchos::RCP<std::vector<int>> block_position_structure =
-            GetBlockPositions(Subproblem::structure);
-        Teuchos::RCP<std::vector<int>> block_positions_thermo =
-            GetBlockPositions(Subproblem::thermo);
+        auto block_positions_scatra = GetBlockPositions(Subproblem::scalar_transport);
+        auto block_position_structure = GetBlockPositions(Subproblem::structure);
+        auto block_positions_thermo = GetBlockPositions(Subproblem::thermo);
 
-        equilibration_method_vector = Teuchos::rcp(new std::vector<LINALG::EquilibrationMethod>(
-            block_positions_scatra->size() + block_position_structure->size() +
-                block_positions_thermo->size(),
-            LINALG::EquilibrationMethod::none));
+        equilibration_method_vector = std::vector<LINALG::EquilibrationMethod>(
+            block_positions_scatra.size() + block_position_structure.size() +
+                block_positions_thermo.size(),
+            LINALG::EquilibrationMethod::none);
 
-        for (const int block_position_scatra : *block_positions_scatra)
-          equilibration_method_vector->at(block_position_scatra) = equilibration_method_.scatra;
+        for (const int block_position_scatra : block_positions_scatra)
+          equilibration_method_vector.at(block_position_scatra) = equilibration_method_.scatra;
 
-        equilibration_method_vector->at(block_position_structure->at(0)) =
+        equilibration_method_vector.at(block_position_structure.at(0)) =
             equilibration_method_.structure;
 
-        for (const int block_position_thermo : *block_positions_thermo)
-          equilibration_method_vector->at(block_position_thermo) = equilibration_method_.thermo;
+        for (const int block_position_thermo : block_positions_thermo)
+          equilibration_method_vector.at(block_position_thermo) = equilibration_method_.thermo;
       }
 
       break;

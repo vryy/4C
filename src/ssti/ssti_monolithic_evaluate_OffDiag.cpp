@@ -199,7 +199,7 @@ void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInter
   {
     case LINALG::MatrixType::block_condition:
     {
-      const int numberthermoblocks = thermo_->ScaTraField()->BlockMaps().NumMaps();
+      const int numberthermoblocks = thermo_->ScaTraField()->BlockMaps()->NumMaps();
 
       auto blockslavematrix =
           Teuchos::rcp_dynamic_cast<const LINALG::BlockSparseMatrixBase>(slavematrix);
@@ -351,13 +351,13 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
         // old slave dofs from input
         auto slave_map = slave_slave_transformation->SlaveDofMap();
 
-        for (int iblock = 0; iblock < thermo_->ScaTraField()->BlockMaps().NumMaps(); ++iblock)
+        for (int iblock = 0; iblock < thermo_->ScaTraField()->BlockMaps()->NumMaps(); ++iblock)
         {
           auto evaluate_iblock = evaluate_matrix_block->Matrix(iblock, 0);
           auto slave_iblock = slavematrix_block->Matrix(iblock, 0);
 
           auto scatra_slave_block_mapi =
-              LINALG::IntersectMap(*thermo_->ScaTraField()->BlockMaps().Map(iblock),
+              LINALG::IntersectMap(*thermo_->ScaTraField()->BlockMaps()->Map(iblock),
                   *meshtying_strategy_thermo_->CouplingAdapter()->SlaveDofMap());
 
           LINALG::MatrixLogicalSplitAndTransform()(evaluate_iblock, *scatra_slave_block_mapi,

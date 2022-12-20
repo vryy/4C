@@ -3243,7 +3243,7 @@ void SCATRA::ScaTraTimIntElch::ReduceDimensionNullSpaceBlocks(
     Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const
 {
   // loop over blocks of global system matrix
-  for (int iblock = 0; iblock < BlockMaps().NumMaps(); ++iblock)
+  for (int iblock = 0; iblock < BlockMaps()->NumMaps(); ++iblock)
   {
     std::ostringstream iblockstr;
     iblockstr << init_block_number + iblock + 1;
@@ -3265,7 +3265,7 @@ void SCATRA::ScaTraTimIntElch::ReduceDimensionNullSpaceBlocks(
     {
       // remove zero null space vector associated with electric potential dofs by truncating
       // null space
-      nullspace.resize(BlockMaps().Map(iblock)->NumMyElements());
+      nullspace.resize(BlockMaps()->Map(iblock)->NumMyElements());
     }
     // null space associated with electric potential dofs
     else
@@ -3273,7 +3273,7 @@ void SCATRA::ScaTraTimIntElch::ReduceDimensionNullSpaceBlocks(
       // remove zero null space vector(s) associated with concentration dofs and retain only
       // the last null space vector associated with electric potential dofs
       nullspace.erase(
-          nullspace.begin(), nullspace.end() - BlockMaps().Map(iblock)->NumMyElements());
+          nullspace.begin(), nullspace.end() - BlockMaps()->Map(iblock)->NumMyElements());
     }
 
     // decrease null space dimension and number of partial differential equations by one
@@ -3285,7 +3285,7 @@ void SCATRA::ScaTraTimIntElch::ReduceDimensionNullSpaceBlocks(
     // This can be done more elegant as writing it back in a different container!
     const int dimnsnew = mueluparams.get<int>("null space: dimension");
     Teuchos::RCP<Epetra_MultiVector> nspVectornew =
-        Teuchos::rcp(new Epetra_MultiVector(*(BlockMaps().Map(iblock)), dimnsnew, true));
+        Teuchos::rcp(new Epetra_MultiVector(*(BlockMaps()->Map(iblock)), dimnsnew, true));
     LINALG::StdVectorToEpetraMultiVector(nullspace, nspVectornew, dimnsnew);
 
     mueluparams.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nspVectornew);

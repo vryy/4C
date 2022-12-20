@@ -613,13 +613,13 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
         case LINALG::MatrixType::block_condition:
         case LINALG::MatrixType::block_condition_dof:
         {
-          block_maps_sub_problems_.insert(std::make_pair(Subproblem::scalar_transport,
-              Teuchos::rcpFromRef(ssi_mono_algorithm.ScaTraField()->BlockMaps())));
+          block_maps_sub_problems_.insert(std::make_pair(
+              Subproblem::scalar_transport, ssi_mono_algorithm.ScaTraField()->BlockMaps()));
 
           if (ssi_mono_algorithm.IsScaTraManifold())
           {
-            block_maps_sub_problems_.insert(std::make_pair(Subproblem::manifold,
-                Teuchos::rcpFromRef(ssi_mono_algorithm.ScaTraManifold()->BlockMaps())));
+            block_maps_sub_problems_.insert(std::make_pair(
+                Subproblem::manifold, ssi_mono_algorithm.ScaTraManifold()->BlockMaps()));
           }
           else
           {

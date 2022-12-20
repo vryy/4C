@@ -407,7 +407,7 @@ namespace SCATRA
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
     //! return map extractor associated with blocks of global system matrix
-    const LINALG::MultiMapExtractor& BlockMaps() const { return *blockmaps_; }
+    Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMaps() const { return blockmaps_; }
 
     //! return residual vector
     Teuchos::RCP<Epetra_Vector> Residual() const { return residual_; };

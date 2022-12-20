@@ -69,7 +69,7 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::InitSyste
       {
         systemmatrix =
             Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-                scatratimint_->BlockMaps(), scatratimint_->BlockMaps(), 81, false, true));
+                *scatratimint_->BlockMaps(), *scatratimint_->BlockMaps(), 81, false, true));
 
         break;
       }
