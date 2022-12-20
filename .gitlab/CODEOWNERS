@@ -307,7 +307,7 @@ linalg/                        @baci/team_solvers
 
 loca_continuation/             @baci/team_solvers
 
-post_drt_common/               @baci/team_output
+post_common/               @baci/team_output
 
 post_ensight/                  @baci/team_output
 

@@ -24,7 +24,7 @@
 // MicroMaterial class. MicroMaterialGP is NOT a member of
 // FILTER_OBJECTS hence the MicroMaterial::Evaluate function that
 // builds the connection to MicroMaterialGP is not either. In
-// post_drt_evaluation.cpp this function is defined to content the
+// post_evaluation.cpp this function is defined to content the
 // compiler. If during postprocessing the MicroMaterial::Evaluate
 // function should be called, an error is invoked.
 //

@@ -8,7 +8,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "post_drt_vti_writer.H"
+#include "post_vti_writer.H"
 
 #include <sstream>
 
@@ -18,7 +18,7 @@
 #include "dserror.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "post_drt_common.H"
+#include "post_common.H"
 
 #ifdef TOL_N
 #undef TOL_N

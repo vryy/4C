@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "post_drt_vtu_writer_node_based.H"
-#include "post_drt_vtu_writer.H"
+#include "post_vtu_writer_node_based.H"
+#include "post_vtu_writer.H"
 
 #include <sstream>
 
@@ -19,7 +19,7 @@
 #include "dserror.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "post_drt_common.H"
+#include "post_common.H"
 
 #include "nurbs_discret.H"
 #include "utils_fem_shapefunctions.H"

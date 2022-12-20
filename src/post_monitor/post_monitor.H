@@ -19,7 +19,7 @@
 #include <string>
 #include <Teuchos_CommandLineProcessor.hpp>
 
-#include "post_drt_common.H"
+#include "post_common.H"
 #include "discret.H"
 
 

@@ -197,7 +197,7 @@ macro(baci_test_and_post_ensight_test name_of_input_file num_proc restart_step)
 
   # additionally run postprocessing in serial mode
   set(RUNPOSTFILTER_SER
-      ./post_drt_ensight\ --file=${test_directory}/xxx\ --output=${test_directory}/xxx_SER\ --outputtype=bin\ --stress=ndxyz
+      ./post_ensight\ --file=${test_directory}/xxx\ --output=${test_directory}/xxx_SER\ --outputtype=bin\ --stress=ndxyz
       )
 
   add_test(
@@ -216,7 +216,7 @@ macro(baci_test_and_post_ensight_test name_of_input_file num_proc restart_step)
 
   # additionally run postprocessing in parallel mode
   set(RUNPOSTFILTER_PAR
-      ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ./post_drt_ensight\ --file=${test_directory}/xxx\ --output=${test_directory}/xxx_PAR\ --outputtype=bin\ --stress=ndxyz
+      ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ./post_ensight\ --file=${test_directory}/xxx\ --output=${test_directory}/xxx_PAR\ --outputtype=bin\ --stress=ndxyz
       )
 
   add_test(
@@ -442,8 +442,8 @@ macro(baci_framework_test name_of_input_file num_proc xml_filename)
       ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ $<TARGET_FILE:${baciname}>\ ${test_directory}/xxx.dat\ ${test_directory}/xxx
       ) # baci is run using the generated dat file
   set(RUNPOSTFILTER
-      ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ./post_drt_ensight\ --file=${test_directory}/xxx
-      ) # post_drt_ensight is run for the resulting output
+      ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ./post_ensight\ --file=${test_directory}/xxx
+      ) # post_ensight is run for the resulting output
 
   add_test(
     NAME ${name_of_test}
@@ -553,10 +553,10 @@ macro(
   set(name_of_test ${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp)
   # define macros for serial and parallel runs
   set(RUNPOSTFILTER_SER
-      ./post_drt_ensight\ --file=${test_directory}/xxx${IDENTIFIER}\ --output=${test_directory}/xxx${IDENTIFIER}_SER_${name_of_input_file}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep}
+      ./post_ensight\ --file=${test_directory}/xxx${IDENTIFIER}\ --output=${test_directory}/xxx${IDENTIFIER}_SER_${name_of_input_file}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep}
       )
   set(RUNPOSTFILTER_PAR
-      ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ./post_drt_ensight\ --file=${test_directory}/xxx${IDENTIFIER}\ --output=${test_directory}/xxx${IDENTIFIER}_PAR_${name_of_input_file}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep}
+      ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ./post_ensight\ --file=${test_directory}/xxx${IDENTIFIER}\ --output=${test_directory}/xxx${IDENTIFIER}_PAR_${name_of_input_file}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep}
       )
 
   # specify test case

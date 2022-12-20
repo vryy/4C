@@ -49,7 +49,7 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
 {
   /*--------------------------------------------------------------------*
    | first create structure then ale --> important for discretization   |
-   | numbering and therefore for the post_drt_ensight.cpp               |
+   | numbering and therefore for the post_ensight.cpp                   |
    *--------------------------------------------------------------------*/
 
   // create structure

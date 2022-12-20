@@ -9,8 +9,8 @@
 
 
 
-#include "post_drt_ensight_writer.H"
-#include "post_drt_common.H"
+#include "post_ensight_writer.H"
+#include "post_common.H"
 #include "nurbs_discret.H"
 #include "fluid_rotsym_periodicbc_utils.H"
 #include "linalg_utils_densematrix_communication.H"
@@ -189,7 +189,7 @@ void EnsightWriter::WriteFiles(PostFilterBase& filter)
       const std::string casefilename = filename_ + "_" + field_->name() + aux + ".case";
       std::ofstream casefile;
       casefile.open(casefilename.c_str());
-      casefile << "# created using post_drt_ensight\n"
+      casefile << "# created using post_ensight\n"
                << "FORMAT\n\n"
                << "type:\tensight gold\n";
 
@@ -356,7 +356,7 @@ void EnsightWriter::WriteFilesChangingGeom(PostFilterBase& filter)
     const std::string casefilename = filename_ + "_" + field_->name() + ".case";
     std::ofstream casefile;
     casefile.open(casefilename.c_str());
-    casefile << "# created using post_drt_ensight\n"
+    casefile << "# created using post_ensight\n"
              << "FORMAT\n\n"
              << "type:\tensight gold\n";
 

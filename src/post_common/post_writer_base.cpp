@@ -10,7 +10,7 @@
 
 
 #include "post_writer_base.H"
-#include "post_drt_common.H"
+#include "post_common.H"
 
 
 PostWriterBase::PostWriterBase(PostField* field, const std::string& filename)

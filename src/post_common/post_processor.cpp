@@ -7,7 +7,7 @@
 
  */
 
-#include "post_drt_common.H"
+#include "post_common.H"
 
 #include <Epetra_MpiComm.h>
 

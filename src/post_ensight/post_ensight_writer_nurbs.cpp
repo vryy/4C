@@ -2,7 +2,7 @@
 /*! \file
 
   \brief Nurbs specific helper methods for ensight filter basis class
-  Methods are declared in post_drt_ensight_writer header file.
+  Methods are declared in post_ensight_writer header file.
 
 
   \level 2
@@ -10,8 +10,8 @@
 
 
 
-#include "post_drt_ensight_writer.H"
-#include "post_drt_common.H"
+#include "post_ensight_writer.H"
+#include "post_common.H"
 #include "nurbs_discret.H"
 #include "utils_nurbs_shapefunctions.H"
 #include "control_point.H"

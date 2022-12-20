@@ -16,7 +16,7 @@
  | headers                                                   dano 11/09 |
  *----------------------------------------------------------------------*/
 #include "post_writer_base.H"
-#include "post_drt_common.H"
+#include "post_common.H"
 #include <string>
 #include "post_single_field_writers.H"
 #include "linalg_utils_sparse_algebra_create.H"

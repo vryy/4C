@@ -8,7 +8,7 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "post_drt_common.H"
+#include "post_common.H"
 #include "shell8.H"
 #include "so_hex8.H"
 #include "io.H"

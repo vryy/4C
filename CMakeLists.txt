@@ -293,7 +293,7 @@ set(BACI_LIBRARIES
     volmortar
     )
 
-set(FILTER_LIBRARIES post_drt_common -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group)
+set(FILTER_LIBRARIES post_common -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group)
 
 ###------------------------------------------------------------------ Binaries
 
@@ -306,15 +306,15 @@ endif(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
 string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
 set(baciname baci-${BUILD_TYPE})
 
-add_custom_target(post DEPENDS post_processor post_drt_monitor)
-add_custom_target(post_drt_ensight DEPENDS post_processor)
-add_custom_target(post_drt_vtk DEPENDS post_processor)
+add_custom_target(post DEPENDS post_processor post_monitor)
+add_custom_target(post_ensight DEPENDS post_processor)
+add_custom_target(post_vtk DEPENDS post_processor)
 add_custom_target(framework DEPENDS pre_exodus post)
 
 set(FULL_TARGETS
     post_processor
-    post_drt_monitor
-    post_drt_s8convert
+    post_monitor
+    post_s8convert
     pre_exodus
     pre_locsys
     cut_test

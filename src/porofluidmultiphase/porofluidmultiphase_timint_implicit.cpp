@@ -1647,7 +1647,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::OutputState()
   // fluxes
   if (flux_ != Teuchos::null)
   {
-    // post_drt_ensight does not support multivectors based on the dofmap
+    // post_ensight does not support multivectors based on the dofmap
     // for now, I create single vectors that can be handled by the filter
 
     const int dim = DRT::Problem::Instance()->NDim();

@@ -1,50 +1,54 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief VTI filter
+\brief node based VTU filter
 
+\level 3
 
-\level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef POST_VTI_H
-#define POST_VTI_H
+#ifndef POST_VTU_NODE_H
+#define POST_VTU_NODE_H
 
 
-#include "post_drt_vtk_writer.H"
+#include "post_vtu_writer.H"
 
 #include <string>
 #include <map>
 #include <vector>
 
-#include <Teuchos_RCP.hpp>
+#include "element.H"
 
 
 // forward declarations
-class Epetra_Vector;
 class PostField;
 class PostResult;
 namespace DRT
 {
   class Discretization;
   class Node;
+
+  namespace ELEMENTS
+  {
+    class Beam3Base;
+  }
 }  // namespace DRT
 
 
 /*
- \brief Base class for VTU output generation
+ \brief Base class for VTU node based output generation
 
- \author kronbichler
- \date 03/14
+ \author biehler
+ \date 12/16
 */
-class PostVtiWriter : public PostVtkWriter
+class PostVtuWriterNode : public PostVtuWriter
 {
  public:
   //! constructor. Initializes the writer to a certain field.
-  PostVtiWriter(PostField* field, const std::string& name);
+  PostVtuWriterNode(PostField* field, const std::string& name);
 
   //! destructor
-  virtual ~PostVtiWriter() {}
+  virtual ~PostVtuWriterNode() {}
 
  protected:
   //! Return the opening xml tag for this writer type
@@ -57,7 +61,7 @@ class PostVtiWriter : public PostVtkWriter
   virtual const std::vector<std::string>& WriterPPieceTags() const;
 
   //! Give every writer a chance to do preparations before writing
-  virtual void WriterPrepTimestep();
+  virtual void WriterPrepTimestep(){};
 
   //! Return the parallel file suffix including the dot for this file type
   virtual const std::string& WriterPSuffix() const;
@@ -89,23 +93,27 @@ class PostVtiWriter : public PostVtkWriter
   //! write the geometry of one time step
   virtual void WriteGeo();
 
-  //! origin of the ImageData-grid
-  double origin_[3];
+  //! write the geometry of Nurbs Element
+  virtual void WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_t>& celltypes,
+      int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates);
 
-  //! spacing of the ImageData-grid
-  double spacing_[3];
+  //! write the geometry of beam element (special treatment due to Hermite interpolation)
+  virtual void WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
+      std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
+      std::vector<double>& coordinates);
 
-  //! global extent of the ImageData-grid (x_min x_max y_min y_max z_min z_max)
-  int globalextent_[6];
+  //! Write a single result step for one Nurbs Element
+  virtual void WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents, const int numdf,
+      std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData, const int from,
+      const bool fillzeros);
 
-  //! local extent of the ImageData-grid (x_min x_max y_min y_max z_min z_max)
-  int localextent_[6];
+  virtual void WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
+      const int& ncomponents, const int& numdf, std::vector<double>& solution,
+      Teuchos::RCP<Epetra_Vector>& ghostedData, const int& from, const bool fillzeros);
 
-  //! Mapping between nodeids and their position on an ImageData-grid in a (z*Ny+y)*Nx+x form
-  std::map<int, int> idmapping_;
-
-  //! Mapping between elementids and their position on an ImageData-grid in a (z*Ny+y)*Nx+x form
-  std::map<int, int> eidmapping_;
+  //! Write a single result step for one Nurbs Element
+  virtual void WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
+      const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_MultiVector> ghostedData);
 };
 
 #endif

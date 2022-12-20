@@ -890,7 +890,7 @@ void SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList(Teuchos::ParameterLi
 {
   Teuchos::RCP<Epetra_MultiVector> flux = CalcFluxInDomain();
 
-  // post_drt_ensight does not support multivectors based on the dofmap
+  // post_ensight does not support multivectors based on the dofmap
   // for now, I create single vectors that can be handled by the filters
 
   // get the noderowmap
@@ -1232,7 +1232,7 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux,
     return;  // leave here
   }
 
-  // post_drt_ensight does not support multivectors based on the dofmap
+  // post_ensight does not support multivectors based on the dofmap
   // for now, I create single vectors that can be handled by the filter
 
   // get the noderowmap

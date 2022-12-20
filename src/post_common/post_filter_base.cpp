@@ -11,11 +11,11 @@
 
 #include "post_filter_base.H"
 #include "post_writer_base.H"
-#include "post_drt_common.H"
-#include "post_drt_ensight_writer.H"
-#include "post_drt_vtu_writer.H"
-#include "post_drt_vtu_writer_node_based.H"
-#include "post_drt_vti_writer.H"
+#include "post_common.H"
+#include "post_ensight_writer.H"
+#include "post_vtu_writer.H"
+#include "post_vtu_writer_node_based.H"
+#include "post_vti_writer.H"
 
 
 #include "pss_cpp.h"
