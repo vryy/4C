@@ -215,7 +215,6 @@ namespace DRT
           const std::vector<std::pair<std::string, double>>& constants);
 
 
-
       /// return the number of components
       std::size_t NumberComponents() override { return (expr_.size()); }
 
@@ -235,6 +234,10 @@ namespace DRT
      private:
       // constants from input
       std::vector<std::pair<std::string, ValueType>> constants_from_input_;
+
+      //! throw an error if a constant given in the input file is a primary variables
+      template <typename T>
+      void CheckValidInput(const std::map<std::string, T>& variable_values) const;
     };
 
     /// try to create VariableExprFunction from a given line definition
