@@ -231,35 +231,35 @@ set(SINGLEFIELD_LIBRARIES
 
 set(SUPPORT_LIBRARIES
     # cmake-format: sortable
-    drt_fem_general
-    drt_geometry_pair
-    drt_inpar
-    drt_io
-    drt_levelset
-    drt_lib
-    drt_lib_artnet
-    drt_lib_beamcontact
-    drt_lib_beaminteraction
-    drt_lib_binstrategy
-    drt_lib_browniandyn
-    drt_lib_constraint
-    drt_lib_contact
-    drt_lib_contact_constitutivelaw
-    drt_lib_cut
-    drt_lib_fiber
-    drt_lib_geometric_search
-    drt_lib_immersed
-    drt_lib_io
-    drt_lib_mortar
-    drt_lib_poromulti_art_coupl
-    drt_lib_statinv_ana
-    drt_lib_struct_ale
-    drt_lib_surfstress
-    drt_lib_xfem
-    drt_lib_xfem_manag
-    drt_particleengine
-    drt_patspec
-    drt_red_airways
+    fem_general
+    geometry_pair
+    inpar
+    io
+    levelset
+    lib
+    lib_artnet
+    lib_beamcontact
+    lib_beaminteraction
+    lib_binstrategy
+    lib_browniandyn
+    lib_constraint
+    lib_contact
+    lib_contact_constitutivelaw
+    lib_cut
+    lib_fiber
+    lib_geometric_search
+    lib_immersed
+    lib_io
+    lib_mortar
+    lib_poromulti_art_coupl
+    lib_statinv_ana
+    lib_struct_ale
+    lib_surfstress
+    lib_xfem
+    lib_xfem_manag
+    particleengine
+    patspec
+    red_airways
     )
 
 set(BACI_LIBRARIES
@@ -268,29 +268,29 @@ set(BACI_LIBRARIES
     ${MULTIFIELD_LIBRARIES}
     ${SINGLEFIELD_LIBRARIES}
     ${SUPPORT_LIBRARIES}
-    drt_adapter
-    drt_cardiovascular0d
-    drt_comm
-    drt_constraint
-    drt_geometry
-    drt_mat
-    drt_matelast
-    drt_mixture
-    drt_mor
-    drt_mortar
-    drt_nurbs_discret
-    drt_opti
-    drt_stru_multi
-    drt_timestepping
-    drt_volmortar
+    adapter
+    cardiovascular0d
+    comm
+    constraint
     fortran
+    geometry
     headers
     linalg
     locacontinuation
+    mat
+    matelast
+    mixture
+    mor
+    mortar
     nlnsolver_nox
+    nurbs_discret
+    opti
     pss_full
     rebalance
     solver
+    stru_multi
+    timestepping
+    volmortar
     )
 
 set(FILTER_LIBRARIES post_drt_common -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group)

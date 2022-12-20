@@ -14,15 +14,15 @@
 #include "post_drt_common.H"
 
 #include <stack>
-#include "drt_exporter.H"
+#include "exporter.H"
 #include <EpetraExt_Transpose_CrsGraph.h>
 #include <Epetra_MpiComm.h>
-#include "drt_parobjectregister.H"
-#include "drt_parobject.H"
-#include "drt_condition_utils.H"
-#include "drt_periodicbc.H"
-#include "drt_nurbs_discret.H"
-#include "drt_dofset_independent.H"
+#include "parobjectregister.H"
+#include "parobject.H"
+#include "condition_utils.H"
+#include "periodicbc.H"
+#include "nurbs_discret.H"
+#include "dofset_independent.H"
 #include "rigidsphere.H"
 #include "inpar_problemtype.H"
 

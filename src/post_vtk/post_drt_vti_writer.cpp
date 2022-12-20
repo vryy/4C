@@ -14,8 +14,8 @@
 
 #include <Epetra_Vector.h>
 
-#include "drt_discret.H"
-#include "drt_dserror.H"
+#include "discret.H"
+#include "dserror.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "post_drt_common.H"

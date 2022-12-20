@@ -11,13 +11,13 @@
 
 #include "post_drt_ensight_writer.H"
 #include "post_drt_common.H"
-#include "drt_nurbs_discret.H"
+#include "nurbs_discret.H"
 #include "fluid_rotsym_periodicbc_utils.H"
 #include "linalg_utils_densematrix_communication.H"
 
 #include "inpar_problemtype.H"
 
-#include "drt_discret_xfem.H"
+#include "discret_xfem.H"
 
 #include <string>
 #include <numeric>

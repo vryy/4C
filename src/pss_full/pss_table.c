@@ -41,7 +41,7 @@ table. This table can be queried for those values quite easily.
 */
 
 #include "standardtypes.h"
-#include "drt_dserror.H"
+#include "dserror.H"
 
 #include "pss_table.h"
 #include "pss_prototypes.h"

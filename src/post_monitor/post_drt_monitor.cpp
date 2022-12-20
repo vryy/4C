@@ -19,8 +19,8 @@
 #include <Teuchos_CommandLineProcessor.hpp>
 
 #include "post_drt_common.H"
-#include "drt_discret.H"
-#include "drt_globalproblem.H"
+#include "discret.H"
+#include "globalproblem.H"
 #include "pss_cpp.h"
 #include "thermo_ele_action.H"
 

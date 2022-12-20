@@ -8,8 +8,8 @@
  */
 
 
-#ifndef POST_DRT_ENSIGHT_WRITER_H_
-#define POST_DRT_ENSIGHT_WRITER_H_
+#ifndef POST_ENSIGHT_WRITER_H_
+#define POST_ENSIGHT_WRITER_H_
 
 #include <iostream>
 #include <sstream>
@@ -19,7 +19,7 @@
 #include <fstream>
 #include <string>
 
-#include "drt_element.H"       // due to DiscretizationType
+#include "element.H"           // due to DiscretizationType
 #include "post_writer_base.H"  // base class PostWriterBase
 
 // class PostProblem;
@@ -438,4 +438,4 @@ class EnsightWriter : public PostWriterBase
   // static const unsigned FILE_SIZE_LIMIT_ = 1024*10; // 10kB ... useful for debugging ;-)
 };
 
-#endif /*POST_DRT_ENSIGHT_WRITER_H_*/
+#endif /*POST_ENSIGHT_WRITER_H_*/

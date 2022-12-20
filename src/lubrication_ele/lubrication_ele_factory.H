@@ -1,0 +1,50 @@
+/*--------------------------------------------------------------------------*/
+/*! \file
+
+\brief Factory of Lubrication elements
+
+\level 3
+
+
+*/
+/*--------------------------------------------------------------------------*/
+
+#ifndef SRC_LUBRICATION_ELE_LUBRICATION_ELE_FACTORY_H_
+#define SRC_LUBRICATION_ELE_LUBRICATION_ELE_FACTORY_H_
+
+#include "element.H"
+
+namespace DRT
+{
+  namespace ELEMENTS
+  {
+    // forward declaration
+    class LubricationEleInterface;
+
+    class LubricationFactory
+    {
+     public:
+      //! ctor
+      LubricationFactory() { return; }
+
+      //! dtor
+      virtual ~LubricationFactory() { return; }
+
+      //! ProvideImpl
+      static LubricationEleInterface* ProvideImpl(
+          DRT::Element::DiscretizationType distype, const std::string& disname);
+
+     private:
+      //! define LubricationEle instances dependent on problem
+      template <DRT::Element::DiscretizationType distype, int probdim>
+      static LubricationEleInterface* DefineProblemType(const std::string& disname);
+
+
+    };  // end class LubricationFactory
+
+  }  // namespace ELEMENTS
+
+}  // namespace DRT
+
+
+#endif /* SRC_LUBRICATION_ELE_LUBRICATION_ELE_FACTORY_H_ */

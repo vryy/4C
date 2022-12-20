@@ -1,10 +1,10 @@
-set(OBJS_POST_DRT_COMMON
+set(OBJS_POST_COMMON
     # cmake-format: sortable
     post_drt_common.cpp
     )
 
-baci_add_library(post_drt_common ${OBJS_POST_DRT_COMMON})
-target_link_libraries(post_drt_common PUBLIC drt_inpar)
+baci_add_library(post_drt_common ${OBJS_POST_COMMON})
+target_link_libraries(post_drt_common PUBLIC inpar)
 
 set(OBJS_POST_PROCESSOR_MAIN
     # cmake-format: sortable

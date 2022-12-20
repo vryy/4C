@@ -8,10 +8,10 @@
  \level 1
  */
 
-#ifndef POST_DRT_FILTER_BASE_H_
-#define POST_DRT_FILTER_BASE_H_
+#ifndef POST_FILTER_BASE_H_
+#define POST_FILTER_BASE_H_
 
-#include "drt_dserror.H"
+#include "dserror.H"
 
 #include <Teuchos_RCP.hpp>
 
@@ -100,4 +100,4 @@ class PostFilterBase
   Teuchos::RCP<PostWriterBase> writer_;
 };
 
-#endif /* POST_DRT_FILTER_BASE_H_ */
+#endif /* POST_FILTER_BASE_H_ */

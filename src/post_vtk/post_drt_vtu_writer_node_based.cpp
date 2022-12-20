@@ -14,17 +14,17 @@
 
 #include <sstream>
 
-#include "drt_element_vtk_cell_type_register.H"
-#include "drt_discret.H"
-#include "drt_dserror.H"
+#include "element_vtk_cell_type_register.H"
+#include "discret.H"
+#include "dserror.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "post_drt_common.H"
 
-#include "drt_nurbs_discret.H"
-#include "drt_utils_fem_shapefunctions.H"
-#include "drt_utils_nurbs_shapefunctions.H"
-#include "drt_element.H"
+#include "nurbs_discret.H"
+#include "utils_fem_shapefunctions.H"
+#include "utils_nurbs_shapefunctions.H"
+#include "element.H"
 
 #include "beam3_base.H"
 

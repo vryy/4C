@@ -14,9 +14,9 @@
 #include "post_writer_base.H"
 #include "post_single_field_writers.H"
 
-#include "drt_dserror.H"
-#include "drt_globalproblem.H"
-#include "drt_discret.H"
+#include "dserror.H"
+#include "globalproblem.H"
+#include "discret.H"
 
 #include "so_base.H"
 

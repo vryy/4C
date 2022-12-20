@@ -7,8 +7,8 @@
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef POST_DRT_VTI_H
-#define POST_DRT_VTI_H
+#ifndef POST_VTI_H
+#define POST_VTI_H
 
 
 #include "post_drt_vtk_writer.H"

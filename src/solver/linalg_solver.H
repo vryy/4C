@@ -15,7 +15,7 @@
 #include <Epetra_MultiVector.h>
 #include <Epetra_Operator.h>
 
-#include "drt_dserror.H"
+#include "dserror.H"
 #include "inpar_solver.H"
 
 // forward declarations

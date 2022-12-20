@@ -24,7 +24,7 @@
 #include "linalg_sparsematrix.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
-#include "drt_dserror.H"
+#include "dserror.H"
 
 #include "intersection_math.H"
 

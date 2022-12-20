@@ -10,7 +10,7 @@
 
 #include <Xpetra_MultiVectorFactory.hpp>
 
-#include "drt_dserror.H"
+#include "dserror.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
 #include "solver_blockpreconditioners.H"

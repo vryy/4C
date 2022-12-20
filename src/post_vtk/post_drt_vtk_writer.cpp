@@ -15,7 +15,7 @@
 
 #include "post_drt_common.H"
 #include "pss_cpp.h"
-#include "drt_discret.H"
+#include "discret.H"
 
 
 // deactivate for ascii output. Only do this for debugging.

@@ -18,7 +18,7 @@
 #include "Epetra_Export.h"
 #include "Epetra_Import.h"
 #include "Teuchos_RCP.hpp"
-#include "drt_exporter.H"
+#include "exporter.H"
 #include "linalg_blocksparsematrix.H"
 
 namespace LINALG

@@ -13,7 +13,7 @@
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 
-#include "drt_dserror.H"
+#include "dserror.H"
 #include "linalg_precond.H"
 #include "linalg_mapextractor.H"
 

@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef POST_DRT_WRITER_BASE_H_
-#define POST_DRT_WRITER_BASE_H_
+#ifndef POST_WRITER_BASE_H_
+#define POST_WRITER_BASE_H_
 
 #include <vector>
 
@@ -140,4 +140,4 @@ class PostWriterBase
   unsigned int numproc_;  ///< number of processors
 };
 
-#endif /* POST_DRT_WRITER_BASE_H_ */
+#endif /* POST_WRITER_BASE_H_ */

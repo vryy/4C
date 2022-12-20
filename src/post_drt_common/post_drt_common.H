@@ -17,15 +17,15 @@ specific output operations can be done by the elements themselves.
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef POST_DRT_COMMON_H
-#define POST_DRT_COMMON_H
+#ifndef POST_COMMON_H
+#define POST_COMMON_H
 
 
 
 #include <vector>
 #include <string>
 
-#include "drt_globalproblem_enums.H"
+#include "globalproblem_enums.H"
 #include "io_hdf.H"
 
 extern "C"

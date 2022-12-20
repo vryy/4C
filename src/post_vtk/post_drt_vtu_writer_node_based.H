@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef POST_DRT_VTU_NODE_H
-#define POST_DRT_VTU_NODE_H
+#ifndef POST_VTU_NODE_H
+#define POST_VTU_NODE_H
 
 
 #include "post_drt_vtu_writer.H"
@@ -17,7 +17,7 @@
 #include <map>
 #include <vector>
 
-#include "drt_element.H"
+#include "element.H"
 
 
 // forward declarations

@@ -13,14 +13,14 @@
 \addtogroup Monitoring
 *//*! @{ (documentation module open)*/
 
-#ifndef POST_DRT_MONITOR_H_
-#define POST_DRT_MONITOR_H_
+#ifndef POST_MONITOR_H_
+#define POST_MONITOR_H_
 
 #include <string>
 #include <Teuchos_CommandLineProcessor.hpp>
 
 #include "post_drt_common.H"
-#include "drt_discret.H"
+#include "discret.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -620,5 +620,5 @@ class PoroMultiElastScatraArteryScatraMonWriter : public ScatraMonWriter
 };  // end of class PoroMultiElastScatraArteryScatraMonWriter
 
 
-#endif /*POST_DRT_MONITOR_H_*/
+#endif /*POST_MONITOR_H_*/
 /*! @} (documentation module close)*/

@@ -20,7 +20,7 @@
 #include <Epetra_LinearProblem.h>
 
 #include "inpar_solver.H"
-#include "drt_globalproblem.H"  // access global problem. can we avoid this?
+#include "globalproblem.H"  // access global problem. can we avoid this?
 #include "linalg_solver.H"
 #include "linalg_sparsematrix.H"
 

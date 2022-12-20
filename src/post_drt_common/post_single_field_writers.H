@@ -277,4 +277,4 @@ class AnyFilter : public PostFilterBase
 };
 
 
-#endif /*POST_DRT_ENSIGHT_SINGLE_FIELD_WRITER_H_*/
+#endif /*POST_ENSIGHT_SINGLE_FIELD_WRITER_H_*/

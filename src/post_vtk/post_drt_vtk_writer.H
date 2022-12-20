@@ -7,8 +7,8 @@
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef POST_DRT_VTK_H
-#define POST_DRT_VTK_H
+#ifndef POST_VTK_H
+#define POST_VTK_H
 
 
 #include "post_writer_base.H"
@@ -23,7 +23,7 @@
 #include <zlib.h>
 #include <Teuchos_RCP.hpp>
 
-#include "drt_dserror.H"
+#include "dserror.H"
 
 
 

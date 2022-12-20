@@ -8,9 +8,9 @@
 *----------------------------------------------------------------------*/
 
 #include <utility>
-#include "drt_globalproblem.H"
+#include "globalproblem.H"
 #include "comm_utils.H"
-#include "drt_inputreader.H"
+#include "inputreader.H"
 #include "io_pstream.H"
 #include "inpar_parameterlist_utils.H"
 
