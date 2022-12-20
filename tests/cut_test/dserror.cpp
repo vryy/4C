@@ -6,7 +6,7 @@
  * \level 2
  *----------------------------------------------------------------------*/
 
-#include "drt_dserror.H"
+#include "dserror.H"
 
 #include <stdexcept>
 #include <string.h>
@@ -22,7 +22,7 @@
 
 #ifdef THROWELEMENTERRORS
 
-#include "drt_globalproblem.H"
+#include "globalproblem.H"
 #include "io_control.H"
 
 
