@@ -9,7 +9,7 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "src/drt_poromultiphase_scatra/poromultiphase_scatra_utils.H"
+#include "poromultiphase_scatra_utils.H"
 
 namespace
 {

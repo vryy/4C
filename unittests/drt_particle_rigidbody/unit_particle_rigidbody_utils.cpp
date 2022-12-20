@@ -6,8 +6,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "gtest/gtest.h"
-#include "unittests/common/assertions.h"
-#include "src/drt_particle_rigidbody/particle_rigidbody_utils.H"
+#include "unittests_assertions.h"
+#include "particle_rigidbody_utils.H"
 
 namespace
 {

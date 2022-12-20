@@ -8,10 +8,10 @@
 
 #include "gtest/gtest.h"
 
-#include "src/drt_lib/drt_globalproblem.H"
+#include "drt_globalproblem.H"
 
-#include "src/drt_mat/electrode.H"
-#include "src/drt_mat/matpar_material.H"
+#include "electrode.H"
+#include "matpar_material.H"
 
 namespace
 {

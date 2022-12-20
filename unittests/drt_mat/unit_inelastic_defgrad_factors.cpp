@@ -8,16 +8,16 @@
 
 #include "gtest/gtest.h"
 
-#include "src/drt_lib/drt_globalproblem.H"
-#include "src/drt_lib/voigt_notation.H"
+#include "drt_globalproblem.H"
+#include "voigt_notation.H"
 
-#include "src/drt_mat/electrode.H"
-#include "src/drt_mat/inelastic_defgrad_factors.H"
-#include "src/drt_mat/matpar_bundle.H"
+#include "electrode.H"
+#include "inelastic_defgrad_factors.H"
+#include "matpar_bundle.H"
 
-#include "src/linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
-#include "unittests/common/assertions.h"
+#include "unittests_assertions.h"
 
 namespace
 {

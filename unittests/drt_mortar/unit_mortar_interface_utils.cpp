@@ -7,7 +7,7 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "src/drt_mortar/mortar_interface_utils.H"
+#include "mortar_interface_utils.H"
 
 namespace
 {

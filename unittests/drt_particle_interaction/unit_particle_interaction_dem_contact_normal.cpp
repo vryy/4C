@@ -5,10 +5,10 @@
 */
 /*---------------------------------------------------------------------------*/
 #include "gtest/gtest.h"
-#include "src/drt_particle_interaction/particle_interaction_dem_contact_normal.H"
-#include "src/drt_particle_interaction/particle_interaction_utils.H"
+#include "particle_interaction_dem_contact_normal.H"
+#include "particle_interaction_utils.H"
 
-#include "src/drt_inpar/drt_validparameters.H"
+#include "drt_validparameters.H"
 
 
 namespace

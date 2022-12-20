@@ -7,7 +7,7 @@ interactions
 /*---------------------------------------------------------------------------*/
 
 #include "gtest/gtest.h"
-#include "src/drt_particle_interaction/particle_interaction_sph_equationofstate.H"
+#include "particle_interaction_sph_equationofstate.H"
 
 namespace
 {

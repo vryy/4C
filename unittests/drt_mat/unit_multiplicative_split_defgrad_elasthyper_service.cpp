@@ -8,14 +8,14 @@
 
 #include "gtest/gtest.h"
 
-#include "src/drt_mat/matpar_material.H"
-#include "src/drt_mat/multiplicative_split_defgrad_elasthyper_service.H"
+#include "matpar_material.H"
+#include "multiplicative_split_defgrad_elasthyper_service.H"
 
-#include "src/drt_matelast/elast_isoneohooke.H"
+#include "elast_isoneohooke.H"
 
-#include "src/linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
-#include "unittests/common/assertions.h"
+#include "unittests_assertions.h"
 
 namespace
 {

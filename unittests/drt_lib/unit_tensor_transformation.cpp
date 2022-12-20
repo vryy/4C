@@ -8,9 +8,9 @@
 /*----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "src/linalg/linalg_fixedsizematrix.H"
-#include "src/drt_lib/tensor_transformation.H"
-#include "unittests/common/assertions.h"
+#include "linalg_fixedsizematrix.H"
+#include "tensor_transformation.H"
+#include "unittests_assertions.h"
 
 namespace
 {

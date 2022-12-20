@@ -11,17 +11,17 @@
 
 
 #include <gtest/gtest.h>
-#include "unittests/common/assertions.h"
+#include "unittests_assertions.h"
 
 #include <Teuchos_RCPDecl.hpp>
 #include <boost/mpl/protect.hpp>
 #include <tuple>
 
-#include "src/linalg/linalg_fixedsizematrix.H"
-#include "src/drt_matelast/elast_coupanisoexpo.H"
-#include "src/drt_mat/anisotropy.H"
-#include "src/drt_matelast/elast_aniso_structuraltensor_strategy.H"
-#include "src/drt_lib/voigt_notation.H"
+#include "linalg_fixedsizematrix.H"
+#include "elast_coupanisoexpo.H"
+#include "anisotropy.H"
+#include "elast_aniso_structuraltensor_strategy.H"
+#include "voigt_notation.H"
 
 
 

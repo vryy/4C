@@ -7,9 +7,9 @@
 
 #include <gtest/gtest.h>
 
-#include "src/drt_lib/symbolic_expression.H"
+#include "symbolic_expression.H"
 
-#include "unittests/common/assertions.h"
+#include "unittests_assertions.h"
 
 
 namespace

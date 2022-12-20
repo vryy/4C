@@ -8,11 +8,11 @@
 
 #include "gtest/gtest.h"
 
-#include "src/drt_mat/material_service.H"
+#include "material_service.H"
 
-#include "src/linalg/linalg_fixedsizematrix.H"
+#include "linalg_fixedsizematrix.H"
 
-#include "unittests/common/assertions.h"
+#include "unittests_assertions.h"
 
 namespace
 {

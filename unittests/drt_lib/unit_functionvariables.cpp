@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "src/drt_lib/drt_functionvariables.H"
+#include "drt_functionvariables.H"
 
 namespace
 {

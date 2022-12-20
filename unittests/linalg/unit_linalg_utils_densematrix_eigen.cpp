@@ -8,9 +8,9 @@
 *----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "src/linalg/linalg_utils_densematrix_eigen.H"
+#include "linalg_utils_densematrix_eigen.H"
 
-#include "unittests/common/assertions.h"
+#include "unittests_assertions.h"
 
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseVector.h>

@@ -7,7 +7,7 @@
 #include <gtest/gtest.h>
 #include <stdexcept>
 #include <Epetra_SerialComm.h>
-#include "src/drt_io/io_pstream.H"
+#include "io_pstream.H"
 
 namespace
 {

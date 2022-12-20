@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 #include <Epetra_SerialComm.h>
-#include "src/drt_lib/drt_discret.H"
-#include "src/drt_lib/drt_domainreader.H"
+#include "drt_discret.H"
+#include "drt_domainreader.H"
 
 namespace
 {

@@ -10,10 +10,10 @@
 /*----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "unittests/common/assertions.h"
+#include "unittests_assertions.h"
 
-#include "src/drt_matelast/elast_isoogden.H"
-#include "src/drt_mat/matpar_material.H"
+#include "elast_isoogden.H"
+#include "matpar_material.H"
 
 namespace
 {
