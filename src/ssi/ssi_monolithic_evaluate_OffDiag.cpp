@@ -238,7 +238,7 @@ void SSI::ScatraStructureOffDiagCoupling::
     case LINALG::MatrixType::block_condition:
     case LINALG::MatrixType::block_condition_dof:
     {
-      const int numberscatrablocks = ScaTraField()->BlockMaps().NumMaps();
+      const int numberscatrablocks = ScaTraField()->BlockMaps()->NumMaps();
 
       // cast master and slave matrix
       auto blockslavematrix = LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(slavematrix);
@@ -273,7 +273,7 @@ void SSI::ScatraStructureOffDiagCoupling::
 
       // split auxiliary system matrix and assemble into scatra-structure matrix block
       auto mastermatrix_split = mastermatrixsparse->Split<LINALG::DefaultBlockMatrixStrategy>(
-          *block_map_structure_, ScaTraField()->BlockMaps());
+          *block_map_structure_, *ScaTraField()->BlockMaps());
       mastermatrix_split->Complete();
       blockmastermatrix->Add(*mastermatrix_split, false, 1.0, 1.0);
 
@@ -502,7 +502,7 @@ void SSI::ScatraStructureOffDiagCoupling::
         // old slave dofs from input
         auto slave_map = slave_slave_transformation->SlaveDofMap();
 
-        for (int iblock = 0; iblock < ScaTraField()->BlockMaps().NumMaps(); ++iblock)
+        for (int iblock = 0; iblock < ScaTraField()->BlockMaps()->NumMaps(); ++iblock)
         {
           auto scatra_slave_flux_structure_slave_dofs_on_scatra_slave_iblock =
               scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix_block->Matrix(
@@ -516,7 +516,7 @@ void SSI::ScatraStructureOffDiagCoupling::
               scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix_block->Matrix(
                   iblock, 0);
 
-          auto scatra_block_mapi = LINALG::IntersectMap(*ScaTraField()->BlockMaps().Map(iblock),
+          auto scatra_block_mapi = LINALG::IntersectMap(*ScaTraField()->BlockMaps()->Map(iblock),
               *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap());
 
           LINALG::MatrixLogicalSplitAndTransform()(
@@ -547,7 +547,7 @@ void SSI::ScatraStructureOffDiagCoupling::
 
       // split auxiliary system matrix and assemble into scatra-structure matrix block
       auto mastermatrix_split = mastermatrixsparse->Split<LINALG::DefaultBlockMatrixStrategy>(
-          *block_map_structure_, ScaTraField()->BlockMaps());
+          *block_map_structure_, *ScaTraField()->BlockMaps());
       mastermatrix_split->Complete();
       mastermatrix_block->Add(*mastermatrix_split, false, 1.0, 1.0);
 
@@ -645,13 +645,13 @@ void SSI::ScatraStructureOffDiagCoupling::
         // old slave dofs from input
         auto slave_map = slave_slave_transformation->SlaveDofMap();
 
-        for (int iblock = 0; iblock < ScaTraField()->BlockMaps().NumMaps(); ++iblock)
+        for (int iblock = 0; iblock < ScaTraField()->BlockMaps()->NumMaps(); ++iblock)
         {
           auto evaluate_iblock = evaluate_matrix_block->Matrix(iblock, 0);
           auto slave_iblock = slavematrix_block->Matrix(iblock, 0);
 
           auto scatra_slave_block_mapi =
-              LINALG::IntersectMap(*ScaTraField()->BlockMaps().Map(iblock),
+              LINALG::IntersectMap(*ScaTraField()->BlockMaps()->Map(iblock),
                   *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap());
 
           LINALG::MatrixLogicalSplitAndTransform()(evaluate_iblock, *scatra_slave_block_mapi,

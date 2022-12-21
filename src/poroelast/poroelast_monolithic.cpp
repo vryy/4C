@@ -468,8 +468,7 @@ void POROELAST::Monolithic::SetupSystem()
 void POROELAST::Monolithic::SetupEquilibration()
 {
   // instantiate appropriate equilibration class
-  auto equilibration_method =
-      Teuchos::rcp(new std::vector<LINALG::EquilibrationMethod>(1, equilibration_method_));
+  auto equilibration_method = std::vector<LINALG::EquilibrationMethod>(1, equilibration_method_);
   equilibration_ =
       LINALG::BuildEquilibration(LINALG::MatrixType::block_field, equilibration_method, fullmap_);
 }
@@ -586,7 +585,7 @@ void POROELAST::Monolithic::LinearSolve()
   iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
 
   // equilibrate global system of equations if necessary
-  equilibration_->EquilibrateSystem(systemmatrix_, rhs_, *blockrowdofmap_);
+  equilibration_->EquilibrateSystem(systemmatrix_, rhs_, blockrowdofmap_);
 
   if (directsolve_)
   {

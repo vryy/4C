@@ -78,8 +78,8 @@ SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
     }
     case LINALG::MatrixType::block_condition:
     {
-      block_map_scatra_ = Teuchos::rcpFromRef(ssti_mono_algorithm.ScaTraField()->BlockMaps());
-      block_map_thermo_ = Teuchos::rcpFromRef(ssti_mono_algorithm.ThermoField()->BlockMaps());
+      block_map_scatra_ = ssti_mono_algorithm.ScaTraField()->BlockMaps();
+      block_map_thermo_ = ssti_mono_algorithm.ThermoField()->BlockMaps();
       break;
     }
     default:
@@ -202,25 +202,23 @@ SSTI::SSTIMapsMono::SSTIMapsMono(const SSTI::SSTIMono& ssti_mono_algorithm)
       // many main-diagonal matrix blocks associated with scalar transport field
     case LINALG::MatrixType::block_condition:
     {
-      Teuchos::RCP<std::vector<int>> block_positions_scatra =
+      auto block_positions_scatra =
           ssti_mono_algorithm.GetBlockPositions(Subproblem::scalar_transport);
-      Teuchos::RCP<std::vector<int>> block_positions_structure =
-          ssti_mono_algorithm.GetBlockPositions(Subproblem::structure);
-      Teuchos::RCP<std::vector<int>> block_positions_thermo =
-          ssti_mono_algorithm.GetBlockPositions(Subproblem::thermo);
+      auto block_positions_structure = ssti_mono_algorithm.GetBlockPositions(Subproblem::structure);
+      auto block_positions_thermo = ssti_mono_algorithm.GetBlockPositions(Subproblem::thermo);
 
       std::vector<Teuchos::RCP<const Epetra_Map>> maps_systemmatrix(
-          block_positions_scatra->size() + block_positions_structure->size() +
-          block_positions_thermo->size());
-      for (int imap = 0; imap < static_cast<int>(block_positions_scatra->size()); ++imap)
-        maps_systemmatrix[block_positions_scatra->at(imap)] = BlockMapScatra()->Map(imap);
+          block_positions_scatra.size() + block_positions_structure.size() +
+          block_positions_thermo.size());
+      for (int imap = 0; imap < static_cast<int>(block_positions_scatra.size()); ++imap)
+        maps_systemmatrix[block_positions_scatra.at(imap)] = BlockMapScatra()->Map(imap);
 
       // extract map underlying single main-diagonal matrix block associated with structural
       // field
-      maps_systemmatrix[block_positions_structure->at(0)] = BlockMapStructure()->FullMap();
+      maps_systemmatrix[block_positions_structure.at(0)] = BlockMapStructure()->FullMap();
 
-      for (int imap = 0; imap < static_cast<int>(block_positions_thermo->size()); ++imap)
-        maps_systemmatrix[block_positions_thermo->at(imap)] = BlockMapThermo()->Map(imap);
+      for (int imap = 0; imap < static_cast<int>(block_positions_thermo.size()); ++imap)
+        maps_systemmatrix[block_positions_thermo.at(imap)] = BlockMapThermo()->Map(imap);
 
       // initialize map extractor associated with blocks of global system matrix
       block_map_system_matrix_ = Teuchos::rcp(

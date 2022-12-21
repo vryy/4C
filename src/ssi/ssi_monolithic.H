@@ -189,7 +189,7 @@ namespace SSI
     void EvaluateSubproblems();
 
     //! build and return vector of equilibration methods for each block of system matrix
-    Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> GetBlockEquilibration();
+    std::vector<LINALG::EquilibrationMethod> GetBlockEquilibration();
 
     /*!
      * @note This is only necessary in the first iteration of the simulation, since only there the

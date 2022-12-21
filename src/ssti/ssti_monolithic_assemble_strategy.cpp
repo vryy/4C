@@ -35,7 +35,7 @@ SSTI::AssembleStrategyBlock::AssembleStrategyBlock(Teuchos::RCP<const SSTI::SSTI
     : AssembleStrategyBase(ssti_mono),
       block_position_scatra_(ssti_mono->GetBlockPositions(SSTI::Subproblem::scalar_transport)),
       block_position_thermo_(ssti_mono->GetBlockPositions(SSTI::Subproblem::thermo)),
-      position_structure_(ssti_mono->GetBlockPositions(SSTI::Subproblem::structure)->at(0))
+      position_structure_(ssti_mono->GetBlockPositions(SSTI::Subproblem::structure).at(0))
 {
 }
 
@@ -72,12 +72,12 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatra(
   auto scatradomain_block = LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(scatradomain);
 
   // assemble blocks of scalar transport system matrix into global system matrix
-  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra().size()); ++iblock)
   {
-    for (int jblock = 0; jblock < static_cast<int>(BlockPositionScaTra()->size()); ++jblock)
+    for (int jblock = 0; jblock < static_cast<int>(BlockPositionScaTra().size()); ++jblock)
     {
       auto& systemmatrix_block_iscatra_jscatra = systemmatrix_block->Matrix(
-          BlockPositionScaTra()->at(iblock), BlockPositionScaTra()->at(jblock));
+          BlockPositionScaTra().at(iblock), BlockPositionScaTra().at(jblock));
 
       systemmatrix_block_iscatra_jscatra.Add(
           scatradomain_block->Matrix(iblock, jblock), false, 1.0, 1.0);
@@ -95,7 +95,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleScatra(
   auto scatradomain_sparse = LINALG::CastToConstSparseMatrixAndCheckSuccess(scatradomain);
 
   auto& systemmatrix_block_scatra_scatra =
-      systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), BlockPositionScaTra()->at(0));
+      systemmatrix_block->Matrix(BlockPositionScaTra().at(0), BlockPositionScaTra().at(0));
 
   systemmatrix_block_scatra_scatra.Add(*scatradomain_sparse, false, 1.0, 1.0);
 }
@@ -264,12 +264,12 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermo(
   auto thermodomain_block = LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(thermodomain);
 
   // assemble blocks of scalar transport system matrix into global system matrix
-  for (int iblock = 0; iblock < static_cast<int>(BlockPositionThermo()->size()); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionThermo().size()); ++iblock)
   {
-    for (int jblock = 0; jblock < static_cast<int>(BlockPositionThermo()->size()); ++jblock)
+    for (int jblock = 0; jblock < static_cast<int>(BlockPositionThermo().size()); ++jblock)
     {
       auto& systemmatrix_block_ithermo_jthermo = systemmatrix_block->Matrix(
-          BlockPositionThermo()->at(iblock), BlockPositionThermo()->at(jblock));
+          BlockPositionThermo().at(iblock), BlockPositionThermo().at(jblock));
 
       systemmatrix_block_ithermo_jthermo.Add(
           thermodomain_block->Matrix(iblock, jblock), false, 1.0, 1.0);
@@ -287,7 +287,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleThermo(
   auto thermodomain_sparse = LINALG::CastToConstSparseMatrixAndCheckSuccess(thermodomain);
 
   auto& systemmatrix_block_thermo_thermo =
-      systemmatrix_block->Matrix(BlockPositionThermo()->at(0), BlockPositionThermo()->at(0));
+      systemmatrix_block->Matrix(BlockPositionThermo().at(0), BlockPositionThermo().at(0));
 
   systemmatrix_block_thermo_thermo.Add(*thermodomain_sparse, false, 1.0, 1.0);
 }
@@ -316,7 +316,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatraStructure(
       LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(scatrastructuredomain);
 
   // assemble blocks of scalar transport system matrix into global system matrix
-  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra().size()); ++iblock)
   {
     const auto scatrastructuredomain_subblock = scatrastructuredomain_block->Matrix(iblock, 0);
 
@@ -324,20 +324,20 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatraStructure(
     if (InterfaceMeshtying())
     {
       AssembleXXXStructureMeshtying(
-          systemmatrix_block->Matrix(BlockPositionScaTra()->at(iblock), PositionStructure()),
+          systemmatrix_block->Matrix(BlockPositionScaTra().at(iblock), PositionStructure()),
           scatrastructuredomain_block->Matrix(iblock, 0));
 
       auto scatrastructureinterface_block =
           LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(scatrastructureinterface);
 
       AssembleXXXStructureMeshtying(
-          systemmatrix_block->Matrix(BlockPositionScaTra()->at(iblock), PositionStructure()),
+          systemmatrix_block->Matrix(BlockPositionScaTra().at(iblock), PositionStructure()),
           scatrastructureinterface_block->Matrix(iblock, 0));
     }
     else
     {
       auto& systemmatrix_block_iscatra_struct =
-          systemmatrix_block->Matrix(BlockPositionScaTra()->at(iblock), PositionStructure());
+          systemmatrix_block->Matrix(BlockPositionScaTra().at(iblock), PositionStructure());
 
       systemmatrix_block_iscatra_struct.Add(scatrastructuredomain_subblock, false, 1.0, 1.0);
     }
@@ -360,20 +360,20 @@ void SSTI::AssembleStrategyBlockSparse::AssembleScatraStructure(
   if (InterfaceMeshtying())
   {
     AssembleXXXStructureMeshtying(
-        systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), PositionStructure()),
+        systemmatrix_block->Matrix(BlockPositionScaTra().at(0), PositionStructure()),
         *scatrastructuredomain_sparse);
 
     auto scatrastructureinterface_sparse =
         LINALG::CastToConstSparseMatrixAndCheckSuccess(scatrastructureinterface);
 
     AssembleXXXStructureMeshtying(
-        systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), PositionStructure()),
+        systemmatrix_block->Matrix(BlockPositionScaTra().at(0), PositionStructure()),
         *scatrastructureinterface_sparse);
   }
   else
   {
     auto& systemmatrix_block_scatra_struct =
-        systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), PositionStructure());
+        systemmatrix_block->Matrix(BlockPositionScaTra().at(0), PositionStructure());
 
     systemmatrix_block_scatra_struct.Add(*scatrastructuredomain_sparse, false, 1.0, 1.0);
   }
@@ -443,13 +443,13 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatraThermoDomain(
       LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatrathermodomain);
 
   // assemble blocks of scalar transport-thermo matrix into global system matrix
-  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra().size()); ++iblock)
   {
-    for (int jblock = 0; jblock < static_cast<int>(BlockPositionThermo()->size()); ++jblock)
+    for (int jblock = 0; jblock < static_cast<int>(BlockPositionThermo().size()); ++jblock)
     {
       auto scatrathermodomain_subblock = scatrathermodomain_block->Matrix(iblock, jblock);
       auto systemmatrix_subblock = systemmatrix_block->Matrix(
-          BlockPositionScaTra()->at(iblock), BlockPositionThermo()->at(jblock));
+          BlockPositionScaTra().at(iblock), BlockPositionThermo().at(jblock));
       systemmatrix_subblock.UnComplete();
       systemmatrix_subblock.Add(scatrathermodomain_subblock, false, 1.0, 1.0);
     }
@@ -464,7 +464,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleScatraThermoDomain(
 {
   auto systemmatrix_subblock =
       LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix)
-          ->Matrix(BlockPositionScaTra()->at(0), BlockPositionThermo()->at(0));
+          ->Matrix(BlockPositionScaTra().at(0), BlockPositionThermo().at(0));
   auto scatrathermodomain_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(scatrathermodomain);
 
   systemmatrix_subblock.UnComplete();
@@ -496,16 +496,16 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatraThermoInterface(
 
   LINALG::SparseMatrix masterderiv(*AllMaps()->BlockMapScatra()->FullMap(), 27, false, true);
 
-  for (int i = 0; i < static_cast<int>(BlockPositionScaTra()->size()); ++i)
+  for (int i = 0; i < static_cast<int>(BlockPositionScaTra().size()); ++i)
   {
-    for (int j = 0; j < static_cast<int>(BlockPositionThermo()->size()); ++j)
+    for (int j = 0; j < static_cast<int>(BlockPositionThermo().size()); ++j)
     {
       const auto scatrathermointerface_subblock = scatrathermointerface_block->Matrix(i, j);
 
       // assemble linearizations of slave- and master side scatra fluxes w.r.t. slave temperatures
       // into system matrix
       auto& systemmatrix_block_iscatra_jthermo =
-          systemmatrix_block->Matrix(BlockPositionScaTra()->at(i), BlockPositionThermo()->at(j));
+          systemmatrix_block->Matrix(BlockPositionScaTra().at(i), BlockPositionThermo().at(j));
       systemmatrix_block_iscatra_jthermo.Add(scatrathermointerface_subblock, false, 1.0, 1.0);
 
       // assemble linearizations of slave- and master side scatra fluxes w.r.t. master temperatures
@@ -527,14 +527,14 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatraThermoInterface(
 
   blockmasterderiv->Complete();
 
-  for (int i = 0; i < static_cast<int>(BlockPositionScaTra()->size()); ++i)
+  for (int i = 0; i < static_cast<int>(BlockPositionScaTra().size()); ++i)
   {
-    for (int j = 0; j < static_cast<int>(BlockPositionThermo()->size()); ++j)
+    for (int j = 0; j < static_cast<int>(BlockPositionThermo().size()); ++j)
     {
       // assemble linearizations of slave side scatra fluxes w.r.t. slave and master side elch
       // into system matrix
       auto& systemmatrix_block_iscatra_jthermo =
-          systemmatrix_block->Matrix(BlockPositionScaTra()->at(i), BlockPositionThermo()->at(j));
+          systemmatrix_block->Matrix(BlockPositionScaTra().at(i), BlockPositionThermo().at(j));
       systemmatrix_block_iscatra_jthermo.Add(blockmasterderiv->Matrix(i, j), false, 1.0, 1.0);
     }
   }
@@ -553,7 +553,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleScatraThermoInterface(
   // assemble linearizations of slave- and master side scatra fluxes w.r.t. slave temperatures into
   // system matrix
   auto& systemmatrix_block_scatra_thermo =
-      systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), BlockPositionThermo()->at(0));
+      systemmatrix_block->Matrix(BlockPositionScaTra().at(0), BlockPositionThermo().at(0));
   systemmatrix_block_scatra_thermo.Add(*scatrathermointerface_sparse, false, 1.0, 1.0);
 
   // assemble linearizations of slave- and master side scatra fluxes w.r.t. master temperatures into
@@ -563,7 +563,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleScatraThermoInterface(
   LINALG::MatrixLogicalSplitAndTransform()(*scatrathermointerface_sparse,
       scatrathermointerface_sparse->RangeMap(),
       *MeshtyingThermo()->CouplingAdapter()->MasterDofMap(), 1.0, nullptr, &thermo_converter,
-      systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), BlockPositionThermo()->at(0)), true,
+      systemmatrix_block->Matrix(BlockPositionScaTra().at(0), BlockPositionThermo().at(0)), true,
       true);
 }
 
@@ -602,7 +602,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleStructureScatra(
       LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(structurescatradomain);
 
   // assemble blocks of scalar transport system matrix into global system matrix
-  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra().size()); ++iblock)
   {
     const auto structurescatradomain_subblock = structurescatradomain_block->Matrix(0, iblock);
 
@@ -610,13 +610,13 @@ void SSTI::AssembleStrategyBlockBlock::AssembleStructureScatra(
     if (InterfaceMeshtying())
     {
       AssembleStructureXXXMeshtying(
-          systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra()->at(iblock)),
+          systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra().at(iblock)),
           structurescatradomain_subblock);
     }
     else
     {
       auto& systemmatrix_block_struct_iscatra =
-          systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra()->at(iblock));
+          systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra().at(iblock));
 
       systemmatrix_block_struct_iscatra.Add(structurescatradomain_subblock, false, 1.0, 1.0);
     }
@@ -637,13 +637,13 @@ void SSTI::AssembleStrategyBlockSparse::AssembleStructureScatra(
   if (InterfaceMeshtying())
   {
     AssembleStructureXXXMeshtying(
-        systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra()->at(0)),
+        systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra().at(0)),
         *structurescatradomain_sparse);
   }
   else
   {
     auto& systemmatrix_block_struct_scatra =
-        systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra()->at(0));
+        systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra().at(0));
 
     systemmatrix_block_struct_scatra.Add(*structurescatradomain_sparse, false, 1.0, 1.0);
   }
@@ -706,12 +706,12 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoScatra(
       LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(thermoscatradomain);
 
   // assemble blocks of scalar transport system matrix into global system matrix
-  for (int iblock = 0; iblock < static_cast<int>(BlockPositionThermo()->size()); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionThermo().size()); ++iblock)
   {
-    for (int jblock = 0; jblock < static_cast<int>(BlockPositionScaTra()->size()); ++jblock)
+    for (int jblock = 0; jblock < static_cast<int>(BlockPositionScaTra().size()); ++jblock)
     {
       auto systemmatrix_block_ithermo_jscatra = systemmatrix_block->Matrix(
-          BlockPositionThermo()->at(iblock), BlockPositionScaTra()->at(jblock));
+          BlockPositionThermo().at(iblock), BlockPositionScaTra().at(jblock));
       systemmatrix_block_ithermo_jscatra.UnComplete();
       systemmatrix_block_ithermo_jscatra.Add(
           thermoscatradomain_block->Matrix(iblock, jblock), false, 1.0, 1.0);
@@ -733,7 +733,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleThermoScatra(
       LINALG::CastToConstSparseMatrixAndCheckSuccess(thermoscatradomain);
 
   auto& systemmatrix_block_thermo_scatra =
-      systemmatrix_block->Matrix(BlockPositionThermo()->at(0), BlockPositionScaTra()->at(0));
+      systemmatrix_block->Matrix(BlockPositionThermo().at(0), BlockPositionScaTra().at(0));
   systemmatrix_block_thermo_scatra.UnComplete();
   systemmatrix_block_thermo_scatra.Add(*thermoscatradomain_sparse, false, 1.0, 1.0);
 
@@ -770,16 +770,16 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoScatraInterface(
 
   LINALG::SparseMatrix masterflux(*AllMaps()->BlockMapThermo()->FullMap(), 27, false, true);
 
-  for (int i = 0; i < static_cast<int>(BlockPositionThermo()->size()); ++i)
+  for (int i = 0; i < static_cast<int>(BlockPositionThermo().size()); ++i)
   {
-    for (int j = 0; j < static_cast<int>(BlockPositionScaTra()->size()); ++j)
+    for (int j = 0; j < static_cast<int>(BlockPositionScaTra().size()); ++j)
     {
       const auto thermoscatrainterface_subblock = thermoscatrainterface_block->Matrix(i, j);
 
       // assemble linearizations of slave side scatra fluxes w.r.t. slave and master side elch
       // into system matrix
       auto& systemmatrix_block_ithermo_jscatra =
-          systemmatrix_block->Matrix(BlockPositionThermo()->at(i), BlockPositionScaTra()->at(j));
+          systemmatrix_block->Matrix(BlockPositionThermo().at(i), BlockPositionScaTra().at(j));
       systemmatrix_block_ithermo_jscatra.Add(thermoscatrainterface_subblock, false, 1.0, 1.0);
 
       // assemble linearizations of master side thermo fluxes w.r.t. slave and master side elch
@@ -811,12 +811,12 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoScatraInterface(
 
   // assemble linearizations of slave side thermo fluxes w.r.t. slave and master side elch
   // into system matrix
-  for (int i = 0; i < static_cast<int>(BlockPositionThermo()->size()); ++i)
+  for (int i = 0; i < static_cast<int>(BlockPositionThermo().size()); ++i)
   {
-    for (int j = 0; j < static_cast<int>(BlockPositionScaTra()->size()); ++j)
+    for (int j = 0; j < static_cast<int>(BlockPositionScaTra().size()); ++j)
     {
       auto& systemmatrix_block_ithermo_jscatra =
-          systemmatrix_block->Matrix(BlockPositionThermo()->at(i), BlockPositionScaTra()->at(j));
+          systemmatrix_block->Matrix(BlockPositionThermo().at(i), BlockPositionScaTra().at(j));
 
       systemmatrix_block_ithermo_jscatra.Add(blockmasterflux->Matrix(i, j), false, 1.0, 1.0);
     }
@@ -837,7 +837,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleThermoScatraInterface(
   // assemble linearizations of slave side scatra fluxes w.r.t. slave and master side elch
   // into system matrix
   auto& systemmatrix_block_thermo_scatra =
-      systemmatrix_block->Matrix(BlockPositionThermo()->at(0), BlockPositionScaTra()->at(0));
+      systemmatrix_block->Matrix(BlockPositionThermo().at(0), BlockPositionScaTra().at(0));
   systemmatrix_block_thermo_scatra.Add(*thermoscatrainterface_sparse, false, 1.0, 1.0);
 
   // assemble linearizations of master side thermo fluxes w.r.t. slave and master side elch
@@ -847,7 +847,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleThermoScatraInterface(
   LINALG::MatrixLogicalSplitAndTransform()(*thermoscatrainterface_sparse,
       *MeshtyingThermo()->CouplingAdapter()->MasterDofMap(),
       thermoscatrainterface_sparse->DomainMap(), -1.0, &thermo_converter, nullptr,
-      systemmatrix_block->Matrix(BlockPositionThermo()->at(0), BlockPositionScaTra()->at(0)), true,
+      systemmatrix_block->Matrix(BlockPositionThermo().at(0), BlockPositionScaTra().at(0)), true,
       true);
 }
 
@@ -887,7 +887,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoStructure(
       LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(thermostructuredomain);
 
   // assemble blocks of scalar transport system matrix into global system matrix
-  for (int iblock = 0; iblock < static_cast<int>(BlockPositionThermo()->size()); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionThermo().size()); ++iblock)
   {
     const auto thermostructuredomain_subblock = thermostructuredomain_block->Matrix(iblock, 0);
 
@@ -895,20 +895,20 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoStructure(
     if (InterfaceMeshtying())
     {
       AssembleXXXStructureMeshtying(
-          systemmatrix_block->Matrix(BlockPositionThermo()->at(iblock), PositionStructure()),
+          systemmatrix_block->Matrix(BlockPositionThermo().at(iblock), PositionStructure()),
           thermostructuredomain_subblock);
 
       auto thermostructureinterface_block =
           LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(thermostructureinterface);
 
       AssembleXXXStructureMeshtying(
-          systemmatrix_block->Matrix(BlockPositionThermo()->at(iblock), PositionStructure()),
+          systemmatrix_block->Matrix(BlockPositionThermo().at(iblock), PositionStructure()),
           thermostructureinterface_block->Matrix(iblock, 0));
     }
     else
     {
       auto& systemmatrix_block_ithermo_struct =
-          systemmatrix_block->Matrix(BlockPositionThermo()->at(iblock), PositionStructure());
+          systemmatrix_block->Matrix(BlockPositionThermo().at(iblock), PositionStructure());
 
       systemmatrix_block_ithermo_struct.Add(thermostructuredomain_subblock, false, 1.0, 1.0);
     }
@@ -930,20 +930,20 @@ void SSTI::AssembleStrategyBlockSparse::AssembleThermoStructure(
   if (InterfaceMeshtying())
   {
     AssembleXXXStructureMeshtying(
-        systemmatrix_block->Matrix(BlockPositionThermo()->at(0), PositionStructure()),
+        systemmatrix_block->Matrix(BlockPositionThermo().at(0), PositionStructure()),
         *thermostructuredomain_sparse);
 
     auto thermostructureinterface_sparse =
         LINALG::CastToConstSparseMatrixAndCheckSuccess(thermostructureinterface);
 
     AssembleXXXStructureMeshtying(
-        systemmatrix_block->Matrix(BlockPositionThermo()->at(0), PositionStructure()),
+        systemmatrix_block->Matrix(BlockPositionThermo().at(0), PositionStructure()),
         *thermostructureinterface_sparse);
   }
   else
   {
     auto& sytemmatrix_block_thermo_structure =
-        systemmatrix_block->Matrix(BlockPositionThermo()->at(0), PositionStructure());
+        systemmatrix_block->Matrix(BlockPositionThermo().at(0), PositionStructure());
 
     sytemmatrix_block_thermo_structure.Add(*thermostructuredomain_sparse, false, 1.0, 1.0);
   }
@@ -984,7 +984,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleStructureThermo(
       LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(structurethermodomain);
 
   // assemble blocks of scalar transport system matrix into global system matrix
-  for (int iblock = 0; iblock < static_cast<int>(BlockPositionThermo()->size()); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionThermo().size()); ++iblock)
   {
     const auto structurethermodomain_subblock = structurethermodomain_block->Matrix(0, iblock);
 
@@ -992,13 +992,13 @@ void SSTI::AssembleStrategyBlockBlock::AssembleStructureThermo(
     if (InterfaceMeshtying())
     {
       AssembleStructureXXXMeshtying(
-          systemmatrix_block->Matrix(PositionStructure(), BlockPositionThermo()->at(iblock)),
+          systemmatrix_block->Matrix(PositionStructure(), BlockPositionThermo().at(iblock)),
           structurethermodomain_subblock);
     }
     else
     {
       auto& systemmatrix_block_struct_ithermo =
-          systemmatrix_block->Matrix(PositionStructure(), BlockPositionThermo()->at(iblock));
+          systemmatrix_block->Matrix(PositionStructure(), BlockPositionThermo().at(iblock));
 
       systemmatrix_block_struct_ithermo.Add(structurethermodomain_subblock, false, 1.0, 1.0);
     }
@@ -1019,13 +1019,13 @@ void SSTI::AssembleStrategyBlockSparse::AssembleStructureThermo(
   if (InterfaceMeshtying())
   {
     AssembleStructureXXXMeshtying(
-        systemmatrix_block->Matrix(PositionStructure(), BlockPositionThermo()->at(0)),
+        systemmatrix_block->Matrix(PositionStructure(), BlockPositionThermo().at(0)),
         *structurethermodomain_sparse);
   }
   else
   {
     auto& systemmatrix_block_struct_thermo =
-        systemmatrix_block->Matrix(PositionStructure(), BlockPositionThermo()->at(0));
+        systemmatrix_block->Matrix(PositionStructure(), BlockPositionThermo().at(0));
 
     systemmatrix_block_struct_thermo.Add(*structurethermodomain_sparse, false, 1.0, 1.0);
   }

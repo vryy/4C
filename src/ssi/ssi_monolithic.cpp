@@ -858,7 +858,7 @@ void SSI::SSIMono::SetSSIContactStates(Teuchos::RCP<const Epetra_Vector> phi) co
 void SSI::SSIMono::SolveLinearSystem()
 {
   strategy_equilibration_->EquilibrateSystem(
-      ssi_matrices_->SystemMatrix(), ssi_vectors_->Residual(), *BlockMapSystemMatrix());
+      ssi_matrices_->SystemMatrix(), ssi_vectors_->Residual(), BlockMapSystemMatrix());
 
   // solve global system of equations
   // Dirichlet boundary conditions have already been applied to global system of equations
@@ -1062,29 +1062,29 @@ void SSI::SSIMono::UpdateIterStructure()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> SSI::SSIMono::GetBlockEquilibration()
+std::vector<LINALG::EquilibrationMethod> SSI::SSIMono::GetBlockEquilibration()
 {
-  Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> equilibration_method_vector;
+  std::vector<LINALG::EquilibrationMethod> equilibration_method_vector;
   switch (matrixtype_)
   {
     case LINALG::MatrixType::sparse:
     {
-      equilibration_method_vector = Teuchos::rcp(
-          new std::vector<LINALG::EquilibrationMethod>(1, equilibration_method_.global));
+      equilibration_method_vector =
+          std::vector<LINALG::EquilibrationMethod>(1, equilibration_method_.global);
       break;
     }
     case LINALG::MatrixType::block_field:
     {
       if (equilibration_method_.global != LINALG::EquilibrationMethod::local)
       {
-        equilibration_method_vector = Teuchos::rcp(
-            new std::vector<LINALG::EquilibrationMethod>(1, equilibration_method_.global));
+        equilibration_method_vector =
+            std::vector<LINALG::EquilibrationMethod>(1, equilibration_method_.global);
       }
       else if (equilibration_method_.structure == LINALG::EquilibrationMethod::none and
                equilibration_method_.scatra == LINALG::EquilibrationMethod::none)
       {
-        equilibration_method_vector = Teuchos::rcp(
-            new std::vector<LINALG::EquilibrationMethod>(1, LINALG::EquilibrationMethod::none));
+        equilibration_method_vector =
+            std::vector<LINALG::EquilibrationMethod>(1, LINALG::EquilibrationMethod::none);
       }
       else
       {
@@ -1093,22 +1093,22 @@ Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> SSI::SSIMono::GetBlockEqu
         auto block_positions_scatra_manifold =
             IsScaTraManifold() ? ssi_maps_->GetBlockPositions(Subproblem::manifold) : Teuchos::null;
 
-        equilibration_method_vector = Teuchos::rcp(new std::vector<LINALG::EquilibrationMethod>(
+        equilibration_method_vector = std::vector<LINALG::EquilibrationMethod>(
             block_positions_scatra->size() + block_position_structure->size() +
                 (IsScaTraManifold() ? block_positions_scatra_manifold->size() : 0),
-            LINALG::EquilibrationMethod::none));
+            LINALG::EquilibrationMethod::none);
 
         for (const int block_position_scatra : *block_positions_scatra)
-          equilibration_method_vector->at(block_position_scatra) = equilibration_method_.scatra;
+          equilibration_method_vector.at(block_position_scatra) = equilibration_method_.scatra;
 
-        equilibration_method_vector->at(block_position_structure->at(0)) =
+        equilibration_method_vector.at(block_position_structure->at(0)) =
             equilibration_method_.structure;
 
         if (IsScaTraManifold())
         {
           for (const int block_position_scatra_manifold : *block_positions_scatra_manifold)
           {
-            equilibration_method_vector->at(block_position_scatra_manifold) =
+            equilibration_method_vector.at(block_position_scatra_manifold) =
                 equilibration_method_.scatra;
           }
         }
@@ -1346,8 +1346,7 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
           ? Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(
                 UTILS::SSIMatrices::SetupSparseMatrix(ScaTraField()->DofRowMap()))
           : Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(UTILS::SSIMatrices::SetupBlockMatrix(
-                Teuchos::rcpFromRef(ScaTraField()->BlockMaps()),
-                Teuchos::rcpFromRef(ScaTraField()->BlockMaps())));
+                ScaTraField()->BlockMaps(), ScaTraField()->BlockMaps()));
 
   auto massmatrix_manifold =
       IsScaTraManifold()
@@ -1356,8 +1355,7 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
                           UTILS::SSIMatrices::SetupSparseMatrix(ScaTraManifold()->DofRowMap()))
                     : Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(
                           UTILS::SSIMatrices::SetupBlockMatrix(
-                              Teuchos::rcpFromRef(ScaTraManifold()->BlockMaps()),
-                              Teuchos::rcpFromRef(ScaTraManifold()->BlockMaps()))))
+                              ScaTraManifold()->BlockMaps(), ScaTraManifold()->BlockMaps())))
           : Teuchos::null;
 
   auto massmatrix_system =

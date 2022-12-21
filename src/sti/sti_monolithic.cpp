@@ -158,10 +158,10 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     case LINALG::MatrixType::block_condition:
     {
       // extract maps underlying main-diagonal matrix blocks associated with scalar transport field
-      const int nblockmapsscatra = static_cast<int>(ScaTraField()->BlockMaps().NumMaps());
+      const int nblockmapsscatra = static_cast<int>(ScaTraField()->BlockMaps()->NumMaps());
       std::vector<Teuchos::RCP<const Epetra_Map>> blockmaps(nblockmapsscatra + 1);
       for (int iblockmap = 0; iblockmap < nblockmapsscatra; ++iblockmap)
-        blockmaps[iblockmap] = ScaTraField()->BlockMaps().Map(iblockmap);
+        blockmaps[iblockmap] = ScaTraField()->BlockMaps()->Map(iblockmap);
 
       // extract map underlying single main-diagonal matrix block associated with temperature field
       blockmaps[nblockmapsscatra] = mapthermo;
@@ -257,7 +257,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       // initialize scatra-thermo blocks
       scatrathermoblockdomain_ =
           Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *blockmapthermo_, ScaTraField()->BlockMaps(), 81, false, true));
+              *blockmapthermo_, *ScaTraField()->BlockMaps(), 81, false, true));
       scatrathermoblockinterface_ =
           Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
               *blockmapthermo_, *blockmapscatrainterface, 81, false, true));
@@ -265,10 +265,10 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       // initialize thermo-scatra blocks
       thermoscatrablockdomain_ =
           Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              ScaTraField()->BlockMaps(), *blockmapthermo_, 81, false, true));
+              *ScaTraField()->BlockMaps(), *blockmapthermo_, 81, false, true));
       thermoscatrablockinterface_ =
           Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              ScaTraField()->BlockMaps(), *blockmapthermointerface, 81, false, true));
+              *ScaTraField()->BlockMaps(), *blockmapthermointerface, 81, false, true));
 
       break;
     }
@@ -307,8 +307,8 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       interface_map_thermo, isAle, strategyscatra_, strategythermo_, scatra_, thermo_);
 
   // instantiate appropriate equilibration class
-  auto equilibration_method = Teuchos::rcp(
-      new std::vector<LINALG::EquilibrationMethod>(1, ScaTraField()->EquilibrationMethod()));
+  auto equilibration_method =
+      std::vector<LINALG::EquilibrationMethod>(1, ScaTraField()->EquilibrationMethod());
   equilibration_ = LINALG::BuildEquilibration(matrixtype_, equilibration_method, maps_->FullMap());
 }
 
@@ -773,7 +773,7 @@ void STI::Monolithic::AssembleMatAndRHS()
         case LINALG::MatrixType::block_condition:
         {
           // extract number of matrix row or column blocks associated with scalar transport field
-          const int nblockmapsscatra = static_cast<int>(ScaTraField()->BlockMaps().NumMaps());
+          const int nblockmapsscatra = static_cast<int>(ScaTraField()->BlockMaps()->NumMaps());
 
           // construct global system matrix by assigning matrix blocks
           for (int iblock = 0; iblock < nblockmapsscatra; ++iblock)
@@ -1508,7 +1508,7 @@ void STI::Monolithic::Solve()
     time = timer_->WallTime();
 
     // equilibrate global system of equations if necessary
-    equilibration_->EquilibrateSystem(systemmatrix_, residual_, *blockmaps_);
+    equilibration_->EquilibrateSystem(systemmatrix_, residual_, blockmaps_);
 
     // solve global system of equations
     // Dirichlet boundary conditions have already been applied to global system of equations
@@ -1622,10 +1622,10 @@ void STI::Monolithic::AssembleDomainInterfaceOffDiag(
     {
       scatrathermo_domain_interface =
           Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *blockmapthermo_, ScaTraField()->BlockMaps(), 81, false, true));
+              *blockmapthermo_, *ScaTraField()->BlockMaps(), 81, false, true));
       thermoscatra_domain_interface =
           Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              ScaTraField()->BlockMaps(), *blockmapthermo_, 81, false, true));
+              *ScaTraField()->BlockMaps(), *blockmapthermo_, 81, false, true));
 
       break;
     }

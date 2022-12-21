@@ -381,7 +381,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::CopySlaveToMasterScatraTherm
 
       // split auxiliary system matrix and assemble into scatra-thermo matrix block
       blockmastermatrix = mastermatrixsparse.Split<LINALG::DefaultBlockMatrixStrategy>(
-          *BlockMapThermo(), ScaTraField()->BlockMaps());
+          *BlockMapThermo(), *ScaTraField()->BlockMaps());
 
       // finalize master matrix
       mastermatrix->Complete();
@@ -748,7 +748,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockThermoS
     case LINALG::MatrixType::block_condition:
     {
       slavematrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-          ScaTraField()->BlockMaps(), *BlockMapThermoInterface(), 81, false, true));
+          *ScaTraField()->BlockMaps(), *BlockMapThermoInterface(), 81, false, true));
       break;
     }
 

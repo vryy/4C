@@ -76,7 +76,7 @@ namespace SSTI
     ~SSTIMono() override = default;
 
     //! get vector containing positions within system matrix for specific subproblem
-    Teuchos::RCP<std::vector<int>> GetBlockPositions(Subproblem subproblem) const;
+    std::vector<int> GetBlockPositions(Subproblem subproblem) const;
 
     //! get position within global dof map for specific subproblem
     int GetProblemPosition(Subproblem subproblem) const;
@@ -125,7 +125,7 @@ namespace SSTI
     Teuchos::RCP<Epetra_Vector> ExtractSubIncrement(Subproblem sub);
 
     // build and return vector of equilibration methods for each block of system matrix
-    Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> GetBlockEquilibration();
+    std::vector<LINALG::EquilibrationMethod> GetBlockEquilibration();
 
     //! evaluate time step using Newton-Raphson iteration
     void NewtonLoop();

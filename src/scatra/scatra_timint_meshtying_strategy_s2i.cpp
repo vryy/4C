@@ -823,7 +823,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                       : MORTAR::MatrixRowTransform(islavematrix_, islavemap_);
               Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockslavematrix(
                   islavematrix->Split<LINALG::DefaultBlockMatrixStrategy>(
-                      scatratimint_->BlockMaps(), *blockmaps_slave_));
+                      *scatratimint_->BlockMaps(), *blockmaps_slave_));
               blockslavematrix->Complete();
               const Teuchos::RCP<const LINALG::SparseMatrix> imastermatrix =
                   not imortarredistribution_
@@ -831,7 +831,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                       : MORTAR::MatrixRowTransform(imastermatrix_, imastermap_);
               Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockmastermatrix(
                   imastermatrix->Split<LINALG::DefaultBlockMatrixStrategy>(
-                      scatratimint_->BlockMaps(), *blockmaps_master_));
+                      *scatratimint_->BlockMaps(), *blockmaps_master_));
               blockmastermatrix->Complete();
 
               // assemble interface block matrices into global block system matrix
@@ -1215,7 +1215,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 // split auxiliary system matrix and assemble into global matrix block
                 const Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockmastermatrix =
                     mastermatrix.Split<LINALG::DefaultBlockMatrixStrategy>(
-                        *blockmapgrowth_, scatratimint_->BlockMaps());
+                        *blockmapgrowth_, *scatratimint_->BlockMaps());
                 blockmastermatrix->Complete();
                 scatragrowthblock_->Add(*blockmastermatrix, false, 1., 1.);
 
@@ -1276,7 +1276,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 // split temporary matrix and assemble into global matrix block
                 const Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockkgm(
                     kgm.Split<LINALG::DefaultBlockMatrixStrategy>(
-                        scatratimint_->BlockMaps(), *blockmapgrowth_));
+                        *scatratimint_->BlockMaps(), *blockmapgrowth_));
                 blockkgm->Complete();
                 growthscatrablock_->Add(*blockkgm, false, 1., 1.);
 
@@ -2744,11 +2744,11 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
               blockmapgrowth_->CheckForValidMapExtractor();
 
               // initialize extended map extractor associated with blocks of global system matrix
-              const unsigned nblockmaps = scatratimint_->BlockMaps().NumMaps();
+              const unsigned nblockmaps = scatratimint_->BlockMaps()->NumMaps();
               std::vector<Teuchos::RCP<const Epetra_Map>> extendedblockmaps(
                   nblockmaps + 1, Teuchos::null);
               for (int iblockmap = 0; iblockmap < static_cast<int>(nblockmaps); ++iblockmap)
-                extendedblockmaps[iblockmap] = scatratimint_->BlockMaps().Map(iblockmap);
+                extendedblockmaps[iblockmap] = scatratimint_->BlockMaps()->Map(iblockmap);
               extendedblockmaps[nblockmaps] = dofrowmap_growth;
               extendedblockmaps_ = Teuchos::rcp(
                   new LINALG::MultiMapExtractor(*extendedmaps_->FullMap(), extendedblockmaps));
@@ -2756,10 +2756,10 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
               scatragrowthblock_ =
                   Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-                      *blockmapgrowth_, scatratimint_->BlockMaps(), 81, false, true));
+                      *blockmapgrowth_, *scatratimint_->BlockMaps(), 81, false, true));
               growthscatrablock_ =
                   Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-                      scatratimint_->BlockMaps(), *blockmapgrowth_, 81, false, true));
+                      *scatratimint_->BlockMaps(), *blockmapgrowth_, 81, false, true));
 
               break;
             }
@@ -2844,8 +2844,8 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
   }
 
   // instantiate appropriate equilibration class
-  auto equilibration_method = Teuchos::rcp(
-      new std::vector<LINALG::EquilibrationMethod>(1, scatratimint_->EquilibrationMethod()));
+  auto equilibration_method =
+      std::vector<LINALG::EquilibrationMethod>(1, scatratimint_->EquilibrationMethod());
   equilibration_ = LINALG::BuildEquilibration(matrixtype_, equilibration_method,
       (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic
               ? extendedmaps_->FullMap()
@@ -3424,13 +3424,13 @@ void SCATRA::MeshtyingStrategyS2I::BuildBlockMapExtractors()
       matrixtype_ == LINALG::MatrixType::block_condition_dof)
   {
     // initialize reduced interface map extractors associated with blocks of global system matrix
-    const int nblocks = scatratimint_->BlockMaps().NumMaps();
+    const int nblocks = scatratimint_->BlockMaps()->NumMaps();
     std::vector<Teuchos::RCP<const Epetra_Map>> blockmaps_slave(nblocks);
     std::vector<Teuchos::RCP<const Epetra_Map>> blockmaps_master(nblocks);
     for (int iblock = 0; iblock < nblocks; ++iblock)
     {
       std::vector<Teuchos::RCP<const Epetra_Map>> maps(2);
-      maps[0] = scatratimint_->BlockMaps().Map(iblock);
+      maps[0] = scatratimint_->BlockMaps()->Map(iblock);
       maps[1] = not imortarredistribution_
                     ? interfacemaps_->Map(1)
                     : Teuchos::rcp_dynamic_cast<const Epetra_Map>(islavemap_);
@@ -3457,7 +3457,7 @@ void SCATRA::MeshtyingStrategyS2I::EquipExtendedSolverWithNullSpaceInfo() const
   if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
   {
     // loop over blocks of scalar transport system matrix
-    for (int iblock = 0; iblock < scatratimint_->BlockMaps().NumMaps(); ++iblock)
+    for (int iblock = 0; iblock < scatratimint_->BlockMaps()->NumMaps(); ++iblock)
     {
       // store number of current block as string, starting from 1
       std::ostringstream iblockstr;
@@ -3469,7 +3469,7 @@ void SCATRA::MeshtyingStrategyS2I::EquipExtendedSolverWithNullSpaceInfo() const
     }
     // store number of matrix block associated with scatra-scatra interface layer growth as string
     std::stringstream iblockstr;
-    iblockstr << scatratimint_->BlockMaps().NumMaps() + 1;
+    iblockstr << scatratimint_->BlockMaps()->NumMaps() + 1;
 
     // equip smoother for extra matrix block with null space associated with all degrees of freedom
     // for scatra-scatra interface layer growth
@@ -3632,7 +3632,7 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<LINALG::Solver>& sol
 
               // extract number of matrix row or column blocks associated with scalar transport
               // field
-              const int nblockmaps = static_cast<int>(scatratimint_->BlockMaps().NumMaps());
+              const int nblockmaps = static_cast<int>(scatratimint_->BlockMaps()->NumMaps());
 
               // construct extended system matrix by assigning matrix blocks
               for (int iblock = 0; iblock < nblockmaps; ++iblock)
@@ -3685,7 +3685,7 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<LINALG::Solver>& sol
 
           // equilibrate global system of equations if necessary
           equilibration_->EquilibrateSystem(
-              extendedsystemmatrix_, extendedresidual, *extendedblockmaps_);
+              extendedsystemmatrix_, extendedresidual, extendedblockmaps_);
 
           // solve extended system of equations
           extendedsolver_->Solve(extendedsystemmatrix_->EpetraOperator(), extendedincrement,

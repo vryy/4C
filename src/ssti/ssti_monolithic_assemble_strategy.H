@@ -195,20 +195,20 @@ namespace SSTI
 
    protected:
     //! position of scatra blocks in system matrix
-    Teuchos::RCP<std::vector<int>> BlockPositionScaTra() const { return block_position_scatra_; };
+    std::vector<int> BlockPositionScaTra() const { return block_position_scatra_; };
 
     //! position of thermo blocks in system matrix
-    Teuchos::RCP<std::vector<int>> BlockPositionThermo() const { return block_position_thermo_; };
+    std::vector<int> BlockPositionThermo() const { return block_position_thermo_; };
 
     //! position of structure block in system matrix
     int PositionStructure() const { return position_structure_; };
 
    private:
     //! position of scatra blocks in system matrix
-    Teuchos::RCP<std::vector<int>> block_position_scatra_;
+    std::vector<int> block_position_scatra_;
 
     //! position of thermo blocks in system matrix
-    Teuchos::RCP<std::vector<int>> block_position_thermo_;
+    std::vector<int> block_position_thermo_;
 
     //! position of structure block in system matrix
     int position_structure_;
