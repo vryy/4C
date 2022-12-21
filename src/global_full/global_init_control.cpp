@@ -12,7 +12,7 @@
 #include <sstream>
 
 #include "global_init_control.H"
-#include "drt_globalproblem.H"
+#include "globalproblem.H"
 #include "comm_utils.H"
 
 /*----------------------------------------------------------------------*/

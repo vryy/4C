@@ -9,5 +9,5 @@ function(baci_link_google_test_necessary_libraries TESTNAME)
   target_link_libraries(${TESTNAME} PRIVATE gtest gmock ${ARGN})
 
   # Link to a special version of dserror which throws a std::runtime_exception
-  target_link_libraries(${TESTNAME} PRIVATE drt_error_for_testing unittests_common)
+  target_link_libraries(${TESTNAME} PRIVATE error_for_testing unittests_common)
 endfunction()

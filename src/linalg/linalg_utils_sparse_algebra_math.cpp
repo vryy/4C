@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "linalg_utils_sparse_algebra_math.H"
-#include "drt_dserror.H"
+#include "dserror.H"
 #include <EpetraExt_Transpose_RowMatrix.h>
 #include <EpetraExt_MatrixMatrix.h>
 

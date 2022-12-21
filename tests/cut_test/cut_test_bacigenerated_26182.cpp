@@ -27,7 +27,7 @@
 #include "cut_utils.H"
 #include "cut_kernel.H"
 
-#include "drt_utils_local_connectivity_matrices.H"
+#include "utils_local_connectivity_matrices.H"
 
 void test_bacigenerated_26182()
 {

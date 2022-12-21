@@ -684,7 +684,7 @@ cd $srcdir
 PROCS=6
 PREFIX=xxx
 FILE=--file=$PREFIX
-EXE=post_drt_ensight_par
+EXE=post_ensight_par
 START=--start=0
 END=--end=10
 STEP=--step=1
@@ -937,18 +937,18 @@ This file can be readily digested by many plotting applications:
 The filter is applied by
 executing for instance
 \begin{verbatim}
-./post_drt_monitor --field="structure" --node=1 --file="xxx"
+./post_monitor --field="structure" --node=1 --file="xxx"
 \end{verbatim}
 
 You can get all options by asking for \texttt{--help}, i.e.\@
 \begin{verbatim}
-./post_drt_monitor --help
+./post_monitor --help
 \end{verbatim}
 
 
 The filter is build by running a
 \begin{verbatim}
-make post_drt_monitor
+make post_monitor
 \end{verbatim}
 
 

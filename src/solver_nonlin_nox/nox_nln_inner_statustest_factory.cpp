@@ -13,7 +13,7 @@
 #include "nox_nln_inner_statustest_factory.H"
 #include "nox_nln_params_utils.H"
 
-#include "drt_dserror.H"
+#include "dserror.H"
 
 #include <Teuchos_ParameterList.hpp>
 

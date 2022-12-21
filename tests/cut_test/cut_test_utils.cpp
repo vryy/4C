@@ -12,7 +12,7 @@
 #include "cut_volumecell.H"
 #include "cut_meshintersection.H"
 
-#include "drt_utils_local_connectivity_matrices.H"
+#include "utils_local_connectivity_matrices.H"
 
 int numnode;
 int numele;

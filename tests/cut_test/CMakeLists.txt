@@ -71,14 +71,14 @@ set(OBJS_CUT_TEST
     cut_test_units.cpp
     cut_test_utils.cpp
     cut_test_volume.cpp
-    drt_dserror.cpp
+    dserror.cpp
     )
 
 add_executable(cut_test EXCLUDE_FROM_ALL ${OBJS_CUT_TEST})
 set_target_properties(cut_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 target_link_libraries(
   cut_test
-  drt_lib_cut
+  lib_cut
   ${QHULL_LIBRARIES}
   ${LAPACK_LIBRARIES}
   -Wl,--start-group

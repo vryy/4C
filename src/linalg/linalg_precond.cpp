@@ -17,8 +17,8 @@
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_mlapi_operator.H"
 
-#include "drt_node.H"
-#include "drt_discret.H"
+#include "node.H"
+#include "discret.H"
 
 
 

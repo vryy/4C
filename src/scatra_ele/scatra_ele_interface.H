@@ -1,0 +1,66 @@
+/*--------------------------------------------------------------------------*/
+/*! \file
+
+\brief Factory of scatra elements
+
+\level 1
+
+*/
+/*--------------------------------------------------------------------------*/
+
+#ifndef SCATRA_ELE_INTERFACE_H
+#define SCATRA_ELE_INTERFACE_H
+
+#include <vector>
+#include "Teuchos_ParameterList.hpp"
+#include "Epetra_SerialDenseVector.h"
+#include "Epetra_SerialDenseMatrix.h"
+#include "element.H"
+
+namespace DRT
+{
+  class Discretization;
+  class Element;
+
+  namespace ELEMENTS
+  {
+    /// Interface base class for ScaTraEleCalc
+    /*!
+      This class exists to provide a common interface for all template
+      versions of ScaTraEleCalc.
+     */
+    class ScaTraEleInterface
+    {
+     public:
+      /// Virtual destructor.
+      virtual ~ScaTraEleInterface() = default;
+
+      /// Setup element evaluation
+      virtual int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization) = 0;
+
+      /// Evaluate the element
+      /*!
+        This class does not provide a definition for this function; it
+        must be defined in ScatraEleCalc.
+       */
+      virtual int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
+          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
+          Epetra_SerialDenseVector& elevec3_epetra) = 0;
+
+      virtual int EvaluateService(DRT::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
+          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
+          Epetra_SerialDenseVector& elevec3_epetra) = 0;
+
+      virtual int EvaluateOD(DRT::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
+          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
+          Epetra_SerialDenseVector& elevec3_epetra) = 0;
+    };
+  }  // namespace ELEMENTS
+}  // namespace DRT
+#endif

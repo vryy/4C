@@ -16,8 +16,8 @@ is handed to a c++ object mesh.
 #include <string>
 #include <iostream>
 #include <vector>
-#include "drt_dserror.H"
-#include "drt_element.H"
+#include "dserror.H"
+#include "element.H"
 
 namespace EXODUS
 {

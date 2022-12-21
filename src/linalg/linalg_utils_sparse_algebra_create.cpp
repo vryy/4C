@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "linalg_utils_sparse_algebra_create.H"
-#include "drt_dserror.H"
+#include "dserror.H"
 
 /*----------------------------------------------------------------------*
  |  create a Epetra_CrsMatrix                                mwgee 12/06|

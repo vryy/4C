@@ -16,7 +16,7 @@ is handed to a c++ object mesh.
 #include "Epetra_SerialComm.h"
 #include "Epetra_Time.h"
 #include "Teuchos_TimeMonitor.hpp"
-#include "drt_utils_local_connectivity_matrices.H"
+#include "utils_local_connectivity_matrices.H"
 #include "pre_exodus_soshextrusion.H"  //for gmsh plot
 
 #include <exodusII.h>

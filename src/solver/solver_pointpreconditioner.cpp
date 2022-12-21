@@ -10,7 +10,7 @@
 
 #include <Epetra_CrsMatrix.h>
 
-#include "drt_dserror.H"
+#include "dserror.H"
 
 #include "solver_pointpreconditioner.H"
 

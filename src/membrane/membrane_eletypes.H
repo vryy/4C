@@ -1,0 +1,155 @@
+/*----------------------------------------------------------------------*/
+/*! \file
+
+\level 3
+
+
+\brief Nonlinear Membrane Finite Element Type
+
+*----------------------------------------------------------------------*/
+#ifndef MEMBRANE_ELETYPES_H
+#define MEMBRANE_ELETYPES_H
+
+#include <Teuchos_SerialDenseMatrix.hpp>
+#include "elementtype.H"
+
+
+namespace DRT
+{
+  // forward declarations
+  class Discretization;
+
+  namespace ELEMENTS
+  {
+    /*----------------------------------------------------------------------*
+     |  TRI 3 Element                                          fbraeu 06/16 |
+     *----------------------------------------------------------------------*/
+    class Membrane_tri3Type : public DRT::ElementType
+    {
+     public:
+      std::string Name() const { return "Membrane_tri3Type"; }
+
+      static Membrane_tri3Type& Instance();
+
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
+
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
+
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+
+      virtual int Initialize(DRT::Discretization& dis) { return 0; };
+
+      virtual void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+
+      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+
+     private:
+      static Membrane_tri3Type instance_;
+    };
+
+    /*----------------------------------------------------------------------*
+     |  TRI 6 Element                                          fbraeu 06/16 |
+     *----------------------------------------------------------------------*/
+    class Membrane_tri6Type : public DRT::ElementType
+    {
+     public:
+      std::string Name() const { return "Membrane_tri6Type"; }
+
+      static Membrane_tri6Type& Instance();
+
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
+
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
+
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+
+      virtual int Initialize(DRT::Discretization& dis) { return 0; };
+
+      virtual void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+
+      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+
+     private:
+      static Membrane_tri6Type instance_;
+    };
+
+    /*----------------------------------------------------------------------*
+     |  QUAD 4 Element                                         fbraeu 06/16 |
+     *----------------------------------------------------------------------*/
+    class Membrane_quad4Type : public DRT::ElementType
+    {
+     public:
+      std::string Name() const { return "Membrane_quad4Type"; }
+
+      static Membrane_quad4Type& Instance();
+
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
+
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
+
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+
+      virtual int Initialize(DRT::Discretization& dis) { return 0; };
+
+      virtual void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+
+      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+
+     private:
+      static Membrane_quad4Type instance_;
+    };
+
+    /*----------------------------------------------------------------------*
+     |  QUAD 9 Element                                         fbraeu 06/16 |
+     *----------------------------------------------------------------------*/
+    class Membrane_quad9Type : public DRT::ElementType
+    {
+     public:
+      std::string Name() const { return "Membrane_quad9Type"; }
+
+      static Membrane_quad9Type& Instance();
+
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
+
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
+
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+
+      virtual int Initialize(DRT::Discretization& dis) { return 0; };
+
+      virtual void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+
+      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+
+     private:
+      static Membrane_quad9Type instance_;
+    };
+
+  }  // namespace ELEMENTS
+}  // namespace DRT
+
+#endif  // #ifndef MEMBRANE_ELETYPES_H
