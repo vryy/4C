@@ -3701,6 +3701,17 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
+  // Mixture constituent for solid material
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition(
+        "MIX_Constituent_SolidMaterial", "Solid material", INPAR::MAT::mix_solid_material));
+
+    AddNamedInt(m, "MATID", "ID of the solid material");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // Isotropic growth
   {
     auto m = Teuchos::rcp(new MaterialDefinition("MIX_GrowthStrategy_Isotropic", "isotropic growth",
