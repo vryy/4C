@@ -3594,8 +3594,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // General mixture models (used for prestretching and for homogenized constrained mixture models)
   {
-    auto m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_MixtureElastHyper", "General mixture model", INPAR::MAT::m_mixture_elasthyper));
+    auto m = Teuchos::rcp(
+        new MaterialDefinition("MAT_Mixture", "General mixture model", INPAR::MAT::m_mixture));
 
     AddNamedInt(m, "NUMCONST", "number of mixture constituents");
     AddNamedInt(m, "MATIDMIXTURERULE", "material id of the mixturerule");

@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_ELASTHYPER_H
-#define BACI_MIXTURE_ELASTHYPER_H
+#ifndef BACI_MIXTURE_H
+#define BACI_MIXTURE_H
 
 
 #include "matpar_parameter.H"
@@ -22,23 +22,23 @@
 namespace MAT
 {
   // forward declaration
-  class Mixture_ElastHyper;
+  class Mixture;
 
   namespace PAR
   {
-    class Mixture_ElastHyper : public Parameter
+    class Mixture : public Parameter
     {
-      friend class MAT::Mixture_ElastHyper;
+      friend class MAT::Mixture;
 
      public:
       /// Standard constructor
       ///
       /// This constructor recursively calls the constructors of the
       /// parameter sets of the hyperelastic summands.
-      explicit Mixture_ElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+      explicit Mixture(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
       /// destructor
-      ~Mixture_ElastHyper() override = default;
+      ~Mixture() override = default;
 
       /// @name material parameters
       /// @{
@@ -55,17 +55,17 @@ namespace MAT
   }  // namespace PAR
 
 
-  class Mixture_ElastHyperType : public DRT::ParObjectType
+  class MixtureType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const override { return "Mixture_ElastHyperType"; }
+    std::string Name() const override { return "MixtureType"; }
 
-    static Mixture_ElastHyperType& Instance() { return instance_; }
+    static MixtureType& Instance() { return instance_; }
 
     DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
-    static Mixture_ElastHyperType instance_;
+    static MixtureType instance_;
   };
 
   /*!
@@ -77,35 +77,31 @@ namespace MAT
    * mixture framework is needed.
    *
    * Example input lines:
-   * MAT 1 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 11 12 MATIDMIXTURERULE 10
+   * MAT 1 MAT_Mixture NUMCONST 2 MATIDSCONST 11 12 MATIDMIXTURERULE 10
    *  DENS 0.1
    * MAT 10 MIX_Rule_Base NUMCONST 2 MASSFRAC 0.4 0.6
    * MAT 11 MIX_Constituent_ElastHyper NUMMAT 1 MATIDS 101 MAT 12
-   * MIX_Constituent_ElastHyper NUMMAT 1 MATIDS 102
    * MAT 101 ELAST_CoupLogNeoHooke MODE YN C1 2.5e4 C2 0.27
    * MAT 102 ELAST_CoupAnisoExpo K1 1.666666666666e4 K2 10.0 GAMMA 0.0 K1COMP
    *  0.833333333333e4 K2COMP 10.0 ADAPT_ANGLE No INIT 0 STR_TENS_ID 1000
    * MAT 1000 ELAST_StructuralTensor STRATEGY Standard
    *
    */
-  class Mixture_ElastHyper : public So3Material
+  class Mixture : public So3Material
   {
    public:
     /// Constructor for an empty material object
-    Mixture_ElastHyper();
+    Mixture();
 
-    /// Constructor for the materiak given the material parameters
-    explicit Mixture_ElastHyper(MAT::PAR::Mixture_ElastHyper* params);
+    /// Constructor for the material given the material parameters
+    explicit Mixture(MAT::PAR::Mixture* params);
 
 
     /// @name Packing and Unpacking
     /// @{
 
     /// \brief Return unique ParObject id
-    int UniqueParObjectId() const override
-    {
-      return Mixture_ElastHyperType::Instance().UniqueParObjectId();
-    }
+    int UniqueParObjectId() const override { return MixtureType::Instance().UniqueParObjectId(); }
 
     /*!
      * \brief Pack this class so it can be communicated
@@ -143,17 +139,11 @@ namespace MAT
     }
 
     /// Return material type
-    INPAR::MAT::MaterialType MaterialType() const override
-    {
-      return INPAR::MAT::m_mixture_elasthyper;
-    }
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_mixture; }
 
     /// Create a copy of this material
     /// \return copy of this material
-    Teuchos::RCP<Material> Clone() const override
-    {
-      return Teuchos::rcp(new Mixture_ElastHyper(*this));
-    }
+    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Mixture(*this)); }
 
 
     /*!
@@ -226,7 +216,7 @@ namespace MAT
 
    private:
     /// Material parameters
-    MAT::PAR::Mixture_ElastHyper* params_;
+    MAT::PAR::Mixture* params_;
 
     /// list of the references to the constituents
     std::shared_ptr<std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>> constituents_;
@@ -246,4 +236,4 @@ namespace MAT
 
 }  // namespace MAT
 
-#endif  // BACI_MIXTURE_ELASTHYPER_H
+#endif  // BACI_MIXTURE_H

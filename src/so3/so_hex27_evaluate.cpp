@@ -1081,7 +1081,7 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(std::vector<int>& lm,  // locat
 
     if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
         Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper ||
-        Material()->MaterialType() == INPAR::MAT::m_mixture_elasthyper)
+        Material()->MaterialType() == INPAR::MAT::m_mixture)
     {
       // gp reference coordinates
       LINALG::Matrix<NUMNOD_SOH27, 1> funct(true);
@@ -1449,7 +1449,7 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
 
     if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
         Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper ||
-        Material()->MaterialType() == INPAR::MAT::m_mixture_elasthyper)
+        Material()->MaterialType() == INPAR::MAT::m_mixture)
     {
       // gp reference coordinates
       LINALG::Matrix<NUMNOD_SOH27, 1> funct(true);

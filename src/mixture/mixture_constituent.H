@@ -61,10 +61,10 @@ namespace MIXTURE
    * holder class
    *
    * This abstract class defines the interface that a constituents needs to implement. It has to be
-   * paired with MAT::Mixture_ElastHyper and MIXTURE::MixtureRule.
+   * paired with MAT::Mixture and MIXTURE::MixtureRule.
    *
    * Example input lines:
-   * MAT 1 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 11 12 MASSFRAC 0.4 0.6 MATIDMIXTURERULE 10
+   * MAT 1 MAT_Mixture NUMCONST 2 MATIDSCONST 11 12 MASSFRAC 0.4 0.6 MATIDMIXTURERULE 10
    *  DENS 0.1
    * MAT 10 MIX_Rule_Simple
    * MAT 11 MIX_Constituent_ElastHyper NUMMAT 1 MATIDS 101 MAT 12

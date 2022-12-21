@@ -21,7 +21,7 @@ TOLRES                          1.0E-9
 TOLDISP                         1.0E-9
 -------------------------------------------------------------------MATERIALS
 // In the new interface, the input will look like this:
-MAT 1 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 11 12 MATIDMIXTURERULE 10
+MAT 1 MAT_Mixture NUMCONST 2 MATIDSCONST 11 12 MATIDMIXTURERULE 10
 
 // Mixture rule
 MAT 10 MIX_GrowthRemodelMixtureRule GROWTH_STRATEGY 100 DENS 1050 NUMCONST 2 MASSFRAC 0.1 0.9

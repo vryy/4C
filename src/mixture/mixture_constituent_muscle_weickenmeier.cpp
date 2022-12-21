@@ -17,7 +17,7 @@
 #include "elasthyper_service.H"
 #include "material_service.H"
 #include "matpar_bundle.H"
-#include "mixture_elasthyper.H"
+#include "mixture.H"
 #include "muscle_utils.H"
 
 MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_Weickenmeier(
