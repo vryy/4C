@@ -460,7 +460,8 @@ checkcode:
 imcs-buildtest_minimal_ubuntu20:
   <<: *buildtest_minimal
   variables:
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: make
+    CTEST_BUILD_COMMAND: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: imcs-workstation-ubuntu20-minimal-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
   tags:
@@ -472,7 +473,8 @@ imcs-buildtest_full_ubuntu20:
   variables:
     CTEST_NUMBER_OF_TEST_THREADS: '12'
     CTEST_NUMBER_OF_BUILD_THREADS: '12'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: make
+    CTEST_BUILD_COMMAND: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: imcs-workstation-ubuntu20-full-$TEST_TAG-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
   tags:
@@ -483,7 +485,8 @@ imcs-buildtest_interactive_ubuntu20:
   <<: *buildtest_interactive
   variables:
     TEST_TAG: ''
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: make
+    CTEST_BUILD_COMMAND: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: imcs-workstation-ubuntu20-interactive-$TEST_TAG-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
     GIT_STRATEGY: fetch
@@ -498,7 +501,8 @@ imcs-buildtest_daily_ubuntu20:
   variables:
     CTEST_NUMBER_OF_TEST_THREADS: '12'
     CTEST_NUMBER_OF_BUILD_THREADS: '12'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: make
+    CTEST_BUILD_COMMAND: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: imcs-workstation-ubuntu20-nightly-full-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
   tags:
@@ -509,7 +513,8 @@ imcs-buildtest_daily_debug_ubuntu20:
   variables:
     CTEST_NUMBER_OF_TEST_THREADS: '12'
     CTEST_NUMBER_OF_BUILD_THREADS: '12'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: make
+    CTEST_BUILD_COMMAND: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: imcs-workstation-ubuntu20-baci-DEBUG-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
   tags:
@@ -521,7 +526,8 @@ imcs-buildtest_release_trilinos_develop:
   variables:
     CTEST_NUMBER_OF_TEST_THREADS: '12'
     CTEST_NUMBER_OF_BUILD_THREADS: '12'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: make
+    CTEST_BUILD_COMMAND: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: imcs-workstation-ubuntu20-trilinos-develop-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04_develop.config
     TRILINOS_ROOT: $CI_PROJECT_DIR/../Trilinos-develop-build
@@ -577,7 +583,8 @@ lnm-buildtest_minimal:
   variables:
     CTEST_NUMBER_OF_TEST_THREADS: '10'
     CTEST_NUMBER_OF_BUILD_THREADS: '10'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: LnM-Workstation-minimal-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
@@ -591,7 +598,8 @@ lnm-buildtest_full:
   variables:
     CTEST_NUMBER_OF_TEST_THREADS: '10'
     CTEST_NUMBER_OF_BUILD_THREADS: '10'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: LnM-Workstation-$TEST_TAG-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
   tags:
@@ -603,7 +611,8 @@ lnm-workstation-buildtest_interactive:
   <<: *buildtest_interactive
   variables:
     TEST_TAG: ''
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: LnM-Workstation-interactive-$TEST_TAG-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
     GIT_STRATEGY: fetch
@@ -625,7 +634,8 @@ lnm-buildtest_coverage_weekly:
     CTEST_NUMBER_OF_TEST_THREADS: '10'
     CTEST_NUMBER_OF_BUILD_THREADS: '10'
     CTEST_CONFIGURE_POSTFIX: --coverage --uselld
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: LnM-Workstation-coverage-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
   tags:
@@ -684,7 +694,8 @@ lnm-buildtest_daily:
   variables:
     CTEST_NUMBER_OF_TEST_THREADS: '10'
     CTEST_NUMBER_OF_BUILD_THREADS: '10'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: LnM-Workstation-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
@@ -698,7 +709,8 @@ lnm-buildtest_daily_bruteforce:
   variables:
     TEST_TAG: ''
     CTEST_FAIL_ON_WARNING: '0'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: CentOS-baci-BruteForce-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_bruteforce.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
@@ -715,7 +727,8 @@ lnm-buildtest-bruteforce_interactive:
   variables:
     TEST_TAG: ''
     CTEST_FAIL_ON_WARNING: '0'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: CentOS-interactive-baci-BruteForce-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_bruteforce.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
@@ -733,7 +746,8 @@ lnm-buildtest_daily_deep:
   variables:
     TEST_TAG: ''
     CTEST_FAIL_ON_WARNING: '0'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: CentOS-baci-Deep-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_deep.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
@@ -750,7 +764,8 @@ lnm-buildtest-deep_interactive:
   variables:
     TEST_TAG: ''
     CTEST_FAIL_ON_WARNING: '0'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: CentOS-interactive-baci-Deep-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_deep.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
@@ -768,7 +783,8 @@ lnm-buildtest_daily_schmarrn:
   variables:
     TEST_TAG: ''
     CTEST_FAIL_ON_WARNING: '0'
-    CTEST_MAKE: make -j${CTEST_NUMBER_OF_BUILD_THREADS} baci-release post_processor
+    BUILD_GENERATOR: make
+    CTEST_BUILD_COMMAND: make -j${CTEST_NUMBER_OF_BUILD_THREADS} baci-release post_processor
     CTEST_BUILD_NAME_GITLAB: CentOS-baci-Schmarrn-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_schmarrn.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
@@ -785,7 +801,8 @@ lnm-buildtest-schmarrn_interactive:
   variables:
     TEST_TAG: ''
     CTEST_FAIL_ON_WARNING: '0'
-    CTEST_MAKE: make -j${CTEST_NUMBER_OF_BUILD_THREADS} baci-release post_processor
+    BUILD_GENERATOR: make
+    CTEST_BUILD_COMMAND: make -j${CTEST_NUMBER_OF_BUILD_THREADS} baci-release post_processor
     CTEST_BUILD_NAME_GITLAB: CentOS-interactive-baci-Schmarrn-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_schmarrn.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
@@ -803,7 +820,8 @@ lnm-buildtest_daily_debug:
   variables:
     CTEST_NUMBER_OF_TEST_THREADS: '10'
     CTEST_NUMBER_OF_BUILD_THREADS: '10'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: LnM-Workstation DEBUG-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
@@ -815,7 +833,8 @@ lnm-buildtest_daily_debug:
 lnm-doxygen-web:
   <<: *doxygen
   variables:
-    CTEST_MAKE: make documentation
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja documentation
     CTEST_BUILD_NAME_GITLAB: Doxygen-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
   tags:
@@ -837,7 +856,8 @@ lnm-doxygen-web:
 lnm-doxygen:
   <<: *doxygen
   variables:
-    CTEST_MAKE: make documentation
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja documentation
     CTEST_BUILD_NAME_GITLAB: Doxygen-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
