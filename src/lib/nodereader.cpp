@@ -54,8 +54,8 @@ namespace DRT
         case INPAR::geometry_box:
         {
           std::string fullsectionname("--" + sectionname + " DOMAIN");
-          Teuchos::RCP<DomainReader> dr = Teuchos::rcp(
-              new DRT::INPUT::DomainReader(dis, reader, fullsectionname, elementtypes));
+          Teuchos::RCP<DomainReader> dr =
+              Teuchos::rcp(new DRT::INPUT::DomainReader(dis, reader, fullsectionname));
           dreader_.push_back(dr);
           break;
         }
@@ -470,20 +470,15 @@ namespace DRT
         // communicate node offset to all procs
         int lmaxnodeid = maxnodeid;
         comm_->MaxAll(&lmaxnodeid, &maxnodeid, 1);
-        dreader_[i]->Partition(&maxnodeid);
-        maxnodeid++;
-      }
-
-      for (size_t i = 0; i < dreader_.size(); ++i)
-      {
+        dreader_[i]->Partition(maxnodeid);
         dreader_[i]->Complete();
+        maxnodeid = dreader_[i]->MyDis()->NodeRowMap()->MaxAllGID() + 1;
       }
 
       int lmaxnodeid = maxnodeid;
       comm_->MaxAll(&lmaxnodeid, &maxnodeid, 1);
       if ((maxnodeid < numproc) && (numnodes != 0))
         dserror("Bad idea: Simulation with %d procs for problem with %d nodes", numproc, maxnodeid);
-
     }  // NodeReader::Read
 
   }  // namespace INPUT
