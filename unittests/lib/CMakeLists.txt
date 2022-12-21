@@ -7,6 +7,7 @@ set(SOURCE_LIST
     unit_domainreader.cpp
     unit_function_library.cpp
     unit_functionvariables.cpp
+    unit_gridgenerator.cpp
     unit_linedefinition.cpp
     unit_symbolic_expression.cpp
     unit_tensor_transformation.cpp
@@ -25,6 +26,7 @@ set(TESTNAME unittests_lib_np_3)
 set(SOURCE_LIST
     # cmake-format: sortable
     unit_gid_vector.cpp
+    unit_gridgenerator_np_3.cpp
     )
 
 baci_add_google_test_executable(

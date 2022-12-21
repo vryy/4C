@@ -41,6 +41,7 @@ set(OBJS_LIB
     function_of_time.cpp
     functionvariables.cpp
     globalproblem.cpp
+    gridgenerator.cpp
     locsys.cpp
     matchingoctree.cpp
     node.cpp
