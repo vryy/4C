@@ -38,9 +38,28 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params,
   Evaluate(params, strategy);
 }
 
+
+void DRT::Discretization::Evaluate(Teuchos::ParameterList& params, DRT::AssembleStrategy& strategy)
+{
+  // Call the Evaluate method for the specific element
+  Evaluate(params, strategy,
+      [&](DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1,
+          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
+          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+      {
+        return ele->Evaluate(params, *this, la, strategy.Elematrix1(), strategy.Elematrix2(),
+            strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
+      });
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::Evaluate(Teuchos::ParameterList& params, DRT::AssembleStrategy& strategy)
+void DRT::Discretization::Evaluate(Teuchos::ParameterList& params, DRT::AssembleStrategy& strategy,
+    const std::function<int(DRT::Element*, Teuchos::ParameterList&, DRT::Discretization&,
+        Element::LocationArray&, Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&,
+        Epetra_SerialDenseVector&, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&)>&
+        element_action)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate");
 
@@ -86,8 +105,9 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params, DRT::Assemble
     {
       TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate elements");
       // call the element evaluate method
-      int err = actele->Evaluate(params, *this, la, strategy.Elematrix1(), strategy.Elematrix2(),
-          strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
+      int err =
+          element_action(actele, params, *this, la, strategy.Elematrix1(), strategy.Elematrix2(),
+              strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
       if (err) dserror("Proc %d: Element %d returned err=%d", Comm().MyPID(), actele->Id(), err);
     }
 
