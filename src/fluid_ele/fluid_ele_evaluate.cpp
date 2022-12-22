@@ -25,9 +25,6 @@
 #include "fluid_ele_parameter_intface.H"
 #include "fluid_ele_tds.H"
 
-#include "opti_topopt_fluidAdjoint3_interface.H"
-#include "opti_topopt_fluidAdjoint3_impl_parameter.H"
-
 #include "lib_condition_utils.H"
 
 
@@ -67,23 +64,6 @@ void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization& dis, Teuchos::Pa
   {
     DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
     fldpara->SetElementLomaParameter(p);
-  }
-  else if (action == FLD::set_topopt_parameter)
-  {
-    DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
-    fldpara->SetElementTopoptParameter(p);
-  }
-  else if (action == FLD::set_general_adjoint_parameter)
-  {
-    Teuchos::RCP<DRT::ELEMENTS::FluidAdjoint3ImplParameter> fldpara =
-        DRT::ELEMENTS::FluidAdjoint3ImplParameter::Instance();
-    fldpara->SetElementGeneralAdjointParameter(p);
-  }
-  else if (action == FLD::set_adjoint_time_parameter)
-  {
-    Teuchos::RCP<DRT::ELEMENTS::FluidAdjoint3ImplParameter> fldpara =
-        DRT::ELEMENTS::FluidAdjoint3ImplParameter::Instance();
-    fldpara->SetElementAdjointTimeParameter(p);
   }
   else if (action == FLD::set_two_phase_parameter)
   {
@@ -742,9 +722,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
     case FLD::set_time_parameter:
     case FLD::set_turbulence_parameter:
     case FLD::set_loma_parameter:
-    case FLD::set_topopt_parameter:
-    case FLD::set_general_adjoint_parameter:
-    case FLD::set_adjoint_time_parameter:
     case FLD::set_two_phase_parameter:
       //    case FLD::calc_adjoint_neumann: // this is done by the surface elements
       break;
@@ -752,12 +729,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
     // adjoint implementation enabling time-integration schemes such as
     // one-step-theta, BDF2, and generalized-alpha (n+alpha_F and n+1)
     //-----------------------------------------------------------------------
-    case FLD::calc_adjoint_systemmat_and_residual:
-    {
-      return DRT::ELEMENTS::FluidAdjoint3ImplInterface::Impl(Shape())->Evaluate(
-          this, discretization, lm, params, mat, elemat1, elevec1);
-      break;
-    }
     default:
       dserror("Unknown type of action '%i' for Fluid", act);
       break;

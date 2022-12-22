@@ -661,14 +661,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::F
     EvaluateAnalyticSolutionPoint(xyzint, fldparatimint_->Time(), calcerr, calcerrfunctno, mat, u,
         p, dervel, fldparatimint_->IsFullImplPressureAndCont(), fldparatimint_->Dt());
 
-    if (calcerr == INPAR::FLUID::topoptchannel &&
-        !(xyzint(1) > -0.2 - 1.0e-014 && xyzint(1) < 0.2 + 1.0e-014))
-    {
-      preint = 0.0;
-      u(0) = 0.0;
-      u(1) = 0.0;
-    }
-
     // compute difference between analytical solution and numerical solution
     deltap = preint - p;
     deltavel.Update(1.0, velint_, -1.0, u);
@@ -882,36 +874,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateAnalyticSolutionPoin
       }
       else
         dserror("3D analytical solution is not implemented yet");
-    }
-    break;
-    case INPAR::FLUID::topoptchannel:
-    {
-      const double visc = static_cast<const MAT::NewtonianFluid*>(mat.get())->Viscosity();
-      // Y=xyzint(1); y=0 is located in the middle of the channel
-
-      if (xyzint(1) > -0.2 - 1.0e-014 && xyzint(1) < 0.2 + 1.0e-014)
-      {
-        u(0) = 1 - 25 * xyzint(1) * xyzint(1);
-        u(1) = 0.0;
-        p = (xyzint(0) - 0.5) * (-50 * visc);
-
-        dervel(0, 0) = 0.0;
-        dervel(0, 1) = -50 * xyzint(1);
-        dervel(1, 0) = 0.0;
-        dervel(1, 1) = 0.0;
-      }
-      else
-      {
-        u(0) = 0.0;
-        u(1) = 0.0;
-        // p = preint; //pressure error outside of channel not factored in
-        p = 0.0;
-
-        dervel(0, 0) = 0.0;
-        dervel(0, 1) = 0.0;
-        dervel(1, 0) = 0.0;
-        dervel(1, 1) = 0.0;
-      }
     }
     break;
     case INPAR::FLUID::byfunct:

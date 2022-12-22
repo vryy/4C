@@ -93,7 +93,6 @@ set(OBJS_MAT
     mat_newman.cpp
     mat_newman_multiscale.cpp
     mat_newtonianfluid.cpp
-    mat_optimization_density.cpp
     mat_par_bundle.cpp
     mat_par_material.cpp
     mat_par_parameter.cpp

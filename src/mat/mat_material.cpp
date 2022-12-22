@@ -81,7 +81,6 @@
 #include "mat_beam_elasthyper_parameter.H"
 #include "mat_beam3r_plasticity.H"
 #include "mat_crosslinkermat.H"
-#include "mat_optimization_density.H"
 #include "mat_fluid_murnaghantait.H"
 #include "mat_fluid_linear_density_viscosity.H"
 #include "mat_fluid_weakly_compressible.H"
@@ -1048,12 +1047,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::CrosslinkerMat(curmat));
       auto* params = static_cast<MAT::PAR::CrosslinkerMat*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_opti_dens:
-    {
-      if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::TopOptDens(curmat));
-      auto* params = static_cast<MAT::PAR::TopOptDens*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_spring:

@@ -87,7 +87,6 @@ std::map<std::string, ProblemType> INPAR::PROBLEMTYPE::StringToProblemTypeMap()
     string2prbtype["Fluid_Structure_Interaction_Lung"] = ProblemType::fsi_lung;
     string2prbtype["Fluid_Structure_Interaction_RedModels"] = ProblemType::fsi_redmodels;
     string2prbtype["Fluid_Structure_Interaction_XFEM"] = ProblemType::fsi_xfem;
-    string2prbtype["Fluid_Top_Opt"] = ProblemType::fluid_topopt;
     string2prbtype["Fluid_XFEM"] = ProblemType::fluid_xfem;
     string2prbtype["Fluid_XFEM_LevelSet"] = ProblemType::fluid_xfem_ls;
     string2prbtype["Gas_Fluid_Structure_Interaction"] = ProblemType::gas_fsi;

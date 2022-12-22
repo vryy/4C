@@ -35,9 +35,6 @@ set(OBJS_ADAPT
     adapter_fld_moving_boundary.cpp
     adapter_fld_poro.cpp
     adapter_lubrication.cpp
-    adapter_opt.cpp
-    adapter_opt_fluid_adjoint_base.cpp
-    adapter_opt_fluid_algo.cpp
     adapter_porofluidmultiphase_wrapper.cpp
     adapter_scatra_base_algorithm.cpp
     adapter_scatra_fluid_ale_coupling_algo.cpp
@@ -102,7 +99,6 @@ set(LIBS_ADAPTER
     linalg
     mat
     nurbs_discret
-    opti
     solver
     volmortar
     )

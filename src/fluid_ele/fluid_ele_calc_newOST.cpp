@@ -299,10 +299,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
         CalcFineScaleSubgrVisc(evelaf, fsevelaf, vol);
     }
 
-    // get reaction coefficient due to porosity for topology optimization
-    // !do this only at gauss point since this is nonlinear!
-    if (fldpara_->ReactionTopopt()) GetPorosityAtGP(eporo);
-
     // calculate stabilization parameter at integration point
     if (fldpara_->TauGp() and fldpara_->StabType() == INPAR::FLUID::stabtype_residualbased)
       CalcStabParameter(vol);
@@ -2350,7 +2346,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SetConvectiveVelintN(const b
     case INPAR::FLUID::loma:
     case INPAR::FLUID::tempdepwater:
     case INPAR::FLUID::boussinesq:
-    case INPAR::FLUID::topopt:
     {
       convvelintn_.Update(velintn_);
       break;

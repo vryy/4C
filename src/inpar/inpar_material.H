@@ -157,7 +157,6 @@ namespace INPAR
       m_newman,                 ///< properties of an ion species in an electrolyte solution
       m_newman_multiscale,      ///< properties of an ion species in an electrolyte solution for
                                 ///< multi-scale approach
-      m_opti_dens,              ///< density field for topology optimization
       m_particle_sph_fluid,     ///< particle material for SPH fluid
       m_particle_sph_boundary,  ///< particle material for SPH boundary
       m_particle_dem,           ///< particle material for DEM

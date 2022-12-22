@@ -52,7 +52,6 @@
 #include "lib_locsys.H"
 #include "comm_utils.H"
 #include "adapter_coupling_mortar.H"
-#include "adapter_opt.H"
 #include "nurbs_discret_apply_nurbs_initial_condition.H"
 #include "mat_par_bundle.H"
 #include "mat_newtonianfluid.H"
@@ -348,9 +347,6 @@ void FLD::FluidImplicitTimeInt::Init()
     if (mhd_redis_eval) MHD_evaluator_ = Teuchos::rcp(new FLD::FluidMHDEvaluate(discret_));
   }
 
-  // initialize density_scaling_ as null
-  density_scaling_ = Teuchos::null;
-
   if (params_->get<bool>("INFNORMSCALING"))
   {
     fluid_infnormscaling_ = Teuchos::rcp(new FLD::UTILS::FluidInfNormScaling(*velpressplitter_));
@@ -575,12 +571,9 @@ void FLD::FluidImplicitTimeInt::Integrate()
   TimeLoop();
 
   // print the results of time measurements
-  if (DRT::Problem::Instance()->GetProblemType() != ProblemType::fluid_topopt)
-  {
-    Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
-        COMM_UTILS::toTeuchosComm<int>(discret_->Comm());
-    Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
-  }
+  Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
+      COMM_UTILS::toTeuchosComm<int>(discret_->Comm());
+  Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
 
 }  // FluidImplicitTimeInt::Integrate
 
@@ -752,7 +745,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*
  | nonlinear solve, i.e., (multiple) corrector                 vg 02/09 |
- | overloaded in TimIntTopOpt                                  bk 12/13 |
+ |   																	|
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::Solve()
 {
@@ -1020,7 +1013,6 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   // set parameters for turbulence models
   TreatTurbulenceModels(eleparams);
 
-  // set additional pseudo-porosity field for topology optimization
   // set thermodynamic pressures
   // set parameters for poro
   // set parameters for HDG
@@ -4694,7 +4686,6 @@ Teuchos::RCP<std::vector<double>> FLD::FluidImplicitTimeInt::EvaluateErrorCompar
     }
     case INPAR::FLUID::beltrami_flow:
     case INPAR::FLUID::channel2D:
-    case INPAR::FLUID::topoptchannel:
     case INPAR::FLUID::gravitation:
     case INPAR::FLUID::shear_flow:
     case INPAR::FLUID::fsi_fluid_pusher:
@@ -4740,8 +4731,7 @@ Teuchos::RCP<std::vector<double>> FLD::FluidImplicitTimeInt::EvaluateErrorCompar
       (*relerror)[0] = sqrt((*errors)[0]) / sqrt((*errors)[3]);
       (*relerror)[1] = sqrt((*errors)[1]) / sqrt((*errors)[4]);
 
-      if ((calcerr == INPAR::FLUID::beltrami_flow) or (calcerr == INPAR::FLUID::topoptchannel) or
-          (calcerr == INPAR::FLUID::byfunct))
+      if ((calcerr == INPAR::FLUID::beltrami_flow) or (calcerr == INPAR::FLUID::byfunct))
         (*relerror)[2] = sqrt((*errors)[2]) / sqrt((*errors)[5]);
       else
       {

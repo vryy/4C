@@ -6,7 +6,7 @@
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-- instationary continuous adjoint fluid example in the topopt frame with a time-independent solution
+- instationary continuous adjoint fluid example with a time-independent solution
 - academical, two-dimensional test case with a duct
 - spatial linear, temporal linear fluid velocity field:
 o u_1 = t + x + 2*y
@@ -53,7 +53,7 @@ MAXTIME                         1.0
 NUMSTEP                         100
 TIMESTEP                        0.01 //0.05
 NONLINITER                      Newton //fixed_point_like
-PHYSICAL_TYPE                   Incompressible //Topology_optimization
+PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       steady_state
 STARTFUNCNO                     1
 STEADYSTEP                      -1

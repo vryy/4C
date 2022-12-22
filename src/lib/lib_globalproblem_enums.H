@@ -26,7 +26,6 @@ enum class ProblemType
   fluid_ale,        // fluid on an ale mesh (no structure)
   fbi,              // 3D fluid interacting with a 1D beam
   fluid_redmodels,  // fluid_redairways problem
-  fluid_topopt,     // fluid topology optimization
   fluid_xfem,       // fluid problem including XFEM interfaces
   fluid_xfem_ls,    // xfluid calculations using levelset for cut.
   fps3i,            // fluid porous structure scatra scatra interaction

@@ -138,7 +138,6 @@
 #include "mat_damage.H"
 #include "mat_spring.H"
 #include "mat_beam_elasthyper.H"
-#include "mat_optimization_density.H"
 #include "mat_structporo.H"
 #include "mat_structporo_reaction.H"
 #include "mat_structporo_reaction_ecm.H"
@@ -155,7 +154,6 @@
 #include "contact_element.H"
 #include "art_net_artery.H"
 #include "red_airways_elementbase.H"
-#include "opti_topopt_optimizer_ele.H"
 #include "elemag_ele.H"
 #include "elemag_diff_ele.H"
 #include "beaminteraction_link_beam3_reissner_line2_pinjointed.H"
@@ -291,7 +289,6 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::LubricationType::Instance().Name() << " "
     << DRT::ELEMENTS::PoroFluidMultiPhaseType::Instance().Name() << " "
     << DRT::ELEMENTS::TransportType::Instance().Name() << " "
-    << DRT::ELEMENTS::TopOptType::Instance().Name() << " "
     << DRT::ELEMENTS::ThermoType::Instance().Name() << " "
     << DRT::ELEMENTS::ElemagType::Instance().Name() << " "
     << DRT::ELEMENTS::ElemagDiffType::Instance().Name() << " "
@@ -356,7 +353,7 @@ std::string DRT::ParObjectList()
     << MAT::BeamElastHyperMaterialType<double>::Instance().Name() << " "
     << MAT::BeamElastHyperMaterialType<Sacado::Fad::DFad<double>>::Instance().Name() << " "
     << MAT::PlasticLinElastType::Instance().Name() << " " << MAT::RobinsonType::Instance().Name()
-    << " " << MAT::DamageType::Instance().Name() << " " << MAT::TopOptDensType::Instance().Name()
+    << " " << MAT::DamageType::Instance().Name() << " "
     << MAT::ElectromagneticMatType::Instance().Name() << " "
     << MAT::Maxwell_0d_acinusType::Instance().Name() << " "
     << MAT::Maxwell_0d_acinusNeoHookeanType::Instance().Name() << " "

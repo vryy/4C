@@ -27,7 +27,6 @@
 #include "inpar_mortar.H"
 #include "inpar_contact.H"
 #include "inpar_fsi.H"
-#include "inpar_topopt.H"
 #include "inpar_lubrication.H"
 #include "inpar_scatra.H"
 #include "inpar_s2i.H"
@@ -430,7 +429,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::FLUID::SetValidParameters(list);
   INPAR::TWOPHASE::SetValidParameters(list);
   INPAR::LOMA::SetValidParameters(list);
-  INPAR::TOPOPT::SetValidParameters(list);
   INPAR::CUT::SetValidParameters(list);
   INPAR::XFEM::SetValidParameters(list);
 
