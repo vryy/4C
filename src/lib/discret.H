@@ -1512,6 +1512,19 @@ namespace DRT
     /// Call elements to evaluate
     virtual void Evaluate(Teuchos::ParameterList& params, DRT::AssembleStrategy& strategy);
 
+    /**
+     * Loop over all elements of the Discretization and perform the given @p element_action. In
+     * contrast to the other overloads of Evaluate(), this function allows to perform any local
+     * action on an Element that can be encoded within the passed function object @p element_action.
+     * This is very useful for one-off actions, that one does not want to implement inside the
+     * actual Element's Evaluate call.
+     */
+    virtual void Evaluate(Teuchos::ParameterList& params, DRT::AssembleStrategy& strategy,
+        const std::function<int(DRT::Element*, Teuchos::ParameterList&, DRT::Discretization&,
+            Element::LocationArray&, Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&,
+            Epetra_SerialDenseVector&, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&)>&
+            element_action);
+
     /// Call elements to evaluate
     /*!
       Abbreviated Evaluate() call that always assembles one matrix and
