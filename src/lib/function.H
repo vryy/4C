@@ -243,13 +243,12 @@ namespace DRT
     /// try to create VariableExprFunction from a given line definition
     template <int dim>
     Teuchos::RCP<FunctionOfSpaceTime> TryCreateVariableExprFunction(
-        Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
-        DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
+        const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
 
     /// create a vector function from multiple expressions
     template <int dim>
     Teuchos::RCP<FunctionOfSpaceTime> TryCreateExprFunction(
-        std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs);
+        const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
   }  // namespace UTILS
 
 }  // namespace DRT

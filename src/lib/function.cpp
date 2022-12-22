@@ -212,10 +212,12 @@ namespace
 
 template <int dim>
 Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateVariableExprFunction(
-    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
-    const int index_current_funct_in_manager)
+    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs)
 {
-  (void)index_current_funct_in_manager;
+  if (function_line_defs.size() != 1) return Teuchos::null;
+
+  const auto& function_lin_def = function_line_defs.front();
+
   if (function_lin_def->HaveNamed("VARFUNCTION"))
   {
     std::string component;
@@ -239,13 +241,13 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateVariableExprF
 
 template <int dim>
 Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateExprFunction(
-    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs)
+    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs)
 {
   // evaluate the maximum component and the number of variables
   int maxcomp = 0;
   int maxvar = -1;
   bool found_function_of_space_time(false);
-  for (const auto& ith_function_lin_def : functions_lin_defs)
+  for (const auto& ith_function_lin_def : function_line_defs)
   {
     ith_function_lin_def->ExtractInt("COMPONENT", maxcomp);
     ith_function_lin_def->ExtractInt("VARIABLE", maxvar);
@@ -256,7 +258,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateExprFunction(
   if (!found_function_of_space_time) return Teuchos::null;
 
   // evaluate the number of rows used for the definition of the variables
-  std::size_t numrowsvar = functions_lin_defs.size() - maxcomp - 1;
+  std::size_t numrowsvar = function_line_defs.size() - maxcomp - 1;
 
   // define a vector of strings
   std::vector<std::string> functstring(maxcomp + 1);
@@ -265,7 +267,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateExprFunction(
   for (int n = 0; n <= maxcomp; ++n)
   {
     // update the current row
-    Teuchos::RCP<DRT::INPUT::LineDefinition> functcomp = functions_lin_defs[n];
+    Teuchos::RCP<DRT::INPUT::LineDefinition> functcomp = function_line_defs[n];
 
     // check the validity of the n-th component
     int compid = 0;
@@ -283,7 +285,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateExprFunction(
   for (std::size_t j = 1; j <= numrowsvar; ++j)
   {
     // update the current row
-    Teuchos::RCP<DRT::INPUT::LineDefinition> line = functions_lin_defs[maxcomp + j];
+    Teuchos::RCP<DRT::INPUT::LineDefinition> line = function_line_defs[maxcomp + j];
 
     // read the number of the variable
     int varid;
@@ -758,18 +760,15 @@ template class DRT::UTILS::VariableExprFunction<2>;
 template class DRT::UTILS::VariableExprFunction<3>;
 
 template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateExprFunction<1>(
-    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs);
+    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
 template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateExprFunction<2>(
-    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs);
+    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
 template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateExprFunction<3>(
-    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions_lin_defs);
+    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
 
 template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateVariableExprFunction<1>(
-    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
-    const int index_current_funct_in_manager);
+    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
 template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateVariableExprFunction<2>(
-    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
-    const int index_current_funct_in_manager);
+    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
 template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateVariableExprFunction<3>(
-    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
-    const int index_current_funct_in_manager);
+    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);

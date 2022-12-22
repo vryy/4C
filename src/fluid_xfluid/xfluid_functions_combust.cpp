@@ -26,20 +26,21 @@ void DRT::UTILS::AddValidCombustFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> li
 }
 
 Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateCombustFunction(
-    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
-    const int index_current_funct_in_manager)
+    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs)
 {
-  if (function_lin_def->HaveNamed("ZALESAKSDISK"))
+  if (function_line_defs.size() != 1) return Teuchos::null;
+
+  if (function_line_defs.front()->HaveNamed("ZALESAKSDISK"))
   {
     return Teuchos::rcp(new ZalesaksDiskFunction());
   }
-  else if (function_lin_def->HaveNamed("COLLAPSINGWATERCOLUMN"))
+  else if (function_line_defs.front()->HaveNamed("COLLAPSINGWATERCOLUMN"))
   {
     return Teuchos::rcp(new CollapsingWaterColumnFunction());
   }
   else
   {
-    return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(NULL);
+    return Teuchos::null;
   }
 }
 

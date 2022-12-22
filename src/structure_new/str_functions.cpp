@@ -50,9 +50,12 @@ void STR::AddValidStructureFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> STR::TryCreateStructureFunction(
-    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
-    const int index_current_funct_in_manager)
+    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs)
 {
+  if (function_line_defs.size() != 1) return Teuchos::null;
+
+  const auto& function_lin_def = function_line_defs.front();
+
   if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE"))
   {
     // read data
