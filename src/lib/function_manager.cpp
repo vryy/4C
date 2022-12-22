@@ -96,7 +96,6 @@ namespace
               WrapFunction(FLD::TryCreateFluidFunction),
               WrapFunction(DRT::UTILS::TryCreateCombustFunction),
               WrapFunction(DRT::UTILS::TryCreateXfluidFunction),
-              WrapFunction(DRT::UTILS::TryCreateLibraryFunction),
               WrapFunction(DRT::UTILS::TryCreateLibraryFunctionScalar)};
 
       bool found_function = false;
