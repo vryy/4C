@@ -598,8 +598,8 @@ void INVANA::MatParManagerTVSVD::BroadcastEigenvectors(Epetra_MultiVector& evecs
 
   // get the necessary communicators
   DRT::Problem* problem = DRT::Problem::Instance();
-  Teuchos::RCP<Epetra_Comm> gcomm = problem->GetNPGroup()->GlobalComm();
-  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = problem->GetCommunicators()->GlobalComm();
+  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetCommunicators()->LocalComm();
 
   // pack the Multivector on global proc0
   std::map<int, std::vector<double>> data;

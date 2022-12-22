@@ -23,7 +23,7 @@
 
 void DRT::ELEMENTS::So_hex20::soh20_homog(Teuchos::ParameterList& params)
 {
-  if (DRT::Problem::Instance(0)->GetNPGroup()->SubComm()->MyPID() == Owner())
+  if (DRT::Problem::Instance(0)->GetCommunicators()->SubComm()->MyPID() == Owner())
   {
     double homogdens = 0.;
     const static std::vector<double> weights = soh20_weights();

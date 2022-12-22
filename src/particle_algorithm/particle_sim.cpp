@@ -26,7 +26,7 @@ void particle_drt()
   DRT::Problem* problem = DRT::Problem::Instance();
 
   // get local communicator
-  const Epetra_Comm& comm = *problem->GetNPGroup()->LocalComm().get();
+  const Epetra_Comm& comm = *problem->GetCommunicators()->LocalComm().get();
 
   // get parameter lists
   const Teuchos::ParameterList& params = problem->ParticleParams();

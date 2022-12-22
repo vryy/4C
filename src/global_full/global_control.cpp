@@ -27,7 +27,7 @@ void ntacal();
  *----------------------------------------------------------------------*/
 void ntam(int argc, char *argv[])
 {
-  Teuchos::RCP<Epetra_Comm> gcomm = DRT::Problem::Instance()->GetNPGroup()->GlobalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = DRT::Problem::Instance()->GetCommunicators()->GlobalComm();
 
   double t0, ti, tc;
 

@@ -98,10 +98,10 @@ INVANA::SurfCurrentGroup::SurfCurrentGroup(Teuchos::RCP<DRT::Discretization> dis
 DRT::Problem* INVANA::SurfCurrentGroup::ReadReferenceDiscretization()
 {
   // groups stuff in case
-  Teuchos::RCP<Epetra_Comm> gcomm = DRT::Problem::Instance()->GetNPGroup()->GlobalComm();
-  Teuchos::RCP<Epetra_Comm> lcomm = DRT::Problem::Instance()->GetNPGroup()->LocalComm();
-  int ngroups = DRT::Problem::Instance()->GetNPGroup()->NumGroups();
-  int groupid = DRT::Problem::Instance()->GetNPGroup()->GroupId();
+  Teuchos::RCP<Epetra_Comm> gcomm = DRT::Problem::Instance()->GetCommunicators()->GlobalComm();
+  Teuchos::RCP<Epetra_Comm> lcomm = DRT::Problem::Instance()->GetCommunicators()->LocalComm();
+  int ngroups = DRT::Problem::Instance()->GetCommunicators()->NumGroups();
+  int groupid = DRT::Problem::Instance()->GetCommunicators()->GroupId();
 
   // get target discretization from the input file
   const Teuchos::ParameterList& statinvp = DRT::Problem::Instance()->StatInverseAnalysisParams();
@@ -126,7 +126,7 @@ DRT::Problem* INVANA::SurfCurrentGroup::ReadReferenceDiscretization()
   // a new problem instance with npgroup
   int newinstance = DRT::Problem::NumInstances();
   DRT::Problem* reference_problem = DRT::Problem::Instance(newinstance);
-  reference_problem->NPGroup(*(DRT::Problem::Instance()->GetNPGroup()));
+  reference_problem->SetCommunicators(DRT::Problem::Instance()->GetCommunicators());
 
   // a reader
   DRT::INPUT::DatFileReader refreader(reference_input_file, lcomm, 1);
@@ -150,7 +150,7 @@ DRT::Problem* INVANA::SurfCurrentGroup::ReadReferenceDiscretization()
 
   // Broadcast to all groups
   gcomm->Barrier();
-  if (ngroups > 1) COMM_UTILS::BroadcastDiscretizations(newinstance);
+  if (ngroups > 1) DRT::BroadcastDiscretizations(*DRT::Problem::Instance(newinstance));
   gcomm->Barrier();
 
   // reset were materials are read from

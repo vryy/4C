@@ -21,8 +21,8 @@ MAT::PAR::ScatraMat::ScatraMat(Teuchos::RCP<MAT::PAR::Material> matdata) : Param
 {
   // extract relevant communicator
   const Epetra_Comm& comm = DRT::Problem::Instance()->Materials()->GetReadFromProblem() == 0
-                                ? *DRT::Problem::Instance()->GetNPGroup()->LocalComm()
-                                : *DRT::Problem::Instance()->GetNPGroup()->SubComm();
+                                ? *DRT::Problem::Instance()->GetCommunicators()->LocalComm()
+                                : *DRT::Problem::Instance()->GetCommunicators()->SubComm();
 
   Epetra_Map dummy_map(1, 1, 0, comm);
   for (int i = first; i <= last; i++)

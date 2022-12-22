@@ -10,6 +10,7 @@ set(OBJS_LIB
     cubic_spline_interpolation.cpp
     dirichletextractor.cpp
     discret.cpp
+    discret_broadcast.cpp
     discret_conditions.cpp
     discret_evaluate.cpp
     discret_faces.cpp

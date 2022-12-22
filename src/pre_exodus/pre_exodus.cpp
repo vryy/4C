@@ -50,9 +50,10 @@ int main(int argc, char** argv)
 
   // create a problem instance
   DRT::Problem* problem = DRT::Problem::Instance();
-  // create "dummy" NP group which only sets the correct communicators
-  COMM_UTILS::CreateComm(0, NULL);
-  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(problem->GetNPGroup()->GlobalComm().get(), false);
+  // create default communicators
+  Teuchos::RCP<COMM_UTILS::Communicators> communicators = COMM_UTILS::CreateComm({});
+  DRT::Problem::Instance()->SetCommunicators(communicators);
+  Teuchos::RCP<Epetra_Comm> comm = communicators->GlobalComm();
 
   try
   {

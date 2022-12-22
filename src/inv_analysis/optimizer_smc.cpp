@@ -59,8 +59,8 @@ void INVANA::OptimizerSMC::Setup()
     dserror("Switch off OUTPUT_BIN for stable computations.");
 
   // get some global numbers and validate
-  ngroups_ = problem->GetNPGroup()->NumGroups();
-  mygroup_ = problem->GetNPGroup()->GroupId();
+  ngroups_ = problem->GetCommunicators()->NumGroups();
+  mygroup_ = problem->GetCommunicators()->GroupId();
   gnumparticles_ = params_.get<int>("NUM_PARTICLES");
 
   // only allow for equally distributed particles among groups

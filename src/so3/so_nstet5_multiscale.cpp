@@ -22,7 +22,7 @@
 
 void DRT::ELEMENTS::NStet5::nstet5_homog(Teuchos::ParameterList& params)
 {
-  if (DRT::Problem::Instance(0)->GetNPGroup()->SubComm()->MyPID() == Owner())
+  if (DRT::Problem::Instance(0)->GetCommunicators()->SubComm()->MyPID() == Owner())
   {
     const double density = Material()->Density(0);
 

@@ -29,7 +29,7 @@ INVANA::ParticleData::ParticleData()
       posterior_(0.0),
       prior_(0.0),
       statechanged_(true),
-      lcomm_(DRT::Problem::Instance()->GetNPGroup()->LocalComm())
+      lcomm_(DRT::Problem::Instance()->GetCommunicators()->LocalComm())
 {
 }
 
@@ -43,7 +43,7 @@ INVANA::ParticleData::ParticleData(ParticleData& data)
   // since the above only works with valid state:
   statechanged_ = false;
 
-  lcomm_ = DRT::Problem::Instance()->GetNPGroup()->LocalComm();
+  lcomm_ = DRT::Problem::Instance()->GetCommunicators()->LocalComm();
 }
 
 /*----------------------------------------------------------------------*/
@@ -130,8 +130,8 @@ void INVANA::ParticleData::Unpack(const std::vector<char>& data)
   //    std::cout << gids[i] << " ";
   //  std::cout << std::endl;
   //  std::cout << "GLENGHT: " << glength << std::endl;
-  //  std::cout << "PROC: " << DRT::Problem::Instance()->GetNPGroup()->GlobalComm()->MyPID() <<
-  //  "arrives here" << std::endl;
+  //  std::cout << "PROC: " << DRT::Problem::Instance()->GetCommunicators()->GlobalComm()->MyPID()
+  //  << "arrives here" << std::endl;
   // ---- reconstruct state_
   Epetra_Map amap((int)glength, llength, &gids[0], 0, *lcomm_);
   state_ = Teuchos::rcp(new Epetra_Vector(amap, false));

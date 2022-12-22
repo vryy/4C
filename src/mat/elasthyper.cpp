@@ -46,7 +46,7 @@ MAT::PAR::ElastHyper::ElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata
   // STAT INVERSE ANALYSIS
   // For stat inverse analysis, add all parameters to matparams_
   // set size of matparams_ here, add values in summands
-  Epetra_Map dummy_map(1, 1, 0, *(DRT::Problem::Instance()->GetNPGroup()->LocalComm()));
+  Epetra_Map dummy_map(1, 1, 0, *(DRT::Problem::Instance()->GetCommunicators()->LocalComm()));
   for (int i = MAT::ELASTIC::PAR::first; i <= MAT::ELASTIC::PAR::last; i++)
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));

@@ -84,8 +84,8 @@ void INVANA::MatParManagerPerElement::Setup()
   }
 
   // the full map of the vector layout
-  paramlayoutmap_ = Teuchos::rcp(
-      new Epetra_Map(-1, nummyparams, 0, *(DRT::Problem::Instance()->GetNPGroup()->LocalComm())));
+  paramlayoutmap_ = Teuchos::rcp(new Epetra_Map(
+      -1, nummyparams, 0, *(DRT::Problem::Instance()->GetCommunicators()->LocalComm())));
   paramlayoutmapunique_ = Teuchos::rcp(new Epetra_Map(*paramlayoutmap_));
 
   // the partial maps:

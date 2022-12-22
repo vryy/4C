@@ -20,7 +20,7 @@
 
 void DRT::ELEMENTS::So_tet4::sotet4_homog(Teuchos::ParameterList& params)
 {
-  if (DRT::Problem::Instance(0)->GetNPGroup()->SubComm()->MyPID() == Owner())
+  if (DRT::Problem::Instance(0)->GetCommunicators()->SubComm()->MyPID() == Owner())
   {
     double homogdens = 0.;
     const static std::vector<double> weights = so_tet4_1gp_weights();

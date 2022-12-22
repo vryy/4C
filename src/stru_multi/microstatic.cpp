@@ -1157,7 +1157,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6, 1>* stress,
 
 void STRUMULTI::stop_np_multiscale()
 {
-  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetNPGroup()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetCommunicators()->SubComm();
   int task[2] = {9, 0};
   subcomm->Broadcast(task, 2, 0);
   return;
