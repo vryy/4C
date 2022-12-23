@@ -129,29 +129,21 @@ namespace MAT
        * \brief Evaluate total fiber cauchy stress and derivative w.r.t the fibre stretch
        *
        * The total fiber cauchy stress is computed as the normalized total fiber force (sum of
-       * active and passive component) scaled by the maximal isometric stress and the ratio between
-       * current fiber length and optimal fiber length
+       * active and passive component) scaled by the current maximal isometric stress (i.e. the
+       * maximal isometric stress scaled by the time-dependency ft) and the ratio between current
+       * fiber length and optimal fiber length.
        *
-       * \param[in] modI4 modified forth invariant of right Cauchy Green tensor
-       * \param[in] alpha_act activation level
+       * In contrast to the original publication, we use lambda_ofl=1 to evaluate the passive
+       * force-stretch dependency.
+       *
+       * \param[in] lambdaM fiber stretch
+       * \param[in] sigma_max_ft maximal fiber cauchy stress at current time t (i.e. scaled by ft)
        * \param[in, out] sigma_fiber_total total fiber cauchy stress
        * \param[in, out] deriv_sigma_fiber_total derivative of total fiber cauchy stress w.r.t.
        * fibre stretch
        */
-      void EvaluateTotalFiberCauchyStressAndDerivative(double modI4, double alpha_act,
+      void EvaluateTotalFiberCauchyStressAndDerivative(double lambdaM, double sigma_max_ft,
           double& sigma_fiber_total, double& deriv_sigma_fiber_total);
-
-      /*!
-       * \brief Evaluate time-dependent activation function
-       *
-       * The activation follows the time-dependent function alpha_act =
-       * alpha*tanh(beta*(t_tot-t_act_start)) for any t_tot>t_act_start.
-       *
-       * \param[in] alpha tetanised activation level
-       * \param[in] beta scaling factor
-       * \param[in] t_tot total time
-       */
-      double EvaluateTimeDependentActivationLevel(double alpha, double beta, double t_tot);
     };
   }  // namespace ELASTIC
 }  // namespace MAT

@@ -8,6 +8,7 @@ set(SOURCE_LIST
     unit_material_service.cpp
     unit_multiplicative_split_defgrad_elasthyper.cpp
     unit_multiplicative_split_defgrad_elasthyper_service.cpp
+    unit_muscle_utils.cpp
     unit_stvenantkirchhoff.cpp
     )
 

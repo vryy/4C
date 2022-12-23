@@ -18,7 +18,7 @@
 #include "material_service.H"
 #include "matpar_bundle.H"
 #include "mixture_elasthyper.H"
-
+#include "muscle_utils.H"
 
 MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_Weickenmeier(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -204,10 +204,10 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Update(
 
   // product C^T*M
   LINALG::Matrix<3, 3> transpCM(false);
-  transpCM.MultiplyTN(1.0, C, M);
+  transpCM.MultiplyTN(C, M);
 
   // save the current fibre stretch in lambdaMOld_
-  lambdaMOld_ = sqrt(transpCM(0, 0) + transpCM(1, 1) + transpCM(2, 2));
+  lambdaMOld_ = std::sqrt(transpCM(0, 0) + transpCM(1, 1) + transpCM(2, 2));
 }
 
 void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Evaluate(const LINALG::Matrix<3, 3>& F,
@@ -231,11 +231,11 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Evaluate(const LINALG::Mat
   // compute matrices
   // right Cauchy Green tensor C
   LINALG::Matrix<3, 3> C(false);                  // matrix notation
-  C.MultiplyTN(1.0, F, F);                        // C = F^T F
+  C.MultiplyTN(F, F);                             // C = F^T F
   LINALG::Matrix<6, 1> Cv(false);                 // Voigt notation
   UTILS::VOIGT::Stresses::MatrixToVector(C, Cv);  // Cv
 
-  // inverse right Cauchy Green tensor C
+  // inverse right Cauchy Green tensor C^-1
   LINALG::Matrix<3, 3> invC(false);                     // matrix notation
   invC.Invert(C);                                       // invC = C^-1
   LINALG::Matrix<6, 1> invCv(false);                    // Voigt notation
@@ -243,6 +243,8 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Evaluate(const LINALG::Mat
 
   // structural tensor M, i.e. dyadic product of fibre directions
   LINALG::Matrix<3, 3> M = anisotropyExtension_.GetStructuralTensor(gp, 0);
+  LINALG::Matrix<6, 1> Mv(false);                 // Voigt notation
+  UTILS::VOIGT::Stresses::MatrixToVector(M, Mv);  // Mv
 
   // structural tensor L = omega0/3*Identity + omegap*M
   LINALG::Matrix<3, 3> L(M);
@@ -255,7 +257,7 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Evaluate(const LINALG::Mat
 
   // product C^T*M
   LINALG::Matrix<3, 3> transpCM(false);
-  transpCM.MultiplyTN(1.0, C, M);  // C^TM = C^T*M
+  transpCM.MultiplyTN(C, M);  // C^TM = C^T*M
 
   // product invC*L
   LINALG::Matrix<3, 3> invCL(false);
@@ -269,7 +271,7 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Evaluate(const LINALG::Mat
 
   // stretch in fibre direction lambdaM
   // lambdaM = sqrt(C:M) = sqrt(tr(C^T M)), see Holzapfel2000, p.14
-  double lambdaM = sqrt(transpCM(0, 0) + transpCM(1, 1) + transpCM(2, 2));
+  double lambdaM = std::sqrt(transpCM(0, 0) + transpCM(1, 1) + transpCM(2, 2));
 
   // computation of active nominal stress Pa, and derivative derivPa
   double Pa = 0.0;
@@ -279,23 +281,19 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Evaluate(const LINALG::Mat
     EvaluateActiveNominalStress(params, lambdaM, Pa, derivPa);
   }  // else: Pa and derivPa remain 0.0
 
-  // computation of activation level omegaa and derivative \frac{\partial omegaa}{\partial C}
+  // computation of activation level omegaa and derivative w.r.t. fiber stretch
   double omegaa = 0.0;
-  LINALG::Matrix<3, 3> domegaadC(true);    // matrix notation
-  LINALG::Matrix<6, 1> domegaadCv(false);  // Voigt notation
-  // compute activation level and derivative only of active nominal stress is not zero
-  if (Pa != 0.0)
-  {
-    EvaluateActivationLevel(params, lambdaM, M, Pa, derivPa, omegaa, domegaadC);
-  }
+  double derivOmegaa = 0.0;
+  // compute activation level and derivative only if active nominal stress is not zero
   // if active nominal stress is zero, material is purely passive, thus activation level and
   // derivative are zero
-  else
+  if (Pa != 0.0)
   {
-    domegaadC.Clear();
-    // omegaa remains zero as initialized
+    EvaluateActivationLevel(params, lambdaM, Pa, derivPa, omegaa, derivOmegaa);
   }
-  UTILS::VOIGT::Stresses::MatrixToVector(domegaadC, domegaadCv);  // convert to Voigt notation
+  // compute derivative \frac{\partial omegaa}{\partial C} in Voigt notation
+  LINALG::Matrix<6, 1> domegaadCv(Mv);
+  domegaadCv.Scale(derivOmegaa);
 
   // compute helper matrices for further calculation
   LINALG::Matrix<3, 3> LomegaaM(L);
@@ -328,7 +326,7 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Evaluate(const LINALG::Mat
   // compute second Piola-Kirchhoff stress
   LINALG::Matrix<3, 3> stressM(false);
   stressM.Update(expalpha, LomegaaM, 0.0);  // add contributions
-  stressM.Update(-expbeta, invCLinvC, 1.0);
+  stressM.Update(-expbeta * detC, invCLinvC, 1.0);
   stressM.Update(J * expbeta - std::pow(detC, -kappa), invC, 1.0);
   stressM.Scale(0.5 * gamma);
   UTILS::VOIGT::Stresses::MatrixToVector(
@@ -382,119 +380,44 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActiveNominalStres
   const double de = params_->de_;
   const double dc = params_->dc_;
 
-  // const int actTimesNum = params_->actTimesNum_; //TODO: may be needed.
   const int actIntervalsNum = params_->actIntervalsNum_;
   const auto& actTimes = params_->actTimes_;
   const auto& actValues = params_->actValues_;
 
-  // compute twitch force of motor unit (MU) type iMU
-  double t_iMU_jstim = 0;                // time of arriving stimulus jstim for MU type iMU
-  double t_end = 0;                      // helper variable
-  double ratiotime = 1.0;                // helper variable
-  std::vector<double> sumg(muTypesNum);  // superposition of single twitches until current time
-  std::vector<double> G(muTypesNum);     // gain function for MU type iMU
-  std::vector<double> Ft(muTypesNum);    // twitch force for MU type iMU
-
-  for (int iMU = 0; iMU < muTypesNum; ++iMU)
-  {  // for all motor unit types i
-    for (int actinterval = 0; actinterval < actIntervalsNum; ++actinterval)
-    {  // for all activation intervals
-
-      t_iMU_jstim = actTimes[actinterval];  // set time of first stimulus jstim=1 to start time of
-                                            // the current activation interval
-
-      // determine end time of activation interval
-      if (t_tot < actTimes[actinterval + 1])
-      {                 // if inside of actinterval
-        t_end = t_tot;  // set end time to current simulation time
-      }
-      else
-      {                                     // if outside of actinterval
-        t_end = actTimes[actinterval + 1];  // set end time to end time of actinterval
-      }
-
-      // superposition of single twitches
-      while (t_iMU_jstim < t_end)
-      {  // for all impulses from start of actinterval until determined end time of actinterval
-        ratiotime = (t_tot - t_iMU_jstim) / T[iMU];
-
-        // add single twitch force response for stimulus jstim and motor unit iMU scaled by
-        // percentage activation prescribed in actinterval
-        sumg[iMU] += actValues[actinterval] * ratiotime * F[iMU] * std::exp(1 - ratiotime);
-
-        // next impulse jstim at time t_iMU_jstim after stimulation interval I
-        t_iMU_jstim += I[iMU];
-      }
-    }  // end actinterval
-
-    G[iMU] = (1 - std::exp(-2 * std::pow(T[iMU] / I[iMU], 3))) /
-             (T[iMU] / I[iMU]);    // gain function for MU type iMU
-    Ft[iMU] = G[iMU] * sumg[iMU];  // twitch force for MU type iMU
-  }                                // end iMU
-
   // compute force-time/stimulation frequency dependency Poptft
-  double Poptft = 0.0;
-  for (int iMU = 0; iMU < muTypesNum; ++iMU)
-  {
-    // sum up twitch forces for all MU types weighted by the respective MU type fraction
-    Poptft += Na * Ft[iMU] * rho[iMU];
-  }
+  double Poptft = MAT::UTILS::MUSCLE::EvaluateTimeDependentActiveStressEhret(
+      Na, muTypesNum, rho, I, F, T, actIntervalsNum, actTimes, actValues, t_tot);
 
   // compute force-stretch dependency fxi
-  double fxi = 1.0;
-  double explambda = std::exp(((2 * lambdaMin - lambdaM - lambdaOpt) * (lambdaM - lambdaOpt)) /
-                              (2 * std::pow(lambdaMin - lambdaOpt, 2)));  // prefactor
-  if (lambdaM > lambdaMin)
-  {
-    fxi = ((lambdaM - lambdaMin) / (lambdaOpt - lambdaMin)) * explambda;
-  }
-  else
-  {
-    fxi = 0.0;
-  }
+  double fxi =
+      MAT::UTILS::MUSCLE::EvaluateForceStretchDependencyEhret(lambdaM, lambdaMin, lambdaOpt);
 
-  // compute force-velocity dependency fv:
-  // modification of the original function given in Weickenmeier
-  double fv = 1.0;
-  double dFvdDotLambdaM = 1.0;  // derivative of fv w.r.t. dotLambdaM
-
-  // BW Euler approximation of derivatives
-  // dotLambdaM = (lambdaM_n - lambdaM_{n-1})/dt approximated through BW Euler
-  double dotLambdaM = (lambdaM - lambdaMOld_) / timestep;
-  // dDotLambdaMdLambdaM = 1/dt approximated through BW Euler
-  double dDotLambdaMdLambdaM = 1 / timestep;
-
-  double ratioDotLambdaM = dotLambdaM / dotLambdaMMin;  // helper variable
-
-  if (dotLambdaM > 0)
-  {
-    fv = (1 + de) - de * (1 + ratioDotLambdaM) / (1 - ke * kc * ratioDotLambdaM);
-    dFvdDotLambdaM =
-        -de * ((1 + ke * kc) / (dotLambdaMMin * std::pow((1 - ke * kc * ratioDotLambdaM), 2)));
-  }
-  else
-  {
-    fv = (1 - dc) + dc * (1 - ratioDotLambdaM) / (1 + kc * ratioDotLambdaM);
-    dFvdDotLambdaM = -dc * ((1 + kc) / (dotLambdaMMin * std::pow((1 + kc * ratioDotLambdaM), 2)));
-  }
+  // compute force-velocity dependency fv
+  double fv = MAT::UTILS::MUSCLE::EvaluateForceVelocityDependencyBoel(
+      lambdaM, lambdaMOld_, timestep, dotLambdaMMin, de, dc, ke, kc);
 
   // compute active nominal stress Pa
   Pa = Poptft * fxi * fv;
 
-  // compute derivative of active nominal stress Pa w.r.t. lambdaM
-  double dFxidLamdaM = 0.0;  // derivative of fxi w.r.t. lambdaM
+  // compute derivative of force-stretch dependency fxi and of force-velocity dependency fv
+  // w.r.t. lambdaM
+  double dFxidLamdaM = 0.0;
+  double dFvdLambdaM = 0.0;
   if (Pa != 0)
   {
-    dFxidLamdaM = ((std::pow(lambdaMin - lambdaM, 2) - std::pow(lambdaMin - lambdaOpt, 2)) /
-                      std::pow(lambdaMin - lambdaOpt, 3)) *
-                  explambda;
+    dFxidLamdaM = MAT::UTILS::MUSCLE::EvaluateDerivativeForceStretchDependencyEhret(
+        lambdaM, lambdaMin, lambdaOpt);
+    dFvdLambdaM = MAT::UTILS::MUSCLE::EvaluateDerivativeForceVelocityDependencyBoel(
+        lambdaM, lambdaMOld_, timestep, dotLambdaMMin, de, dc, ke, kc);
   }
-  derivPa = Poptft * (fv * dFxidLamdaM + fxi * dFvdDotLambdaM * dDotLambdaMdLambdaM);
+
+  // compute derivative of active nominal stress Pa w.r.t. lambdaM
+  derivPa = Poptft * (fv * dFxidLamdaM + fxi * dFvdLambdaM);
 }
 
 void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActivationLevel(
-    Teuchos::ParameterList& params, const double lambdaM, LINALG::Matrix<3, 3>& M, double Pa,
-    double derivPa, double& omegaa, LINALG::Matrix<3, 3>& domegaadC)
+    Teuchos::ParameterList& params, const double lambdaM, double Pa, double derivPa, double& omegaa,
+    double& derivOmegaa)
 {
   // get passive material parameters
   const double alpha = params_->alpha_;
@@ -509,16 +432,16 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActivationLevel(
   double derivderivIp = (omega0 / 3.0) * (2.0 + 4.0 / std::pow(lambdaM, 3.)) + 2.0 * (1.0 - omega0);
 
   // argument for Lambert W function
-  double xi =
+  const double xi =
       Pa * ((2.0 * alpha * lambdaM) / gamma) *
           std::exp(0.5 * alpha * (2.0 - 2.0 * Ip + lambdaM * derivIp)) +
       0.5 * alpha * lambdaM * derivIp * std::exp(0.5 * alpha * lambdaM * derivIp);  // argument xi
 
   // solution W0 of principal branch of Lambert W function approximated with Halley's method
-  double W0 = 1.0;     // starting guess for solution
-  double tol = 1e-15;  // tolerance for numeric approximation 10^-15
-  int maxiter = 100;   // maximal number of iterations
-  EvaluateLambert(xi, W0, tol, maxiter);
+  double W0 = 1.0;           // starting guess for solution
+  const double tol = 1e-15;  // tolerance for numeric approximation 10^-15
+  const int maxiter = 100;   // maximal number of iterations
+  MAT::UTILS::MUSCLE::EvaluateLambert(xi, W0, tol, maxiter);
 
   // derivatives of xi and W0 w.r.t. lambdaM used for activation level computation
   double derivXi =
@@ -532,35 +455,8 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActivationLevel(
   // computation of activation level omegaa
   omegaa = W0 / (alpha * std::pow(lambdaM, 2.)) - derivIp / (2.0 * lambdaM);
 
-  // computation of partial derivative of omegaa w.r.t. C
-  domegaadC.Update(1.0, M, 1.0);  // structural tensor M
-  domegaadC.Scale(
-      derivLambert / (2.0 * alpha * std::pow(lambdaM, 3.)) - W0 / (alpha * std::pow(lambdaM, 4)) -
-      derivderivIp / (4.0 * std::pow(lambdaM, 2.)) + derivIp / (4.0 * std::pow(lambdaM, 3.)));
-}
-
-void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateLambert(
-    double xi, double& W0, double tol, double maxiter)
-{
-  double W0_old =
-      std::numeric_limits<double>::infinity();  // s.t. error is infinite in the beginning
-  int numiter = 0;                              // number of iterations
-
-  // Halley's method
-  while ((std::abs(W0 - W0_old) / std::abs(W0) > tol) && (numiter <= maxiter))
-  {
-    numiter++;
-    W0_old = W0;
-    W0 = W0 - (W0 * std::exp(W0) - xi) /
-                  ((std::exp(W0) * (W0 + 1) - (W0 + 2) * (W0 * std::exp(W0) - xi) / (2 * W0 + 2)));
-  }
-
-  // error handling
-  if (numiter >= maxiter)
-  {
-    dserror(
-        "Maximal number of iterations for evaluation of Lambert W function with Halley's method "
-        "exceeded for tolerance %E.",
-        tol);
-  }
+  // computation of partial derivative of omegaa w.r.t. lambdaM
+  derivOmegaa = derivLambert / (2.0 * alpha * std::pow(lambdaM, 3.)) -
+                W0 / (alpha * std::pow(lambdaM, 4)) - derivderivIp / (4.0 * std::pow(lambdaM, 2.)) +
+                derivIp / (4.0 * std::pow(lambdaM, 3.));
 }

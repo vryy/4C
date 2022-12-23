@@ -11,10 +11,11 @@
 #include "globalproblem.H"
 #include "standardtypes_cpp.H"
 #include "linedefinition.H"
-#include "voigt_notation.H"
 #include "elasthyper_service.H"
 #include "material_service.H"
 #include "matpar_material.H"
+#include "muscle_utils.H"
+#include "voigt_notation.H"
 
 
 MAT::ELASTIC::PAR::IsoMuscleBlemker::IsoMuscleBlemker(
@@ -81,7 +82,7 @@ void MAT::ELASTIC::IsoMuscleBlemker::AddStressAnisoModified(const LINALG::Matrix
 {
   // right Cauchy Green tensor C in matrix notation
   LINALG::Matrix<3, 3> C(true);
-  UTILS::VOIGT::Strains::VectorToMatrix(rcg, C);
+  ::UTILS::VOIGT::Strains::VectorToMatrix(rcg, C);
 
   // compute volume ratio J
   double J = std::sqrt(I3);
@@ -111,21 +112,25 @@ void MAT::ELASTIC::IsoMuscleBlemker::AddStressAnisoModified(const LINALG::Matrix
   // compute time-dependent activation level
   const double& alpha = params_->alpha_;
   const double& beta = params_->beta_;
+  const double& sigma_max = params_->sigma_max_;
+  const double& t_act_start = params_->t_act_start_;
   const double& t_tot = params.get<double>("total time");  // current simulation time
-  double alpha_act = EvaluateTimeDependentActivationLevel(alpha, beta, t_tot);
+  double sigma_max_ft = MAT::UTILS::MUSCLE::EvaluateTimeDependentActiveStressTanh(
+      sigma_max, alpha, beta, t_act_start, t_tot);
 
   // compute total fiber cauchy stress and derivative w.r.t. fibre stretch
   double sigma_fiber_total = 0.0;
   double deriv_sigma_fiber_total = 0.0;
+  double lambdaM = std::sqrt(modI4);  // fiber stretch
   EvaluateTotalFiberCauchyStressAndDerivative(
-      modI4, alpha_act, sigma_fiber_total, deriv_sigma_fiber_total);
+      lambdaM, sigma_max_ft, sigma_fiber_total, deriv_sigma_fiber_total);
 
   // helper variables for computation of 2nd Piola Kirchhoff stress and elasticity tensor
-  double H1 = (modI1 * modI4 - modI5) / (2.0 * std::sqrt(modI4));
+  double H1 = (modI1 * modI4 - modI5) / (2.0 * lambdaM);
   // prevents singularitys in cross-fiber-shear-free states
   if ((H1 - 1.0) < EPS15) H1 = 1.0 + EPS15;
   double H2 = std::sqrt(H1 * H1 - 1.0);
-  double H3 = modI1 / (2.0 * std::sqrt(modI4)) - H1 / (2.0 * modI4);
+  double H3 = modI1 / (2.0 * lambdaM) - H1 / (2.0 * modI4);
   double B2 = std::acosh(H1);
 
   // get material parameters
@@ -134,25 +139,25 @@ void MAT::ELASTIC::IsoMuscleBlemker::AddStressAnisoModified(const LINALG::Matrix
 
   // scalar prefactors, gamma_i = derivative of strain-energy function w.r.t. modified
   // invariant i; Psi_iso = W1(modI4, modI5) + W2(mod_I1, modI4, modI5) + W3(modI4)
-  double gamma1 = 2.0 * G2 * (B2 / H2) * std::sqrt(modI4);
+  double gamma1 = 2.0 * G2 * (B2 / H2) * lambdaM;
   double gamma4_1 = -4.0 * G1 * modI5 / std::pow(modI4, 3.0);  // dW1/dI4
   double gamma4_2 = 4.0 * G2 * (B2 / H2) * H3;                 // dW2/dI4
   double gamma4_3 = sigma_fiber_total / modI4;                 // dW3/dI4
   double gamma4 = gamma4_1 + gamma4_2 + gamma4_3;
-  double gamma5 = 2.0 * G1 / std::pow(modI4, 2.0) - 2.0 * G2 * (B2 / H2) / std::sqrt(modI4);
+  double gamma5 = 2.0 * G1 / std::pow(modI4, 2.0) - 2.0 * G2 * (B2 / H2) / lambdaM;
 
   // matrix terms for stress evaluation
   // unitary 3x3 matrix
   LINALG::Matrix<3, 3> Id3(false);
   MAT::IdentityMatrix(Id3);
   LINALG::Matrix<6, 1> Id3v(false);
-  UTILS::VOIGT::IdentityMatrix(Id3v);
+  ::UTILS::VOIGT::IdentityMatrix(Id3v);
 
   // sum modC*M + M*modC = dI5/dC
   LINALG::Matrix<3, 3> modCMsumMmodC(modCM);
   modCMsumMmodC.MultiplyNN(1.0, M, modC, 1.0);
   LINALG::Matrix<6, 1> modCMsumMmodCv(false);
-  UTILS::VOIGT::Stresses::MatrixToVector(modCMsumMmodC, modCMsumMmodCv);
+  ::UTILS::VOIGT::Stresses::MatrixToVector(modCMsumMmodC, modCMsumMmodCv);
 
   // ficticious 2nd Piola-Kirchhoff stress tensor modS
   LINALG::Matrix<3, 3> modS(true);
@@ -160,7 +165,7 @@ void MAT::ELASTIC::IsoMuscleBlemker::AddStressAnisoModified(const LINALG::Matrix
   modS.Update(gamma4, M, 1.0);              // + gamma4*M
   modS.Update(gamma5, modCMsumMmodC, 1.0);  // dyad(a0,modC*a0)+dyad(a0*C,a0) = (modC*M)' +modC'*M
   LINALG::Matrix<6, 1> modSv(false);
-  UTILS::VOIGT::Stresses::MatrixToVector(modS, modSv);
+  ::UTILS::VOIGT::Stresses::MatrixToVector(modS, modSv);
 
   // isometirc 2nd Piola-Kirchhoff tensor S_iso from ficticious 2nd PK stress
   double traceCmodS = modSv(0) * rcg(0) + modSv(1) * rcg(1) + modSv(2) * rcg(2) +
@@ -174,23 +179,21 @@ void MAT::ELASTIC::IsoMuscleBlemker::AddStressAnisoModified(const LINALG::Matrix
   // scalar prefactors for computation of elasticity tensor
   double delta1 =
       (2. * G2 * modI4) / (std::pow(H2, 2.)) - (2. * B2 * G2 * H1 * modI4) / (std::pow(H2, 3.));
-  double delta5 = (2. * B2 * G2) / (H2 * std::sqrt(modI4)) +
-                  (4. * G2 * H3 * std::sqrt(modI4)) / (std::pow(H2, 2.)) -
-                  (4. * B2 * G2 * H1 * H3 * std::sqrt(modI4)) / (std::pow(H2, 3.));
-  double delta7 =
-      (24. * G1 * modI5) / (std::pow(modI4, 4.)) +
-      (8. * G2 * std::pow(H3, 2.)) / (std::pow(H2, 2.)) +
-      (2. * B2 * G2 * (3. * H1 - 2. * modI1 * std::sqrt(modI4))) / (H2 * std::pow(modI4, 2.)) -
-      (8. * B2 * G2 * std::pow(H3, 2.) * H1) / (std::pow(H2, 3.));
+  double delta5 = (2. * B2 * G2) / (H2 * lambdaM) + (4. * G2 * H3 * lambdaM) / (std::pow(H2, 2.)) -
+                  (4. * B2 * G2 * H1 * H3 * lambdaM) / (std::pow(H2, 3.));
+  double delta7 = (24. * G1 * modI5) / (std::pow(modI4, 4.)) +
+                  (8. * G2 * std::pow(H3, 2.)) / (std::pow(H2, 2.)) +
+                  (2. * B2 * G2 * (3. * H1 - 2. * modI1 * lambdaM)) / (H2 * std::pow(modI4, 2.)) -
+                  (8. * B2 * G2 * std::pow(H3, 2.) * H1) / (std::pow(H2, 3.));
   delta7 += 2. * (-sigma_fiber_total / std::pow(modI4, 2.) + deriv_sigma_fiber_total / modI4);
   double delta8 = (2. * B2 * G2 * H1) / (std::pow(H2, 3.)) - (2. * G2) / (std::pow(H2, 2.));
   double delta10 =
       (2. * G2) / (std::pow(H2, 2) * modI4) - (2. * B2 * G2 * H1) / (modI4 * std::pow(H2, 3.));
   double delta11 = (2. * B2 * G2) / (H2 * std::pow(modI4, 3. / 2.)) -
                    (8. * G1) / (std::pow(modI4, 3.)) -
-                   (4. * G2 * H3) / (std::pow(H2, 2.) * std::sqrt(modI4)) +
-                   (4. * B2 * G2 * H3 * H1) / (std::sqrt(modI4) * std::pow(H2, 3.));
-  double delta12 = (4. * G1) / (std::pow(modI4, 2.)) - (4. * B2 * G2) / (H2 * std::sqrt(modI4));
+                   (4. * G2 * H3) / (std::pow(H2, 2.) * lambdaM) +
+                   (4. * B2 * G2 * H3 * H1) / (lambdaM * std::pow(H2, 3.));
+  double delta12 = (4. * G1) / (std::pow(modI4, 2.)) - (4. * B2 * G2) / (H2 * lambdaM);
 
   // summand tensors for computation of elasticity tensor
   LINALG::Matrix<6, 6> IdId(false);
@@ -229,56 +232,40 @@ void MAT::ELASTIC::IsoMuscleBlemker::AddStressAnisoModified(const LINALG::Matrix
   modcmat.Scale(std::pow(J, -4.0 / 3.0));
 
   // modified projection tensor Psl = Cinv o Cinv - 1/3 Cinv x Cinv
-  LINALG::Matrix<6, 6> Psl(false);
-  Psl.Clear();
+  LINALG::Matrix<6, 6> Psl(true);
   AddtoCmatHolzapfelProduct(Psl, icg, 1.0);
   Psl.MultiplyNT(-1.0 / 3.0, icg, icg, 1.0);
 
   // Right Cauchy-Green tensor in stress-like Voigt notation
   static LINALG::Matrix<6, 1> rcg_stress(false);
-  UTILS::VOIGT::Strains::ToStressLike(rcg, rcg_stress);
+  ::UTILS::VOIGT::Strains::ToStressLike(rcg, rcg_stress);
 
   // compute the projection tensor P = II - 1/3 Cinv x C
   LINALG::Matrix<6, 6> P(false);
-  UTILS::VOIGT::FourthOrderIdentityMatrix<UTILS::VOIGT::NotationType::stress,
-      UTILS::VOIGT::NotationType::stress>(P);
+  ::UTILS::VOIGT::FourthOrderIdentityMatrix<::UTILS::VOIGT::NotationType::stress,
+      ::UTILS::VOIGT::NotationType::stress>(P);
   P.MultiplyNT(-1.0 / 3.0, icg, rcg_stress, 1.0);
 
   // compute the transpose of the projection tensor PT = II - 1/3 C x Cinv
   LINALG::Matrix<6, 6> PT(false);
-  UTILS::VOIGT::FourthOrderIdentityMatrix<UTILS::VOIGT::NotationType::stress,
-      UTILS::VOIGT::NotationType::stress>(PT);
+  ::UTILS::VOIGT::FourthOrderIdentityMatrix<::UTILS::VOIGT::NotationType::stress,
+      ::UTILS::VOIGT::NotationType::stress>(PT);
   PT.MultiplyNT(-1.0 / 3.0, rcg_stress, icg, 1.0);
 
   // compute isochoric cmat from ficticious elasticiy tensor
   LINALG::Matrix<6, 6> cmatiso(false);
   cmatiso.MultiplyNN(P, modcmat);
   cmatiso.MultiplyNN(1.0, modcmat, PT, 1.0);
-  cmatiso.MultiplyNT(-2.0 / 3.0, icg, S_isov, 1.0);
   cmatiso.Update(2.0 / 3.0 * incJ * traceCmodS, Psl, 1.0);
-  cmatiso.MultiplyNT(-2.0 / 3.0, icg, S_isov, 1.0);
+  cmatiso.MultiplyNT(-4.0 / 3.0, icg, S_isov, 1.0);
   cmatiso.MultiplyNT(-2.0 / 3.0, S_isov, icg, 1.0);
 
   // update cmat
   cmat.Update(1.0, cmatiso, 1.0);
 }
-double MAT::ELASTIC::IsoMuscleBlemker::EvaluateTimeDependentActivationLevel(
-    double alpha, double beta, double t_tot)
-{
-  // get start of activation
-  const double& t_act_start = params_->t_act_start_;
-
-  // compute activation level
-  double alpha_act = 0;
-  if (t_tot >= t_act_start)
-  {
-    alpha_act = alpha * std::tanh(beta * (t_tot - t_act_start));
-  }
-  return alpha_act;
-}
 
 void MAT::ELASTIC::IsoMuscleBlemker::EvaluateTotalFiberCauchyStressAndDerivative(
-    double modI4, double alpha_act, double& sigma_fiber_total, double& deriv_sigma_fiber_total)
+    double lambdaM, double sigma_max_ft, double& sigma_fiber_total, double& deriv_sigma_fiber_total)
 {
   // get active material parameters
   const double& sigma_max = params_->sigma_max_;
@@ -287,57 +274,21 @@ void MAT::ELASTIC::IsoMuscleBlemker::EvaluateTotalFiberCauchyStressAndDerivative
   const double& P1 = params_->P1_;
   const double& P2 = params_->P2_;
 
-  // compute fiber stretch and stretch ratio
-  double lambda = std::sqrt(modI4);
-  double ratio_lambda = lambda / lambda_ofl;
-
-  // initialize fpassive and factive and the respective derivatives w.r.t. the fibre stretch
-  double f_passive = 0;
-  double deriv_f_passive = 0;
-  double f_active = 0;
-  double deriv_f_active = 0;
-
-  // calculate constants for computation of passive fiber force
-  double P3 = P1 * P2 * std::exp(P2 * (lambda_star / lambda_ofl - 1.0)) / lambda_ofl;
-  double P4 = P1 * (std::exp(P2 * ((lambda_star / lambda_ofl) - 1.0)) - 1.0) -
-              P3 * lambda_star / lambda_ofl;
-
   // compute normalized passive fiber force and derivative w.r.t. fibre stretch
-  if (lambda <= lambda_ofl)
-  {
-    f_passive = 0.0;
-    deriv_f_passive = 0.0;
-  }
-  else if (lambda < lambda_star)
-  {
-    f_passive = P1 * (std::exp(P2 * (ratio_lambda - 1.0)) - 1.0);
-    deriv_f_passive = P1 * std::exp(P2 * (ratio_lambda - 1.0)) * P2 / lambda_ofl;
-  }
-  else
-  {
-    f_passive = P3 * ratio_lambda + P4;
-    deriv_f_passive = P3 / lambda_ofl;
-  }
+  double f_passive = MAT::UTILS::MUSCLE::EvaluatePassiveForceStretchDependencyBlemker(
+      lambdaM, 1.0, lambda_star, P1, P2);
+  double deriv_f_passive =
+      MAT::UTILS::MUSCLE::EvaluateDerivativePassiveForceStretchDependencyBlemker(
+          lambdaM, 1.0, lambda_star, P1, P2);
 
   // compute normalized normalized active fiber force and derivative w.r.t. fibre stretch
-  if (lambda <= 0.6 * lambda_ofl)
-  {
-    f_active = 9 * std::pow(ratio_lambda - 0.4, 2.0);
-    deriv_f_active = 18 / lambda_ofl * (ratio_lambda - 0.4);
-  }
-  else if (lambda < 1.4 * lambda_ofl)
-  {
-    f_active = 1 - 4 * std::pow(1 - ratio_lambda, 2.0);
-    deriv_f_active = 8 / lambda_ofl * (1 - ratio_lambda);
-  }
-  else
-  {
-    f_active = 9 * std::pow(ratio_lambda - 1.6, 2.0);
-    deriv_f_active = 18 / lambda_ofl * (ratio_lambda - 1.6);
-  }
+  double f_active =
+      MAT::UTILS::MUSCLE::EvaluateActiveForceStretchDependencyBlemker(lambdaM, lambda_ofl);
+  double deriv_f_active = MAT::UTILS::MUSCLE::EvaluateDerivativeActiveForceStretchDependencyBlemker(
+      lambdaM, lambda_ofl);
 
-  sigma_fiber_total = sigma_max * ratio_lambda * (f_passive + alpha_act * f_active);
+  sigma_fiber_total = (sigma_max * f_passive + sigma_max_ft * f_active) * lambdaM / lambda_ofl;
   deriv_sigma_fiber_total =
-      sigma_max * ratio_lambda * (deriv_f_passive + alpha_act * deriv_f_active) +
-      sigma_max / lambda_ofl * sigma_fiber_total;
+      (sigma_max * deriv_f_passive + sigma_max_ft * deriv_f_active) * lambdaM / lambda_ofl +
+      sigma_fiber_total / lambda_ofl;
 }
