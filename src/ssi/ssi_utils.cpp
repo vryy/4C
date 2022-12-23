@@ -204,17 +204,18 @@ Teuchos::ParameterList SSI::UTILS::CloneScaTraManifoldParams(
 
   return *scatra_manifold_params;
 }
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::ParameterList SSI::UTILS::ModifyScaTraParams(const Teuchos::ParameterList& scatraparams)
 {
-  auto* scatraparams_mutable = new Teuchos::ParameterList(scatraparams);
+  auto scatraparams_mutable = Teuchos::ParameterList(scatraparams);
 
   if (DRT::INPUT::IntegralValue<INPAR::SCATRA::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
       INPAR::SCATRA::outputscalars_none)
-    scatraparams_mutable->set<bool>("output_file_name_discretization", true);
+    scatraparams_mutable.set<bool>("output_file_name_discretization", true);
 
-  return *scatraparams_mutable;
+  return scatraparams_mutable;
 }
 
 /*----------------------------------------------------------------------*/
