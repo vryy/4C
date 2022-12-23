@@ -10,10 +10,10 @@ SFB-TRR40: design of a Plexiglas channel loaded by a heatflux on the inner side
 compared to design simulation the present mesh (nightly test) is quite coarse
 number of elements in directions: x,y,z = 17,36,1
 curve fitting of E(T) using a polynom of order 6
-polynom valid ONLY for temperatures between [50°C,80°C], according to experimental data
+polynom valid ONLY for temperatures between [50 degrees celsius,80 degrees celsius], according to experimental data
 K.F. Lei, W.J. Li, Y. Yam (2004):
 "Effects of contact-stress on hot-embossed PMMA microchannel wall profile"
-chosen units: [m,kg,°C,s]
+chosen units: [m,kg, degrees celsius,s]
 stationary                      solution:
 STRUCTURE DIS structure NODE 433 QUANTITY dispx VALUE 0 TOLERANCE 1e-9 NAME ux(-3.5,0,0)
 STRUCTURE DIS structure NODE 433 QUANTITY dispy VALUE 0 TOLERANCE 1e-9 NAME uy(-3.5,0,0)
@@ -139,13 +139,13 @@ NORMCOMBI_RESFINC               Coupl_Or_Singl  // Or,Coupl_Or_Singl,Coupl_And_S
 NORM_RESF                       Rel  // Abs,Rel,Mix
 --------------------------------------------------------------------SOLVER 1
 NAME                            STRUCTURAL_SOLVER
-SOLVER                          UMFPACK  // Aztec_MSR,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
+SOLVER                          UMFPACK  // Belos,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
 --------------------------------------------------------------------SOLVER 2
 NAME                            THERMAL_SOLVER
-SOLVER                          UMFPACK  // Aztec_MSR,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
+SOLVER                          UMFPACK  // Belos,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
 --------------------------------------------------------------------SOLVER 3
 NAME                            TSI_MONOLITHIC_SOLVER
-SOLVER                          UMFPACK  // Aztec_MSR,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
+SOLVER                          UMFPACK  // Belos,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 6 YOUNG 1.30406e+11 -1.09895e+10 3.64935e+08 -5.88115e+06 45945.7 -139.619 NUE 0.35 DENS 1185 THEXPANS 7.0e-05 CAPA 1737210 CONDUCT 0.2 INITTEMP 50.0
 MAT 2 THERM_FourierIso CAPA 1737210 CONDUCT 0.2

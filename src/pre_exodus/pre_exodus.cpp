@@ -22,15 +22,15 @@ its parameters and conditions.
 #include <Teuchos_CommandLineProcessor.hpp>
 #include "Epetra_Time.h"
 #include "Teuchos_TimeMonitor.hpp"
-#include "drt_globalproblem.H"
-#include "drt_resulttest.H"
-#include "drt_utils_createdis.H"
-#include "drt_validparameters.H"
-#include "drt_validmaterials.H"
-#include "drt_validconditions.H"
-#include "drt_conditiondefinition.H"
-#include "drt_elementdefinition.H"
-#include "drt_parobjectregister.H"
+#include "globalproblem.H"
+#include "resulttest.H"
+#include "utils_createdis.H"
+#include "validparameters.H"
+#include "validmaterials.H"
+#include "validconditions.H"
+#include "conditiondefinition.H"
+#include "elementdefinition.H"
+#include "parobjectregister.H"
 #include "comm_utils.H"
 #include "pre_exodus_reader.H"
 #include "pre_exodus_soshextrusion.H"
@@ -50,9 +50,10 @@ int main(int argc, char** argv)
 
   // create a problem instance
   DRT::Problem* problem = DRT::Problem::Instance();
-  // create "dummy" NP group which only sets the correct communicators
-  COMM_UTILS::CreateComm(0, NULL);
-  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(problem->GetNPGroup()->GlobalComm().get(), false);
+  // create default communicators
+  Teuchos::RCP<COMM_UTILS::Communicators> communicators = COMM_UTILS::CreateComm({});
+  DRT::Problem::Instance()->SetCommunicators(communicators);
+  Teuchos::RCP<Epetra_Comm> comm = communicators->GlobalComm();
 
   try
   {

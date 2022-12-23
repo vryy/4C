@@ -62,38 +62,10 @@ typedef struct _MAP_ITERATOR
 } MAP_ITERATOR;
 
 
-/*----------------------------------------------------------------------*/
-/*!
-  \brief map node iterator
-
-  Visit all values of a given symbol.
-
-  \author m.geppert (u.kue)
-  \date 08/06
- */
-/*----------------------------------------------------------------------*/
-typedef struct _MAP_NODE_ITERATOR
-{
-  MAP_NODE* map_node;
-  SYMBOL* symbol;
-} MAP_NODE_ITERATOR;
-
-
 void init_map_iterator(MAP_ITERATOR* iterator, MAP* map);
 
 INT next_map_node(MAP_ITERATOR* iterator);
 
-void init_map_node_iterator(MAP_NODE_ITERATOR* iterator, MAP_NODE* map_node);
-
-INT next_symbol(MAP_NODE_ITERATOR* iterator);
-
-DOUBLE result_map_find_key(MAP* map, CHAR* key);
-
-DOUBLE result_map_read_key(MAP* map, CHAR* key);
-
 MAP_NODE* iterator_get_node(MAP_ITERATOR* iterator);
-INT iterator_find_symbol(MAP_ITERATOR* iterator, char* name);
-MAP* iterator_get_map(MAP_ITERATOR* iterator);
-INT node_iterator_get_real_as_float(MAP_NODE_ITERATOR* node_iterator, float* real);
 
 #endif

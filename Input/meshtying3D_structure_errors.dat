@@ -61,13 +61,11 @@ LM_SHAPEFCN                     Dual
 LM_QUAD                         quad
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Belos                     // Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        10                            // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ML                            // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         0                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
 AZTOL                           1.0E-10                       // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
@@ -75,7 +73,6 @@ AZITER                          1000                          // max iterations
 AZSUB                           200                           // size of krylov space for gmres
 AZOMEGA                         0.67                          // unused
 AZGRAPH                         1                             // unused
-AZPOLY                          5                             // polynomial order for Neumann
 IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
 IFPACKCOMBINE                   Add
 AZSCAL                          none                          // none sym infnorm scaling of the system
@@ -95,13 +92,11 @@ ML_DAMPMED                      1.0                           // damping med gri
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 --------------------------------------------------------------------SOLVER 2
 NAME                            Meshtying_Solver
-SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Belos                     // Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        10                            // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ML                            // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         0                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
 AZTOL                           1.0E-10                       // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
@@ -109,7 +104,6 @@ AZITER                          1000                          // max iterations
 AZSUB                           200                           // size of krylov space for gmres
 AZOMEGA                         0.67                          // unused
 AZGRAPH                         1                             // unused
-AZPOLY                          5                             // polynomial order for Neumann
 IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
 IFPACKCOMBINE                   Add
 AZSCAL                          none                          // none sym infnorm scaling of the system

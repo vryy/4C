@@ -86,15 +86,12 @@ AZOUTPUT                        5
 AZSOLVE                         CG
 AZPREC                          ILU
 AZREUSE                         8
-AZDROP                          0.0
-IFPACKFILL                      1.0
 IFPACKGFILL                     0
 AZTOL                           1.0E-6
 AZITER                          60
 AZSUB                           25
 AZOMEGA                         1.0
 AZGRAPH                         1
-AZPOLY                          5
 IFPACKOVERLAP                   0
 AZSCAL                          none
 AZCONV                          AZ_r0
@@ -168,11 +165,11 @@ COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 4.2e-6
 ----------------------------------------------------------------------FUNCT4
 VARFUNCTION (4e-5*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))*heaviside(1.3e6-p1))*(1-phi2)*porosity*S1
 ----------------------------------------------------------------------FUNCT5
-VARFUNCTION (1e-5*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))+0.5*heaviside(p1-1.3e6))*(1-phi2)*porosity*S1*porosity*S1 NUMCONSTANTS 3 CONSTANTS p1 0.0 porosity 0.0 S1 0.0
+VARFUNCTION (1e-5*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))+0.5*heaviside(p1-1.3e6))*(1-phi2)*porosity*S1*porosity*S1
 ----------------------------------------------------------------------FUNCT6
-VARFUNCTION (2e-7*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))*heaviside(1.3e6-p1)+3e-7*sin(0.5*pi*phi1/4.2e-6))*(1-phi2)*porosity*S1*porosity*S2 NUMCONSTANTS 3 CONSTANTS p1 0.0 porosity 0.0 S1 0.0
+VARFUNCTION (2e-7*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))*heaviside(1.3e6-p1)+3e-7*sin(0.5*pi*phi1/4.2e-6))*(1-phi2)*porosity*S1*porosity*S2
 ----------------------------------------------------------------------FUNCT7
-VARFUNCTION (4e-5*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))*heaviside(1.3e6-p1))*(1-phi2)*porosity*S1*porosity*S1 NUMCONSTANTS 3 CONSTANTS p1 0.0 porosity 0.0 S1 0.0
+VARFUNCTION (4e-5*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))*heaviside(1.3e6-p1))*(1-phi2)*porosity*S1*porosity*S1
 ----------------------------------------------------------------------FUNCT8
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 4.2e-6
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0

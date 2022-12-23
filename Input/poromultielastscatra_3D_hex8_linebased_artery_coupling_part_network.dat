@@ -119,7 +119,7 @@ NAME                            solver
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            iterative_solver_porofluid_artery_coupl
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        10
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
@@ -128,7 +128,7 @@ AZSUB                           100
 AZTOL                           1.0e-12
 --------------------------------------------------------------------SOLVER 3
 NAME                            iterative_solver_scatra_artery_scatra_coupl
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        10
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML

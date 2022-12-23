@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "linalg_utils_sparse_algebra_assemble.H"
-#include "drt_dserror.H"
+#include "dserror.H"
 
 /*----------------------------------------------------------------------*
  |  assemble a matrix                                         popp 01/08|

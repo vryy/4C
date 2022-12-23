@@ -17,7 +17,7 @@ simple, academic test case for monolithic scalar-structure interaction:
 - cathode uses growth law "MAT_InelasticDefgradLinScalarIso" (isotropic strains develop)
 - volume change due to both growth laws is a linear function of the difference of current and initial concentration evaluated in the reference configuration
 - dirichlet boundary conditions are applied to the whole structural surface
-- used unit system is: mm, µg, nmol, ms, K, µA
+- used unit system is: mm, microg, nmol, ms, K, microA
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    3
 //NODES       24
@@ -162,10 +162,10 @@ E 4 - 1 Master S2IKineticsID 1
 E 5 - 1 Slave S2IKineticsID 1
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  4
-E 2 - 0 Slave KineticModel Butler-VolmerReduced numscal 1 stoichiometries -1 e- 1 k_r 1.036426957e-3 alpha_a 0.5 alpha_c 0.5
+E 2 - 0 Slave KineticModel Butler-VolmerReduced numscal 1 stoichiometries -1 e- 1 k_r 1.036426957e-3 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0
 E 3 - 0 Master
 E 4 - 1 Master
-E 5 - 1 Slave KineticModel Butler-VolmerReduced numscal 1 stoichiometries -1 e- 1 k_r 1.036426957e-3 alpha_a 0.5 alpha_c 0.5
+E 5 - 1 Slave KineticModel Butler-VolmerReduced numscal 1 stoichiometries -1 e- 1 k_r 1.036426957e-3 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0
 -----------------------DESIGN TOTAL AND MEAN SCALAR VOL CONDITIONS
 DVOL   3
 E 1 - ID 0

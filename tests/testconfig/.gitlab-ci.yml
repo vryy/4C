@@ -60,7 +60,7 @@ variables:
 # Define the base jobs for testing
 #-------------------------------------------------------------------------------
 
-# This kind of job is started when something changes in the master branch.
+# This kind of job is started when something changes in any protected branch.
 # Minimal tests are performed.
 .buildtest_minimal: &buildtest_minimal
   stage: buildtest
@@ -68,7 +68,7 @@ variables:
         # So the old build can be used again.
     GIT_STRATEGY: fetch
   script:
-  - 'echo minimal test: triggered by change in master'
+  - 'echo minimal test: triggered by change in any protected branch'
         # Delete old build files.
   - rm -rf ../baci-build/
         # Clear eventual ccache cache.
@@ -87,17 +87,14 @@ variables:
     - buildtest_minimal.log
     when: on_failure
     expire_in: 1 day
-  only:
-  - master
-  except:
-    refs:
-    - schedules
-    - web
-    variables:
-    - $GITLAB_SCHEDULER_TYPE == "1"
-    - $GITLAB_SCHEDULER_TYPE == "2"
-    - $GITLAB_SCHEDULER_TYPE == "3"
-    - $GITLAB_SCHEDULER_TYPE == "4"
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "schedule"
+    when: never
+  - if: $CI_PIPELINE_SOURCE == "web"
+    when: never
+  - if: $GITLAB_SCHEDULER_TYPE != "0"
+    when: never
+  - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # This kind of job is started when a user triggers a job in the gitlab UI.
 # Full tests are performed.
@@ -135,16 +132,12 @@ variables:
     - buildtest_full.log
     when: on_failure
     expire_in: 1 day
-  only:
-    refs:
-    - web
-  except:
-    variables:
-    - $GITLAB_SCHEDULER_TYPE == "1"
-    - $GITLAB_SCHEDULER_TYPE == "2"
-    - $GITLAB_SCHEDULER_TYPE == "3"
-    - $GITLAB_SCHEDULER_TYPE == "4"
-    - $GITLAB_INTERACTIVE_MODE == "1"
+  rules:
+  - if: $GITLAB_SCHEDULER_TYPE != "0"
+    when: never
+  - if: $GITLAB_INTERACTIVE_MODE == "1"
+    when: never
+  - if: $CI_PIPELINE_SOURCE == "web"
 
 # This kind of job is started when a user triggers a job in the Gitlab UI and sets the interactive flag GITLAB_INTERACTIVE_MODE to 1
 .buildtest_interactive: &buildtest_interactive
@@ -254,9 +247,8 @@ variables:
     - genhtml_weekly_coverage.log
     when: always
     expire_in: 1 day
-  only:
-    variables:
-    - $GITLAB_SCHEDULER_TYPE == "3"
+  rules:
+  - if: $GITLAB_SCHEDULER_TYPE == "3"
 
 # This kind of job is started by a daily scheduler, with the variable
 # $GITLAB_SCHEDULER_TYPE = "1"
@@ -296,9 +288,8 @@ variables:
     - buildtest_daily.log
     when: on_failure
     expire_in: 1 day
-  only:
-    variables:
-    - $GITLAB_SCHEDULER_TYPE == "1"
+  rules:
+  - if: $GITLAB_SCHEDULER_TYPE == "1"
 
 # This kind of job is started by a daily scheduler, with the variable
 # $GITLAB_SCHEDULER_TYPE = "1"
@@ -338,9 +329,8 @@ variables:
     - buildtest_daily_debug.log
     when: on_failure
     expire_in: 1 day
-  only:
-    variables:
-    - $GITLAB_SCHEDULER_TYPE == "1"
+  rules:
+  - if: $GITLAB_SCHEDULER_TYPE == "1"
 
 # Trilinos-develop build job
 .buildtest_release_trilinos_develop: &buildtest_release_trilinos_develop
@@ -394,9 +384,8 @@ variables:
     - buildtest_release_trilinos_develop.log
     when: on_failure
     expire_in: 1 week
-  only:
-    variables:
-    - $GITLAB_SCHEDULER_TYPE == "4"
+  rules:
+  - if: $GITLAB_SCHEDULER_TYPE == "4"
 
 # Doxygen job
 .doxygen: &doxygen
@@ -455,14 +444,14 @@ checkcode:
     - wrong_code_format.txt
     when: on_failure
     expire_in: 1 day
-  only:
-  - master
-  - web
-  except:
-    variables:
-    - $GITLAB_SCHEDULER_TYPE == "3"
-    - $GITLAB_SCHEDULER_TYPE == "4"
-    - $GITLAB_INTERACTIVE_MODE == "1"
+  rules:
+  - if: $GITLAB_SCHEDULER_TYPE == "3" || $GITLAB_SCHEDULER_TYPE == "4"
+    when: never
+  - if: $GITLAB_INTERACTIVE_MODE == "1"
+    when: never
+  - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  - if: $CI_PIPELINE_SOURCE == "web"
+  - if: $CI_PIPELINE_SOURCE == "schedule"
   tags:
   - all
 
@@ -471,7 +460,8 @@ checkcode:
 imcs-buildtest_minimal_ubuntu20:
   <<: *buildtest_minimal
   variables:
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: make
+    CTEST_BUILD_COMMAND: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: imcs-workstation-ubuntu20-minimal-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
   tags:
@@ -483,7 +473,8 @@ imcs-buildtest_full_ubuntu20:
   variables:
     CTEST_NUMBER_OF_TEST_THREADS: '12'
     CTEST_NUMBER_OF_BUILD_THREADS: '12'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: make
+    CTEST_BUILD_COMMAND: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: imcs-workstation-ubuntu20-full-$TEST_TAG-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
   tags:
@@ -494,7 +485,8 @@ imcs-buildtest_interactive_ubuntu20:
   <<: *buildtest_interactive
   variables:
     TEST_TAG: ''
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: make
+    CTEST_BUILD_COMMAND: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: imcs-workstation-ubuntu20-interactive-$TEST_TAG-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
     GIT_STRATEGY: fetch
@@ -509,7 +501,8 @@ imcs-buildtest_daily_ubuntu20:
   variables:
     CTEST_NUMBER_OF_TEST_THREADS: '12'
     CTEST_NUMBER_OF_BUILD_THREADS: '12'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: make
+    CTEST_BUILD_COMMAND: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: imcs-workstation-ubuntu20-nightly-full-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
   tags:
@@ -520,7 +513,8 @@ imcs-buildtest_daily_debug_ubuntu20:
   variables:
     CTEST_NUMBER_OF_TEST_THREADS: '12'
     CTEST_NUMBER_OF_BUILD_THREADS: '12'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: make
+    CTEST_BUILD_COMMAND: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: imcs-workstation-ubuntu20-baci-DEBUG-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
   tags:
@@ -532,7 +526,8 @@ imcs-buildtest_release_trilinos_develop:
   variables:
     CTEST_NUMBER_OF_TEST_THREADS: '12'
     CTEST_NUMBER_OF_BUILD_THREADS: '12'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: make
+    CTEST_BUILD_COMMAND: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: imcs-workstation-ubuntu20-trilinos-develop-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04_develop.config
     TRILINOS_ROOT: $CI_PROJECT_DIR/../Trilinos-develop-build
@@ -572,12 +567,12 @@ lnm-codeclimate:
     paths: [codeclimate.json]
     reports:
       codequality: codeclimate.json
-  only:
-  - master
-  - web
-  except:
-    variables:
-    - $GITLAB_INTERACTIVE_MODE == "1"
+  rules:
+  - if: $GITLAB_INTERACTIVE_MODE == "1"
+    when: never
+  - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  - if: $CI_PIPELINE_SOURCE == "web"
+  - if: $CI_PIPELINE_SOURCE == "schedule"
   allow_failure: true
   tags:
   - lnm-codeclimate
@@ -588,7 +583,8 @@ lnm-buildtest_minimal:
   variables:
     CTEST_NUMBER_OF_TEST_THREADS: '10'
     CTEST_NUMBER_OF_BUILD_THREADS: '10'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: LnM-Workstation-minimal-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
@@ -602,7 +598,8 @@ lnm-buildtest_full:
   variables:
     CTEST_NUMBER_OF_TEST_THREADS: '10'
     CTEST_NUMBER_OF_BUILD_THREADS: '10'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: LnM-Workstation-$TEST_TAG-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
   tags:
@@ -614,7 +611,8 @@ lnm-workstation-buildtest_interactive:
   <<: *buildtest_interactive
   variables:
     TEST_TAG: ''
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: LnM-Workstation-interactive-$TEST_TAG-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
     GIT_STRATEGY: fetch
@@ -636,7 +634,8 @@ lnm-buildtest_coverage_weekly:
     CTEST_NUMBER_OF_TEST_THREADS: '10'
     CTEST_NUMBER_OF_BUILD_THREADS: '10'
     CTEST_CONFIGURE_POSTFIX: --coverage --uselld
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: LnM-Workstation-coverage-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
   tags:
@@ -684,9 +683,8 @@ pages: # job name needs to be pages
     paths:
     - public
     expire_in: 1 day
-  only:
-    refs:
-    - master
+  rules:
+  - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   tags:   # must run on the same machine as the coverage report
   - lnm-coverage-weekly
   - lnm-ubuntu
@@ -696,7 +694,8 @@ lnm-buildtest_daily:
   variables:
     CTEST_NUMBER_OF_TEST_THREADS: '10'
     CTEST_NUMBER_OF_BUILD_THREADS: '10'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: LnM-Workstation-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
@@ -710,7 +709,8 @@ lnm-buildtest_daily_bruteforce:
   variables:
     TEST_TAG: ''
     CTEST_FAIL_ON_WARNING: '0'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: CentOS-baci-BruteForce-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_bruteforce.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
@@ -718,9 +718,8 @@ lnm-buildtest_daily_bruteforce:
   - module load comp/gcc/9.1.0 mpi/openmpi/gcc/1.10.1 boost/1.71_gcc9
   tags:
   - lnm-release-nightly-build-bruteforce
-  only:
-    variables:
-    - $GITLAB_SCHEDULER_LNM_BRUTEFORCE == "1"
+  rules:
+  - if: $GITLAB_SCHEDULER_LNM_BRUTEFORCE == "1"
   needs: [checkcode]
 
 lnm-buildtest-bruteforce_interactive:
@@ -728,7 +727,8 @@ lnm-buildtest-bruteforce_interactive:
   variables:
     TEST_TAG: ''
     CTEST_FAIL_ON_WARNING: '0'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: CentOS-interactive-baci-BruteForce-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_bruteforce.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
@@ -746,7 +746,8 @@ lnm-buildtest_daily_deep:
   variables:
     TEST_TAG: ''
     CTEST_FAIL_ON_WARNING: '0'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: CentOS-baci-Deep-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_deep.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
@@ -754,9 +755,8 @@ lnm-buildtest_daily_deep:
   - module load gcc/9 mpi/openmpi-4.0.1 boost/1.71_gcc9
   tags:
   - lnm-release-nightly-build-deep
-  only:
-    variables:
-    - $GITLAB_SCHEDULER_LNM_DEEP == "1"
+  rules:
+  - if: $GITLAB_SCHEDULER_LNM_DEEP == "1"
   needs: [checkcode]
 
 lnm-buildtest-deep_interactive:
@@ -764,7 +764,8 @@ lnm-buildtest-deep_interactive:
   variables:
     TEST_TAG: ''
     CTEST_FAIL_ON_WARNING: '0'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: CentOS-interactive-baci-Deep-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_deep.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
@@ -782,7 +783,8 @@ lnm-buildtest_daily_schmarrn:
   variables:
     TEST_TAG: ''
     CTEST_FAIL_ON_WARNING: '0'
-    CTEST_MAKE: make -j${CTEST_NUMBER_OF_BUILD_THREADS} baci-release post_processor
+    BUILD_GENERATOR: make
+    CTEST_BUILD_COMMAND: make -j${CTEST_NUMBER_OF_BUILD_THREADS} baci-release post_processor
     CTEST_BUILD_NAME_GITLAB: CentOS-baci-Schmarrn-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_schmarrn.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
@@ -790,9 +792,8 @@ lnm-buildtest_daily_schmarrn:
   - module load gcc/gcc9 mpi/openmpi-4.0.7 boost/1.71_gcc9
   tags:
   - lnm-release-nightly-build-schmarrn
-  only:
-    variables:
-    - $GITLAB_SCHEDULER_LNM_SCHMARRN == "1"
+  rules:
+  - if: $GITLAB_SCHEDULER_LNM_SCHMARRN == "1"
   needs: [checkcode]
 
 lnm-buildtest-schmarrn_interactive:
@@ -800,7 +801,8 @@ lnm-buildtest-schmarrn_interactive:
   variables:
     TEST_TAG: ''
     CTEST_FAIL_ON_WARNING: '0'
-    CTEST_MAKE: make -j${CTEST_NUMBER_OF_BUILD_THREADS} baci-release post_processor
+    BUILD_GENERATOR: make
+    CTEST_BUILD_COMMAND: make -j${CTEST_NUMBER_OF_BUILD_THREADS} baci-release post_processor
     CTEST_BUILD_NAME_GITLAB: CentOS-interactive-baci-Schmarrn-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_schmarrn.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
@@ -818,7 +820,8 @@ lnm-buildtest_daily_debug:
   variables:
     CTEST_NUMBER_OF_TEST_THREADS: '10'
     CTEST_NUMBER_OF_BUILD_THREADS: '10'
-    CTEST_MAKE: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: LnM-Workstation DEBUG-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
@@ -830,7 +833,8 @@ lnm-buildtest_daily_debug:
 lnm-doxygen-web:
   <<: *doxygen
   variables:
-    CTEST_MAKE: make documentation
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja documentation
     CTEST_BUILD_NAME_GITLAB: Doxygen-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
   tags:
@@ -842,18 +846,18 @@ lnm-doxygen-web:
     - doxygen.log
     when: on_failure
     expire_in: 1 day
-  only:
-    refs:
-    - web
-  except:
-    variables:
-    - $GITLAB_SCHEDULER_TYPE == "3"
-    - $GITLAB_INTERACTIVE_MODE == "1"
+  rules:
+  - if: $GITLAB_SCHEDULER_TYPE == "3"
+    when: never
+  - if: $GITLAB_INTERACTIVE_MODE == "1"
+    when: never
+  - if: $CI_PIPELINE_SOURCE == "web"
 
 lnm-doxygen:
   <<: *doxygen
   variables:
-    CTEST_MAKE: make documentation
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_COMMAND: ninja documentation
     CTEST_BUILD_NAME_GITLAB: Doxygen-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
@@ -867,7 +871,6 @@ lnm-doxygen:
     - doxygen/
     when: always
     expire_in: 1 day
-  only:
-        # Build doxygen only on master builds
-    refs:
-    - master
+  rules:
+  - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  - if: $CI_PIPELINE_SOURCE == "schedule"

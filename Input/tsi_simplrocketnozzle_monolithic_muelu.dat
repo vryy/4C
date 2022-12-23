@@ -11,7 +11,7 @@ created by pre_exodus on Tue 22th of november 2011
 Configuration according to
 "D. Kuhl, J. Riccius, and O. J. Haidn. Thermomechanical analysis and
 optimization of cryogenic liquid rocket engines. Journal of
-Propulsion and Power, 18:835–846, 2002."
+Propulsion and Power, 18:835-846, 2002."
 
 The structural model (circular ring without cooling channels) is
 composed of a copper alloy wall and a nickel jacket (thickness: 4 mm).
@@ -22,7 +22,7 @@ outer radius ra = 148.2 mm.
 
 The model is loaded by a mechanical and a thermal load which vary in time.
 The time-dependent loading represents a reduced load cycle possibly
-occurring in a realstic rocket nozzle. Moreover, no heat ﬂuxes are applied
+occurring in a realstic rocket nozzle. Moreover, no heat fluxes are applied
 at the surrounding surface of the body, such that q = 0 W/m2.
 
 discretisation: circumferential x radial(Cu) x radial(Ni) x depth = 100x10x10x2
@@ -62,7 +62,7 @@ ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
 ITERNORM                        Inf
-LINEAR_SOLVER                   2
+LINEAR_SOLVER                   1
 MAXITER                         50
 MAXTIME                         5
 MINITER                         0
@@ -115,30 +115,23 @@ NUMSTEP                         1
 RESTARTEVRY                     50
 TIMESTEP                        0.05
 RESULTSEVRY                     1
----------------------------------------------TSI DYNAMIC/MONOLITHIC
+-------------------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-06
 ITERNORM                        Rms
-LINEAR_SOLVER                   3
+LINEAR_SOLVER                   2
 NORMCOMBI_RESFINC               Coupl_And_Singl
 NORM_RESF                       Rel
 TOLINC                          1e-06
 --------------------------------------------------------------------SOLVER 1
-NAME                            Thermal_Solver
-AZPREC                          MueLu
-MUELU_XML_ENFORCE               No
-SOLVER                          Belos
+SOLVER                          UMFPACK //this is just a dummy
 --------------------------------------------------------------------SOLVER 2
-NAME                            Structure_Solver
-SOLVER                          Superlu
---------------------------------------------------------------------SOLVER 3
 NAME                            Thermo_Structure_Interaction_Solver
 SOLVER                          Belos
 AZSOLVE                         GMRES
-AZSUB                           300
-AZCONV                          AZ_r0
 AZTOL                           1e-06
+AZCONV                          AZ_r0
 AZPREC                          MueLu_tsi
-MUELU_XML_FILE                  tsi_simplrocketnozzle_monolithic_muelu.xml
+MUELU_XML_FILE                  tsi_monolithic_muelu.xml
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1.48e8 NUE 0.3 DENS 9.130e-6 THEXPANS 1.72e-5 CAPA 3405.49 CONDUCT 3.1e5 INITTEMP 293.15 // Cu
 MAT 3 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1.93e8 NUE 0.3 DENS 8.910e-6 THEXPANS 1.22e-5 CAPA 3956.04 CONDUCT 7.5e4 INITTEMP 293.15 // Ni

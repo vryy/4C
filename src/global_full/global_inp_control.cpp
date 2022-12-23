@@ -8,11 +8,11 @@
 *----------------------------------------------------------------------*/
 
 #include <utility>
-#include "drt_globalproblem.H"
+#include "globalproblem.H"
+#include "discret.H"
 #include "comm_utils.H"
-#include "drt_inputreader.H"
+#include "inputreader.H"
 #include "io_pstream.H"
-#include "inpar_parameterlist_utils.H"
 
 void SetupParallelOutput(
     std::string& outputfile_kenner, Teuchos::RCP<Epetra_Comm> lcomm, int group);
@@ -24,10 +24,10 @@ void ntainp_ccadiscret(
     std::string& inputfile_name, std::string& outputfile_kenner, std::string& restartfile_kenner)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
-  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
-  Teuchos::RCP<Epetra_Comm> gcomm = problem->GetNPGroup()->GlobalComm();
-  int group = problem->GetNPGroup()->GroupId();
-  NestedParallelismType npType = problem->GetNPGroup()->NpType();
+  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetCommunicators()->LocalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = problem->GetCommunicators()->GlobalComm();
+  int group = problem->GetCommunicators()->GroupId();
+  NestedParallelismType npType = problem->GetCommunicators()->NpType();
 
 
 
@@ -92,7 +92,7 @@ void ntainp_ccadiscret(
       }
       gcomm->Barrier();
       // group 0 broadcasts the discretizations to the other groups
-      COMM_UTILS::BroadcastDiscretizations();
+      DRT::BroadcastDiscretizations(*problem);
       gcomm->Barrier();
       break;
     default:

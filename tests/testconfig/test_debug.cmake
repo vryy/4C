@@ -7,7 +7,6 @@ set(CTEST_SITE "$ENV{HOSTNAME}")
 set(CTEST_BUILD_NAME "$ENV{CTEST_BUILD_NAME_GITLAB}")
 
 # prepare environment
-set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
 set(WITH_MEMCHECK TRUE)
 set(WITH_COVERAGE TRUE)
 
@@ -15,9 +14,9 @@ ctest_empty_binary_directory(${CTEST_BINARY_DIRECTORY})
 
 # prepare commands
 set(CTEST_CONFIGURE_COMMAND
-    "$ENV{CTEST_CONFIGURE_PREFIX}${CTEST_SOURCE_DIRECTORY}/do-configure -f --debug-optimized --trilinos-debug --no-ccache --config=${CTEST_SOURCE_DIRECTORY}/buildconfig/$ENV{CTEST_BUILD_CONFIG_GITLAB} $ENV{CTEST_CONFIGURE_POSTFIX}"
+    "$ENV{CTEST_CONFIGURE_PREFIX}${CTEST_SOURCE_DIRECTORY}/do-configure -f --debug-optimized --trilinos-debug --no-ccache --config=${CTEST_SOURCE_DIRECTORY}/buildconfig/$ENV{CTEST_BUILD_CONFIG_GITLAB} --generator=$ENV{BUILD_GENERATOR} $ENV{CTEST_CONFIGURE_POSTFIX}"
     )
-set(CTEST_BUILD_COMMAND "$ENV{CTEST_MAKE}")
+set(CTEST_BUILD_COMMAND "$ENV{CTEST_BUILD_COMMAND}")
 set(CTEST_CUSTOM_MAXIMUM_NUMBER_OF_WARNINGS "5000")
 set(CTEST_COMMAND "ctest -D Nightly")
 

@@ -12,7 +12,7 @@
 #include "linalg_utils_densematrix_determinant.H"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
-#include "drt_exporter.H"
+#include "exporter.H"
 
 namespace LINALG
 {

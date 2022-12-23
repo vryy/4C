@@ -76,7 +76,7 @@ BIN_SIZE_LOWER_BOUND            1
 DOMAINBOUNDINGBOX               -3 -3 -3 3 3 3
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Amesos_KLU_nonsym
+SOLVER                          UMFPACK
 ------------------------------------------------STRUCT NOX/Printing
 Outer Iteration                 = Yes
 Inner Iteration                 = No

@@ -12,7 +12,7 @@
 #include <sstream>
 
 #include "global_init_control.H"
-#include "drt_globalproblem.H"
+#include "globalproblem.H"
 #include "comm_utils.H"
 
 /*----------------------------------------------------------------------*/
@@ -24,10 +24,10 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
     std::string& outputfile_kenner, std::string& restartfile_kenner)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
-  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
-  int group = problem->GetNPGroup()->GroupId();
-  int ngroups = problem->GetNPGroup()->NumGroups();
-  NestedParallelismType npType = problem->GetNPGroup()->NpType();
+  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetCommunicators()->LocalComm();
+  int group = problem->GetCommunicators()->GroupId();
+  int ngroups = problem->GetCommunicators()->NumGroups();
+  NestedParallelismType npType = problem->GetCommunicators()->NpType();
   int restartgroup = 0;
   int myrank = lcomm->MyPID();
 

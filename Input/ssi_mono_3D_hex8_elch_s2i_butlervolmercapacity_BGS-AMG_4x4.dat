@@ -57,19 +57,19 @@ COUPLE_BOUNDARY_FLUXES          No
 ---------------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 ssi_mono_3D_hex8_elch_s2i_butlervolmercapacity_BGS-AMG_4x4.xml
 AZOUTPUT                        10
 --------------------------------------------------------------------SOLVER 2
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 ssi_mono_3D_hex8_elch_s2i_butlervolmercapacity_BGS-AMG_4x4_scatra.xml
 AZOUTPUT                        10
 --------------------------------------------------------------------SOLVER 3
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          MueLu
 MUELU_XML_FILE                  ssi_mono_3D_hex8_elch_s2i_butlervolmercapacity_BGS-AMG_4x4_structure.xml
 AZOUTPUT                        10
@@ -157,10 +157,10 @@ E 2 -
 E 3 -
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  4
-E 2 - 0 Slave KineticModel Butler-VolmerReduced numscal 1 stoichiometries -1 e- 1 k_r 2.07e-5 alpha_a 0.5 alpha_c 0.5
+E 2 - 0 Slave KineticModel Butler-VolmerReduced numscal 1 stoichiometries -1 e- 1 k_r 2.07e-5 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0
 E 3 - 0 Master
 E 4 - 1 Master
-E 5 - 1 Slave KineticModel Butler-VolmerReduced_Capacitance numscal 1 stoichiometries -1 e- 1 k_r 2.07e-5 capacitance 0.1 alpha_a 0.5 alpha_c 0.5
+E 5 - 1 Slave KineticModel Butler-VolmerReduced_Capacitance numscal 1 stoichiometries -1 e- 1 k_r 2.07e-5 capacitance 0.1 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0
 -------------------DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS
 DVOL   2
 E 1 - ID 0 c_0% 2.029 c_100% 10.88 one_hour 3600

@@ -33,17 +33,21 @@ source utilities/baci-python-venv/bin/activate
 # set the field separator to new line
 IFS=$'\n'
 
+# test all changed files
 for line in $(git diff --cached --name-only --diff-filter=ACMR)
 do
 
-# check if there are non-ascii characters in the file
-non_ascii_chars=`(git diff HEAD $line | grep ^+[^+] | tr -d "\000-\011\013-\177" | tr -d '\n')`
-if [ -n "$non_ascii_chars" ]; then
-  cnt=${#non_ascii_chars}
-  for ((i=0; i < cnt; i++)); do
-    char=${non_ascii_chars:$i:1}
-    non_ascii_error+="${line} contains non-ascii character '$char'\n"
-  done
+# check if there are non-ascii characters in the file (excluding *.md files)
+if [[ $line != *.md ]]
+then
+  non_ascii_chars=`(git diff HEAD $line | grep --perl-regex --no-filename --only-matching --binary-files=without-match "[^\x00-\x7F]" | sort --unique | tr --delete '\n')`
+  if [ -n "$non_ascii_chars" ]; then
+    cnt=${#non_ascii_chars}
+    for ((i=0; i < cnt; i++)); do
+      char=${non_ascii_chars:$i:1}
+      non_ascii_error+="${line} contains non-ascii character '$char'\n"
+    done
+  fi
 fi
 
 # check if the file is a c or cpp file
@@ -65,7 +69,6 @@ then
     uncompliant_files+="$(pwd)/${line}\n"
     fi
 fi
-
 
 # check if the file is an xml file
 if [[ $line == *.xml ]]

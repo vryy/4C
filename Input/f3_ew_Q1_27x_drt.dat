@@ -55,12 +55,10 @@ REYNOLDS-STRESS                 no_reynolds
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 //SOLVER                        UMFPACK
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZSOLVE                         GMRES
 AZPREC                          ILU
 AZREUSE                         0
-AZDROP                          0.0
-IFPACKFILL                      1.0
 IFPACKGFILL                     1
 AZTOL                           1.0E-12
 AZCONV                          AZ_rhs
@@ -68,7 +66,6 @@ AZITER                          2500
 AZSUB                           50
 AZOMEGA                         1.0
 AZGRAPH                         1
-AZPOLY                          5
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          12

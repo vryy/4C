@@ -17,28 +17,6 @@
 
 namespace LINALG::SOLVER
 {
-  class NonePreconditioner : public PreconditionerType
-  {
-   public:
-    NonePreconditioner(FILE* outfile, Teuchos::ParameterList& list);
-
-    void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
-        Epetra_MultiVector* b) override;
-
-    Epetra_Operator* PrecOperator() const override { return &*prec_; }
-
-    /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override { return prec_; }
-
-    void Print(std::ostream& stream) override { stream << "None"; }
-
-    /// return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "unknown"; }
-
-   private:
-    Teuchos::RCP<LINALG::NoneOperator> prec_;
-  };
-
   /// inf-norm scaling fits the preconditioner framework perfecty
   /*!
    Modifies the underlying matrix and needs to unscale the result

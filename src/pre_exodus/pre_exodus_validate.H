@@ -16,7 +16,7 @@ Validate a given BACI input file (after all preprocessing steps)
 #include <string>
 #include <Teuchos_RCP.hpp>
 #include <Epetra_SerialDenseMatrix.h>
-#include "drt_element.H"
+#include "element.H"
 
 
 namespace EXODUS

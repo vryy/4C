@@ -21,7 +21,7 @@
 #include "Epetra_Operator.h"
 #include "Epetra_Import.h"
 #include "Epetra_Map.h"
-#include "drt_dserror.H"
+#include "dserror.H"
 
 /* ====================================================================
     public
@@ -197,7 +197,7 @@ const LINALG::SparseMatrix LINALG::KrylovProjector::GetP()
    *               / T   \ -1   T
    * P = I - c_ * | w_ c_ |  * w_
    *               \     /
-   *             `----v-----´
+   *             `----v-----'
    *                invwTc_
    */
   if (!complete_)
@@ -219,7 +219,7 @@ const LINALG::SparseMatrix LINALG::KrylovProjector::GetPT()
    * P  = x - w_ * | c_ w_ |  * c_
    *
    *                \     /
-   *              `----v-----´
+   *              `----v-----'
    *               (invwTc_)^T
    */
   if (!complete_)
@@ -252,7 +252,7 @@ int LINALG::KrylovProjector::ApplyP(Epetra_MultiVector& Y) const
    *                  / T   \ -1   T
    * P(x) = x - c_ * | w_ c_ |  * w_ * x
    *                  \     /
-   *                `----v-----´
+   *                `----v-----'
    *                   invwTc_
    */
 
@@ -269,7 +269,7 @@ int LINALG::KrylovProjector::ApplyPT(Epetra_MultiVector& Y) const
    *  T                / T   \ -1   T
    * P (x) = x - w_ * | c_ w_ |  * c_ * x
    *                   \     /
-   *                 `----v-----´
+   *                 `----v-----'
    *                  (invwTc_)^T
    */
 
@@ -289,7 +289,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::KrylovProjector::Project(
   /*
    * P^T A P = A - { A c (w^T c)^-1 w^T + w (c^T w)^-1 c^T A } + w (c^T w)^-1 (c^T A c) (w^T c)^-1
    * w^T
-   *                `--------v--------´   `--------v--------´ `-----------------v------------------´
+   *                `--------v--------'   `--------v--------' `-----------------v------------------'
    *                        mat1                mat2                            mat3
    *
    *
@@ -356,7 +356,7 @@ void LINALG::KrylovProjector::CreateProjector(Teuchos::RCP<LINALG::SparseMatrix>
    *               /  T  \ -1    T
    * P = I - v2 * | v1 v2 |  * v1
    *               \     /
-   *      `--------v--------´
+   *      `--------v--------'
    *              temp1
    */
 
@@ -422,9 +422,9 @@ int LINALG::KrylovProjector::ApplyProjector(Epetra_MultiVector& Y,
    *  (T)                /  T  \ -1    T
    * P   (x) = x - v2 * | v1 v2 |  * v1 * x
    *                     \     /
-   *                                `---v---´
+   *                                `---v---'
    *                                 =:temp1
-   *                   `----------v----------´
+   *                   `----------v----------'
    *                           =:temp2
    */
 

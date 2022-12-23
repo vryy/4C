@@ -639,7 +639,7 @@ namespace IMMERSED
  * one day and we have to establish an alternative for them.
  * Second, it makes sense to define the valid parameters on a
  * global level and not within the different types of problems.
- * Of course, then drt_validparameters.H has to be included
+ * Of course, then validparameters.H has to be included
  * wherever we want to work with the enums!
  * (a.popp 04/08)
  * \date 11/08
@@ -1438,6 +1438,19 @@ namespace MAT
   namespace TRAIT
   {
   }
+
+  /*!
+   * @brief Utilities for materials
+   */
+  namespace UTILS
+  {
+    /*!
+     * @brief Muscle-material related utilities
+     */
+    namespace MUSCLE
+    {
+    }  // namespace MUSCLE
+  }    // namespace UTILS
 }  // namespace MAT
 
 /*!

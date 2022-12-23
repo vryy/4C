@@ -39,7 +39,7 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
 NDPOINT 1
 ---------------DESIGN SCATRA MULTI-SCALE COUPLING POINT CONDITIONS
 DPOINT 1
-E 1 - KineticModel ConstantPermeability numscal 1 permeabilities 0.1
+E 1 - KineticModel ConstantPermeability numscal 1 permeabilities 0.1 is_pseudo_contact 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 6 DNODE 1
 -------------------------------------------------------NODE COORDS

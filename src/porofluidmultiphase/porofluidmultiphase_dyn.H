@@ -1,0 +1,18 @@
+/*----------------------------------------------------------------------*/
+/*! \file
+ \brief entry point (global control routine) for porous multiphase flow
+
+   \level 3
+
+ *----------------------------------------------------------------------*/
+
+#ifndef SRC_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_DYN_H_
+#define SRC_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_DYN_H_
+
+
+/*! entry point for the solution of Lubrication problems */
+void porofluidmultiphase_dyn(int restart /* do we have to perform a restart?  */
+);
+
+
+#endif /* SRC_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_DYN_H_ */

@@ -10,29 +10,9 @@
 
 #include <Epetra_CrsMatrix.h>
 
-#include "drt_dserror.H"
+#include "dserror.H"
 
 #include "solver_pointpreconditioner.H"
-
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-LINALG::SOLVER::NonePreconditioner::NonePreconditioner(FILE* outfile, Teuchos::ParameterList& list)
-    : PreconditionerType(outfile)
-{
-}
-
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-void LINALG::SOLVER::NonePreconditioner::Setup(
-    bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
-{
-  SetupLinearProblem(matrix, x, b);
-
-  if (create)
-  {
-    prec_ = Teuchos::rcp(new NoneOperator(matrix));
-  }
-}
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------

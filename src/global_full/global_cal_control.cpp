@@ -8,7 +8,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include "drt_globalproblem.H"
+#include "globalproblem.H"
 
 #include "ale_dyn.H"
 #include "art_net_dyn_drt.H"
@@ -203,7 +203,7 @@ void ntacal()
       two_phase_dyn(restart);
       break;
     case ProblemType::fluid_xfem_ls:
-      fluid_xfem_ls_drt(restart);  // Exists in drt_two_phase_flow subfolder
+      fluid_xfem_ls_drt(restart);  // Exists in two_phase_flow subfolder
       break;
 
     case ProblemType::invana:

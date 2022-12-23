@@ -100,12 +100,10 @@ MESH_INIT                       no
 NAME                            TSI_MONOLITHIC_SOLVER
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPOLY                          3
 AZPREC                          BGS2x2
 AZREUSE                         0
 AZSCAL                          none
@@ -114,7 +112,6 @@ AZSUB                           300
 AZTOL                           1e-08
 BGS2X2_FLIPORDER                block1_block0_order
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -131,17 +128,15 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 --------------------------------------------------------------------SOLVER 2
 NAME                            THERMAL_SOLVER
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPOLY                          3
 AZPREC                          MLFLUID2
 AZREUSE                         0
 AZSCAL                          none
@@ -149,7 +144,6 @@ AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -166,17 +160,15 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 --------------------------------------------------------------------SOLVER 3
 NAME                            STRUCTURAL_SOLVER
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPOLY                          3
 AZPREC                          MLFLUID2
 AZREUSE                         0
 AZSCAL                          none
@@ -184,7 +176,6 @@ AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -201,7 +192,7 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 2.1e05 NUE 0.0 DENS 7.85e-06 THEXPANS 1.1e-05 CAPA 0.0 CONDUCT 1030.0 INITTEMP 273.15
 MAT 2 THERM_FourierIso CAPA 1.0 CONDUCT 1030.0
@@ -210,7 +201,7 @@ SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 20*(1-exp(-0.1*x*x-0.1*y*y))
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 273.15 //0°C
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 273.15 //0 degrees celsius
 ----------------------------------------------------------RESULT DESCRIPTION
 THERMAL DIS thermo NODE 1611 QUANTITY temp VALUE 1.29069907586992461e+01 TOLERANCE 1.0e-8 NAME temp_out
 THERMAL DIS thermo NODE 1741 QUANTITY temp VALUE 8.39156169718515343e+00 TOLERANCE 1.0e-8 NAME temp_in

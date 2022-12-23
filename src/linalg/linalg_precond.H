@@ -135,11 +135,6 @@ namespace LINALG
     /// Get number of solver calls done on this solver
     inline int Ncall() const { return ncall_; }
 
-    /// enrich the fluid nullspace in case of monolithic fsi with structure split
-    virtual void EnrichFluidNullSpace(Teuchos::ParameterList& mllist,
-        Teuchos::RCP<LINALG::MapExtractor> fsidofmapex, Teuchos::RCP<Epetra_Map> inodes,
-        Teuchos::RCP<DRT::Discretization> fdis);
-
     /// my internal preconditioner
     Teuchos::RCP<Epetra_Operator> prec_;
 

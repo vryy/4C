@@ -1,0 +1,94 @@
+set(OBJS_SCATRA_ELE
+    # cmake-format: sortable
+    scatra_ele.cpp
+    scatra_ele_boundary_calc.cpp
+    scatra_ele_boundary_calc_elch.cpp
+    scatra_ele_boundary_calc_elch_diffcond.cpp
+    scatra_ele_boundary_calc_elch_electrode.cpp
+    scatra_ele_boundary_calc_elch_electrode_growth.cpp
+    scatra_ele_boundary_calc_elch_electrode_growth_utils.cpp
+    scatra_ele_boundary_calc_elch_electrode_sti_thermo.cpp
+    scatra_ele_boundary_calc_elch_electrode_utils.cpp
+    scatra_ele_boundary_calc_elch_NP.cpp
+    scatra_ele_boundary_calc_loma.cpp
+    scatra_ele_boundary_calc_poro.cpp
+    scatra_ele_boundary_calc_refconc_reac.cpp
+    scatra_ele_boundary_calc_std.cpp
+    scatra_ele_boundary_calc_sti_electrode.cpp
+    scatra_ele_boundary_evaluate.cpp
+    scatra_ele_boundary_factory.cpp
+    scatra_ele_calc.cpp
+    scatra_ele_calc_advanced_reaction.cpp
+    scatra_ele_calc_aniso.cpp
+    scatra_ele_calc_artery.cpp
+    scatra_ele_calc_cardiac_monodomain.cpp
+    scatra_ele_calc_cardiac_monodomain_hdg.cpp
+    scatra_ele_calc_chemo.cpp
+    scatra_ele_calc_chemo_reac.cpp
+    scatra_ele_calc_elch.cpp
+    scatra_ele_calc_elch_diffcond.cpp
+    scatra_ele_calc_elch_diffcond_multiscale.cpp
+    scatra_ele_calc_elch_diffcond_sti_thermo.cpp
+    scatra_ele_calc_elch_electrode.cpp
+    scatra_ele_calc_elch_electrode_sti_thermo.cpp
+    scatra_ele_calc_elch_NP.cpp
+    scatra_ele_calc_hdg.cpp
+    scatra_ele_calc_loma.cpp
+    scatra_ele_calc_ls.cpp
+    scatra_ele_calc_lsreinit.cpp
+    scatra_ele_calc_multiporo_reac.cpp
+    scatra_ele_calc_no_physics.cpp
+    scatra_ele_calc_OD.cpp
+    scatra_ele_calc_poro.cpp
+    scatra_ele_calc_poro_reac.cpp
+    scatra_ele_calc_poro_reac_ECM.cpp
+    scatra_ele_calc_refconc_reac.cpp
+    scatra_ele_calc_service_cardiac_monodomain.cpp
+    scatra_ele_calc_service_elch.cpp
+    scatra_ele_calc_service_elch_diffcond.cpp
+    scatra_ele_calc_service_elch_diffcond_multiscale.cpp
+    scatra_ele_calc_service_elch_electrode.cpp
+    scatra_ele_calc_service_elch_NP.cpp
+    scatra_ele_calc_service_general.cpp
+    scatra_ele_calc_service_loma.cpp
+    scatra_ele_calc_service_ls.cpp
+    scatra_ele_calc_service_lsreinit.cpp
+    scatra_ele_calc_service_no_physics.cpp
+    scatra_ele_calc_service_stabilization.cpp
+    scatra_ele_calc_service_turbulence.cpp
+    scatra_ele_calc_std.cpp
+    scatra_ele_calc_sti_diffcond.cpp
+    scatra_ele_calc_sti_electrode.cpp
+    scatra_ele_calc_utils.cpp
+    scatra_ele_evaluate.cpp
+    scatra_ele_factory.cpp
+    scatra_ele_hdg.cpp
+    scatra_ele_hdg_boundary_calc.cpp
+    scatra_ele_hdg_intfaces_calc.cpp
+    scatra_ele_input.cpp
+    scatra_ele_parameter_boundary.cpp
+    scatra_ele_parameter_elch.cpp
+    scatra_ele_parameter_elch_diffcond.cpp
+    scatra_ele_parameter_lsreinit.cpp
+    scatra_ele_parameter_std.cpp
+    scatra_ele_parameter_timint.cpp
+    scatra_ele_parameter_turbulence.cpp
+    scatra_ele_sti_elch.cpp
+    scatra_ele_sti_thermo.cpp
+    scatra_ele_utils_elch.cpp
+    scatra_ele_utils_elch_diffcond.cpp
+    scatra_ele_utils_elch_electrode.cpp
+    )
+
+baci_add_library(ele_scatra ${OBJS_SCATRA_ELE})
+
+set(LIBS_ELE_SCATRA
+    # cmake-format: sortable
+    alg_fluid_turbulence
+    alg_porofluidmultiphase
+    alg_poromultiphase_scatra
+    ele_porofluidmultiphase
+    lib
+    )
+
+target_link_libraries(ele_scatra PUBLIC ${LIBS_ELE_SCATRA})

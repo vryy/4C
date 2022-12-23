@@ -10,7 +10,7 @@
 #define LINALG_ANA_H
 
 // Trilinos includes
-#include "drt_dserror.H"
+#include "dserror.H"
 #include "linalg_sparsematrix.H"
 #include "linalg_solver.H"
 

@@ -72,19 +72,19 @@ LINEAR_SOLVER                   4
 ----------------------------------------------SSI CONTROL/ELCH
 INITPOTCALC                     yes
 ----------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 ssi_mono_3D_tet4_elch_s2i_butlervolmer_manifold_BGS-AMG_6x6.xml
 ----------------------------------------------------------SOLVER 2
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 ssi_mono_3D_tet4_elch_s2i_butlervolmer_manifold_BGS-AMG_6x6_scatra.xml
 ----------------------------------------------------------SOLVER 3
 SOLVER                          UMFPACK
 ----------------------------------------------------------SOLVER 4
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 ssi_mono_3D_tet4_elch_s2i_butlervolmer_manifold_BGS-AMG_6x6_manifold.xml
@@ -195,10 +195,10 @@ E 4 - 1 Master S2IKineticsID 1
 E 5 - 1 Slave S2IKineticsID 1
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  4
-E 2 - 0 Slave KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 4.52e-5 alpha_a 0.5 alpha_c 0.5
+E 2 - 0 Slave KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 4.52e-5 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0
 E 3 - 0 Master
 E 4 - 1 Master
-E 5 - 1 Slave KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 2.07e-5 alpha_a 0.5 alpha_c 0.5
+E 5 - 1 Slave KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 2.07e-5 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0
 -----------------------DESIGN SCATRA VOL CONDITIONS / PARTITIONING
 DVOL   3
 E 1 -
@@ -214,8 +214,8 @@ E 1 - ID 0
 E 6 - ID 1
 -------------------------------DESIGN SSI MANIFOLD SURF CONDITIONS
 DSURF  2
-E 2 - 1 ImplType ElchElectrode
-E 5 - 2 ImplType ElchElectrode
+E 2 - 1 ImplType ElchElectrode thickness 1.0
+E 5 - 2 ImplType ElchElectrode thickness 1.0
 ----------------------DESIGN SSI MANIFOLD KINETICS SURF CONDITIONS
 DSURF  4
 // electrode side

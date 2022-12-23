@@ -12,7 +12,7 @@ constant initial lithium concentrations, electric potentials, and temperatures
 - charge transfer kinetics characterized by Butler-Volmer-Peltier kinetics
 - discharge from partially charged state at C rate of approximately 0.8
 - 2500 quad4 elements with matching interface nodes
-- cf. bachelor thesis by Tobias Crönert (2015) for details
+- cf. bachelor thesis by Tobias Croenert (2015) for details
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    2500
 //NODES       2909
@@ -132,9 +132,9 @@ E 6 - 2 Slave S2IKineticsID 2
 E 7 - 2 Master S2IKineticsID 2
 -------------------------------DESIGN S2I KINETICS LINE CONDITIONS
 DLINE  4
-E 4 - 1 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e- 1 k_r 6.554939e-9 alpha_a 0.5 alpha_c 0.5 peltier -0.28
+E 4 - 1 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e- 1 k_r 6.554939e-9 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0 peltier -0.28
 E 5 - 1 Master
-E 6 - 2 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e- 1 k_r 6.554939e-7 alpha_a 0.5 alpha_c 0.5 peltier -0.38
+E 6 - 2 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e- 1 k_r 6.554939e-7 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0 peltier -0.38
 E 7 - 2 Master
 ------------------DESIGN ELECTRODE STATE OF CHARGE SURF CONDITIONS
 DSURF  2

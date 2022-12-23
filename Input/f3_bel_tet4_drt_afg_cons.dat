@@ -58,12 +58,10 @@ CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZSOLVE                         BiCGSTAB
 AZPREC                          ILU
 AZREUSE                         0
-AZDROP                          0.0
-IFPACKFILL                      1.0
 IFPACKGFILL                     0
 AZCONV                          AZ_r0
 AZTOL                           1.0E-12
@@ -71,7 +69,6 @@ AZITER                          2500
 AZSUB                           50
 AZOMEGA                         1.0
 AZGRAPH                         1
-AZPOLY                          5
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         125
 NDLINE                          540

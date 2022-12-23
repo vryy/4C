@@ -1020,7 +1020,7 @@ SOLVER                          UMFPACK
 //     Stratimikos_Aztec
 //     Stratimikos_Belos
 //     undefined
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 //
 // Type of linear solver algorithm to use.
 //     CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU,FGMRES
@@ -1066,20 +1066,9 @@ IFPACKOVERLAP                   0
 // The amount of fill allowed for the internal "ilu" preconditioner.
 IFPACKGFILL                     0
 //
-// The amount of fill allowed for an internal "ilut" preconditioner.
-IFPACKFILL                      1
-//
 // Combine mode for Ifpack Additive Schwarz
 //     Add,Insert,Zero
 IFPACKCOMBINE                   Add
-//
-// The tolerance below which an entry from the factors of an internal "ilut"
-// preconditioner will be dropped.
-AZDROP                          0
-//
-// The order for of the polynomials used for the "Polynomial" and
-// "Least-squares Polynomial" internal preconditioners.
-AZPOLY                          3
 //
 // The maximum size of the Krylov subspace used with "GMRES" before
 // a restart is performed.
@@ -1210,9 +1199,6 @@ SUB_SOLVER1                     -1
 //
 // sub solver/smoother block number (SIMPLE/C: used for SchurComplement eq. on all levels, BS: used for coarse BraessSarazin (BS) level smoother)
 SUB_SOLVER2                     -1
-//
-// Minimal objective size of an aggregate (to influence the coarsening rate)
-MueLu_MIN_AGG_SIZE              6
 //
 // BGS2x2 flip order parameter
 //     block0_block1_order,block1_block0_order

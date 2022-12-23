@@ -17,7 +17,7 @@
 #define NOX_NLN_CONSTRAINT_INTERFACE_REQUIRED_H_
 
 #include "nox_nln_enum_lists.H"
-#include "drt_dserror.H"
+#include "dserror.H"
 
 #include <NOX_StatusTest_Generic.H>
 #include <NOX_Abstract_Vector.H>
