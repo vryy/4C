@@ -12,10 +12,10 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <numeric>
-#include "drt_element.H"
-#include "drt_utils_local_connectivity_matrices.H"
+#include "element.H"
+#include "utils_local_connectivity_matrices.H"
 #include "solid_ele.H"
-#include "drt_utils.H"
+#include "utils.H"
 #include "so3_material.H"
 #include "voigt_notation.H"
 

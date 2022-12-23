@@ -11,18 +11,18 @@
 #include <Teuchos_ParameterList.hpp>
 #include <memory>
 #include <optional>
-#include "drt_dserror.H"
-#include "drt_utils_integration.H"
-#include "drt_utils.H"
+#include "dserror.H"
+#include "utils_integration.H"
+#include "utils.H"
 #include "voigt_notation.H"
 #include "solid_ele.H"
-#include "drt_discret.H"
+#include "discret.H"
 #include "so3_material.H"
 #include "solid_ele_calc_lib.H"
 #include "solid_utils.H"
-#include "drt_utils_local_connectivity_matrices.H"
-#include "drt_fiber_node.H"
-#include "drt_fiber_utils.H"
+#include "utils_local_connectivity_matrices.H"
+#include "fiber_node.H"
+#include "fiber_utils.H"
 #include "nodal_fiber_holder.H"
 
 #include "gauss_point_data_output_manager.H"

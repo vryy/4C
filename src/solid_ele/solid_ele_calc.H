@@ -14,10 +14,10 @@
 #include <string>
 #include <unordered_map>
 #include "solid_ele_interface.H"
-#include "drt_element.H"
-#include "drt_utils_gausspoints.H"
+#include "element.H"
+#include "utils_gausspoints.H"
 #include "solid_utils.H"
-#include "drt_element_integration_select.H"
+#include "element_integration_select.H"
 #include "singleton_owner.H"
 
 namespace STR::ELEMENTS

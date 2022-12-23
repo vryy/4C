@@ -158,7 +158,6 @@ find_package(CLN REQUIRED)
 
 set(ELEMENT_LIBRARIES
     # cmake-format: sortable
-    drt_solid_ele
     ele_ale
     ele_beam3
     ele_bele
@@ -173,6 +172,7 @@ set(ELEMENT_LIBRARIES
     ele_scatra
     ele_so
     ele_so_plast
+    ele_solid
     ele_sp3
     ele_t3
     ele_t3cl

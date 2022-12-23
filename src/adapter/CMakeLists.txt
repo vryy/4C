@@ -92,6 +92,7 @@ set(LIBS_ADAPTER
     ele_s8
     ele_so
     ele_so_plast
+    ele_solid
     io
     levelset
     lib

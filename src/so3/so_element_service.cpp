@@ -14,8 +14,8 @@
 #include "so_hex8.H"
 #include "so_tet10.H"
 #include "../linalg/linalg_serialdensevector.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_gausspoints.H"
+#include "../fem_general/utils_integration.H"
+#include "../fem_general/utils_gausspoints.H"
 
 #include "utils_fem_shapefunctions.H"
 

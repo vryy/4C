@@ -9,9 +9,9 @@ Evaluate(...), EvaluateNeumann(...), etc.
 \level 1
 */
 
-#include "drt_elements_paramsinterface.H"
+#include "elements_paramsinterface.H"
 #include "str_elements_paramsinterface.H"
-#include "drt_dserror.H"
+#include "dserror.H"
 #include "solid_ele.H"
 #include "solid_ele_factory.H"
 #include "solid_ele_interface.H"

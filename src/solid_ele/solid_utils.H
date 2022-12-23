@@ -10,8 +10,8 @@
 #ifndef SOLID_UTILS_H
 #define SOLID_UTILS_H
 
-#include "drt_utils_integration.H"
-#include "drt_element.H"
+#include "utils_integration.H"
+#include "element.H"
 #include "linalg_utils_densematrix_eigen.H"
 
 namespace STR::UTILS

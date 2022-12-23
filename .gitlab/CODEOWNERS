@@ -252,7 +252,7 @@ scatra_ele/scatra_ele_calc_poro*           @baci/team_scatra @baci/team_poro
 so3/                       @baci/team_structure
 so3/so3_poro*              @baci/team_structure @baci/team_poro
 
-drt_solid_ele/                  @baci/team_structure
+solid_ele/                 @baci/team_structure
 
 spring3/                   @baci/team_structure
 

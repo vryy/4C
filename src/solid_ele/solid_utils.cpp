@@ -7,8 +7,8 @@
 *----------------------------------------------------------------------*/
 
 #include "solid_utils.H"
-#include "drt_element_integration_select.H"
-#include "drt_element.H"
+#include "element_integration_select.H"
+#include "element.H"
 #include "voigt_notation.H"
 
 int STR::UTILS::DisTypeToNgpOptGaussRule(DRT::Element::DiscretizationType distype)

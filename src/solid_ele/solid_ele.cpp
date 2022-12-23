@@ -8,9 +8,9 @@
 #include "solid_ele.H"
 #include <memory>
 #include "solid_utils.H"
-#include "drt_linedefinition.H"
-#include "drt_utils_local_connectivity_matrices.H"
-#include "drt_utils_factory.H"
+#include "linedefinition.H"
+#include "utils_local_connectivity_matrices.H"
+#include "utils_factory.H"
 #include "so_line.H"
 #include "so_surface.H"
 #include "linalg_utils_nullspace.H"

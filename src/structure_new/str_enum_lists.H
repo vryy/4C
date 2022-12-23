@@ -13,7 +13,7 @@
 #ifndef SRC_STRUCTURE_NEW_STR_ENUM_LISTS_H_
 #define SRC_STRUCTURE_NEW_STR_ENUM_LISTS_H_
 
-#include "drt_dserror.H"
+#include "dserror.H"
 #include <string>
 
 namespace STR
