@@ -296,7 +296,7 @@ LINALG::SerialDenseMatrix DRT::ELEMENTS::EvaluateGaussPointsToNodesExtrapolation
       GetGaussPointExtrapolationBaseDistype<distype>(intpoints.NumPoints());
 
   dsassert(DRT::UTILS::getNumberOfElementNodes(base_distype) <= intpoints.NumPoints(),
-      "The base discretization has more nodes than Gauß points. The extrapolation is not unique! "
+      "The base discretization has more nodes than Gauss points. The extrapolation is not unique! "
       "This should not happen. The evaluation of the base extrapolation type for the number of "
       "gauss points is not correct.");
 
