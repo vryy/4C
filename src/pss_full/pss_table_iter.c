@@ -11,7 +11,7 @@ Iterate the symbol table and visit all entries.
 
 #include "pss_table_iter.h"
 #include "pss_prototypes.h"
-#include "drt_dserror.H"
+#include "dserror.H"
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -132,84 +132,6 @@ INT next_map_node(MAP_ITERATOR* iterator)
   return result;
 }
 
-/*----------------------------------------------------------------------*/
-/*!
-  \brief map node iterator constructor
-
-  \author m.geppert (u.kue)
-  \date 08/06
- */
-/*----------------------------------------------------------------------*/
-void init_map_node_iterator(MAP_NODE_ITERATOR* iterator, MAP_NODE* map_node)
-{
-  iterator->map_node = map_node;
-  iterator->symbol = NULL;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief map node iterator next
-
-  \param iterator (i/o)
-  \return true if a new value has been found
-
-  \author m.geppert (u.kue)
-  \date 08/06
- */
-/*----------------------------------------------------------------------*/
-INT next_symbol(MAP_NODE_ITERATOR* iterator)
-{
-  /*first call of this iterator*/
-  if (iterator->symbol == NULL)
-  {
-    iterator->symbol = iterator->map_node->symbol;
-    return 1;
-  }
-  else
-  {
-    if (iterator->symbol->next == NULL)
-      return 0;
-    else
-    {
-      iterator->symbol = iterator->symbol->next;
-      return 1;
-    }
-  }
-}
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief
-
-  \author m.geppert (u.kue)
-  \date 08/06
- */
-/*----------------------------------------------------------------------*/
-DOUBLE result_map_read_key(MAP* map, CHAR* key)
-{
-  MAP_ITERATOR iterator; /* used for stepping through all map_nodes*/
-
-  init_map_iterator(&iterator, map);
-  while (next_map_node(&iterator)) /*loop over all map_nodes*/
-  {
-    MAP_NODE_ITERATOR node_iterator;
-    MAP_NODE* actnode;
-    actnode = iterator.stack.head.snext->map_node;
-    init_map_node_iterator(&node_iterator, actnode);
-    while (next_symbol(&node_iterator)) /*loop over all symbols*/
-    {
-      if (node_iterator.symbol->type == sym_map)
-      {
-        if (map_find_symbol(node_iterator.symbol->s.dir, key) != NULL)
-        {
-          return map_read_real(node_iterator.symbol->s.dir, key);
-        }
-      }
-    }
-  }
-  return 0;
-}
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -220,62 +142,3 @@ DOUBLE result_map_read_key(MAP* map, CHAR* key)
  */
 /*----------------------------------------------------------------------*/
 MAP_NODE* iterator_get_node(MAP_ITERATOR* iterator) { return iterator->stack.head.snext->map_node; }
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief map iterator constructor current map
-
-  \author m.geppert (u.kue)
-  \date 08/06
- */
-/*----------------------------------------------------------------------*/
-MAP* iterator_get_map(MAP_ITERATOR* iterator)
-{
-  MAP_NODE* actnode = iterator_get_node(iterator);
-  MAP* ret = NULL;
-
-  if (actnode->symbol->type == sym_map)
-    ret = actnode->symbol->s.dir;
-
-  else
-    dserror("iterator has no map symbol");
-
-  return ret;
-}
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief find a symbol in the current map
-
-  \author m.geppert (u.kue)
-  \date 08/06
- */
-/*----------------------------------------------------------------------*/
-INT iterator_find_symbol(MAP_ITERATOR* iterator, char* name)
-{
-  int ret = 0;
-
-  if (map_find_symbol(iterator_get_map(iterator), name) != NULL) ret = 1;
-
-  return ret;
-}
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief get the float value
-
-  \warning This will always return the first value in the symbol
-  chain. The iterator position is ignored.
-
-  \author m.geppert (u.kue)
-  \date 08/06
- */
-/*----------------------------------------------------------------------*/
-INT node_iterator_get_real_as_float(MAP_NODE_ITERATOR* node_iterator, float* real)
-{
-  INT ret;
-
-  ret = symbol_get_real_as_float(node_iterator->symbol, real);
-
-  return ret;
-}

@@ -48,15 +48,12 @@ AZOUTPUT                        5
 AZSOLVE                         CG
 AZPREC                          ILU
 AZREUSE                         8
-AZDROP                          0.0
-IFPACKFILL                      1.0
 IFPACKGFILL                     0
 AZTOL                           1.0E-6
 AZITER                          60
 AZSUB                           25
 AZOMEGA                         1.0
 AZGRAPH                         1
-AZPOLY                          5
 IFPACKOVERLAP                   0
 AZSCAL                          none
 AZCONV                          AZ_r0

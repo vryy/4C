@@ -22,7 +22,7 @@
 #include <MueLu_ParameterListInterpreter.hpp>
 #include <MueLu_EpetraOperator.hpp>
 
-#include "drt_dserror.H"
+#include "dserror.H"
 #include "linalg_multiply.H"
 
 #include "solver_amgnxn_smoothers.H"
@@ -761,10 +761,9 @@ void LINALG::SOLVER::AMGNXN::DirectSolverWrapper::Setup(
   x_ = Teuchos::rcp(new Epetra_MultiVector(A_->OperatorDomainMap(), 1));
   b_ = Teuchos::rcp(new Epetra_MultiVector(A_->OperatorRangeMap(), 1));
 
-  // Create linear solver. Default solver: KLU
-  const auto solvertype = params->get<std::string>("solver", "klu");
-  if (solvertype != "klu" and solvertype != "umfpack" and solvertype != "superlu" and
-      solvertype != "lapack")
+  // Create linear solver. Default solver: UMFPACK
+  const auto solvertype = params->get<std::string>("solver", "umfpack");
+  if (solvertype != "umfpack" and solvertype != "superlu")
     dserror("Solver type not supported as direct solver in AMGNXN framework");
 
   solver_ = Teuchos::rcp(new LINALG::Solver(params, A_->Comm(), nullptr));

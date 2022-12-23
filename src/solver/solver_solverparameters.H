@@ -10,9 +10,9 @@
 #ifndef SOLVER_SOLVERPARAMETERS_H_
 #define SOLVER_SOLVERPARAMETERS_H_
 
-#include "drt_discret.H"
-#include "drt_dserror.H"
-#include "drt_elementtype.H"
+#include "discret.H"
+#include "dserror.H"
+#include "elementtype.H"
 
 #include "linalg_nullspace.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"

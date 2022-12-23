@@ -94,12 +94,11 @@ GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.1                           // in [0.1;0.5]
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        10
 AZSOLVE                         GMRES
 AZPREC                          MLFLUID2
 AZREUSE                         1
-AZDROP                          0.0
 AZTOL                           1.0E-013
 AZCONV                          AZ_r0
 AZITER                          1000

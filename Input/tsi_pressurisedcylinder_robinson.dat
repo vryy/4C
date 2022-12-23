@@ -5,7 +5,7 @@ General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
 created by pre_exodus and jou2dat on Wed Jul 18 16:10:44 CEST 2012
-example taken from "VK Arya & A Kaufman, Finite Element Implementation of Robinson’s
+example taken from "VK Arya & A Kaufman, Finite Element Implementation of Robinson's
 unified viscoplastic model and its application to some uniaxial and multiaxial
 problems, NASA-TM-89891, 1987."
 thick-walled cylinder subjected to internal pressure under isothermal conditions
@@ -14,7 +14,7 @@ quarter of a cylinder (r_i=4.06mm, r_a=6.35mm) loaded by an pseudo_orthopressure
 the inner side of the body. The load is applied incrementally in the first 2
 seconds and then held constant at 25.17MPa.
 Due to the softening of the material, the stresses decrease in time.
-constant temperature of the body = 800° F = 699.81667 K
+constant temperature of the body = 800 degrees Fahrenheit = 699.81667 K
 //                              2013-04-05
 // changed convergence criterion from RelIter0 to Rel using new framwork
 ----------------------------------------------------------------PROBLEM SIZE
@@ -108,20 +108,18 @@ NORMCOMBI_RESFINC               And
 NORM_RESF                       Rel  // Abs,Rel,Mix
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structural Solver
-SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Thermal Solver
-SOLVER                          UMFPACK  // Aztec_MSR,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
+SOLVER                          UMFPACK  // Belos,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
 --------------------------------------------------------------------SOLVER 3
 NAME                            TSI Monolithic Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0  // 10// print every 10th step
-AZPOLY                          3
 AZPREC                          BGS2x2  // BGSnxn,ILU
 AZREUSE                         0
 AZSCAL                          none
@@ -130,7 +128,6 @@ AZSUB                           300
 AZTOL                           1e-08
 BGS2X2_FLIPORDER                block1_block0_order
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -148,7 +145,7 @@ ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
-SOLVER                          Aztec_MSR //UMFPACK,undefined
+SOLVER                          Belos //UMFPACK,undefined
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_Robinson KIND arya_narloyz YOUNGNUM 1 YOUNG 1.395e8 NUE 0.296 DENS 7.850e-6 THEXPANS 0 INITTEMP 699.81667 HRDN_FACT 2.468e-13 HRDN_EXPO 4 SHRTHRSHLDNUM 1 SHRTHRSHLD 3.196e7 RCVRY 6.37e-11 ACTV_ERGY 0 ACTV_TMPR 0 G0 0.14 M_EXPO 7.73 BETANUM 1 BETA 1.5 H_FACT 6.82e7
 MAT 2 THERM_FourierIso CAPA 3.375e3 CONDUCT 5.2e4
@@ -160,7 +157,7 @@ MAT 2 THERM_FourierIso CAPA 3.375e3 CONDUCT 5.2e4
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 699.81667 // = 800°F
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 699.81667 // = 800 degrees Fahrenheit
 -------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 5 500000.0 DESCRIPTION 0.5*(sin((t*pi/5)-(pi/2)))+0.5 0.5*(sin((5*pi/5)-(pi/2)))+0.5

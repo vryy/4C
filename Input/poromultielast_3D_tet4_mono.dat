@@ -47,7 +47,7 @@ NAME                            solver
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            iterative_poromultiphase_solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZTOL                           1e-10
 AZOUTPUT                        10
 AZPREC                          AMGnxn

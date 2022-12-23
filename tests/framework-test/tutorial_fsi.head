@@ -736,13 +736,6 @@ SHAPEFCT                        Polynomial
 //                              AZ_inf_noscaled
 AZCONV                          AZ_r0
 //
-// The tolerance below which an entry from the factors of an internal "ilut"
-// preconditioner will be dropped.
-AZDROP                          0
-//
-//                              unused
-AZGRAPH                         0
-//
 // max iterations
 AZITER                          1000
 //
@@ -751,10 +744,6 @@ AZOMEGA                         0
 //
 // The number of iterations between each output of the solver's progress.
 AZOUTPUT                        0
-//
-// The order for of the polynomials used for the "Polynomial" and
-// "Least-squares Polynomial" internal preconditioners.
-AZPOLY                          3
 //
 // Type of internal preconditioner to use.
 // Note! this preconditioner will only be used if the input operator
@@ -826,9 +815,6 @@ BGS2X2_GLOBAL_DAMPING           1
 // Combine mode for Ifpack Additive Schwarz
 //                              Add,Insert,Zero
 IFPACKCOMBINE                   Add
-//
-// The amount of fill allowed for an internal "ilut" preconditioner.
-IFPACKFILL                      1
 //
 // The amount of fill allowed for the internal "ilu" preconditioner.
 IFPACKGFILL                     0
@@ -969,13 +955,6 @@ AZBDIAG                         0
 //                              AZ_inf_noscaled
 AZCONV                          AZ_r0
 //
-// The tolerance below which an entry from the factors of an internal "ilut"
-// preconditioner will be dropped.
-AZDROP                          0
-//
-//                              unused
-AZGRAPH                         0
-//
 // max iterations
 AZITER                          1000
 //
@@ -984,10 +963,6 @@ AZOMEGA                         0
 //
 // The number of iterations between each output of the solver's progress.
 AZOUTPUT                        0
-//
-// The order for of the polynomials used for the "Polynomial" and
-// "Least-squares Polynomial" internal preconditioners.
-AZPOLY                          3
 //
 // Type of internal preconditioner to use.
 // Note! this preconditioner will only be used if the input operator
@@ -1059,9 +1034,6 @@ BGS2X2_GLOBAL_DAMPING           1
 // Combine mode for Ifpack Additive Schwarz
 //                              Add,Insert,Zero
 IFPACKCOMBINE                   Add
-//
-// The amount of fill allowed for an internal "ilut" preconditioner.
-IFPACKFILL                      1
 //
 // The amount of fill allowed for the internal "ilu" preconditioner.
 IFPACKGFILL                     0
@@ -1174,7 +1146,7 @@ SIMPLE_DAMPING                  1
 //                              Stratimikos_Aztec
 //                              Stratimikos_Belos
 //                              undefined
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 //
 // sub solver/smoother block number (SIMPLE/C: used for prediction of primary variable on all levels, BS: used for fine and intermedium BraessSarazin (BS) level smoother)
 SUB_SOLVER1                     -1
@@ -1202,13 +1174,6 @@ AZBDIAG                         0
 //                              AZ_inf_noscaled
 AZCONV                          AZ_r0
 //
-// The tolerance below which an entry from the factors of an internal "ilut"
-// preconditioner will be dropped.
-AZDROP                          0
-//
-//                              unused
-AZGRAPH                         0
-//
 // max iterations
 AZITER                          1000
 //
@@ -1217,10 +1182,6 @@ AZOMEGA                         0
 //
 // The number of iterations between each output of the solver's progress.
 AZOUTPUT                        0
-//
-// The order for of the polynomials used for the "Polynomial" and
-// "Least-squares Polynomial" internal preconditioners.
-AZPOLY                          3
 //
 // Type of internal preconditioner to use.
 // Note! this preconditioner will only be used if the input operator
@@ -1292,9 +1253,6 @@ BGS2X2_GLOBAL_DAMPING           1
 // Combine mode for Ifpack Additive Schwarz
 //                              Add,Insert,Zero
 IFPACKCOMBINE                   Add
-//
-// The amount of fill allowed for an internal "ilut" preconditioner.
-IFPACKFILL                      1
 //
 // The amount of fill allowed for the internal "ilu" preconditioner.
 IFPACKGFILL                     0

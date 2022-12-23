@@ -139,20 +139,18 @@ NORM_RESF                       Rel  // Abs
 TOLINC                          1e-06
 -----------------------------------------------------------SOLVER 1
 NAME                            STRUCT SOLVER
-SOLVER                          UMFPACK  //  Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK  //  Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
 -----------------------------------------------------------SOLVER 2
 NAME                            THERMAL SOLVER
-SOLVER                          UMFPACK  //  Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK  //  Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
 -----------------------------------------------------------SOLVER 3
 NAME                            TSI MONOLITHIC SOLVER
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPOLY                          3
 AZPREC                          BGS2x2  // ILU
 AZREUSE                         0
 AZSCAL                          none
@@ -164,7 +162,6 @@ BGS2X2_BLOCK2_DAMPING           1
 BGS2X2_FLIPORDER                block0_block1_order
 BGS2X2_GLOBAL_DAMPING           1
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -184,7 +181,7 @@ ML_SMOTIMES                     1 1 1 1 1
 NON_DIAGDOMINANCE_RATIO         1
 PERMUTE_SYSTEM                  none
 SIMPLE_DAMPING                  1
-SOLVER                          Aztec_MSR  // UMFPACK
+SOLVER                          Belos  // UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 1   MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 2.1e11 NUE 0.3 DENS 7850 THEXPANS 1.2e-05 CAPA 3297000 CONDUCT 52 INITTEMP 293
 // CAPA = C_V* rho = 420*7850 = 3297000 kg/(ms^2 K)

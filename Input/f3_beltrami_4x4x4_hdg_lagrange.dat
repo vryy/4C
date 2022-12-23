@@ -55,15 +55,12 @@ TOL_VEL_INC	  1e-04
 TOL_PRES_RES	  1e-04
 TOL_PRES_INC	  1e-04
 -----------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZSOLVE                         GMRES
 AZPREC                          ILU
 IFPACKOVERLAP                   0
 IFPACKGFILL                     0
-IFPACKFILL                      0
 IFPACKCOMBINE                   Add
-AZDROP                          0
-AZPOLY                          3
 AZSUB                           100
 AZCONV                          AZ_r0
 AZOUTPUT                        0

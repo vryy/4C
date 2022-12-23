@@ -1,0 +1,33 @@
+/*---------------------------------------------------------------------*/
+/*! \file
+
+\brief Main control routine for reduced dimensional airways network
+ (time) integration. Includes routines for pure reduced modeling and for
+ reduced_airway-tissue coupling.
+
+
+\level 3
+
+*/
+/*---------------------------------------------------------------------*/
+
+#ifndef RED_AIRWAYS_H
+#define RED_AIRWAYS_H
+
+#include "Epetra_Time.h"
+#include "Teuchos_RCP.hpp"
+#include "discret.H"
+#include "linalg_utils_sparse_algebra_math.H"
+#include "linalg_solver.H"
+#include "io.H"
+#include "airwayimplicitintegration.H"
+
+
+
+void dyn_red_airways_drt();
+void redairway_tissue_dyn();
+
+Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledTo3D);
+
+
+#endif /* #ifndef RED_AIRWAYS_H */

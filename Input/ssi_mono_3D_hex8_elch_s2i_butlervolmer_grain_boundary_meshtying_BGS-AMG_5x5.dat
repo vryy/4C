@@ -70,18 +70,18 @@ INITPOTCALC                     yes
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------SOLVER 2
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 ssi_mono_3D_hex8_elch_s2i_butlervolmer_grain_boundary_meshtying_BGS-AMG_5x5.xml
 AZSUB                           100
 ----------------------------------------------------------SOLVER 3
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 ssi_mono_3D_hex8_elch_s2i_butlervolmer_grain_boundary_meshtying_BGS-AMG_5x5_scatra.xml
 ----------------------------------------------------------SOLVER 4
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 ssi_mono_3D_hex8_elch_s2i_butlervolmer_grain_boundary_meshtying_BGS-AMG_5x5_manifold.xml
@@ -202,13 +202,13 @@ E 1 - 0 Slave KineticModel NoInterfaceFlux
 // master-side_cc-el
 E 2 - 0 Master
 // slave-side_cc-cath
-E 3 - 1 Slave KineticModel ConstantInterfaceResistance ONOFF 0 1 resistance 2.0e-5 e- 1
+E 3 - 1 Slave KineticModel ConstantInterfaceResistance ONOFF 0 1 resistance 2.0e-5 e- 1 is_pseudo_contact 0
 // master-side_cc-cath
 E 4 - 1 Master
 // master-side_el-cath
 E 5 - 2 Master
 // slave-side_el-cath
-E 6 - 2 Slave KineticModel Butler-VolmerReduced numscal 1 stoichiometries -1 e- 1 k_r 1.036426957e3 alpha_a 0.5 alpha_c 0.5
+E 6 - 2 Slave KineticModel Butler-VolmerReduced numscal 1 stoichiometries -1 e- 1 k_r 1.036426957e3 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0
 --------------------DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS
 DSURF  6
 // slave-side_cc-el
@@ -226,11 +226,11 @@ E 6 - 2 Slave S2IKineticsID 2
 -------------------------------DESIGN SSI MANIFOLD SURF CONDITIONS
 DSURF  3
 // slave-side_cc-el
-E 1 - 1 ImplType ElchElectrode
+E 1 - 1 ImplType ElchElectrode thickness 1.0
 // master-side_cc-cath
-E 4 - 2 ImplType ElchElectrode
+E 4 - 2 ImplType ElchElectrode thickness 1.0
 // slave-side_el-cath
-E 6 - 3 ImplType ElchElectrode
+E 6 - 3 ImplType ElchElectrode thickness 1.0
 ----------------------DESIGN SSI MANIFOLD KINETICS SURF CONDITIONS
 DSURF  6
 // slave-side_cc-el

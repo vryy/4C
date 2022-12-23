@@ -17,7 +17,7 @@
 #include <NOX_Solver_Generic.H>
 #include <Epetra_Map.h>
 
-#include "drt_dserror.H"
+#include "dserror.H"
 
 
 /*----------------------------------------------------------------------------*

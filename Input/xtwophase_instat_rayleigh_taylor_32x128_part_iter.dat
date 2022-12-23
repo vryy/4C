@@ -150,7 +150,7 @@ SUGRVEL                         no
 // REINIT_INITIAL                  yes
 -----------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZTOL                           1e-05
 AZPREC                          MLFLUID2
 AZREUSE                         5

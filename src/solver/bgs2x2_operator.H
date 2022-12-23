@@ -13,7 +13,7 @@
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 
-#include "drt_dserror.H"
+#include "dserror.H"
 #include "linalg_precond.H"
 #include "linalg_mapextractor.H"
 
@@ -68,11 +68,10 @@ namespace LINALG
       return (-1);
     }
 
-    /// not implemented
     int SetUseTranspose(bool UseTranspose)
     {
-      dserror("SetUseTranspose not impl.");
-      return -1;
+      // we default to false
+      return 0;
     }
 
     /// not implemented
@@ -82,11 +81,9 @@ namespace LINALG
       return (-1.0);
     }
 
-
-    /// not implemented
     bool UseTranspose() const
     {
-      dserror("UseTranspose not impl.");
+      // we default to false
       return false;
     }
 

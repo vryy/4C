@@ -90,7 +90,7 @@ NAME                            Solid_Solver
 SOLVER                          Superlu
 -----------------------------------------------------------SOLVER 2
 NAME                            Meshtying_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZSOLVE                         GMRES
 AZPREC                          MueLu_contactSP
 MUELU_XML_FILE                  meshtying3D_sp_braess_sarazin.xml

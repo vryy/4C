@@ -10,6 +10,7 @@ Created on: Feb 27, 2014
 #define AMGNXN_SMOOTHERS_H
 
 // Trilinos includes
+#include <Ifpack.h>
 #include "Epetra_MultiVector.h"
 #include "Epetra_Operator.h"
 #include "Teuchos_RCP.hpp"
@@ -24,7 +25,6 @@ Created on: Feb 27, 2014
 #include "linalg_blocksparsematrix.H"
 #include "solver_preconditionertype.H"
 #include "solver_amgnxn_objects.H"
-// #include "solver_amgnxn_vcycle.H"
 
 
 namespace LINALG::SOLVER::AMGNXN

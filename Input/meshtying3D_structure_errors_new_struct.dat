@@ -54,13 +54,11 @@ LM_SHAPEFCN                     Dual
 LM_QUAD                         quad
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        10
 AZSOLVE                         GMRES
 AZPREC                          ML
 AZREUSE                         0
-AZDROP                          0.0
-IFPACKFILL                      1.0
 IFPACKGFILL                     0
 AZTOL                           1.0E-10
 AZCONV                          AZ_r0
@@ -68,7 +66,6 @@ AZITER                          1000
 AZSUB                           200
 AZOMEGA                         0.67
 AZGRAPH                         1
-AZPOLY                          5
 IFPACKOVERLAP                   0
 IFPACKCOMBINE                   Add
 AZSCAL                          none
@@ -88,13 +85,11 @@ ML_DAMPMED                      1.0
 ML_DAMPCOARSE                   1.0
 --------------------------------------------------------------------SOLVER 2
 NAME                            Meshtying_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        10
 AZSOLVE                         GMRES
 AZPREC                          ML
 AZREUSE                         0
-AZDROP                          0.0
-IFPACKFILL                      1.0
 IFPACKGFILL                     0
 AZTOL                           1.0E-10
 AZCONV                          AZ_r0
@@ -102,7 +97,6 @@ AZITER                          1000
 AZSUB                           200
 AZOMEGA                         0.67
 AZGRAPH                         1
-AZPOLY                          5
 IFPACKOVERLAP                   0
 IFPACKCOMBINE                   Add
 AZSCAL                          none

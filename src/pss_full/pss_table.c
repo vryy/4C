@@ -41,7 +41,7 @@ table. This table can be queried for those values quite easily.
 */
 
 #include "standardtypes.h"
-#include "drt_dserror.H"
+#include "dserror.H"
 
 #include "pss_table.h"
 #include "pss_prototypes.h"
@@ -698,84 +698,6 @@ void map_insert_map(MAP* map, MAP* dir, CHAR* key)
 }
 
 
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Insert a copy of that string with a copy of this key.
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-void map_insert_string_cpy(MAP* map, CHAR* string, CHAR* key)
-{
-  CHAR* string_cpy;
-  CHAR* key_cpy;
-
-  string_cpy = (CHAR*)CCAMALLOC((strlen(string) + 1) * sizeof(CHAR));
-  strcpy(string_cpy, string);
-  key_cpy = (CHAR*)CCAMALLOC((strlen(key) + 1) * sizeof(CHAR));
-  strcpy(key_cpy, key);
-  map_insert_string(map, string_cpy, key_cpy);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Insert that integer with a copy of this key.
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-void map_insert_int_cpy(MAP* map, INT integer, CHAR* key)
-{
-  CHAR* key_cpy;
-
-  key_cpy = (CHAR*)CCAMALLOC((strlen(key) + 1) * sizeof(CHAR));
-  strcpy(key_cpy, key);
-  map_insert_int(map, integer, key_cpy);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Insert that real with a copy of this key.
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-void map_insert_real_cpy(MAP* map, DOUBLE real, CHAR* key)
-{
-  CHAR* key_cpy;
-
-  key_cpy = (CHAR*)CCAMALLOC((strlen(key) + 1) * sizeof(CHAR));
-  strcpy(key_cpy, key);
-  map_insert_real(map, real, key_cpy);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Insert that map with a copy of this key.
-
-  \warning The map to be inserted itself is not copied. It must have
-  been allocated using CCACALLOC (or the like) and will be owned by
-  the map from now on.
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-void map_insert_map_cpy(MAP* map, MAP* dir, CHAR* key)
-{
-  CHAR* key_cpy;
-
-  key_cpy = (CHAR*)CCAMALLOC((strlen(key) + 1) * sizeof(CHAR));
-  strcpy(key_cpy, key);
-  map_insert_map(map, dir, key_cpy);
-}
-
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -1054,81 +976,6 @@ INT symbol_get_map(const SYMBOL* symbol, MAP** map)
 
 /*----------------------------------------------------------------------*/
 /*!
-  \brief Extract the value if its a string.
-
-  \author u.kue
-  \date 09/04
-*/
-/*----------------------------------------------------------------------*/
-CHAR* symbol_string(const SYMBOL* symbol)
-{
-  CHAR* ret = NULL;
-
-  if (symbol->type == sym_string)
-  {
-    ret = symbol->s.string;
-  }
-  else
-  {
-    dserror("Wrong symbol type %d", symbol->type);
-  }
-
-  return ret;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Extract the value if its an integer.
-
-  \author u.kue
-  \date 09/04
-*/
-/*----------------------------------------------------------------------*/
-INT symbol_int(const SYMBOL* symbol)
-{
-  INT ret = 0;
-
-  if (symbol->type == sym_int)
-  {
-    ret = symbol->s.integer;
-  }
-  else
-  {
-    dserror("Wrong symbol type %d", symbol->type);
-  }
-
-  return ret;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Extract the value if its a double.
-
-  \author u.kue
-  \date 09/04
-*/
-/*----------------------------------------------------------------------*/
-DOUBLE symbol_real(const SYMBOL* symbol)
-{
-  DOUBLE ret = 0.0;
-
-  if (symbol->type == sym_real)
-  {
-    ret = symbol->s.real;
-  }
-  else
-  {
-    dserror("Wrong symbol type %d", symbol->type);
-  }
-
-  return ret;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*!
   \brief Extract the value if its a map.
 
   \author u.kue
@@ -1150,98 +997,6 @@ MAP* symbol_map(const SYMBOL* symbol)
 
   return ret;
 }
-
-
-#define PRINT_INDENT(f, count)                     \
-  {                                                \
-    INT i;                                         \
-    for (i = 0; i < (count); ++i) fprintf(f, " "); \
-  }
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Write all symbols with the given key.
-
-  Here recursion is used in order to write the last symbol first. This
-  way we'll get an identical map when we read it back instead of a map
-  with it's symbols in reverse order. Of course there are limits when
-  using recursion but we don't expect to hit them here. There maps are
-  supposed to be relatively small.
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-void symbol_print(FILE* f, CHAR* key, SYMBOL* symbol, INT indent)
-{
-  dsassert(strstr(key, "\n") == NULL, "malformed key");
-
-  if (symbol != NULL)
-  {
-    symbol_print(f, key, symbol->next, indent);
-
-    PRINT_INDENT(f, indent);
-    switch (symbol->type)
-    {
-      case sym_string:
-        fprintf(f, "%s = \"%s\"\n", key, symbol->s.string);
-        break;
-      case sym_int:
-        fprintf(f, "%s = %d\n", key, symbol->s.integer);
-        break;
-      case sym_real:
-      {
-        /* We don't care for beauty but we need many digits. */
-        fprintf(f, "%s = %.20e\n", key, symbol->s.real);
-        break;
-      }
-      case sym_map:
-        fprintf(f, "%s:\n", key);
-        map_print(f, symbol->s.dir, indent + 4);
-        break;
-      default:
-        dserror("Ups!");
-    }
-  }
-}
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Write this node and its subnodes.
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-void map_node_print(FILE* f, MAP_NODE* node, INT indent)
-{
-  if (node != NULL)
-  {
-    map_node_print(f, node->lhs, indent);
-    symbol_print(f, node->key, node->symbol, indent);
-    map_node_print(f, node->rhs, indent);
-  }
-}
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Write the maps content to file \a f using \a indent as basic
-  indention level.
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-void map_print(FILE* f, MAP* map, INT indent)
-{
-  map_node_print(f, map->root.rhs, indent);
-  fprintf(f, "\n");
-}
-
-
 
 /*----------------------------------------------------------------------*/
 /*!

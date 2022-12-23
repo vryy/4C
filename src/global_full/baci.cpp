@@ -13,19 +13,19 @@
 #include <csignal>
 #include <Epetra_MpiComm.h>
 
-#include "drt_globalproblem.H"
+#include "globalproblem.H"
 #include "comm_utils.H"
 #include "compile_settings.h"
-#include "drt_validparameters.H"
-#include "drt_validcontactconstitutivelaw.H"
-#include "drt_validconditions.H"
-#include "drt_validmaterials.H"
-#include "drt_function.H"
-#include "drt_elementdefinition.H"
-#include "drt_resulttest.H"
-#include "drt_dserror.H"
-#include "drt_parobjectregister.H"
-#include "drt_utils_createdis.H"
+#include "validparameters.H"
+#include "validcontactconstitutivelaw.H"
+#include "validconditions.H"
+#include "validmaterials.H"
+#include "function.H"
+#include "elementdefinition.H"
+#include "resulttest.H"
+#include "dserror.H"
+#include "parobjectregister.H"
+#include "utils_createdis.H"
 
 #include <revision.H>
 #include <trilinos_version.H>
@@ -217,12 +217,12 @@ int main(int argc, char *argv[])
   MPI_Init(&argc, &argv);
   Kokkos::ScopeGuard kokkos_guard(argc, argv);
 
-  COMM_UTILS::CreateComm(argc, argv);
-
-  DRT::Problem *problem = DRT::Problem::Instance();
-  Teuchos::RCP<Epetra_Comm> lcomm = Teuchos::rcp(problem->GetNPGroup()->LocalComm().get(), false);
-  Teuchos::RCP<Epetra_Comm> gcomm = Teuchos::rcp(problem->GetNPGroup()->GlobalComm().get(), false);
-  int ngroups = problem->GetNPGroup()->NumGroups();
+  Teuchos::RCP<COMM_UTILS::Communicators> communicators =
+      COMM_UTILS::CreateComm(std::vector<std::string>(argv, argv + argc));
+  DRT::Problem::Instance()->SetCommunicators(communicators);
+  Teuchos::RCP<Epetra_Comm> lcomm = communicators->LocalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = communicators->GlobalComm();
+  int ngroups = communicators->NumGroups();
 
   if (strcmp(argv[argc - 1], "--interactive") == 0)
   {

@@ -11,21 +11,6 @@
 
 #include <mpi.h>
 
-/*!
- * Release and delete Google Test's test listeners for all MPI ranks > 0.
- */
-void DeleteDuplicateTestListeners()
-{
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-  if (rank > 0)
-  {
-    testing::TestEventListeners& listeners = testing::UnitTest::GetInstance()->listeners();
-    delete listeners.Release(listeners.default_result_printer());
-  }
-}
-
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
@@ -37,7 +22,6 @@ int main(int argc, char* argv[])
 
   MPI_Init(&argc, &argv);
 
-  DeleteDuplicateTestListeners();
   const int result = RUN_ALL_TESTS();
 
   MPI_Finalize();

@@ -68,21 +68,18 @@ UZAWAMAXITER                    50
 UZAWAPARAM                      1.0
 UZAWATOL                        1e-08
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Belos                     // Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          MLFLUID2                      // none ML MLFLUID MLFLUID2 MLAPI LU ILU ILUT LU ICC Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
 AZREUSE                         3                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
 AZTOL                           1.0E-6                        // tolerance in unscaled residual
 AZITER                          1000                          // max iterations
 AZSUB                           25                            // size of krylov space for gmres
 AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
 AZGRAPH                         1                             // unused
-AZPOLY                          5                             // polynomial order for Neumann
 AZSCAL                          none                          // none sym infnorm scaling of the system
 AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     1                             // graph fill for ILU and no. sweeps for GS and Jacobi
 IFPACKOVERLAP                   0                             // Additive Schwarz Overlap for ASM-ILU and ASM-GS and ASM-J
 IFPACKCOMBINE                   Zero                          // combine mode: Zero, Insert, Add

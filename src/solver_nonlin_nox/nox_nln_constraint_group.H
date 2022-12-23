@@ -17,7 +17,7 @@
 #include "nox_nln_group.H"
 #include "nox_nln_constraint_interface_required.H"
 #include "nox_nln_enum_lists.H"
-#include "drt_dserror.H"
+#include "dserror.H"
 
 // forward declaration
 namespace STR

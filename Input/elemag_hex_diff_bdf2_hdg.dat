@@ -33,7 +33,7 @@ CALCERR                         yes
 ERRORFUNCNO                     1
 
 -----------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZSOLVE                         GMRES
 AZREUSE                         10
 ----------------------------------------------------------MATERIALS

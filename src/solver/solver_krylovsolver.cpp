@@ -29,7 +29,7 @@
 #include <Epetra_CrsMatrix.h>
 #include <az_aztec_defs.h>  // for AZ_none (provokes compiler warning due to redeclaration of HAVE_SYS_TIME_H in mpi.h and AztecOO_config.h -> AztecOO problem)
 
-#include "drt_dserror.H"
+#include "dserror.H"
 
 #include "solver_krylovsolver.H"
 #include "solver_pointpreconditioner.H"
@@ -223,10 +223,6 @@ void LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::CreatePreconditioner(
       dserror("MueLu (BeamSolid) preconditioner only available in Trilinos_Develop.");
 #endif
     }
-    else if (azlist.get<int>("AZ_precond") == AZ_none)  // FIXME Attention: this is dangerous.
-    {
-      preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::NonePreconditioner(outfile_, Params()));
-    }
     else
     {
       dserror("unknown preconditioner");
@@ -281,8 +277,7 @@ void LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::CreatePreconditioner(
     }
     else if (Params().isSublist("MueLu (TSI) Parameters"))
     {
-      preconditioner_ = Teuchos::rcp(
-          new MueLuTsiBlockPreconditioner(outfile_, Params().sublist("MueLu (TSI) Parameters")));
+      preconditioner_ = Teuchos::rcp(new MueLuTsiBlockPreconditioner(outfile_, Params()));
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {

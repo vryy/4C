@@ -139,21 +139,18 @@ DSURF                           0
 DVOL                            0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Belos                     // Belos SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        1                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          MLFLUID2                      // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         8                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
 AZTOL                           1.0E-4                        // tolerance in unscaled residual
 AZITER                          600                           // max iterations
 AZSUB                           25                            // size of krylov space for gmres
 AZOMEGA                         1.0                           // unused
 AZGRAPH                         1                             // unused
-AZPOLY                          5                             // polynomial order for Neumann
 AZSCAL                          none                          // none sym infnorm scaling of the system
 AZCONV                          AZ_r0                         // AZ_r0 AZ_noscaled AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZTECOO_conv_test AZ_inf_noscaled
-IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
 IFPACKOVERLAP                   2                             // amount of ASM overlap for ILU, ILU, ICC, LU
 IFPACKCOMBINE                   Zero                          // combine mode: Zero, Insert, Add

@@ -48,8 +48,7 @@ GENAVG                          TrLike
 RHO_INF                         0.85
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Aztec_MSR
-AZOUTPUT                        0
+SOLVER                          Belos
 AZSOLVE                         CG
 AZPREC                          ML
 AZREUSE                         10
@@ -67,13 +66,15 @@ ML_COARSEN                      UC
 ML_AGG_SIZE                     27
 ML_PROLONG_SMO                  1.33
 ML_PROLONG_THRES                0.0
-ML_SMOOTHERFINE                 Chebychev
-ML_SMOOTHERMED                  Chebychev
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
 ML_SMOOTHERCOARSE               KLU
 ML_SMOTIMES                     3 1
 ML_DAMPFINE                     1.0
 ML_DAMPMED                      1.0
 ML_DAMPCOARSE                   1.0
+AZOUTPUT                        1
+VERBOSITY                       5
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000000 NUE 0.45 DENS 0.001
 ----------------------------------------------------------------------FUNCT1
@@ -86,7 +87,7 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.1 0.11 1.5 VALU
 STRUCTURE DIS structure NODE 65 QUANTITY dispx VALUE -9.26827766664614465e-03 TOLERANCE 1.0e-7
 STRUCTURE DIS structure NODE 65 QUANTITY dispy VALUE -5.16507789497255287e-01 TOLERANCE 1.0e-7
 STRUCTURE DIS structure NODE 65 QUANTITY dispz VALUE 1.69251200674458824e-05 TOLERANCE 1.0e-7
-STRUCTURE SPECIAL QUANTITY lin_iters VALUE 25 TOLERANCE 1.0e-13
+STRUCTURE SPECIAL QUANTITY lin_iters VALUE 10 TOLERANCE 1.0e-13
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4

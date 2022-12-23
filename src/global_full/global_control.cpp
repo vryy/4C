@@ -14,7 +14,7 @@
 
 #include "global_init_control.H"
 #include "global_inp_control.H"
-#include "drt_globalproblem.H"
+#include "globalproblem.H"
 #include "io_pstream.H"
 #include "comm_utils.H"
 
@@ -27,7 +27,7 @@ void ntacal();
  *----------------------------------------------------------------------*/
 void ntam(int argc, char *argv[])
 {
-  Teuchos::RCP<Epetra_Comm> gcomm = DRT::Problem::Instance()->GetNPGroup()->GlobalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = DRT::Problem::Instance()->GetCommunicators()->GlobalComm();
 
   double t0, ti, tc;
 

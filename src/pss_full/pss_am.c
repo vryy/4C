@@ -13,7 +13,7 @@
 \brief the header of everything
 *----------------------------------------------------------------------*/
 #include "standardtypes.h"
-#include "drt_dserror.H"
+#include "dserror.H"
 #include "am.h"
 #include "pss_prototypes.h"
 

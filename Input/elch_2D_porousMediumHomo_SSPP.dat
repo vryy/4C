@@ -58,20 +58,17 @@ MAT_NEWMAN_CONST_C              -1.0
 MAT_DIFFCOND_DIFFBASED          No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ML                              // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
 AZREUSE                         5                               // how often to recompute some preconditioners
-AZDROP                          0.0                             // drop tolerance for ILUT
-IFPACKFILL                      1.0                             // fill-in for ILUT
 IFPACKGFILL                     0                               // graph fill for ILU
 AZTOL                           1.0E-10                         // tolerance in (un)scaled residual
 AZITER                          1000                            // max iterations
 AZSUB                           100                              // size of krylov space for gmres
 AZOMEGA                         1.0                             // damping factor for Jacobi/GaussSeidel type preconditioners
 AZGRAPH                         1                               // unused
-AZPOLY                          1                               // polynomial order for Neumann
 IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL                          none                            // none sym infnorm scaling of the system
 AZCONV                          AZ_r0                           // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
@@ -94,7 +91,7 @@ MAT 1 MAT_elchmat NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 2 END
 MAT 2 MAT_elchphase EPSILON 0.363380237 TORTUOSITY 5.4540e-01 NUMMAT 1 MATIDS 3 END
 MAT 3 MAT_newman VALENCE 1.0 DIFF_COEF_CONC_DEP_FUNCT 2 DIFF_COEF_TEMP_SCALE_FUNCT 0 TRANSNR 3 THERMFAC 5 COND_CONC_DEP_FUNCT 4 COND_TEMP_SCALE_FUNCT 0 END
 ------------------------------------------------------------FUNCT1
-COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0    //initial concentration field: µmol/mm³
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0    //initial concentration field: micromol/mm^3
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0    //initial potential field:
 ----------------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_TIME 1.48e-4*t^(-0.125)

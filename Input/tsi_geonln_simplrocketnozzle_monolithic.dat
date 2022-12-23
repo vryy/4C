@@ -9,7 +9,7 @@ created by pre_exodus on Tue 22th of november 2011
 Configuration according to
 "D. Kuhl, J. Riccius, and O. J. Haidn. Thermomechanical analysis and
 optimization of cryogenic liquid rocket engines. Journal of
-Propulsion and Power, 18:835–846, 2002."
+Propulsion and Power, 18:835-846, 2002."
 
 The structural model (circular ring without cooling channels) is
 composed of a copper alloy wall and a nickel jacket (thickness: 4 mm).
@@ -20,7 +20,7 @@ outer radius ra = 148.2 mm.
 
 The model is loaded by a mechanical and a thermal load which vary in time.
 The time-dependent loading represents a reduced load cycle possibly
-occurring in a realstic rocket nozzle. Moreover, no heat ﬂuxes are applied
+occurring in a realstic rocket nozzle. Moreover, no heat fluxes are applied
 at the surrounding surface of the body, such that q = 0 W/m2.
 
 discretisation: circumferential x radial(Cu) x radial(Ni) x depth = 100x10x10x2
@@ -120,12 +120,10 @@ NORM_RESF                       Rel  // Abs,Rel,Mix
 NAME                            Thermal_Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0  // AZ_r0,AZ_rhs,AZ_Anorm,AZ_noscaled,AZ_sol,AZ_weighted,AZ_expected_values,AZTECOO_conv_test,AZ_inf_noscaled
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPOLY                          3
 AZPREC                          MLFLUID2  // ML,ILU
 AZREUSE                         0
 AZSCAL                          none  // none,sym,infnorm
@@ -133,7 +131,6 @@ AZSOLVE                         GMRES  // CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU
 AZSUB                           300
 AZTOL                           1e-08
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -151,17 +148,15 @@ ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
-SOLVER                          Aztec_MSR  // UMFPACK,undefined
+SOLVER                          Belos  // UMFPACK,undefined
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPOLY                          3
 AZPREC                          MLFLUID2  // ML,ILU
 AZREUSE                         0
 AZSCAL                          none
@@ -169,7 +164,6 @@ AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -187,17 +181,15 @@ ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
-SOLVER                          Aztec_MSR  // UMFPACK
+SOLVER                          Belos  // UMFPACK
 --------------------------------------------------------------------SOLVER 3
 NAME                            Thermo_Structure_Interaction_Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0  // 10// print every 10th step
-AZPOLY                          3
 AZPREC                          BGS2x2  // BGSnxn,ILU
 AZREUSE                         0
 AZSCAL                          none
@@ -206,7 +198,6 @@ AZSUB                           300
 AZTOL                           1e-06
 BGS2X2_FLIPORDER                block1_block0_order  // block0_block1_order,block1_block0_order
 IFPACKCOMBINE                   Add
-IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -224,7 +215,7 @@ ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
-SOLVER                          Aztec_MSR  //UMFPACK,undefined
+SOLVER                          Belos  //UMFPACK,undefined
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1.48e8 NUE 0.3 DENS 9.130e-6 THEXPANS 1.72e-5 CAPA 3405.49 CONDUCT 3.1e5 INITTEMP 293.15 // Cu
 MAT 3 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1.93e8 NUE 0.3 DENS 8.910e-6 THEXPANS 1.22e-5 CAPA 3956.04 CONDUCT 7.5e4 INITTEMP 293.15 // Ni

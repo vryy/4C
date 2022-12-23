@@ -113,7 +113,7 @@ NORM_RESF                       Rel  //Abs,Rel,Mix
 NAME                            TSI_MONOLITHIC_SOLVER
 AZPREC                          BGS2x2
 AZSOLVE                         GMRES
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 --------------------------------------------------------------------SOLVER 2
 NAME                            THERMAL SOLVER
 SOLVER                          UMFPACK

@@ -86,17 +86,14 @@ GHOST_PENALTY_STAB              No
 GHOST_PENALTY_FAC               0.001
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      0                             // The amount of fill allowed for an internal "ilut" preconditioner.
 IFPACKGFILL                     0                             // The amount of fill allowed for the internal "ilu" preconditioner.
 AZGRAPH                         1
 AZITER                          1000                          // max iteration
 AZOMEGA                         1.0                           // damping for GaussSeidel and jacobi type methods
 AZOUTPUT                        1                             // The amount of overlap used for the internal "ilu" and "ilut" preconditioners.
 IFPACKOVERLAP                   0                             // The order for of the polynomials used for the "Polynomial" and
-AZPOLY                          1                             // "Least-squares Polynomial" internal preconditioners.
 AZPREC                          ILU                           // Type of internal preconditioner to use.
 AZREUSE                         4                             // how often to recompute some preconditioners
 AZSCAL                          none                          // scaling of the system

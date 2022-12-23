@@ -52,12 +52,12 @@ LINEAR_SOLVER                   1
 -----------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    StandardMortar
 -----------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 sti_mono_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_BGS-AMG_4x4.xml
 -----------------------------------------------------------SOLVER 2
-SOLVER                          Aztec_MSR
+SOLVER                          Belos
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 sti_mono_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_BGS-AMG_4x4_scatra.xml
@@ -154,9 +154,9 @@ E 5 - 2 Slave S2IKineticsID 2
 E 6 - 2 Master S2IKineticsID 2
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  4
-E 3 - 1 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e- 1 k_r 6.554939e-9 alpha_a 0.5 alpha_c 0.5 peltier -0.28
+E 3 - 1 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e- 1 k_r 6.554939e-9 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0 peltier -0.28
 E 4 - 1 Master
-E 5 - 2 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e- 1 k_r 6.554939e-7 alpha_a 0.5 alpha_c 0.5 peltier -0.38
+E 5 - 2 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e- 1 k_r 6.554939e-7 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0 peltier -0.38
 E 6 - 2 Master
 -----------------------DESIGN SCATRA VOL CONDITIONS / PARTITIONING
 DVOL   3

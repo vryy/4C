@@ -13,7 +13,7 @@ significantly from the one given in the reference.
 Reference:
 L. Vu-Quoc, X.G. Tan,
 Optimal solid shells for non-linear analyses of multilayer composites. I. Statics,
-Comput. Methods Appl. Mech. Engrg. 192 (9–10) (2003) 975–1016.
+Comput. Methods Appl. Mech. Engrg. 192 (9-10) (2003) 975-1016.
 
 Note (kloeppel, r9448):
 To obtain the linear solution for displacement controlled simulations,
@@ -93,15 +93,12 @@ THETA                           0.5
 NAME                            Structure_Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      1
 IFPACKGFILL                     0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
 IFPACKOVERLAP                   0
-AZPOLY                          3
 AZPREC                          ILU
 AZREUSE                         0
 AZSCAL                          none
