@@ -735,20 +735,20 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetRhsInt(
  *------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcMatConvAddCons(Epetra_SerialDenseMatrix& emat,
-    const int k, const double timefacfac, const LINALG::Matrix<my::nsd_, 1>& convelint,
-    const LINALG::Matrix<my::nsd_, 1>& gradphi, const double vdiv, const double densnp,
+    const int k, const double timefacfac, const LINALG::Matrix<nsd_, 1>& convelint,
+    const LINALG::Matrix<nsd_, 1>& gradphi, const double vdiv, const double densnp,
     const double visc)
 {
   // convective term using current scalar value
   const double cons_conv_phi = convelint.Dot(gradphi);
 
   const double consfac = timefacfac * (densnp * vdiv + densgradfac_[k] * cons_conv_phi);
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (unsigned vi = 0; vi < nen_; ++vi)
   {
     const double v = consfac * my::funct_(vi);
     const int fvi = vi * my::numdofpernode_ + k;
 
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (unsigned ui = 0; ui < nen_; ++ui)
     {
       const int fui = ui * my::numdofpernode_ + k;
 
@@ -764,9 +764,9 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcMatConvAddCons(Epetra_Serial
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::RecomputeConvPhiForRhs(double& conv_phi,
-    const int k, const LINALG::Matrix<my::nsd_, 1>& sgvelint,
-    const LINALG::Matrix<my::nsd_, 1>& gradphi, const double densnp, const double densn,
-    const double phinp, const double phin, const double vdiv)
+    const int k, const LINALG::Matrix<nsd_, 1>& sgvelint, const LINALG::Matrix<nsd_, 1>& gradphi,
+    const double densnp, const double densn, const double phinp, const double phin,
+    const double vdiv)
 {
   if (my::scatraparatimint_->IsIncremental())
   {

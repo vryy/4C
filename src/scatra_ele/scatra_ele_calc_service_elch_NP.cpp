@@ -63,18 +63,18 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CheckElchElementParameter(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::EvaluateElchBoundaryKineticsPoint(
-    const DRT::Element* ele,                                 ///< current element
-    Epetra_SerialDenseMatrix& emat,                          ///< element matrix
-    Epetra_SerialDenseVector& erhs,                          ///< element right-hand side vector
-    const std::vector<LINALG::Matrix<my::nen_, 1>>& ephinp,  ///< state variables at element nodes
-    const std::vector<LINALG::Matrix<my::nen_, 1>>& ehist,   ///< history variables at element nodes
-    double timefac,                                          ///< time factor
-    Teuchos::RCP<DRT::Condition> cond,  ///< electrode kinetics boundary condition
-    const int nume,                     ///< number of transferred electrons
-    const std::vector<int> stoich,      ///< stoichiometry of the reaction
-    const int kinetics,                 ///< desired electrode kinetics model
-    const double pot0,                  ///< electrode potential on metal side
-    const double frt,                   ///< factor F/RT
+    const DRT::Element* ele,                             ///< current element
+    Epetra_SerialDenseMatrix& emat,                      ///< element matrix
+    Epetra_SerialDenseVector& erhs,                      ///< element right-hand side vector
+    const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
+    const std::vector<LINALG::Matrix<nen_, 1>>& ehist,   ///< history variables at element nodes
+    double timefac,                                      ///< time factor
+    Teuchos::RCP<DRT::Condition> cond,                   ///< electrode kinetics boundary condition
+    const int nume,                                      ///< number of transferred electrons
+    const std::vector<int> stoich,                       ///< stoichiometry of the reaction
+    const int kinetics,                                  ///< desired electrode kinetics model
+    const double pot0,                                   ///< electrode potential on metal side
+    const double frt,                                    ///< factor F/RT
     const double scalar  ///< scaling factor for element matrix and right-hand side contributions
 )
 {
@@ -96,9 +96,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::EvaluateElchBoundaryKineticsPo
     {
       for (int k = 0; k < my::numscal_; ++k)
       {
-        for (unsigned vi = 0; vi < my::nen_; ++vi)
+        for (unsigned vi = 0; vi < nen_; ++vi)
         {
-          for (unsigned ui = 0; ui < my::nen_; ++ui)
+          for (unsigned ui = 0; ui < nen_; ++ui)
           {
             emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + k) +=
                 nume * emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + k);
@@ -120,9 +120,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::EvaluateElchBoundaryKineticsPo
       const double faraday = myelch::elchparams_->Faraday();
       for (int k = 0; k < my::numscal_; ++k)
       {
-        for (unsigned vi = 0; vi < my::nen_; ++vi)
+        for (unsigned vi = 0; vi < nen_; ++vi)
         {
-          for (unsigned ui = 0; ui < my::nen_; ++ui)
+          for (unsigned ui = 0; ui < nen_; ++ui)
           {
             emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + k) +=
                 faraday * nume * emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + k);
@@ -199,7 +199,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetConductivity(
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalculateFlux(
-    LINALG::Matrix<my::nsd_, 1>& q,          //!< flux of species k
+    LINALG::Matrix<nsd_, 1>& q,              //!< flux of species k
     const INPAR::SCATRA::FluxType fluxtype,  //!< type fo flux
     const int k                              //!< index of current scalar
 )
@@ -283,7 +283,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
 
   // integration points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
       SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
 
   const INPAR::SCATRA::CalcError errortype =
@@ -307,7 +307,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
       // working arrays
       double potint(0.0);
       LINALG::Matrix<2, 1> conint(true);
-      LINALG::Matrix<my::nsd_, 1> xint(true);
+      LINALG::Matrix<nsd_, 1> xint(true);
       LINALG::Matrix<2, 1> c(true);
       double deltapot(0.0);
       LINALG::Matrix<2, 1> deltacon(true);
@@ -350,7 +350,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
         double expterm;
         double c_0_0_0_t;
 
-        if (my::nsd_ == 3)
+        if (nsd_ == 3)
         {
           expterm = exp((-D) * (m * m + n * n + k * k) * t * PI * PI);
           c(0) = A0 +
@@ -358,20 +358,20 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
                      expterm);
           c_0_0_0_t = A0 + (A_mnk * exp((-D) * (m * m + n * n + k * k) * t * PI * PI));
         }
-        else if (my::nsd_ == 2)
+        else if (nsd_ == 2)
         {
           expterm = exp((-D) * (m * m + n * n) * t * PI * PI);
           c(0) = A0 + (A_mnk * (cos(m * PI * xint(0)) * cos(n * PI * xint(1))) * expterm);
           c_0_0_0_t = A0 + (A_mnk * exp((-D) * (m * m + n * n) * t * PI * PI));
         }
-        else if (my::nsd_ == 1)
+        else if (nsd_ == 1)
         {
           expterm = exp((-D) * (m * m) * t * PI * PI);
           c(0) = A0 + (A_mnk * (cos(m * PI * xint(0))) * expterm);
           c_0_0_0_t = A0 + (A_mnk * exp((-D) * (m * m) * t * PI * PI));
         }
         else
-          dserror("Illegal number of space dimensions for analyt. solution: %d", my::nsd_);
+          dserror("Illegal number of space dimensions for analyt. solution: %d", nsd_);
 
         // compute analytical solution for anion concentration
         c(1) =
@@ -405,7 +405,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
 
       // working arrays
       LINALG::Matrix<2, 1> conint(true);
-      LINALG::Matrix<my::nsd_, 1> xint(true);
+      LINALG::Matrix<nsd_, 1> xint(true);
       LINALG::Matrix<2, 1> c(true);
       LINALG::Matrix<2, 1> deltacon(true);
 
@@ -432,13 +432,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
         xint.Multiply(my::xyze_, my::funct_);
 
         // evaluate analytical solution for cation concentration at radial position r
-        if (my::nsd_ == 3)
+        if (nsd_ == 3)
         {
           const double r = sqrt(xint(0) * xint(0) + xint(1) * xint(1));
           c(0) = c0_inner + ((c0_outer - c0_inner) * (log(r) - log(r_inner)) / b);
         }
         else
-          dserror("Illegal number of space dimensions for analyt. solution: %d", my::nsd_);
+          dserror("Illegal number of space dimensions for analyt. solution: %d", nsd_);
 
         // compute analytical solution for anion concentration
         c(1) =

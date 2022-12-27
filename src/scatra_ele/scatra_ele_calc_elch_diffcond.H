@@ -37,6 +37,9 @@ namespace DRT
       using my = ScaTraEleCalc<distype, probdim>;
       using myelch = ScaTraEleCalcElch<distype, probdim>;
       using myelectrode = ScaTraEleCalcElchElectrode<distype, probdim>;
+      using my::nen_;
+      using my::nsd_;
+      using my::nsd_ele_;
 
      public:
       /// Singleton access method
@@ -60,7 +63,7 @@ namespace DRT
               timetaufac,  //!< domain-integration factor times tau times time-integration factor
           const double rhstaufac,  //!< time-integration factor for rhs times tau times
                                    //!< domain-integration factor
-          LINALG::Matrix<my::nen_, 1>&
+          LINALG::Matrix<nen_, 1>&
               tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
           double& rhsint  //!< rhs at Gauss point
       );
@@ -103,7 +106,7 @@ namespace DRT
           const int k,                                     //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double invfval,     //!< 1/(F z_k)
-          const LINALG::Matrix<my::nsd_, 1>& gradpot  //!< gradient of potential at GP
+          const LINALG::Matrix<nsd_, 1>& gradpot  //!< gradient of potential at GP
       );
 
       //! CalcMat: Conduction term with inserted current - conc. overpotential
@@ -113,8 +116,8 @@ namespace DRT
           const double rtffcval,        //!< RT/F^2/Newman_const_c/z_k
           const double newman_const_a,  //!< Newman constant a
           const double newman_const_b,  //!< Newman constant b
-          const LINALG::Matrix<my::nsd_, 1>& gradphi,  //!< gradient of concentration at GP
-          const std::vector<double>& conintinv         //!< inverted concentration at GP
+          const LINALG::Matrix<nsd_, 1>& gradphi,  //!< gradient of concentration at GP
+          const std::vector<double>& conintinv     //!< inverted concentration at GP
       );
 
       //! CalcMat: Conduction term without inserted current
@@ -122,7 +125,7 @@ namespace DRT
           const int k,                                  //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double invfval,     //!< 1/(F z_k)
-          const LINALG::Matrix<my::nsd_, 1>& curint  //!< current at GP
+          const LINALG::Matrix<nsd_, 1>& curint  //!< current at GP
       );
 
       //! CalcMat: Additional diffusion term without inserted current
@@ -130,8 +133,7 @@ namespace DRT
           const int k,                                      //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double invfval,     //!< 1/(F z_k)
-          const std::vector<LINALG::Matrix<my::nsd_, 1>>&
-              gradphi  //!< gradient of concentration at GP
+          const std::vector<LINALG::Matrix<nsd_, 1>>& gradphi  //!< gradient of concentration at GP
       );
 
       //! Potential equation div i inserted current - concentration overpotential
@@ -143,8 +145,8 @@ namespace DRT
           const double invf,            //!< 1/F
           const double newman_const_a,  //!< Newman constant a
           const double newman_const_b,  //!< Newman constant b
-          const LINALG::Matrix<my::nsd_, 1>& gradphi,  //!< gradient of concentration at GP
-          const double conintinv                       //!< inverted concentration at GP
+          const LINALG::Matrix<nsd_, 1>& gradphi,  //!< gradient of concentration at GP
+          const double conintinv                   //!< inverted concentration at GP
       );
 
       //! Potential equation div i without inserted current
@@ -163,7 +165,7 @@ namespace DRT
       void CalcMatCurEquOhm(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double invf,        //!< 1/F
-          const LINALG::Matrix<my::nsd_, 1>& gradpot  //!< gradient of potenial at GP
+          const LINALG::Matrix<nsd_, 1>& gradpot  //!< gradient of potenial at GP
       );
 
       //! CalcMat: Current equation concentration overpotential
@@ -171,47 +173,45 @@ namespace DRT
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double rtf,         //!< RT/F
           const double rtffc,       //!< RT/(F^2 Newman_const_c)
-          const std::vector<double>& invfval,  //!< 1/(F z_k)
-          const double newman_const_a,         //!< Newman constant a
-          const double newman_const_b,         //!< Newman constant b
-          const std::vector<LINALG::Matrix<my::nsd_, 1>>&
-              gradphi,                          //!< gradient of concentration at GP
-          const std::vector<double>& conintinv  //!< inverted concentration at GP
+          const std::vector<double>& invfval,                   //!< 1/(F z_k)
+          const double newman_const_a,                          //!< Newman constant a
+          const double newman_const_b,                          //!< Newman constant b
+          const std::vector<LINALG::Matrix<nsd_, 1>>& gradphi,  //!< gradient of concentration at GP
+          const std::vector<double>& conintinv                  //!< inverted concentration at GP
       );
 
       //! CalcRhs: Conduction term with inserted current - ohmic overpotential
       void CalcRhsCondOhm(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
           const int k,                                     //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-          const double invfval,                       //!< 1/(F z_k)
-          const LINALG::Matrix<my::nsd_, 1>& gradpot  //!< gradient of potenial at GP
+          const double invfval,                   //!< 1/(F z_k)
+          const LINALG::Matrix<nsd_, 1>& gradpot  //!< gradient of potenial at GP
       );
 
       //! CalcRhs: Conduction term with inserted current - conc. overpotential
       void CalcRhsCondConc(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
           const int k,                                      //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-          const double rtffcval,                       //!< RT/(F^2 Newman_const_c z_k)
-          const double newman_const_a,                 //!< Newman constant a
-          const double newman_const_b,                 //!< Newman constant b
-          const LINALG::Matrix<my::nsd_, 1>& gradphi,  //!< gradient of concentration at GP
-          const std::vector<double>& conintinv         //!< inverted concentration at GP
+          const double rtffcval,                   //!< RT/(F^2 Newman_const_c z_k)
+          const double newman_const_a,             //!< Newman constant a
+          const double newman_const_b,             //!< Newman constant b
+          const LINALG::Matrix<nsd_, 1>& gradphi,  //!< gradient of concentration at GP
+          const std::vector<double>& conintinv     //!< inverted concentration at GP
       );
 
       //! CalcRhs: Conduction term without inserted current
       void CalcRhsCond(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
           const int k,                                  //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-          const double invfval,                      //!< 1/(F z_k)
-          const LINALG::Matrix<my::nsd_, 1>& curint  //!< current at GP
+          const double invfval,                  //!< 1/(F z_k)
+          const LINALG::Matrix<nsd_, 1>& curint  //!< current at GP
       );
 
       //! CalcRhs: Additional diffusion term without inserted current
       void CalcRhsCondDiff(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
           const int k,                                      //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-          const std::vector<LINALG::Matrix<my::nsd_, 1>>&
-              gradphi  //!< gradient of concentration at GP
+          const std::vector<LINALG::Matrix<nsd_, 1>>& gradphi  //!< gradient of concentration at GP
       );
 
       //! CalcRhs: Potential equation div i inserted current - conc. overpotential
@@ -219,33 +219,33 @@ namespace DRT
           const int k,                                            //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double rtf,     //!< RT/F
-          const std::vector<double>& invfval,          //!< 1/(F z_k)
-          const double rtffc,                          //!< RT/(F^2 Newman_const_c)
-          const double newman_const_a,                 //!< Newman constant a
-          const double newman_const_b,                 //!< Newman constant b
-          const LINALG::Matrix<my::nsd_, 1>& gradphi,  //!< gradient of concentration at GP
-          const double conintinv                       //!< inverted concentration at GP
+          const std::vector<double>& invfval,      //!< 1/(F z_k)
+          const double rtffc,                      //!< RT/(F^2 Newman_const_c)
+          const double newman_const_a,             //!< Newman constant a
+          const double newman_const_b,             //!< Newman constant b
+          const LINALG::Matrix<nsd_, 1>& gradphi,  //!< gradient of concentration at GP
+          const double conintinv                   //!< inverted concentration at GP
       );
 
       //! CalcRhs: Potential equation divi without inserted current
       void CalcRhsPotEquDivi(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double invf,    //!< 1/F
-          const LINALG::Matrix<my::nsd_, 1>& curint  //!< current at GP
+          const LINALG::Matrix<nsd_, 1>& curint  //!< current at GP
       );
 
       //! CalcRhs: Current equation - current
       void CalcRhsCurEquCur(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double invf,    //!< 1/F
-          const LINALG::Matrix<my::nsd_, 1>& curint  //!< current at GP
+          const LINALG::Matrix<nsd_, 1>& curint  //!< current at GP
       );
 
       //! CalcRhs: Current equation - ohmic overpotential
       void CalcRhsCurEquOhm(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double invf,    //!< 1/F
-          const LINALG::Matrix<my::nsd_, 1>& gradpot  //!< gradient of potenial at GP
+          const LINALG::Matrix<nsd_, 1>& gradpot  //!< gradient of potenial at GP
       );
 
       //! Current equation - concentration overpotential
@@ -256,7 +256,7 @@ namespace DRT
           const double rtffc,                  //!< RT/(F^2 Newman_const_c)
           const double newman_const_a,         //!< Newman constant a
           const double newman_const_b,         //!< Newman constant b
-          const std::vector<LINALG::Matrix<my::nsd_, 1>>&
+          const std::vector<LINALG::Matrix<nsd_, 1>>&
               gradphi,                          //!< vector of gradient of concentration at GP
           const std::vector<double>& conintinv  //!< inverted concentration at GP
       );
@@ -276,10 +276,9 @@ namespace DRT
       //! evaluate an electrode boundary kinetics point condition
       void EvaluateElchBoundaryKineticsPoint(const DRT::Element* ele,  ///< current element
           Epetra_SerialDenseMatrix& emat,                              ///< element matrix
-          Epetra_SerialDenseVector& erhs,  ///< element right-hand side vector
-          const std::vector<LINALG::Matrix<my::nen_, 1>>&
-              ephinp,  ///< state variables at element nodes
-          const std::vector<LINALG::Matrix<my::nen_, 1>>&
+          Epetra_SerialDenseVector& erhs,                      ///< element right-hand side vector
+          const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
+          const std::vector<LINALG::Matrix<nen_, 1>>&
               ehist,                          ///< history variables at element nodes
           double timefac,                     ///< time factor
           Teuchos::RCP<DRT::Condition> cond,  ///< electrode kinetics boundary condition
@@ -296,15 +295,15 @@ namespace DRT
       void EvaluateElchDomainKinetics(const DRT::Element* ele,  ///< the actual boundary element
           Epetra_SerialDenseMatrix& emat,                       ///< element-matrix
           Epetra_SerialDenseVector& erhs,                       ///< element-rhs
-          const std::vector<LINALG::Matrix<my::nen_, 1>>&
+          const std::vector<LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< nodal values of concentration and electric potential
-          const std::vector<LINALG::Matrix<my::nen_, 1>>& ehist,  ///< nodal history vector
-          double timefac,                                         ///< time factor
-          Teuchos::RCP<DRT::Condition> cond,                      ///< the condition
-          const int nume,                 ///< number of transferred electrons
-          const std::vector<int> stoich,  ///< stoichiometry of the reaction
-          const int kinetics,             ///< desired electrode kinetics model
-          const double pot0               ///< actual electrode potential on metal side
+          const std::vector<LINALG::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
+          double timefac,                                     ///< time factor
+          Teuchos::RCP<DRT::Condition> cond,                  ///< the condition
+          const int nume,                                     ///< number of transferred electrons
+          const std::vector<int> stoich,                      ///< stoichiometry of the reaction
+          const int kinetics,                                 ///< desired electrode kinetics model
+          const double pot0  ///< actual electrode potential on metal side
       );
 
       //! validity check for all elements with respect to
@@ -331,15 +330,15 @@ namespace DRT
       );
 
       //!  calculate weighted mass flux (no reactive flux so far) -> elch-specific implementation
-      void CalculateFlux(LINALG::Matrix<my::nsd_, 1>& q,  //!< flux of species k
-          const INPAR::SCATRA::FluxType fluxtype,         //!< type fo flux
-          const int k                                     //!< index of current scalar
+      void CalculateFlux(LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
+          const INPAR::SCATRA::FluxType fluxtype,     //!< type fo flux
+          const int k                                 //!< index of current scalar
       );
 
       //!  calculate weighted current flux (no reactive flux so far) -> elch-specific implementation
-      void CalculateCurrent(LINALG::Matrix<my::nsd_, 1>& q,  //!< flux of species k
-          const INPAR::SCATRA::FluxType fluxtype,            //!< type fo flux
-          const double fac                                   //!< integration factor
+      void CalculateCurrent(LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
+          const INPAR::SCATRA::FluxType fluxtype,        //!< type fo flux
+          const double fac                               //!< integration factor
       );
 
       //! calculate error of numerical solution with respect to analytical solution
@@ -357,10 +356,9 @@ namespace DRT
           Epetra_SerialDenseVector& scalars,                 ///< scalars to be computed
           Teuchos::ParameterList& params,                    ///< the parameter list
           Teuchos::RCP<DRT::Condition> cond,                 ///< the condition
-          const std::vector<LINALG::Matrix<my::nen_, 1>>&
+          const std::vector<LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< nodal values of concentration and electric potential
-          const std::vector<LINALG::Matrix<my::nen_, 1>>&
-              ephidtnp,                   ///< nodal time derivative vector
+          const std::vector<LINALG::Matrix<nen_, 1>>& ephidtnp,  ///< nodal time derivative vector
           const int kinetics,             ///< desired electrode kinetics model
           const std::vector<int> stoich,  ///< stoichiometry of the reaction
           const int nume,                 ///<  number of transferred electrons
@@ -378,10 +376,9 @@ namespace DRT
       }
 
       //! get internal variable manager for diffusion-conduction formulation
-      Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond<my::nsd_, my::nen_>> VarManager()
+      Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond<nsd_, nen_>> VarManager()
       {
-        return Teuchos::rcp_static_cast<
-            ScaTraEleInternalVariableManagerElchDiffCond<my::nsd_, my::nen_>>(
+        return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerElchDiffCond<nsd_, nen_>>(
             my::scatravarmanager_);
       }
 

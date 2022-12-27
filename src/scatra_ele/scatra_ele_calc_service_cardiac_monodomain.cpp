@@ -86,7 +86,7 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::EvaluateAct
         // extract local values from the global vectors
         Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
         if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
-        DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*phinp, my::ephinp_, lm);
+        DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
         my::EvalShapeFuncAndDerivsAtEleCenter();
 

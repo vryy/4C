@@ -34,6 +34,9 @@ namespace DRT
       ScaTraEleCalcLsReinit(const int numdofpernode, const int numscal, const std::string& disname);
 
       typedef ScaTraEleCalc<distype, probDim> my;
+      using my::nen_;
+      using my::nsd_;
+      using my::nsd_ele_;
 
      public:
       virtual ~ScaTraEleCalcLsReinit() {}
@@ -85,8 +88,7 @@ namespace DRT
        *
        *  \author hiermeier \date 12/16 */
       void EllipticNewtonSystem(Epetra_SerialDenseMatrix* emat, Epetra_SerialDenseVector* erhs,
-          const LINALG::Matrix<my::nen_, 1>& el2sysmat_diag_inv,
-          const GEO::BoundaryIntCellPtrs& bcell);
+          const LINALG::Matrix<nen_, 1>& el2sysmat_diag_inv, const GEO::BoundaryIntCellPtrs& bcell);
 
      private:
       /*========================================================================*/
@@ -119,7 +121,7 @@ namespace DRT
       void CalcRHSDiff(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
           const int k,                                  //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-          const LINALG::Matrix<my::nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
+          const LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
       );
 
       /*========================================================================*/
@@ -127,12 +129,12 @@ namespace DRT
       /*========================================================================*/
 
       //! sign function
-      void SignFunction(double& sign_phi,                  //!< sign of phi
-          const double charelelength,                      //!< characteristic element length
-          const double phizero,                            //!< initial phi
-          const LINALG::Matrix<my::nsd_, 1>& gradphizero,  //!< gradient of initial phi
-          const double phi,                                //!< phi at time n+1
-          const LINALG::Matrix<my::nsd_, 1>& gradphi       //!< gradient of phi at time n+1
+      void SignFunction(double& sign_phi,              //!< sign of phi
+          const double charelelength,                  //!< characteristic element length
+          const double phizero,                        //!< initial phi
+          const LINALG::Matrix<nsd_, 1>& gradphizero,  //!< gradient of initial phi
+          const double phi,                            //!< phi at time n+1
+          const LINALG::Matrix<nsd_, 1>& gradphi       //!< gradient of phi at time n+1
       );
 
       //! derivative of sign function
@@ -142,8 +144,8 @@ namespace DRT
       );
 
       //! calculation of characteristic element length, i.e., interface thickness
-      double CalcCharEleLengthReinit(const double vol,    //!< element volume
-          const LINALG::Matrix<my::nsd_, 1>& gradphizero  //!< gradient of initial phi
+      double CalcCharEleLengthReinit(const double vol,  //!< element volume
+          const LINALG::Matrix<nsd_, 1>& gradphizero    //!< gradient of initial phi
       );
 
       /*========================================================================*/
@@ -204,16 +206,16 @@ namespace DRT
       );
 
       //! get diffusion manager for reinitialization
-      Teuchos::RCP<ScaTraEleDiffManagerLsReinit<my::nsd_>> DiffManager()
+      Teuchos::RCP<ScaTraEleDiffManagerLsReinit<nsd_>> DiffManager()
       {
-        return Teuchos::rcp_static_cast<ScaTraEleDiffManagerLsReinit<my::nsd_>>(my::diffmanager_);
+        return Teuchos::rcp_static_cast<ScaTraEleDiffManagerLsReinit<nsd_>>(my::diffmanager_);
       };
 
       //! get internal variable manager for reinitialization
-      Teuchos::RCP<ScaTraEleInternalVariableManagerLsReinit<my::nsd_, my::nen_>> VarManager()
+      Teuchos::RCP<ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>> VarManager()
       {
-        return Teuchos::rcp_static_cast<
-            ScaTraEleInternalVariableManagerLsReinit<my::nsd_, my::nen_>>(my::scatravarmanager_);
+        return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(
+            my::scatravarmanager_);
       };
 
       /*========================================================================*/
@@ -221,7 +223,7 @@ namespace DRT
       /*========================================================================*/
 
       //! scalar at before reinitialization
-      std::vector<LINALG::Matrix<my::nen_, 1>> ephizero_;
+      std::vector<LINALG::Matrix<nen_, 1>> ephizero_;
 
       //! parameter class for reinitialization
       const ScaTraEleParameterLsReinit* lsreinitparams_;

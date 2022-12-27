@@ -36,7 +36,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::PrepareGaussRule()
 
   // the derivative of the wall distance with respect to the local coordinates
   // shows how the local axes are oriented with respect to the wall-normal vector
-  LINALG::Matrix<my::nsd_, 1> normwallrst(true);
+  LINALG::Matrix<nsd_, 1> normwallrst(true);
   normwallrst.Multiply(deriv_, ewdist_);
   double normwallrstnorm2 = normwallrst.Norm2();
   const double dot1 = abs(normwallrst(0) / normwallrstnorm2);
@@ -141,34 +141,28 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::PrepareGaussRule()
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Sysmat(
-    const LINALG::Matrix<my::nsd_, my::nen_>& ebofoaf,
-    const LINALG::Matrix<my::nsd_, my::nen_>& eprescpgaf,
-    const LINALG::Matrix<my::nsd_, my::nen_>& ebofon,
-    const LINALG::Matrix<my::nsd_, my::nen_>& eprescpgn,
-    const LINALG::Matrix<my::nsd_, my::nen_>& evelaf,
-    const LINALG::Matrix<my::nsd_, my::nen_>& evelam,
-    const LINALG::Matrix<my::nsd_, my::nen_>& eveln,
-    const LINALG::Matrix<my::nsd_, my::nen_>& evelnp,
-    const LINALG::Matrix<my::nsd_, my::nen_>& fsevelaf, const LINALG::Matrix<my::nen_, 1>& fsescaaf,
-    const LINALG::Matrix<my::nsd_, my::nen_>& evel_hat,
-    const LINALG::Matrix<my::nsd_ * my::nsd_, my::nen_>& ereynoldsstress_hat,
-    const LINALG::Matrix<my::nen_, 1>& epreaf, const LINALG::Matrix<my::nen_, 1>& epream,
-    const LINALG::Matrix<my::nen_, 1>& epren, const LINALG::Matrix<my::nen_, 1>& eprenp,
-    const LINALG::Matrix<my::nsd_, my::nen_>& eaccam, const LINALG::Matrix<my::nen_, 1>& escaaf,
-    const LINALG::Matrix<my::nen_, 1>& escaam, const LINALG::Matrix<my::nen_, 1>& escadtam,
-    const LINALG::Matrix<my::nsd_, my::nen_>& eveldtam, const LINALG::Matrix<my::nen_, 1>& epredtam,
-    const LINALG::Matrix<my::nen_, 1>& escabofoaf, const LINALG::Matrix<my::nen_, 1>& escabofon,
-    const LINALG::Matrix<my::nsd_, my::nen_>& emhist,
-    const LINALG::Matrix<my::nsd_, my::nen_>& edispnp,
-    const LINALG::Matrix<my::nsd_, my::nen_>& egridv,
-    LINALG::Matrix<(my::nsd_ + 1) * my::nen_, (my::nsd_ + 1) * my::nen_>& estif,
-    LINALG::Matrix<(my::nsd_ + 1) * my::nen_, (my::nsd_ + 1) * my::nen_>& emesh,
-    LINALG::Matrix<(my::nsd_ + 1) * my::nen_, 1>& eforce, const LINALG::Matrix<my::nen_, 1>& eporo,
-    const LINALG::Matrix<my::nsd_, 2 * my::nen_>& egradphi,
-    const LINALG::Matrix<my::nen_, 2 * 1>& ecurvature, const double thermpressaf,
-    const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-    Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
-    double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
+    const LINALG::Matrix<nsd_, nen_>& ebofoaf, const LINALG::Matrix<nsd_, nen_>& eprescpgaf,
+    const LINALG::Matrix<nsd_, nen_>& ebofon, const LINALG::Matrix<nsd_, nen_>& eprescpgn,
+    const LINALG::Matrix<nsd_, nen_>& evelaf, const LINALG::Matrix<nsd_, nen_>& evelam,
+    const LINALG::Matrix<nsd_, nen_>& eveln, const LINALG::Matrix<nsd_, nen_>& evelnp,
+    const LINALG::Matrix<nsd_, nen_>& fsevelaf, const LINALG::Matrix<nen_, 1>& fsescaaf,
+    const LINALG::Matrix<nsd_, nen_>& evel_hat,
+    const LINALG::Matrix<nsd_ * nsd_, nen_>& ereynoldsstress_hat,
+    const LINALG::Matrix<nen_, 1>& epreaf, const LINALG::Matrix<nen_, 1>& epream,
+    const LINALG::Matrix<nen_, 1>& epren, const LINALG::Matrix<nen_, 1>& eprenp,
+    const LINALG::Matrix<nsd_, nen_>& eaccam, const LINALG::Matrix<nen_, 1>& escaaf,
+    const LINALG::Matrix<nen_, 1>& escaam, const LINALG::Matrix<nen_, 1>& escadtam,
+    const LINALG::Matrix<nsd_, nen_>& eveldtam, const LINALG::Matrix<nen_, 1>& epredtam,
+    const LINALG::Matrix<nen_, 1>& escabofoaf, const LINALG::Matrix<nen_, 1>& escabofon,
+    const LINALG::Matrix<nsd_, nen_>& emhist, const LINALG::Matrix<nsd_, nen_>& edispnp,
+    const LINALG::Matrix<nsd_, nen_>& egridv,
+    LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& estif,
+    LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
+    LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce, const LINALG::Matrix<nen_, 1>& eporo,
+    const LINALG::Matrix<nsd_, 2 * nen_>& egradphi, const LINALG::Matrix<nen_, 2 * 1>& ecurvature,
+    const double thermpressaf, const double thermpressam, const double thermpressdtaf,
+    const double thermpressdtam, Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq,
+    double& Ci_delta_sq, double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
     const DRT::UTILS::GaussIntegration& intpoints)
 {
   my::Sysmat(ebofoaf, eprescpgaf, ebofon, eprescpgn, evelaf, evelam, eveln, evelnp, fsevelaf,

@@ -60,7 +60,7 @@ DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::ScaTraEleCalcAniso(
     : DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(numdofpernode, numscal, disname)
 {
   // get diffusion manager for anisotropic diffusivity / diffusivities (in case of systems)
-  my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerAniso<my::nsd_>(my::numscal_));
+  my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerAniso<nsd_>(my::numscal_));
 }
 
 
@@ -106,10 +106,10 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::MatScaTraAniso(
       Teuchos::rcp_dynamic_cast<const MAT::ScatraMatAniso>(material);
 
   // get constant diffusivity
-  LINALG::Matrix<my::nsd_, my::nsd_> difftensor(true);
+  LINALG::Matrix<nsd_, nsd_> difftensor(true);
   LINALG::Matrix<3, 1> diff = actmat->Diffusivity();
 
-  for (unsigned i = 0; i < my::nsd_; i++) difftensor(i, i) = diff(i);
+  for (unsigned i = 0; i < nsd_; i++) difftensor(i, i) = diff(i);
 
   DiffManager()->SetAnisotropicDiff(difftensor, k);
 
@@ -124,9 +124,9 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::CalcRHSDiff(
     Epetra_SerialDenseVector& erhs, const int k, const double rhsfac)
 {
-  const LINALG::Matrix<my::nsd_, 1>& gradphi = my::scatravarmanager_->GradPhi(k);
+  const LINALG::Matrix<nsd_, 1>& gradphi = my::scatravarmanager_->GradPhi(k);
 
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (unsigned vi = 0; vi < nen_; ++vi)
   {
     const int fvi = vi * my::numdofpernode_ + k;
 
@@ -145,11 +145,11 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::CalcMatDiff(
     Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac)
 {
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (unsigned vi = 0; vi < nen_; ++vi)
   {
     const int fvi = vi * my::numdofpernode_ + k;
 
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (unsigned ui = 0; ui < nen_; ++ui)
     {
       const int fui = ui * my::numdofpernode_ + k;
       double laplawf(0.0);

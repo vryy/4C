@@ -36,6 +36,8 @@ namespace DRT
       typedef ScaTraEleCalcPoroReac<distype> pororeac;
       typedef ScaTraEleCalcPoro<distype> poro;
       typedef ScaTraEleCalcAdvReac<distype> advreac;
+      using my::nen_;
+      using my::nsd_;
 
      public:
       virtual ~ScaTraEleCalcPoroReacECM() {}

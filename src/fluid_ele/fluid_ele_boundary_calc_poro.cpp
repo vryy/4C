@@ -270,7 +270,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   double scalarintegraltransformfac = 0.0;
   double tangentialfac = 0.0;
 
-  LINALG::Matrix<Base::nsd_, 1> neumannoverinflow(true);
+  LINALG::Matrix<nsd_, 1> neumannoverinflow(true);
 
   std::vector<int> lm;
   std::vector<int> lmowner;
@@ -282,32 +282,32 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   std::vector<double> my_parentdisp_n;
   std::vector<double> porosity;
 
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> evelnp(true);
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> eveln(true);
-  LINALG::Matrix<Base::nsd_, nenparent> pevelnp(true);
-  LINALG::Matrix<Base::nsd_, nenparent> peveln(true);  // at previous time step n
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> edispnp(true);
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> egridvel(true);
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> egridvel_n(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> eveln(true);
+  LINALG::Matrix<nsd_, nenparent> pevelnp(true);
+  LINALG::Matrix<nsd_, nenparent> peveln(true);  // at previous time step n
+  LINALG::Matrix<nsd_, Base::bdrynen_> edispnp(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> egridvel(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> egridvel_n(true);
   LINALG::Matrix<1, Base::bdrynen_> epressnp(true);
   LINALG::Matrix<1, Base::bdrynen_> epressn(true);
-  LINALG::Matrix<Base::nsd_, 1> gridvelint(true);
-  LINALG::Matrix<Base::nsd_, 1> pxsi(true);
+  LINALG::Matrix<nsd_, 1> gridvelint(true);
+  LINALG::Matrix<nsd_, 1> pxsi(true);
   LINALG::Matrix<1, 1> pressint(true);
   LINALG::Matrix<1, 1> pressint_n(true);  // at previous time step n
-  LINALG::Matrix<Base::nsd_, Base::nsd_> dudxi(true);
-  LINALG::Matrix<Base::nsd_, Base::nsd_> dudxi_n(true);  // at previous time step n
-  LINALG::Matrix<Base::nsd_, Base::nsd_> dudxioJinv(true);
-  LINALG::Matrix<Base::nsd_, Base::nsd_> dudxioJinv_n(true);  // at previous time step n
+  LINALG::Matrix<nsd_, nsd_> dudxi(true);
+  LINALG::Matrix<nsd_, nsd_> dudxi_n(true);  // at previous time step n
+  LINALG::Matrix<nsd_, nsd_> dudxioJinv(true);
+  LINALG::Matrix<nsd_, nsd_> dudxioJinv_n(true);  // at previous time step n
   LINALG::Matrix<1, 1> tangentialvelocity1(true);
   LINALG::Matrix<1, 1> tangentialvelocity2(true);
   LINALG::Matrix<1, 1> tangentialgridvelocity1(true);
   LINALG::Matrix<1, 1> tangentialgridvelocity2(true);
   LINALG::Matrix<1, 1> normalvelocity(true);
 
-  LINALG::Matrix<Base::nsd_, nenparent> xrefe;  // material coord. of parent element
-  LINALG::Matrix<Base::nsd_, nenparent> xcurr;  // current  coord. of parent element
-  LINALG::Matrix<Base::nsd_, nenparent>
+  LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
+  LINALG::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
+  LINALG::Matrix<nsd_, nenparent>
       xcurr_n;  // current  coord. of parent element at previous time step n
 
   Teuchos::RCP<const Epetra_Vector> displacements_np = discretization.GetState("dispnp");
@@ -327,11 +327,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
-  // (we have a Base::nsd_ dimensional domain, since Base::nsd_ determines the dimension of
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  GEO::fillInitialPositionArray<distype, Base::nsd_, LINALG::Matrix<Base::nsd_, Base::bdrynen_>>(
+  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
-  GEO::fillInitialPositionArray<distype, Base::nsd_, LINALG::Matrix<Base::nsd_, Base::bdrynen_>>(
+  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_n_);
 
   // get element location vector and ownerships
@@ -433,7 +433,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   // Add the deformation of the ALE mesh to the nodes coordinates
   for (int inode = 0; inode < Base::bdrynen_; ++inode)
   {
-    for (int idim = 0; idim < Base::nsd_; ++idim)
+    for (int idim = 0; idim < nsd_; ++idim)
     {
       Base::xyze_(idim, inode) += my_displacements_np[Base::numdofpernode_ * inode + idim];
       Base::xyze_n_(idim, inode) += my_displacements_n[Base::numdofpernode_ * inode + idim];
@@ -445,7 +445,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     DRT::Node** nodes = pele->Nodes();
     for (int inode = 0; inode < nenparent; ++inode)
     {
-      for (int idof = 0; idof < Base::nsd_; ++idof)
+      for (int idof = 0; idof < nsd_; ++idof)
       {
         const double* x = nodes[inode]->X();
         xrefe(idof, inode) = x[idof];
@@ -472,20 +472,20 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < Base::bdrynen_; inode++)
   {
-    for (int idim = 0; idim < Base::nsd_; idim++)
+    for (int idim = 0; idim < nsd_; idim++)
     {
       evelnp(idim, inode) = my_fluidvelocity_np[idim + (inode * Base::numdofpernode_)];
       eveln(idim, inode) = my_fluidvelocity_n[idim + (inode * Base::numdofpernode_)];
       edispnp(idim, inode) = my_displacements_np[idim + (inode * Base::numdofpernode_)];
       egridvel(idim, inode) = my_gridvelocity[idim + (inode * Base::numdofpernode_)];
     }
-    epressnp(inode) = my_fluidvelocity_np[Base::nsd_ + (Base::numdofpernode_ * inode)];
-    epressn(inode) = my_fluidvelocity_n[Base::nsd_ + (Base::numdofpernode_ * inode)];
+    epressnp(inode) = my_fluidvelocity_np[nsd_ + (Base::numdofpernode_ * inode)];
+    epressn(inode) = my_fluidvelocity_n[nsd_ + (Base::numdofpernode_ * inode)];
   }
 
   for (int inode = 0; inode < nenparent; inode++)
   {
-    for (int idim = 0; idim < Base::nsd_; idim++)
+    for (int idim = 0; idim < nsd_; idim++)
     {
       pevelnp(idim, inode) = my_parentfluidvelocity_np[idim + (inode * Base::numdofpernode_)];
       peveln(idim, inode) = my_parentfluidvelocity_n[idim + (inode * Base::numdofpernode_)];
@@ -537,10 +537,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   }
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
-  LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, Base::nsd_);
-  LINALG::Matrix<Base::nsd_, Base::nsd_> derivtrafo(true);
+  LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
+  LINALG::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  DRT::UTILS::BoundaryGPToParentGP<Base::nsd_>(
+  DRT::UTILS::BoundaryGPToParentGP<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->SurfaceNumber());
 
   // //////////////////////////////////////////////////////////////////////////
@@ -550,13 +550,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   {
     // get shape functions and derivatives in the plane of the element
     LINALG::Matrix<nenparent, 1> pfunct(true);  // parent element shape function
-    LINALG::Matrix<Base::nsd_, nenparent> pderiv(
+    LINALG::Matrix<nsd_, nenparent> pderiv(
         true);  // derivatives of parent element shape functions in interface coordinate system
-    LINALG::Matrix<Base::nsd_, nenparent> pderiv_loc(
+    LINALG::Matrix<nsd_, nenparent> pderiv_loc(
         true);  // derivatives of parent element shape functions in parent element coordinate system
 
     // coordinates of the current integration point in parent coordinate system
-    for (int idim = 0; idim < Base::nsd_; idim++)
+    for (int idim = 0; idim < nsd_; idim++)
     {
       pxsi(idim) = pqxg(gpid, idim);
     }
@@ -590,9 +590,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     //   |  X_1,2  X_2,2  X_3,2  | = Jmat = --------
     //   |_ X_1,3  X_2,3  X_3,3 _|           d s_j
     //
-    LINALG::Matrix<Base::nsd_, Base::nsd_> xjm;
-    LINALG::Matrix<Base::nsd_, Base::nsd_> xjm_n;  // at previous time step n
-    LINALG::Matrix<Base::nsd_, Base::nsd_> Jmat;
+    LINALG::Matrix<nsd_, nsd_> xjm;
+    LINALG::Matrix<nsd_, nsd_> xjm_n;  // at previous time step n
+    LINALG::Matrix<nsd_, nsd_> Jmat;
     xjm.MultiplyNT(pderiv_loc, xcurr);
     xjm_n.MultiplyNT(pderiv_loc, xcurr_n);
     Jmat.MultiplyNT(pderiv_loc, xrefe);
@@ -601,8 +601,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     const double J = det / detJ;
 
     // inverse of transposed jacobian "ds/dx" (xjm)
-    LINALG::Matrix<Base::nsd_, Base::nsd_> xji;
-    LINALG::Matrix<Base::nsd_, Base::nsd_> xji_n;  // at previous time step n
+    LINALG::Matrix<nsd_, nsd_> xji;
+    LINALG::Matrix<nsd_, nsd_> xji_n;  // at previous time step n
     //    _                     _
     //   |  s_1,1  s_2,1  s_3,1  |           d s_i
     //   |  s_1,2  s_2,2  s_3,2  | = xji  = -------- ;  [xji] o [xjm] = I
@@ -613,9 +613,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 
 #ifdef DEBUG
     // check unitiy of  [xji] o [xjm]
-    LINALG::Matrix<Base::nsd_, Base::nsd_> eye;
+    LINALG::Matrix<nsd_, nsd_> eye;
     eye.Multiply(xji, xjm);
-    if (Base::nsd_ == 3)
+    if (nsd_ == 3)
     {
       if (abs(eye(0, 0) - 1.0) > 1e-11 or abs(eye(1, 1) - 1.0) > 1e-11 or
           abs(eye(2, 2) - 1.0) > 1e-11)
@@ -630,7 +630,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
         dserror("matrix times its inverse is not equal identity ... that sucks !!!");
       }
     }
-    else if (Base::nsd_ == 2)
+    else if (nsd_ == 2)
     {
       if (abs(eye(0, 0) - 1.0) > 1e-11 or abs(eye(1, 1) - 1.0) > 1e-11)
       {
@@ -688,31 +688,31 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     dudxioJinv.MultiplyNT(dudxi, xji);
     dudxioJinv_n.MultiplyNT(dudxi_n, xji_n);  // at previus time step n
 
-    LINALG::Matrix<1, Base::nsd_> graduon(true);
-    LINALG::Matrix<1, Base::nsd_> graduon_n(true);  // from previous time step
+    LINALG::Matrix<1, nsd_> graduon(true);
+    LINALG::Matrix<1, nsd_> graduon_n(true);  // from previous time step
     //
     // l=  1     2     3
     // [  ...   ...   ...  ]
     //
     //
-    for (int idof = 0; idof < Base::nsd_; idof++)  // l Loop
+    for (int idof = 0; idof < nsd_; idof++)  // l Loop
     {
-      for (int idof2 = 0; idof2 < Base::nsd_; idof2++)
+      for (int idof2 = 0; idof2 < nsd_; idof2++)
       {
         graduon(0, idof) += dudxioJinv(idof, idof2) * Base::unitnormal_(idof2);
         graduon_n(0, idof) += dudxioJinv_n(idof, idof2) * Base::unitnormal_n_(idof2);
       }
     }
-    LINALG::Matrix<1, Base::nsd_> graduTon(true);
-    LINALG::Matrix<1, Base::nsd_> graduTon_n(true);  // at previous time step n
+    LINALG::Matrix<1, nsd_> graduTon(true);
+    LINALG::Matrix<1, nsd_> graduTon_n(true);  // at previous time step n
     //
     // l=  1     2     3
     // [  ...   ...   ...  ]
     //
     //
-    for (int idof = 0; idof < Base::nsd_; idof++)  // l Loop
+    for (int idof = 0; idof < nsd_; idof++)  // l Loop
     {
-      for (int idof2 = 0; idof2 < Base::nsd_; idof2++)
+      for (int idof2 = 0; idof2 < nsd_; idof2++)
       {
         graduTon(0, idof) += dudxioJinv(idof2, idof) * Base::unitnormal_(idof2);
         graduTon_n(0, idof) += dudxioJinv_n(idof2, idof) * Base::unitnormal_n_(idof2);
@@ -741,18 +741,18 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 
     // dxyzdrs vector -> normal which is not normalized built from cross product of columns
     // of Jacobian matrix d(x,y,z)/d(r,s)
-    LINALG::Matrix<Base::bdrynsd_, Base::nsd_> dxyzdrs(0.0);
-    LINALG::Matrix<Base::bdrynsd_, Base::nsd_> dxyzdrs_n(0.0);
+    LINALG::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
+    LINALG::Matrix<Base::bdrynsd_, nsd_> dxyzdrs_n(0.0);
     dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
     dxyzdrs_n.MultiplyNT(Base::deriv_, Base::xyze_n_);
 
     // tangential surface vectors are columns of dxyzdrs
-    LINALG::Matrix<Base::nsd_, 1> tangential1(true);
-    LINALG::Matrix<Base::nsd_, 1> tangential2(true);
-    LINALG::Matrix<Base::nsd_, 1> tangential1_n(true);
-    LINALG::Matrix<Base::nsd_, 1> tangential2_n(true);
+    LINALG::Matrix<nsd_, 1> tangential1(true);
+    LINALG::Matrix<nsd_, 1> tangential2(true);
+    LINALG::Matrix<nsd_, 1> tangential1_n(true);
+    LINALG::Matrix<nsd_, 1> tangential2_n(true);
 
-    for (int idof = 0; idof < Base::nsd_; idof++)
+    for (int idof = 0; idof < nsd_; idof++)
     {
       tangential1(idof, 0) = dxyzdrs(0, idof);
       tangential1_n(idof, 0) = dxyzdrs_n(0, idof);
@@ -766,9 +766,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 
     tangential1_n.Scale(1 / normoftangential1_n);
 
-    if (Base::nsd_ == 3)
+    if (nsd_ == 3)
     {
-      for (int idof = 0; idof < Base::nsd_; idof++)
+      for (int idof = 0; idof < nsd_; idof++)
       {
         tangential2(idof, 0) = dxyzdrs(1, idof);
         tangential2_n(idof, 0) = dxyzdrs_n(1, idof);
@@ -786,7 +786,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     //                                                             I
     // calculate tangential structure velocity (gridvelocity) vs o t
     //
-    // [Base::nsd_ x 1] o [Base::nsd_ x 1]
+    // [nsd_ x 1] o [nsd_ x 1]
     //
     double tangentialvs1 = 0.0;
     double tangentialvs2 = 0.0;
@@ -796,7 +796,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     //                                          I
     // calculate tangential fluid velocity vf o t
     //
-    // [Base::nsd_ x 1] o [Base::nsd_ x 1]
+    // [nsd_ x 1] o [nsd_ x 1]
     //
     double tangentialvf1 = 0.0;
     double tangentialvf2 = 0.0;
@@ -819,37 +819,37 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     //  t3 |  -(...)     -(...)    N_1,(r,s)-() |    ...       ...     N_2,(r,s) |  ...     |
     //     |_                                                                              _|
     //
-    LINALG::Matrix<Base::nsd_, nenparent * Base::nsd_> tangentialderiv1(true);
-    LINALG::Matrix<Base::nsd_, nenparent * Base::nsd_> tangentialderiv2(true);
+    LINALG::Matrix<nsd_, nenparent * nsd_> tangentialderiv1(true);
+    LINALG::Matrix<nsd_, nenparent * nsd_> tangentialderiv2(true);
 
     for (int node = 0; node < nenparent; ++node)
     {
       // block diagonal entries
-      for (int idof = 0; idof < Base::nsd_; ++idof)
-        tangentialderiv1(idof, (node * Base::nsd_) + idof) = pderiv(0, node) / normoftangential1;
+      for (int idof = 0; idof < nsd_; ++idof)
+        tangentialderiv1(idof, (node * nsd_) + idof) = pderiv(0, node) / normoftangential1;
 
       // terms from linearization of norm
-      for (int idof = 0; idof < Base::nsd_; ++idof)
+      for (int idof = 0; idof < nsd_; ++idof)
       {
-        for (int idof2 = 0; idof2 < Base::nsd_; idof2++)
-          tangentialderiv1(idof, (node * Base::nsd_) + idof2) -=
+        for (int idof2 = 0; idof2 < nsd_; idof2++)
+          tangentialderiv1(idof, (node * nsd_) + idof2) -=
               (tangential1(idof, 0) * tangential1(idof2, 0) * pderiv(0, node)) / normoftangential1;
       }
     }
-    if (Base::nsd_ == 3)
+    if (nsd_ == 3)
     {
       for (int node = 0; node < nenparent; ++node)
       {
         // block diagonal entries
-        for (int idof = 0; idof < Base::nsd_; ++idof)
-          tangentialderiv2(idof, (node * Base::nsd_) + idof) = pderiv(1, node) / normoftangential2;
+        for (int idof = 0; idof < nsd_; ++idof)
+          tangentialderiv2(idof, (node * nsd_) + idof) = pderiv(1, node) / normoftangential2;
 
         // terms from linearization of norm
-        for (int idof = 0; idof < Base::nsd_; ++idof)
+        for (int idof = 0; idof < nsd_; ++idof)
         {
-          for (int idof2 = 0; idof2 < Base::nsd_; idof2++)
+          for (int idof2 = 0; idof2 < nsd_; idof2++)
           {
-            tangentialderiv2(idof, (node * Base::nsd_) + idof2) -=
+            tangentialderiv2(idof, (node * nsd_) + idof2) -=
                 (tangential2(idof, 0) * tangential2(idof2, 0) * pderiv(1, node)) /
                 normoftangential2;
           }
@@ -862,33 +862,33 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     // vs_j --------- = [  x x x      x x x            ]
     //       d d^L_l
     //
-    LINALG::Matrix<nenparent * Base::nsd_, 1> vsotangentialderiv1(true);
-    LINALG::Matrix<nenparent * Base::nsd_, 1> vsotangentialderiv2(true);
+    LINALG::Matrix<nenparent * nsd_, 1> vsotangentialderiv1(true);
+    LINALG::Matrix<nenparent * nsd_, 1> vsotangentialderiv2(true);
     for (int inode = 0; inode < nenparent; inode++)
     {
-      for (int idof = 0; idof < Base::nsd_; idof++)
+      for (int idof = 0; idof < nsd_; idof++)
       {
-        for (int idof2 = 0; idof2 < Base::nsd_; idof2++)
+        for (int idof2 = 0; idof2 < nsd_; idof2++)
         {
-          vsotangentialderiv1((inode * Base::nsd_) + idof, 0) +=
-              gridvelint(idof2, 0) * tangentialderiv1(idof2, (inode * Base::nsd_) + idof);
-          vsotangentialderiv2((inode * Base::nsd_) + idof, 0) +=
-              gridvelint(idof2, 0) * tangentialderiv2(idof2, (inode * Base::nsd_) + idof);
+          vsotangentialderiv1((inode * nsd_) + idof, 0) +=
+              gridvelint(idof2, 0) * tangentialderiv1(idof2, (inode * nsd_) + idof);
+          vsotangentialderiv2((inode * nsd_) + idof, 0) +=
+              gridvelint(idof2, 0) * tangentialderiv2(idof2, (inode * nsd_) + idof);
         }
       }
     }
-    LINALG::Matrix<nenparent * Base::nsd_, 1> vfotangentialderiv1(true);
-    LINALG::Matrix<nenparent * Base::nsd_, 1> vfotangentialderiv2(true);
+    LINALG::Matrix<nenparent * nsd_, 1> vfotangentialderiv1(true);
+    LINALG::Matrix<nenparent * nsd_, 1> vfotangentialderiv2(true);
     for (int inode = 0; inode < nenparent; inode++)
     {
-      for (int idof = 0; idof < Base::nsd_; idof++)
+      for (int idof = 0; idof < nsd_; idof++)
       {
-        for (int idof2 = 0; idof2 < Base::nsd_; idof2++)
+        for (int idof2 = 0; idof2 < nsd_; idof2++)
         {
-          vfotangentialderiv1((inode * Base::nsd_) + idof, 0) +=
-              Base::velint_(idof2, 0) * tangentialderiv1(idof2, (inode * Base::nsd_) + idof);
-          vfotangentialderiv2((inode * Base::nsd_) + idof, 0) +=
-              Base::velint_(idof2, 0) * tangentialderiv2(idof2, (inode * Base::nsd_) + idof);
+          vfotangentialderiv1((inode * nsd_) + idof, 0) +=
+              Base::velint_(idof2, 0) * tangentialderiv1(idof2, (inode * nsd_) + idof);
+          vfotangentialderiv2((inode * nsd_) + idof, 0) +=
+              Base::velint_(idof2, 0) * tangentialderiv2(idof2, (inode * nsd_) + idof);
         }
       }
     }
@@ -910,9 +910,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     //  interface and its corresponding basic functions become zero. this makes perfect
     //  sense for the normal and its linearization are well determined solely by the
     //  surface of the element.
-    LINALG::Matrix<Base::nsd_, nenparent * Base::nsd_> normalderiv(true);
+    LINALG::Matrix<nsd_, nenparent * nsd_> normalderiv(true);
 
-    if (Base::nsd_ == 3)
+    if (nsd_ == 3)
     {
       for (int node = 0; node < nenparent; ++node)
       {
@@ -939,11 +939,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     {
       for (int node = 0; node < nenparent; ++node)
       {
-        normalderiv(0, Base::nsd_ * node) += 0.;
-        normalderiv(0, Base::nsd_ * node + 1) += pderiv(0, node);
+        normalderiv(0, nsd_ * node) += 0.;
+        normalderiv(0, nsd_ * node + 1) += pderiv(0, node);
 
-        normalderiv(1, Base::nsd_ * node) += -pderiv(0, node);
-        normalderiv(1, Base::nsd_ * node + 1) += 0.;
+        normalderiv(1, nsd_ * node) += -pderiv(0, node);
+        normalderiv(1, nsd_ * node + 1) += 0.;
       }
     }
 
@@ -958,9 +958,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     //          | x_3,r |     | x_3,s |
     //          |_     _|     |_     _|
     //
-    LINALG::Matrix<Base::nsd_, 1> normal(true);
+    LINALG::Matrix<nsd_, 1> normal(true);
 
-    if (Base::nsd_ == 3)
+    if (nsd_ == 3)
     {
       normal(0, 0) = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(0, 2) * dxyzdrs(1, 1);
       normal(1, 0) = dxyzdrs(0, 2) * dxyzdrs(1, 0) - dxyzdrs(0, 0) * dxyzdrs(1, 2);
@@ -986,17 +986,17 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     //                 |_ |          |        |            _|
     //
     //
-    LINALG::Matrix<Base::nsd_, nenparent> linearizationofscalarintegraltransformfac(true);
+    LINALG::Matrix<nsd_, nenparent> linearizationofscalarintegraltransformfac(true);
 
     for (int node = 0; node < nenparent; ++node)
     {
-      for (int ldof = 0; ldof < Base::nsd_; ++ldof)
+      for (int ldof = 0; ldof < nsd_; ++ldof)
       {
-        for (int idof = 0; idof < Base::nsd_; ++idof)
+        for (int idof = 0; idof < nsd_; ++idof)
         {
           linearizationofscalarintegraltransformfac(ldof, node) +=
               1 / scalarintegraltransformfac * normal(idof, 0) *
-              normalderiv(idof, node * Base::nsd_ + ldof);
+              normalderiv(idof, node * nsd_ + ldof);
         }
       }
     }
@@ -1005,9 +1005,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     //------------------------------------- d|J|/dd = d|J|/dF : dF/dd = |J| * F^-T . N_X = |J| * N_x
     //
     // linearization of jacobian determinant w.r.t. structural displacements
-    LINALG::Matrix<1, Base::nsd_ * nenparent> dJ_dds;
+    LINALG::Matrix<1, nsd_ * nenparent> dJ_dds;
     // global derivatives of shape functions w.r.t x,y,z (material configuration)
-    LINALG::Matrix<Base::nsd_, nenparent> derxy;
+    LINALG::Matrix<nsd_, nenparent> derxy;
 
     //                                        _                          _
     //            d  N_A      d xi_alpha     |  N1,1 N2,1 N3,1 N4,1 ...   |
@@ -1017,7 +1017,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     derxy.Multiply(xji, pderiv_loc);
 
     for (int i = 0; i < nenparent; i++)
-      for (int j = 0; j < Base::nsd_; j++) dJ_dds(j + i * Base::nsd_) = J * derxy(j, i);
+      for (int j = 0; j < nsd_; j++) dJ_dds(j + i * nsd_) = J * derxy(j, i);
 
     //
     //
@@ -1028,14 +1028,14 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     LINALG::Matrix<1, nenparent> dNdxon(true);
     for (int inode = 0; inode < nenparent; inode++)
     {
-      for (int idof = 0; idof < Base::nsd_; idof++)
+      for (int idof = 0; idof < nsd_; idof++)
       {
         dNdxon(0, inode) += derxy(idof, inode) * Base::unitnormal_(idof);
       }
     }
 
     LINALG::Matrix<1, nenparent> gradNon(true);
-    LINALG::Matrix<1, Base::nsd_ * nenparent> gradN(true);
+    LINALG::Matrix<1, nsd_ * nenparent> gradN(true);
     //              d xi_alpha
     //  N_L,alpha  ------------ [g_L x g_j]
     //              d  x_j
@@ -1047,13 +1047,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     // gradN.MultiplyTT(pderiv,xji);
     for (int inode = 0; inode < nenparent; inode++)  // L     Loop
     {
-      for (int idof = 0; idof < Base::nsd_; idof++)  // j     Loop
+      for (int idof = 0; idof < nsd_; idof++)  // j     Loop
       {
-        for (int idof2 = 0; idof2 < Base::nsd_; idof2++)  // alpha Loop
+        for (int idof2 = 0; idof2 < nsd_; idof2++)  // alpha Loop
         {
-          gradN(0, (inode * Base::nsd_) + idof) += pderiv_loc(idof2, inode) * (xji(idof, idof2));
+          gradN(0, (inode * nsd_) + idof) += pderiv_loc(idof2, inode) * (xji(idof, idof2));
         }
-        gradNon(0, inode) += gradN(0, inode * Base::nsd_ + idof) * Base::unitnormal_(idof);
+        gradNon(0, inode) += gradN(0, inode * nsd_ + idof) * Base::unitnormal_(idof);
       }
     }
 
@@ -1061,23 +1061,23 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     // gradient of u once contracted with linearization of normal
     //
     //                                L= 1 ... nenparent
-    //                         i=   _ l= 1 ... Base::nsd_        _
+    //                         i=   _ l= 1 ... nsd_        _
     //               d  n_j      1 |     ...                |
     //   N_A,j u^A_i -------- =  2 |     ...                |
     //               d d^L_l     3 |_    ...               _|
     //
-    LINALG::Matrix<Base::nsd_, Base::nsd_ * nenparent> graduonormalderiv;
+    LINALG::Matrix<nsd_, nsd_ * nenparent> graduonormalderiv;
     graduonormalderiv.Multiply(dudxioJinv, normalderiv);
 
     // transposed gradient of u once contracted with linearization of normal
     //
     //                                L= 1 ... nenparent
-    //                         i=   _ l= 1 ... Base::nsd_        _
+    //                         i=   _ l= 1 ... nsd_        _
     //               d  n_j      1 |     ...                |
     //   N_A,i u^A_j -------- =  2 |     ...                |
     //               d d^L_l     3 |_    ...               _|
     //
-    LINALG::Matrix<Base::nsd_, Base::nsd_ * nenparent> graduTonormalderiv;
+    LINALG::Matrix<nsd_, nsd_ * nenparent> graduTonormalderiv;
     graduTonormalderiv.MultiplyTN(dudxioJinv, normalderiv);
 
     // Isn't that cool?
@@ -1111,15 +1111,15 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     for (int inode = 0; inode < nenparent; inode++)
     {
       double normal_u_minus_vs = 0.0;
-      LINALG::Matrix<1, Base::nsd_> u_minus_vs(true);
+      LINALG::Matrix<1, nsd_> u_minus_vs(true);
 
-      for (int idof = 0; idof < Base::nsd_; idof++)
+      for (int idof = 0; idof < nsd_; idof++)
       {
         normal_u_minus_vs += Base::unitnormal_(idof) * (Base::velint_(idof) - gridvelint(idof));
         u_minus_vs(idof) = Base::velint_(idof) - gridvelint(idof);
       }
 
-      LINALG::Matrix<1, nenparent * Base::nsd_> u_minus_vs_normalderiv(true);
+      LINALG::Matrix<1, nenparent * nsd_> u_minus_vs_normalderiv(true);
       u_minus_vs_normalderiv.Multiply(u_minus_vs, normalderiv);
 
 
@@ -1128,7 +1128,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
       // //////////////////////////////////////////////////////////////////////////
       for (int nnod = 0; nnod < nenparent; nnod++)
       {
-        for (int idof2 = 0; idof2 < Base::nsd_; idof2++)
+        for (int idof2 = 0; idof2 < nsd_; idof2++)
         {
           if (block == "Porofluid_Freefluid")
           {
@@ -1139,8 +1139,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                opposite direction
              */
 
-            elemat1(
-                inode * Base::numdofpernode_ + Base::nsd_, nnod * Base::numdofpernode_ + idof2) -=
+            elemat1(inode * Base::numdofpernode_ + nsd_, nnod * Base::numdofpernode_ + idof2) -=
                 ((timefacfacpre)*pfunct(inode) * Base::unitnormal_(idof2) * pfunct(nnod));
           }  // Porofluid_Freefluid
           else if (block == "Porofluid_Structure")
@@ -1152,13 +1151,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                sign
              */
 
-            elemat1(
-                inode * Base::numdofpernode_ + Base::nsd_, nnod * Base::numdofpernode_ + idof2) +=
-                -u_minus_vs_normalderiv(0, nnod * Base::nsd_ + idof2) * pfunct(inode) * timefacpre *
-                    fac * survivor(nnod)  // no Base::drs_ needed, since it is contained in the
-                                          // linearization w.r.t. nonunitnormal (normalderiv) ->
-                                          // timefacpre*fac instead of timefafacpre = timefacpre *
-                                          // Base::fac_ (Base::fac_ = fac*Base::drs_)
+            elemat1(inode * Base::numdofpernode_ + nsd_, nnod * Base::numdofpernode_ + idof2) +=
+                -u_minus_vs_normalderiv(0, nnod * nsd_ + idof2) * pfunct(inode) * timefacpre * fac *
+                    survivor(nnod)  // no Base::drs_ needed, since it is contained in the
+                                    // linearization w.r.t. nonunitnormal (normalderiv) ->
+                                    // timefacpre*fac instead of timefafacpre = timefacpre *
+                                    // Base::fac_ (Base::fac_ = fac*Base::drs_)
                 + pfunct(inode) * Base::unitnormal_(idof2) * timescale * pfunct(nnod) *
                       (timefacfacpre);
           }  // block Porofluid_Structure
@@ -1171,7 +1169,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                opposite direction
              */
             elemat1((inode * Base::numdofpernode_) + idof2,
-                (nnod * Base::numdofpernode_) + Base::nsd_) -=
+                (nnod * Base::numdofpernode_) + nsd_) -=
                 (  // sign checked to be negative
                     pfunct(inode) * pfunct(nnod) * Base::unitnormal_(idof2)
 
@@ -1191,7 +1189,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 
              */
             elemat1((inode * Base::numdofpernode_) + idof2,
-                (nnod * Base::numdofpernode_) + Base::nsd_) -=
+                (nnod * Base::numdofpernode_) + nsd_) -=
                 (  // sign checked to be negative
                     tangential1(idof2, 0) * (tangentialvf1 - tangentialvs1) +  // d phi / dpfpm
                     tangential2(idof2, 0) * (tangentialvf2 - tangentialvs2)
@@ -1200,7 +1198,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                 pfunct(inode) * tangentialfac * dphi_dp * Base::fac_ *
                 timefac;  // scalarintegraltransformfac;
 
-            for (int idof3 = 0; idof3 < Base::nsd_; idof3++)
+            for (int idof3 = 0; idof3 < nsd_; idof3++)
             {
               /*                              _                      _
                                 I  alpha mu_f  |                        |   I  /
@@ -1233,11 +1231,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                         evaluated on PoroField(): flip sign because Base::unitnormal_ points in
                  opposite direction
                */
-              for (int idof3 = 0; idof3 < Base::nsd_; idof3++)
+              for (int idof3 = 0; idof3 < nsd_; idof3++)
               {
-                elemat1((inode * Base::numdofpernode_) + idof2, (nnod * Base::nsd_) + idof3) -=
-                    (pfunct(inode) * normalderiv(idof2, (nnod * Base::nsd_) + idof3)) *
-                    pressint(0, 0) * fac * timefac *
+                elemat1((inode * Base::numdofpernode_) + idof2, (nnod * nsd_) + idof3) -=
+                    (pfunct(inode) * normalderiv(idof2, (nnod * nsd_) + idof3)) * pressint(0, 0) *
+                    fac * timefac *
                     survivor(
                         nnod);  // *Base::fac_ since normalderiv is referring to the test function
               }                 // idof3
@@ -1251,9 +1249,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 
                                 evaluated on PoroField():
                */
-              for (int idof3 = 0; idof3 < Base::nsd_; idof3++)
+              for (int idof3 = 0; idof3 < nsd_; idof3++)
               {
-                elemat1((inode * Base::numdofpernode_) + idof2, (nnod * Base::nsd_) + idof3) -=
+                elemat1((inode * Base::numdofpernode_) + idof2, (nnod * nsd_) + idof3) -=
                     ((tangential1(idof2, 0) *
                              (tangentialvs1 +
                                  porosityint *
@@ -1266,19 +1264,18 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                             survivor(nnod)  // -> survivor(nnod) in order to filter the entries
                                             // which do not belong to the interface
                         +
-                        (tangentialderiv1(idof2, (nnod * Base::nsd_) + idof3) *
+                        (tangentialderiv1(idof2, (nnod * nsd_) + idof3) *
                                 (porosityint * (tangentialvf1 - tangentialvs1)) +  // d t^i/d d^L_l
-                            tangentialderiv2(idof2, (nnod * Base::nsd_) + idof3) *
+                            tangentialderiv2(idof2, (nnod * nsd_) + idof3) *
                                 (porosityint * (tangentialvf2 - tangentialvs2))
 
                                 ) *
                             survivor(nnod) +
-                        (tangential1(idof2, 0) * (vfotangentialderiv1((nnod * Base::nsd_) + idof3) -
-                                                     vsotangentialderiv1((nnod * Base::nsd_) +
-                                                                         idof3)) +  // d t^j/d d^L_l
-                            tangential2(idof2, 0) *
-                                (vfotangentialderiv2((nnod * Base::nsd_) + idof3) -
-                                    vsotangentialderiv2((nnod * Base::nsd_) + idof3))
+                        (tangential1(idof2, 0) *
+                                (vfotangentialderiv1((nnod * nsd_) + idof3) -
+                                    vsotangentialderiv1((nnod * nsd_) + idof3)) +  // d t^j/d d^L_l
+                            tangential2(idof2, 0) * (vfotangentialderiv2((nnod * nsd_) + idof3) -
+                                                        vsotangentialderiv2((nnod * nsd_) + idof3))
 
                                 ) *
                             porosityint * survivor(nnod) -
@@ -1293,7 +1290,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                             tangential2(idof2, 0) * (tangentialvf2 - tangentialvs2)
 
                                 ) *
-                            dphi_dJ * dJ_dds((nnod * Base::nsd_) + idof3) +
+                            dphi_dJ * dJ_dds((nnod * nsd_) + idof3) +
                         (tangential1(idof2, 0) *
                                 tangential1(idof3,
                                     0) +  // d vs / d d^L_l (front term without phi) (sign checked)
@@ -1301,17 +1298,17 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 
                                 ) *
                             pfunct(nnod) * timescale +
-                        (tangentialderiv1(idof2, (nnod * Base::nsd_) + idof3) *
+                        (tangentialderiv1(idof2, (nnod * nsd_) + idof3) *
                                 tangentialvs1 +  // d t^i/d d^L_l (front term without phi)
-                            tangentialderiv2(idof2, (nnod * Base::nsd_) + idof3) * tangentialvs2
+                            tangentialderiv2(idof2, (nnod * nsd_) + idof3) * tangentialvs2
 
                             ) *
                             survivor(nnod) +
                         (tangential1(idof2, 0) *
                                 vsotangentialderiv1(
-                                    (nnod * Base::nsd_) +
+                                    (nnod * nsd_) +
                                     idof3) +  // d t^j/d d^L_l (front term without phi)
-                            tangential2(idof2, 0) * vsotangentialderiv2((nnod * Base::nsd_) + idof3)
+                            tangential2(idof2, 0) * vsotangentialderiv2((nnod * nsd_) + idof3)
 
                                 ) *
                             survivor(nnod)
@@ -1326,8 +1323,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 
                             evaluated on PoroField(): sign flip*/
 
-                  elemat1((inode * Base::numdofpernode_) + idof2, (nnod * Base::nsd_) + idof3) +=
-                      ((-u_minus_vs_normalderiv(0, nnod * Base::nsd_ + idof2) * pfunct(inode) *
+                  elemat1((inode * Base::numdofpernode_) + idof2, (nnod * nsd_) + idof3) +=
+                      ((-u_minus_vs_normalderiv(0, nnod * nsd_ + idof2) * pfunct(inode) *
                                Base::fac_ * timefac * survivor(nnod) +
                            pfunct(inode) * Base::unitnormal_(idof2) * timescale * pfunct(nnod) *
                                Base::fac_ * timefac) /
@@ -1337,7 +1334,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
             }
             else if (discretization.Name() == "fluid")
             {
-              for (int idof3 = 0; idof3 < Base::nsd_; idof3++)
+              for (int idof3 = 0; idof3 < nsd_; idof3++)
               {
                 elemat1((inode * Base::numdofpernode_) + idof2,
                     (nnod * Base::numdofpernode_) + idof3) +=
@@ -1348,15 +1345,15 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                          ) * (linearizationofscalarintegraltransformfac(idof3, nnod) / Base::drs_) *
                             survivor(nnod)  // -> survivor(nnod) in order to filter the entries
                                             // which do not belong to the interface
-                        + (tangentialderiv1(idof2, (nnod * Base::nsd_) + idof3) *
+                        + (tangentialderiv1(idof2, (nnod * nsd_) + idof3) *
                                   tangentialvf1 +  // d t^i/d d^L_l
-                              tangentialderiv2(idof2, (nnod * Base::nsd_) + idof3) * tangentialvf2
+                              tangentialderiv2(idof2, (nnod * nsd_) + idof3) * tangentialvf2
 
                               ) *
                               survivor(nnod) +
                         (tangential1(idof2, 0) *
-                                vfotangentialderiv1((nnod * Base::nsd_) + idof3) +  // d t^j/d d^L_l
-                            tangential2(idof2, 0) * vfotangentialderiv2((nnod * Base::nsd_) + idof3)
+                                vfotangentialderiv1((nnod * nsd_) + idof3) +  // d t^j/d d^L_l
+                            tangential2(idof2, 0) * vfotangentialderiv2((nnod * nsd_) + idof3)
 
                                 ) *
                             survivor(nnod)) *
@@ -1369,7 +1366,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
             /*
                         d(w o t,tangentialfac * u o t) / d(du)
              */
-            for (int idof3 = 0; idof3 < Base::nsd_; idof3++)
+            for (int idof3 = 0; idof3 < nsd_; idof3++)
             {
               elemat1(
                   (inode * Base::numdofpernode_) + idof2, (nnod * Base::numdofpernode_) + idof3) +=
@@ -1409,22 +1406,22 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                       ) *
                   fluiddynamicviscosity * Base::fac_ * timefac;
 
-              elemat1((inode * Base::numdofpernode_) + idof2,
-                  (nnod * Base::numdofpernode_) + Base::nsd_) +=
+              elemat1(
+                  (inode * Base::numdofpernode_) + idof2, (nnod * Base::numdofpernode_) + nsd_) +=
                   (
                       // d (dd , pf o n) / d pf_B
                       // flip sign
                       pfunct(inode) * pfunct(nnod) * Base::unitnormal_(idof2)) *
                   Base::fac_ * timefac;
 
-              for (int idof3 = 0; idof3 < Base::nsd_; idof3++)
+              for (int idof3 = 0; idof3 < nsd_; idof3++)
               {
                 elemat1((inode * Base::numdofpernode_) + idof2,
                     (nnod * Base::numdofpernode_) + idof3) -=
                     (
                         // d (2*mu*0.5*(u_i,j+u_j,i)) / d u^L_l
-                        pfunct(inode) * gradN(0, (nnod * Base::nsd_) + idof2) *
-                        Base::unitnormal_(idof3) * fluiddynamicviscosity  // d u_j,i / d u^L_l
+                        pfunct(inode) * gradN(0, (nnod * nsd_) + idof2) * Base::unitnormal_(idof3) *
+                        fluiddynamicviscosity  // d u_j,i / d u^L_l
                         ) *
                     Base::fac_ * timefac;
               }
@@ -1432,27 +1429,25 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
           }  // block NeumannIntegration
           else if (block == "NeumannIntegration_Ale")
           {
-            for (int idof3 = 0; idof3 < Base::nsd_; idof3++)
+            for (int idof3 = 0; idof3 < nsd_; idof3++)
             {
-              elemat1((inode * Base::numdofpernode_) + idof2, (nnod * Base::nsd_) + idof3) -=
+              elemat1((inode * Base::numdofpernode_) + idof2, (nnod * nsd_) + idof3) -=
                   (
                       // d (dd , - pf o n) / d d^L_l
-                      -pfunct(inode) * pressint(0, 0) *
-                          normalderiv(idof2, (nnod * Base::nsd_) + idof3) * fac  // d n_j / d d^L_l
+                      -pfunct(inode) * pressint(0, 0) * normalderiv(idof2, (nnod * nsd_) + idof3) *
+                          fac  // d n_j / d d^L_l
 
                       // d (dd, mu*u_i,j o n ) / d d^L_l
                       - fluiddynamicviscosity * pfunct(inode) * dudxioJinv(idof2, idof3) *
                             dNdxon(nnod) * Base::fac_  // d ui,j / d d^L_l
                       + fluiddynamicviscosity * pfunct(inode) *
-                            graduonormalderiv(idof2, (nnod * Base::nsd_) + idof3) *
-                            fac  // d n / d d^L_l
+                            graduonormalderiv(idof2, (nnod * nsd_) + idof3) * fac  // d n / d d^L_l
 
                       // d (dd, mu*u_j,i o n ) / d d^L_l
                       - fluiddynamicviscosity * pfunct(inode) * graduTon(0, idof3) *
                             derxy(idof2, nnod) * Base::fac_  // d uj,i / d d^L,l
                       + fluiddynamicviscosity * pfunct(inode) *
-                            graduTonormalderiv(idof2, (nnod * Base::nsd_) + idof3) *
-                            fac  // d n_j / d^L_l
+                            graduTonormalderiv(idof2, (nnod * nsd_) + idof3) * fac  // d n_j / d^L_l
                       ) *
                   timefac;  // split afterwards, as this is assembled into a blockmatrix
             }
@@ -1479,8 +1474,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                     fluiddynamicviscosity * Base::fac_ * theta);
 
 
-            elemat1((inode * Base::numdofpernode_) + idof2,
-                (nnod * Base::numdofpernode_) + Base::nsd_) -=
+            elemat1((inode * Base::numdofpernode_) + idof2, (nnod * Base::numdofpernode_) + nsd_) -=
                 ((
                      // d (dd , pf o n) / d pf_B
                      // flip sign
@@ -1490,14 +1484,14 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                          ) *
                     Base::fac_ * theta);
 
-            for (int idof3 = 0; idof3 < Base::nsd_; idof3++)
+            for (int idof3 = 0; idof3 < nsd_; idof3++)
             {
               elemat1(
                   (inode * Base::numdofpernode_) + idof2, (nnod * Base::numdofpernode_) + idof3) +=
                   (
                       // d (2*mu*0.5*(u_i,j+u_j,i)) / d u^L_l
 
-                      pfunct(inode) * gradN(0, (nnod * Base::nsd_) + idof2) *
+                      pfunct(inode) * gradN(0, (nnod * nsd_) + idof2) *
                       Base::unitnormal_(idof3)  // d u_j,i / d u^L_l
                       ) *
                   Base::fac_ * theta * fluiddynamicviscosity;
@@ -1505,28 +1499,26 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
           }  // block Structure_Fluid
           else if (block == "Structure_Structure")
           {
-            for (int idof3 = 0; idof3 < Base::nsd_; idof3++)
+            for (int idof3 = 0; idof3 < nsd_; idof3++)
             {
               elemat1(
                   (inode * Base::numdofpernode_) + idof2, (nnod * Base::numdofpernode_) + idof3) +=
                   (
                       // d (dd , - pf o n) / d d^L_l
-                      -pfunct(inode) * pressint(0, 0) *
-                          normalderiv(idof2, (nnod * Base::nsd_) + idof3) * fac  // d n_j / d d^L_l
+                      -pfunct(inode) * pressint(0, 0) * normalderiv(idof2, (nnod * nsd_) + idof3) *
+                          fac  // d n_j / d d^L_l
 
                       // d (dd, mu*u_i,j o n ) / d d^L_l
                       - fluiddynamicviscosity * pfunct(inode) * dudxioJinv(idof2, idof3) *
                             dNdxon(nnod) * Base::fac_  // d ui,j / d d^L_l
                       + fluiddynamicviscosity * pfunct(inode) *
-                            graduonormalderiv(idof2, (nnod * Base::nsd_) + idof3) *
-                            fac  // d n / d d^L_l
+                            graduonormalderiv(idof2, (nnod * nsd_) + idof3) * fac  // d n / d d^L_l
 
                       // d (dd, mu*u_j,i o n ) / d d^L_l
                       - fluiddynamicviscosity * pfunct(inode) * graduTon(0, idof3) *
                             derxy(idof2, nnod) * Base::fac_  // d uj,i / d d^L,l
                       + fluiddynamicviscosity * pfunct(inode) *
-                            graduTonormalderiv(idof2, (nnod * Base::nsd_) + idof3) *
-                            fac  // d n_j / d^L_l
+                            graduTonormalderiv(idof2, (nnod * nsd_) + idof3) * fac  // d n_j / d^L_l
                       ) *
                       survivor(nnod) * theta
                   // linearisation of the old timestep --> change of Base::fac_
@@ -1540,9 +1532,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
           }  // block Structure_Structure
           else if (block == "Structure_Ale")
           {
-            for (int idof3 = 0; idof3 < Base::nsd_; idof3++)
+            for (int idof3 = 0; idof3 < nsd_; idof3++)
             {
-              elemat1((inode * Base::numdofpernode_) + idof2, (nnod * Base::nsd_) + idof3) +=
+              elemat1((inode * Base::numdofpernode_) + idof2, (nnod * nsd_) + idof3) +=
                   (
                       // d (dd, mu*u_i,j o n ) / d d^L_l
                       -fluiddynamicviscosity * pfunct(inode) * dudxioJinv(idof2, idof3) *
@@ -1578,15 +1570,15 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     for (int inode = 0; inode < nenparent; inode++)
     {
       double normal_u_minus_vs = 0.0;
-      LINALG::Matrix<1, Base::nsd_> u_minus_vs(true);
+      LINALG::Matrix<1, nsd_> u_minus_vs(true);
 
-      for (int idof = 0; idof < Base::nsd_; idof++)
+      for (int idof = 0; idof < nsd_; idof++)
       {
         normal_u_minus_vs += Base::unitnormal_(idof) * (Base::velint_(idof) - gridvelint(idof));
         u_minus_vs(idof) = Base::velint_(idof) - gridvelint(idof);
       }
 
-      LINALG::Matrix<1, nenparent * Base::nsd_> u_minus_vs_normalderiv(true);
+      LINALG::Matrix<1, nenparent * nsd_> u_minus_vs_normalderiv(true);
       u_minus_vs_normalderiv.Multiply(u_minus_vs, normalderiv);
 
       // //////////////////////////////////////////////////////////////////////////
@@ -1601,8 +1593,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
          */
         // double rhsfacpre =
         // DRT::ELEMENTS::FluidEleParameter::Instance(INPAR::FPSI::porofluid)->TimeFacRhsPre();
-        elevec1(inode * Base::numdofpernode_ + Base::nsd_) +=
-            rhsfac * pfunct(inode) * normal_u_minus_vs;
+        elevec1(inode * Base::numdofpernode_ + nsd_) += rhsfac * pfunct(inode) * normal_u_minus_vs;
 
       }  // block conti
       else if (block == "structure")
@@ -1613,7 +1604,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                     evaluated on FluidField(); Base::unitnormal_ opposite to strucutral unitnormal
            -> application of nanson's formula yields structural normal -> * (-1)
          */
-        for (int idof2 = 0; idof2 < Base::nsd_; idof2++)
+        for (int idof2 = 0; idof2 < nsd_; idof2++)
         {
           elevec1(inode * Base::numdofpernode_ + idof2) -=
               (theta * pfunct(inode) *
@@ -1633,7 +1624,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                   (3+4) - N*n * 1/rhof * (pf) + N*t*tangentialfac*[u- (vs + phi(vf-vs))]ot  << from
            last iteration at time n+1
          */
-        for (int idof2 = 0; idof2 < Base::nsd_; idof2++)
+        for (int idof2 = 0; idof2 < nsd_; idof2++)
         {
           elevec1(inode * Base::numdofpernode_ + idof2) +=
               (+(pfunct(inode) * Base::unitnormal_(idof2) *
@@ -1655,7 +1646,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
         /*
                     (4)  N*t*tangentialfac*[u]ot  << from last iteration at time n+1
          */
-        for (int idof2 = 0; idof2 < Base::nsd_; idof2++)
+        for (int idof2 = 0; idof2 < nsd_; idof2++)
         {
           elevec1(inode * Base::numdofpernode_ + idof2) -=
               (pfunct(inode) * tangential1(idof2) * tangentialvelocity1(0, 0) +
@@ -1684,7 +1675,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
               "You think that's funny, hu ?? Roundhouse-Kick !!!");
         }
 
-        for (int idof2 = 0; idof2 < Base::nsd_; idof2++)
+        for (int idof2 = 0; idof2 < nsd_; idof2++)
         {
           elevec1(inode * Base::numdofpernode_ + idof2) +=
               ((-pfunct(inode) * pressint(0, 0) * Base::unitnormal_(idof2) * rhsfac) +
@@ -1824,9 +1815,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
-  // (we have a Base::nsd_ dimensional domain, since Base::nsd_ determines the dimension of
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  GEO::fillInitialPositionArray<distype, Base::nsd_, LINALG::Matrix<Base::nsd_, Base::bdrynen_>>(
+  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -1846,18 +1837,18 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   for (int inode = 0; inode < Base::bdrynen_; ++inode)
-    for (int idim = 0; idim < Base::nsd_; ++idim)
+    for (int idim = 0; idim < nsd_; ++idim)
       Base::xyze_(idim, inode) += mydispnp[Base::numdofpernode_ * inode + idim];
 
   // update element geometry of parent element
-  LINALG::Matrix<Base::nsd_, nenparent> xrefe;  // material coord. of parent element
-  LINALG::Matrix<Base::nsd_, nenparent> xcurr;  // current  coord. of parent element
+  LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
+  LINALG::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
   {
     DRT::Node** nodes = pele->Nodes();
     for (int i = 0; i < nenparent; ++i)
     {
       const double* x = nodes[i]->X();
-      for (int j = 0; j < Base::nsd_; ++j)
+      for (int j = 0; j < nsd_; ++j)
       {
         xrefe(j, i) = x[j];
         xcurr(j, i) = xrefe(j, i) + parentdispnp[i * Base::numdofpernode_ + j];
@@ -1879,32 +1870,32 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   DRT::UTILS::ExtractMyValues(*gridvel, mygridvel, lm);
 
   // allocate velocity vectors
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> evelnp(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
   LINALG::Matrix<Base::bdrynen_, 1> epressnp(true);
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> edispnp(true);
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> egridvel(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> edispnp(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> egridvel(true);
   LINALG::Matrix<Base::bdrynen_, 1> escaaf(true);
   LINALG::Matrix<Base::bdrynen_, 1> eporosity(true);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < Base::bdrynen_; inode++)
   {
-    for (int idim = 0; idim < Base::nsd_; idim++)
+    for (int idim = 0; idim < nsd_; idim++)
     {
       evelnp(idim, inode) = myvelnp[idim + (inode * Base::numdofpernode_)];
       edispnp(idim, inode) = mydispnp[idim + (inode * Base::numdofpernode_)];
       egridvel(idim, inode) = mygridvel[idim + (inode * Base::numdofpernode_)];
     }
-    epressnp(inode) = myvelnp[Base::nsd_ + (inode * Base::numdofpernode_)];
+    epressnp(inode) = myvelnp[nsd_ + (inode * Base::numdofpernode_)];
   }
 
   ComputeNodalPorosity(ele, mydispnp, eporosity);
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
-  LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, Base::nsd_);
-  LINALG::Matrix<Base::nsd_, Base::nsd_> derivtrafo(true);
+  LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
+  LINALG::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  DRT::UTILS::BoundaryGPToParentGP<Base::nsd_>(
+  DRT::UTILS::BoundaryGPToParentGP<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->SurfaceNumber());
 
 
@@ -1914,7 +1905,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<Epetra_SerialDenseVector> mypknots(Base::nsd_);
+  std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
   std::vector<Epetra_SerialDenseVector> myknots(Base::bdrynsd_);
   Epetra_SerialDenseVector weights(Base::bdrynen_);
   Epetra_SerialDenseVector pweights(pele->NumNode());
@@ -1934,19 +1925,19 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   // --------------------------------------------------
 
   // structure velocity at gausspoint
-  LINALG::Matrix<Base::nsd_, 1> gridvelint;
+  LINALG::Matrix<nsd_, 1> gridvelint;
 
   // coordinates of gauss points of parent element
-  LINALG::Matrix<Base::nsd_, 1> pxsi(true);
+  LINALG::Matrix<nsd_, 1> pxsi(true);
 
   for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
   {
     // get shape functions and derivatives in the plane of the element
     LINALG::Matrix<nenparent, 1> pfunct(true);
-    LINALG::Matrix<Base::nsd_, nenparent> pderiv_loc;
+    LINALG::Matrix<nsd_, nenparent> pderiv_loc;
 
     // coordinates of the current integration point
-    for (int idim = 0; idim < Base::nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
+    for (int idim = 0; idim < nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
 
     // get shape functions and derivatives of the parent element
     if (not IsNurbs<distype>::isnurbs)
@@ -1964,8 +1955,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
 
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     // transposed jacobian "dx/ds"
-    LINALG::Matrix<Base::nsd_, Base::nsd_> xjm;
-    LINALG::Matrix<Base::nsd_, Base::nsd_> Jmat;
+    LINALG::Matrix<nsd_, nsd_> xjm;
+    LINALG::Matrix<nsd_, nsd_> Jmat;
     xjm.MultiplyNT(pderiv_loc, xcurr);
     Jmat.MultiplyNT(pderiv_loc, xrefe);
     // jacobian determinant "det(dx/ds)"
@@ -2061,9 +2052,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
-  // (we have a Base::nsd_ dimensional domain, since Base::nsd_ determines the dimension of
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  GEO::fillInitialPositionArray<distype, Base::nsd_, LINALG::Matrix<Base::nsd_, Base::bdrynen_>>(
+  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -2080,7 +2071,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   for (int inode = 0; inode < Base::bdrynen_; ++inode)
-    for (int idim = 0; idim < Base::nsd_; ++idim)
+    for (int idim = 0; idim < nsd_; ++idim)
       Base::xyze_(idim, inode) += mydispnp[Base::numdofpernode_ * inode + idim];
 
   Teuchos::RCP<const Epetra_Vector> condVector;
@@ -2112,11 +2103,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
 
     for (int inode = 0; inode < Base::bdrynen_; ++inode)
     {
-      for (int idim = 0; idim < Base::nsd_; ++idim)
+      for (int idim = 0; idim < nsd_; ++idim)
         normal(inode * Base::numdofpernode_ + idim) +=
             Base::unitnormal_(idim) * Base::funct_(inode) * Base::fac_;
       // pressure dof is set to zero
-      normal(inode * Base::numdofpernode_ + (Base::nsd_)) = 0.0;
+      normal(inode * Base::numdofpernode_ + (nsd_)) = 0.0;
     }
   }
 
@@ -2162,13 +2153,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
     DRT::UTILS::ExtractMyValues(*gridvel, mygridvel, lm);
 
     // allocate velocity vectors
-    LINALG::Matrix<Base::nsd_, Base::bdrynen_> evelnp(true);
-    LINALG::Matrix<Base::nsd_, Base::bdrynen_> egridvel(true);
+    LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
+    LINALG::Matrix<nsd_, Base::bdrynen_> egridvel(true);
 
     // split velocity and pressure, insert into element arrays
     for (int inode = 0; inode < Base::bdrynen_; inode++)
     {
-      for (int idim = 0; idim < Base::nsd_; idim++)
+      for (int idim = 0; idim < nsd_; idim++)
       {
         evelnp(idim, inode) = myvelnp[idim + (inode * Base::numdofpernode_)];
         egridvel(idim, inode) = mygridvel[idim + (inode * Base::numdofpernode_)];
@@ -2176,7 +2167,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
     }
 
     //  derivatives of surface normals wrt mesh displacements
-    LINALG::Matrix<Base::nsd_, Base::bdrynen_ * Base::nsd_> normalderiv(true);
+    LINALG::Matrix<nsd_, Base::bdrynen_ * nsd_> normalderiv(true);
 
     for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
     {
@@ -2188,7 +2179,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
           IsNurbs<distype>::isnurbs);
 
       // dxyzdrs vector -> normal which is not normalized
-      LINALG::Matrix<Base::bdrynsd_, Base::nsd_> dxyzdrs(0.0);
+      LINALG::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
       dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
 
       // The integration factor is not multiplied with drs
@@ -2196,52 +2187,52 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
       // Therefore it cancels out!!
       const double fac = intpoints.IP().qwgt[gpid];
 
-      if (Base::nsd_ == 3)
+      if (nsd_ == 3)
       {
         for (int node = 0; node < Base::bdrynen_; ++node)
         {
-          normalderiv(0, Base::nsd_ * node) += 0.;
-          normalderiv(0, Base::nsd_ * node + 1) +=
+          normalderiv(0, nsd_ * node) += 0.;
+          normalderiv(0, nsd_ * node + 1) +=
               (Base::deriv_(0, node) * dxyzdrs(1, 2) - Base::deriv_(1, node) * dxyzdrs(0, 2)) *
               Base::funct_(node) * fac;
-          normalderiv(0, Base::nsd_ * node + 2) +=
+          normalderiv(0, nsd_ * node + 2) +=
               (Base::deriv_(1, node) * dxyzdrs(0, 1) - Base::deriv_(0, node) * dxyzdrs(1, 1)) *
               Base::funct_(node) * fac;
 
-          normalderiv(1, Base::nsd_ * node) +=
+          normalderiv(1, nsd_ * node) +=
               (Base::deriv_(1, node) * dxyzdrs(0, 2) - Base::deriv_(0, node) * dxyzdrs(1, 2)) *
               Base::funct_(node) * fac;
-          normalderiv(1, Base::nsd_ * node + 1) += 0.;
-          normalderiv(1, Base::nsd_ * node + 2) +=
+          normalderiv(1, nsd_ * node + 1) += 0.;
+          normalderiv(1, nsd_ * node + 2) +=
               (Base::deriv_(0, node) * dxyzdrs(1, 0) - Base::deriv_(1, node) * dxyzdrs(0, 0)) *
               Base::funct_(node) * fac;
 
-          normalderiv(2, Base::nsd_ * node) +=
+          normalderiv(2, nsd_ * node) +=
               (Base::deriv_(0, node) * dxyzdrs(1, 1) - Base::deriv_(1, node) * dxyzdrs(0, 1)) *
               Base::funct_(node) * fac;
-          normalderiv(2, Base::nsd_ * node + 1) +=
+          normalderiv(2, nsd_ * node + 1) +=
               (Base::deriv_(1, node) * dxyzdrs(0, 0) - Base::deriv_(0, node) * dxyzdrs(1, 0)) *
               Base::funct_(node) * fac;
-          normalderiv(2, Base::nsd_ * node + 2) += 0.;
+          normalderiv(2, nsd_ * node + 2) += 0.;
         }
       }
-      else if (Base::nsd_ == 2)
+      else if (nsd_ == 2)
       {
         for (int node = 0; node < Base::bdrynen_; ++node)
         {
-          normalderiv(0, Base::nsd_ * node) += 0.;
-          normalderiv(0, Base::nsd_ * node + 1) += Base::deriv_(0, node) * Base::funct_(node) * fac;
+          normalderiv(0, nsd_ * node) += 0.;
+          normalderiv(0, nsd_ * node + 1) += Base::deriv_(0, node) * Base::funct_(node) * fac;
 
-          normalderiv(1, Base::nsd_ * node) += -Base::deriv_(0, node) * Base::funct_(node) * fac;
-          normalderiv(1, Base::nsd_ * node + 1) += 0.;
+          normalderiv(1, nsd_ * node) += -Base::deriv_(0, node) * Base::funct_(node) * fac;
+          normalderiv(1, nsd_ * node + 1) += 0.;
         }
       }
     }
 
     // allocate auxiliary variable (= normalderiv^T * velocity)
-    LINALG::Matrix<1, Base::nsd_ * Base::bdrynen_> temp(true);
+    LINALG::Matrix<1, nsd_ * Base::bdrynen_> temp(true);
     // allocate convective velocity at node
-    LINALG::Matrix<1, Base::nsd_> convvel(true);
+    LINALG::Matrix<1, nsd_> convvel(true);
 
     // fill element matrix
     for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -2252,23 +2243,22 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
       double norm = nodenormal.Norm2();
       nodenormal.Scale(1 / norm);
 
-      for (int idof = 0; idof < Base::nsd_; idof++)
+      for (int idof = 0; idof < nsd_; idof++)
         convvel(idof) = evelnp(idof, inode) - egridvel(idof, inode);
       temp.Multiply(convvel, normalderiv);
       for (int idof = 0; idof < Base::numdofpernode_; idof++)
       {
         if (mycondVector[inode * Base::numdofpernode_ + idof] != 0.0)
         {
-          for (int idof2 = 0; idof2 < Base::nsd_; idof2++)
+          for (int idof2 = 0; idof2 < nsd_; idof2++)
           {
-            elemat1(inode * Base::numdofpernode_ + idof, inode * Base::nsd_ + idof2) +=
-                temp(0, inode * Base::nsd_ + idof2);
-            elemat2(inode * Base::numdofpernode_ + idof, inode * Base::nsd_ + idof2) +=
+            elemat1(inode * Base::numdofpernode_ + idof, inode * nsd_ + idof2) +=
+                temp(0, inode * nsd_ + idof2);
+            elemat2(inode * Base::numdofpernode_ + idof, inode * nsd_ + idof2) +=
                 -nodenormal(idof2);
           }
           double normalconvvel = 0.0;
-          for (int dim = 0; dim < Base::nsd_; dim++)
-            normalconvvel += convvel(dim) * nodenormal(dim);
+          for (int dim = 0; dim < nsd_; dim++) normalconvvel += convvel(dim) * nodenormal(dim);
           elevec1(inode * Base::numdofpernode_ + idof) += -normalconvvel;
           break;
         }
@@ -2293,9 +2283,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationIDs(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
-  // (we have a Base::nsd_ dimensional domain, since Base::nsd_ determines the dimension of
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  GEO::fillInitialPositionArray<distype, Base::nsd_, LINALG::Matrix<Base::nsd_, Base::bdrynen_>>(
+  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -2314,7 +2304,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationIDs(
 
     // Add the deformation of the ALE mesh to the nodes coordinates
     for (int inode = 0; inode < Base::bdrynen_; ++inode)
-      for (int idim = 0; idim < Base::nsd_; ++idim)
+      for (int idim = 0; idim < nsd_; ++idim)
         Base::xyze_(idim, inode) += mydispnp[Base::numdofpernode_ * inode + idim];
   }
   else
@@ -2335,11 +2325,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationIDs(
 
     for (int inode = 0; inode < Base::bdrynen_; ++inode)
     {
-      for (int idim = 0; idim < Base::nsd_; ++idim)
+      for (int idim = 0; idim < nsd_; ++idim)
         normal(inode * Base::numdofpernode_ + idim) +=
             Base::unitnormal_(idim) * Base::funct_(inode) * Base::fac_;
       // pressure dof is set to zero
-      normal(inode * Base::numdofpernode_ + (Base::nsd_)) = 0.0;
+      normal(inode * Base::numdofpernode_ + (nsd_)) = 0.0;
     }
   }
 
@@ -2525,9 +2515,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
-  // (we have a Base::nsd_ dimensional domain, since Base::nsd_ determines the dimension of
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  GEO::fillInitialPositionArray<distype, Base::nsd_, LINALG::Matrix<Base::nsd_, Base::bdrynen_>>(
+  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -2547,17 +2537,17 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   for (int inode = 0; inode < Base::bdrynen_; ++inode)
-    for (int idim = 0; idim < Base::nsd_; ++idim)
+    for (int idim = 0; idim < nsd_; ++idim)
       Base::xyze_(idim, inode) += mydispnp[Base::numdofpernode_ * inode + idim];
 
   // update element geometry of parent element
-  LINALG::Matrix<Base::nsd_, nenparent> xrefe;  // material coord. of parent element
-  LINALG::Matrix<Base::nsd_, nenparent> xcurr;  // current  coord. of parent element
+  LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
+  LINALG::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
   {
     DRT::Node** nodes = pele->Nodes();
     for (int i = 0; i < nenparent; ++i)
     {
-      for (int j = 0; j < Base::nsd_; ++j)
+      for (int j = 0; j < nsd_; ++j)
       {
         const double* x = nodes[i]->X();
         xrefe(j, i) = x[j];
@@ -2582,33 +2572,33 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
   DRT::UTILS::ExtractMyValues(*scaaf, myscaaf, lm);
 
   // allocate velocity vectors
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> evelnp(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
   LINALG::Matrix<Base::bdrynen_, 1> epressnp(true);
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> edispnp(true);
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> egridvel(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> edispnp(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> egridvel(true);
   LINALG::Matrix<Base::bdrynen_, 1> escaaf(true);
   LINALG::Matrix<Base::bdrynen_, 1> eporosity(true);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < Base::bdrynen_; inode++)
   {
-    for (int idim = 0; idim < Base::nsd_; idim++)
+    for (int idim = 0; idim < nsd_; idim++)
     {
       evelnp(idim, inode) = myvelnp[idim + (inode * Base::numdofpernode_)];
       edispnp(idim, inode) = mydispnp[idim + (inode * Base::numdofpernode_)];
       egridvel(idim, inode) = mygridvel[idim + (inode * Base::numdofpernode_)];
     }
-    epressnp(inode) = myvelnp[Base::nsd_ + (inode * Base::numdofpernode_)];
-    escaaf(inode) = myscaaf[Base::nsd_ + (inode * Base::numdofpernode_)];
+    epressnp(inode) = myvelnp[nsd_ + (inode * Base::numdofpernode_)];
+    escaaf(inode) = myscaaf[nsd_ + (inode * Base::numdofpernode_)];
   }
 
   const bool porositydof = ComputeNodalPorosity(ele, mydispnp, eporosity);
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
-  LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, Base::nsd_);
-  LINALG::Matrix<Base::nsd_, Base::nsd_> derivtrafo(true);
+  LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
+  LINALG::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  DRT::UTILS::BoundaryGPToParentGP<Base::nsd_>(
+  DRT::UTILS::BoundaryGPToParentGP<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->SurfaceNumber());
 
   // --------------------------------------------------
@@ -2617,7 +2607,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<Epetra_SerialDenseVector> mypknots(Base::nsd_);
+  std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
   std::vector<Epetra_SerialDenseVector> myknots(Base::bdrynsd_);
   Epetra_SerialDenseVector weights(Base::bdrynen_);
   Epetra_SerialDenseVector pweights(pele->NumNode());
@@ -2636,20 +2626,20 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
   }
   // --------------------------------------------------
   // structure velocity at gausspoint
-  LINALG::Matrix<Base::nsd_, 1> gridvelint;
+  LINALG::Matrix<nsd_, 1> gridvelint;
 
   // coordinates of gauss points of parent element
-  LINALG::Matrix<Base::nsd_, 1> pxsi(true);
+  LINALG::Matrix<nsd_, 1> pxsi(true);
 
   for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
   {
     // get shape functions and derivatives in the plane of the element
     LINALG::Matrix<nenparent, 1> pfunct(true);
-    LINALG::Matrix<Base::nsd_, nenparent> pderiv;
-    LINALG::Matrix<Base::nsd_, nenparent> pderiv_loc;
+    LINALG::Matrix<nsd_, nenparent> pderiv;
+    LINALG::Matrix<nsd_, nenparent> pderiv_loc;
 
     // coordinates of the current integration point
-    for (int idim = 0; idim < Base::nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
+    for (int idim = 0; idim < nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
 
     // get shape functions and derivatives of the parent element
     if (not IsNurbs<distype>::isnurbs)
@@ -2668,8 +2658,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
 
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     // transposed jacobian "dx/ds"
-    LINALG::Matrix<Base::nsd_, Base::nsd_> xjm;
-    LINALG::Matrix<Base::nsd_, Base::nsd_> Jmat;
+    LINALG::Matrix<nsd_, nsd_> xjm;
+    LINALG::Matrix<nsd_, nsd_> Jmat;
     xjm.MultiplyNT(pderiv_loc, xcurr);
     Jmat.MultiplyNT(pderiv_loc, xrefe);
     // jacobian determinant "det(dx/ds)"
@@ -2714,44 +2704,44 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     const double fac = intpoints.IP().qwgt[gpid];
 
     //  derivatives of surface normals wrt mesh displacements
-    LINALG::Matrix<Base::nsd_, nenparent * Base::nsd_> normalderiv(true);
+    LINALG::Matrix<nsd_, nenparent * nsd_> normalderiv(true);
 
     // dxyzdrs vector -> normal which is not normalized
-    LINALG::Matrix<Base::bdrynsd_, Base::nsd_> dxyzdrs(0.0);
+    LINALG::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
     dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
 
-    if (Base::nsd_ == 3)
+    if (nsd_ == 3)
     {
       for (int node = 0; node < nenparent; ++node)
       {
-        normalderiv(0, Base::nsd_ * node) += 0.;
-        normalderiv(0, Base::nsd_ * node + 1) +=
+        normalderiv(0, nsd_ * node) += 0.;
+        normalderiv(0, nsd_ * node + 1) +=
             (pderiv(0, node) * dxyzdrs(1, 2) - pderiv(1, node) * dxyzdrs(0, 2));
-        normalderiv(0, Base::nsd_ * node + 2) +=
+        normalderiv(0, nsd_ * node + 2) +=
             (pderiv(1, node) * dxyzdrs(0, 1) - pderiv(0, node) * dxyzdrs(1, 1));
 
-        normalderiv(1, Base::nsd_ * node) +=
+        normalderiv(1, nsd_ * node) +=
             (pderiv(1, node) * dxyzdrs(0, 2) - pderiv(0, node) * dxyzdrs(1, 2));
-        normalderiv(1, Base::nsd_ * node + 1) += 0.;
-        normalderiv(1, Base::nsd_ * node + 2) +=
+        normalderiv(1, nsd_ * node + 1) += 0.;
+        normalderiv(1, nsd_ * node + 2) +=
             (pderiv(0, node) * dxyzdrs(1, 0) - pderiv(1, node) * dxyzdrs(0, 0));
 
-        normalderiv(2, Base::nsd_ * node) +=
+        normalderiv(2, nsd_ * node) +=
             (pderiv(0, node) * dxyzdrs(1, 1) - pderiv(1, node) * dxyzdrs(0, 1));
-        normalderiv(2, Base::nsd_ * node + 1) +=
+        normalderiv(2, nsd_ * node + 1) +=
             (pderiv(1, node) * dxyzdrs(0, 0) - pderiv(0, node) * dxyzdrs(1, 0));
-        normalderiv(2, Base::nsd_ * node + 2) += 0.;
+        normalderiv(2, nsd_ * node + 2) += 0.;
       }
     }
     else
     {
       for (int node = 0; node < nenparent; ++node)
       {
-        normalderiv(0, Base::nsd_ * node) += 0.;
-        normalderiv(0, Base::nsd_ * node + 1) += pderiv(0, node);
+        normalderiv(0, nsd_ * node) += 0.;
+        normalderiv(0, nsd_ * node + 1) += pderiv(0, node);
 
-        normalderiv(1, Base::nsd_ * node) += -pderiv(0, node);
-        normalderiv(1, Base::nsd_ * node + 1) += 0.;
+        normalderiv(1, nsd_ * node) += -pderiv(0, node);
+        normalderiv(1, nsd_ * node + 1) += 0.;
       }
     }
 
@@ -2759,22 +2749,22 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     if (IsNurbs<distype>::isnurbs) normalderiv.Scale(normalfac);
 
     //-------------------------------------------dJ/dus = dJ/dF : dF/dus = J * F^-T . N_X = J * N_x
-    LINALG::Matrix<1, Base::nsd_ * nenparent> dJ_dus;
+    LINALG::Matrix<1, nsd_ * nenparent> dJ_dus;
     // global derivatives of shape functions w.r.t x,y,z
-    LINALG::Matrix<Base::nsd_, nenparent> derxy;
+    LINALG::Matrix<nsd_, nenparent> derxy;
     // inverse of transposed jacobian "ds/dx"
-    LINALG::Matrix<Base::nsd_, Base::nsd_> xji;
+    LINALG::Matrix<nsd_, nsd_> xji;
 
     xji.Invert(xjm);
     derxy.Multiply(xji, pderiv_loc);
 
     for (int i = 0; i < nenparent; i++)
-      for (int j = 0; j < Base::nsd_; j++) dJ_dus(j + i * Base::nsd_) = J * derxy(j, i);
+      for (int j = 0; j < nsd_; j++) dJ_dus(j + i * nsd_) = J * derxy(j, i);
 
     double normal_convel = 0.0;
-    LINALG::Matrix<1, Base::nsd_> convel;
+    LINALG::Matrix<1, nsd_> convel;
 
-    for (int idof = 0; idof < Base::nsd_; idof++)
+    for (int idof = 0; idof < nsd_; idof++)
     {
       normal_convel += Base::unitnormal_(idof) * Base::velint_(idof);
       convel(idof) = Base::velint_(idof);
@@ -2782,14 +2772,14 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
 
     if (not Base::fldparatimint_->IsStationary())
     {
-      for (int idof = 0; idof < Base::nsd_; idof++)
+      for (int idof = 0; idof < nsd_; idof++)
       {
         normal_convel += Base::unitnormal_(idof) * (-gridvelint(idof));
         convel(idof) -= gridvelint(idof);
       }
     }
 
-    LINALG::Matrix<1, nenparent * Base::nsd_> tmp;
+    LINALG::Matrix<1, nenparent * nsd_> tmp;
     tmp.Multiply(convel, normalderiv);
 
     // fill element matrix
@@ -2797,22 +2787,20 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
       if (not offdiag)
       {
         for (int inode = 0; inode < nenparent; inode++)
-          elevec1(inode * Base::numdofpernode_ + Base::nsd_) -=
+          elevec1(inode * Base::numdofpernode_ + nsd_) -=
               rhsfac * pfunct(inode) * porosity_gp * normal_convel;
 
         for (int inode = 0; inode < nenparent; inode++)
         {
           for (int nnod = 0; nnod < nenparent; nnod++)
           {
-            for (int idof2 = 0; idof2 < Base::nsd_; idof2++)
+            for (int idof2 = 0; idof2 < nsd_; idof2++)
             {
-              elemat1(inode * Base::numdofpernode_ + Base::nsd_,
-                  nnod * Base::numdofpernode_ + idof2) += timefacfacpre * pfunct(inode) *
-                                                          porosity_gp * Base::unitnormal_(idof2) *
-                                                          pfunct(nnod);
+              elemat1(inode * Base::numdofpernode_ + nsd_, nnod * Base::numdofpernode_ + idof2) +=
+                  timefacfacpre * pfunct(inode) * porosity_gp * Base::unitnormal_(idof2) *
+                  pfunct(nnod);
             }
-            elemat1(inode * Base::numdofpernode_ + Base::nsd_,
-                nnod * Base::numdofpernode_ + Base::nsd_) +=
+            elemat1(inode * Base::numdofpernode_ + nsd_, nnod * Base::numdofpernode_ + nsd_) +=
                 +timefacfacpre * pfunct(inode) * dphi_dp * normal_convel * pfunct(nnod);
           }
         }
@@ -2823,14 +2811,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
         {
           for (int nnod = 0; nnod < nenparent; nnod++)
           {
-            for (int idof2 = 0; idof2 < Base::nsd_; idof2++)
+            for (int idof2 = 0; idof2 < nsd_; idof2++)
             {
-              elemat1(inode * Base::numdofpernode_ + Base::nsd_, nnod * Base::nsd_ + idof2) +=
-                  +tmp(0, nnod * Base::nsd_ + idof2) * porosity_gp * pfunct(inode) * timefacpre *
-                      fac -
+              elemat1(inode * Base::numdofpernode_ + nsd_, nnod * nsd_ + idof2) +=
+                  +tmp(0, nnod * nsd_ + idof2) * porosity_gp * pfunct(inode) * timefacpre * fac -
                   pfunct(inode) * porosity_gp * Base::unitnormal_(idof2) * timescale *
                       pfunct(nnod) * timefacfacpre +
-                  pfunct(inode) * dphi_dJ * dJ_dus(nnod * Base::nsd_ + idof2) * normal_convel *
+                  pfunct(inode) * dphi_dJ * dJ_dus(nnod * nsd_ + idof2) * normal_convel *
                       timefacfacpre;
             }
           }
@@ -2842,18 +2829,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
         {
           for (int nnod = 0; nnod < nenparent; nnod++)
           {
-            for (int idof2 = 0; idof2 < Base::nsd_; idof2++)
+            for (int idof2 = 0; idof2 < nsd_; idof2++)
             {
-              elemat1(inode * Base::numdofpernode_ + Base::nsd_, nnod * (Base::nsd_ + 1) + idof2) +=
-                  +tmp(0, nnod * Base::nsd_ + idof2) * porosity_gp * pfunct(inode) * timefacpre *
-                      fac -
+              elemat1(inode * Base::numdofpernode_ + nsd_, nnod * (nsd_ + 1) + idof2) +=
+                  +tmp(0, nnod * nsd_ + idof2) * porosity_gp * pfunct(inode) * timefacpre * fac -
                   pfunct(inode) * porosity_gp * Base::unitnormal_(idof2) * timescale *
                       pfunct(nnod) * timefacfacpre +
-                  pfunct(inode) * dphi_dJ * dJ_dus(nnod * Base::nsd_ + idof2) * normal_convel *
+                  pfunct(inode) * dphi_dJ * dJ_dus(nnod * nsd_ + idof2) * normal_convel *
                       timefacfacpre;
             }
-            elemat1(
-                inode * Base::numdofpernode_ + Base::nsd_, nnod * (Base::nsd_ + 1) + Base::nsd_) +=
+            elemat1(inode * Base::numdofpernode_ + nsd_, nnod * (nsd_ + 1) + nsd_) +=
                 pfunct(inode) * pfunct(nnod) * normal_convel * timefacfacpre;
           }
         }
@@ -2882,9 +2867,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
-  // (we have a Base::nsd_ dimensional domain, since Base::nsd_ determines the dimension of
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  GEO::fillInitialPositionArray<distype, Base::nsd_, LINALG::Matrix<Base::nsd_, Base::bdrynen_>>(
+  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -2904,7 +2889,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
     // Add the deformation of the ALE mesh to the nodes coordinates
     for (int inode = 0; inode < Base::bdrynen_; ++inode)
     {
-      for (int idim = 0; idim < Base::nsd_; ++idim)
+      for (int idim = 0; idim < nsd_; ++idim)
       {
         Base::xyze_(idim, inode) += mydispnp[Base::numdofpernode_ * inode + idim];
       }
@@ -2925,7 +2910,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < Base::bdrynen_; inode++)
   {
-    epressnp(inode) = myvelnp[Base::nsd_ + (inode * Base::numdofpernode_)];
+    epressnp(inode) = myvelnp[nsd_ + (inode * Base::numdofpernode_)];
   }
 
   // --------------------------------------------------
@@ -2934,7 +2919,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<Epetra_SerialDenseVector> mypknots(Base::nsd_);
+  std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
   std::vector<Epetra_SerialDenseVector> myknots(Base::bdrynsd_);
   Epetra_SerialDenseVector weights(Base::bdrynen_);
 
@@ -2968,21 +2953,21 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
     double press = Base::funct_.Dot(epressnp);
 
     // dxyzdrs vector -> normal which is not normalized
-    LINALG::Matrix<Base::bdrynsd_, Base::nsd_> dxyzdrs(0.0);
+    LINALG::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
     dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
     if (IsNurbs<distype>::isnurbs) Base::unitnormal_.Scale(normalfac);
 
     //  derivatives of surface normals wrt mesh displacements
-    LINALG::Matrix<Base::nsd_, Base::bdrynen_ * Base::nsd_> normalderiv(true);
+    LINALG::Matrix<nsd_, Base::bdrynen_ * nsd_> normalderiv(true);
 
     // The integration factor is not multiplied with drs
     // since it is the same as the scaling factor for the unit normal derivatives
     // Therefore it cancels out!!
     const double fac = intpoints.IP().qwgt[gpid];
 
-    if (Base::nsd_ == 3)
+    if (nsd_ == 3)
     {
       for (int node = 0; node < Base::bdrynen_; ++node)
       {
@@ -3005,15 +2990,15 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
         normalderiv(2, 3 * node + 2) += 0.;
       }
     }
-    else if (Base::nsd_ == 2)
+    else if (nsd_ == 2)
     {
       for (int node = 0; node < Base::bdrynen_; ++node)
       {
-        normalderiv(0, Base::nsd_ * node) += 0.;
-        normalderiv(0, Base::nsd_ * node + 1) += Base::deriv_(0, node);
+        normalderiv(0, nsd_ * node) += 0.;
+        normalderiv(0, nsd_ * node + 1) += Base::deriv_(0, node);
 
-        normalderiv(1, Base::nsd_ * node) += -Base::deriv_(0, node);
-        normalderiv(1, Base::nsd_ * node + 1) += 0.;
+        normalderiv(1, nsd_ * node) += -Base::deriv_(0, node);
+        normalderiv(1, nsd_ * node + 1) += 0.;
       }
     }
 
@@ -3023,7 +3008,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
     // fill element matrix
     for (int inode = 0; inode < Base::bdrynen_; inode++)
     {
-      for (int idof = 0; idof < Base::nsd_; idof++)
+      for (int idof = 0; idof < nsd_; idof++)
       {
         if (not offdiag)
           elevec1(inode * Base::numdofpernode_ + idof) -=
@@ -3032,17 +3017,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
         {
           if (not offdiag)
           {
-            elemat1(
-                inode * Base::numdofpernode_ + idof, nnod * Base::numdofpernode_ + Base::nsd_) +=
+            elemat1(inode * Base::numdofpernode_ + idof, nnod * Base::numdofpernode_ + nsd_) +=
                 Base::funct_(inode) * Base::unitnormal_(idof) * Base::funct_(nnod) * timefacfac;
           }
           else
           {
-            for (int idof2 = 0; idof2 < Base::nsd_; idof2++)
+            for (int idof2 = 0; idof2 < nsd_; idof2++)
             {
-              elemat1(inode * Base::numdofpernode_ + idof, nnod * Base::nsd_ + idof2) +=
-                  normalderiv(idof, nnod * Base::nsd_ + idof2) * press * Base::funct_(inode) *
-                  timefac * fac;
+              elemat1(inode * Base::numdofpernode_ + idof, nnod * nsd_ + idof2) +=
+                  normalderiv(idof, nnod * nsd_ + idof2) * press * Base::funct_(inode) * timefac *
+                  fac;
             }
           }
         }
@@ -3190,9 +3174,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
-  // (we have a Base::nsd_ dimensional domain, since Base::nsd_ determines the dimension of
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  GEO::fillInitialPositionArray<distype, Base::nsd_, LINALG::Matrix<Base::nsd_, Base::bdrynen_>>(
+  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -3212,9 +3196,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
     // Add the deformation of the ALE mesh to the nodes coordinates
     for (int inode = 0; inode < Base::bdrynen_; ++inode)
     {
-      for (int idim = 0; idim < Base::nsd_; ++idim)
+      for (int idim = 0; idim < nsd_; ++idim)
       {
-        Base::xyze_(idim, inode) += mydispnp[Base::nsd_ * inode + idim];
+        Base::xyze_(idim, inode) += mydispnp[nsd_ * inode + idim];
       }
     }
   }
@@ -3232,21 +3216,21 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
   DRT::UTILS::ExtractMyValues(*gridvel, mygridvel, lm);
 
   // allocate velocity vectors
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> evelnp(true);
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> egridvel(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> egridvel(true);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < Base::bdrynen_; inode++)
   {
-    for (int idim = 0; idim < Base::nsd_; idim++)
+    for (int idim = 0; idim < nsd_; idim++)
     {
-      evelnp(idim, inode) = myvelnp[idim + (inode * Base::nsd_)];
-      egridvel(idim, inode) = mygridvel[idim + (inode * Base::nsd_)];
+      evelnp(idim, inode) = myvelnp[idim + (inode * nsd_)];
+      egridvel(idim, inode) = mygridvel[idim + (inode * nsd_)];
     }
   }
 
   // allocate convective velocity at node
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> econvvel(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> econvvel(true);
   econvvel += evelnp;
   if (not Base::fldparatimint_->IsStationary()) econvvel -= egridvel;
 
@@ -3270,13 +3254,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
   DRT::UTILS::ExtractMyValues(*dispnp, parentdispnp, plm);
 
   // update element geometry of parent element
-  LINALG::Matrix<Base::nsd_, nenparent> xrefe;  // material coord. of parent element
-  LINALG::Matrix<Base::nsd_, nenparent> xcurr;  // current  coord. of parent element
+  LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
+  LINALG::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
   {
     DRT::Node** nodes = pele->Nodes();
     for (int i = 0; i < nenparent; ++i)
     {
-      for (int j = 0; j < Base::nsd_; ++j)
+      for (int j = 0; j < nsd_; ++j)
       {
         const double* x = nodes[i]->X();
         xrefe(j, i) = x[j];
@@ -3294,18 +3278,18 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < nenparent; inode++)
   {
-    pepressnp(inode) = pvelnp[Base::nsd_ + (inode * Base::numdofpernode_)];
+    pepressnp(inode) = pvelnp[nsd_ + (inode * Base::numdofpernode_)];
   }
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
-  LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, Base::nsd_);
-  LINALG::Matrix<Base::nsd_, Base::nsd_> derivtrafo(true);
+  LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
+  LINALG::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  DRT::UTILS::BoundaryGPToParentGP<Base::nsd_>(
+  DRT::UTILS::BoundaryGPToParentGP<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->SurfaceNumber());
 
   // coordinates of gauss points of parent element
-  LINALG::Matrix<Base::nsd_, 1> pxsi(true);
+  LINALG::Matrix<nsd_, 1> pxsi(true);
 
   LINALG::Matrix<Base::bdrynen_, 1> eporosity(true);
 
@@ -3315,7 +3299,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<Epetra_SerialDenseVector> mypknots(Base::nsd_);
+  std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
   std::vector<Epetra_SerialDenseVector> myknots(Base::bdrynsd_);
   Epetra_SerialDenseVector weights(Base::bdrynen_);
   Epetra_SerialDenseVector pweights(pele->NumNode());
@@ -3336,7 +3320,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
   // --------------------------------------------------
 
   // allocate convective velocity at gauss point
-  LINALG::Matrix<Base::nsd_, 1> convvel(true);
+  LINALG::Matrix<nsd_, 1> convvel(true);
 
   for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
   {
@@ -3352,10 +3336,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
     // --------------------------------------------------
     // get shape functions and derivatives in the plane of the element
     LINALG::Matrix<nenparent, 1> pfunct(true);
-    LINALG::Matrix<Base::nsd_, nenparent> pderiv_loc;
+    LINALG::Matrix<nsd_, nenparent> pderiv_loc;
 
     // coordinates of the current integration point
-    for (int idim = 0; idim < Base::nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
+    for (int idim = 0; idim < nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
 
     // get shape functions and derivatives of the parent element
     if (not IsNurbs<distype>::isnurbs)
@@ -3373,8 +3357,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
 
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     // transposed jacobian "dx/ds"
-    LINALG::Matrix<Base::nsd_, Base::nsd_> xjm;
-    LINALG::Matrix<Base::nsd_, Base::nsd_> Jmat;
+    LINALG::Matrix<nsd_, nsd_> xjm;
+    LINALG::Matrix<nsd_, nsd_> Jmat;
     xjm.MultiplyNT(pderiv_loc, xcurr);
     Jmat.MultiplyNT(pderiv_loc, xrefe);
     // jacobian determinant "det(dx/ds)"
@@ -3396,7 +3380,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
     // --------------------------------------------------
 
     // dxyzdrs vector -> normal which is not normalized
-    LINALG::Matrix<Base::bdrynsd_, Base::nsd_> dxyzdrs(0.0);
+    LINALG::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
     dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
@@ -3407,20 +3391,20 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
     // fill element matrix and rhs
     for (int inode = 0; inode < Base::bdrynen_; inode++)
     {
-      for (int idof = 0; idof < Base::nsd_; idof++)
+      for (int idof = 0; idof < nsd_; idof++)
       {
         // residual for normal direction
-        rhs(inode * Base::nsd_) -= Base::funct_(inode) * porosity_gp * Base::unitnormal_(idof) *
-                                   convvel(idof) * Base::fac_;
+        rhs(inode * nsd_) -= Base::funct_(inode) * porosity_gp * Base::unitnormal_(idof) *
+                             convvel(idof) * Base::fac_;
       }
 
       for (int nnod = 0; nnod < Base::bdrynen_; nnod++)
       {
-        for (int idof2 = 0; idof2 < Base::nsd_; idof2++)
+        for (int idof2 = 0; idof2 < nsd_; idof2++)
         {
-          k_fluid(inode * Base::nsd_, nnod * Base::nsd_ + idof2) +=
-              Base::funct_(inode) * porosity_gp * Base::unitnormal_(idof2) * Base::funct_(nnod) *
-              Base::fac_;
+          k_fluid(inode * nsd_, nnod * nsd_ + idof2) += Base::funct_(inode) * porosity_gp *
+                                                        Base::unitnormal_(idof2) *
+                                                        Base::funct_(nnod) * Base::fac_;
         }
       }
     }
@@ -3554,9 +3538,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
-  // (we have a Base::nsd_ dimensional domain, since Base::nsd_ determines the dimension of
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  GEO::fillInitialPositionArray<distype, Base::nsd_, LINALG::Matrix<Base::nsd_, Base::bdrynen_>>(
+  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // get timescale parameter from parameter list (depends on time integration scheme)
@@ -3583,9 +3567,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
     // Add the deformation of the ALE mesh to the nodes coordinates
     for (int inode = 0; inode < Base::bdrynen_; ++inode)
     {
-      for (int idim = 0; idim < Base::nsd_; ++idim)
+      for (int idim = 0; idim < nsd_; ++idim)
       {
-        Base::xyze_(idim, inode) += mydispnp[Base::nsd_ * inode + idim];
+        Base::xyze_(idim, inode) += mydispnp[nsd_ * inode + idim];
       }
     }
   }
@@ -3603,16 +3587,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
   DRT::UTILS::ExtractMyValues(*gridvel, mygridvel, lm);
 
   // allocate velocity vectors
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> evelnp(true);
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> egridvel(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> egridvel(true);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < Base::bdrynen_; inode++)
   {
-    for (int idim = 0; idim < Base::nsd_; idim++)
+    for (int idim = 0; idim < nsd_; idim++)
     {
-      evelnp(idim, inode) = myvelnp[idim + (inode * Base::nsd_)];
-      egridvel(idim, inode) = mygridvel[idim + (inode * Base::nsd_)];
+      evelnp(idim, inode) = myvelnp[idim + (inode * nsd_)];
+      egridvel(idim, inode) = mygridvel[idim + (inode * nsd_)];
     }
   }
 
@@ -3623,19 +3607,19 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
   std::vector<double> mylambda(lm.size());
   DRT::UTILS::ExtractMyValues(*glambda, mylambda, lm);
 
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> elambda(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> elambda(true);
 
   // copy lagrange multiplier values into matrix
   for (int inode = 0; inode < Base::bdrynen_; inode++)
   {
-    for (int idim = 0; idim < Base::nsd_; idim++)
+    for (int idim = 0; idim < nsd_; idim++)
     {
-      elambda(idim, inode) = mylambda[idim + (inode * Base::nsd_)];
+      elambda(idim, inode) = mylambda[idim + (inode * nsd_)];
     }
   }
 
   // allocate convective velocity at node
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> econvvel(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> econvvel(true);
 
   econvvel += evelnp;
   if (not Base::fldparatimint_->IsStationary()) econvvel -= egridvel;
@@ -3660,13 +3644,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
   DRT::UTILS::ExtractMyValues(*dispnp, parentdispnp, plm);
 
   // update element geometry of parent element
-  LINALG::Matrix<Base::nsd_, nenparent> xrefe;  // material coord. of parent element
-  LINALG::Matrix<Base::nsd_, nenparent> xcurr;  // current  coord. of parent element
+  LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
+  LINALG::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
   {
     DRT::Node** nodes = pele->Nodes();
     for (int i = 0; i < nenparent; ++i)
     {
-      for (int j = 0; j < Base::nsd_; ++j)
+      for (int j = 0; j < nsd_; ++j)
       {
         const double* x = nodes[i]->X();
         xrefe(j, i) = x[j];
@@ -3684,18 +3668,18 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < nenparent; inode++)
   {
-    pepressnp(inode) = pvelnp[Base::nsd_ + (inode * Base::numdofpernode_)];
+    pepressnp(inode) = pvelnp[nsd_ + (inode * Base::numdofpernode_)];
   }
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
-  LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, Base::nsd_);
-  LINALG::Matrix<Base::nsd_, Base::nsd_> derivtrafo(true);
+  LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
+  LINALG::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  DRT::UTILS::BoundaryGPToParentGP<Base::nsd_>(
+  DRT::UTILS::BoundaryGPToParentGP<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->SurfaceNumber());
 
   // coordinates of gauss points of parent element
-  LINALG::Matrix<Base::nsd_, 1> pxsi(true);
+  LINALG::Matrix<nsd_, 1> pxsi(true);
 
   LINALG::Matrix<Base::bdrynen_, 1> eporosity(true);
 
@@ -3705,7 +3689,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<Epetra_SerialDenseVector> mypknots(Base::nsd_);
+  std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
   std::vector<Epetra_SerialDenseVector> myknots(Base::bdrynsd_);
   Epetra_SerialDenseVector weights(Base::bdrynen_);
   Epetra_SerialDenseVector pweights(pele->NumNode());
@@ -3724,12 +3708,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
   }
   // --------------------------------------------------
   // tangent vectors
-  LINALG::Matrix<Base::nsd_, 1> tangent1(true);
-  LINALG::Matrix<Base::nsd_, 1> tangent2(true);
+  LINALG::Matrix<nsd_, 1> tangent1(true);
+  LINALG::Matrix<nsd_, 1> tangent2(true);
 
   // allocate convective velocity at gauss point
-  LINALG::Matrix<Base::nsd_, 1> convvel(true);
-  LINALG::Matrix<Base::nsd_, 1> lambda(true);
+  LINALG::Matrix<nsd_, 1> convvel(true);
+  LINALG::Matrix<nsd_, 1> lambda(true);
 
   // array for dual shape functions for boundary element
   LINALG::Matrix<Base::bdrynen_, 1> dualfunct(true);
@@ -3749,10 +3733,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
 
     // get shape functions and derivatives in the plane of the element
     LINALG::Matrix<nenparent, 1> pfunct(true);
-    LINALG::Matrix<Base::nsd_, nenparent> pderiv_loc;
+    LINALG::Matrix<nsd_, nenparent> pderiv_loc;
 
     // coordinates of the current integration point
-    for (int idim = 0; idim < Base::nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
+    for (int idim = 0; idim < nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
 
     // get shape functions and derivatives of the parent element
     if (not IsNurbs<distype>::isnurbs)
@@ -3770,8 +3754,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
 
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     // transposed jacobian "dx/ds"
-    LINALG::Matrix<Base::nsd_, Base::nsd_> xjm;
-    LINALG::Matrix<Base::nsd_, Base::nsd_> Jmat;
+    LINALG::Matrix<nsd_, nsd_> xjm;
+    LINALG::Matrix<nsd_, nsd_> Jmat;
     xjm.MultiplyNT(pderiv_loc, xcurr);
     Jmat.MultiplyNT(pderiv_loc, xrefe);
     // jacobian determinant "det(dx/ds)"
@@ -3798,7 +3782,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
     VOLMORTAR::UTILS::dual_shape_function<distype>(dualfunct, Axi.data(), *ele);
 
     // dxyzdrs vector -> normal which is not normalized
-    LINALG::Matrix<Base::bdrynsd_, Base::nsd_> dxyzdrs(0.0);
+    LINALG::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
     dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
@@ -3808,16 +3792,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
     lambda.Multiply(elambda, dualfunct);
 
     //  derivatives of surface normals wrt mesh displacements
-    LINALG::Matrix<Base::nsd_, Base::bdrynen_ * Base::nsd_> normalderiv(true);
-    LINALG::Matrix<Base::nsd_, Base::bdrynen_ * Base::nsd_> tangent1deriv(true);
-    LINALG::Matrix<Base::nsd_, Base::bdrynen_ * Base::nsd_> tangent2deriv(true);
+    LINALG::Matrix<nsd_, Base::bdrynen_ * nsd_> normalderiv(true);
+    LINALG::Matrix<nsd_, Base::bdrynen_ * nsd_> tangent1deriv(true);
+    LINALG::Matrix<nsd_, Base::bdrynen_ * nsd_> tangent2deriv(true);
 
     // The integration factor is not multiplied with drs
     // since it is the same as the scaling factor for the unit normal derivatives
     // Therefore it cancels out!!
     const double fac = intpoints.IP().qwgt[gpid];
 
-    if (Base::nsd_ == 3)
+    if (nsd_ == 3)
     {
       for (int node = 0; node < Base::bdrynen_; ++node)
       {
@@ -3915,15 +3899,15 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
         }
       }
     }
-    else if (Base::nsd_ == 2)
+    else if (nsd_ == 2)
     {
       for (int node = 0; node < Base::bdrynen_; ++node)
       {
-        normalderiv(0, Base::nsd_ * node) += 0.;
-        normalderiv(0, Base::nsd_ * node + 1) += Base::deriv_(0, node);
+        normalderiv(0, nsd_ * node) += 0.;
+        normalderiv(0, nsd_ * node + 1) += Base::deriv_(0, node);
 
-        normalderiv(1, Base::nsd_ * node) += -Base::deriv_(0, node);
-        normalderiv(1, Base::nsd_ * node + 1) += 0.;
+        normalderiv(1, nsd_ * node) += -Base::deriv_(0, node);
+        normalderiv(1, nsd_ * node + 1) += 0.;
       }
 
       // in the case of nurbs the normal vector must be scaled with a special factor
@@ -3935,16 +3919,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
 
       for (int node = 0; node < Base::bdrynen_; ++node)
       {
-        tangent1deriv(0, Base::nsd_ * node) = -normalderiv(1, Base::nsd_ * node);
-        tangent1deriv(0, Base::nsd_ * node + 1) = -normalderiv(1, Base::nsd_ * node + 1);
+        tangent1deriv(0, nsd_ * node) = -normalderiv(1, nsd_ * node);
+        tangent1deriv(0, nsd_ * node + 1) = -normalderiv(1, nsd_ * node + 1);
         ;
 
-        tangent1deriv(1, Base::nsd_ * node) = normalderiv(0, Base::nsd_ * node);
-        tangent1deriv(1, Base::nsd_ * node + 1) = normalderiv(0, Base::nsd_ * node + 1);
+        tangent1deriv(1, nsd_ * node) = normalderiv(0, nsd_ * node);
+        tangent1deriv(1, nsd_ * node + 1) = normalderiv(0, nsd_ * node + 1);
       }
     }
 
-    static LINALG::Matrix<1, Base::bdrynen_ * Base::nsd_> convvel_normalderiv(true);
+    static LINALG::Matrix<1, Base::bdrynen_ * nsd_> convvel_normalderiv(true);
     convvel_normalderiv.MultiplyTN(convvel, normalderiv);
 
     // fill element matrix
@@ -3953,21 +3937,21 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
       const double funct_fac = Base::funct_(inode) * porosity_gp * fac;
       for (int nnod = 0; nnod < Base::bdrynen_; nnod++)
       {
-        for (int idof = 0; idof < Base::nsd_; idof++)
+        for (int idof = 0; idof < nsd_; idof++)
         {
-          k_struct(inode * Base::nsd_, nnod * Base::nsd_ + idof) +=
+          k_struct(inode * nsd_, nnod * nsd_ + idof) +=
               -Base::unitnormal_(idof) * timescale * Base::funct_(nnod) * Base::funct_(inode) *
                   porosity_gp * Base::fac_ +
-              convvel_normalderiv(0, nnod * Base::nsd_ + idof) * funct_fac;
+              convvel_normalderiv(0, nnod * nsd_ + idof) * funct_fac;
         }
       }
     }
 
-    if (Base::nsd_ == 3)
+    if (nsd_ == 3)
     {
-      static LINALG::Matrix<1, Base::bdrynen_ * Base::nsd_> lambda_tangent1deriv(true);
+      static LINALG::Matrix<1, Base::bdrynen_ * nsd_> lambda_tangent1deriv(true);
       lambda_tangent1deriv.MultiplyTN(lambda, tangent1deriv);
-      static LINALG::Matrix<1, Base::bdrynen_ * Base::nsd_> lambda_tangent2deriv(true);
+      static LINALG::Matrix<1, Base::bdrynen_ * nsd_> lambda_tangent2deriv(true);
       lambda_tangent2deriv.MultiplyTN(lambda, tangent2deriv);
 
       for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -3975,19 +3959,19 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
         const double funct_fac = Base::funct_(inode) * fac;
         for (int nnod = 0; nnod < Base::bdrynen_; nnod++)
         {
-          for (int idof = 0; idof < Base::nsd_; idof++)
+          for (int idof = 0; idof < nsd_; idof++)
           {
-            k_struct(inode * Base::nsd_ + 1, nnod * Base::nsd_ + idof) +=
-                lambda_tangent1deriv(0, nnod * Base::nsd_ + idof) * funct_fac;
-            k_struct(inode * Base::nsd_ + 2, nnod * Base::nsd_ + idof) +=
-                lambda_tangent2deriv(0, nnod * Base::nsd_ + idof) * funct_fac;
+            k_struct(inode * nsd_ + 1, nnod * nsd_ + idof) +=
+                lambda_tangent1deriv(0, nnod * nsd_ + idof) * funct_fac;
+            k_struct(inode * nsd_ + 2, nnod * nsd_ + idof) +=
+                lambda_tangent2deriv(0, nnod * nsd_ + idof) * funct_fac;
           }
         }
       }
     }
-    else if (Base::nsd_ == 2)
+    else if (nsd_ == 2)
     {
-      LINALG::Matrix<1, Base::bdrynen_ * Base::nsd_> lambda_tangent1deriv(true);
+      LINALG::Matrix<1, Base::bdrynen_ * nsd_> lambda_tangent1deriv(true);
       lambda_tangent1deriv.MultiplyTN(lambda, tangent1deriv);
 
       for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -3995,42 +3979,42 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
         const double funct_fac = Base::funct_(inode) * fac;
         for (int nnod = 0; nnod < Base::bdrynen_; nnod++)
         {
-          for (int idof = 0; idof < Base::nsd_; idof++)
+          for (int idof = 0; idof < nsd_; idof++)
           {
-            k_struct(inode * Base::nsd_ + 1, nnod * Base::nsd_ + idof) +=
-                lambda_tangent1deriv(0, nnod * Base::nsd_ + idof) * funct_fac;
+            k_struct(inode * nsd_ + 1, nnod * nsd_ + idof) +=
+                lambda_tangent1deriv(0, nnod * nsd_ + idof) * funct_fac;
           }
         }
       }
     }
 
-    if (Base::nsd_ == 3)
+    if (nsd_ == 3)
     {
       for (int inode = 0; inode < Base::bdrynen_; inode++)
       {
         const double funct_fac = Base::funct_(inode) * Base::fac_;
         for (int nnod = 0; nnod < Base::bdrynen_; nnod++)
         {
-          for (int idof = 0; idof < Base::nsd_; idof++)
+          for (int idof = 0; idof < nsd_; idof++)
           {
-            k_lambda(inode * Base::nsd_ + 1, nnod * Base::nsd_ + idof) +=
+            k_lambda(inode * nsd_ + 1, nnod * nsd_ + idof) +=
                 tangent1(idof) * dualfunct(nnod) * funct_fac;
-            k_lambda(inode * Base::nsd_ + 2, nnod * Base::nsd_ + idof) +=
+            k_lambda(inode * nsd_ + 2, nnod * nsd_ + idof) +=
                 tangent2(idof) * dualfunct(nnod) * funct_fac;
           }
         }
       }
     }
-    else if (Base::nsd_ == 2)
+    else if (nsd_ == 2)
     {
       for (int inode = 0; inode < Base::bdrynen_; inode++)
       {
         const double funct_fac = Base::funct_(inode) * Base::fac_;
         for (int nnod = 0; nnod < Base::bdrynen_; nnod++)
         {
-          for (int idof = 0; idof < Base::nsd_; idof++)
+          for (int idof = 0; idof < nsd_; idof++)
           {
-            k_lambda(inode * Base::nsd_ + 1, nnod * Base::nsd_ + idof) +=
+            k_lambda(inode * nsd_ + 1, nnod * nsd_ + idof) +=
                 tangent1(idof) * dualfunct(nnod) * funct_fac;
           }
         }
@@ -4159,9 +4143,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
-  // (we have a Base::nsd_ dimensional domain, since Base::nsd_ determines the dimension of
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  GEO::fillInitialPositionArray<distype, Base::nsd_, LINALG::Matrix<Base::nsd_, Base::bdrynen_>>(
+  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -4181,9 +4165,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
     // Add the deformation of the ALE mesh to the nodes coordinates
     for (int inode = 0; inode < Base::bdrynen_; ++inode)
     {
-      for (int idim = 0; idim < Base::nsd_; ++idim)
+      for (int idim = 0; idim < nsd_; ++idim)
       {
-        Base::xyze_(idim, inode) += mydispnp[Base::nsd_ * inode + idim];
+        Base::xyze_(idim, inode) += mydispnp[nsd_ * inode + idim];
       }
     }
   }
@@ -4201,13 +4185,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
   DRT::UTILS::ExtractMyValues(*gridvel, mygridvel, lm);
 
   // allocate velocity vectors
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> evelnp(true);
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> egridvel(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> egridvel(true);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < Base::bdrynen_; inode++)
   {
-    for (int idim = 0; idim < Base::nsd_; idim++)
+    for (int idim = 0; idim < nsd_; idim++)
     {
       evelnp(idim, inode) = myvelnp[idim + (inode * Base::numdofpernode_)];
       egridvel(idim, inode) = mygridvel[idim + (inode * Base::numdofpernode_)];
@@ -4215,7 +4199,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
   }
 
   // allocate convective velocity at node
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> econvvel(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> econvvel(true);
 
   econvvel += evelnp;
   if (not Base::fldparatimint_->IsStationary()) econvvel -= egridvel;
@@ -4240,13 +4224,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
   DRT::UTILS::ExtractMyValues(*dispnp, parentdispnp, plm);
 
   // update element geometry of parent element
-  LINALG::Matrix<Base::nsd_, nenparent> xrefe;  // material coord. of parent element
-  LINALG::Matrix<Base::nsd_, nenparent> xcurr;  // current  coord. of parent element
+  LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
+  LINALG::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
   {
     DRT::Node** nodes = pele->Nodes();
     for (int i = 0; i < nenparent; ++i)
     {
-      for (int j = 0; j < Base::nsd_; ++j)
+      for (int j = 0; j < nsd_; ++j)
       {
         const double* x = nodes[i]->X();
         xrefe(j, i) = x[j];
@@ -4264,18 +4248,18 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < nenparent; inode++)
   {
-    pepressnp(inode) = pvelnp[Base::nsd_ + (inode * Base::numdofpernode_)];
+    pepressnp(inode) = pvelnp[nsd_ + (inode * Base::numdofpernode_)];
   }
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
-  LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, Base::nsd_);
-  LINALG::Matrix<Base::nsd_, Base::nsd_> derivtrafo(true);
+  LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
+  LINALG::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  DRT::UTILS::BoundaryGPToParentGP<Base::nsd_>(
+  DRT::UTILS::BoundaryGPToParentGP<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->SurfaceNumber());
 
   // coordinates of gauss points of parent element
-  LINALG::Matrix<Base::nsd_, 1> pxsi(true);
+  LINALG::Matrix<nsd_, 1> pxsi(true);
 
   LINALG::Matrix<Base::bdrynen_, 1> eporosity(true);
 
@@ -4285,7 +4269,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<Epetra_SerialDenseVector> mypknots(Base::nsd_);
+  std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
   std::vector<Epetra_SerialDenseVector> myknots(Base::bdrynsd_);
   Epetra_SerialDenseVector weights(Base::bdrynen_);
   Epetra_SerialDenseVector pweights(pele->NumNode());
@@ -4304,7 +4288,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
   }
 
   // --------------------------------------------------
-  LINALG::Matrix<Base::nsd_, 1> convvel(true);
+  LINALG::Matrix<nsd_, 1> convvel(true);
 
   for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
   {
@@ -4321,10 +4305,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
 
     // get shape functions and derivatives in the plane of the element
     LINALG::Matrix<nenparent, 1> pfunct(true);
-    LINALG::Matrix<Base::nsd_, nenparent> pderiv_loc;
+    LINALG::Matrix<nsd_, nenparent> pderiv_loc;
 
     // coordinates of the current integration point
-    for (int idim = 0; idim < Base::nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
+    for (int idim = 0; idim < nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
 
     // get shape functions and derivatives of the parent element
     if (not IsNurbs<distype>::isnurbs)
@@ -4342,8 +4326,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
 
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     // transposed jacobian "dx/ds"
-    LINALG::Matrix<Base::nsd_, Base::nsd_> xjm;
-    LINALG::Matrix<Base::nsd_, Base::nsd_> Jmat;
+    LINALG::Matrix<nsd_, nsd_> xjm;
+    LINALG::Matrix<nsd_, nsd_> Jmat;
     xjm.MultiplyNT(pderiv_loc, xcurr);
     Jmat.MultiplyNT(pderiv_loc, xrefe);
     // jacobian determinant "det(dx/ds)"
@@ -4365,7 +4349,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
         params, ele, Base::funct_, eporosity, press, J, gpid, porosity_gp, dphi_dp, dphi_dJ, false);
 
     // dxyzdrs vector -> normal which is not normalized
-    LINALG::Matrix<Base::bdrynsd_, Base::nsd_> dxyzdrs(0.0);
+    LINALG::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
     dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
@@ -4374,7 +4358,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
     convvel.Multiply(econvvel, Base::funct_);
     double normal_convel = 0.0;
 
-    for (int idof = 0; idof < Base::nsd_; idof++)
+    for (int idof = 0; idof < nsd_; idof++)
       normal_convel += Base::unitnormal_(idof) * convvel(idof);
 
     // fill element matrix
@@ -4383,7 +4367,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
       const double funct_fac = Base::funct_(inode) * Base::fac_;
       for (int nnod = 0; nnod < Base::bdrynen_; nnod++)
       {
-        k_pres(inode * Base::numdofpernode_, nnod * Base::numdofpernode_ + Base::nsd_) +=
+        k_pres(inode * Base::numdofpernode_, nnod * Base::numdofpernode_ + nsd_) +=
             +normal_convel * dphi_dp * Base::funct_(nnod) * funct_fac;
       }
     }
@@ -4516,9 +4500,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
-  // (we have a Base::nsd_ dimensional domain, since Base::nsd_ determines the dimension of
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  GEO::fillInitialPositionArray<distype, Base::nsd_, LINALG::Matrix<Base::nsd_, Base::bdrynen_>>(
+  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -4538,7 +4522,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
     // Add the deformation of the ALE mesh to the nodes coordinates
     for (int inode = 0; inode < Base::bdrynen_; ++inode)
     {
-      for (int idim = 0; idim < Base::nsd_; ++idim)
+      for (int idim = 0; idim < nsd_; ++idim)
       {
         Base::xyze_(idim, inode) += mydispnp[Base::numdofpernode_ * inode + idim];
       }
@@ -4558,13 +4542,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
   DRT::UTILS::ExtractMyValues(*gridvel, mygridvel, lm);
 
   // allocate velocity vectors
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> evelnp(true);
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> egridvel(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> egridvel(true);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < Base::bdrynen_; inode++)
   {
-    for (int idim = 0; idim < Base::nsd_; idim++)
+    for (int idim = 0; idim < nsd_; idim++)
     {
       evelnp(idim, inode) = myvelnp[idim + (inode * Base::numdofpernode_)];
       egridvel(idim, inode) = mygridvel[idim + (inode * Base::numdofpernode_)];
@@ -4572,7 +4556,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
   }
 
   // allocate convective velocity at node
-  LINALG::Matrix<Base::nsd_, Base::bdrynen_> econvvel(true);
+  LINALG::Matrix<nsd_, Base::bdrynen_> econvvel(true);
 
   econvvel += evelnp;
   if (not Base::fldparatimint_->IsStationary()) econvvel -= egridvel;
@@ -4591,13 +4575,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
   DRT::UTILS::ExtractMyValues(*dispnp, parentdispnp, plm);
 
   // update element geometry of parent element
-  LINALG::Matrix<Base::nsd_, nenparent> xrefe;  // material coord. of parent element
-  LINALG::Matrix<Base::nsd_, nenparent> xcurr;  // current  coord. of parent element
+  LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
+  LINALG::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
   {
     DRT::Node** nodes = pele->Nodes();
     for (int i = 0; i < nenparent; ++i)
     {
-      for (int j = 0; j < Base::nsd_; ++j)
+      for (int j = 0; j < nsd_; ++j)
       {
         const double* x = nodes[i]->X();
         xrefe(j, i) = x[j];
@@ -4615,21 +4599,21 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < nenparent; inode++)
   {
-    pepressnp(inode) = pvelnp[Base::nsd_ + (inode * Base::numdofpernode_)];
+    pepressnp(inode) = pvelnp[nsd_ + (inode * Base::numdofpernode_)];
   }
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
-  LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, Base::nsd_);
-  LINALG::Matrix<Base::nsd_, Base::nsd_> derivtrafo(true);
+  LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
+  LINALG::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  DRT::UTILS::BoundaryGPToParentGP<Base::nsd_>(
+  DRT::UTILS::BoundaryGPToParentGP<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->SurfaceNumber());
 
   // coordinates of gauss points of parent element
-  LINALG::Matrix<Base::nsd_, 1> pxsi(true);
+  LINALG::Matrix<nsd_, 1> pxsi(true);
 
   LINALG::Matrix<Base::bdrynen_, 1> eporosity(true);
-  LINALG::Matrix<Base::nsd_, 1> convvel(true);
+  LINALG::Matrix<nsd_, 1> convvel(true);
 
   // --------------------------------------------------
   // Now do the nurbs specific stuff
@@ -4637,7 +4621,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<Epetra_SerialDenseVector> mypknots(Base::nsd_);
+  std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
   std::vector<Epetra_SerialDenseVector> myknots(Base::bdrynsd_);
   Epetra_SerialDenseVector weights(Base::bdrynen_);
   Epetra_SerialDenseVector pweights(pele->NumNode());
@@ -4670,10 +4654,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
 
     // get shape functions and derivatives in the plane of the element
     LINALG::Matrix<nenparent, 1> pfunct(true);
-    LINALG::Matrix<Base::nsd_, nenparent> pderiv_loc;
+    LINALG::Matrix<nsd_, nenparent> pderiv_loc;
 
     // coordinates of the current integration point
-    for (int idim = 0; idim < Base::nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
+    for (int idim = 0; idim < nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
 
     // get shape functions and derivatives of the parent element
     if (not IsNurbs<distype>::isnurbs)
@@ -4691,8 +4675,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
 
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     // transposed jacobian "dx/ds"
-    LINALG::Matrix<Base::nsd_, Base::nsd_> xjm;
-    LINALG::Matrix<Base::nsd_, Base::nsd_> Jmat;
+    LINALG::Matrix<nsd_, nsd_> xjm;
+    LINALG::Matrix<nsd_, nsd_> Jmat;
     xjm.MultiplyNT(pderiv_loc, xcurr);
     Jmat.MultiplyNT(pderiv_loc, xrefe);
     // jacobian determinant "det(dx/ds)"
@@ -4705,17 +4689,17 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
     double press = pepressnp.Dot(pfunct);
 
     //--------------------------------------------dJ/dus = dJ/dF : dF/dus = J * F^-T . N_X = J * N_x
-    LINALG::Matrix<1, Base::nsd_ * nenparent> dJ_dus;
+    LINALG::Matrix<1, nsd_ * nenparent> dJ_dus;
     // global derivatives of shape functions w.r.t x,y,z
-    LINALG::Matrix<Base::nsd_, nenparent> derxy;
+    LINALG::Matrix<nsd_, nenparent> derxy;
     // inverse of transposed jacobian "ds/dx"
-    LINALG::Matrix<Base::nsd_, Base::nsd_> xji;
+    LINALG::Matrix<nsd_, nsd_> xji;
 
     xji.Invert(xjm);
     derxy.Multiply(xji, pderiv_loc);
 
     for (int i = 0; i < nenparent; i++)
-      for (int j = 0; j < Base::nsd_; j++) dJ_dus(j + i * Base::nsd_) = J * derxy(j, i);
+      for (int j = 0; j < nsd_; j++) dJ_dus(j + i * nsd_) = J * derxy(j, i);
 
     // --------------------------------------------------
 
@@ -4727,7 +4711,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
         params, ele, Base::funct_, eporosity, press, J, gpid, porosity_gp, dphi_dp, dphi_dJ, false);
 
     // dxyzdrs vector -> normal which is not normalized
-    LINALG::Matrix<Base::bdrynsd_, Base::nsd_> dxyzdrs(0.0);
+    LINALG::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
     dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
@@ -4736,7 +4720,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
     convvel.Multiply(econvvel, Base::funct_);
     double normal_convel = 0.0;
 
-    for (int idof = 0; idof < Base::nsd_; idof++)
+    for (int idof = 0; idof < nsd_; idof++)
       normal_convel += Base::unitnormal_(idof) * convvel(idof);
 
     // fill element matrix
@@ -4745,10 +4729,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
       const double funct_fac = pfunct(inode) * Base::fac_;
       for (int nnod = 0; nnod < nenparent; nnod++)
       {
-        for (int idof = 0; idof < Base::nsd_; idof++)
+        for (int idof = 0; idof < nsd_; idof++)
         {
-          k_disp(inode * Base::numdofpernode_, nnod * Base::nsd_ + idof) +=
-              +normal_convel * dphi_dJ * dJ_dus(nnod * Base::nsd_ + idof) * funct_fac;
+          k_disp(inode * Base::numdofpernode_, nnod * nsd_ + idof) +=
+              +normal_convel * dphi_dJ * dJ_dus(nnod * nsd_ + idof) * funct_fac;
         }
       }
     }
@@ -4777,7 +4761,7 @@ bool DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::ComputeNodalPorosity(
     LINALG::Matrix<Base::bdrynen_, 1>& eporosity)
 {
   for (int inode = 0; inode < Base::bdrynen_; inode++)
-    eporosity(inode) = mydispnp[Base::nsd_ + (inode * Base::numdofpernode_)];
+    eporosity(inode) = mydispnp[nsd_ + (inode * Base::numdofpernode_)];
 
   return true;
 }

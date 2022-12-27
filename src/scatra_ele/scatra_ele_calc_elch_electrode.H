@@ -52,6 +52,9 @@ namespace DRT
       //! abbreviations
       using my = ScaTraEleCalc<distype, probdim>;
       using myelch = ScaTraEleCalcElch<distype, probdim>;
+      using my::nen_;
+      using my::nsd_;
+      using my::nsd_ele_;
 
       /*========================================================================*/
       //! @name general framework
@@ -69,7 +72,7 @@ namespace DRT
               timetaufac,  //!< domain-integration factor times tau times time-integration factor
           const double rhstaufac,  //!< time-integration factor for rhs times tau times
                                    //!< domain-integration factor
-          LINALG::Matrix<my::nen_, 1>&
+          LINALG::Matrix<nen_, 1>&
               tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
           double& rhsint  //!< rhs at Gauss point
       );
@@ -117,9 +120,9 @@ namespace DRT
           const double fac,           //!< domain-integration factor
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double J,       //!< Jacobian determinant det(dx/ds)
-          const LINALG::Matrix<my::nsd_, 1>& gradphi,    //!< gradient of current scalar
-          const LINALG::Matrix<my::nsd_, 1>& convelint,  //!< convective velocity
-          const LINALG::Matrix<1, my::nsd_ * my::nen_>&
+          const LINALG::Matrix<nsd_, 1>& gradphi,    //!< gradient of current scalar
+          const LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity
+          const LINALG::Matrix<1, nsd_ * nen_>&
               dJ_dmesh  //!< derivatives of Jacobian determinant det(dx/ds) w.r.t. structural
                         //!< displacements
       );
@@ -128,7 +131,7 @@ namespace DRT
       void CalcMatDiffCoeffLin(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                                          //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
-          const LINALG::Matrix<my::nsd_, 1>& gradphi,  //!< gradient of concentration at GP
+          const LINALG::Matrix<nsd_, 1>& gradphi,  //!< gradient of concentration at GP
           const double scalar  //!< scaling factor for element matrix contributions
       );
 
@@ -136,7 +139,7 @@ namespace DRT
       void CalcMatPotEquDiviOhm(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double invf,        //!< 1/F
-          const LINALG::Matrix<my::nsd_, 1>& gradpot,  //!< gradient of potential at GP
+          const LINALG::Matrix<nsd_, 1>& gradpot,  //!< gradient of potential at GP
           const double scalar  //!< scaling factor for element matrix contributions
       );
 
@@ -156,14 +159,14 @@ namespace DRT
       void CalcRhsPotEquDiviOhm(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double invf,    //!< 1./F
-          const LINALG::Matrix<my::nsd_, 1>& gradpot,  //!< gradient of potential at GP
+          const LINALG::Matrix<nsd_, 1>& gradpot,  //!< gradient of potential at GP
           const double scalar  //!< scaling factor for element residual contributions
       );
 
       //! calculate weighted current density
-      virtual void CalculateCurrent(LINALG::Matrix<my::nsd_, 1>& q,  //!< flux of species k
-          const INPAR::SCATRA::FluxType fluxtype,                    //!< type fo flux
-          const double fac                                           //!< integration factor
+      virtual void CalculateCurrent(LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
+          const INPAR::SCATRA::FluxType fluxtype,                //!< type fo flux
+          const double fac                                       //!< integration factor
       );
 
       //! get utility class supporting element evaluation for electrodes
@@ -208,9 +211,9 @@ namespace DRT
           Epetra_SerialDenseVector& conc);
 
       //! calculate weighted mass flux (no reactive flux so far)
-      virtual void CalculateFlux(LINALG::Matrix<my::nsd_, 1>& q,  //!< flux of species k
-          const INPAR::SCATRA::FluxType fluxtype,                 //!< type fo flux
-          const int k                                             //!< index of current scalar
+      virtual void CalculateFlux(LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
+          const INPAR::SCATRA::FluxType fluxtype,             //!< type fo flux
+          const int k                                         //!< index of current scalar
       );
 
       //! calculate error of numerical solution with respect to analytical solution
@@ -230,10 +233,9 @@ namespace DRT
 
      private:
       //! get internal variable manager for electrodes
-      Teuchos::RCP<ScaTraEleInternalVariableManagerElchElectrode<my::nsd_, my::nen_>> VarManager()
+      Teuchos::RCP<ScaTraEleInternalVariableManagerElchElectrode<nsd_, nen_>> VarManager()
       {
-        return Teuchos::rcp_static_cast<
-            ScaTraEleInternalVariableManagerElchElectrode<my::nsd_, my::nen_>>(
+        return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerElchElectrode<nsd_, nen_>>(
             my::scatravarmanager_);
       };
     };

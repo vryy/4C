@@ -48,7 +48,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::ScaTraEleCalcElchEl
 
   // replace elch internal variable manager by internal variable manager for electrodes
   my::scatravarmanager_ =
-      Teuchos::rcp(new ScaTraEleInternalVariableManagerElchElectrode<my::nsd_, my::nen_>(
+      Teuchos::rcp(new ScaTraEleInternalVariableManagerElchElectrode<nsd_, nen_>(
           my::numscal_, myelch::elchparams_));
 
   // replace elch utility class by utility class for electrodes
@@ -62,7 +62,7 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhs(
     Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs, const int k, const double fac,
     const double timefacfac, const double rhsfac, const double taufac, const double timetaufac,
-    const double rhstaufac, LINALG::Matrix<my::nen_, 1>& tauderpot, double& rhsint)
+    const double rhstaufac, LINALG::Matrix<nen_, 1>& tauderpot, double& rhsint)
 {
   //----------------------------------------------------------------------
   // 1) element matrix: instationary terms arising from transport equation
@@ -154,9 +154,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhsO
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcDiffODMesh(
     Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double diffcoeff,
-    const double fac, const double rhsfac, const double J,
-    const LINALG::Matrix<my::nsd_, 1>& gradphi, const LINALG::Matrix<my::nsd_, 1>& convelint,
-    const LINALG::Matrix<1, my::nsd_ * my::nen_>& dJ_dmesh)
+    const double fac, const double rhsfac, const double J, const LINALG::Matrix<nsd_, 1>& gradphi,
+    const LINALG::Matrix<nsd_, 1>& convelint, const LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
 {
   // safety check
   if (k != 0) dserror("Invalid species index!");
@@ -177,15 +176,15 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcDiffODMesh
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatDiffCoeffLin(
     Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac,
-    const LINALG::Matrix<my::nsd_, 1>& gradphi, const double scalar)
+    const LINALG::Matrix<nsd_, 1>& gradphi, const double scalar)
 {
   // linearization of diffusion coefficient in ionic diffusion term (transport equation):
   //
   // (nabla w, D(D(c)) nabla c)
   //
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (unsigned vi = 0; vi < nen_; ++vi)
   {
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (unsigned ui = 0; ui < nen_; ++ui)
     {
       double laplawfrhs_gradphi(0.);
       my::GetLaplacianWeakFormRHS(laplawfrhs_gradphi, gradphi, vi);
@@ -202,11 +201,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatDiffCoe
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatPotEquDiviOhm(
     Epetra_SerialDenseMatrix& emat, const double timefacfac, const double invf,
-    const LINALG::Matrix<my::nsd_, 1>& gradpot, const double scalar)
+    const LINALG::Matrix<nsd_, 1>& gradpot, const double scalar)
 {
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (unsigned vi = 0; vi < nen_; ++vi)
   {
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (unsigned ui = 0; ui < nen_; ++ui)
     {
       double laplawf(0.);
       my::GetLaplacianWeakForm(laplawf, ui, vi);
@@ -243,8 +242,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
     const double rhsfac, const double vdiv)
 {
   double vrhs = rhsfac * my::scatravarmanager_->Phinp(k) * vdiv;
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
-    erhs[vi * my::numdofpernode_ + k] -= vrhs * my::funct_(vi);
+  for (unsigned vi = 0; vi < nen_; ++vi) erhs[vi * my::numdofpernode_ + k] -= vrhs * my::funct_(vi);
 }
 
 /*----------------------------------------------------------------------*
@@ -252,9 +250,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcRhsPotEquDiviOhm(
     Epetra_SerialDenseVector& erhs, const double rhsfac, const double invf,
-    const LINALG::Matrix<my::nsd_, 1>& gradpot, const double scalar)
+    const LINALG::Matrix<nsd_, 1>& gradpot, const double scalar)
 {
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (unsigned vi = 0; vi < nen_; ++vi)
   {
     double laplawfrhs_gradpot(0.);
     my::GetLaplacianWeakFormRHS(laplawfrhs_gradpot, gradpot, vi);

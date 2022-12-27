@@ -32,7 +32,13 @@ namespace DRT
 
      private:
       typedef ScaTraEleCalc<distype, probdim> my;
-      typedef ScaTraEleInternalVariableManager<my::nsd_, my::nen_> varmanager;
+
+     protected:
+      using my::nen_;
+      using my::nsd_;
+
+     private:
+      typedef ScaTraEleInternalVariableManager<nsd_, nen_> varmanager;
 
      public:
       virtual ~ScaTraEleCalcAniso() {}
@@ -70,9 +76,9 @@ namespace DRT
       );
 
       //! get diffusion manager for anisotropic diffusivity
-      Teuchos::RCP<ScaTraEleDiffManagerAniso<my::nsd_>> DiffManager()
+      Teuchos::RCP<ScaTraEleDiffManagerAniso<nsd_>> DiffManager()
       {
-        return Teuchos::rcp_static_cast<ScaTraEleDiffManagerAniso<my::nsd_>>(my::diffmanager_);
+        return Teuchos::rcp_static_cast<ScaTraEleDiffManagerAniso<nsd_>>(my::diffmanager_);
       };
 
       /*========================================================================*/
@@ -80,21 +86,20 @@ namespace DRT
       /*========================================================================*/
 
       //! calculate the Laplacian for all shape functions(strong form)
-      void GetLaplacianStrongForm(
-          LINALG::Matrix<my::nen_, 1>& diff  //!< laplace term to be computed
+      void GetLaplacianStrongForm(LINALG::Matrix<nen_, 1>& diff  //!< laplace term to be computed
       );
 
       //! calculate the Laplacian (weak form)
-      void GetLaplacianWeakForm(double& val,                     //!< ?
-          const LINALG::Matrix<my::nsd_, my::nsd_>& difftensor,  //!< ?
-          const int vi,                                          //!< ?
-          const int ui                                           //!< ?
+      void GetLaplacianWeakForm(double& val,             //!< ?
+          const LINALG::Matrix<nsd_, nsd_>& difftensor,  //!< ?
+          const int vi,                                  //!< ?
+          const int ui                                   //!< ?
       )
       {
         val = 0.0;
-        for (unsigned j = 0; j < my::nsd_; j++)
+        for (unsigned j = 0; j < nsd_; j++)
         {
-          for (unsigned i = 0; i < my::nsd_; i++)
+          for (unsigned i = 0; i < nsd_; i++)
           {
             val += my::derxy_(j, vi) * difftensor(j, i) * my::derxy_(i, ui);
           }
@@ -103,16 +108,16 @@ namespace DRT
       };
 
       //! calculate the Laplacian (weak form)
-      void GetLaplacianWeakFormRHS(double& val,                  //!< ?
-          const LINALG::Matrix<my::nsd_, my::nsd_>& difftensor,  //!< ?
-          const LINALG::Matrix<my::nsd_, 1>& gradphi,            //!< ?
-          const int vi                                           //!< ?
+      void GetLaplacianWeakFormRHS(double& val,          //!< ?
+          const LINALG::Matrix<nsd_, nsd_>& difftensor,  //!< ?
+          const LINALG::Matrix<nsd_, 1>& gradphi,        //!< ?
+          const int vi                                   //!< ?
       )
       {
         val = 0.0;
-        for (unsigned j = 0; j < my::nsd_; j++)
+        for (unsigned j = 0; j < nsd_; j++)
         {
-          for (unsigned i = 0; i < my::nsd_; i++)
+          for (unsigned i = 0; i < nsd_; i++)
           {
             val += my::derxy_(j, vi) * difftensor(j, i) * gradphi(i);
           }

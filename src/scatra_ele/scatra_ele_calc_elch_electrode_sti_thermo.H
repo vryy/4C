@@ -41,6 +41,9 @@ namespace DRT
       using myelch = ScaTraEleCalcElch<distype>;
       using myelectrode = ScaTraEleCalcElchElectrode<distype>;
       using mythermo = ScaTraEleSTIThermo<distype>;
+      using my::nen_;
+      using my::nsd_;
+      using my::nsd_ele_;
 
       //! private constructor for singletons
       ScaTraEleCalcElchElectrodeSTIThermo(
@@ -87,7 +90,7 @@ namespace DRT
               timetaufac,  //!< domain-integration factor times tau times time-integration factor
           const double rhstaufac,  //!< time-integration factor for rhs times tau times
                                    //!< domain-integration factor
-          LINALG::Matrix<my::nen_, 1>&
+          LINALG::Matrix<nen_, 1>&
               tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
           double& rhsint  //!< rhs at Gauss point
       );
@@ -101,11 +104,10 @@ namespace DRT
       void SetInternalVariablesForMatAndRHS();
 
       //! get internal variable manager for thermodynamic electrodes
-      Teuchos::RCP<ScaTraEleInternalVariableManagerElchElectrodeSTIThermo<my::nsd_, my::nen_>>
-      VarManager()
+      Teuchos::RCP<ScaTraEleInternalVariableManagerElchElectrodeSTIThermo<nsd_, nen_>> VarManager()
       {
         return Teuchos::rcp_static_cast<
-            ScaTraEleInternalVariableManagerElchElectrodeSTIThermo<my::nsd_, my::nen_>>(
+            ScaTraEleInternalVariableManagerElchElectrodeSTIThermo<nsd_, nen_>>(
             my::scatravarmanager_);
       };
 

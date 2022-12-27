@@ -31,10 +31,10 @@ namespace DRT
       using my = ScaTraEleCalc<distype>;
 
       //! number of element nodes
-      static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = my::nen_;
 
       //! number of space dimensions
-      static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ = my::nsd_;
 
       //! protected constructor for singletons
       ScaTraEleSTIThermo(const int& numscal  //!< number of transported scalars
@@ -100,8 +100,8 @@ namespace DRT
       //! \param derxy     spatial derivatives of shape functions
       //! \param scalefac  scaling factor for pot. contributions
       void CalcMatDiffThermoOD(Epetra_SerialDenseMatrix& emat, const int& numdofpernode,
-          const double& timefacfac, const double& invF, const LINALG::Matrix<my::nsd_, 1>& gradconc,
-          const LINALG::Matrix<my::nsd_, 1>& gradpot, const double& tempderivisodiffcoef,
+          const double& timefacfac, const double& invF, const LINALG::Matrix<nsd_, 1>& gradconc,
+          const LINALG::Matrix<nsd_, 1>& gradpot, const double& tempderivisodiffcoef,
           const double& tempderivcond, const LINALG::Matrix<nen_, 1>& funct,
           const LINALG::Matrix<nsd_, nen_>& derxy, const double& scalefac);
 

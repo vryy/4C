@@ -76,7 +76,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::CalcMatAndRhs(
     Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs, const int k, const double fac,
     const double timefacfac, const double rhsfac, const double taufac, const double timetaufac,
-    const double rhstaufac, LINALG::Matrix<my::nen_, 1>& tauderpot, double& rhsint)
+    const double rhstaufac, LINALG::Matrix<nen_, 1>& tauderpot, double& rhsint)
 {
   // call base class routine for isothermal problems
   myelectrode::CalcMatAndRhs(
@@ -140,8 +140,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::SysmatODScatra
     DRT::Element* ele, Epetra_SerialDenseMatrix& emat)
 {
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -209,7 +208,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::ScaTraEleCalcElchEl
   // replace internal variable manager for isothermal electrodes by internal variable manager for
   // thermodynamic electrodes
   my::scatravarmanager_ =
-      Teuchos::rcp(new ScaTraEleInternalVariableManagerElchElectrodeSTIThermo<my::nsd_, my::nen_>(
+      Teuchos::rcp(new ScaTraEleInternalVariableManagerElchElectrodeSTIThermo<nsd_, nen_>(
           my::numscal_, myelch::elchparams_));
 }
 

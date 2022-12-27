@@ -190,17 +190,17 @@ DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::ScaTraEleSTIThermo(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatDiffThermoOD(Epetra_SerialDenseMatrix& emat,
     const int& numdofpernode, const double& timefacfac, const double& invF,
-    const LINALG::Matrix<my::nsd_, 1>& gradconc, const LINALG::Matrix<my::nsd_, 1>& gradpot,
+    const LINALG::Matrix<nsd_, 1>& gradconc, const LINALG::Matrix<nsd_, 1>& gradpot,
     const double& tempderivisodiffcoef, const double& tempderivcond,
     const LINALG::Matrix<nen_, 1>& funct, const LINALG::Matrix<nsd_, nen_>& derxy,
     const double& scalefac)
 {
-  for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
+  for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
   {
     const int rowconc = vi * 2;
     const int rowpot = rowconc + 1;
 
-    for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
+    for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
     {
       double laplawfrhs(0.0);
       GetLaplacianWeakFormRHS(laplawfrhs, vi, gradconc, derxy);
