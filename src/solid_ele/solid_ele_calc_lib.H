@@ -38,6 +38,105 @@ namespace DRT::ELEMENTS::DETAIL
 namespace DRT::ELEMENTS
 {
   template <DRT::Element::DiscretizationType distype>
+  constexpr auto GetGaussRuleMassMatrix()
+  {
+    return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
+  }
+
+  template <DRT::Element::DiscretizationType distype>
+  constexpr auto GetGaussRuleStiffnessMatrix()
+  {
+    return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
+  }
+
+  template <>
+  constexpr auto GetGaussRuleStiffnessMatrix<DRT::Element::DiscretizationType::tet10>()
+  {
+    return DRT::UTILS::GaussRule3D::tet_4point;
+  }
+
+  template <>
+  constexpr auto GetGaussRuleStiffnessMatrix<DRT::Element::DiscretizationType::tet4>()
+  {
+    return DRT::UTILS::GaussRule3D::tet_1point;
+  }
+
+  // TODO: What about the stiffness matrix of tri-elements?
+  template <DRT::Element::DiscretizationType distype, typename GaussRuleType>
+  DRT::UTILS::GaussIntegration CreateGaussIntegration(GaussRuleType rule)
+  {
+    constexpr int nsd = DRT::UTILS::DisTypeToDim<distype>::dim;
+
+    // setup default integration
+    DRT::UTILS::IntPointsAndWeights<nsd> intpoints(rule);
+
+    // format as DRT::UTILS::GaussIntegration
+    Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> gp =
+        Teuchos::rcp(new DRT::UTILS::CollectedGaussPoints);
+
+    std::array<double, 3> xi = {0., 0., 0.};
+    for (int i = 0; i < intpoints.IP().nquad; ++i)
+    {
+      for (int d = 0; d < nsd; ++d) xi[d] = intpoints.IP().qxg[i][d];
+      gp->Append(xi[0], xi[1], xi[2], intpoints.IP().qwgt[i]);
+    }
+
+    return DRT::UTILS::GaussIntegration(gp);
+  }
+
+  inline std::vector<char>& GetMutableStressData(
+      const DRT::ELEMENTS::Solid& ele, const Teuchos::ParameterList& params)
+  {
+    if (ele.IsParamsInterface())
+    {
+      return *ele.ParamsInterface().MutableStressDataPtr();
+    }
+    else
+    {
+      return *params.get<Teuchos::RCP<std::vector<char>>>("stress");
+    }
+  }
+
+  inline std::vector<char>& GetMutableStrainData(
+      const DRT::ELEMENTS::Solid& ele, const Teuchos::ParameterList& params)
+  {
+    if (ele.IsParamsInterface())
+    {
+      return *ele.ParamsInterface().MutableStrainDataPtr();
+    }
+    else
+    {
+      return *params.get<Teuchos::RCP<std::vector<char>>>("strain");
+    }
+  }
+
+  inline INPAR::STR::StressType GetIOStressType(
+      const DRT::ELEMENTS::Solid& ele, const Teuchos::ParameterList& params)
+  {
+    if (ele.IsParamsInterface())
+    {
+      return ele.ParamsInterface().GetStressOutputType();
+    }
+    else
+    {
+      return DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress");
+    }
+  }
+
+  inline INPAR::STR::StrainType GetIOStrainType(
+      const DRT::ELEMENTS::Solid& ele, const Teuchos::ParameterList& params)
+  {
+    if (ele.IsParamsInterface())
+    {
+      return ele.ParamsInterface().GetStrainOutputType();
+    }
+    else
+    {
+      return DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain");
+    }
+  }
+
+  template <DRT::Element::DiscretizationType distype>
   struct NodalCoordinates
   {
     LINALG::Matrix<DETAIL::nen<distype>, DETAIL::nsd<distype>> reference_;
