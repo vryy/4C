@@ -215,7 +215,7 @@ namespace POROELAST
     //!@}
 
     //! finite difference check of stiffness matrix
-    __attribute__((unused)) void PoroFDCheck();
+    [[maybe_unused]] void PoroFDCheck();
 
     //! Evaluate no penetration condition
     void EvaluateCondition(Teuchos::RCP<LINALG::SparseOperator> Sysmat,
@@ -240,7 +240,7 @@ namespace POROELAST
     void Aitken();
 
     //! Aitken Reset
-    __attribute__((unused)) void AitkenReset();
+    [[maybe_unused]] void AitkenReset();
 
     //! @name Apply current field state to system
 

@@ -1142,7 +1142,7 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(Teuchos::RCP<LINALG::SparseOpe
   FluidField()->Discretization()->ClearState();
 }
 
-__attribute__((unused)) void POROELAST::Monolithic::PoroFDCheck()
+[[maybe_unused]] void POROELAST::Monolithic::PoroFDCheck()
 {
   std::cout << "\n******************finite difference check***************" << std::endl;
 
@@ -1679,7 +1679,7 @@ void POROELAST::Monolithic::Aitken()
   iterinc_->Scale(1.0 - mu_);
 }
 
-__attribute__((unused)) void POROELAST::Monolithic::AitkenReset()
+[[maybe_unused]] void POROELAST::Monolithic::AitkenReset()
 {
   if (del_ == Teuchos::null)  // first iteration, itnum==1
   {
