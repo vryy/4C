@@ -10,7 +10,9 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include <sstream>
+#ifdef TRAP_FE
 #include <fenv.h>
+#endif
 
 #include "structure_timint.H"
 #include "structure_timint_impl.H"
@@ -1962,16 +1964,22 @@ int STR::TimIntImpl::NewtonLS()
     }
     {
       int exceptcount = 0;
+#ifdef TRAP_FE
       fedisableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
+#endif
       EvaluateForceStiffResidual(params);
+#ifdef TRAP_FE
       if (fetestexcept(FE_INVALID) || fetestexcept(FE_OVERFLOW) || fetestexcept(FE_DIVBYZERO) ||
           params.get<bool>("eval_error") == true)
         exceptcount = 1;
+#endif
       int tmp = 0;
       discret_->Comm().SumAll(&exceptcount, &tmp, 1);
       if (tmp) eval_error = true;
+#ifdef TRAP_FE
       feclearexcept(FE_ALL_EXCEPT);
       feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
+#endif
     }
 
     // get residual of condensed variables (e.g. EAS) for NewtonLS
@@ -2170,7 +2178,9 @@ int STR::TimIntImpl::LsSolveNewtonStep()
 void STR::TimIntImpl::LsUpdateStructuralRHSandStiff(bool& isexcept, double& merit_fct)
 {
   // --- Checking for floating point exceptions
+#ifdef TRAP_FE
   fedisableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
+#endif
 
   // compute residual forces #fres_ and stiffness #stiff_
   // whose components are globally oriented
@@ -2199,9 +2209,11 @@ void STR::TimIntImpl::LsUpdateStructuralRHSandStiff(bool& isexcept, double& meri
     discret_->Comm().SumAll(&loc, &cond_res_, 1);
   }
 
+#ifdef TRAP_FE
   if (fetestexcept(FE_INVALID) || fetestexcept(FE_OVERFLOW) || fetestexcept(FE_DIVBYZERO) ||
       params.get<bool>("eval_error") == true)
     exceptcount = 1;
+#endif
 
   // synchronize the exception flag isexcept on all processors
   int exceptsum = 0;
@@ -2211,8 +2223,10 @@ void STR::TimIntImpl::LsUpdateStructuralRHSandStiff(bool& isexcept, double& meri
   else
     isexcept = false;
 
+#ifdef TRAP_FE
   feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
   feclearexcept(FE_ALL_EXCEPT);
+#endif
   // blank residual at (locally oriented) Dirichlet DOFs
   // rotate to local co-ordinate systems
   if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(fres_);
@@ -2248,7 +2262,9 @@ void STR::TimIntImpl::LsUpdateStructuralRHSandStiff(bool& isexcept, double& meri
 /*----------------------------------------------------------------------*/
 int STR::TimIntImpl::LsEvalMeritFct(double& merit_fct)
 {
+#ifdef TRAP_FE
   fedisableexcept(FE_OVERFLOW);
+#endif
   int err = 0;
   // Calculate the quadratic norm of the right-hand side as merit function
   // Calculate the merit function value: (1/2) * <RHS,RHS>
@@ -2265,12 +2281,16 @@ int STR::TimIntImpl::LsEvalMeritFct(double& merit_fct)
   merit_fct *= 0.5;
 
   int exceptcount = 0;
+#ifdef TRAP_FE
   if (fetestexcept(FE_OVERFLOW)) exceptcount = 1;
+#endif
   int exceptsum = 0;
   discret_->Comm().SumAll(&exceptcount, &exceptsum, 1);
   if (exceptsum != 0) return err;
+#ifdef TRAP_FE
   feclearexcept(FE_ALL_EXCEPT);
   feenableexcept(FE_OVERFLOW);
+#endif
 
   return 0;
 }

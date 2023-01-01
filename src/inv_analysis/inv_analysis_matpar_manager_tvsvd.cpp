@@ -40,7 +40,9 @@
 #include "AnasaziEpetraAdapter.hpp"
 #include "Teuchos_CommandLineProcessor.hpp"
 
+#ifdef TRAP_FE
 #include <fenv.h>
+#endif
 
 typedef std::map<int, std::vector<int>> PATCHES;
 
@@ -460,14 +462,18 @@ void INVANA::MatParManagerTVSVD::Factorize()
   int graised = 1;
   while (graised)
   {
+#ifdef TRAP_FE
     feclearexcept(FE_ALL_EXCEPT);
+#endif
 
     try
     {
       AnasaziEigenProblem(lintvop_, evecs_, params);
       // AnasaziEigenProblem(fullcovariance_->FillMatrix(),evecs_,params);
 
+#ifdef TRAP_FE
       iraised = fetestexcept(FE_INVALID | FE_DIVBYZERO);
+#endif
 
       Comm().SumAll(&iraised, &graised, 1);
 
