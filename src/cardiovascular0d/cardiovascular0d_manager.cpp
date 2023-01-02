@@ -1098,13 +1098,13 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<LINALG::SparseMatrix> mat
     break;
     case INPAR::CARDIOVASCULAR0D::cardvasc0dsolve_AMGnxn:
     {
-      solver_->Params().sublist("Inverse1").sublist("Aztec Parameters");
+      solver_->Params().sublist("Inverse1").sublist("Belos Parameters");
       solver_->Params().sublist("Inverse1").sublist("MueLu Parameters");
       actdisc_->ComputeNullSpaceIfNecessary(solver_->Params().sublist("Inverse1"), true);
 
       // this does not make sense: nullspace for 0D-block is calculated from structural
       // discretization
-      solver_->Params().sublist("Inverse2").sublist("Aztec Parameters");
+      solver_->Params().sublist("Inverse2").sublist("Belos Parameters");
       solver_->Params().sublist("Inverse2").sublist("MueLu Parameters");
       actdisc_->ComputeNullSpaceIfNecessary(solver_->Params().sublist("Inverse2"), true);
     }

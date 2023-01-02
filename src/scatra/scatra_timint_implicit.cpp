@@ -3444,7 +3444,7 @@ void SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(
     // computation
     Teuchos::ParameterList& blocksmootherparams =
         solver->Params().sublist("Inverse" + iblockstr.str());
-    blocksmootherparams.sublist("Aztec Parameters");
+    blocksmootherparams.sublist("Belos Parameters");
     blocksmootherparams.sublist("MueLu Parameters");
 
     // equip smoother for current matrix block with null space associated with all degrees of

@@ -149,7 +149,7 @@ void SSTI::SSTIMono::BuildNullSpaces()
       Teuchos::ParameterList& blocksmootherparamsscatra =
           solver_->Params().sublist("Inverse" + scatrablockstr.str());
 
-      blocksmootherparamsscatra.sublist("Aztec Parameters");
+      blocksmootherparamsscatra.sublist("Belos Parameters");
       blocksmootherparamsscatra.sublist("MueLu Parameters");
 
       // equip smoother for scatra matrix block with null space associated with all degrees of
@@ -160,7 +160,7 @@ void SSTI::SSTIMono::BuildNullSpaces()
       thermoblockstr << GetBlockPositions(Subproblem::thermo).at(0) + 1;
       Teuchos::ParameterList& blocksmootherparamsthermo =
           solver_->Params().sublist("Inverse" + thermoblockstr.str());
-      blocksmootherparamsthermo.sublist("Aztec Parameters");
+      blocksmootherparamsthermo.sublist("Belos Parameters");
       blocksmootherparamsthermo.sublist("MueLu Parameters");
 
       // equip smoother for scatra matrix block with null space associated with all degrees of
@@ -184,7 +184,7 @@ void SSTI::SSTIMono::BuildNullSpaces()
     // space computation
     Teuchos::ParameterList& blocksmootherparams =
         solver_->Params().sublist("Inverse" + iblockstr.str());
-    blocksmootherparams.sublist("Aztec Parameters");
+    blocksmootherparams.sublist("Belos Parameters");
     blocksmootherparams.sublist("MueLu Parameters");
 
     // equip smoother for structural matrix block with null space associated with all degrees of

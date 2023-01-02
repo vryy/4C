@@ -389,7 +389,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
 
       printf("Locsys warning:\n");
       printf("A zero diagonal element on the transformation matrix occured.\n");
-      printf("This will probably cause a crash in the AZTEC preconditioner.\n");
+      printf("This will probably cause a crash in the preconditioner.\n");
       printf("Try not to rotate your local coordinate system by 90 degrees \n");
       printf("or more or use the slow version.\n");
       printf("This warning won't be repeated anymore.\n");

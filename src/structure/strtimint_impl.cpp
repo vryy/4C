@@ -3133,24 +3133,6 @@ void STR::TimIntImpl::CmtLinearSolve()
     Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtbridge_->GetStrategy());
     strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
 
-    // feed Aztec based solvers with contact information
-    if (contactsolver_->Params().isSublist("Aztec Parameters"))
-    {
-      Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("Aztec Parameters");
-      Teuchos::ParameterList& linSystemProps = mueluParams.sublist("Linear System properties");
-      linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact masterDofMap", masterDofMap);
-      linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap", slaveDofMap);
-      linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact innerDofMap", innerDofMap);
-      linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact activeDofMap", activeDofMap);
-      Teuchos::RCP<CONTACT::CoAbstractStrategy> costrat =
-          Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
-      if (costrat != Teuchos::null)
-        linSystemProps.set<std::string>("ProblemType", "contact");
-      else
-        linSystemProps.set<std::string>("ProblemType", "meshtying");
-      linSystemProps.set<int>("time step", step_);
-      linSystemProps.set<int>("iter", iter_);
-    }
     // feed Belos based solvers with contact information
     if (contactsolver_->Params().isSublist("Belos Parameters"))
     {
@@ -4557,27 +4539,6 @@ int STR::TimIntImpl::CmtWindkConstrLinearSolve(const double k_ptc)
     Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtbridge_->GetStrategy());
     strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
 
-    // feed Aztec based solvers with contact information
-    // if (contactsolver_->Params().isSublist("Aztec Parameters"))
-    if (cardvasc0dman_->GetSolver()->Params().isSublist("Aztec Parameters"))
-    {
-      // Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("Aztec Parameters");
-      Teuchos::ParameterList& mueluParams =
-          cardvasc0dman_->GetSolver()->Params().sublist("Aztec Parameters");
-      Teuchos::ParameterList& linSystemProps = mueluParams.sublist("Linear System properties");
-      linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact masterDofMap", masterDofMap);
-      linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap", slaveDofMap);
-      linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact innerDofMap", innerDofMap);
-      linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact activeDofMap", activeDofMap);
-      Teuchos::RCP<CONTACT::CoAbstractStrategy> costrat =
-          Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
-      if (costrat != Teuchos::null)
-        linSystemProps.set<std::string>("ProblemType", "contact");
-      else
-        linSystemProps.set<std::string>("ProblemType", "meshtying");
-      linSystemProps.set<int>("time step", step_);
-      linSystemProps.set<int>("iter", iter_);
-    }
     // feed Belos based solvers with contact information
     // if (contactsolver_->Params().isSublist("Belos Parameters"))
     if (cardvasc0dman_->GetSolver()->Params().isSublist("Belos Parameters"))

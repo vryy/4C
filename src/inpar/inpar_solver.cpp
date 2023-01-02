@@ -94,8 +94,6 @@ namespace INPAR::SOLVER
           tuple<int>(0, 1, 2), &list);
     }
 
-    // Aztecoo / Belos options
-
     /* Iterative solver options
      *
      * Options available for every iterative solver:
