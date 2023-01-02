@@ -63,9 +63,9 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
     Epetra_SerialDenseMatrix* mass_matrix)
 {
   // Create views to SerialDenseMatrices
-  std::optional<LINALG::Matrix<nsd_ * nen_, nsd_* nen_>> stiff = {};
-  std::optional<LINALG::Matrix<nsd_ * nen_, nsd_* nen_>> mass = {};
-  std::optional<LINALG::Matrix<nsd_ * nen_, 1>> force = {};
+  std::optional<LINALG::Matrix<numdofperelement_, numdofperelement_>> stiff = {};
+  std::optional<LINALG::Matrix<numdofperelement_, numdofperelement_>> mass = {};
+  std::optional<LINALG::Matrix<numdofperelement_, 1>> force = {};
   if (stiffness_matrix != nullptr) stiff.emplace(*stiffness_matrix, true);
   if (mass_matrix != nullptr) mass.emplace(*mass_matrix, true);
   if (force_vector != nullptr) force.emplace(*force_vector, true);
@@ -82,7 +82,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
   // Loop over all Gauss points
   for (int gp = 0; gp < stiffness_matrix_integration_.NumPoints(); ++gp)
   {
-    const LINALG::Matrix<nsd<distype>, 1> xi =
+    const LINALG::Matrix<nsd_, 1> xi =
         EvaluateParameterCoordinate<distype>(stiffness_matrix_integration_, gp);
 
     const ShapeFunctionsAndDerivatives<distype> shape_functions =
@@ -96,7 +96,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
 
     const Strains<distype> strains = EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
 
-    LINALG::Matrix<numstr<distype>, nsd<distype> * nen<distype>> Bop =
+    LINALG::Matrix<numstr_, numdofperelement_> Bop =
         EvaluateStrainGradient(jacobian_mapping, strains);
 
     const Stress<distype> stress =
@@ -129,7 +129,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
     dsassert(mean_density > 0, "It looks like the density is 0.0");
     for (int gp = 0; gp < mass_matrix_integration_.NumPoints(); ++gp)
     {
-      const LINALG::Matrix<nsd<distype>, 1> xi =
+      const LINALG::Matrix<nsd_, 1> xi =
           EvaluateParameterCoordinate<distype>(mass_matrix_integration_, gp);
 
       const ShapeFunctionsAndDerivatives<distype> shape_functions =
@@ -166,7 +166,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::Update(const DRT::ELEMENTS::Solid& el
   // Loop over all Gauss points
   for (int gp = 0; gp < stiffness_matrix_integration_.NumPoints(); ++gp)
   {
-    const LINALG::Matrix<nsd<distype>, 1> xi =
+    const LINALG::Matrix<nsd_, 1> xi =
         EvaluateParameterCoordinate<distype>(stiffness_matrix_integration_, gp);
 
     const ShapeFunctionsAndDerivatives<distype> shape_functions =
@@ -241,7 +241,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::ELEMENTS::
   // Loop over all Gauss points
   for (int gp = 0; gp < stiffness_matrix_integration_.NumPoints(); ++gp)
   {
-    const LINALG::Matrix<nsd<distype>, 1> xi =
+    const LINALG::Matrix<nsd_, 1> xi =
         EvaluateParameterCoordinate<distype>(stiffness_matrix_integration_, gp);
 
     const ShapeFunctionsAndDerivatives<distype> shape_functions =
