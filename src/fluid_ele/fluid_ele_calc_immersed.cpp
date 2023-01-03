@@ -368,7 +368,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::LinGalMomResU(
 
   // add conservative terms for covered fluid integration points
   const double timefacfac_densaf = timefacfac * my::densaf_;
-  int idim_nsd_p_idim[nsd_];
+  std::array<int, nsd_> idim_nsd_p_idim;
   for (int idim = 0; idim < nsd_; ++idim)
   {
     idim_nsd_p_idim[idim] = idim * nsd_ + idim;

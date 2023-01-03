@@ -1181,9 +1181,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcTauDerPotTaylorHughesZarin
       for (unsigned tt = 1; tt < nsd_; ++tt) G += my::xij_(nn, tt) * my::xij_(rr, tt);
 
       for (unsigned jj = 0; jj < nen_; ++jj)
+      {
         tauderpot(jj) +=
             dens_sqr * frt * diffusvalence *
             ((my::derxy_(nn, jj) * G * veleff(rr, 0)) + (veleff(nn, 0) * G * my::derxy_(rr, jj)));
+      }
     }
   }
 

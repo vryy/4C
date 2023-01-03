@@ -126,10 +126,11 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
   }
 
   LINALG::Matrix<nen_, 1> escaaf(true);
-  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL, &escaaf, "scaaf");
+  my::ExtractValuesFromGlobalVector(
+      discretization, lm, *my::rotsymmpbc_, nullptr, &escaaf, "scaaf");
 
   LINALG::Matrix<nsd_, nen_> emhist(true);
-  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &emhist, NULL, "hist");
+  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &emhist, nullptr, "hist");
 
   LINALG::Matrix<nsd_, nen_> eaccam(true);
   LINALG::Matrix<nen_, 1> escadtam(true);

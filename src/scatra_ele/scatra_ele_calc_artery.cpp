@@ -26,14 +26,15 @@ DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ScaTraEleCalcArtery(
   // below
   //        will not work anymore
   if (nen_ != 2)
+  {
     dserror(
         "Only line2 elements supported so far, you have %d nodes, if called with 2D or 3D element, "
         "think again",
         nen_);
+  }
   // replace internal variable manager by internal variable manager for artery
   my::scatravarmanager_ =
       Teuchos::rcp(new ScaTraEleInternalVariableManagerArtery<nsd_, nen_>(my::numscal_));
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -240,7 +241,7 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::CalcMatConvODFluid(
       // get correct factor
       double laplawf(0.0);
       for (unsigned j = 0; j < nsd_; j++) laplawf += my::derxy_(j, ui) * gradphi(j);
-      const int fui = ui;
+      const unsigned fui = ui;
       emat(fvi, fui) += v * laplawf;
     }
   }

@@ -1026,7 +1026,7 @@ double DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcCharEleLength
     case INPAR::SCATRA::root_of_volume_reinit:
     {
       // cast dimension to a double varibale -> pow()
-      const double dim = double(nsd_);
+      const double dim = static_cast<double>(nsd_);
       h = std::pow(vol, 1.0 / dim);
     }
     break;
@@ -1098,10 +1098,14 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcRHSDiff(
 
   LINALG::Matrix<nsd_, 1> gradphirhs(true);
   if (crosswind)
+  {
     // in case of anisotropic or crosswind diffusion, multiply 'gradphi' with diffusion tensor
     gradphirhs.Multiply(DiffManager()->GetCrosswindTensor(), gradphi);
+  }
   else
+  {
     gradphirhs.Update(1.0, gradphi, 0.0);
+  }
 
   for (unsigned vi = 0; vi < nen_; ++vi)
   {

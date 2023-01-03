@@ -82,7 +82,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::CalErrorComparedToAnalytSolution(
 
   // get elemet length
   // cast dimension to a double varibale -> pow()
-  const double dim = double(nsd_);
+  const double dim = static_cast<double>(nsd_);
   const double h = std::pow(vol, 1.0 / dim);
 
   // integration points and weights

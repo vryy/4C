@@ -77,13 +77,13 @@ namespace DRT
           double* saccn,    ///< s.-s. acceleration at time n+alpha_a / n
           double* sveln,    ///< s.-s. velocity at time n+alpha_a / n
           double* svelnp    ///< s.-s. velocity at time n+alpha_f / n+1
-      );
+          ) override;
 
       //! Provide linearization of Garlerkin momentum residual with respect to the velocities
       void LinGalMomResU(LINALG::Matrix<nsd_ * nsd_, nen_>&
                              lin_resM_Du,  ///< linearisation of the Garlerkin momentum residual
           const double& timefacfac         ///< = timefac x fac
-      );
+          ) override;
 
       //! Compute element matrix and rhs entries: inertia, convective andyn
       //! reactive terms of the Galerkin part
@@ -103,7 +103,7 @@ namespace DRT
           const double& timefacfac,                      ///< = timefac x fac
           const double& timefacfacpre,
           const double& rhsfac  ///< right-hand-side factor
-      );
+          ) override;
 
       //! Compute element matrix entries: conservative formulation
       void ConservativeFormulation(
@@ -111,7 +111,7 @@ namespace DRT
           LINALG::Matrix<nsd_, nen_>& velforce,               ///< rhs forces velocity
           const double& timefacfac,                           ///< = timefac x fac
           const double& rhsfac                                ///< right-hand-side factor
-      );
+          ) override;
 
       // current element
       DRT::ELEMENTS::FluidImmersedBase* immersedele_;

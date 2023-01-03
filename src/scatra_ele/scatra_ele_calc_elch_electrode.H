@@ -156,7 +156,8 @@ namespace DRT
           Epetra_SerialDenseVector& erhs, const int k, const double rhsfac, const double vdiv);
 
       //! CalcRhs: potential equation div i with inserted current - ohmic overpotential
-      void CalcRhsPotEquDiviOhm(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
+      virtual void CalcRhsPotEquDiviOhm(
+          Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double invf,    //!< 1./F
           const LINALG::Matrix<nsd_, 1>& gradpot,  //!< gradient of potential at GP
@@ -164,10 +165,10 @@ namespace DRT
       );
 
       //! calculate weighted current density
-      virtual void CalculateCurrent(LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
-          const INPAR::SCATRA::FluxType fluxtype,                //!< type fo flux
-          const double fac                                       //!< integration factor
-      );
+      void CalculateCurrent(LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
+          const INPAR::SCATRA::FluxType fluxtype,        //!< type fo flux
+          const double fac                               //!< integration factor
+          ) override;
 
       //! get utility class supporting element evaluation for electrodes
       DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>* Utils()
@@ -211,10 +212,10 @@ namespace DRT
           Epetra_SerialDenseVector& conc);
 
       //! calculate weighted mass flux (no reactive flux so far)
-      virtual void CalculateFlux(LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
-          const INPAR::SCATRA::FluxType fluxtype,             //!< type fo flux
-          const int k                                         //!< index of current scalar
-      );
+      void CalculateFlux(LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
+          const INPAR::SCATRA::FluxType fluxtype,     //!< type fo flux
+          const int k                                 //!< index of current scalar
+          ) override;
 
       //! calculate error of numerical solution with respect to analytical solution
       virtual void CalErrorComparedToAnalytSolution(const DRT::Element* ele,  //!< element

@@ -5478,7 +5478,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinResMDu(const double& ti
     LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
     LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resMRea_Du)
 {
-  int idim_nsd_p_idim[nsd_];
+  std::array<int, nsd_> idim_nsd_p_idim;
   for (int idim = 0; idim < nsd_; ++idim)
   {
     idim_nsd_p_idim[idim] = idim * nsd_ + idim;

@@ -307,7 +307,7 @@ namespace DRT
       void CalculateFlux(LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
           const INPAR::SCATRA::FluxType fluxtype,     //!< type fo flux
           const int k                                 //!< index of current scalar
-      );
+          ) override;
 
       //! calculate error of numerical solution with respect to analytical solution
       void CalErrorComparedToAnalytSolution(

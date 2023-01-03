@@ -38,7 +38,7 @@ namespace DRT
       using my::nsd_;
 
      private:
-      typedef ScaTraEleInternalVariableManager<nsd_, nen_> varmanager;
+      using varmanager = ScaTraEleInternalVariableManager<nsd_, nen_>;
 
      public:
       virtual ~ScaTraEleCalcAniso() {}

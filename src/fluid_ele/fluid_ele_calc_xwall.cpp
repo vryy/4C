@@ -819,7 +819,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::TauWViaGradient(DRT::ELE
   //----------------------------------------------------------------------------
 
   LINALG::Matrix<nsd_, nen_> evel(true);
-  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evel, NULL, "vel");
+  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evel, nullptr, "vel");
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
@@ -1072,17 +1072,19 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::XWallProjection(DRT::ELE
   //----------------------------------------------------------------------------
 
   LINALG::Matrix<nsd_, nen_> eveln(true);
-  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eveln, NULL, "veln");
+  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eveln, nullptr, "veln");
 
   LINALG::Matrix<nsd_, nen_> eaccn(true);
   bool switchonaccn = discretization.HasState("accn");
   if (switchonaccn)
-    my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eaccn, NULL, "accn");
+    my::ExtractValuesFromGlobalVector(
+        discretization, lm, *my::rotsymmpbc_, &eaccn, nullptr, "accn");
 
   LINALG::Matrix<nsd_, nen_> evelnp(true);
   bool switchonvelnp = discretization.HasState("velnp");
   if (switchonvelnp)
-    my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evelnp, NULL, "velnp");
+    my::ExtractValuesFromGlobalVector(
+        discretization, lm, *my::rotsymmpbc_, &evelnp, nullptr, "velnp");
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
@@ -1118,7 +1120,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::XWallProjection(DRT::ELE
     //----------------------------------------------------------------------------
     //                         MASS MATRIX
     //----------------------------------------------------------------------------
-    int idim_nsd_p_idim[nsd_];
+    std::array<int, nsd_> idim_nsd_p_idim;
     LINALG::Matrix<nsd_ * nsd_, enren_> lin_resM_Du(true);
     LINALG::Matrix<enren_ * nsd_, enren_ * nsd_> estif_u(true);
 

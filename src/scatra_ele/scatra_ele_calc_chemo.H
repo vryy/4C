@@ -29,7 +29,7 @@ namespace DRT
       typedef ScaTraEleCalc<distype, probdim> my;
       using my::nen_;
       using my::nsd_;
-      typedef ScaTraEleInternalVariableManager<nsd_, nen_> varmanager;
+      using varmanager = ScaTraEleInternalVariableManager<nsd_, nen_>;
 
      public:
       virtual ~ScaTraEleCalcChemo() {}

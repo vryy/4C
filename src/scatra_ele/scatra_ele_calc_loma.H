@@ -210,7 +210,7 @@ namespace DRT
           Teuchos::ParameterList& params, const double tempnp);
 
       //! calculate viscous part of subgrid-scale velocity
-      void CalcSubgrVelocityVisc(LINALG::Matrix<nsd_, 1>& epsilonvel);
+      void CalcSubgrVelocityVisc(LINALG::Matrix<nsd_, 1>& epsilonvel) override;
 
       /*========================================================================*/
       //! @name scalar degrees of freedom and related

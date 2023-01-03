@@ -325,10 +325,9 @@ namespace DRT
           LINALG::Matrix<nsd_, nen_ * nsd_>& dgradphi_dus);
 
       //! Compute element matrix entries: PSPG
-      virtual void PSPG(
-          LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u,  //!< block (weighting function q x u)
-          LINALG::Matrix<nen_, nen_>& ppmat,             //!< block (weighting function q x p)
-          LINALG::Matrix<nen_, 1>& preforce,             //!< rhs forces pressure
+      void PSPG(LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u,  //!< block (weighting function q x u)
+          LINALG::Matrix<nen_, nen_>& ppmat,                   //!< block (weighting function q x p)
+          LINALG::Matrix<nen_, 1>& preforce,                   //!< rhs forces pressure
           const LINALG::Matrix<nsd_ * nsd_, nen_>&
               lin_resM_Du,  //!< linearisation of the stabilization residual
           const LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resMRea_Du,
@@ -339,10 +338,10 @@ namespace DRT
           const double& timefacfac,     //!< = timefac x fac
           const double& timefacfacpre,  //!< = timefacpre x fac
           const double& rhsfac          //!< right-hand-side factor for residuals
-      );
+          ) override;
 
       //! Compute element matrix entries: reactive stabilization
-      virtual void ReacStab(
+      void ReacStab(
           LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,  //!< block (weighting function v x u)
           LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v,       //!< block (weighting function v x p)
           LINALG::Matrix<nsd_, nen_>& velforce,               //!< rhs forces velocity
@@ -355,14 +354,14 @@ namespace DRT
           const double& timefacfacpre,  //!< = timefacpre x fac
           const double& rhsfac,         //!< right-hand-side factor for residuals
           const double& fac3            //!< factor for residual in current subgrid velocities
-      );
+          ) override;
 
-      virtual int ComputeVolume(Teuchos::ParameterList& params,
+      int ComputeVolume(Teuchos::ParameterList& params,
           DRT::ELEMENTS::Fluid* ele,            //!< current fluid element
           DRT::Discretization& discretization,  //!< fluid discretization
           std::vector<int>& lm,                 //!< location vector for DOF management
           Epetra_SerialDenseVector& elevec1     //!< reference to element vector to be filled
-      );
+          ) override;
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

@@ -60,14 +60,14 @@ namespace DRT
           Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
           Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
 
-      virtual int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
           Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
           Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-          bool offdiag = false);
+          bool offdiag = false) override;
 
-      virtual void Sysmat(const LINALG::Matrix<nsd_, nen_>& ebofoaf,
+      void Sysmat(const LINALG::Matrix<nsd_, nen_>& ebofoaf,
           const LINALG::Matrix<nsd_, nen_>& eprescpgaf, const LINALG::Matrix<nsd_, nen_>& ebofon,
           const LINALG::Matrix<nsd_, nen_>& eprescpgn, const LINALG::Matrix<nsd_, nen_>& evelaf,
           const LINALG::Matrix<nsd_, nen_>& evelam, const LINALG::Matrix<nsd_, nen_>& eveln,
@@ -90,7 +90,7 @@ namespace DRT
           const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
           Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
           double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
-          const DRT::UTILS::GaussIntegration& intpoints);
+          const DRT::UTILS::GaussIntegration& intpoints) override;
 
       //! get ALE grid displacements and grid velocity for element
       virtual void GetGridDispALE(DRT::Discretization& discretization, const std::vector<int>& lm,
