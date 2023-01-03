@@ -503,7 +503,11 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::DiscretizationInterface& d
       const int onesetj = j % numdf;
 
       // check whether dof gid is a dbc gid and is prescribed only by the current condition
-      if ((*onoff)[onesetj] == 0) continue;
+      const bool test1 = ((*onoff)[onesetj] == 0);  // dof is not DBC by current condition
+      const bool test2 =
+          (std::abs(toggle[lid] - 1.0) > 1e-13);  // dof is not prescribed by current condition or
+                                                  // is unprescribed by lower hierarchy condition
+      if (test1 || test2) continue;
 
       std::vector<double> value(deg + 1, (*val)[onesetj]);
 
