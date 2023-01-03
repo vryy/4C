@@ -368,8 +368,7 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLinSolve
       linsolver->Params() = LINALG::Solver::TranslateSolverParameters(
           DRT::Problem::Instance()->SolverParams(linsolvernumber));
 
-      if (!linsolver->Params().isSublist("Belos Parameters"))
-        dserror("Iterative solver expected!");
+      if (!linsolver->Params().isSublist("Belos Parameters")) dserror("Iterative solver expected!");
 
       const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
           DRT::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");

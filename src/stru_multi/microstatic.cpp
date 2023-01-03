@@ -1090,8 +1090,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6, 1>* stress,
       }
       default:
       {
-        dserror(
-            "You have to choose an iterative solver for micro structures!");
+        dserror("You have to choose an iterative solver for micro structures!");
         break;
       }
     }

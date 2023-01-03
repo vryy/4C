@@ -146,8 +146,7 @@ void SCATRA::MeshtyingStrategyArtery::InitializeLinearSolver(
       solvertype == INPAR::SOLVER::SolverType::superlu)
     return;
 
-  if (solvertype != INPAR::SOLVER::SolverType::belos)
-    dserror("Iterative solver expected");
+  if (solvertype != INPAR::SOLVER::SolverType::belos) dserror("Iterative solver expected");
 
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(solverparams, "AZPREC");

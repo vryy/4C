@@ -164,8 +164,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
   if (onlymeshtying or onlycontact or meshtyingandcontact)
     contactsolver = CreateContactMeshtyingSolver(actdis, sdyn);
 
-  if (solver != Teuchos::null &&
-      (solver->Params().isSublist("Belos Parameters")) &&
+  if (solver != Teuchos::null && (solver->Params().isSublist("Belos Parameters")) &&
       solver->Params().isSublist("ML Parameters")  // TODO what about MueLu?
       &&
       DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(sdyn, "STC_SCALING") != INPAR::STR::stc_none)

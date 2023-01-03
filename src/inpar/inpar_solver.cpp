@@ -26,16 +26,17 @@ namespace INPAR::SOLVER
       setStringToIntegralParameter<SolverType>("SOLVER", "undefined",
           "The solver to attack the system of linear equations arising of FE approach with.",
           tuple<std::string>("UMFPACK", "Superlu", "Belos", "undefined"),
-          tuple<SolverType>(SolverType::umfpack, SolverType::superlu, SolverType::belos, SolverType::undefined),
+          tuple<SolverType>(
+              SolverType::umfpack, SolverType::superlu, SolverType::belos, SolverType::undefined),
           &list);
     }
 
     // Iterative solver options
     {
       setStringToIntegralParameter<IterativeSolverType>("AZSOLVE", "GMRES",
-          "Type of linear solver algorithm to use.",
-          tuple<std::string>("CG", "GMRES", "BiCGSTAB"),
-          tuple<IterativeSolverType>(IterativeSolverType::cg, IterativeSolverType::gmres, IterativeSolverType::bicgstab),
+          "Type of linear solver algorithm to use.", tuple<std::string>("CG", "GMRES", "BiCGSTAB"),
+          tuple<IterativeSolverType>(
+              IterativeSolverType::cg, IterativeSolverType::gmres, IterativeSolverType::bicgstab),
           &list);
     }
 

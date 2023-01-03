@@ -24,8 +24,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     Teuchos::ParameterList& solveparams, bool recompute)
 {
   // see whether we have a list for an iterative solver
-  if (!solveparams.isSublist("Belos Parameters") ||
-      solveparams.isSublist("IFPACK Parameters"))
+  if (!solveparams.isSublist("Belos Parameters") || solveparams.isSublist("IFPACK Parameters"))
   {
     return;
   }

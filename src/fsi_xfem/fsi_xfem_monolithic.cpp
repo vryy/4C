@@ -2031,8 +2031,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
   // create iterative solver for XFSI block matrix
   //----------------------------------------------
 
-  if (solvertype != INPAR::SOLVER::SolverType::belos)
-    dserror("Iterative solver expected");
+  if (solvertype != INPAR::SOLVER::SolverType::belos) dserror("Iterative solver expected");
 
   // get parameter list of structural dynamics
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();

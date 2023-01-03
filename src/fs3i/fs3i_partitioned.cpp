@@ -563,8 +563,7 @@ void FS3I::PartFS3I::SetupSystem()
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(coupledscatrasolvparams, "SOLVER");
 
-  if (solvertype != INPAR::SOLVER::SolverType::belos)
-    dserror("Iterative solver expected");
+  if (solvertype != INPAR::SOLVER::SolverType::belos) dserror("Iterative solver expected");
 
   const auto azprectype = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
       coupledscatrasolvparams, "AZPREC");

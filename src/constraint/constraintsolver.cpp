@@ -336,8 +336,7 @@ void UTILS::ConstraintSolver::SolveSimple(Teuchos::RCP<LINALG::SparseMatrix> sti
   // Teuchos::ParameterList sfparams = solver_->Params();  // save copy of original solver parameter
   // list solver_->Params() =
   // LINALG::Solver::TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(linsolvernumber));
-  if (!solver_->Params().isSublist("Belos Parameters"))
-    dserror("Iterative solver expected!");
+  if (!solver_->Params().isSublist("Belos Parameters")) dserror("Iterative solver expected!");
 
   solver_->Params().set<bool>(
       "CONSTRAINT", true);  // handling of constraint null space within Simple type preconditioners
