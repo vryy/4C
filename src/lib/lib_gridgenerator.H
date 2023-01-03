@@ -13,6 +13,7 @@
 
 #include <string>
 #include <array>
+#include <string>
 
 namespace DRT
 {
