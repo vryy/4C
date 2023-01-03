@@ -301,7 +301,6 @@ namespace DRT::ELEMENTS
     virtual ::STR::ELEMENTS::EASType GetEAStype() { return eastype_; }
     virtual ::INPAR::STR::KinemType GetKinemType() { return kintype_; }
     virtual const std::set<INPAR::STR::EleTech>& GetEleTech() { return eletech_; }
-    virtual bool HaveEAS() { return eletech_.find(INPAR::STR::EleTech::eas) != eletech_.end(); }
     void VisNames(std::map<std::string, int>& names) override;
     bool VisData(const std::string& name, std::vector<double>& data) override;
 
