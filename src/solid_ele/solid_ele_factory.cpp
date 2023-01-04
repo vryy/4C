@@ -9,8 +9,9 @@
 
 #include "solid_ele_factory.H"
 #include <memory>
-#include "solid_ele_calc.H"
 // #include "solid_ele_calc_eas.H"
+#include "solid_ele_calc_fbar.H"
+#include "solid_ele_calc.H"
 #include "inpar_structure.H"
 #include "solid_ele.H"
 
@@ -84,6 +85,19 @@ std::unique_ptr<DRT::ELEMENTS::SolidEleInterface> DRT::ELEMENTS::SolidFactory::P
               dserror("eastype not implemented %d", (int)ele->GetEAStype());
               break;
           } */
+        case INPAR::STR::EleTech::fbar:
+          if constexpr (distype != DRT::Element::hex8)
+          {
+            dserror("FBAR is only implemented for hex8 elements.");
+          }
+          if (ele->GetKinemType() != INPAR::STR::KinemType::kinem_nonlinearTotLag)
+          {
+            dserror("FBAR only usable for KINEM nonlinear (you are using %s)", ele->GetKinemType());
+          }
+          // template only instantiated for distype == DRT::Element::hex8,
+          // hence this check is necessary
+          if constexpr (distype == DRT::Element::hex8)
+            return std::make_unique<DRT::ELEMENTS::SolidEleCalcFbar<distype>>();
           break;
         default:
           dserror("unknown element technology");

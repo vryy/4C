@@ -38,6 +38,105 @@ namespace DRT::ELEMENTS::DETAIL
 namespace DRT::ELEMENTS
 {
   template <DRT::Element::DiscretizationType distype>
+  constexpr auto GetGaussRuleMassMatrix()
+  {
+    return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
+  }
+
+  template <DRT::Element::DiscretizationType distype>
+  constexpr auto GetGaussRuleStiffnessMatrix()
+  {
+    return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
+  }
+
+  template <>
+  constexpr auto GetGaussRuleStiffnessMatrix<DRT::Element::DiscretizationType::tet10>()
+  {
+    return DRT::UTILS::GaussRule3D::tet_4point;
+  }
+
+  template <>
+  constexpr auto GetGaussRuleStiffnessMatrix<DRT::Element::DiscretizationType::tet4>()
+  {
+    return DRT::UTILS::GaussRule3D::tet_1point;
+  }
+
+  // TODO: What about the stiffness matrix of tri-elements?
+  template <DRT::Element::DiscretizationType distype, typename GaussRuleType>
+  DRT::UTILS::GaussIntegration CreateGaussIntegration(GaussRuleType rule)
+  {
+    constexpr int nsd = DRT::UTILS::DisTypeToDim<distype>::dim;
+
+    // setup default integration
+    DRT::UTILS::IntPointsAndWeights<nsd> intpoints(rule);
+
+    // format as DRT::UTILS::GaussIntegration
+    Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> gp =
+        Teuchos::rcp(new DRT::UTILS::CollectedGaussPoints);
+
+    std::array<double, 3> xi = {0., 0., 0.};
+    for (int i = 0; i < intpoints.IP().nquad; ++i)
+    {
+      for (int d = 0; d < nsd; ++d) xi[d] = intpoints.IP().qxg[i][d];
+      gp->Append(xi[0], xi[1], xi[2], intpoints.IP().qwgt[i]);
+    }
+
+    return DRT::UTILS::GaussIntegration(gp);
+  }
+
+  inline std::vector<char>& GetMutableStressData(
+      const DRT::ELEMENTS::Solid& ele, const Teuchos::ParameterList& params)
+  {
+    if (ele.IsParamsInterface())
+    {
+      return *ele.ParamsInterface().MutableStressDataPtr();
+    }
+    else
+    {
+      return *params.get<Teuchos::RCP<std::vector<char>>>("stress");
+    }
+  }
+
+  inline std::vector<char>& GetMutableStrainData(
+      const DRT::ELEMENTS::Solid& ele, const Teuchos::ParameterList& params)
+  {
+    if (ele.IsParamsInterface())
+    {
+      return *ele.ParamsInterface().MutableStrainDataPtr();
+    }
+    else
+    {
+      return *params.get<Teuchos::RCP<std::vector<char>>>("strain");
+    }
+  }
+
+  inline INPAR::STR::StressType GetIOStressType(
+      const DRT::ELEMENTS::Solid& ele, const Teuchos::ParameterList& params)
+  {
+    if (ele.IsParamsInterface())
+    {
+      return ele.ParamsInterface().GetStressOutputType();
+    }
+    else
+    {
+      return DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress");
+    }
+  }
+
+  inline INPAR::STR::StrainType GetIOStrainType(
+      const DRT::ELEMENTS::Solid& ele, const Teuchos::ParameterList& params)
+  {
+    if (ele.IsParamsInterface())
+    {
+      return ele.ParamsInterface().GetStrainOutputType();
+    }
+    else
+    {
+      return DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain");
+    }
+  }
+
+  template <DRT::Element::DiscretizationType distype>
   struct NodalCoordinates
   {
     LINALG::Matrix<DETAIL::nen<distype>, DETAIL::nsd<distype>> reference_;
@@ -117,7 +216,6 @@ namespace DRT::ELEMENTS
     double determinant_;
     LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> inverse_jacobian_;
     LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nen<distype>> n_xyz_;
-    double integration_factor_;
   };
 
   /*!
@@ -127,7 +225,6 @@ namespace DRT::ELEMENTS
    * @param shapefcns (in) : Shape functions and derivatives evaluated at the respective point in
    * the parameter space
    * @param nodal_coordniates (in) : Reference and current coordinates of the nodes of the element
-   * @param intpoints (in) : Gauss integration rule
    * @param gp (in) : Id of the Gauss point
    * @return JacobianMapping<distype> : An object holding quantities of the jacobian mapping
    * (inverse Jacobian, determinant, derivatives of the shape functions w.r.t. XYZ, integration
@@ -136,14 +233,12 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype>
   JacobianMapping<distype> EvaluateJacobianMapping(
       const ShapeFunctionsAndDerivatives<distype>& shapefcns,
-      const NodalCoordinates<distype>& nodal_coordniates,
-      const DRT::UTILS::GaussIntegration& intpoints, const int gp)
+      const NodalCoordinates<distype>& nodal_coordniates)
   {
     JacobianMapping<distype> jacobian;
 
     jacobian.inverse_jacobian_.Multiply(shapefcns.derivatives_, nodal_coordniates.reference_);
     jacobian.determinant_ = jacobian.inverse_jacobian_.Invert();
-    jacobian.integration_factor_ = jacobian.determinant_ * intpoints.Weight(gp);
     jacobian.n_xyz_.Multiply(jacobian.inverse_jacobian_, shapefcns.derivatives_);
 
     return jacobian;
@@ -168,35 +263,48 @@ namespace DRT::ELEMENTS
   };
 
   /*!
-   * @brief Evaluates strain measures
+   * @brief Evaluates Green Lagrange strain from right cauchy green tensor
    *
+   * GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
    * @tparam distype
-   * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
-   * @param jacobian_mapping (in) : Quantities of the jacobian mapping
-   * @return Strains<distype> (out) : Strain measures of the element (deformation gradient, right
+   * @param strains (in/out) : Strain measures
    * Cauchy-Green deformation tensor, Green-Lagrange strain tensor)
    */
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DETAIL::nsd<distype> == 3, int> = 0>
-  Strains<distype> EvaluateStrains(const NodalCoordinates<distype>& nodal_coordinates,
-      const JacobianMapping<distype>& jacobian_mapping)
+  void EvaluateGreenLagrangeStrain(Strains<distype>& strains)
   {
-    Strains<distype> strains;
-
-    strains.defgrd_.MultiplyTT(nodal_coordinates.current_, jacobian_mapping.n_xyz_);
-    strains.rcg_.MultiplyTN(strains.defgrd_, strains.defgrd_);
-
-    // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     strains.gl_strain_(0) = 0.5 * (strains.rcg_(0, 0) - 1.0);
     strains.gl_strain_(1) = 0.5 * (strains.rcg_(1, 1) - 1.0);
     strains.gl_strain_(2) = 0.5 * (strains.rcg_(2, 2) - 1.0);
     strains.gl_strain_(3) = strains.rcg_(0, 1);
     strains.gl_strain_(4) = strains.rcg_(1, 2);
     strains.gl_strain_(5) = strains.rcg_(2, 0);
+  }
+
+  /*!
+   * @brief Evaluates strain measures
+   *
+   * @tparam distype
+   * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
+   * @param jacobian_mapping (in) : Quantities of the jacobian mapping
+   * @param scale_defgrd (in) : Optional scalar factor for deformation gradient
+   * @return Strains<distype> : Strain measures of the element (deformation gradient, right
+   * Cauchy-Green deformation tensor, Green-Lagrange strain tensor)
+   */
+  template <DRT::Element::DiscretizationType distype,
+      std::enable_if_t<DETAIL::nsd<distype> == 3, int> = 0>
+  Strains<distype> EvaluateStrains(const NodalCoordinates<distype>& nodal_coordinates,
+      const JacobianMapping<distype>& jacobian_mapping, double scale_defgrd = 1.0)
+  {
+    Strains<distype> strains;
+
+    strains.defgrd_.MultiplyTT(scale_defgrd, nodal_coordinates.current_, jacobian_mapping.n_xyz_);
+    strains.rcg_.MultiplyTN(strains.defgrd_, strains.defgrd_);
+    EvaluateGreenLagrangeStrain(strains);
 
     return strains;
   }
-
 
   /*!
    * @brief Evaluates the strain gradient (B-Operator) of the specified element
@@ -324,13 +432,17 @@ namespace DRT::ELEMENTS
    * @brief Add geometric stiffness matrix contribution of one Gauss point
    *
    * @tparam distype
-   * @param jacobian_mapping (in) : Jacobian mapping at the respective Gauss point
+   * @param B_L (in) : B_L operator, i.e. derivatives of the shape functions w.r.t. XYZ
+   *                   at the respective Gauss point
    * @param stress (in) : Stress measures
+   * @param integration_fac (in) : Integration factor (Gauss point weight times the determinant of
+   * the jacobian)
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
    */
   template <DRT::Element::DiscretizationType distype>
-  void AddGeometricStiffnessMatrix(const JacobianMapping<distype>& jacobian_mapping,
-      const Stress<distype> stress,
+  void AddGeometricStiffnessMatrix(
+      const LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nen<distype>>& B_L,
+      const Stress<distype> stress, const double integration_fac,
       LINALG::Matrix<DETAIL::nsd<distype> * DETAIL::nen<distype>,
           DETAIL::nsd<distype> * DETAIL::nen<distype>>& stiffness_matrix)
   {
@@ -338,25 +450,22 @@ namespace DRT::ELEMENTS
     // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
     for (int inod = 0; inod < DETAIL::nen<distype>; ++inod)
     {
-      SmB_L[0] = stress.pk2_(0) * jacobian_mapping.n_xyz_(0, inod) +
-                 stress.pk2_(3) * jacobian_mapping.n_xyz_(1, inod) +
-                 stress.pk2_(5) * jacobian_mapping.n_xyz_(2, inod);
-      SmB_L[1] = stress.pk2_(3) * jacobian_mapping.n_xyz_(0, inod) +
-                 stress.pk2_(1) * jacobian_mapping.n_xyz_(1, inod) +
-                 stress.pk2_(4) * jacobian_mapping.n_xyz_(2, inod);
-      SmB_L[2] = stress.pk2_(5) * jacobian_mapping.n_xyz_(0, inod) +
-                 stress.pk2_(4) * jacobian_mapping.n_xyz_(1, inod) +
-                 stress.pk2_(2) * jacobian_mapping.n_xyz_(2, inod);
+      SmB_L[0] = stress.pk2_(0) * B_L(0, inod) + stress.pk2_(3) * B_L(1, inod) +
+                 stress.pk2_(5) * B_L(2, inod);
+      SmB_L[1] = stress.pk2_(3) * B_L(0, inod) + stress.pk2_(1) * B_L(1, inod) +
+                 stress.pk2_(4) * B_L(2, inod);
+      SmB_L[2] = stress.pk2_(5) * B_L(0, inod) + stress.pk2_(4) * B_L(1, inod) +
+                 stress.pk2_(2) * B_L(2, inod);
 
       for (int jnod = 0; jnod < DETAIL::nen<distype>; ++jnod)
       {
         double bopstrbop = 0.0;  // intermediate value
         for (int idim = 0; idim < DETAIL::nsd<distype>; ++idim)
-          bopstrbop += jacobian_mapping.n_xyz_(idim, jnod) * SmB_L[idim];
+          bopstrbop += B_L(idim, jnod) * SmB_L[idim];
 
         for (int d = 0; d < DETAIL::nsd<distype>; ++d)
           stiffness_matrix(DETAIL::nsd<distype> * inod + d, DETAIL::nsd<distype> * jnod + d) +=
-              jacobian_mapping.integration_factor_ * bopstrbop;
+              integration_fac * bopstrbop;
       }
     }
   }
@@ -456,7 +565,7 @@ namespace DRT::ELEMENTS
     }
   }
 
-  void Serialize(const Epetra_SerialDenseMatrix& matrix, std::vector<char>& data)
+  inline void Serialize(const Epetra_SerialDenseMatrix& matrix, std::vector<char>& data)
   {
     DRT::PackBuffer packBuffer;
     DRT::ParObject::AddtoPack(packBuffer, matrix);
