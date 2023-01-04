@@ -93,7 +93,7 @@ void DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights(
 
   // Compute rebalanced graph
   Teuchos::RCP<Epetra_CrsGraph> balanced_graph =
-      DRT::UTILS::REBALANCING::RebalanceGraph(*initgraph, *nodeWeights, *edgeWeights, paramlist);
+      DRT::UTILS::REBALANCING::RebalanceGraph(*initgraph, paramlist, nodeWeights, edgeWeights);
 
   // extract repartitioned maps
   rownodes = Teuchos::rcp(new Epetra_Map(-1, balanced_graph->RowMap().NumMyElements(),
@@ -387,11 +387,11 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::REBALANCING::RebalanceGraph(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::REBALANCING::RebalanceGraph(
-    const Epetra_CrsGraph& initialGraph, const Epetra_Vector& initialNodeWeights,
-    const Teuchos::ParameterList& rebalanceParams)
+    const Epetra_CrsGraph& initialGraph, const Teuchos::ParameterList& rebalanceParams,
+    const Teuchos::RCP<Epetra_Vector>& initialNodeWeights)
 {
   Isorropia::Epetra::CostDescriber costs = Isorropia::Epetra::CostDescriber();
-  costs.setVertexWeights(Teuchos::rcpFromRef(initialNodeWeights));
+  costs.setVertexWeights(initialNodeWeights);
 
   Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner =
       Teuchos::rcp(new Isorropia::Epetra::Partitioner(&initialGraph, &costs, rebalanceParams));
@@ -408,12 +408,13 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::REBALANCING::RebalanceGraph(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::REBALANCING::RebalanceGraph(
-    const Epetra_CrsGraph& initialGraph, const Epetra_Vector& initialNodeWeights,
-    const Epetra_CrsMatrix& initialEdgeWeights, const Teuchos::ParameterList& rebalanceParams)
+    const Epetra_CrsGraph& initialGraph, const Teuchos::ParameterList& rebalanceParams,
+    const Teuchos::RCP<Epetra_Vector>& initialNodeWeights,
+    const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights)
 {
   Isorropia::Epetra::CostDescriber costs = Isorropia::Epetra::CostDescriber();
-  costs.setVertexWeights(Teuchos::rcpFromRef(initialNodeWeights));
-  costs.setGraphEdgeWeights(Teuchos::rcpFromRef(initialEdgeWeights));
+  costs.setVertexWeights(initialNodeWeights);
+  costs.setGraphEdgeWeights(initialEdgeWeights);
 
   Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner =
       Teuchos::rcp(new Isorropia::Epetra::Partitioner(&initialGraph, &costs, rebalanceParams));

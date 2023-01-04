@@ -1586,7 +1586,7 @@ void PeriodicBoundaryConditions::BalanceLoad()
       Teuchos::RCP<const Epetra_CrsGraph> const_nodegraph(nodegraph);
 
       auto newnodegraph = DRT::UTILS::REBALANCING::RebalanceGraph(
-          *const_nodegraph, *node_weights, *edge_weights, paramlist);
+          *const_nodegraph, paramlist, node_weights, edge_weights);
       newnodegraph->OptimizeStorage();
 
       // the rowmap will become the new distribution of nodes

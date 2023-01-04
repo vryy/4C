@@ -175,13 +175,14 @@ namespace DRT::UTILS::REBALANCING
   rebalanced graph will be FillComplete().
 
   @param[in] initialGraph Initial graph to be rebalanced
-  @param[in] initialNodeWeights Initial weights of the graph nodes
   @param[in] rebalanceParams Parameter list with rebalancing options
+  @param[in] initialNodeWeights Initial weights of the graph nodes
 
   @return Rebalanced graph
   */
   Teuchos::RCP<Epetra_CrsGraph> RebalanceGraph(const Epetra_CrsGraph& initialGraph,
-      const Epetra_Vector& initialNodeWeights, const Teuchos::ParameterList& rebalanceParams);
+      const Teuchos::ParameterList& rebalanceParams,
+      const Teuchos::RCP<Epetra_Vector>& initialNodeWeights);
 
   /*!
   \brief Rebalance graph using node and edge weights based on the initial graph
@@ -194,15 +195,16 @@ namespace DRT::UTILS::REBALANCING
    rebalanced graph will be FillComplete().
 
   @param[in] initialGraph Initial graph to be rebalanced
+  @param[in] rebalanceParams Parameter list with rebalancing options
   @param[in] initialNodeWeights Initial weights of the graph nodes
   @param[in] initialEdgeWeights Initial weights of the graph edges
-  @param[in] rebalanceParams Parameter list with rebalancing options
 
   @return Rebalanced graph
   */
   Teuchos::RCP<Epetra_CrsGraph> RebalanceGraph(const Epetra_CrsGraph& initialGraph,
-      const Epetra_Vector& initialNodeWeights, const Epetra_CrsMatrix& initialEdgeWeights,
-      const Teuchos::ParameterList& rebalanceParams);
+      const Teuchos::ParameterList& rebalanceParams,
+      const Teuchos::RCP<Epetra_Vector>& initialNodeWeights,
+      const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights);
 
   /*!
   \brief Rebalance coordinates using weights based on the initial coordinates
@@ -238,8 +240,8 @@ namespace DRT::UTILS::REBALANCING
 
   @return Cost describer ready to be used for repartitioning
   */
-  std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>>
-  SetupWeights(const DRT::Discretization& discretization);
+  std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>> SetupWeights(
+      const DRT::Discretization& discretization);
 
   /*!
   \brief Build graph of a given  discretization
