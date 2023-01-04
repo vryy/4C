@@ -35,15 +35,15 @@ namespace LINALG::SOLVER
      * @param reset Boolean flag to enforce a full reset of the solver object
      * @param projector Krylov projector
      */
-    virtual void Setup(Teuchos::RCP<MatrixType> A, Teuchos::RCP<VectorType> x,
-        Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
-        Teuchos::RCP<LINALG::KrylovProjector> projector);
+    void Setup(Teuchos::RCP<MatrixType> A, Teuchos::RCP<VectorType> x, Teuchos::RCP<VectorType> b,
+        const bool refactor, const bool reset,
+        Teuchos::RCP<LINALG::KrylovProjector> projector) override;
 
     //! Actual call to the underlying Belos solver
-    virtual int Solve();
+    int Solve() override;
 
     //! return number of iterations
-    int getNumIters() const { return numiters_; };
+    int getNumIters() const override { return numiters_; };
 
    private:
     //! number of iterations
