@@ -42,8 +42,9 @@ void DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
       DRT::UTILS::REBALANCING::BuildGraph(discretization, elementRowMap, nodeRowMap, comm, outflag);
 
   // Create parameter list with rebalancing options
-  Teuchos::RCP<Teuchos::ParameterList> rebalanceParams =
-      CreateRebalancingParameterList(numPartitions, imbalanceTol);
+  Teuchos::RCP<Teuchos::ParameterList> rebalanceParams = Teuchos::rcp(new Teuchos::ParameterList());
+  rebalanceParams->set<std::string>("NUM_PARTS", std::to_string(numPartitions));
+  rebalanceParams->set<std::string>("IMBALANCE_TOL", std::to_string(imbalanceTol));
 
   // Compute rebalanced graph
   Teuchos::RCP<Epetra_CrsGraph> balancedGraph = Teuchos::null;
@@ -368,53 +369,13 @@ void DRT::UTILS::REBALANCING::RedistributeAndFillCompleteDiscretizationUsingWeig
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::REBALANCING::RebalanceGraph(
-    const Epetra_CrsGraph& initialGraph, const Teuchos::ParameterList& rebalanceParams)
-{
-  Isorropia::Epetra::CostDescriber costs = Isorropia::Epetra::CostDescriber();
-
-  Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner =
-      Teuchos::rcp(new Isorropia::Epetra::Partitioner(&initialGraph, &costs, rebalanceParams));
-
-  Isorropia::Epetra::Redistributor rd(partitioner);
-  Teuchos::RCP<Epetra_CrsGraph> balancedGraph = rd.redistribute(initialGraph, true);
-
-  balancedGraph->FillComplete();
-  balancedGraph->OptimizeStorage();
-
-  return balancedGraph;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::REBALANCING::RebalanceGraph(
-    const Epetra_CrsGraph& initialGraph, const Teuchos::ParameterList& rebalanceParams,
-    const Teuchos::RCP<Epetra_Vector>& initialNodeWeights)
-{
-  Isorropia::Epetra::CostDescriber costs = Isorropia::Epetra::CostDescriber();
-  costs.setVertexWeights(initialNodeWeights);
-
-  Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner =
-      Teuchos::rcp(new Isorropia::Epetra::Partitioner(&initialGraph, &costs, rebalanceParams));
-
-  Isorropia::Epetra::Redistributor rd(partitioner);
-  Teuchos::RCP<Epetra_CrsGraph> balancedGraph = rd.redistribute(initialGraph, true);
-
-  balancedGraph->FillComplete();
-  balancedGraph->OptimizeStorage();
-
-  return balancedGraph;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::REBALANCING::RebalanceGraph(
     const Epetra_CrsGraph& initialGraph, const Teuchos::ParameterList& rebalanceParams,
     const Teuchos::RCP<Epetra_Vector>& initialNodeWeights,
     const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights)
 {
   Isorropia::Epetra::CostDescriber costs = Isorropia::Epetra::CostDescriber();
-  costs.setVertexWeights(initialNodeWeights);
-  costs.setGraphEdgeWeights(initialEdgeWeights);
+  if (initialNodeWeights != Teuchos::null) costs.setVertexWeights(initialNodeWeights);
+  if (initialEdgeWeights != Teuchos::null) costs.setGraphEdgeWeights(initialEdgeWeights);
 
   Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner =
       Teuchos::rcp(new Isorropia::Epetra::Partitioner(&initialGraph, &costs, rebalanceParams));
@@ -440,18 +401,4 @@ DRT::UTILS::REBALANCING::RebalanceCoordinates(const Epetra_MultiVector& initialC
   Isorropia::Epetra::Redistributor rd(part);
 
   return {rd.redistribute(initialCoordinates), rd.redistribute(initialWeights)};
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Teuchos::ParameterList> DRT::UTILS::REBALANCING::CreateRebalancingParameterList(
-    const int numPartitions, const double imbalanceTol)
-{
-  Teuchos::RCP<Teuchos::ParameterList> rebalancingParams =
-      Teuchos::rcp(new Teuchos::ParameterList());
-
-  rebalancingParams->set<std::string>("NUM_PARTS", std::to_string(numPartitions));
-  rebalancingParams->set<std::string>("IMBALANCE_TOL", std::to_string(imbalanceTol));
-
-  return rebalancingParams;
 }

@@ -147,44 +147,6 @@ namespace DRT::UTILS::REBALANCING
   //! @{
 
   /*!
-  \brief Rebalance graph based on the initial graph
-
-  The partitioning will be done based on the method given in the parameter list. This method
-  only makes sense with graph or hypergraph partitioning.
-
-  @note Use Isorropia package to access Zoltan. By default, Isorropia will use Zoltan hypergraph
-  partitioning, treating the graph columns as hyper-edges and the graph rows as vertices. The
-  rebalanced graph will be FillComplete().
-
-  @param[in] initialGraph Initial graph to be rebalanced
-  @param[in] rebalanceParams Parameter list with rebalancing options
-
-  @return Rebalanced graph
-  */
-  Teuchos::RCP<Epetra_CrsGraph> RebalanceGraph(
-      const Epetra_CrsGraph& initialGraph, const Teuchos::ParameterList& rebalanceParams);
-
-  /*!
-  \brief Rebalance graph using node weights based on the initial graph
-
-  The partitioning will be done based on the method given in the parameter list. This method
-  only makes sense with graph or hypergraph partitioning.
-
-  @note Use Isorropia package to access Zoltan. By default, Isorropia will use Zoltan hypergraph
-  partitioning, treating the graph columns as hyper-edges and the graph rows as vertices. The
-  rebalanced graph will be FillComplete().
-
-  @param[in] initialGraph Initial graph to be rebalanced
-  @param[in] rebalanceParams Parameter list with rebalancing options
-  @param[in] initialNodeWeights Initial weights of the graph nodes
-
-  @return Rebalanced graph
-  */
-  Teuchos::RCP<Epetra_CrsGraph> RebalanceGraph(const Epetra_CrsGraph& initialGraph,
-      const Teuchos::ParameterList& rebalanceParams,
-      const Teuchos::RCP<Epetra_Vector>& initialNodeWeights);
-
-  /*!
   \brief Rebalance graph using node and edge weights based on the initial graph
 
   The partitioning will be done based on the method given in the parameter list. This method
@@ -203,8 +165,8 @@ namespace DRT::UTILS::REBALANCING
   */
   Teuchos::RCP<Epetra_CrsGraph> RebalanceGraph(const Epetra_CrsGraph& initialGraph,
       const Teuchos::ParameterList& rebalanceParams,
-      const Teuchos::RCP<Epetra_Vector>& initialNodeWeights,
-      const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights);
+      const Teuchos::RCP<Epetra_Vector>& initialNodeWeights = Teuchos::null,
+      const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights = Teuchos::null);
 
   /*!
   \brief Rebalance coordinates using weights based on the initial coordinates
@@ -223,15 +185,6 @@ namespace DRT::UTILS::REBALANCING
       const Epetra_MultiVector& initialWeights, const Teuchos::ParameterList& rebalanceParams);
 
   //! @}
-
-  /*!
-  \brief Create parameter list with rebalancing options for Isorropia/Zoltan
-
-  @param[in] numPartitions Desired number of partitions
-  @param[in] Max. relative imbalance of subdomain size
-  */
-  Teuchos::RCP<Teuchos::ParameterList> CreateRebalancingParameterList(
-      const int numPartitions, const double imbalanceTol);
 
   /*!
   \brief Create Isorropia cost describer based on element connectivity
