@@ -16,8 +16,6 @@
 #include "Epetra_MultiVector.h"
 #include "Epetra_Map.h"
 
-#include "Isorropia_EpetraCostDescriber.hpp"
-
 #include "Teuchos_ParameterList.hpp"
 #include "Teuchos_RCP.hpp"
 
