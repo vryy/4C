@@ -1315,7 +1315,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
 
     if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
-        Material()->MaterialType() == INPAR::MAT::m_mixture_elasthyper)
+        Material()->MaterialType() == INPAR::MAT::m_mixture)
     {
       // gp reference coordinates
       LINALG::Matrix<NUMNOD_SOTET10, 1> funct(true);

@@ -14,6 +14,7 @@ set(OBJS_MIXTURE
     mixture_constituent_remodelfiber_material.cpp
     mixture_constituent_remodelfiber_material_exponential.cpp
     mixture_constituent_remodelfiber_material_exponential_active.cpp
+    mixture_constituent_solidmaterial.cpp
     mixture_growth_strategy.cpp
     mixture_growth_strategy_anisotropic.cpp
     mixture_growth_strategy_isotropic.cpp

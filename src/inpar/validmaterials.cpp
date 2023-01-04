@@ -3594,8 +3594,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // General mixture models (used for prestretching and for homogenized constrained mixture models)
   {
-    auto m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_MixtureElastHyper", "General mixture model", INPAR::MAT::m_mixture_elasthyper));
+    auto m = Teuchos::rcp(
+        new MaterialDefinition("MAT_Mixture", "General mixture model", INPAR::MAT::m_mixture));
 
     AddNamedInt(m, "NUMCONST", "number of mixture constituents");
     AddNamedInt(m, "MATIDMIXTURERULE", "material id of the mixturerule");
@@ -3696,6 +3696,17 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedInt(m, "ACTINTERVALSNUM", "number of time intervals to prescribe activation");
     AddNamedRealVector(m, "ACTVALUES",
         "scaling factor in intervals (1=full activation, 0=no activation)", "ACTINTERVALSNUM");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Mixture constituent for solid material
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition(
+        "MIX_Constituent_SolidMaterial", "Solid material", INPAR::MAT::mix_solid_material));
+
+    AddNamedInt(m, "MATID", "ID of the solid material");
 
     AppendMaterialDefinition(matlist, m);
   }

@@ -146,8 +146,8 @@ namespace INPAR
       m_matlist_chemoreac,  ///< collection of single materials (used for scalar transport problems)
                             ///< and collection of chemotactic pairs AND reactions
       m_mixfrac,            ///< material according to mixture-fraction approach
-      m_mixture_elasthyper,  ///< material for solid mixtures with homogenized stress response
-      m_modpowerlaw,         ///< fluid with nonlinear viscosity according to a modified power law
+      m_mixture,            ///< material for solid mixtures with homogenized stress response
+      m_modpowerlaw,        ///< fluid with nonlinear viscosity according to a modified power law
       m_multiplicative_split_defgrad_elasthyper,  ///< deformation gradient is split
                                                   ///< multiplicatively in elastic and inelastic
                                                   ///< parts
@@ -308,9 +308,10 @@ namespace INPAR
                               ///< with implicit solution of the growth and remodel equations
       mix_remodelfiber_material_exponential,  ///< material for a remodel fiber with exponential
                                               ///< strain energy function
-      mix_remodelfiber_material_exponential_active  ///< material for a remodel fiber with
-                                                    ///< exponential strain energy and an active
-                                                    ///< contribution
+      mix_remodelfiber_material_exponential_active,  ///< material for a remodel fiber with
+                                                     ///< exponential strain energy and an active
+                                                     ///< contribution
+      mix_solid_material                             ///< Solid material for Constituents
     };
 
     /*----------------------------------------------------------------------*

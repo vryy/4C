@@ -1269,7 +1269,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(std::vector<int>& lm,  // location
 
     if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
         Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper ||
-        Material()->MaterialType() == INPAR::MAT::m_mixture_elasthyper)
+        Material()->MaterialType() == INPAR::MAT::m_mixture)
     {
       LINALG::Matrix<1, NUMDIM_SOH8> point(true);
       soh8_GaussPointRefeCoords(point, xrefe, gp);

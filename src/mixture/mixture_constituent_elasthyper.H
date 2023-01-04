@@ -43,7 +43,7 @@ namespace MIXTURE
    * \brief Constituent for any hyperelastic material
    *
    * This constituent represents any hyperelastic material from the elasthyper toolbox. It has to
-   * be paired with the MAT::Mixture_ElastHyper material and a MIXTURE::MixtureRule.
+   * be paired with the MAT::Mixture material and a MIXTURE::MixtureRule.
    */
   class MixtureConstituent_ElastHyper : public MIXTURE::MixtureConstituent_ElastHyperBase
   {

@@ -80,7 +80,7 @@ set(OBJS_MAT
     micromaterial_evaluate.cpp
     micromaterialgp_static.cpp
     mixfrac.cpp
-    mixture_elasthyper.cpp
+    mixture.cpp
     modpowerlaw.cpp
     multiplicative_split_defgrad_elasthyper.cpp
     multiplicative_split_defgrad_elasthyper_service.H

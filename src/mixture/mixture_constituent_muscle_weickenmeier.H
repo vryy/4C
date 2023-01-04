@@ -97,7 +97,7 @@ namespace MIXTURE
    * \brief Constituent for the Weickenmeier muscle material
    *
    * This constituent represents the Weickenmeier muscle material. It has to
-   * be paired with the MAT::Mixture_ElastHyper material and a MIXTURE::MixtureRule.
+   * be paired with the MAT::Mixture material and a MIXTURE::MixtureRule.
    *
    * Reference for the material model: J. Weickenmeier, M. Itskov, E Mazza and M. Jabareen, 'A
    * physically motivated constitutive model for 3D numerical simulation of skeletal muscles',
