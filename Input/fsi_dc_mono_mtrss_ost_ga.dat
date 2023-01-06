@@ -96,7 +96,7 @@ NDSURF                          0
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
-//                              structure_vertices
+//                              structure_dry_vertices
 E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 //                              inflow_vertices_top
 E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 2 0 0
@@ -104,8 +104,6 @@ E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 2 0 0
 E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              structure_vertex_fsi_NoDBC_slave
 E 4 - NUMDOF 2 ONOFF 0 0 VAL 0.0 0.0 FUNCT 0 0
-//                              fluid_vertex_fsi_NoDBC_slave
-//E 5 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
 //                              structure_ycurves
@@ -130,8 +128,6 @@ E 2 - 1
 E 6 - 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
-NODE 2 DNODE 1
-NODE 73 DNODE 1
 NODE 74 DNODE 1
 NODE 1264 DNODE 2
 NODE 1295 DNODE 2
@@ -141,8 +137,6 @@ NODE 1132 DNODE 3
 NODE 1163 DNODE 3
 NODE 2 DNODE 4
 NODE 73 DNODE 4
-NODE 1132 DNODE 5
-NODE 1163 DNODE 5
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 2 DLINE 1
