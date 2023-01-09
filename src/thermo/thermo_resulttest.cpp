@@ -25,6 +25,7 @@ THR::ResultTest::ResultTest(TimInt& tintegrator) : DRT::ResultTest("THERMAL")
 {
   temp_ = tintegrator.Temp();
   rate_ = tintegrator.Rate();
+  flux_ = tintegrator.Freact();
   thrdisc_ = tintegrator.Discretization();
 }
 
@@ -86,6 +87,18 @@ void THR::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& 
         {
           unknownpos = false;
           result = (*rate_)[ratemap.LID(thrdisc_->Dof(0, actnode, 0))];
+        }
+      }
+
+      // test thermal flux
+      if (flux_ != Teuchos::null)
+      {
+        const Epetra_BlockMap& fluxmap = flux_->Map();
+
+        if (position == "flux")
+        {
+          unknownpos = false;
+          result = (*flux_)[fluxmap.LID(thrdisc_->Dof(0, actnode, 0))];
         }
       }
 

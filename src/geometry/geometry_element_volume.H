@@ -18,7 +18,7 @@
 
 namespace GEO
 {
-  //! calculates the length of an element in given configuration          buih
+  //! calculates the length of an element in given configuration
   template <DRT::Element::DiscretizationType distype, class MatrixType>
   double ElementLengthT(const MatrixType& xyze)  ///> xyze nsd = 3 coords, number of nodes
   {
@@ -57,7 +57,7 @@ namespace GEO
     return length;
   }
 
-  //! calculates the area of an element in given configuration          buih
+  //! calculates the area of an element in given configuration
   template <DRT::Element::DiscretizationType distype, class MatrixType>
   double ElementAreaT(const MatrixType& xyze)  ///> xyze nsd = 3 coords, number of nodes
   {

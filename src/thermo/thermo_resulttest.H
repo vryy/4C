@@ -54,6 +54,8 @@ namespace THR
     Teuchos::RCP<Epetra_Vector> temp_;
     //! global temperature rate DOFs
     Teuchos::RCP<Epetra_Vector> rate_;
+    //! global temperature DOFs
+    Teuchos::RCP<Epetra_Vector> flux_;
     //! NOTE: these have to be present explicitly
     //! as they are not part of the problem instance like in fluid3
 
