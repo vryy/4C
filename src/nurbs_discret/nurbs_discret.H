@@ -188,10 +188,10 @@ namespace DRT
        *      start to build and solve the least squares problem
        *
        *  \author hiermeier, vuong \date 01/17 */
-      virtual void Evaluate(const DRT::DiscretizationInterface& discret, const double& time,
+      void Evaluate(const DRT::DiscretizationInterface& discret, const double& time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, Epetra_IntVector& toggle,
           Epetra_IntVector& hierarchy, Epetra_Vector& values,
-          Teuchos::RCP<std::set<int>>* dbcgids) const;
+          Teuchos::RCP<std::set<int>>* dbcgids) const override;
 
       /** \brief Determine Dirichlet condition at given time and apply its
        *         values to a system vector
@@ -205,10 +205,10 @@ namespace DRT
        * Dirichlet boundary conditions
        *
        * \author vuong */
-      virtual void DoDirichletCondition(const DRT::DiscretizationInterface& discret,
+      void DoDirichletCondition(const DRT::DiscretizationInterface& discret,
           const DRT::Condition& cond, const double& time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
-          const Teuchos::RCP<std::set<int>>* dbcgids) const;
+          const Teuchos::RCP<std::set<int>>* dbcgids) const override;
 
      private:
       /*!

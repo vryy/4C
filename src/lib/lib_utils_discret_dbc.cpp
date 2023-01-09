@@ -159,7 +159,6 @@ void DRT::UTILS::Dbc::Evaluate(const DRT::DiscretizationInterface& discret, cons
   std::vector<Teuchos::RCP<DRT::Condition>> conds(0);
   discret.GetCondition("Dirichlet", conds);
   ReadDirichletCondition(discret, conds, time, toggle, hierarchy, values, dbcgids);
-
   // --------------------------------------------------------------------------
   // Now, as we know from the toggle vector which dofs actually have
   // Dirichlet BCs, we can assign the values to the system vectors.
@@ -299,7 +298,8 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface&
       int onesetj = j % numdf;
 
       // get the current hierarchical order this dof is currently applying to
-      const int current_order = hierarchy[lid];
+      const int lid1 = hierarchy.Map().LID(gid);
+      const int current_order = hierarchy[lid1];
 
       if ((*onoff)[onesetj] == 0)
       {
@@ -316,7 +316,7 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface&
           if (not dbcgids[set_col].is_null()) (*dbcgids[set_col]).erase(gid);
 
           // record the current hierarchical order of the DBC dof
-          hierarchy[lid] = hierarchical_order;
+          hierarchy[lid1] = hierarchical_order;
         }
       }
       else  // if ((*onoff)[onesetj]==1)
@@ -338,10 +338,11 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface&
 
         // check: if the dof has been fixed before and the DBC set it to a different value, then an
         // inconsistency is detected.
+        const int lid2 = values.Map().LID(gid);
         if ((hierarchical_order == current_order) && (toggle[lid] == 1))
         {
           // get the current prescribed value of dof
-          const double current_val = values[lid];
+          const double current_val = values[lid2];
 
           // if the current value is nonzero, and the current condition set it to other value,
           // then we found an inconsistency. The basis for this is:
@@ -385,10 +386,10 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface&
         }
 
         // record the lowest hierarchical order of the DBC dof
-        if (hierarchical_order < current_order) hierarchy[lid] = hierarchical_order;
+        if (hierarchical_order < current_order) hierarchy[lid1] = hierarchical_order;
 
         // record the prescribed value of dof if it is fixed
-        values[lid] = value;
+        values[lid2] = value;
       }
     }  // loop over nodal DOFs
   }    // loop over nodes
