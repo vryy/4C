@@ -128,8 +128,6 @@ E 2 - 1
 E 6 - 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
-NODE 2 DNODE 1
-NODE 73 DNODE 1
 NODE 74 DNODE 1
 NODE 1264 DNODE 2
 NODE 1295 DNODE 2
