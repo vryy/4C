@@ -42,7 +42,7 @@ namespace LINALG::SOLVER
       return preconditioner_->PrecOperatorRCP();
     }
 
-    void Print(std::ostream& stream) override
+    void Print(std::ostream& stream) const override
     {
       stream << "InfNorm(";
       preconditioner_->Print(stream);
@@ -83,7 +83,7 @@ namespace LINALG::SOLVER
       return preconditioner_->PrecOperatorRCP();
     }
 
-    void Print(std::ostream& stream) override
+    void Print(std::ostream& stream) const override
     {
       stream << "SymDiag(";
       preconditioner_->Print(stream);
