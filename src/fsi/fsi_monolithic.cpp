@@ -17,6 +17,7 @@
 #include "fsi_debugwriter.H"
 #include "fsi_nox_group.H"
 #include "fsi_nox_newton.H"
+#include "fsi_noxlinsys.H"
 #include "fsi_statustest.H"
 
 #include "globalproblem.H"
@@ -47,6 +48,8 @@
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_overlapprec_amgnxn.H"
 #include "fsi_overlapprec_hybrid.H"
+
+#include "linalg_solver.H"
 
 /*----------------------------------------------------------------------------*/
 /* Note: The order of calling the three BaseAlgorithm-constructors is
@@ -1200,6 +1203,7 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
   {
     case INPAR::FSI::PreconditionedKrylov:
     case INPAR::FSI::FSIAMG:
+    case INPAR::FSI::LinalgSolver:
     {
       mat = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(Extractor(), *StructureField(),
           *FluidField(), *AleField(), structuresplit,
@@ -1274,6 +1278,25 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem
     {
       linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
           Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M, noxSoln));
+      break;
+    }
+    case INPAR::FSI::LinalgSolver:
+    {
+      const int linsolvernumber = fsimono.get<int>("LINEAR_SOLVER");
+      if (linsolvernumber == -1)
+        dserror(
+            "no linear solver defined for monolithic FSI. Please set LINEAR_SOLVER in FSI "
+            "DYNAMIC/MONOLITHIC SOLVER to a valid number!");
+
+      const Teuchos::ParameterList& fsisolverparams =
+          DRT::Problem::Instance()->SolverParams(linsolvernumber);
+
+      auto solver = Teuchos::rcp(new LINALG::Solver(
+          fsisolverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+
+      linSys = Teuchos::rcp(new NOX::FSI::LinearSystem(
+          printParams, lsParams, Teuchos::rcp(iJac, false), J, noxSoln, solver));
+
       break;
     }
     default:

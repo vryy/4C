@@ -25,6 +25,7 @@ with condensed fluid interface velocities
 #include "fsi_overlapprec.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_utils.H"
+#include "fsi_noxlinsys.H"
 
 #include "globalproblem.H"
 #include "validparameters.H"
@@ -48,6 +49,7 @@ with condensed fluid interface velocities
 
 #include <math.h>
 #include "linalg_matrixtransform.H"
+#include "linalg_solver.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -1180,8 +1182,29 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::MortarMonolithicFluidSplit::CreateL
     case INPAR::FSI::HybridSchwarz:
       linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
           Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M, noxSoln));
+      break;
+    case INPAR::FSI::LinalgSolver:
+    {
+      const int linsolvernumber = DRT::Problem::Instance()
+                                      ->FSIDynamicParams()
+                                      .sublist("MONOLITHIC SOLVER")
+                                      .get<int>("LINEAR_SOLVER");
+      if (linsolvernumber == -1)
+        dserror(
+            "no linear solver defined for monolithic FSI. Please set LINEAR_SOLVER in FSI "
+            "DYNAMIC/MONOLITHIC SOLVER to a valid number!");
+
+      const Teuchos::ParameterList& fsisolverparams =
+          DRT::Problem::Instance()->SolverParams(linsolvernumber);
+
+      auto solver = Teuchos::rcp(new LINALG::Solver(
+          fsisolverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+
+      linSys = Teuchos::rcp(new NOX::FSI::LinearSystem(
+          printParams, lsParams, Teuchos::rcp(iJac, false), J, noxSoln, solver));
 
       break;
+    }
     default:
       dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);
       break;

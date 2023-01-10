@@ -69,7 +69,8 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
       verbosity_(verbosity),
       hybridPrec_(hybridPrec)
 {
-  if (strategy_ != INPAR::FSI::FSIAMG && strategy_ != INPAR::FSI::PreconditionedKrylov)
+  if (strategy_ != INPAR::FSI::FSIAMG && strategy_ != INPAR::FSI::PreconditionedKrylov &&
+      strategy_ != INPAR::FSI::LinalgSolver)
     dserror("Type of LINEARBLOCKSOLVER parameter not recognized by this class");
 }
 
@@ -200,6 +201,10 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
           "%d\n",
           snlevel_, fnlevel_, anlevel_, minnlevel_, maxnlevel_);
       fflush(stdout);
+    }
+    else if (strategy_ == INPAR::FSI::LinalgSolver)
+    {
+      // do nothing ?!
     }
   }
 
@@ -1453,6 +1458,11 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
             const_cast<std::vector<MLAPI::Operator>&>(Raa_), ASF_, AFS_, AFA_, AAF_, true, false,
             true);
 
+      break;
+    }
+    case INPAR::FSI::LinalgSolver:
+    {
+      // do nothing?
       break;
     }
     default:

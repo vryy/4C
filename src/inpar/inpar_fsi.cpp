@@ -244,10 +244,14 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   setStringToIntegralParameter<int>("LINEARBLOCKSOLVER", "PreconditionedKrylov",
       "Linear block preconditioner for block system in monolithic FSI.",
-      tuple<std::string>("PreconditionedKrylov", "FSIAMG", "AMGnxn", "HybridSchwarz"),
+      tuple<std::string>(
+          "PreconditionedKrylov", "FSIAMG", "AMGnxn", "HybridSchwarz", "LinalgSolver"),
       tuple<int>(INPAR::FSI::PreconditionedKrylov, INPAR::FSI::FSIAMG, INPAR::FSI::AMGnxn,
-          INPAR::FSI::HybridSchwarz),
+          INPAR::FSI::HybridSchwarz, INPAR::FSI::LinalgSolver),
       &fsimono);
+
+  IntParameter("LINEAR_SOLVER", -1,
+      "number of linear solver used for fluid-structure-interaction problems", &fsimono);
 
   // Iteration parameters for convergence check of newton loop
   // for implementations without NOX
