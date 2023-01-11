@@ -204,7 +204,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     }
     else if (strategy_ == INPAR::FSI::LinalgSolver)
     {
-      // do nothing ?!
+      // Do nothing. Will be done by LINALG::Solver internally.
     }
   }
 
@@ -1462,7 +1462,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
     }
     case INPAR::FSI::LinalgSolver:
     {
-      // do nothing?
+      // Do nothing. Will be done by LINALG::Solver internally.
       break;
     }
     default:

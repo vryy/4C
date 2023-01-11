@@ -1,9 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\level 3
-*/
+\brief FSI linear system interface to the nonlinear solver NOX
 
+\level 3
+
+*/
 /*----------------------------------------------------------------------*/
 
 #ifndef FSI_NOXLINSYS_H
@@ -24,7 +26,6 @@
 #include <NOX_Utils.H>
 #include <NOX.H>
 
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
@@ -51,12 +52,12 @@ namespace NOX::FSI
    public:
     LinearSystem(Teuchos::ParameterList& printParams,  ///< printing parameters
         Teuchos::ParameterList& linearSolverParams,    ///< parameters for linear solution
-        const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>&
-            iJac,  ///< NOX interface to Jacobian, i.e. #STR::TimIntImpl
-        const Teuchos::RCP<Epetra_Operator>& J,  ///< the Jacobian or stiffness matrix
-        const NOX::Epetra::Vector& cloneVector,
+        const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,  ///< NOX interface to Jacobian
+        const Teuchos::RCP<Epetra_Operator>& J,         ///< the Jacobian or stiffness matrix
+        const NOX::Epetra::Vector& cloneVector,         ///< initial guess of the solution process
         Teuchos::RCP<LINALG::Solver> structure_solver,  ///< (used-defined) linear algebraic solver
-        const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject = Teuchos::null);
+        const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject =
+            Teuchos::null);  ///< scaling of the linear system
 
     /// provide storage pattern of tangent matrix, i.e. the operator
     virtual OperatorType getOperatorType(const Epetra_Operator& Op);
@@ -128,11 +129,11 @@ namespace NOX::FSI
     /// Set preconditioner operator for solve.
     virtual void setPrecOperatorForSolve(const Teuchos::RCP<const Epetra_Operator>& solvePrecOp);
 
-   protected:
+   private:
     /// throw an error
     virtual void throwError(const std::string& functionName, const std::string& errorMsg) const;
 
-   protected:
+   private:
     NOX::Utils utils_;
 
     Teuchos::RCP<NOX::Epetra::Interface::Jacobian> jacInterfacePtr_;

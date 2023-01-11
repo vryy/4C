@@ -1,6 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
+\brief FSI linear system interface to the nonlinear solver NOX
+
 \level 3
 */
 
@@ -53,9 +55,9 @@ NOX::FSI::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
 NOX::FSI::LinearSystem::OperatorType NOX::FSI::LinearSystem::getOperatorType(
     const Epetra_Operator& Op)
 {
-  // check per dynamik cast, which type of Jacobian was broadcast
+  // check via dynamic cast, which type of Jacobian was broadcast
 
-  const Epetra_Operator* testOperator = 0;
+  const Epetra_Operator* testOperator = nullptr;
 
   testOperator =
       dynamic_cast<const LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>*>(&Op);
@@ -115,13 +117,13 @@ bool NOX::FSI::LinearSystem::applyJacobianTranspose(
 bool NOX::FSI::LinearSystem::applyJacobianInverse(
     Teuchos::ParameterList& p, const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result)
 {
-  double startTime = timer_.WallTime();
+  const double startTime = timer_.WallTime();
 
   // Zero out the delta X of the linear problem if requested by user.
   if (zeroInitialGuess_) result.init(0.0);
 
-  int maxit = p.get("Max Iterations", 30);
-  double tol = p.get("Tolerance", 1.0e-10);
+  const int maxit = p.get("Max Iterations", 30);
+  const double tol = p.get("Tolerance", 1.0e-10);
 
   Teuchos::RCP<Epetra_Vector> fres = Teuchos::rcp(new Epetra_Vector(input.getEpetraVector()));
   Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(&(result.getEpetraVector()), false);
@@ -132,16 +134,16 @@ bool NOX::FSI::LinearSystem::applyJacobianInverse(
   if (outputSolveDetails_)
   {
     Teuchos::ParameterList& outputList = p.sublist("Output");
-    int prevLinIters = outputList.get("Total Number of Linear Iterations", 0);
-    int curLinIters = maxit;
-    double achievedTol = tol;
+    const int prevLinIters = outputList.get("Total Number of Linear Iterations", 0);
+    const int curLinIters = maxit;
+    const double achievedTol = tol;
 
     outputList.set("Number of Linear Iterations", curLinIters);
     outputList.set("Total Number of Linear Iterations", (prevLinIters + curLinIters));
     outputList.set("Achieved Tolerance", achievedTol);
   }
 
-  double endTime = timer_.WallTime();
+  const double endTime = timer_.WallTime();
   timeApplyJacbianInverse_ += (endTime - startTime);
 
   return true;

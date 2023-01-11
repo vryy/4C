@@ -251,7 +251,7 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       &fsimono);
 
   IntParameter("LINEAR_SOLVER", -1,
-      "number of linear solver used for fluid-structure-interaction problems", &fsimono);
+      "Number of SOLVER block describing the linear solver and preconditioner", &fsimono);
 
   // Iteration parameters for convergence check of newton loop
   // for implementations without NOX
