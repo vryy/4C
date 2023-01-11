@@ -186,7 +186,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   if (!myrank && verbosity_ == INPAR::FSI::verbosity_full)
   {
     printf("       -----------------------------------------------------------------------\n");
-    switch(strategy_)
+    switch (strategy_)
     {
       case INPAR::FSI::FSIAMG:
       {
