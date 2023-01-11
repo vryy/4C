@@ -38,7 +38,7 @@ namespace NOX::FSI
 {
   class LinearSystem : public NOX::Epetra::LinearSystem
   {
-   protected:
+   private:
     enum OperatorType
     {
       EpetraOperator,
