@@ -1,14 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Implementation of the Weickenmeier active skeletal muscle material model constituent
+\brief Implementation of the Weickenmeier active skeletal muscle material
 
 \level 3
 
 */
 /*----------------------------------------------------------------------*/
 
-#include "mixture_constituent_muscle_weickenmeier.H"
+#include "muscle_weickenmeier.H"
 #include "globalproblem.H"
 #include "linedefinition.H"
 #include "standardtypes_cpp.H"
@@ -20,9 +20,9 @@
 #include "mixture.H"
 #include "muscle_utils.H"
 
-MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_Weickenmeier(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : MixtureConstituent(matdata),
+
+MAT::PAR::Muscle_Weickenmeier::Muscle_Weickenmeier(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : Parameter(matdata),
       alpha_(matdata->GetDouble("ALPHA")),
       beta_(matdata->GetDouble("BETA")),
       gamma_(matdata->GetDouble("GAMMA")),
@@ -44,7 +44,8 @@ MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_
       actTimesNum_(matdata->GetInt("ACTTIMESNUM")),
       actTimes_(*(matdata->Get<std::vector<double>>("ACTTIMES"))),
       actIntervalsNum_(matdata->GetInt("ACTINTERVALSNUM")),
-      actValues_(*(matdata->Get<std::vector<double>>("ACTVALUES")))
+      actValues_(*(matdata->Get<std::vector<double>>("ACTVALUES"))),
+      density_(matdata->GetDouble("DENS"))
 {
   // error handling for parameter ranges
   // passive material parameters
@@ -90,19 +91,38 @@ MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_
     dserror("Number of activation values ACTVALUES must equal ACTINTERVALSNUM");
   if (actTimesNum_ != actIntervalsNum_ + 1)
     dserror("ACTTIMESNUM must be one smaller than ACTINTERVALSNUM");
+
+  // density
+  if (density_ < 0.0) dserror("DENS should be positive");
 }
 
-std::unique_ptr<MIXTURE::MixtureConstituent>
-MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier::CreateConstituent(int id)
+Teuchos::RCP<MAT::Material> MAT::PAR::Muscle_Weickenmeier::CreateMaterial()
 {
-  return std::unique_ptr<MIXTURE::MixtureConstituent_Muscle_Weickenmeier>(
-      new MIXTURE::MixtureConstituent_Muscle_Weickenmeier(this, id));
+  return Teuchos::rcp(new MAT::Muscle_Weickenmeier(this));
 }
 
-MIXTURE::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_Weickenmeier(
-    MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier* params, int id)
-    : MixtureConstituent(params, id),
-      params_(params),
+MAT::Muscle_WeickenmeierType MAT::Muscle_WeickenmeierType::instance_;
+
+DRT::ParObject* MAT::Muscle_WeickenmeierType::Create(const std::vector<char>& data)
+{
+  auto* muscle_weickenmeier = new MAT::Muscle_Weickenmeier();
+  muscle_weickenmeier->Unpack(data);
+  return muscle_weickenmeier;
+}
+
+MAT::Muscle_Weickenmeier::Muscle_Weickenmeier()
+    : params_(nullptr),
+      lambdaMOld_(1.0),
+      anisotropy_(),
+      anisotropyExtension_(true, 0.0, 0,
+          Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
+              new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
+          {0})
+{
+}
+
+MAT::Muscle_Weickenmeier::Muscle_Weickenmeier(MAT::PAR::Muscle_Weickenmeier* params)
+    : params_(params),
       lambdaMOld_(1.0),
       anisotropy_(),
       anisotropyExtension_(true, 0.0, 0,
@@ -121,83 +141,81 @@ MIXTURE::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_Weick
                                              MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
-// Return the material type
-INPAR::MAT::MaterialType MIXTURE::MixtureConstituent_Muscle_Weickenmeier::MaterialType() const
+void MAT::Muscle_Weickenmeier::Pack(DRT::PackBuffer& data) const
 {
-  return INPAR::MAT::mix_muscle_weickenmeier;
-}
+  DRT::PackBuffer::SizeMarker sm(data);
+  sm.Insert();
 
-// Pack the constituent
-void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::PackConstituent(DRT::PackBuffer& data) const
-{
-  MixtureConstituent::PackConstituent(data);
+  // pack type of this instance of ParObject
+  int type = UniqueParObjectId();
+  AddtoPack(data, type);
 
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  DRT::ParObject::AddtoPack(data, matid);
+  AddtoPack(data, matid);
 
-  DRT::ParObject::AddtoPack(data, lambdaMOld_);
+  AddtoPack(data, lambdaMOld_);
 
   anisotropyExtension_.PackAnisotropy(data);
 }
 
-void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::UnpackConstituent(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+void MAT::Muscle_Weickenmeier::Unpack(const std::vector<char>& data)
 {
-  MixtureConstituent::UnpackConstituent(position, data);
+  std::vector<char>::size_type position = 0;
+
+  // extract type
+  int type = 0;
+  ExtractfromPack(position, data, type);
+  if (type != UniqueParObjectId())
+    dserror(
+        "Wrong instance type data. The extracted type id is %d, while the UniqueParObjectId is %d",
+        type, UniqueParObjectId());
+
 
   // make sure we have a pristine material
   params_ = nullptr;
 
   // matid and recover params_
   int matid;
-  DRT::ParObject::ExtractfromPack(position, data, matid);
+  ExtractfromPack(position, data, matid);
 
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
   {
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
-      const unsigned int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
           DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = dynamic_cast<MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier*>(mat);
+        params_ = static_cast<MAT::PAR::Muscle_Weickenmeier*>(mat);
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
   }
 
-  DRT::ParObject::ExtractfromPack(position, data, lambdaMOld_);
+  ExtractfromPack(position, data, lambdaMOld_);
 
   anisotropyExtension_.UnpackAnisotropy(data, position);
+
+  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
-void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::PreEvaluate(
-    MixtureRule& mixtureRule, Teuchos::ParameterList& params, int gp, int eleGID)
+void MAT::Muscle_Weickenmeier::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
-  anisotropy_.ReadAnisotropyFromParameterList(params);
-}
-
-void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::ReadElement(
-    int numgp, DRT::INPUT::LineDefinition* linedef)
-{
-  // Read element from the input line
-  MixtureConstituent::ReadElement(numgp, linedef);
-
   // Read anisotropy
   anisotropy_.SetNumberOfGaussPoints(numgp);
   anisotropy_.ReadAnisotropyFromElement(linedef);
 }
 
-void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Update(
-    const LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, int gp, int eleGID)
+void MAT::Muscle_Weickenmeier::Update(LINALG::Matrix<3, 3> const& defgrd, int const gp,
+    Teuchos::ParameterList& params, int const eleGID)
 {
   // compute the current fibre stretch using the deformation gradient and the structural tensor
   // right Cauchy Green tensor C= F^T F
   LINALG::Matrix<3, 3> C(false);
-  C.MultiplyTN(1.0, F, F);
+  C.MultiplyTN(1.0, defgrd, defgrd);
 
   // structural tensor M, i.e. dyadic product of fibre directions
   const LINALG::Matrix<3, 3>& M = anisotropyExtension_.GetStructuralTensor(gp, 0);
@@ -210,16 +228,12 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Update(
   lambdaMOld_ = std::sqrt(transpCM(0, 0) + transpCM(1, 1) + transpCM(2, 2));
 }
 
-void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Evaluate(const LINALG::Matrix<3, 3>& F,
-    const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, const int gp, const int eleGID)
+void MAT::Muscle_Weickenmeier::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
+    const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
-  // 2nd Piola-Kirchhoff stress tensor in stress-like Voigt notation of the constituent
-  static LINALG::Matrix<6, 1> Sc_stress(false);
-  Sc_stress.Clear();
-  // constitutive tensor of constituent
-  static LINALG::Matrix<6, 6> ccmat(false);
-  ccmat.Clear();
+  LINALG::Matrix<6, 1> Sc_stress(true);
+  LINALG::Matrix<6, 6> ccmat(true);
 
   // get passive material parameters
   const double alpha = params_->alpha_;
@@ -230,21 +244,21 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Evaluate(const LINALG::Mat
 
   // compute matrices
   // right Cauchy Green tensor C
-  LINALG::Matrix<3, 3> C(false);                  // matrix notation
-  C.MultiplyTN(F, F);                             // C = F^T F
-  LINALG::Matrix<6, 1> Cv(false);                 // Voigt notation
-  UTILS::VOIGT::Stresses::MatrixToVector(C, Cv);  // Cv
+  LINALG::Matrix<3, 3> C(false);                    // matrix notation
+  C.MultiplyTN(*defgrd, *defgrd);                   // C = F^T F
+  LINALG::Matrix<6, 1> Cv(false);                   // Voigt notation
+  ::UTILS::VOIGT::Stresses::MatrixToVector(C, Cv);  // Cv
 
   // inverse right Cauchy Green tensor C^-1
-  LINALG::Matrix<3, 3> invC(false);                     // matrix notation
-  invC.Invert(C);                                       // invC = C^-1
-  LINALG::Matrix<6, 1> invCv(false);                    // Voigt notation
-  UTILS::VOIGT::Stresses::MatrixToVector(invC, invCv);  // invCv
+  LINALG::Matrix<3, 3> invC(false);                       // matrix notation
+  invC.Invert(C);                                         // invC = C^-1
+  LINALG::Matrix<6, 1> invCv(false);                      // Voigt notation
+  ::UTILS::VOIGT::Stresses::MatrixToVector(invC, invCv);  // invCv
 
   // structural tensor M, i.e. dyadic product of fibre directions
   LINALG::Matrix<3, 3> M = anisotropyExtension_.GetStructuralTensor(gp, 0);
-  LINALG::Matrix<6, 1> Mv(false);                 // Voigt notation
-  UTILS::VOIGT::Stresses::MatrixToVector(M, Mv);  // Mv
+  LINALG::Matrix<6, 1> Mv(false);                   // Voigt notation
+  ::UTILS::VOIGT::Stresses::MatrixToVector(M, Mv);  // Mv
 
   // structural tensor L = omega0/3*Identity + omegap*M
   LINALG::Matrix<3, 3> L(M);
@@ -267,7 +281,7 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Evaluate(const LINALG::Mat
   LINALG::Matrix<3, 3> invCLinvC(false);  // matrix notation
   invCLinvC.MultiplyNN(invCL, invC);
   LINALG::Matrix<6, 1> invCLinvCv(false);  // Voigt notation
-  UTILS::VOIGT::Stresses::MatrixToVector(invCLinvC, invCLinvCv);
+  ::UTILS::VOIGT::Stresses::MatrixToVector(invCLinvC, invCLinvCv);
 
   // stretch in fibre direction lambdaM
   // lambdaM = sqrt(C:M) = sqrt(tr(C^T M)), see Holzapfel2000, p.14
@@ -299,19 +313,19 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Evaluate(const LINALG::Mat
   LINALG::Matrix<3, 3> LomegaaM(L);
   LomegaaM.Update(omegaa, M, 1.0);  // LomegaaM = L + omegaa*M
   LINALG::Matrix<6, 1> LomegaaMv(false);
-  UTILS::VOIGT::Stresses::MatrixToVector(LomegaaM, LomegaaMv);
+  ::UTILS::VOIGT::Stresses::MatrixToVector(LomegaaM, LomegaaMv);
 
   LINALG::Matrix<3, 3> LfacomegaaM(L);  // LfacomegaaM = L + fac*M
   LfacomegaaM.Update(
       (1.0 + omegaa * alpha * std::pow(lambdaM, 2.)) / (alpha * std::pow(lambdaM, 2.)), M,
       1.0);  // + fac*M
   LINALG::Matrix<6, 1> LfacomegaaMv(false);
-  UTILS::VOIGT::Stresses::MatrixToVector(LfacomegaaM, LfacomegaaMv);
+  ::UTILS::VOIGT::Stresses::MatrixToVector(LfacomegaaM, LfacomegaaMv);
 
   LINALG::Matrix<3, 3> transpCLomegaaM(false);
   transpCLomegaaM.MultiplyTN(1.0, C, LomegaaM);  // C^T*(L+omegaa*M)
   LINALG::Matrix<6, 1> transpCLomegaaMv(false);
-  UTILS::VOIGT::Stresses::MatrixToVector(transpCLomegaaM, transpCLomegaaMv);
+  ::UTILS::VOIGT::Stresses::MatrixToVector(transpCLomegaaM, transpCLomegaaMv);
 
   // generalized invariants including active material properties
   double detC = C.Determinant();  // detC = det(C)
@@ -329,7 +343,7 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Evaluate(const LINALG::Mat
   stressM.Update(-expbeta * detC, invCLinvC, 1.0);
   stressM.Update(J * expbeta - std::pow(detC, -kappa), invC, 1.0);
   stressM.Scale(0.5 * gamma);
-  UTILS::VOIGT::Stresses::MatrixToVector(
+  ::UTILS::VOIGT::Stresses::MatrixToVector(
       stressM, Sc_stress);  // convert to Voigt notation and update stress
 
   // compute cmat
@@ -346,22 +360,21 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Evaluate(const LINALG::Mat
   MAT::AddDerivInvABInvBProduct(-expbeta * detC, invCv, invCLinvCv, ccmat);
   ccmat.Scale(gamma);
 
-  // update constituent stress and material tangent with the computed stress and cmat valuess scaled
-  // by reference mass density
-  S_stress.Update(1.0, Sc_stress, 1.0);
-  cmat.Update(1.0, ccmat, 1.0);
+  // update stress and material tangent with the computed stress and cmat values
+  stress->Update(1.0, Sc_stress, 1.0);
+  cmat->Update(1.0, ccmat, 1.0);
 }
 
-void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActiveNominalStress(
+void MAT::Muscle_Weickenmeier::EvaluateActiveNominalStress(
     Teuchos::ParameterList& params, const double lambdaM, double& Pa, double& derivPa)
 {
   // save current simulation time
   double t_tot = params.get<double>("total time", -1);
-  if (abs(t_tot + 1.0) < 1e-14) dserror("No total time given for muscle Weickenmeier constituent!");
+  if (abs(t_tot + 1.0) < 1e-14) dserror("No total time given for muscle Weickenmeier material!");
   // save (time) step size
   double timestep = params.get<double>("delta time", -1);
   if (abs(timestep + 1.0) < 1e-14)
-    dserror("No time step size given for muscle Weickenmeier constituent!");
+    dserror("No time step size given for muscle Weickenmeier material!");
 
   // get active microstructural parameters from params_
   const double Na = params_->Na_;
@@ -415,9 +428,8 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActiveNominalStres
   derivPa = Poptft * (fv * dFxidLamdaM + fxi * dFvdLambdaM);
 }
 
-void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActivationLevel(
-    Teuchos::ParameterList& params, const double lambdaM, double Pa, double derivPa, double& omegaa,
-    double& derivOmegaa)
+void MAT::Muscle_Weickenmeier::EvaluateActivationLevel(Teuchos::ParameterList& params,
+    const double lambdaM, double Pa, double derivPa, double& omegaa, double& derivOmegaa)
 {
   // get passive material parameters
   const double alpha = params_->alpha_;

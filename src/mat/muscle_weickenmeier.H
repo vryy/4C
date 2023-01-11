@@ -1,37 +1,35 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Definition of the Weickenmeier active skeletal muscle material model constituent
+\brief Definition of the Weickenmeier active skeletal muscle material
 
 \level 3
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_CONSTITUENT_MUSCLE_WEICKENMEIER_H
-#define BACI_MIXTURE_CONSTITUENT_MUSCLE_WEICKENMEIER_H
+#ifndef BACI_MUSCLE_WEICKENMEIER_H_
+#define BACI_MUSCLE_WEICKENMEIER_H_
 
 #include "parobjectfactory.H"
+#include "so3_material.H"
 #include "matpar_parameter.H"
 #include "anisotropy.H"
 #include "anisotropy_extension_default.H"
 #include "anisotropy_extension_provider.H"
-#include "mixture_constituent.H"
 #include <Teuchos_RCP.hpp>
 
 
-namespace MIXTURE
+namespace MAT
 {
   namespace PAR
   {
-    class MixtureConstituent_Muscle_Weickenmeier : public MIXTURE::PAR::MixtureConstituent
+    class Muscle_Weickenmeier : public Parameter
     {
      public:
       /// constructor
-      explicit MixtureConstituent_Muscle_Weickenmeier(
-          const Teuchos::RCP<MAT::PAR::Material>& matdata);
+      Muscle_Weickenmeier(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// create material instance of matching type with my parameters
-      std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       /// @name material parameters
       //@{
@@ -88,13 +86,30 @@ namespace MIXTURE
       const std::vector<double> actValues_;  ///< scaling factor in intervals
                                              ///< (1=full activation, 0=no activation)
       //! @}
+
+      const double density_;  ///< density
       //@}
 
-    };  // end class MixtureConstituent_Muscle_Weickenmeier
+    };  // end class Muscle_Weickenmeier
   }     // end namespace PAR
 
+
+  class Muscle_WeickenmeierType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const override { return "Muscle_WeickenmeierType"; }
+
+    static Muscle_WeickenmeierType& Instance() { return instance_; };
+
+    DRT::ParObject* Create(const std::vector<char>& data) override;
+
+   private:
+    static Muscle_WeickenmeierType instance_;
+  };
+
+
   /*!
-   * \brief Constituent for the Weickenmeier muscle material
+   * \brief Weickenmeier muscle material
    *
    * This constituent represents the Weickenmeier muscle material. It has to
    * be paired with the MAT::Mixture material and a MIXTURE::MixtureRule.
@@ -117,37 +132,53 @@ namespace MIXTURE
    * finite element method', Computer Methods in Biomechanics and Biomedical Engineering, vol. 11,
    * no. 5, pp. 489-504, 2008, doi: 10.1080/10255840701771750.
    */
-  class MixtureConstituent_Muscle_Weickenmeier : public MIXTURE::MixtureConstituent
+  class Muscle_Weickenmeier : public So3Material
   {
    public:
-    /// Constructor for the material given the material parameters
-    explicit MixtureConstituent_Muscle_Weickenmeier(
-        MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier* params, int id);
+    // Constructor for empty material object
+    Muscle_Weickenmeier();
 
-    // Pack this class so it can be communicated
-    void PackConstituent(DRT::PackBuffer& data) const override;
+    // Constructor for the material given the material parameters
+    explicit Muscle_Weickenmeier(MAT::PAR::Muscle_Weickenmeier* params);
 
-    // Unpack data from a char vector into this class
-    void UnpackConstituent(
-        std::vector<char>::size_type& position, const std::vector<char>& data) override;
+    Teuchos::RCP<Material> Clone() const override
+    {
+      return Teuchos::rcp(new Muscle_Weickenmeier(*this));
+    }
 
-    // Material type
-    INPAR::MAT::MaterialType MaterialType() const override;
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
-    // Initialize the constituent with the parameters of the input line
-    void ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+    INPAR::MAT::MaterialType MaterialType() const override
+    {
+      return INPAR::MAT::m_muscle_weickenmeier;
+    };
 
-    // Method that is executed before the first evaluate call, once for each Gauss point
-    void PreEvaluate(
-        MixtureRule& mixtureRule, Teuchos::ParameterList& params, int gp, int eleGID) override;
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
+    {
+      if (!(kinem == INPAR::STR::kinem_linear || kinem == INPAR::STR::kinem_nonlinearTotLag))
+        dserror("element and material kinematics are not compatible");
+    }
 
-    // Updates the material and all its summands, called in between timesteps after convergence
-    void Update(
-        const LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, int gp, int eleGID) override;
+    double Density() const override { return params_->density_; }
 
-    // Evaluate stress and material tangent of the constituent and add to mixture stress and cmat
-    void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
+    int UniqueParObjectId() const override
+    {
+      return Muscle_WeickenmeierType::Instance().UniqueParObjectId();
+    }
+
+    void Pack(DRT::PackBuffer& data) const override;
+
+    void Unpack(const std::vector<char>& data) override;
+
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+
+    bool UsesExtendedUpdate() override { return true; };
+
+    void Update(LINALG::Matrix<3, 3> const& defgrd, int const gp, Teuchos::ParameterList& params,
+        int const eleGID) override;
+
+    void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
+        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
         int gp, int eleGID) override;
 
    private:
@@ -176,7 +207,7 @@ namespace MIXTURE
         double derivPa, double& omegaa, double& derivOmegaa);
 
     /// Weickenmeier material parameters
-    MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier* params_{};
+    MAT::PAR::Muscle_Weickenmeier* params_{};
 
     /// Fibre stretch of the previous timestep
     double lambdaMOld_;
@@ -186,8 +217,8 @@ namespace MIXTURE
 
     /// Anisotropy extension holder
     MAT::DefaultAnisotropyExtension<1> anisotropyExtension_;
-  };  // end class MixtureConstituent_Muscle_Weickenmeier
+  };  // end class Muscle_Weickenmeier
 
-}  // end namespace MIXTURE
+}  // end namespace MAT
 
-#endif  // BACI_MIXTURE_CONSTITUENT_MUSCLE_WEICKENMEIER_H
+#endif  // BACI_MUSCLE_WEICKENMEIER_H_

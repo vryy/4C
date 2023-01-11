@@ -7,7 +7,6 @@ set(OBJS_MIXTURE
     mixture_constituent_elasthyper_damage.cpp
     mixture_constituent_elasthyper_elastin_membrane.cpp
     mixture_constituent_elasthyperbase.cpp
-    mixture_constituent_muscle_weickenmeier.cpp
     mixture_constituent_remodelfiber_expl.cpp
     mixture_constituent_remodelfiber_impl.cpp
     mixture_constituent_remodelfiber_lib.cpp
