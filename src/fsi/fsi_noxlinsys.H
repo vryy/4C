@@ -133,7 +133,6 @@ namespace NOX::FSI
     /// throw an error
     virtual void throwError(const std::string& functionName, const std::string& errorMsg) const;
 
-   private:
     NOX::Utils utils_;
 
     Teuchos::RCP<NOX::Epetra::Interface::Jacobian> jacInterfacePtr_;

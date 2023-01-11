@@ -186,25 +186,28 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   if (!myrank && verbosity_ == INPAR::FSI::verbosity_full)
   {
     printf("       -----------------------------------------------------------------------\n");
-    if (strategy_ == INPAR::FSI::FSIAMG)
+    switch(strategy_)
     {
-      printf(
-          "       Setting up AMG(BGS): snlevel %d fnlevel %d anlevel %d minnlevel %d maxnlevel "
-          "%d\n",
-          snlevel_, fnlevel_, anlevel_, minnlevel_, maxnlevel_);
-      fflush(stdout);
-    }
-    else if (strategy_ == INPAR::FSI::PreconditionedKrylov)
-    {
-      printf(
-          "       Setting up BGS(AMG): snlevel %d fnlevel %d anlevel %d minnlevel %d maxnlevel "
-          "%d\n",
-          snlevel_, fnlevel_, anlevel_, minnlevel_, maxnlevel_);
-      fflush(stdout);
-    }
-    else if (strategy_ == INPAR::FSI::LinalgSolver)
-    {
-      // Do nothing. Will be done by LINALG::Solver internally.
+      case INPAR::FSI::FSIAMG:
+      {
+        printf(
+            "       Setting up AMG(BGS): snlevel %d fnlevel %d anlevel %d minnlevel %d maxnlevel "
+            "%d\n",
+            snlevel_, fnlevel_, anlevel_, minnlevel_, maxnlevel_);
+        fflush(stdout);
+        break;
+      }
+      case INPAR::FSI::PreconditionedKrylov:
+      {
+        printf(
+            "       Setting up BGS(AMG): snlevel %d fnlevel %d anlevel %d minnlevel %d maxnlevel "
+            "%d\n",
+            snlevel_, fnlevel_, anlevel_, minnlevel_, maxnlevel_);
+        fflush(stdout);
+        break;
+      }
+      default:
+        break;
     }
   }
 
