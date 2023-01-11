@@ -91,13 +91,13 @@ namespace MIXTURE
   /*!
    * \brief Mixture rule containing the physics behind the mixture
    *
-   * This class should be used within the Mixture_ElastHyper framework as a mixture rule. This class
+   * This class should be used within the Mixture framework as a mixture rule. This class
    * contains the whole physics. This is the base class defining the simplest possible physics,
    * i.e. constituents all deforming with the same deformation gradient and a homogenized stress
    * response using the mass density of each constituent.
    *
    * Example input lines:
-   * MAT 1 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 11 12 MATIDMIXTURERULE 10
+   * MAT 1 MAT_Mixture NUMCONST 2 MATIDSCONST 11 12 MATIDMIXTURERULE 10
    * MAT 10 MIX_Rule_Simple DENS 0.1 NUMCONST 2 MASSFRAC 0.4 0.6
    * MAT 11 MIX_Constituent_ElastHyper NUMMAT 1 MATIDS 101 MAT 12
    * MIX_Constituent_ElastHyper NUMMAT 1 MATIDS 102

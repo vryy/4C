@@ -23,13 +23,12 @@
 
 namespace
 {
-  template <typename T>
-  using CreateFunctionType = Teuchos::RCP<T> (*)(
-      Teuchos::RCP<DRT::INPUT::LineDefinition>, DRT::UTILS::FunctionManager&, const int);
+  using LineDefinitionVector = std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>;
+
+  using TypeErasedFunctionCreator = std::function<std::any(const LineDefinitionVector&)>;
 
   template <typename T>
-  using CreateMultiLineFunctionType = Teuchos::RCP<T> (*)(
-      std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>);
+  using FunctionCreator = Teuchos::RCP<T> (*)(const LineDefinitionVector&);
 
   /**
    * Utility function that takes a function object returning a Teuchos::RCP<T> and erases its return
@@ -37,28 +36,11 @@ namespace
    * return an empty std::any instead.
    */
   template <typename T>
-  std::function<std::any(
-      Teuchos::RCP<DRT::INPUT::LineDefinition>, DRT::UTILS::FunctionManager&, const int)>
-  WrapFunction(CreateFunctionType<T> fun)
+  TypeErasedFunctionCreator WrapFunction(FunctionCreator<T> fun)
   {
-    return [fun](Teuchos::RCP<DRT::INPUT::LineDefinition> linedef, DRT::UTILS::FunctionManager& fm,
-               const int index) -> std::any
+    return [fun](const LineDefinitionVector& linedefs) -> std::any
     {
-      Teuchos::RCP<T> created = fun(linedef, fm, index);
-      if (created == Teuchos::null)
-        return {};
-      else
-        return created;
-    };
-  }
-
-  template <typename T>
-  std::function<std::any(std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>)>
-  WrapMultiLineFunction(CreateMultiLineFunctionType<T> fun)
-  {
-    return [fun](std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> multiline_def) -> std::any
-    {
-      Teuchos::RCP<T> created = fun(multiline_def);
+      Teuchos::RCP<T> created = fun(linedefs);
       if (created == Teuchos::null)
         return {};
       else
@@ -67,8 +49,7 @@ namespace
   }
 
   template <int dim>
-  void FillFunctions(DRT::INPUT::DatFileReader& reader, std::vector<std::any>& functions,
-      DRT::UTILS::FunctionManager& functionManager)
+  void FillFunctions(DRT::INPUT::DatFileReader& reader, std::vector<std::any>& functions)
   {
     Teuchos::RCP<DRT::INPUT::Lines> lines = DRT::UTILS::FunctionManager::ValidFunctionLines();
 
@@ -84,61 +65,45 @@ namespace
       // Stop reading as soon as the first FUNCT section in the input file is empty
       if (section_line_defs.empty()) break;
 
-      Teuchos::RCP<DRT::INPUT::LineDefinition> first_line_in_section = section_line_defs.front();
-
       // List all known TryCreate functions in a vector, so they can be called with a unified
       // syntax below. Also, erase their exact return type, since we can only store std::any.
-      std::vector<std::function<std::any(
-          Teuchos::RCP<DRT::INPUT::LineDefinition>, DRT::UTILS::FunctionManager&, const int)>>
-          try_create_function_vector{WrapFunction(DRT::UTILS::TryCreateVariableExprFunction<dim>),
-              WrapFunction(POROMULTIPHASESCATRA::TryCreatePoroFunction<dim>),
-              WrapFunction(STR::TryCreateStructureFunction),
-              WrapFunction(FLD::TryCreateFluidFunction),
-              WrapFunction(DRT::UTILS::TryCreateCombustFunction),
-              WrapFunction(DRT::UTILS::TryCreateXfluidFunction),
-              WrapFunction(DRT::UTILS::TryCreateLibraryFunction),
-              WrapFunction(DRT::UTILS::TryCreateLibraryFunctionScalar)};
+      std::vector<TypeErasedFunctionCreator> try_create_function_vector{
+          WrapFunction(DRT::UTILS::TryCreateVariableExprFunction<dim>),
+          WrapFunction(POROMULTIPHASESCATRA::TryCreatePoroFunction<dim>),
+          WrapFunction(STR::TryCreateStructureFunction), WrapFunction(FLD::TryCreateFluidFunction),
+          WrapFunction(DRT::UTILS::TryCreateCombustFunction),
+          WrapFunction(DRT::UTILS::TryCreateXfluidFunction),
+          WrapFunction(DRT::UTILS::TryCreateLibraryFunctionScalar),
+          WrapFunction(DRT::UTILS::TryCreateExprFunction<dim>),
+          WrapFunction(DRT::UTILS::TryCreateFunctionOfTime)};
 
-      bool found_function = false;
-
-      // First, parse functions that read a single line
-      for (const auto& try_create_function : try_create_function_vector)
-      {
-        auto special_funct =
-            try_create_function(first_line_in_section, functionManager, funct_suffix);
-        if (special_funct.has_value())
-        {
-          functions.emplace_back(special_funct);
-          found_function = true;
-          break;
-        }
-      }
-
-      // List all known multi-line functions in a vector, so they can be called with a unified
-      // syntax below. Also, erase their exact return type, since we can only store std::any.
-      std::vector<std::function<std::any(std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>)>>
-          try_create_multiline_function_vector{
-              WrapMultiLineFunction(DRT::UTILS::TryCreateExprFunction<dim>),
-              WrapMultiLineFunction(DRT::UTILS::TryCreateFunctionOfTime)};
-
-      // If we haven't found the function by now, try to parse a multi-line function.
-      if (!found_function)
-      {
-        for (const auto& try_create_multiline_function : try_create_multiline_function_vector)
-        {
-          auto basic_funct = try_create_multiline_function(section_line_defs);
-          if (basic_funct.has_value())
+      const bool found_and_inserted_function = std::invoke(
+          [&]()
           {
-            functions.emplace_back(basic_funct);
-            found_function = true;
-            break;
-          }
-        }
-      }
+            for (const auto& try_create_function : try_create_function_vector)
+            {
+              auto maybe_function = try_create_function(section_line_defs);
+              if (maybe_function.has_value())
+              {
+                functions.emplace_back(maybe_function);
+                return true;
+              }
+            }
+            return false;
+          });
 
-      if (!found_function)
+      // If we didn't find the function, we don't know how to read the lines we were given.
+      if (not found_and_inserted_function)
       {
-        dserror("Could not create any function from the given function line definition.");
+        std::stringstream ss;
+        for (const auto& line : section_line_defs)
+        {
+          ss << "\n";
+          line->Print(ss);
+        }
+
+        dserror("Could not create any function from the following function line definition:\n%s",
+            ss.str().c_str());
       }
     }
   }
@@ -228,13 +193,13 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
   switch (DRT::Problem::Instance()->NDim())
   {
     case 1:
-      FillFunctions<1>(reader, functions_, *this);
+      FillFunctions<1>(reader, functions_);
       break;
     case 2:
-      FillFunctions<2>(reader, functions_, *this);
+      FillFunctions<2>(reader, functions_);
       break;
     case 3:
-      FillFunctions<3>(reader, functions_, *this);
+      FillFunctions<3>(reader, functions_);
       break;
     default:
       dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());

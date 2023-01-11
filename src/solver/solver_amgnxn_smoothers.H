@@ -46,8 +46,8 @@ namespace LINALG::SOLVER::AMGNXN
   class SingleFieldSmoother : public GenericSmoother
   {
    public:
-    virtual void Solve(
-        const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const
+    void Solve(
+        const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const override
     {
       CheckSingleFieldVector(X);
       CheckSingleFieldVector(Y);
@@ -86,8 +86,8 @@ namespace LINALG::SOLVER::AMGNXN
     {
     }
 
-    virtual void Solve(
-        const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const;
+    void Solve(
+        const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const override;
 
    private:
     Teuchos::RCP<BlockedMatrix> A_;
@@ -118,8 +118,8 @@ namespace LINALG::SOLVER::AMGNXN
     {
     }
 
-    virtual void Solve(
-        const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const;
+    void Solve(
+        const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const override;
 
    private:
     Teuchos::RCP<BlockedMatrix> A_;
@@ -155,8 +155,8 @@ namespace LINALG::SOLVER::AMGNXN
 
     void Setup(BlockedMatrix matrix);
 
-    virtual void Solve(
-        const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const;
+    void Solve(
+        const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const override;
 
    private:
     Teuchos::RCP<LINALG::Solver> solver_;
@@ -183,8 +183,8 @@ namespace LINALG::SOLVER::AMGNXN
         const Teuchos::ParameterList& amgnxn_params, const Teuchos::ParameterList& smoothers_params,
         const Teuchos::ParameterList& muelu_params);
 
-    virtual void Solve(
-        const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const;
+    void Solve(
+        const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const override;
 
    private:
     void Setup();
@@ -213,8 +213,8 @@ namespace LINALG::SOLVER::AMGNXN
     {
     }
 
-    virtual void Apply(
-        const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero = false) const;
+    void Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y,
+        bool InitialGuessIsZero = false) const override;
 
    private:
     Teuchos::RCP<MueLu::SmootherBase<Scalar, LocalOrdinal, GlobalOrdinal, Node>> S_;
@@ -226,8 +226,8 @@ namespace LINALG::SOLVER::AMGNXN
     MueluHierarchyWrapper(
         Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>> H);
 
-    virtual void Apply(
-        const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero = false) const;
+    void Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y,
+        bool InitialGuessIsZero = false) const override;
 
    private:
     Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>> H_;
@@ -241,8 +241,8 @@ namespace LINALG::SOLVER::AMGNXN
         Teuchos::RCP<std::vector<double>> null_space_data,
         const Teuchos::ParameterList& muelu_list);
 
-    virtual void Apply(
-        const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero = false) const;
+    void Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y,
+        bool InitialGuessIsZero = false) const override;
 
     void Setup();
 
@@ -266,8 +266,8 @@ namespace LINALG::SOLVER::AMGNXN
         Teuchos::RCP<std::vector<double>> null_space_data, const Teuchos::ParameterList& muelu_list,
         const Teuchos::ParameterList& fine_smoother_list);
 
-    virtual void Apply(
-        const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero = false) const;
+    void Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y,
+        bool InitialGuessIsZero = false) const override;
 
    private:
     Teuchos::ParameterList fine_smoother_list_;
@@ -280,8 +280,8 @@ namespace LINALG::SOLVER::AMGNXN
    public:
     IfpackWrapper(Teuchos::RCP<SparseMatrixBase> A, Teuchos::ParameterList& list);
     ~IfpackWrapper() { delete prec_; }
-    virtual void Apply(
-        const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero = false) const;
+    void Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y,
+        bool InitialGuessIsZero = false) const override;
 
    private:
     Ifpack_Preconditioner* prec_;
@@ -298,8 +298,8 @@ namespace LINALG::SOLVER::AMGNXN
     void Setup(
         Teuchos::RCP<LINALG::SparseMatrix> matrix, Teuchos::RCP<Teuchos::ParameterList> params);
 
-    virtual void Apply(
-        const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero = false) const;
+    void Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y,
+        bool InitialGuessIsZero = false) const override;
 
    private:
     Teuchos::RCP<LINALG::Solver> solver_;
@@ -414,7 +414,7 @@ namespace LINALG::SOLVER::AMGNXN
   class SmootherFactory : public SmootherFactoryBase
   {
    public:
-    virtual Teuchos::RCP<GenericSmoother> Create();
+    Teuchos::RCP<GenericSmoother> Create() override;
 
    private:
     void SetTypeAndParams();
@@ -423,7 +423,7 @@ namespace LINALG::SOLVER::AMGNXN
   class BgsSmootherFactory : public SmootherFactoryBase
   {
    public:
-    virtual Teuchos::RCP<GenericSmoother> Create();
+    Teuchos::RCP<GenericSmoother> Create() override;
 
    private:
     void ParseSmootherNames(const std::string& smoothers_string,
@@ -433,13 +433,13 @@ namespace LINALG::SOLVER::AMGNXN
   class CoupledAmgFactory : public SmootherFactoryBase
   {
    public:
-    virtual Teuchos::RCP<GenericSmoother> Create();
+    Teuchos::RCP<GenericSmoother> Create() override;
   };
 
   class SimpleSmootherFactory : public SmootherFactoryBase
   {
    public:
-    virtual Teuchos::RCP<GenericSmoother> Create();
+    Teuchos::RCP<GenericSmoother> Create() override;
 
    private:
     Teuchos::RCP<SparseMatrix> ApproximateInverse(
@@ -451,43 +451,43 @@ namespace LINALG::SOLVER::AMGNXN
   class MergeAndSolveFactory : public SmootherFactoryBase
   {
    public:
-    virtual Teuchos::RCP<GenericSmoother> Create();
+    Teuchos::RCP<GenericSmoother> Create() override;
   };
 
   class IfpackWrapperFactory : public SmootherFactoryBase
   {
    public:
-    virtual Teuchos::RCP<GenericSmoother> Create();
+    Teuchos::RCP<GenericSmoother> Create() override;
   };
 
   class MueluSmootherWrapperFactory : public SmootherFactoryBase
   {
    public:
-    virtual Teuchos::RCP<GenericSmoother> Create();
+    Teuchos::RCP<GenericSmoother> Create() override;
   };
 
   class HierarchyRemainderWrapperFactory : public SmootherFactoryBase
   {
    public:
-    virtual Teuchos::RCP<GenericSmoother> Create();
+    Teuchos::RCP<GenericSmoother> Create() override;
   };
 
   class MueluAMGWrapperFactory : public SmootherFactoryBase
   {
    public:
-    virtual Teuchos::RCP<GenericSmoother> Create();
+    Teuchos::RCP<GenericSmoother> Create() override;
   };
 
   class SingleFieldAMGFactory : public SmootherFactoryBase
   {
    public:
-    virtual Teuchos::RCP<GenericSmoother> Create();
+    Teuchos::RCP<GenericSmoother> Create() override;
   };
 
   class DirectSolverWrapperFactory : public SmootherFactoryBase
   {
    public:
-    virtual Teuchos::RCP<GenericSmoother> Create();
+    Teuchos::RCP<GenericSmoother> Create() override;
   };
 }  // namespace LINALG::SOLVER::AMGNXN
 

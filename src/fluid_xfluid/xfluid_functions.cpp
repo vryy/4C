@@ -122,9 +122,12 @@ void DRT::UTILS::AddValidXfluidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lin
 }
 
 Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateXfluidFunction(
-    Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def, DRT::UTILS::FunctionManager& manager,
-    const int index_current_funct_in_manager)
+    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs)
 {
+  if (function_line_defs.size() != 1) return Teuchos::null;
+
+  const auto& function_lin_def = function_line_defs.front();
+
   if (function_lin_def->HaveNamed("FORWARDFACINGSTEP"))
   {
     return Teuchos::rcp(new GerstenbergerForwardfacingStep());

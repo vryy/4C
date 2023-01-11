@@ -14,7 +14,7 @@
 #include "globalproblem.H"
 #include "matpar_bundle.H"
 #include "multiplicative_split_defgrad_elasthyper_service.H"
-#include "mixture_elasthyper.H"
+#include "mixture.H"
 #include "mixture_prestress_strategy.H"
 
 // Constructor for the parameter class

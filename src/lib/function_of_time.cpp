@@ -144,13 +144,13 @@ double DRT::UTILS::SymbolicFunctionOfTime::EvaluateDerivative(
 }
 
 Teuchos::RCP<DRT::UTILS::FunctionOfTime> DRT::UTILS::TryCreateFunctionOfTime(
-    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> function_lin_defs)
+    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs)
 {
   // evaluate the maximum component and the number of variables
   int maxcomp = 0;
   int maxvar = -1;
   bool found_function_of_time(false);
-  for (const auto& ith_function_lin_def : function_lin_defs)
+  for (const auto& ith_function_lin_def : function_line_defs)
   {
     ith_function_lin_def->ExtractInt("COMPONENT", maxcomp);
     ith_function_lin_def->ExtractInt("VARIABLE", maxvar);
@@ -160,7 +160,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfTime> DRT::UTILS::TryCreateFunctionOfTime(
   if (!found_function_of_time) return Teuchos::null;
 
   // evaluate the number of rows used for the definition of the variables
-  std::size_t numrowsvar = function_lin_defs.size() - maxcomp - 1;
+  std::size_t numrowsvar = function_line_defs.size() - maxcomp - 1;
 
   // define a vector of strings
   std::vector<std::string> functstring(maxcomp + 1);
@@ -169,7 +169,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfTime> DRT::UTILS::TryCreateFunctionOfTime(
   for (int n = 0; n <= maxcomp; ++n)
   {
     // update the current row
-    Teuchos::RCP<DRT::INPUT::LineDefinition> functcomp = function_lin_defs[n];
+    Teuchos::RCP<DRT::INPUT::LineDefinition> functcomp = function_line_defs[n];
 
     // check the validity of the n-th component
     int compid = 0;
@@ -186,7 +186,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfTime> DRT::UTILS::TryCreateFunctionOfTime(
   for (std::size_t j = 1; j <= numrowsvar; ++j)
   {
     // update the current row
-    Teuchos::RCP<DRT::INPUT::LineDefinition> line = function_lin_defs[maxcomp + j];
+    Teuchos::RCP<DRT::INPUT::LineDefinition> line = function_line_defs[maxcomp + j];
 
     // read the number of the variable
     int varid;

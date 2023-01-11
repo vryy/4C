@@ -1520,10 +1520,9 @@ namespace DRT
      * actual Element's Evaluate call.
      */
     virtual void Evaluate(Teuchos::ParameterList& params, DRT::AssembleStrategy& strategy,
-        const std::function<int(DRT::Element*, Teuchos::ParameterList&, DRT::Discretization&,
-            Element::LocationArray&, Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&,
-            Epetra_SerialDenseVector&, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&)>&
-            element_action);
+        const std::function<void(DRT::Element&, Element::LocationArray&, Epetra_SerialDenseMatrix&,
+            Epetra_SerialDenseMatrix&, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&,
+            Epetra_SerialDenseVector&)>& element_action);
 
     /// Call elements to evaluate
     /*!
@@ -1562,6 +1561,18 @@ namespace DRT
                             containing assembly instructions
    */
     void Evaluate(Teuchos::ParameterList& params);
+
+
+    /*!
+     * @brief Evaluate all elements with a function object
+     *
+     * @note No assembly is performed. This call is useful for e.g. setup, output and post
+     * processing tasks.
+     *
+     * @param element_action : Function object called for each element to perform the evaluation of
+     * the element
+     */
+    void Evaluate(const std::function<void(DRT::Element&)>& element_action);
 
     /*!
     \brief Evaluate Neumann boundary conditions
@@ -1950,8 +1961,8 @@ namespace DRT
 
     \note This is a collective call
     */
-    // set protected to be accessible from derived class DRT::MESHFREE::MeshfreeDiscretization (nis)
-    // Jan12
+    // set protected to be accessible from derived class DRT::MESHFREE::MeshfreeDiscretization
+    // (nis) Jan12
     virtual void Reset(bool killdofs, bool killcond);
     virtual void Reset() { this->Reset(true, true); }
 

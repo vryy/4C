@@ -1389,8 +1389,8 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedDistributionOfBin
   else
     sublist.set("LB_APPROACH", "PARTITION");
 
-  Teuchos::RCP<Epetra_CrsGraph> balanced_bingraph = DRT::UTILS::REBALANCING::RebalanceGraph(
-      *bingraph.getConst(), *vweights.getConst(), paramlist);
+  Teuchos::RCP<Epetra_CrsGraph> balanced_bingraph =
+      DRT::UTILS::REBALANCING::RebalanceGraph(*bingraph.getConst(), paramlist, vweights);
 
   // extract repartitioned bin row map
   const Epetra_BlockMap& rbinstmp = balanced_bingraph->RowMap();

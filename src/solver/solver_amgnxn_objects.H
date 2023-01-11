@@ -120,20 +120,20 @@ namespace LINALG::SOLVER::AMGNXN
       cols_ = rows;
     }
 
-    virtual void SetMatrix(Teuchos::RCP<SparseMatrix> A, int i, int j)
+    void SetMatrix(Teuchos::RCP<SparseMatrix> A, int i, int j) override
     {
       if (i != j) dserror("You can only set diagonal blocks");
       matrices_[i] = A;
     }
 
-    virtual Teuchos::RCP<SparseMatrix> GetMatrix(int i, int j) const
+    Teuchos::RCP<SparseMatrix> GetMatrix(int i, int j) const override
     {
       if (i != j) dserror("You can only get diagonal blocks");
       return matrices_[i];
     }
 
-    virtual BlockedMatrix GetBlockedMatrix(
-        const std::vector<int>& row_blocks, const std::vector<int>& col_blocks) const
+    BlockedMatrix GetBlockedMatrix(
+        const std::vector<int>& row_blocks, const std::vector<int>& col_blocks) const override
     {
       dserror("Function not implemented yet.");
       return *this;
@@ -145,11 +145,11 @@ namespace LINALG::SOLVER::AMGNXN
       return Teuchos::null;
     }
 
-    virtual void Apply(const BlockedVector& in, BlockedVector& out) const;
+    void Apply(const BlockedVector& in, BlockedVector& out) const override;
 
-    virtual Teuchos::RCP<BlockedVector> NewDomainBlockedVector(int NV, bool ZeroIt = false) const;
+    Teuchos::RCP<BlockedVector> NewDomainBlockedVector(int NV, bool ZeroIt = false) const override;
 
-    virtual Teuchos::RCP<BlockedVector> NewRangeBlockedVector(int NV, bool ZeroIt = false) const;
+    Teuchos::RCP<BlockedVector> NewRangeBlockedVector(int NV, bool ZeroIt = false) const override;
   };
 
   // class BlockAggrupator

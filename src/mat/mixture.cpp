@@ -8,13 +8,13 @@
 /*----------------------------------------------------------------------*/
 #include <memory>
 
-#include "mixture_elasthyper.H"
+#include "mixture.H"
 #include "material_service.H"
 #include "globalproblem.H"
 #include "matpar_bundle.H"
 
 // constructor of the parameters
-MAT::PAR::Mixture_ElastHyper::Mixture_ElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+MAT::PAR::Mixture::Mixture(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), constituents_(0)
 {
   const int num_constituents = matdata->GetInt("NUMCONST");
@@ -41,24 +41,24 @@ MAT::PAR::Mixture_ElastHyper::Mixture_ElastHyper(const Teuchos::RCP<MAT::PAR::Ma
 }
 
 // Create a material instance from parameters
-Teuchos::RCP<MAT::Material> MAT::PAR::Mixture_ElastHyper::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::PAR::Mixture::CreateMaterial()
 {
-  return Teuchos::rcp(new MAT::Mixture_ElastHyper(this));
+  return Teuchos::rcp(new MAT::Mixture(this));
 }
 
-MAT::Mixture_ElastHyperType MAT::Mixture_ElastHyperType::instance_;
+MAT::MixtureType MAT::MixtureType::instance_;
 
 // Create a material instance from packed data
-DRT::ParObject* MAT::Mixture_ElastHyperType::Create(const std::vector<char>& data)
+DRT::ParObject* MAT::MixtureType::Create(const std::vector<char>& data)
 {
-  auto* mix_elhy = new MAT::Mixture_ElastHyper();
+  auto* mix_elhy = new MAT::Mixture();
   mix_elhy->Unpack(data);
 
   return mix_elhy;
 }
 
 // constructor
-MAT::Mixture_ElastHyper::Mixture_ElastHyper()
+MAT::Mixture::Mixture()
     : params_(nullptr),
       constituents_(std::make_shared<std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>>(0)),
       setup_(false),
@@ -67,7 +67,7 @@ MAT::Mixture_ElastHyper::Mixture_ElastHyper()
 }
 
 // constructor
-MAT::Mixture_ElastHyper::Mixture_ElastHyper(MAT::PAR::Mixture_ElastHyper* params)
+MAT::Mixture::Mixture(MAT::PAR::Mixture* params)
     : params_(params),
       constituents_(std::make_shared<std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>>(0)),
       setup_(false),
@@ -90,7 +90,7 @@ MAT::Mixture_ElastHyper::Mixture_ElastHyper(MAT::PAR::Mixture_ElastHyper* params
 }
 
 // Pack data
-void MAT::Mixture_ElastHyper::Pack(DRT::PackBuffer& data) const
+void MAT::Mixture::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -133,7 +133,7 @@ void MAT::Mixture_ElastHyper::Pack(DRT::PackBuffer& data) const
 }
 
 // Unpack data
-void MAT::Mixture_ElastHyper::Unpack(const std::vector<char>& data)
+void MAT::Mixture::Unpack(const std::vector<char>& data)
 {
   params_ = nullptr;
   constituents_->clear();
@@ -157,7 +157,7 @@ void MAT::Mixture_ElastHyper::Unpack(const std::vector<char>& data)
           DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {
-        params_ = dynamic_cast<MAT::PAR::Mixture_ElastHyper*>(mat);
+        params_ = dynamic_cast<MAT::PAR::Mixture*>(mat);
       }
       else
       {
@@ -219,7 +219,7 @@ void MAT::Mixture_ElastHyper::Unpack(const std::vector<char>& data)
 }
 
 // Read element and create arrays for the quantities at the Gauss points
-void MAT::Mixture_ElastHyper::Setup(const int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::Mixture::Setup(const int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   So3Material::Setup(numgp, linedef);
 
@@ -240,7 +240,7 @@ void MAT::Mixture_ElastHyper::Setup(const int numgp, DRT::INPUT::LineDefinition*
 }
 
 // Post setup routine -> Call Setup of constituents and mixture rule
-void MAT::Mixture_ElastHyper::PostSetup(Teuchos::ParameterList& params, const int eleGID)
+void MAT::Mixture::PostSetup(Teuchos::ParameterList& params, const int eleGID)
 {
   So3Material::PostSetup(params, eleGID);
   anisotropy_.ReadAnisotropyFromParameterList(params);
@@ -261,7 +261,7 @@ void MAT::Mixture_ElastHyper::PostSetup(Teuchos::ParameterList& params, const in
 }
 
 // This method is called between two timesteps
-void MAT::Mixture_ElastHyper::Update(LINALG::Matrix<3, 3> const& defgrd, const int gp,
+void MAT::Mixture::Update(LINALG::Matrix<3, 3> const& defgrd, const int gp,
     Teuchos::ParameterList& params, const int eleGID)
 {
   // Update all constituents
@@ -274,7 +274,7 @@ void MAT::Mixture_ElastHyper::Update(LINALG::Matrix<3, 3> const& defgrd, const i
 }
 
 // This method is called between two timesteps during prestress
-void MAT::Mixture_ElastHyper::UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd, const int gp,
+void MAT::Mixture::UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd, const int gp,
     Teuchos::ParameterList& params, const int eleGID)
 {
   // Update all constituents
@@ -287,7 +287,7 @@ void MAT::Mixture_ElastHyper::UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd
 }
 
 // Evaluates the material
-void MAT::Mixture_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
+void MAT::Mixture::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
@@ -309,7 +309,7 @@ void MAT::Mixture_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   mixture_rule_->Evaluate(*defgrd, *glstrain, params, *stress, *cmat, gp, eleGID);
 }
 
-void MAT::Mixture_ElastHyper::RegisterVtkOutputDataNames(
+void MAT::Mixture::RegisterVtkOutputDataNames(
     std::unordered_map<std::string, int>& names_and_size) const
 {
   mixture_rule_->RegisterVtkOutputDataNames(names_and_size);
@@ -319,7 +319,7 @@ void MAT::Mixture_ElastHyper::RegisterVtkOutputDataNames(
   }
 }
 
-bool MAT::Mixture_ElastHyper::EvaluateVtkOutputData(
+bool MAT::Mixture::EvaluateVtkOutputData(
     const std::string& name, Epetra_SerialDenseMatrix& data) const
 {
   bool out = mixture_rule_->EvaluateVtkOutputData(name, data);

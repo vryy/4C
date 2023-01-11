@@ -36,22 +36,7 @@ namespace LINALG::SOLVER
     //! Constructor
     KrylovSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile);
 
-    /*! \brief Setup the solver object
-     *
-     * @param A Matrix of the linear system
-     * @param x Solution vector of the linear system
-     * @param b Right-hand side vector of the linear system
-     * @param refactor Boolean flag to enforce a refactorization of the matrix
-     * @param reset Boolean flag to enforce a full reset of the solver object
-     * @param projector Krylov projector
-     */
-    virtual void Setup(Teuchos::RCP<MatrixType> A, Teuchos::RCP<VectorType> x,
-        Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
-        Teuchos::RCP<LINALG::KrylovProjector> projector) = 0;
-
-    virtual int Solve() = 0;
-
-    int ApplyInverse(const VectorType& X, VectorType& Y);
+    int ApplyInverse(const VectorType& X, VectorType& Y) override;
 
     int Ncall() { return ncall_; }
 

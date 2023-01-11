@@ -1141,7 +1141,7 @@ void DRT::ELEMENTS::So_pyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // loca
     }
 
     if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
-        Material()->MaterialType() == INPAR::MAT::m_mixture_elasthyper)
+        Material()->MaterialType() == INPAR::MAT::m_mixture)
     {
       // gp reference coordinates
       LINALG::Matrix<NUMNOD_SOP5, 1> funct(true);

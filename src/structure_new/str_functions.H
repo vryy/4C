@@ -32,8 +32,7 @@ namespace STR
 
   /// try to create structure-specific functions from a given line definition
   Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> TryCreateStructureFunction(
-      Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
-      DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
+      const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
 
   /// special implementation for weakly compressible flow - Etienne FSI problem
   class WeaklyCompressibleEtienneFSIStructureFunction : public DRT::UTILS::FunctionOfSpaceTime

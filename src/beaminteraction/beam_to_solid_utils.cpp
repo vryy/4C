@@ -666,26 +666,29 @@ void BEAMINTERACTION::GetSolidRotationVectorPolarDecomposition2D(
     if (abs(FADUTILS::CastToDouble(U_times_U(0, 0) - U_times_U(1, 1))) < 1e-10 and
         abs(FADUTILS::CastToDouble(U_times_U(0, 1))) < 1e-10)
     {
-      U(0, 0) = FADUTILS::sqrt(U_times_U(0, 0));
-      U(1, 1) = FADUTILS::sqrt(U_times_U(1, 1));
+      U(0, 0) = FADUTILS::sqrt<scalar_type>(U_times_U(0, 0));
+      U(1, 1) = FADUTILS::sqrt<scalar_type>(U_times_U(1, 1));
     }
     else
     {
-      scalar_type v[16];
-      v[15] = U_times_U(0, 0) - U_times_U(1, 1);
-      v[5] = 4.0 * std::pow(U_times_U(0, 1), 2.0) + (v[15] * v[15]);
-      v[12] = 1.0 / FADUTILS::sqrt(v[5]);
-      v[6] = FADUTILS::sqrt(v[5]);
-      v[7] = 0.3535533905932738e0 * v[12];
-      v[8] = FADUTILS::sqrt<scalar_type>(U_times_U(0, 0) + U_times_U(1, 1) - v[6]);
-      v[9] = -U_times_U(0, 0) + U_times_U(1, 1) + v[6];
-      v[10] = v[15] + v[6];
-      v[11] = FADUTILS::sqrt<scalar_type>(2.0 * U_times_U(0, 0) + v[9]);
-      v[13] = -0.7071067811865476e0 * U_times_U(0, 1) * v[12] * (-v[11] + v[8]);
-      U(0, 0) = v[7] * (v[10] * v[11] + v[8] * v[9]);
-      U(0, 1) = v[13];
-      U(1, 0) = v[13];
-      U(1, 1) = v[7] * (v[10] * v[8] + v[11] * v[9]);
+      // Explicit square root of the symmetric 2x2 matrix (generated with Mathematica)
+      // Shortcuts to the matrix entries
+      const scalar_type& A00 = U_times_U(0, 0);
+      const scalar_type& A01 = U_times_U(0, 1);
+      const scalar_type& A11 = U_times_U(1, 1);
+
+      // Temporary variables of common expressions
+      scalar_type t1 =
+          FADUTILS::sqrt<scalar_type>(A00 * A00 + A11 * A11 + 4.0 * A01 * A01 - 2.0 * A00 * A11);
+      scalar_type t2 = FADUTILS::sqrt<scalar_type>(A00 + A11 + t1);
+      scalar_type t3 = FADUTILS::sqrt<scalar_type>(A00 + A11 - t1);
+      scalar_type t4 = A00 - A11 + t1;
+      scalar_type t5 = -A00 + A11 + t1;
+
+      U(0, 0) = (t2 * t4 + t3 * t5) / (2.0 * FADUTILS::sqrt<scalar_type>(2.0) * t1);
+      U(0, 1) = A01 * (t2 - t3) / (FADUTILS::sqrt<scalar_type>(2.0) * t1);
+      U(1, 0) = U(0, 1);
+      U(1, 1) = (t3 * t4 + t2 * t5) / (2.0 * FADUTILS::sqrt<scalar_type>(2.0) * t1);
     }
 
     // Compute R.

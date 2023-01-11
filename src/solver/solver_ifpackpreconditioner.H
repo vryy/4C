@@ -38,7 +38,7 @@ namespace LINALG::SOLVER
     Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override { return prec_; }
 
     //! Print name of preconditioner
-    void Print(std::ostream& stream) override { stream << "IFPACK"; }
+    void Print(std::ostream& stream) const override { stream << "IFPACK"; }
 
     //! return name of sublist in parameter list which contains parameters for preconditioner
     const std::string getParameterListName() const override { return "IFPACK Parameters"; }

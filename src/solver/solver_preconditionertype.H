@@ -90,7 +90,7 @@ namespace LINALG::SOLVER
     }
 
     /// debug output
-    virtual void Print(std::ostream& stream) = 0;
+    virtual void Print(std::ostream& stream) const = 0;
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
     /// e.g. "IFPACK parameters" for an Ifpack preconditioner

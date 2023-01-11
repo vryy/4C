@@ -49,7 +49,7 @@ Inner Iteration                 = No
 Outer Iteration StatusTest      = No
 ---------------------------------------------------------------------MATERIALS
 // Units: [m] = 1.0 kg, [l] = 0.1 m, [t] = 1.0 s, [s] = 1.0 days
-MAT 1 MAT_MixtureElastHyper NUMCONST 3 MATIDSCONST 11 12 14 MATIDMIXTURERULE 10
+MAT 1 MAT_Mixture NUMCONST 3 MATIDSCONST 11 12 14 MATIDMIXTURERULE 10
 MAT 10 MIX_GrowthRemodelMixtureRule GROWTH_STRATEGY 100 DENS 1.0000000000000002 NUMCONST 3 MASSFRAC 0.3 0.1 0.6
 MAT 100 MIX_GrowthStrategy_Isotropic
 // Fiber of the cardiomyocytes
