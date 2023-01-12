@@ -11,13 +11,14 @@ function(get_git_revision_information)
   endif()
 
   # enforces reconfigure upon new commit
-  if(EXISTS ${CMAKE_SOURCE_DIR}/.git/HEAD)
-    configure_file(${CMAKE_SOURCE_DIR}/.git/HEAD ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/HEAD)
-    file(STRINGS ${CMAKE_SOURCE_DIR}/.git/HEAD _head_ref LIMIT_COUNT 1)
+  if(EXISTS ${PROJECT_SOURCE_DIR}/.git/HEAD)
+    configure_file(${PROJECT_SOURCE_DIR}/.git/HEAD ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/HEAD)
+    file(STRINGS ${PROJECT_SOURCE_DIR}/.git/HEAD _head_ref LIMIT_COUNT 1)
     string(REPLACE "ref: " "" _head_ref ${_head_ref})
-    if(EXISTS ${CMAKE_SOURCE_DIR}/.git/${_head_ref})
+    if(EXISTS ${PROJECT_SOURCE_DIR}/.git/${_head_ref})
       configure_file(
-        ${CMAKE_SOURCE_DIR}/.git/${_head_ref} ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/HEAD_REF
+        ${PROJECT_SOURCE_DIR}/.git/${_head_ref}
+        ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/HEAD_REF
         )
     endif()
   endif()
@@ -25,7 +26,7 @@ function(get_git_revision_information)
   # get Baci git hash
   execute_process(
     COMMAND ${GIT_EXECUTABLE} show -s --format=%H
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
     RESULT_VARIABLE res_var
     OUTPUT_VARIABLE BaciGitHash
     OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -47,7 +48,7 @@ function(get_git_revision_information)
   # get Baci git hash (short)
   execute_process(
     COMMAND ${GIT_EXECUTABLE} show -s --format=%h
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
     RESULT_VARIABLE res_var
     OUTPUT_VARIABLE BaciGitHashShort
     OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -69,7 +70,7 @@ function(get_git_revision_information)
   # get Baci git branch name
   execute_process(
     COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
     RESULT_VARIABLE res_var
     OUTPUT_VARIABLE BaciGitBranch
     OUTPUT_STRIP_TRAILING_WHITESPACE
