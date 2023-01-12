@@ -350,35 +350,6 @@ void DRT::ELEMENTS::So_hex8::Print(std::ostream& os) const
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  extrapolation of quantities at the GPs to the nodes      lw 02/08   |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::soh8_expol(
-    LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>& stresses, Epetra_MultiVector& expolstresses)
-{
-  LINALG::Matrix<NUMNOD_SOH8, MAT::NUM_STRESS_3D> nodalstresses;
-  static LINALG::Matrix<NUMNOD_SOH8, NUMGPT_SOH8> extrapolationMatrix(
-      GaussPointsToNodesExtrapolation());
-  nodalstresses.Multiply(extrapolationMatrix, stresses);
-
-  DRT::ELEMENTS::AssembleExtrapolatedNodalValues<LINALG::Matrix<NUMNOD_SOH8, MAT::NUM_STRESS_3D>>(
-      expolstresses, nodalstresses, this);
-}
-
-void DRT::ELEMENTS::So_hex8::ExtrapolateGPQuantityToNodesAndAssemble(
-    const LINALG::SerialDenseMatrix& gp_quantity, Epetra_MultiVector& global_quantity,
-    bool nodal_average)
-{
-  LINALG::SerialDenseMatrix nodal_quantity(NUMNOD_SOH8, gp_quantity.N());
-  // static const LINALG::SerialDenseMatrix extrapolation_matrix(Epetra_DataAccess::View,
-  //    GaussPointsToNodesExtrapolation().A(), NUMNOD_SOH8, NUMNOD_SOH8, NUMGPT_SOH8);
-
-  nodal_quantity.Multiply('N', 'N', 1.0, GaussPointsToNodesExtrapolation(), gp_quantity, 0.0);
-
-  DRT::ELEMENTS::AssembleExtrapolatedNodalValues<LINALG::SerialDenseMatrix>(
-      global_quantity, nodal_quantity, this, nodal_average);
-}
-
 
 /*====================================================================*/
 /* 8-node hexhedra node topology*/

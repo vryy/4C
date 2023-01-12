@@ -53,7 +53,6 @@ namespace DRT
                               //!< the computation
       struct_calc_energy,     //!< compute internal energy
       struct_calc_errornorms,               //!< compute error norms (L2,H1,energy)
-      struct_postprocess_stress,            //!< postprocess stresses
       struct_postprocess_thickness,         //!< postprocess thickness of membrane finite elements
       struct_init_gauss_point_data_output,  //!< initialize quantities for output of gauss point
                                             //!< data
@@ -138,8 +137,6 @@ namespace DRT
         return multi_readrestart;
       else if (action == "multi_calc_dens")
         return multi_calc_dens;
-      else if (action == "postprocess_stress")
-        return struct_postprocess_stress;
       else if (action == "struct_init_gauss_point_data_output")
         return struct_init_gauss_point_data_output;
       else if (action == "struct_gauss_point_data_output")
@@ -212,8 +209,6 @@ namespace DRT
           return "struct_calc_energy";
         case struct_calc_errornorms:
           return "struct_calc_errornorms";
-        case struct_postprocess_stress:
-          return "struct_postprocess_stress";
         case struct_postprocess_thickness:
           return "struct_postprocess_thickness";
         case struct_init_gauss_point_data_output:

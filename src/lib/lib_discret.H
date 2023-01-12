@@ -1503,11 +1503,11 @@ namespace DRT
                                    the underlying assembly methods that add element
                                    contributions.
     */
-    virtual void Evaluate(Teuchos::ParameterList& params,
+    void Evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
         Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-        Teuchos::RCP<Epetra_Vector> systemvector3);
+        Teuchos::RCP<Epetra_Vector> systemvector3) override;
 
     /// Call elements to evaluate
     virtual void Evaluate(Teuchos::ParameterList& params, DRT::AssembleStrategy& strategy);
@@ -1562,17 +1562,7 @@ namespace DRT
    */
     void Evaluate(Teuchos::ParameterList& params);
 
-
-    /*!
-     * @brief Evaluate all elements with a function object
-     *
-     * @note No assembly is performed. This call is useful for e.g. setup, output and post
-     * processing tasks.
-     *
-     * @param element_action : Function object called for each element to perform the evaluation of
-     * the element
-     */
-    void Evaluate(const std::function<void(DRT::Element&)>& element_action);
+    void Evaluate(const std::function<void(DRT::Element&)>& element_action) override;
 
     /*!
     \brief Evaluate Neumann boundary conditions

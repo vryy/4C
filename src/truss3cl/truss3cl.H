@@ -328,9 +328,8 @@ namespace DRT
         calc_struct_update_istep,
         calc_struct_reset_istep,  //!< reset elementwise internal variables
                                   //!< during iteration to last converged state
-        postprocess_stress,
-        calc_struct_ptcstiff,  // calculate artificial stiffness due to PTC solution strategy
-        calc_struct_energy     // calculate current elastic energy of element
+        calc_struct_ptcstiff,     // calculate artificial stiffness due to PTC solution strategy
+        calc_struct_energy        // calculate current elastic energy of element
       };
 
       //! kind of integration to be performed

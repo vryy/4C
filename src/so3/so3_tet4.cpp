@@ -273,43 +273,6 @@ void DRT::ELEMENTS::So_tet4::Unpack(const std::vector<char>& data)
 }
 
 
-/*----------------------------------------------------------------------*
- |  extrapolation of quantities at the GPs to the nodes      lw 03/08   |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet4::so_tet4_expol(
-    LINALG::Matrix<NUMGPT_SOTET4, MAT::NUM_STRESS_3D>& stresses, Epetra_MultiVector& expolstresses)
-{
-  static LINALG::Matrix<NUMNOD_SOTET4, NUMGPT_SOTET4> expol;
-  static bool isfilled;
-
-  if (isfilled == false)
-  {
-    expol(0, 0) = 1.0;
-    expol(1, 0) = 1.0;
-    expol(2, 0) = 1.0;
-    expol(3, 0) = 1.0;
-
-    isfilled = true;
-  }
-
-  LINALG::Matrix<NUMNOD_SOTET4, MAT::NUM_STRESS_3D> nodalstresses;
-  nodalstresses.Multiply(expol, stresses);
-
-  // "assembly" of extrapolated nodal stresses
-  for (int i = 0; i < NUMNOD_SOTET4; ++i)
-  {
-    const int lid = expolstresses.Map().LID(NodeIds()[i]);
-    if (lid >= 0)  // rownode
-    {
-      const double invmyadjele = 1.0 / Nodes()[i]->NumElement();
-      for (int j = 0; j < MAT::NUM_STRESS_3D; ++j)
-        (*(expolstresses(j)))[lid] += nodalstresses(i, j) * invmyadjele;
-    }
-  }
-  return;
-}
-
-
 /*----------------------------------------------------------------------***
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/

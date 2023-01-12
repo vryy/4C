@@ -45,6 +45,7 @@
 #include "beam3_discretization_runtime_vtu_output_params.H"
 
 #include "lib_prestress_service.H"
+#include "fem_general_utils_gauss_point_postprocess.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -849,76 +850,99 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
 
     EvaluateInternal(eval_mat, eval_vec);
 
-    // Define a helper function to extract the element / nodal stress / strains from the gauss
-    // point data.
-    auto DetermineStressStrainRuntimeOutput =
-        [this](const Teuchos::RCP<std::vector<char>>& data, const Epetra_Map* result_map,
-            Teuchos::RCP<Epetra_MultiVector>& postprocessed_data, const std::string& stress_type)
+    auto DoPostprocessingOnElement = [](const DRT::Element& ele)
+    {
+      // If it is not a beam element, we post-process it.
+      return dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(&ele) == nullptr;
+    };
+
+    auto EvaluateGaussPointData = [&](const std::vector<char>& raw_data)
     {
       // Get the values at the Gauss-points.
-      Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> mapdata =
-          Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
+      std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>> mapdata{};
       std::vector<char>::size_type position = 0;
       for (int i = 0; i < DiscretPtr()->ElementRowMap()->NumMyElements(); ++i)
       {
-        // Skip beam elements.
-        const DRT::ELEMENTS::Beam3Base* beam_element =
-            dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Discret().lRowElement(i));
-        if (beam_element == nullptr)
+        if (DoPostprocessingOnElement(*Discret().lRowElement(i)))
         {
           Teuchos::RCP<Epetra_SerialDenseMatrix> gpstress =
               Teuchos::rcp(new Epetra_SerialDenseMatrix);
-          DRT::ParObject::ExtractfromPack(position, *data, *gpstress);
-          (*mapdata)[DiscretPtr()->ElementRowMap()->GID(i)] = gpstress;
+          DRT::ParObject::ExtractfromPack(position, raw_data, *gpstress);
+          mapdata[DiscretPtr()->ElementRowMap()->GID(i)] = gpstress;
         }
       }
-
-      // Export to element column map.
-      const DRT::Discretization* discret = dynamic_cast<const DRT::Discretization*>(&Discret());
-      DRT::Exporter ex(*(Discret().ElementRowMap()), *(discret->ElementColMap()), Discret().Comm());
-      ex.Export(*mapdata);
-
-      // Set up everything for the postprocess call
-      Teuchos::ParameterList p;
-      p.set("action", "postprocess_stress");
-      p.set("stresstype", stress_type);
-      p.set("gpstressmap", mapdata);
-
-      postprocessed_data = Teuchos::rcp(new Epetra_MultiVector(*result_map, 6, true));
-      p.set("poststress", postprocessed_data);
-
-      // Perform the postprocess call.
-      DiscretPtr()->Evaluate(
-          p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+      return mapdata;
     };
 
+    auto PostprocessGaussPointDataToNodes =
+        [&](const std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>& map_data,
+            Epetra_MultiVector& assembled_data)
+    {
+      DiscretPtr()->Evaluate(
+          [&](DRT::Element& ele)
+          {
+            if (DoPostprocessingOnElement(ele))
+              DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
+                  ele, *map_data.at(ele.Id()), assembled_data);
+          });
+    };
+
+    auto PostprocessGaussPointDataToElementCenter =
+        [&](const std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>& map_data,
+            Epetra_MultiVector& assembled_data)
+    {
+      DiscretPtr()->Evaluate(
+          [&](DRT::Element& ele)
+          {
+            if (DoPostprocessingOnElement(ele))
+              DRT::ELEMENTS::EvaluateGaussPointQuantityAtElementCenter(
+                  ele, *map_data.at(ele.Id()), assembled_data);
+          });
+    };
+
+    const auto* discret = dynamic_cast<const DRT::Discretization*>(&Discret());
+
     // Postprocess the result vectors.
-    const DRT::Discretization* discret = dynamic_cast<const DRT::Discretization*>(&Discret());
     if (not(GInOutput().GetStressOutputType() == INPAR::STR::stress_none))
     {
-      Teuchos::RCP<Epetra_MultiVector> row_nodal_data;
-      DetermineStressStrainRuntimeOutput(
-          EvalData().GetStressData(), discret->NodeRowMap(), row_nodal_data, "ndxyz");
-      DetermineStressStrainRuntimeOutput(EvalData().GetStressData(), discret->ElementRowMap(),
-          EvalData().GetStressDataElementPostprocessedMutable(), "cxyz");
+      std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>> gp_stress_data =
+          EvaluateGaussPointData(*EvalData().GetStressData());
 
-      // Export the row data to the column map.
+      DRT::Exporter ex(*(Discret().ElementRowMap()), *(discret->ElementColMap()), Discret().Comm());
+      ex.Export(gp_stress_data);
+
       EvalData().GetStressDataNodePostprocessedMutable() =
           Teuchos::rcp(new Epetra_MultiVector(*discret->NodeColMap(), 6, true));
-      LINALG::Export(*row_nodal_data, *EvalData().GetStressDataNodePostprocessedMutable());
+      EvalData().GetStressDataElementPostprocessedMutable() =
+          Teuchos::rcp(new Epetra_MultiVector(*discret->ElementRowMap(), 6, true));
+
+
+      Epetra_MultiVector row_nodal_data(*discret->NodeRowMap(), 6, true);
+      PostprocessGaussPointDataToNodes(gp_stress_data, row_nodal_data);
+      LINALG::Export(row_nodal_data, *EvalData().GetStressDataNodePostprocessedMutable());
+
+      PostprocessGaussPointDataToElementCenter(
+          gp_stress_data, *EvalData().GetStressDataElementPostprocessedMutable());
     }
     if (not(GInOutput().GetStrainOutputType() == INPAR::STR::strain_none))
     {
-      Teuchos::RCP<Epetra_MultiVector> row_nodal_data;
-      DetermineStressStrainRuntimeOutput(
-          EvalData().GetStrainData(), discret->NodeRowMap(), row_nodal_data, "ndxyz");
-      DetermineStressStrainRuntimeOutput(EvalData().GetStrainData(), discret->ElementRowMap(),
-          EvalData().GetStrainDataElementPostprocessedMutable(), "cxyz");
+      std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>> gp_strain_data =
+          EvaluateGaussPointData(*EvalData().GetStrainData());
 
-      // Export the row data to the column map.
+      DRT::Exporter ex(*(Discret().ElementRowMap()), *(discret->ElementColMap()), Discret().Comm());
+      ex.Export(gp_strain_data);
+
       EvalData().GetStrainDataNodePostprocessedMutable() =
           Teuchos::rcp(new Epetra_MultiVector(*discret->NodeColMap(), 6, true));
-      LINALG::Export(*row_nodal_data, *EvalData().GetStrainDataNodePostprocessedMutable());
+      EvalData().GetStrainDataElementPostprocessedMutable() =
+          Teuchos::rcp(new Epetra_MultiVector(*discret->ElementRowMap(), 6, true));
+
+      Epetra_MultiVector row_nodal_data(*discret->NodeRowMap(), 6, true);
+      PostprocessGaussPointDataToNodes(gp_strain_data, row_nodal_data);
+      LINALG::Export(row_nodal_data, *EvalData().GetStrainDataNodePostprocessedMutable());
+
+      PostprocessGaussPointDataToElementCenter(
+          gp_strain_data, *EvalData().GetStrainDataElementPostprocessedMutable());
     }
   }
 }
@@ -1973,9 +1997,6 @@ void STR::MODELEVALUATOR::Structure::ParamsInterface2ParameterList(
       break;
     case DRT::ELEMENTS::multi_calc_dens:
       action = "multi_calc_dens";
-      break;
-    case DRT::ELEMENTS::struct_postprocess_stress:
-      action = "postprocess_stress";
       break;
     case DRT::ELEMENTS::struct_postprocess_thickness:
       action = "postprocess_thickness";

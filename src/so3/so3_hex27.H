@@ -347,7 +347,6 @@ namespace DRT
                                   //!< during iteration to last converged state
         calc_struct_energy,       //!< compute internal energy
         calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
-        postprocess_stress,       //!< postprocess stresses
         prestress_update,
         inversedesign_update,
         multi_readrestart,  //!< multi-scale: read restart on microscale
@@ -425,10 +424,6 @@ namespace DRT
 
       //! Lump mass matrix (bborn 07/08)
       void soh27_lumpmass(LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* emass);
-
-      //! Extrapolate Gauss-point values (e.g. stresses) to nodes
-      void soh27_expol(LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>& stresses,
-          Epetra_MultiVector& expolstresses);
 
       //! Evaluate Hex27 Shapefcts to keep them static
       const std::vector<LINALG::Matrix<NUMNOD_SOH27, 1>> soh27_shapefcts();

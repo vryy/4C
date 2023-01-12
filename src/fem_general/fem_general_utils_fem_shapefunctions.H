@@ -3054,10 +3054,10 @@ namespace DRT
     /*!
      \brief Fill vector with the shape function values evaluated at given point
      */
-    template <DRT::Element::DiscretizationType distype, class T, class V>
-    static void shape_function(const T& xsi, V& f)
+    template <class T, class V, unsigned dim>
+    constexpr void shape_function_dim(const T& xsi, V& f, DRT::Element::DiscretizationType distype)
     {
-      switch (DRT::UTILS::DisTypeToDim<distype>::dim)
+      switch (dim)
       {
         case 1:
         {
@@ -3079,6 +3079,15 @@ namespace DRT
           break;
       }
       return;
+    }
+
+    /*!
+    \brief Fill vector with the shape function values evaluated at given point
+    */
+    template <DRT::Element::DiscretizationType distype, class T, class V>
+    constexpr void shape_function(const T& xsi, V& f)
+    {
+      shape_function_dim<T, V, DRT::UTILS::DisTypeToDim<distype>::dim>(xsi, f, distype);
     }
 
     /*!

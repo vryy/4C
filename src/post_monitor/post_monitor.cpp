@@ -21,6 +21,7 @@
 #include "post_common.H"
 #include "lib_discret.H"
 #include "lib_globalproblem.H"
+#include "fem_general_utils_gauss_point_postprocess.H"
 #include "pss_full_cpp.h"
 #include "thermo_ele_action.H"
 
@@ -861,25 +862,19 @@ void StructMonWriter::WriteStrResult(std::ofstream& outfile, PostField*& field, 
   // discretisation (once more)
   const Teuchos::RCP<DRT::Discretization> dis = field->discretization();
 
-  Teuchos::ParameterList p;
-  p.set("action", "postprocess_stress");
-  p.set("stresstype", "ndxyz");
-  p.set("gpstressmap", data);
+  Epetra_MultiVector nodal_stress(*dis->NodeRowMap(), 6, true);
 
-  const Epetra_Map* nodemap = dis->NodeRowMap();
-  Teuchos::RCP<Epetra_MultiVector> nodal_stress = Teuchos::rcp(new Epetra_MultiVector(*nodemap, 6));
-  p.set("poststress", nodal_stress);
-  dis->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-  if (nodal_stress == Teuchos::null)
-  {
-    dserror("vector containing nodal stresses/strains not available");
-  }
+  dis->Evaluate(
+      [&](DRT::Element& ele) {
+        DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(ele, *data->at(ele.Id()), nodal_stress);
+      });
+
   if (nodeowner_)
   {
     outfile << std::right << std::setw(10) << result.step();
     outfile << std::right << std::setw(16) << std::scientific << result.time();
     for (int i = 0; i < 6; i++)
-      outfile << std::right << std::setw(16) << std::scientific << (*nodal_stress)[i][node];
+      outfile << std::right << std::setw(16) << std::scientific << nodal_stress[i][node];
     outfile << std::endl;
   }
 

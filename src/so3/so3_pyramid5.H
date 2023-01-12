@@ -342,7 +342,6 @@ namespace DRT
                                   //!< to state in the beginning of the computation
         calc_struct_energy,       //!< compute internal energy
         calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
-        postprocess_stress,       //!< postprocess stresses
         prestress_update,
         inversedesign_update,
         multi_readrestart,  //!< multi-scale: read restart on microscale
@@ -424,10 +423,6 @@ namespace DRT
 
       //! Lump mass matrix (bborn 07/08)
       void sop5_lumpmass(LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* emass);
-
-      //! Extrapolate Gauss-point values (e.g. stresses) to nodes
-      void sop5_expol(LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>& stresses,
-          Epetra_MultiVector& expolstresses);
 
       //! Evaluate Pyramid5 Shapefcts to keep them static
       const std::vector<LINALG::Matrix<NUMNOD_SOP5, 1>> sop5_shapefcts();

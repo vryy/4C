@@ -385,56 +385,6 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       break;
     }  // calc_struct_update_istep
 
-    // note that in the following, quantities are always referred to as
-    // "stresses" etc. although they might also apply to strains
-    // (depending on what this routine is called for from the post filter)
-    case DRT::ELEMENTS::struct_postprocess_stress:
-    {
-      const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> gpstressmap =
-          params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
-              "gpstressmap", Teuchos::null);
-      if (gpstressmap == Teuchos::null)
-        dserror("no gp stress/strain map available for postprocessing");
-      std::string stresstype = params.get<std::string>("stresstype", "ndxyz");
-      int gid = Id();
-      LINALG::Matrix<numgpt_post, numstr_> gpstress(((*gpstressmap)[gid])->A(), true);
-
-      Teuchos::RCP<Epetra_MultiVector> poststress =
-          params.get<Teuchos::RCP<Epetra_MultiVector>>("poststress", Teuchos::null);
-      if (poststress == Teuchos::null) dserror("No element stress/strain vector available");
-
-      if (stresstype == "ndxyz")
-      {
-        if (distype == DRT::Element::hex8)
-          soh8_expol(gpstress, *poststress);
-        else
-          dserror("only element centered stress for so3_plast");
-      }
-      else if (stresstype == "cxyz")
-      {
-        const Epetra_BlockMap& elemap = poststress->Map();
-        int lid = elemap.LID(Id());
-        if (lid != -1)
-        {
-          for (int i = 0; i < numstr_; ++i)
-          {
-            double& s = (*((*poststress)(i)))[lid];  // resolve pointer for faster access
-            s = 0.;
-            for (int j = 0; j < numgpt_post; ++j)
-            {
-              s += gpstress(j, i);
-            }
-            s *= 1.0 / numgpt_post;
-          }
-        }
-      }
-      else
-      {
-        dserror("unknown type of stress/strain output on element level");
-      }
-      break;
-    }
-
     //============================================================================
     case DRT::ELEMENTS::struct_calc_stifftemp:  // here we want to build the K_dT block for
                                                 // monolithic TSI
@@ -584,7 +534,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
                       ->GetMutableElementCenterData()
                       .at(quantity_name);
               DRT::ELEMENTS::AssembleAveragedElementValues<LINALG::SerialDenseMatrix>(
-                  *global_data, gp_data, this);
+                  *global_data, gp_data, *this);
               break;
             }
             case INPAR::STR::GaussPointDataOutputType::nodes:
