@@ -13,10 +13,8 @@
 #include "lib_linedefinition.H"
 #include "lib_voigt_notation.H"
 #include "matelast_aniso_structuraltensor_strategy.H"
-#include "mat_elasthyper_service.H"
 #include "mat_service.H"
 #include "mat_par_bundle.H"
-#include "mat_mixture.H"
 #include "mat_muscle_utils.H"
 
 
@@ -214,17 +212,13 @@ void MAT::Muscle_Weickenmeier::Update(LINALG::Matrix<3, 3> const& defgrd, int co
   // compute the current fibre stretch using the deformation gradient and the structural tensor
   // right Cauchy Green tensor C= F^T F
   LINALG::Matrix<3, 3> C(false);
-  C.MultiplyTN(1.0, defgrd, defgrd);
+  C.MultiplyTN(defgrd, defgrd);
 
   // structural tensor M, i.e. dyadic product of fibre directions
   const LINALG::Matrix<3, 3>& M = anisotropyExtension_.GetStructuralTensor(gp, 0);
 
-  // product C^T*M
-  LINALG::Matrix<3, 3> transpCM(false);
-  transpCM.MultiplyTN(C, M);
-
   // save the current fibre stretch in lambdaMOld_
-  lambdaMOld_ = std::sqrt(transpCM(0, 0) + transpCM(1, 1) + transpCM(2, 2));
+  lambdaMOld_ = MAT::UTILS::MUSCLE::FiberStretch(C, M);
 }
 
 void MAT::Muscle_Weickenmeier::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
@@ -264,14 +258,6 @@ void MAT::Muscle_Weickenmeier::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   L.Scale(1.0 - omega0);  // omegap*M
   for (unsigned i = 0; i < 3; ++i) L(i, i) += omega0 / 3.0;
 
-  // product C*M
-  LINALG::Matrix<3, 3> CM(false);
-  CM.MultiplyNN(C, M);
-
-  // product C^T*M
-  LINALG::Matrix<3, 3> transpCM(false);
-  transpCM.MultiplyTN(C, M);  // C^TM = C^T*M
-
   // product invC*L
   LINALG::Matrix<3, 3> invCL(false);
   invCL.MultiplyNN(invC, L);
@@ -284,7 +270,7 @@ void MAT::Muscle_Weickenmeier::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   // stretch in fibre direction lambdaM
   // lambdaM = sqrt(C:M) = sqrt(tr(C^T M)), see Holzapfel2000, p.14
-  double lambdaM = std::sqrt(transpCM(0, 0) + transpCM(1, 1) + transpCM(2, 2));
+  double lambdaM = MAT::UTILS::MUSCLE::FiberStretch(C, M);
 
   // computation of active nominal stress Pa, and derivative derivPa
   double Pa = 0.0;
@@ -302,7 +288,7 @@ void MAT::Muscle_Weickenmeier::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   // derivative are zero
   if (Pa != 0.0)
   {
-    EvaluateActivationLevel(params, lambdaM, Pa, derivPa, omegaa, derivOmegaa);
+    EvaluateActivationLevel(lambdaM, Pa, derivPa, omegaa, derivOmegaa);
   }
   // compute derivative \frac{\partial omegaa}{\partial C} in Voigt notation
   LINALG::Matrix<6, 1> domegaadCv(Mv);
@@ -427,8 +413,8 @@ void MAT::Muscle_Weickenmeier::EvaluateActiveNominalStress(
   derivPa = Poptft * (fv * dFxidLamdaM + fxi * dFvdLambdaM);
 }
 
-void MAT::Muscle_Weickenmeier::EvaluateActivationLevel(Teuchos::ParameterList& params,
-    const double lambdaM, double Pa, double derivPa, double& omegaa, double& derivOmegaa)
+void MAT::Muscle_Weickenmeier::EvaluateActivationLevel(const double lambdaM, const double Pa,
+    const double derivPa, double& omegaa, double& derivOmegaa)
 {
   // get passive material parameters
   const double alpha = params_->alpha_;

@@ -111,8 +111,7 @@ namespace MAT
   /*!
    * \brief Weickenmeier muscle material
    *
-   * This constituent represents the Weickenmeier muscle material. It has to
-   * be paired with the MAT::Mixture material and a MIXTURE::MixtureRule.
+   * This constituent represents the Weickenmeier muscle material.
    *
    * Reference for the material model: J. Weickenmeier, M. Itskov, E Mazza and M. Jabareen, 'A
    * physically motivated constitutive model for 3D numerical simulation of skeletal muscles',
@@ -185,10 +184,10 @@ namespace MAT
     /*!
      *  \brief Evaluate active nominal stress Pa and its derivative w.r.t. the fiber stretch
      *
-     *  \param[in]     params Container for additional information
-     *  \param[in]     lambdaM Fiber stretch
-     *  \param[in,out] Pa Active nominal stress
-     *  \param[in,out] derivPa Derivative of active nominal stress w.r.t. the fiber stretch
+     *  \param[in] params Container for additional information
+     *  \param[in] lambdaM Fiber stretch
+     *  \param[out] Pa Active nominal stress
+     *  \param[out] derivPa Derivative of active nominal stress w.r.t. the fiber stretch
      */
     void EvaluateActiveNominalStress(
         Teuchos::ParameterList& params, const double lambdaM, double& Pa, double& derivPa);
@@ -196,15 +195,15 @@ namespace MAT
     /*!
      *  \brief Evaluate activation level omegaa and its derivative w.r.t. the fiber stretch
      *
-     *  \param[in]     params Container for additional information
-     *  \param[in]     lambdaM Fiber stretch
-     *  \param[in]     Pa Active nominal stress
-     *  \param[in]     derivPa Derivative of active nominal stress w.r.t. the fiber stretch
-     *  \param[in,out] omegaa Activation level
-     *  \param[in,out] derivOmegaa Derivative of the activation level w.r.t. the fiber stretch
+     *  \param[in] params Container for additional information
+     *  \param[in] lambdaM Fiber stretch
+     *  \param[in] Pa Active nominal stress
+     *  \param[in] derivPa Derivative of active nominal stress w.r.t. the fiber stretch
+     *  \param[out] omegaa Activation level
+     *  \param[out] derivOmegaa Derivative of the activation level w.r.t. the fiber stretch
      */
-    void EvaluateActivationLevel(Teuchos::ParameterList& params, const double lambdaM, double Pa,
-        double derivPa, double& omegaa, double& derivOmegaa);
+    void EvaluateActivationLevel(const double lambdaM, const double Pa, const double derivPa,
+        double& omegaa, double& derivOmegaa);
 
     /// Weickenmeier material parameters
     MAT::PAR::Muscle_Weickenmeier* params_{};
