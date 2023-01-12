@@ -21,7 +21,6 @@
 #include "lib_discret.H"
 #include "lib_globalproblem.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "headers_definitions.h"
 #include <Epetra_SerialDenseSolver.h>
 #include <stdio.h>
 #include <stdlib.h>

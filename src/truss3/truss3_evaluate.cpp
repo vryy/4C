@@ -14,7 +14,6 @@ adapts assembly automatically according to the thereby changed number of nodal d
 #include "beam3_euler_bernoulli.H"
 
 #include "lib_globalproblem.H"
-#include "lib_standardtypes_cpp.H"
 
 #include "mat_lin_elast_1D.H"
 

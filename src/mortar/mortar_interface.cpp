@@ -1020,7 +1020,7 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy> MORTAR::MortarInterface::SetupBinning
 
   // extend cutoff based on problem interface velocity
   // --> only for contact problems
-  if (meanVelocity >= EPS12)
+  if (meanVelocity >= 1e-12)
   {
     const double dt = InterfaceParams().get<double>("TIMESTEP");
     cutoff = cutoff + 2 * dt * meanVelocity;

@@ -10,7 +10,6 @@
 #include "matelast_aniso_structuraltensor_strategy.H"
 
 #include "mat_par_material.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_linedefinition.H"
 
 

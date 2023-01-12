@@ -11,7 +11,6 @@
 #include <utility>
 #include "fluid_xfluid_functions.H"
 #include "lib_discret_interface.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_linedefinition.H"
 
 
@@ -388,7 +387,8 @@ double DRT::UTILS::GerstenbergerForwardfacingStep::Evaluate(
   //  }
   //  else
   //  {
-  //      distance = sqrt(DSQR(xp[0]-xp_center[0])+DSQR(xp[1]-xp_center[1]))-radius;
+  //      distance = sqrt(((xp[0]-xp_center[0]) * (xp[0]-xp_center[0]))+((xp[1]-xp_center[1]) *
+  //      (xp[1]-xp_center[1])))-radius;
   //  }
   //=========================================================
 
@@ -444,7 +444,7 @@ double DRT::UTILS::MovingLevelSetCylinder::Evaluate(
   // coefficient for sinus.
   double sin_coeff = maxspeed_ * (2.0 / distance_);
   // distance of cylinder viewed from the midpoint
-  double dist = 0.5 * distance_ * sin(sin_coeff * t - PI * 0.5);
+  double dist = 0.5 * distance_ * sin(sin_coeff * t - M_PI * 0.5);
 
   double x0_t = midpoint_trajectory_[0] + direction_[0] * dist;
   double x1_t = midpoint_trajectory_[1] + direction_[1] * dist;
@@ -506,7 +506,7 @@ DRT::UTILS::MovingLSTorus::MovingLSTorus(std::vector<double>* origin,
   rotvector_[2] /= rotvector_norm;
 
   // Rotation speed
-  rotspeed_ = 2 * PI * rotspeed;  // rotation-speed:       revolutions/sec
+  rotspeed_ = 2 * M_PI * rotspeed;  // rotation-speed:       revolutions/sec
 
   // Ramp time
   ramptime_ = rotramptime;  // ADD VALUE HERE!
@@ -583,7 +583,7 @@ double DRT::UTILS::MovingLevelSetTorus::Evaluate(
   {
     double sin_coeff = maxspeed_ * (2.0 / distance_);
     // distance of cylinder viewed from the midpoint
-    dist = 0.5 * distance_ * sin(sin_coeff * t - PI * 0.5);
+    dist = 0.5 * distance_ * sin(sin_coeff * t - M_PI * 0.5);
   }
   else
     dist = 0.0;
@@ -609,7 +609,7 @@ double DRT::UTILS::MovingLevelSetTorus::Evaluate(
   if (rotspeed_ != 0.0)
   {
     if (t < ramptime_ and ramptime_ != 0.0)
-      rotspeed_t = 0.5 * (1.0 - cos(PI * t / ramptime_)) *
+      rotspeed_t = 0.5 * (1.0 - cos(M_PI * t / ramptime_)) *
                    rotspeed_;  // Gives zero acceleration in the beginning of used!
     //    else
     //      rotspeed_t = rotspeed_;
@@ -694,8 +694,8 @@ double DRT::UTILS::MovingLevelSetTorusVelocity::Evaluate(
   {
     double sin_coeff = maxspeed_ * (2.0 / distance_);
     // distance of cylinder viewed from the midpoint
-    dist = 0.5 * distance_ * sin(sin_coeff * t - PI * 0.5);
-    vel = 0.5 * distance_ * sin_coeff * cos(sin_coeff * t - PI * 0.5);
+    dist = 0.5 * distance_ * sin(sin_coeff * t - M_PI * 0.5);
+    vel = 0.5 * distance_ * sin_coeff * cos(sin_coeff * t - M_PI * 0.5);
   }
   else
   {
@@ -740,7 +740,7 @@ double DRT::UTILS::MovingLevelSetTorusVelocity::Evaluate(
   // rotation speed
   double rotspeed_t = rotspeed_;
   if (t < ramptime_ and ramptime_ != 0.0)
-    rotspeed_t = 0.5 * (1.0 - cos(PI * t / ramptime_)) *
+    rotspeed_t = 0.5 * (1.0 - cos(M_PI * t / ramptime_)) *
                  rotspeed_;  // Gives zero acceleration in the beginning of used!
 
   for (int i = 0; i < 3; i++)
@@ -819,7 +819,7 @@ double DRT::UTILS::MovingLevelSetTorusSliplength::Evaluate(
   {
     double sin_coeff = maxspeed_ * (2.0 / distance_);
     // distance of cylinder viewed from the midpoint
-    dist = 0.5 * distance_ * sin(sin_coeff * t - PI * 0.5);
+    dist = 0.5 * distance_ * sin(sin_coeff * t - M_PI * 0.5);
   }
   else
     dist = 0.0;
@@ -845,7 +845,7 @@ double DRT::UTILS::MovingLevelSetTorusSliplength::Evaluate(
   if (rotspeed_ != 0.0)
   {
     if (t < ramptime_ and ramptime_ != 0.0)
-      rotspeed_t = 0.5 * (1.0 - cos(PI * t / ramptime_)) *
+      rotspeed_t = 0.5 * (1.0 - cos(M_PI * t / ramptime_)) *
                    rotspeed_;  // Gives zero acceleration in the beginning of used!
     //    else
     //      rotspeed_t = rotspeed_;
@@ -1096,7 +1096,7 @@ DRT::UTILS::UrquizaBoxFlow::UrquizaBoxFlow(double lengthx, double lengthy, doubl
 
   if (lengthy_ != 1.0) dserror("Not tested for other than length 1.0.");
 
-  if (rotation_ >= 2 * PI or rotation_ < 0.0)
+  if (rotation_ >= 2 * M_PI or rotation_ < 0.0)
     dserror("The rotation is not in the predefined interval.");
 
   if (rotation_ != 0.0)

@@ -22,7 +22,6 @@
 #include "lib_discret.H"
 #include "lib_globalproblem.H"
 #include "lib_exporter.H"
-#include "lib_standardtypes_cpp.H"
 
 #include "mat_par_bundle.H"
 #include "mat_newtonianfluid.H"
@@ -1480,7 +1479,7 @@ namespace FLD
     // domain length
     const double L = 10.0 * M;
     // reference length
-    const double L_ref = L / (2.0 * PI);
+    const double L_ref = L / (2.0 * M_PI);
     // non-dimensionalize energy spectrum
     // inlet velocity of experiment
     const double U_0 = 10.0;

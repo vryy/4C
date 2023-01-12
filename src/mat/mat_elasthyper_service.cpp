@@ -11,7 +11,6 @@
 
 #include "mat_elasthyper_service.H"
 #include "mat_service.H"
-#include "headers_definitions.h"
 #include "linalg_utils_densematrix_eigen.H"
 
 #include "lib_voigt_notation.H"
@@ -344,7 +343,7 @@ void MAT::ElastHyperAddResponseStretches(LINALG::Matrix<6, 6>& cmat, LINALG::Mat
     prfact1(albe) = prfact1_albe;
     if (al != be)
     {
-      if (fabs(prstr(al) - prstr(be)) < EPS6)
+      if (fabs(prstr(al) - prstr(be)) < 1e-6)
         prfact2(albe) = (prfact1(be) - prfact1(albe)) / 2.0;
       else
         prfact2(albe) = (prsts(be) - prsts(al)) / (prstr(be) * prstr(be) - prstr(al) * prstr(al));

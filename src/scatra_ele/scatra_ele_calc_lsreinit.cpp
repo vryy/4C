@@ -17,7 +17,6 @@
 #include "geometry_position_array.H"
 #include "lib_utils.H"
 #include "lib_discret.H"
-#include "lib_standardtypes_cpp.H"  // for EPS13 and so on
 
 #include "fem_general_utils_fem_shapefunctions.H"
 #include "geometry_integrationcell_coordtrafo.H"
@@ -945,7 +944,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SignFunction(double
     else if (phizero > epsilon)
       sign_phi = +1.0;
     else
-      sign_phi = phizero / epsilon + 1.0 / PI * sin(PI * phizero / epsilon);
+      sign_phi = phizero / epsilon + 1.0 / M_PI * sin(M_PI * phizero / epsilon);
   }
   else
     dserror("unknown type of sign function!");
@@ -968,7 +967,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::DerivSignFunction(
   else if (phizero > epsilon)
     deriv_sign = 0.0;
   else
-    deriv_sign = 1.0 / (2.0 * epsilon) * (1.0 + cos(PI * phizero / epsilon));
+    deriv_sign = 1.0 / (2.0 * epsilon) * (1.0 + cos(M_PI * phizero / epsilon));
 
   return;
 }

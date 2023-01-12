@@ -17,7 +17,6 @@
 #include "fem_general_utils_fem_shapefunctions.H"
 #include "mat_stvenantkirchhoff.H"
 #include "inpar_structure.H"
-#include "lib_standardtypes_cpp.H"
 
 #include "Sacado.hpp"
 #include "headers_FAD_utils.H"

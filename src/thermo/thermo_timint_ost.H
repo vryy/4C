@@ -157,7 +157,7 @@ namespace THR
     int MethodSteps() { return 1; }
 
     //! Give local order of accuracy of temperature part
-    int MethodOrderOfAccuracy() { return fabs(1. / 2. - theta_) < EPS10 ? 2 : 1; }
+    int MethodOrderOfAccuracy() { return fabs(1. / 2. - theta_) < 1e-10 ? 2 : 1; }
 
     //! Return linear error coefficient
     virtual double MethodLinErrCoeff() { return 1. / 2. - theta_; }

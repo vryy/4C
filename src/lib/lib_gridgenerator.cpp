@@ -11,7 +11,6 @@
 
 
 #include "lib_gridgenerator.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_elementdefinition.H"
 #include "rebalance_utils.H"
 #include "lib_utils_factory.H"
@@ -292,8 +291,8 @@ namespace DRT
             dx[1] = coords[1] - coordm[1];
             dx[2] = coords[2] - coordm[2];
 
-            double calpha = cos(inputData.rotation_angle_[rotaxis] * PI / 180);
-            double salpha = sin(inputData.rotation_angle_[rotaxis] * PI / 180);
+            double calpha = cos(inputData.rotation_angle_[rotaxis] * M_PI / 180);
+            double salpha = sin(inputData.rotation_angle_[rotaxis] * M_PI / 180);
 
             coords[0] = coordm[0];  //+ calpha*dx[0] + salpha*dx[1];
             coords[1] = coordm[1];  //+ -salpha*dx[0] + calpha*dx[1];

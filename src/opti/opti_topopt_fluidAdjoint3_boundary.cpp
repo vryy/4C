@@ -20,7 +20,6 @@
 #include "inpar_topopt.H"
 #include "lib_discret.H"
 #include "lib_utils.H"
-#include "lib_standardtypes_cpp.H"
 #include "mat_newtonianfluid.H"
 
 #include "cut_position.H"
@@ -360,7 +359,7 @@ void DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::GetMaterialParams(
     dserror("Material type is not supported for boundary element!");
 
   // check whether there is zero or negative (physical) viscosity
-  if (visc_ < EPS15) dserror("zero or negative (physical) diffusivity");
+  if (visc_ < 1e-15) dserror("zero or negative (physical) diffusivity");
 
   return;
 }  // FluidBoundaryImpl::GetMaterialParams

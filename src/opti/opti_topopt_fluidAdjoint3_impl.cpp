@@ -21,7 +21,6 @@
 #include "lib_condition_utils.H"
 #include "lib_discret.H"
 #include "lib_utils.H"
-#include "lib_standardtypes_cpp.H"
 #include "mat_newtonianfluid.H"
 
 
@@ -1001,7 +1000,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(
 
       // computation of stabilization parameters tau_Mu and tau_Mp
       // -> identical for the present definitions
-      tau(0) = 1.0 / (sqrt(c1 * dens_sqr * DSQR(sigma_tot) + Gnormu + Gvisc));
+      tau(0) = 1.0 / (sqrt(c1 * dens_sqr * ((sigma_tot) * (sigma_tot)) + Gnormu + Gvisc));
       tau(1) = tau(0);
       break;
     }
@@ -1044,8 +1043,8 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(
 
       // various parameter computations for case with dt:
       // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
-      const double re01 = 4.0 * visc / (mk * dens * sigma_tot * DSQR(strle));
-      const double re11 = 4.0 * visc / (mk * dens * sigma_tot * DSQR(hk));
+      const double re01 = 4.0 * visc / (mk * dens * sigma_tot * ((strle) * (strle)));
+      const double re11 = 4.0 * visc / (mk * dens * sigma_tot * ((hk) * (hk)));
 
       // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
       const double re02 = mk * dens * fluidvel_norm * strle / (2.0 * visc);
@@ -1057,8 +1056,9 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(
       const double xi02 = std::max(re02, 1.0);
       const double xi12 = std::max(re12, 1.0);
 
-      tau(0) = DSQR(strle) / (DSQR(strle) * dens * sigma_tot * xi01 + (4.0 * visc / mk) * xi02);
-      tau(1) = DSQR(hk) / (DSQR(hk) * dens * sigma_tot * xi11 + (4.0 * visc / mk) * xi12);
+      tau(0) = ((strle) * (strle)) /
+               (((strle) * (strle)) * dens * sigma_tot * xi01 + (4.0 * visc / mk) * xi02);
+      tau(1) = ((hk) * (hk)) / (((hk) * (hk)) * dens * sigma_tot * xi11 + (4.0 * visc / mk) * xi12);
       break;
     }
 
@@ -1077,8 +1077,8 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(
 
       // various parameter computations for case without dt:
       // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
-      double re01 = 4.0 * visc / (mk * dens * reacoeff_ * DSQR(strle));
-      double re11 = 4.0 * visc / (mk * dens * reacoeff_ * DSQR(hk));
+      double re01 = 4.0 * visc / (mk * dens * reacoeff_ * ((strle) * (strle)));
+      double re11 = 4.0 * visc / (mk * dens * reacoeff_ * ((hk) * (hk)));
 
       // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
       const double re02 = mk * dens * fluidvel_norm * strle / (2.0 * visc);
@@ -1090,8 +1090,9 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(
       const double xi02 = std::max(re02, 1.0);
       const double xi12 = std::max(re12, 1.0);
 
-      tau(0) = DSQR(strle) / (DSQR(strle) * dens * reacoeff_ * xi01 + (4.0 * visc / mk) * xi02);
-      tau(1) = DSQR(hk) / (DSQR(hk) * dens * reacoeff_ * xi11 + (4.0 * visc / mk) * xi12);
+      tau(0) = ((strle) * (strle)) /
+               (((strle) * (strle)) * dens * reacoeff_ * xi01 + (4.0 * visc / mk) * xi02);
+      tau(1) = ((hk) * (hk)) / (((hk) * (hk)) * dens * reacoeff_ * xi11 + (4.0 * visc / mk) * xi12);
       break;
     }
 
@@ -1143,12 +1144,15 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(
       c3 = 4.0 / (mk * mk);
       // alternative value as proposed in Shakib (1989): c3 = 16.0/(mk*mk);
 
-      tau(0) = 1.0 / (sqrt(c1 * DSQR(dens) * DSQR(sigma_tot) +
-                           c2 * DSQR(dens) * DSQR(fluidvel_norm) / DSQR(strle) +
-                           c3 * DSQR(visc) / (DSQR(strle) * DSQR(strle))));
-      tau(1) = 1.0 / (sqrt(c1 * DSQR(dens) * DSQR(sigma_tot) +
-                           c2 * DSQR(dens) * DSQR(fluidvel_norm) / DSQR(hk) +
-                           c3 * DSQR(visc) / (DSQR(hk) * DSQR(hk))));
+      tau(0) =
+          1.0 /
+          (sqrt(c1 * ((dens) * (dens)) * ((sigma_tot) * (sigma_tot)) +
+                c2 * ((dens) * (dens)) * ((fluidvel_norm) * (fluidvel_norm)) / ((strle) * (strle)) +
+                c3 * ((visc) * (visc)) / (((strle) * (strle)) * ((strle) * (strle)))));
+      tau(1) =
+          1.0 / (sqrt(c1 * ((dens) * (dens)) * ((sigma_tot) * (sigma_tot)) +
+                      c2 * ((dens) * (dens)) * ((fluidvel_norm) * (fluidvel_norm)) / ((hk) * (hk)) +
+                      c3 * ((visc) * (visc)) / (((hk) * (hk)) * ((hk) * (hk)))));
       break;
     }
     case INPAR::FLUID::tau_codina:
@@ -1187,10 +1191,9 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(
       c3 = 4.0 / mk;
 
       tau(0) = 1.0 / (sqrt(c1 * dens * sigma_tot + c2 * dens * fluidvel_norm / strle +
-                           c3 * visc / DSQR(strle)));
-      tau(1) =
-          1.0 /
-          (sqrt(c1 * dens * sigma_tot + c2 * dens * fluidvel_norm / hk + c3 * visc / DSQR(hk)));
+                           c3 * visc / ((strle) * (strle))));
+      tau(1) = 1.0 / (sqrt(c1 * dens * sigma_tot + c2 * dens * fluidvel_norm / hk +
+                           c3 * visc / ((hk) * (hk))));
       break;
     }
     default:
@@ -1352,7 +1355,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(
 
       */
 
-      tau(2) = DSQR(hk) / (sqrt(c3) * tau(1));
+      tau(2) = ((hk) * (hk)) / (sqrt(c3) * tau(1));
     }
     break;
     default:

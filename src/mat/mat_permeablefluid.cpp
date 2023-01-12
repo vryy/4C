@@ -11,7 +11,6 @@
 #include <vector>
 #include "mat_permeablefluid.H"
 #include "lib_globalproblem.H"
-#include "lib_standardtypes_cpp.H"
 #include "mat_par_bundle.H"
 
 
@@ -109,10 +108,10 @@ void MAT::PermeableFluid::Unpack(const std::vector<char>& data)
 double MAT::PermeableFluid::ComputeReactionCoeff() const
 {
   // check for zero or negative viscosity
-  if (Viscosity() < EPS15) dserror("zero or negative viscosity");
+  if (Viscosity() < 1e-15) dserror("zero or negative viscosity");
 
   // check for zero or negative permeability
-  if (Permeability() < EPS15) dserror("zero or negative permeability");
+  if (Permeability() < 1e-15) dserror("zero or negative permeability");
 
   // viscosity divided by permeability
   double reacoeff = Viscosity() / Permeability();

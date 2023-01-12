@@ -23,8 +23,6 @@
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "lib_standardtypes_cpp.H"  // for EPS13 and so on
-
 #include "fluid_rotsym_periodicbc.H"
 #include "headers_singleton_owner.H"
 
@@ -483,7 +481,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::CalculateScalars(
         for (int k = 0; k < my::numscal_; k++)
         {
           const double porosity = DiffManager()->GetPorosity(k);
-          if (std::abs(my::ephinp_[k](i, 0)) > EPS14)
+          if (std::abs(my::ephinp_[k](i, 0)) > 1e-14)
             scalars[k] += fac_funct_i / (my::ephinp_[k](i, 0) * porosity);
           else
             dserror("Division by zero");

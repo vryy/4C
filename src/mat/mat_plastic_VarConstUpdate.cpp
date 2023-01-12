@@ -14,7 +14,6 @@ ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0.0
 /*----------------------------------------------------------------------*/
 
 #include "mat_plastic_VarConstUpdate.H"
-#include "lib_standardtypes_cpp.H"
 #include "matelast_summand.H"
 #include "linalg_utils_densematrix_inverse.H"
 #include "lib_linedefinition.H"

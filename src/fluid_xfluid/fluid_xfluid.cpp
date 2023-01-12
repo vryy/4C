@@ -5519,7 +5519,7 @@ void FLD::XFluid::CalculateAcceleration(const Teuchos::RCP<const Epetra_Vector> 
     case INPAR::FLUID::timeint_bdf2: /* 2nd order backward differencing BDF2 */
     {
       // TODO: computed, even though not really used afterwards! CHECK!!!
-      if (dta_ * dtp_ < EPS15) dserror("Zero time step size!!!!!");
+      if (dta_ * dtp_ < 1e-15) dserror("Zero time step size!!!!!");
       const double sum = dta_ + dtp_;
 
       accnp->Update((2.0 * dta_ + dtp_) / (dta_ * sum), *velnp, -sum / (dta_ * dtp_), *veln, 0.0);

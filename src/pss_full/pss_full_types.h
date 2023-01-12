@@ -40,7 +40,6 @@ table. This table can be queried for those values quite easily.
 #ifndef PSS_TYPES_H
 #define PSS_TYPES_H
 
-#include "headers_standardtypes.h"
 #include "pss_full_am.h"
 
 /*!

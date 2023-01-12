@@ -15,7 +15,6 @@ BETA_ISO 1.E4 BETA_ANISO 1.E4 RELAX_ISO 0.0010001 RELAX_ANISO 0
 #include "mat_viscoanisotropic.H"
 #include "lib_linedefinition.H"
 #include "lib_globalproblem.H"
-#include "lib_standardtypes_cpp.H"
 #include "mat_par_bundle.H"
 #include "mat_service.H"
 
@@ -219,7 +218,7 @@ void MAT::ViscoAnisotropic::Setup(int numgp, DRT::INPUT::LineDefinition* linedef
   ca2_ = Teuchos::rcp(new std::vector<std::vector<double>>(numgp));
 
   if ((params_->gamma_ < 0) || (params_->gamma_ > 90)) dserror("Fiber angle not in [0,90]");
-  const double gamma = (params_->gamma_ * PI) / 180.;  // convert
+  const double gamma = (params_->gamma_ * M_PI) / 180.;  // convert
 
   // read local (cylindrical) cosy-directions at current element
   std::vector<double> rad;
@@ -311,7 +310,7 @@ void MAT::ViscoAnisotropic::Setup(const int numgp, const std::vector<double> thi
 
     if (abs(params_->gamma_) >= 1.0E-6)
       dserror("Fibers can only be aligned in thickness direction for gamma = 0.0!");
-    const double gamma = (params_->gamma_ * PI) / 180.;  // convert
+    const double gamma = (params_->gamma_ * M_PI) / 180.;  // convert
 
     // Fibers are related to the element thickness direction
     std::vector<double> rad = thickvec;

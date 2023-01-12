@@ -20,7 +20,6 @@
 #include "linalg_fixedsizematrix.H"
 #include "fem_general_largerotations.H"
 #include "inpar_structure.H"
-#include "lib_standardtypes_cpp.H"
 #include "structure_new_elements_paramsinterface.H"
 
 #include <Sacado.hpp>

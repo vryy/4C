@@ -21,7 +21,6 @@
 
 #include "inpar_browniandyn.H"  // enums
 
-#include "lib_standardtypes_cpp.H"
 #include "lib_globalproblem.H"
 #include "lib_globalproblem.H"
 
@@ -252,9 +251,9 @@ void DRT::ELEMENTS::Beam3Base::GetDampingCoefficients(LINALG::Matrix<3, 1>& gamm
        * (1) damping of translation orthogonal to axis,
        * (2) damping of rotation around its own axis */
 
-      gamma(0) = 2.0 * PI * BrownianDynParamsInterface().GetViscosity();
-      gamma(1) = 4.0 * PI * BrownianDynParamsInterface().GetViscosity();
-      gamma(2) = 4.0 * PI * BrownianDynParamsInterface().GetViscosity() *
+      gamma(0) = 2.0 * M_PI * BrownianDynParamsInterface().GetViscosity();
+      gamma(1) = 4.0 * M_PI * BrownianDynParamsInterface().GetViscosity();
+      gamma(2) = 4.0 * M_PI * BrownianDynParamsInterface().GetViscosity() *
                  GetCircularCrossSectionRadiusForInteractions() *
                  GetCircularCrossSectionRadiusForInteractions();
 

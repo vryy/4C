@@ -621,8 +621,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatThermoStVenantKirchhoff(
 
   // set reaction flag to true, check whether reaction coefficient is positive
   // and set derivative of reaction coefficient
-  // if (reacoef > EPS14) reaction_ = true;
-  // if (reacoef < -EPS14)
+  // if (reacoef > 1e-14) reaction_ = true;
+  // if (reacoef < -1e-14)
   //  dserror("Reaction coefficient for Thermo St. Venant-Kirchhoff material is not positive: %f",0,
   //  reacoef);
   // reacoeffderiv_[0] = reacoef;

@@ -420,7 +420,7 @@ void MAT::ConstraintMixture::Setup(int numgp, DRT::INPUT::LineDefinition* linede
     locsys(i, 2) = cir[i] / cirnorm;
   }
 
-  const double gamma = (45.0 * PI) / 180.;  // angle for diagonal fibers
+  const double gamma = (45.0 * M_PI) / 180.;  // angle for diagonal fibers
 
   for (int gp = 0; gp < numgp; gp++)
   {
@@ -2026,7 +2026,7 @@ void MAT::ConstraintMixture::MassProductionSingleFiber(const int gp, LINALG::Mat
 void MAT::ConstraintMixture::MassFunction(
     double growthfac, double delta, double mmax, double& massfac)
 {
-  if (delta < -PI / (2.0 * growthfac))
+  if (delta < -M_PI / (2.0 * growthfac))
   {
     massfac = 0.0;
   }
@@ -2034,7 +2034,7 @@ void MAT::ConstraintMixture::MassFunction(
   {
     massfac = 0.5 * (1.0 + cos(2.0 * growthfac * delta));
   }
-  else if (delta < (mmax - 1.0) * PI / (2.0 * growthfac))  // && 0.0 < delta
+  else if (delta < (mmax - 1.0) * M_PI / (2.0 * growthfac))  // && 0.0 < delta
   {
     massfac = 0.5 * (mmax + 1.0 - (mmax - 1.0) * cos(2.0 * growthfac * delta / (mmax - 1.0)));
   }
@@ -2072,7 +2072,7 @@ void MAT::ConstraintMixture::Degradation(double t, double& degr)
     }
     else if (t < params_->lifetime_ - 1.0e-11)
     {
-      degr = 0.5 * (cos(PI * (t - 0.2 * params_->lifetime_) / (0.8 * params_->lifetime_)) + 1.0);
+      degr = 0.5 * (cos(M_PI * (t - 0.2 * params_->lifetime_) / (0.8 * params_->lifetime_)) + 1.0);
     }
     else
     {
@@ -2097,11 +2097,11 @@ void MAT::ConstraintMixture::ElastinDegradation(LINALG::Matrix<1, 3> coord, doub
     double z4 = 16.0;
     if (z1 < coord(2) && coord(2) < z2)
     {
-      funcz = 0.5 * (1.0 - cos((coord(2) - z1) / (z2 - z1) * PI));
+      funcz = 0.5 * (1.0 - cos((coord(2) - z1) / (z2 - z1) * M_PI));
     }
     else if (z3 < coord(2) && coord(2) < z4)
     {
-      funcz = 0.5 * (1.0 + cos((coord(2) - z3) / (z4 - z3) * PI));
+      funcz = 0.5 * (1.0 + cos((coord(2) - z3) / (z4 - z3) * M_PI));
     }
     else if (z2 <= coord(2) && coord(2) <= z3)
     {
@@ -2110,17 +2110,17 @@ void MAT::ConstraintMixture::ElastinDegradation(LINALG::Matrix<1, 3> coord, doub
 
     double funcphi = 0.0;
     double phi = atan2(coord(1), coord(0));
-    double phi1 = -0.55 * PI;
-    double phi2 = -0.5 * PI;
-    double phi3 = -0.25 * PI;
-    double phi4 = -0.2 * PI;
+    double phi1 = -0.55 * M_PI;
+    double phi2 = -0.5 * M_PI;
+    double phi3 = -0.25 * M_PI;
+    double phi4 = -0.2 * M_PI;
     if (phi1 < phi && phi < phi2)
     {
-      funcphi = 0.5 * (1.0 - cos((phi - phi1) / (phi2 - phi1) * PI));
+      funcphi = 0.5 * (1.0 - cos((phi - phi1) / (phi2 - phi1) * M_PI));
     }
     else if (phi3 < phi && phi < phi4)
     {
-      funcphi = 0.5 * (1.0 + cos((phi - phi3) / (phi4 - phi3) * PI));
+      funcphi = 0.5 * (1.0 + cos((phi - phi3) / (phi4 - phi3) * M_PI));
     }
     else if (phi2 <= phi && phi <= phi3)
     {
@@ -2138,11 +2138,11 @@ void MAT::ConstraintMixture::ElastinDegradation(LINALG::Matrix<1, 3> coord, doub
     double z4 = 2.5;
     if (z1 < coord(2) && coord(2) < z2)
     {
-      funcz = 0.5 * (1.0 - cos((coord(2) - z1) / (z2 - z1) * PI));
+      funcz = 0.5 * (1.0 - cos((coord(2) - z1) / (z2 - z1) * M_PI));
     }
     else if (z3 < coord(2) && coord(2) < z4)
     {
-      funcz = 0.5 * (1.0 + cos((coord(2) - z3) / (z4 - z3) * PI));
+      funcz = 0.5 * (1.0 + cos((coord(2) - z3) / (z4 - z3) * M_PI));
     }
     else if (z2 <= coord(2) && coord(2) <= z3)
     {
@@ -2156,11 +2156,11 @@ void MAT::ConstraintMixture::ElastinDegradation(LINALG::Matrix<1, 3> coord, doub
     double x4 = 2.5;
     if (x1 < coord(0) && coord(0) < x2)
     {
-      funcx = 0.5 * (1.0 - cos((coord(0) - x1) / (x2 - x1) * PI));
+      funcx = 0.5 * (1.0 - cos((coord(0) - x1) / (x2 - x1) * M_PI));
     }
     else if (x3 < coord(0) && coord(0) < x4)
     {
-      funcx = 0.5 * (1.0 + cos((coord(0) - x3) / (x4 - x3) * PI));
+      funcx = 0.5 * (1.0 + cos((coord(0) - x3) / (x4 - x3) * M_PI));
     }
     else if (x2 <= coord(0) && coord(0) <= x3)
     {
@@ -2177,17 +2177,17 @@ void MAT::ConstraintMixture::ElastinDegradation(LINALG::Matrix<1, 3> coord, doub
     double z3 = 12.0;   // 19.0; //12.0;
     double z4 = 16.0;   // 22.0; //16.0;
     double phi = atan2(coord(1), coord(0));
-    z1 = ((PI - abs(phi)) / PI * 0.75 + 0.25) * z1;
-    z2 = ((PI - abs(phi)) / PI * 0.75 + 0.25) * z2;
-    z3 = ((PI - abs(phi)) / PI * 0.75 + 0.25) * z3;
-    z4 = ((PI - abs(phi)) / PI * 0.75 + 0.25) * z4;
+    z1 = ((M_PI - abs(phi)) / M_PI * 0.75 + 0.25) * z1;
+    z2 = ((M_PI - abs(phi)) / M_PI * 0.75 + 0.25) * z2;
+    z3 = ((M_PI - abs(phi)) / M_PI * 0.75 + 0.25) * z3;
+    z4 = ((M_PI - abs(phi)) / M_PI * 0.75 + 0.25) * z4;
     if (z1 < coord(2) && coord(2) < z2)
     {
-      funcz = 0.5 * (1.0 - cos((coord(2) - z1) / (z2 - z1) * PI));
+      funcz = 0.5 * (1.0 - cos((coord(2) - z1) / (z2 - z1) * M_PI));
     }
     else if (z3 < coord(2) && coord(2) < z4)
     {
-      funcz = 0.5 * (1.0 + cos((coord(2) - z3) / (z4 - z3) * PI));
+      funcz = 0.5 * (1.0 + cos((coord(2) - z3) / (z4 - z3) * M_PI));
     }
     else if (z2 <= coord(2) && coord(2) <= z3)
     {
@@ -2214,7 +2214,7 @@ void MAT::ConstraintMixture::ElastinDegradation(LINALG::Matrix<1, 3> coord, doub
     }
     else if (rad1 < radmax)
     {
-      func1 = 0.5 * (1.0 - cos((rad1 - radmax) / (radmax - radmin) * PI));
+      func1 = 0.5 * (1.0 - cos((rad1 - radmax) / (radmax - radmin) * M_PI));
     }
     double func2 = 0.0;
     LINALG::Matrix<1, 3> center2(true);
@@ -2230,7 +2230,7 @@ void MAT::ConstraintMixture::ElastinDegradation(LINALG::Matrix<1, 3> coord, doub
     }
     else if (rad2 < radmax)
     {
-      func2 = 0.5 * (1.0 - cos((rad2 - radmax) / (radmax - radmin) * PI));
+      func2 = 0.5 * (1.0 - cos((rad2 - radmax) / (radmax - radmin) * M_PI));
     }
     double func = std::max(func1, func2);
     degr = 1.0 - func;
@@ -2910,7 +2910,7 @@ void MAT::ConstraintMixture::EvaluateFiberVecs(
   // configuration as the material is evaluated there.
   // If this function is called during Setup defgrd should be replaced by the Identity.
 
-  const double gamma = (45 * PI) / 180.;  // angle for diagonal fibers
+  const double gamma = (45 * M_PI) / 180.;  // angle for diagonal fibers
   LINALG::Matrix<3, 1> ca1(true);
   LINALG::Matrix<3, 1> ca2(true);
   LINALG::Matrix<3, 1> ca3(true);

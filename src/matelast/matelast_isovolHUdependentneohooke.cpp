@@ -8,7 +8,6 @@ dependent Neo Hooke material
 /*----------------------------------------------------------------------*/
 #include "matelast_isovolHUdependentneohooke.H"
 #include "mat_par_material.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_linedefinition.H"
 #include "lib_globalproblem.H"
 
@@ -65,7 +64,7 @@ void MAT::ELASTIC::IsoVolHUDependentNeoHooke::Setup(int numgp, DRT::INPUT::LineD
   else
     alpha_ =
         0.5 * params_->alphamax_ *
-        (sin(PI * (HU - params_->ctmin_) / (params_->ctmax_ - params_->ctmin_) - PI / 2) + 1.0);
+        (sin(M_PI * (HU - params_->ctmin_) / (params_->ctmax_ - params_->ctmin_) - M_PI / 2) + 1.0);
 }
 
 /*----------------------------------------------------------------------
