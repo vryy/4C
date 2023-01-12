@@ -56,7 +56,6 @@ NOX::FSI::LinearSystem::OperatorType NOX::FSI::LinearSystem::getOperatorType(
     const Epetra_Operator& Op)
 {
   // check via dynamic cast, which type of Jacobian was broadcast
-
   const Epetra_Operator* testOperator = nullptr;
 
   testOperator =
@@ -96,7 +95,8 @@ bool NOX::FSI::LinearSystem::applyJacobian(
 {
   jacPtr_->SetUseTranspose(false);
   int status = jacPtr_->Apply(input.getEpetraVector(), result.getEpetraVector());
-  return (status == 0);
+
+  return status == 0;
 }
 
 
@@ -108,7 +108,8 @@ bool NOX::FSI::LinearSystem::applyJacobianTranspose(
   jacPtr_->SetUseTranspose(true);
   int status = jacPtr_->Apply(input.getEpetraVector(), result.getEpetraVector());
   jacPtr_->SetUseTranspose(false);
-  return (status == 0);
+
+  return status == 0;
 }
 
 
@@ -156,6 +157,7 @@ bool NOX::FSI::LinearSystem::applyRightPreconditioning(bool useTranspose,
     NOX::Epetra::Vector& result) const
 {
   if (&result != &input) result = input;
+
   return true;
 }
 
@@ -278,9 +280,7 @@ void NOX::FSI::LinearSystem::throwError(
     const std::string& functionName, const std::string& errorMsg) const
 {
   if (utils_.isPrintType(NOX::Utils::Error))
-
-  {
     utils_.out() << "NOX::FSI::LinearSystem::" << functionName << " - " << errorMsg << std::endl;
-  }
+
   throw "NOX Error";
 }
