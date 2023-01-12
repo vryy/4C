@@ -15,14 +15,14 @@ parameter cn
 #include "contact_aug_lagrange_multiplier_function.H"
 #include "contact_paramsinterface.H"
 
-#include "str_model_evaluator_contact.H"
+#include "structure_new_model_evaluator_contact.H"
 #include "inpar_structure.H"
 
 #include "inpar_contact.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "io_pstream.H"
 #include "linalg_multiply.H"
-#include "epetra_utils.H"
+#include "lib_epetra_utils.H"
 
 #include <Teuchos_ParameterList.hpp>
 

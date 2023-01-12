@@ -10,9 +10,9 @@
 
 #include "fsi_fluid_ale.H"
 
-#include "colors.H"
-#include "globalproblem.H"
-#include "validparameters.H"
+#include "lib_colors.H"
+#include "lib_globalproblem.H"
+#include "inpar_validparameters.H"
 #include "io_pstream.H"
 
 /*----------------------------------------------------------------------*/

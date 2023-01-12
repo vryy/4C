@@ -8,9 +8,9 @@
  *----------------------------------------------------------------------*/
 
 #include "poromultiphase_scatra_artery_coupling_base.H"
-#include "utils.H"
+#include "lib_utils.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_ParameterListExceptions.hpp>

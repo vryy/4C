@@ -13,7 +13,7 @@
 
 #include "mortar_integrator.H"
 #include "inpar_wear.H"
-#include "pairedvector.H"
+#include "headers_pairedvector.H"
 
 // forward declarations
 namespace LINALG

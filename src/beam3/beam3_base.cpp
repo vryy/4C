@@ -10,22 +10,22 @@
 
 #include "beam3_base.H"
 
-#include "beam_templated_material_generic.H"
+#include "mat_beam_templated_material_generic.H"
 
-#include "periodic_boundingbox.H"
+#include "beaminteraction_periodic_boundingbox.H"
 #include "beaminteraction_calc_utils.H"
-#include "bounding_volume.H"
+#include "geometric_search_bounding_volume.H"
 #include "geometric_search_params.H"
 
-#include "str_elements_paramsinterface.H"
+#include "structure_new_elements_paramsinterface.H"
 
 #include "inpar_browniandyn.H"  // enums
 
-#include "standardtypes_cpp.H"
-#include "globalproblem.H"
-#include "globalproblem.H"
+#include "lib_standardtypes_cpp.H"
+#include "lib_globalproblem.H"
+#include "lib_globalproblem.H"
 
-#include "FAD_utils.H"
+#include "headers_FAD_utils.H"
 #include <Sacado.hpp>
 
 /*----------------------------------------------------------------------*

@@ -11,7 +11,7 @@
 #ifndef SRC_CONTACT_AUG_CONTACT_AUG_LAGRANGE_INTERFACE_H_
 #define SRC_CONTACT_AUG_CONTACT_AUG_LAGRANGE_INTERFACE_H_
 
-#include "contact_augmented_interface.H"
+#include "contact_aug_interface.H"
 
 namespace CONTACT
 {

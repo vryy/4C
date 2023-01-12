@@ -9,7 +9,7 @@
 
 #include "inpar_IO_monitor_structure_dbc.H"
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar.H"
 #include "inpar_parameterlist_utils.H"
 

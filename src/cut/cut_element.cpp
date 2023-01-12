@@ -16,9 +16,9 @@
 #include "cut_facetgraph.H"
 #include "cut_output.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
-#include "element_volume.H"
+#include "geometry_element_volume.H"
 
 #include "inpar_cut.H"
 

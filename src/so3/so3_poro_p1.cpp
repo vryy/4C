@@ -10,10 +10,10 @@
 #include "so3_poro_p1.H"
 #include "so3_poro_p1_eletypes.H"
 
-#include "so_surface.H"
-#include "so_line.H"
+#include "so3_surface.H"
+#include "so3_line.H"
 
-#include "utils_factory.H"
+#include "lib_utils_factory.H"
 
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::So3_Poro_P1(int id, int owner)

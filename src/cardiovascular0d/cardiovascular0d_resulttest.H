@@ -11,7 +11,7 @@
 #define CARDIOVASCULAR0DRESULTTEST_H
 
 #include <Epetra_Vector.h>
-#include "resulttest.H"
+#include "lib_resulttest.H"
 
 
 // forward declarations

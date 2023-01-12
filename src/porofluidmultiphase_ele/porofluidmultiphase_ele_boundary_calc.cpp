@@ -14,11 +14,11 @@
 
 #include "inpar_parameterlist_utils.H"
 
-#include "utils_boundary_integration.H"
+#include "fem_general_utils_boundary_integration.H"
 
-#include "globalproblem.H"      // for curves and functions
-#include "standardtypes_cpp.H"  // for EPS12 and so on
-#include "singleton_owner.H"
+#include "lib_globalproblem.H"      // for curves and functions
+#include "lib_standardtypes_cpp.H"  // for EPS12 and so on
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   vuong 08/16 |

@@ -13,7 +13,7 @@
 
 #include <Teuchos_SerialDenseMatrix.hpp>
 
-#include "discret.H"
+#include "lib_discret.H"
 
 namespace LINALG
 {

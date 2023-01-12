@@ -13,7 +13,7 @@
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
-#include "resulttest.H"
+#include "lib_resulttest.H"
 
 // forward declarations
 namespace DRT

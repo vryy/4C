@@ -20,14 +20,14 @@
 #include "fsi_monolithic.H"
 
 // POROELAST includes
-#include "poro_base.H"
+#include "poroelast_base.H"
 
 // ALE includes
 #include "ale.H"
-#include "ad_ale_fpsi.H"
+#include "adapter_ale_fpsi.H"
 
 // ADAPTER includes
-#include "ad_fld_fluid_fpsi.H"
+#include "adapter_fld_fluid_fpsi.H"
 
 // LINALG includes
 #include "linalg_mapextractor.H"

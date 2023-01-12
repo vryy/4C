@@ -13,7 +13,7 @@
 #ifndef ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_H
 #define ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_H
 
-#include "ad_ale_fluid.H"
+#include "adapter_ale_fluid.H"
 #include "adapter_scatra_fluid_coupling_algorithm.H"
 
 

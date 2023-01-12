@@ -17,14 +17,14 @@
 #include <functional>
 
 #include "fsi_utils.H"
-#include "globalproblem.H"
-#include "utils.H"
-#include "condition_utils.H"
+#include "lib_globalproblem.H"
+#include "lib_utils.H"
+#include "lib_condition_utils.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_densematrix_communication.H"
-#include "matpar_bundle.H"
+#include "mat_par_bundle.H"
 
 #include <Epetra_CrsMatrix.h>
 #include <EpetraExt_RowMatrixOut.h>
@@ -32,17 +32,17 @@
 #include <NOX_Epetra.H>
 #include <Epetra_SerialDenseMatrix.h>
 
-#include "so_surface.H"
-#include "so_line.H"
+#include "so3_surface.H"
+#include "so3_line.H"
 
 #include "fsi_debugwriter.H"
-#include "searchtree.H"
-#include "searchtree_geometry_service.H"
-#include "ad_fld_fluid_ale.H"
+#include "geometry_searchtree.H"
+#include "geometry_searchtree_service.H"
+#include "adapter_fld_fluid_ale.H"
 #include "adapter_coupling_mortar.H"
 #include "mortar_interface.H"
-#include "ad_str_fsiwrapper.H"
-#include "ad_ale_fsi.H"
+#include "adapter_str_fsiwrapper.H"
+#include "adapter_ale_fsi.H"
 #include "adapter_coupling.H"
 
 #include "io.H"

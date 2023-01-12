@@ -11,10 +11,10 @@
 #include "particle_interaction_dem_history_pairs.H"
 
 #include "particle_engine_interface.H"
-#include "particle_communication_utils.H"
+#include "particle_engine_communication_utils.H"
 
 #include "io.H"
-#include "pack_buffer.H"
+#include "lib_pack_buffer.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

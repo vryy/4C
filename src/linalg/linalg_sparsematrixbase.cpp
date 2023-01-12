@@ -8,7 +8,7 @@
 
 #include "linalg_sparsematrixbase.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 
 
 /*----------------------------------------------------------------------*

@@ -10,7 +10,7 @@
 
 #include "fluid_discretization_runtime_vtu_output_params.H"
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 #include "inpar_parameterlist_utils.H"
 #include "inpar_fluid.H"

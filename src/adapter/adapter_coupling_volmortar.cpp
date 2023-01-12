@@ -12,19 +12,19 @@
  |  headers                                                  farah 10/13|
  *----------------------------------------------------------------------*/
 #include "adapter_coupling_volmortar.H"
-#include "discret.H"
-#include "globalproblem.H"
-#include "utils_parallel.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_parallel.H"
 #include "volmortar_coupling.H"
 #include "volmortar_utils.H"
 #include "linalg_sparsematrix.H"
 #include "linalg_multiply.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "linalg_solver.H"
-#include "xfluid.H"
+#include "solver_linalg_solver.H"
+#include "fluid_xfluid.H"
 #include "io_gmsh.H"
 #include "inpar_volmortar.H"
-#include "dofset_predefineddofnumber.H"
+#include "lib_dofset_predefineddofnumber.H"
 
 /*----------------------------------------------------------------------*
  |  ctor                                                     farah 10/13|

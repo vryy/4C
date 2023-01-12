@@ -8,9 +8,9 @@
  */
 /*----------------------------------------------------------------------*/
 #include "fbi_calc_utils.H"
-#include "discret.H"
-#include "dserror.H"
-#include "element.H"
+#include "lib_discret.H"
+#include "lib_dserror.H"
+#include "lib_element.H"
 #include "beam3_base.H"
 #include "linalg_serialdensevector.H"
 #include "linalg_serialdensematrix.H"

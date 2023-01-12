@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "inpar_solver.H"
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 
 #include <AztecOO.h>
 

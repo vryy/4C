@@ -10,11 +10,11 @@
 #define MORTAR_PROJECTOR_H
 
 #include "linalg_fixedsizematrix.H"
-#include "element.H"
-#include "pairedvector.H"
-#include "utils_local_connectivity_matrices.H"
+#include "lib_element.H"
+#include "headers_pairedvector.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
-#include "singleton_owner.H"
+#include "headers_singleton_owner.H"
 
 namespace MORTAR
 {

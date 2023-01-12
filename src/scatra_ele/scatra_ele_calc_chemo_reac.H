@@ -14,8 +14,8 @@ reactive scalars
 #include "scatra_ele_calc_chemo.H"
 #include "scatra_ele_calc_advanced_reaction.H"
 
-#include "scatra_chemotaxis_mat.H"
-#include "scatra_reaction_mat.H"
+#include "mat_scatra_chemotaxis_mat.H"
+#include "mat_scatra_reaction_mat.H"
 
 
 namespace DRT

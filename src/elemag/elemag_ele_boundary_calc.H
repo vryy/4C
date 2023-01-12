@@ -15,10 +15,10 @@ correct implementation is still missing.
 #ifndef ELEMAG_ELE_BOUNDARY_CALC_H
 #define ELEMAG_ELE_BOUNDARY_CALC_H
 
-#include "element.H"
-#include "utils_local_connectivity_matrices.H"
+#include "lib_element.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
-#include "singleton_owner.H"
+#include "headers_singleton_owner.H"
 
 namespace DRT
 {

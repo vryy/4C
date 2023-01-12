@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "particle_container_bundle.H"
+#include "particle_engine_container_bundle.H"
 
 #include "linalg_fixedsizematrix.H"
 

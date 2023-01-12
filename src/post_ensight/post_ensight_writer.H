@@ -19,8 +19,8 @@
 #include <fstream>
 #include <string>
 
-#include "element.H"           // due to DiscretizationType
-#include "post_writer_base.H"  // base class PostWriterBase
+#include "lib_element.H"              // due to DiscretizationType
+#include "post_common_writer_base.H"  // base class PostWriterBase
 
 // class PostProblem;
 class PostField;

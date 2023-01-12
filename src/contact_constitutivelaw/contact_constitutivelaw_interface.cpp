@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 #include "contact_constitutivelaw_interface.H"
-#include "contactconstitutivelaw.H"
-#include "contactconstitutivelaw_parameter.H"
+#include "contact_constitutivelaw_contactconstitutivelaw.H"
+#include "contact_constitutivelaw_contactconstitutivelaw_parameter.H"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
@@ -23,9 +23,9 @@
 #include "inpar_mortar.H"
 #include "inpar_contact.H"
 
-#include "discret.H"
-#include "dserror.H"
-#include "node.H"
+#include "lib_discret.H"
+#include "lib_dserror.H"
+#include "lib_node.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                                       |

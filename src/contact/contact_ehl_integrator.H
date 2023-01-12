@@ -11,7 +11,7 @@
 #define CONTACT_INTEGRATOR_EHL_H
 
 #include "contact_integrator.H"
-#include "pairedvector.H"
+#include "headers_pairedvector.H"
 #include <Epetra_FEVector.h>
 #include <Epetra_CrsMatrix.h>
 

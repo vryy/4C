@@ -12,25 +12,25 @@ MATLAB, PGFPlot or other tools.
 /*----------------------------------------------------------------------------*/
 
 #include "contact_aug_plot.H"
-#include "contact_augmented_strategy.H"
+#include "contact_aug_strategy.H"
 
-#include "dserror.H"
+#include "lib_dserror.H"
 #include "inpar_contact.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "discret_interface.H"
-#include "element.H"
-#include "node.H"
-#include "epetra_utils.H"
+#include "lib_discret_interface.H"
+#include "lib_element.H"
+#include "lib_node.H"
+#include "lib_epetra_utils.H"
 
-#include "nox_nln_aux.H"
-#include "nox_nln_constraint_group.H"
-#include "nox_nln_solver_linesearchbased.H"
+#include "solver_nonlin_nox_aux.H"
+#include "solver_nonlin_nox_constraint_group.H"
+#include "solver_nonlin_nox_solver_linesearchbased.H"
 
-#include "str_model_evaluator_contact.H"
+#include "structure_new_model_evaluator_contact.H"
 
-#include "every_iteration_writer.H"
+#include "io_every_iteration_writer.H"
 #include "io_pstream.H"
 
 #include <Teuchos_ParameterList.hpp>

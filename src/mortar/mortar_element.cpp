@@ -16,9 +16,9 @@
 
 #include "contact_nitsche_utils.H"
 
-#include "material.H"
+#include "mat_material.H"
 
-#include "so_surface.H"
+#include "so3_surface.H"
 #include <Teuchos_RCP.hpp>
 
 

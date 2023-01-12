@@ -11,14 +11,14 @@
 
 #include "inpar_s2i.H"
 
-#include "condition_utils.H"
-#include "discret.H"
-#include "utils.H"
+#include "lib_condition_utils.H"
+#include "lib_discret.H"
+#include "lib_utils.H"
 
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "utils_fem_shapefunctions.H"
-#include "position_array.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "geometry_position_array.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

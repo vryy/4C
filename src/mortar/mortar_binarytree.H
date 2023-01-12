@@ -11,7 +11,7 @@
 
 #include "Epetra_Comm.h"
 #include "Epetra_Map.h"
-#include "base_binarytree.H"
+#include "mortar_base_binarytree.H"
 #include "inpar_mortar.H"
 
 // forward declarations

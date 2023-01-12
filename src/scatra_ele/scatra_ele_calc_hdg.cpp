@@ -14,17 +14,17 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_action.H"
 
-#include "discret.H"
-#include "globalproblem.H"
-#include "elementtype.H"
-#include "position_array.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
+#include "lib_elementtype.H"
+#include "geometry_position_array.H"
 
-#include "scatra_mat.H"
-#include "matlist.H"
+#include "mat_scatra_mat.H"
+#include "mat_list.H"
 
-#include "utils_polynomial.H"
-#include "utils_boundary_integration.H"
-#include "utils_local_connectivity_matrices.H"
+#include "fem_general_utils_polynomial.H"
+#include "fem_general_utils_boundary_integration.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
 #include <Epetra_SerialDenseSolver.h>
 #include <Teuchos_TimeMonitor.hpp>

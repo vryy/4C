@@ -14,7 +14,7 @@
 #include "fsi_dirichletneumann_vel.H"
 #include "fsi_dirichletneumann_volcoupl.H"
 #include "fsi_dirichletneumannslideale.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "inpar_fsi.H"
 

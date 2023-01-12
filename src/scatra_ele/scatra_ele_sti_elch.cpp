@@ -10,8 +10,8 @@ transport within electrochemical substances
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_sti_elch.H"
 
-#include "discret.H"
-#include "utils.H"
+#include "lib_discret.H"
+#include "lib_utils.H"
 
 /*-------------------------------------------------------------------------------------------------------------------------------------*
  | element matrix and right-hand side vector contributions arising from thermal source terms in

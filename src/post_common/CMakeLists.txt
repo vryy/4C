@@ -8,12 +8,12 @@ target_link_libraries(post_common PUBLIC inpar)
 
 set(OBJS_POST_PROCESSOR_MAIN
     # cmake-format: sortable
-    post_filter_base.cpp
-    post_processor.cpp
-    post_single_field_writers.cpp
-    post_structure_stress.cpp
-    post_thermo_heatflux.cpp
-    post_writer_base.cpp
+    post_common_filter_base.cpp
+    post_common_post_processor.cpp
+    post_common_single_field_writers.cpp
+    post_common_structure_stress.cpp
+    post_common_thermo_heatflux.cpp
+    post_common_writer_base.cpp
     )
 
 add_executable(post_processor EXCLUDE_FROM_ALL ${OBJS_POST_PROCESSOR_MAIN})

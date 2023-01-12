@@ -13,13 +13,13 @@ coupling matrices M and D first.
 
 #include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.H"
 
-#include "beam_contact_pair.H"
+#include "beaminteraction_contact_pair.H"
 #include "beaminteraction_calc_utils.H"
-#include "beam_to_solid_mortar_manager.H"
-#include "str_model_evaluator_beaminteraction_datastate.H"
+#include "beaminteraction_beam_to_solid_mortar_manager.H"
+#include "beaminteraction_str_model_evaluator_datastate.H"
 
-#include "discret.H"
-#include "element.H"
+#include "lib_discret.H"
+#include "lib_element.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
 

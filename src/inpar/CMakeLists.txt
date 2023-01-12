@@ -1,6 +1,5 @@
 set(OBJS_INPAR
     # cmake-format: sortable
-    boolifyparameters.cpp
     inpar_ale.cpp
     inpar_beam_to_solid.cpp
     inpar_beamcontact.cpp
@@ -8,6 +7,7 @@ set(OBJS_INPAR
     inpar_beampotential.cpp
     inpar_binningstrategy.cpp
     inpar_bio.cpp
+    inpar_boolifyparameters.cpp
     inpar_browniandyn.cpp
     inpar_cardiac_monodomain.cpp
     inpar_cardiovascular0d.cpp
@@ -60,13 +60,13 @@ set(OBJS_INPAR
     inpar_topopt.cpp
     inpar_tsi.cpp
     inpar_twophase.cpp
+    inpar_validconditions.cpp
+    inpar_validcontactconstitutivelaw.cpp
+    inpar_validmaterials.cpp
+    inpar_validparameters.cpp
     inpar_volmortar.cpp
     inpar_wear.cpp
     inpar_xfem.cpp
-    validconditions.cpp
-    validcontactconstitutivelaw.cpp
-    validmaterials.cpp
-    validparameters.cpp
     )
 
 baci_add_library(inpar ${OBJS_INPAR})

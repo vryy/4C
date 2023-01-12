@@ -15,11 +15,11 @@
 
 #include "elemag_ele_interface.H"
 #include "elemag_diff_ele.H"
-#include "utils_gausspoints.H"
+#include "fem_general_utils_gausspoints.H"
 #include "inpar_elemag.H"
-#include "utils_shapevalues_hdg.H"
+#include "fem_general_utils_shapevalues_hdg.H"
 
-#include "singleton_owner.H"
+#include "headers_singleton_owner.H"
 
 namespace DRT
 {

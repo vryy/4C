@@ -18,14 +18,14 @@
 #include "inpar_s2i.H"
 #include "inpar_ssi.H"
 
-#include "runtime_csv_writer.H"
+#include "io_runtime_csv_writer.H"
 
-#include "assemblestrategy.H"
-#include "condition_utils.H"
-#include "globalproblem.H"
-#include "matchingoctree.H"
-#include "utils_gid_vector.H"
-#include "utils_parameter_list.H"
+#include "lib_assemblestrategy.H"
+#include "lib_condition_utils.H"
+#include "lib_globalproblem.H"
+#include "lib_matchingoctree.H"
+#include "lib_utils_gid_vector.H"
+#include "lib_utils_parameter_list.H"
 
 #include "scatra_timint_implicit.H"
 

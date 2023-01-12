@@ -7,7 +7,7 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_plasticity.H"
 #include "inpar_structure.H"
 #include "inpar_tsi.H"

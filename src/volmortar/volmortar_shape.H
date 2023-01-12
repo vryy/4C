@@ -18,12 +18,12 @@
  | Header                                                   farah 01/14 |
  *----------------------------------------------------------------------*/
 #include "linalg_utils_densematrix_inverse.H"
-#include "utils_local_connectivity_matrices.H"
-#include "utils_fem_shapefunctions.H"
-#include "utils_integration.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "fem_general_utils_integration.H"
 #include "mortar_element.H"
-#include "element_integration_select.H"
-#include "utils_nurbs_shapefunctions.H"
+#include "lib_element_integration_select.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
 #include "inpar_volmortar.H"
 
 /*----------------------------------------------------------------------*

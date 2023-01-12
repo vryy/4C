@@ -11,7 +11,7 @@
 #define SCATRA_ELE_CALC_CHEMO_H_
 
 #include "scatra_ele_calc.H"
-#include "scatra_chemotaxis_mat.H"
+#include "mat_scatra_chemotaxis_mat.H"
 
 namespace DRT
 {

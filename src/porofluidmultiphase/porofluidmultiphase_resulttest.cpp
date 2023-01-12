@@ -9,8 +9,8 @@
 
 #include "porofluidmultiphase_resulttest.H"
 
-#include "linedefinition.H"
-#include "discret.H"
+#include "lib_linedefinition.H"
+#include "lib_discret.H"
 #include "porofluidmultiphase_timint_implicit.H"
 #include "porofluidmultiphase_meshtying_strategy_base.H"
 

@@ -1,9 +1,9 @@
 set(OBJS_NURBS_DISCRET
     # cmake-format: sortable
-    apply_nurbs_initial_condition.cpp
-    control_point.cpp
-    knotvector.cpp
     nurbs_discret.cpp
+    nurbs_discret_apply_nurbs_initial_condition.cpp
+    nurbs_discret_control_point.cpp
+    nurbs_discret_knotvector.cpp
     )
 
 baci_add_library(nurbs_discret ${OBJS_NURBS_DISCRET})

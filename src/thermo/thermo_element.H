@@ -19,10 +19,10 @@ Pack, Unpack, NumDofPerNode etc.
  | headers                                                    gjb 01/08 |
  *----------------------------------------------------------------------*/
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "element.H"
-#include "elementtype.H"
+#include "lib_element.H"
+#include "lib_elementtype.H"
 
-#include "utils_local_connectivity_matrices.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
 #include "inpar_structure.H"
 

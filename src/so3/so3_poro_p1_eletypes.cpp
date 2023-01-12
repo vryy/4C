@@ -10,7 +10,7 @@
 #include "so3_poro_p1_eletypes.H"
 #include "so3_poro_p1.H"
 
-#include "linedefinition.H"
+#include "lib_linedefinition.H"
 #include "linalg_utils_nullspace.H"
 
 /*----------------------------------------------------------------------*

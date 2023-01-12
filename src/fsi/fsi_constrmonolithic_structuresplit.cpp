@@ -12,23 +12,23 @@
 
 #include "fsi_constrmonolithic_structuresplit.H"
 #include "adapter_coupling.H"
-#include "ad_str_fsiwrapper.H"
+#include "adapter_str_fsiwrapper.H"
 
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 #include "inpar_fsi.H"
 #include "io_control.H"
-#include "ad_str_structure.H"
-#include "ad_fld_fluid.H"
+#include "adapter_str_structure.H"
+#include "adapter_fld_fluid.H"
 
 #include "linalg_utils_sparse_algebra_math.H"
 
 #include "constraint_manager.H"
 #include "fluid_utils_mapextractor.H"
-#include "stru_aux.H"
+#include "structure_aux.H"
 #include "ale_utils_mapextractor.H"
-#include "ad_fld_fluid_fsi.H"
-#include "ad_ale_fsi.H"
+#include "adapter_fld_fluid_fsi.H"
+#include "adapter_ale_fsi.H"
 
 #include "linalg_matrixtransform.H"
 

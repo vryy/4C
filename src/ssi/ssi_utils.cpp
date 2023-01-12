@@ -13,21 +13,21 @@
 
 #include "ssi_monolithic.H"
 
-#include "ad_str_ssiwrapper.H"
+#include "adapter_str_ssiwrapper.H"
 #include "adapter_coupling.H"
 #include "adapter_scatra_base_algorithm.H"
 
 #include "inpar_s2i.H"
 
-#include "utils_createdis.H"
-#include "utils_gid_vector.H"
+#include "lib_utils_createdis.H"
+#include "lib_utils_gid_vector.H"
 
 #include "scatra_timint_implicit.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"
 
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "matchingoctree.H"
+#include "lib_matchingoctree.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

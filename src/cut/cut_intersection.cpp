@@ -14,7 +14,7 @@
 #include "cut_position.H"
 #include "cut_utils.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 // whether to perform triangulation during intersection
 #define TRIANGULATED_INTERSECTION true

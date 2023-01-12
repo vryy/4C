@@ -18,10 +18,10 @@
 #include <tuple>
 
 #include "linalg_fixedsizematrix.H"
-#include "elast_coupanisoexpo.H"
-#include "anisotropy.H"
-#include "elast_aniso_structuraltensor_strategy.H"
-#include "voigt_notation.H"
+#include "matelast_coupanisoexpo.H"
+#include "mat_anisotropy.H"
+#include "matelast_aniso_structuraltensor_strategy.H"
+#include "lib_voigt_notation.H"
 
 
 

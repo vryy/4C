@@ -6,7 +6,7 @@ target_include_directories(
   )
 
 # Define the production implementation.
-add_library(lib_error dserror.cpp)
+add_library(lib_error lib_dserror.cpp)
 
 set(LIBS_LIB_ERROR
     # cmake-format: sortable

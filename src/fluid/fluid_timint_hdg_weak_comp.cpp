@@ -8,16 +8,16 @@
 /*----------------------------------------------------------------------------*/
 
 #include "fluid_timint_hdg_weak_comp.H"
-#include "discret_hdg.H"
-#include "globalproblem.H"
+#include "lib_discret_hdg.H"
+#include "lib_globalproblem.H"
 #include "fluid_ele_hdg_weak_comp.H"
 #include "fluid_ele_action.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "io.H"
-#include "dofset_predefineddofnumber.H"
+#include "lib_dofset_predefineddofnumber.H"
 #include "io_control.H"
-#include "fluid_weakly_compressible.H"
-#include "matpar_bundle.H"
+#include "mat_fluid_weakly_compressible.H"
+#include "mat_par_bundle.H"
 
 
 /*----------------------------------------------------------------------*

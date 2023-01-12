@@ -10,22 +10,22 @@
 
 #include "porofluidmultiphase_timint_ost.H"
 
-#include "material.H"
-#include "cnst_1d_art.H"
+#include "mat_material.H"
+#include "mat_cnst_1d_art.H"
 
-#include "globalproblem.H"
-#include "utils_createdis.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_createdis.H"
 
-#include "ad_porofluidmultiphase.H"
-#include "utils_parallel.H"
+#include "adapter_porofluidmultiphase.H"
+#include "lib_utils_parallel.H"
 
 #include "linalg_utils_densematrix_communication.H"
 
-#include "searchtree.H"
-#include "searchtree_geometry_service.H"
-#include "position_array.H"
-#include "intersection_service_templates.H"
-#include "intersection_service.H"
+#include "geometry_searchtree.H"
+#include "geometry_searchtree_service.H"
+#include "geometry_position_array.H"
+#include "geometry_intersection_service_templates.H"
+#include "geometry_intersection_service.H"
 #include "inpar_bio.H"
 
 

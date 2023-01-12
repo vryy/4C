@@ -12,7 +12,7 @@
 
 #include "fluid_ele_boundary_calc.H"
 #include "fluid_ele.H"
-#include "element_integration_select.H"
+#include "lib_element_integration_select.H"
 #include "fluid_ele_action.H"
 
 #include "fluid_ele_parameter_std.H"
@@ -20,27 +20,27 @@
 
 #include "inpar_material.H"
 
-#include "utils_boundary_integration.H"
+#include "fem_general_utils_boundary_integration.H"
 
-#include "nurbs_utils.H"
+#include "nurbs_discret_nurbs_utils.H"
 
-#include "globalproblem.H"
-#include "standardtypes_cpp.H"
+#include "lib_globalproblem.H"
+#include "lib_standardtypes_cpp.H"
 
-#include "arrhenius_pv.H"
-#include "carreauyasuda.H"
-#include "ferech_pv.H"
-#include "herschelbulkley.H"
-#include "mixfrac.H"
-#include "modpowerlaw.H"
-#include "newtonianfluid.H"
-#include "permeablefluid.H"
-#include "sutherland.H"
-#include "fluid_linear_density_viscosity.H"
-#include "fluid_murnaghantait.H"
-#include "tempdepwater.H"
-#include "yoghurt.H"
-#include "fluidporo.H"
+#include "mat_arrhenius_pv.H"
+#include "mat_carreauyasuda.H"
+#include "mat_ferech_pv.H"
+#include "mat_herschelbulkley.H"
+#include "mat_mixfrac.H"
+#include "mat_modpowerlaw.H"
+#include "mat_newtonianfluid.H"
+#include "mat_permeablefluid.H"
+#include "mat_sutherland.H"
+#include "mat_fluid_linear_density_viscosity.H"
+#include "mat_fluid_murnaghantait.H"
+#include "mat_tempdepwater.H"
+#include "mat_yoghurt.H"
+#include "mat_fluidporo.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

@@ -32,7 +32,7 @@ valves with k_p -> 0
 #include <Epetra_RowMatrix.h>
 #include <Teuchos_ParameterList.hpp>
 #include "Epetra_FECrsMatrix.h"
-#include "utils_integration.H"
+#include "fem_general_utils_integration.H"
 #include "inpar_cardiovascular0d.H"
 // class which is inherited from
 #include "cardiovascular0d.H"

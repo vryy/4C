@@ -8,9 +8,9 @@
 
 #include "inpar_problemtype.H"
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

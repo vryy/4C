@@ -15,16 +15,16 @@
 
 #include "loma_dyn.H"
 #include "loma_algorithm.H"
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "scatra_timint_implicit.H"
 #include "scatra_utils_clonestrategy.H"
 #include "scatra_ele.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
-#include "globalproblem.H"
-#include "utils_createdis.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_createdis.H"
 #include <Epetra_Time.h>
-#include "dofset_predefineddofnumber.H"
+#include "lib_dofset_predefineddofnumber.H"
 
 
 /*----------------------------------------------------------------------*/

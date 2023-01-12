@@ -14,13 +14,13 @@
 #include "io.H"
 #include "io_pstream.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
-#include "control_point.H"
-#include "knotvector.H"
+#include "nurbs_discret_control_point.H"
+#include "nurbs_discret_knotvector.H"
 #include "nurbs_discret.H"
 
-#include "str_timint_basedataglobalstate.H"
+#include "structure_new_timint_basedataglobalstate.H"
 
 #include <Epetra_SerialDenseVector.h>
 

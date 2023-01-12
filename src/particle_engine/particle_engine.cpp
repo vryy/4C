@@ -10,23 +10,23 @@
  *---------------------------------------------------------------------------*/
 #include "particle_engine.H"
 
-#include "particle_communication_utils.H"
+#include "particle_engine_communication_utils.H"
 
-#include "particle_container.H"
-#include "particle_container_bundle.H"
-#include "particle_object.H"
-#include "particle_unique_global_id.H"
-#include "particle_runtime_vtp_writer.H"
+#include "particle_engine_container.H"
+#include "particle_engine_container_bundle.H"
+#include "particle_engine_object.H"
+#include "particle_engine_unique_global_id.H"
+#include "particle_engine_runtime_vtp_writer.H"
 
 #include "particle_algorithm_utils.H"
 
-#include "binning_strategy.H"
+#include "binstrategy.H"
 
 #include "inpar_particle.H"
 
-#include "dserror.H"
-#include "discret.H"
-#include "utils_factory.H"
+#include "lib_dserror.H"
+#include "lib_discret.H"
+#include "lib_utils_factory.H"
 
 #include "io.H"
 #include "io_pstream.H"

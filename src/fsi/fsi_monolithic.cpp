@@ -20,27 +20,27 @@
 #include "fsi_noxlinsys.H"
 #include "fsi_statustest.H"
 
-#include "globalproblem.H"
-#include "discret.H"
-#include "prestress_service.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "lib_prestress_service.H"
 #include "linalg_blocksparsematrix.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
-#include "ad_ale_fsi.H"
+#include "adapter_ale_fsi.H"
 
 #include "adapter_coupling.H"
-#include "ad_fld_fluid_fsi.H"
-#include "ad_ale.H"
-#include "ad_str_fsiwrapper.H"
-#include "ad_str_fsi_timint_adaptive.H"
+#include "adapter_fld_fluid_fsi.H"
+#include "adapter_ale.H"
+#include "adapter_str_fsiwrapper.H"
+#include "adapter_str_fsi_timint_adaptive.H"
 
 #include "constraint_manager.H"
 
 #include "io_control.H"
 #include "io_pstream.H"
 
-#include "stru_aux.H"
+#include "structure_aux.H"
 #include "fluid_utils_mapextractor.H"
 #include "ale_utils_mapextractor.H"
 
@@ -49,7 +49,7 @@
 #include "fsi_overlapprec_amgnxn.H"
 #include "fsi_overlapprec_hybrid.H"
 
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 
 /*----------------------------------------------------------------------------*/
 /* Note: The order of calling the three BaseAlgorithm-constructors is

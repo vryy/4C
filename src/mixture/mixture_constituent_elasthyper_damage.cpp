@@ -7,12 +7,12 @@
 /*----------------------------------------------------------------------*/
 
 #include "mixture_constituent_elasthyper_damage.H"
-#include "matpar_bundle.H"
-#include "globalproblem.H"
-#include "multiplicative_split_defgrad_elasthyper_service.H"
-#include "elast_aniso_structuraltensor_strategy.H"
-#include "elast_isoneohooke.H"
-#include "elastin_membrane_prestress_strategy.H"
+#include "mat_par_bundle.H"
+#include "lib_globalproblem.H"
+#include "mat_multiplicative_split_defgrad_elasthyper_service.H"
+#include "matelast_aniso_structuraltensor_strategy.H"
+#include "matelast_isoneohooke.H"
+#include "mixture_elastin_membrane_prestress_strategy.H"
 
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituent_ElastHyperDamage::MixtureConstituent_ElastHyperDamage(

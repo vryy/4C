@@ -12,7 +12,7 @@
 #define INPAR_GEOMETRYPAIR_H
 
 
-#include "utils_integration.H"
+#include "fem_general_utils_integration.H"
 
 // Forward declaration.
 namespace Teuchos

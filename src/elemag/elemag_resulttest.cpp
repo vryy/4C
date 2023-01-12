@@ -11,8 +11,8 @@
 
 #include "elemag_resulttest.H"
 #include "elemag_timeint.H"
-#include "linedefinition.H"
-#include "discret.H"
+#include "lib_linedefinition.H"
+#include "lib_discret.H"
 
 /*----------------------------------------------------------------------*
  |                                                     berardocco 10/18 |

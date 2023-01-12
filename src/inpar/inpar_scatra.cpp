@@ -9,12 +9,12 @@
 /*----------------------------------------------------------------------*/
 #include "inpar_scatra.H"
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_fluid.H"
 #include "inpar_s2i.H"
 #include "inpar_bio.H"
 
-#include "conditiondefinition.H"
+#include "lib_conditiondefinition.H"
 
 #include "linalg_sparseoperator.H"
 #include "linalg_equilibrate.H"

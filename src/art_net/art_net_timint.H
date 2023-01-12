@@ -13,8 +13,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "ad_art_net.H"
-#include "discret.H"
+#include "adapter_art_net.H"
+#include "lib_discret.H"
 #include "inpar_bio.H"
 
 

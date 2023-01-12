@@ -8,23 +8,23 @@
 /*----------------------------------------------------------------------------*/
 
 #include "contact_aug_lagrange_multiplier_function.H"
-#include "contact_augmented_strategy.H"
-#include "contact_augmented_interface.H"
+#include "contact_aug_strategy.H"
+#include "contact_aug_interface.H"
 
 #include "mortar_matrix_transform.H"
 
 #include "contact_paramsinterface.H"
 
-#include "str_model_evaluator_contact.H"
+#include "structure_new_model_evaluator_contact.H"
 
 #include "linalg_sparsematrix.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_multiply.H"
 
 #include "io_control.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

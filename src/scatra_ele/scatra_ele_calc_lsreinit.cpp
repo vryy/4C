@@ -14,14 +14,14 @@
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "position_array.H"
-#include "utils.H"
-#include "discret.H"
-#include "standardtypes_cpp.H"  // for EPS13 and so on
+#include "geometry_position_array.H"
+#include "lib_utils.H"
+#include "lib_discret.H"
+#include "lib_standardtypes_cpp.H"  // for EPS13 and so on
 
-#include "utils_fem_shapefunctions.H"
-#include "integrationcell_coordtrafo.H"
-#include "singleton_owner.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "geometry_integrationcell_coordtrafo.H"
+#include "headers_singleton_owner.H"
 
 #define USE_PHIN_FOR_VEL
 

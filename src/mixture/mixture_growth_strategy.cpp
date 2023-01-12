@@ -6,9 +6,9 @@
 */
 /*----------------------------------------------------------------------*/
 #include "mixture_growth_strategy.H"
-#include "globalproblem.H"
-#include "matpar_bundle.H"
-#include "material_service.H"
+#include "lib_globalproblem.H"
+#include "mat_par_bundle.H"
+#include "mat_service.H"
 #include "mixture_growth_strategy_anisotropic.H"
 #include "mixture_growth_strategy_isotropic.H"
 #include "mixture_growth_strategy_stiffness.H"

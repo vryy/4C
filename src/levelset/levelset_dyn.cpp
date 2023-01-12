@@ -8,8 +8,8 @@
 #include "levelset_dyn.H"
 #include "levelset_algorithm.H"
 #include "inpar_scatra.H"
-#include "discret.H"
-#include "globalproblem.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
 #include "adapter_scatra_base_algorithm.H"
 #include <Epetra_MpiComm.h>
 #include <Teuchos_RCP.hpp>
@@ -17,7 +17,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <iostream>
-#include "dofset_predefineddofnumber.H"
+#include "lib_dofset_predefineddofnumber.H"
 
 
 /*----------------------------------------------------------------------*

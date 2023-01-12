@@ -15,7 +15,7 @@
 #include "mortar_defines.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "io_gmsh.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "io_control.H"
 
 /*----------------------------------------------------------------------*

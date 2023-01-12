@@ -13,10 +13,10 @@
 #include "ssi_utils.H"
 #include "Epetra_Map.h"
 
-#include "ad_str_ssiwrapper.H"
+#include "adapter_str_ssiwrapper.H"
 #include "adapter_coupling.H"
 
-#include "locsys.H"
+#include "lib_locsys.H"
 
 #include "scatra_timint_meshtying_strategy_s2i.H"
 

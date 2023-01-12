@@ -8,17 +8,17 @@
 /*-----------------------------------------------------------------------*/
 
 #include "mortar_utils.H"
-#include "dserror.H"
-#include "exporter.H"
-#include "globalproblem.H"
+#include "lib_dserror.H"
+#include "lib_exporter.H"
+#include "lib_globalproblem.H"
 #include "linalg_sparsematrix.H"
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_multiply.H"
 
 #include "nurbs_discret.H"
-#include "control_point.H"
-#include "knotvector.H"
+#include "nurbs_discret_control_point.H"
+#include "nurbs_discret_knotvector.H"
 
 /*!
 \brief Sort vector in ascending order

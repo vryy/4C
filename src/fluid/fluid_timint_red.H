@@ -14,7 +14,7 @@
 #define FLD_TIMINT_RED_H
 
 
-#include "fluidimplicitintegration.H"
+#include "fluid_implicit_integration.H"
 
 namespace ADAPTER
 {

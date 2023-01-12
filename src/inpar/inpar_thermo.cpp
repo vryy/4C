@@ -11,10 +11,10 @@
 
 
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_thermo.H"
 #include "inpar.H"
-#include "conditiondefinition.H"
+#include "lib_conditiondefinition.H"
 
 
 

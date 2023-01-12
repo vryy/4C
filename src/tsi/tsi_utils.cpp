@@ -19,18 +19,18 @@
  *----------------------------------------------------------------------*/
 #include "tsi_utils.H"
 
-#include "utils_createdis.H"
-#include "globalproblem.H"
+#include "lib_utils_createdis.H"
+#include "lib_globalproblem.H"
 
 #include "thermo_element.H"
 #include "thermo_ele_impl_utils.H"
 #include "so3_thermo.H"
-#include "so3_ssn_plast.H"
+#include "so3_plast_ssn.H"
 
-#include "dofset.H"
-#include "dofset_predefineddofnumber.H"
-#include "discret.H"
-#include "periodicbc.H"
+#include "lib_dofset.H"
+#include "lib_dofset_predefineddofnumber.H"
+#include "lib_discret.H"
+#include "lib_periodicbc.H"
 
 #include "volmortar_utils.H"
 

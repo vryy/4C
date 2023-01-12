@@ -18,7 +18,7 @@ derived from an abstract, purely virtual interface class.
 #include "ssi_monolithic_convcheck_strategies.H"
 #include "ssi_utils.H"
 
-#include "ad_str_ssiwrapper.H"
+#include "adapter_str_ssiwrapper.H"
 #include "adapter_scatra_base_algorithm.H"
 
 #include "scatra_timint_implicit.H"

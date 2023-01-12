@@ -11,7 +11,7 @@
 
 #include "contact_interface.H"
 #include "contact_element.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_densematrix_communication.H"

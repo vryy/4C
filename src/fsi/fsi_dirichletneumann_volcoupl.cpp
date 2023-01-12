@@ -19,11 +19,11 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include "ad_fld_fluid_xfem.H"
-#include "ad_fld_fluid.H"
-#include "ad_fld_fluid_xfsi.H"
-#include "ad_str_fsiwrapper.H"
-#include "ad_ale_fluid.H"
+#include "adapter_fld_fluid_xfem.H"
+#include "adapter_fld_fluid.H"
+#include "adapter_fld_fluid_xfsi.H"
+#include "adapter_str_fsiwrapper.H"
+#include "adapter_ale_fluid.H"
 
 #include "io_control.H"
 
@@ -33,12 +33,12 @@
 
 #include "mortar_calc_utils.H"
 
-#include "condition_utils.H"
-#include "globalproblem.H"
+#include "lib_condition_utils.H"
+#include "lib_globalproblem.H"
 
 // search
-#include "searchtree.H"
-#include "searchtree_geometry_service.H"
+#include "geometry_searchtree.H"
+#include "geometry_searchtree_service.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

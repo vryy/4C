@@ -13,13 +13,13 @@
 #include "io_control.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_densematrix_communication.H"
-#include "globalproblem.H"
-#include "dserror.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_dserror.H"
+#include "lib_discret.H"
 #include "nurbs_discret.H"
 #include "fluid_ele_immersed_base.H"
 
-#include "pss_cpp.h"  // access to legacy parser module
+#include "pss_full_cpp.h"  // access to legacy parser module
 
 
 /*----------------------------------------------------------------------*/

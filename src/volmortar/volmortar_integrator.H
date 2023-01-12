@@ -17,8 +17,8 @@
 /*---------------------------------------------------------------------*
  | headers                                                 farah 01/14 |
  *---------------------------------------------------------------------*/
-#include "utils_local_connectivity_matrices.H"
-#include "utils_gausspoints.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
+#include "fem_general_utils_gausspoints.H"
 #include "cut_utils.H"
 #include "inpar_volmortar.H"
 

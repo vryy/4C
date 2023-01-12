@@ -20,7 +20,7 @@
 #include "fluid_utils_mapextractor.H"
 #include "fluid_utils.H"
 #include "Teuchos_RCP.hpp"
-#include "discret.H"
+#include "lib_discret.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "io.H"
 #include "fluid_ele_action.H"

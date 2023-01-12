@@ -15,7 +15,7 @@
 #include "contact_integrator.H"
 #include "contact_element.H"
 #include "contact_defines.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 
 #include "mortar_shape_utils.H"
 #include "mortar_projector.H"

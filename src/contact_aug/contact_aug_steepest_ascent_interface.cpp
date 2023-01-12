@@ -12,7 +12,7 @@
 #include "contact_aug_steepest_ascent_interface.H"
 #include "contact_node.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

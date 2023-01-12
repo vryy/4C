@@ -9,12 +9,12 @@
 
 #include "truss3_scatra.H"
 
-#include "discret.H"
-#include "globalproblem.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
 
-#include "lin_elast_1D.H"
+#include "mat_lin_elast_1D.H"
 
-#include "str_elements_paramsinterface.H"
+#include "structure_new_elements_paramsinterface.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

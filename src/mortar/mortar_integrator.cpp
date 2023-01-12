@@ -17,14 +17,14 @@ of two MortarElements in 1D and 2D
 #include "mortar_calc_utils.H"
 #include "mortar_shape_utils.H"
 
-#include "utils_integration.H"
-#include "element.H"
+#include "fem_general_utils_integration.H"
+#include "lib_element.H"
 
 #include "linalg_serialdensevector.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_sparsematrix.H"
 
-#include "singleton_owner.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  |  impl...                                                  farah 01/14|

@@ -1,9 +1,9 @@
 set(OBJS_SCATRA
     # cmake-format: sortable
-    nox_nln_scatra_linearsystem.cpp
     scatra_algorithm.cpp
     scatra_cardiac_monodomain_dyn.cpp
     scatra_dyn.cpp
+    scatra_nox_nln_scatra_linearsystem.cpp
     scatra_resulttest.cpp
     scatra_resulttest_elch.cpp
     scatra_resulttest_hdg.cpp
@@ -34,10 +34,10 @@ set(OBJS_SCATRA
     scatra_timint_poromulti.cpp
     scatra_timint_stat.cpp
     scatra_timint_stat_hdg.cpp
+    scatra_turbulence_hit_initial_scalar_field.cpp
+    scatra_turbulence_hit_scalar_forcing.cpp
     scatra_utils.cpp
     scatra_utils_clonestrategy.cpp
-    turbulence_hit_initial_scalar_field.cpp
-    turbulence_hit_scalar_forcing.cpp
     )
 
 baci_add_library(alg_scatra ${OBJS_SCATRA})

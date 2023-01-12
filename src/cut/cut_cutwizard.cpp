@@ -14,9 +14,9 @@ surface meshes
 #include "io_pstream.H"
 #include "io_control.H"
 
-#include "discret.H"
-#include "discret_xfem.H"
-#include "globalproblem.H"
+#include "lib_discret.H"
+#include "lib_discret_xfem.H"
+#include "lib_globalproblem.H"
 
 #include "cut_combintersection.H"
 #include "cut_elementhandle.H"

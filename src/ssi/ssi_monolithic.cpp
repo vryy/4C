@@ -18,8 +18,8 @@
 #include "ssi_monolithic_meshtying_strategy.H"
 #include "ssi_utils.H"
 
-#include "ad_str_ssiwrapper.H"
-#include "ad_str_structure_new.H"
+#include "adapter_str_ssiwrapper.H"
+#include "adapter_str_structure_new.H"
 #include "adapter_scatra_base_algorithm.H"
 
 #include "contact_nitsche_strategy_ssi.H"
@@ -28,19 +28,19 @@
 
 #include "io_control.H"
 
-#include "assemblestrategy.H"
-#include "globalproblem.H"
-#include "locsys.H"
+#include "lib_assemblestrategy.H"
+#include "lib_globalproblem.H"
+#include "lib_locsys.H"
 
 #include "scatra_timint_elch.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"
 
-#include "str_model_evaluator_contact.H"
+#include "structure_new_model_evaluator_contact.H"
 
 #include "linalg_mapextractor.H"
 #include "linalg_matrixtransform.H"
 #include "linalg_equilibrate.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_sparse_algebra_create.H"

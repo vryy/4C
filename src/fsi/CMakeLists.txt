@@ -1,6 +1,5 @@
 set(OBJS_FSI
     # cmake-format: sortable
-    fs_monolithic.cpp
     fsi_algorithm.cpp
     fsi_constr_overlapprec.cpp
     fsi_constrmonolithic.cpp
@@ -19,6 +18,7 @@ set(OBJS_FSI
     fsi_fluidfluidmonolithic_fluidsplit_nonox.cpp
     fsi_fluidfluidmonolithic_structuresplit.cpp
     fsi_fluidfluidmonolithic_structuresplit_nonox.cpp
+    fsi_free_surface_monolithic.cpp
     fsi_lung_overlapprec.cpp
     fsi_lungmonolithic.cpp
     fsi_lungmonolithic_fluidsplit.cpp

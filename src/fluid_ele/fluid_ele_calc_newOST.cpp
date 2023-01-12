@@ -18,13 +18,13 @@
 
 #include "fluid_rotsym_periodicbc.H"
 
-#include "condition_utils.H"
-#include "globalproblem.H"
-#include "standardtypes_cpp.H"
+#include "lib_condition_utils.H"
+#include "lib_globalproblem.H"
+#include "lib_standardtypes_cpp.H"
 
-#include "arrhenius_pv.H"
+#include "mat_arrhenius_pv.H"
 
-#include "nurbs_utils.H"
+#include "nurbs_discret_nurbs_utils.H"
 
 
 /*----------------------------------------------------------------------*

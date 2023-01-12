@@ -11,9 +11,9 @@
 #include "contact_element.H"
 #include "contact_strategy_factory.H"
 #include "contact_utils.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_wear.H"
 #include "inpar_s2i.H"
 #include "inpar_ssi.H"
@@ -21,11 +21,11 @@
 #include "io.H"
 #include "io_pstream.H"
 
-#include "discret.H"
-#include "globalproblem.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
 
-#include "str_timint_basedataglobalstate.H"
-#include "str_utils.H"
+#include "structure_new_timint_basedataglobalstate.H"
+#include "structure_new_utils.H"
 
 #include "scatra_timint_meshtying_strategy_s2i.H"
 
@@ -45,7 +45,7 @@
 #include "contact_nitsche_strategy.H"
 #include "contact_penalty_strategy.H"
 #include "contact_wear_lagrange_strategy.H"
-#include "contact_augmented_interface.H"
+#include "contact_aug_interface.H"
 #include "contact_aug_steepest_ascent_interface.H"
 #include "contact_aug_steepest_ascent_strategy.H"
 #include "contact_aug_lagrange_strategy.H"

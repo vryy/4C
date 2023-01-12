@@ -11,14 +11,14 @@ adapts assembly automatically according to the thereby changed number of nodal d
 
 #include "truss3.H"
 
-#include "beam3eb.H"
+#include "beam3_euler_bernoulli.H"
 
-#include "globalproblem.H"
-#include "standardtypes_cpp.H"
+#include "lib_globalproblem.H"
+#include "lib_standardtypes_cpp.H"
 
-#include "lin_elast_1D.H"
+#include "mat_lin_elast_1D.H"
 
-#include "str_elements_paramsinterface.H"
+#include "structure_new_elements_paramsinterface.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) cyron 08/08|

@@ -16,7 +16,7 @@
 #include "volmortar_defines.H"
 #include "volmortar_cell.H"
 
-#include "utils_integration.H"
+#include "fem_general_utils_integration.H"
 
 #include "mortar_coupling3d_classes.H"
 #include "mortar_calc_utils.H"
@@ -25,7 +25,7 @@
 #include "linalg_sparsematrix.H"
 #include "linalg_serialdensevector.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 #include "cut_volumecell.H"
 
 

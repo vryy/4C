@@ -15,7 +15,7 @@
 
 extern "C"
 {
-#include "pss_types.h"
+#include "pss_full_types.h"
 }
 
 //  Forward declaration

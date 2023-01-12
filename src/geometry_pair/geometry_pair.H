@@ -13,7 +13,7 @@ problems.
 #define GEOMETRY_PAIR_H
 
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 #include <Teuchos_RCP.hpp>
 

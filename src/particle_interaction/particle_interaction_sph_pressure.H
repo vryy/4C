@@ -14,8 +14,8 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "particle_enums.H"
-#include "particle_typedefs.H"
+#include "particle_engine_enums.H"
+#include "particle_engine_typedefs.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |

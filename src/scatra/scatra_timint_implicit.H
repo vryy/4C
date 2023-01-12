@@ -26,7 +26,7 @@
 
 #include <set>
 
-#include "ad_scatra_wrapper.H"
+#include "adapter_scatra_wrapper.H"
 
 #include <Epetra_MultiVector.h>
 #include <Epetra_SerialDenseVector.h>

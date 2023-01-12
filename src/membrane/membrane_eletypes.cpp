@@ -11,7 +11,7 @@
 #include "membrane.H"
 #include "membrane_eletypes.H"
 
-#include "linedefinition.H"
+#include "lib_linedefinition.H"
 
 #include "linalg_utils_nullspace.H"
 

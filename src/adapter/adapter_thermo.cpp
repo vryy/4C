@@ -13,11 +13,11 @@
  *----------------------------------------------------------------------*/
 #include "adapter_thermo.H"
 #include "io_pstream.H"
-#include "globalproblem.H"
-#include "thrtimint_statics.H"
-#include "thrtimint_genalpha.H"
-#include "thrtimint_ost.H"
-#include "thrtimint_expleuler.H"
+#include "lib_globalproblem.H"
+#include "thermo_timint_statics.H"
+#include "thermo_timint_genalpha.H"
+#include "thermo_timint_ost.H"
+#include "thermo_timint_expleuler.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

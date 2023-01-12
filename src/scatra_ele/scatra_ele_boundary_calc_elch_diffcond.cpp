@@ -12,11 +12,11 @@
 #include "scatra_ele_calc_elch_diffcond.H"
 #include "scatra_ele_parameter_boundary.H"
 
-#include "elchmat.H"
-#include "elchphase.H"
-#include "ion.H"
-#include "newman.H"
-#include "singleton_owner.H"
+#include "mat_elchmat.H"
+#include "mat_elchphase.H"
+#include "mat_ion.H"
+#include "mat_newman.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |

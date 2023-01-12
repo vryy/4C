@@ -11,10 +11,10 @@
 #include "contact_element.H"
 #include "contact_defines.H"
 
-#include "contact_integrator_utils.H"
+#include "contact_aug_contact_integrator_utils.H"
 
 #include "linalg_serialdensevector.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 
 CONTACT::CoNodeType CONTACT::CoNodeType::instance_;
 

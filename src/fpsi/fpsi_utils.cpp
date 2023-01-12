@@ -19,7 +19,7 @@
 
 // POROELAST includes
 #include "poroelast_utils_setup.H"
-#include "poro_utils_clonestrategy.H"
+#include "poroelast_utils_clonestrategy.H"
 
 // FSI includes
 #include "fsi_utils.H"
@@ -29,9 +29,9 @@
 #include "inpar_fpsi.H"
 
 // lib includes
-#include "utils_createdis.H"
-#include "globalproblem.H"
-#include "condition_selector.H"
+#include "lib_utils_createdis.H"
+#include "lib_globalproblem.H"
+#include "lib_condition_selector.H"
 
 
 Teuchos::RCP<FPSI::Utils> FPSI::Utils::instance_;

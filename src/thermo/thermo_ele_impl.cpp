@@ -10,26 +10,26 @@
 #include "inpar_thermo.H"
 #include "inpar_structure.H"
 
-#include "utils_fem_shapefunctions.H"
-#include "position_array.H"
-#include "condition_utils.H"
-#include "discret.H"
-#include "globalproblem.H"
-#include "utils_nurbs_shapefunctions.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "geometry_position_array.H"
+#include "lib_condition_utils.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
 #include "nurbs_discret.H"
 
 // material headers
-#include "fourieriso.H"
-#include "thermostvenantkirchhoff.H"
-#include "thermoplasticlinelast.H"
-#include "thermoplastichyperelast.H"
-#include "plasticelasthyper.H"
+#include "mat_fourieriso.H"
+#include "mat_thermostvenantkirchhoff.H"
+#include "mat_thermoplasticlinelast.H"
+#include "mat_thermoplastichyperelast.H"
+#include "mat_plasticelasthyper.H"
 
 #include "thermo_element.H"  // only for visualization of element data
 #include "thermo_ele_impl.H"
 #include "thermo_ele_action.H"
 
-#include "trait_thermo_solid.H"
+#include "mat_trait_thermo_solid.H"
 
 DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT::Element* ele)
 {

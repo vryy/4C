@@ -10,10 +10,10 @@
 /*----------------------------------------------------------------------------*/
 #include "ale_utils_mapextractor.H"
 
-#include "condition_selector.H"
-#include "condition_utils.H"
-#include "discret.H"
-#include "globalproblem.H"
+#include "lib_condition_selector.H"
+#include "lib_condition_utils.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

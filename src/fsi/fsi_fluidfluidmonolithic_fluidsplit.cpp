@@ -11,16 +11,16 @@
 #include "fsi_fluidfluidmonolithic_fluidsplit.H"
 
 #include "fluid_utils_mapextractor.H"
-#include "stru_aux.H"
+#include "structure_aux.H"
 #include "ale_utils_mapextractor.H"
-#include "ad_ale_xffsi.H"
+#include "adapter_ale_xffsi.H"
 
 #include "inpar_fsi.H"
 #include "inpar_ale.H"
 
 #include "adapter_coupling.H"
-#include "ad_str_fsiwrapper.H"
-#include "ad_fld_fluid_fluid_fsi.H"
+#include "adapter_str_fsiwrapper.H"
+#include "adapter_fld_fluid_fluid_fsi.H"
 
 #include "io_control.H"
 #include "io_pstream.H"
@@ -28,7 +28,7 @@
 
 #include "constraint_manager.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

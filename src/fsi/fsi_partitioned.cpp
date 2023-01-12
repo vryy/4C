@@ -13,23 +13,23 @@
 #include "fsi_partitioned.H"
 #include "fsi_utils.H"
 
-#include "ad_str_fsiwrapper.H"
+#include "adapter_str_fsiwrapper.H"
 #include "adapter_coupling.H"
 #include "adapter_coupling_mortar.H"
-#include "ad_fld_fluid_xfem.H"
-#include "ad_fld_fluid.H"
-#include "ad_fld_fluid_xfsi.H"
-#include "ad_ale_fluid.H"
-#include "ad_fld_fluid_immersed.H"
-#include "xfluid.H"
+#include "adapter_fld_fluid_xfem.H"
+#include "adapter_fld_fluid.H"
+#include "adapter_fld_fluid_xfsi.H"
+#include "adapter_ale_fluid.H"
+#include "adapter_fld_fluid_immersed.H"
+#include "fluid_xfluid.H"
 
-#include "globalproblem.H"
-#include "validparameters.H"
+#include "lib_globalproblem.H"
+#include "inpar_validparameters.H"
 #include "inpar_fsi.H"
-#include "colors.H"
+#include "lib_colors.H"
 
 #include "io_control.H"
-#include "stru_aux.H"
+#include "structure_aux.H"
 #include "fluid_utils_mapextractor.H"
 #include "fsi_debugwriter.H"
 
@@ -45,7 +45,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "ad_fld_fbi_movingboundary.H"
+#include "adapter_fld_fbi_movingboundary.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

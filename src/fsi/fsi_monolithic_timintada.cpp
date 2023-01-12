@@ -17,19 +17,19 @@
 
 #include "inpar_fsi.H"
 
-#include "globalproblem.H"
-#include "timintmstep.H"
+#include "lib_globalproblem.H"
+#include "timestepping_mstep.H"
 
 #include "linalg_utils_sparse_algebra_math.H"
 
-#include "ad_ale_fsi.H"
-#include "ad_fld_fluid_fsi.H"
-#include "ad_str_fsi_timint_adaptive.H"
+#include "adapter_ale_fsi.H"
+#include "adapter_fld_fluid_fsi.H"
+#include "adapter_str_fsi_timint_adaptive.H"
 
 #include "io_control.H"
 #include "io_pstream.H"
 
-#include "stru_aux.H"
+#include "structure_aux.H"
 #include "fluid_utils_mapextractor.H"
 
 /*----------------------------------------------------------------------------*/

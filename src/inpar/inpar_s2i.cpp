@@ -9,9 +9,9 @@
 /*----------------------------------------------------------------------*/
 #include "inpar_s2i.H"
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 
-#include "conditiondefinition.H"
+#include "lib_conditiondefinition.H"
 
 /*------------------------------------------------------------------------*
  | set valid parameters for scatra-scatra interface coupling   fang 01/16 |

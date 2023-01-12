@@ -15,16 +15,16 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "Epetra_Vector.h"
 
-#include "elementtype.H"
-#include "discret.H"
+#include "lib_elementtype.H"
+#include "lib_discret.H"
 #include "inpar_structure.H"
 #include "inpar_beaminteraction.H"
-#include "element.H"
+#include "lib_element.H"
 
-#include "utils_fem_shapefunctions.H"
-#include "utils_integration.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "fem_general_utils_integration.H"
 
-#include "beam_spatial_discretization_utils.H"
+#include "beam3_spatial_discretization_utils.H"
 
 
 // forward declaration ...

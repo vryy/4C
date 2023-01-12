@@ -1,11 +1,11 @@
 set(OBJS_SOH8_LIB_PLAST
     # cmake-format: sortable
-    so3_ssn_plast.cpp
-    so3_ssn_plast_eas.cpp
-    so3_ssn_plast_eletypes.cpp
-    so3_ssn_plast_evaluate.cpp
-    so3_ssn_plast_sosh18.cpp
-    so3_ssn_plast_sosh8.cpp
+    so3_plast_ssn.cpp
+    so3_plast_ssn_eas.cpp
+    so3_plast_ssn_eletypes.cpp
+    so3_plast_ssn_evaluate.cpp
+    so3_plast_ssn_sosh18.cpp
+    so3_plast_ssn_sosh8.cpp
     )
 
 baci_add_library(ele_so_plast ${OBJS_SOH8_LIB_PLAST})

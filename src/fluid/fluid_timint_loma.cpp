@@ -11,10 +11,10 @@
 
 #include "fluid_timint_loma.H"
 #include "fluid_ele_action.H"
-#include "turbulence_statistic_manager.H"
-#include "globalproblem.H"
-#include "matpar_bundle.H"
-#include "sutherland.H"
+#include "fluid_turbulence_statistic_manager.H"
+#include "lib_globalproblem.H"
+#include "mat_par_bundle.H"
+#include "mat_sutherland.H"
 #include "io.H"
 #include "linalg_utils_sparse_algebra_math.H"
 

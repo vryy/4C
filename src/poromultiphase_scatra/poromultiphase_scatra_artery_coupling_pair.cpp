@@ -11,18 +11,18 @@
 #include "poromultiphase_scatra_artery_coupling_defines.H"
 
 
-#include "elementtype.H"
-#include "fluidporo_multiphase.H"
-#include "utils.H"
-#include "globalproblem.H"
-#include "cnst_1d_art.H"
-#include "FAD_utils.H"
+#include "lib_elementtype.H"
+#include "mat_fluidporo_multiphase.H"
+#include "lib_utils.H"
+#include "lib_globalproblem.H"
+#include "mat_cnst_1d_art.H"
+#include "headers_FAD_utils.H"
 #include "porofluidmultiphase_ele_parameter.H"
-#include "coordinate_system_utils.H"
+#include "geometry_coordinate_system_utils.H"
 
-#include "utils_fem_shapefunctions.H"
-#include "utils_integration.H"
-#include "element_integration_select.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "fem_general_utils_integration.H"
+#include "lib_element_integration_select.H"
 
 #include <Epetra_MultiVector.h>
 

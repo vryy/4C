@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------------*/
 
 #include "torsion3.H"
-#include "linedefinition.H"
+#include "lib_linedefinition.H"
 
 
 

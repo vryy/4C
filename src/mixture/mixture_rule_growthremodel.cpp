@@ -17,8 +17,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 #include <algorithm>
-#include "dserror.H"
-#include "matpar_material.H"
+#include "lib_dserror.H"
+#include "mat_par_material.H"
 #include "mixture_constituent.H"
 #include "mixture_growth_strategy.H"
 

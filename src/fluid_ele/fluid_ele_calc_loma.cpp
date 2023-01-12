@@ -14,7 +14,7 @@
 #include "fluid_ele_parameter_std.H"
 #include "fluid_ele_parameter_timint.H"
 
-#include "nurbs_utils.H"
+#include "nurbs_discret_nurbs_utils.H"
 
 #include "fluid_rotsym_periodicbc.H"
 

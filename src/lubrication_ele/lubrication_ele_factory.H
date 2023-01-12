@@ -12,7 +12,7 @@
 #ifndef SRC_LUBRICATION_ELE_LUBRICATION_ELE_FACTORY_H_
 #define SRC_LUBRICATION_ELE_LUBRICATION_ELE_FACTORY_H_
 
-#include "element.H"
+#include "lib_element.H"
 
 namespace DRT
 {

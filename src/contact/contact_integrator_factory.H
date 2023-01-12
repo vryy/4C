@@ -12,7 +12,7 @@
 #define SRC_CONTACT_CONTACT_INTEGRATOR_FACTORY_H_
 
 #include "inpar_contact.H"
-#include "element.H"
+#include "lib_element.H"
 
 // forward declaration
 class Epetra_Comm;

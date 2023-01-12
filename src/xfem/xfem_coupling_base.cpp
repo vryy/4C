@@ -14,12 +14,12 @@ thereby builds the bridge between the xfluid class and the cut-library
 
 #include "xfem_coupling_base.H"
 
-#include "condition_utils.H"
+#include "lib_condition_utils.H"
 #include "xfem_utils.H"
 #include "xfem_interface_utils.H"
 
 // Needed for Master Fluid
-#include "newtonianfluid.H"
+#include "mat_newtonianfluid.H"
 
 // finally this parameter list should go and all interface relevant parameters should be stored in
 // the condition mangager or coupling objects

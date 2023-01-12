@@ -16,9 +16,9 @@
 #include "scatra_ele_parameter_lsreinit.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "utils.H"
-#include "position_array.H"
-#include "discret.H"
+#include "lib_utils.H"
+#include "geometry_position_array.H"
+#include "lib_discret.H"
 
 
 /*----------------------------------------------------------------------*

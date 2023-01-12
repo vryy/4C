@@ -15,7 +15,7 @@
 #include <Epetra_Vector.h>
 #include <Epetra_MultiVector.h>
 
-#include "resulttest.H"
+#include "lib_resulttest.H"
 
 // forward declaration
 namespace DRT

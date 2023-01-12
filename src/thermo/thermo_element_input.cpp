@@ -8,8 +8,8 @@
  | headers                                                    gjb 01/08 |
  *----------------------------------------------------------------------*/
 #include "thermo_element.H"
-#include "linedefinition.H"
-#include "utils_local_connectivity_matrices.H"
+#include "lib_linedefinition.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
 
 /*----------------------------------------------------------------------*

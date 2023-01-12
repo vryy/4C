@@ -24,7 +24,7 @@ extern "C"
 #include "compile_settings.h"  // for printing current revision number
 }
 
-#include "pss_cpp.h"  // access to legacy parser module
+#include "pss_full_cpp.h"  // access to legacy parser module
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

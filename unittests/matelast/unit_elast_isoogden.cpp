@@ -12,8 +12,8 @@
 #include <gtest/gtest.h>
 #include "unittests_assertions.h"
 
-#include "elast_isoogden.H"
-#include "matpar_material.H"
+#include "matelast_isoogden.H"
+#include "mat_par_material.H"
 
 namespace
 {

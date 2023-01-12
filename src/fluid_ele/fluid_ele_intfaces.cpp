@@ -9,7 +9,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "discret.H"
+#include "lib_discret.H"
 
 #include "fluid_ele.H"
 #include "fluid_ele_intfaces_calc.H"

@@ -13,7 +13,7 @@
 #include "fluid_ele_interface.H"
 
 #include "inpar_fluid.H"
-#include "linedefinition.H"
+#include "lib_linedefinition.H"
 
 
 // initialize static variable

@@ -14,10 +14,10 @@
 #include "scatra_ele_parameter_boundary.H"
 #include "scatra_ele_boundary_calc_elch_electrode_utils.H"
 
-#include "utils_boundary_integration.H"
+#include "fem_general_utils_boundary_integration.H"
 
-#include "electrode.H"
-#include "singleton_owner.H"
+#include "mat_electrode.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |

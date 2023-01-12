@@ -9,7 +9,7 @@
 
 #include "mortar_dofset.H"
 #include "mortar_node.H"
-#include "discret.H"
+#include "lib_discret.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|

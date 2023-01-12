@@ -13,7 +13,7 @@
 #include "Epetra_Comm.h"
 #include "mortar_coupling3d_classes.H"
 #include "inpar_mortar.H"
-#include "pairedvector.H"
+#include "headers_pairedvector.H"
 
 // forward declarations
 namespace DRT

@@ -10,43 +10,43 @@
 #include "beaminteraction_submodel_evaluator_crosslinking.H"
 #include "beaminteraction_calc_utils.H"
 #include "beaminteraction_data.H"
-#include "utils_parallel_proctoproc.H"
-#include "crosslinking_params.H"
-#include "str_model_evaluator_beaminteraction_datastate.H"
-#include "crosslinker_node.H"
-#include "periodic_boundingbox.H"
-#include "beam_link.H"
-#include "beam_link_beam3r_line2_rigidjointed.H"
-#include "beam_link_beam3r_line2_pinjointed.H"
+#include "beaminteraction_utils_parallel_proctoproc.H"
+#include "beaminteraction_crosslinking_params.H"
+#include "beaminteraction_str_model_evaluator_datastate.H"
+#include "beaminteraction_crosslinker_node.H"
+#include "beaminteraction_periodic_boundingbox.H"
+#include "beaminteraction_link.H"
+#include "beaminteraction_link_beam3_reissner_line2_rigidjointed.H"
+#include "beaminteraction_link_beam3_reissner_line2_pinjointed.H"
 
-#include "dserror.H"
-#include "globalproblem.H"
+#include "lib_dserror.H"
+#include "lib_globalproblem.H"
 
 #include "io.H"
 #include "io_pstream.H"
-#include "runtime_vtp_writer.H"
-#include "discretization_runtime_vtp_writer.H"
+#include "io_runtime_vtp_writer.H"
+#include "io_discretization_runtime_vtp_writer.H"
 
-#include "str_timint_basedataglobalstate.H"
-#include "str_timint_basedataio.H"
-#include "str_timint_basedataio_runtime_vtp_output.H"
+#include "structure_new_timint_basedataglobalstate.H"
+#include "structure_new_timint_basedataio.H"
+#include "structure_new_timint_basedataio_runtime_vtp_output.H"
 
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
 
-#include "intersection_math.H"
+#include "geometry_intersection_math.H"
 
-#include "meshfree_multibin.H"
+#include "binstrategy_meshfree_multibin.H"
 
-#include "crosslinkermat.H"
+#include "mat_crosslinkermat.H"
 
 #include "beam3_base.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
 #include <unordered_set>
-#include "beam_crosslinker_handler.H"
+#include "beaminteraction_crosslinker_handler.H"
 
 
 /*-------------------------------------------------------------------------------*

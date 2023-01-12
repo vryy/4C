@@ -10,19 +10,19 @@
  *---------------------------------------------------------------------------*/
 #include "pasi_partitioned.H"
 
-#include "ad_str_structure_new.H"
-#include "ad_str_factory.H"
-#include "ad_str_pasiwrapper.H"
+#include "adapter_str_structure_new.H"
+#include "adapter_str_factory.H"
+#include "adapter_str_pasiwrapper.H"
 
 #include "particle_algorithm.H"
 
 #include "particle_wall_interface.H"
 #include "particle_wall_datastate.H"
 
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 
-#include "stru_aux.H"
+#include "structure_aux.H"
 
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"

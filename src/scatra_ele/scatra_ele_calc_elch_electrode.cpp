@@ -13,8 +13,8 @@ within isothermal electrodes
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_utils_elch_electrode.H"
 
-#include "material.H"
-#include "singleton_owner.H"
+#include "mat_material.H"
+#include "headers_singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*

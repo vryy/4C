@@ -17,10 +17,10 @@
 #include "scatra_algorithm.H"
 #include "scatra_timint_implicit.H"
 #include "inpar_scatra.H"
-#include "globalproblem.H"
-#include "discret.H"
-#include "ad_str_fsiwrapper.H"
-#include "ad_fld_fluid_fsi.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "adapter_str_fsiwrapper.H"
+#include "adapter_fld_fluid_fsi.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

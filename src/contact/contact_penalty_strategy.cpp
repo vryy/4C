@@ -25,10 +25,10 @@
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Operator.h>
 
-#include "cubic_contactconstitutivelaw.H"
-#include "utils.H"
+#include "contact_constitutivelaw_cubic_contactconstitutivelaw.H"
+#include "lib_utils.H"
 #include "contact_paramsinterface.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
