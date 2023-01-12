@@ -3173,7 +3173,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
 
   const std::string action = "interpolate_velocity_to_given_point";
 
-  // parameter space coordinates of nodes 0 to 7 according to global report
+  // parameter space coordinates of nodes 0 to 7
   std::vector<std::vector<double>> nodalrefcoords(8);
   nodalrefcoords[0].push_back(-1.0);
   nodalrefcoords[0].push_back(-1.0);
@@ -3514,7 +3514,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
     // set action for structure evaluation
     const std::string action = "interpolate_velocity_to_given_point";
 
-    // parameter space coordinates of nodes 0 to 7 according to global report
+    // parameter space coordinates of nodes 0 to 7
     std::vector<std::vector<double>> nodalrefcoords(8);
     nodalrefcoords[0].push_back(-1.0);
     nodalrefcoords[0].push_back(-1.0);
