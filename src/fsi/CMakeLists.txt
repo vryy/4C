@@ -41,6 +41,7 @@ set(OBJS_FSI
     fsi_nox_mpe.cpp
     fsi_nox_newton.cpp
     fsi_nox_sd.cpp
+    fsi_noxlinsys.cpp
     fsi_overlapprec.cpp
     fsi_overlapprec_amgnxn.cpp
     fsi_overlapprec_fsiamg.cpp

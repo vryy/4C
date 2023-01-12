@@ -69,7 +69,8 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
       verbosity_(verbosity),
       hybridPrec_(hybridPrec)
 {
-  if (strategy_ != INPAR::FSI::FSIAMG && strategy_ != INPAR::FSI::PreconditionedKrylov)
+  if (strategy_ != INPAR::FSI::FSIAMG && strategy_ != INPAR::FSI::PreconditionedKrylov &&
+      strategy_ != INPAR::FSI::LinalgSolver)
     dserror("Type of LINEARBLOCKSOLVER parameter not recognized by this class");
 }
 
@@ -185,21 +186,28 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   if (!myrank && verbosity_ == INPAR::FSI::verbosity_full)
   {
     printf("       -----------------------------------------------------------------------\n");
-    if (strategy_ == INPAR::FSI::FSIAMG)
+    switch (strategy_)
     {
-      printf(
-          "       Setting up AMG(BGS): snlevel %d fnlevel %d anlevel %d minnlevel %d maxnlevel "
-          "%d\n",
-          snlevel_, fnlevel_, anlevel_, minnlevel_, maxnlevel_);
-      fflush(stdout);
-    }
-    else if (strategy_ == INPAR::FSI::PreconditionedKrylov)
-    {
-      printf(
-          "       Setting up BGS(AMG): snlevel %d fnlevel %d anlevel %d minnlevel %d maxnlevel "
-          "%d\n",
-          snlevel_, fnlevel_, anlevel_, minnlevel_, maxnlevel_);
-      fflush(stdout);
+      case INPAR::FSI::FSIAMG:
+      {
+        printf(
+            "       Setting up AMG(BGS): snlevel %d fnlevel %d anlevel %d minnlevel %d maxnlevel "
+            "%d\n",
+            snlevel_, fnlevel_, anlevel_, minnlevel_, maxnlevel_);
+        fflush(stdout);
+        break;
+      }
+      case INPAR::FSI::PreconditionedKrylov:
+      {
+        printf(
+            "       Setting up BGS(AMG): snlevel %d fnlevel %d anlevel %d minnlevel %d maxnlevel "
+            "%d\n",
+            snlevel_, fnlevel_, anlevel_, minnlevel_, maxnlevel_);
+        fflush(stdout);
+        break;
+      }
+      default:
+        break;
     }
   }
 
@@ -1453,6 +1461,11 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
             const_cast<std::vector<MLAPI::Operator>&>(Raa_), ASF_, AFS_, AFA_, AAF_, true, false,
             true);
 
+      break;
+    }
+    case INPAR::FSI::LinalgSolver:
+    {
+      // Do nothing. Will be done by LINALG::Solver internally.
       break;
     }
     default:

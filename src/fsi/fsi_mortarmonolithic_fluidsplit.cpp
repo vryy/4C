@@ -49,6 +49,7 @@ with condensed fluid interface velocities
 #include <math.h>
 #include "linalg_matrixtransform.H"
 
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 FSI::MortarMonolithicFluidSplit::MortarMonolithicFluidSplit(
@@ -1156,39 +1157,6 @@ void FSI::MortarMonolithicFluidSplit::UnscaleSolution(
     StructureField()->SystemMatrix()->Reset();
 }
 
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::MortarMonolithicFluidSplit::CreateLinearSystem(
-    Teuchos::ParameterList& nlParams, NOX::Epetra::Vector& noxSoln, Teuchos::RCP<NOX::Utils> utils)
-{
-  Teuchos::RCP<NOX::Epetra::LinearSystem> linSys;
-
-  Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
-  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
-  Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
-  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
-
-  NOX::Epetra::Interface::Jacobian* iJac = this;
-  NOX::Epetra::Interface::Preconditioner* iPrec = this;
-  const Teuchos::RCP<Epetra_Operator> J = systemmatrix_;
-  const Teuchos::RCP<Epetra_Operator> M = systemmatrix_;
-
-  switch (linearsolverstrategy_)
-  {
-    case INPAR::FSI::PreconditionedKrylov:
-    case INPAR::FSI::FSIAMG:
-    case INPAR::FSI::HybridSchwarz:
-      linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
-          Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M, noxSoln));
-
-      break;
-    default:
-      dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);
-      break;
-  }
-
-  return linSys;
-}
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

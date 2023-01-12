@@ -40,7 +40,8 @@ RESULTSEVRY                           1
 ADAPTIVEDIST                    0.01
 BASETOL                         1e-06
 ITEMAX                          10
-LINEARBLOCKSOLVER               PreconditionedKrylov
+LINEARBLOCKSOLVER               LinalgSolver
+LINEAR_SOLVER                   1
 SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                No
 TOL_DIS_INC_INF                 1e-08
@@ -76,7 +77,7 @@ PREDICT                         ConstVel
 RHO_INF                         0.8
 GENAVG                          TrLike
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          Superlu
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2000000 NUE 0.3 DENS 7.8e-4 THEXPANS 0.0
 MAT 2 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1
