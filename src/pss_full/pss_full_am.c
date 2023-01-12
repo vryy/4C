@@ -14,7 +14,7 @@
 *----------------------------------------------------------------------*/
 #include "headers_standardtypes.h"
 #include "lib_dserror.H"
-#include "headers_am.h"
+#include "pss_full_am.h"
 #include "pss_full_prototypes.h"
 
 

@@ -41,7 +41,7 @@ table. This table can be queried for those values quite easily.
 #define PSS_TABLE_H
 
 #include "headers_standardtypes.h"
-#include "headers_am.h"
+#include "pss_full_am.h"
 #include "pss_full_types.h"
 #include <mpi.h> /* Be careful: this is the C mpi header */
 

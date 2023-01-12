@@ -41,7 +41,7 @@ table. This table can be queried for those values quite easily.
 #define PSS_TYPES_H
 
 #include "headers_standardtypes.h"
-#include "headers_am.h"
+#include "pss_full_am.h"
 
 /*!
   \brief Types of the symbols we store in a map.
