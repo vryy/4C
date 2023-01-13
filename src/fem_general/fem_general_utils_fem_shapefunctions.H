@@ -23,22 +23,22 @@ namespace DRT
   namespace UTILS
   {
     /*!
-     \brief Fill a vector of type V with with 3D shape function
+     \brief Fill a vector of type VectorType with with 3D shape function
      */
-    template <class V, typename T>
-    void shape_function_3D(V& funct,  ///< to be filled with shape function values
-        const T& r,                   ///< r coordinate
-        const T& s,                   ///< s coordinate
-        const T& t,                   ///< t coordinate
+    template <class VectorType, typename NumberType>
+    void shape_function_3D(VectorType& funct,  ///< to be filled with shape function values
+        const NumberType& r,                   ///< r coordinate
+        const NumberType& s,                   ///< s coordinate
+        const NumberType& t,                   ///< t coordinate
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
       // if the given template parameter is of type int, the error occurs during compilation
-      static_assert(!std::is_integral_v<T>);
+      static_assert(!std::is_integral_v<NumberType>);
 
-      const T Q18 = 0.125;
-      const T Q12 = 0.5;
-      const T Q14 = 0.25;
+      const NumberType Q18 = 0.125;
+      const NumberType Q12 = 0.5;
+      const NumberType Q14 = 0.25;
 
       switch (distype)
       {
@@ -49,12 +49,12 @@ namespace DRT
         }
         case DRT::Element::hex8:
         {
-          const T rp = 1.0 + r;
-          const T rm = 1.0 - r;
-          const T sp = 1.0 + s;
-          const T sm = 1.0 - s;
-          const T tp = 1.0 + t;
-          const T tm = 1.0 - t;
+          const NumberType rp = 1.0 + r;
+          const NumberType rm = 1.0 - r;
+          const NumberType sp = 1.0 + s;
+          const NumberType sm = 1.0 - s;
+          const NumberType tp = 1.0 + t;
+          const NumberType tm = 1.0 - t;
 
           funct(0) = Q18 * rm * sm * tm;
           funct(1) = Q18 * rp * sm * tm;
@@ -69,14 +69,14 @@ namespace DRT
         }
         case DRT::Element::hex16:
         {
-          const T rp = 1.0 + r;
-          const T rm = 1.0 - r;
-          const T sp = 1.0 + s;
-          const T sm = 1.0 - s;
-          const T r2 = 1.0 - r * r;
-          const T s2 = 1.0 - s * s;
-          const T tp = 1.0 + t;
-          const T tm = 1.0 - t;
+          const NumberType rp = 1.0 + r;
+          const NumberType rm = 1.0 - r;
+          const NumberType sp = 1.0 + s;
+          const NumberType sm = 1.0 - s;
+          const NumberType r2 = 1.0 - r * r;
+          const NumberType s2 = 1.0 - s * s;
+          const NumberType tp = 1.0 + t;
+          const NumberType tm = 1.0 - t;
 
           funct(0) = 0.125 * (rm * sm - (r2 * sm + s2 * rm)) * tm;
           funct(1) = 0.125 * (rp * sm - (r2 * sm + s2 * rp)) * tm;
@@ -100,15 +100,15 @@ namespace DRT
         }
         case DRT::Element::hex18:
         {
-          const T rp = 1.0 + r;
-          const T rm = 1.0 - r;
-          const T sp = 1.0 + s;
-          const T sm = 1.0 - s;
-          const T r2 = 1.0 - r * r;
-          const T s2 = 1.0 - s * s;
-          const T rh = 0.5 * r;
-          const T sh = 0.5 * s;
-          const T rs = rh * sh;
+          const NumberType rp = 1.0 + r;
+          const NumberType rm = 1.0 - r;
+          const NumberType sp = 1.0 + s;
+          const NumberType sm = 1.0 - s;
+          const NumberType r2 = 1.0 - r * r;
+          const NumberType s2 = 1.0 - s * s;
+          const NumberType rh = 0.5 * r;
+          const NumberType sh = 0.5 * s;
+          const NumberType rs = rh * sh;
 
           funct(0) = rs * rm * sm * (1.0 - t) * 0.5;
           funct(1) = -rs * rp * sm * (1.0 - t) * 0.5;
@@ -144,15 +144,15 @@ namespace DRT
            *           ( (1 + r^k r) + (1 + s^k s) + (1 + t^k t) - 2 - 3)
            */
 
-          const T rp = 1.0 + r;
-          const T rm = 1.0 - r;
-          const T sp = 1.0 + s;
-          const T sm = 1.0 - s;
-          const T tp = 1.0 + t;
-          const T tm = 1.0 - t;
-          const T rrm = 1.0 - r * r;
-          const T ssm = 1.0 - s * s;
-          const T ttm = 1.0 - t * t;
+          const NumberType rp = 1.0 + r;
+          const NumberType rm = 1.0 - r;
+          const NumberType sp = 1.0 + s;
+          const NumberType sm = 1.0 - s;
+          const NumberType tp = 1.0 + t;
+          const NumberType tm = 1.0 - t;
+          const NumberType rrm = 1.0 - r * r;
+          const NumberType ssm = 1.0 - s * s;
+          const NumberType ttm = 1.0 - t * t;
 
           // corner nodes
           funct(0) = Q18 * rm * sm * tm * (rm + sm + tm - 5.0);
@@ -186,15 +186,15 @@ namespace DRT
         }
         case DRT::Element::hex27:
         {
-          const T rm1 = 0.5 * r * (r - 1.0);
-          const T r00 = (1.0 - r * r);
-          const T rp1 = 0.5 * r * (r + 1.0);
-          const T sm1 = 0.5 * s * (s - 1.0);
-          const T s00 = (1.0 - s * s);
-          const T sp1 = 0.5 * s * (s + 1.0);
-          const T tm1 = 0.5 * t * (t - 1.0);
-          const T t00 = (1.0 - t * t);
-          const T tp1 = 0.5 * t * (t + 1.0);
+          const NumberType rm1 = 0.5 * r * (r - 1.0);
+          const NumberType r00 = (1.0 - r * r);
+          const NumberType rp1 = 0.5 * r * (r + 1.0);
+          const NumberType sm1 = 0.5 * s * (s - 1.0);
+          const NumberType s00 = (1.0 - s * s);
+          const NumberType sp1 = 0.5 * s * (s + 1.0);
+          const NumberType tm1 = 0.5 * t * (t - 1.0);
+          const NumberType t00 = (1.0 - t * t);
+          const NumberType tp1 = 0.5 * t * (t + 1.0);
 
           funct(0) = rm1 * sm1 * tm1;
           funct(1) = rp1 * sm1 * tm1;
@@ -227,10 +227,10 @@ namespace DRT
         }
         case DRT::Element::tet4:
         {
-          const T t1 = 1.0 - r - s - t;
-          const T t2 = r;
-          const T t3 = s;
-          const T t4 = t;
+          const NumberType t1 = 1.0 - r - s - t;
+          const NumberType t2 = r;
+          const NumberType t3 = s;
+          const NumberType t4 = t;
 
           funct(0) = t1;
           funct(1) = t2;
@@ -240,7 +240,7 @@ namespace DRT
         }
         case DRT::Element::tet10:
         {
-          const T u = 1.0 - r - s - t;
+          const NumberType u = 1.0 - r - s - t;
 
           funct(0) = u * (2.0 * u - 1.0);
           funct(1) = r * (2.0 * r - 1.0);
@@ -256,7 +256,7 @@ namespace DRT
         }
         case DRT::Element::wedge6:
         {
-          const T t3 = 1.0 - r - s;
+          const NumberType t3 = 1.0 - r - s;
 
           funct(0) = Q12 * r * (1.0 - t);
           funct(1) = Q12 * s * (1.0 - t);
@@ -268,25 +268,25 @@ namespace DRT
         }
         case DRT::Element::wedge15:
         {
-          const T t1 = r;
-          const T t2 = s;
-          const T t3 = 1.0 - r - s;
+          const NumberType t1 = r;
+          const NumberType t2 = s;
+          const NumberType t3 = 1.0 - r - s;
 
-          const T f1 = t1 * (2.0 * t1 - 1.0);
-          const T f2 = t2 * (2.0 * t2 - 1.0);
-          const T f3 = t3 * (2.0 * t3 - 1.0);
+          const NumberType f1 = t1 * (2.0 * t1 - 1.0);
+          const NumberType f2 = t2 * (2.0 * t2 - 1.0);
+          const NumberType f3 = t3 * (2.0 * t3 - 1.0);
 
-          const T p2 = 1.0 - t * t;
-          const T mt = 1.0 - t;
-          const T pt = 1.0 + t;
+          const NumberType p2 = 1.0 - t * t;
+          const NumberType mt = 1.0 - t;
+          const NumberType pt = 1.0 + t;
 
-          const T t1p2 = t1 * p2;
-          const T t2p2 = t2 * p2;
-          const T t3p2 = t3 * p2;
+          const NumberType t1p2 = t1 * p2;
+          const NumberType t2p2 = t2 * p2;
+          const NumberType t3p2 = t3 * p2;
 
-          const T t1t2_2 = 2.0 * t1 * t2;
-          const T t2t3_2 = 2.0 * t2 * t3;
-          const T t3t1_2 = 2.0 * t3 * t1;
+          const NumberType t1t2_2 = 2.0 * t1 * t2;
+          const NumberType t2t3_2 = 2.0 * t2 * t3;
+          const NumberType t3t1_2 = 2.0 * t3 * t1;
 
           funct(0) = Q12 * (f1 * mt - t1p2);
           funct(1) = Q12 * (f2 * mt - t2p2);
@@ -318,7 +318,7 @@ namespace DRT
           // does NOT produce a homogeneous stress state for a homogeneous
           // loaded beam, we do not use them (Thon, 17.06.16)
 
-          T ration;
+          NumberType ration;
 
           if (fabs(t - 1.0) > PY5TOL)
           {
@@ -345,27 +345,27 @@ namespace DRT
     }
 
     /*!
-     \brief Fill a matrix of type M with 3D first shape function derivatives
+     \brief Fill a matrix of type MatrixType with 3D first shape function derivatives
      */
-    template <class M, typename T>
+    template <class MatrixType, typename NumberType>
     void shape_function_3D_deriv1(
-        M& deriv1,   ///< to be filled with shape function derivative values
-        const T& r,  ///< r coordinate
-        const T& s,  ///< s coordinate
-        const T& t,  ///< t coordinate
+        MatrixType& deriv1,   ///< to be filled with shape function derivative values
+        const NumberType& r,  ///< r coordinate
+        const NumberType& s,  ///< s coordinate
+        const NumberType& t,  ///< t coordinate
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
       // if the given template parameter is of type int, the error occurs during compilation
-      static_assert(!std::is_integral_v<T>);
+      static_assert(!std::is_integral_v<NumberType>);
 
       const int dr = 0;
       const int ds = 1;
       const int dt = 2;
 
-      const T Q18 = 0.125;
-      const T Q12 = 0.500;
-      const T Q14 = 0.250;
+      const NumberType Q18 = 0.125;
+      const NumberType Q12 = 0.500;
+      const NumberType Q14 = 0.250;
 
       switch (distype)
       {
@@ -378,12 +378,12 @@ namespace DRT
         }
         case DRT::Element::hex8:
         {
-          const T rp = 1.0 + r;
-          const T rm = 1.0 - r;
-          const T sp = 1.0 + s;
-          const T sm = 1.0 - s;
-          const T tp = 1.0 + t;
-          const T tm = 1.0 - t;
+          const NumberType rp = 1.0 + r;
+          const NumberType rm = 1.0 - r;
+          const NumberType sp = 1.0 + s;
+          const NumberType sm = 1.0 - s;
+          const NumberType tp = 1.0 + t;
+          const NumberType tm = 1.0 - t;
 
           deriv1(0, 0) = -Q18 * sm * tm;
           deriv1(1, 0) = -Q18 * tm * rm;
@@ -420,12 +420,12 @@ namespace DRT
         }
         case DRT::Element::hex16:
         {
-          const T rp = 1.0 + r;
-          const T rm = 1.0 - r;
-          const T sp = 1.0 + s;
-          const T sm = 1.0 - s;
-          const T tp = 1.0 + t;
-          const T tm = 1.0 - t;
+          const NumberType rp = 1.0 + r;
+          const NumberType rm = 1.0 - r;
+          const NumberType sp = 1.0 + s;
+          const NumberType sm = 1.0 - s;
+          const NumberType tp = 1.0 + t;
+          const NumberType tm = 1.0 - t;
 
           deriv1(0, 0) = 0.125 * sm * (2.0 * r + s) * tm;
           deriv1(1, 0) = 0.125 * rm * (r + 2.0 * s) * tm;
@@ -475,8 +475,8 @@ namespace DRT
           deriv1(0, 15) = -0.25 * sm * sp * tp;
           deriv1(1, 15) = -0.5 * rm * s * tp;
 
-          const T r2 = 1.0 - r * r;
-          const T s2 = 1.0 - s * s;
+          const NumberType r2 = 1.0 - r * r;
+          const NumberType s2 = 1.0 - s * s;
 
           deriv1(2, 0) = -0.125 * (rm * sm - (r2 * sm + s2 * rm));
           deriv1(2, 1) = -0.125 * (rp * sm - (r2 * sm + s2 * rp));
@@ -500,19 +500,19 @@ namespace DRT
         }
         case DRT::Element::hex18:
         {
-          const T rp = 1.0 + r;
-          const T rm = 1.0 - r;
-          const T sp = 1.0 + s;
-          const T sm = 1.0 - s;
-          const T r2 = 1.0 - r * r;
-          const T s2 = 1.0 - s * s;
-          const T rh = 0.5 * r;
-          const T sh = 0.5 * s;
-          const T rs = rh * sh;
-          const T rhp = r + 0.5;
-          const T rhm = r - 0.5;
-          const T shp = s + 0.5;
-          const T shm = s - 0.5;
+          const NumberType rp = 1.0 + r;
+          const NumberType rm = 1.0 - r;
+          const NumberType sp = 1.0 + s;
+          const NumberType sm = 1.0 - s;
+          const NumberType r2 = 1.0 - r * r;
+          const NumberType s2 = 1.0 - s * s;
+          const NumberType rh = 0.5 * r;
+          const NumberType sh = 0.5 * s;
+          const NumberType rs = rh * sh;
+          const NumberType rhp = r + 0.5;
+          const NumberType rhm = r - 0.5;
+          const NumberType shp = s + 0.5;
+          const NumberType shm = s - 0.5;
 
           deriv1(0, 0) = -rhm * sh * sm * (1.0 - t) * 0.5;
           deriv1(1, 0) = -shm * rh * rm * (1.0 - t) * 0.5;
@@ -577,15 +577,15 @@ namespace DRT
         case DRT::Element::hex20:
         {
           // form basic values
-          const T rp = 1.0 + r;
-          const T rm = 1.0 - r;
-          const T sp = 1.0 + s;
-          const T sm = 1.0 - s;
-          const T tp = 1.0 + t;
-          const T tm = 1.0 - t;
-          const T rrm = 1.0 - r * r;
-          const T ssm = 1.0 - s * s;
-          const T ttm = 1.0 - t * t;
+          const NumberType rp = 1.0 + r;
+          const NumberType rm = 1.0 - r;
+          const NumberType sp = 1.0 + s;
+          const NumberType sm = 1.0 - s;
+          const NumberType tp = 1.0 + t;
+          const NumberType tm = 1.0 - t;
+          const NumberType rrm = 1.0 - r * r;
+          const NumberType ssm = 1.0 - s * s;
+          const NumberType ttm = 1.0 - t * t;
 
           // corner nodes
           deriv1(0, 0) = -Q18 * sm * tm * (2.0 * rm + sm + tm - 5.0);
@@ -675,25 +675,25 @@ namespace DRT
         }
         case DRT::Element::hex27:
         {
-          const T rm1 = 0.5 * r * (r - 1.0);
-          const T r00 = (1.0 - r * r);
-          const T rp1 = 0.5 * r * (r + 1.0);
-          const T sm1 = 0.5 * s * (s - 1.0);
-          const T s00 = (1.0 - s * s);
-          const T sp1 = 0.5 * s * (s + 1.0);
-          const T tm1 = 0.5 * t * (t - 1.0);
-          const T t00 = (1.0 - t * t);
-          const T tp1 = 0.5 * t * (t + 1.0);
+          const NumberType rm1 = 0.5 * r * (r - 1.0);
+          const NumberType r00 = (1.0 - r * r);
+          const NumberType rp1 = 0.5 * r * (r + 1.0);
+          const NumberType sm1 = 0.5 * s * (s - 1.0);
+          const NumberType s00 = (1.0 - s * s);
+          const NumberType sp1 = 0.5 * s * (s + 1.0);
+          const NumberType tm1 = 0.5 * t * (t - 1.0);
+          const NumberType t00 = (1.0 - t * t);
+          const NumberType tp1 = 0.5 * t * (t + 1.0);
 
-          const T drm1 = r - 0.5;
-          const T dr00 = -2.0 * r;
-          const T drp1 = r + 0.5;
-          const T dsm1 = s - 0.5;
-          const T ds00 = -2.0 * s;
-          const T dsp1 = s + 0.5;
-          const T dtm1 = t - 0.5;
-          const T dt00 = -2.0 * t;
-          const T dtp1 = t + 0.5;
+          const NumberType drm1 = r - 0.5;
+          const NumberType dr00 = -2.0 * r;
+          const NumberType drp1 = r + 0.5;
+          const NumberType dsm1 = s - 0.5;
+          const NumberType ds00 = -2.0 * s;
+          const NumberType dsp1 = s + 0.5;
+          const NumberType dtm1 = t - 0.5;
+          const NumberType dt00 = -2.0 * t;
+          const NumberType dtp1 = t + 0.5;
 
           deriv1(0, 0) = sm1 * tm1 * drm1;
           deriv1(0, 1) = sm1 * tm1 * drp1;
@@ -800,7 +800,7 @@ namespace DRT
         }
         case DRT::Element::tet10:
         {
-          const T u = 1.0 - r - s - t;
+          const NumberType u = 1.0 - r - s - t;
 
           deriv1(0, 0) = -4.0 * u + 1.;
           deriv1(1, 0) = deriv1(0, 0);
@@ -846,9 +846,9 @@ namespace DRT
         }
         case DRT::Element::wedge6:
         {
-          const T p1 = Q12 * (1.0 - t);
-          const T p2 = Q12 * (1.0 + t);
-          const T t3 = 1.0 - r - s;
+          const NumberType p1 = Q12 * (1.0 - t);
+          const NumberType p2 = Q12 * (1.0 + t);
+          const NumberType t3 = 1.0 - r - s;
 
           deriv1(0, 0) = p1;
           deriv1(0, 1) = 0.0;
@@ -875,23 +875,23 @@ namespace DRT
         }
         case DRT::Element::wedge15:
         {
-          const T t1 = r;
-          const T t2 = s;
-          const T t3 = 1.0 - r - s;
+          const NumberType t1 = r;
+          const NumberType t2 = s;
+          const NumberType t3 = 1.0 - r - s;
 
-          const T f1 = t1 * (2.0 * t1 - 1.0);
-          const T f2 = t2 * (2.0 * t2 - 1.0);
-          const T f3 = t3 * (2.0 * t3 - 1.0);
+          const NumberType f1 = t1 * (2.0 * t1 - 1.0);
+          const NumberType f2 = t2 * (2.0 * t2 - 1.0);
+          const NumberType f3 = t3 * (2.0 * t3 - 1.0);
 
-          const T p2 = 1.0 - t * t;
-          const T mt = 1.0 - t;
-          const T pt = 1.0 + t;
+          const NumberType p2 = 1.0 - t * t;
+          const NumberType mt = 1.0 - t;
+          const NumberType pt = 1.0 + t;
 
-          const T t1t2_2 = 2.0 * t1 * t2;
-          const T t2t3_2 = 2.0 * t2 * t3;
-          const T t3t1_2 = 2.0 * t3 * t1;
+          const NumberType t1t2_2 = 2.0 * t1 * t2;
+          const NumberType t2t3_2 = 2.0 * t2 * t3;
+          const NumberType t3t1_2 = 2.0 * t3 * t1;
 
-          const T dp2dt = -2.0 * t;
+          const NumberType dp2dt = -2.0 * t;
 
           deriv1(dr, 0) = Q12 * ((4.0 * t1 - 1.0) * mt - p2);
           deriv1(dr, 1) = 0.0;
@@ -945,9 +945,9 @@ namespace DRT
         }
         case DRT::Element::pyramid5:
         {
-          T rationdr;
-          T rationds;
-          T rationdt;
+          NumberType rationdr;
+          NumberType rationds;
+          NumberType rationdt;
 
           if (fabs(t - 1.0) > PY5TOL)
           {
@@ -994,22 +994,22 @@ namespace DRT
     }
 
     /*!
-     \brief Fill a matrix of type M with 3D second shape function derivatives
+     \brief Fill a matrix of type MatrixType with 3D second shape function derivatives
      */
-    template <class M, typename T>
+    template <class MatrixType, typename NumberType>
     void shape_function_3D_deriv2(
-        M& deriv2,   ///< to be filled with shape function 2-nd derivative values
-        const T& r,  ///< r coordinate
-        const T& s,  ///< s coordinate
-        const T& t,  ///< t coordinate
+        MatrixType& deriv2,   ///< to be filled with shape function 2-nd derivative values
+        const NumberType& r,  ///< r coordinate
+        const NumberType& s,  ///< s coordinate
+        const NumberType& t,  ///< t coordinate
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
       // if the given template parameter is of type int, the error occurs during compilation
-      static_assert(!std::is_integral_v<T>);
+      static_assert(!std::is_integral_v<NumberType>);
 
-      const T Q18 = 1.0 / 8.0;
-      const T Q12 = 1.0 / 2.0;
+      const NumberType Q18 = 1.0 / 8.0;
+      const NumberType Q12 = 1.0 / 2.0;
 
       const int drdr = 0;
       const int dsds = 1;
@@ -1032,12 +1032,12 @@ namespace DRT
         }
         case DRT::Element::hex8:
         {
-          const T rp = 1.0 + r;
-          const T rm = 1.0 - r;
-          const T sp = 1.0 + s;
-          const T sm = 1.0 - s;
-          const T tp = 1.0 + t;
-          const T tm = 1.0 - t;
+          const NumberType rp = 1.0 + r;
+          const NumberType rm = 1.0 - r;
+          const NumberType sp = 1.0 + s;
+          const NumberType sm = 1.0 - s;
+          const NumberType tp = 1.0 + t;
+          const NumberType tm = 1.0 - t;
 
           deriv2(drdr, 0) = 0.0;
           deriv2(dsds, 0) = 0.0;
@@ -1099,12 +1099,12 @@ namespace DRT
         }
         case DRT::Element::hex16:
         {
-          const T rp = 1.0 + r;
-          const T rm = 1.0 - r;
-          const T sp = 1.0 + s;
-          const T sm = 1.0 - s;
-          const T tp = 1.0 + t;
-          const T tm = 1.0 - t;
+          const NumberType rp = 1.0 + r;
+          const NumberType rm = 1.0 - r;
+          const NumberType sp = 1.0 + s;
+          const NumberType sm = 1.0 - s;
+          const NumberType tp = 1.0 + t;
+          const NumberType tm = 1.0 - t;
 
           deriv2(drdr, 0) = 0.25 * sm * tm;
           deriv2(dsds, 0) = 0.25 * rm * tm;
@@ -1384,12 +1384,12 @@ namespace DRT
         }
         case DRT::Element::hex20:
         {
-          const T rp = 1.0 + r;
-          const T rm = 1.0 - r;
-          const T sp = 1.0 + s;
-          const T sm = 1.0 - s;
-          const T tp = 1.0 + t;
-          const T tm = 1.0 - t;
+          const NumberType rp = 1.0 + r;
+          const NumberType rm = 1.0 - r;
+          const NumberType sp = 1.0 + s;
+          const NumberType sm = 1.0 - s;
+          const NumberType tp = 1.0 + t;
+          const NumberType tm = 1.0 - t;
 
           // corner nodes
           deriv2(drdr, 0) = 0.25 * sm * tm;
@@ -1539,25 +1539,25 @@ namespace DRT
         }
         case DRT::Element::hex27:
         {
-          const T rm1 = 0.5 * r * (r - 1.0);
-          const T r00 = (1.0 - r * r);
-          const T rp1 = 0.5 * r * (r + 1.0);
-          const T sm1 = 0.5 * s * (s - 1.0);
-          const T s00 = (1.0 - s * s);
-          const T sp1 = 0.5 * s * (s + 1.0);
-          const T tm1 = 0.5 * t * (t - 1.0);
-          const T t00 = (1.0 - t * t);
-          const T tp1 = 0.5 * t * (t + 1.0);
+          const NumberType rm1 = 0.5 * r * (r - 1.0);
+          const NumberType r00 = (1.0 - r * r);
+          const NumberType rp1 = 0.5 * r * (r + 1.0);
+          const NumberType sm1 = 0.5 * s * (s - 1.0);
+          const NumberType s00 = (1.0 - s * s);
+          const NumberType sp1 = 0.5 * s * (s + 1.0);
+          const NumberType tm1 = 0.5 * t * (t - 1.0);
+          const NumberType t00 = (1.0 - t * t);
+          const NumberType tp1 = 0.5 * t * (t + 1.0);
 
-          const T drm1 = r - 0.5;
-          const T dr00 = -2.0 * r;
-          const T drp1 = r + 0.5;
-          const T dsm1 = s - 0.5;
-          const T ds00 = -2.0 * s;
-          const T dsp1 = s + 0.5;
-          const T dtm1 = t - 0.5;
-          const T dt00 = -2.0 * t;
-          const T dtp1 = t + 0.5;
+          const NumberType drm1 = r - 0.5;
+          const NumberType dr00 = -2.0 * r;
+          const NumberType drp1 = r + 0.5;
+          const NumberType dsm1 = s - 0.5;
+          const NumberType ds00 = -2.0 * s;
+          const NumberType dsp1 = s + 0.5;
+          const NumberType dtm1 = t - 0.5;
+          const NumberType dt00 = -2.0 * t;
+          const NumberType dtp1 = t + 0.5;
 
           deriv2(drdr, 0) = sm1 * tm1;
           deriv2(drdr, 1) = sm1 * tm1;
@@ -1855,12 +1855,12 @@ namespace DRT
         }
         case DRT::Element::wedge15:
         {
-          const T t1 = r;
-          const T t2 = s;
-          const T t3 = 1.0 - r - s;
+          const NumberType t1 = r;
+          const NumberType t2 = s;
+          const NumberType t3 = 1.0 - r - s;
 
-          const T mt = 1.0 - t;
-          const T pt = 1.0 + t;
+          const NumberType mt = 1.0 - t;
+          const NumberType pt = 1.0 + t;
 
           deriv2(drdr, 0) = 2.0 * mt;
           deriv2(drdr, 1) = 0.0;
@@ -1968,17 +1968,17 @@ namespace DRT
     }
 
     /*!
-     \brief Fill a vector of type V with 2D shape function
+     \brief Fill a vector of type VectorType with 2D shape function
      */
-    template <class V, typename T>
-    void shape_function_2D(V& funct,  ///< to be filled with shape function values
-        const T& r,                   ///< r coordinate
-        const T& s,                   ///< s coordinate
+    template <class VectorType, typename NumberType>
+    void shape_function_2D(VectorType& funct,  ///< to be filled with shape function values
+        const NumberType& r,                   ///< r coordinate
+        const NumberType& s,                   ///< s coordinate
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
       // if the given template parameter is of type int, the error occurs during compilation
-      static_assert(!std::is_integral_v<T>);
+      static_assert(!std::is_integral_v<NumberType>);
 
       switch (distype)
       {
@@ -1989,10 +1989,10 @@ namespace DRT
         }
         case DRT::Element::quad4:
         {
-          const T rp = 1.0 + r;
-          const T rm = 1.0 - r;
-          const T sp = 1.0 + s;
-          const T sm = 1.0 - s;
+          const NumberType rp = 1.0 + r;
+          const NumberType rm = 1.0 - r;
+          const NumberType sp = 1.0 + s;
+          const NumberType sm = 1.0 - s;
 
           funct(0) = 0.25 * rm * sm;
           funct(1) = 0.25 * rp * sm;
@@ -2013,12 +2013,12 @@ namespace DRT
         }
         case DRT::Element::quad8:
         {
-          const T rp = 1.0 + r;
-          const T rm = 1.0 - r;
-          const T sp = 1.0 + s;
-          const T sm = 1.0 - s;
-          const T r2 = 1.0 - r * r;
-          const T s2 = 1.0 - s * s;
+          const NumberType rp = 1.0 + r;
+          const NumberType rm = 1.0 - r;
+          const NumberType sp = 1.0 + s;
+          const NumberType sm = 1.0 - s;
+          const NumberType r2 = 1.0 - r * r;
+          const NumberType s2 = 1.0 - s * s;
 
           // values for centernodes are straight forward
           //            0.5*(1-xi*xi)*(1-eta) (0 for xi=+/-1 and eta=+/-1/0
@@ -2051,15 +2051,15 @@ namespace DRT
         }
         case DRT::Element::quad9:
         {
-          const T rp = 1.0 + r;
-          const T rm = 1.0 - r;
-          const T sp = 1.0 + s;
-          const T sm = 1.0 - s;
-          const T r2 = 1.0 - r * r;
-          const T s2 = 1.0 - s * s;
-          const T rh = 0.5 * r;
-          const T sh = 0.5 * s;
-          const T rs = rh * sh;
+          const NumberType rp = 1.0 + r;
+          const NumberType rm = 1.0 - r;
+          const NumberType sp = 1.0 + s;
+          const NumberType sm = 1.0 - s;
+          const NumberType r2 = 1.0 - r * r;
+          const NumberType s2 = 1.0 - s * s;
+          const NumberType rh = 0.5 * r;
+          const NumberType sh = 0.5 * s;
+          const NumberType rs = rh * sh;
 
           funct(0) = rs * rm * sm;
           funct(1) = -rs * rp * sm;
@@ -2074,9 +2074,9 @@ namespace DRT
         }
         case DRT::Element::tri3:
         {
-          const T t1 = 1.0 - r - s;
-          const T t2 = r;
-          const T t3 = s;
+          const NumberType t1 = 1.0 - r - s;
+          const NumberType t2 = r;
+          const NumberType t3 = s;
           funct(0) = t1;
           funct(1) = t2;
           funct(2) = t3;
@@ -2084,9 +2084,9 @@ namespace DRT
         }
         case DRT::Element::tri6:
         {
-          const T t1 = 1.0 - r - s;
-          const T t2 = r;
-          const T t3 = s;
+          const NumberType t1 = 1.0 - r - s;
+          const NumberType t2 = r;
+          const NumberType t3 = s;
 
           funct(0) = t1 * (2.0 * t1 - 1.0);
           funct(1) = t2 * (2.0 * t2 - 1.0);
@@ -2105,18 +2105,18 @@ namespace DRT
     }
 
     /*!
-     \brief Fill a matrix of type M with first 2D shape function derivative
+     \brief Fill a matrix of type MatrixType with first 2D shape function derivative
      */
-    template <class M, typename T>
+    template <class MatrixType, typename NumberType>
     void shape_function_2D_deriv1(
-        M& deriv1,   ///< to be filled with shape function derivative values
-        const T& r,  ///< r coordinate
-        const T& s,  ///< s coordinate
+        MatrixType& deriv1,   ///< to be filled with shape function derivative values
+        const NumberType& r,  ///< r coordinate
+        const NumberType& s,  ///< s coordinate
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
       // if the given template parameter is of type int, the error occurs during compilation
-      static_assert((not std::is_same<int, T>::value));
+      static_assert((not std::is_same<int, NumberType>::value));
 
       const int dr = 0;
       const int ds = 1;
@@ -2131,10 +2131,10 @@ namespace DRT
         }
         case DRT::Element::quad4:
         {
-          const T rp = 1.0 + r;
-          const T rm = 1.0 - r;
-          const T sp = 1.0 + s;
-          const T sm = 1.0 - s;
+          const NumberType rp = 1.0 + r;
+          const NumberType rm = 1.0 - r;
+          const NumberType sp = 1.0 + s;
+          const NumberType sm = 1.0 - s;
 
           deriv1(dr, 0) = -0.25 * sm;
           deriv1(ds, 0) = -0.25 * rm;
@@ -2168,10 +2168,10 @@ namespace DRT
         }
         case DRT::Element::quad8:
         {
-          const T rp = 1.0 + r;
-          const T rm = 1.0 - r;
-          const T sp = 1.0 + s;
-          const T sm = 1.0 - s;
+          const NumberType rp = 1.0 + r;
+          const NumberType rm = 1.0 - r;
+          const NumberType sp = 1.0 + s;
+          const NumberType sm = 1.0 - s;
 
           //          (-1/4) (s - 1.0) (2.0 r + s)
           deriv1(0, 0) = 0.25 * sm * (2. * r + s);
@@ -2216,18 +2216,18 @@ namespace DRT
         }
         case DRT::Element::quad9:
         {
-          const T rp = 1.0 + r;
-          const T rm = 1.0 - r;
-          const T sp = 1.0 + s;
-          const T sm = 1.0 - s;
-          const T r2 = 1.0 - r * r;
-          const T s2 = 1.0 - s * s;
-          const T rh = 0.5 * r;
-          const T sh = 0.5 * s;
-          const T rhp = r + 0.5;
-          const T rhm = r - 0.5;
-          const T shp = s + 0.5;
-          const T shm = s - 0.5;
+          const NumberType rp = 1.0 + r;
+          const NumberType rm = 1.0 - r;
+          const NumberType sp = 1.0 + s;
+          const NumberType sm = 1.0 - s;
+          const NumberType r2 = 1.0 - r * r;
+          const NumberType s2 = 1.0 - s * s;
+          const NumberType rh = 0.5 * r;
+          const NumberType sh = 0.5 * s;
+          const NumberType rhp = r + 0.5;
+          const NumberType rhm = r - 0.5;
+          const NumberType shp = s + 0.5;
+          const NumberType shm = s - 0.5;
 
           deriv1(0, 0) = -rhm * sh * sm;
           deriv1(1, 0) = -shm * rh * rm;
@@ -2299,18 +2299,18 @@ namespace DRT
     }
 
     /*!
-     \brief Fill a matrix of type M with second 2D shape function derivative
+     \brief Fill a matrix of type MatrixType with second 2D shape function derivative
      */
-    template <class M, typename T>
+    template <class MatrixType, typename NumberType>
     void shape_function_2D_deriv2(
-        M& deriv2,   ///< to be filled with shape function 2-nd derivative values
-        const T& r,  ///< r coordinate
-        const T& s,  ///< s coordinate
+        MatrixType& deriv2,   ///< to be filled with shape function 2-nd derivative values
+        const NumberType& r,  ///< r coordinate
+        const NumberType& s,  ///< s coordinate
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
       // if the given template parameter is of type int, the error occurs during compilation
-      static_assert((not std::is_same<int, T>::value));
+      static_assert((not std::is_same<int, NumberType>::value));
 
       const int drdr = 0;
       const int dsds = 1;
@@ -2374,10 +2374,10 @@ namespace DRT
         }
         case DRT::Element::quad8:
         {
-          const T rp = 1.0 + r;
-          const T rm = 1.0 - r;
-          const T sp = 1.0 + s;
-          const T sm = 1.0 - s;
+          const NumberType rp = 1.0 + r;
+          const NumberType rm = 1.0 - r;
+          const NumberType sp = 1.0 + s;
+          const NumberType sm = 1.0 - s;
 
           //              (-1/2) (s - 1.0)
           deriv2(drdr, 0) = 0.5 * sm;
@@ -2438,18 +2438,18 @@ namespace DRT
         }
         case DRT::Element::quad9:
         {
-          const T rp = 1.0 + r;
-          const T rm = 1.0 - r;
-          const T sp = 1.0 + s;
-          const T sm = 1.0 - s;
-          const T r2 = 1.0 - r * r;
-          const T s2 = 1.0 - s * s;
-          const T rh = 0.5 * r;
-          const T sh = 0.5 * s;
-          const T rhp = r + 0.5;
-          const T rhm = r - 0.5;
-          const T shp = s + 0.5;
-          const T shm = s - 0.5;
+          const NumberType rp = 1.0 + r;
+          const NumberType rm = 1.0 - r;
+          const NumberType sp = 1.0 + s;
+          const NumberType sm = 1.0 - s;
+          const NumberType r2 = 1.0 - r * r;
+          const NumberType s2 = 1.0 - s * s;
+          const NumberType rh = 0.5 * r;
+          const NumberType sh = 0.5 * s;
+          const NumberType rhp = r + 0.5;
+          const NumberType rhm = r - 0.5;
+          const NumberType shp = s + 0.5;
+          const NumberType shm = s - 0.5;
 
           deriv2(drdr, 0) = -sh * sm;
           deriv2(dsds, 0) = -rh * rm;
@@ -2539,16 +2539,16 @@ namespace DRT
     }
 
     /*!
-     \brief Fill a vector of type V with 1D shape function
+     \brief Fill a vector of type VectorType with 1D shape function
      */
-    template <class M, typename T>
-    void shape_function_1D(M& funct,  ///< to be filled with shape function values
-        const T& r,                   ///< r coordinate
+    template <class VectorType, typename NumberType>
+    void shape_function_1D(VectorType& funct,  ///< to be filled with shape function values
+        const NumberType& r,                   ///< r coordinate
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
       // if the given template parameter is of type int, the error occurs during compilation
-      static_assert(!std::is_integral_v<T>);
+      static_assert(!std::is_integral_v<NumberType>);
 
       switch (distype)
       {
@@ -2633,17 +2633,17 @@ namespace DRT
     }
 
     /*!
-     \brief Fill a matrix of type M with first 1D shape function derivative
+     \brief Fill a matrix of type MatrixType with first 1D shape function derivative
      */
-    template <class M, typename T>
+    template <class MatrixType, typename NumberType>
     void shape_function_1D_deriv1(
-        M& deriv1,   ///< to be filled with shape function derivative values
-        const T& r,  ///< r coordinate
+        MatrixType& deriv1,   ///< to be filled with shape function derivative values
+        const NumberType& r,  ///< r coordinate
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
       // if the given template parameter is of type int, the error occurs during compilation
-      static_assert(!std::is_integral_v<T>);
+      static_assert(!std::is_integral_v<NumberType>);
 
       const int dr = 0;
       switch (distype)
@@ -2729,17 +2729,17 @@ namespace DRT
     }
 
     /*!
-     \brief Fill a matrix of type M with second 1D shape function derivative
+     \brief Fill a matrix of type MatrixType with second 1D shape function derivative
      */
-    template <class M, typename T>
+    template <class MatrixType, typename NumberType>
     void shape_function_1D_deriv2(
-        M& deriv2,   ///< to be filled with shape function 2-nd derivative values
-        const T& r,  ///< r coordinate
+        MatrixType& deriv2,   ///< to be filled with shape function 2-nd derivative values
+        const NumberType& r,  ///< r coordinate
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
       // if the given template parameter is of type int, the error occurs during compilation
-      static_assert(!std::is_integral_v<T>);
+      static_assert(!std::is_integral_v<NumberType>);
 
       const int drdr = 0;
       switch (distype)
@@ -2779,23 +2779,23 @@ namespace DRT
     }
 
     /*!
-     \brief Fill a matrix of type M with 1D hermite shape function
+     \brief Fill a matrix of type VectorType with 1D hermite shape function
      */
-    template <class M, typename T, typename L>
-    void shape_function_hermite_1D(M& funct,  ///< to be filled with shape function values
-        const T& r,                           ///< r coordinate
-        const L& l,                           ///< length of element
+    template <class VectorType, typename NumberType1, typename NumberType2>
+    void shape_function_hermite_1D(VectorType& funct,  ///< to be filled with shape function values
+        const NumberType1& r,                          ///< r coordinate
+        const NumberType2& l,                          ///< length of element
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
       // if the given template parameter is of type int, the error occurs during compilation
-      static_assert(!std::is_integral_v<T>);
+      static_assert(!std::is_integral_v<NumberType1>);
 
       switch (distype)
       {
         case DRT::Element::line2:
         {
-          const T r_p3 = r * r * r;
+          const NumberType1 r_p3 = r * r * r;
           funct(0) = 0.25 * (2.0 - 3.0 * r + r_p3);
           funct(1) = l / 8.0 * (1.0 - r - r * r + r_p3);
           funct(2) = 0.25 * (2.0 + 3.0 * r - r_p3);
@@ -2811,18 +2811,18 @@ namespace DRT
     }
 
     /*!
-     \brief Fill a matrix of type M with 1D hermite shape function derivatives
+     \brief Fill a matrix of type MatrixType with 1D hermite shape function derivatives
      */
-    template <class M, typename T, typename L>
+    template <class MatrixType, typename NumberType1, typename NumberType2>
     void shape_function_hermite_1D_deriv1(
-        M& deriv1,   ///< to be filled with hermite shape function first derivative values
-        const T& r,  ///< r coordinate
-        const L& l,  ///< length of element
+        MatrixType& deriv1,    ///< to be filled with hermite shape function first derivative values
+        const NumberType1& r,  ///< r coordinate
+        const NumberType2& l,  ///< length of element
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
       // if the given template parameter is of type int, the error occurs during compilation
-      static_assert(!std::is_integral_v<T>);
+      static_assert(!std::is_integral_v<NumberType1>);
 
       switch (distype)
       {
@@ -2843,18 +2843,18 @@ namespace DRT
     }
 
     /*!
-     \brief Fill a matrix of type M with 1D hermite shape function derivatives
+     \brief Fill a matrix of type MatrixType with 1D hermite shape function derivatives
      */
-    template <class M, typename T, typename L>
+    template <class MatrixType, typename NumberType1, typename NumberType2>
     void shape_function_hermite_1D_deriv2(
-        M& deriv2,   ///< to be filled with hermite shape function second derivative values
-        const T& r,  ///< r coordinate
-        const L& l,  ///< length of element
+        MatrixType& deriv2,  ///< to be filled with hermite shape function second derivative values
+        const NumberType1& r,                            ///< r coordinate
+        const NumberType2& l,                            ///< length of element
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
       // if the given template parameter is of type int, the error occurs during compilation
-      static_assert(!std::is_integral_v<T>);
+      static_assert(!std::is_integral_v<NumberType1>);
 
       switch (distype)
       {
@@ -2875,18 +2875,18 @@ namespace DRT
     }
 
     /*!
-     \brief Fill a matrix of type M with 1D hermite shape function derivatives
+     \brief Fill a matrix of type VectorType with 1D hermite shape function derivatives
      */
-    template <class M, typename T, typename L>
+    template <class VectorType, typename NumberType1, typename NumberType2>
     void shape_function_hermite_1D_deriv3(
-        M& deriv3,   ///< to be filled with hermite shape function second derivative values
-        const T& r,  ///< r coordinate
-        const L& l,  ///< length of element
+        VectorType deriv3,  ///< to be filled with hermite shape function second derivative values
+        const NumberType1& r,                            ///< r coordinate
+        const NumberType2& l,                            ///< length of element
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     )
     {
       // if the given template parameter is of type int, the error occurs during compilation
-      static_assert(!std::is_integral_v<T>);
+      static_assert(!std::is_integral_v<NumberType1>);
 
       switch (distype)
       {
@@ -2907,27 +2907,27 @@ namespace DRT
     }
 
     /*!
-     \brief Fill a matrix of type M with 1D hermite shape functions of order five
+     \brief Fill a matrix of type VectorType with 1D hermite shape functions of order five
      */
-    template <class M, typename T, typename L>
+    template <class VectorType, typename NumberType1, typename NumberType2>
     void shape_function_hermite_1D_order5(
-        M& funct,    ///< to be filled with the values hermite shape functions of order five
-        const T& r,  ///< r coordinate
-        const L& l,  ///< length of element
+        VectorType& funct,  ///< to be filled with the values hermite shape functions of order five
+        const NumberType1& r,  ///< r coordinate
+        const NumberType2& l,  ///< length of element
         const DRT::Element::DiscretizationType&
             distype  ///< distinguish between Discretization Type
     )
     {
       // if the given template parameter is of type int, the error occurs during compilation
-      static_assert(!std::is_integral_v<T>);
+      static_assert(!std::is_integral_v<NumberType1>);
 
       switch (distype)
       {
         case DRT::Element::line2:
         {
-          const T r_p3 = r * r * r;
-          const T r_p4 = r_p3 * r;
-          const T r_p5 = r_p4 * r;
+          const NumberType1 r_p3 = r * r * r;
+          const NumberType1 r_p4 = r_p3 * r;
+          const NumberType1 r_p5 = r_p4 * r;
           funct(0) = 0.0625 * (8 - 15 * r + 10 * r_p3 - 3 * r_p5);
           funct(1) = 0.03125 * l * (5 - 7 * r - 6 * r * r + 10 * r_p3 + 1 * r_p4 - 3 * r_p5);
           funct(2) = 0.015625 * l * l * (1 - 1 * r - 2 * r * r + 2 * r_p3 + 1 * r_p4 - 1 * r_p5);
@@ -2944,27 +2944,27 @@ namespace DRT
     }
 
     /*!
-     \brief Fill a matrix of type M with the first derivative of 1D hermite shape functions of order
-     five
+     \brief Fill a matrix of type VectorType with the first derivative of 1D hermite shape functions
+     of order five
      */
-    template <class M, typename T, typename L>
+    template <class VectorType, typename NumberType1, typename NumberType2>
     void shape_function_hermite_1D_order5_deriv1(
-        M& funct,    ///< to be filled with the values hermite shape functions of order five
-        const T& r,  ///< r coordinate
-        const L& l,  ///< length of element
+        VectorType& funct,  ///< to be filled with the values hermite shape functions of order five
+        const NumberType1& r,  ///< r coordinate
+        const NumberType2& l,  ///< length of element
         const DRT::Element::DiscretizationType&
             distype  ///< distinguish between Discretization Type
     )
     {
       // if the given template parameter is of type int, the error occurs during compilation
-      static_assert(!std::is_integral_v<T>);
+      static_assert(!std::is_integral_v<NumberType1>);
 
       switch (distype)
       {
         case DRT::Element::line2:
         {
-          const T r_p3 = r * r * r;
-          const T r_p4 = r_p3 * r;
+          const NumberType1 r_p3 = r * r * r;
+          const NumberType1 r_p4 = r_p3 * r;
           funct(0) = 0.0625 * (-15 + 30 * r * r - 15 * r_p4);
           funct(1) = 0.03125 * l * (-7 - 12 * r + 30 * r * r + 4 * r_p3 - 15 * r_p4);
           funct(2) = 0.015625 * l * l * (-1 - 4 * r + 6 * r * r + 4 * r_p3 - 5 * r_p4);
@@ -2981,26 +2981,26 @@ namespace DRT
     }
 
     /*!
-     \brief Fill a matrix of type M with the second derivative of 1D hermite shape functions of
-     order five
+     \brief Fill a matrix of type VectorType with the second derivative of 1D hermite shape
+     functions of order five
      */
-    template <class M, typename T, typename L>
+    template <class VectorType, typename NumberType1, typename NumberType2>
     void shape_function_hermite_1D_order5_deriv2(
-        M& funct,    ///< to be filled with the values hermite shape functions of order five
-        const T& r,  ///< r coordinate
-        const L& l,  ///< length of element
+        VectorType& funct,  ///< to be filled with the values hermite shape functions of order five
+        const NumberType1& r,  ///< r coordinate
+        const NumberType2& l,  ///< length of element
         const DRT::Element::DiscretizationType&
             distype  ///< distinguish between Discretization Type
     )
     {
       // if the given template parameter is of type int, the error occurs during compilation
-      static_assert(!std::is_integral_v<T>);
+      static_assert(!std::is_integral_v<NumberType1>);
 
       switch (distype)
       {
         case DRT::Element::line2:
         {
-          const T r_p3 = r * r * r;
+          const NumberType1 r_p3 = r * r * r;
           funct(0) = 0.0625 * (60 * r - 60 * r_p3);
           funct(1) = 0.03125 * l * (-12 + 60 * r + 12 * r * r - 60 * r_p3);
           funct(2) = 0.015625 * l * l * (-4 + 12 * r + 12 * r * r - 20 * r_p3);
@@ -3017,20 +3017,20 @@ namespace DRT
     }
 
     /*!
-     \brief Fill a matrix of type M with the third derivative of 1D hermite shape functions of order
-     five
+     \brief Fill a matrix of type VectorType with the third derivative of 1D hermite shape functions
+     of order five
      */
-    template <class M, typename T, typename L>
+    template <class VectorType, typename NumberType1, typename NumberType2>
     void shape_function_hermite_1D_order5_deriv3(
-        M& funct,    ///< to be filled with the values hermite shape functions of order five
-        const T& r,  ///< r coordinate
-        const L& l,  ///< length of element
+        VectorType& funct,  ///< to be filled with the values hermite shape functions of order five
+        const NumberType1& r,  ///< r coordinate
+        const NumberType2& l,  ///< length of element
         const DRT::Element::DiscretizationType&
             distype  ///< distinguish between Discretization Type
     )
     {
       // if the given template parameter is of type int, the error occurs during compilation
-      static_assert(!std::is_integral_v<T>);
+      static_assert(!std::is_integral_v<NumberType1>);
 
       switch (distype)
       {
@@ -3054,8 +3054,9 @@ namespace DRT
     /*!
      \brief Fill vector with the shape function values evaluated at given point
      */
-    template <class T, class V, unsigned dim>
-    constexpr void shape_function_dim(const T& xsi, V& f, DRT::Element::DiscretizationType distype)
+    template <class VectorType1, class VectorType2, unsigned dim>
+    constexpr void shape_function_dim(
+        const VectorType1& xsi, VectorType2& f, DRT::Element::DiscretizationType distype)
     {
       switch (dim)
       {
@@ -3084,17 +3085,18 @@ namespace DRT
     /*!
     \brief Fill vector with the shape function values evaluated at given point
     */
-    template <DRT::Element::DiscretizationType distype, class T, class V>
-    constexpr void shape_function(const T& xsi, V& f)
+    template <DRT::Element::DiscretizationType distype, class VectorType1, class VectorType2>
+    constexpr void shape_function(const VectorType1& xsi, VectorType2& f)
     {
-      shape_function_dim<T, V, DRT::UTILS::DisTypeToDim<distype>::dim>(xsi, f, distype);
+      shape_function_dim<VectorType1, VectorType2, DRT::UTILS::DisTypeToDim<distype>::dim>(
+          xsi, f, distype);
     }
 
     /*!
      \brief Fill a matrix with first shape function derivatives evaluated at given point
      */
-    template <DRT::Element::DiscretizationType distype, class T, class M>
-    static void shape_function_deriv1(const T& xsi, M& d)
+    template <DRT::Element::DiscretizationType distype, class VectorType, class MatrixType>
+    static void shape_function_deriv1(const VectorType& xsi, MatrixType& d)
     {
       switch (DRT::UTILS::DisTypeToDim<distype>::dim)
       {
@@ -3123,8 +3125,8 @@ namespace DRT
     /*!
      \brief Fill a matrix with second shape function derivatives evaluated at given point
      */
-    template <DRT::Element::DiscretizationType distype, class T, class M>
-    static void shape_function_deriv2(const T& xsi, M& d2)
+    template <DRT::Element::DiscretizationType distype, class VectorType, class MatrixType>
+    static void shape_function_deriv2(const VectorType& xsi, MatrixType& d2)
     {
       switch (DRT::UTILS::DisTypeToDim<distype>::dim)
       {
