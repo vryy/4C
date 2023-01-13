@@ -15,7 +15,7 @@
 #define ADAPTER_SCATRA_FLUID_COUPLING_ALGORITHM_H
 
 #include "adapter_algorithmbase.H"
-#include "ad_fld_base_algorithm.H"
+#include "adapter_fld_base_algorithm.H"
 #include "adapter_scatra_base_algorithm.H"
 #include "inpar_scatra.H"
 

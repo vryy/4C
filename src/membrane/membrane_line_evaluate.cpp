@@ -10,9 +10,9 @@
 *----------------------------------------------------------------------*/
 #include "membrane.H"
 
-#include "globalproblem.H"
-#include "utils_fem_shapefunctions.H"
-#include "str_elements_paramsinterface.H"
+#include "lib_globalproblem.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "structure_new_elements_paramsinterface.H"
 
 
 /*----------------------------------------------------------------------*

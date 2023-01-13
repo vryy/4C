@@ -16,8 +16,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "dofset_predefineddofnumber.H"
-#include "utils_createdis.H"
+#include "lib_dofset_predefineddofnumber.H"
+#include "lib_utils_createdis.H"
 
 #include "scatra_resulttest_elch.H"
 #include "scatra_timint_elch.H"

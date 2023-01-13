@@ -14,7 +14,7 @@
 #include "contact_tsi_interface.H"
 #include "contact_interface.H"
 #include "contact_node.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 #include "contact_element.H"
 
 #include "mortar_dofset.H"

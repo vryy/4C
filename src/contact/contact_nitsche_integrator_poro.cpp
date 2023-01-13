@@ -18,13 +18,13 @@
 #include <Epetra_FEVector.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include "utils_boundary_integration.H"
+#include "fem_general_utils_boundary_integration.H"
 
-#include "elasthyper.H"
-#include "structporo.H"
+#include "mat_elasthyper.H"
+#include "mat_structporo.H"
 
-#include "so_base.H"
-#include "so_hex8.H"
+#include "so3_base.H"
+#include "so3_hex8.H"
 #include "so3_poro.H"
 
 

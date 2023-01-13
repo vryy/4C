@@ -24,7 +24,7 @@
 #include "io_pstream.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "epetra_utils.H"
+#include "lib_epetra_utils.H"
 
 //#define LAGRANGE_FUNC
 

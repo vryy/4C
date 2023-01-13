@@ -14,7 +14,7 @@
 #include "fluid_ele_tds.H"
 #include "fluid_ele_parameter_std.H"
 #include "fluid_ele_immersed_base.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcImmersed<distype>*

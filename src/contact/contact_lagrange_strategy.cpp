@@ -19,7 +19,7 @@
 #include "contact_paramsinterface.H"
 #include "contact_element.H"
 #include "contact_utils.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 #include "mortar_defines.H"
 #include "mortar_utils.H"
 #include "inpar_contact.H"
@@ -28,9 +28,9 @@
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "epetra_utils.H"
+#include "lib_epetra_utils.H"
 
-#include "str_model_evaluator_contact.H"
+#include "structure_new_model_evaluator_contact.H"
 
 
 /*----------------------------------------------------------------------*

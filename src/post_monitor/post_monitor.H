@@ -20,7 +20,7 @@
 #include <Teuchos_CommandLineProcessor.hpp>
 
 #include "post_common.H"
-#include "discret.H"
+#include "lib_discret.H"
 
 
 /*----------------------------------------------------------------------*/

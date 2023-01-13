@@ -10,12 +10,12 @@
 #include "art_net_utils.H"
 
 #include "art_net_impl_stationary.H"
-#include "artnetexplicitintegration.H"
+#include "art_net_explicitintegration.H"
 
-#include "utils_createdis.H"
-#include "artery.H"
+#include "lib_utils_createdis.H"
+#include "art_net_artery.H"
 #include "scatra_ele.H"
-#include "matpar_bundle.H"
+#include "mat_par_bundle.H"
 
 /*----------------------------------------------------------------------*
  | create algorithm                                                      |

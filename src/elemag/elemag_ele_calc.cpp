@@ -10,16 +10,16 @@
 #include "elemag_ele_calc.H"
 #include "elemag_ele_action.H"
 
-#include "utils_boundary_integration.H"
+#include "fem_general_utils_boundary_integration.H"
 
-#include "position_array.H"
+#include "geometry_position_array.H"
 #include "linalg_utils_sparse_algebra_math.H"
 
-#include "discret.H"
-#include "globalproblem.H"
-#include "elementtype.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
+#include "lib_elementtype.H"
 
-#include "electromagnetic.H"
+#include "mat_electromagnetic.H"
 
 #include <Epetra_SerialDenseSolver.h>
 #include <Teuchos_TimeMonitor.hpp>

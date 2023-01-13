@@ -10,12 +10,12 @@
 #ifndef SO3_SCATRA_ELETYPES_H_
 #define SO3_SCATRA_ELETYPES_H_
 
-#include "so_hex8.H"
-#include "so_hex8fbar.H"
-#include "so_hex27.H"
-#include "so_tet4.H"
-#include "so_tet10.H"
-#include "so_weg6.H"
+#include "so3_hex8.H"
+#include "so3_hex8fbar.H"
+#include "so3_hex27.H"
+#include "so3_tet4.H"
+#include "so3_tet10.H"
+#include "so3_weg6.H"
 
 namespace DRT
 {

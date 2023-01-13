@@ -23,7 +23,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include "discret.H"
+#include "lib_discret.H"
 #include "inpar_fsi.H"
 
 // forward declarations

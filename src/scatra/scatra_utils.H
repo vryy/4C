@@ -12,7 +12,7 @@
 
 #include <Epetra_MultiVector.h>
 
-#include "element.H"
+#include "lib_element.H"
 
 namespace SCATRA
 {

@@ -16,11 +16,11 @@
 #include "particle_interaction_utils.H"
 
 #include "particle_engine_interface.H"
-#include "particle_container.H"
+#include "particle_engine_container.H"
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

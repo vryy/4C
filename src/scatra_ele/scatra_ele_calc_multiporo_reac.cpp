@@ -15,16 +15,16 @@
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "discret.H"
-#include "utils.H"
+#include "lib_discret.H"
+#include "lib_utils.H"
 
-#include "scatra_mat_multiporo.H"
-#include "fluidporo_multiphase.H"
-#include "scatra_mat.H"
-#include "structporo.H"
-#include "matlist.H"
-#include "matlist_reactions.H"
-#include "singleton_owner.H"
+#include "mat_scatra_mat_multiporo.H"
+#include "mat_fluidporo_multiphase.H"
+#include "mat_scatra_mat.H"
+#include "mat_structporo.H"
+#include "mat_list.H"
+#include "mat_list_reactions.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

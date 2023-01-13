@@ -8,7 +8,7 @@
 
 
 #include "inpar_geometry_pair.H"
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 
 
 /**

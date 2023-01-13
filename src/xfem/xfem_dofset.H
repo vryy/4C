@@ -15,8 +15,8 @@ the number of dofs per node when multiple sets of degrees of freedom per node ha
 #define XFEM_DOFSET_H
 
 
-#include "dofset_fixed_size.H"
-#include "discret.H"
+#include "lib_dofset_fixed_size.H"
+#include "lib_discret.H"
 
 namespace DRT
 {

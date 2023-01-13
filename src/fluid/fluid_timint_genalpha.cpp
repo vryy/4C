@@ -12,11 +12,11 @@
 
 #include "fluid_timint_genalpha.H"
 #include "fluid_ele_action.H"
-#include "dyn_smag.H"
-#include "dyn_vreman.H"
-#include "boxfilter.H"
+#include "fluid_turbulence_dyn_smag.H"
+#include "fluid_turbulence_dyn_vreman.H"
+#include "fluid_turbulence_boxfilter.H"
 #include "fluid_utils.H"
-#include "utils.H"
+#include "lib_utils.H"
 #include "linalg_utils_sparse_algebra_math.H"
 
 

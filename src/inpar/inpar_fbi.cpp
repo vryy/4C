@@ -12,8 +12,8 @@
 
 
 #include "inpar_fbi.H"
-#include "validparameters.H"
-#include "conditiondefinition.H"
+#include "inpar_validparameters.H"
+#include "lib_conditiondefinition.H"
 #include "inpar_geometry_pair.H"
 
 void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)

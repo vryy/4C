@@ -16,8 +16,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "globalproblem.H"
-#include "function_of_time.H"
+#include "lib_globalproblem.H"
+#include "lib_function_of_time.H"
 #include "fluid_ele.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 

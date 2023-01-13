@@ -1,11 +1,11 @@
 set(OBJS_PARTICLE_ENGINE
     # cmake-format: sortable
-    particle_communication_utils.cpp
-    particle_container.cpp
-    particle_container_bundle.cpp
     particle_engine.cpp
-    particle_runtime_vtp_writer.cpp
-    particle_unique_global_id.cpp
+    particle_engine_communication_utils.cpp
+    particle_engine_container.cpp
+    particle_engine_container_bundle.cpp
+    particle_engine_runtime_vtp_writer.cpp
+    particle_engine_unique_global_id.cpp
     )
 
 baci_add_library(alg_particle_engine ${OBJS_PARTICLE_ENGINE})
@@ -22,8 +22,8 @@ target_link_libraries(alg_particle_engine PUBLIC ${LIBS_ALG_PARTICLE_ENGINE})
 
 set(OBJS_PARTICLE_ENGINE_LIB
     # cmake-format: sortable
-    particle_enums.cpp
-    particle_object.cpp
+    particle_engine_enums.cpp
+    particle_engine_object.cpp
     )
 
 baci_add_library(particleengine ${OBJS_PARTICLE_ENGINE_LIB})

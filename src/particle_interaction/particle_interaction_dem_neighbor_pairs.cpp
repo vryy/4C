@@ -13,15 +13,15 @@
 #include "particle_interaction_utils.H"
 
 #include "particle_engine_interface.H"
-#include "particle_container.H"
+#include "particle_engine_container.H"
 
 #include "particle_wall_interface.H"
 
-#include "particle_wall_material_dem.H"
+#include "mat_particle_wall_dem.H"
 
-#include "searchtree_geometry_service.H"
-#include "position_array.H"
-#include "element_coordtrafo.H"
+#include "geometry_searchtree_service.H"
+#include "geometry_position_array.H"
+#include "geometry_element_coordtrafo.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

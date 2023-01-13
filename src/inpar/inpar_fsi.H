@@ -83,7 +83,8 @@ namespace INPAR
       PreconditionedKrylov,  ///< BGS(AMG)
       FSIAMG,                ///< AMG(BGS)
       AMGnxn,                ///< general n-by-n block preconditioning framework
-      HybridSchwarz          ///< hybrid additive/multiplicative Schwarz
+      HybridSchwarz,         ///< hybrid additive/multiplicative Schwarz
+      LinalgSolver           ///< use LINALG::Solver interface
     };
 
     enum HybridASType

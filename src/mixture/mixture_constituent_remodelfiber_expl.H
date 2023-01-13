@@ -10,12 +10,12 @@
 
 #include <Teuchos_RCPDecl.hpp>
 #include <cmath>
-#include "matpar_material.H"
-#include "growth_evolution.H"
+#include "mat_par_material.H"
+#include "mixture_growth_evolution.H"
 #include "mixture_constituent.H"
 #include "mixture_constituent_remodelfiber_material.H"
-#include "anisotropy_extension_default.H"
-#include "remodelfiber.H"
+#include "mat_anisotropy_extension_default.H"
+#include "mixture_remodelfiber.H"
 
 namespace MIXTURE
 {

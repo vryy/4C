@@ -18,10 +18,10 @@ between the xfluid class and the cut-library
 #include "xfem_discretization_utils.H"
 #include "xfem_xfluid_contact_communicator.H"
 
-#include "colors.H"
-#include "utils_parallel.H"
-#include "utils_createdis.H"
-#include "dofset_transparent_independent.H"
+#include "lib_colors.H"
+#include "lib_utils_parallel.H"
+#include "lib_utils_createdis.H"
+#include "lib_dofset_transparent_independent.H"
 
 #include "fluid_ele_action.H"
 #include "fluid_ele_parameter_xfem.H"
@@ -39,12 +39,12 @@ between the xfluid class and the cut-library
 #include "io_pstream.H"
 
 // Needed for Slave Solid XFSI --> should go to xfem_coulpling_mesh_fsi
-#include "so_hex8.H"
-#include "so_surface.H"
-#include "elasthyper.H"
+#include "so3_hex8.H"
+#include "so3_surface.H"
+#include "mat_elasthyper.H"
 
 // Needed for Slave Fluid XFF --> should go to xfem_coulpling_mesh_ff
-#include "newtonianfluid.H"
+#include "mat_newtonianfluid.H"
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/

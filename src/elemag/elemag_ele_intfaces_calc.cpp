@@ -14,7 +14,7 @@
 
 #include "linalg_utils_sparse_algebra_math.H"
 
-#include "discret_faces.H"
+#include "lib_discret_faces.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

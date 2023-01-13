@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "particle_typedefs.H"
+#include "particle_engine_typedefs.H"
 
 #include "linalg_fixedsizematrix.H"
 

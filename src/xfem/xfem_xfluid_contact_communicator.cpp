@@ -18,14 +18,14 @@
 #include "cut_element.H"
 #include "cut_boundingbox.H"
 
-#include "so_surface.H"
-#include "so_hex8.H"
+#include "so3_surface.H"
+#include "so3_hex8.H"
 
 #include "fluid_ele.H"
 
-#include "newtonianfluid.H"
+#include "mat_newtonianfluid.H"
 
-#include "utils.H"
+#include "lib_utils.H"
 
 #include "xfem_condition_manager.H"
 

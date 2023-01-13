@@ -11,8 +11,8 @@
 #include "fpsi_dyn.H"
 #include "fpsi_utils.H"
 #include "inpar_fpsi.H"
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

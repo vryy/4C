@@ -12,26 +12,26 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 
-#include "globalproblem.H"
-#include "discret.H"
-#include "utils_parameter_list.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "lib_utils_parameter_list.H"
 
 #include "poromultiphase_base.H"
 #include "poromultiphase_monolithic_twoway.H"
-#include "ad_porofluidmultiphase_wrapper.H"
-#include "ad_str_structure.H"
+#include "adapter_porofluidmultiphase_wrapper.H"
+#include "adapter_str_structure.H"
 
 #include "scatra_ele_action.H"
 
-#include "assemblestrategy.H"
+#include "lib_assemblestrategy.H"
 
 #include "adapter_scatra_base_algorithm.H"
 #include "scatra_timint_implicit.H"
 #include "io_control.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 
 #include "scatra_timint_meshtying_strategy_artery.H"
-#include "ad_art_net.H"
+#include "adapter_art_net.H"
 
 #include "linalg_equilibrate.H"
 #include "linalg_nullspace.H"

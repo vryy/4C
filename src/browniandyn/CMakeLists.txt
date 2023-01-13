@@ -1,7 +1,7 @@
 set(OBJS_LIB_BROWNIANDYN
     # cmake-format: sortable
-    str_model_evaluator_browniandyn.cpp
-    str_model_evaluator_browniandyndata.cpp
+    browniandyn_str_model_evaluator.cpp
+    browniandyn_str_model_evaluator_data.cpp
     )
 
 baci_add_library(lib_browniandyn ${OBJS_LIB_BROWNIANDYN})

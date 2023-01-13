@@ -14,19 +14,19 @@
 
 #include "fluid_ele_action.H"
 #include "fluid_ele_parameter_std.H"
-#include "element_integration_select.H"
+#include "lib_element_integration_select.H"
 
-#include "utils_fem_shapefunctions.H"
-#include "utils_nurbs_shapefunctions.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
 
-#include "position_array.H"
+#include "geometry_position_array.H"
 
 #include "inpar_turbulence.H"
 
-#include "utils.H"
+#include "lib_utils.H"
 
-#include "newtonianfluid.H"
-#include "sutherland.H"
+#include "mat_newtonianfluid.H"
+#include "mat_sutherland.H"
 
 #include "nurbs_discret.H"
 

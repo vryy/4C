@@ -21,7 +21,7 @@
 
 #include "inpar_lubrication.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 
 /*==========================================================================*/
 // Style guide                                                    nis Mar12

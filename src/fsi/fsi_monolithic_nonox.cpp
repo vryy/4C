@@ -14,11 +14,11 @@
 #include "fsi_monolithic_nonox.H"
 #include "fsi_statustest.H"
 
-#include "globalproblem.H"
-#include "validparameters.H"
-#include "colors.H"
+#include "lib_globalproblem.H"
+#include "inpar_validparameters.H"
+#include "lib_colors.H"
 
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
@@ -27,16 +27,16 @@
 
 #include "inpar_ale.H"
 
-#include "stru_aux.H"
+#include "structure_aux.H"
 #include "fluid_utils_mapextractor.H"
 #include "ale_utils_mapextractor.H"
 
 #include "adapter_coupling.H"
-#include "ad_str_fsiwrapper.H"
+#include "adapter_str_fsiwrapper.H"
 
-#include "ad_fld_fluid_fluid_fsi.H"
+#include "adapter_fld_fluid_fluid_fsi.H"
 
-#include "ad_ale_xffsi.H"
+#include "adapter_ale_xffsi.H"
 
 /*----------------------------------------------------------------------*/
 // constructor (public)

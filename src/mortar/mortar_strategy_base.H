@@ -9,7 +9,7 @@
 #ifndef MORTAR_STRATEGY_BASE_H
 #define MORTAR_STRATEGY_BASE_H
 
-#include "nox_nln_constraint_interface_preconditioner.H"  // interface specifications
+#include "solver_nonlin_nox_constraint_interface_preconditioner.H"  // interface specifications
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_Comm.h"

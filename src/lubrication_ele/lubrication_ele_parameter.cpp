@@ -17,8 +17,8 @@ parameters required for Lubrication element evaluation.
 
 #include "lubrication_ele_parameter.H"
 
-#include "dserror.H"
-#include "singleton_owner.H"
+#include "lib_dserror.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                  wirtz 10/15 |

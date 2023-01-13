@@ -15,12 +15,12 @@
 /*---------------------------------------------------------------------*
  | headers                                                 farah 09/14 |
  *---------------------------------------------------------------------*/
-#include "pairedvector.H"
+#include "headers_pairedvector.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "inpar_wear.H"
-#include "utils_local_connectivity_matrices.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
-#include "singleton_owner.H"
+#include "headers_singleton_owner.H"
 
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 09/14 |

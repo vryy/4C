@@ -14,7 +14,7 @@
 
 
 #include "beaminteraction_submodel_evaluator_generic.H"
-#include "binning_strategy_utils.H"
+#include "binstrategy_utils.H"
 
 // forward declaration ...
 class RuntimeVtpWriter;

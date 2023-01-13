@@ -12,8 +12,8 @@
 
 #include "levelset_algorithm.H"
 #include "levelset_intersection_utils.H"
-#include "globalproblem.H"
-#include "utils_parameter_list.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_parameter_list.H"
 #include "io_control.H"
 #include "io_pstream.H"
 #include "scatra_ele_action.H"
@@ -21,7 +21,7 @@
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_densematrix_communication.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 
 
 /*----------------------------------------------------------------------*

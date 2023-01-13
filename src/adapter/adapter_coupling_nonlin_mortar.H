@@ -20,7 +20,7 @@
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
-#include "dserror.H"
+#include "lib_dserror.H"
 #include "adapter_coupling_mortar.H"
 
 /*---------------------------------------------------------------------*

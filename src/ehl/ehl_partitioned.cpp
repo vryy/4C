@@ -11,9 +11,9 @@
 
 #include "linalg_utils_sparse_algebra_create.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
-#include "ad_str_wrapper.H"
+#include "adapter_str_wrapper.H"
 #include "adapter_lubrication.H"
 #include "adapter_coupling_ehl_mortar.H"
 

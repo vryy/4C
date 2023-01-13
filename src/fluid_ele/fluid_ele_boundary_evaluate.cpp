@@ -15,8 +15,8 @@
 #include "fluid_ele_boundary_calc.H"
 #include "fluid_ele_boundary_factory.H"
 #include "fluid_ele_boundary_parent_calc.H"
-#include "discret.H"
-#include "topopt_fluidAdjoint3_boundary.H"
+#include "lib_discret.H"
+#include "opti_topopt_fluidAdjoint3_boundary.H"
 
 
 /*----------------------------------------------------------------------*

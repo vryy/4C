@@ -21,7 +21,7 @@ Created on: Feb 27, 2014
 #include <MueLu_UseDefaultTypes.hpp>
 
 // Baci includes
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_blocksparsematrix.H"
 #include "solver_preconditionertype.H"
 #include "solver_amgnxn_objects.H"

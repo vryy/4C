@@ -22,11 +22,11 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "adapter_lubrication.H"
-#include "ad_str_structure.H"
-#include "assemblestrategy.H"
-#include "discret.H"
-#include "globalproblem.H"
-#include "locsys.H"
+#include "adapter_str_structure.H"
+#include "lib_assemblestrategy.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
+#include "lib_locsys.H"
 
 #include "adapter_coupling_ehl_mortar.H"
 #include "contact_interface.H"
@@ -39,7 +39,7 @@
 
 #include "linalg_blocksparsematrix.H"
 #include "linalg_sparsematrix.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
@@ -50,7 +50,7 @@
 
 #include "io_control.H"
 
-#include "lubrication_mat.H"
+#include "mat_lubrication_mat.H"
 
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is

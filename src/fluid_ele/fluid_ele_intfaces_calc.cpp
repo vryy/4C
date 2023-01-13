@@ -20,7 +20,7 @@
 
 #include "linalg_utils_sparse_algebra_assemble.H"
 
-#include "discret_faces.H"
+#include "lib_discret_faces.H"
 
 
 /*----------------------------------------------------------------------*

@@ -14,14 +14,14 @@
 #include "adapter_scatra_fluid_coupling_algorithm.H"
 #include "adapter_coupling_volmortar.H"
 
-#include "turbulence_statistic_manager.H"
+#include "fluid_turbulence_statistic_manager.H"
 #include "io.H"
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 
 // XFEM-specific coupling.
-#include "xfluid.H"
-#include "discret_xfem.H"
+#include "fluid_xfluid.H"
+#include "lib_discret_xfem.H"
 
 #include "levelset_algorithm.H"
 

@@ -16,7 +16,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 /*----------------------------------------------------------------------*/
 namespace INPAR

@@ -11,7 +11,7 @@
 #include "contact_abstract_strategy.H"
 #include "contact_defines.H"
 #include "contact_interface.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 #include "contact_paramsinterface.H"
 #include "contact_noxinterface.H"
 #include "contact_utils_parallel.H"
@@ -22,8 +22,8 @@
 #include "inpar_contact.H"
 #include "inpar_parameterlist_utils.H"
 
-#include "discret.H"
-#include "colors.H"
+#include "lib_discret.H"
+#include "lib_colors.H"
 
 #include "io.H"
 #include "io_control.H"
@@ -34,9 +34,9 @@
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_multiply.H"
 #include "linalg_sparsematrix.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
-#include "nox_nln_group.H"
+#include "solver_nonlin_nox_group.H"
 
 
 /*----------------------------------------------------------------------*

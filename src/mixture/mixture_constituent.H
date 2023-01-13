@@ -15,10 +15,10 @@
 #include <unordered_map>
 #include <memory>
 
-#include "matpar_parameter.H"
+#include "mat_par_parameter.H"
 #include "linalg_fixedsizematrix.H"
-#include "pack_buffer.H"
-#include "linedefinition.H"
+#include "lib_pack_buffer.H"
+#include "lib_linedefinition.H"
 
 // forward declaration
 namespace MAT

@@ -11,9 +11,9 @@
 #include "contact_interface.H"
 
 #include "contact_element.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 
 #include "linalg_utils_sparse_algebra_manipulation.H"
 

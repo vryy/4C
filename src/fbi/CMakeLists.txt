@@ -1,28 +1,28 @@
 set(OBJS_FBI
     # cmake-format: sortable
-    ad_fbi_constraintbridge.cpp
-    ad_fbi_constraintbridge_penalty.cpp
-    beam_to_fluid_assembly_manager_factory.cpp
-    beam_to_fluid_meshtying_pair_base.cpp
-    beam_to_fluid_meshtying_pair_factory.cpp
-    beam_to_fluid_meshtying_pair_gauss_point.cpp
-    beam_to_fluid_meshtying_pair_mortar.cpp
-    beam_to_fluid_meshtying_params.cpp
-    beam_to_fluid_meshtying_vtk_output_params.cpp
-    beam_to_fluid_meshtying_vtk_output_writer.cpp
-    beam_to_fluid_mortar_manager.cpp
-    constraintenforcer_fbi.cpp
-    constraintenforcer_fbi_factory.cpp
-    constraintenforcer_fbi_penalty.cpp
+    fbi_adapter_constraintbridge.cpp
+    fbi_adapter_constraintbridge_penalty.cpp
+    fbi_beam_to_fluid_assembly_manager_factory.cpp
+    fbi_beam_to_fluid_meshtying_pair_base.cpp
+    fbi_beam_to_fluid_meshtying_pair_factory.cpp
+    fbi_beam_to_fluid_meshtying_pair_gauss_point.cpp
+    fbi_beam_to_fluid_meshtying_pair_mortar.cpp
+    fbi_beam_to_fluid_meshtying_params.cpp
+    fbi_beam_to_fluid_meshtying_vtk_output_params.cpp
+    fbi_beam_to_fluid_meshtying_vtk_output_writer.cpp
+    fbi_beam_to_fluid_mortar_manager.cpp
     fbi_calc_utils.cpp
-    fluid_assembly_strategy.cpp
-    fluidblockmatrix_assembly_strategy.cpp
-    immersed_geometry_coupler_fbi.cpp
-    immersed_geometry_coupler_fbi_binning.cpp
-    immersedcoupler_factory.cpp
-    partitioned_penaltycoupling_assembly_manager.cpp
-    partitioned_penaltycoupling_assembly_manager_direct.cpp
-    partitioned_penaltycoupling_assembly_manager_indirect.cpp
+    fbi_constraintenforcer.cpp
+    fbi_constraintenforcer_factory.cpp
+    fbi_constraintenforcer_penalty.cpp
+    fbi_fluid_assembly_strategy.cpp
+    fbi_fluidblockmatrix_assembly_strategy.cpp
+    fbi_immersed_geometry_coupler.cpp
+    fbi_immersed_geometry_coupler_binning.cpp
+    fbi_immersedcoupler_factory.cpp
+    fbi_partitioned_penaltycoupling_assembly_manager.cpp
+    fbi_partitioned_penaltycoupling_assembly_manager_direct.cpp
+    fbi_partitioned_penaltycoupling_assembly_manager_indirect.cpp
     )
 
 baci_add_library(alg_fbi ${OBJS_FBI})

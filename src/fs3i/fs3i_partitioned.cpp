@@ -24,23 +24,23 @@
 #include "fsi_monolithicfluidsplit.H"
 #include "fsi_monolithicstructuresplit.H"
 #include "fsi_utils.H"
-#include "condition_selector.H"
-#include "condition_utils.H"
-#include "colors.H"
-#include "globalproblem.H"
-#include "utils_createdis.H"
-#include "condition_utils.H"
+#include "lib_condition_selector.H"
+#include "lib_condition_utils.H"
+#include "lib_colors.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_createdis.H"
+#include "lib_condition_utils.H"
 #include "linalg_utils_sparse_algebra_create.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 // INPAR
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 // ALE
 #include "ale_utils_clonestrategy.H"
 // ADAPTER
 #include "adapter_coupling.H"
-#include "ad_str_fsiwrapper.H"
-#include "ad_fld_fluid_fsi.H"
-#include "ad_ale_fsi.H"
+#include "adapter_str_fsiwrapper.H"
+#include "adapter_fld_fluid_fsi.H"
+#include "adapter_ale_fsi.H"
 #include "adapter_coupling_volmortar.H"
 // SCATRA
 #include "scatra_algorithm.H"
@@ -49,8 +49,8 @@
 #include "scatra_ele.H"
 // FOR WSS CALCULATIONS
 #include "fluid_utils_mapextractor.H"
-#include "dofset_predefineddofnumber.H"
-#include "stru_aux.H"
+#include "lib_dofset_predefineddofnumber.H"
+#include "structure_aux.H"
 // CLONE SCATRA DISCRETIZATION FROM STRUCTURE DISCRETIZATION
 #include "ssi_clonestrategy.H"
 

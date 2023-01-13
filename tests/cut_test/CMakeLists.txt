@@ -71,7 +71,6 @@ set(OBJS_CUT_TEST
     cut_test_units.cpp
     cut_test_utils.cpp
     cut_test_volume.cpp
-    dserror.cpp
     )
 
 add_executable(cut_test EXCLUDE_FROM_ALL ${OBJS_CUT_TEST})

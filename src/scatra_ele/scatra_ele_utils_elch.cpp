@@ -10,10 +10,10 @@
 #include "scatra_ele_utils_elch.H"
 #include "scatra_ele_calc_elch.H"
 
-#include "ion.H"
+#include "mat_ion.H"
 
-#include "definitions.h"
-#include "singleton_owner.H"
+#include "headers_definitions.h"
+#include "headers_singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*

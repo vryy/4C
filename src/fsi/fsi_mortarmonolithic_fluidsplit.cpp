@@ -17,7 +17,7 @@ with condensed fluid interface velocities
 
 #include "adapter_coupling_mortar.H"
 #include "adapter_coupling.H"
-#include "ad_str_fsiwrapper.H"
+#include "adapter_str_fsiwrapper.H"
 
 #include "fsi_mortarmonolithic_fluidsplit.H"
 #include "fsi_debugwriter.H"
@@ -26,18 +26,18 @@ with condensed fluid interface velocities
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_utils.H"
 
-#include "globalproblem.H"
-#include "validparameters.H"
+#include "lib_globalproblem.H"
+#include "inpar_validparameters.H"
 #include "fluid_utils_mapextractor.H"
-#include "stru_aux.H"
+#include "structure_aux.H"
 #include "linalg_multiply.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "ale_utils_mapextractor.H"
-#include "ad_fld_fluid_fsi.H"
-#include "ad_ale_fsi.H"
+#include "adapter_fld_fluid_fsi.H"
+#include "adapter_ale_fsi.H"
 
 #include "constraint_manager.H"
 
@@ -48,6 +48,7 @@ with condensed fluid interface velocities
 
 #include <math.h>
 #include "linalg_matrixtransform.H"
+
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -1156,39 +1157,6 @@ void FSI::MortarMonolithicFluidSplit::UnscaleSolution(
     StructureField()->SystemMatrix()->Reset();
 }
 
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::MortarMonolithicFluidSplit::CreateLinearSystem(
-    Teuchos::ParameterList& nlParams, NOX::Epetra::Vector& noxSoln, Teuchos::RCP<NOX::Utils> utils)
-{
-  Teuchos::RCP<NOX::Epetra::LinearSystem> linSys;
-
-  Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
-  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
-  Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
-  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
-
-  NOX::Epetra::Interface::Jacobian* iJac = this;
-  NOX::Epetra::Interface::Preconditioner* iPrec = this;
-  const Teuchos::RCP<Epetra_Operator> J = systemmatrix_;
-  const Teuchos::RCP<Epetra_Operator> M = systemmatrix_;
-
-  switch (linearsolverstrategy_)
-  {
-    case INPAR::FSI::PreconditionedKrylov:
-    case INPAR::FSI::FSIAMG:
-    case INPAR::FSI::HybridSchwarz:
-      linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
-          Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M, noxSoln));
-
-      break;
-    default:
-      dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);
-      break;
-  }
-
-  return linSys;
-}
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

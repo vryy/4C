@@ -6,7 +6,7 @@
 \level 2
 
  *----------------------------------------------------------------------*/
-#include "elchmat.H"
+#include "mat_elchmat.H"
 
 #include "scatra_ele_action.H"
 #include "scatra_ele_boundary_calc.H"
@@ -14,7 +14,7 @@
 #include "scatra_ele_parameter_elch.H"
 #include "scatra_ele.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             gjb 01/09 |

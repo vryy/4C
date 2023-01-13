@@ -6,7 +6,8 @@
 #
 # The test will fail if code is found that 
 #   if our header requirements for input files and source files are violated, 
-#   if our requirements for unit and input file tests are violated, or
+#   if our requirements for unit and input file tests are violated
+#   if a source file is not prefixed with the module name, or
 #   if C++ source files, or python, xml or yaml files are found that are not compliant with our respective format style.
 #
 # In the event of failure, an error message is written to stdout and to the files
@@ -52,6 +53,21 @@ else
   rm wrong_tests.txt
   echo "Passed."
 fi
+
+### Module prefixes check ######################################
+echo "Start test for module prefixes ..."
+python ./utilities/code_checks/file_prefix_check.py src src --out wrong_prefix.txt | tee wrong_prefix.txt
+
+if [ -s wrong_prefix.txt ]
+then
+  echo "Failed. Non-compliant files have been reported in wrong_prefix.txt."
+  cat wrong_prefix.txt
+  exit 1
+else
+  rm wrong_prefix.txt
+  echo "Passed."
+fi
+
 
 ### Style Format check #########################################
 #   1) Check for non-ascii characters

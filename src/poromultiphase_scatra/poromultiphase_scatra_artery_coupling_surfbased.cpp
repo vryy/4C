@@ -9,7 +9,7 @@
  *----------------------------------------------------------------------*/
 
 #include "poromultiphase_scatra_artery_coupling_surfbased.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "linalg_utils_densematrix_communication.H"
 
 #include "poromultiphase_scatra_artery_coupling_pair.H"

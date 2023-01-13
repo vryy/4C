@@ -10,10 +10,10 @@
 #include "poromultiphase_monolithic_twoway.H"
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "ad_porofluidmultiphase_wrapper.H"
-#include "ad_str_wrapper.H"
-#include "ad_art_net.H"
-#include "globalproblem.H"
+#include "adapter_porofluidmultiphase_wrapper.H"
+#include "adapter_str_wrapper.H"
+#include "adapter_art_net.H"
+#include "lib_globalproblem.H"
 #include "io_control.H"
 #include "inpar_solver.H"
 #include "linalg_equilibrate.H"
@@ -22,12 +22,12 @@
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_sparse_algebra_print.H"
-#include "linalg_solver.H"
-#include "locsys.H"
+#include "solver_linalg_solver.H"
+#include "lib_locsys.H"
 
 
-#include "assemblestrategy.H"
-#include "elements_paramsminimal.H"
+#include "lib_assemblestrategy.H"
+#include "lib_elements_paramsminimal.H"
 
 #include "poromultiphase_utils.H"
 

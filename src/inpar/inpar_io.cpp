@@ -9,7 +9,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_io.H"
 
 #include "inpar_structure.H"

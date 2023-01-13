@@ -9,9 +9,9 @@
 /*----------------------------------------------------------------------------*/
 
 #include "torsion3.H"
-#include "dserror.H"
-#include "linedefinition.H"
-#include "str_elements_paramsinterface.H"
+#include "lib_dserror.H"
+#include "lib_linedefinition.H"
+#include "structure_new_elements_paramsinterface.H"
 #include "linalg_utils_nullspace.H"
 
 DRT::ELEMENTS::Torsion3Type DRT::ELEMENTS::Torsion3Type::instance_;

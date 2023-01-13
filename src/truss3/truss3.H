@@ -11,8 +11,8 @@
 #define TRUSS3_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "elementtype.H"
-#include "utils_integration.H"
+#include "lib_elementtype.H"
+#include "fem_general_utils_integration.H"
 
 #include "Sacado.hpp"
 using FAD = Sacado::Fad::DFad<double>;

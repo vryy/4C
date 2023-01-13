@@ -11,7 +11,7 @@
 #include "so3_poro_eletypes.H"
 #include "so3_poro.H"
 
-#include "linedefinition.H"
+#include "lib_linedefinition.H"
 
 /*----------------------------------------------------------------------*
  |  HEX 8 Element                                       |

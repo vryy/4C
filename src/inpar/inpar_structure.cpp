@@ -9,10 +9,10 @@
 
 /*----------------------------------------------------------------------*/
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_structure.H"
 #include "inpar.H"
-#include "conditiondefinition.H"
+#include "lib_conditiondefinition.H"
 
 namespace INPAR
 {

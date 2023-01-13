@@ -12,7 +12,7 @@
 #include "mortar_element.H"
 #include "mortar_node.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 #include "linalg_fixedsizematrix.H"
 
 

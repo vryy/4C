@@ -8,12 +8,12 @@
 
 #include "gtest/gtest.h"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
-#include "elasthyper_service.H"
-#include "matpar_bundle.H"
-#include "matpar_material.H"
-#include "multiplicative_split_defgrad_elasthyper.H"
+#include "mat_elasthyper_service.H"
+#include "mat_par_bundle.H"
+#include "mat_par_material.H"
+#include "mat_multiplicative_split_defgrad_elasthyper.H"
 
 #include "linalg_fixedsizematrix.H"
 

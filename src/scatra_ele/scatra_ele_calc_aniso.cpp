@@ -15,24 +15,24 @@
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "globalproblem.H"
-#include "discret.H"
-#include "element.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "lib_element.H"
 
-#include "globalproblem.H"      // for time curve in body force
-#include "standardtypes_cpp.H"  // for EPS13 and so on
-#include "utils.H"
-#include "utils_fem_shapefunctions.H"
-#include "utils_nurbs_shapefunctions.H"
-#include "nurbs_utils.H"
-#include "utils_gder2.H"
-#include "position_array.H"
-#include "condition_utils.H"
+#include "lib_globalproblem.H"      // for time curve in body force
+#include "lib_standardtypes_cpp.H"  // for EPS13 and so on
+#include "lib_utils.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "nurbs_discret_nurbs_utils.H"
+#include "fem_general_utils_gder2.H"
+#include "geometry_position_array.H"
+#include "lib_condition_utils.H"
 
-#include "matlist.H"
-#include "newtonianfluid.H"
-#include "scatra_mat_aniso.H"
-#include "singleton_owner.H"
+#include "mat_list.H"
+#include "mat_newtonianfluid.H"
+#include "mat_scatra_mat_aniso.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

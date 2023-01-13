@@ -12,9 +12,9 @@
 #define SCATRA_ELE_HDG_INTFACES_CALC_H
 
 
-#include "utils_local_connectivity_matrices.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
-#include "singleton_owner.H"
+#include "headers_singleton_owner.H"
 
 namespace LINALG
 {

@@ -10,10 +10,10 @@
 #define MORTAR_ELEMENT_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "element.H"
-#include "elementtype.H"
+#include "lib_element.H"
+#include "lib_elementtype.H"
 #include "inpar_mortar.H"
-#include "pairedvector.H"
+#include "headers_pairedvector.H"
 #include "linalg_serialdensevector.H"
 #include "mortar_node.H"
 

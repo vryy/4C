@@ -11,10 +11,10 @@
 
 #include "beaminteraction_data.H"
 
-#include "dserror.H"
-#include "pack_buffer.H"
-#include "parobject.H"
-#include "globalproblem.H"
+#include "lib_dserror.H"
+#include "lib_pack_buffer.H"
+#include "lib_parobject.H"
+#include "lib_globalproblem.H"
 
 
 /*----------------------------------------------------------------------------*

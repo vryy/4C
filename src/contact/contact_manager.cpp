@@ -25,23 +25,23 @@
 #include "contact_nitsche_strategy_fsi.H"
 #include "contact_nitsche_strategy_fpi.H"
 #include "contact_defines.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 #include "contact_strategy_factory.H"
 #include "contact_utils.H"
 #include "contact_utils_parallel.H"
 
-#include "contact_augmented_strategy.H"
-#include "contact_augmented_interface.H"
+#include "contact_aug_strategy.H"
+#include "contact_aug_interface.H"
 
 #include "mortar_defines.H"
 #include "mortar_utils.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "inpar_contact.H"
 #include "inpar_mortar.H"
 #include "inpar_wear.H"
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 
 #include "io_control.H"
 #include "io.H"

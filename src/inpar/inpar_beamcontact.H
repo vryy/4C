@@ -12,7 +12,7 @@
 
 #include "inpar_parameterlist_utils.H"
 
-#include "condition.H"
+#include "lib_condition.H"
 
 /*----------------------------------------------------------------------*/
 

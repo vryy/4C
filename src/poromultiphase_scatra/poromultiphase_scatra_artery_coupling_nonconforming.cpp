@@ -8,9 +8,9 @@
  *----------------------------------------------------------------------*/
 
 #include "poromultiphase_scatra_artery_coupling_nonconforming.H"
-#include "utils_parallel.H"
-#include "utils.H"
-#include "globalproblem.H"
+#include "lib_utils_parallel.H"
+#include "lib_utils.H"
+#include "lib_globalproblem.H"
 #include "linalg_serialdensevector.H"
 #include <Epetra_FEVector.h>
 
@@ -22,7 +22,7 @@
 #include "linalg_utils_sparse_algebra_print.H"
 #include "poromultiphase_scatra_artery_coupling_pair.H"
 #include "poromultiphase_scatra_artery_coupling_defines.H"
-#include "cnst_1d_art.H"
+#include "mat_cnst_1d_art.H"
 
 
 

@@ -14,9 +14,9 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "particle_typedefs.H"
+#include "particle_engine_typedefs.H"
 
-#include "resulttest.H"
+#include "lib_resulttest.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |

@@ -10,14 +10,14 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_functions.H"
-#include "globalproblem.H"
-#include "standardtypes_cpp.H"
-#include "matpar_bundle.H"
-#include "newtonianfluid.H"
-#include "fluid_murnaghantait.H"
-#include "fluid_linear_density_viscosity.H"
-#include "fluid_weakly_compressible.H"
-#include "stvenantkirchhoff.H"
+#include "lib_globalproblem.H"
+#include "lib_standardtypes_cpp.H"
+#include "mat_par_bundle.H"
+#include "mat_newtonianfluid.H"
+#include "mat_fluid_murnaghantait.H"
+#include "mat_fluid_linear_density_viscosity.H"
+#include "mat_fluid_weakly_compressible.H"
+#include "mat_stvenantkirchhoff.H"
 #include "Teuchos_RCP.hpp"
 
 namespace

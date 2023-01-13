@@ -15,15 +15,15 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_utils_elch.H"
 
-#include "position_array.H"
-#include "discret.H"  // for time curve in body force
-#include "utils.H"
-#include "globalproblem.H"  // consistency check of formulation and material
-#include "function_of_time.H"
+#include "geometry_position_array.H"
+#include "lib_discret.H"  // for time curve in body force
+#include "lib_utils.H"
+#include "lib_globalproblem.H"  // consistency check of formulation and material
+#include "lib_function_of_time.H"
 
-#include "nurbs_utils.H"
+#include "nurbs_discret_nurbs_utils.H"
 
-#include "elchmat.H"
+#include "mat_elchmat.H"
 
 #include "scatra_ele_calc_elch.H"
 

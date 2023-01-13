@@ -16,8 +16,8 @@
 
 #include "io_control.H"
 
-#include "discret.H"
-#include "globalproblem.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

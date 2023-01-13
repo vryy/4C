@@ -151,6 +151,7 @@ namespace INPAR
       m_multiplicative_split_defgrad_elasthyper,  ///< deformation gradient is split
                                                   ///< multiplicatively in elastic and inelastic
                                                   ///< parts
+      m_muscle_weickenmeier,                      ///< Weickenmeier muscle material
       m_myocard,                ///< anisotropic electrophysical model of heart tissue
       m_newman,                 ///< properties of an ion species in an electrolyte solution
       m_newman_multiscale,      ///< properties of an ion species in an electrolyte solution for
@@ -301,7 +302,6 @@ namespace INPAR
       mix_elasthyper_damage,             ///< Elast hyper toolbox with temporal damage
       mix_elasthyper_elastin_membrane,   ///< Elast Hyper toolbox with temporal damage and 2D
                                          ///< membrane material
-      mix_muscle_weickenmeier,           ///< Weickenmeier muscle material for Constituents
       mix_remodelfiber_expl,  ///< Fiber that remodels with homogenized constrained mixture model
                               ///< with explicit solution of the growth and remodel equations
       mix_remodelfiber_impl,  ///< Fiber that remodels with homogenized constrained mixture model

@@ -21,13 +21,13 @@
 
 #include "poroelast_utils.H"
 
-#include "poro_utils_clonestrategy.H"
+#include "poroelast_utils_clonestrategy.H"
 #include "scatra_ele.H"
 
-#include "utils_createdis.H"
+#include "lib_utils_createdis.H"
 
-#include "dofset_predefineddofnumber.H"
-#include "utils_parallel.H"
+#include "lib_dofset_predefineddofnumber.H"
+#include "lib_utils_parallel.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

@@ -10,16 +10,16 @@
 
 /*----------------------------------------------------------------------------*/
 #include "ale_utils_clonestrategy.H"
-#include "globalproblem.H"
-#include "matpar_material.H"
-#include "matpar_bundle.H"
+#include "lib_globalproblem.H"
+#include "mat_par_material.H"
+#include "mat_par_bundle.H"
 
 // we need to know all element types for the ale mesh creation
 #include "fluid_ele.H"
-#include "ale2.H"
-#include "ale2_nurbs.H"
-#include "ale3.H"
-#include "ale3_nurbs.H"
+#include "ale_ale2.H"
+#include "ale_ale2_nurbs.H"
+#include "ale_ale3.H"
+#include "ale_ale3_nurbs.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

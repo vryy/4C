@@ -9,8 +9,8 @@
 #ifndef SRC_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_CALC_UTILS_H_
 #define SRC_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_CALC_UTILS_H_
 
-#include "element.H"
-#include "utils_integration.H"
+#include "lib_element.H"
+#include "fem_general_utils_integration.H"
 
 namespace MAT
 {

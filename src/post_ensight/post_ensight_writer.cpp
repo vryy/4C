@@ -17,15 +17,15 @@
 
 #include "inpar_problemtype.H"
 
-#include "discret_xfem.H"
+#include "lib_discret_xfem.H"
 
 #include <string>
 #include <numeric>
 
-#include "pss_cpp.h"
+#include "pss_full_cpp.h"
 extern "C"
 {
-#include "pss_table_iter.h"
+#include "pss_full_table_iter.h"
 }
 
 //! 6 Surfaces of a Hex27 element with 9 nodes per surface

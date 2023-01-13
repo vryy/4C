@@ -13,14 +13,14 @@
 #include "thermo_ele_boundary_impl.H"
 #include "thermo_ele_action.H"
 #include "inpar_thermo.H"
-#include "globalproblem.H"
-#include "discret.H"
-#include "function_of_time.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "lib_function_of_time.H"
 
-#include "utils_fem_shapefunctions.H"
-#include "utils_boundary_integration.H"
-#include "position_array.H"
-#include "utils_nurbs_shapefunctions.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "fem_general_utils_boundary_integration.H"
+#include "geometry_position_array.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
 #include "nurbs_discret.H"
 
 

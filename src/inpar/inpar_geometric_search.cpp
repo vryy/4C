@@ -8,7 +8,7 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_geometric_search.H"
 
 void INPAR::GEOMETRICSEARCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)

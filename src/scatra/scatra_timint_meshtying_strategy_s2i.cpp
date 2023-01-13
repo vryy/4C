@@ -17,20 +17,20 @@
 #include "fluid_utils.H"
 #include "linalg_matrixtransform.H"
 
-#include "position_array.H"
+#include "geometry_position_array.H"
 
 #include "io.H"
 #include "io_control.H"
 
-#include "assemblestrategy.H"
-#include "condition_utils.H"
-#include "dofset_predefineddofnumber.H"
-#include "globalproblem.H"
-#include "utils_gid_vector.H"
-#include "utils_vector.H"
-#include "utils_parameter_list.H"
+#include "lib_assemblestrategy.H"
+#include "lib_condition_utils.H"
+#include "lib_dofset_predefineddofnumber.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_gid_vector.H"
+#include "lib_utils_vector.H"
+#include "lib_utils_parameter_list.H"
 
-#include "electrode.H"
+#include "mat_electrode.H"
 
 #include "mortar_coupling3d_classes.H"
 #include "mortar_interface.H"
@@ -46,7 +46,7 @@
 #include "volmortar_shape.H"
 
 #include "linalg_multiply.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_equilibrate.H"

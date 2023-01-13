@@ -8,11 +8,11 @@
 /*----------------------------------------------------------------------*/
 
 #include "scatra_timint_hdg.H"
-#include "discret_hdg.H"
-#include "globalproblem.H"
-#include "utils_parameter_list.H"
-#include "assemblestrategy.H"
-#include "dofset.H"
+#include "lib_discret_hdg.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_parameter_list.H"
+#include "lib_assemblestrategy.H"
+#include "lib_dofset.H"
 
 #include "scatra_ele_hdg.H"
 #include "scatra_ele_action.H"
@@ -22,9 +22,9 @@
 #include "io_control.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-#include "dofset_predefineddofnumber.H"
+#include "lib_dofset_predefineddofnumber.H"
 
-#include "binning_strategy.H"
+#include "binstrategy.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 hoermann 09/15 |

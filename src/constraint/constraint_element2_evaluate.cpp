@@ -9,8 +9,8 @@
 #include <Epetra_SerialDenseSolver.h>
 
 #include "constraint_element2.H"
-#include "utils.H"
-#include "exporter.H"
+#include "lib_utils.H"
+#include "lib_exporter.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensevector.H"
 

@@ -11,10 +11,10 @@
 #include "scatra_timint_implicit.H"
 
 #include "adapter_scatra_base_algorithm.H"
-#include "ad_art_net.H"
-#include "linalg_solver.H"
+#include "adapter_art_net.H"
+#include "solver_linalg_solver.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "poromultiphase_scatra_artery_coupling_nodebased.H"
 #include "poromultiphase_scatra_utils.H"
 

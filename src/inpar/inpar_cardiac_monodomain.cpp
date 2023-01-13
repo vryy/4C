@@ -8,9 +8,9 @@
 /*----------------------------------------------------------------------*/
 #include "inpar_cardiac_monodomain.H"
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 
-#include "conditiondefinition.H"
+#include "lib_conditiondefinition.H"
 
 void INPAR::EP::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {

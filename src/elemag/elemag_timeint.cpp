@@ -11,17 +11,17 @@
 #include "elemag_timeint.H"
 #include "elemag_ele_action.H"
 #include "elemag_resulttest.H"
-#include "resulttest.H"
-#include "discret_hdg.H"
-#include "globalproblem.H"
+#include "lib_resulttest.H"
+#include "lib_discret_hdg.H"
+#include "lib_globalproblem.H"
 #include "io.H"
 #include "io_control.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_equilibrate.H"
-#include "linalg_solver.H"
-#include "electromagnetic.H"
+#include "solver_linalg_solver.H"
+#include "mat_electromagnetic.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

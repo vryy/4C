@@ -10,15 +10,15 @@
 
 #include <iostream>
 
-#include "validparameters.H"
-#include "colors.H"
-#include "globalproblem.H"
+#include "inpar_validparameters.H"
+#include "lib_colors.H"
+#include "lib_globalproblem.H"
 
 #include "io_pstream.H"
 
 #include "adapter_algorithmbase.H"
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

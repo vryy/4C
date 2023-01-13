@@ -11,10 +11,10 @@
 
 #include <gtest/gtest.h>
 
-#include "anisotropy.H"
-#include "elast_coupanisoexpo.H"
-#include "voigt_notation.H"
-#include "elast_coupanisoexposhear.H"
+#include "mat_anisotropy.H"
+#include "matelast_coupanisoexpo.H"
+#include "lib_voigt_notation.H"
+#include "matelast_coupanisoexposhear.H"
 #include "unittests_assertions.h"
 
 namespace

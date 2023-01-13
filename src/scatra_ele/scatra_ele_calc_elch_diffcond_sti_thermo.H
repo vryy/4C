@@ -13,7 +13,7 @@
 #include "scatra_ele_sti_thermo.H"
 #include "scatra_ele_calc_elch_diffcond.H"
 
-#include "material.H"
+#include "mat_material.H"
 
 namespace DRT
 {

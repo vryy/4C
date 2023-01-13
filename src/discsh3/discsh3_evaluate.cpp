@@ -8,17 +8,17 @@
 /*-----------------------------------------------------------*/
 
 #include "discsh3.H"
-#include "utils.H"
-#include "discret.H"
-#include "globalproblem.H"
-#include "dserror.H"
+#include "lib_utils.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
+#include "lib_dserror.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "stvenantkirchhoff.H"
+#include "mat_stvenantkirchhoff.H"
 #include "linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
-#include "globalproblem.H"
-#include "utils_integration.H"
-#include "utils_fem_shapefunctions.H"
+#include "lib_globalproblem.H"
+#include "fem_general_utils_integration.H"
+#include "fem_general_utils_fem_shapefunctions.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

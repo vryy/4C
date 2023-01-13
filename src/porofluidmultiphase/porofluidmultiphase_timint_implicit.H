@@ -18,10 +18,10 @@
 
 #include <Teuchos_ParameterList.hpp>
 
-#include "discret.H"
+#include "lib_discret.H"
 
-#include "ad_porofluidmultiphase.H"
-#include "ad_art_net.H"
+#include "adapter_porofluidmultiphase.H"
+#include "adapter_art_net.H"
 
 #include "inpar_porofluidmultiphase.H"
 

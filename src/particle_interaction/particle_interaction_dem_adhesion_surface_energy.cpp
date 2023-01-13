@@ -12,9 +12,9 @@
 
 #include "inpar_particle.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

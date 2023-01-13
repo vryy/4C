@@ -20,7 +20,7 @@
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialDenseMatrix.h"
 
-#include "utils_gausspoints.H"
+#include "fem_general_utils_gausspoints.H"
 
 #include "cut_utils.H"
 

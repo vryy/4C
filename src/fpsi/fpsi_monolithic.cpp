@@ -21,20 +21,20 @@
 
 // LINALG includes
 #include "linalg_nullspace.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
 // lib includes
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 // adapter includes
-#include "ad_str_fpsiwrapper.H"
-#include "ad_fld_poro.H"
+#include "adapter_str_fpsiwrapper.H"
+#include "adapter_fld_poro.H"
 
 // STRUCTURE includes
-#include "stru_aux.H"
+#include "structure_aux.H"
 
 // OTHER includes
 #include "io_control.H"

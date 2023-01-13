@@ -16,7 +16,7 @@
 
 #include "inpar_elch.H"
 
-#include "electrode.H"
+#include "mat_electrode.H"
 
 namespace DRT
 {

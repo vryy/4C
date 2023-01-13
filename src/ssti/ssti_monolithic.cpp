@@ -13,13 +13,13 @@
 #include "ssti_monolithic_evaluate_OffDiag.H"
 #include "ssti_utils.H"
 
-#include "ad_str_ssiwrapper.H"
-#include "ad_str_structure_new.H"
+#include "adapter_str_ssiwrapper.H"
+#include "adapter_str_structure_new.H"
 #include "adapter_scatra_base_algorithm.H"
 
 #include "io_control.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "scatra_timint_implicit.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"
@@ -31,7 +31,7 @@
 
 #include "linalg_equilibrate.H"
 #include "linalg_utils_sparse_algebra_create.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/

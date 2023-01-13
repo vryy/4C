@@ -10,11 +10,11 @@
 
 #include <gtest/gtest.h>
 
-#include "beam3r.H"
-#include "so_hex8.H"
-#include "so_hex27.H"
-#include "so_tet10.H"
-#include "so_nurbs27.H"
+#include "beam3_reissner.H"
+#include "so3_hex8.H"
+#include "so3_hex27.H"
+#include "so3_tet10.H"
+#include "so3_nurbs27.H"
 #include "geometry_pair_element_functions.H"
 #include "geometry_pair_line_to_volume_segmentation.H"
 #include "geometry_pair_line_to_3D_evaluation_data.H"

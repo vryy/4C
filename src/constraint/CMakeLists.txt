@@ -1,19 +1,19 @@
 set(OBJS_CONSTRAINT
     # cmake-format: sortable
     constraint.cpp
+    constraint_dofset.cpp
+    constraint_lagpenconstraint_noxinterface.cpp
     constraint_manager.cpp
-    constraintdofset.cpp
-    constraintpenalty.cpp
-    constraintsolver.cpp
-    lagpenconstraint_noxinterface.cpp
-    monitor.cpp
-    multipointconstraint.cpp
-    multipointconstraint2.cpp
-    multipointconstraint3.cpp
-    multipointconstraint3penalty.cpp
-    nox_nln_lagpenconstraint_linearsystem.cpp
-    springdashpot.cpp
-    springdashpot_manager.cpp
+    constraint_monitor.cpp
+    constraint_multipointconstraint.cpp
+    constraint_multipointconstraint2.cpp
+    constraint_multipointconstraint3.cpp
+    constraint_multipointconstraint3penalty.cpp
+    constraint_nox_nln_lagpenconstraint_linearsystem.cpp
+    constraint_penalty.cpp
+    constraint_solver.cpp
+    constraint_springdashpot.cpp
+    constraint_springdashpot_manager.cpp
     )
 
 baci_add_library(constraint ${OBJS_CONSTRAINT})

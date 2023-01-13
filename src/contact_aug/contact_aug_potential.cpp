@@ -9,8 +9,8 @@
 /*---------------------------------------------------------------------*/
 
 #include "contact_aug_potential.H"
-#include "contact_augmented_strategy.H"
-#include "contact_augmented_interface.H"
+#include "contact_aug_strategy.H"
+#include "contact_aug_interface.H"
 
 #include "io_pstream.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"

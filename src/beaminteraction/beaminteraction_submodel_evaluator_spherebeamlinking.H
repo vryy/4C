@@ -17,7 +17,7 @@
 #include "linalg_fixedsizematrix.H"
 #include <Epetra_MpiComm.h>
 
-#include "binning_strategy_utils.H"
+#include "binstrategy_utils.H"
 #include "beaminteraction_submodel_evaluator_generic.H"
 #include <unordered_set>
 

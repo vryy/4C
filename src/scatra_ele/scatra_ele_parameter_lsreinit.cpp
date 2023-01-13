@@ -15,8 +15,8 @@ general static parameters required for scalar transport element evaluation.
 */
 /*----------------------------------------------------------------------*/
 #include "scatra_ele_parameter_lsreinit.H"
-#include "dserror.H"
-#include "singleton_owner.H"
+#include "lib_dserror.H"
+#include "headers_singleton_owner.H"
 
 //----------------------------------------------------------------------*/
 //    definition of the instance

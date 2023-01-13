@@ -11,22 +11,22 @@
 #include <Teuchos_RCP.hpp>
 #include "membrane.H"
 
-#include "utils_fem_shapefunctions.H"
-#include "str_elements_paramsinterface.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "structure_new_elements_paramsinterface.H"
 #include "linalg_fixedsizematrix.H"
 #include "linalg_utils_densematrix_eigen.H"
-#include "tensor_transformation.H"
-#include "function_of_time.H"
+#include "lib_tensor_transformation.H"
+#include "lib_function_of_time.H"
 
-#include "material.H"
-#include "membrane_elasthyper.H"
-#include "membrane_active_strain.H"
-#include "growthremodel_elasthyper.H"
+#include "mat_material.H"
+#include "mat_membrane_elasthyper.H"
+#include "mat_membrane_active_strain.H"
+#include "mat_growthremodel_elasthyper.H"
 
 #include "fluid_ele_action.H"
-#include "immersed_base.H"
+#include "immersed_problem_immersed_base.H"
 
-#include "membrane_material_interfaces.H"
+#include "mat_membrane_material_interfaces.H"
 #include "membrane_service.H"
 
 

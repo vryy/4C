@@ -12,13 +12,13 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_utils_elch_diffcond.H"
 
-#include "discret.H"
-#include "globalproblem.H"
-#include "function_of_time.H"
-#include "standardtypes_cpp.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
+#include "lib_function_of_time.H"
+#include "lib_standardtypes_cpp.H"
 
-#include "elchmat.H"
-#include "elchphase.H"
+#include "mat_elchmat.H"
+#include "mat_elchphase.H"
 
 
 /*-----------------------------------------------------------------------*

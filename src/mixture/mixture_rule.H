@@ -15,14 +15,14 @@
 #include <memory>
 #include <unordered_map>
 
-#include "matpar_parameter.H"
+#include "mat_par_parameter.H"
 #include <Teuchos_ENull.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_RCPDecl.hpp>
 #include <string>
 #include <utility>
 #include <vector>
-#include "dserror.H"
+#include "lib_dserror.H"
 #include "linalg_fixedsizematrix.H"
 
 // forward declarations

@@ -14,15 +14,15 @@
 #include "scatra_ele_action.H"
 #include "scatra_ele.H"
 
-#include "globalproblem.H"
-#include "utils_boundary_integration.H"
-#include "utils_fem_shapefunctions.H"
-#include "utils_nurbs_shapefunctions.H"
+#include "lib_globalproblem.H"
+#include "fem_general_utils_boundary_integration.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
 #include "nurbs_discret.H"
-#include "nurbs_utils.H"
-#include "position_array.H"
+#include "nurbs_discret_nurbs_utils.H"
+#include "geometry_position_array.H"
 #include "fluid_rotsym_periodicbc.H"
-#include "singleton_owner.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  |  Singleton access method                               hemmler 07/14 |

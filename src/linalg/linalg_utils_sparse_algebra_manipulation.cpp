@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 #include <Epetra_IntVector.h>
 
 /*----------------------------------------------------------------------*

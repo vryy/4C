@@ -14,9 +14,9 @@
 #include "fluid_ele_interface.H"
 #include "fluid_ele_hdg_weak_comp.H"
 #include "inpar_fluid.H"
-#include "utils_shapevalues_hdg.H"
+#include "fem_general_utils_shapevalues_hdg.H"
 
-#include "singleton_owner.H"
+#include "headers_singleton_owner.H"
 
 namespace DRT
 {

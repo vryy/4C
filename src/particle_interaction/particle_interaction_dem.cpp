@@ -20,13 +20,13 @@
 #include "particle_interaction_dem_adhesion.H"
 
 #include "particle_engine_interface.H"
-#include "particle_container.H"
+#include "particle_engine_container.H"
 
 #include "particle_wall_interface.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
-#include "runtime_csv_writer.H"
+#include "io_runtime_csv_writer.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

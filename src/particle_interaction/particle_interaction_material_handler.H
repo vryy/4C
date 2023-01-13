@@ -14,14 +14,14 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "particle_enums.H"
-#include "particle_typedefs.H"
+#include "particle_engine_enums.H"
+#include "particle_engine_typedefs.H"
 
-#include "particle_material_base.H"
-#include "particle_material_thermo.H"
-#include "particle_material_sph_fluid.H"
-#include "particle_material_sph_boundary.H"
-#include "particle_material_dem.H"
+#include "mat_particle_base.H"
+#include "mat_particle_thermo.H"
+#include "mat_particle_sph_fluid.H"
+#include "mat_particle_sph_boundary.H"
+#include "mat_particle_dem.H"
 
 #include "inpar_parameterlist_utils.H"
 

@@ -17,28 +17,28 @@
 
 // adapters
 #include "adapter_coupling_volmortar.H"
-#include "ad_fld_base_algorithm.H"
-#include "ad_fld_poro.H"
-#include "ad_str_fpsiwrapper.H"
+#include "adapter_fld_base_algorithm.H"
+#include "adapter_fld_poro.H"
+#include "adapter_str_fpsiwrapper.H"
 
 // contact
 #include "contact_poro_lagrange_strategy.H"
-#include "meshtying_poro_lagrange_strategy.H"
-#include "meshtying_contact_bridge.H"
+#include "contact_meshtying_poro_lagrange_strategy.H"
+#include "contact_meshtying_contact_bridge.H"
 #include "contact_nitsche_strategy_poro.H"
 
 #include "fluid_ele_action.H"
 #include "fluid_utils_mapextractor.H"
 
 // include this header for coupling stiffness terms
-#include "assemblestrategy.H"
-#include "globalproblem.H"
-#include "condition_utils.H"
+#include "lib_assemblestrategy.H"
+#include "lib_globalproblem.H"
+#include "lib_condition_utils.H"
 
 #include "io_control.H"
 #include "inpar_solver.H"
 
-#include "stru_aux.H"
+#include "structure_aux.H"
 
 #include "mortar_manager_base.H"
 
@@ -46,9 +46,9 @@
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 
-#include "elements_paramsminimal.H"
+#include "lib_elements_paramsminimal.H"
 
 POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : PoroBase(comm, timeparams),

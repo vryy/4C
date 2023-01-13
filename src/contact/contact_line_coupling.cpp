@@ -18,14 +18,14 @@
 #include "contact_defines.H"
 #include "contact_integrator.H"
 #include "contact_integrator_factory.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 
 #include "mortar_defines.H"
 #include "mortar_projector.H"
 
 #include "inpar_contact.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 
 #include "linalg_serialdensevector.H"
 #include "linalg_serialdensematrix.H"

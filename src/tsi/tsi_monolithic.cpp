@@ -16,21 +16,21 @@
 #include "tsi_monolithic.H"
 #include "tsi_defines.H"
 #include "tsi_utils.H"
-#include "thrtimint.H"
+#include "thermo_timint.H"
 
 #include "thermo_ele_action.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "ad_str_structure_new.H"
-#include "assemblestrategy.H"
-#include "discret.H"
-#include "globalproblem.H"
-#include "locsys.H"
+#include "adapter_str_structure_new.H"
+#include "lib_assemblestrategy.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
+#include "lib_locsys.H"
 
 #include "linalg_blocksparsematrix.H"
 #include "linalg_sparsematrix.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
@@ -44,17 +44,17 @@
 #include "contact_interface.H"
 #include "contact_tsi_interface.H"
 #include "contact_node.H"
-#include "meshtying_contact_bridge.H"
+#include "contact_meshtying_contact_bridge.H"
 #include "mortar_manager_base.H"
 
 // for coupling of nonmatching meshes
 #include "adapter_coupling_volmortar.H"
 
-#include "str_timint_base.H"
-#include "str_model_evaluator_contact.H"
-#include "str_model_evaluator_structure.H"
-#include "str_model_evaluator_data.H"
-#include "elements_paramsminimal.H"
+#include "structure_new_timint_base.H"
+#include "structure_new_model_evaluator_contact.H"
+#include "structure_new_model_evaluator_structure.H"
+#include "structure_new_model_evaluator_data.H"
+#include "lib_elements_paramsminimal.H"
 
 #include "mortar_multifield_coupling.H"
 

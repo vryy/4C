@@ -11,7 +11,7 @@
 #define SSI_BASE_H_
 
 #include "adapter_algorithmbase.H"
-#include "discret.H"
+#include "lib_discret.H"
 #include "Epetra_Vector.h"
 #include "ssi_str_model_evaluator_base.H"
 

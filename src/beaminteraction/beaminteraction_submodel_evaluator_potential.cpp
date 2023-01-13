@@ -10,15 +10,15 @@
 
 #include "beaminteraction_submodel_evaluator_potential.H"
 
-#include "dserror.H"
-#include "globalproblem.H"
+#include "lib_dserror.H"
+#include "lib_globalproblem.H"
 #include "io.H"
 #include "io_control.H"
 #include "io_pstream.H"
-#include "runtime_vtp_writer.H"
+#include "io_runtime_vtp_writer.H"
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "str_timint_basedataglobalstate.H"
+#include "structure_new_timint_basedataglobalstate.H"
 
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensematrix.H"
@@ -26,15 +26,15 @@
 #include "linalg_fixedsizematrix.H"
 
 #include "beam3_base.H"
-#include "beam3contact_utils.H"
-#include "str_model_evaluator_beaminteraction_datastate.H"
-#include "beam_potential_pair.H"
-#include "beam_potential_params.H"
-#include "beam_potential_runtime_vtk_output_params.H"
+#include "beaminteraction_beam3contact_utils.H"
+#include "beaminteraction_str_model_evaluator_datastate.H"
+#include "beaminteraction_potential_pair.H"
+#include "beaminteraction_potential_params.H"
+#include "beaminteraction_potential_runtime_vtk_output_params.H"
 #include "beaminteraction_calc_utils.H"
 
 #include <NOX_Solver_Generic.H>
-#include "beam_crosslinker_handler.H"
+#include "beaminteraction_crosslinker_handler.H"
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/

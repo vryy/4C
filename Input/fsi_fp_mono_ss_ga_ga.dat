@@ -43,7 +43,8 @@ RESULTSEVRY                           1
 ADAPTIVEDIST                    0.01
 BASETOL                         1e-11
 ITEMAX                          15
-LINEARBLOCKSOLVER               PreconditionedKrylov
+LINEARBLOCKSOLVER               LinalgSolver
+LINEAR_SOLVER                   1
 SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                No
 TOL_DIS_INC_INF                 1e-09

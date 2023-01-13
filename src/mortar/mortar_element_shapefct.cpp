@@ -16,7 +16,7 @@
 #include "linalg_serialdensematrix.H"
 
 // nurbs specific
-#include "utils_nurbs_shapefunctions.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
 
 /*----------------------------------------------------------------------*
  |  1D/2D shape function repository                           popp 04/08|

@@ -12,22 +12,22 @@
 
 #include "inpar_ssi.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
-#include "matpar_material.H"
-#include "matpar_bundle.H"
+#include "mat_par_material.H"
+#include "mat_par_bundle.H"
 
 #include "membrane_scatra.H"
 
 #include "scatra_ele.H"
 
-#include "shell8_scatra.H"
+#include "s8_scatra.H"
 
 #include "so3_scatra.H"
 
 #include "truss3_scatra.H"
 
-#include "wall1_scatra.H"
+#include "w1_scatra.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

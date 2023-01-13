@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 
-#include "symbolic_expression.H"
+#include "lib_symbolic_expression.H"
 
 #include "unittests_assertions.h"
 

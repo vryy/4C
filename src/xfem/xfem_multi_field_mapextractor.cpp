@@ -13,15 +13,15 @@
 
 #include "xfem_multi_field_mapextractor.H"
 
-#include "xfield_field_coupling_dofset.H"
-#include "xfield_field_coupling.H"
+#include "xfem_xfield_field_coupling_dofset.H"
+#include "xfem_xfield_field_coupling.H"
 
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_mapextractor.H"
 
-#include "discret_xfem.H"
-#include "parobject.H"
-#include "exporter.H"
+#include "lib_discret_xfem.H"
+#include "lib_parobject.H"
+#include "lib_exporter.H"
 
 #include "linalg_matrixtransform.H"
 

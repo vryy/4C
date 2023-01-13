@@ -11,17 +11,17 @@
 
 #include "xfem_utils.H"
 
-#include "discret_faces.H"
-#include "utils.H"
-#include "utils_parallel.H"
+#include "lib_discret_faces.H"
+#include "lib_utils.H"
+#include "lib_utils_parallel.H"
 #include "linalg_utils_sparse_algebra_math.H"
 
-#include "element.H"
+#include "lib_element.H"
 
 // Materials supported in XFEM currently
-#include "material.H"
-#include "matlist.H"
-#include "newtonianfluid.H"
+#include "mat_material.H"
+#include "mat_list.H"
+#include "mat_newtonianfluid.H"
 
 void XFEM::UTILS::ExtractNodeVectors(Teuchos::RCP<DRT::Discretization> dis,
     std::map<int, LINALG::Matrix<3, 1>>& nodevecmap, Teuchos::RCP<Epetra_Vector> idispnp)

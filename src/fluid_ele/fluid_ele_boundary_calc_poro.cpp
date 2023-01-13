@@ -10,19 +10,19 @@
 /*----------------------------------------------------------------------*/
 
 #include "fluid_ele.H"
-#include "element_integration_select.H"
+#include "lib_element_integration_select.H"
 #include "fluid_ele_action.H"
 #include "fluid_ele_parameter_poro.H"
 
-#include "utils_boundary_integration.H"
+#include "fem_general_utils_boundary_integration.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
-#include "nurbs_utils.H"
+#include "nurbs_discret_nurbs_utils.H"
 
-#include "newtonianfluid.H"
-#include "fluidporo.H"
-#include "structporo.H"
+#include "mat_newtonianfluid.H"
+#include "mat_fluidporo.H"
+#include "mat_structporo.H"
 
 #include "poroelast_utils.H"
 

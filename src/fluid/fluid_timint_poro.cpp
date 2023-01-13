@@ -12,7 +12,7 @@
 #include "fluid_timint_poro.H"
 #include "fluid_ele_action.H"
 #include "poroelast_utils.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "linalg_utils_sparse_algebra_math.H"
 

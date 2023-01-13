@@ -16,16 +16,16 @@
 #include "particle_interaction_utils.H"
 
 #include "particle_engine_interface.H"
-#include "particle_container.H"
+#include "particle_engine_container.H"
 
 #include "particle_wall_interface.H"
 #include "particle_wall_datastate.H"
 
-#include "utils_fem_shapefunctions.H"
+#include "fem_general_utils_fem_shapefunctions.H"
 
-#include "element.H"
-#include "utils.H"
-#include "dserror.H"
+#include "lib_element.H"
+#include "lib_utils.H"
+#include "lib_dserror.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

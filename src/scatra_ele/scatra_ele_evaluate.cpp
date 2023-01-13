@@ -22,9 +22,9 @@
 #include "scatra_ele_parameter_turbulence.H"
 #include "scatra_ele_parameter_boundary.H"
 
-#include "elchmat.H"
+#include "mat_elchmat.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 
 
 

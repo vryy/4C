@@ -8,14 +8,14 @@
 /*---------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>
 #include "immersed_problem_dyn.H"
-#include "immersed_base.H"
-#include "immersed_partitioned_fsi_dirichletneumann.H"
+#include "immersed_problem_immersed_base.H"
+#include "immersed_problem_immersed_partitioned_fsi_dirichletneumann.H"
 
-#include "utils_parallel.H"
-#include "utils_createdis.H"
-#include "globalproblem.H"
+#include "lib_utils_parallel.H"
+#include "lib_utils_createdis.H"
+#include "lib_globalproblem.H"
 #include "inpar_immersed.H"
-#include "ad_str_fsiwrapper_immersed.H"
+#include "adapter_str_fsiwrapper_immersed.H"
 #include "fsi_utils.H"
 #include "ale_utils_clonestrategy.H"
 

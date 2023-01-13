@@ -10,9 +10,9 @@
 #define LINALG_ANA_H
 
 // Trilinos includes
-#include "dserror.H"
+#include "lib_dserror.H"
 #include "linalg_sparsematrix.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 
 #define DEBUGGING_ANA 0  // turn on to get debugging printouts
 

@@ -12,20 +12,20 @@
 #include <Epetra_Vector.h>
 #include <Epetra_Time.h>
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "io_control.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_mapextractor.H"
 #include "linalg_sparsematrix.H"
 #include "linalg_serialdensevector.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
-#include "utils_integration.H"
-#include "utils_nurbs_shapefunctions.H"
-#include "utils_boundary_integration.H"
+#include "fem_general_utils_integration.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "fem_general_utils_boundary_integration.H"
 
-#include "nurbs_utils.H"
+#include "nurbs_discret_nurbs_utils.H"
 #include "nurbs_discret.H"
 
 /*----------------------------------------------------------------------*

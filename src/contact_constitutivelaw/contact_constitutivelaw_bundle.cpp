@@ -15,8 +15,8 @@
 /* headers */
 #include "contact_constitutivelaw_bundle.H"
 
-#include "contactconstitutivelaw.H"
-#include "contactconstitutivelaw_parameter.H"
+#include "contact_constitutivelaw_contactconstitutivelaw.H"
+#include "contact_constitutivelaw_contactconstitutivelaw_parameter.H"
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::Bundle::Bundle() : readfromproblem_(0) {}
 /*----------------------------------------------------------------------*/

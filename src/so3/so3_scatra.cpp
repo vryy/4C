@@ -11,11 +11,11 @@
 
 #include "so3_scatra.H"
 
-#include "linedefinition.H"
+#include "lib_linedefinition.H"
 // needed for Gauss integration
-#include "element_integration_select.H"
+#include "lib_element_integration_select.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "inpar_ssi.H"
 
 /*----------------------------------------------------------------------*

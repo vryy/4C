@@ -5,14 +5,14 @@
 
 
 \level 2
-    */
+*/
 /*----------------------------------------------------------------------*/
 #ifndef POST_VTK_H
 #define POST_VTK_H
 
 
-#include "post_writer_base.H"
-#include "vtk_writer_base.H"  // LIBB64
+#include "post_common_writer_base.H"
+#include "io_vtk_writer_base.H"  // LIBB64
 
 #include <string>
 #include <map>
@@ -23,7 +23,7 @@
 #include <zlib.h>
 #include <Teuchos_RCP.hpp>
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 
 

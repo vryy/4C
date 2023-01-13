@@ -17,13 +17,13 @@
 
 #include "ale_utils_clonestrategy.H"
 
-#include "utils_createdis.H"
-#include "globalproblem.H"
-#include "condition_utils.H"
+#include "lib_utils_createdis.H"
+#include "lib_globalproblem.H"
+#include "lib_condition_utils.H"
 
 #include "inpar_wear.H"
 
-#include "utils_parallel.H"
+#include "lib_utils_parallel.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_MpiComm.h>

@@ -13,8 +13,8 @@
 #include "particle_rigidbody_interface.H"
 #include "particle_rigidbody_datastate.H"
 
-#include "linedefinition.H"
-#include "dserror.H"
+#include "lib_linedefinition.H"
+#include "lib_dserror.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

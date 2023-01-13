@@ -11,18 +11,18 @@
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "globalproblem.H"
-#include "discret.H"
-#include "element.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "lib_element.H"
 
 // MATERIALS
-#include "scatra_mat.H"
-#include "scatra_reaction_mat.H"
-#include "matlist.H"
-#include "matlist_reactions.H"
-#include "so3_material.H"
-#include "growth_law.H"
-#include "singleton_owner.H"
+#include "mat_scatra_mat.H"
+#include "mat_scatra_reaction_mat.H"
+#include "mat_list.H"
+#include "mat_list_reactions.H"
+#include "mat_so3_material.H"
+#include "mat_growth_law.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

@@ -18,7 +18,7 @@
 #include "cut_options.H"
 #include "cut_output.H"
 
-#include "searchtree.H"
+#include "geometry_searchtree.H"
 
 #include "cut_selfcut.H"
 

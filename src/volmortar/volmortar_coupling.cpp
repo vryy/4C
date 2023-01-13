@@ -20,12 +20,12 @@
 
 #include "inpar_volmortar.H"
 
-#include "discret.H"
-#include "globalproblem.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
 
 #include "linalg_multiply.H"
 #include "linalg_sparsematrix.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_mapextractor.H"
@@ -42,12 +42,12 @@
 #include "cut_cutwizard.H"
 
 // search
-#include "searchtree.H"
-#include "searchtree_geometry_service.H"
+#include "geometry_searchtree.H"
+#include "geometry_searchtree_service.H"
 
-#include "pairedvector.H"
+#include "headers_pairedvector.H"
 #include <Teuchos_Time.hpp>
-#include "dofset_predefineddofnumber.H"
+#include "lib_dofset_predefineddofnumber.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/13|

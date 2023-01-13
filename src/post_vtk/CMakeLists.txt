@@ -1,9 +1,9 @@
 set(OBJS_POST_VTK
     # cmake-format: sortable
-    post_vti_writer.cpp
+    post_vtk_vti_writer.cpp
+    post_vtk_vtu_writer.cpp
+    post_vtk_vtu_writer_node_based.cpp
     post_vtk_writer.cpp
-    post_vtu_writer.cpp
-    post_vtu_writer_node_based.cpp
     )
 
 baci_add_library(post_vtk_lib ${OBJS_POST_VTK})

@@ -14,7 +14,7 @@
 #include "Epetra_SerialDenseVector.h"
 #include <Teuchos_LAPACK.hpp>
 #include "Teuchos_RCP.hpp"
-#include "exporter.H"
+#include "lib_exporter.H"
 #include "linalg_blocksparsematrix.H"
 
 namespace LINALG

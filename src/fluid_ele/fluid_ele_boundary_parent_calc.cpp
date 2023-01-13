@@ -11,36 +11,36 @@
 
 #include "fluid_ele_boundary_parent_calc.H"
 #include "fluid_ele.H"
-#include "element_integration_select.H"
+#include "lib_element_integration_select.H"
 
-#include "utils_fem_shapefunctions.H"
-#include "utils_boundary_integration.H"
-#include "utils_nurbs_shapefunctions.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "fem_general_utils_boundary_integration.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
 
-#include "position_array.H"
+#include "geometry_position_array.H"
 
-#include "nurbs_utils.H"
+#include "nurbs_discret_nurbs_utils.H"
 // TODO: remove after Nurbs functions are changed
 #include "nurbs_discret.H"
 
-#include "globalproblem.H"
-#include "utils.H"
-#include "function_of_time.H"
-#include "standardtypes_cpp.H"
+#include "lib_globalproblem.H"
+#include "lib_utils.H"
+#include "lib_function_of_time.H"
+#include "lib_standardtypes_cpp.H"
 
 #include "linalg_utils_densematrix_eigen.H"
 
-#include "arrhenius_pv.H"
-#include "carreauyasuda.H"
-#include "ferech_pv.H"
-#include "fluidporo.H"
-#include "herschelbulkley.H"
-#include "mixfrac.H"
-#include "modpowerlaw.H"
-#include "newtonianfluid.H"
-#include "permeablefluid.H"
-#include "sutherland.H"
-#include "tempdepwater.H"
+#include "mat_arrhenius_pv.H"
+#include "mat_carreauyasuda.H"
+#include "mat_ferech_pv.H"
+#include "mat_fluidporo.H"
+#include "mat_herschelbulkley.H"
+#include "mat_mixfrac.H"
+#include "mat_modpowerlaw.H"
+#include "mat_newtonianfluid.H"
+#include "mat_permeablefluid.H"
+#include "mat_sutherland.H"
+#include "mat_tempdepwater.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

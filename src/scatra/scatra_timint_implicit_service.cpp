@@ -15,21 +15,21 @@
 #include "adapter_coupling.H"
 
 #include "fluid_rotsym_periodicbc_utils.H"
-#include "dyn_smag.H"
-#include "dyn_vreman.H"
+#include "fluid_turbulence_dyn_smag.H"
+#include "fluid_turbulence_dyn_vreman.H"
 
-#include "globalproblem.H"
-#include "utils_parameter_list.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_parameter_list.H"
 
 #include "nurbs_discret.H"
 
 #include "scatra_ele_action.H"
 
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
-#include "turbulence_hit_scalar_forcing.H"
+#include "scatra_turbulence_hit_scalar_forcing.H"
 
 // for AVM3 solver:
 #include <MLAPI_Workspace.h>
@@ -40,7 +40,7 @@
 #include "io_control.H"
 #include "io_gmsh.H"
 
-#include "runtime_csv_writer.H"
+#include "io_runtime_csv_writer.H"
 
 
 /*==========================================================================*

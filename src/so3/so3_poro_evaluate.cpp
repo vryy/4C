@@ -10,23 +10,23 @@
 
 #include "so3_poro.H"
 #include "so3_poro_eletypes.H"
-#include "utils.H"
+#include "lib_utils.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 #include <iterator>
 
-#include "fluidporo.H"
-#include "structporo.H"
-#include "matlist.H"
-#include "fluidporo_multiphase.H"
+#include "mat_fluidporo.H"
+#include "mat_structporo.H"
+#include "mat_list.H"
+#include "mat_fluidporo_multiphase.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
-#include "nurbs_utils.H"
-#include "utils_nurbs_shapefunctions.H"
+#include "nurbs_discret_nurbs_utils.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
 
-#include "str_elements_paramsinterface.H"
+#include "structure_new_elements_paramsinterface.H"
 
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::PreEvaluate(Teuchos::ParameterList& params,

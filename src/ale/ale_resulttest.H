@@ -14,10 +14,10 @@
 
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
-#include "resulttest.H"
+#include "lib_resulttest.H"
 #include <Epetra_Vector.h>
 
-#include "ad_ale.H"
+#include "adapter_ale.H"
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */

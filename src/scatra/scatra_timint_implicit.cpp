@@ -27,34 +27,34 @@
 #include "scatra_timint_meshtying_strategy_std.H"
 #include "scatra_timint_meshtying_strategy_artery.H"
 #include "scatra_utils.H"
-#include "turbulence_hit_initial_scalar_field.H"
-#include "turbulence_hit_scalar_forcing.H"
+#include "scatra_turbulence_hit_initial_scalar_field.H"
+#include "scatra_turbulence_hit_scalar_forcing.H"
 
 #include "fluid_rotsym_periodicbc_utils.H"
 
-#include "dyn_vreman.H"
+#include "fluid_turbulence_dyn_vreman.H"
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 
 #include "io.H"
 #include "io_pstream.H"
 #include "io_control.H"
 
-#include "assemblestrategy.H"
-#include "condition_selector.H"
-#include "globalproblem.H"
-#include "periodicbc.H"
-#include "utils_gid_vector.H"
-#include "utils_vector.H"
-#include "utils_parameter_list.H"
+#include "lib_assemblestrategy.H"
+#include "lib_condition_selector.H"
+#include "lib_globalproblem.H"
+#include "lib_periodicbc.H"
+#include "lib_utils_gid_vector.H"
+#include "lib_utils_vector.H"
+#include "lib_utils_parameter_list.H"
 
-#include "elchmat.H"
-#include "electrode.H"
-#include "matlist.H"
-#include "matpar_bundle.H"
-#include "scatra_mat.H"
+#include "mat_elchmat.H"
+#include "mat_electrode.H"
+#include "mat_list.H"
+#include "mat_par_bundle.H"
+#include "mat_scatra_mat.H"
 
-#include "apply_nurbs_initial_condition.H"
+#include "nurbs_discret_apply_nurbs_initial_condition.H"
 #include "nurbs_discret.H"
 
 #include "scatra_ele_action.H"
@@ -62,7 +62,7 @@
 
 #include "linalg_krylov_projector.H"
 #include "linalg_nullspace.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "scatra_ele_boundary_calc_elch_electrode_utils.H"
 
 /*----------------------------------------------------------------------*
