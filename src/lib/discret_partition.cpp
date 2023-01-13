@@ -472,19 +472,11 @@ Teuchos::RCP<Epetra_MultiVector> DRT::Discretization::BuildNodeCoordinates(
   Teuchos::RCP<Epetra_MultiVector> coordinates =
       Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 3, true));
 
-  for (const auto& current_element : element_)
+  for (const auto& [global_node_id, local_node] : node_)
   {
-    const int numnode = current_element.second->NumNode();
-    const int* nodeids = current_element.second->NodeIds();
-    DRT::Node** nodes = current_element.second->Nodes();
-
-    for (int i = 0; i < numnode; i++)
-    {
-      const int rownodeid = noderowmap->MyGID(nodeids[i]);
-      if (!rownodeid) continue;
-      for (int dim = 0; dim < 3; dim++)
-        coordinates->ReplaceMyValue(noderowmap->LID(nodeids[i]), dim, nodes[i]->X()[dim]);
-    }
+    if (!noderowmap->MyGID(global_node_id)) continue;
+    for (int dim = 0; dim < 3; dim++)
+      coordinates->ReplaceMyValue(noderowmap->LID(global_node_id), dim, local_node->X()[dim]);
   }
 
   return coordinates;

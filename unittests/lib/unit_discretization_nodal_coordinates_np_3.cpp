@@ -35,10 +35,10 @@ namespace
   }
 
   // Serial discretization nodal method tests
-  class DiscretizationTestSerial : public testing::Test
+  class BuildNodeCoordinatesTest : public testing::Test
   {
    public:
-    DiscretizationTestSerial()
+    BuildNodeCoordinatesTest()
     {
       CreateMaterialInGlobalProblem();
 
@@ -71,7 +71,7 @@ namespace
     Teuchos::RCP<Epetra_Comm> comm_;
   };
 
-  TEST_F(DiscretizationTestSerial, NodalCoordinatesDefault)
+  TEST_F(BuildNodeCoordinatesTest, NodalCoordinatesDefault)
   {
     // build node coordinates based on the node row map of the whole discretization
     Teuchos::RCP<Epetra_MultiVector> nodal_test_coordinates =
@@ -133,7 +133,7 @@ namespace
     }
   }
 
-  TEST_F(DiscretizationTestSerial, NodalCoordinatesPartialMap)
+  TEST_F(BuildNodeCoordinatesTest, NodalCoordinatesPartialMap)
   {
     // build node coordinates based on the node row map of first partial discretization
     {
