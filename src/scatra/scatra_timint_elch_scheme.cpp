@@ -12,8 +12,8 @@
 
 #include "io.H"
 
-#include "globalproblem.H"
-#include "function_of_time.H"
+#include "lib_globalproblem.H"
+#include "lib_function_of_time.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     ehrl 01/14 |

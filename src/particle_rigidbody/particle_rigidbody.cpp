@@ -18,13 +18,13 @@
 #include "particle_interaction_utils.H"
 
 #include "particle_engine_interface.H"
-#include "particle_communication_utils.H"
-#include "particle_unique_global_id.H"
+#include "particle_engine_communication_utils.H"
+#include "particle_engine_unique_global_id.H"
 
 #include "inpar_particle.H"
 
-#include "pack_buffer.H"
-#include "parobject.H"
+#include "lib_pack_buffer.H"
+#include "lib_parobject.H"
 
 #include "io.H"
 #include "io_pstream.H"

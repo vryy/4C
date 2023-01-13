@@ -17,7 +17,7 @@
 
 #include "linalg_serialdensevector.H"
 #include "linalg_serialdensematrix.H"
-#include "node.H"
+#include "lib_node.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/09|

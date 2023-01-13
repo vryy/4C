@@ -9,20 +9,20 @@
 /*---------------------------------------------------------------------*/
 
 #include "contact_aug_combo_strategy.H"
-#include "contact_augmented_strategy.H"
-#include "contact_augmented_interface.H"
+#include "contact_aug_strategy.H"
+#include "contact_aug_interface.H"
 
 #include "contact_strategy_factory.H"
 #include "contact_paramsinterface.H"
 
-#include "str_solver_factory.H"
+#include "structure_new_solver_factory.H"
 
 #include "inpar_contact.H"
 
 #include "linalg_mapextractor.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "utils_parallel.H"
+#include "lib_utils_parallel.H"
 
 #include "io_pstream.H"
 

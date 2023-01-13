@@ -10,8 +10,8 @@
 #include "elemag_ele_boundary_calc.H"
 #include "elemag_ele.H"
 #include "elemag_ele_action.H"
-#include "node.H"
-#include "globalproblem.H"
+#include "lib_node.H"
+#include "lib_globalproblem.H"
 #include "inpar_parameterlist_utils.H"
 
 

@@ -19,7 +19,7 @@
 #include "Epetra_Time.h"
 #include "Epetra_IntVector.h"
 
-#include "dserror.H"
+#include "lib_dserror.H"
 #include "linalg_mapextractor.H"
 #include "linalg_sparsematrix.H"
 

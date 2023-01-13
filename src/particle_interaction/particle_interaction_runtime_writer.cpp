@@ -12,12 +12,12 @@
 
 #include "inpar_particle.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "io.H"
 #include "io_control.H"
-#include "runtime_vtp_writer.H"
-#include "runtime_csv_writer.H"
+#include "io_runtime_vtp_writer.H"
+#include "io_runtime_csv_writer.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

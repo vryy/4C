@@ -14,27 +14,27 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_turbulence.H"
 
-#include "utils_nurbs_shapefunctions.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
 
-#include "position_array.H"
+#include "geometry_position_array.H"
 
 #include "inpar_fluid.H"
 
-#include "discret.H"
-#include "utils.H"
+#include "lib_discret.H"
+#include "lib_utils.H"
 
-#include "mixfrac.H"
-#include "sutherland.H"
-#include "tempdepwater.H"
-#include "arrhenius_spec.H"
-#include "arrhenius_temp.H"
-#include "arrhenius_pv.H"
-#include "ferech_pv.H"
-#include "thermostvenantkirchhoff.H"
-#include "yoghurt.H"
+#include "mat_mixfrac.H"
+#include "mat_sutherland.H"
+#include "mat_tempdepwater.H"
+#include "mat_arrhenius_spec.H"
+#include "mat_arrhenius_temp.H"
+#include "mat_arrhenius_pv.H"
+#include "mat_ferech_pv.H"
+#include "mat_thermostvenantkirchhoff.H"
+#include "mat_yoghurt.H"
 
-#include "nurbs_utils.H"
-#include "singleton_owner.H"
+#include "nurbs_discret_nurbs_utils.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

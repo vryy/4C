@@ -10,16 +10,16 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_timint_hdg.H"
-#include "discret_hdg.H"
-#include "globalproblem.H"
+#include "lib_discret_hdg.H"
+#include "lib_globalproblem.H"
 #include "fluid_ele_hdg.H"
 #include "fluid_ele_hdg_weak_comp.H"
 #include "fluid_ele_action.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "io.H"
-#include "turbulence_hit_forcing.H"
-#include "turbulence_hit_initial_field.H"
-#include "dofset_predefineddofnumber.H"
+#include "fluid_turbulence_hit_forcing.H"
+#include "fluid_turbulence_hit_initial_field.H"
+#include "lib_dofset_predefineddofnumber.H"
 
 
 /*----------------------------------------------------------------------*

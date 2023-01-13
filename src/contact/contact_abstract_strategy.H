@@ -18,7 +18,7 @@
 #include "mortar_strategy_base.H"
 #include "inpar_mortar.H"
 #include "inpar_contact.H"
-#include "utils_matrix_vector_enums.H"
+#include "lib_utils_matrix_vector_enums.H"
 
 // forward declarations
 namespace NOX

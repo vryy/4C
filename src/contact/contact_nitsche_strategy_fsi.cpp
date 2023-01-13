@@ -15,7 +15,7 @@
 #include "contact_interface.H"
 #include "contact_nitsche_integrator_fsi.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 
 #include "mortar_projector.H"
 

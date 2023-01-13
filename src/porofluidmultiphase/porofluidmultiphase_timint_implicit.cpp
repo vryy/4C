@@ -17,17 +17,17 @@
 #include "porofluidmultiphase_meshtying_strategy_artery.H"
 #include "porofluidmultiphase_ele_action.H"
 #include "porofluidmultiphase_ele.H"
-#include "fluidporo_multiphase.H"
+#include "mat_fluidporo_multiphase.H"
 
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_print.H"
 
-#include "globalproblem.H"
-#include "assemblestrategy.H"
+#include "lib_globalproblem.H"
+#include "lib_assemblestrategy.H"
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 
 #include "io.H"
 #include "io_control.H"

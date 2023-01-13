@@ -9,7 +9,7 @@
 #ifndef MORTAR_DOFSET_H
 #define MORTAR_DOFSET_H
 
-#include "dofset.H"
+#include "lib_dofset.H"
 
 
 // forward declarations

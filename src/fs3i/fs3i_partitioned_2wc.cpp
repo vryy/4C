@@ -14,11 +14,11 @@
 #include "fs3i_partitioned_2wc.H"
 
 #include "fsi_monolithic.H"
-#include "ad_str_fsiwrapper.H"
-#include "ad_fld_fluid_fsi.H"
+#include "adapter_str_fsiwrapper.H"
+#include "adapter_fld_fluid_fsi.H"
 #include "scatra_algorithm.H"
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 #include "fluid_timint_loma.H"
 
 #include "scatra_timint_loma.H"

@@ -13,14 +13,14 @@
 #include "loma_algorithm.H"
 
 #include "fluid_ele_action.H"
-#include "assemblestrategy.H"
+#include "lib_assemblestrategy.H"
 #include "io_control.H"
 #include "inpar_solver.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_blocksparsematrix.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "fluid_timint_loma.H"
 
 #include "scatra_timint_loma.H"

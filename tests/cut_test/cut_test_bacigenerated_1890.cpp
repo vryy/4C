@@ -23,7 +23,7 @@
 #include "cut_options.H"
 #include "cut_volumecell.H"
 
-#include "utils_local_connectivity_matrices.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
 void test_bacigenerated_1890()
 {

@@ -28,10 +28,10 @@ convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods A
 #include "fluid_ele_parameter_timint.H"
 #include "fluid_ele_parameter_intface.H"
 
-#include "utils.H"
-#include "utils_gausspoints.H"
+#include "lib_utils.H"
+#include "fem_general_utils_gausspoints.H"
 
-#include "singleton_owner.H"
+#include "headers_singleton_owner.H"
 
 namespace DRT
 {

@@ -12,16 +12,16 @@
 
 #include "opti_GCMMA.H"
 
-#include "topopt_utils.H"
+#include "opti_topopt_utils.H"
 #include "inpar_topopt.H"
 #include "inpar_parameterlist_utils.H"
 #include "io.H"
 #include "io_control.H"
 #include "io_gmsh.H"
-#include "discret.H"
-#include "globalproblem.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "definitions.h"
+#include "headers_definitions.h"
 #include <Epetra_SerialDenseSolver.h>
 #include <stdio.h>
 #include <stdlib.h>

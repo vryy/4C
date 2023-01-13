@@ -13,8 +13,8 @@
 #include "ssi_partitioned_2wc.H"
 #include "ssi_utils.H"
 #include "io_control.H"
-#include "globalproblem.H"
-#include "utils_parallel.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_parallel.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

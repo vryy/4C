@@ -10,10 +10,10 @@
 
 #include "membrane_scatra.H"
 
-#include "utils_fem_shapefunctions.H"
+#include "fem_general_utils_fem_shapefunctions.H"
 
-#include "discret.H"
-#include "utils.H"
+#include "lib_discret.H"
+#include "lib_utils.H"
 
 /*----------------------------------------------------------------------*
  |  pre-evaluate the element (public)                      sfuchs 05/18 |

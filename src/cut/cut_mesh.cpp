@@ -8,7 +8,7 @@ mesh
  *------------------------------------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "discret.H"
+#include "lib_discret.H"
 
 #include "cut_mesh.H"
 
@@ -20,12 +20,12 @@ mesh
 #include "cut_output.H"
 #include "cut_parallel.H"
 
-#include "element_volume.H"
+#include "geometry_element_volume.H"
 
 // search
-#include "searchtree.H"
+#include "geometry_searchtree.H"
 
-#include "colors.H"
+#include "lib_colors.H"
 
 /*-------------------------------------------------------------------------------------*
  * constructor

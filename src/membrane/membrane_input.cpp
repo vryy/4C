@@ -10,8 +10,8 @@
 *----------------------------------------------------------------------*/
 #include "membrane.H"
 
-#include "so3_material.H"
-#include "linedefinition.H"
+#include "mat_so3_material.H"
+#include "lib_linedefinition.H"
 
 
 /*----------------------------------------------------------------------*

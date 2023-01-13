@@ -10,7 +10,7 @@
 #ifndef SCATRA_ELE_UTILS_ELCH_H
 #define SCATRA_ELE_UTILS_ELCH_H
 
-#include "utils_local_connectivity_matrices.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
 #include "inpar_elch.H"
 

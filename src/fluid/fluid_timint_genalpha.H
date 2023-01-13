@@ -13,7 +13,7 @@
 #define FLD_TIMINT_GENALPHA_H
 
 
-#include "fluidimplicitintegration.H"
+#include "fluid_implicit_integration.H"
 
 
 namespace FLD

@@ -13,10 +13,10 @@
 
 #include "adapter_lubrication.H"
 
-#include "utils_createdis.H"
+#include "lib_utils_createdis.H"
 
 #include "lubrication_timint_implicit.H"
-#include "dofset_predefineddofnumber.H"
+#include "lib_dofset_predefineddofnumber.H"
 
 
 /*----------------------------------------------------------------------*

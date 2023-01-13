@@ -10,7 +10,7 @@
 #include <math.h>
 #include "contact_analytical.H"
 #include "inpar_contact.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*

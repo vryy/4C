@@ -10,8 +10,8 @@
 
 #include "discsh3.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "discret.H"
-#include "dserror.H"
+#include "lib_discret.H"
+#include "lib_dserror.H"
 
 
 DRT::ELEMENTS::DiscSh3LineType DRT::ELEMENTS::DiscSh3LineType::instance_;

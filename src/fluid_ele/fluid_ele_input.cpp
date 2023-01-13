@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "fluid_ele.H"
-#include "linedefinition.H"
+#include "lib_linedefinition.H"
 
 
 

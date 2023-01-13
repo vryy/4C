@@ -8,10 +8,10 @@
 
 #include "poromultiphase_scatra_base.H"
 
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 
-#include "ad_poromultiphase.H"
+#include "adapter_poromultiphase.H"
 #include "poromultiphase_utils.H"
 #include "poromultiphase_scatra_utils.H"
 
@@ -19,13 +19,13 @@
 #include "scatra_timint_implicit.H"
 #include "scatra_timint_poromulti.H"
 
-#include "ad_art_net.H"
-#include "ad_porofluidmultiphase_wrapper.H"
+#include "adapter_art_net.H"
+#include "adapter_porofluidmultiphase_wrapper.H"
 
 #include "scatra_timint_meshtying_strategy_artery.H"
 #include "scatra_ele.H"
-#include "fluidporo_multiphase.H"
-#include "scatra_mat_multiporo.H"
+#include "mat_fluidporo_multiphase.H"
+#include "mat_scatra_mat_multiporo.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

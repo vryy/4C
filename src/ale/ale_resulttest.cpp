@@ -13,8 +13,8 @@
 
 #include "ale.H"
 
-#include "linedefinition.H"
-#include "discret.H"
+#include "lib_linedefinition.H"
+#include "lib_discret.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

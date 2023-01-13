@@ -10,7 +10,7 @@
 #ifndef SRC_SSI_SSI_COUPLING_H_
 #define SRC_SSI_SSI_COUPLING_H_
 
-#include "discret.H"
+#include "lib_discret.H"
 #include "scatra_timint_implicit.H"
 #include "ssi_base.H"
 

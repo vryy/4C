@@ -11,7 +11,7 @@
 #define SRC_ALE_ALE_UTILS_H_
 
 
-#include "discret.H"
+#include "lib_discret.H"
 #include "linalg_utils_sparse_algebra_math.H"
 
 

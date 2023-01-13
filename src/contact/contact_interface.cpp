@@ -20,18 +20,18 @@
 #include "contact_coupling2d.H"
 #include "contact_coupling3d.H"
 #include "contact_line_coupling.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 
 #include "mortar_binarytree.H"
 #include "mortar_defines.H"
 #include "mortar_dofset.H"
 #include "mortar_projector.H"
 
-#include "binning_strategy.H"
+#include "binstrategy.H"
 
 #include "scatra_ele_parameter_boundary.H"
 
-#include "utils_rebalancing.H"
+#include "rebalance_utils.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
@@ -40,7 +40,7 @@
 
 #include "io.H"
 
-#include "selfcontact_binarytree_unbiased.H"
+#include "contact_selfcontact_binarytree_unbiased.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

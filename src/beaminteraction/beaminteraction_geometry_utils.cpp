@@ -10,9 +10,9 @@
 
 #include "beaminteraction_geometry_utils.H"
 
-#include "beam_spatial_discretization_utils.H"
+#include "beam3_spatial_discretization_utils.H"
 
-#include "FAD_utils.H"
+#include "headers_FAD_utils.H"
 
 #include "io_pstream.H"
 

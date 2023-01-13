@@ -15,6 +15,14 @@ set(OBJS_CONTACT
     contact_lagrange_strategy.cpp
     contact_line_coupling.cpp
     contact_manager.cpp
+    contact_meshtying_abstract_strategy.cpp
+    contact_meshtying_contact_bridge.cpp
+    contact_meshtying_lagrange_strategy.cpp
+    contact_meshtying_manager.cpp
+    contact_meshtying_noxinterface.cpp
+    contact_meshtying_penalty_strategy.cpp
+    contact_meshtying_poro_lagrange_strategy.cpp
+    contact_meshtying_strategy_factory.cpp
     contact_monocoupled_lagrange_strategy.cpp
     contact_nitsche_integrator.cpp
     contact_nitsche_integrator_fpi.cpp
@@ -31,9 +39,12 @@ set(OBJS_CONTACT
     contact_nitsche_strategy_ssi_elch.cpp
     contact_nitsche_strategy_tsi.cpp
     contact_nitsche_utils.cpp
+    contact_nox_nln_meshtying_linearsystem.cpp
     contact_noxinterface.cpp
     contact_penalty_strategy.cpp
     contact_poro_lagrange_strategy.cpp
+    contact_selfcontact_binarytree.cpp
+    contact_selfcontact_binarytree_unbiased.cpp
     contact_strategy_factory.cpp
     contact_tsi_interface.cpp
     contact_tsi_lagrange_strategy.cpp
@@ -42,17 +53,6 @@ set(OBJS_CONTACT
     contact_wear_interface.cpp
     contact_wear_interface_tools.cpp
     contact_wear_lagrange_strategy.cpp
-    meshtying_abstract_strategy.cpp
-    meshtying_contact_bridge.cpp
-    meshtying_lagrange_strategy.cpp
-    meshtying_manager.cpp
-    meshtying_noxinterface.cpp
-    meshtying_penalty_strategy.cpp
-    meshtying_poro_lagrange_strategy.cpp
-    meshtying_strategy_factory.cpp
-    nox_nln_meshtying_linearsystem.cpp
-    selfcontact_binarytree.cpp
-    selfcontact_binarytree_unbiased.cpp
     )
 
 baci_add_library(alg_contact ${OBJS_CONTACT})
@@ -73,9 +73,9 @@ set(OBJS_CONTACT_LIB
     # cmake-format: sortable
     contact_analytical.cpp
     contact_element.cpp
+    contact_friction_node.cpp
+    contact_friction_node.cpp
     contact_node.cpp
-    friction_node.cpp
-    friction_node.cpp
     )
 
 baci_add_library(lib_contact ${OBJS_CONTACT_LIB})

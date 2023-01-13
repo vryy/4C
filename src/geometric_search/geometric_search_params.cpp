@@ -10,7 +10,7 @@
 
 #include <Teuchos_ParameterList.hpp>
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "geometric_search_params.H"
 

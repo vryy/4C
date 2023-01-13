@@ -16,7 +16,7 @@
 
 #include "cut_output.H"
 #include "cut_tolerance.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #ifdef CLN_CALC_OUTSIDE_KERNEL_POINT
 #include "cut_clnwrapper.H"

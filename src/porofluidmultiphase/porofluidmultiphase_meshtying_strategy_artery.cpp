@@ -8,13 +8,13 @@
 *----------------------------------------------------------------------*/
 
 #include "porofluidmultiphase_meshtying_strategy_artery.H"
-#include "globalproblem.H"
-#include "ad_art_net.H"
+#include "lib_globalproblem.H"
+#include "adapter_art_net.H"
 #include "inpar_bio.H"
 #include "art_net_utils.H"
 #include "poromultiphase_scatra_artery_coupling_base.H"
 #include "poromultiphase_scatra_utils.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "porofluidmultiphase_utils.H"
 #include "linalg_utils_sparse_algebra_print.H"
 

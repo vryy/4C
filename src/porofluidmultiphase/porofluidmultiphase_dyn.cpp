@@ -17,14 +17,14 @@
 
 #include "inpar_bio.H"
 
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 #include "io.H"
 #include "io_control.H"
 
 
 #include <Teuchos_TimeMonitor.hpp>
-#include "dofset_predefineddofnumber.H"
+#include "lib_dofset_predefineddofnumber.H"
 
 /*-------------------------------------------------------------------------------*
  | Main control routine for poro fluid multiphase problems           vuong 08/16 |

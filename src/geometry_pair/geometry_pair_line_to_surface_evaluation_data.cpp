@@ -12,7 +12,7 @@
 #include "geometry_pair_utility_classes.H"
 #include "geometry_pair_element_faces.H"
 
-#include "str_model_evaluator_beaminteraction_datastate.H"
+#include "beaminteraction_str_model_evaluator_datastate.H"
 
 
 /**

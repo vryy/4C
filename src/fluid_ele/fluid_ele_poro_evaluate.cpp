@@ -17,7 +17,7 @@
 #include "fluid_ele_factory.H"
 #include "fluid_ele_interface.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 void DRT::ELEMENTS::FluidPoroEleType::PreEvaluate(DRT::Discretization& dis,
     Teuchos::ParameterList& p, Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,

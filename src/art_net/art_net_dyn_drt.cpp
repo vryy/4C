@@ -19,16 +19,16 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "art_net_dyn_drt.H"
-#include "artery_resulttest.H"
-#include "ad_art_net.H"
+#include "art_net_artery_resulttest.H"
+#include "adapter_art_net.H"
 #include "art_net_utils.H"
 
-#include "resulttest.H"
-#include "globalproblem.H"
+#include "lib_resulttest.H"
+#include "lib_globalproblem.H"
 #include "io_control.H"
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 
-#include "utils_createdis.H"
+#include "lib_utils_createdis.H"
 
 /*----------------------------------------------------------------------*
  * Main control routine for arterial network including various solvers:

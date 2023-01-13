@@ -20,12 +20,12 @@ Kloeppel
 
 #include "constraint_manager.H"
 #include "constraint.H"
-#include "constraintpenalty.H"
-#include "monitor.H"
-#include "multipointconstraint2.H"
-#include "multipointconstraint3.H"
-#include "multipointconstraint3penalty.H"
-#include "constraintdofset.H"
+#include "constraint_penalty.H"
+#include "constraint_monitor.H"
+#include "constraint_multipointconstraint2.H"
+#include "constraint_multipointconstraint3.H"
+#include "constraint_multipointconstraint3penalty.H"
+#include "constraint_dofset.H"
 
 
 /*----------------------------------------------------------------------*

@@ -8,12 +8,12 @@
 
 #include "gtest/gtest.h"
 
-#include "elasthyper_service.H"
-#include "material_service.H"
-#include "matpar_material.H"
+#include "mat_elasthyper_service.H"
+#include "mat_service.H"
+#include "mat_par_material.H"
 
-#include "elast_coupanisoexpo.H"
-#include "elast_isoneohooke.H"
+#include "matelast_coupanisoexpo.H"
+#include "matelast_isoneohooke.H"
 
 #include "linalg_fixedsizematrix.H"
 

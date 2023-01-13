@@ -16,7 +16,7 @@
 #include "geometry_pair_utility_classes.H"
 
 #include "inpar_geometry_pair.H"
-#include "utils_integration.H"
+#include "fem_general_utils_integration.H"
 
 
 namespace GEOMETRYPAIR

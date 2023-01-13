@@ -14,8 +14,8 @@
 
 #include "inpar_poromultiphase.H"
 
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

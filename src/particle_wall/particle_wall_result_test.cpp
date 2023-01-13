@@ -13,8 +13,8 @@
 #include "particle_wall_interface.H"
 #include "particle_wall_datastate.H"
 
-#include "linedefinition.H"
-#include "discret.H"
+#include "lib_linedefinition.H"
+#include "lib_discret.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

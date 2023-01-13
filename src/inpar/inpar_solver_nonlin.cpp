@@ -10,10 +10,10 @@
 
 
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_solver_nonlin.H"
 
-#include "nox_nln_enum_lists.H"
+#include "solver_nonlin_nox_enum_lists.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

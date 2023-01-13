@@ -10,9 +10,9 @@
 /*----------------------------------------------------------------------*/
 #include "adapter_scatra_base_algorithm.H"
 
-#include "globalproblem.H"
-#include "utils_createdis.H"
-#include "utils_parallel.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_createdis.H"
+#include "lib_utils_parallel.H"
 
 #include "scatra_timint_implicit.H"
 
@@ -26,7 +26,7 @@
 #include "scatra_resulttest.H"
 #include "scatra_utils_clonestrategy.H"
 #include "scatra_dyn.H"
-#include "dofset_predefineddofnumber.H"
+#include "lib_dofset_predefineddofnumber.H"
 
 
 /*----------------------------------------------------------------------*

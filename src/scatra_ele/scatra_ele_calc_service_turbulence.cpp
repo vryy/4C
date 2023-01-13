@@ -15,14 +15,14 @@
 #include "scatra_ele_parameter_turbulence.H"
 #include "inpar_fluid.H"
 
-#include "globalproblem.H"
-#include "discret.H"
-#include "utils.H"
-#include "standardtypes_cpp.H"
-#include "newtonianfluid.H"
-#include "matlist.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "lib_utils.H"
+#include "lib_standardtypes_cpp.H"
+#include "mat_newtonianfluid.H"
+#include "mat_list.H"
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 #include "fluid_rotsym_periodicbc.H"
 

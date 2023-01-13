@@ -15,7 +15,7 @@
 #include "mortar_defines.H"
 #include "mortar_projector.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 #include "linalg_utils_densematrix_inverse.H"
 #include "linalg_serialdensevector.H"
 

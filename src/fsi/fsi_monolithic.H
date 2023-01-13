@@ -14,7 +14,7 @@
 #include <NOX.H>
 #include <NOX_Epetra.H>
 
-#include "ad_fld_base_algorithm.H"
+#include "adapter_fld_base_algorithm.H"
 #include "adapter_algorithmbase.H"
 
 #include "fsi_monolithicinterface.H"

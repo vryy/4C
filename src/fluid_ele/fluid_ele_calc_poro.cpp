@@ -10,26 +10,26 @@
 /*----------------------------------------------------------------------*/
 
 #include "fluid_ele_poro.H"
-#include "element_integration_select.H"
+#include "lib_element_integration_select.H"
 #include "fluid_ele_action.H"
 #include "fluid_ele_parameter_poro.H"
 
 #include "fluid_rotsym_periodicbc.H"
 
-#include "utils_gder2.H"
-#include "utils_nurbs_shapefunctions.H"
+#include "fem_general_utils_gder2.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
 
-#include "position_array.H"
+#include "geometry_position_array.H"
 
-#include "fluidporo.H"
-#include "structporo.H"
-#include "stvenantkirchhoff.H"
-#include "elasthyper.H"
+#include "mat_fluidporo.H"
+#include "mat_structporo.H"
+#include "mat_stvenantkirchhoff.H"
+#include "mat_elasthyper.H"
 
-#include "globalproblem.H"
-#include "standardtypes_cpp.H"
+#include "lib_globalproblem.H"
+#include "lib_standardtypes_cpp.H"
 
-#include "nurbs_utils.H"
+#include "nurbs_discret_nurbs_utils.H"
 
 #include "fluid_ele_calc_poro.H"
 

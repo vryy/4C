@@ -41,7 +41,7 @@
 #include "solver_ifpackpreconditioner.H"
 #include "solver_mlpreconditioner.H"
 
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------

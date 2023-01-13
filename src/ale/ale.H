@@ -20,7 +20,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include "ad_ale.H"
+#include "adapter_ale.H"
 
 #include "inpar_ale.H"
 

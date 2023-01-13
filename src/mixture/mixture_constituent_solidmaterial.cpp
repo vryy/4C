@@ -11,10 +11,10 @@
 
 #include "mixture_constituent_solidmaterial.H"
 #include <Teuchos_RCPDecl.hpp>
-#include "material_service.H"
-#include "globalproblem.H"
-#include "matpar_bundle.H"
-#include "mixture.H"
+#include "mat_service.H"
+#include "lib_globalproblem.H"
+#include "mat_par_bundle.H"
+#include "mat_mixture.H"
 
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituent_SolidMaterial::MixtureConstituent_SolidMaterial(

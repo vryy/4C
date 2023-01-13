@@ -15,11 +15,11 @@
 #include "fluid_ele_parameter_timint.H"
 #include "fluid_ele_action.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "fluid_functions.H"
-#include "newtonianfluid.H"
-#include "fluid_murnaghantait.H"
+#include "mat_newtonianfluid.H"
+#include "mat_fluid_murnaghantait.H"
 
 #include <Teuchos_BLAS.hpp>
 #include <Epetra_SerialDenseSolver.h>

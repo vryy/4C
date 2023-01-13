@@ -11,7 +11,7 @@
 #define SO3_PORO_H
 
 #include "inpar_structure.H"
-#include "utils_gausspoints.H"
+#include "fem_general_utils_gausspoints.H"
 
 namespace MAT
 {

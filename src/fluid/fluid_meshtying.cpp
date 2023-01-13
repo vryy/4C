@@ -21,9 +21,9 @@
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_nullspace.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_krylov_projector.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "io.H"
 #include "io_control.H"
 #include <Teuchos_TimeMonitor.hpp>

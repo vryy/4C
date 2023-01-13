@@ -15,24 +15,24 @@
 #include "adapter_coupling_nonlin_mortar.H"
 
 #include "contact_interface.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 #include "contact_element.H"
 #include "contact_integrator.H"
 
 #include "mortar_utils.H"
 
-#include "discret.H"
-#include "condition_utils.H"
-#include "globalproblem.H"
+#include "lib_discret.H"
+#include "lib_condition_utils.H"
+#include "lib_globalproblem.H"
 
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_sparsematrix.H"
 #include "linalg_multiply.H"
 
-#include "control_point.H"
+#include "nurbs_discret_control_point.H"
 #include "nurbs_discret.H"
-#include "knotvector.H"
+#include "nurbs_discret_knotvector.H"
 
 #include "inpar_contact.H"
 

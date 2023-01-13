@@ -12,7 +12,7 @@
 
 #include "inpar_poroelast.H"
 #include "inpar_structure.H"
-#include "poro_base.H"
+#include "poroelast_base.H"
 #include "poroelast_utils.H"
 
 namespace LINALG

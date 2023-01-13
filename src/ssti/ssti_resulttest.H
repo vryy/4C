@@ -10,7 +10,7 @@
 #ifndef SSTI_RESULTTEST_H
 #define SSTI_RESULTTEST_H
 
-#include "resulttest.H"
+#include "lib_resulttest.H"
 
 namespace SSTI
 {

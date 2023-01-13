@@ -10,19 +10,19 @@
 
 #include "poromultiphase_scatra_partitioned_twoway.H"
 
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 
 #include "poromultiphase_base.H"
 
 #include "adapter_scatra_base_algorithm.H"
 #include "scatra_timint_implicit.H"
 
-#include "ad_porofluidmultiphase_wrapper.H"
-#include "ad_str_wrapper.H"
+#include "adapter_porofluidmultiphase_wrapper.H"
+#include "adapter_str_wrapper.H"
 
 #include "scatra_timint_meshtying_strategy_artery.H"
-#include "ad_art_net.H"
+#include "adapter_art_net.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

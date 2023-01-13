@@ -14,7 +14,7 @@
 
 #include "inpar_beaminteraction.H"
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 #include <map>
 #include <set>

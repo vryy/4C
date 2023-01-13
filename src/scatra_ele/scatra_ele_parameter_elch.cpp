@@ -14,10 +14,10 @@ general static parameters required for scalar transport element evaluation.
 
 */
 /*----------------------------------------------------------------------*/
-#include "dserror.H"
+#include "lib_dserror.H"
 
 #include "scatra_ele_parameter_elch.H"
-#include "singleton_owner.H"
+#include "headers_singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*

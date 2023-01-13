@@ -15,7 +15,7 @@
 
 #include "adapter_algorithmbase.H"
 #include <Epetra_Vector.h>
-#include "ad_field_wrapper.H"
+#include "adapter_field_wrapper.H"
 
 namespace DRT
 {

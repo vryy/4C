@@ -11,8 +11,8 @@
 
 #include "opti_resulttest.H"
 #include "opti_GCMMA.H"
-#include "discret.H"
-#include "linedefinition.H"
+#include "lib_discret.H"
+#include "lib_linedefinition.H"
 
 
 /*----------------------------------------------------------------------*/

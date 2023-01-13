@@ -18,9 +18,9 @@
 #include "cut_options.H"
 #include "cut_kernel.H"
 #include "cut_triangulateFacet.H"
-#include "volume_integration.H"
-#include "boundarycell_integration.H"
-#include "direct_divergence.H"
+#include "cut_volume_integration.H"
+#include "cut_boundarycell_integration.H"
+#include "cut_direct_divergence.H"
 #include "cut_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>

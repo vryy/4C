@@ -1,58 +1,13 @@
 set(OBJS_ADAPT
     # cmake-format: sortable
-    ad_ale.cpp
-    ad_ale_fluid.cpp
-    ad_ale_fpsi.cpp
-    ad_ale_fsi.cpp
-    ad_ale_fsi_msht.cpp
-    ad_ale_wear.cpp
-    ad_ale_wrapper.cpp
-    ad_ale_xffsi.cpp
-    ad_field_wrapper.cpp
-    ad_fld_base_algorithm.cpp
-    ad_fld_fbi_movingboundary.cpp
-    ad_fld_fbi_wrapper.cpp
-    ad_fld_fluid.cpp
-    ad_fld_fluid_ac_fsi.cpp
-    ad_fld_fluid_ale.cpp
-    ad_fld_fluid_ale_xfem.cpp
-    ad_fld_fluid_fluid_fsi.cpp
-    ad_fld_fluid_fluid_xfsi.cpp
-    ad_fld_fluid_fpsi.cpp
-    ad_fld_fluid_fsi.cpp
-    ad_fld_fluid_fsi_msht.cpp
-    ad_fld_fluid_immersed.cpp
-    ad_fld_fluid_xfem.cpp
-    ad_fld_fluid_xfsi.cpp
-    ad_fld_lung.cpp
-    ad_fld_moving_boundary.cpp
-    ad_fld_poro.cpp
-    ad_opt.cpp
-    ad_opt_fluid_adjoint_base.cpp
-    ad_opt_fluid_algo.cpp
-    ad_porofluidmultiphase_wrapper.cpp
-    ad_scatra_wrapper.cpp
-    ad_str_constr_merged.cpp
-    ad_str_factory.cpp
-    ad_str_fbiwrapper.cpp
-    ad_str_fpsiwrapper.cpp
-    ad_str_fsi_timint_adaptive.cpp
-    ad_str_fsiwrapper.cpp
-    ad_str_fsiwrapper_immersed.cpp
-    ad_str_invana.cpp
-    ad_str_loca.cpp
-    ad_str_loca_wrapper.cpp
-    ad_str_lung.cpp
-    ad_str_pasiwrapper.cpp
-    ad_str_poro_wrapper.cpp
-    ad_str_redairway.cpp
-    ad_str_ssiwrapper.cpp
-    ad_str_structalewrapper.cpp
-    ad_str_structure.cpp
-    ad_str_structure_new.cpp
-    ad_str_timeloop.cpp
-    ad_str_timint_adaptive.cpp
-    ad_str_wrapper.cpp
+    adapter_ale.cpp
+    adapter_ale_fluid.cpp
+    adapter_ale_fpsi.cpp
+    adapter_ale_fsi.cpp
+    adapter_ale_fsi_msht.cpp
+    adapter_ale_wear.cpp
+    adapter_ale_wrapper.cpp
+    adapter_ale_xffsi.cpp
     adapter_algorithmbase.cpp
     adapter_coupling.cpp
     adapter_coupling_ehl_mortar.cpp
@@ -60,10 +15,55 @@ set(OBJS_ADAPT
     adapter_coupling_nonlin_mortar.cpp
     adapter_coupling_poro_mortar.cpp
     adapter_coupling_volmortar.cpp
+    adapter_field_wrapper.cpp
+    adapter_fld_base_algorithm.cpp
+    adapter_fld_fbi_movingboundary.cpp
+    adapter_fld_fbi_wrapper.cpp
+    adapter_fld_fluid.cpp
+    adapter_fld_fluid_ac_fsi.cpp
+    adapter_fld_fluid_ale.cpp
+    adapter_fld_fluid_ale_xfem.cpp
+    adapter_fld_fluid_fluid_fsi.cpp
+    adapter_fld_fluid_fluid_xfsi.cpp
+    adapter_fld_fluid_fpsi.cpp
+    adapter_fld_fluid_fsi.cpp
+    adapter_fld_fluid_fsi_msht.cpp
+    adapter_fld_fluid_immersed.cpp
+    adapter_fld_fluid_xfem.cpp
+    adapter_fld_fluid_xfsi.cpp
+    adapter_fld_lung.cpp
+    adapter_fld_moving_boundary.cpp
+    adapter_fld_poro.cpp
     adapter_lubrication.cpp
+    adapter_opt.cpp
+    adapter_opt_fluid_adjoint_base.cpp
+    adapter_opt_fluid_algo.cpp
+    adapter_porofluidmultiphase_wrapper.cpp
     adapter_scatra_base_algorithm.cpp
     adapter_scatra_fluid_ale_coupling_algo.cpp
     adapter_scatra_fluid_coupling_algorithm.cpp
+    adapter_scatra_wrapper.cpp
+    adapter_str_constr_merged.cpp
+    adapter_str_factory.cpp
+    adapter_str_fbiwrapper.cpp
+    adapter_str_fpsiwrapper.cpp
+    adapter_str_fsi_timint_adaptive.cpp
+    adapter_str_fsiwrapper.cpp
+    adapter_str_fsiwrapper_immersed.cpp
+    adapter_str_invana.cpp
+    adapter_str_loca.cpp
+    adapter_str_loca_wrapper.cpp
+    adapter_str_lung.cpp
+    adapter_str_pasiwrapper.cpp
+    adapter_str_poro_wrapper.cpp
+    adapter_str_redairway.cpp
+    adapter_str_ssiwrapper.cpp
+    adapter_str_structalewrapper.cpp
+    adapter_str_structure.cpp
+    adapter_str_structure_new.cpp
+    adapter_str_timeloop.cpp
+    adapter_str_timint_adaptive.cpp
+    adapter_str_wrapper.cpp
     adapter_thermo.cpp
     )
 

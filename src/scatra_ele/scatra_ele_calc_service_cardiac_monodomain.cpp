@@ -15,12 +15,12 @@
 
 #include "scatra_ele_parameter_timint.H"
 
-#include "utils.H"
-#include "position_array.H"
-#include "discret.H"
+#include "lib_utils.H"
+#include "geometry_position_array.H"
+#include "lib_discret.H"
 
-#include "myocard.H"
-#include "matlist.H"
+#include "mat_myocard.H"
+#include "mat_list.H"
 
 
 /*----------------------------------------------------------------------*

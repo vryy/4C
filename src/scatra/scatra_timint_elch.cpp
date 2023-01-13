@@ -11,12 +11,12 @@
 #include "io_control.H"
 #include "io.H"
 
-#include "globalproblem.H"
-#include "utils_parameter_list.H"
-#include "function_of_time.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_parameter_list.H"
+#include "lib_function_of_time.H"
 
-#include "ion.H"
-#include "matlist.H"
+#include "mat_ion.H"
+#include "mat_list.H"
 
 #include "nurbs_discret.H"
 
@@ -27,7 +27,7 @@
 #include "scatra_ele_action.H"
 
 #include "linalg_krylov_projector.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"

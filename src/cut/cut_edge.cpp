@@ -14,7 +14,7 @@
 #include "cut_levelsetside.H"
 #include "cut_options.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include <string>
 #include <stack>

@@ -19,7 +19,7 @@
 #include <Epetra_MpiComm.h>
 
 #include "linalg_fixedsizematrix.H"
-#include "elementtype.H"
+#include "lib_elementtype.H"
 
 namespace DRT
 {

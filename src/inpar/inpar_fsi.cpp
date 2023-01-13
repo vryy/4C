@@ -9,9 +9,9 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_fsi.H"
-#include "conditiondefinition.H"
+#include "lib_conditiondefinition.H"
 
 /*----------------------------------------------------------------------------*/
 void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)

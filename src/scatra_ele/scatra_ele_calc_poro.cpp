@@ -10,23 +10,23 @@
 
 #include "scatra_ele_calc_poro.H"
 
-#include "globalproblem.H"
-#include "discret.H"
-#include "element.H"
-#include "utils.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "lib_element.H"
+#include "lib_utils.H"
 
-#include "structporo.H"
-#include "scatra_mat.H"
-#include "matlist.H"
+#include "mat_structporo.H"
+#include "mat_scatra_mat.H"
+#include "mat_list.H"
 
 #include "scatra_ele.H"
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "standardtypes_cpp.H"  // for EPS13 and so on
+#include "lib_standardtypes_cpp.H"  // for EPS13 and so on
 
 #include "fluid_rotsym_periodicbc.H"
-#include "singleton_owner.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  |                                                           vuong 07/14 |

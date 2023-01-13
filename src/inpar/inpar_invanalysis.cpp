@@ -10,13 +10,13 @@
 
 
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_invanalysis.H"
 #include "inpar_statinvanalysis.H"
 #include "inpar_structure.H"
-#include "conditiondefinition.H"
+#include "lib_conditiondefinition.H"
 
-#include "globalproblem_enums.H"
+#include "lib_globalproblem_enums.H"
 #include "inpar_problemtype.H"
 
 

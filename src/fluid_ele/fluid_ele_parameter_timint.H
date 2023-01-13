@@ -19,7 +19,7 @@ with different parameters in more than one fluid field is not yet supported.
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "inpar_fluid.H"
 
-#include "singleton_owner.H"
+#include "headers_singleton_owner.H"
 
 namespace DRT
 {

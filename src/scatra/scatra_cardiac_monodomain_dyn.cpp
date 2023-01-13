@@ -12,9 +12,9 @@
 
 #include "adapter_scatra_base_algorithm.H"
 
-#include "globalproblem.H"
-#include "utils_createdis.H"
-#include "binning_strategy.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_createdis.H"
+#include "binstrategy.H"
 
 #include "scatra_timint_implicit.H"
 
@@ -24,7 +24,7 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "dofset_predefineddofnumber.H"
+#include "lib_dofset_predefineddofnumber.H"
 #include "scatra_algorithm.H"
 #include "scatra_resulttest.H"
 #include "scatra_utils_clonestrategy.H"

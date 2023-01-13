@@ -16,8 +16,8 @@ and Johannes Kremheller, Originates from ADAPTER::CouplingNonLinMortar
  |  includes                                                  ager 10/15|
  *----------------------------------------------------------------------*/
 // lib
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 
 // contact
 #include "contact_element.H"
@@ -25,9 +25,9 @@ and Johannes Kremheller, Originates from ADAPTER::CouplingNonLinMortar
 #include "contact_interface.H"
 
 // nurbs
-#include "control_point.H"
+#include "nurbs_discret_control_point.H"
 #include "nurbs_discret.H"
-#include "knotvector.H"
+#include "nurbs_discret_knotvector.H"
 
 // linalg
 #include "linalg_sparsematrix.H"

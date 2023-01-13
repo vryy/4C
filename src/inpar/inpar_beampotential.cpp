@@ -8,13 +8,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_beampotential.H"
 #include "inpar_beamcontact.H"
 #include "inpar_structure.H"
 #include "inpar_tsi.H"
 #include "inpar_parameterlist_utils.H"
-#include "conditiondefinition.H"
+#include "lib_conditiondefinition.H"
 
 
 

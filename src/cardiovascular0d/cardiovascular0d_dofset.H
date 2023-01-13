@@ -19,8 +19,8 @@
 
 #include "mor_pod.H"
 
-#include "dofset.H"
-#include "discret.H"
+#include "lib_dofset.H"
+#include "lib_discret.H"
 
 namespace UTILS
 {

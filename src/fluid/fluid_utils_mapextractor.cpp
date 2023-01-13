@@ -11,10 +11,10 @@
 
 #include "fluid_utils_mapextractor.H"
 
-#include "discret.H"
-#include "condition_selector.H"
-#include "condition_utils.H"
-#include "globalproblem.H"
+#include "lib_discret.H"
+#include "lib_condition_selector.H"
+#include "lib_condition_utils.H"
+#include "lib_globalproblem.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
 /*----------------------------------------------------------------------*/

@@ -14,7 +14,7 @@
 #include "scatra_timint_meshtying_strategy_s2i.H"
 #include "scatra_timint_meshtying_strategy_artery.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 
 #include "linalg_mapextractor.H"
 

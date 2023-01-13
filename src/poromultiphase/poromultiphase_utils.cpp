@@ -8,10 +8,10 @@
 
 #include "poromultiphase_utils.H"
 
-#include "dofset_predefineddofnumber.H"
+#include "lib_dofset_predefineddofnumber.H"
 #include "poromultiphase_utils_clonestrategy.H"
 
-#include "ad_poromultiphase.H"
+#include "adapter_poromultiphase.H"
 
 #include "poromultiphase_partitioned.H"
 #include "poromultiphase_partitioned_twoway.H"
@@ -23,7 +23,7 @@
 #include "poroelast_utils.H"
 #include "inpar_bio.H"
 
-#include "utils_createdis.H"
+#include "lib_utils_createdis.H"
 
 /*----------------------------------------------------------------------*
  | setup discretizations and dofsets                         vuong 08/16 |

@@ -15,9 +15,9 @@
 
 #include "scatra_ele_calc_utils.H"
 
-#include "standardtypes_cpp.H"  // for EPS13 and so on
-#include "condition_utils.H"
-#include "globalproblem.H"
+#include "lib_standardtypes_cpp.H"  // for EPS13 and so on
+#include "lib_condition_utils.H"
+#include "lib_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*

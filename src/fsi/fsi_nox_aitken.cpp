@@ -21,7 +21,7 @@
 #include <Epetra_Vector.h>
 #include <Epetra_Comm.h>
 #include <NOX_Epetra_Vector.H>
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "io_control.H"
 
 NOX::FSI::AitkenRelaxation::AitkenRelaxation(

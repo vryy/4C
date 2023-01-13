@@ -13,7 +13,7 @@
 #define FLD_TIMINT_TWO_PHASE_H
 
 
-#include "fluidimplicitintegration.H"
+#include "fluid_implicit_integration.H"
 
 
 namespace FLD

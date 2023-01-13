@@ -13,7 +13,7 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "dserror.H"
+#include "lib_dserror.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Comm.h>

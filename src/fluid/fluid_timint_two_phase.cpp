@@ -12,7 +12,7 @@
 #include "fluid_timint_two_phase.H"
 #include "fluid_ele_action.H"
 #include "levelset_algorithm.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "io.H"
 #include "linalg_utils_sparse_algebra_math.H"
 

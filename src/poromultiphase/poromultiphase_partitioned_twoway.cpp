@@ -9,10 +9,10 @@
 
 #include "poromultiphase_partitioned_twoway.H"
 
-#include "ad_porofluidmultiphase_wrapper.H"
-#include "ad_str_wrapper.H"
-#include "ad_art_net.H"
-#include "globalproblem.H"
+#include "adapter_porofluidmultiphase_wrapper.H"
+#include "adapter_str_wrapper.H"
+#include "adapter_art_net.H"
+#include "lib_globalproblem.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "io.H"
 

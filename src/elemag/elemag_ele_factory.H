@@ -11,7 +11,7 @@
 #ifndef ELEMAG_ELE_FACTORY_H
 #define ELEMAG_ELE_FACTORY_H
 
-#include "element.H"
+#include "lib_element.H"
 
 namespace DRT
 {

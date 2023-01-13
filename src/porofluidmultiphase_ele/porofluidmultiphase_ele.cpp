@@ -9,12 +9,12 @@
 
 #include "porofluidmultiphase_ele.H"
 
-#include "fluidporo_multiphase.H"
+#include "mat_fluidporo_multiphase.H"
 
-#include "linedefinition.H"
-#include "utils_factory.H"
+#include "lib_linedefinition.H"
+#include "lib_utils_factory.H"
 
-#include "utils_local_connectivity_matrices.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
 #include "linalg_utils_nullspace.H"
 

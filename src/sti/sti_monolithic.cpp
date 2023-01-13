@@ -17,8 +17,8 @@
 
 #include "io_control.H"
 
-#include "assemblestrategy.H"
-#include "globalproblem.H"
+#include "lib_assemblestrategy.H"
+#include "lib_globalproblem.H"
 
 #include "scatra_timint_implicit.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"
@@ -27,7 +27,7 @@
 #include "linalg_mapextractor.H"
 #include "linalg_multiply.H"
 #include "linalg_nullspace.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_densematrix_communication.H"

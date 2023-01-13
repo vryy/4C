@@ -10,13 +10,13 @@
 /*---------------------------------------------------------------------*/
 
 #include "tutorial_dyn.H"
-#include "inpar_tutorial.H"
+#include "tutorial_inpar.H"
 
 #include "tutorial_nln_truss.H"
 #include "tutorial_fixedpoint_scheme.H"
 #include "tutorial_struct_ale_coupling.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 
 void tutorial_drt()

@@ -9,7 +9,7 @@
 #define ANISOTROPIC_GROWTH_STRATEGY_H
 
 #include "mixture_growth_strategy.H"
-#include "anisotropy_extension_default.H"
+#include "mat_anisotropy_extension_default.H"
 
 namespace MIXTURE
 {

@@ -1,20 +1,20 @@
 set(SOURCES
     # cmake-format: sortable
-    csv_reader.cpp
-    discretization_runtime_vtp_writer.cpp
-    discretization_runtime_vtu_writer.cpp
-    every_iteration_writer.cpp
     io.cpp
     io_control.cpp
+    io_csv_reader.cpp
+    io_discretization_runtime_vtp_writer.cpp
+    io_discretization_runtime_vtu_writer.cpp
+    io_every_iteration_writer.cpp
     io_gmsh.cpp
     io_hdf.cpp
     io_pstream.cpp
-    runtime_csv_writer.cpp
-    runtime_vtp_writer.cpp
-    runtime_vtu_writer.cpp
-    vtk_writer_base.cpp
-    vtp_writer.cpp
-    vtu_writer.cpp
+    io_runtime_csv_writer.cpp
+    io_runtime_vtp_writer.cpp
+    io_runtime_vtu_writer.cpp
+    io_vtk_writer_base.cpp
+    io_vtp_writer.cpp
+    io_vtu_writer.cpp
     )
 
 baci_add_library(io ${SOURCES})

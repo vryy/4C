@@ -13,8 +13,8 @@
 #include "linalg_fixedsizematrix.H"
 #include "linalg_serialdensevector.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "porofluid_variablemanager.H"
-#include "porofluid_phasemanager.H"
+#include "porofluidmultiphase_ele_porofluid_variablemanager.H"
+#include "porofluidmultiphase_ele_porofluid_phasemanager.H"
 #include "inpar_bio.H"
 #include "Sacado.hpp"
 

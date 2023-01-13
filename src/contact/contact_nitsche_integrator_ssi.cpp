@@ -13,7 +13,7 @@
 #include "scatra_ele_parameter_boundary.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "so_base.H"
+#include "so3_base.H"
 #include "so3_scatra.H"
 
 /*----------------------------------------------------------------------*

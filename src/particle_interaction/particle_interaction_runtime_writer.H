@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "dserror.H"
+#include "lib_dserror.H"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>

@@ -12,7 +12,7 @@
 #ifndef XFEM_UTILS_H_
 #define XFEM_UTILS_H_
 
-#include "discret.H"
+#include "lib_discret.H"
 #include "cut_point.H"
 
 namespace XFEM

@@ -11,8 +11,8 @@
 
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "element.H"
-#include "elementtype.H"
+#include "lib_element.H"
+#include "lib_elementtype.H"
 
 namespace DRT
 {

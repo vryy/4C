@@ -15,7 +15,7 @@
 #include "scatra_ele_boundary_interface.H"
 #include "scatra_ele_calc_utils.H"
 
-#include "utils_local_connectivity_matrices.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
 #include "inpar_elch.H"
 

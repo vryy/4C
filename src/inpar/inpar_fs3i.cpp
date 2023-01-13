@@ -11,7 +11,7 @@
 
 
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_fs3i.H"
 #include "inpar_scatra.H"
 

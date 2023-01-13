@@ -9,18 +9,18 @@
 */
 
 
-#include "ad_fld_base_algorithm.H"
-#include "ad_str_fsiwrapper.H"
-#include "xfluid.H"
-#include "ad_ale.H"
-#include "ad_ale_fpsi.H"
-#include "ad_str_poro_wrapper.H"
-#include "ad_ale_fpsi.H"
+#include "adapter_fld_base_algorithm.H"
+#include "adapter_str_fsiwrapper.H"
+#include "fluid_xfluid.H"
+#include "adapter_ale.H"
+#include "adapter_ale_fpsi.H"
+#include "adapter_str_poro_wrapper.H"
+#include "adapter_ale_fpsi.H"
 #include "poroelast_monolithic.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "io.H"
-#include "discret.H"
+#include "lib_discret.H"
 
 #include "fsi_xfem_algorithm.H"
 

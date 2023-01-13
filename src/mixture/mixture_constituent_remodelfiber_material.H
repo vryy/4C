@@ -10,7 +10,7 @@
 
 
 #include <memory>
-#include "matpar_parameter.H"
+#include "mat_par_parameter.H"
 
 namespace MIXTURE
 {

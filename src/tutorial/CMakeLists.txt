@@ -1,8 +1,8 @@
 set(OBJS_TUTORIAL
     # cmake-format: sortable
-    inpar_tutorial.cpp
     tutorial_dyn.cpp
     tutorial_fixedpoint_scheme.cpp
+    tutorial_inpar.cpp
     tutorial_nln_truss.cpp
     tutorial_struct_ale_coupling.cpp
     tutorial_utils.cpp

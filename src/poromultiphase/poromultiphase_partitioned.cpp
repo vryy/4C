@@ -9,7 +9,7 @@
 
 #include "poromultiphase_partitioned.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

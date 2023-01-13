@@ -12,10 +12,10 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_utils_elch.H"
 
-#include "discret.H"
-#include "utils.H"
-#include "matlist.H"
-#include "singleton_owner.H"
+#include "lib_discret.H"
+#include "lib_utils.H"
+#include "mat_list.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

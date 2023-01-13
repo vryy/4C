@@ -7,7 +7,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 #include <stdexcept>
 #include <sstream>

@@ -10,9 +10,9 @@
 #include "mixture_constituent_remodelfiber_material_exponential.H"
 #include "mixture_constituent_remodelfiber_material_active.H"
 #include "mixture_constituent_remodelfiber_material_exponential_active.H"
-#include "globalproblem.H"
-#include "matpar_bundle.H"
-#include "material_service.H"
+#include "lib_globalproblem.H"
+#include "mat_par_bundle.H"
+#include "mat_service.H"
 
 [[nodiscard]] const MIXTURE::PAR::RemodelFiberMaterial<double>* MIXTURE::PAR::FiberMaterialFactory(
     int matid)

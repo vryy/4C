@@ -32,12 +32,12 @@ bridge between the xfluid class and the cut-library
 #include "io_pstream.H"
 
 #include "fluid_ele_action.H"
-#include "discret_xfem.H"
+#include "lib_discret_xfem.H"
 
 // Needed to find element conditions
-#include "condition_utils.H"
+#include "lib_condition_utils.H"
 
-#include "newtonianfluid.H"
+#include "mat_newtonianfluid.H"
 
 // TODO: CouplingBase should become abstract class
 

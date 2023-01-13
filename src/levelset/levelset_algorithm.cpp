@@ -16,9 +16,9 @@
 #include "levelset_intersection_utils.H"
 
 #include "scatra_resulttest.H"
-#include "standardtypes_cpp.H"
+#include "lib_standardtypes_cpp.H"
 #include "linalg_utils_sparse_algebra_create.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "io.H"
 

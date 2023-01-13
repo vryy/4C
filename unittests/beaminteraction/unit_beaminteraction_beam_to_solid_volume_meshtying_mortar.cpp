@@ -9,13 +9,13 @@
 
 #include <gtest/gtest.h>
 
-#include "beam3r.H"
-#include "so_hex8.H"
-#include "so_hex27.H"
+#include "beam3_reissner.H"
+#include "so3_hex8.H"
+#include "so3_hex27.H"
 #include "geometry_pair_element.H"
 #include "geometry_pair_line_to_volume_segmentation.H"
 #include "geometry_pair_line_to_3D_evaluation_data.H"
-#include "beam_to_solid_volume_meshtying_pair_mortar.H"
+#include "beaminteraction_beam_to_solid_volume_meshtying_pair_mortar.H"
 #include "linalg_serialdensevector.H"
 
 

@@ -10,7 +10,7 @@
 #include "contact_nitsche_strategy_ssi.H"
 #include "contact_interface.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "mortar_element.H"
 

@@ -9,7 +9,7 @@
 #ifndef SSI_STR_MODEL_EVALUATOR_BASE_H_
 #define SSI_STR_MODEL_EVALUATOR_BASE_H_
 
-#include "str_model_evaluator_generic.H"
+#include "structure_new_model_evaluator_generic.H"
 
 namespace STR::MODELEVALUATOR
 {

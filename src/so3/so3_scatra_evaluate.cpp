@@ -10,11 +10,11 @@
 
 #include "so3_scatra.H"
 
-#include "so_element_service.H"
+#include "so3_element_service.H"
 
-#include "utils.H"
-#include "so3_material.H"
-#include "str_enum_lists.H"
+#include "lib_utils.H"
+#include "mat_so3_material.H"
+#include "structure_new_enum_lists.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

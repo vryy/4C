@@ -12,7 +12,7 @@
 #include "scatra_timint_cardiac_monodomain_scheme.H"
 #include "scatra_ele_action.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "io.H"
 
 

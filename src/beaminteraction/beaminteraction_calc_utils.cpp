@@ -8,10 +8,10 @@
 /*-----------------------------------------------------------*/
 
 #include "beaminteraction_calc_utils.H"
-#include "beam_link.H"
-#include "periodic_boundingbox.H"
-#include "crosslinking_params.H"
-#include "spherebeamlinking_params.H"
+#include "beaminteraction_link.H"
+#include "beaminteraction_periodic_boundingbox.H"
+#include "beaminteraction_crosslinking_params.H"
+#include "beaminteraction_spherebeamlinking_params.H"
 
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_densematrix_communication.H"
@@ -19,15 +19,15 @@
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
 
-#include "binning_strategy.H"
+#include "binstrategy.H"
 
 #include "beam3_base.H"
 #include "rigidsphere.H"
-#include "so_base.H"
+#include "so3_base.H"
 
-#include "intersection_math.H"
+#include "geometry_intersection_math.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "io_pstream.H"
 

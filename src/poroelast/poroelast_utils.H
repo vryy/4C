@@ -16,7 +16,7 @@
 #include "inpar_poroelast.H"
 
 #include "volmortar_utils.H"
-#include "element.H"
+#include "lib_element.H"
 
 namespace DRT
 {

@@ -7,16 +7,16 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#include "position_array.H"
+#include "geometry_position_array.H"
 
-#include "discret.H"
-#include "utils.H"
+#include "lib_discret.H"
+#include "lib_utils.H"
 
-#include "material.H"
-#include "matlist.H"
-#include "arrhenius_temp.H"
-#include "sutherland.H"
-#include "tempdepwater.H"
+#include "mat_material.H"
+#include "mat_list.H"
+#include "mat_arrhenius_temp.H"
+#include "mat_sutherland.H"
+#include "mat_tempdepwater.H"
 
 #include "scatra_ele.H"
 #include "scatra_ele_action.H"

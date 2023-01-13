@@ -7,11 +7,11 @@
 */
 /*----------------------------------------------------------------------*/
 #include "discsh3.H"
-#include "discret.H"
-#include "utils_factory.H"
-#include "dserror.H"
-#include "linedefinition.H"
-#include "globalproblem.H"
+#include "lib_discret.H"
+#include "lib_utils_factory.H"
+#include "lib_dserror.H"
+#include "lib_linedefinition.H"
+#include "lib_globalproblem.H"
 
 #include "linalg_utils_nullspace.H"
 #include "linalg_utils_sparse_algebra_math.H"

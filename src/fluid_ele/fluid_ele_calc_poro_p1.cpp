@@ -13,10 +13,10 @@
 
 #include "fluid_ele.H"
 #include "fluid_ele_parameter_poro.H"
-#include "nurbs_utils.H"
+#include "nurbs_discret_nurbs_utils.H"
 
-#include "fluidporo.H"
-#include "structporo.H"
+#include "mat_fluidporo.H"
+#include "mat_structporo.H"
 
 #include "fluid_rotsym_periodicbc.H"
 

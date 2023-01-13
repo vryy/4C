@@ -10,9 +10,9 @@
 
 
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_mortar.H"
-#include "conditiondefinition.H"
+#include "lib_conditiondefinition.H"
 
 
 

@@ -14,7 +14,7 @@
 
 #include "Epetra_MpiComm.h"
 
-#include "discret.H"
+#include "lib_discret.H"
 #include "linalg_blocksparsematrix.H"
 #include "inpar_fluid.H"
 #include <Teuchos_TimeMonitor.hpp>

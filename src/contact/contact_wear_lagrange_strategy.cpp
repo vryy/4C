@@ -22,7 +22,7 @@
 #include "contact_integrator.H"
 #include "contact_element.H"
 
-#include "friction_node.H"
+#include "contact_friction_node.H"
 
 #include "mortar_utils.H"
 #include "inpar_contact.H"

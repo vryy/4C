@@ -16,8 +16,8 @@ Pack, Unpack, NumDofPerNode etc.
 #define SRC_LUBRICATION_ELE_LUBRICATION_ELE_H_
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "element.H"
-#include "elementtype.H"
+#include "lib_element.H"
+#include "lib_elementtype.H"
 
 namespace DRT
 {

@@ -10,11 +10,11 @@
 #define SRC_INPAR_INPAR_POROMULTIPHASE_SCATRA_CPP_
 
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_poromultiphase_scatra.H"
 #include "inpar_scatra.H"
 #include "inpar_poroelast.H"
-#include "conditiondefinition.H"
+#include "lib_conditiondefinition.H"
 
 #include "linalg_equilibrate.H"
 

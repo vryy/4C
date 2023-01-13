@@ -14,17 +14,17 @@
 #include "adapter_coupling_mortar.H"
 
 #include "adapter_scatra_base_algorithm.H"
-#include "ad_str_wrapper.H"
+#include "adapter_str_wrapper.H"
 
 #include "volmortar_utils.H"
 
-#include "condition_utils.H"
-#include "dofset_definedmapping_wrapper.H"
-#include "dofset_gidbased_wrapper.H"
-#include "dofset_predefineddofnumber.H"
-#include "globalproblem.H"
+#include "lib_condition_utils.H"
+#include "lib_dofset_definedmapping_wrapper.H"
+#include "lib_dofset_gidbased_wrapper.H"
+#include "lib_dofset_predefineddofnumber.H"
+#include "lib_globalproblem.H"
 
-#include "matpar_bundle.H"
+#include "mat_par_bundle.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

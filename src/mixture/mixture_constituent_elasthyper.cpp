@@ -10,11 +10,11 @@
 /*----------------------------------------------------------------------*/
 
 #include "mixture_constituent_elasthyper.H"
-#include "material_service.H"
-#include "globalproblem.H"
-#include "matpar_bundle.H"
-#include "multiplicative_split_defgrad_elasthyper_service.H"
-#include "mixture.H"
+#include "mat_service.H"
+#include "lib_globalproblem.H"
+#include "mat_par_bundle.H"
+#include "mat_multiplicative_split_defgrad_elasthyper_service.H"
+#include "mat_mixture.H"
 #include "mixture_prestress_strategy.H"
 
 // Constructor for the parameter class

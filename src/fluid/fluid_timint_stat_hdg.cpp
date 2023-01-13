@@ -12,19 +12,19 @@
 #include "fluid_timint_stat_hdg.H"
 #include "fluid_volumetric_surfaceFlow_condition.H"
 #include "fluid_ele_action.H"
-#include "dyn_smag.H"
-#include "dyn_vreman.H"
-#include "boxfilter.H"
+#include "fluid_turbulence_dyn_smag.H"
+#include "fluid_turbulence_dyn_vreman.H"
+#include "fluid_turbulence_boxfilter.H"
 #include "fluid_utils.H"
 
 #include "linalg_utils_sparse_algebra_math.H"
 
-#include "discret_hdg.H"
-#include "globalproblem.H"
+#include "lib_discret_hdg.H"
+#include "lib_globalproblem.H"
 #include "fluid_ele_hdg.H"
 #include "fluid_ele_hdg_weak_comp.H"
 #include "io.H"
-#include "dofset_predefineddofnumber.H"
+#include "lib_dofset_predefineddofnumber.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                      als 01/18 |    // TODO als fix

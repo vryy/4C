@@ -10,7 +10,7 @@
 
 #include "membrane_scatra.H"
 
-#include "linedefinition.H"
+#include "lib_linedefinition.H"
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                   sfuchs 05/18 |

@@ -9,13 +9,13 @@
 
 #include "ssi_monolithic.H"
 
-#include "ad_str_ssiwrapper.H"
+#include "adapter_str_ssiwrapper.H"
 
 #include "contact_nitsche_strategy_ssi.H"
 
 #include "io_control.H"
 
-#include "locsys.H"
+#include "lib_locsys.H"
 
 #include "scatra_timint_meshtying_strategy_s2i.H"
 

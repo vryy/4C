@@ -10,8 +10,8 @@
 
 
 #include "scatra_ele_calc_utils.H"
-#include "standardtypes_cpp.H"
-#include "condition_utils.H"
+#include "lib_standardtypes_cpp.H"
+#include "lib_condition_utils.H"
 
 namespace SCATRA
 {

@@ -13,7 +13,7 @@
 #define OPTI_RESULTTEST_H_
 
 
-#include "resulttest.H"
+#include "lib_resulttest.H"
 
 
 class Epetra_SerialDenseVector;

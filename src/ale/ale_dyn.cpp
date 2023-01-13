@@ -15,10 +15,10 @@
 
 #include "ale_resulttest.H"
 
-#include "ad_ale.H"
+#include "adapter_ale.H"
 
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

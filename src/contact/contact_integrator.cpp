@@ -14,20 +14,20 @@
 #include "contact_element.H"
 #include "contact_defines.H"
 #include "contact_paramsinterface.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 #include "mortar_defines.H"
 #include "mortar_projector.H"
 #include "mortar_coupling3d_classes.H"
 #include "mortar_calc_utils.H"
 #include "linalg_serialdensevector.H"
 #include "linalg_serialdensematrix.H"
-#include "utils_integration.H"
+#include "fem_general_utils_integration.H"
 #include "inpar_contact.H"
 #include "inpar_wear.H"
 
 // headers for poro contact integration
-#include "structporo.H"
-#include "utils_boundary_integration.H"
+#include "mat_structporo.H"
+#include "fem_general_utils_boundary_integration.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/13|

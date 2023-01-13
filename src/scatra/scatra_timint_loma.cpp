@@ -5,12 +5,12 @@
  *------------------------------------------------------------------------------------------------*/
 #include "io_control.H"
 
-#include "discret.H"
-#include "globalproblem.H"
-#include "utils_parameter_list.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_parameter_list.H"
 
-#include "matpar_bundle.H"
-#include "sutherland.H"
+#include "mat_par_bundle.H"
+#include "mat_sutherland.H"
 
 #include "scatra_ele_action.H"
 

@@ -9,9 +9,9 @@
 
 #include <fstream>
 #include <gtest/gtest.h>
-#include "function.H"
-#include "function_library.H"
-#include "cubic_spline_interpolation.H"
+#include "lib_function.H"
+#include "lib_function_library.H"
+#include "lib_cubic_spline_interpolation.H"
 
 namespace
 {

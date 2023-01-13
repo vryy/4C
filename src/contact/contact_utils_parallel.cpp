@@ -14,8 +14,8 @@
 #include "inpar_mortar.H"
 #include "inpar_structure.H"
 
-#include "globalproblem.H"
-#include "globalproblem_enums.H"
+#include "lib_globalproblem.H"
+#include "lib_globalproblem_enums.H"
 
 #include <Teuchos_ParameterList.hpp>
 

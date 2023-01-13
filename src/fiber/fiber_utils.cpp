@@ -9,7 +9,7 @@
 
 #include "fiber_utils.H"
 #include "fiber_node.H"
-#include "nodal_fiber_holder.H"
+#include "fiber_nodal_fiber_holder.H"
 #include <cmath>
 
 template <DRT::Element::DiscretizationType distype>

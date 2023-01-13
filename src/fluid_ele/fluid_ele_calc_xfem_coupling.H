@@ -27,7 +27,7 @@
  * kruse, 08/14
  */
 
-#include "utils_local_connectivity_matrices.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
 #include "linalg_fixedsizeblockmatrix.H"
 

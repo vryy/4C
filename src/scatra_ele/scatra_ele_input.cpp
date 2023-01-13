@@ -6,9 +6,9 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "linedefinition.H"
+#include "lib_linedefinition.H"
 
-#include "myocard.H"
+#include "mat_myocard.H"
 
 #include "scatra_ele.H"
 

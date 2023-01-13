@@ -14,7 +14,7 @@
 #define BEAMINTERACTION_SUBMODEL_EVALUATOR_GENERIC_H_
 
 #include "inpar_beaminteraction.H"
-#include "str_model_evaluator_beaminteraction.H"
+#include "beaminteraction_str_model_evaluator.H"
 
 // forward declaration
 namespace BINSTRATEGY

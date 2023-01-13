@@ -10,11 +10,11 @@
 
 #include <Sacado.hpp>
 
-#include "matpar_material.H"
-#include "growth_evolution_linear_cauchy.H"
-#include "remodelfiber.H"
+#include "mat_par_material.H"
+#include "mixture_growth_evolution_linear_cauchy.H"
+#include "mixture_remodelfiber.H"
 #include "mixture_constituent_remodelfiber_material_exponential.H"
-#include "remodelfiber-internal.H"
+#include "mixture_remodelfiber-internal.H"
 
 #include "linalg_fixedsizematrix.H"
 

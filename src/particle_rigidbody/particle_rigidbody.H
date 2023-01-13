@@ -16,7 +16,7 @@
  *---------------------------------------------------------------------------*/
 #include "particle_rigidbody_interface.H"
 
-#include "particle_typedefs.H"
+#include "particle_engine_typedefs.H"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>

@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "functionvariables.H"
+#include "lib_functionvariables.H"
 
 namespace
 {

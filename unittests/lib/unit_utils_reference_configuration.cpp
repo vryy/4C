@@ -8,9 +8,9 @@
 /*----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "utils_reference_configuration.H"
-#include "so_tet4.H"
-#include "so_hex8.H"
+#include "lib_utils_reference_configuration.H"
+#include "so3_tet4.H"
+#include "so3_hex8.H"
 #include "contact_element.H"
 #include "unittests_assertions.h"
 

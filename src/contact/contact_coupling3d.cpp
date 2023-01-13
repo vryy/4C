@@ -18,7 +18,7 @@
 #include "mortar_coupling3d_classes.H"
 #include "mortar_defines.H"
 #include "mortar_projector.H"
-#include "discret.H"
+#include "lib_discret.H"
 #include "inpar_contact.H"
 #include "linalg_serialdensevector.H"
 #include "linalg_serialdensematrix.H"

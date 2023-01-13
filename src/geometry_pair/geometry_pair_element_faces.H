@@ -14,7 +14,7 @@
 
 #include "geometry_pair_element_functions.H"
 
-#include "element.H"
+#include "lib_element.H"
 
 #include <unordered_map>
 

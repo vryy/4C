@@ -10,8 +10,8 @@
 
 #include "struct_ale_str_model_evaluator.H"
 
-#include "discret.H"
-#include "str_timint_basedataglobalstate.H"
+#include "lib_discret.H"
+#include "structure_new_timint_basedataglobalstate.H"
 
 
 /*----------------------------------------------------------------------*

@@ -12,10 +12,10 @@ within electrodes
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "discret.H"
-#include "utils.H"
+#include "lib_discret.H"
+#include "lib_utils.H"
 
-#include "material.H"
+#include "mat_material.H"
 
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |

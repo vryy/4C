@@ -11,7 +11,7 @@
 
 #include "tutorial_fixedpoint_scheme.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "inpar_parameterlist_utils.H"
 
 

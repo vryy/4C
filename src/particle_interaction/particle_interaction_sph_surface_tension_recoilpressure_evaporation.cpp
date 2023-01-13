@@ -14,7 +14,7 @@
 #include "particle_interaction_utils.H"
 
 #include "particle_engine_interface.H"
-#include "particle_container.H"
+#include "particle_engine_container.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

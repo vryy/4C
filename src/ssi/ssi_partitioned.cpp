@@ -11,7 +11,7 @@
 
 #include "linalg_utils_sparse_algebra_math.H"
 
-#include "ad_str_structure_new.H"
+#include "adapter_str_structure_new.H"
 #include "adapter_scatra_base_algorithm.H"
 
 #include "scatra_timint_implicit.H"

@@ -8,7 +8,7 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_contact.H"
 #include "inpar_structure.H"
 
