@@ -369,7 +369,7 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface&
                << " prescribed by other " << geom_name << " DBC. The checking tolerance is 1e-13."
                << " If your value difference is larger than this value, please try to fix the "
                   "input.";
-            std::cout << ss.str() << std::endl;
+            dserror(ss.str().c_str());
           }
         }
 
