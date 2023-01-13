@@ -23,12 +23,12 @@
 #include "fluid_ele_parameter_xfem.H"
 #include "fluid_ele_calc_xfem.H"
 
-#include "newtonianfluid.H"
-#include "matpar_bundle.H"
+#include "mat_newtonianfluid.H"
+#include "mat_par_bundle.H"
 
 #include "fluid_functions.H"
 
-#include "condition_utils.H"
+#include "lib_condition_utils.H"
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcXFEM<distype>* DRT::ELEMENTS::FluidEleCalcXFEM<distype>::Instance(

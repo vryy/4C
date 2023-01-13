@@ -12,14 +12,14 @@
 #include <stdio.h>
 
 #include "fluid_utils.H"
-#include "fluidimplicitintegration.H"
+#include "fluid_implicit_integration.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "globalproblem.H"
-#include "dofset.H"
-#include "dofset_interface.H"
+#include "lib_globalproblem.H"
+#include "lib_dofset.H"
+#include "lib_dofset_interface.H"
 #include "io_control.H"
 #include "linalg_mapextractor.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "inpar_fluid.H"
 #include "fluid_ele_action.H"
 

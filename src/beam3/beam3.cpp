@@ -9,16 +9,16 @@
 /*----------------------------------------------------------------------------*/
 
 #include "beam3.H"
-#include "beam3r.H"
-#include "discret.H"
-#include "dserror.H"
-#include "globalproblem.H"
-#include "element.H"
-#include "validparameters.H"
+#include "beam3_reissner.H"
+#include "lib_discret.H"
+#include "lib_dserror.H"
+#include "lib_globalproblem.H"
+#include "lib_element.H"
+#include "inpar_validparameters.H"
 #include "linalg_fixedsizematrix.H"
-#include "largerotations.H"
-#include "linedefinition.H"
-#include "periodic_boundingbox.H"
+#include "fem_general_largerotations.H"
+#include "lib_linedefinition.H"
+#include "beaminteraction_periodic_boundingbox.H"
 
 DRT::ELEMENTS::Beam3Type DRT::ELEMENTS::Beam3Type::instance_;
 

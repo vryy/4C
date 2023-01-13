@@ -12,11 +12,11 @@
 
 #include "inpar_beam_to_solid.H"
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_beaminteraction.H"
 #include "inpar_geometry_pair.H"
-#include "dserror.H"
-#include "conditiondefinition.H"
+#include "lib_dserror.H"
+#include "lib_conditiondefinition.H"
 
 
 /**

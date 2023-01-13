@@ -10,10 +10,10 @@ transport
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_sti_thermo.H"
 
-#include "discret.H"
-#include "utils.H"
+#include "lib_discret.H"
+#include "lib_utils.H"
 
-#include "soret.H"
+#include "mat_soret.H"
 
 /*----------------------------------------------------------------------*
  | extract quantities for element evaluation                 fang 11/15 |

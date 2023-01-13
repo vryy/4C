@@ -6,7 +6,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "gtest/gtest.h"
-#include "particle_container_bundle.H"
+#include "particle_engine_container_bundle.H"
 
 
 namespace

@@ -12,10 +12,10 @@
 #ifndef NURBS_DISCRET_H
 #define NURBS_DISCRET_H
 
-#include "utils_discret.H"
-#include "discret.H"
-#include "knotvector.H"
-#include "control_point.H"
+#include "lib_utils_discret.H"
+#include "lib_discret.H"
+#include "nurbs_discret_knotvector.H"
+#include "nurbs_discret_control_point.H"
 
 // forward declarations
 namespace LINALG

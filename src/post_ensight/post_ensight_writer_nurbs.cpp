@@ -13,8 +13,8 @@
 #include "post_ensight_writer.H"
 #include "post_common.H"
 #include "nurbs_discret.H"
-#include "utils_nurbs_shapefunctions.H"
-#include "control_point.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "nurbs_discret_control_point.H"
 #include "linalg_utils_densematrix_communication.H"
 #include <string>
 

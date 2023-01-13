@@ -1,10 +1,10 @@
 set(OBJS_BACI_MAIN
     # cmake-format: sortable
-    baci.cpp
-    global_cal_control.cpp
-    global_control.cpp
-    global_init_control.cpp
-    global_inp_control.cpp
+    global_full_baci.cpp
+    global_full_cal_control.cpp
+    global_full_control.cpp
+    global_full_init_control.cpp
+    global_full_inp_control.cpp
     )
 
 # the baci executable

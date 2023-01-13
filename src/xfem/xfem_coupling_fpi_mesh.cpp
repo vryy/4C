@@ -17,10 +17,10 @@ xfluid class and the cut-library
 #include "xfem_interface_utils.H"
 #include "xfem_discretization_utils.H"
 
-#include "colors.H"
-#include "utils_parallel.H"
-#include "utils_createdis.H"
-#include "dofset_transparent_independent.H"
+#include "lib_colors.H"
+#include "lib_utils_parallel.H"
+#include "lib_utils_createdis.H"
+#include "lib_dofset_transparent_independent.H"
 
 #include "fluid_ele_action.H"
 #include "fluid_ele_parameter_xfem.H"
@@ -34,8 +34,8 @@ xfluid class and the cut-library
 #include "io_pstream.H"
 
 #include "poroelast_utils.H"
-#include "structporo.H"
-#include "fluidporo.H"
+#include "mat_structporo.H"
+#include "mat_fluidporo.H"
 #include "xfem_xfluid_contact_communicator.H"
 
 //! constructor

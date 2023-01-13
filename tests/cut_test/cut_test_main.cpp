@@ -8,8 +8,8 @@
 
 #include "cut_mesh.H"
 #include "cut_element.H"
-#include "utils_gausspoints.H"
-#include "globalproblem.H"
+#include "fem_general_utils_gausspoints.H"
+#include "lib_globalproblem.H"
 #include "cut_test_utils.H"
 
 #include <Teuchos_CommandLineProcessor.hpp>

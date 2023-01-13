@@ -14,10 +14,10 @@
 
 #include "linalg_ana.H"
 #include "linalg_blocksparsematrix.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_mapextractor.H"
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 namespace LINALG::SOLVER
 {

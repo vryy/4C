@@ -11,7 +11,7 @@
 #define SCATRA_ELE_PARAMETER_BOUNDARY_H
 
 #include "scatra_ele_parameter_base.H"
-#include "condition.H"
+#include "lib_condition.H"
 #include "inpar_s2i.H"
 #include "vector"
 

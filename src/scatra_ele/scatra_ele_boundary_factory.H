@@ -12,7 +12,7 @@
 #ifndef SCATRA_ELE_BOUNDARY_FACTORY_H
 #define SCATRA_ELE_BOUNDARY_FACTORY_H
 
-#include "element.H"
+#include "lib_element.H"
 #include "inpar_scatra.H"
 
 namespace DRT

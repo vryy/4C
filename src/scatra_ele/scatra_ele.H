@@ -14,9 +14,9 @@ Pack, Unpack, NumDofPerNode etc.
 
 #include "inpar_scatra.H"
 
-#include "element.H"
-#include "elementtype.H"
-#include "parobjectfactory.H"
+#include "lib_element.H"
+#include "lib_elementtype.H"
+#include "lib_parobjectfactory.H"
 
 namespace DRT
 {

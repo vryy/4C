@@ -8,10 +8,10 @@
 
 #include "gtest/gtest.h"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
-#include "electrode.H"
-#include "matpar_material.H"
+#include "mat_electrode.H"
+#include "mat_par_material.H"
 
 namespace
 {

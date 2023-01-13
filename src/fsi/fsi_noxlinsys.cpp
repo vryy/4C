@@ -20,8 +20,8 @@
 #include <Epetra_Vector.h>
 
 #include "fsi_noxlinsys.H"
-#include "globalproblem.H"
-#include "linalg_solver.H"
+#include "lib_globalproblem.H"
+#include "solver_linalg_solver.H"
 #include "linalg_blocksparsematrix.H"
 
 /*----------------------------------------------------------------------*

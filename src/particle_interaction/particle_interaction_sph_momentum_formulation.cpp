@@ -12,7 +12,7 @@
 
 #include "particle_interaction_utils.H"
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 #include <cmath>
 

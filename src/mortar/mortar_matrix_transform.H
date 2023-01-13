@@ -11,9 +11,9 @@ distributions
 #ifndef SRC_MORTAR_MORTAR_MATRIX_TRANSFORM_H_
 #define SRC_MORTAR_MORTAR_MATRIX_TRANSFORM_H_
 
-#include "dserror.H"
-#include "pairedvector.H"
-#include "utils_matrix_vector_enums.H"
+#include "lib_dserror.H"
+#include "headers_pairedvector.H"
+#include "lib_utils_matrix_vector_enums.H"
 
 #include <Teuchos_RCP.hpp>
 

@@ -9,9 +9,9 @@ based on the interface displacements
 */
 /*----------------------------------------------------------------------*/
 
-#include "ad_str_fsiwrapper.H"
+#include "adapter_str_fsiwrapper.H"
 #include "fsi_debugwriter.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "inpar_fsi.H"
 

@@ -9,9 +9,9 @@
 /*----------------------------------------------------------------------*/
 #include "inpar_elch.H"
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 
-#include "conditiondefinition.H"
+#include "lib_conditiondefinition.H"
 
 void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {

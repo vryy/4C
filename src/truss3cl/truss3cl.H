@@ -20,8 +20,8 @@
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
 
-#include "elementtype.H"
-#include "utils_integration.H"
+#include "lib_elementtype.H"
+#include "fem_general_utils_integration.H"
 #include "inpar_browniandyn.H"
 
 

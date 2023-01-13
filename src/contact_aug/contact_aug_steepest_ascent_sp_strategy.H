@@ -10,7 +10,7 @@
 #ifndef SRC_CONTACT_AUG_CONTACT_AUG_STEEPEST_ASCENT_SP_STRATEGY_H_
 #define SRC_CONTACT_AUG_CONTACT_AUG_STEEPEST_ASCENT_SP_STRATEGY_H_
 
-#include "contact_augmented_strategy.H"
+#include "contact_aug_strategy.H"
 
 namespace CONTACT
 {

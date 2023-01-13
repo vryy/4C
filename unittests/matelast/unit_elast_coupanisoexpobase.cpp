@@ -13,11 +13,11 @@
 
 #include <Teuchos_RCPDecl.hpp>
 
-#include "voigt_notation.H"
+#include "lib_voigt_notation.H"
 
-#include "anisotropy.H"
-#include "material_service.H"
-#include "elast_coupanisoexpo.H"
+#include "mat_anisotropy.H"
+#include "mat_service.H"
+#include "matelast_coupanisoexpo.H"
 
 #include "linalg_fixedsizematrix.H"
 

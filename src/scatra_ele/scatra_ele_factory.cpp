@@ -35,7 +35,7 @@
 #include "scatra_ele_calc_hdg.H"
 #include "scatra_ele_parameter_std.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "scatra_ele_factory.H"
 

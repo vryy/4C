@@ -6,7 +6,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "gtest/gtest.h"
-#include "muscle_utils.H"
+#include "mat_muscle_utils.H"
 #include "unittests_assertions.h"
 
 namespace

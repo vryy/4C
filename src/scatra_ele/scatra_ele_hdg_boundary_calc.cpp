@@ -11,8 +11,8 @@
 
 #include "scatra_ele_hdg_boundary_calc.H"
 #include "scatra_ele_hdg.H"
-#include "node.H"
-#include "utils_parameter_list.H"
+#include "lib_node.H"
+#include "lib_utils_parameter_list.H"
 #include "scatra_ele_action.H"
 
 

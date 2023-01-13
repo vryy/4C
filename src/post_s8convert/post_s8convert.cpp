@@ -9,8 +9,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "post_common.H"
-#include "shell8.H"
-#include "so_hex8.H"
+#include "s8.H"
+#include "so3_hex8.H"
 #include "io.H"
 #include "io_control.H"
 
@@ -18,7 +18,7 @@
 #include <Teuchos_RCP.hpp>
 #include <vector>
 
-#include "pss_cpp.h"
+#include "pss_full_cpp.h"
 
 class Converter
 {

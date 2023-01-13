@@ -13,10 +13,10 @@
 #include "fluid_ele_parameter_timint.H"
 #include "fluid_ele_action.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "fluid_functions.H"
-#include "fluid_weakly_compressible.H"
+#include "mat_fluid_weakly_compressible.H"
 
 #include <Epetra_SerialDenseSolver.h>
 

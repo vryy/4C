@@ -14,8 +14,8 @@ with condensed structure interface displacements
 
 #include "fsi_monolithic.H"
 #include "inpar_fsi.H"
-#include "ad_fld_fluid_fsi_msht.H"
-#include "ad_ale_fsi_msht.H"
+#include "adapter_fld_fluid_fsi_msht.H"
+#include "adapter_ale_fsi_msht.H"
 
 // forward declarations
 namespace ADAPTER

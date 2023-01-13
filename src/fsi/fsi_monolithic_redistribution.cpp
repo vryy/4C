@@ -19,30 +19,30 @@
 
 #include "inpar_fsi.H"
 
-#include "globalproblem.H"
-#include "discret.H"
-#include "condition_utils.H"
-#include "utils_rebalancing.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "lib_condition_utils.H"
+#include "rebalance_utils.H"
 #include "linalg_blocksparsematrix.H"
 #include "linalg_utils_sparse_algebra_math.H"
 
-#include "ad_ale_fsi.H"
+#include "adapter_ale_fsi.H"
 
 #include "adapter_coupling.H"
-#include "ad_fld_fluid_fsi.H"
-#include "ad_ale.H"
-#include "ad_str_fsiwrapper.H"
-#include "ad_str_fsi_timint_adaptive.H"
+#include "adapter_fld_fluid_fsi.H"
+#include "adapter_ale.H"
+#include "adapter_str_fsiwrapper.H"
+#include "adapter_str_fsi_timint_adaptive.H"
 
 #include "io_control.H"
 #include "io_pstream.H"
 #include "io.H"
 
-#include "stru_aux.H"
+#include "structure_aux.H"
 #include "fluid_utils_mapextractor.H"
 #include "ale_utils_mapextractor.H"
 
-#include "node.H"
+#include "lib_node.H"
 
 /*----------------------------------------------------------------------------*/
 void FSI::BlockMonolithic::RedistributeMonolithicGraph(

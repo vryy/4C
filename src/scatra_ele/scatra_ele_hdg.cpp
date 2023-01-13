@@ -11,20 +11,20 @@
 #include "scatra_ele_action.H"
 #include "scatra_ele_factory.H"
 #include "scatra_ele_interface.H"
-#include "matlist.H"
-#include "myocard.H"
-#include "utils_gausspoints.H"
+#include "mat_list.H"
+#include "mat_myocard.H"
+#include "fem_general_utils_gausspoints.H"
 
 #include "scatra_ele_hdg_intfaces_calc.H"
 #include "scatra_ele_hdg_boundary_calc.H"
 
-#include "utils_factory.H"
+#include "lib_utils_factory.H"
 
 #include "inpar_scatra.H"
-#include "linedefinition.H"
-#include "discret_faces.H"
-#include "utils_polynomial.H"
-#include "globalproblem.H"
+#include "lib_linedefinition.H"
+#include "lib_discret_faces.H"
+#include "fem_general_utils_polynomial.H"
+#include "lib_globalproblem.H"
 
 
 // initialize static variable

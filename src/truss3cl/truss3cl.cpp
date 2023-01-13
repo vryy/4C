@@ -10,14 +10,14 @@
 /*---------------------------------------------------------------------------*/
 
 #include "truss3cl.H"
-#include "discret.H"
-#include "dserror.H"
-#include "globalproblem.H"
-#include "validparameters.H"
+#include "lib_discret.H"
+#include "lib_dserror.H"
+#include "lib_globalproblem.H"
+#include "inpar_validparameters.H"
 #include "linalg_fixedsizematrix.H"
 #include "linalg_utils_nullspace.H"
-#include "linedefinition.H"
-#include "utils_fem_shapefunctions.H"
+#include "lib_linedefinition.H"
+#include "fem_general_utils_fem_shapefunctions.H"
 
 DRT::ELEMENTS::Truss3CLType DRT::ELEMENTS::Truss3CLType::instance_;
 

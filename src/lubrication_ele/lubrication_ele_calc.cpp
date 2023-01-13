@@ -11,14 +11,14 @@
 
 #include "lubrication_ele_calc.H"
 
-#include "position_array.H"
+#include "geometry_position_array.H"
 
-#include "utils.H"
-#include "discret.H"
-#include "condition_utils.H"
-#include "globalproblem.H"
+#include "lib_utils.H"
+#include "lib_discret.H"
+#include "lib_condition_utils.H"
+#include "lib_globalproblem.H"
 
-#include "utils_integration.H"
+#include "fem_general_utils_integration.H"
 #include "lubrication_ele_parameter.H"
 
 #include "inpar_lubrication.H"
@@ -26,10 +26,10 @@
 #include "lubrication_ele_calc_utils.H"
 #include "lubrication_ele_action.H"
 
-#include "standardtypes_cpp.H"
+#include "lib_standardtypes_cpp.H"
 
-#include "lubrication_mat.H"
-#include "singleton_owner.H"
+#include "mat_lubrication_mat.H"
+#include "headers_singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*

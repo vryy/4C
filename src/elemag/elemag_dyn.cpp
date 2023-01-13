@@ -17,18 +17,18 @@
 #include "elemag_dyn.H"
 #include "elemag_timeint.H"
 #include "elemag_ele.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "inpar_elemag.H"
-#include "discret_hdg.H"
-#include "dofset_independent.H"
-#include "linalg_solver.H"
+#include "lib_discret_hdg.H"
+#include "lib_dofset_independent.H"
+#include "solver_linalg_solver.H"
 #include "io.H"
 #include "io_control.H"
 #include "comm_utils.H"
-#include "dofset_predefineddofnumber.H"
+#include "lib_dofset_predefineddofnumber.H"
 
 // Clone discreization
-#include "utils_createdis.H"
+#include "lib_utils_createdis.H"
 #include "elemag_utils_clonestrategy.H"
 
 // Scatra init

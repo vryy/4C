@@ -12,13 +12,13 @@
 #include "adapter_coupling_ehl_mortar.H"
 
 #include "contact_interface.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 
 #include "linalg_sparsematrix.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "contact_tsi_lagrange_strategy.H"
 

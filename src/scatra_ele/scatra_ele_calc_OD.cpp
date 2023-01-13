@@ -8,8 +8,8 @@
  *----------------------------------------------------------------------*/
 
 
-#include "position_array.H"
-#include "nurbs_utils.H"
+#include "geometry_position_array.H"
+#include "nurbs_discret_nurbs_utils.H"
 
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"

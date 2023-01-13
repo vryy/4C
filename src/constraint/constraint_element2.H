@@ -15,10 +15,10 @@
 #include <Teuchos_SerialDenseMatrix.hpp>
 
 
-#include "element.H"
-#include "elementtype.H"
-#include "parobjectfactory.H"
-#include "node.H"
+#include "lib_element.H"
+#include "lib_elementtype.H"
+#include "lib_parobjectfactory.H"
+#include "lib_node.H"
 #include "linalg_fixedsizematrix.H"
 
 

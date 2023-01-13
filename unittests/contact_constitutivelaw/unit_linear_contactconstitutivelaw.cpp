@@ -10,7 +10,7 @@
 
 #include <gtest/gtest.h>
 
-#include "linear_contactconstitutivelaw.H"
+#include "contact_constitutivelaw_linear_contactconstitutivelaw.H"
 
 namespace
 {

@@ -8,9 +8,9 @@
 
 #include <Epetra_SerialDenseSolver.h>
 #include "constraint_element3.H"
-#include "exporter.H"
+#include "lib_exporter.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "utils.H"
+#include "lib_utils.H"
 
 
 using namespace DRT::UTILS;

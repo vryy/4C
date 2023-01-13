@@ -9,11 +9,11 @@ sparse matrices and parallel distributed vectors
 /*----------------------------------------------------------------------------*/
 
 
-#include "contact_augmented_interface.H"
+#include "contact_aug_interface.H"
 #include "contact_aug_steepest_ascent_interface.H"
-#include "contact_integrator_utils.H"
+#include "contact_aug_contact_integrator_utils.H"
 #include "contact_node.H"
-#include "discret.H"
+#include "lib_discret.H"
 #include "linalg_sparsematrix.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 

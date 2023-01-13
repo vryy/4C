@@ -10,10 +10,10 @@
 
 #include "beam3.H"
 
-#include "linedefinition.H"
+#include "lib_linedefinition.H"
 
-#include "material.H"
-#include "matpar_parameter.H"
+#include "mat_material.H"
+#include "mat_par_parameter.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

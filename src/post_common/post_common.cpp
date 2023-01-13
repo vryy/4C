@@ -14,22 +14,22 @@
 #include "post_common.H"
 
 #include <stack>
-#include "exporter.H"
+#include "lib_exporter.H"
 #include <EpetraExt_Transpose_CrsGraph.h>
 #include <Epetra_MpiComm.h>
-#include "parobjectregister.H"
-#include "parobject.H"
-#include "condition_utils.H"
-#include "periodicbc.H"
+#include "lib_parobjectregister.H"
+#include "lib_parobject.H"
+#include "lib_condition_utils.H"
+#include "lib_periodicbc.H"
 #include "nurbs_discret.H"
-#include "dofset_independent.H"
+#include "lib_dofset_independent.H"
 #include "rigidsphere.H"
 #include "inpar_problemtype.H"
 
-#include "pss_cpp.h"
+#include "pss_full_cpp.h"
 extern "C"
 {
-#include "pss_table_iter.h"
+#include "pss_full_table_iter.h"
 }
 
 /*----------------------------------------------------------------------*

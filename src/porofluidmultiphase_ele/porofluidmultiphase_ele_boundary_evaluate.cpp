@@ -12,8 +12,8 @@
 #include "porofluidmultiphase_ele_boundary_factory.H"
 #include "porofluidmultiphase_ele_interface.H"
 
-#include "element.H"
-#include "discret.H"
+#include "lib_element.H"
+#include "lib_discret.H"
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             vuong 08/16 |

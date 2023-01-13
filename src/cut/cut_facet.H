@@ -11,7 +11,7 @@
 #ifndef CUT_FACET_H
 #define CUT_FACET_H
 
-#include "utils_gausspoints.H"
+#include "fem_general_utils_gausspoints.H"
 
 #include "cut_line.H"
 

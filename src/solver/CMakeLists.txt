@@ -1,7 +1,5 @@
 set(OBJS_SOLVER
     # cmake-format: sortable
-    bgs2x2_operator.cpp
-    linalg_solver.cpp
     solver_amgnxn_hierarchies.cpp
     solver_amgnxn_objects.cpp
     solver_amgnxn_preconditioner.cpp
@@ -10,12 +8,14 @@ set(OBJS_SOLVER
     solver_aztecsolver.cpp
     solver_aztecsolver_projectedresidual.cpp
     solver_belossolver.cpp
+    solver_bgs2x2_operator.cpp
     solver_blockpreconditioners.cpp
     solver_cheapsimplepreconditioner.cpp
     solver_directsolver.cpp
     solver_ifpackpreconditioner.cpp
     solver_krylovprojectionpreconditioner.cpp
     solver_krylovsolver.cpp
+    solver_linalg_solver.cpp
     solver_mlpreconditioner.cpp
     solver_muelupreconditioner.cpp
     solver_pointpreconditioner.cpp

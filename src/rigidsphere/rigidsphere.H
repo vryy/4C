@@ -17,10 +17,10 @@
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
-#include "elementtype.H"
-#include "largerotations.H"
-#include "utils_fem_shapefunctions.H"
-#include "utils_integration.H"
+#include "lib_elementtype.H"
+#include "fem_general_largerotations.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "fem_general_utils_integration.H"
 
 #include "beaminteraction_calc_utils.H"
 

@@ -15,8 +15,8 @@
 #include "scatra_ele_utils_elch_diffcond.H"
 #include "scatra_ele_parameter_std.H"
 
-#include "soret.H"
-#include "singleton_owner.H"
+#include "mat_soret.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 11/15 |

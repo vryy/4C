@@ -1,8 +1,8 @@
 set(OBJS_FIBER_LIB
     # cmake-format: sortable
+    fiber_nodal_fiber_holder.cpp
     fiber_node.cpp
     fiber_utils.cpp
-    nodal_fiber_holder.cpp
     )
 
 baci_add_library(lib_fiber ${OBJS_FIBER_LIB})

@@ -11,7 +11,7 @@
 
 #include "inpar_browniandyn.H"
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 
 
 void INPAR::BROWNIANDYN::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)

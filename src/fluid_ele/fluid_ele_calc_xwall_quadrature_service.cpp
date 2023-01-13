@@ -15,9 +15,9 @@
 #include "fluid_ele_parameter_std.H"
 #include "fluid_ele_parameter_timint.H"
 
-#include "newtonianfluid.H"
+#include "mat_newtonianfluid.H"
 
-#include "condition_utils.H"
+#include "lib_condition_utils.H"
 
 #include "linalg_utils_sparse_algebra_math.H"
 

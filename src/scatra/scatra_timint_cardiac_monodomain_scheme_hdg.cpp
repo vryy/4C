@@ -15,8 +15,8 @@
 
 #include "io.H"
 
-#include "globalproblem.H"
-#include "utils_parameter_list.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_parameter_list.H"
 
 
 /*----------------------------------------------------------------------*

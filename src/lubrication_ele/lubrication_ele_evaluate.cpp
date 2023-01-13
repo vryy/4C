@@ -11,7 +11,7 @@
 
 #include "inpar_parameterlist_utils.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 #include "lubrication_ele.H"
 #include "lubrication_ele_factory.H"
 #include "lubrication_ele_interface.H"

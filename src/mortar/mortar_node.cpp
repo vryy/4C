@@ -10,8 +10,8 @@
 #include "mortar_node.H"
 #include "mortar_element.H"
 #include "mortar_defines.H"
-#include "dserror.H"
-#include "discret.H"
+#include "lib_dserror.H"
+#include "lib_discret.H"
 
 
 MORTAR::MortarNodeType MORTAR::MortarNodeType::instance_;

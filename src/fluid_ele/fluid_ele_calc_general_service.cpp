@@ -18,19 +18,19 @@
 
 #include "fluid_rotsym_periodicbc.H"
 
-#include "condition_utils.H"
-#include "globalproblem.H"
+#include "lib_condition_utils.H"
+#include "lib_globalproblem.H"
 
-#include "newtonianfluid.H"
-#include "fluid_linear_density_viscosity.H"
-#include "fluid_murnaghantait.H"
-#include "fluidporo.H"
+#include "mat_newtonianfluid.H"
+#include "mat_fluid_linear_density_viscosity.H"
+#include "mat_fluid_murnaghantait.H"
+#include "mat_fluidporo.H"
 
-#include "nurbs_utils.H"
+#include "nurbs_discret_nurbs_utils.H"
 #include "Sacado.hpp"
 
 // immersed fsi related
-#include "immersed_base.H"
+#include "immersed_problem_immersed_base.H"
 
 /*----------------------------------------------------------------------*
  * Evaluate supporting methods of the element

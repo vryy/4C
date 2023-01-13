@@ -8,18 +8,18 @@
 
 #include "fsi_debugwriter.H"
 #include "adapter_coupling.H"
-#include "ad_str_fsiwrapper.H"
-#include "ad_fld_fluid_fsi.H"
-#include "ad_ale_fsi.H"
+#include "adapter_str_fsiwrapper.H"
+#include "adapter_fld_fluid_fsi.H"
+#include "adapter_ale_fsi.H"
 #include "fsi_monolithic.H"
 
-#include "utils_createdis.H"
-#include "discret.H"
+#include "lib_utils_createdis.H"
+#include "lib_discret.H"
 
 #include "io_control.H"
 #include "io.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

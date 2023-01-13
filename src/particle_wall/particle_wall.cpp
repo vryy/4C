@@ -14,19 +14,19 @@
 #include "particle_wall_discretization_runtime_vtu_writer.H"
 
 #include "particle_engine_interface.H"
-#include "particle_enums.H"
-#include "particle_container_bundle.H"
-#include "particle_container.H"
+#include "particle_engine_enums.H"
+#include "particle_engine_container_bundle.H"
+#include "particle_engine_container.H"
 
-#include "binning_strategy.H"
+#include "binstrategy.H"
 
 #include "inpar_particle.H"
 
-#include "globalproblem.H"
-#include "discret.H"
-#include "condition_utils.H"
-#include "utils_factory.H"
-#include "dofset_transparent.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "lib_condition_utils.H"
+#include "lib_utils_factory.H"
+#include "lib_dofset_transparent.H"
 
 #include "io.H"
 #include "io_pstream.H"
@@ -34,7 +34,7 @@
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "searchtree_geometry_service.H"
+#include "geometry_searchtree_service.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

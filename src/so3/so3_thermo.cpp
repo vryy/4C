@@ -10,8 +10,8 @@
  *----------------------------------------------------------------------*/
 #include "so3_thermo.H"
 
-#include "linedefinition.H"
-#include "utils_shapefunctions_service.H"
+#include "lib_linedefinition.H"
+#include "fem_general_utils_shapefunctions_service.H"
 
 
 /*----------------------------------------------------------------------*

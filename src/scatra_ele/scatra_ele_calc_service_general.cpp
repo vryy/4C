@@ -16,17 +16,17 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_turbulence.H"
 
-#include "utils_boundary_integration.H"
+#include "fem_general_utils_boundary_integration.H"
 
-#include "utils.H"
-#include "nurbs_utils.H"
+#include "lib_utils.H"
+#include "nurbs_discret_nurbs_utils.H"
 
-#include "standardtypes_cpp.H"  // for EPS13 and so on
-#include "globalproblem.H"
+#include "lib_standardtypes_cpp.H"  // for EPS13 and so on
+#include "lib_globalproblem.H"
 
 #include "fluid_rotsym_periodicbc.H"
 
-#include "scatra_mat_multiscale.H"
+#include "mat_scatra_mat_multiscale.H"
 
 #include "volmortar_shape.H"
 

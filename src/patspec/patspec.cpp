@@ -11,21 +11,21 @@
 
 
 #include "patspec.H"
-#include "material.H"
-#include "elasthyper.H"
+#include "mat_material.H"
+#include "mat_elasthyper.H"
 #include "linalg_utils_densematrix_inverse.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_sparse_algebra_create.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include <iostream>
 #include "io_pstream.H"  // has to go before io.H
 #include "io.H"
 #include <Epetra_Time.h>
 
-#include "matpar_bundle.H"
-#include "matpar_parameter.H"
-#include "elast_summand.H"
-#include "elast_isovolaaagasser.H"
+#include "mat_par_bundle.H"
+#include "mat_par_parameter.H"
+#include "matelast_summand.H"
+#include "matelast_isovolaaagasser.H"
 
 
 /*----------------------------------------------------------------------*

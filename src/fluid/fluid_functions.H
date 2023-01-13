@@ -9,10 +9,10 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "function.H"
-#include "newtonianfluid.H"
-#include "fluid_weakly_compressible.H"
-#include "stvenantkirchhoff.H"
+#include "lib_function.H"
+#include "mat_newtonianfluid.H"
+#include "mat_fluid_weakly_compressible.H"
+#include "mat_stvenantkirchhoff.H"
 
 #ifndef FLUID_FUNCTION_H
 #define FLUID_FUNCTION_H

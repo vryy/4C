@@ -10,14 +10,14 @@
 /*---------------------------------------------------------------------------*/
 
 #include "truss3cl.H"
-#include "globalproblem.H"
-#include "dserror.H"
-#include "utils.H"
-#include "function_of_time.H"
+#include "lib_globalproblem.H"
+#include "lib_dserror.H"
+#include "lib_utils.H"
+#include "lib_function_of_time.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "utils_fem_shapefunctions.H"
-#include "stvenantkirchhoff.H"
-#include "standardtypes_cpp.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "mat_stvenantkirchhoff.H"
+#include "lib_standardtypes_cpp.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) mukherjee 01/14|

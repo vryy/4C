@@ -16,7 +16,7 @@
 #include "contact_node.H"
 #include "contact_interpolator.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 #include "linalg_utils_densematrix_inverse.H"
 #include "linalg_serialdensevector.H"
 

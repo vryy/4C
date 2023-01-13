@@ -20,7 +20,7 @@
 #include <ostream>
 #include <iostream>
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 // Attention: In the case a LINALG::Matrix is created with float_type ClnWrapper,
 // include the header "/cut/cut_clnwrapper.H" before this header is processed.

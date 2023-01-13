@@ -12,9 +12,9 @@
 #ifndef BACI_MIXTURE_CONSTITUENT_ELASTHYPER_H
 #define BACI_MIXTURE_CONSTITUENT_ELASTHYPER_H
 
-#include "matpar_parameter.H"
+#include "mat_par_parameter.H"
 #include "mixture_constituent_elasthyperbase.H"
-#include "elasthyper_service.H"
+#include "mat_elasthyper_service.H"
 #include "mixture_prestress_strategy.H"
 
 namespace MIXTURE

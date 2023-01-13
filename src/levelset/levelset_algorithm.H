@@ -17,9 +17,9 @@
 
 #include "scatra_timint_implicit.H"
 #include "inpar_levelset.H"
-#include "geo_utils.H"
+#include "geometry_geo_utils.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 
 #include "linalg_fixedsizematrix.H"
 

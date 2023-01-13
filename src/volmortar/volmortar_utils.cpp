@@ -9,8 +9,8 @@
 
 #include "volmortar_coupling.H"
 
-#include "discret.H"
-#include "utils.H"
+#include "lib_discret.H"
+#include "lib_utils.H"
 
 #include "volmortar_utils.H"
 

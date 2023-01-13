@@ -28,10 +28,10 @@
 #include "io.H"
 #include "io_control.H"
 
-#include "utils_rebalancing.H"
-#include "utils.H"
-#include "globalproblem.H"
-#include "utils_parallel.H"
+#include "rebalance_utils.H"
+#include "lib_utils.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_parallel.H"
 
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
@@ -41,7 +41,7 @@
 #include <Epetra_Time.h>
 #include <Epetra_SerialComm.h>
 
-#include "binning_strategy.H"
+#include "binstrategy.H"
 #include "nurbs_discret.H"
 #include "poroelast_utils.H"
 

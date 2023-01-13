@@ -10,8 +10,8 @@
 #ifndef SRC_CONTACT_AUG_CONTACT_AUG_PROJECTOR_H_
 #define SRC_CONTACT_AUG_CONTACT_AUG_PROJECTOR_H_
 
-#include "element.H"
-#include "utils_local_connectivity_matrices.H"
+#include "lib_element.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
 
 namespace MORTAR

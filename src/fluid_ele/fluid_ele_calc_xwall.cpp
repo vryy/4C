@@ -18,11 +18,11 @@
 
 #include "fluid_rotsym_periodicbc.H"
 
-#include "utils_gder2.H"
+#include "fem_general_utils_gder2.H"
 
-#include "newtonianfluid.H"
+#include "mat_newtonianfluid.H"
 
-#include "condition_utils.H"
+#include "lib_condition_utils.H"
 
 #include "linalg_utils_densematrix_eigen.H"
 

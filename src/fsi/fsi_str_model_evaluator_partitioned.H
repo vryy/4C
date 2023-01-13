@@ -13,7 +13,7 @@
 #ifndef FSI_STR_MODEL_EVALUATOR_PARTITIONED_H_
 #define FSI_STR_MODEL_EVALUATOR_PARTITIONED_H_
 
-#include "str_model_evaluator_generic.H"
+#include "structure_new_model_evaluator_generic.H"
 
 namespace ADAPTER
 {

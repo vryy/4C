@@ -10,10 +10,10 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include "discsh3.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
-#include "discret.H"
-#include "dserror.H"
-#include "globalproblem.H"
-#include "utils.H"
+#include "lib_discret.H"
+#include "lib_dserror.H"
+#include "lib_globalproblem.H"
+#include "lib_utils.H"
 
 
 

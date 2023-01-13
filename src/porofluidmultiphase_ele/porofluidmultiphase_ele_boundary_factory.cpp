@@ -8,8 +8,8 @@
  *----------------------------------------------------------------------*/
 
 
-#include "globalproblem.H"
-#include "element.H"
+#include "lib_globalproblem.H"
+#include "lib_element.H"
 
 #include "porofluidmultiphase_ele_interface.H"
 #include "porofluidmultiphase_ele_boundary_calc.H"

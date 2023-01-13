@@ -11,24 +11,24 @@
 
 #include "beaminteraction_submodel_evaluator_beamcontact.H"
 #include "beaminteraction_data.H"
-#include "beam_contact_pair.H"
-#include "beam_contact_params.H"
-#include "beam_contact_runtime_vtk_output_params.H"
+#include "beaminteraction_contact_pair.H"
+#include "beaminteraction_contact_params.H"
+#include "beaminteraction_contact_runtime_vtk_output_params.H"
 #include "beaminteraction_calc_utils.H"
-#include "str_model_evaluator_beaminteraction_datastate.H"
+#include "beaminteraction_str_model_evaluator_datastate.H"
 
-#include "dserror.H"
-#include "globalproblem.H"
+#include "lib_dserror.H"
+#include "lib_globalproblem.H"
 #include "geometric_search.H"
 #include "geometric_search_params.H"
 
 #include "io.H"
 #include "io_control.H"
 #include "io_pstream.H"
-#include "runtime_vtp_writer.H"
+#include "io_runtime_vtp_writer.H"
 
-#include "str_timint_basedataglobalstate.H"
-#include "str_timint_basedataio.H"
+#include "structure_new_timint_basedataglobalstate.H"
+#include "structure_new_timint_basedataio.H"
 
 #include "linalg_utils_densematrix_inverse.H"
 #include "linalg_serialdensematrix.H"
@@ -37,30 +37,30 @@
 
 #include "inpar_beamcontact.H"
 
-#include "binning_strategy.H"
+#include "binstrategy.H"
 
 #include "beam3_base.H"
 #include "rigidsphere.H"
 
-#include "so_base.H"
+#include "so3_base.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_FEVector.h>
 #include <NOX_Solver_Generic.H>
 
 #include "beaminteraction_conditions.H"
-#include "beam_to_solid_surface_meshtying_params.H"
-#include "beam_to_solid_surface_contact_params.H"
-#include "beam_to_solid_surface_vtk_output_params.H"
-#include "beam_to_solid_surface_vtk_output_writer.H"
-#include "beam_to_solid_volume_meshtying_params.H"
-#include "beam_to_solid_volume_meshtying_vtk_output_params.H"
-#include "beam_to_solid_volume_meshtying_vtk_output_writer.H"
+#include "beaminteraction_beam_to_solid_surface_meshtying_params.H"
+#include "beaminteraction_beam_to_solid_surface_contact_params.H"
+#include "beaminteraction_beam_to_solid_surface_vtk_output_params.H"
+#include "beaminteraction_beam_to_solid_surface_vtk_output_writer.H"
+#include "beaminteraction_beam_to_solid_volume_meshtying_params.H"
+#include "beaminteraction_beam_to_solid_volume_meshtying_vtk_output_params.H"
+#include "beaminteraction_beam_to_solid_volume_meshtying_vtk_output_writer.H"
 #include "geometry_pair_line_to_3D_evaluation_data.H"
 #include "inpar_geometry_pair.H"
 #include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.H"
 #include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.H"
-#include "str_model_evaluator_beaminteraction_datastate.H"
+#include "beaminteraction_str_model_evaluator_datastate.H"
 
 
 /*----------------------------------------------------------------------------*

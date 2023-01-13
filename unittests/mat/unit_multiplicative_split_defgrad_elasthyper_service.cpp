@@ -8,10 +8,10 @@
 
 #include "gtest/gtest.h"
 
-#include "matpar_material.H"
-#include "multiplicative_split_defgrad_elasthyper_service.H"
+#include "mat_par_material.H"
+#include "mat_multiplicative_split_defgrad_elasthyper_service.H"
 
-#include "elast_isoneohooke.H"
+#include "matelast_isoneohooke.H"
 
 #include "linalg_fixedsizematrix.H"
 

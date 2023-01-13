@@ -10,11 +10,11 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_timint_topopt.H"
-#include "topopt_optimizer.H"
+#include "opti_topopt_optimizer.H"
 #include "fluid_ele_action.H"
-#include "globalproblem.H"
-#include "matpar_bundle.H"
-#include "optimization_density.H"
+#include "lib_globalproblem.H"
+#include "mat_par_bundle.H"
+#include "mat_optimization_density.H"
 #include "io.H"
 #include "linalg_utils_sparse_algebra_math.H"
 

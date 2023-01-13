@@ -11,8 +11,8 @@
 
 
 #include "adapter_algorithmbase.H"
-#include "ad_poromultiphase.H"
-#include "dserror.H"
+#include "adapter_poromultiphase.H"
+#include "lib_dserror.H"
 
 namespace ADAPTER
 {

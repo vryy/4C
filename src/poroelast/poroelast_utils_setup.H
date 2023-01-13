@@ -11,15 +11,15 @@
 #ifndef POROELAST_UTILS_SETUP_H_
 #define POROELAST_UTILS_SETUP_H_
 
-#include "dofset_gidbased_wrapper.H"
-#include "dofset_predefineddofnumber.H"
+#include "lib_dofset_gidbased_wrapper.H"
+#include "lib_dofset_predefineddofnumber.H"
 #include "poroelast_utils.H"
-#include "poro_utils_clonestrategy.H"
+#include "poroelast_utils_clonestrategy.H"
 
-#include "globalproblem.H"
-#include "utils_createdis.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_createdis.H"
 
-#include "utils_parallel.H"
+#include "lib_utils_parallel.H"
 
 
 namespace POROELAST

@@ -1,14 +1,14 @@
 set(OBJS_CONTACT_CONSTITUTIVELAW
     # cmake-format: sortable
-    brokenrational_contactconstitutivelaw.cpp
-    constitutivelaw_definition.cpp
+    contact_constitutivelaw_brokenrational_contactconstitutivelaw.cpp
     contact_constitutivelaw_bundle.cpp
+    contact_constitutivelaw_constitutivelaw_definition.cpp
+    contact_constitutivelaw_contactconstitutivelaw.cpp
+    contact_constitutivelaw_contactconstitutivelaw_parameter.cpp
+    contact_constitutivelaw_cubic_contactconstitutivelaw.cpp
     contact_constitutivelaw_interface.cpp
-    contactconstitutivelaw.cpp
-    contactconstitutivelaw_parameter.cpp
-    cubic_contactconstitutivelaw.cpp
-    linear_contactconstitutivelaw.cpp
-    power_contactconstitutivelaw.cpp
+    contact_constitutivelaw_linear_contactconstitutivelaw.cpp
+    contact_constitutivelaw_power_contactconstitutivelaw.cpp
     )
 
 baci_add_library(lib_contact_constitutivelaw ${OBJS_CONTACT_CONSTITUTIVELAW})

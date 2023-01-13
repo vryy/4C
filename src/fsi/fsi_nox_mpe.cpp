@@ -26,7 +26,7 @@
 
 #include <Epetra_Vector.h>
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "io_control.H"
 #include "linalg_serialdensevector.H"
 #include "linalg_serialdensematrix.H"

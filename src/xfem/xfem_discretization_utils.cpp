@@ -10,14 +10,14 @@
 
 #include "xfem_discretization_utils.H"
 
-#include "discret_faces.H"
-#include "discret_xfem.H"
+#include "lib_discret_faces.H"
+#include "lib_discret_xfem.H"
 
-#include "utils.H"
-#include "utils_parallel.H"
-#include "condition_utils.H"
-#include "utils_rebalancing.H"
-#include "dofset_fixed_size.H"
+#include "lib_utils.H"
+#include "lib_utils_parallel.H"
+#include "lib_condition_utils.H"
+#include "rebalance_utils.H"
+#include "lib_dofset_fixed_size.H"
 
 #include "linalg_utils_sparse_algebra_math.H"
 

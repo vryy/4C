@@ -15,7 +15,7 @@
 
 #include <Teuchos_RCP.hpp>
 
-#include "str_model_evaluator_beaminteraction.H"  // typedef
+#include "beaminteraction_str_model_evaluator.H"  // typedef
 
 namespace BEAMINTERACTION
 {

@@ -15,7 +15,7 @@
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialDenseMatrix.h"
 
-#include "element.H"
+#include "lib_element.H"
 
 namespace DRT
 {

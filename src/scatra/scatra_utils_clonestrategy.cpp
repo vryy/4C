@@ -10,11 +10,11 @@
 
 
 #include "scatra_utils_clonestrategy.H"
-#include "globalproblem.H"
-#include "matpar_material.H"
-#include "matpar_bundle.H"
+#include "lib_globalproblem.H"
+#include "mat_par_material.H"
+#include "mat_par_bundle.H"
 #include "scatra_ele.H"
-#include "element.H"
+#include "lib_element.H"
 
 
 /*----------------------------------------------------------------------*/

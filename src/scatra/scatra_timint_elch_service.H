@@ -15,7 +15,7 @@
 
 #include "scatra_timint_implicit.H"
 
-#include "condition.H"
+#include "lib_condition.H"
 
 /*==========================================================================*/
 // forward declarations

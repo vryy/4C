@@ -12,7 +12,7 @@
 #ifndef FLUID_ELE_BOUNDARY_FACTORY_H
 #define FLUID_ELE_BOUNDARY_FACTORY_H
 
-#include "element.H"
+#include "lib_element.H"
 
 namespace DRT
 {

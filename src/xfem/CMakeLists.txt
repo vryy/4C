@@ -9,12 +9,12 @@ set(OBJS_XFEM
     xfem_multi_field_mapextractor.cpp
     xfem_neumann.cpp
     xfem_utils.cpp
-    xfield_field_coupling.cpp
-    xfield_field_coupling_dofset.cpp
-    xfield_state.cpp
-    xfluid_timeInt.cpp
-    xfluid_timeInt_base.cpp
-    xfluid_timeInt_std_SemiLagrange.cpp
+    xfem_xfield_field_coupling.cpp
+    xfem_xfield_field_coupling_dofset.cpp
+    xfem_xfield_state.cpp
+    xfem_xfluid_timeInt.cpp
+    xfem_xfluid_timeInt_base.cpp
+    xfem_xfluid_timeInt_std_SemiLagrange.cpp
     )
 
 baci_add_library(lib_xfem ${OBJS_XFEM})

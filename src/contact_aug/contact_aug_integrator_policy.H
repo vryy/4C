@@ -12,7 +12,7 @@
 
 //#define SWITCH_2ND_DERIV_NORMAL_OFF
 
-#include "contact_integrator_utils.H"
+#include "contact_aug_contact_integrator_utils.H"
 #include "contact_aug_timemonitor.H"
 
 namespace CONTACT

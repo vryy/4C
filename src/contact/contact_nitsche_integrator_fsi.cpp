@@ -13,9 +13,9 @@
 #include "contact_element.H"
 #include "contact_node.H"
 
-#include "utils_boundary_integration.H"
+#include "fem_general_utils_boundary_integration.H"
 
-#include "so_hex8.H"
+#include "so3_hex8.H"
 #include "so3_poro.H"
 
 #include "xfem_xfluid_contact_communicator.H"

@@ -9,14 +9,14 @@
 #include "ssi_str_model_evaluator_base.H"
 
 #include "adapter_coupling.H"
-#include "ad_str_ssiwrapper.H"
-#include "exporter.H"
-#include "utils_gid_vector.H"
+#include "adapter_str_ssiwrapper.H"
+#include "lib_exporter.H"
+#include "lib_utils_gid_vector.H"
 #include "Epetra_IntVector.h"
 #include "Epetra_Vector.h"
 #include "io.H"
-#include "str_model_evaluator_data.H"
-#include "str_timint_basedataglobalstate.H"
+#include "structure_new_model_evaluator_data.H"
+#include "structure_new_timint_basedataglobalstate.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

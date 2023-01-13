@@ -8,7 +8,7 @@
 /*-----------------------------------------------------------*/
 
 #include "contact_aug_parallel_distribution_controller.H"
-#include "contact_augmented_strategy.H"
+#include "contact_aug_strategy.H"
 #include "contact_paramsinterface.H"
 
 #include "io_pstream.H"

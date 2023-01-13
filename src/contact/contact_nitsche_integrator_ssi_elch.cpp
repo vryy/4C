@@ -11,7 +11,7 @@ electrochemistry
 #include "contact_nitsche_integrator_ssi_elch.H"
 #include "contact_nitsche_utils.H"
 
-#include "electrode.H"
+#include "mat_electrode.H"
 
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_boundary.H"

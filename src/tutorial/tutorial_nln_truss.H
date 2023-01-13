@@ -15,7 +15,7 @@
 #define TUTORIAL_NONLINEAR_TRUSS_H
 
 #include "linalg_fixedsizematrix.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 //////////////////////////////////////////////////////
 ///  DEFINE THE NUMBER OF ELEMENTS

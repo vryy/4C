@@ -13,12 +13,12 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "linalg_precond.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_mlapi_operator.H"
 
-#include "node.H"
-#include "discret.H"
+#include "lib_node.H"
+#include "lib_discret.H"
 
 
 

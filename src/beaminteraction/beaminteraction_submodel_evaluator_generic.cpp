@@ -11,13 +11,13 @@
 
 
 #include "beaminteraction_submodel_evaluator_generic.H"
-#include "str_model_evaluator_beaminteraction_datastate.H"
+#include "beaminteraction_str_model_evaluator_datastate.H"
 #include "beaminteraction_calc_utils.H"
 
-#include "periodic_boundingbox.H"
-#include "dserror.H"
+#include "beaminteraction_periodic_boundingbox.H"
+#include "lib_dserror.H"
 
-#include "beam_crosslinker_handler.H"
+#include "beaminteraction_crosslinker_handler.H"
 
 
 

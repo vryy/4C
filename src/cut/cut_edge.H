@@ -11,7 +11,7 @@
 #define CUT_EDGE_H
 
 #include "inpar_cut.H"
-#include "utils_fem_shapefunctions.H"
+#include "fem_general_utils_fem_shapefunctions.H"
 
 #include "cut_node.H"
 #include "cut_tolerance.H"

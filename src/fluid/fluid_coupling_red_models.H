@@ -17,7 +17,7 @@ problem
 #include "Epetra_MpiComm.h"
 
 #include "Teuchos_RCP.hpp"
-#include "discret.H"
+#include "lib_discret.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "art_net_dyn_drt.H"
 #include "red_airways_dyn_drt.H"

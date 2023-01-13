@@ -12,15 +12,15 @@
 #include "scatra_timint_loma_bdf2.H"
 
 #include "scatra_ele_action.H"
-#include "turbulence_hit_scalar_forcing.H"
+#include "scatra_turbulence_hit_scalar_forcing.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include "io.H"
-#include "linalg_solver.H"
-#include "dyn_smag.H"
-#include "dyn_vreman.H"
-#include "globalproblem.H"
-#include "validparameters.H"
+#include "solver_linalg_solver.H"
+#include "fluid_turbulence_dyn_smag.H"
+#include "fluid_turbulence_dyn_vreman.H"
+#include "lib_globalproblem.H"
+#include "inpar_validparameters.H"
 
 
 /*----------------------------------------------------------------------*

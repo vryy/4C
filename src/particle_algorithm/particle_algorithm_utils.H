@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "particle_typedefs.H"
+#include "particle_engine_typedefs.H"
 
 #include "inpar_parameterlist_utils.H"
 

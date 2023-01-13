@@ -13,8 +13,8 @@
 #include "adapter_coupling.H"
 #include "fluid_utils_mapextractor.H"
 #include "ale_utils_mapextractor.H"
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

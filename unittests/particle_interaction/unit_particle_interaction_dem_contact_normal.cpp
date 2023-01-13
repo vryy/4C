@@ -8,7 +8,7 @@
 #include "particle_interaction_dem_contact_normal.H"
 #include "particle_interaction_utils.H"
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 
 
 namespace

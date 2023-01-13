@@ -16,7 +16,7 @@
 
 #include <set>
 
-#include "dserror.H"
+#include "lib_dserror.H"
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 

@@ -15,8 +15,8 @@
 #include "fluid_ele_interface.H"
 
 #include "inpar_fluid.H"
-#include "linedefinition.H"
-#include "discret_faces.H"
+#include "lib_linedefinition.H"
+#include "lib_discret_faces.H"
 
 
 // initialize static variable

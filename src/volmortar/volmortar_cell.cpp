@@ -11,7 +11,7 @@
  *---------------------------------------------------------------------*/
 #include "volmortar_cell.H"
 #include "linalg_serialdensematrix.H"
-#include "utils_fem_shapefunctions.H"
+#include "fem_general_utils_fem_shapefunctions.H"
 
 /*---------------------------------------------------------------------*
  | constructor                                             farah 01/14 |

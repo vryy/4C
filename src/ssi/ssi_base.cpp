@@ -18,22 +18,22 @@
 
 #include "adapter_coupling.H"
 #include "adapter_scatra_base_algorithm.H"
-#include "ad_str_factory.H"
-#include "ad_str_ssiwrapper.H"
-#include "ad_str_structure_new.H"
+#include "adapter_str_factory.H"
+#include "adapter_str_ssiwrapper.H"
+#include "adapter_str_structure_new.H"
 
 #include "inpar_volmortar.H"
 #include "inpar_ssi.H"
 
 #include "io_control.H"
 
-#include "inputreader.H"
-#include "globalproblem.H"
-#include "utils_createdis.H"
-#include "utils_parallel.H"
-#include "function_of_time.H"
+#include "lib_inputreader.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_createdis.H"
+#include "lib_utils_parallel.H"
+#include "lib_function_of_time.H"
 
-#include "matpar_bundle.H"
+#include "mat_par_bundle.H"
 
 #include "scatra_timint_implicit.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"

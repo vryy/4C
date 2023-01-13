@@ -10,19 +10,19 @@
 
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include "rigidsphere.H"
-#include "discret.H"
-#include "dserror.H"
-#include "globalproblem.H"
-#include "validparameters.H"
+#include "lib_discret.H"
+#include "lib_dserror.H"
+#include "lib_globalproblem.H"
+#include "inpar_validparameters.H"
 #include "linalg_fixedsizematrix.H"
-#include "largerotations.H"
-#include "linedefinition.H"
-#include "utils_factory.H"
-#include "utils_fem_shapefunctions.H"
-#include "utils_integration.H"
+#include "fem_general_largerotations.H"
+#include "lib_linedefinition.H"
+#include "lib_utils_factory.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "fem_general_utils_integration.H"
 #include "inpar_browniandyn.H"
-#include "str_elements_paramsinterface.H"
-#include "beam_link_pinjointed.H"
+#include "structure_new_elements_paramsinterface.H"
+#include "beaminteraction_link_pinjointed.H"
 
 
 DRT::ELEMENTS::RigidsphereType DRT::ELEMENTS::RigidsphereType::instance_;

@@ -16,7 +16,7 @@
 
 #include "io_pstream.H"
 
-#include "bounding_volume.H"
+#include "geometric_search_bounding_volume.H"
 
 namespace GEOMETRICSEARCH
 {

@@ -12,11 +12,11 @@
 #include "elemag_ele.H"
 #include "elemag_ele_boundary_calc.H"
 #include "elemag_ele_intfaces_calc.H"
-#include "discret.H"
-#include "discret_faces.H"
-#include "utils_factory.H"
-#include "linedefinition.H"
-#include "globalproblem.H"
+#include "lib_discret.H"
+#include "lib_discret_faces.H"
+#include "lib_utils_factory.H"
+#include "lib_linedefinition.H"
+#include "lib_globalproblem.H"
 
 #include "linalg_utils_nullspace.H"
 

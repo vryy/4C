@@ -9,7 +9,7 @@
  *----------------------------------------------------------------------*/
 
 #include "poromultiphase_scatra_artery_coupling_linebased.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include <Epetra_FEVector.h>
 #include <Epetra_IntVector.h>
 
@@ -17,7 +17,7 @@
 #include "linalg_utils_densematrix_communication.H"
 #include "poromultiphase_scatra_artery_coupling_pair.H"
 #include "poromultiphase_scatra_artery_coupling_defines.H"
-#include "cnst_1d_art.H"
+#include "mat_cnst_1d_art.H"
 
 #include "linalg_utils_sparse_algebra_manipulation.H"
 

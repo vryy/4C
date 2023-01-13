@@ -19,9 +19,9 @@
 #include <Teuchos_CommandLineProcessor.hpp>
 
 #include "post_common.H"
-#include "discret.H"
-#include "globalproblem.H"
-#include "pss_cpp.h"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
+#include "pss_full_cpp.h"
 #include "thermo_ele_action.H"
 
 /*----------------------------------------------------------------------*/

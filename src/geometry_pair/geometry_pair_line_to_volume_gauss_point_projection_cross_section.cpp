@@ -14,9 +14,9 @@ line.
 #include "geometry_pair_line_to_3D_evaluation_data.H"
 #include "geometry_pair_utility_classes.H"
 
-#include "element.H"
-#include "utils_integration.H"
-#include "triad_interpolation_local_rotation_vectors.H"
+#include "lib_element.H"
+#include "fem_general_utils_integration.H"
+#include "beam3_triad_interpolation_local_rotation_vectors.H"
 
 #include <math.h>
 

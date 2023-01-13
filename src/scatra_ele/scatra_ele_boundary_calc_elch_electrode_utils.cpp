@@ -11,7 +11,7 @@
 #include "scatra_ele_boundary_calc_elch_electrode_utils.H"
 
 #include "inpar_s2i.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

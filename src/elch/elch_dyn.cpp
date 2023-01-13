@@ -8,11 +8,11 @@
 *----------------------------------------------------------------------*/
 #include "ale_utils_clonestrategy.H"
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_elch.H"
 
-#include "globalproblem.H"
-#include "utils_createdis.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_createdis.H"
 #include "scatra_resulttest_elch.H"
 #include "scatra_timint_elch.H"
 #include "scatra_utils_clonestrategy.H"
@@ -25,7 +25,7 @@
 #include "elch_algorithm.H"
 #include "elch_moving_boundary_algorithm.H"
 #include "elch_dyn.H"
-#include "dofset_predefineddofnumber.H"
+#include "lib_dofset_predefineddofnumber.H"
 
 
 /*----------------------------------------------------------------------*/

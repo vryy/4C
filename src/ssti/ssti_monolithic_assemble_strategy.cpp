@@ -9,11 +9,11 @@
 #include "ssti_monolithic_assemble_strategy.H"
 #include "ssti_utils.H"
 
-#include "ad_str_ssiwrapper.H"
+#include "adapter_str_ssiwrapper.H"
 
 #include "io_control.H"
 
-#include "locsys.H"
+#include "lib_locsys.H"
 
 #include "scatra_timint_meshtying_strategy_s2i.H"
 

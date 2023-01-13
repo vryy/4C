@@ -11,7 +11,7 @@
 
 #include "fluid_meshtying.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "scatra_timint_implicit.H"
 

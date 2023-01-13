@@ -11,10 +11,10 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_rotsym_periodicbc_utils.H"
-#include "standardtypes_cpp.H"
-#include "discret.H"
-#include "node.H"
-#include "condition.H"
+#include "lib_standardtypes_cpp.H"
+#include "lib_discret.H"
+#include "lib_node.H"
+#include "lib_condition.H"
 
 
 /*----------------------------------------------------------------------*/

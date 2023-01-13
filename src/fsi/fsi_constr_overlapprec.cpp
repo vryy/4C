@@ -12,12 +12,12 @@
 
 #include "fsi_constr_overlapprec.H"
 #include "fsi_debugwriter.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "io_control.H"
-#include "ad_str_fsiwrapper.H"
-#include "ad_fld_fluid.H"
+#include "adapter_str_fsiwrapper.H"
+#include "adapter_fld_fluid.H"
 #include "linalg_precond.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 
 // /*----------------------------------------------------------------------*
 //  *----------------------------------------------------------------------*/

@@ -10,14 +10,14 @@
 #include "scatra_ele_calc_poro_reac.H"
 #include "scatra_ele_parameter_std.H"
 
-#include "globalproblem.H"
-#include "discret.H"
-#include "element.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "lib_element.H"
 
-#include "structporo.H"
-#include "structporo_reaction_ecm.H"
-#include "scatra_mat.H"
-#include "singleton_owner.H"
+#include "mat_structporo.H"
+#include "mat_structporo_reaction_ecm.H"
+#include "mat_scatra_mat.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

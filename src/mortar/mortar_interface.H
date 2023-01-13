@@ -18,8 +18,8 @@
 #include <Epetra_Vector.h>
 
 #include "inpar_mortar.H"
-#include "dserror.H"
-#include "pairedvector.H"
+#include "lib_dserror.H"
+#include "headers_pairedvector.H"
 #include "mortar_paramsinterface.H"
 
 // forward declarations

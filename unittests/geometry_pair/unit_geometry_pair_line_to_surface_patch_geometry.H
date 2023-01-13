@@ -16,9 +16,9 @@
 #include <unordered_map>
 #include <Teuchos_RCP.hpp>
 
-#include "discret.H"
-#include "so_hex8.H"
-#include "so_surface.H"
+#include "lib_discret.H"
+#include "so3_hex8.H"
+#include "so3_surface.H"
 #include "geometry_pair_element_faces.H"
 
 

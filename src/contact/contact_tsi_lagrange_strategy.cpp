@@ -13,7 +13,7 @@
 #include "contact_interface.H"
 #include "contact_tsi_interface.H"
 #include "contact_defines.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 #include "mortar_utils.H"
 #include "inpar_contact.H"
 #include "io.H"
@@ -25,7 +25,7 @@
 #include "contact_tsi_interface.H"
 
 #include "linalg_sparsematrix.H"
-#include "utils.H"
+#include "lib_utils.H"
 #include "linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------*

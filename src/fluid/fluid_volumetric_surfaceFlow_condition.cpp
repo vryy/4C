@@ -13,10 +13,10 @@
 #include <stdio.h>
 
 #include "fluid_volumetric_surfaceFlow_condition.H"
-#include "condition_utils.H"
-#include "function.H"
-#include "globalproblem.H"
-#include "function_of_time.H"
+#include "lib_condition_utils.H"
+#include "lib_function.H"
+#include "lib_globalproblem.H"
+#include "lib_function_of_time.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

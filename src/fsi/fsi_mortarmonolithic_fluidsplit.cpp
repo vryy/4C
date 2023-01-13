@@ -17,7 +17,7 @@ with condensed fluid interface velocities
 
 #include "adapter_coupling_mortar.H"
 #include "adapter_coupling.H"
-#include "ad_str_fsiwrapper.H"
+#include "adapter_str_fsiwrapper.H"
 
 #include "fsi_mortarmonolithic_fluidsplit.H"
 #include "fsi_debugwriter.H"
@@ -26,18 +26,18 @@ with condensed fluid interface velocities
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_utils.H"
 
-#include "globalproblem.H"
-#include "validparameters.H"
+#include "lib_globalproblem.H"
+#include "inpar_validparameters.H"
 #include "fluid_utils_mapextractor.H"
-#include "stru_aux.H"
+#include "structure_aux.H"
 #include "linalg_multiply.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "ale_utils_mapextractor.H"
-#include "ad_fld_fluid_fsi.H"
-#include "ad_ale_fsi.H"
+#include "adapter_fld_fluid_fsi.H"
+#include "adapter_ale_fsi.H"
 
 #include "constraint_manager.H"
 

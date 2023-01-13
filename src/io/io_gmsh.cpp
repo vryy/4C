@@ -11,14 +11,14 @@
 
 #include "io_gmsh.H"
 #include "io_control.H"
-#include "discret.H"
-#include "globalproblem.H"
-#include "utils.H"
-#include "utils_parallel.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
+#include "lib_utils.H"
+#include "lib_utils_parallel.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"  // LINALG::Export
 #include "linalg_serialdensevector.H"
-#include "intersection_service.H"
-#include "position_array.H"
+#include "geometry_intersection_service.H"
+#include "geometry_position_array.H"
 
 
 /*------------------------------------------------------------------------------------------------*

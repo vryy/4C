@@ -13,14 +13,14 @@
 
 #include "fs3i.H"
 #include "fs3i_partitioned_1wc.H"
-#include "fps3i_partitioned_1wc.H"
+#include "fs3i_fps3i_partitioned_1wc.H"
 #include "fs3i_partitioned_2wc.H"
-#include "biofilm_fsi.H"
-#include "ac_fsi.H"
-#include "globalproblem.H"
+#include "fs3i_biofilm_fsi.H"
+#include "fs3i_ac_fsi.H"
+#include "lib_globalproblem.H"
 
 #include "comm_utils.H"
-#include "discret.H"
+#include "lib_discret.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

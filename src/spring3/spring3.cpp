@@ -8,12 +8,12 @@
 /*-----------------------------------------------------------*/
 
 #include "spring3.H"
-#include "beam3eb.H"
-#include "beam3r.H"
-#include "discret.H"
-#include "dserror.H"
-#include "linedefinition.H"
-#include "largerotations.H"
+#include "beam3_euler_bernoulli.H"
+#include "beam3_reissner.H"
+#include "lib_discret.H"
+#include "lib_dserror.H"
+#include "lib_linedefinition.H"
+#include "fem_general_largerotations.H"
 #include "linalg_utils_nullspace.H"
 
 DRT::ELEMENTS::Spring3Type DRT::ELEMENTS::Spring3Type::instance_;

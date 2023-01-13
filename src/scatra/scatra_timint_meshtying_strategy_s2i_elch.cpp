@@ -11,12 +11,12 @@
 
 #include "adapter_coupling.H"
 
-#include "discret.H"
-#include "globalproblem.H"
-#include "utils_parameter_list.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_parameter_list.H"
 
-#include "electrode.H"
-#include "soret.H"
+#include "mat_electrode.H"
+#include "mat_soret.H"
 
 #include "mortar_element.H"
 
@@ -30,8 +30,8 @@
 
 #include "linalg_mapextractor.H"
 #include "linalg_sparseoperator.H"
-#include "linalg_solver.H"
-#include "singleton_owner.H"
+#include "solver_linalg_solver.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |

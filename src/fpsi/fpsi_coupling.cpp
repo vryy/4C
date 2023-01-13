@@ -24,20 +24,20 @@ Fluid-Poro-Coupling Matrixes!
 #include "inpar_fpsi.H"
 //
 // LIB includes
-#include "globalproblem.H"
-#include "discret.H"
-#include "assemblestrategy.H"
-#include "condition_selector.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "lib_assemblestrategy.H"
+#include "lib_condition_selector.H"
 //
 // ADAPTER includes
 #include "adapter_coupling.H"
-#include "ad_str_fpsiwrapper.H"
-#include "ad_fld_poro.H"
-#include "ad_fld_fluid.H"
-#include "ad_ale_fpsi.H"
+#include "adapter_str_fpsiwrapper.H"
+#include "adapter_fld_poro.H"
+#include "adapter_fld_fluid.H"
+#include "adapter_ale_fpsi.H"
 //
 // STRUCTURE includes
-#include "stru_aux.H"
+#include "structure_aux.H"
 //
 // FLUID includes
 #include "fluid_utils_mapextractor.H"

@@ -10,16 +10,16 @@
 
 /*----------------------------------------------------------------------------*/
 #include "elemag_utils_clonestrategy.H"
-#include "globalproblem.H"
-#include "matpar_material.H"
-#include "matpar_bundle.H"
+#include "lib_globalproblem.H"
+#include "mat_par_material.H"
+#include "mat_par_bundle.H"
 
 // we need to know all element types for the scatra mesh creation
 #include "elemag_ele.H"
 #include "scatra_ele.H"
 #include "scatra_ele_hdg.H"
 
-#include "globalproblem_enums.H"
+#include "lib_globalproblem_enums.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

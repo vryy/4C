@@ -13,10 +13,10 @@ multi-scale framework
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "elchmat.H"
-#include "elchphase.H"
-#include "newman_multiscale.H"
-#include "singleton_owner.H"
+#include "mat_elchmat.H"
+#include "mat_elchphase.H"
+#include "mat_newman_multiscale.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

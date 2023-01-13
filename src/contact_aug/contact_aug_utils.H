@@ -13,7 +13,7 @@
 #include "inpar_contact.H"
 #include <ext/mt_allocator.h>
 
-#include "pairedmatrix.H"
+#include "headers_pairedmatrix.H"
 
 namespace GEN_DATA = GEN;
 

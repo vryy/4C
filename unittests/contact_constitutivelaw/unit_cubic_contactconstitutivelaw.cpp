@@ -10,7 +10,7 @@
 
 #include <gtest/gtest.h>
 
-#include "cubic_contactconstitutivelaw.H"
+#include "contact_constitutivelaw_cubic_contactconstitutivelaw.H"
 
 namespace
 {

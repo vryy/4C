@@ -17,7 +17,7 @@
 
 #include "linalg_sparsematrixbase.H"
 #include "linalg_mapextractor.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 
 
 namespace LINALG

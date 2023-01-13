@@ -10,11 +10,11 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_discret_extractor.H"
-#include "periodicbc.H"
-#include "dofset_transparent.H"
-#include "utils_rebalancing.H"
+#include "lib_periodicbc.H"
+#include "lib_dofset_transparent.H"
+#include "rebalance_utils.H"
 #include "io.H"
-#include "discret_xwall.H"
+#include "lib_discret_xwall.H"
 
 
 /*----------------------------------------------------------------------*

@@ -12,12 +12,12 @@
 
 #include "inpar_browniandyn.H"
 #include "torsion3.H"
-#include "globalproblem.H"
-#include "dserror.H"
-#include "utils.H"
+#include "lib_globalproblem.H"
+#include "lib_dserror.H"
+#include "lib_utils.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "spring.H"
-#include "str_elements_paramsinterface.H"
+#include "mat_spring.H"
+#include "structure_new_elements_paramsinterface.H"
 
 
 /*-----------------------------------------------------------------------------------------------------------*

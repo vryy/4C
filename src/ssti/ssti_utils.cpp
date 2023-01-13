@@ -14,9 +14,9 @@
 
 #include "ssti_monolithic.H"
 
-#include "ad_str_ssiwrapper.H"
+#include "adapter_str_ssiwrapper.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "scatra_timint_implicit.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"
@@ -26,10 +26,10 @@
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
 
-#include "matpar_material.H"
-#include "matpar_bundle.H"
+#include "mat_par_material.H"
+#include "mat_par_bundle.H"
 #include "scatra_ele.H"
-#include "so_nurbs27.H"
+#include "so3_nurbs27.H"
 
 
 

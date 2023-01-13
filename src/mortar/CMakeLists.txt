@@ -1,6 +1,6 @@
 set(OBJS_MORTAR
     # cmake-format: sortable
-    base_binarytree.cpp
+    mortar_base_binarytree.cpp
     mortar_binarytree.cpp
     mortar_coupling2d.cpp
     mortar_coupling3d.cpp

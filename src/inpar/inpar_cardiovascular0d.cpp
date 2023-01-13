@@ -13,8 +13,8 @@
 
 #include "inpar_cardiovascular0d.H"
 
-#include "validparameters.H"
-#include "conditiondefinition.H"
+#include "inpar_validparameters.H"
+#include "lib_conditiondefinition.H"
 
 
 

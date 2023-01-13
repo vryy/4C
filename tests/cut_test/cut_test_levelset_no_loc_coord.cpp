@@ -20,7 +20,7 @@
 #include "cut_facet.H"
 #include "cut_integrationcell.H"
 #include "cut_utils.H"
-#include "sorted_vector.H"
+#include "cut_sorted_vector.H"
 #include "cut_combintersection.H"
 
 

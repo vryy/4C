@@ -10,7 +10,7 @@
 
 #include "fsi_overlapprec_fsiamg.H"
 #include "linalg_precond.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 
 #include <Epetra_Time.h>
 #include <ml_MultiLevelPreconditioner.h>

@@ -11,9 +11,9 @@
 
 #include "scatra_ele_boundary_calc_elch_electrode_utils.H"
 
-#include "utils_boundary_integration.H"
+#include "fem_general_utils_boundary_integration.H"
 
-#include "electrode.H"
+#include "mat_electrode.H"
 
 #include "inpar_s2i.H"
 
@@ -21,7 +21,7 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_boundary.H"
 #include "scatra_ele_parameter_std.H"
-#include "singleton_owner.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 08/15 |

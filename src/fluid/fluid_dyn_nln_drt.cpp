@@ -21,10 +21,10 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_dyn_nln_drt.H"
-#include "globalproblem.H"
-#include "ad_fld_base_algorithm.H"
-#include "turbulent_flow_algorithm.H"
-#include "condition_utils.H"
+#include "lib_globalproblem.H"
+#include "adapter_fld_base_algorithm.H"
+#include "fluid_turbulence_turbulent_flow_algorithm.H"
+#include "lib_condition_utils.H"
 #include "linalg_utils_sparse_algebra_math.H"
 
 /*----------------------------------------------------------------------*

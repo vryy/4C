@@ -11,8 +11,8 @@
 
 #include "ssti_algorithm.H"
 
-#include "dserror.H"
-#include "linedefinition.H"
+#include "lib_dserror.H"
+#include "lib_linedefinition.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

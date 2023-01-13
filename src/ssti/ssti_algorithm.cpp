@@ -12,16 +12,16 @@
 #include "ssti_resulttest.H"
 #include "ssti_utils.H"
 
-#include "ad_str_factory.H"
-#include "ad_str_ssiwrapper.H"
-#include "ad_str_structure_new.H"
+#include "adapter_str_factory.H"
+#include "adapter_str_ssiwrapper.H"
+#include "adapter_str_structure_new.H"
 
 #include "adapter_scatra_base_algorithm.H"
 
 #include "inpar_ssti.H"
 
-#include "globalproblem.H"
-#include "utils_createdis.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_createdis.H"
 
 #include "scatra_timint_implicit.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"

@@ -8,19 +8,19 @@
 /*-----------------------------------------------------------*/
 
 #include "spring3.H"
-#include "beam3eb.H"
-#include "beam3contact_utils.H"
-#include "globalproblem.H"
-#include "dserror.H"
-#include "utils.H"
+#include "beam3_euler_bernoulli.H"
+#include "beaminteraction_beam3contact_utils.H"
+#include "lib_globalproblem.H"
+#include "lib_dserror.H"
+#include "lib_utils.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "utils_fem_shapefunctions.H"
-#include "stvenantkirchhoff.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "mat_stvenantkirchhoff.H"
 #include "inpar_structure.H"
-#include "standardtypes_cpp.H"
+#include "lib_standardtypes_cpp.H"
 
 #include "Sacado.hpp"
-#include "FAD_utils.H"
+#include "headers_FAD_utils.H"
 typedef Sacado::Fad::DFad<double> FAD;
 
 /*-----------------------------------------------------------------------------------------------------------*

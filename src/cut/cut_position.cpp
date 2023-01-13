@@ -12,7 +12,7 @@
 
 #include "cut_position.H"
 #include "cut_boundingbox.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

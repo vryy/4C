@@ -12,10 +12,10 @@
  | headers                                                    sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
 #include "inpar_particle.H"
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_parameterlist_utils.H"
 
-#include "conditiondefinition.H"
+#include "lib_conditiondefinition.H"
 
 /*---------------------------------------------------------------------------*
  | set the particle parameters                                sfuchs 03/2018 |

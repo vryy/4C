@@ -17,10 +17,10 @@
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Operator.h>
 
-#include "discret.H"
-#include "globalproblem.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
 
-#include "so3_ssn_plast.H"
+#include "so3_plast_ssn.H"
 
 #include "linalg_utils_sparse_algebra_manipulation.H"
 

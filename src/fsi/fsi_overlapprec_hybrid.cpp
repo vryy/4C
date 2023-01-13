@@ -15,7 +15,7 @@
 #include "fsi_overlapprec_hybrid.H"
 #include "fsi_overlapprec_fsiamg.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "linalg_utils_sparse_algebra_math.H"  // for debugging: print matrices ToDo (mayr) remove?
 

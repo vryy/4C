@@ -29,7 +29,7 @@
 #include <Epetra_CrsMatrix.h>
 #include <az_aztec_defs.h>  // for AZ_none (provokes compiler warning due to redeclaration of HAVE_SYS_TIME_H in mpi.h and AztecOO_config.h -> AztecOO problem)
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 #include "solver_krylovsolver.H"
 #include "solver_pointpreconditioner.H"

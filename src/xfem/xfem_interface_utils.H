@@ -13,8 +13,8 @@
 
 // forward declaration of enums not possible
 #include "inpar_xfem.H"
-#include "element.H"
-#include "element_integration_select.H"
+#include "lib_element.H"
+#include "lib_element_integration_select.H"
 #include "cut_utils.H"
 
 // avoid forward declaration for templated class

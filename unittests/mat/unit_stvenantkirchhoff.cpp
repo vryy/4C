@@ -8,8 +8,8 @@
 
 #include "gtest/gtest.h"
 
-#include "matpar_material.H"
-#include "stvenantkirchhoff.H"
+#include "mat_par_material.H"
+#include "mat_stvenantkirchhoff.H"
 
 #include "unittests_assertions.h"
 

@@ -14,10 +14,10 @@
 
 #include "inpar_levelset.H"
 
-#include "utils.H"
-#include "standardtypes_cpp.H"  // for EPS13 and so on
-#include "position_array.H"
-#include "discret.H"
+#include "lib_utils.H"
+#include "lib_standardtypes_cpp.H"  // for EPS13 and so on
+#include "geometry_position_array.H"
+#include "lib_discret.H"
 
 
 /*----------------------------------------------------------------------*

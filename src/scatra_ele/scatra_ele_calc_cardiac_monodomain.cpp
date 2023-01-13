@@ -10,18 +10,18 @@
 
 #include "scatra_ele_calc_cardiac_monodomain.H"
 
-#include "globalproblem.H"
-#include "discret.H"
-#include "element.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "lib_element.H"
 
 #include "scatra_ele_parameter_timint.H"
 
-#include "myocard.H"
-#include "matlist.H"
+#include "mat_myocard.H"
+#include "mat_list.H"
 
 #include "inpar_cardiac_monodomain.H"
 #include "scatra_ele_parameter_std.H"
-#include "singleton_owner.H"
+#include "headers_singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*

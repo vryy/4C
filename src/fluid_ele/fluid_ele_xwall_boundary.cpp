@@ -11,8 +11,8 @@
 
 #include "fluid_ele_xwall.H"
 #include "fluid_ele_action.H"
-#include "discret.H"
-#include "utils.H"
+#include "lib_discret.H"
+#include "lib_utils.H"
 #include "fluid_ele_boundary_parent_calc.H"
 
 DRT::ELEMENTS::FluidXWallBoundaryType DRT::ELEMENTS::FluidXWallBoundaryType::instance_;

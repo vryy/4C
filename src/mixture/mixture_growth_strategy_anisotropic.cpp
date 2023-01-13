@@ -8,10 +8,10 @@
 
 #include "mixture_growth_strategy_anisotropic.H"
 #include "mixture_growth_strategy.H"
-#include "material_service.H"
-#include "voigt_notation.H"
-#include "matpar_material.H"
-#include "elast_aniso_structuraltensor_strategy.H"
+#include "mat_service.H"
+#include "lib_voigt_notation.H"
+#include "mat_par_material.H"
+#include "matelast_aniso_structuraltensor_strategy.H"
 
 MIXTURE::PAR::AnisotropicGrowthStrategy::AnisotropicGrowthStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)

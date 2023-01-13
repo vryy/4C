@@ -24,8 +24,8 @@ of errors, turbulence statistics etc.).
 #include "Teuchos_RCP.hpp"
 
 
-#include "elementtype.H"
-#include "utils_local_connectivity_matrices.H"
+#include "lib_elementtype.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
 
 // forward declarations

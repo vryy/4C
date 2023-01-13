@@ -11,39 +11,39 @@
 
 #include <Epetra_Time.h>
 
-#include "poro_base.H"
+#include "poroelast_base.H"
 
-#include "poro_partitioned.H"
+#include "poroelast_partitioned.H"
 #include "poroelast_monolithic.H"
-#include "poro_monolithicstructuresplit.H"
-#include "poro_monolithicfluidsplit.H"
-#include "poro_monolithicsplit_nopenetration.H"
-#include "poro_monolithicmeshtying.H"
-#include "poro_utils_clonestrategy.H"
+#include "poroelast_monolithicstructuresplit.H"
+#include "poroelast_monolithicfluidsplit.H"
+#include "poroelast_monolithicsplit_nopenetration.H"
+#include "poroelast_monolithicmeshtying.H"
+#include "poroelast_utils_clonestrategy.H"
 
-#include "poro_scatra_base.H"
+#include "poroelast_scatra_base.H"
 
-#include "poro_scatra_part_1wc.H"
-#include "poro_scatra_part_2wc.H"
-#include "poro_scatra_monolithic.H"
+#include "poroelast_scatra_part_1wc.H"
+#include "poroelast_scatra_part_2wc.H"
+#include "poroelast_scatra_monolithic.H"
 
 
-#include "condition_utils.H"
-#include "discret_faces.H"
+#include "lib_condition_utils.H"
+#include "lib_discret_faces.H"
 
 #include "so3_poro_eletypes.H"
 #include "so3_poro_scatra_eletypes.H"
 #include "so3_poro_p1_eletypes.H"
 #include "so3_poro_p1_scatra_eletypes.H"
 
-#include "wall1_poro_eletypes.H"
-#include "wall1_poro_scatra_eletypes.H"
-#include "wall1_poro_p1_eletypes.H"
-#include "wall1_poro_p1_scatra_eletypes.H"
+#include "w1_poro_eletypes.H"
+#include "w1_poro_scatra_eletypes.H"
+#include "w1_poro_p1_eletypes.H"
+#include "w1_poro_p1_scatra_eletypes.H"
 
 #include "fluid_ele_poro.H"
-#include "fluidporo.H"
-#include "structporo.H"
+#include "mat_fluidporo.H"
+#include "mat_structporo.H"
 
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_utils_sparse_algebra_create.H"

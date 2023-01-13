@@ -15,7 +15,7 @@
 #include "cut_pointgraph.H"
 #include "cut_levelsetside.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 
 #include <string>

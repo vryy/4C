@@ -16,7 +16,7 @@
  */
 
 #include "inpar_loca_continuation.H"
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 
 
 /*----------------------------------------------------------------------------*

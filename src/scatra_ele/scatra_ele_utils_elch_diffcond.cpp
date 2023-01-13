@@ -11,11 +11,11 @@
 #include "scatra_ele_calc_elch_diffcond.H"
 #include "scatra_ele_calc_elch_diffcond_multiscale.H"
 
-#include "elchmat.H"
-#include "elchphase.H"
-#include "newman.H"
-#include "newman_multiscale.H"
-#include "singleton_owner.H"
+#include "mat_elchmat.H"
+#include "mat_elchphase.H"
+#include "mat_newman.H"
+#include "mat_newman_multiscale.H"
+#include "headers_singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*

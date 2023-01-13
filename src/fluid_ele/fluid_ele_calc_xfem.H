@@ -12,13 +12,13 @@
 #ifndef FLUID_ELE_CALC_XFEM_H
 #define FLUID_ELE_CALC_XFEM_H
 
-#include "utils.H"
+#include "lib_utils.H"
 
 #include "fluid_ele_calc.H"
 #include "fluid_ele_calc_xfem_coupling.H"
 #include "xfem_condition_manager.H"
 
-#include "singleton_owner.H"
+#include "headers_singleton_owner.H"
 
 namespace XFEM
 {

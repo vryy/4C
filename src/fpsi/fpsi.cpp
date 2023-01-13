@@ -13,8 +13,8 @@
 #include "fpsi_utils.H"
 
 // lib includes
-#include "discret.H"
-#include "globalproblem.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
 
 // POROELAST includes
 #include "poroelast_utils.H"

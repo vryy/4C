@@ -15,7 +15,7 @@
 
 #include "inpar_scatra.H"
 
-#include "element.H"
+#include "lib_element.H"
 
 namespace DRT
 {

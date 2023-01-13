@@ -8,9 +8,9 @@
 
 
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_poromultiphase.H"
-#include "conditiondefinition.H"
+#include "lib_conditiondefinition.H"
 
 #include "linalg_equilibrate.H"
 
