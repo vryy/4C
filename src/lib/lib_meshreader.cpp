@@ -21,7 +21,6 @@
 #include "io_pstream.H"
 
 #include <Epetra_Time.h>
-#include <istream>
 #include <string>
 
 namespace DRT::INPUT
@@ -458,6 +457,7 @@ namespace DRT::INPUT
     }
   }
 
+
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   void MeshReader::CreateInlineMesh(int& max_node_id)
@@ -475,6 +475,7 @@ namespace DRT::INPUT
     for (const auto& domain_reader : domain_readers_) domain_reader->Complete();
   }
 
+
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   void MeshReader::ThrowIfNotEnoughNodes(int max_node_id) const
@@ -486,5 +487,4 @@ namespace DRT::INPUT
       dserror("Bad idea: Simulation with %d procs for problem with %d nodes", comm_->NumProc(),
           max_node_id);
   }
-
 }  // namespace DRT::INPUT
