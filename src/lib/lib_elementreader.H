@@ -151,6 +151,12 @@ namespace DRT
       void Complete();
 
      private:
+      /// read file and get element ids
+      std::pair<int, std::vector<int>> GetElementSizeAndIDs();
+
+      // read file and get elements and distribute
+      void GetAndDistributeElements(const int nblock, const int bsize);
+
       /// discretization name
       std::string name_;
 

@@ -5,7 +5,6 @@
 
 \level 0
 
-
 */
 /*---------------------------------------------------------------------*/
 
@@ -86,13 +85,9 @@ namespace DRT::INPUT
   std::vector<Teuchos::RCP<DRT::Discretization>> MeshReader::FindDisNode(int global_node_id)
   {
     std::vector<Teuchos::RCP<DRT::Discretization>> list_of_discretizations;
-    for (const auto element_reader : element_readers_)
-    {
+    for (const auto& element_reader : element_readers_)
       if (element_reader->HasNode(global_node_id))
-      {
         list_of_discretizations.emplace_back(element_reader->MyDis());
-      }
-    }
 
     return list_of_discretizations;
   }
@@ -118,7 +113,7 @@ namespace DRT::INPUT
     const int numnodes = reader_.ExcludedSectionLength(sectionname_);
     if (numnodes == 0) return;
 
-    for (const auto element_reader : element_readers_) element_reader->ReadAndPartition();
+    for (const auto& element_reader : element_readers_) element_reader->ReadAndPartition();
 
     Epetra_Time time(*comm_);
 
