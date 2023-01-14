@@ -178,8 +178,6 @@ E 2 - 1
 E 8 - 1
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1 DNODE 1
-NODE    2 DNODE 1
-NODE    101 DNODE 1
 NODE    102 DNODE 1
 NODE    2 DNODE 2
 NODE    101 DNODE 2

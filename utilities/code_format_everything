@@ -52,7 +52,7 @@ IFS=$'\n'
 
 if [[ $STAGED_ONLY ]]
 then
-  FILES_TO_CHECK=$(git diff --name-only --staged)
+  FILES_TO_CHECK=$(git diff --name-only --staged --diff-filter=d)
   echo "Run clang-format on all staged source files in the repository."
 else
   FILES_TO_CHECK=$(git ls-files)

@@ -16,12 +16,12 @@
 
 #include <Epetra_MpiComm.h>
 
-#include "drt_globalproblem.H"
-#include "drt_inputreader.H"
-#include "drt_utils.H"
-#include "drt_parobjectregister.H"
+#include "lib_globalproblem.H"
+#include "lib_inputreader.H"
+#include "lib_utils.H"
+#include "lib_parobjectregister.H"
 #include "linalg_fixedsizematrix.H"
-#include "largerotations.H"
+#include "fem_general_largerotations.H"
 
 /*======================================================================*/
 /*======================================================================*/

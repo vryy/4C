@@ -1,0 +1,46 @@
+/*----------------------------------------------------------------------*/
+/*! \file
+
+\brief factory for scatra boundary evaluation
+
+\level 2
+
+ */
+/*----------------------------------------------------------------------*/
+
+
+#ifndef SCATRA_ELE_BOUNDARY_FACTORY_H
+#define SCATRA_ELE_BOUNDARY_FACTORY_H
+
+#include "lib_element.H"
+#include "inpar_scatra.H"
+
+namespace DRT
+{
+  namespace ELEMENTS
+  {
+    class ScaTraBoundaryInterface;
+
+    class ScaTraBoundaryFactory
+    {
+     public:
+      //! ctor
+      ScaTraBoundaryFactory() { return; };
+
+      //! dtor
+      virtual ~ScaTraBoundaryFactory() { return; };
+
+      //! ProvideImpl
+      static ScaTraBoundaryInterface* ProvideImpl(const DRT::Element* ele,
+          const enum INPAR::SCATRA::ImplType impltype, const int numdofpernode, const int numscal,
+          const std::string& disname);
+
+     private:
+      //! return instance of element evaluation class depending on implementation type
+      template <DRT::Element::DiscretizationType distype>
+      static ScaTraBoundaryInterface* DefineProblemType(const enum INPAR::SCATRA::ImplType impltype,
+          const int numdofpernode, const int numscal, const std::string& disname);
+    };  // class ScaTraBoundaryFactory
+  }     // namespace ELEMENTS
+}  // namespace DRT
+#endif

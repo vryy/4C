@@ -36,7 +36,7 @@ baci_add_library(linalg ${OBJS_LINALG})
 
 set(LIBS_LINALG
     # cmake-format: sortable
-    drt_inpar
+    inpar
     )
 
 target_link_libraries(linalg PUBLIC ${LIBS_LINALG})

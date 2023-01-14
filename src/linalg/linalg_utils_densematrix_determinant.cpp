@@ -9,7 +9,7 @@
 
 #include <Teuchos_LAPACK.hpp>
 #include "linalg_utils_densematrix_determinant.H"
-#include "drt_dserror.H"
+#include "lib_dserror.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

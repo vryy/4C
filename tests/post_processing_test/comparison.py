@@ -1,4 +1,4 @@
-# Script for comparing result of the parallel and serial post processing by the post_drt_ensight filter
+# Script for comparing result of the parallel and serial post processing by the post_ensight filter
 
 from paraview import servermanager as sm
 import sys
@@ -41,11 +41,9 @@ csvWriter1 = sm.writers.CSVWriter(Input=converter1)
 csvWriter1.FileName = sys.argv[4] + "/xxx_par.csv"
 csvWriter1.UpdatePipeline()
 
-
 csv_reader1 = csv.reader(open(sys.argv[4] + "/xxx_par0.csv", "r"), delimiter=",")
 head1 = csv_reader1.next()
 index1 = head1.index("Points:0")
-
 
 # read in of serial calculated case file
 ens_reader2 = sm.sources.EnSightReader()

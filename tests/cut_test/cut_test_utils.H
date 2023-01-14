@@ -13,7 +13,7 @@
 
 #include <Epetra_SerialDenseMatrix.h>
 
-#include "drt_element.H"
+#include "lib_element.H"
 
 #include "linalg_fixedsizematrix.H"
 

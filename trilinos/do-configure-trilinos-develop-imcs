@@ -11,6 +11,7 @@ TPLDIR="/imcs/public/compsim/lib/TPL"
 
 $CMAKE_COMMAND \
   -D CMAKE_BUILD_TYPE:STRING="RELEASE" \
+  -D CMAKE_CXX_STANDARD:STRING="17" \
   -D CMAKE_CXX_COMPILER:FILEPATH="$MPI_BIN_DIR/mpic++" \
   -D CMAKE_C_COMPILER:FILEPATH="$MPI_BIN_DIR/mpicc" \
   -D CMAKE_Fortran_COMPILER:FILEPATH="$MPI_BIN_DIR/mpif90" \
@@ -19,7 +20,6 @@ $CMAKE_COMMAND \
   -D CMAKE_COLOR_MAKEFILE:BOOL=ON \
   -D BUILD_SHARED_LIBS:BOOL=OFF \
   \
-  -D Trilinos_ASSERT_MISSING_PACKAGES=OFF \
   -D Trilinos_VERBOSE_CONFIGURE:BOOL=OFF \
   -D Trilinos_ENABLE_ALL_OPTIONAL_PACKAGES:BOOL=OFF \
   -D Trilinos_ENABLE_EXPLICIT_INSTANTIATION:BOOL=ON \
@@ -27,9 +27,10 @@ $CMAKE_COMMAND \
   -D Trilinos_ENABLE_TESTS:BOOL=OFF \
   -D Trilinos_ENABLE_EXAMPLES:BOOL=OFF \
   \
+  -D Trilinos_ASSERT_MISSING_PACKAGES=OFF \
   -D Trilinos_ENABLE_Gtest:BOOL=OFF \
   -D Trilinos_ENABLE_Amesos:BOOL=ON \
-  -D Trilinos_ENABLE_Amesos2:BOOL=OFF \
+  -D Trilinos_ENABLE_Amesos2:BOOL=ON \
   -D Trilinos_ENABLE_Anasazi:BOOL=ON \
   -D Trilinos_ENABLE_AztecOO:BOOL=ON \
   -D Trilinos_ENABLE_Belos:BOOL=ON \
@@ -64,19 +65,23 @@ $CMAKE_COMMAND \
   -D Trilinos_ENABLE_Zoltan:BOOL=ON \
   -D Trilinos_ENABLE_Zoltan2:BOOL=OFF \
   \
-  -D TPL_ENABLE_Boost:BOOL=ON \
+  -D Trilinos_MUST_FIND_ALL_TPL_LIBS=TRUE \
+  -D TPL_ENABLE_DLlib:BOOL=OFF \
+  -D TPL_ENABLE_Netcdf:BOOL=ON \
   -D TPL_ENABLE_MPI:BOOL=ON \
   -D TPL_ENABLE_ParMETIS:BOOL=ON \
     -D ParMETIS_INCLUDE_DIRS:PATH="/usr/include" \
     -D ParMETIS_LIBRARY_DIRS:PATH="/usr/lib/libparmetis.so.4.0.3" \
   -D TPL_ENABLE_UMFPACK:BOOL=ON \
-    -D UMFPACK_INCLUDE_DIRS:FILEPATH="$TPLDIR/include" \
-    -D UMFPACK_LIBRARY_DIRS:FILEPATH="$TPLDIR/lib" \
-  -D TPL_ENABLE_Netcdf:BOOL=ON \
+    -D UMFPACK_INCLUDE_DIRS:FILEPATH="$TPLDIR/packages/SuiteSparse-5.4.0/include" \
+    -D UMFPACK_LIBRARY_DIRS:FILEPATH="$TPLDIR/packages/SuiteSparse-5.4.0/lib" \
   -D TPL_ENABLE_SuperLUDist:BOOL=ON \
     -D SuperLUDist_INCLUDE_DIRS:PATH="$TPLDIR/include" \
     -D SuperLUDist_LIBRARY_DIRS:PATH="$TPLDIR/lib" \
     -D SuperLUDist_LIBRARY_NAMES:STRING="superlu_dist_2.5" \
+  -D TPL_ENABLE_Cholmod:BOOL=ON \
+    -D Cholmod_INCLUDE_DIRS:FILEPATH="$TPLDIR/packages/SuiteSparse-5.4.0/include" \
+    -D Cholmod_LIBRARY_DIRS:FILEPATH="$TPLDIR/packages/SuiteSparse-5.4.0/lib" \
+    -D Cholmod_LIBRARY_NAMES:STRING="cholmod;amd" \
 $EXTRA_ARGS \
 ${TRILINOS_HOME}
-

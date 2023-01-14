@@ -9,7 +9,7 @@
 
 #include "fortran_definitions.h"
 #include "linalg_utils_densematrix_inverse.H"
-#include "drt_dserror.H"
+#include "lib_dserror.H"
 
 /*----------------------------------------------------------------------*
  |  invert a dense symmetric matrix         )                mwgee 12/06|

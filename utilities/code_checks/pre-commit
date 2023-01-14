@@ -18,7 +18,7 @@
 # A Python script checks if the unit tests follow the naming conventions, its addition to a local CMakeLists.txt, or if they are not ordered in alphabetical order.
 # It also checks if the input file tests use an unjustified high mpi rank, if they are missing in TestingFrameworkListOfTests.cmake or if they have empty sections.
 # The commit will be rejected in case a check fails (script exits 1).
-# 
+#
 # Stage 4: Check commit on master
 # A commit on master branch is rejected (script exits 1). The user is asked to create and checkout a new feature branch in order to proceed with the commit.
 #
@@ -105,7 +105,7 @@ done
 
 # printout for non-ascii characters
 if [ ! -z "$non_ascii_error" ]
-then 
+then
 printf "\n"
 printf "The following file(s) contain non-ascii characters:\n"
 printf "\n"
@@ -150,6 +150,8 @@ fi
 
 ### Stage 2: Header check ####################################
 python ./utilities/code_checks/header_check.py --diff_only || exit 1
+
+python ./utilities/code_checks/file_prefix_check.py src src --diff_only || exit 1
 
 ### Stage 3: Framework check ####################################
 python ./utilities/code_checks/testing_frameworks_check.py --diff_only || exit 1

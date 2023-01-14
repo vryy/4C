@@ -21,7 +21,7 @@
 #include <MueLu_UseDefaultTypes.hpp>
 
 // Baci includes
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_blocksparsematrix.H"
 #include "solver_preconditionertype.H"
 #include "solver_amgnxn_smoothers.H"
@@ -40,8 +40,8 @@ namespace LINALG::SOLVER::AMGNXN
     void SetPreSmoothers(std::vector<Teuchos::RCP<GenericSmoother>> SvecPre);
     void SetPosSmoothers(std::vector<Teuchos::RCP<GenericSmoother>> SvecPos);
 
-    virtual void Solve(
-        const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const;
+    void Solve(
+        const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const override;
 
    private:
     void DoVcycle(
@@ -76,8 +76,8 @@ namespace LINALG::SOLVER::AMGNXN
     void SetPreSmoothers(std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPre);
     void SetPosSmoothers(std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPos);
 
-    virtual void Apply(
-        const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const;
+    void Apply(
+        const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const override;
 
    private:
     void DoVcycle(const Epetra_MultiVector& X, Epetra_MultiVector& Y, int level,

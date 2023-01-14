@@ -8,7 +8,7 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "drt_dserror.H"
+#include "lib_dserror.H"
 
 #include "solver_ifpackpreconditioner.H"
 

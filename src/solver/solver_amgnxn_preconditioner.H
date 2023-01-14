@@ -19,7 +19,7 @@
 #include <MueLu_Utilities.hpp>
 #include <MueLu_UseDefaultTypes.hpp>
 
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_blocksparsematrix.H"
 #include "solver_preconditionertype.H"
 #include "solver_amgnxn_smoothers.H"
@@ -33,18 +33,18 @@ namespace LINALG::SOLVER
    public:
     AMGnxn_Preconditioner(FILE *outfile, Teuchos::ParameterList &params);
 
-    virtual void Setup(bool create, Epetra_Operator *matrix, Epetra_MultiVector *x,
+    void Setup(bool create, Epetra_Operator *matrix, Epetra_MultiVector *x,
         Epetra_MultiVector *b) override;
 
     virtual void Setup(Teuchos::RCP<BlockSparseMatrixBase> A);
 
-    virtual Epetra_Operator *PrecOperator() const;
+    Epetra_Operator *PrecOperator() const override;
 
     /// linear operator used for preconditioning
-    virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const;
+    Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override;
 
-    virtual void Print(std::ostream &stream) { stream << "AMGnxn"; }
-    virtual const std::string getParameterListName() const { return "AMGnxn Parameters"; }
+    void Print(std::ostream &stream) const override { stream << "AMGnxn"; }
+    const std::string getParameterListName() const override { return "AMGnxn Parameters"; }
 
    private:
     // Private variables
@@ -99,48 +99,48 @@ namespace LINALG::SOLVER
         const Teuchos::ParameterList &muelu_params);
 
     // virtual functions given by Epetra_Operator. The only one to be used is ApplyInverse()
-    virtual int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+    int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const override;
 
-    virtual int SetUseTranspose(bool UseTranspose)
+    int SetUseTranspose(bool UseTranspose) override
     {
       // default to false
       return 0;
     }
 
-    virtual int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
+    int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const override
     {
       dserror("Function not implemented");
       return -1;
     }
 
-    virtual double NormInf() const
+    double NormInf() const override
     {
       dserror("Function not implemented");
       return -1.0;
     }
 
-    virtual const char *Label() const { return "AMG(BlockSmoother)"; }
+    const char *Label() const override { return "AMG(BlockSmoother)"; }
 
-    virtual bool UseTranspose() const
+    bool UseTranspose() const override
     {
       // default to false
       return false;
     }
 
-    virtual bool HasNormInf() const
+    bool HasNormInf() const override
     {
       dserror("Function not implemented");
       return false;
     }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    virtual const Epetra_Comm &Comm() const { return A_->Comm(); }
+    const Epetra_Comm &Comm() const override { return A_->Comm(); }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    virtual const Epetra_Map &OperatorDomainMap() const { return A_->OperatorDomainMap(); }
+    const Epetra_Map &OperatorDomainMap() const override { return A_->OperatorDomainMap(); }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    virtual const Epetra_Map &OperatorRangeMap() const { return A_->OperatorRangeMap(); }
+    const Epetra_Map &OperatorRangeMap() const override { return A_->OperatorRangeMap(); }
 
     void Setup();
 
@@ -170,48 +170,48 @@ namespace LINALG::SOLVER
         const Teuchos::ParameterList &smoothers_params);
 
     // virtual functions given by Epetra_Operator. The only one to be used is ApplyInverse()
-    virtual int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+    int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const override;
 
-    virtual int SetUseTranspose(bool UseTranspose)
+    int SetUseTranspose(bool UseTranspose) override
     {
       // default to false
       return 0;
     }
 
-    virtual int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
+    int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const override
     {
       dserror("Function not implemented");
       return -1;
     }
 
-    virtual double NormInf() const
+    double NormInf() const override
     {
       dserror("Function not implemented");
       return -1.0;
     }
 
-    virtual const char *Label() const { return "BlockSmoother(X)"; }
+    const char *Label() const override { return "BlockSmoother(X)"; }
 
-    virtual bool UseTranspose() const
+    bool UseTranspose() const override
     {
       // default to false
       return false;
     }
 
-    virtual bool HasNormInf() const
+    bool HasNormInf() const override
     {
       dserror("Function not implemented");
       return false;
     }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    virtual const Epetra_Comm &Comm() const { return A_->Comm(); }
+    const Epetra_Comm &Comm() const override { return A_->Comm(); }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    virtual const Epetra_Map &OperatorDomainMap() const { return A_->OperatorDomainMap(); }
+    const Epetra_Map &OperatorDomainMap() const override { return A_->OperatorDomainMap(); }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    virtual const Epetra_Map &OperatorRangeMap() const { return A_->OperatorRangeMap(); }
+    const Epetra_Map &OperatorRangeMap() const override { return A_->OperatorRangeMap(); }
 
     void Setup();  // TODO
 
@@ -237,48 +237,48 @@ namespace LINALG::SOLVER
         const Teuchos::ParameterList &smoothers_params);
 
     // virtual functions given by Epetra_Operator. The only one to be used is ApplyInverse()
-    virtual int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+    int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const override;
 
-    virtual int SetUseTranspose(bool UseTranspose)
+    int SetUseTranspose(bool UseTranspose) override
     {
       // default to false
       return 0;
     }
 
-    virtual int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
+    int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const override
     {
       dserror("Function not implemented");
       return -1;
     }
 
-    virtual double NormInf() const
+    double NormInf() const override
     {
       dserror("Function not implemented");
       return -1.0;
     }
 
-    virtual const char *Label() const { return "Merged matrix plus smoother"; }
+    const char *Label() const override { return "Merged matrix plus smoother"; }
 
-    virtual bool UseTranspose() const
+    bool UseTranspose() const override
     {
       // default to false
       return false;
     }
 
-    virtual bool HasNormInf() const
+    bool HasNormInf() const override
     {
       dserror("Function not implemented");
       return false;
     }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    virtual const Epetra_Comm &Comm() const { return A_->Comm(); }
+    const Epetra_Comm &Comm() const override { return A_->Comm(); }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    virtual const Epetra_Map &OperatorDomainMap() const { return A_->OperatorDomainMap(); }
+    const Epetra_Map &OperatorDomainMap() const override { return A_->OperatorDomainMap(); }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    virtual const Epetra_Map &OperatorRangeMap() const { return A_->OperatorRangeMap(); }
+    const Epetra_Map &OperatorRangeMap() const override { return A_->OperatorRangeMap(); }
 
     void Setup();  // TODO
 

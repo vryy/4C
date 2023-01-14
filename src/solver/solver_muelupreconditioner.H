@@ -62,7 +62,7 @@ namespace LINALG::SOLVER
     //! linear operator used for preconditioning
     Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const final { return P_; }
 
-    void Print(std::ostream& stream) { stream << "MueLuPreconditioner"; }
+    void Print(std::ostream& stream) const override { stream << "MueLuPreconditioner"; }
 
     //! return name of sublist in paramterlist which contains parameters for preconditioner
     const std::string getParameterListName() const { return "MueLu Parameters"; }
@@ -105,7 +105,7 @@ namespace LINALG::SOLVER
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
-    void Print(std::ostream& stream) override { stream << "MueLuFlBlockPreconditioner"; }
+    void Print(std::ostream& stream) const override { stream << "MueLuFlBlockPreconditioner"; }
 
     //! return name of sublist in paramterlist which contains parameters for preconditioner
     const std::string getParameterListName() const override { return "MueLu (Fluid) Parameters"; }
@@ -138,7 +138,7 @@ namespace LINALG::SOLVER
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
-    void Print(std::ostream& stream) override { stream << "MueLuTsiBlockPreconditioner"; }
+    void Print(std::ostream& stream) const override { stream << "MueLuTsiBlockPreconditioner"; }
 
     // return name of sublist in paramterlist which contains parameters for preconditioner
     const std::string getParameterListName() const override { return "MueLu (TSI) Parameters"; }
@@ -187,7 +187,7 @@ namespace LINALG::SOLVER
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
-    void Print(std::ostream& stream) override { stream << "MueLuContactSpPreconditioner"; }
+    void Print(std::ostream& stream) const override { stream << "MueLuContactSpPreconditioner"; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
     const std::string getParameterListName() const override { return "MueLu (Contact) Parameters"; }
@@ -231,7 +231,7 @@ namespace LINALG::SOLVER
     void Setup(
         bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) final;
 
-    void Print(std::ostream& stream) final { stream << "MueLuBeamSolidBlockPreconditioner"; }
+    void Print(std::ostream& stream) const final { stream << "MueLuBeamSolidBlockPreconditioner"; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
     const std::string getParameterListName() const final { return "MueLu (BeamSolid) Parameters"; }

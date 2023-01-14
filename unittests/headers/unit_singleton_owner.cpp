@@ -9,7 +9,7 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "src/headers/singleton_owner.H"
+#include "headers_singleton_owner.H"
 
 namespace
 {

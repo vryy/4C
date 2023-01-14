@@ -158,13 +158,13 @@ MAT 513 MAT_scatra_reaction NUMSCAL 4 STOICH 0 0 0 -1 REACCOEFF 1.0 COUPLING by_
 SRC_FIELD structure SRC_MAT 4 TAR_FIELD porofluid TAR_MAT 2
 SRC_FIELD structure SRC_MAT 4 TAR_FIELD scatra TAR_MAT 5
 ----------------------------------------------------------------------FUNCT1 // inside: TCs: 0.025, IF: 0.775, everywhere HCs 0.2, outside: ECs 0.25
-COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.217662491494835*heaviside(-sqrt(x*x+y*y+z*z)+0.03)+0.191702620777447*heaviside(sqrt(x*x+y*y+z*z)-0.03)+0.398297379222553*heaviside(sqrt(x*x+y*y+z*z)-0.995)
-COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME (11.59058157e-3)*heaviside(-sqrt(x*x+y*y+z*z)+0.03) // 0.975
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.217662491494835*heaviside(-sqrt(x*x+y*y)+0.03)+0.191702620777447*heaviside(sqrt(x*x+y*y)-0.03)+0.398297379222553*heaviside(sqrt(x*x+y*y)-0.995)
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME (11.59058157e-3)*heaviside(-sqrt(x*x+y*y)+0.03)
 COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
-COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.1*heaviside(sqrt(x*x+y*y+z*z)-0.995)
+COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.1*heaviside(sqrt(x*x+y*y)-0.995)
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 398.2973792226528*1.0/(1.0+exp(-2.0*100.0*(-sqrt((x+0.2)*(x+0.2)+y*y+z*z)+0.025)))+191.7026207774473 // 0.025
-COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 294.999999999963*1.0/(1.0+exp(-2.0*100.0*(-sqrt((x+0.2)*(x+0.2)+y*y+z*z)+0.025))) // 0.975
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 398.2973792226528*1.0/(1.0+exp(-2.0*100.0*(-sqrt((x+0.2)*(x+0.2)+y*y)+0.025)))+191.7026207774473
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 294.999999999963*1.0/(1.0+exp(-2.0*100.0*(-sqrt((x+0.2)*(x+0.2)+y*y)+0.025)))
 COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 COMPONENT 4 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
@@ -176,21 +176,21 @@ COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------------------FUNCT4 // - w^TAF * M^v->l_leak
 VARFUNCTION phi3*4.2e-10*(VFP1-p3-1333.0)*VF1
 ----------------------------------------------------------------------FUNCT5  // production of necrotic cells
-VARFUNCTION (-1e-8*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside(-(phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2) NUMCONSTANTS 3 CONSTANTS p2 0.0 porosity 0.0 S2 0.0
+VARFUNCTION (-1e-8*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside(-(phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2)
 ----------------------------------------------------------------------FUNCT6 // transcapillary exchange of oxygen
 VARFUNCTION ((phi4-phi1)*4.2e-10*(VFP1-p3-1333.0)+2.0e-4*heaviside(-(phi1-phi4))*(phi4-phi1))*VF1
 ----------------------------------------------------------------------FUNCT7  // phi_necro*(tumor cells <--> IF)
-VARFUNCTION ((1e-8*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside((phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2))*phi2 NUMCONSTANTS 3 CONSTANTS p2 0.0 porosity 0.0 S2 0.0
+VARFUNCTION ((1e-8*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside((phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2))*phi2 
 ----------------------------------------------------------------------FUNCT8
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 4.2e-6
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------------------FUNCT9 // phi_oxy*(tumor cells <--> IF)
-VARFUNCTION ((1e-8*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside((phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2)*S2/S3)*phi1 NUMCONSTANTS 3 CONSTANTS p2 0.0 S2 0.0 S3 0.0
+VARFUNCTION ((1e-8*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside((phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2)*S2/S3)*phi1 
 ----------------------------------------------------------------------FUNCT10 // production of TAF
 VARFUNCTION 1.0e-9*heaviside(4.0e-6-phi1)*(0.5+0.5*cos(pi*phi1/4.0e-6))*(1-phi2)*S2*porosity
 ----------------------------------------------------------------------FUNCT11 // phi_TAF*(tumor cells <--> IF)
-VARFUNCTION ((4.0e-8*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside((phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2)*S2)*phi3*porosity NUMCONSTANTS 3 CONSTANTS p2 0.0 S2 0.0 S3 0.0
+VARFUNCTION ((4.0e-8*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside((phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2)*S2)*phi3*porosity
 ----------------------------------------------------------------------FUNCT12
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 191.7026207774473
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
@@ -219,21 +219,21 @@ VARFUNCTION 4.2e-10*(VFP1-p3-1333.0)*VF1
 ----------------------------------------------------------------------FUNCT21 // diffusive part of transcapillary exchange of oxygen -1 into balance of oxygen (species in volume fraction)
 VARFUNCTION 2.0e-4*heaviside(-(phi1-phi4))*(phi4-phi1)*VF1
 ----------------------------------------------------------------------FUNCT22 // mass of tumor
-VARFUNCTION porosity*S2*DENS2 NUMCONSTANTS 3 CONSTANTS porosity 0.0 S2 0.0 DENS2 0.0
+VARFUNCTION porosity*S2*DENS2
 ----------------------------------------------------------------------FUNCT23 // oxygen
-VARFUNCTION phi1 NUMCONSTANTS 1 CONSTANTS phi1 0.0
+VARFUNCTION phi1 
 ----------------------------------------------------------------------FUNCT24 // mass of necrotic core
-VARFUNCTION porosity*S2*phi2*DENS2 NUMCONSTANTS 4 CONSTANTS porosity 0.0 S2 0.0 phi2 0.0 DENS2 0.0
+VARFUNCTION porosity*S2*phi2*DENS2 
 ----------------------------------------------------------------------FUNCT25 // neovasculature
-VARFUNCTION VF1 NUMCONSTANTS 1 CONSTANTS VF1 0.0
+VARFUNCTION VF1 
 ----------------------------------------------------------------------FUNCT26 // mass of living tumor cells
-VARFUNCTION porosity*S2*(1-phi2)*DENS2 NUMCONSTANTS 4 CONSTANTS porosity 0.0 S2 0.0 phi2 0.0 DENS2 0.0
+VARFUNCTION porosity*S2*(1-phi2)*DENS2 
 ----------------------------------------------------------------------FUNCT27 // area times density of volume fraction 1 (=1.0e-3)
-VARFUNCTION 1.0*VFDENS1 NUMCONSTANTS 1 CONSTANTS VFDENS1 0.0
+VARFUNCTION 1.0*VFDENS1 
 ----------------------------------------------------------------------FUNCT28 // needed for calculation of x-coordinate center of mass of tumor
-VARFUNCTION porosity*S2*DENS2*x NUMCONSTANTS 4 CONSTANTS porosity 0.0 S2 0.0 DENS2 0.0 x 0.0
+VARFUNCTION porosity*S2*DENS2*x 
 ----------------------------------------------------------------------FUNCT29 // needed for calculation of y-coordinate center of mass of tumor
-VARFUNCTION porosity*S2*DENS2*y NUMCONSTANTS 4 CONSTANTS porosity 0.0 S2 0.0 DENS2 0.0 y 0.0
+VARFUNCTION porosity*S2*DENS2*y 
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4
 NDLINE  12

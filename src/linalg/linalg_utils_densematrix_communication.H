@@ -17,7 +17,7 @@
 #include "Epetra_Export.h"
 #include "Epetra_Import.h"
 #include "Teuchos_RCP.hpp"
-#include "drt_exporter.H"
+#include "lib_exporter.H"
 #include "linalg_blocksparsematrix.H"
 
 namespace LINALG
@@ -552,7 +552,7 @@ namespace LINALG
    \brief Create an allreduced gid to index map from the given Epetra_Map
           on a distinct processor, all other procs create empty maps instead.
 
-   This method is currently used within the parallel post_drt_ensight
+   This method is currently used within the parallel post_ensight
    filter in order to import all values stored in a distributed Epetra_Vector
    to processor 0 for writing them into file.
 

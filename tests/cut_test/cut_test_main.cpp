@@ -8,8 +8,8 @@
 
 #include "cut_mesh.H"
 #include "cut_element.H"
-#include "drt_utils_gausspoints.H"
-#include "drt_globalproblem.H"
+#include "fem_general_utils_gausspoints.H"
+#include "lib_globalproblem.H"
 #include "cut_test_utils.H"
 
 #include <Teuchos_CommandLineProcessor.hpp>
@@ -396,7 +396,7 @@ int main(int argc, char** argv)
   // these tests were generated from the real computation
   // all of then expreience the same problem:
   // "Could not find reference plane with all gausspoints inside!" in
-  // src/drt_cut/direct_divergence_refplane.cpp
+  // src/cut/direct_divergence_refplane.cpp
   functable["cluster_comp_fail1"] = test_bacigenerated_622829;
   // functable["cluster_comp_fail2"] = test_bacigenerated_627558;
   functable["cluster_comp_fail3"] = test_bacigenerated_622320;

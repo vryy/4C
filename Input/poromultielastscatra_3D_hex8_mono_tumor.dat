@@ -152,16 +152,16 @@ COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------------------FUNCT4
 VARFUNCTION (1-phi2)*porosity*S2*(9.6e-9*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2))
 ----------------------------------------------------------------------FUNCT5
-VARFUNCTION porosity*S2*(1-phi2)*(-9.6e-9*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside(-(phi1-2.0e-6)/(4.2e-6-2.0e-6))+0.5e-3*heaviside(p2-1.3e6)) NUMCONSTANTS 3 CONSTANTS p2 0.0 porosity 0.0 S2 0.0
+VARFUNCTION porosity*S2*(1-phi2)*(-9.6e-9*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside(-(phi1-2.0e-6)/(4.2e-6-2.0e-6))+0.5e-3*heaviside(p2-1.3e6))
 ----------------------------------------------------------------------FUNCT6
-VARFUNCTION porosity*S2*(1-phi2)*(2.4e-10*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2)+6e-10*sin(0.5*pi*phi1/4.2e-6)) NUMCONSTANTS 3 CONSTANTS p2 0.0 S2 0.0 S3 0.0
+VARFUNCTION porosity*S2*(1-phi2)*(2.4e-10*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2)+6e-10*sin(0.5*pi*phi1/4.2e-6))
 ----------------------------------------------------------------------FUNCT7
-VARFUNCTION porosity*S2*phi2*((9.6e-9*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2))*(1-phi2)) NUMCONSTANTS 3 CONSTANTS p2 0.0 porosity 0.0 S2 0.0
+VARFUNCTION porosity*S2*phi2*((9.6e-9*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2))*(1-phi2))
 ----------------------------------------------------------------------FUNCT8
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 4.2e-6
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2.0e-6
 ----------------------------------------------------------------------FUNCT9
-VARFUNCTION phi1*porosity*((9.6e-9*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2))*(1-phi2)*S2) NUMCONSTANTS 3 CONSTANTS p2 0.0 S2 0.0 S3 0.0
+VARFUNCTION phi1*porosity*((9.6e-9*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2))*(1-phi2)*S2)
 ----------------------------------------------------------------------FUNCT10
 POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_T_growth 9.6e-9 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
 ----------------------------------------------------------------------FUNCT11

@@ -41,7 +41,7 @@ Outer Iteration                 = Yes
 Inner Iteration                 = No
 Outer Iteration StatusTest      = No
 ----------------------------------------------------------------MATERIALS
-MAT 1 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 11 14 MATIDMIXTURERULE 10
+MAT 1 MAT_Mixture NUMCONST 2 MATIDSCONST 11 14 MATIDMIXTURERULE 10
 MAT 10 MIX_GrowthRemodelMixtureRule GROWTH_STRATEGY 100 DENS 1.0 NUMCONST 2 MASSFRAC 0.1 0.9
 MAT 100 MIX_GrowthStrategy_Isotropic
 
