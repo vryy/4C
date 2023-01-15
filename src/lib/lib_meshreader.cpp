@@ -464,10 +464,9 @@ namespace DRT::INPUT
       comm_->MaxAll(&local_max_node_id, &max_node_id, 1);
 
       domain_reader->CreatePartitionedMesh(max_node_id);
-      max_node_id++;
+      domain_reader->Complete();
+      max_node_id = domain_reader->MyDis()->NodeRowMap()->MaxAllGID() + 1;
     }
-
-    for (const auto& domain_reader : domain_readers_) domain_reader->Complete();
   }
 
 
