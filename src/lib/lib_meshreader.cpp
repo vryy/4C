@@ -109,17 +109,15 @@ namespace DRT::INPUT
   /*----------------------------------------------------------------------*/
   void MeshReader::ReadMeshFromDatFile(int& max_node_id)
   {
+    TEUCHOS_FUNC_TIME_MONITOR("MeshReader::ReadMeshFromDatFile");
+
     // Check if there are any nodes to be read. If not, leave right away.
     const int numnodes = reader_.ExcludedSectionLength(sectionname_);
     if (numnodes == 0) return;
 
     for (const auto& element_reader : element_readers_) element_reader->ReadAndPartition();
 
-    Epetra_Time time(*comm_);
-
     const int myrank = comm_->MyPID();
-    if (myrank == 0 && !reader_.MyOutputFlag())
-      IO::cout << "Read, create and partition nodes\n" << IO::flush;
 
     // We will read the nodes block wise. We will use one block per processor
     // so the number of blocks is numproc
@@ -152,23 +150,12 @@ namespace DRT::INPUT
     std::string tmp;
     std::string tmp2;
 
-    if (myrank == 0 && !reader_.MyOutputFlag())
-    {
-      printf(
-          "numnode %d number_of_blocks %d blocksize %d\n", numnodes, number_of_blocks, blocksize);
-      fflush(stdout);
-    }
-
-
     // note that the last block is special....
     int filecount = 0;
     for (int block = 0; block < number_of_blocks; ++block)
     {
-      double t1 = time.ElapsedTime();
       if (myrank == 0)
       {
-        if (!reader_.MyOutputFlag()) printf("block %d ", block);
-
         int block_counter = 0;
         for (; file; ++filecount)
         {
@@ -417,38 +404,17 @@ namespace DRT::INPUT
         }
       }
 
-      double t2 = time.ElapsedTime();
-      if (myrank == 0 && !reader_.MyOutputFlag()) printf("reading %10.5e secs", t2 - t1);
-
-      // export block of nodes to other processors as reflected in rownodes,
-      // changes ownership of nodes
-      for (unsigned i = 0; i < element_readers_.size(); ++i)
-      {
-        element_readers_[i]->MyDis()->ProcZeroDistributeNodesToAll(
-            *element_readers_[i]->MyRowNodes());
-        // this does the same job but slower
-        // element_readers_[i]->dis_->ExportRowNodes(*element_readers_[i]->rownodes_);
-      }
-      double t3 = time.ElapsedTime();
-      if (myrank == 0 && !reader_.MyOutputFlag())
-      {
-        printf(" / distrib %10.5e secs\n", t3 - t2);
-        fflush(stdout);
-      }
+      // export block of nodes to other processors as reflected in rownodes, changes ownership of
+      // nodes
+      for (const auto& element_reader : element_readers_)
+        element_reader->MyDis()->ProcZeroDistributeNodesToAll(*element_reader->MyRowNodes());
     }
 
     // last thing to do here is to produce nodal ghosting/overlap
-    for (unsigned i = 0; i < element_readers_.size(); ++i)
+    for (const auto& element_reader : element_readers_)
     {
-      element_readers_[i]->MyDis()->ExportColumnNodes(*element_readers_[i]->MyColNodes());
-    }
-
-    if (myrank == 0 && !reader_.MyOutputFlag())
-      printf("in............................................. %10.5e secs\n", time.ElapsedTime());
-
-    for (unsigned i = 0; i < element_readers_.size(); ++i)
-    {
-      element_readers_[i]->Complete();
+      element_reader->MyDis()->ExportColumnNodes(*element_reader->MyColNodes());
+      element_reader->Complete();
     }
   }
 
