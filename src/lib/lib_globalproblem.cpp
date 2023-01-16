@@ -25,6 +25,7 @@
 #include "lib_inputreader.H"
 #include "lib_elementreader.H"
 #include "lib_meshreader.H"
+#include "lib_nodereader.H"
 #include "lib_particlereader.H"
 #include "lib_utils_createdis.H"
 #include "lib_discret.H"
@@ -964,8 +965,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   // decide which kind of spatial representation is required
   const ShapeFunctionType distype = SpatialApproximationType();
 
-  // the basic node reader. now add desired element readers to it!
+  // the basic mesh reader. now add desired node and element readers to it!
   DRT::INPUT::MeshReader meshreader(reader, "--NODE COORDS");
+  meshreader.AddNodeReader(Teuchos::rcp(new DRT::INPUT::NodeReader(reader, "--NODE COORDS")));
 
   switch (GetProblemType())
   {

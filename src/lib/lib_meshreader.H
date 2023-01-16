@@ -14,6 +14,7 @@
 #include "lib_inputreader.H"
 #include "lib_elementreader.H"
 #include "lib_domainreader.H"
+#include "lib_nodereader.H"
 
 #include "inpar.H"
 
@@ -38,6 +39,8 @@ namespace DRT::INPUT
       \param er (i) a reader of one discretization that uses (a fraction of) our nodes
      */
     void AddElementReader(Teuchos::RCP<ElementReader> er) { element_readers_.push_back(er); }
+
+    void AddNodeReader(Teuchos::RCP<NodeReader> nr) { node_reader = nr; }
 
     /*!
      * \brief Adds the selected element/domain/file reader to this nodereader
@@ -140,6 +143,9 @@ namespace DRT::INPUT
 
     /// my domain readers
     std::vector<Teuchos::RCP<DomainReader>> domain_readers_;
+
+    /// my node reader
+    Teuchos::RCP<NodeReader> node_reader;
   };
 }  // namespace DRT::INPUT
 
