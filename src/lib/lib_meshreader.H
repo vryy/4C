@@ -29,7 +29,7 @@ namespace DRT::INPUT
   {
    public:
     /// construct a reader that reads a given section
-    MeshReader(const DatFileReader& reader, std::string sectionname);
+    MeshReader(const DatFileReader& reader);
 
     /// add an element reader for each discretization
     /*!
@@ -40,6 +40,12 @@ namespace DRT::INPUT
      */
     void AddElementReader(Teuchos::RCP<ElementReader> er) { element_readers_.push_back(er); }
 
+    /// add an node reader
+    /*!
+      The reader has to be registered at the MeshReader.
+
+    \param nr a node reader of the overall problem
+    */
     void AddNodeReader(Teuchos::RCP<NodeReader> nr) { node_reader = nr; }
 
     /*!
@@ -96,14 +102,6 @@ namespace DRT::INPUT
 
    private:
     /*!
-    \brief Find all discretizations that contain the given node
-
-    \param[in] nodeid Global ID of node of interest
-    \return Vector with all discretizations containing the node of interest
-    */
-    std::vector<Teuchos::RCP<DRT::Discretization>> FindDisNode(int global_node_id);
-
-    /*!
     \brief Read pre-generated mesh from dat-file
 
     \param[in/out] node_id_offset Global offset to start node numbering (based on already existing
@@ -121,22 +119,8 @@ namespace DRT::INPUT
     */
     void CreateInlineMesh(int& node_id_offset);
 
-    /*!
-    \brief Check for sufficient number of nodes and throw if too few
-
-    We need at least as many nodes as there are processors. If there are not enough nodes, throw
-    an error.
-    */
-    void ThrowIfNotEnoughNodes(int max_node_id) const;
-
-    /// the main dat file reader
-    const DatFileReader& reader_;
-
     /// my comm
     Teuchos::RCP<Epetra_Comm> comm_;
-
-    /// my section to read
-    std::string sectionname_;
 
     /// my element readers
     std::vector<Teuchos::RCP<ElementReader>> element_readers_;

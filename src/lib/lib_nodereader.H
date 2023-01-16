@@ -13,6 +13,7 @@
 #define NODEREADER_H
 
 #include "lib_inputreader.H"
+#include "lib_elementreader.H"
 
 #include "Epetra_Map.h"
 
@@ -37,9 +38,12 @@ namespace DRT
       */
       NodeReader(const DatFileReader& reader, std::string sectionname);
 
-      void Read();
+      void Read(std::vector<Teuchos::RCP<ElementReader>>& element_readers, int& max_node_id);
 
       void ThrowIfNotEnoughNodes(int max_node_id) const;
+
+      std::vector<Teuchos::RCP<DRT::Discretization>> FindDisNode(
+          std::vector<Teuchos::RCP<ElementReader>>& element_readers, int global_node_id);
 
      private:
       /// the main dat file reader
