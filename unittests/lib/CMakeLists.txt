@@ -4,6 +4,7 @@ set(SOURCE_LIST
     # cmake-format: sortable
     unit_cubic_spline_interpolation.cpp
     unit_demangle.cpp
+    unit_discretization_nodal_coordinates.cpp
     unit_domainreader.cpp
     unit_function_library.cpp
     unit_functionvariables.cpp
@@ -25,6 +26,7 @@ set(TESTNAME unittests_lib_np_3)
 
 set(SOURCE_LIST
     # cmake-format: sortable
+    unit_discretization_nodal_coordinates_np_3.cpp
     unit_gid_vector.cpp
     unit_gridgenerator_np_3.cpp
     )
