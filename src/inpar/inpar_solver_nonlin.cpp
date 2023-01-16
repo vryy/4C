@@ -223,12 +223,12 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   {
     DoubleParameter("Default Step", 1.0, "Starting step length", &polynomial);
     IntParameter("Max Iters", 100,
-        "Maximum number of line search iterations. The search fails if the number of iterations "
-        "exceeds this value",
+        "Maximum number of line search iterations. "
+        "The search fails if the number of iterations exceeds this value",
         &polynomial);
     DoubleParameter("Minimum Step", 1.0e-12,
-        "Minimum acceptable step length. The search fails if the computed $lambda_k$ is less than "
-        "this value",
+        "Minimum acceptable step length. The search fails if the computed \f$\\lambda_k\f$ "
+        "is less than this value",
         &polynomial);
     Teuchos::Array<std::string> recoverysteptype =
         Teuchos::tuple<std::string>("Constant", "Last Computed Step");
@@ -245,12 +245,12 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
         "Type of interpolation that should be used", interpolationtype,
         Teuchos::tuple<int>(0, 1, 2), &polynomial);
     DoubleParameter("Min Bounds Factor", 0.1,
-        "Choice for $gamma_{min}$, i.e., the factor that limits the minimum size of the new step "
-        "based on the previous step",
+        "Choice for \f$\\gamma_{\\min}\f$, i.e., the factor that limits the minimum size "
+        "of the new step based on the previous step",
         &polynomial);
     DoubleParameter("Max Bounds Factor", 0.5,
-        "Choice for $gamma_{max}$, i.e., the factor that limits the maximum size of the new step "
-        "based on the previous step",
+        "Choice for \f$\\gamma_{\\max}\f$, i.e., the factor that limits the maximum size "
+        "of the new step based on the previous step",
         &polynomial);
     Teuchos::Array<std::string> sufficientdecreasecondition =
         Teuchos::tuple<std::string>("Armijo-Goldstein", "Ared/Pred", "None");
@@ -306,9 +306,10 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
         "Choice to use for the sufficient decrease condition", sufficientdecreasecondition,
         Teuchos::tuple<int>(0, 1, 2), &morethuente);
     BoolParameter("Optimize Slope Calculation", "No",
-        "Boolean value. If set to true the value of $s^T J^T F$ is estimated using a directional "
-        "derivative in a call to NOX::LineSearch::Common::computeSlopeWithOutJac. If false the "
-        "slope computation is computed with the NOX::LineSearch::Common::computeSlope method. "
+        "Boolean value. If set to true the value of \f$s^T J^T F\f$ is estimated using a "
+        "directional derivative in a call to NOX::LineSearch::Common::computeSlopeWithOutJac. "
+        "If false the slope computation is computed with the "
+        "NOX::LineSearch::Common::computeSlope method. "
         "Setting this to true eliminates having to compute the Jacobian at each inner iteration of "
         "the More'-Thuente line search",
         &morethuente);

@@ -28,10 +28,12 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
   Teuchos::ParameterList& beampotential = list->sublist("BEAM POTENTIAL", false, "");
 
   setNumericStringParameter("POT_LAW_EXPONENT", "1.0",
-      "negative(!) exponent(s) m_i of potential law Phi(r) = sum_i (k_i * r^(-m_i)).",
+      "negative(!) exponent(s)  \f$m_i\f$ of potential law "
+      "\f$\\Phi(r) = \\sum_i (k_i * r^(-m_i)).\f$",
       &beampotential);
   setNumericStringParameter("POT_LAW_PREFACTOR", "0.0",
-      "prefactor(s) k_i of potential law Phi(r) = sum_i (k_i * r^(-m_i)).", &beampotential);
+      "prefactor(s) \f$k_i\f$ of potential law \f$\\Phi(r) = \\sum_i (k_i * r^{-m_i})\f$.",
+      &beampotential);
 
   setStringToIntegralParameter<int>("BEAMPOTENTIAL_TYPE", "Surface",
       "Type of potential interaction: surface (default) or volume potential",
