@@ -69,12 +69,12 @@ namespace DRT::UTILS::REBALANCING
   \pre Input discretization has to be FillComplete().
 
   @param[in] dis Discretization whose node maps are to be rebalanced
+
   @param[out] rownodes Node row map after rebalancing
   @param[out] colnodes Node column map after rebalancing
-  @param[in] outflag Flag to switch screen output on/off
   */
-  void ComputeRebalancedNodeMapsUsingWeights(Teuchos::RCP<DRT::Discretization> dis,
-      Teuchos::RCP<Epetra_Map>& rownodes, Teuchos::RCP<Epetra_Map>& colnodes, const bool outflag);
+  std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>>
+  ComputeRebalancedNodeMapsUsingWeights(Teuchos::RCP<DRT::Discretization> dis);
 
   //! @}
 

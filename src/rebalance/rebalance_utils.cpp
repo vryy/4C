@@ -74,14 +74,14 @@ DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(Teuchos::RCP<DRT::Discretizat
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights(
-    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& rownodes,
-    Teuchos::RCP<Epetra_Map>& colnodes, const bool outflag)
+std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>>
+DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights(
+    Teuchos::RCP<DRT::Discretization> dis)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights");
 
   const int myrank = dis->Comm().MyPID();
-  if (!myrank && outflag)
+  if (!myrank)
     std::cout << "Rebalance nodal maps of discretization '" << dis->Name() << "'..." << std::endl;
 
   // create nodal graph of existing problem
@@ -100,10 +100,14 @@ void DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights(
       DRT::UTILS::REBALANCING::RebalanceGraph(*initgraph, paramlist, nodeWeights, edgeWeights);
 
   // extract repartitioned maps
-  rownodes = Teuchos::rcp(new Epetra_Map(-1, balanced_graph->RowMap().NumMyElements(),
-      balanced_graph->RowMap().MyGlobalElements(), 0, dis->Comm()));
-  colnodes = Teuchos::rcp(new Epetra_Map(-1, balanced_graph->ColMap().NumMyElements(),
-      balanced_graph->ColMap().MyGlobalElements(), 0, dis->Comm()));
+  Teuchos::RCP<Epetra_Map> rownodes =
+      Teuchos::rcp(new Epetra_Map(-1, balanced_graph->RowMap().NumMyElements(),
+          balanced_graph->RowMap().MyGlobalElements(), 0, dis->Comm()));
+  Teuchos::RCP<Epetra_Map> colnodes =
+      Teuchos::rcp(new Epetra_Map(-1, balanced_graph->ColMap().NumMyElements(),
+          balanced_graph->ColMap().MyGlobalElements(), 0, dis->Comm()));
+
+  return {rownodes, colnodes};
 }
 
 /*----------------------------------------------------------------------*/
@@ -349,13 +353,9 @@ void DRT::UTILS::REBALANCING::RedistributeAndFillCompleteDiscretizationUsingWeig
     Teuchos::RCP<DRT::Discretization> discretization, const bool assigndegreesoffreedom,
     const bool initelements, const bool doboundaryconditions)
 {
-  // maps to be filled with final distributed node maps
-  Teuchos::RCP<Epetra_Map> rownodes = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> colnodes = Teuchos::null;
-
   // do weighted repartitioning to obtain new row/column maps
-  DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights(
-      discretization, rownodes, colnodes, true);
+  const auto& [rownodes, colnodes] =
+      DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights(discretization);
 
   // rebuild the discretization with new maps
   DRT::UTILS::REBALANCING::ExportAndFillCompleteDiscretization(*discretization, *rownodes,
