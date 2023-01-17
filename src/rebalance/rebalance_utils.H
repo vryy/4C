@@ -42,13 +42,11 @@ namespace DRT::UTILS::REBALANCING
 
   @param[in] discretization Discretization whose graph shall be redistributed
   @param[in] elementRowMap Element row map of the discretization prior to the rebalancing
-  @param[in] outflag Flag to switch screen output on/off
   @param[in] numPartitions Desired number of partitions
   @param[in] imbalanceTol Max. relative imbalance of subdomain size
   @param[in] method Algorithm used for rebalancing
 
-  @param[out] nodeRowMap Node row map after redistribution
-  @param[out] nodeColumnMap Node column map after redistribution
+  @return Node row map and node column map after rebalancing
   */
   std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> ComputeRebalancedNodeMaps(
       Teuchos::RCP<DRT::Discretization> discretization,
@@ -70,8 +68,7 @@ namespace DRT::UTILS::REBALANCING
 
   @param[in] dis Discretization whose node maps are to be rebalanced
 
-  @param[out] rownodes Node row map after rebalancing
-  @param[out] colnodes Node column map after rebalancing
+  @return Node row map and node column map after rebalancing with weights
   */
   std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>>
   ComputeRebalancedNodeMapsUsingWeights(Teuchos::RCP<DRT::Discretization> dis);
