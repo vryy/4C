@@ -201,14 +201,11 @@ namespace DRT::UTILS::REBALANCING
 
   @param[in] dis Discretization whose graph will be build
   @param[in] roweles Element row map of this discretization
-  @param[out] rownodes Node row map
-  @param[in] outflag Flag to switch screen output on/off
 
   @return Uncompleted graph of input discretization
   */
-  Teuchos::RCP<const Epetra_CrsGraph> BuildGraph(Teuchos::RCP<DRT::Discretization> dis,
-      Teuchos::RCP<const Epetra_Map> roweles, Teuchos::RCP<Epetra_Map>& rownodes,
-      Teuchos::RCP<const Epetra_Comm> comm, const bool outflag);
+  Teuchos::RCP<const Epetra_CrsGraph> BuildGraph(
+      Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles);
 
 }  // namespace DRT::UTILS::REBALANCING
 

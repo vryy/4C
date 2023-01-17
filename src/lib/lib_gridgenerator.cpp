@@ -221,8 +221,9 @@ namespace DRT
       else  // do not destroy our manual partitioning
       {
         Teuchos::RCP<const Epetra_CrsGraph> graph =
-            DRT::UTILS::REBALANCING::BuildGraph(Teuchos::rcp(&dis, false), elementRowMap,
-                nodeRowMap, Teuchos::rcpFromRef(comm), !outputFlag);
+            DRT::UTILS::REBALANCING::BuildGraph(Teuchos::rcp(&dis, false), elementRowMap);
+        nodeRowMap = Teuchos::rcp(new Epetra_Map(
+            -1, graph->RowMap().NumMyElements(), graph->RowMap().MyGlobalElements(), 0, comm));
         nodeColMap = Teuchos::rcp(new Epetra_Map(
             -1, graph->ColMap().NumMyElements(), graph->ColMap().MyGlobalElements(), 0, comm));
       }
