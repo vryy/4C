@@ -350,7 +350,6 @@ namespace DRT
         calc_struct_internalforce,
         calc_struct_nlnstiffmass,
         calc_struct_stress,
-        postprocess_stress,
         calc_struct_update_istep,
         calc_struct_reset_istep,  //!< reset elementwise internal variables
                                   //!< during iteration to last converged state

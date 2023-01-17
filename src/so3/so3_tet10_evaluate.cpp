@@ -4,6 +4,8 @@
 \level 1
 *----------------------------------------------------------------------*/
 #include "fem_general_utils_fem_shapefunctions.H"
+#include "fem_general_utils_gauss_point_extrapolation.H"
+#include "lib_element.H"
 #include "so3_element_service.H"
 #include "so3_tet10.H"
 #include "lib_utils.H"
@@ -86,8 +88,6 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
     act = So_tet10::prestress_update;
   else if (action == "calc_global_gpstresses_map")
     act = So_tet10::calc_global_gpstresses_map;
-  else if (action == "postprocess_stress")
-    act = So_tet10::postprocess_stress;
   else if (action == "struct_init_gauss_point_data_output")
     act = So_tet10::struct_init_gauss_point_data_output;
   else if (action == "struct_gauss_point_data_output")
@@ -270,74 +270,6 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       }
     }
     break;
-
-    // postprocess stresses/strains at gauss points
-
-    // note that in the following, quantities are always referred to as
-    // "stresses" etc. although they might also apply to strains
-    // (depending on what this routine is called for from the post filter)
-    case postprocess_stress:
-    {
-      const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> gpstressmap =
-          params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
-              "gpstressmap", Teuchos::null);
-      if (gpstressmap == Teuchos::null)
-        dserror("no gp stress/strain map available for postprocessing");
-      std::string stresstype = params.get<std::string>("stresstype", "ndxyz");
-      int gid = Id();
-
-      Teuchos::RCP<Epetra_MultiVector> poststress =
-          params.get<Teuchos::RCP<Epetra_MultiVector>>("poststress", Teuchos::null);
-      if (poststress == Teuchos::null) dserror("No element stress/strain vector available");
-
-      if (stresstype == "ndxyz")
-      {
-        LINALG::Matrix<NUMGPT_SOTET10, MAT::NUM_STRESS_3D> gpstress(
-            ((*gpstressmap)[gid])->A(), true);
-
-        // extrapolate stresses/strains at Gauss points to nodes
-        so_tet10_expol(gpstress, *poststress);
-      }
-      else if (stresstype == "cxyz")
-      {
-        LINALG::Matrix<NUMGPT_SOTET10, MAT::NUM_STRESS_3D> gpstress(
-            ((*gpstressmap)[gid])->A(), true);
-
-        const Epetra_BlockMap elemap = poststress->Map();
-        int lid = elemap.LID(Id());
-        if (lid != -1)
-        {
-          for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
-          {
-            double& s = (*((*poststress)(i)))[lid];  // resolve pointer for faster access
-            s = 0.;
-            for (int j = 0; j < NUMGPT_SOTET10; ++j)
-            {
-              s += gpstress(j, i);
-            }
-            s *= 1.0 / NUMGPT_SOTET10;
-          }
-        }
-      }
-      else if (stresstype == "rotation")
-      {
-        LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10> elecenterrot(
-            ((*gpstressmap)[gid])->A(), true);
-
-        const Epetra_BlockMap elemap = poststress->Map();
-        int lid = elemap.LID(Id());
-        if (lid != -1)
-          for (int i = 0; i < NUMDIM_SOTET10; ++i)
-            for (int j = 0; j < NUMDIM_SOTET10; ++j)
-              (*((*poststress)(i * NUMDIM_SOTET10 + j)))[lid] = elecenterrot(i, j);
-      }
-      else
-      {
-        dserror("unknown type of stress/strain output on element level");
-      }
-    }
-    break;
-
     case calc_struct_eleload:
       dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
       break;
@@ -916,7 +848,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
                       .MutableGaussPointDataOutputManagerPtr()
                       ->GetMutableElementCenterData()
                       .at(quantity_name);
-              DRT::ELEMENTS::AssembleAveragedElementValues(*global_data, gp_data, this);
+              DRT::ELEMENTS::AssembleAveragedElementValues(*global_data, gp_data, *this);
               break;
             }
             case INPAR::STR::GaussPointDataOutputType::nodes:
@@ -933,7 +865,12 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
                        ->GetMutableNodalDataCount()
                        .at(quantity_name);
 
-              ExtrapolateGPQuantityToNodesAndAssemble(gp_data, *global_data, false);
+              static auto gauss_integration = DRT::UTILS::IntegrationPoints3D(
+                  DRT::UTILS::NumGaussPointsToGaussRule<DRT::Element::DiscretizationType::tet10>(
+                      NUMGPT_SOTET10));
+              DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
+                  DRT::Element::DiscretizationType::tet10>(
+                  *this, gp_data, *global_data, false, gauss_integration);
               DRT::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, this);
               break;
             }

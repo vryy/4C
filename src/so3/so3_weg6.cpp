@@ -294,65 +294,6 @@ void DRT::ELEMENTS::So_weg6::Print(std::ostream& os) const
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  extrapolation of quantities at the GPs to the nodes     maf 02/08   |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::soweg6_expol(
-    LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>& stresses, Epetra_MultiVector& expolstresses)
-{
-  static LINALG::Matrix<NUMNOD_WEG6, NUMGPT_WEG6> expol;
-  static bool isfilled;
-
-  if (isfilled == false)
-  {
-    expol(0, 0) = -0.61004233964073;
-    expol(0, 1) = 0.12200846792815;
-    expol(0, 2) = 0.12200846792815;
-    expol(0, 3) = 2.27670900630740;
-    expol(0, 4) = -0.45534180126148;
-    expol(0, 5) = -0.45534180126148;
-    expol(1, 1) = -0.61004233964073;
-    expol(1, 2) = 0.12200846792815;
-    expol(1, 3) = -0.45534180126148;
-    expol(1, 4) = 2.27670900630740;
-    expol(1, 5) = -0.45534180126148;
-    expol(2, 2) = -0.61004233964073;
-    expol(2, 3) = -0.45534180126148;
-    expol(2, 4) = -0.45534180126148;
-    expol(2, 5) = 2.27670900630740;
-    expol(3, 3) = -0.61004233964073;
-    expol(3, 4) = 0.12200846792815;
-    expol(3, 5) = 0.12200846792815;
-    expol(4, 4) = -0.61004233964073;
-    expol(4, 5) = 0.12200846792815;
-    expol(5, 5) = -0.61004233964073;
-    for (int i = 0; i < NUMNOD_WEG6; ++i)
-    {
-      for (int j = 0; j < i; ++j)
-      {
-        expol(i, j) = expol(j, i);
-      }
-    }
-    isfilled = true;
-  }
-
-  LINALG::Matrix<NUMNOD_WEG6, MAT::NUM_STRESS_3D> nodalstresses;
-  nodalstresses.Multiply(expol, stresses);
-
-  // "assembly" of extrapolated nodal stresses
-  for (int i = 0; i < NUMNOD_WEG6; ++i)
-  {
-    const int lid = expolstresses.Map().LID(NodeIds()[i]);
-    if (lid >= 0)  // rownode
-    {
-      const double invmyadjele = 1.0 / Nodes()[i]->NumElement();
-      for (int j = 0; j < MAT::NUM_STRESS_3D; ++j)
-        (*(expolstresses(j)))[lid] += nodalstresses(i, j) * invmyadjele;
-    }
-  }
-  return;
-}
-
 
 std::vector<double> DRT::ELEMENTS::So_weg6::ElementCenterRefeCoords()
 {

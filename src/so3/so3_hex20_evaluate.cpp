@@ -83,8 +83,6 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
     act = So_hex20::calc_struct_energy;
   else if (action == "calc_struct_errornorms")
     act = So_hex20::calc_struct_errornorms;
-  else if (action == "postprocess_stress")
-    act = So_hex20::postprocess_stress;
   else if (action == "multi_readrestart")
     act = So_hex20::multi_readrestart;
   else if (action == "multi_calc_dens")
@@ -294,56 +292,6 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
           AddtoPack(data, strain);
           std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
         }
-      }
-    }
-    break;
-
-    // postprocess stresses/strains at gauss points
-
-    // note that in the following, quantities are always referred to as
-    // "stresses" etc. although they might also apply to strains
-    // (depending on what this routine is called for from the post filter)
-    case postprocess_stress:
-    {
-      const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> gpstressmap =
-          params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
-              "gpstressmap", Teuchos::null);
-      if (gpstressmap == Teuchos::null)
-        dserror("no gp stress/strain map available for postprocessing");
-      std::string stresstype = params.get<std::string>("stresstype", "ndxyz");
-      int gid = Id();
-      LINALG::Matrix<NUMGPT_SOH20, MAT::NUM_STRESS_3D> gpstress(((*gpstressmap)[gid])->A(), true);
-
-      Teuchos::RCP<Epetra_MultiVector> poststress =
-          params.get<Teuchos::RCP<Epetra_MultiVector>>("poststress", Teuchos::null);
-      if (poststress == Teuchos::null) dserror("No element stress/strain vector available");
-
-      if (stresstype == "ndxyz")
-      {
-        // extrapolate stresses/strains at Gauss points to nodes
-        soh20_expol(gpstress, *poststress);
-      }
-      else if (stresstype == "cxyz")
-      {
-        const Epetra_BlockMap& elemap = poststress->Map();
-        int lid = elemap.LID(Id());
-        if (lid != -1)
-        {
-          for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
-          {
-            double& s = (*((*poststress)(i)))[lid];  // resolve pointer for faster access
-            s = 0.;
-            for (int j = 0; j < NUMGPT_SOH20; ++j)
-            {
-              s += gpstress(j, i);
-            }
-            s *= 1.0 / NUMGPT_SOH20;
-          }
-        }
-      }
-      else
-      {
-        dserror("unknown type of stress/strain output on element level");
       }
     }
     break;

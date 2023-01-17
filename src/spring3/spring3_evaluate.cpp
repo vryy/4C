@@ -58,8 +58,6 @@ int DRT::ELEMENTS::Spring3::Evaluate(Teuchos::ParameterList& params,
     act = Spring3::calc_struct_update_istep;
   else if (action == "calc_struct_reset_istep")
     act = Spring3::calc_struct_reset_istep;
-  else if (action == "postprocess_stress")
-    act = Spring3::postprocess_stress;
   else if (action == "calc_struct_ptcstiff")
     act = Spring3::calc_struct_ptcstiff;
   else if (action == "calc_struct_energy")
@@ -254,12 +252,7 @@ int DRT::ELEMENTS::Spring3::Evaluate(Teuchos::ParameterList& params,
       // no stress calculation implemented! Do not crash simulation and just keep quiet!
     }
     break;
-    case postprocess_stress:
-    {
-      // no stress calculation for postprocess. Does not really make sense!
-      dserror("No stress output for Spring3!");
-    }
-    break;
+      break;
     default:
       dserror("Unknown type of action for Spring3 %d", act);
       break;

@@ -56,8 +56,6 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
       act = ELEMENTS::struct_calc_nlnstifflmass;
     else if (action == "calc_struct_stress")
       act = ELEMENTS::struct_calc_stress;
-    else if (action == "postprocess_stress")
-      act = ELEMENTS::struct_postprocess_stress;
     else if (action == "calc_struct_update_istep")
       act = ELEMENTS::struct_calc_update_istep;
     else if (action == "calc_struct_reset_istep")
@@ -131,46 +129,6 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
 
         CalcGPStresses(params, ele_state);
       }
-      break;
-    }
-    case ELEMENTS::struct_postprocess_stress:
-    {
-      const auto gpstressmap =
-          params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
-              "gpstressmap", Teuchos::null);
-
-      if (gpstressmap == Teuchos::null)
-        dserror("no gp stress/strain map available for postprocessing");
-
-      std::string stresstype = params.get<std::string>("stresstype", "ndxyz");
-
-      int gid = Id();
-      Teuchos::RCP<Epetra_SerialDenseMatrix> gpstress = (*gpstressmap)[gid];
-      Teuchos::RCP<Epetra_MultiVector> poststress =
-          params.get<Teuchos::RCP<Epetra_MultiVector>>("poststress", Teuchos::null);
-      if (poststress == Teuchos::null) dserror("No element stress/strain vector available");
-
-      if (stresstype == "ndxyz")
-      {
-        dserror("Nodal stress not supported for truss3");
-      }
-      else if (stresstype == "cxyz")
-      {
-        const Epetra_BlockMap& elemap = poststress->Map();
-        int lid = elemap.LID(Id());
-        const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
-        if (lid != -1)
-        {
-          (*((*poststress)(0)))[lid] = 0.0;
-          for (int j = 0; j < intpoints.nquad; ++j)
-            (*((*poststress)(0)))[lid] += 1.0 / intpoints.nquad * (*gpstress)(j, 0);
-        }
-      }
-      else
-      {
-        dserror("unknown type of stress/strain output on element level");
-      }
-
       break;
     }
     case ELEMENTS::struct_calc_update_istep:

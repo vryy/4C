@@ -6,6 +6,8 @@ set(OBJS_FEM_GENERAL
     fem_general_utils_bspline.cpp
     fem_general_utils_fem_shapefunctions.cpp
     fem_general_utils_fem_shapefunctions.cpp
+    fem_general_utils_gauss_point_extrapolation.cpp
+    fem_general_utils_gauss_point_postprocess.cpp
     fem_general_utils_gausspoints.cpp
     fem_general_utils_gausspoints.cpp
     fem_general_utils_integration.cpp

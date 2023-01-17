@@ -36,7 +36,7 @@ namespace DRT
         const DRT::ELEMENTS::So_base* ele, bool nodal_average = true);
 
     /*!
-     * \brief Assemble averaged date. The data at the Gauss points are averaged within the element.
+     * \brief Assemble averaged data. The data at the Gauss points are averaged within the element.
      *
      * \tparam T Type of the data, either SerialDenseMatrix or LINALG::Matrix
      * \param global_data Global cell data
@@ -45,7 +45,7 @@ namespace DRT
      */
     template <class T>
     void AssembleAveragedElementValues(
-        Epetra_MultiVector& global_data, const T& gp_data, const DRT::ELEMENTS::So_base* ele);
+        Epetra_MultiVector& global_data, const T& gp_data, const DRT::Element& ele);
 
     /*!
      * \brief Assemble nodal element count

@@ -483,6 +483,17 @@ namespace DRT
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3) = 0;
 
+    /*!
+     * @brief Evaluate all elements with a function object
+     *
+     * @note No assembly is performed. This call is useful for e.g. setup, output and post
+     * processing tasks.
+     *
+     * @param element_action : Function object called for each element to perform the evaluation of
+     * the element
+     */
+    virtual void Evaluate(const std::function<void(DRT::Element&)>& element_action) = 0;
+
     /** \brief Evaluate Dirichlet boundary conditions
      *
      *  Loop all Dirichlet conditions attached to the discretization and evaluate them.

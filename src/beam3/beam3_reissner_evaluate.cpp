@@ -78,8 +78,6 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
       act = ELEMENTS::struct_calc_nlnstifflmass;  // with lumped mass matrix
     else if (action == "calc_struct_stress")
       act = ELEMENTS::struct_calc_stress;
-    else if (action == "postprocess_stress")
-      act = ELEMENTS::struct_postprocess_stress;
     else if (action == "calc_struct_eleload")
       act = ELEMENTS::struct_calc_eleload;
     else if (action == "calc_struct_fsiload")
@@ -514,11 +512,6 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
 
     // write stress and strain output
     case ELEMENTS::struct_calc_stress:
-    {
-      break;
-    }
-    // post process stress and strain
-    case ELEMENTS::struct_postprocess_stress:
     {
       break;
     }

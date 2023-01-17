@@ -347,7 +347,6 @@ namespace DRT
         prestress_update,
         calc_struct_energy,      //!< compute internal energy
         calc_struct_errornorms,  //!< compute error norms (L2,H1,energy)
-        postprocess_stress,      //!< postprocess stresses
         inversedesign_update,
         multi_readrestart,  //!< multi-scale: read restart on microscale
         multi_calc_dens     //!< multi-scale: calculate homogenized density
@@ -419,10 +418,6 @@ namespace DRT
 
       //! Lump mass matrix (bborn 07/08)
       void soh20_lumpmass(LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20>* emass);
-
-      //! Extrapolate Gauss-point values (e.g. stresses) to nodes
-      void soh20_expol(LINALG::Matrix<NUMGPT_SOH20, MAT::NUM_STRESS_3D>& stresses,
-          Epetra_MultiVector& expolstresses);
 
       //! Evaluate Hex20 Shapefcts to keep them static
       const std::vector<LINALG::Matrix<NUMNOD_SOH20, 1>> soh20_shapefcts();

@@ -4,7 +4,7 @@ set(OBJS_POST_COMMON
     )
 
 baci_add_library(post_common ${OBJS_POST_COMMON})
-target_link_libraries(post_common PUBLIC inpar)
+target_link_libraries(post_common PUBLIC inpar fem_general)
 
 set(OBJS_POST_PROCESSOR_MAIN
     # cmake-format: sortable

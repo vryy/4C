@@ -351,7 +351,6 @@ namespace DRT
                                   //!< during iteration to last converged state
         calc_struct_reset_all,    //!< reset elementwise internal variables
                                   //!< to state in the beginning of the computation
-        postprocess_stress,
         calc_struct_energy,
         prestress_update,
         inversedesign_update,
@@ -434,11 +433,6 @@ namespace DRT
 
       //! lump mass matrix (bborn 07/08)
       void sow6_lumpmass(LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* emass);
-
-      /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store them in elevecs
-      void soweg6_expol(LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>& stresses,  ///< gp stresses
-          Epetra_MultiVector& expolstresses  ///< nodal stresses
-      );
 
      private:
       std::string GetElementTypeString() const { return "SOLIDW6"; }
