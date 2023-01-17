@@ -630,11 +630,9 @@ void FLD::XWall::SetupXWallDis()
   {
     // redistribute
     Teuchos::RCP<Epetra_Map> elemap = Teuchos::rcp(new Epetra_Map(*xwdiscret_->ElementRowMap()));
-    Teuchos::RCP<Epetra_Map> rownodes;
-    Teuchos::RCP<Epetra_Map> colnodes;
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(discret_->Comm().Clone());
-    DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-        xwdiscret_, elemap, rownodes, colnodes, comm, true, comm->NumProc());
+    const auto& [rownodes, colnodes] =
+        DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(xwdiscret_, elemap, comm->NumProc());
     // rebuild of the system with new maps
     xwdiscret_->Redistribute(*rownodes, *colnodes, false, false);
 

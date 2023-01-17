@@ -42,38 +42,19 @@ namespace DRT::UTILS::REBALANCING
 
   @param[in] discretization Discretization whose graph shall be redistributed
   @param[in] elementRowMap Element row map of the discretization prior to the rebalancing
-  @param[out] nodeRowMap Node row map after redistribution
-  @param[out] nodeColumnMap Node column map after redistribution
-  @param[in] comm Communicator (might be different from the one inside discretization)
   @param[in] outflag Flag to switch screen output on/off
   @param[in] numPartitions Desired number of partitions
   @param[in] imbalanceTol Max. relative imbalance of subdomain size
   @param[in] method Algorithm used for rebalancing
+
+  @param[out] nodeRowMap Node row map after redistribution
+  @param[out] nodeColumnMap Node column map after redistribution
   */
-  void ComputeRebalancedNodeMaps(Teuchos::RCP<DRT::Discretization> discretization,
-      Teuchos::RCP<const Epetra_Map> elementRowMap, Teuchos::RCP<Epetra_Map>& nodeRowMap,
-      Teuchos::RCP<Epetra_Map>& nodeColumnMap, Teuchos::RCP<const Epetra_Comm> comm,
-      const bool outflag, const int numPartitions, const double imbalanceTol = 1.1,
+  std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> ComputeRebalancedNodeMaps(
+      Teuchos::RCP<DRT::Discretization> discretization,
+      Teuchos::RCP<const Epetra_Map> elementRowMap, const int numPartitions,
+      const double imbalanceTol = 1.1,
       INPAR::REBALANCE::RebalanceType method = INPAR::REBALANCE::RebalanceType::hypergraph);
-
-  /*!
-  \brief Compute rebalanced node maps for a given discretization
-
-  Starting from a given discretization, a new node row and column map is computed, such that
-  they both are better balanced across a given number partitions.
-
-  \note This just computes the new node row/column maps, but does not perform any redistribution
-  of data among ranks.
-
-  \pre Input discretization has to be FillComplete().
-
-  @param[in] dis Discretization whose node maps are to be rebalanced
-  @param[out] rownodes Node row map after rebalancing
-  @param[out] colnodes Node column map after rebalancing
-  @param[in] outflag Flag to switch screen output on/off
-  */
-  void ComputeRebalancedNodeMaps(Teuchos::RCP<DRT::Discretization> dis,
-      Teuchos::RCP<Epetra_Map>& rownodes, Teuchos::RCP<Epetra_Map>& colnodes, const bool outflag);
 
   /*!
   \brief Compute rebalanced node maps for a given discretization considering weights to model
@@ -88,56 +69,12 @@ namespace DRT::UTILS::REBALANCING
   \pre Input discretization has to be FillComplete().
 
   @param[in] dis Discretization whose node maps are to be rebalanced
+
   @param[out] rownodes Node row map after rebalancing
   @param[out] colnodes Node column map after rebalancing
-  @param[in] outflag Flag to switch screen output on/off
   */
-  void ComputeRebalancedNodeMapsUsingWeights(Teuchos::RCP<DRT::Discretization> dis,
-      Teuchos::RCP<Epetra_Map>& rownodes, Teuchos::RCP<Epetra_Map>& colnodes, const bool outflag);
-
-  //! @}
-
-  //! @name Redistribute discretizations
-  //! @{
-
-  /*!
-  \brief Export and FillComplete a discretization based on given nodal row and column maps
-
-  Given a nodal row and column map, this routines creates the corresponding element maps. We
-  then export nodes and elements of the discretization to their new maps. Finally, the
-  discretization has to perform a FillComplete().
-
-  \post Discretization is FillComplete().
-
-  @param[in/out] discretization Discretization to be redistributed
-  @param[in] noderowmap Given target node row map
-  @param[in] nodecolmap Given target node column map
-  @param[in] assigndegreesoffreedom Flag forwarded to DRT::Discretization::FillComplete()
-  @param[in] initelements Flag forwarded to DRT::Discretization::FillComplete()
-  @param[in] doboundaryconditions Flag forwarded to DRT::Discretization::FillComplete()
-  */
-  void ExportAndFillCompleteDiscretization(DRT::Discretization& discretization,
-      const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap, const bool assigndegreesoffreedom,
-      const bool initelements, const bool doboundaryconditions);
-
-  /*!
-  \brief Redistribute and FillComplete() a discretization to a new partitioning using weights to
-  model costs
-
-  1. Compute node row and column maps with a better and more balanced partitioning
-  2. Redistriibute and FillComplete() the discretization.
-
-  @param[in/out] discretization Discretization to be repartitioned
-  @param[in] assigndegreesoffreedom Flag forwarded to DRT::Discretization::FillComplete()
-  @param[in] initelements Flag forwarded to DRT::Discretization::FillComplete()
-  @param[in] doboundaryconditions Flag forwarded to DRT::Discretization::FillComplete()
-
-  \sa DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights()
-  \sa DRT::Discretization::FillComplete()
-  */
-  void RedistributeAndFillCompleteDiscretizationUsingWeights(
-      Teuchos::RCP<DRT::Discretization> discretization, const bool assigndegreesoffreedom,
-      const bool initelements, const bool doboundaryconditions);
+  std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>>
+  ComputeRebalancedNodeMapsUsingWeights(Teuchos::RCP<DRT::Discretization> dis);
 
   //! @}
 
@@ -180,35 +117,32 @@ namespace DRT::UTILS::REBALANCING
   */
   std::pair<Teuchos::RCP<Epetra_MultiVector>, Teuchos::RCP<Epetra_MultiVector>>
   RebalanceCoordinates(const Epetra_MultiVector& initialCoordinates,
-      const Epetra_MultiVector& initialWeights, const Teuchos::ParameterList& rebalanceParams);
+      const Teuchos::ParameterList& rebalanceParams, const Epetra_MultiVector& initialWeights);
 
   //! @}
 
   /*!
-  \brief Create Isorropia cost describer based on element connectivity
+  \brief Create node and edge weights based on element connectivity
 
-  @param[in] discretization Discretization used to build the cost model
+  @param[in] dis Discretization used to build the weights
 
-  @return Cost describer ready to be used for repartitioning
+  @return Node and edge weights to be used for repartitioning
   */
-  std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>> SetupWeights(
-      const DRT::Discretization& discretization);
+  std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>> BuildWeights(
+      const DRT::Discretization& dis);
 
   /*!
-  \brief Build graph of a given  discretization
+  \brief Build node graph of a given  discretization
 
   \pre Discretization does not have to be FillComplete().
 
-  @param[in] dis Discretization whose graph will be build
+  @param[in] dis Discretization whose node graph will be build
   @param[in] roweles Element row map of this discretization
-  @param[out] rownodes Node row map
-  @param[in] outflag Flag to switch screen output on/off
 
-  @return Uncompleted graph of input discretization
+  @return Uncompleted node graph of input discretization
   */
-  Teuchos::RCP<const Epetra_CrsGraph> BuildGraph(Teuchos::RCP<DRT::Discretization> dis,
-      Teuchos::RCP<const Epetra_Map> roweles, Teuchos::RCP<Epetra_Map>& rownodes,
-      Teuchos::RCP<const Epetra_Comm> comm, const bool outflag);
+  Teuchos::RCP<const Epetra_CrsGraph> BuildGraph(
+      Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles);
 
 }  // namespace DRT::UTILS::REBALANCING
 

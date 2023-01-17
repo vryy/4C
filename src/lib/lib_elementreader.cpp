@@ -138,11 +138,9 @@ namespace DRT::INPUT
       // just skip the partitioning.
       if (numnodes)
       {
-        rownodes_ = Teuchos::null;
-        colnodes_ = Teuchos::null;
         nids.clear();
-        DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(dis_, roweles_, rownodes_, colnodes_,
-            comm_, !reader_.MyOutputFlag(), comm_->NumProc(), imbalance_tol);
+        std::tie(rownodes_, colnodes_) = DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
+            dis_, roweles_, comm_->NumProc(), imbalance_tol);
       }
       else
       {
