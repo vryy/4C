@@ -34,7 +34,6 @@ namespace DRT::INPUT
   /*----------------------------------------------------------------------*/
   void NodeReader::Read(std::vector<Teuchos::RCP<ElementReader>>& element_readers, int& max_node_id)
   {
-    // TODO: This should go into the node reader
     {
       // Check if there are any nodes to be read. If not, leave right away.
       const int numnodes = reader_.ExcludedSectionLength(sectionname_);

@@ -127,7 +127,6 @@ namespace DRT::INPUT
 
       // global node ids --- this will be a fully redundant vector!
       int numnodes = 0;
-      std::vector<int> nids;
       numnodes = (int)nodes_.size();
       comm_->Broadcast(&numnodes, 1, 0);
 
@@ -135,20 +134,14 @@ namespace DRT::INPUT
           DRT::Problem::Instance()->MeshPartitioningParams().get<double>("IMBALANCE_TOL");
 
       // We want to be able to read empty fields. If we have such a beast
-      // just skip the partitioning.
+      // just skip the partitioning and do a proper initialization
       if (numnodes)
       {
-        nids.clear();
         std::tie(rownodes_, colnodes_) = DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
             dis_, roweles_, comm_->NumProc(), imbalance_tol);
       }
       else
-      {
-        // We are empty. Just a proper initialization.
-        int zero = 0;
-        colnodes_ = Teuchos::rcp(new Epetra_Map(-1, zero, &zero, 0, *comm_));
-        rownodes_ = colnodes_;
-      }
+        rownodes_ = colnodes_ = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_));
 
       // now we have all elements in a linear map roweles
       // build reasonable maps for elements from the
