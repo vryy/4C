@@ -864,8 +864,6 @@ void CONTACT::CoInterface::Redistribute()
   //**********************************************************************
   // (4) CLOSE SLAVE redistribution
   //**********************************************************************
-  Teuchos::RCP<Epetra_Map> slaveCloseRowNodes = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> slaveCloseColNodes = Teuchos::null;
 
   // build redundant vector of all close slave node ids on all procs
   // (there must not be any double entries in the node lists, thus
@@ -879,15 +877,14 @@ void CONTACT::CoInterface::Redistribute()
 
   //**********************************************************************
   // call parallel redistribution
-  DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(idiscret_, slaveCloseRowEles,
-      slaveCloseRowNodes, slaveCloseColNodes, comm, false, scproc, imbalance_tol);
+  const auto& [slaveCloseRowNodes, slaveCloseColNodes] =
+      DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
+          idiscret_, slaveCloseRowEles, scproc, imbalance_tol);
   //**********************************************************************
 
   //**********************************************************************
   // (5) NON-CLOSE SLAVE redistribution
   //**********************************************************************
-  Teuchos::RCP<Epetra_Map> slaveNonCloseRowNodes = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> snccolnodes = Teuchos::null;
 
   // build redundant vector of all non-close slave node ids on all procs
   // (there must not be any double entries in the node lists, thus
@@ -901,8 +898,9 @@ void CONTACT::CoInterface::Redistribute()
 
   //**********************************************************************
   // call parallel redistribution
-  DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(idiscret_, slaveNonCloseRowEles,
-      slaveNonCloseRowNodes, snccolnodes, comm, false, sncproc, imbalance_tol);
+  const auto& [slaveNonCloseRowNodes, snccolnodes] =
+      DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
+          idiscret_, slaveNonCloseRowEles, sncproc, imbalance_tol);
   //**********************************************************************
 
   //**********************************************************************

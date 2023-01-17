@@ -213,10 +213,8 @@ namespace DRT
       // redistribute the elements
       if (inputData.autopartition_)
       {
-        nodeRowMap = Teuchos::null;
-        nodeColMap = Teuchos::null;
-        DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(Teuchos::rcp(&dis, false), elementRowMap,
-            nodeRowMap, nodeColMap, Teuchos::rcp(&comm, false), !outputFlag, comm.NumProc());
+        std::tie(nodeRowMap, nodeColMap) = DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
+            Teuchos::rcp(&dis, false), elementRowMap, comm.NumProc());
       }
       else  // do not destroy our manual partitioning
       {

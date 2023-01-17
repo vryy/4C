@@ -24,16 +24,15 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-    Teuchos::RCP<DRT::Discretization> discretization, Teuchos::RCP<const Epetra_Map> elementRowMap,
-    Teuchos::RCP<Epetra_Map>& nodeRowMap, Teuchos::RCP<Epetra_Map>& nodeColumnMap,
-    Teuchos::RCP<const Epetra_Comm> comm, const bool outflag, const int numPartitions,
+std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>>
+DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(Teuchos::RCP<DRT::Discretization> discretization,
+    Teuchos::RCP<const Epetra_Map> elementRowMap, const int numPartitions,
     const double imbalanceTol, INPAR::REBALANCE::RebalanceType method)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps");
 
   const int myrank = discretization->Comm().MyPID();
-  if (!myrank && outflag)
+  if (!myrank)
     std::cout << "Rebalance nodal maps of discretization '" << discretization->Name() << "'..."
               << std::endl;
 
@@ -63,10 +62,14 @@ void DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
   }
 
   // Extract rebalanced maps
-  nodeRowMap = Teuchos::rcp(new Epetra_Map(-1, balancedGraph->RowMap().NumMyElements(),
-      balancedGraph->RowMap().MyGlobalElements(), 0, *comm));
-  nodeColumnMap = Teuchos::rcp(new Epetra_Map(-1, balancedGraph->ColMap().NumMyElements(),
-      balancedGraph->ColMap().MyGlobalElements(), 0, *comm));
+  Teuchos::RCP<Epetra_Map> nodeRowMap =
+      Teuchos::rcp(new Epetra_Map(-1, balancedGraph->RowMap().NumMyElements(),
+          balancedGraph->RowMap().MyGlobalElements(), 0, discretization->Comm()));
+  Teuchos::RCP<Epetra_Map> nodeColumnMap =
+      Teuchos::rcp(new Epetra_Map(-1, balancedGraph->ColMap().NumMyElements(),
+          balancedGraph->ColMap().MyGlobalElements(), 0, discretization->Comm()));
+
+  return {nodeRowMap, nodeColumnMap};
 }
 
 /*----------------------------------------------------------------------*/

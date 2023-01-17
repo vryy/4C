@@ -1120,8 +1120,8 @@ void MORTAR::MortarInterface::Redistribute()
     ss_slave << "MORTAR::MortarInterface::Redistribute of '" << Discret().Name() << "' (slave)";
     TEUCHOS_FUNC_TIME_MONITOR(ss_slave.str());
 
-    DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-        idiscret_, sroweles, srownodes, scolnodes, comm, false, sproc, imbalance_tol);
+    std::tie(srownodes, scolnodes) = DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
+        idiscret_, sroweles, sproc, imbalance_tol);
   }
 
   //**********************************************************************
@@ -1179,8 +1179,8 @@ void MORTAR::MortarInterface::RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& r
   if (not HasMaSharingRefInterface())
   {
     // call parallel redistribution
-    DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-        idiscret_, roweles, rownodes, colnodes, comm, false, parts, imbalance);
+    std::tie(rownodes, colnodes) =
+        DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(idiscret_, roweles, parts, imbalance);
   }
   else
   {

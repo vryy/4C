@@ -42,38 +42,19 @@ namespace DRT::UTILS::REBALANCING
 
   @param[in] discretization Discretization whose graph shall be redistributed
   @param[in] elementRowMap Element row map of the discretization prior to the rebalancing
-  @param[out] nodeRowMap Node row map after redistribution
-  @param[out] nodeColumnMap Node column map after redistribution
-  @param[in] comm Communicator (might be different from the one inside discretization)
   @param[in] outflag Flag to switch screen output on/off
   @param[in] numPartitions Desired number of partitions
   @param[in] imbalanceTol Max. relative imbalance of subdomain size
   @param[in] method Algorithm used for rebalancing
+
+  @param[out] nodeRowMap Node row map after redistribution
+  @param[out] nodeColumnMap Node column map after redistribution
   */
-  void ComputeRebalancedNodeMaps(Teuchos::RCP<DRT::Discretization> discretization,
-      Teuchos::RCP<const Epetra_Map> elementRowMap, Teuchos::RCP<Epetra_Map>& nodeRowMap,
-      Teuchos::RCP<Epetra_Map>& nodeColumnMap, Teuchos::RCP<const Epetra_Comm> comm,
-      const bool outflag, const int numPartitions, const double imbalanceTol = 1.1,
+  std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> ComputeRebalancedNodeMaps(
+      Teuchos::RCP<DRT::Discretization> discretization,
+      Teuchos::RCP<const Epetra_Map> elementRowMap, const int numPartitions,
+      const double imbalanceTol = 1.1,
       INPAR::REBALANCE::RebalanceType method = INPAR::REBALANCE::RebalanceType::hypergraph);
-
-  /*!
-  \brief Compute rebalanced node maps for a given discretization
-
-  Starting from a given discretization, a new node row and column map is computed, such that
-  they both are better balanced across a given number partitions.
-
-  \note This just computes the new node row/column maps, but does not perform any redistribution
-  of data among ranks.
-
-  \pre Input discretization has to be FillComplete().
-
-  @param[in] dis Discretization whose node maps are to be rebalanced
-  @param[out] rownodes Node row map after rebalancing
-  @param[out] colnodes Node column map after rebalancing
-  @param[in] outflag Flag to switch screen output on/off
-  */
-  void ComputeRebalancedNodeMaps(Teuchos::RCP<DRT::Discretization> dis,
-      Teuchos::RCP<Epetra_Map>& rownodes, Teuchos::RCP<Epetra_Map>& colnodes, const bool outflag);
 
   /*!
   \brief Compute rebalanced node maps for a given discretization considering weights to model

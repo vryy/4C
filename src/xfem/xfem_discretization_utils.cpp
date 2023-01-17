@@ -465,8 +465,8 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::Redistribute(Teuchos::RCP<DRT::Disc
   if (!dis->Filled()) dis->Redistribute(*noderowmap, *nodecolmap);
 
   Teuchos::RCP<Epetra_Map> elerowmap = Teuchos::rcp(new Epetra_Map(*dis->ElementRowMap()));
-  DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-      dis, elerowmap, noderowmap, nodecolmap, comm, false, comm->NumProc());
+  std::tie(noderowmap, nodecolmap) =
+      DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(dis, elerowmap, comm->NumProc());
 
   Teuchos::RCP<Epetra_Map> roweles = Teuchos::null;
   Teuchos::RCP<Epetra_Map> coleles = Teuchos::null;
