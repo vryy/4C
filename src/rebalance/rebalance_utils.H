@@ -82,26 +82,6 @@ namespace DRT::UTILS::REBALANCING
   //! @{
 
   /*!
-  \brief Export and FillComplete a discretization based on given nodal row and column maps
-
-  Given a nodal row and column map, this routines creates the corresponding element maps. We
-  then export nodes and elements of the discretization to their new maps. Finally, the
-  discretization has to perform a FillComplete().
-
-  \post Discretization is FillComplete().
-
-  @param[in/out] discretization Discretization to be redistributed
-  @param[in] noderowmap Given target node row map
-  @param[in] nodecolmap Given target node column map
-  @param[in] assigndegreesoffreedom Flag forwarded to DRT::Discretization::FillComplete()
-  @param[in] initelements Flag forwarded to DRT::Discretization::FillComplete()
-  @param[in] doboundaryconditions Flag forwarded to DRT::Discretization::FillComplete()
-  */
-  void ExportAndFillCompleteDiscretization(DRT::Discretization& discretization,
-      const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap, const bool assigndegreesoffreedom,
-      const bool initelements, const bool doboundaryconditions);
-
-  /*!
   \brief Redistribute and FillComplete() a discretization to a new partitioning using weights to
   model costs
 

@@ -329,26 +329,6 @@ Teuchos::RCP<const Epetra_CrsGraph> DRT::UTILS::REBALANCING::BuildGraph(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::REBALANCING::ExportAndFillCompleteDiscretization(
-    DRT::Discretization& discretization, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
-    const bool assigndegreesoffreedom, const bool initelements, const bool doboundaryconditions)
-{
-  // Export nodes
-  discretization.ExportRowNodes(noderowmap);
-  discretization.ExportColumnNodes(nodecolmap);
-
-  // Build reasonable maps for elements from the already valid and final node maps
-  Teuchos::RCP<Epetra_Map> elerowmap = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> elecolmap = Teuchos::null;
-  discretization.BuildElementRowColumn(noderowmap, nodecolmap, elerowmap, elecolmap);
-  discretization.ExportRowElements(*elerowmap);
-  discretization.ExportColumnElements(*elecolmap);
-
-  discretization.FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void DRT::UTILS::REBALANCING::RedistributeAndFillCompleteDiscretizationUsingWeights(
     Teuchos::RCP<DRT::Discretization> discretization, const bool assigndegreesoffreedom,
     const bool initelements, const bool doboundaryconditions)
@@ -358,8 +338,8 @@ void DRT::UTILS::REBALANCING::RedistributeAndFillCompleteDiscretizationUsingWeig
       DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights(discretization);
 
   // rebuild the discretization with new maps
-  DRT::UTILS::REBALANCING::ExportAndFillCompleteDiscretization(*discretization, *rownodes,
-      *colnodes, assigndegreesoffreedom, initelements, doboundaryconditions);
+  discretization->Redistribute(
+      *rownodes, *colnodes, assigndegreesoffreedom, initelements, doboundaryconditions);
 }
 
 /*----------------------------------------------------------------------*/
