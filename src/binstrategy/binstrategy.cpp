@@ -806,7 +806,7 @@ void BINSTRATEGY::BinningStrategy::DistributeBinsRecursCoordBisection(
   sublist.set("RCB_RECTILINEAR_BLOCKS", "1");
 
   std::tie(bincenters, binweights) = DRT::UTILS::REBALANCING::RebalanceCoordinates(
-      *bincenters.getConst(), *binweights.getConst(), params);
+      *bincenters.getConst(), params, *binweights.getConst());
 
   // create bin row map
   binrowmap = Teuchos::rcp(new Epetra_Map(-1, bincenters->Map().NumMyElements(),

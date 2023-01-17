@@ -117,29 +117,29 @@ namespace DRT::UTILS::REBALANCING
   */
   std::pair<Teuchos::RCP<Epetra_MultiVector>, Teuchos::RCP<Epetra_MultiVector>>
   RebalanceCoordinates(const Epetra_MultiVector& initialCoordinates,
-      const Epetra_MultiVector& initialWeights, const Teuchos::ParameterList& rebalanceParams);
+      const Teuchos::ParameterList& rebalanceParams, const Epetra_MultiVector& initialWeights);
 
   //! @}
 
   /*!
-  \brief Create Isorropia cost describer based on element connectivity
+  \brief Create node and edge weights based on element connectivity
 
-  @param[in] discretization Discretization used to build the cost model
+  @param[in] dis Discretization used to build the weights
 
-  @return Cost describer ready to be used for repartitioning
+  @return Node and edge weights to be used for repartitioning
   */
-  std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>> SetupWeights(
-      const DRT::Discretization& discretization);
+  std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>> BuildWeights(
+      const DRT::Discretization& dis);
 
   /*!
-  \brief Build graph of a given  discretization
+  \brief Build node graph of a given  discretization
 
   \pre Discretization does not have to be FillComplete().
 
-  @param[in] dis Discretization whose graph will be build
+  @param[in] dis Discretization whose node graph will be build
   @param[in] roweles Element row map of this discretization
 
-  @return Uncompleted graph of input discretization
+  @return Uncompleted node graph of input discretization
   */
   Teuchos::RCP<const Epetra_CrsGraph> BuildGraph(
       Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles);

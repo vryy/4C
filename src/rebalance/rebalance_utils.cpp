@@ -44,6 +44,8 @@ DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(Teuchos::RCP<DRT::Discretizat
   Teuchos::RCP<Teuchos::ParameterList> rebalanceParams = Teuchos::rcp(new Teuchos::ParameterList());
   rebalanceParams->set<std::string>("NUM_PARTS", std::to_string(numPartitions));
   rebalanceParams->set<std::string>("IMBALANCE_TOL", std::to_string(imbalanceTol));
+  Teuchos::ParameterList& sublist = rebalanceParams->sublist("Zoltan");
+  sublist.set("LB_APPROACH", "PARTITION");
 
   // Compute rebalanced graph
   Teuchos::RCP<Epetra_CrsGraph> balancedGraph = Teuchos::null;
@@ -88,7 +90,7 @@ DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights(
   Teuchos::RCP<const Epetra_CrsGraph> initgraph = dis->BuildNodeGraph();
 
   // Setup cost describer based on element connectivity
-  const auto& [nodeWeights, edgeWeights] = SetupWeights(*dis);
+  const auto& [nodeWeights, edgeWeights] = BuildWeights(*dis);
 
   // Create parameter list with repartitioning options
   Teuchos::ParameterList paramlist;
@@ -112,19 +114,56 @@ DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>>
-DRT::UTILS::REBALANCING::SetupWeights(const DRT::Discretization& discretization)
+Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::REBALANCING::RebalanceGraph(
+    const Epetra_CrsGraph& initialGraph, const Teuchos::ParameterList& rebalanceParams,
+    const Teuchos::RCP<Epetra_Vector>& initialNodeWeights,
+    const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights)
 {
-  const Epetra_Map* oldnoderowmap = discretization.NodeRowMap();
+  Isorropia::Epetra::CostDescriber costs = Isorropia::Epetra::CostDescriber();
+  if (initialNodeWeights != Teuchos::null) costs.setVertexWeights(initialNodeWeights);
+  if (initialEdgeWeights != Teuchos::null) costs.setGraphEdgeWeights(initialEdgeWeights);
+
+  Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner =
+      Teuchos::rcp(new Isorropia::Epetra::Partitioner(&initialGraph, &costs, rebalanceParams));
+
+  Isorropia::Epetra::Redistributor rd(partitioner);
+  Teuchos::RCP<Epetra_CrsGraph> balancedGraph = rd.redistribute(initialGraph, true);
+
+  balancedGraph->FillComplete();
+  balancedGraph->OptimizeStorage();
+
+  return balancedGraph;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::pair<Teuchos::RCP<Epetra_MultiVector>, Teuchos::RCP<Epetra_MultiVector>>
+DRT::UTILS::REBALANCING::RebalanceCoordinates(const Epetra_MultiVector& initialCoordinates,
+    const Teuchos::ParameterList& rebalanceParams, const Epetra_MultiVector& initialWeights)
+{
+  Teuchos::RCP<Isorropia::Epetra::Partitioner> part = Teuchos::rcp(
+      new Isorropia::Epetra::Partitioner(&initialCoordinates, &initialWeights, rebalanceParams));
+
+  Isorropia::Epetra::Redistributor rd(part);
+
+  return {rd.redistribute(initialCoordinates), rd.redistribute(initialWeights)};
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>>
+DRT::UTILS::REBALANCING::BuildWeights(const DRT::Discretization& dis)
+{
+  const Epetra_Map* noderowmap = dis.NodeRowMap();
 
   Teuchos::RCP<Epetra_CrsMatrix> crs_ge_weights =
-      Teuchos::rcp(new Epetra_CrsMatrix(Copy, *oldnoderowmap, 15));
-  Teuchos::RCP<Epetra_Vector> vweights = LINALG::CreateVector(*oldnoderowmap, true);
+      Teuchos::rcp(new Epetra_CrsMatrix(Copy, *noderowmap, 15));
+  Teuchos::RCP<Epetra_Vector> vweights = LINALG::CreateVector(*noderowmap, true);
 
   // loop all row elements and get their cost of evaluation
-  for (int i = 0; i < discretization.ElementRowMap()->NumMyElements(); ++i)
+  for (int i = 0; i < dis.ElementRowMap()->NumMyElements(); ++i)
   {
-    DRT::Element* ele = discretization.lRowElement(i);
+    DRT::Element* ele = dis.lRowElement(i);
     DRT::Node** nodes = ele->Nodes();
     const int numnode = ele->NumNode();
     std::vector<int> lm(numnode);
@@ -138,6 +177,7 @@ DRT::UTILS::REBALANCING::SetupWeights(const DRT::Discretization& discretization)
     // element vector and matrix for weights of nodes and edges
     Epetra_SerialDenseMatrix edgeweigths_ele;
     Epetra_SerialDenseVector nodeweights_ele;
+
     // evaluate elements to get their evaluation cost
     ele->NodalConnectivity(edgeweigths_ele, nodeweights_ele);
 
@@ -325,41 +365,4 @@ Teuchos::RCP<const Epetra_CrsGraph> DRT::UTILS::REBALANCING::BuildGraph(
   dis->Comm().Barrier();
 
   return graph;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::REBALANCING::RebalanceGraph(
-    const Epetra_CrsGraph& initialGraph, const Teuchos::ParameterList& rebalanceParams,
-    const Teuchos::RCP<Epetra_Vector>& initialNodeWeights,
-    const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights)
-{
-  Isorropia::Epetra::CostDescriber costs = Isorropia::Epetra::CostDescriber();
-  if (initialNodeWeights != Teuchos::null) costs.setVertexWeights(initialNodeWeights);
-  if (initialEdgeWeights != Teuchos::null) costs.setGraphEdgeWeights(initialEdgeWeights);
-
-  Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner =
-      Teuchos::rcp(new Isorropia::Epetra::Partitioner(&initialGraph, &costs, rebalanceParams));
-
-  Isorropia::Epetra::Redistributor rd(partitioner);
-  Teuchos::RCP<Epetra_CrsGraph> balancedGraph = rd.redistribute(initialGraph, true);
-
-  balancedGraph->FillComplete();
-  balancedGraph->OptimizeStorage();
-
-  return balancedGraph;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::pair<Teuchos::RCP<Epetra_MultiVector>, Teuchos::RCP<Epetra_MultiVector>>
-DRT::UTILS::REBALANCING::RebalanceCoordinates(const Epetra_MultiVector& initialCoordinates,
-    const Epetra_MultiVector& initialWeights, const Teuchos::ParameterList& rebalanceParams)
-{
-  Teuchos::RCP<Isorropia::Epetra::Partitioner> part = Teuchos::rcp(
-      new Isorropia::Epetra::Partitioner(&initialCoordinates, &initialWeights, rebalanceParams));
-
-  Isorropia::Epetra::Redistributor rd(part);
-
-  return {rd.redistribute(initialCoordinates), rd.redistribute(initialWeights)};
 }
