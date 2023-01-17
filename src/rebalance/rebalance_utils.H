@@ -78,30 +78,6 @@ namespace DRT::UTILS::REBALANCING
 
   //! @}
 
-  //! @name Redistribute discretizations
-  //! @{
-
-  /*!
-  \brief Redistribute and FillComplete() a discretization to a new partitioning using weights to
-  model costs
-
-  1. Compute node row and column maps with a better and more balanced partitioning
-  2. Redistriibute and FillComplete() the discretization.
-
-  @param[in/out] discretization Discretization to be repartitioned
-  @param[in] assigndegreesoffreedom Flag forwarded to DRT::Discretization::FillComplete()
-  @param[in] initelements Flag forwarded to DRT::Discretization::FillComplete()
-  @param[in] doboundaryconditions Flag forwarded to DRT::Discretization::FillComplete()
-
-  \sa DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights()
-  \sa DRT::Discretization::FillComplete()
-  */
-  void RedistributeAndFillCompleteDiscretizationUsingWeights(
-      Teuchos::RCP<DRT::Discretization> discretization, const bool assigndegreesoffreedom,
-      const bool initelements, const bool doboundaryconditions);
-
-  //! @}
-
   //! @name Perform actual rebalancing via Isorropia/Zoltan
   //! @{
 

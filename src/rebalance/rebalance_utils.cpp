@@ -329,21 +329,6 @@ Teuchos::RCP<const Epetra_CrsGraph> DRT::UTILS::REBALANCING::BuildGraph(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::REBALANCING::RedistributeAndFillCompleteDiscretizationUsingWeights(
-    Teuchos::RCP<DRT::Discretization> discretization, const bool assigndegreesoffreedom,
-    const bool initelements, const bool doboundaryconditions)
-{
-  // do weighted repartitioning to obtain new row/column maps
-  const auto& [rownodes, colnodes] =
-      DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights(discretization);
-
-  // rebuild the discretization with new maps
-  discretization->Redistribute(
-      *rownodes, *colnodes, assigndegreesoffreedom, initelements, doboundaryconditions);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::REBALANCING::RebalanceGraph(
     const Epetra_CrsGraph& initialGraph, const Teuchos::ParameterList& rebalanceParams,
     const Teuchos::RCP<Epetra_Vector>& initialNodeWeights,
