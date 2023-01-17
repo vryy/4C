@@ -98,6 +98,8 @@ namespace DRT::INPUT
     // read and partition element information
     for (const auto& element_reader : element_readers_) element_reader->ReadAndPartition();
 
+    // TODO: here we should place the partitioning -> extract from element reader
+
     // read nodes based on the element information
     node_reader->Read(element_readers_, max_node_id);
 

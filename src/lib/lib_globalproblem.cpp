@@ -2414,7 +2414,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 
         DRT::INPUT::MeshReader micromeshreader(micro_reader);
         micromeshreader.AddNodeReader(
-            Teuchos::rcp(new DRT::INPUT::NodeReader(reader, "--NODE COORDS")));
+            Teuchos::rcp(new DRT::INPUT::NodeReader(micro_reader, "--NODE COORDS")));
 
         if (micro_dis_name == "structure")
         {
