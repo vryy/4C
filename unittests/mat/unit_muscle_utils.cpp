@@ -98,11 +98,9 @@ namespace
 
   TEST(MuscleUtilsTest, TestEvaluateForceVelocityDependencyBoel)
   {
-    const double l_case_dotl_greater_zero = 1.2;
-    const double l_case_dotl_smaller_zero = 0.5;
+    const double dotl_greater_zero = (1.2 - 0.7) / 0.1;
+    const double dotl_smaller_zero = (0.5 - 0.7) / 0.1;
 
-    const double lold = 0.7;
-    const double timestepsize = 0.1;
     const double dotlmin = 0.5;
     const double de = 0.7;
     const double dc = 0.5;
@@ -113,9 +111,9 @@ namespace
     double ref_case_dotl_smaller_zero = -5.75;
 
     auto test_case_dotl_greater_zero = MAT::UTILS::MUSCLE::EvaluateForceVelocityDependencyBoel(
-        l_case_dotl_greater_zero, lold, timestepsize, dotlmin, de, dc, ke, kc);
+        dotl_greater_zero, dotlmin, de, dc, ke, kc);
     auto test_case_dotl_smaller_zero = MAT::UTILS::MUSCLE::EvaluateForceVelocityDependencyBoel(
-        l_case_dotl_smaller_zero, lold, timestepsize, dotlmin, de, dc, ke, kc);
+        dotl_smaller_zero, dotlmin, de, dc, ke, kc);
 
     EXPECT_NEAR(test_case_dotl_greater_zero, ref_case_dotl_greater_zero, 1.0e-10);
     EXPECT_NEAR(test_case_dotl_smaller_zero, ref_case_dotl_smaller_zero, 1.0e-10);
@@ -123,11 +121,9 @@ namespace
 
   TEST(MuscleUtilsTest, TestEvaluateDerivativeForceVelocityDependencyBoel)
   {
-    const double l_case_dotl_greater_zero = 1.2;
-    const double l_case_dotl_smaller_zero = 0.5;
+    const double dotl_greater_zero = (1.2 - 0.7) / 0.1;
+    const double dotl_smaller_zero = (0.5 - 0.7) / 0.1;
 
-    const double lold = 0.7;
-    const double timestepsize = 0.1;
     const double dotlmin = 0.5;
     const double de = 0.7;
     const double dc = 0.5;
@@ -139,10 +135,10 @@ namespace
 
     auto test_case_dotl_greater_zero =
         MAT::UTILS::MUSCLE::EvaluateDerivativeForceVelocityDependencyBoel(
-            l_case_dotl_greater_zero, lold, timestepsize, dotlmin, de, dc, ke, kc);
+            dotl_greater_zero, 1 / 0.1, dotlmin, de, dc, ke, kc);
     auto test_case_dotl_smaller_zero =
         MAT::UTILS::MUSCLE::EvaluateDerivativeForceVelocityDependencyBoel(
-            l_case_dotl_smaller_zero, lold, timestepsize, dotlmin, de, dc, ke, kc);
+            dotl_smaller_zero, 1 / 0.1, dotlmin, de, dc, ke, kc);
 
     EXPECT_NEAR(test_case_dotl_greater_zero, ref_case_dotl_greater_zero, 1.0e-10);
     EXPECT_NEAR(test_case_dotl_smaller_zero, ref_case_dotl_smaller_zero, 1.0e-10);

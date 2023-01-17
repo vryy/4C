@@ -80,19 +80,17 @@ namespace MAT
        * the finite element method', Computer Methods in Biomechanics and Biomedical Engineering,
        * vol. 11, no. 5, pp. 489-504, 2008, doi: 10.1080/10255840701771750.
        *
-       * @param[in]     lambdaM Fiber stretch at current timestep n
-       * @param[in]     lambdaMOld Fiber stretch at timestep n-1
-       * @param[in]     timestepsize Time step size (i.e. t_n - t_{n-1})
+       * @param[in]     dotLambdaM Contraction velocity / stretch rate
        * @param[in]     dotLambdaMMin Minimal stretch rate
        * @param[in]     de Amplitude of the eccentric velocity dependency function
        * @param[in]     dc Amplitude of the concentric velocity dependency function
        * @param[in]     ke Curvature of the eccentric velocity dependency function
        * @param[in]     kc Curvature of the concentric velocity dependency function
-       * @param[out]    fxi Force-velocity function result between zero and one
+       * @param[out]    fv Force-velocity function result between zero and one
        */
-      double EvaluateForceVelocityDependencyBoel(const double lambdaM, const double lambdaMOld,
-          const double timestepsize, const double dotLambdaMMin, const double de, const double dc,
-          const double ke, const double kc);
+      double EvaluateForceVelocityDependencyBoel(const double dotLambdaM,
+          const double dotLambdaMMin, const double de, const double dc, const double ke,
+          const double kc);
 
       /*!
        * @brief Evaluate the derivative of the force-velocity dependency in the style of Boel et al.
@@ -108,9 +106,9 @@ namespace MAT
        * the finite element method', Computer Methods in Biomechanics and Biomedical Engineering,
        * vol. 11, no. 5, pp. 489-504, 2008, doi: 10.1080/10255840701771750.
        *
-       * @param[in]     lambdaM Fiber stretch at current timestep n
-       * @param[in]     lambdaMOld Fiber stretch at timestep n-1
-       * @param[in]     timestepsize Time step size (i.e. t_n - t_{n-1})
+       * @param[in]     dotLambdaM Contraction velocity / stretch rate
+       * @param[in]     dDotLambdaMdLambdaM Derivative of contraction velocity w.r.t. the fiber
+       *                                    stretch
        * @param[in]     dotLambdaMMin Minimal stretch rate
        * @param[in]     de Amplitude of the eccentric velocity dependency function
        * @param[in]     dc Amplitude of the concentric velocity dependency function
@@ -119,9 +117,9 @@ namespace MAT
        * @param[out]    dFvdLamdaM Derivative of the force-velocity function w.r.t. the fiber
        *                           stretch
        */
-      double EvaluateDerivativeForceVelocityDependencyBoel(const double lambdaM,
-          const double lambdaMOld, const double timestepsize, const double dotLambdaMMin,
-          const double de, const double dc, const double ke, const double kc);
+      double EvaluateDerivativeForceVelocityDependencyBoel(const double dotLambdaM,
+          const double dDotLambdaMdLambdaM, const double dotLambdaMMin, const double de,
+          const double dc, const double ke, const double kc);
 
       /*!
        * @brief Evaluate the time-dependent optimal active stress by summation single twitches

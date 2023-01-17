@@ -71,13 +71,9 @@ double MAT::UTILS::MUSCLE::EvaluateDerivativeForceStretchDependencyEhret(
   return dFxidLamdaM;
 }
 
-double MAT::UTILS::MUSCLE::EvaluateForceVelocityDependencyBoel(const double lambdaM,
-    const double lambdaMOld, const double timestepsize, const double dotLambdaMMin, const double de,
-    const double dc, const double ke, const double kc)
+double MAT::UTILS::MUSCLE::EvaluateForceVelocityDependencyBoel(const double dotLambdaM,
+    const double dotLambdaMMin, const double de, const double dc, const double ke, const double kc)
 {
-  // dotLambdaM = (lambdaM_n - lambdaM_{n-1})/dt approximated through BW Euler
-  double dotLambdaM = (lambdaM - lambdaMOld) / timestepsize;
-
   // helper variable
   double ratioDotLambdaM = dotLambdaM / dotLambdaMMin;
 
@@ -95,16 +91,10 @@ double MAT::UTILS::MUSCLE::EvaluateForceVelocityDependencyBoel(const double lamb
   return fv;
 }
 
-double MAT::UTILS::MUSCLE::EvaluateDerivativeForceVelocityDependencyBoel(const double lambdaM,
-    const double lambdaMOld, const double timestepsize, const double dotLambdaMMin, const double de,
-    const double dc, const double ke, const double kc)
+double MAT::UTILS::MUSCLE::EvaluateDerivativeForceVelocityDependencyBoel(const double dotLambdaM,
+    const double dDotLambdaMdLambdaM, const double dotLambdaMMin, const double de, const double dc,
+    const double ke, const double kc)
 {
-  // dotLambdaM = (lambdaM_n - lambdaM_{n-1})/dt approximated through BW Euler
-  double dotLambdaM = (lambdaM - lambdaMOld) / timestepsize;
-
-  // dDotLambdaMdLambdaM = 1/dt approximated through BW Euler
-  double dDotLambdaMdLambdaM = 1 / timestepsize;
-
   // helper variable
   double ratioDotLambdaM = dotLambdaM / dotLambdaMMin;
 

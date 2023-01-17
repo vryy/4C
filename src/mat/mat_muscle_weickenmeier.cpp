@@ -361,6 +361,14 @@ void MAT::Muscle_Weickenmeier::EvaluateActiveNominalStress(
   if (abs(timestep + 1.0) < 1e-14)
     dserror("No time step size given for muscle Weickenmeier material!");
 
+  // approximate first time derivative of lambdaM through BW Euler
+  // dotLambdaM = (lambdaM_n - lambdaM_{n-1})/dt
+  double dotLambdaM = (lambdaM - lambdaMOld_) / timestep;
+
+  // approximate second time derivative of lambdaM through BW Euler
+  // dDotLambdaMdLambdaM = 1/dt approximated through BW Euler
+  double dDotLambdaMdLambdaM = 1 / timestep;
+
   // get active microstructural parameters from params_
   const double Na = params_->Na_;
   const int muTypesNum = params_->muTypesNum_;
@@ -392,7 +400,7 @@ void MAT::Muscle_Weickenmeier::EvaluateActiveNominalStress(
 
   // compute force-velocity dependency fv
   double fv = MAT::UTILS::MUSCLE::EvaluateForceVelocityDependencyBoel(
-      lambdaM, lambdaMOld_, timestep, dotLambdaMMin, de, dc, ke, kc);
+      dotLambdaM, dotLambdaMMin, de, dc, ke, kc);
 
   // compute active nominal stress Pa
   Pa = Poptft * fxi * fv;
@@ -406,7 +414,7 @@ void MAT::Muscle_Weickenmeier::EvaluateActiveNominalStress(
     dFxidLamdaM = MAT::UTILS::MUSCLE::EvaluateDerivativeForceStretchDependencyEhret(
         lambdaM, lambdaMin, lambdaOpt);
     dFvdLambdaM = MAT::UTILS::MUSCLE::EvaluateDerivativeForceVelocityDependencyBoel(
-        lambdaM, lambdaMOld_, timestep, dotLambdaMMin, de, dc, ke, kc);
+        dotLambdaM, dDotLambdaMdLambdaM, dotLambdaMMin, de, dc, ke, kc);
   }
 
   // compute derivative of active nominal stress Pa w.r.t. lambdaM
