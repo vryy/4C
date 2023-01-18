@@ -335,7 +335,7 @@ namespace DRT
     {
     }  // namespace BEAM
 
-  }    // namespace UTILS
+  }  // namespace UTILS
 }  // namespace DRT
 
 /*! \brief Elasto-hydrodynamic lubrication (lubrication-structure interaction)
