@@ -14,7 +14,7 @@
 #include "lib_standardtypes_cpp.H"
 #include "lib_elementdefinition.H"
 #include "lib_globalproblem.H"
-#include "rebalance_utils.H"
+#include "rebalance.H"
 #include "lib_utils_factory.H"
 #include "lib_utils_parallel.H"
 
@@ -367,11 +367,9 @@ namespace DRT
       // just skip the partitioning.
       if (numnodes)
       {
-        rownodes_ = Teuchos::null;
-        colnodes_ = Teuchos::null;
         nids.clear();
-        DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(dis_, roweles_, rownodes_, colnodes_,
-            comm_, !reader_.MyOutputFlag(), comm_->NumProc(), imbalance_tol);
+        std::tie(rownodes_, colnodes_) =
+            REBALANCE::RebalanceNodeMaps(dis_, roweles_, comm_->NumProc(), imbalance_tol);
       }
       else
       {

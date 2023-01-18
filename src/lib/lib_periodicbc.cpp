@@ -24,7 +24,7 @@
 #include "comm_utils.H"
 #include "lib_standardtypes_cpp.H"
 #include "linalg_utils_sparse_algebra_create.H"
-#include "rebalance_utils.H"
+#include "rebalance.H"
 #include "linalg_utils_sparse_algebra_print.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1585,8 +1585,8 @@ void PeriodicBoundaryConditions::BalanceLoad()
 
       Teuchos::RCP<const Epetra_CrsGraph> const_nodegraph(nodegraph);
 
-      auto newnodegraph = DRT::UTILS::REBALANCING::RebalanceGraph(
-          *const_nodegraph, paramlist, node_weights, edge_weights);
+      auto newnodegraph =
+          REBALANCE::RebalanceGraph(*const_nodegraph, paramlist, node_weights, edge_weights);
       newnodegraph->OptimizeStorage();
 
       // the rowmap will become the new distribution of nodes

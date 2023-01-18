@@ -12,7 +12,7 @@
 #include "fluid_discret_extractor.H"
 #include "lib_periodicbc.H"
 #include "lib_dofset_transparent.H"
-#include "rebalance_utils.H"
+#include "rebalance.H"
 #include "io.H"
 #include "lib_discret_xwall.H"
 
@@ -371,9 +371,6 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     }
 
     // this is the actual redistribution
-    Teuchos::RCP<Epetra_Map> sepcondrownodes;
-    Teuchos::RCP<Epetra_Map> sepcondcolnodes;
-
     Teuchos::RCP<Epetra_Map> sepcondelenodesmap =
         Teuchos::rcp(new Epetra_Map(*childdiscret_->ElementRowMap()));
     Epetra_Time time(parentdiscret_->Comm());
@@ -381,8 +378,8 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 
     // Starting from the current partitioning of the discretization, compute nodal maps with a
     // hopefully better partitioning
-    DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(childdiscret_, sepcondelenodesmap,
-        sepcondrownodes, sepcondcolnodes, comm, false, comm->NumProc());
+    const auto& [sepcondrownodes, sepcondcolnodes] =
+        REBALANCE::RebalanceNodeMaps(childdiscret_, sepcondelenodesmap, comm->NumProc());
 
     if (childdiscret_->Comm().MyPID() == 0)
     {

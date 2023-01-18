@@ -22,7 +22,7 @@
 #include "lib_globalproblem.H"
 #include "lib_discret.H"
 #include "lib_condition_utils.H"
-#include "rebalance_utils.H"
+#include "rebalance.H"
 #include "linalg_blocksparsematrix.H"
 #include "linalg_utils_sparse_algebra_math.H"
 
@@ -842,7 +842,7 @@ Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::CallPartitioner(
 
   if (parts != -1) paramlist.set("NUM_PARTS", std::to_string(parts));
 
-  return DRT::UTILS::REBALANCING::RebalanceGraph(*initgraph_manip, paramlist);
+  return REBALANCE::RebalanceGraph(*initgraph_manip, paramlist);
 }
 
 

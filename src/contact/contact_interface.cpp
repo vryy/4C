@@ -31,7 +31,7 @@
 
 #include "scatra_ele_parameter_boundary.H"
 
-#include "rebalance_utils.H"
+#include "rebalance.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
@@ -864,8 +864,6 @@ void CONTACT::CoInterface::Redistribute()
   //**********************************************************************
   // (4) CLOSE SLAVE redistribution
   //**********************************************************************
-  Teuchos::RCP<Epetra_Map> slaveCloseRowNodes = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> slaveCloseColNodes = Teuchos::null;
 
   // build redundant vector of all close slave node ids on all procs
   // (there must not be any double entries in the node lists, thus
@@ -879,15 +877,13 @@ void CONTACT::CoInterface::Redistribute()
 
   //**********************************************************************
   // call parallel redistribution
-  DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(idiscret_, slaveCloseRowEles,
-      slaveCloseRowNodes, slaveCloseColNodes, comm, false, scproc, imbalance_tol);
+  const auto& [slaveCloseRowNodes, slaveCloseColNodes] =
+      REBALANCE::RebalanceNodeMaps(idiscret_, slaveCloseRowEles, scproc, imbalance_tol);
   //**********************************************************************
 
   //**********************************************************************
   // (5) NON-CLOSE SLAVE redistribution
   //**********************************************************************
-  Teuchos::RCP<Epetra_Map> slaveNonCloseRowNodes = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> snccolnodes = Teuchos::null;
 
   // build redundant vector of all non-close slave node ids on all procs
   // (there must not be any double entries in the node lists, thus
@@ -901,8 +897,8 @@ void CONTACT::CoInterface::Redistribute()
 
   //**********************************************************************
   // call parallel redistribution
-  DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(idiscret_, slaveNonCloseRowEles,
-      slaveNonCloseRowNodes, snccolnodes, comm, false, sncproc, imbalance_tol);
+  const auto& [slaveNonCloseRowNodes, snccolnodes] =
+      REBALANCE::RebalanceNodeMaps(idiscret_, slaveNonCloseRowEles, sncproc, imbalance_tol);
   //**********************************************************************
 
   //**********************************************************************

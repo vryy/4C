@@ -20,7 +20,7 @@
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_sparsematrix.H"
-#include "rebalance_utils.H"
+#include "rebalance.H"
 #include "lib_element.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -337,16 +337,12 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(Teuchos::RCP<DRT::Discretization> actdis
 
     //**********************************************************************
     // Compute the rebalancing
-
-    Teuchos::RCP<Epetra_Map> bndrownodes;
-    Teuchos::RCP<Epetra_Map> bndcolnodes;
-
     Teuchos::RCP<Epetra_Map> belemap = Teuchos::rcp(new Epetra_Map(*bnd_discret_->ElementRowMap()));
     Epetra_Time time(pdiscret_->Comm());
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_->Comm().Clone());
 
-    DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-        bnd_discret_, belemap, bndrownodes, bndcolnodes, comm, false, comm->NumProc());
+    const auto& [bndrownodes, bndcolnodes] =
+        REBALANCE::RebalanceNodeMaps(bnd_discret_, belemap, comm->NumProc());
 
     if (bnd_discret_->Comm().MyPID() == 0)
     {

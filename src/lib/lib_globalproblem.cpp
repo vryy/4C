@@ -43,7 +43,7 @@
 #include "mat_micromaterial.H"
 #include "mat_newman_multiscale.H"
 #include "mat_scatra_mat_multiscale.H"
-#include "rebalance_utils.H"
+#include "rebalance.H"
 #include "comm_utils.H"
 #include "inpar_validcontactconstitutivelaw.H"
 #include "inpar_problemtype.H"
@@ -2222,8 +2222,13 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 
   // repartition macro problem for a good distribution of elements with micro material
   if (macro_dis_name == "structure")
-    DRT::UTILS::REBALANCING::RedistributeAndFillCompleteDiscretizationUsingWeights(
-        macro_dis, true, true, true);
+  {
+    // do weighted repartitioning to obtain new row/column maps
+    const auto& [rownodes, colnodes] = REBALANCE::RebalanceNodeMaps(macro_dis);
+
+    // rebuild the discretization with new maps
+    macro_dis->Redistribute(*rownodes, *colnodes, true, true, true);
+  }
 
   // make sure that we read the micro discretizations only on the processors on
   // which elements with the corresponding micro material are evaluated

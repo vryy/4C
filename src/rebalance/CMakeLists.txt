@@ -1,6 +1,6 @@
 set(OBJS_REBALANCE
     # cmake-format: sortable
-    rebalance_utils.cpp
+    rebalance.cpp
     )
 
 baci_add_library(rebalance ${OBJS_REBALANCE})
