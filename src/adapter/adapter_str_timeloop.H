@@ -38,23 +38,14 @@ namespace ADAPTER
     /// wrapper for things that should be done before PrepareTimeStep is called
     void PrePredict() override{};
 
-    /// wrapper for things that should be done after PrepareTimeStep is called
-    void PostPredict() override{};
-
     /// wrapper for things that should be done before solving the nonlinear iterations
     void PreSolve() override{};
-
-    /// wrapper for things that should be done after solving the nonlinear iterations
-    void PostSolve() override{};
 
     /// wrapper for things that should be done before updating
     void PreUpdate() override{};
 
     /// wrapper for things that should be done after solving the update
     void PostUpdate() override{};
-
-    /// wrapper for things that should be done before the output
-    void PreOutput() override{};
 
     /// wrapper for things that should be done after the output
     void PostOutput() override{};

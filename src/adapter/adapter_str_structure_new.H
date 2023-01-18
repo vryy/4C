@@ -301,23 +301,14 @@ namespace ADAPTER
     /// wrapper for things that should be done before PrepareTimeStep is called
     void PrePredict() override = 0;
 
-    /// wrapper for things that should be done after PrepareTimeStep is called
-    void PostPredict() override = 0;
-
     /// wrapper for things that should be done before solving the nonlinear iterations
     void PreSolve() override = 0;
-
-    /// wrapper for things that should be done after solving the nonlinear iterations
-    void PostSolve() override = 0;
 
     /// wrapper for things that should be done before updating
     void PreUpdate() override = 0;
 
     /// wrapper for things that should be done after solving the update
     void PostUpdate() override = 0;
-
-    /// wrapper for things that should be done before the output
-    void PreOutput() override = 0;
 
     /// wrapper for things that should be done after the output
     void PostOutput() override = 0;

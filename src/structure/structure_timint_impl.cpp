@@ -322,7 +322,6 @@ int STR::TimIntImpl::IntegrateStep()
 
 void STR::TimIntImpl::Output(const bool forced_writerestart)
 {
-  PreOutput();
   OutputStep(forced_writerestart);
 
   // write Gmsh output
@@ -490,9 +489,6 @@ void STR::TimIntImpl::Predict()
 
   // output
   PrintPredictor();
-
-  // things that need to be done after Predict
-  PostPredict();
 
   // enjoy your meal
   return;
@@ -1484,9 +1480,6 @@ INPAR::STR::ConvergenceStatus STR::TimIntImpl::Solve()
   // following methods checks, if the time step size can be increased again.
   CheckForTimeStepIncrease(status);
   CheckFor3D0DPTCReset(status);
-
-  // things to be done after solving
-  PostSolve();
 
   return status;
 }

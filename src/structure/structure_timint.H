@@ -974,23 +974,14 @@ namespace STR
     /// wrapper for things that should be done before PrepareTimeStep is called
     void PrePredict() final{};
 
-    /// wrapper for things that should be done after PrepareTimeStep is called
-    void PostPredict() final{};
-
     /// wrapper for things that should be done before solving the nonlinear iterations
-    virtual void PreSolve() final{};
-
-    /// wrapper for things that should be done after solving the nonlinear iterations
-    virtual void PostSolve() final;
+    void PreSolve() final{};
 
     /// wrapper for things that should be done before updating
     void PreUpdate() final{};
 
     /// wrapper for things that should be done after solving the update
     void PostUpdate() final{};
-
-    /// wrapper for things that should be done before the output
-    void PreOutput() final{};
 
     /// wrapper for things that should be done after convergence of Newton scheme
     void PostOutput() final{};

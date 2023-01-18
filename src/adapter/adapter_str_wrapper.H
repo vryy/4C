@@ -372,23 +372,14 @@ namespace ADAPTER
     /// wrapper for things that should be done before PrepareTimeStep is called
     void PrePredict() override { structure_->PrePredict(); }
 
-    /// wrapper for things that should be done after PrepareTimeStep is called
-    void PostPredict() override { structure_->PostPredict(); }
-
     /// wrapper for things that should be done before solving the nonlinear iterations
     void PreSolve() override { structure_->PreSolve(); }
-
-    /// wrapper for things that should be done after solving the nonlinear iterations
-    void PostSolve() override { structure_->PostSolve(); }
 
     /// wrapper for things that should be done before updating
     void PreUpdate() override { structure_->PreUpdate(); }
 
     /// wrapper for things that should be done after solving the update
     void PostUpdate() override { structure_->PostUpdate(); }
-
-    /// wrapper for things that should be done before the output
-    void PreOutput() override { structure_->PreOutput(); }
 
     /// wrapper for things that should be done after the output
     void PostOutput() override { structure_->PostOutput(); }
