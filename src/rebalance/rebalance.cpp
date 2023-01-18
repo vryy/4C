@@ -1,15 +1,14 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of helper methods related to partitioning and parallel distribution
+\brief A collection of functions related to partitioning and parallel distribution
 
 \level 0
-
 
 */
 /*----------------------------------------------------------------------*/
 
-#include "rebalance_utils.H"
+#include "rebalance.H"
 
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
@@ -24,28 +23,19 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>>
-DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(Teuchos::RCP<DRT::Discretization> discretization,
-    Teuchos::RCP<const Epetra_Map> elementRowMap, const int numPartitions,
-    const double imbalanceTol, INPAR::REBALANCE::RebalanceType method)
+std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> REBALANCE::RebalanceNodeMaps(
+    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<const Epetra_Map> elementRowMap,
+    const int numPartitions, const double imbalanceTol, INPAR::REBALANCE::RebalanceType method)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps");
-
-  const int myrank = discretization->Comm().MyPID();
-  if (!myrank)
-    std::cout << "Rebalance nodal maps of discretization '" << discretization->Name() << "'..."
-              << std::endl;
+  TEUCHOS_FUNC_TIME_MONITOR("REBALANCE::RebalanceNodeMaps");
 
   // create nodal graph of existing problem
-  Teuchos::RCP<const Epetra_CrsGraph> initialGraph =
-      DRT::UTILS::REBALANCING::BuildGraph(discretization, elementRowMap);
+  Teuchos::RCP<const Epetra_CrsGraph> initialGraph = REBALANCE::BuildGraph(dis, elementRowMap);
 
   // Create parameter list with rebalancing options
   Teuchos::RCP<Teuchos::ParameterList> rebalanceParams = Teuchos::rcp(new Teuchos::ParameterList());
-  rebalanceParams->set<std::string>("NUM_PARTS", std::to_string(numPartitions));
-  rebalanceParams->set<std::string>("IMBALANCE_TOL", std::to_string(imbalanceTol));
-  Teuchos::ParameterList& sublist = rebalanceParams->sublist("Zoltan");
-  sublist.set("LB_APPROACH", "PARTITION");
+  rebalanceParams->set<std::string>("num parts", std::to_string(numPartitions));
+  rebalanceParams->set<std::string>("imbalance tol", std::to_string(imbalanceTol));
 
   // Compute rebalanced graph
   Teuchos::RCP<Epetra_CrsGraph> balancedGraph = Teuchos::null;
@@ -55,8 +45,8 @@ DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(Teuchos::RCP<DRT::Discretizat
   }
   else if (method == INPAR::REBALANCE::RebalanceType::hypergraph)
   {
-    rebalanceParams->set("PARTITIONING METHOD", "HYPERGRAPH");
-    balancedGraph = DRT::UTILS::REBALANCING::RebalanceGraph(*initialGraph, *rebalanceParams);
+    rebalanceParams->set("partitioning method", "HYPERGRAPH");
+    balancedGraph = REBALANCE::RebalanceGraph(*initialGraph, *rebalanceParams);
   }
   else
   {
@@ -66,25 +56,20 @@ DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(Teuchos::RCP<DRT::Discretizat
   // Extract rebalanced maps
   Teuchos::RCP<Epetra_Map> nodeRowMap =
       Teuchos::rcp(new Epetra_Map(-1, balancedGraph->RowMap().NumMyElements(),
-          balancedGraph->RowMap().MyGlobalElements(), 0, discretization->Comm()));
+          balancedGraph->RowMap().MyGlobalElements(), 0, dis->Comm()));
   Teuchos::RCP<Epetra_Map> nodeColumnMap =
       Teuchos::rcp(new Epetra_Map(-1, balancedGraph->ColMap().NumMyElements(),
-          balancedGraph->ColMap().MyGlobalElements(), 0, discretization->Comm()));
+          balancedGraph->ColMap().MyGlobalElements(), 0, dis->Comm()));
 
   return {nodeRowMap, nodeColumnMap};
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>>
-DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights(
+std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> REBALANCE::RebalanceNodeMaps(
     Teuchos::RCP<DRT::Discretization> dis)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights");
-
-  const int myrank = dis->Comm().MyPID();
-  if (!myrank)
-    std::cout << "Rebalance nodal maps of discretization '" << dis->Name() << "'..." << std::endl;
+  TEUCHOS_FUNC_TIME_MONITOR("REBALANCE::RebalanceNodeMaps");
 
   // create nodal graph of existing problem
   Teuchos::RCP<const Epetra_CrsGraph> initgraph = dis->BuildNodeGraph();
@@ -94,12 +79,10 @@ DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights(
 
   // Create parameter list with repartitioning options
   Teuchos::ParameterList paramlist;
-  Teuchos::ParameterList& sublist = paramlist.sublist("Zoltan");
-  sublist.set("LB_APPROACH", "PARTITION");
 
   // Compute rebalanced graph
   Teuchos::RCP<Epetra_CrsGraph> balanced_graph =
-      DRT::UTILS::REBALANCING::RebalanceGraph(*initgraph, paramlist, nodeWeights, edgeWeights);
+      REBALANCE::RebalanceGraph(*initgraph, paramlist, nodeWeights, edgeWeights);
 
   // extract repartitioned maps
   Teuchos::RCP<Epetra_Map> rownodes =
@@ -114,11 +97,13 @@ DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::REBALANCING::RebalanceGraph(
-    const Epetra_CrsGraph& initialGraph, const Teuchos::ParameterList& rebalanceParams,
+Teuchos::RCP<Epetra_CrsGraph> REBALANCE::RebalanceGraph(const Epetra_CrsGraph& initialGraph,
+    const Teuchos::ParameterList& rebalanceParams,
     const Teuchos::RCP<Epetra_Vector>& initialNodeWeights,
     const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("REBALANCE::RebalanceGraph");
+
   Isorropia::Epetra::CostDescriber costs = Isorropia::Epetra::CostDescriber();
   if (initialNodeWeights != Teuchos::null) costs.setVertexWeights(initialNodeWeights);
   if (initialEdgeWeights != Teuchos::null) costs.setGraphEdgeWeights(initialEdgeWeights);
@@ -138,9 +123,11 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::REBALANCING::RebalanceGraph(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::pair<Teuchos::RCP<Epetra_MultiVector>, Teuchos::RCP<Epetra_MultiVector>>
-DRT::UTILS::REBALANCING::RebalanceCoordinates(const Epetra_MultiVector& initialCoordinates,
+REBALANCE::RebalanceCoordinates(const Epetra_MultiVector& initialCoordinates,
     const Teuchos::ParameterList& rebalanceParams, const Epetra_MultiVector& initialWeights)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("REBALANCE::RebalanceCoordinates");
+
   Teuchos::RCP<Isorropia::Epetra::Partitioner> part = Teuchos::rcp(
       new Isorropia::Epetra::Partitioner(&initialCoordinates, &initialWeights, rebalanceParams));
 
@@ -151,8 +138,8 @@ DRT::UTILS::REBALANCING::RebalanceCoordinates(const Epetra_MultiVector& initialC
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>>
-DRT::UTILS::REBALANCING::BuildWeights(const DRT::Discretization& dis)
+std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>> REBALANCE::BuildWeights(
+    const DRT::Discretization& dis)
 {
   const Epetra_Map* noderowmap = dis.NodeRowMap();
 
@@ -190,7 +177,7 @@ DRT::UTILS::REBALANCING::BuildWeights(const DRT::Discretization& dis)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_CrsGraph> DRT::UTILS::REBALANCING::BuildGraph(
+Teuchos::RCP<const Epetra_CrsGraph> REBALANCE::BuildGraph(
     Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles)
 {
   const int myrank = dis->Comm().MyPID();

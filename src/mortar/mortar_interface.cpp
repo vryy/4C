@@ -28,7 +28,7 @@
 #include "io.H"
 #include "io_control.H"
 
-#include "rebalance_utils.H"
+#include "rebalance.H"
 #include "lib_utils.H"
 #include "lib_globalproblem.H"
 #include "lib_utils_parallel.H"
@@ -1120,8 +1120,8 @@ void MORTAR::MortarInterface::Redistribute()
     ss_slave << "MORTAR::MortarInterface::Redistribute of '" << Discret().Name() << "' (slave)";
     TEUCHOS_FUNC_TIME_MONITOR(ss_slave.str());
 
-    std::tie(srownodes, scolnodes) = DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-        idiscret_, sroweles, sproc, imbalance_tol);
+    std::tie(srownodes, scolnodes) =
+        REBALANCE::RebalanceNodeMaps(idiscret_, sroweles, sproc, imbalance_tol);
   }
 
   //**********************************************************************
@@ -1180,7 +1180,7 @@ void MORTAR::MortarInterface::RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& r
   {
     // call parallel redistribution
     std::tie(rownodes, colnodes) =
-        DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(idiscret_, roweles, parts, imbalance);
+        REBALANCE::RebalanceNodeMaps(idiscret_, roweles, parts, imbalance);
   }
   else
   {

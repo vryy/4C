@@ -31,7 +31,7 @@
 
 #include "scatra_ele_parameter_boundary.H"
 
-#include "rebalance_utils.H"
+#include "rebalance.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
@@ -878,8 +878,7 @@ void CONTACT::CoInterface::Redistribute()
   //**********************************************************************
   // call parallel redistribution
   const auto& [slaveCloseRowNodes, slaveCloseColNodes] =
-      DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-          idiscret_, slaveCloseRowEles, scproc, imbalance_tol);
+      REBALANCE::RebalanceNodeMaps(idiscret_, slaveCloseRowEles, scproc, imbalance_tol);
   //**********************************************************************
 
   //**********************************************************************
@@ -899,8 +898,7 @@ void CONTACT::CoInterface::Redistribute()
   //**********************************************************************
   // call parallel redistribution
   const auto& [slaveNonCloseRowNodes, snccolnodes] =
-      DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-          idiscret_, slaveNonCloseRowEles, sncproc, imbalance_tol);
+      REBALANCE::RebalanceNodeMaps(idiscret_, slaveNonCloseRowEles, sncproc, imbalance_tol);
   //**********************************************************************
 
   //**********************************************************************

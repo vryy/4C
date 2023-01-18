@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of helper methods related to partitioning and parallel distribution
+\brief A collection of functions related to partitioning and parallel distribution
 
 \level 0
 
@@ -26,7 +26,7 @@ namespace DRT
   class Discretization;
 }
 
-namespace DRT::UTILS::REBALANCING
+namespace REBALANCE
 {
   //! @name Rebalancing of nodal maps
   //! @{
@@ -48,10 +48,9 @@ namespace DRT::UTILS::REBALANCING
 
   @return Node row map and node column map after rebalancing
   */
-  std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> ComputeRebalancedNodeMaps(
-      Teuchos::RCP<DRT::Discretization> discretization,
-      Teuchos::RCP<const Epetra_Map> elementRowMap, const int numPartitions,
-      const double imbalanceTol = 1.1,
+  std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> RebalanceNodeMaps(
+      Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<const Epetra_Map> elementRowMap,
+      const int numPartitions, const double imbalanceTol = 1.1,
       INPAR::REBALANCE::RebalanceType method = INPAR::REBALANCE::RebalanceType::hypergraph);
 
   /*!
@@ -70,8 +69,8 @@ namespace DRT::UTILS::REBALANCING
 
   @return Node row map and node column map after rebalancing with weights
   */
-  std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>>
-  ComputeRebalancedNodeMapsUsingWeights(Teuchos::RCP<DRT::Discretization> dis);
+  std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> RebalanceNodeMaps(
+      Teuchos::RCP<DRT::Discretization> dis);
 
   //! @}
 
@@ -141,6 +140,6 @@ namespace DRT::UTILS::REBALANCING
   Teuchos::RCP<const Epetra_CrsGraph> BuildGraph(
       Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles);
 
-}  // namespace DRT::UTILS::REBALANCING
+}  // namespace REBALANCE
 
 #endif

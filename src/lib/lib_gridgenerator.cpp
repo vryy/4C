@@ -13,7 +13,7 @@
 #include "lib_gridgenerator.H"
 #include "lib_standardtypes_cpp.H"
 #include "lib_elementdefinition.H"
-#include "rebalance_utils.H"
+#include "rebalance.H"
 #include "lib_utils_factory.H"
 #include "lib_utils_parallel.H"
 #include "lib_discret.H"
@@ -213,13 +213,13 @@ namespace DRT
       // redistribute the elements
       if (inputData.autopartition_)
       {
-        std::tie(nodeRowMap, nodeColMap) = DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-            Teuchos::rcp(&dis, false), elementRowMap, comm.NumProc());
+        std::tie(nodeRowMap, nodeColMap) =
+            REBALANCE::RebalanceNodeMaps(Teuchos::rcp(&dis, false), elementRowMap, comm.NumProc());
       }
       else  // do not destroy our manual partitioning
       {
         Teuchos::RCP<const Epetra_CrsGraph> graph =
-            DRT::UTILS::REBALANCING::BuildGraph(Teuchos::rcp(&dis, false), elementRowMap);
+            REBALANCE::BuildGraph(Teuchos::rcp(&dis, false), elementRowMap);
         nodeRowMap = Teuchos::rcp(new Epetra_Map(
             -1, graph->RowMap().NumMyElements(), graph->RowMap().MyGlobalElements(), 0, comm));
         nodeColMap = Teuchos::rcp(new Epetra_Map(
