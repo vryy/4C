@@ -14,7 +14,7 @@
 #include "ssi_utils.H"
 #include "io_control.H"
 #include "lib_globalproblem.H"
-#include "lib_utils_parallel.H"
+#include "rebalance_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -104,10 +104,10 @@ void ssi_drt()
   problem->GetDis("scatra")->FillComplete(true, false, true);
   if (is_scatra_manifold) problem->GetDis("scatra_manifold")->FillComplete(true, false, true);
 
-  DRT::UTILS::PrintParallelDistribution(*problem->GetDis("structure"));
-  DRT::UTILS::PrintParallelDistribution(*problem->GetDis("scatra"));
+  REBALANCE::UTILS::PrintParallelDistribution(*problem->GetDis("structure"));
+  REBALANCE::UTILS::PrintParallelDistribution(*problem->GetDis("scatra"));
   if (is_scatra_manifold)
-    DRT::UTILS::PrintParallelDistribution(*problem->GetDis("scatra_manifold"));
+    REBALANCE::UTILS::PrintParallelDistribution(*problem->GetDis("scatra_manifold"));
 
   // 3.1.4 Setup the coupled problem
   // now as we redistributed our discretizations we can construct all

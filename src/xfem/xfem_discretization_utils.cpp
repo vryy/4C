@@ -17,6 +17,7 @@
 #include "lib_utils_parallel.H"
 #include "lib_condition_utils.H"
 #include "rebalance.H"
+#include "rebalance_utils.H"
 #include "lib_dofset_fixed_size.H"
 
 #include "linalg_utils_sparse_algebra_math.H"
@@ -225,8 +226,8 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
 
   SetupXFEMDiscretization(xgen_params, xdis, numdof);
 
-  DRT::UTILS::PrintParallelDistribution(*dis);
-  DRT::UTILS::PrintParallelDistribution(*embedded_dis);
+  REBALANCE::UTILS::PrintParallelDistribution(*dis);
+  REBALANCE::UTILS::PrintParallelDistribution(*embedded_dis);
 
   return;
 }
@@ -271,8 +272,8 @@ int XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
   if (!Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(target_dis).is_null())
     SetupXFEMDiscretization(xgen_params, target_dis, num_dof_per_node);
 
-  DRT::UTILS::PrintParallelDistribution(*src_dis);
-  DRT::UTILS::PrintParallelDistribution(*target_dis);
+  REBALANCE::UTILS::PrintParallelDistribution(*src_dis);
+  REBALANCE::UTILS::PrintParallelDistribution(*target_dis);
 
   return num_dof_per_node;
 }

@@ -23,6 +23,8 @@
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "lib_matchingoctree.H"
 
+#include "rebalance_utils.H"
+
 #include <Epetra_IntVector.h>
 
 /*----------------------------------------------------------------------*
@@ -216,7 +218,7 @@ void DRT::UTILS::MatchNodalDistributionOfMatchingDiscretizations(
     );
 
     // print to screen
-    PrintParallelDistribution(dis_to_redistribute);
+    REBALANCE::UTILS::PrintParallelDistribution(dis_to_redistribute);
   }  // if more than one proc
 }  // MatchDistributionOfMatchingDiscretizations
 
@@ -301,7 +303,7 @@ void DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(
     if (err) dserror("FillComplete() returned err=%d", err);
 
     // print to screen
-    PrintParallelDistribution(dis_to_redistribute);
+    REBALANCE::UTILS::PrintParallelDistribution(dis_to_redistribute);
   }  // if more than one proc
 }  // DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations
 
@@ -584,58 +586,10 @@ void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
     if (err) dserror("FillComplete() returned err=%d", err);
 
     // print to screen
-    PrintParallelDistribution(dis_to_redistribute);
+    REBALANCE::UTILS::PrintParallelDistribution(dis_to_redistribute);
 
   }  // if more than one proc
 }  // MatchElementDistributionOfMatchingConditionedElements
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::UTILS::PrintParallelDistribution(const DRT::Discretization& dis)
-{
-  const int numproc = dis.Comm().NumProc();
-
-  if (numproc > 1)
-  {
-    const int myrank = dis.Comm().MyPID();
-
-    std::vector<int> my_n_nodes(numproc, 0);
-    std::vector<int> n_nodes(numproc, 0);
-    std::vector<int> my_n_ghostnodes(numproc, 0);
-    std::vector<int> n_ghostnodes(numproc, 0);
-    std::vector<int> my_n_elements(numproc, 0);
-    std::vector<int> n_elements(numproc, 0);
-    std::vector<int> my_n_ghostele(numproc, 0);
-    std::vector<int> n_ghostele(numproc, 0);
-
-    my_n_nodes[myrank] = dis.NumMyRowNodes();
-    my_n_ghostnodes[myrank] = dis.NumMyColNodes() - my_n_nodes[myrank];
-    my_n_elements[myrank] = dis.NumMyRowElements();
-    my_n_ghostele[myrank] = dis.NumMyColElements() - my_n_elements[myrank];
-
-    dis.Comm().SumAll(&my_n_nodes[0], &n_nodes[0], numproc);
-    dis.Comm().SumAll(&my_n_ghostnodes[0], &n_ghostnodes[0], numproc);
-    dis.Comm().SumAll(&my_n_elements[0], &n_elements[0], numproc);
-    dis.Comm().SumAll(&my_n_ghostele[0], &n_ghostele[0], numproc);
-
-    if (myrank == 0)
-    {
-      std::cout << std::endl;
-      std::cout << "   Discretization: " << dis.Name() << std::endl;
-      printf("   +-----+---------------+--------------+-----------------+----------------+\n");
-      printf("   | PID |  n_rownodes   | n_ghostnodes |  n_rowelements  |   n_ghostele   |\n");
-      printf("   +-----+---------------+--------------+-----------------+----------------+\n");
-      for (int npid = 0; npid < numproc; ++npid)
-      {
-        printf("   | %3d | %13d | %12d | %15d | %14d |\n", npid, n_nodes[npid], n_ghostnodes[npid],
-            n_elements[npid], n_ghostele[npid]);
-        printf("   +-----+---------------+--------------+-----------------+----------------+\n");
-      }
-      std::cout << std::endl;
-    }
-  }
-}  // PrintParallelDistribution
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

@@ -15,6 +15,7 @@
 #include "lib_elementdefinition.H"
 #include "lib_globalproblem.H"
 #include "rebalance.H"
+#include "rebalance_utils.H"
 #include "lib_utils_factory.H"
 #include "lib_utils_parallel.H"
 
@@ -425,7 +426,7 @@ namespace DRT
         std::cout << time.ElapsedTime() << " secs" << std::endl;
       }
 
-      DRT::UTILS::PrintParallelDistribution(*dis_);
+      REBALANCE::UTILS::PrintParallelDistribution(*dis_);
     }
 
 

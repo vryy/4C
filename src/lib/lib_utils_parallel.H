@@ -88,9 +88,6 @@ namespace DRT
         DRT::Discretization& dis_to_redistribute, const std::string& condname_template,
         const std::string& condname_redistribute, bool print = false);
 
-    /// print information about parallel mesh distribution
-    void PrintParallelDistribution(const DRT::Discretization& dis);
-
     /*! \brief Get a column vector made of a row vector.
 
     Using this method, a reference to a vector is returned.
