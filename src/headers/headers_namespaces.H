@@ -335,12 +335,6 @@ namespace DRT
     {
     }  // namespace BEAM
 
-    /*! \brief Rebalancing, repartitioning, and redistribution
-     *
-     */
-    namespace REBALANCING
-    {
-    }  // namespace REBALANCING
   }    // namespace UTILS
 }  // namespace DRT
 
@@ -1826,6 +1820,13 @@ namespace STR
   namespace PREDICT
   {
   }  // namespace PREDICT
+
+  /*! \brief Methods related to partitioning and rebalancing
+   *
+   */
+  namespace REBALANCE
+  {
+  }  // namespace REBALANCE
 
   /*! \brief
    *
