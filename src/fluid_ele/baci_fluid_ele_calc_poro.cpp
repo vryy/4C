@@ -2039,16 +2039,17 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(const double& t
       grad_porosity_us_gridvelint.MultiplyTN(gridvel_int_, dgradphi_dus);
 
       /*
-        /                            \       / \ |                              |     | n+1 | |
-    dphi/dJ * J * div Dus , v  |   + |   d^2(phi)/(dJ)^2 * dJ/dus  * J * div vs    * Dus , v  | | |
-    |                                        (i)             | \                            /      \
-    /
+        /                            \     /                                                    \
+        |                             |   |                                        n+1           |
+        |  dphi/dJ * J * div Dus , v  | + |   d^2(phi)/(dJ)^2 * dJ/dus  * J * div vs   * Dus , v |
+        |                             |   |                                        (i)           |
+        \                            /     \                                                    /
 
-       /                                            \        / \ |                           n+1 |
-    |                           n+1            |
-    +  |   dphi/dJ * dJ/dus * div vs    * Dus, v     |    - |   d(grad(phi))/d(us) *  vs    * Dus ,
-    v  | |                           (i)               |      |                           (i) | \ /
-    \                                        /
+       /                                          \   /                                          \
+       |                            n+1           |   |                           n+1            |
+    +  |   dphi/dJ * dJ/dus * div vs    * Dus, v  | - |   d(grad(phi))/d(us) *  vs    * Dus , v  |
+       |                            (i)           |   |                           (i)            |
+       \                                          /   \                                          /
 
           /                       \
          |                         |
@@ -2114,10 +2115,12 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(const double& t
     if (!Base::fldparatimint_->IsStationary())
     {
       /*
-        /                                    \       / \ |                                      | |
-    n+1                 | |   (dphi/dJ * J + phi )* div Dus , v  |   + |   d^2(phi)/(dJ)^2 * dJ/dus
-    * J * div vs    * Dus , v  | |                                      |     | (i)             | \
-    /      \                                                       /
+
+     /                                   \    /                                                   \
+     |                                   |   |                                     n+1            |
+     | (dphi/dJ * J + phi )* div Dus , v | + | d^2(phi)/(dJ)^2 * dJ/dus * J * div vs    * Dus , v |
+     |                                   |   |                                     (i)            |
+     \                                   /    \                                                   /
 
        /                                            \
        |                           n+1               |

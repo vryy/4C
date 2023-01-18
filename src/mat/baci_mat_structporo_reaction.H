@@ -40,7 +40,7 @@ namespace MAT
       int dofIDReacScalar_;
       //@}
 
-    };  // class StructPoro
+    };  // class StructPoroReaction
 
   }  // namespace PAR
 
@@ -142,7 +142,7 @@ namespace MAT
         double* dW_dp,       ///< (o) derivative of potential w.r.t. pressure
         double* dW_dphi,     ///< (o) derivative of potential w.r.t. porosity
         double* dW_dJ,       ///< (o) derivative of potential w.r.t. jacobian
-        double* dW_dphiref,  ///< (o) derivative of potential w.r.t. jacobian
+        double* dW_dphiref,  ///< (o) derivative of potential w.r.t. reference porosity
         double* W            ///< (o) inner potential
         ) override;
 

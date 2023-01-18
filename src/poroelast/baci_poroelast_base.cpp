@@ -192,8 +192,8 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     if (porosity_dof_ and physicaltype != INPAR::FLUID::poro_p1)
     {
       dserror(
-          "Poro P1 elements need a special fluid. Set 'PHYSICAL_TYPE' to 'Poro_P1' in the FLUID "
-          "DYNAMIC section!");
+          "Poro P1 elements need a special fluid. Set 'PHYSICAL_TYPE' to 'Poro_P1' in the "
+          "POROELASTICITY DYNAMIC section!");
     }
 
     auto transientfluid = INPUT::IntegralValue<INPAR::POROELAST::TransientEquationsOfPoroFluid>(

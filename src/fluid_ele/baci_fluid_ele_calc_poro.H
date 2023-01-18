@@ -548,8 +548,9 @@ namespace DRT
         \param dphidp         (i) derivative of porosity w.r.t. fluid pressure
         \param dphi_dpp       (i) second derivative of porosity w.r.t. fluid pressure
         \param dphi_dJp       (i) mixed derivative of porosity w.r.t. fluid pressure and jacobian
-        determinant \param gradJ          (i) spatial gradient of jacobian determinant \param
-        dgradphi_dp    (o) derivate of spatial gradient of porosity w.r.t. fluid pressure
+                                  determinant
+        \param gradJ          (i) spatial gradient of jacobian determinant
+        \param dgradphi_dp    (o) derivate of spatial gradient of porosity w.r.t. fluid pressure
        */
       virtual void ComputeLinearization(const double& dphi_dp, const double& dphi_dpp,
           const double& dphi_dJdp, const CORE::LINALG::Matrix<nsd_, 1>& gradJ,
@@ -562,14 +563,17 @@ namespace DRT
         \param dphi_dJ        (i) derivative of porosity w.r.t. jacobian determinant
         \param dphi_dJJ       (i) second derivative of porosity w.r.t. jacobian determinant
         \param dphi_dJp       (i) mixed derivative of porosity w.r.t. fluid pressure and jacobian
-        determinant \param defgrd_inv     (i) inverse deformation gradient \param defgrd_IT_vec  (o)
-        inverse transposed deformation gradient in vector notation \param F_x            (i)
-        derivative of deformation gradient w.r.t. current coordinates xyz \param F_X            (i)
-        derivative of deformation gradient w.r.t. material coordinates XYZ \param gradJ          (i)
-        spatial gradient of jacobian determinant \param dJ_dus         (o) derivative of jacobian
-        determinant w.r.t. structure displacments \param dphi_dus       (o) derivative of porosity
-        determinant w.r.t. structure displacments \param dgradphi_dus   (o) derivate of spatial
-        gradient of porosity w.r.t. structure displacments
+                                  determinant
+        \param defgrd_inv     (i) inverse deformation gradient
+        \param defgrd_IT_vec  (i) inverse transposed deformation gradient in vector notation
+        \param F_x            (i) derivative of deformation gradient w.r.t. current coordinates xyz
+        \param F_X            (i) derivative of deformation gradient w.r.t. material coordinates
+                                  XYZ
+        \param gradJ          (i) spatial gradient of jacobian determinant
+        \param dJ_dus         (o) derivative of jacobian determinant w.r.t. structure displacments
+        \param dphi_dus       (o) derivative of porosity determinant w.r.t. structure displacments
+        \param dgradphi_dus   (o) derivate of spatial gradient of porosity w.r.t. structure
+                                  displacments
        */
       virtual void ComputeLinearizationOD(const double& dphi_dJ, const double& dphi_dJJ,
           const double& dphi_dJp, const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd_inv,
@@ -583,19 +587,20 @@ namespace DRT
       /*!
         \brief Compute porosity and derivatives
 
-        \param params         (i) element parameter list
-        \param press          (i) fluid pressure at gauss point
-        \param J              (i) jacobian determinant at gauss point
-        \param gp             (i) number of actual gauss point
-        \param shapfct        (i) shape function values at gauss point
-        \param myporosity     (i) nodal porosities
-        \param porosity       (o) porosity at gauss point
-        \param dphi_dp        (o) derivative of porosity gradient w.r.t. fluid pressure
-        \param dphi_dJ        (o) derivative of porosity gradient w.r.t. jacobian determinant
-        \param dphi_dJdp      (o) mixed derivative of porosity gradient w.r.t. fluid pressure and
-        jacobian determinant \param dphi_dJJ       (o) second derivative of porosity gradient w.r.t.
-        jacobian determinant \param dphi_dpp       (o) second derivative of porosity gradient w.r.t.
-        fluid pressure \param save           (i) flag for saving porosity within structure material
+        \param params       (i) element parameter list
+        \param press        (i) fluid pressure at gauss point
+        \param J            (i) jacobian determinant at gauss point
+        \param gp           (i) number of actual gauss point
+        \param shapfct      (i) shape function values at gauss point
+        \param myporosity   (i) nodal porosities
+        \param porosity     (o) porosity at gauss point
+        \param dphi_dp      (o) derivative of porosity gradient w.r.t. fluid pressure
+        \param dphi_dJ      (o) derivative of porosity gradient w.r.t. jacobian determinant
+        \param dphi_dJdp    (o) mixed derivative of porosity gradient w.r.t. fluid pressure and
+                                jacobian determinant
+        \param dphi_dJJ     (o) second derivative of porosity gradient w.r.t. jacobian determinant
+        \param dphi_dpp     (o) second derivative of porosity gradient w.r.t. fluid pressure
+        \param save         (i) flag for saving porosity within structure material
        */
       virtual void ComputePorosity(Teuchos::ParameterList& params, const double& press,
           const double& J, const int& gp, const CORE::LINALG::Matrix<nen_, 1>& shapfct,
@@ -612,10 +617,12 @@ namespace DRT
         \param dphi_dp        (i) derivative of porosity gradient w.r.t. fluid pressure
         \param dphi_dJ        (i) derivative of porosity gradient w.r.t. jacobian determinant
         \param dphi_dJdp      (i) mixed derivative of porosity gradient w.r.t. fluid pressure and
-       jacobian determinant \param dphi_dJJ       (i) second derivative of porosity gradient w.r.t.
-       jacobian determinant \param dphi_dpp       (i) second derivative of porosity gradient w.r.t.
-       fluid pressure \param eporositydot   (i) nodal values of porosity time derivative at time
-       step n+1 \param eporositydotn  (i) nodal values of porosity time derivative at time step n
+                                  jacobian determinant
+        \param dphi_dJJ       (i) second derivative of porosity gradient w.r.t. jacobian
+                                  determinant
+        \param dphi_dpp       (i) second derivative of porosity gradient w.r.t. fluid pressure
+        \param eporositydot   (i) nodal values of porosity time derivative at time step n+1
+        \param eporositydotn  (i) nodal values of porosity time derivative at time step n
         \param echist         (i) nodal values of history values of continuity equation
         \param dgradphi_dp    (i) derivative of porosity gradient w.r.t. fluid pressure
         \param estif_q_u      (o) element matrix (pressure - fluid velocity weighting) to be filled
@@ -641,10 +648,12 @@ namespace DRT
         \param dphi_dp        (i) derivative of porosity gradient w.r.t. fluid pressure
         \param dphi_dJ        (i) derivative of porosity gradient w.r.t. jacobian determinant
         \param dphi_dJdp      (i) mixed derivative of porosity gradient w.r.t. fluid pressure and
-       jacobian determinant \param dphi_dJJ       (i) second derivative of porosity gradient w.r.t.
-       jacobian determinant \param dphi_dpp       (i) second derivative of porosity gradient w.r.t.
-       fluid pressure \param echist         (i) nodal values of history values of continuity
-       equation \param dgradphi_dp    (i) derivative of porosity gradient w.r.t. fluid pressure
+                                  jacobian determinant
+        \param dphi_dJJ       (i) second derivative of porosity gradient w.r.t. jacobian
+                                  determinant
+        \param dphi_dpp       (i) second derivative of porosity gradient w.r.t. fluid pressure
+        \param echist         (i) nodal values of history values of continuity equation
+        \param dgradphi_dp    (i) derivative of porosity gradient w.r.t. fluid pressure
         \param estif_q_u      (o) element matrix (pressure - fluid velocity weighting) to be filled
         \param ppmat          (o) element matrix (pressure - pressure weighting) to be filled
         \param preforce       (o) element rhs vector to be filled
@@ -835,16 +844,18 @@ namespace DRT
       /*!
         \brief Evaluate off diagonal terms in momentum equation
 
-        \param timefacfac         (i) time factor * integration factor
-        \param porosity           (i) porosity at gauss point
-        \param gridvelint         (i) grid (structure) velocity at gauss point
-        \param grad_porosity      (i) porosity gradient at gauss point
-        \param dgradphi_dus       (i) derivative of porosity gradient w.r.t. structural
-        displacements at gauss point \param dphi_dus           (i) derivative of porosity w.r.t.
-        structural displacements at gauss point \param refporositydot     (i) time derivative of
-        reference porosity \param lin_resM_Dus       (i) linearization of residual of momentum
-        equation w.r.t. structureal dofs \param ecoupl_u           (o) coupling element matrix of
-        momentum equation
+        \param timefacfac      (i) time factor * integration factor
+        \param porosity        (i) porosity at gauss point
+        \param gridvelint      (i) grid (structure) velocity at gauss point
+        \param grad_porosity   (i) porosity gradient at gauss point
+        \param dgradphi_dus    (i) derivative of porosity gradient w.r.t. structural displacements
+                                   at gauss point
+        \param dphi_dus        (i) derivative of porosity w.r.t. structural displacements at gauss
+                                   point
+        \param refporositydot  (i) time derivative of reference porosity
+        \param lin_resM_Dus    (i) linearization of residual of momentum equation w.r.t. structural
+                                   dofs
+        \param ecoupl_u        (o) coupling element matrix of momentum equation
        */
       void FillMatrixMomentumOD(const double& timefacfac,
           const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
@@ -859,17 +870,23 @@ namespace DRT
       /*!
         \brief Evaluate off diagonal terms in continuity equation
 
-        \param timefacfacpre      (i) time factor (pressure) * integration factor
-        \param dphi_dJ            (i) derivative of porosity gradient w.r.t. jacobian determinant at
-        gauss point \param dphi_dJJ           (i) second derivative of porosity gradient w.r.t.
-        jacobian determinant at gauss point \param dphi_dJdp          (i) mixed derivative of
-        porosity gradient w.r.t. jacobian and pressure at gauss point \param dgradphi_dus       (i)
-        derivative of porosity gradient w.r.t. structural displacements at gauss point \param
-        dphi_dus           (i) derivative of porosity w.r.t. structural displacements at gauss point
-        \param dJ_dus             (i) derivative of jacobian w.r.t. structural displacements at
-        gauss point \param egridv             (i) nodal grid velocities \param lin_resM_Dus (i)
-        linearization of residual of momentum equation w.r.t. structureal dofs \param ecoupl_u (o)
-        coupling element matrix of continuity equation
+        \param timefacfacpre   (i) time factor (pressure) * integration factor
+        \param dphi_dJ         (i) derivative of porosity gradient w.r.t. jacobian determinant at
+                                   gauss point
+        \param dphi_dJJ        (i) second derivative of porosity gradient w.r.t. jacobian
+                                   determinant at gauss point
+        \param dphi_dJdp       (i) mixed derivative of porosity gradient w.r.t. jacobian and
+                                   pressure at gauss point
+        \param dgradphi_dus    (i) derivative of porosity gradient w.r.t. structural displacements
+                                   at gauss point
+        \param dphi_dus        (i) derivative of porosity w.r.t. structural displacements at gauss
+                                   point
+        \param dJ_dus          (i) derivative of jacobian w.r.t. structural displacements at gauss
+                                   point
+        \param egridv          (i) nodal grid velocities
+        \param lin_resM_Dus    (i) linearization of residual of momentum equation w.r.t. structural
+                                   dofs
+        \param ecoupl_u        (o) coupling element matrix of continuity equation
        */
       virtual void FillMatrixContiOD(const double& timefacfacpre, const double& dphi_dp,
           const double& dphi_dJ, const double& dphi_dJJ, const double& dphi_dJdp,
