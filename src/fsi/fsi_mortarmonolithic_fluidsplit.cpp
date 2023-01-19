@@ -2042,8 +2042,8 @@ void FSI::MortarMonolithicFluidSplit::CreateInterfaceMapping(
     stnode = -1;
 
     int NumEntries = 0;
-    double Values[numStructureDofs];
-    int stdofGID[numStructureDofs];
+    std::vector<double> Values(numStructureDofs);
+    std::vector<int> stdofGID(numStructureDofs);
 
     if (NumMyElementsP > 0)
     {
@@ -2052,7 +2052,8 @@ void FSI::MortarMonolithicFluidSplit::CreateInterfaceMapping(
       FindNodeRelatedToDof(fluidnodesPtr, fldofGID, fluiddis, re);  // fluid
       flnode = re[0];
 
-      P_->ExtractGlobalRowCopy(fldofGID, numStructureDofs, NumEntries, Values, stdofGID);
+      P_->ExtractGlobalRowCopy(
+          fldofGID, numStructureDofs, NumEntries, Values.data(), stdofGID.data());
     }
 
     // Loop over related structure dofs and get related nodes.
@@ -2276,8 +2277,8 @@ void FSI::MortarMonolithicFluidSplit::CreateNodeOwnerRelationship(std::map<int, 
     stowner = -1;
 
     int NumEntries = 0;
-    double Values[numStructureDofs];
-    int stdofGID[numStructureDofs];
+    std::vector<double> Values(numStructureDofs);
+    std::vector<int> stdofGID(numStructureDofs);
 
     if (NumMyElements > 0)
     {
@@ -2287,7 +2288,8 @@ void FSI::MortarMonolithicFluidSplit::CreateNodeOwnerRelationship(std::map<int, 
       flnode = re[0];
       flowner = re[1];
 
-      P_->ExtractGlobalRowCopy(fldofGID, numStructureDofs, NumEntries, Values, stdofGID);
+      P_->ExtractGlobalRowCopy(
+          fldofGID, numStructureDofs, NumEntries, Values.data(), stdofGID.data());
     }
 
     // Loop over related structure dofs and get related nodes.

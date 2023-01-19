@@ -408,7 +408,7 @@ namespace IMMERSED
     std::vector<double> myvalues;
 
     // declare vector of global current coordinates
-    double x[globdim];
+    std::vector<double> x(globdim);
 
     // dimension of source discretization
     static const int source_dim = DRT::UTILS::DisTypeToDim<sourcedistype>::dim;
@@ -424,7 +424,7 @@ namespace IMMERSED
 
     // get current global coordinates of the given point xi of the target dis
     MORTAR::UTILS::LocalToCurrentGlobal<targetdistype>(
-        targetele, globdim, &targetxi[0], targetedisp, &x[0]);
+        targetele, globdim, &targetxi[0], targetedisp, x.data());
     std::vector<double> xvec(globdim);
     xvec[0] = x[0];
     xvec[1] = x[1];
@@ -929,7 +929,7 @@ namespace IMMERSED
     // pointer to background element
     DRT::Element* sourceele;
     // declare vector of global current coordinates
-    double x[globdim];
+    std::vector<double> x(globdim);
     // dimension of source discretization
     static const int source_dim = DRT::UTILS::DisTypeToDim<sourcedistype>::dim;
     // declarations and definitions for round robin loop
@@ -946,7 +946,7 @@ namespace IMMERSED
 
     // get current global coordinates of the given point xi of the target dis
     MORTAR::UTILS::LocalToCurrentGlobal<targetdistype>(
-        targetele, globdim, &targetxi[0], targetedisp, &x[0]);
+        targetele, globdim, &targetxi[0], targetedisp, x.data());
     std::vector<double> xvec(globdim);
     xvec[0] = x[0];
     xvec[1] = x[1];
@@ -1253,7 +1253,7 @@ namespace IMMERSED
     const int globdim = problem->NDim();
 
     // declare vector of global current coordinates of fluid node
-    double x_fluid_node[globdim];
+    std::vector<double> x_fluid_node(globdim);
 
     // dimension of structure and fluid discretization
     static const int struct_dim = DRT::UTILS::DisTypeToDim<structdistype>::dim;
@@ -1287,7 +1287,7 @@ namespace IMMERSED
 
     // get current global coordinates of the given fluid node fluid_xi
     MORTAR::UTILS::LocalToCurrentGlobal<fluiddistype>(
-        fluidele, globdim, &fluidxi[0], fluideledisp, &x_fluid_node[0]);
+        fluidele, globdim, &fluidxi[0], fluideledisp, x_fluid_node.data());
     // get as vector
     std::vector<double> fluid_node_glob_coord(globdim);
     for (int idim = 0; idim < 3; ++idim) fluid_node_glob_coord[idim] = x_fluid_node[idim];
@@ -1440,7 +1440,7 @@ namespace IMMERSED
                   for (int i = 0; i < struct_dim; ++i) struct_xi(i) = struct_xsi[i];
 
                   // declare vector of global current coordinates
-                  double structsurf_gp_glob_coord[globdim];
+                  std::vector<double> structsurf_gp_glob_coord(globdim);
 
                   // get current global position of the given int point xi on the structural surface
                   MORTAR::UTILS::LocalToCurrentGlobal<structdistype>(*(structele), globdim,

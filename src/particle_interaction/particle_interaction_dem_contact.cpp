@@ -828,14 +828,14 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
     if (walldatastate->GetForceCol() != Teuchos::null)
     {
       // determine nodal forces
-      double nodal_force[numnodes * 3];
+      std::vector<double> nodal_force(numnodes * 3);
       for (int node = 0; node < numnodes; ++node)
         for (int dim = 0; dim < 3; ++dim)
           nodal_force[node * 3 + dim] = funct[node] * wallcontactforce[dim];
 
       // assemble nodal forces
       const int err = walldatastate->GetMutableForceCol()->SumIntoGlobalValues(
-          numnodes * 3, &nodal_force[0], &(lmele)[0]);
+          numnodes * 3, nodal_force.data(), &(lmele)[0]);
       if (err < 0) dserror("sum into Epetra_Vector failed!");
     }
   }

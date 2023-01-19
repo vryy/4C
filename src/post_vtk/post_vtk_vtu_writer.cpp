@@ -764,8 +764,8 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncom
 
     DRT::NURBS::UTILS::nurbs_get_funct_deriv(funct, deriv, gpa, myknots, weights, nurbs_type);
 
-    double val[numdf];
-    std::fill(val, val + numdf, 0.0);
+    std::vector<double> val(numdf);
+    std::fill(val.data(), val.data() + numdf, 0.0);
 
     for (unsigned m = 0; m < NUMNODES; ++m)
     {
@@ -937,7 +937,7 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int nc
   std::vector<Epetra_SerialDenseVector> myknots(3);
   bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, ele->Id());
   if (zero_ele) return;
-  double val[numdf];
+  std::vector<double> val(numdf);
   for (unsigned n = 0; n < NUMNODES; ++n)
   {
     LINALG::Matrix<NUMNODES, 1> funct;

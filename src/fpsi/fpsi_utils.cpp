@@ -310,8 +310,9 @@ void FPSI::Utils::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
     int parenteleowner = -1;
     int match = 0;
     int mastergeomsize = mastergeom.size();
-    int sizelist[mastercomm.NumProc()];  // how many master interface elements has each processor
-    mastercomm.GatherAll(&mastergeomsize, &sizelist[0], 1);
+    std::vector<int> sizelist(
+        mastercomm.NumProc());  // how many master interface elements has each processor
+    mastercomm.GatherAll(&mastergeomsize, sizelist.data(), 1);
     mastercomm.Barrier();  // wait for procs
 
     bool done;

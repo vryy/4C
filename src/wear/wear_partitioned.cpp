@@ -453,8 +453,8 @@ void WEAR::Partitioned::UpdateSpatConf()
       const int numdof = StructureField()->Discretization()->NumDof(node);
 
       // create Xmat for 3D problems
-      double Xspatial[numdof];
-      double Xmat[numdof];
+      std::vector<double> Xspatial(numdof);
+      std::vector<double> Xmat(numdof);
 
       for (int dof = 0; dof < numdof; ++dof)
       {
@@ -464,7 +464,7 @@ void WEAR::Partitioned::UpdateSpatConf()
       }
 
       // create updated  Xspatial --> via nonlinear interpolation between nodes (like gp projection)
-      AdvectionMap(Xspatial, Xmat, ElementPtr, numelement, false);
+      AdvectionMap(Xspatial.data(), Xmat.data(), ElementPtr, numelement, false);
 
       // store in dispmat
       for (int dof = 0; dof < numdof; ++dof)
@@ -1440,8 +1440,8 @@ void WEAR::Partitioned::UpdateMatConf()
       const int numdof = StructureField()->Discretization()->NumDof(node);
 
       // create Xmat for 3D problems
-      double XMat[numdof];
-      double XMesh[numdof];
+      std::vector<double> XMat(numdof);
+      std::vector<double> XMesh(numdof);
 
       for (int dof = 0; dof < numdof; ++dof)
       {
@@ -1451,7 +1451,7 @@ void WEAR::Partitioned::UpdateMatConf()
       }
 
       // create updated  XMat --> via nonlinear interpolation between nodes (like gp projection)
-      AdvectionMap(XMat, XMesh, ElementPtr, numelement, true);
+      AdvectionMap(XMat.data(), XMesh.data(), ElementPtr, numelement, true);
 
       // store in dispmat
       for (int dof = 0; dof < numdof; ++dof)

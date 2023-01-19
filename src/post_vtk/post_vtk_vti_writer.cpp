@@ -81,18 +81,19 @@ const std::vector<std::string>& PostVtiWriter::WriterPPieceTags() const
   static std::vector<std::string> tags;
   tags.clear();
 
-  int allextents[numproc_][6];
-  field_->problem()->comm()->GatherAll((int*)localextent_, (int*)allextents, 6);
+  std::vector<int> allextents(numproc_ * 6);
+  field_->problem()->comm()->GatherAll((int*)localextent_, allextents.data(), 6);
 
   if (myrank_ == 0)
   {
     for (size_t i = 0; i < numproc_; ++i)
     {
       std::stringstream stream;
-      stream << "<Piece Extent=\"" << allextents[i][0] << " " << allextents[i][1] << " "
-             << allextents[i][2] << " " << allextents[i][3] << " " << allextents[i][4] << " "
-             << allextents[i][5] << "\" Source=\"" << filenamebase_ << "-" << std::setfill('0')
-             << std::setw(npdigits_) << i << ".vti\"/>";
+      stream << "<Piece Extent=\"" << allextents[6 * i] << " " << allextents[6 * i + 1] << " "
+             << allextents[6 * i + 2] << " " << allextents[6 * i + 3] << " "
+             << allextents[6 * i + 4] << " " << allextents[6 * i + 5] << "\" Source=\""
+             << filenamebase_ << "-" << std::setfill('0') << std::setw(npdigits_) << i
+             << ".vti\"/>";
       tags.push_back(stream.str());
     }
   }

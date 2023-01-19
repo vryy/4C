@@ -421,10 +421,10 @@ namespace LINALG
   {
     // ntargetprocs is equal to the total number of processors to make data redundant on all procs
     const int numprocs = comm.NumProc();
-    int allproc[numprocs];
+    std::vector<int> allproc(numprocs);
     for (int i = 0; i < numprocs; ++i) allproc[i] = i;
 
-    Gather<T>(data, data, numprocs, allproc, comm);
+    Gather<T>(data, data, numprocs, allproc.data(), comm);
     return;
   }
 
@@ -446,10 +446,10 @@ namespace LINALG
   void GatherAll(std::map<T, U>& data, const Epetra_Comm& comm)
   {
     const int numprocs = comm.NumProc();
-    int allproc[numprocs];
+    std::vector<int> allproc(numprocs);
     for (int i = 0; i < numprocs; ++i) allproc[i] = i;
 
-    Gather<T, U>(data, data, numprocs, allproc, comm);
+    Gather<T, U>(data, data, numprocs, allproc.data(), comm);
 
     return;
   }
@@ -472,10 +472,10 @@ namespace LINALG
   void GatherAll(std::map<int, std::vector<T>>& data, const Epetra_Comm& comm)
   {
     const int numprocs = comm.NumProc();
-    int allproc[numprocs];
+    std::vector<int> allproc(numprocs);
     for (int i = 0; i < numprocs; ++i) allproc[i] = i;
 
-    Gather<T>(data, data, numprocs, allproc, comm);
+    Gather<T>(data, data, numprocs, allproc.data(), comm);
 
     return;
   }
@@ -501,10 +501,10 @@ namespace LINALG
   {
     // ntargetprocs is equal to the total number of processors to make data redundant on all procs
     const int numprocs = comm.NumProc();
-    int allproc[numprocs];
+    std::vector<int> allproc(numprocs);
     for (int i = 0; i < numprocs; ++i) allproc[i] = i;
 
-    Gather<T>(data, data, numprocs, allproc, comm);
+    Gather<T>(data, data, numprocs, allproc.data(), comm);
     return;
   }
 

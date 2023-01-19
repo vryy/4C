@@ -1214,7 +1214,7 @@ void STI::Monolithic::ComputeNullSpaceIfNecessary(Teuchos::ParameterList& solver
 
     // compute null space modes associated with scatra field
     const DRT::Discretization& scatradis = *ScaTraField()->Discretization();
-    double* modes_scatra[numdofpernode_scatra];
+    std::vector<double*> modes_scatra(numdofpernode_scatra);
     for (int i = 0; i < numdofpernode_scatra; ++i)
       modes_scatra[i] = &((*ns)[i * DofRowMap()->NumMyElements()]);
     for (int i = 0; i < scatradis.NumMyRowNodes(); ++i)
@@ -1226,7 +1226,7 @@ void STI::Monolithic::ComputeNullSpaceIfNecessary(Teuchos::ParameterList& solver
 
     // compute null space modes associated with thermo field
     const DRT::Discretization& thermodis = *ThermoField()->Discretization();
-    double* modes_thermo[numdofpernode_thermo];
+    std::vector<double*> modes_thermo(numdofpernode_thermo);
     for (int i = 0; i < numdofpernode_thermo; ++i)
       modes_thermo[i] = &((*ns)[(numdofpernode_scatra + i) * DofRowMap()->NumMyElements()]);
     for (int i = 0; i < thermodis.NumMyRowNodes(); ++i)

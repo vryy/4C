@@ -1510,12 +1510,12 @@ void CONTACT::STRATEGY::Factory::FindPoroInterfaceTypes(bool& poromaster, bool& 
    *  enum MORTAR::MortarElement::PhysicalType masterTypeList[Comm().NumProc()];
    *  Comm().GatherAll(static_cast<int*>(&slavetype),static_cast<int*>(&slaveTypeList[0]),1);
    *  Comm().GatherAll(static_cast<int*>(&mastertype),static_cast<int*>(&masterTypeList[0]),1); */
-  int slaveTypeList[Comm().NumProc()];
-  int masterTypeList[Comm().NumProc()];
+  std::vector<int> slaveTypeList(Comm().NumProc());
+  std::vector<int> masterTypeList(Comm().NumProc());
   int int_slavetype = static_cast<int>(slavetype);
   int int_mastertype = static_cast<int>(mastertype);
-  Comm().GatherAll(&int_slavetype, &slaveTypeList[0], 1);
-  Comm().GatherAll(&int_mastertype, &masterTypeList[0], 1);
+  Comm().GatherAll(&int_slavetype, slaveTypeList.data(), 1);
+  Comm().GatherAll(&int_mastertype, masterTypeList.data(), 1);
   Comm().Barrier();
 
   for (int i = 0; i < Comm().NumProc(); ++i)

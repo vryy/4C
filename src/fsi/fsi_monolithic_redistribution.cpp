@@ -135,7 +135,7 @@ void FSI::BlockMonolithic::RedistributeMonolithicGraph(
   int prelimNumMyNodes = numMyStructureNodes + numMyFluidNodes;
 
   // vector of global gids of structure + fluid
-  int gid[prelimNumMyNodes];
+  std::vector<int> gid(prelimNumMyNodes);
   int* gid_structure = structureGraph_map.MyGlobalElements();
   int* gid_fluid = fluidGraph_map.MyGlobalElements();
 
@@ -159,7 +159,7 @@ void FSI::BlockMonolithic::RedistributeMonolithicGraph(
   int numMyNodes = numMyStructureNodes + countMyFluidNodes;
   int numGlobalNodes = numGlobalStructureNodes + countGlobalFluidNodes;
 
-  const Epetra_Map& monolithicMap = Epetra_Map(numGlobalNodes, numMyNodes, gid, 0, comm);
+  const Epetra_Map& monolithicMap = Epetra_Map(numGlobalNodes, numMyNodes, gid.data(), 0, comm);
 
   // create monolithic graph
   Teuchos::RCP<Epetra_CrsGraph> monolithicGraph =
@@ -599,8 +599,8 @@ void FSI::BlockMonolithic::BuildWeightedGraph(Teuchos::RCP<Epetra_CrsMatrix> crs
   const double weight = inputWeight2;
   const double zero = 0.001;
   int graphLength = crs_ge_weights->NumGlobalCols();
-  int graphIndices[graphLength];
-  int graphIndicesCopy[graphLength];
+  std::vector<int> graphIndices(graphLength);
+  std::vector<int> graphIndicesCopy(graphLength);
   int numGraphEntries;
   int numGraphEntriesCopy;
 
@@ -618,8 +618,8 @@ void FSI::BlockMonolithic::BuildWeightedGraph(Teuchos::RCP<Epetra_CrsMatrix> crs
     int graphRowGID = crs_ge_weights->GRID(i);
     if (graphRowGID != -1)
     {
-      int success =
-          initgraph->ExtractGlobalRowCopy(graphRowGID, graphLength, numGraphEntries, graphIndices);
+      int success = initgraph->ExtractGlobalRowCopy(
+          graphRowGID, graphLength, numGraphEntries, graphIndices.data());
       if (success != 0) dserror("\nExtract global values failed, error code %d!", success);
     }
 
@@ -653,13 +653,13 @@ void FSI::BlockMonolithic::BuildWeightedGraph(Teuchos::RCP<Epetra_CrsMatrix> crs
           for (int c = 0; c < numGraphEntries; ++c) graphIndicesCopy[c] = graphIndices[c];
         }
 
-        comm.Broadcast(&graphIndicesCopy[0], numGraphEntriesCopy, proc);
+        comm.Broadcast(graphIndicesCopy.data(), numGraphEntriesCopy, proc);
 
         if (foundInterfaceNodeSum == 0)
         {  // not an interface node
           if (initgraph_map.LID(noderowcopy) != -1)
           {
-            double fieldWeight[numGraphEntriesCopy];
+            std::vector<double> fieldWeight(numGraphEntriesCopy);
             for (int w = 0; w < numGraphEntriesCopy; ++w)
             {
               fieldWeight[w] = inputWeight1;
@@ -667,10 +667,10 @@ void FSI::BlockMonolithic::BuildWeightedGraph(Teuchos::RCP<Epetra_CrsMatrix> crs
 
             int success;
             success = crs_ge_weights->InsertGlobalValues(
-                noderowcopy, numGraphEntriesCopy, &fieldWeight[0], &graphIndicesCopy[0]);
+                noderowcopy, numGraphEntriesCopy, fieldWeight.data(), graphIndicesCopy.data());
             if (success != 0) dserror("\nInsert global values failed, error code %d!", success);
             success = initgraph_manip->InsertGlobalIndices(
-                noderowcopy, numGraphEntriesCopy, &graphIndicesCopy[0]);
+                noderowcopy, numGraphEntriesCopy, graphIndicesCopy.data());
             if (success != 0) dserror("\nInsert global indices failed, error code %d!", success);
           }
         }
@@ -691,8 +691,8 @@ void FSI::BlockMonolithic::BuildWeightedGraph(Teuchos::RCP<Epetra_CrsMatrix> crs
               // find interface node pairs
 
               double GIDweight;  // weight for graph position noderowcopy - graphIndices[k]
-              double insertWeights[listLength];
-              int insertIndices[listLength];
+              std::vector<double> insertWeights(listLength);
+              std::vector<int> insertIndices(listLength);
 
               int insert_k = 0;
 
@@ -786,11 +786,11 @@ void FSI::BlockMonolithic::BuildWeightedGraph(Teuchos::RCP<Epetra_CrsMatrix> crs
               {  // get processor which accesses row noderowcopy and insert weights
                 int success;
                 success = crs_ge_weights->InsertGlobalValues(
-                    noderowcopy, insert_k, &insertWeights[0], &insertIndices[0]);
+                    noderowcopy, insert_k, insertWeights.data(), insertIndices.data());
                 if (success != 0)
                   dserror("\nReplace global values failed, error code %d!", success);
-                success =
-                    initgraph_manip->InsertGlobalIndices(noderowcopy, insert_k, &insertIndices[0]);
+                success = initgraph_manip->InsertGlobalIndices(
+                    noderowcopy, insert_k, insertIndices.data());
                 if (success != 0)
                   dserror("\nInsert global indices failed, error code %d!", success);
               }
@@ -864,16 +864,16 @@ Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::SwitchDomains(Teuchos::RCP<E
   comm.MaxAll(&nN, &maxNumOfNodes, 1);
 
   int numMyFutureNodes = rownodes->NumMyElements();
-  int myFutureNodeGIDs[maxNumOfNodes];  // contains GIDs of proc's nodes, later needed for map
-                                        // construction
+  std::vector<int> myFutureNodeGIDs(maxNumOfNodes);  // contains GIDs of proc's nodes, later needed
+                                                     // for map construction
   int* nodeIdsPtr = rownodes->MyGlobalElements();
 
   for (int k = 0; k < numMyFutureNodes;
        ++k)  // Just insert the old node IDs. Maybe not every proc will change something here.
     myFutureNodeGIDs[k] = nodeIdsPtr[k];
 
-  int countNodes[numproc];  // We use this array to determine to which proc another proc has to send
-                            // its nodes.
+  std::vector<int> countNodes(numproc);  // We use this array to determine to which proc another
+                                         // proc has to send its nodes.
 
   double nonmatch = 0;  // How many of my nodes don't want to be with me?
   double ratio;         // nonmatch is double because later this ratio is needed.
@@ -1077,7 +1077,7 @@ Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::SwitchDomains(Teuchos::RCP<E
   //    comm_.Barrier();
 
   // Create new map, new graph, an Epetra Exporter and do the new distribution.
-  Epetra_Map newDistribution(-1, numMyFutureNodes, myFutureNodeGIDs, 0, comm);
+  Epetra_Map newDistribution(-1, numMyFutureNodes, myFutureNodeGIDs.data(), 0, comm);
 
   Teuchos::RCP<Epetra_CrsGraph> switched_bal_graph =
       Teuchos::rcp(new Epetra_CrsGraph(Copy, newDistribution, 0));
@@ -1107,12 +1107,12 @@ void FSI::BlockMonolithic::RestoreRedistStructFluidGraph(
   int numMyNodes = monolithicRowmap->NumMyElements();
   int maxNumIndices = monolithicGraph->MaxNumIndices();
   int actNumMyNodes = 0;
-  int ind[maxNumIndices];
+  std::vector<int> ind(maxNumIndices);
 
   for (int i = 0; i < numMyNodes; ++i)
   {
     int gid = monolithicRowmap->GID(i);
-    int err = monolithicGraph->ExtractGlobalRowCopy(gid, maxNumIndices, actNumMyNodes, ind);
+    int err = monolithicGraph->ExtractGlobalRowCopy(gid, maxNumIndices, actNumMyNodes, ind.data());
     if (err != 0) dserror("\nExtractGlobalRowCopy failed, error code %d!", err);
 
     std::vector<int> insertCoupl;
@@ -1287,14 +1287,14 @@ void FSI::BlockMonolithic::InsertDeletedEdges(std::map<int, std::list<int>>* del
     {
       col_list = delEdgeIt->second;
       int col_length = col_list.size();
-      int col_indices[col_length];
+      std::vector<int> col_indices(col_length);
       int k = 0;
       for (col_list_it = col_list.begin(); col_list_it != col_list.end(); col_list_it++)
       {
         col_indices[k] = *col_list_it;
         ++k;
       }
-      int success = switched_bal_graph->InsertGlobalIndices(row, col_length, col_indices);
+      int success = switched_bal_graph->InsertGlobalIndices(row, col_length, col_indices.data());
       if (success != 0) dserror("\nInsert global indices failed, error code %d!", success);
     }
   }
@@ -1364,7 +1364,7 @@ void FSI::BlockMonolithic::BuildMonolithicGraph(Teuchos::RCP<Epetra_CrsGraph> mo
   int numMyFluidNodes = fluidGraph_map.NumMyElements();
   int maxNumFluidIndices = fluidGraph->MaxNumIndices();
   int actNumIndices = 0;  // actual number of entries in "indices"
-  int indices_f[maxNumFluidIndices];
+  std::vector<int> indices_f(maxNumFluidIndices);
   std::vector<int> coupling;
   bool insertCoupling = false;
 
@@ -1380,7 +1380,8 @@ void FSI::BlockMonolithic::BuildMonolithicGraph(Teuchos::RCP<Epetra_CrsGraph> mo
 
     // extract indices
 
-    int err = fluidGraph->ExtractGlobalRowCopy(gid, maxNumFluidIndices, actNumIndices, indices_f);
+    int err =
+        fluidGraph->ExtractGlobalRowCopy(gid, maxNumFluidIndices, actNumIndices, indices_f.data());
     if (err != 0) dserror("ExtractGlobalRowCopy failed, error = %d!", err);
 
     // check if interface node
@@ -1425,7 +1426,7 @@ void FSI::BlockMonolithic::BuildMonolithicGraph(Teuchos::RCP<Epetra_CrsGraph> mo
     else  // interface node
     {
       // cast array to std::vector
-      std::vector<int> indices_f_coupl(indices_f, indices_f + actNumIndices);
+      std::vector<int> indices_f_coupl(indices_f.data(), indices_f.data() + actNumIndices);
 
       for (int v = 0; v < actNumIndices; ++v)
       {
@@ -1579,7 +1580,7 @@ void FSI::BlockMonolithic::BuildMonolithicGraph(Teuchos::RCP<Epetra_CrsGraph> mo
 
   int numMyStructureNodes = structureGraph_map.NumMyElements();
   int maxNumStructureIndices = structureGraph->MaxNumIndices();
-  int indices_s[maxNumStructureIndices];
+  std::vector<int> indices_s(maxNumStructureIndices);
 
   for (int i = 0; i < numMyStructureNodes; ++i)
   {
@@ -1587,8 +1588,8 @@ void FSI::BlockMonolithic::BuildMonolithicGraph(Teuchos::RCP<Epetra_CrsGraph> mo
 
     // extract indices
 
-    int err =
-        structureGraph->ExtractGlobalRowCopy(gid, maxNumStructureIndices, actNumIndices, indices_s);
+    int err = structureGraph->ExtractGlobalRowCopy(
+        gid, maxNumStructureIndices, actNumIndices, indices_s.data());
     if (err != 0) dserror("ExtractGlobalRowCopy failed, error = %d!", err);
 
 
@@ -1929,14 +1930,14 @@ Teuchos::RCP<Epetra_Map> FSI::BlockMonolithic::GetRedistRowMap(const Epetra_Map&
     int numReceivedNodes = numMyNodes;
     oldMap.Comm().Broadcast(&numReceivedNodes, 1, p);
 
-    int receivedNodes[numReceivedNodes];
+    std::vector<int> receivedNodes(numReceivedNodes);
 
     if (myrank == p)
     {
       for (int i = 0; i < numReceivedNodes; ++i) receivedNodes[i] = myNodes[i];
     }
 
-    oldMap.Comm().Broadcast(receivedNodes, numReceivedNodes, p);
+    oldMap.Comm().Broadcast(receivedNodes.data(), numReceivedNodes, p);
 
     for (int i = 0; i < numReceivedNodes; ++i) allNodes.push_back(receivedNodes[i]);
 

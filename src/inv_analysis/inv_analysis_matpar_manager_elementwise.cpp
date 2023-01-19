@@ -364,7 +364,7 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(
    * made redundant.
    */
   const int numprocs = Discret()->Comm().NumProc();
-  int allproc[numprocs];
+  std::vector<int> allproc(numprocs);
   for (int i = 0; i < numprocs; ++i) allproc[i] = i;
 
   for (int i = 0; i < Discret()->Comm().NumProc(); i++)
@@ -399,7 +399,7 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(
       std::vector<int> rowningprocs;
       if (face_abroad != facemap.end() && Discret()->Comm().MyPID() != i)
         sowningprocs.push_back(Discret()->Comm().MyPID());
-      LINALG::Gather(sowningprocs, rowningprocs, numprocs, allproc, Discret()->Comm());
+      LINALG::Gather(sowningprocs, rowningprocs, numprocs, allproc.data(), Discret()->Comm());
 
       // now bring parameters corresponding to this face on the other procs to proc i
       // (they are send to all procs but only proc i stores them in the map with
@@ -409,7 +409,7 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(
       if (std::find(rowningprocs.begin(), rowningprocs.end(), Discret()->Comm().MyPID()) !=
           rowningprocs.end())
         sparams = facemap[facekey];
-      LINALG::Gather(sparams, rparams, numprocs, allproc, Discret()->Comm());
+      LINALG::Gather(sparams, rparams, numprocs, allproc.data(), Discret()->Comm());
 
       // store additional elements on proc i
       if (Discret()->Comm().MyPID() == i)
