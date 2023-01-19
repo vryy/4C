@@ -15,7 +15,6 @@
 
 #include "scatra_ele_calc_utils.H"
 
-#include "lib_standardtypes_cpp.H"  // for EPS13 and so on
 #include "lib_condition_utils.H"
 #include "lib_globalproblem.H"
 
@@ -194,7 +193,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauTaylorHughesZarins(
   const double Gdiff = c3 * diffus * diffus * normG;
 
   // computation of stabilization parameter tau
-  tau = 1.0 / (sqrt(c1 * dens_sqr * DSQR(sigma_tot) + Gnormu + Gdiff));
+  tau = 1.0 / (sqrt(c1 * dens_sqr * ((sigma_tot) * (sigma_tot)) + Gnormu + Gdiff));
 
   return;
 }
@@ -257,13 +256,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauFrancaValentin(
   // relating viscous to reactive part
   double epe1 = 0.0;
   if (scatrapara_->TauDef() == INPAR::SCATRA::tau_franca_valentin or reacoeff != 0.0)
-    epe1 = 2.0 * diffus / (mk * densnp * sigma_tot * DSQR(h));
+    epe1 = 2.0 * diffus / (mk * densnp * sigma_tot * ((h) * (h)));
 
   // respective "switching" parameters
   const double xi = std::max(epe, 1.0 * diffus);
   const double xi1 = std::max(epe1, 1.0);
 
-  tau = DSQR(h) / (DSQR(h) * densnp * sigma_tot * xi1 + 2.0 * xi / mk);
+  tau = ((h) * (h)) / (((h) * (h)) * densnp * sigma_tot * xi1 + 2.0 * xi / mk);
 
   return;
 }
@@ -333,9 +332,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauFrancaShakibCodina(
   const double c3 = 4.0 / (mk * mk);
   // alternative value as proposed in Shakib (1989): c3 = 16.0/(mk*mk);
 
-  tau = 1.0 /
-        (sqrt(c1 * DSQR(densnp) * DSQR(sigma_tot) + c2 * DSQR(densnp) * DSQR(vel_norm) / DSQR(h) +
-              c3 * DSQR(diffus) / (DSQR(h) * DSQR(h))));
+  tau = 1.0 / (sqrt(c1 * ((densnp) * (densnp)) * ((sigma_tot) * (sigma_tot)) +
+                    c2 * ((densnp) * (densnp)) * ((vel_norm) * (vel_norm)) / ((h) * (h)) +
+                    c3 * ((diffus) * (diffus)) / (((h) * (h)) * ((h) * (h)))));
 
   return;
 }
@@ -440,7 +439,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauFrancaMadureiraValen
   // parameter relating reactive to diffusive part
   double epe = 0.0;
   if (scatrapara_->TauDef() == INPAR::SCATRA::tau_franca_madureira_valentin or reacoeff != 0.0)
-    epe = 2.0 * diffus / (mk * densnp * sigma_tot * DSQR(h));
+    epe = 2.0 * diffus / (mk * densnp * sigma_tot * ((h) * (h)));
 
   // respective "switching" parameter
   const double xi = std::max(epe, 1.0);
@@ -452,7 +451,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauFrancaMadureiraValen
   const double c_u = 1.0;
 
   if (scatrapara_->TauDef() == INPAR::SCATRA::tau_franca_madureira_valentin or reacoeff != 0.0)
-    tau = DSQR(h) / (c_u * DSQR(h) * densnp * sigma_tot * xi + (2.0 * diffus / mk));
+    tau = ((h) * (h)) / (c_u * ((h) * (h)) * densnp * sigma_tot * xi + (2.0 * diffus / mk));
 
   return;
 }
@@ -481,7 +480,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTau1DExact(
   double vel_norm(0.0);
   vel_norm = convelint.Norm2();
 
-  if (diffus < EPS14) dserror("Invalid diffusion coefficent");
+  if (diffus < 1e-14) dserror("Invalid diffusion coefficent");
   double epe = 0.5 * densnp * vel_norm * h / diffus;
 
   const double pp = exp(epe);
@@ -489,7 +488,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTau1DExact(
   double xi = 0.0;
   if (epe >= 700.0)
     tau = 0.5 * h / vel_norm;
-  else if (epe < 700.0 and epe > EPS15)
+  else if (epe < 700.0 and epe > 1e-15)
   {
     xi = (((pp + pm) / (pp - pm)) - (1.0 / epe));  // xi = coth(epe) - 1/epe
     // compute optimal stabilization parameter
@@ -625,7 +624,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcArtificialDiff(
 
     // gradient norm
     const double grad_norm = gradphi.Norm2();
-    if (grad_norm > EPS8) artdiff = 0.5 * alpha * h * std::abs(scatrares) / grad_norm;
+    if (grad_norm > 1e-8) artdiff = 0.5 * alpha * h * std::abs(scatrares) / grad_norm;
   }
   else if (scatrapara_->ASSGDType() == INPAR::SCATRA::assgd_yzbeta)
   {
@@ -635,7 +634,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcArtificialDiff(
     // gradient norm
     const double grad_norm = gradphi.Norm2();
 
-    if (phiref > EPS12 and grad_norm > EPS12)
+    if (phiref > 1e-12 and grad_norm > 1e-12)
     {
       // normalized gradient of phi
       LINALG::Matrix<nsd_, 1> normalized_gradphi(true);
@@ -653,7 +652,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcArtificialDiff(
         h_sum += std::abs(val);
       }
       double h_dc(0.0);
-      if (h_sum > EPS12)
+      if (h_sum > 1e-12)
         h_dc = 2.0 / h_sum;
       else
         h_dc = h;
@@ -665,7 +664,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcArtificialDiff(
         double val = gradphi(idim, 0) / phiref;
         kappa_inter += (val * val);
       }
-      //      if (kappa_inter < EPS10) dserror("Too low value");
+      //      if (kappa_inter < 1e-10) dserror("Too low value");
 
       // smoothness parameter beta: 1 (smoother layers) or 2 (sharper layers)
       // note for 1.0, this form is equivalent to the Codina form above, except
@@ -684,7 +683,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcArtificialDiff(
     // gradient norm
     const double grad_norm = gradphi.Norm2();
 
-    if (grad_norm > EPS10)
+    if (grad_norm > 1e-10)
     {
       // for the present definitions, sigma and a specific term (either
       // residual or convective term) are different
@@ -736,7 +735,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcArtificialDiff(
           double tau_bhpar = 0.0;
           if (epe >= 700.0)
             tau_bhpar = 0.5 * h / vel_norm_bhpar;
-          else if (epe < 700.0 and epe > EPS15)
+          else if (epe < 700.0 and epe > 1e-15)
           {
             xi = (((pp + pm) / (pp - pm)) - (1.0 / epe));  // xi = coth(epe) - 1/epe
             // compute optimal stabilization parameter
@@ -769,14 +768,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcArtificialDiff(
           // compute sigma (version 1 according to John and Knobloch (2007))
           if (scatrapara_->ASSGDType() == INPAR::SCATRA::assgd_tezduyar_wo_phizero)
           {
-            if (vel_norm > EPS10) sigma = (h / vel_norm) * (1.0 - (vel_norm_bhpar / vel_norm));
+            if (vel_norm > 1e-10) sigma = (h / vel_norm) * (1.0 - (vel_norm_bhpar / vel_norm));
           }
           else
           {
             // compute sigma (version 2 according to John and Knobloch (2007))
             // setting scaling phi_0=1.0 as in John and Knobloch (2007)
             const double phi0 = 1.0;
-            if (vel_norm > EPS10)
+            if (vel_norm > 1e-10)
               sigma = (h * h * grad_norm / (vel_norm * phi0)) * (1.0 - (vel_norm_bhpar / vel_norm));
           }
 
@@ -800,11 +799,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcArtificialDiff(
             zeta = 1.0;
           else
           {
-            if (abs(scatrares) > EPS10) zeta = std::max(1.0, (conv_phi / scatrares));
+            if (abs(scatrares) > 1e-10) zeta = std::max(1.0, (conv_phi / scatrares));
           }
 
           // compute sigma
-          if (vel_norm_zh > EPS10) sigma = tau * std::max(0.0, (vel_norm / vel_norm_zh) - zeta);
+          if (vel_norm_zh > 1e-10) sigma = tau * std::max(0.0, (vel_norm / vel_norm_zh) - zeta);
 
           // set specific term to residual
           specific_term = scatrares;
@@ -828,7 +827,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcArtificialDiff(
       artdiff = 0.0;
   }
 
-  //  if (artdiff>EPS8)
+  //  if (artdiff>1e-8)
   //    std::cout<<__FILE__<<__LINE__<<"\t artdiff=\t"<<artdiff<<std::endl;
   diffmanager_->SetIsotropicSubGridDiff(artdiff, k);
 

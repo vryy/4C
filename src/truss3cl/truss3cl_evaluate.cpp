@@ -17,7 +17,6 @@
 #include "linalg_utils_sparse_algebra_math.H"
 #include "fem_general_utils_fem_shapefunctions.H"
 #include "mat_stvenantkirchhoff.H"
-#include "lib_standardtypes_cpp.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) mukherjee 01/14|
@@ -809,8 +808,8 @@ inline void DRT::ELEMENTS::Truss3CL::MyDampingConstants(
     Teuchos::ParameterList& params, LINALG::Matrix<3, 1>& gamma)
 {
   // translational damping coefficients according to Howard, p. 107, table 6.2;
-  gamma(0) = 2 * PI * params.get<double>("ETA", 0.0);
-  gamma(1) = 4 * PI * params.get<double>("ETA", 0.0);
+  gamma(0) = 2 * M_PI * params.get<double>("ETA", 0.0);
+  gamma(1) = 4 * M_PI * params.get<double>("ETA", 0.0);
   // no rotational damping as no rotaional degrees of freedom
   gamma(2) = 0;
 

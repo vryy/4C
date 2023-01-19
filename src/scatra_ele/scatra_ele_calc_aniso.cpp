@@ -19,8 +19,8 @@
 #include "lib_discret.H"
 #include "lib_element.H"
 
-#include "lib_globalproblem.H"      // for time curve in body force
-#include "lib_standardtypes_cpp.H"  // for EPS13 and so on
+#include "lib_globalproblem.H"  // for time curve in body force
+
 #include "lib_utils.H"
 #include "fem_general_utils_fem_shapefunctions.H"
 #include "fem_general_utils_nurbs_shapefunctions.H"

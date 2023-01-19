@@ -71,7 +71,7 @@ void SCATRA::TimIntGenAlpha::Setup()
 
   // compute specific time factor for generalized-alpha time integration:
   // genalphatimefac = gamma*alpha_F/alpha_M
-  if (alphaM_ < EPS12) dserror("factor alpha_M lower than or equal zero");
+  if (alphaM_ < 1e-12) dserror("factor alpha_M lower than or equal zero");
   genalphafac_ = gamma_ / alphaM_;
 
   // fine-scale vector at time n+alpha_F

@@ -26,7 +26,6 @@
 #include "lubrication_ele_calc_utils.H"
 #include "lubrication_ele_action.H"
 
-#include "lib_standardtypes_cpp.H"
 
 #include "mat_lubrication_mat.H"
 #include "headers_singleton_owner.H"
@@ -1421,7 +1420,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalculatePressures(
       for (int i = 0; i < nen_; i++)
       {
         const double fac_funct_i = fac * funct_(i);
-        if (std::abs(eprenp_(i, 0)) > EPS14)
+        if (std::abs(eprenp_(i, 0)) > 1e-14)
           pressures[0] += fac_funct_i / eprenp_(i, 0);
         else
           dserror("Division by zero");

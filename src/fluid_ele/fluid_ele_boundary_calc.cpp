@@ -25,7 +25,6 @@
 #include "nurbs_discret_nurbs_utils.H"
 
 #include "lib_globalproblem.H"
-#include "lib_standardtypes_cpp.H"
 
 #include "mat_arrhenius_pv.H"
 #include "mat_carreauyasuda.H"
@@ -2341,7 +2340,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetDensity(
     dserror("Material type is not supported for density evaluation for boundary element!");
 
   //  // check whether there is zero or negative density
-  if (densaf_ < EPS15) dserror("zero or negative density!");
+  if (densaf_ < 1e-15) dserror("zero or negative density!");
 
 
 

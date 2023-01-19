@@ -17,7 +17,6 @@
 #include "lib_utils.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "lib_element_integration_select.H"
-#include "headers_definitions.h"
 
 
 /*----------------------------------------------------------------------*
@@ -860,7 +859,7 @@ void DRT::ELEMENTS::TopOptImpl<distype>::CalcStabParameter(const double vol)
 
       // computation of stabilization parameters tau_Mu and tau_Mp
       // -> identical for the present definitions
-      tau_(0) = 1.0 / (sqrt(c1 * dens_sqr * DSQR(sigma_tot) + Gnormu + Gvisc));
+      tau_(0) = 1.0 / (sqrt(c1 * dens_sqr * ((sigma_tot) * (sigma_tot)) + Gnormu + Gvisc));
       tau_(1) = tau_(0);
       break;
     }
@@ -905,8 +904,8 @@ void DRT::ELEMENTS::TopOptImpl<distype>::CalcStabParameter(const double vol)
 
       // various parameter computations for case with dt:
       // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
-      const double re01 = 4.0 * visc / (mk * dens * sigma_tot * DSQR(strle));
-      const double re11 = 4.0 * visc / (mk * dens * sigma_tot * DSQR(hk));
+      const double re01 = 4.0 * visc / (mk * dens * sigma_tot * ((strle) * (strle)));
+      const double re11 = 4.0 * visc / (mk * dens * sigma_tot * ((hk) * (hk)));
 
       // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
       const double re02 = mk * dens * fluidvel_norm * strle / (2.0 * visc);
@@ -918,8 +917,10 @@ void DRT::ELEMENTS::TopOptImpl<distype>::CalcStabParameter(const double vol)
       const double xi02 = std::max(re02, 1.0);
       const double xi12 = std::max(re12, 1.0);
 
-      tau_(0) = DSQR(strle) / (DSQR(strle) * dens * sigma_tot * xi01 + (4.0 * visc / mk) * xi02);
-      tau_(1) = DSQR(hk) / (DSQR(hk) * dens * sigma_tot * xi11 + (4.0 * visc / mk) * xi12);
+      tau_(0) = ((strle) * (strle)) /
+                (((strle) * (strle)) * dens * sigma_tot * xi01 + (4.0 * visc / mk) * xi02);
+      tau_(1) =
+          ((hk) * (hk)) / (((hk) * (hk)) * dens * sigma_tot * xi11 + (4.0 * visc / mk) * xi12);
       break;
     }
 
@@ -938,8 +939,8 @@ void DRT::ELEMENTS::TopOptImpl<distype>::CalcStabParameter(const double vol)
 
       // various parameter computations for case without dt:
       // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
-      double re01 = 4.0 * visc / (mk * dens * poroint_ * DSQR(strle));
-      double re11 = 4.0 * visc / (mk * dens * poroint_ * DSQR(hk));
+      double re01 = 4.0 * visc / (mk * dens * poroint_ * ((strle) * (strle)));
+      double re11 = 4.0 * visc / (mk * dens * poroint_ * ((hk) * (hk)));
 
       // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
       const double re02 = mk * dens * fluidvel_norm * strle / (2.0 * visc);
@@ -951,8 +952,9 @@ void DRT::ELEMENTS::TopOptImpl<distype>::CalcStabParameter(const double vol)
       const double xi02 = std::max(re02, 1.0);
       const double xi12 = std::max(re12, 1.0);
 
-      tau_(0) = DSQR(strle) / (DSQR(strle) * dens * poroint_ * xi01 + (4.0 * visc / mk) * xi02);
-      tau_(1) = DSQR(hk) / (DSQR(hk) * dens * poroint_ * xi11 + (4.0 * visc / mk) * xi12);
+      tau_(0) = ((strle) * (strle)) /
+                (((strle) * (strle)) * dens * poroint_ * xi01 + (4.0 * visc / mk) * xi02);
+      tau_(1) = ((hk) * (hk)) / (((hk) * (hk)) * dens * poroint_ * xi11 + (4.0 * visc / mk) * xi12);
       break;
     }
 
@@ -1004,12 +1006,15 @@ void DRT::ELEMENTS::TopOptImpl<distype>::CalcStabParameter(const double vol)
       c3 = 4.0 / (mk * mk);
       // alternative value as proposed in Shakib (1989): c3 = 16.0/(mk*mk);
 
-      tau_(0) = 1.0 / (sqrt(c1 * DSQR(dens) * DSQR(sigma_tot) +
-                            c2 * DSQR(dens) * DSQR(fluidvel_norm) / DSQR(strle) +
-                            c3 * DSQR(visc) / (DSQR(strle) * DSQR(strle))));
-      tau_(1) = 1.0 / (sqrt(c1 * DSQR(dens) * DSQR(sigma_tot) +
-                            c2 * DSQR(dens) * DSQR(fluidvel_norm) / DSQR(hk) +
-                            c3 * DSQR(visc) / (DSQR(hk) * DSQR(hk))));
+      tau_(0) =
+          1.0 /
+          (sqrt(c1 * ((dens) * (dens)) * ((sigma_tot) * (sigma_tot)) +
+                c2 * ((dens) * (dens)) * ((fluidvel_norm) * (fluidvel_norm)) / ((strle) * (strle)) +
+                c3 * ((visc) * (visc)) / (((strle) * (strle)) * ((strle) * (strle)))));
+      tau_(1) =
+          1.0 / (sqrt(c1 * ((dens) * (dens)) * ((sigma_tot) * (sigma_tot)) +
+                      c2 * ((dens) * (dens)) * ((fluidvel_norm) * (fluidvel_norm)) / ((hk) * (hk)) +
+                      c3 * ((visc) * (visc)) / (((hk) * (hk)) * ((hk) * (hk)))));
       break;
     }
     case INPAR::FLUID::tau_codina:
@@ -1048,10 +1053,9 @@ void DRT::ELEMENTS::TopOptImpl<distype>::CalcStabParameter(const double vol)
       c3 = 4.0 / mk;
 
       tau_(0) = 1.0 / (sqrt(c1 * dens * sigma_tot + c2 * dens * fluidvel_norm / strle +
-                            c3 * visc / DSQR(strle)));
-      tau_(1) =
-          1.0 /
-          (sqrt(c1 * dens * sigma_tot + c2 * dens * fluidvel_norm / hk + c3 * visc / DSQR(hk)));
+                            c3 * visc / ((strle) * (strle))));
+      tau_(1) = 1.0 / (sqrt(c1 * dens * sigma_tot + c2 * dens * fluidvel_norm / hk +
+                            c3 * visc / ((hk) * (hk))));
       break;
     }
     default:
@@ -1213,7 +1217,7 @@ void DRT::ELEMENTS::TopOptImpl<distype>::CalcStabParameter(const double vol)
 
       */
 
-      tau_(2) = DSQR(hk) / (sqrt(c3) * tau_(1));
+      tau_(2) = ((hk) * (hk)) / (sqrt(c3) * tau_(1));
     }
     break;
     default:

@@ -25,7 +25,6 @@
 #include "lib_condition_utils.H"
 #include "lib_function.H"
 #include "lib_globalproblem.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_function_of_time.H"
 
 #include "mat_arrhenius_pv.H"
@@ -1634,7 +1633,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::AddSurfaceTensionForce(
     //==================================================
 
     static LINALG::Matrix<nsd_, 1> gradphi;
-    double Dheavyside_epsilon = 1.0 / (2.0 * epsilon) * (1.0 + cos(PI * gaussescaaf / epsilon));
+    double Dheavyside_epsilon = 1.0 / (2.0 * epsilon) * (1.0 + cos(M_PI * gaussescaaf / epsilon));
 
     // NON-smoothed gradient!!! Should be correct
     gradphi.Multiply(derxy_, escaaf);
@@ -1672,7 +1671,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::AddSurfaceTensionForce(
       //    else
       //      gradphin.Scale(0.0); //This to catch the cases when gradphi \approx 0
 
-      Dheavyside_epsilon = 1.0 / (2.0 * epsilon) * (1.0 + cos(PI * gaussescan / epsilon));
+      Dheavyside_epsilon = 1.0 / (2.0 * epsilon) * (1.0 + cos(M_PI * gaussescan / epsilon));
 
       // Smoothed gradient (egradphi, should not be used!!!)
       if (fldpara_->GetSurfaceTensionApprox() ==
@@ -1983,7 +1982,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
     {
       const double density_0 = actmat->Density();
 
-      if (escaaf(0) < EPS12) dserror("Boussinesq approximation: density in escaaf is zero");
+      if (escaaf(0) < 1e-12) dserror("Boussinesq approximation: density in escaaf is zero");
       densaf = density_0;
       densam = densaf;
       densn = densaf;
@@ -2583,7 +2582,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
     // Calculate material parameters with phiaf
     if (abs(gpscaaf) <= epsilon)
     {
-      heavyside_epsilon = 0.5 * (1.0 + gpscaaf / epsilon + 1.0 / PI * sin(PI * gpscaaf / epsilon));
+      heavyside_epsilon =
+          0.5 * (1.0 + gpscaaf / epsilon + 1.0 / M_PI * sin(M_PI * gpscaaf / epsilon));
 
       densaf = heavyside_epsilon * density[0] + (1.0 - heavyside_epsilon) * density[1];
       visc = heavyside_epsilon * viscosity[0] + (1.0 - heavyside_epsilon) * viscosity[1];
@@ -2599,7 +2599,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
     //  //Calculate material parameters with phiam
     if (abs(gpscaam) <= epsilon)
     {
-      heavyside_epsilon = 0.5 * (1.0 + gpscaam / epsilon + 1.0 / PI * sin(PI * gpscaam / epsilon));
+      heavyside_epsilon =
+          0.5 * (1.0 + gpscaam / epsilon + 1.0 / M_PI * sin(M_PI * gpscaam / epsilon));
 
       densam = heavyside_epsilon * density[0] + (1.0 - heavyside_epsilon) * density[1];
       densn = densam;
@@ -2628,7 +2629,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
 
   // check whether there is zero or negative (physical) viscosity
   // (expect for permeable fluid)
-  if (visc < EPS15 and not(material->MaterialType() == INPAR::MAT::m_permeable_fluid))
+  if (visc < 1e-15 and not(material->MaterialType() == INPAR::MAT::m_permeable_fluid))
     dserror("zero or negative (physical) diffusivity");
 
   return;
@@ -2791,7 +2792,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
         Gvisc = c3 * visceff_ * visceff_ * normG;
 
         // compute stabilization parameter tau_Mu
-        tau_(0) = 1.0 / (sqrt(c1 * dens_sqr * DSQR(sigma_tot) + Gnormu + Gvisc));
+        tau_(0) = 1.0 / (sqrt(c1 * dens_sqr * ((sigma_tot) * (sigma_tot)) + Gnormu + Gvisc));
 
         // compute stabilization parameter tau_Mp
         // ensure that tau_Mp does not become too small for viscosity-dominated flow
@@ -2801,8 +2802,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
         const double llc = 1.0;
         const double powerfac = 3.0;
         if ((Gnormu < Gvisc) and (std::pow(traceG, (powerfac / 2.0)) < llc * sqrt(Gvisc)))
-          tau_(1) = 1.0 / (sqrt(c1 * dens_sqr * DSQR(sigma_tot) + Gnormu +
-                                (std::pow(traceG, powerfac) / DSQR(llc))));
+          tau_(1) = 1.0 / (sqrt(c1 * dens_sqr * ((sigma_tot) * (sigma_tot)) + Gnormu +
+                                (std::pow(traceG, powerfac) / ((llc) * (llc)))));
         else
           tau_(1) = tau_(0);
       }
@@ -2847,8 +2848,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
 
         // various parameter computations for case with dt:
         // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
-        const double re01 = 4.0 * visceff_ / (mk * densaf_ * sigma_tot * DSQR(h_u));
-        const double re11 = 4.0 * visceff_ / (mk * densaf_ * sigma_tot * DSQR(h_p));
+        const double re01 = 4.0 * visceff_ / (mk * densaf_ * sigma_tot * ((h_u) * (h_u)));
+        const double re11 = 4.0 * visceff_ / (mk * densaf_ * sigma_tot * ((h_p) * (h_p)));
 
         // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
         const double re02 = mk * densaf_ * vel_norm * h_u / (2.0 * visceff_);
@@ -2861,8 +2862,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
         const double xi12 = std::max(re12, 1.0);
 
         // compute stabilization parameter tau_Mu
-        tau_(0) =
-            DSQR(h_u) / (DSQR(h_u) * densaf_ * sigma_tot * xi01 + (4.0 * visceff_ / mk) * xi02);
+        tau_(0) = ((h_u) * (h_u)) /
+                  (((h_u) * (h_u)) * densaf_ * sigma_tot * xi01 + (4.0 * visceff_ / mk) * xi02);
 
         // compute stabilization parameter tau_Mp
         // ensure that tau_Mp does not become too small for viscosity-dominated flow
@@ -2871,7 +2872,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
         // here: lower-limit constant chosen to be 1.0 and cubic char. length
         const double llc = 1.0;
         const double powerfac = 3.0;
-        if ((re12 < 1.0) and (llc * std::pow(h_p, powerfac) > DSQR(h_p) / (4.0 * visceff_ / mk)))
+        if ((re12 < 1.0) and
+            (llc * std::pow(h_p, powerfac) > ((h_p) * (h_p)) / (4.0 * visceff_ / mk)))
         {
           if (re11 < 1.0)
             tau_(1) = 1.0 / (densaf_ * sigma_tot + (1.0 / (llc * std::pow(h_p, powerfac))));
@@ -2879,8 +2881,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
             tau_(1) = llc * std::pow(h_p, powerfac);
         }
         else
-          tau_(1) =
-              DSQR(h_p) / (DSQR(h_p) * densaf_ * sigma_tot * xi11 + (4.0 * visceff_ / mk) * xi12);
+          tau_(1) = ((h_p) * (h_p)) /
+                    (((h_p) * (h_p)) * densaf_ * sigma_tot * xi11 + (4.0 * visceff_ / mk) * xi12);
       }
       break;
 
@@ -2903,8 +2905,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
         double re11 = 0.0;
         if (fldpara_->Reaction())  // TODO Martin: check influence of reaction to stabilization
         {
-          re01 = 4.0 * visceff_ / (mk * densaf_ * reacoeff_ * DSQR(h_u));
-          re11 = 4.0 * visceff_ / (mk * densaf_ * reacoeff_ * DSQR(h_p));
+          re01 = 4.0 * visceff_ / (mk * densaf_ * reacoeff_ * ((h_u) * (h_u)));
+          re11 = 4.0 * visceff_ / (mk * densaf_ * reacoeff_ * ((h_p) * (h_p)));
         }
         // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
         const double re02 = mk * densaf_ * vel_norm * h_u / (2.0 * visceff_);
@@ -2917,8 +2919,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
         const double xi12 = std::max(re12, 1.0);
 
         // compute stabilization parameter tau_Mu
-        tau_(0) =
-            DSQR(h_u) / (DSQR(h_u) * densaf_ * reacoeff_ * xi01 + (4.0 * visceff_ / mk) * xi02);
+        tau_(0) = ((h_u) * (h_u)) /
+                  (((h_u) * (h_u)) * densaf_ * reacoeff_ * xi01 + (4.0 * visceff_ / mk) * xi02);
 
         // compute stabilization parameter tau_Mp
         // ensure that tau_Mp does not become too small for viscosity-dominated flow
@@ -2927,7 +2929,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
         // here: lower-limit constant chosen to be 1.0 and cubic char. length
         const double llc = 1.0;
         const double powerfac = 3.0;
-        if ((re12 < 1.0) and (llc * std::pow(h_p, powerfac) > DSQR(h_p) / (4.0 * visceff_ / mk)))
+        if ((re12 < 1.0) and
+            (llc * std::pow(h_p, powerfac) > ((h_p) * (h_p)) / (4.0 * visceff_ / mk)))
         {
           if (re11 < 1.0)
             tau_(1) = 1.0 / (densaf_ * reacoeff_ + (1.0 / (llc * std::pow(h_p, powerfac))));
@@ -2935,8 +2938,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
             tau_(1) = llc * std::pow(h_p, powerfac);
         }
         else
-          tau_(1) =
-              DSQR(h_p) / (DSQR(h_p) * densaf_ * reacoeff_ * xi11 + (4.0 * visceff_ / mk) * xi12);
+          tau_(1) = ((h_p) * (h_p)) /
+                    (((h_p) * (h_p)) * densaf_ * reacoeff_ * xi11 + (4.0 * visceff_ / mk) * xi12);
       }
       break;
 
@@ -2989,9 +2992,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
         // alternative value as proposed in Shakib (1989): c3 = 16.0/(mk*mk);
 
         // compute stabilization parameter tau_Mu
-        tau_(0) = 1.0 / (sqrt(c1 * DSQR(densaf_) * DSQR(sigma_tot) +
-                              c2 * DSQR(densaf_) * DSQR(vel_norm) / DSQR(h_u) +
-                              c3 * DSQR(visceff_) / (DSQR(h_u) * DSQR(h_u))));
+        tau_(0) =
+            1.0 / (sqrt(c1 * ((densaf_) * (densaf_)) * ((sigma_tot) * (sigma_tot)) +
+                        c2 * ((densaf_) * (densaf_)) * ((vel_norm) * (vel_norm)) / ((h_u) * (h_u)) +
+                        c3 * ((visceff_) * (visceff_)) / (((h_u) * (h_u)) * ((h_u) * (h_u)))));
 
         // compute stabilization parameter tau_Mp
         // ensure that tau_Mp does not become too small for viscosity-dominated flow
@@ -3001,14 +3005,19 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
         const double llc = 1.0;
         const double powerfac = 3.0;
         const double re12 = mk * densaf_ * vel_norm * h_p / (2.0 * visceff_);
-        if ((re12 < 1.0) and (llc * std::pow(h_p, powerfac) > DSQR(h_p) / (sqrt(c3) * visceff_)))
-          tau_(1) = 1.0 / (sqrt(c1 * DSQR(densaf_) * DSQR(sigma_tot) +
-                                c2 * DSQR(densaf_) * DSQR(vel_norm) / DSQR(h_p) +
-                                1.0 / DSQR(llc * std::pow(h_p, powerfac))));
+        if ((re12 < 1.0) and
+            (llc * std::pow(h_p, powerfac) > ((h_p) * (h_p)) / (sqrt(c3) * visceff_)))
+          tau_(1) =
+              1.0 /
+              (sqrt(c1 * ((densaf_) * (densaf_)) * ((sigma_tot) * (sigma_tot)) +
+                    c2 * ((densaf_) * (densaf_)) * ((vel_norm) * (vel_norm)) / ((h_p) * (h_p)) +
+                    1.0 / ((llc * std::pow(h_p, powerfac)) * (llc * std::pow(h_p, powerfac)))));
         else
-          tau_(1) = 1.0 / (sqrt(c1 * DSQR(densaf_) * DSQR(sigma_tot) +
-                                c2 * DSQR(densaf_) * DSQR(vel_norm) / DSQR(h_p) +
-                                c3 * DSQR(visceff_) / (DSQR(h_p) * DSQR(h_p))));
+          tau_(1) =
+              1.0 /
+              (sqrt(c1 * ((densaf_) * (densaf_)) * ((sigma_tot) * (sigma_tot)) +
+                    c2 * ((densaf_) * (densaf_)) * ((vel_norm) * (vel_norm)) / ((h_p) * (h_p)) +
+                    c3 * ((visceff_) * (visceff_)) / (((h_p) * (h_p)) * ((h_p) * (h_p)))));
       }
       break;
 
@@ -3056,7 +3065,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
 
         // compute stabilization parameter tau_Mu
         tau_(0) = 1.0 / (c1 * densaf_ * sigma_tot + c2 * densaf_ * vel_norm / h_u +
-                            c3 * visceff_ / DSQR(h_u));
+                            c3 * visceff_ / ((h_u) * (h_u)));
 
         // compute stabilization parameter tau_Mp
         // ensure that tau_Mp does not become too small for viscosity-dominated flow
@@ -3066,12 +3075,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
         const double llc = 1.0;
         const double powerfac = 3.0;
         const double re12 = mk * densaf_ * vel_norm * h_p / (2.0 * visceff_);
-        if ((re12 < 1.0) and (llc * std::pow(h_p, powerfac) > DSQR(h_p) / (c3 * visceff_)))
+        if ((re12 < 1.0) and (llc * std::pow(h_p, powerfac) > ((h_p) * (h_p)) / (c3 * visceff_)))
           tau_(1) = 1.0 / (c1 * densaf_ * sigma_tot + c2 * densaf_ * vel_norm / h_p +
                               1.0 / (llc * std::pow(h_p, powerfac)));
         else
           tau_(1) = 1.0 / (c1 * densaf_ * sigma_tot + c2 * densaf_ * vel_norm / h_p +
-                              c3 * visceff_ / DSQR(h_p));
+                              c3 * visceff_ / ((h_p) * (h_p)));
       }
       break;
 
@@ -3104,7 +3113,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
 
         // various parameter computations for case with dt:
         // relating viscous to reactive part
-        const double re11 = 2.0 * visceff_ / (mk * densaf_ * sigma_tot * DSQR(h_p));
+        const double re11 = 2.0 * visceff_ / (mk * densaf_ * sigma_tot * ((h_p) * (h_p)));
 
         // respective "switching" parameter
         const double xi11 = std::max(re11, 1.0);
@@ -3115,8 +3124,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
 
         // compute stabilization parameter tau_Mp (tau_Mu not required)
         tau_(0) = 0.0;
-        tau_(1) =
-            DSQR(h_p) / (c_u * DSQR(h_p) * densaf_ * sigma_tot * xi11 + (2.0 * visceff_ / mk));
+        tau_(1) = ((h_p) * (h_p)) /
+                  (c_u * ((h_p) * (h_p)) * densaf_ * sigma_tot * xi11 + (2.0 * visceff_ / mk));
       }
       break;
 
@@ -3308,7 +3317,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
 
         */
 
-        tau_(2) = DSQR(h_p) / (sqrt(c3) * tau_(1));
+        tau_(2) = ((h_p) * (h_p)) / (sqrt(c3) * tau_(1));
       }
       break;
 
@@ -3329,7 +3338,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
            see for example Diss Peter Gamnitzer for correct definition
         */
 
-        tau_(2) = DSQR(h_p) / (c3 * tau_(1));
+        tau_(2) = ((h_p) * (h_p)) / (c3 * tau_(1));
       }
       break;
 
@@ -3352,7 +3361,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
         // (set to be 4.0 in Badia and Codina (2010))
         const double c_p = 4.0;
 
-        tau_(2) = c_p * DSQR(h_p) * reacoeff_;
+        tau_(2) = c_p * ((h_p) * (h_p)) * reacoeff_;
       }
       break;
 
@@ -3622,7 +3631,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
         /* the 4.0 instead of the Franca's definition 2.0 results from the viscous
          * term in the Navier-Stokes-equations, which is scaled by 2.0*nu         */
 
-        tau_(0) = DSQR(h_p) / (4.0 * visceff_ / mk + (4.0 * visceff_ / mk) * xi_convectaf);
+        tau_(0) = ((h_p) * (h_p)) / (4.0 * visceff_ / mk + (4.0 * visceff_ / mk) * xi_convectaf);
 
         tau_(1) = tau_(0);
 

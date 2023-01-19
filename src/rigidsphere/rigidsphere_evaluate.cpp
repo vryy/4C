@@ -24,7 +24,6 @@
 #include <Epetra_CrsMatrix.h>
 
 #include "inpar_browniandyn.H"
-#include "lib_standardtypes_cpp.H"
 #include "structure_new_elements_paramsinterface.H"
 #include "geometric_search_params.H"
 #include "geometric_search_bounding_volume.H"
@@ -181,7 +180,7 @@ void DRT::ELEMENTS::Rigidsphere::nlnstiffmass(Teuchos::ParameterList& params,
   // assemble massmatrix if requested
   if (massmatrix != NULL)
   {
-    double m = rho_ * 4.0 / 3.0 * PI * radius_ * radius_ * radius_;
+    double m = rho_ * 4.0 / 3.0 * M_PI * radius_ * radius_ * radius_;
     for (int i = 0; i < 3; ++i) (*massmatrix)(i, i) = m;
   }
 
@@ -318,7 +317,7 @@ double DRT::ELEMENTS::Rigidsphere::MyDampingConstant()
   double eta = ParamsInterface().GetBrownianDynParamInterface()->GetViscosity();
 
   // damping/friction coefficient of a rigid sphere (Stokes' law for very small Reynolds numbers)
-  return 6 * PI * eta * radius_;
+  return 6 * M_PI * eta * radius_;
 }
 
 /*-----------------------------------------------------------------------------------------------------------*

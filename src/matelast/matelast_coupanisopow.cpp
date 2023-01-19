@@ -10,7 +10,6 @@
 #include "matelast_aniso_structuraltensor_strategy.H"
 
 #include "mat_par_material.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_linedefinition.H"
 
 MAT::ELASTIC::PAR::CoupAnisoPow::CoupAnisoPow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -159,7 +158,7 @@ void MAT::ELASTIC::CoupAnisoPow::SetFiberVecs(
 {
   if ((params_->gamma_ < -90) || (params_->gamma_ > 90)) dserror("Fiber angle not in [-90,90]");
   // convert
-  double gamma = (params_->gamma_ * PI) / 180.;
+  double gamma = (params_->gamma_ * M_PI) / 180.;
 
   if (params_->adapt_angle_ && newgamma != -1.0)
   {

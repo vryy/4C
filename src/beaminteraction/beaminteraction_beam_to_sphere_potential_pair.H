@@ -22,7 +22,6 @@
 
 #include "beaminteraction_beam3contact_defines.H"
 #include "beaminteraction_beam3contact_tangentsmoothing.H"
-#include "lib_standardtypes_cpp.H"
 
 // forward declarations
 namespace LINALG

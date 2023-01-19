@@ -20,7 +20,6 @@
 #include "beaminteraction_beam3contact_tangentsmoothing.H"
 #include "beamcontact_beam3contactinterface.H"
 
-#include "lib_standardtypes_cpp.H"
 
 namespace CONTACT
 {

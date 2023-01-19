@@ -10,7 +10,6 @@ according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium"
 #include "matelast_coupanisoexpotwocoup.H"
 
 #include "mat_par_material.H"
-#include "lib_standardtypes_cpp.H"
 #include "mat_service.H"
 #include "mat_anisotropy_extension.H"
 

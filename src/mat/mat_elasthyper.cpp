@@ -15,7 +15,6 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 /*----------------------------------------------------------------------*/
 
 #include "mat_elasthyper.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_globalproblem.H"
 #include "mat_par_bundle.H"
 #include "mat_service.H"

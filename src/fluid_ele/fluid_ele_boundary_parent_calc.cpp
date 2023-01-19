@@ -26,7 +26,6 @@
 #include "lib_globalproblem.H"
 #include "lib_utils.H"
 #include "lib_function_of_time.H"
-#include "lib_standardtypes_cpp.H"
 
 #include "linalg_utils_densematrix_eigen.H"
 
@@ -5062,7 +5061,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
       }
 
       // compute averaged norm of traction by division by area element
-      if (area < EPS13) dserror("Area too small, zero or even negative!");
+      if (area < 1e-13) dserror("Area too small, zero or even negative!");
       normtraction /= area;
     }  // if (nsd==3)
   }
@@ -5245,7 +5244,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
           nGn += unitnormal(rr) * G(rr, nn) * unitnormal(nn);
         }
       }
-      if (nGn < EPS14) dserror("nGn is zero or negative!");
+      if (nGn < 1e-14) dserror("nGn is zero or negative!");
       const double h = 2.0 / sqrt(nGn);
 
       // interpolate to gausspoint
@@ -5429,7 +5428,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
           {
             const double dres_duplus = JacobianSpaldingResidual_uplus(y, visc_, utau, normu);
 
-            if (abs(dres_duplus) < EPS12) dserror("prevent division by zero");
+            if (abs(dres_duplus) < 1e-12) dserror("prevent division by zero");
             const double visc_dudy = -utau * utau / dres_duplus;
 
             if (fabs(normtraction) > 0.001 * visc_ / y)
@@ -5938,10 +5937,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::GetDensityAndViscosity(
     dserror("Material type is not supported for boundary element with parent-element evaluation!");
 
   // check whether there is zero or negative density
-  if (densaf_ < EPS15) dserror("zero or negative density!");
+  if (densaf_ < 1e-15) dserror("zero or negative density!");
 
   // check whether there is zero or negative (physical) viscosity
-  if (visc_ < EPS15) dserror("zero or negative (physical) diffusivity!");
+  if (visc_ < 1e-15) dserror("zero or negative (physical) diffusivity!");
 
   return;
 }  // FluidBoundaryParent::GetDensityAndViscosity

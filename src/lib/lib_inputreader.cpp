@@ -13,7 +13,6 @@
 #include "lib_inputreader.H"
 #include "lib_linedefinition.H"
 #include "linalg_utils_densematrix_communication.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_globalproblem.H"
 #include "comm_utils.H"
 #include "io_control.H"
@@ -424,8 +423,8 @@ namespace DRT
                   dx[1] = coords[1] - coordm[1];
                   dx[2] = coords[2] - coordm[2];
 
-                  double calpha = cos(-box_specifications[rotaxis + rotoffset] * PI / 180);
-                  double salpha = sin(-box_specifications[rotaxis + rotoffset] * PI / 180);
+                  double calpha = cos(-box_specifications[rotaxis + rotoffset] * M_PI / 180);
+                  double salpha = sin(-box_specifications[rotaxis + rotoffset] * M_PI / 180);
 
                   coords[0] = coordm[0];  //+ calpha*dx[0] + salpha*dx[1];
                   coords[1] = coordm[1];  //+ -salpha*dx[0] + calpha*dx[1];

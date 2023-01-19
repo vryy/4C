@@ -40,9 +40,10 @@ table. This table can be queried for those values quite easily.
 
 */
 
-#include "headers_standardtypes.h"
 #include "lib_dserror.H"
 
+#include "ctype.h"
+#include "string.h"
 #include "pss_full_table.h"
 #include "pss_full_prototypes.h"
 

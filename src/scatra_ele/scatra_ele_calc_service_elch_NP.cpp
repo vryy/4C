@@ -12,8 +12,6 @@
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "lib_standardtypes_cpp.H"  // for EPS13 and so on
-
 #include "mat_material.H"
 
 /*----------------------------------------------------------------------------------------------------------*
@@ -352,23 +350,24 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
 
         if (my::nsd_ == 3)
         {
-          expterm = exp((-D) * (m * m + n * n + k * k) * t * PI * PI);
+          expterm = exp((-D) * (m * m + n * n + k * k) * t * M_PI * M_PI);
           c(0) = A0 +
-                 (A_mnk * (cos(m * PI * xint(0)) * cos(n * PI * xint(1)) * cos(k * PI * xint(2))) *
+                 (A_mnk *
+                     (cos(m * M_PI * xint(0)) * cos(n * M_PI * xint(1)) * cos(k * M_PI * xint(2))) *
                      expterm);
-          c_0_0_0_t = A0 + (A_mnk * exp((-D) * (m * m + n * n + k * k) * t * PI * PI));
+          c_0_0_0_t = A0 + (A_mnk * exp((-D) * (m * m + n * n + k * k) * t * M_PI * M_PI));
         }
         else if (my::nsd_ == 2)
         {
-          expterm = exp((-D) * (m * m + n * n) * t * PI * PI);
-          c(0) = A0 + (A_mnk * (cos(m * PI * xint(0)) * cos(n * PI * xint(1))) * expterm);
-          c_0_0_0_t = A0 + (A_mnk * exp((-D) * (m * m + n * n) * t * PI * PI));
+          expterm = exp((-D) * (m * m + n * n) * t * M_PI * M_PI);
+          c(0) = A0 + (A_mnk * (cos(m * M_PI * xint(0)) * cos(n * M_PI * xint(1))) * expterm);
+          c_0_0_0_t = A0 + (A_mnk * exp((-D) * (m * m + n * n) * t * M_PI * M_PI));
         }
         else if (my::nsd_ == 1)
         {
-          expterm = exp((-D) * (m * m) * t * PI * PI);
-          c(0) = A0 + (A_mnk * (cos(m * PI * xint(0))) * expterm);
-          c_0_0_0_t = A0 + (A_mnk * exp((-D) * (m * m) * t * PI * PI));
+          expterm = exp((-D) * (m * m) * t * M_PI * M_PI);
+          c(0) = A0 + (A_mnk * (cos(m * M_PI * xint(0))) * expterm);
+          c_0_0_0_t = A0 + (A_mnk * exp((-D) * (m * m) * t * M_PI * M_PI));
         }
         else
           dserror("Illegal number of space dimensions for analyt. solution: %d", my::nsd_);

@@ -14,7 +14,6 @@
 #include "lib_discret.H"
 #include "lib_exporter.H"
 #include "lib_globalproblem.H"
-#include "lib_standardtypes_cpp.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -293,7 +292,7 @@ void DRT::UTILS::MatchingOctree::CreateGlobalEntityMatching(const std::vector<in
         // get its coordinates
         std::vector<double> x(3);
 
-        if (abs(rotangle) < EPS13)
+        if (abs(rotangle) < 1e-13)
         {
           for (int dim = 0; dim < 3; dim++)
           {

@@ -12,7 +12,7 @@
 #ifndef AM_H
 #define AM_H
 
-#include "headers_ccarat_datatypes.h"
+#include "pss_full_ccarat_datatypes.h"
 
 /*!
 \addtogroup AMSYSTEM

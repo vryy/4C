@@ -8,8 +8,6 @@
 *----------------------------------------------------------------------*/
 
 #include "so3_surface.H"
-#include "headers_definitions.h"
-#include "headers_standardtypes.h"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "lib_discret.H"
 #include "lib_dserror.H"
@@ -839,7 +837,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
               const double val = (1.0 - pow(xcn(node, 2) / maxcoord, 2.0));
               if (val < 0.0)  // negative doubles can happen due to round-off errors
               {
-                if (val > -EPS10)  // seems to be a round-off error, we proceed assuming val=0.0
+                if (val > -1e-10)  // seems to be a round-off error, we proceed assuming val=0.0
                 {
                   circ = 0.0;
                 }
@@ -921,7 +919,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
           const double val = (1.0 - pow(xcn(node, 2) / maxcoord, 2.0));
           if (val < 0.0)  // negative doubles can happen due to round-off errors
           {
-            if (val > -EPS10)  // seems to be a round-off error, we proceed assuming val=0.0
+            if (val > -1e-10)  // seems to be a round-off error, we proceed assuming val=0.0
             {
               circ = 0.0;
             }

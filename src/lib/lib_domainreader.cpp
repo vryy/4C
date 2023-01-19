@@ -12,7 +12,6 @@
 
 #include "lib_domainreader.H"
 #include "lib_gridgenerator.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_elementdefinition.H"
 #include "lib_utils_parallel.H"
 #include "lib_utils_reader.H"

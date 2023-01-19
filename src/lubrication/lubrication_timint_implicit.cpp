@@ -367,7 +367,7 @@ void LUBRICATION::TimIntImpl::TimeLoop()
   // prepare time loop
   PrepareTimeLoop();
 
-  while ((step_ < stepmax_) and ((time_ + EPS12) < maxtime_))
+  while ((step_ < stepmax_) and ((time_ + 1e-12) < maxtime_))
   {
     // -------------------------------------------------------------------
     // prepare time step

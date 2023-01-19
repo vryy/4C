@@ -27,7 +27,6 @@
 #include "mat_elasthyper.H"
 
 #include "lib_globalproblem.H"
-#include "lib_standardtypes_cpp.H"
 
 #include "nurbs_discret_nurbs_utils.H"
 
@@ -5447,7 +5446,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeStabilizationParameters(co
 
     // various parameter computations for case with dt:
     // relating viscous to reactive part
-    const double re11 = 2.0 * Base::visceff_ / (mk * Base::densaf_ * sigma_tot * DSQR(h_p));
+    const double re11 = 2.0 * Base::visceff_ / (mk * Base::densaf_ * sigma_tot * ((h_p) * (h_p)));
 
     // respective "switching" parameter
     const double xi11 = std::max(re11, 1.0);
@@ -5458,9 +5457,9 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeStabilizationParameters(co
 
     // tau_Mu not required for porous flow
     Base::tau_(0) = 0.0;
-    Base::tau_(1) = DSQR(h_p) / (c_u * DSQR(h_p) * Base::densaf_ * sigma_tot * xi11 +
-                                    (2.0 * Base::visceff_ / mk));
-    Base::tau_(2) = c_p * DSQR(h_p) * Base::reacoeff_ / porosity_;
+    Base::tau_(1) = ((h_p) * (h_p)) / (c_u * ((h_p) * (h_p)) * Base::densaf_ * sigma_tot * xi11 +
+                                          (2.0 * Base::visceff_ / mk));
+    Base::tau_(2) = c_p * ((h_p) * (h_p)) * Base::reacoeff_ / porosity_;
 
     dtau_dphi_(0) = 0.0;
     if (xi11 == 1.0)
@@ -5492,7 +5491,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeStabilizationParameters(co
       // note: I do not know if the stabilization parameter should be devided by TimeFac(). It seems
       // to work, though...
       tau_struct_ =
-          scaling * DSQR(h_p) / 12.0 / effective_stiffness / Base::fldparatimint_->TimeFac();
+          scaling * ((h_p) * (h_p)) / 12.0 / effective_stiffness / Base::fldparatimint_->TimeFac();
     }
   }
   else

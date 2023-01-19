@@ -8,7 +8,6 @@
 
 #include "matelast_remodelfiber.H"
 #include "mat_par_material.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_linedefinition.H"
 #include "lib_voigt_notation.H"
 #include "mat_service.H"

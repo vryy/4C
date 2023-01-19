@@ -15,7 +15,7 @@
 #include "inpar_levelset.H"
 
 #include "lib_utils.H"
-#include "lib_standardtypes_cpp.H"  // for EPS13 and so on
+
 #include "geometry_position_array.H"
 #include "lib_discret.H"
 
@@ -142,7 +142,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::SmoothHeavisideFunction(
   else if (phi > epsilon)
     smoothH = 1.0;
   else
-    smoothH = 0.5 * (1.0 + phi / epsilon + sin(phi * PI / epsilon) / PI);
+    smoothH = 0.5 * (1.0 + phi / epsilon + sin(phi * M_PI / epsilon) / M_PI);
 
   return;
 }

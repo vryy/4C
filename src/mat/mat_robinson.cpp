@@ -55,7 +55,6 @@
 #include "lib_linedefinition.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "lib_globalproblem.H"
-#include "lib_standardtypes_cpp.H"
 #include "mat_par_bundle.H"
 
 #include "tsi_defines.H"
@@ -687,7 +686,7 @@ void MAT::Robinson::CalcBEViscousStrainRate(const double dt,  // (i) time step s
 
   // F = (J_2 - K^2) / K^2 = (J_2 / K^2) - 1
   double ff = 0.0;
-  if (fabs(kksq) <= EPS10)  // shrthrshld = kksq
+  if (fabs(kksq) <= 1e-10)  // shrthrshld = kksq
   {
     ff = -1.0;
     dserror("Division by zero: Shear threshold very close to zero");
@@ -1038,10 +1037,10 @@ void MAT::Robinson::CalcBEBackStressFlow(const double dt, const double tempnp,
   // activation energy 'Q_0'
   double q0 = params_->actv_ergy_;
   // T_{n+1} . T_0 < (1.0E-12)
-  if (fabs(tempnp * tem0) <= EPS12)
+  if (fabs(tempnp * tem0) <= 1e-12)
   {
     // T_0 < (1.0E-12)
-    if (fabs(tem0) <= EPS12)
+    if (fabs(tem0) <= 1e-12)
     {
       rr = rr0;
     }
@@ -1068,13 +1067,13 @@ void MAT::Robinson::CalcBEBackStressFlow(const double dt, const double tempnp,
   // G = I_2/K_0^2
   double gg = 0.0;
   // K_0^2 < 1.0E-10
-  if (fabs(kk0sq) <= EPS10)
+  if (fabs(kk0sq) <= 1e-10)
   {
     gg = 0.0;
     dserror("Division by zero: Shear threshold very close to zero");
   }
   // K_0^2 > 1.0E-10
-  else  // (fabs(kk0sq) > EPS10)
+  else  // (fabs(kk0sq) > 1e-10)
   {
     gg = sqrt(i2 / kk0sq);
   }
@@ -1137,12 +1136,12 @@ void MAT::Robinson::CalcBEBackStressFlow(const double dt, const double tempnp,
   {
     double fctv = hh / std::pow(gg0, beta);
     double fcta = 0.0;
-    if (sqrt(i2) < EPS10)
+    if (sqrt(i2) < 1e-10)
     {
       // sqrt(i2) := 1.0e6 assures units are OK
       fcta = rr * std::pow(gg0, (mm - beta)) / 1.0e6;
     }
-    else  // (sqrt(i2) > EPS10)
+    else  // (sqrt(i2) > 1e-10)
     {
       fcta = rr * std::pow(gg0, (mm - beta)) / sqrt(i2);
     }
@@ -1218,7 +1217,7 @@ void MAT::Robinson::CalcBEBackStressFlow(const double dt, const double tempnp,
   else
   {
     double ii2;
-    if (sqrt(i2) < EPS10)
+    if (sqrt(i2) < 1e-10)
     {
       ii2 = 1.0e12; /* sqrt(i2) := 1.0e6 assures units are OK */
     }

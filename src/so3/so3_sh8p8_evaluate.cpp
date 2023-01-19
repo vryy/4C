@@ -34,8 +34,6 @@
 #include "mat_elasthyper.H"
 #include "mat_micromaterial.H"
 
-#include "headers_definitions.h"
-
 using VoigtMapping = ::UTILS::VOIGT::IndexMappings;
 
 /*----------------------------------------------------------------------*
@@ -724,7 +722,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
 
     // compute determinant of Jacobian by Sarrus' rule
     double detJ = jac.Determinant();
-    if (fabs(detJ) <= EPS10)
+    if (fabs(detJ) <= 1e-10)
       dserror("JACOBIAN DETERMINANT CLOSE TO ZERO");
     else if (detJ < 0.0)
       dserror("NEGATIVE JACOBIAN DETERMINANT");

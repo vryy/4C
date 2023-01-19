@@ -9,7 +9,6 @@
 /*---------------------------------------------------------------------------*/
 
 #include "s8.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_discret.H"
 #include "lib_exporter.H"
 #include "lib_dserror.H"
@@ -26,10 +25,11 @@
 extern "C"
 {
 #include "./shell8/s8_shell8.h"
-#include "headers_am.h"
+#include "pss_full_am.h"
 #include "pss_full_prototypes.h"
 }
 
+#define DSQR(a) ((a) * (a))
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -4067,8 +4067,7 @@ int DRT::ELEMENTS::Shell8Type::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  average director (public)                                mwgee 12/06|
  *----------------------------------------------------------------------*/
-#define DSQR(a) ((a) * (a))
-// #define ABS(x)  ((x) <  0  ? (-x) : (x))
+
 void s8_averagedirector(Epetra_SerialDenseMatrix& dir_list, const int numa3, double a3[])
 {
   double davn[3];

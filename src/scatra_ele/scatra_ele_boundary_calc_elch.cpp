@@ -15,7 +15,6 @@
 #include "lib_discret.H"
 #include "lib_globalproblem.H"
 #include "lib_function_of_time.H"
-#include "lib_standardtypes_cpp.H"
 
 /*----------------------------------------------------------------------*
  | protected constructor for singletons                      fang 01/15 |
@@ -290,7 +289,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
         // el. potential at integration point
         const double potint = my::funct_.Dot(my::ephinp_[my::numscal_]);
 
-        if (c0 < EPS12) dserror("reference concentration is too small (c0 < 1.0E-12) : %f", c0);
+        if (c0 < 1e-12) dserror("reference concentration is too small (c0 < 1.0E-12) : %f", c0);
 
         for (int vi = 0; vi < my::nen_; ++vi)
         {

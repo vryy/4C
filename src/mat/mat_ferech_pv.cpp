@@ -12,7 +12,6 @@
 
 #include "mat_ferech_pv.H"
 #include "lib_globalproblem.H"
-#include "lib_standardtypes_cpp.H"
 #include "mat_par_bundle.H"
 
 
@@ -163,9 +162,9 @@ double MAT::FerEchPV::ComputeViscosity(const double temp) const
   double visc = RefVisc();
 
   // original version by Ferziger and Echekki (1993): linear variation
-  if (Mod() < EPS15) visc *= temp / RefTemp();
+  if (Mod() < 1e-15) visc *= temp / RefTemp();
   // modified version by Hartmann et al. (2010): Sutherland law
-  else if (Mod() > (1.0 + EPS15))
+  else if (Mod() > (1.0 + 1e-15))
     visc *= std::pow((temp / RefTemp()), 1.5) * ((RefTemp() + SuthTemp()) / (temp + SuthTemp()));
 
   return visc;
@@ -179,9 +178,9 @@ double MAT::FerEchPV::ComputeDiffusivity(const double temp) const
   double diffus = RefVisc() / PraNum();
 
   // original version by Ferziger and Echekki (1993): linear variation
-  if (Mod() < EPS15) diffus *= temp / RefTemp();
+  if (Mod() < 1e-15) diffus *= temp / RefTemp();
   // modified version by Hartmann et al. (2010): Sutherland law
-  else if (Mod() > (1.0 + EPS15))
+  else if (Mod() > (1.0 + 1e-15))
     diffus *= std::pow((temp / RefTemp()), 1.5) * ((RefTemp() + SuthTemp()) / (temp + SuthTemp()));
 
   return diffus;
@@ -201,7 +200,7 @@ double MAT::FerEchPV::ComputeReactionCoeff(const double provar) const
     reacoeff = ReacRateCon();
 
     // modified version by Poinsot and Veynante (2005)
-    if ((Mod() > (1.0 - EPS15)) and (Mod() < (1.0 + EPS15)))
+    if ((Mod() > (1.0 - 1e-15)) and (Mod() < (1.0 + 1e-15)))
     {
       // BML hypothesis
       reacoeff *= UnbDens() / (UnbDens() + provar * (BurDens() - UnbDens()));
@@ -209,7 +208,7 @@ double MAT::FerEchPV::ComputeReactionCoeff(const double provar) const
       // equation of state
       // reacoeff *= (BurDens() + provar * (UnbDens() - BurDens()))/BurDens();
     }
-    else if (Mod() > (1.0 + EPS15))
+    else if (Mod() > (1.0 + 1e-15))
     {
       // modified version by Hartmann et al. (2010)
       reacoeff *= UnbDens() * UnbDens() / (BurDens() + provar * (UnbDens() - BurDens()));

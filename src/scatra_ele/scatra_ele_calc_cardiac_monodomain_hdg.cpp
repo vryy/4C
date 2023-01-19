@@ -14,7 +14,6 @@
 #include "lib_globalproblem.H"
 #include "lib_discret.H"
 #include "lib_element.H"
-#include "lib_standardtypes_cpp.H"  // for EPS13 and so on
 
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_std.H"

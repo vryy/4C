@@ -1614,7 +1614,7 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
   // calculate mean concentration
   const double domint = (*scalars)[NumDofPerNode()];
 
-  if (std::abs(domint) < EPS15) dserror("Division by zero!");
+  if (std::abs(domint) < 1e-15) dserror("Division by zero!");
 
   for (int k = 0; k < NumScal(); k++) c0_[k] = (*scalars)[k] / domint;
 
@@ -2346,7 +2346,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
         }
 
         // safety check
-        if (abs((*currtangent)[condid_cathode]) < EPS13)
+        if (abs((*currtangent)[condid_cathode]) < 1e-13)
           dserror(
               "Tangent in galvanostatic control is near zero: %lf", (*currtangent)[condid_cathode]);
       }
@@ -2443,10 +2443,10 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       potinc_ohm = -1.0 * resistance * residual / timefacrhs;
 
       // Do not update the cell potential for small currents
-      if (abs((*actualcurrent)[condid_cathode]) < EPS10) potinc_ohm = 0.0;
+      if (abs((*actualcurrent)[condid_cathode]) < 1e-10) potinc_ohm = 0.0;
 
       // the current flow at both electrodes has to be the same within the solution tolerances
-      if (abs((*actualcurrent)[condid_cathode] + (*actualcurrent)[condid_anode]) > EPS8)
+      if (abs((*actualcurrent)[condid_cathode] + (*actualcurrent)[condid_anode]) > 1e-8)
       {
         if (myrank_ == 0)
         {
@@ -2454,7 +2454,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
                     << std::endl;
           std::cout << "| is "
                     << abs((*actualcurrent)[condid_cathode] + (*actualcurrent)[condid_anode])
-                    << " larger than " << EPS8 << "!                             |" << std::endl;
+                    << " larger than " << 1e-8 << "!                             |" << std::endl;
           std::cout << "+-----------------------------------------------------------------------+"
                     << std::endl;
         }
@@ -2463,7 +2463,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       // Newton step:  Jacobian * \Delta pot = - Residual
       const double potinc_cathode = residual / ((-1) * currtangent_cathode);
       double potinc_anode = 0.0;
-      if (abs(currtangent_anode) > EPS13)  // anode surface overpotential is optional
+      if (abs(currtangent_anode) > 1e-13)  // anode surface overpotential is optional
       {
         potinc_anode = residual / ((-1) * currtangent_anode);
       }
@@ -2752,10 +2752,10 @@ void SCATRA::ScaTraTimIntElch::CheckConcentrationValues(Teuchos::RCP<Epetra_Vect
     for (int k = 0; k < NumScal(); k++)
     {
       const int lid = discret_->DofRowMap()->LID(dofs[k]);
-      if (((*vec)[lid]) < EPS13)
+      if (((*vec)[lid]) < 1e-13)
       {
         numfound[k]++;
-        if (makepositive) ((*vec)[lid]) = EPS13;
+        if (makepositive) ((*vec)[lid]) = 1e-13;
       }
     }
   }

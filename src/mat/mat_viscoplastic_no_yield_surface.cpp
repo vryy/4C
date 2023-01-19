@@ -12,7 +12,6 @@
 #include "mat_par_bundle.H"
 
 #include "lib_globalproblem.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_voigt_notation.H"
 
 #include "so3_hex8.H"
