@@ -29,7 +29,7 @@
 #include <MueLu_UseDefaultTypes.hpp>
 #include <MueLu_EpetraOperator.hpp>
 
-#include "linalg_ana.H"
+#include "solver_linalg_ana.H"
 #include "linalg_blocksparsematrix.H"
 #include "linalg_downwindmatrix.H"
 #include "linalg_multiply.H"
