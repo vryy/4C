@@ -18,7 +18,7 @@
 #include "immersed_problem_immersed_node.H"
 #include "fiber_node.H"
 #include "io_pstream.H"
-#include "rebalance_utils.H"
+#include "rebalance.H"
 
 #include <string>
 
@@ -99,7 +99,7 @@ namespace DRT::INPUT
     // read and partition element information
     for (const auto& element_reader : element_readers_) element_reader->ReadAndPartition();
 
-    // TODO: here we should place the partitioning -> extract from element reader
+    // partition
     for (const auto& element_reader : element_readers_)
     {
       // global node ids --- this will be a fully redundant vector!
@@ -111,22 +111,23 @@ namespace DRT::INPUT
 
       // We want to be able to read empty fields. If we have such a beast
       // just skip the partitioning and do a proper initialization
+      Teuchos::RCP<Epetra_Map> rownodemap, colnodemap;
       if (numnodes)
-      {
-        // TODO: Here to RebalanceNodeMaps
-      }
+        std::tie(rownodemap, colnodemap) =
+            REBALANCE::RebalanceNodeMaps(element_reader->GetDis(), element_reader->GetRowElements(),
+                element_reader->GetDis()->Comm().NumProc(), imbalance_tol);
       else
-      {
-        element_reader->SetRowNodes(Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_)));
-        element_reader->SetColNodes(Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_)));
-      }
+        rownodemap = colnodemap = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_));
+      element_reader->SetRowNodes(rownodemap);
+      element_reader->SetColNodes(colnodemap);
 
-      // now we have all elements in a linear map roweles
-      // build reasonable maps for elements from the
-      // already valid and final node maps
-      // note that nothing is actually redistributed in here
-      // TODO: get syntax right
-      [roweles_, coleles_] = element_reader->GetDis()->BuildElementRowColumn(*element_reader->GetRowNodes(), *element_reader->GetColNodes());
+      // now we have all elements in a linear map roweles build reasonable maps for elements from
+      // the already valid and final node maps note that nothing is actually redistributed in here
+      Teuchos::RCP<Epetra_Map> rowelementmap, colelementmap;
+      element_reader->GetDis()->BuildElementRowColumn(*element_reader->GetRowNodes(),
+          *element_reader->GetColNodes(), rowelementmap, colelementmap);
+      element_reader->SetRowElements(rowelementmap);
+      element_reader->SetColElements(colelementmap);
 
       // we can now export elements to resonable row element distribution
       element_reader->GetDis()->ExportRowElements(*element_reader->GetRowElements());

@@ -334,7 +334,7 @@ namespace DRT::INPUT
         // export block of nodes to other processors as reflected in rownodes, changes ownership of
         // nodes
         for (const auto& element_reader : element_readers)
-          element_reader->MyDis()->ProcZeroDistributeNodesToAll(*element_reader->MyRowNodes());
+          element_reader->GetDis()->ProcZeroDistributeNodesToAll(*element_reader->GetRowNodes());
       }
     }
   }
@@ -359,7 +359,7 @@ namespace DRT::INPUT
     std::vector<Teuchos::RCP<DRT::Discretization>> list_of_discretizations;
     for (const auto& element_reader : element_readers)
       if (element_reader->HasNode(global_node_id))
-        list_of_discretizations.emplace_back(element_reader->MyDis());
+        list_of_discretizations.emplace_back(element_reader->GetDis());
 
     return list_of_discretizations;
   }
