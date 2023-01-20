@@ -57,10 +57,10 @@ DRT::ELEMENTS::SolidEleCalc<distype>::SolidEleCalc()
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
-    const DRT::ELEMENTS::Solid& ele, const DRT::Discretization& discretization,
-    const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Epetra_SerialDenseVector* force_vector, Epetra_SerialDenseMatrix* stiffness_matrix,
-    Epetra_SerialDenseMatrix* mass_matrix)
+    const DRT::Element& ele, MAT::So3Material& solid_material,
+    const DRT::Discretization& discretization, const std::vector<int>& lm,
+    Teuchos::ParameterList& params, Epetra_SerialDenseVector* force_vector,
+    Epetra_SerialDenseMatrix* stiffness_matrix, Epetra_SerialDenseMatrix* mass_matrix)
 {
   // Create views to SerialDenseMatrices
   std::optional<LINALG::Matrix<numdofperelement_, numdofperelement_>> stiff = {};
@@ -100,7 +100,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
         EvaluateStrainGradient(jacobian_mapping, strains);
 
     const Stress<distype> stress =
-        EvaluateMaterialStress(*ele.SolidMaterial(), strains, params, gp, ele.Id());
+        EvaluateMaterialStress(solid_material, strains, params, gp, ele.Id());
 
     if (force.has_value()) AddInternalForceVector(Bop, stress, integration_factor, *force);
 
@@ -114,12 +114,11 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
     {
       if (equal_integration_mass_stiffness)
       {
-        AddMassMatrix(shape_functions, integration_factor, ele.SolidMaterial()->Density(gp), *mass);
+        AddMassMatrix(shape_functions, integration_factor, solid_material.Density(gp), *mass);
       }
       else
       {
-        mean_density +=
-            ele.SolidMaterial()->Density(gp) / stiffness_matrix_integration_.NumPoints();
+        mean_density += solid_material.Density(gp) / stiffness_matrix_integration_.NumPoints();
       }
     }
   }
@@ -145,7 +144,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::SolidEleCalc<distype>::Recover(const DRT::ELEMENTS::Solid& ele,
+void DRT::ELEMENTS::SolidEleCalc<distype>::Recover(const DRT::Element& ele,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
@@ -156,9 +155,9 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::Recover(const DRT::ELEMENTS::Solid& e
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::SolidEleCalc<distype>::Update(const DRT::ELEMENTS::Solid& ele,
-    const DRT::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params)
+void DRT::ELEMENTS::SolidEleCalc<distype>::Update(const DRT::Element& ele,
+    MAT::So3Material& solid_material, const DRT::Discretization& discretization,
+    const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
   const NodalCoordinates<distype> nodal_coordinates =
       EvaluateNodalCoordinates<distype>(ele, discretization, lm);
@@ -177,12 +176,12 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::Update(const DRT::ELEMENTS::Solid& el
 
     const Strains<distype> strains = EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
 
-    ele.SolidMaterial()->Update(strains.defgrd_, gp, params, ele.Id());
+    solid_material.Update(strains.defgrd_, gp, params, ele.Id());
   }  // gp loop
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::SolidEleCalc<distype>::PostProcessStressStrain(const DRT::ELEMENTS::Solid& ele,
+void DRT::ELEMENTS::SolidEleCalc<distype>::PostProcessStressStrain(const DRT::Element& ele,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
@@ -222,7 +221,8 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::PostProcessStressStrain(const DRT::EL
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::ELEMENTS::Solid& ele,
+void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::Element& ele,
+    MAT::So3Material& solid_material, const StressIO& stressIO, const StrainIO& strainIO,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
@@ -230,8 +230,8 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::ELEMENTS::
   // InitializeGaussPointDataOutput and EvaluateGaussPointDataOutput and write the stresses there.
   if (discretization.Comm().MyPID() != ele.Owner()) return;
 
-  std::vector<char>& serialized_stress_data = GetMutableStressData(ele, params);
-  std::vector<char>& serialized_strain_data = GetMutableStrainData(ele, params);
+  std::vector<char>& serialized_stress_data = stressIO.mutable_data;
+  std::vector<char>& serialized_strain_data = strainIO.mutable_data;
   Epetra_SerialDenseMatrix stress_data(stiffness_matrix_integration_.NumPoints(), numstr_);
   Epetra_SerialDenseMatrix strain_data(stiffness_matrix_integration_.NumPoints(), numstr_);
 
@@ -253,10 +253,10 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::ELEMENTS::
     const Strains<distype> strains = EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
 
     const Stress<distype> stress =
-        EvaluateMaterialStress(*ele.SolidMaterial(), strains, params, gp, ele.Id());
+        EvaluateMaterialStress(solid_material, strains, params, gp, ele.Id());
 
-    AssembleStrainTypeToMatrixRow(strains, GetIOStrainType(ele, params), strain_data, gp);
-    AssembleStressTypeToMatrixRow(strains, stress, GetIOStressType(ele, params), stress_data, gp);
+    AssembleStrainTypeToMatrixRow(strains, strainIO.type, strain_data, gp);
+    AssembleStressTypeToMatrixRow(strains, stress, stressIO.type, stress_data, gp);
   }  // gp loop
 
   Serialize(stress_data, serialized_stress_data);
@@ -265,13 +265,14 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::ELEMENTS::
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::SolidEleCalc<distype>::Setup(
-    const DRT::ELEMENTS::Solid& ele, DRT::INPUT::LineDefinition* linedef)
+    MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef)
 {
-  ele.SolidMaterial()->Setup(stiffness_matrix_integration_.NumPoints(), linedef);
+  solid_material.Setup(stiffness_matrix_integration_.NumPoints(), linedef);
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::SolidEleCalc<distype>::MaterialPostSetup(const DRT::ELEMENTS::Solid& ele)
+void DRT::ELEMENTS::SolidEleCalc<distype>::MaterialPostSetup(
+    const DRT::Element& ele, MAT::So3Material& solid_material)
 {
   Teuchos::ParameterList params{};
   if (DRT::FIBER::UTILS::HaveNodalFibers<distype>(ele.Nodes()))
@@ -302,40 +303,40 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::MaterialPostSetup(const DRT::ELEMENTS
   }
 
   // Call PostSetup of material
-  ele.SolidMaterial()->PostSetup(params, ele.Id());
+  solid_material.PostSetup(params, ele.Id());
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::SolidEleCalc<distype>::InitializeGaussPointDataOutput(
-    const DRT::ELEMENTS::Solid& ele) const
+void DRT::ELEMENTS::SolidEleCalc<distype>::InitializeGaussPointDataOutput(const DRT::Element& ele,
+    const MAT::So3Material& solid_material,
+    STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
   dsassert(ele.IsParamsInterface(),
       "This action type should only be called from the new time integration framework!");
 
   // Save number of Gauss of the element for gauss point data output
-  ele.ParamsInterface().MutableGaussPointDataOutputManagerPtr()->AddElementNumberOfGaussPoints(
-      stiffness_matrix_integration_.NumPoints());
+  gp_data_output_manager.AddElementNumberOfGaussPoints(stiffness_matrix_integration_.NumPoints());
 
   // holder for output quantity names and their size
   std::unordered_map<std::string, int> quantities_map{};
 
   // Ask material for the output quantity names and sizes
-  ele.SolidMaterial()->RegisterVtkOutputDataNames(quantities_map);
+  solid_material.RegisterVtkOutputDataNames(quantities_map);
 
   // Add quantities to the Gauss point output data manager (if they do not already exist)
-  ele.ParamsInterface().MutableGaussPointDataOutputManagerPtr()->MergeQuantities(quantities_map);
+  gp_data_output_manager.MergeQuantities(quantities_map);
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateGaussPointDataOutput(
-    const DRT::ELEMENTS::Solid& ele) const
+void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateGaussPointDataOutput(const DRT::Element& ele,
+    const MAT::So3Material& solid_material,
+    STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
   dsassert(ele.IsParamsInterface(),
       "This action type should only be called from the new time integration framework!");
 
   // Collection and assembly of gauss point data
-  for (const auto& quantity :
-      ele.ParamsInterface().MutableGaussPointDataOutputManagerPtr()->GetQuantities())
+  for (const auto& quantity : gp_data_output_manager.GetQuantities())
   {
     const std::string& quantity_name = quantity.first;
     const int quantity_size = quantity.second;
@@ -343,38 +344,29 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateGaussPointDataOutput(
     // Step 1: Collect the data for each Gauss point for the material
     LINALG::SerialDenseMatrix gp_data(
         stiffness_matrix_integration_.NumPoints(), quantity_size, true);
-    bool data_available = ele.SolidMaterial()->EvaluateVtkOutputData(quantity_name, gp_data);
+    bool data_available = solid_material.EvaluateVtkOutputData(quantity_name, gp_data);
 
     // Step 3: Assemble data based on output type (elecenter, postprocessed to nodes, Gauss
     // point)
     if (data_available)
     {
-      switch (ele.ParamsInterface().MutableGaussPointDataOutputManagerPtr()->GetOutputType())
+      switch (gp_data_output_manager.GetOutputType())
       {
         case INPAR::STR::GaussPointDataOutputType::element_center:
         {
           // compute average of the quantities
           Teuchos::RCP<Epetra_MultiVector> global_data =
-              ele.ParamsInterface()
-                  .MutableGaussPointDataOutputManagerPtr()
-                  ->GetMutableElementCenterData()
-                  .at(quantity_name);
+              gp_data_output_manager.GetMutableElementCenterData().at(quantity_name);
           DRT::ELEMENTS::AssembleAveragedElementValues(*global_data, gp_data, ele);
           break;
         }
         case INPAR::STR::GaussPointDataOutputType::nodes:
         {
           Teuchos::RCP<Epetra_MultiVector> global_data =
-              ele.ParamsInterface()
-                  .MutableGaussPointDataOutputManagerPtr()
-                  ->GetMutableNodalData()
-                  .at(quantity_name);
+              gp_data_output_manager.GetMutableNodalData().at(quantity_name);
 
           Epetra_IntVector& global_nodal_element_count =
-              *ele.ParamsInterface()
-                   .MutableGaussPointDataOutputManagerPtr()
-                   ->GetMutableNodalDataCount()
-                   .at(quantity_name);
+              *gp_data_output_manager.GetMutableNodalDataCount().at(quantity_name);
 
           ExtrapolateGPQuantityToNodesAndAssemble<distype>(
               ele, gp_data, *global_data, false, stiffness_matrix_integration_);
@@ -384,10 +376,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateGaussPointDataOutput(
         case INPAR::STR::GaussPointDataOutputType::gauss_points:
         {
           std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
-              ele.ParamsInterface()
-                  .MutableGaussPointDataOutputManagerPtr()
-                  ->GetMutableGaussPointData()
-                  .at(quantity_name);
+              gp_data_output_manager.GetMutableGaussPointData().at(quantity_name);
           DRT::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, ele);
           break;
         }

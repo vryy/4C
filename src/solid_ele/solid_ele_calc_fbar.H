@@ -19,10 +19,6 @@
 #include "element_integration_select.H"
 #include "singleton_owner.H"
 
-namespace STR::ELEMENTS
-{
-  class ParamsInterface;
-}  // namespace STR::ELEMENTS
 
 namespace DRT
 {
@@ -46,33 +42,39 @@ namespace DRT
       static SolidEleCalcFbar<distype>* Instance(
           ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
 
-      void Setup(const DRT::ELEMENTS::Solid& ele, DRT::INPUT::LineDefinition* linedef) override;
+      void Setup(MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef) override;
 
-      void MaterialPostSetup(const DRT::ELEMENTS::Solid& ele) override;
+      void MaterialPostSetup(const DRT::Element& ele, MAT::So3Material& solid_material) override;
 
-      void EvaluateNonlinearForceStiffnessMass(const DRT::ELEMENTS::Solid& ele,
-          const DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::ParameterList& params, Epetra_SerialDenseVector* force_vector,
-          Epetra_SerialDenseMatrix* stiffness_matrix,
+      void EvaluateNonlinearForceStiffnessMass(const DRT::Element& ele,
+          MAT::So3Material& solid_material, const DRT::Discretization& discretization,
+          const std::vector<int>& lm, Teuchos::ParameterList& params,
+          Epetra_SerialDenseVector* force_vector, Epetra_SerialDenseMatrix* stiffness_matrix,
           Epetra_SerialDenseMatrix* mass_matrix) override;
 
-      void Recover(const DRT::ELEMENTS::Solid& ele, const DRT::Discretization& discretization,
+      void Recover(const DRT::Element& ele, const DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params) override;
 
-      void CalculateStress(const DRT::ELEMENTS::Solid& ele,
+      void CalculateStress(const DRT::Element& ele, MAT::So3Material& solid_material,
+          const StressIO& stressIO, const StrainIO& strainIO,
           const DRT::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params) override;
 
-      void PostProcessStressStrain(const DRT::ELEMENTS::Solid& ele,
+      void PostProcessStressStrain(const DRT::Element& ele,
           const DRT::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params) override;
 
-      void Update(const DRT::ELEMENTS::Solid& ele, const DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params) override;
+      void Update(const DRT::Element& ele, MAT::So3Material& solid_material,
+          const DRT::Discretization& discretization, const std::vector<int>& lm,
+          Teuchos::ParameterList& params) override;
 
-      void InitializeGaussPointDataOutput(const DRT::ELEMENTS::Solid& ele) const override;
+      void InitializeGaussPointDataOutput(const DRT::Element& ele,
+          const MAT::So3Material& solid_material,
+          STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const override;
 
-      void EvaluateGaussPointDataOutput(const DRT::ELEMENTS::Solid& ele) const override;
+      void EvaluateGaussPointDataOutput(const DRT::Element& ele,
+          const MAT::So3Material& solid_material,
+          STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const override;
 
      private:
       /// static values for matrix sizes

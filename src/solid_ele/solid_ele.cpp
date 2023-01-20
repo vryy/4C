@@ -419,7 +419,7 @@ bool DRT::ELEMENTS::Solid::ReadElement(
     if (Shape() == DRT::Element::hex8) eletech_.insert(INPAR::STR::EleTech::fbar);
   }
 
-  DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->Setup(*this, linedef);
+  DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->Setup(*SolidMaterial(), linedef);
   return true;
 }
 
