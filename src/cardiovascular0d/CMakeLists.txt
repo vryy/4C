@@ -8,6 +8,7 @@ set(OBJS_CARDIOVASCULAR0D
     cardiovascular0d_nox_nln_linearsystem.cpp
     cardiovascular0d_respiratory_syspulperiphcirculation.cpp
     cardiovascular0d_resulttest.cpp
+    cardiovascular0d_structure_new_model_evaluator.cpp
     cardiovascular0d_syspulcirculation.cpp
     )
 
