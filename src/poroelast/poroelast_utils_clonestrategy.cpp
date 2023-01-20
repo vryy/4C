@@ -11,6 +11,8 @@
 
 #include "poroelast_utils.H"
 
+#include "adapter_structure_scatra_ele.H"
+
 #include "lib_globalproblem.H"
 
 #include "fluid_ele_poro.H"
@@ -24,7 +26,6 @@
 #include "so3_poro_scatra.H"
 #include "so3_poro_p1_scatra.H"
 
-#include "w1_scatra.H"
 #include "w1_poro_scatra.H"
 #include "w1_poro_p1_scatra.H"
 
@@ -329,7 +330,7 @@ INPAR::SCATRA::ImplType POROELAST::UTILS::PoroScatraCloneStrategy::GetImplType(
   }
   // call base class routine
   else
-    impltype = my::GetImplType(ele);
+    impltype = ADAPTER::GetScaTraImplType(ele);
 
   return impltype;
 }
@@ -392,8 +393,29 @@ void POROELAST::UTILS::PoroScatraCloneStrategy::SetElementData(
 std::map<std::string, std::string> POROELAST::UTILS::PoroScatraCloneStrategy::ConditionsToCopy()
 {
   // call base class
-  std::map<std::string, std::string> conditions_to_copy =
-      SSI::ScatraStructureCloneStrategy::ConditionsToCopy();
+  std::map<std::string, std::string> conditions_to_copy;
+
+  conditions_to_copy.insert(std::pair<std::string, std::string>("TransportDirichlet", "Dirichlet"));
+  conditions_to_copy.insert(
+      std::pair<std::string, std::string>("TransportPointNeumann", "PointNeumann"));
+  conditions_to_copy.insert(
+      std::pair<std::string, std::string>("TransportLineNeumann", "LineNeumann"));
+  conditions_to_copy.insert(
+      std::pair<std::string, std::string>("TransportSurfaceNeumann", "SurfaceNeumann"));
+  conditions_to_copy.insert(
+      std::pair<std::string, std::string>("TransportVolumeNeumann", "VolumeNeumann"));
+  conditions_to_copy.insert(
+      std::pair<std::string, std::string>("TransportNeumannInflow", "TransportNeumannInflow"));
+  // for moving boundary problems
+  conditions_to_copy.insert(std::pair<std::string, std::string>("FSICoupling", "FSICoupling"));
+  // for coupled scalar transport fields
+  conditions_to_copy.insert(
+      std::pair<std::string, std::string>("ScaTraCoupling", "ScaTraCoupling"));
+  // boundary flux evaluation condition for scalar transport
+  conditions_to_copy.insert(
+      std::pair<std::string, std::string>("ScaTraFluxCalc", "ScaTraFluxCalc"));
+  // initial field conditions
+  conditions_to_copy.insert(std::pair<std::string, std::string>("Initfield", "Initfield"));
 
   conditions_to_copy.insert(std::pair<std::string, std::string>("PoroCoupling", "PoroCoupling"));
 
@@ -416,4 +438,16 @@ std::map<std::string, std::string> POROELAST::UTILS::PoroScatraCloneStrategy::Co
       "ArtScatraCouplConNodeToPoint", "ArtScatraCouplConNodeToPoint"));
 
   return conditions_to_copy;
+}
+
+void POROELAST::UTILS::PoroScatraCloneStrategy::CheckMaterialType(const int matid)
+{
+  // We take the material with the ID specified by the user
+  // Here we check first, whether this material is of admissible type
+  INPAR::MAT::MaterialType mtype = DRT::Problem::Instance()->Materials()->ById(matid)->Type();
+  if ((mtype != INPAR::MAT::m_scatra) && (mtype != INPAR::MAT::m_elchmat) &&
+      (mtype != INPAR::MAT::m_electrode) && (mtype != INPAR::MAT::m_matlist) &&
+      (mtype != INPAR::MAT::m_matlist_reactions) && (mtype != INPAR::MAT::m_myocard) &&
+      (mtype != INPAR::MAT::m_thermostvenant))
+    dserror("Material with ID %d is not admissible for scalar transport elements", matid);
 }

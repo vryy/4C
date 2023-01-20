@@ -52,23 +52,26 @@ namespace POROELAST
 
     //! \brief implementation of special clone strategy for automatic generation
     //!        of scatra discretization from a given structure discretization for porous media
-    class PoroScatraCloneStrategy : public SSI::ScatraStructureCloneStrategy
+    class PoroScatraCloneStrategy
     {
      public:
-      using my = SSI::ScatraStructureCloneStrategy;
-
       //! constructor
       explicit PoroScatraCloneStrategy() = default;
 
       //! return SCATRA::ImplType of the element
       INPAR::SCATRA::ImplType GetImplType(
           DRT::Element* ele  //! element whose SCATRA::ImplType shall be determined
-          ) override;
+      );
 
      protected:
+      //! check material of cloned element
+      //!
+      //! \param matid     material of cloned element
+      void CheckMaterialType(const int matid);
+
       //! determine element type string and whether element is copied or not
       bool DetermineEleType(
-          DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype) override;
+          DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
       //! provide cloned element with element specific data (material etc.)
       void SetElementData(
@@ -76,10 +79,10 @@ namespace POROELAST
           DRT::Element* oldele,               //! current element on source discretization
           const int matid,                    //! material of cloned element
           const bool isnurbs                  //! nurbs flag
-          ) override;
+      );
 
       //! returns conditions names to be copied (source and target name)
-      std::map<std::string, std::string> ConditionsToCopy() override;
+      std::map<std::string, std::string> ConditionsToCopy();
     };
   }  // namespace UTILS
 }  // namespace POROELAST

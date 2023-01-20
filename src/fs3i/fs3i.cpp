@@ -31,6 +31,7 @@
 
 #include "adapter_coupling.H"
 #include "adapter_str_fsiwrapper.H"
+#include "adapter_structure_scatra_ele.H"
 
 #include "scatra_algorithm.H"
 #include "scatra_timint_implicit.H"
@@ -244,11 +245,10 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
   {
     // get structure discretization
     Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
-    SSI::ScatraStructureCloneStrategy clonestrategy;
 
     for (int i = 0; i < structdis->NumMyColElements(); ++i)
     {
-      if (clonestrategy.GetImplType(structdis->lColElement(i)) !=
+      if (ADAPTER::GetScaTraImplType(structdis->lColElement(i)) !=
           INPAR::SCATRA::impltype_refconcreac)
         dserror(
             "Your scalar fields have to be calculated in conservative form, "

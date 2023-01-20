@@ -64,6 +64,7 @@ set(OBJS_ADAPT
     adapter_str_timeloop.cpp
     adapter_str_timint_adaptive.cpp
     adapter_str_wrapper.cpp
+    adapter_structure_scatra_ele.cpp
     adapter_thermo.cpp
     )
 
