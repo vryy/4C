@@ -85,7 +85,7 @@ GHOST_PENALTY_STAB              No
 //GHOST_PENALTY_FAC             0.001
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          UMFPACK                       // Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK                       
 //SOLVER                        Belos                     // // vm3 Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 //AZOUTPUT                      1
 -------------------------------------------------------------------MATERIALS

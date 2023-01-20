@@ -84,7 +84,7 @@ TIMESTEP                        0.05
 NUMSTEP                         5
 ------------------------------------------------------SOLVER 1
 NAME              Fluid_Solver
-SOLVER            UMFPACK//Belos
+SOLVER            UMFPACK
 AZOUTPUT          0
 AZSOLVE           GMRES
 AZPREC            ILU

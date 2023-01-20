@@ -139,10 +139,10 @@ NORM_RESF                       Rel  // Abs
 TOLINC                          1e-06
 -----------------------------------------------------------SOLVER 1
 NAME                            STRUCT SOLVER
-SOLVER                          UMFPACK  //  Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK  
 -----------------------------------------------------------SOLVER 2
 NAME                            THERMAL SOLVER
-SOLVER                          UMFPACK  //  Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK  
 -----------------------------------------------------------SOLVER 3
 NAME                            TSI MONOLITHIC SOLVER
 AZBDIAG                         0
@@ -151,7 +151,7 @@ AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPREC                          BGS2x2  // ILU
+AZPREC                          BGS2x2  
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
@@ -181,7 +181,7 @@ ML_SMOTIMES                     1 1 1 1 1
 NON_DIAGDOMINANCE_RATIO         1
 PERMUTE_SYSTEM                  none
 SIMPLE_DAMPING                  1
-SOLVER                          Belos  // UMFPACK
+SOLVER                          Belos  
 ----------------------------------------------------------MATERIALS
 MAT 1   MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 2.1e11 NUE 0.3 DENS 7850 THEXPANS 1.2e-05 CAPA 3297000 CONDUCT 52 INITTEMP 293
 // CAPA = C_V* rho = 420*7850 = 3297000 kg/(ms^2 K)

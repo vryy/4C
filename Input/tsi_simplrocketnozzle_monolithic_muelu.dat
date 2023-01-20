@@ -123,7 +123,7 @@ NORMCOMBI_RESFINC               Coupl_And_Singl
 NORM_RESF                       Rel
 TOLINC                          1e-06
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK //this is just a dummy
+SOLVER                          UMFPACK 
 --------------------------------------------------------------------SOLVER 2
 NAME                            Thermo_Structure_Interaction_Solver
 SOLVER                          Belos

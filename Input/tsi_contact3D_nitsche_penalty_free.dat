@@ -122,13 +122,13 @@ PENALTYPARAM_THERMO             1e-5
 NITSCHE_METHOD_TSI             substitution //   nitsche // nitsche // substitution //
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER               Belos // Superlu
+SOLVER               Belos 
 AZSOLVE              GMRES
-AZPREC               MLFLUID2 // ILU
+AZPREC               MLFLUID2 
 IFPACKGFILL          6
 AZOUTPUT             0
 --------------------------------------------------------------------SOLVER 2
-SOLVER                          Superlu // Belos
+SOLVER                          Superlu 
 AZSOLVE                         GMRES
 AZPREC                          BGS2x2
 AZOUTPUT                        0

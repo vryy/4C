@@ -79,7 +79,7 @@ GENAVG                          TrLike
 THETA                           0.666666
 -----------------------------------------------------------SOLVER 1
 NAME                            THERMAL_SOLVER
-SOLVER                          UMFPACK  // Belos,Superlu
+SOLVER                          UMFPACK  
 ----------------------------------------------------------MATERIALS
 MAT 1   THERM_FourierIso   CAPA 420 CONDUCT 52
 -------------------------------------------------------------FUNCT1

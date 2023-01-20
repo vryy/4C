@@ -104,9 +104,9 @@ GHOST_PENALTY_TRANSIENT_FAC     0.001
 IS_PSEUDO_2D                    yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Belos                     // vm3 Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        50                            // output every so often, 0 no output
-AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
+SOLVER                          Belos                     
+AZOUTPUT                        50                            
+AZSOLVE                         GMRES                         
 AZTOL                           1e-13
 //AZPREC                        ILU                           // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
 //IFPACKGFILL                   0                             // (3 for edgebased stabilization pattern) graph fill for ILU

@@ -54,7 +54,7 @@ CROSS-STRESS                    no_cross                        // no_cross cros
 REYNOLDS-STRESS                 no_reynolds                     // no_reynolds reynolds_rhs
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          UMFPACK //Belos
+SOLVER                          UMFPACK 
 //AZOUTPUT                        50
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0

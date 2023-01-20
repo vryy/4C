@@ -52,7 +52,7 @@ NORMCOMBI_RESFDISP              Or
 MAXITER                         10
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          UMFPACK                       // Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK                       
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4

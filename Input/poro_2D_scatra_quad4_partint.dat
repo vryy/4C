@@ -73,19 +73,19 @@ EVALUATION_TAU                  element_center
 STABTYPE                        no_stabilization
 SUGRVEL                         no
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          Belos //UMFPACK Belos
+SOLVER                          Belos 
 AZTOL                           1.0E-9
 AZPREC                          BGS2x2
 --------------------------------------------------------------------SOLVER 2
-SOLVER                          Belos //UMFPACK
+SOLVER                          Belos 
 AZTOL                           1.0E-9
 --------------------------------------------------------------------SOLVER 3
-SOLVER                          Belos //UMFPACK
+SOLVER                          Belos 
 AZTOL                           1.0E-9
 --------------------------------------------------------------------SOLVER 4
 NAME                            Sca_Tra_Solver
-SOLVER                          Belos                     // Belos vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym
-AZTOL                           1.0E-11                       // tolerance in (un)scaled residual
+SOLVER                          Belos                     
+AZTOL                           1.0E-11                       
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DYNAMICTYP                      OneStepTheta

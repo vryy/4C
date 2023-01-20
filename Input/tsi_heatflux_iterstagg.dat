@@ -112,19 +112,19 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 NAME                            TSI_MONOLITHIC_SOLVER
 AZBDIAG                         0
-AZCONV                          AZ_r0  // AZ_r0,AZ_rhs,AZ_Anorm,AZ_noscaled,AZ_sol,AZ_weighted,AZ_expected_values,AZTECOO_conv_test,AZ_inf_noscaled
+AZCONV                          AZ_r0  
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPREC                          BGS2x2  // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
+AZPREC                          BGS2x2  
 AZREUSE                         0
-AZSCAL                          none  // none,sym,infnorm
-AZSOLVE                         GMRES  // CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU
+AZSCAL                          none  
+AZSOLVE                         GMRES  
 AZSUB                           300
 AZTOL                           1e-08
 BGS2X2_FLIPORDER                block1_block0_order
-IFPACKCOMBINE                   Add  // Add,Insert,Zero
+IFPACKCOMBINE                   Add  
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -141,7 +141,7 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          Belos  // UMFPACK,Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          Belos  
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 21000 NUE 0.3 DENS 1.0 THEXPANS 1.2e-05 CAPA 3297000.0 CONDUCT 52.0 INITTEMP 0.0
 // CAPA = C_V* rho = 420* = 420

@@ -70,7 +70,7 @@ EVALUATION_MAT                  integration_point
 STAB_BIOT                       yes
 STAB_BIOT_SCALING               3.0
 -----------------------------------------------------------SOLVER 1
-SOLVER                         Belos // UMFPACK Belos
+SOLVER                         Belos 
 AZSOLVE                        GMRES
 AZPREC                         AMGnxn
 AZSUB                          300
@@ -82,7 +82,7 @@ NAME                           Poro_solver
 AMGNXN_TYPE                    XML
 AMGNXN_XML_FILE                poro_3D_hex8_amgnxn_BGSAMG.xml
 -----------------------------------------------------------SOLVER 2
-SOLVER                         Belos // UMFPACK Belos
+SOLVER                         Belos 
 AZSOLVE                        GMRES
 AZPREC                         MueLu
 MUELU_XML_ENFORCE              No
@@ -91,7 +91,7 @@ ML_SMOOTHERFINE                 GS
 ML_SMOOTHERMED                  GS
 ML_SMOOTHERCOARSE               GS
 -----------------------------------------------------------SOLVER 3
-SOLVER                         Belos // UMFPACK Belos
+SOLVER                         Belos 
 AZSOLVE                        GMRES
 AZPREC                         MueLu
 MUELU_XML_ENFORCE              No

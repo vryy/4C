@@ -120,10 +120,10 @@ NORMCOMBI_RESFINC               Coupl_And_Singl // And ,Rel,{And,Or}_Singl
 NORM_RESF                       Rel  // Abs,Rel,Mix
 --------------------------------------------------------------------SOLVER 1
 NAME                            STRUCTURAL_SOLVER
-SOLVER                          UMFPACK  // Belos,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
+SOLVER                          UMFPACK  
 --------------------------------------------------------------------SOLVER 2
 NAME                            THERMAL_SOLVER
-SOLVER                          UMFPACK  // Belos,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
+SOLVER                          UMFPACK  
 --------------------------------------------------------------------SOLVER 3
 AZBDIAG                         0
 AZCONV                          AZ_r0
@@ -131,7 +131,7 @@ AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPREC                          BGS2x2  // ILU,ML
+AZPREC                          BGS2x2  
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
@@ -157,7 +157,7 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 NAME                            TSI_MONOLITHIC_SOLVER
 SIMPLE_DAMPING                  1
-SOLVER                          Belos  // Belos,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
+SOLVER                          Belos  
 -------------------------------------------------------------------MATERIALS
 // CAPA = rho * C_V
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 2.1e5 NUE 0.3 DENS 7850 THEXPANS 1.2e-05 CAPA 3297000 CONDUCT 52.0 INITTEMP 0.0

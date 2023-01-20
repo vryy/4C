@@ -148,7 +148,7 @@ AZSUB                           300
 AZTOL                           1e-08
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
-IFPACKCOMBINE                   Add                           // Add Insert Zero
+IFPACKCOMBINE                   Add                           
 ML_AGG_SIZE                     27
 ML_COARSEN                      UC
 ML_DAMPCOARSE                   1

@@ -103,13 +103,13 @@ INTTYPE                         elements
 MESH_INIT                       no
 --------------------------------------------------------------------SOLVER 1
 NAME                            TSI_MONOLITHIC_SOLVER
-SOLVER                          UMFPACK  // UMFPACK,Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK  
 --------------------------------------------------------------------SOLVER 2
 NAME                            THERMAL_SOLVER
-SOLVER                          Belos  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          Belos  
 --------------------------------------------------------------------SOLVER 3
 NAME                            STRUCTURAL_SOLVER
-SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK  
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 2.1e05 NUE 0.3 DENS 7.85e-06 THEXPANS 1.1e-03 CAPA 6.445 CONDUCT 1031.2 INITTEMP 0.0
 MAT 2 THERM_FourierIso CAPA 6.445 CONDUCT 1031.2

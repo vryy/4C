@@ -77,7 +77,7 @@ BOUNDARY_GAUSS_POINTS_BY        Tessellation
 COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       //BoundaryTypeSigma //BoundaryTypeSigma //BoundaryTypeNeumann // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          UMFPACK                       // vm3 Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK                       
 -------------------------------------------------------------------MATERIALS
 // MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0

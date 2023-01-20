@@ -42,7 +42,7 @@ CHARELELENGTH                   root_of_volume
 EVALUATION_TAU                  integration_point
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          UMFPACK                       // Belos vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK                       
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 10.00
 MAT 2 MAT_scatra DIFFUSIVITY 10.00

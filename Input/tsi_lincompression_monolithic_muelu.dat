@@ -100,7 +100,7 @@ LINEAR_SOLVER                   2
 NORMCOMBI_RESFINC               Coupl_And_Singl
 NORM_RESF                       Rel
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK //this is just a dummy
+SOLVER                          UMFPACK 
 --------------------------------------------------------------------SOLVER 2
 NAME                            Thermo_Structure_Interaction_Solver
 SOLVER                          Belos

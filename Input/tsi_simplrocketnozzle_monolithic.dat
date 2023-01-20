@@ -122,15 +122,15 @@ CONVTOL                         1e-06
 --------------------------------------------------------------------SOLVER 1
 NAME                            Thermal_Solver
 AZBDIAG                         0
-AZCONV                          AZ_r0   // AZ_r0,AZ_rhs,AZ_Anorm,AZ_noscaled,AZ_sol,AZ_weighted,AZ_expected_values,AZTECOO_conv_test,AZ_inf_noscaled
+AZCONV                          AZ_r0   
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPREC                          MLFLUID2  // ML,ILU
+AZPREC                          MLFLUID2  
 AZREUSE                         0
-AZSCAL                          none  // none,sym,infnorm
-AZSOLVE                         GMRES  // CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU
+AZSCAL                          none  
+AZSOLVE                         GMRES  
 AZSUB                           300
 AZTOL                           1e-08
 IFPACKCOMBINE                   Add
@@ -141,17 +141,17 @@ ML_COARSEN                      UC
 ML_DAMPCOARSE                   1
 ML_DAMPFINE                     1
 ML_DAMPMED                      1
-ML_MAXCOARSESIZE                1000  // 5000
+ML_MAXCOARSESIZE                1000  
 ML_MAXLEVEL                     5
 ML_PRINT                        0
-ML_PROLONG_SMO                  1.3333  // 0
+ML_PROLONG_SMO                  1.3333  
 ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
-SOLVER                          Belos  // UMFPACK,undefined
+SOLVER                          Belos  
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
 AZBDIAG                         0
@@ -160,7 +160,7 @@ AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPREC                          MLFLUID2  // ML,ILU
+AZPREC                          MLFLUID2  
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
@@ -174,17 +174,17 @@ ML_COARSEN                      UC
 ML_DAMPCOARSE                   1
 ML_DAMPFINE                     1
 ML_DAMPMED                      1
-ML_MAXCOARSESIZE                1000  // 5000
+ML_MAXCOARSESIZE                1000  
 ML_MAXLEVEL                     5
 ML_PRINT                        0
-ML_PROLONG_SMO                  1.33333 // 0
+ML_PROLONG_SMO                  1.33333 
 ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
-SOLVER                          Belos  // UMFPACK
+SOLVER                          Belos  
 --------------------------------------------------------------------SOLVER 3
 NAME                            Thermo_Structure_Interaction_Solver
 AZBDIAG                         0
@@ -192,14 +192,14 @@ AZCONV                          AZ_r0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
-AZOUTPUT                        0  // 10// print every 10th step
-AZPREC                          BGS2x2  // BGSnxn,ILU
+AZOUTPUT                        0  
+AZPREC                          BGS2x2  
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-06
-BGS2X2_FLIPORDER                block1_block0_order  // block0_block1_order,block1_block0_order
+BGS2X2_FLIPORDER                block1_block0_order  
 IFPACKCOMBINE                   Add
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
@@ -208,7 +208,7 @@ ML_COARSEN                      UC
 ML_DAMPCOARSE                   1
 ML_DAMPFINE                     1
 ML_DAMPMED                      1
-ML_MAXCOARSESIZE                1000  // 5000
+ML_MAXCOARSESIZE                1000  
 ML_MAXLEVEL                     5
 ML_PRINT                        0
 ML_PROLONG_SMO                  0
@@ -218,7 +218,7 @@ ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
-SOLVER                          Belos //UMFPACK,undefined
+SOLVER                          Belos 
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1.48e8 NUE 0.3 DENS 9.130e-6 THEXPANS 1.72e-5 CAPA 3405.49 CONDUCT 3.1e5 INITTEMP 293.15 // Cu
 MAT 3 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1.93e8 NUE 0.3 DENS 8.910e-6 THEXPANS 1.22e-5 CAPA 3956.04 CONDUCT 7.5e4 INITTEMP 293.15 // Ni

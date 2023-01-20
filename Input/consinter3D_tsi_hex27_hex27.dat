@@ -106,19 +106,19 @@ MESH_INIT                       no
 --------------------------------------------------------------------SOLVER 1
 NAME                            TSI_MONOLITHIC_SOLVER
 AZBDIAG                         0
-AZCONV                          AZ_r0  // AZ_r0,AZ_rhs,AZ_Anorm,AZ_noscaled,AZ_sol,AZ_weighted,AZ_expected_values,AZTECOO_conv_test,AZ_inf_noscaled
+AZCONV                          AZ_r0  
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPREC                          BGS2x2  // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
+AZPREC                          BGS2x2  
 AZREUSE                         0
-AZSCAL                          none   // none,sym,infnorm
-AZSOLVE                         GMRES  // CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU
+AZSCAL                          none   
+AZSOLVE                         GMRES  
 AZSUB                           300
 AZTOL                           1e-08
 BGS2X2_FLIPORDER                block1_block0_order
-IFPACKCOMBINE                   Add  // Add,Insert,Zero
+IFPACKCOMBINE                   Add  
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -135,7 +135,7 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          Belos  // UMFPACK,Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          Belos  
 --------------------------------------------------------------------SOLVER 2
 NAME                            THERMAL_SOLVER
 AZBDIAG                         0
@@ -144,7 +144,7 @@ AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPREC                          MLFLUID2  // ML,ILU
+AZPREC                          MLFLUID2  
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
@@ -158,8 +158,8 @@ ML_COARSEN                      UC
 ML_DAMPCOARSE                   1
 ML_DAMPFINE                     1
 ML_DAMPMED                      1
-ML_MAXCOARSESIZE                1  // 5000
-ML_MAXLEVEL                     3  // 5
+ML_MAXCOARSESIZE                1  
+ML_MAXLEVEL                     3  
 ML_PRINT                        0
 ML_PROLONG_SMO                  0
 ML_PROLONG_THRES                0
@@ -167,7 +167,7 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          Belos  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          Belos  
 --------------------------------------------------------------------SOLVER 3
 NAME                            STRUCTURAL_SOLVER
 AZBDIAG                         0
@@ -176,7 +176,7 @@ AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPREC                          MLFLUID2  // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
+AZPREC                          MLFLUID2  
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
@@ -190,8 +190,8 @@ ML_COARSEN                      UC
 ML_DAMPCOARSE                   1
 ML_DAMPFINE                     1
 ML_DAMPMED                      1
-ML_MAXCOARSESIZE                1  // 5000
-ML_MAXLEVEL                     3  // 5
+ML_MAXCOARSESIZE                1  
+ML_MAXLEVEL                     3  
 ML_PRINT                        0
 ML_PROLONG_SMO                  0
 ML_PROLONG_THRES                0
@@ -199,7 +199,7 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          Belos  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          Belos  
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 2.1e08 NUE 0.0 DENS 7.85e-06 THEXPANS 1.1e-05 CAPA 0.0 CONDUCT 1030.0 INITTEMP 273.15
 MAT 2 THERM_FourierIso CAPA 0.0 CONDUCT 1030.0

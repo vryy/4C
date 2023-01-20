@@ -79,7 +79,7 @@ COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       //BoundaryTypeSigm
 //NIT_STAB_FAC                  100.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          UMFPACK                       // vm3 Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK                       
 -------------------------------------------------------------------MATERIALS
 // MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0

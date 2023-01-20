@@ -60,7 +60,7 @@ EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          UMFPACK //Belos
+SOLVER                          UMFPACK 
 //AZOUTPUT                        50
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0

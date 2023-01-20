@@ -151,7 +151,7 @@ RANDSEED                        -1
 RESTART                         0
 SHAPEFCT                        Polynomial
 -----------------------------------------------------------SOLVER 1
-SOLVER                         Belos // UMFPACK Belos
+SOLVER                         Belos 
 AZSOLVE                        GMRES
 AZPREC                         AMGnxn
 AZSUB                          300
@@ -163,7 +163,7 @@ NAME                           FPSI_Solver
 AMGNXN_TYPE                    XML
 AMGNXN_XML_FILE                fpsi_bending_struct_BGSAMG.xml
 -----------------------------------------------------------SOLVER 2
-SOLVER                         Belos // UMFPACK Belos
+SOLVER                         Belos 
 AZSOLVE                        GMRES
 AZPREC                         MueLu
 MUELU_XML_ENFORCE              No
@@ -172,7 +172,7 @@ ML_SMOOTHERFINE                 GS
 ML_SMOOTHERMED                  GS
 ML_SMOOTHERCOARSE               GS
 -----------------------------------------------------------SOLVER 3
-SOLVER                         Belos // UMFPACK Belos
+SOLVER                         Belos 
 AZSOLVE                        GMRES
 AZPREC                         MueLu
 MUELU_XML_ENFORCE              No
@@ -181,7 +181,7 @@ ML_SMOOTHERFINE                 GS
 ML_SMOOTHERMED                  GS
 ML_SMOOTHERCOARSE               GS
 -----------------------------------------------------------SOLVER 4
-SOLVER                         Belos // UMFPACK Belos
+SOLVER                         Belos 
 AZSOLVE                        GMRES
 AZPREC                         MueLu
 MUELU_XML_ENFORCE              No

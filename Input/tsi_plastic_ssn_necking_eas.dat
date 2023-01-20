@@ -96,13 +96,13 @@ NORM_RESF                       Rel                // Abs,Mix
 MERGE_TSI_BLOCK_MATRIX          yes
 --------------------------------------------------------------------SOLVER 3
 NAME                            TSI_MONOLITHIC_SOLVER
-SOLVER                  Superlu //        Belos          // UMFPACK,Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                  Superlu 
 --------------------------------------------------------------------SOLVER 2
 NAME                            THERMAL_SOLVER
-SOLVER                          UMFPACK            // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK            
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          UMFPACK            // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK            
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 4
 ----------------------------------------------------------------------FUNCT1

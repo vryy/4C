@@ -61,11 +61,11 @@ LINEAR_SOLVER                   1
 TRANSIENT_TERMS                 none
 CONTIPARTINT                    yes
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK                       // UMFPACK,Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK                       
 --------------------------------------------------------------------SOLVER 2
-SOLVER                          UMFPACK                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK                       
 --------------------------------------------------------------------SOLVER 3
-SOLVER                          UMFPACK                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK                       
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DIVERCONT                       stop

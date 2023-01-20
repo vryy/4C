@@ -82,33 +82,33 @@ EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino_wo_dt //Burman_Fern
 EOS_H_DEFINITION                EOS_he_surf_with_max_diameter// EOS_he_max_dist_to_opp_surf //EOS_he_surf_with_max_diameter // EOS_he_surf_with_max_diameter
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Belos                       // vm3 Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        50                              // output every so often, 0 no output
-AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
+SOLVER                          Belos                       
+AZOUTPUT                        50                              
+AZSOLVE                         GMRES                           
 ML_PRINT                        5
-AZPREC                          MLFLUID2 //MLFLUID2                        // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
-AZREUSE                         0                               // how often to recompute some preconditioners
-AZOMEGA                         1.0       // unused
-AZGRAPH                         1         // unused
-AZSCAL                          none      // none sym infnorm scaling of the system
-IFPACKGFILL                     0                               // (3 for edgebased stabilization pattern) graph fill for ILU
-AZTOL                           1.0E-12                        // tolerance in unscaled residual
-AZCONV                          AZ_r0                           // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1000                            // max iterations
-AZSUB                           30                            // size of krylov space for gmres
-ML_MAXCOARSESIZE                2500 // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
-ML_MAXLEVEL                     3                              // ML max number of levels
-ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  0.0                             // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES                0.0                            // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 SGS //ILU                             // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  SGS //ILU                             // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               Umfpack                         // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     3 3 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.66//66 //0.66                            // damping fine grid
-ML_DAMPMED                      0.66 //66                             // damping med grids
-ML_DAMPCOARSE                   1.0                             // damping coarse grid
+AZPREC                          MLFLUID2 
+AZREUSE                         0                               
+AZOMEGA                         1.0       
+AZGRAPH                         1         
+AZSCAL                          none      
+IFPACKGFILL                     0                               
+AZTOL                           1.0E-12                        
+AZCONV                          AZ_r0                           
+AZITER                          1000                            
+AZSUB                           30                            
+ML_MAXCOARSESIZE                2500 
+ML_MAXLEVEL                     3                              
+ML_COARSEN                      UC                              
+ML_AGG_SIZE                     27                              
+ML_PROLONG_SMO                  0.0                             
+ML_PROLONG_THRES                0.0                            
+ML_SMOOTHERFINE                 SGS 
+ML_SMOOTHERMED                  SGS 
+ML_SMOOTHERCOARSE               Umfpack                         
+ML_SMOTIMES                     3 3 1 
+ML_DAMPFINE                     0.66
+ML_DAMPMED                      0.66 
+ML_DAMPCOARSE                   1.0                             
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_fluid  DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 1.0 NUE 0.0 DENS 1.0 THEXPANS 0.0

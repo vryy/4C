@@ -56,35 +56,35 @@ MAXITER                         100
 UZAWAPARAM                      1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Belos                     // Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                             // output every so often, 0 no output
-AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ML                            // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
-AZREUSE                         10                            // how often to recompute some preconditioners
-IFPACKGFILL                     2                             // graph fill for ILU
-AZTOL                           1.0E-4                        // tolerance in unscaled residual
-AZCONV                          AZ_r0                         // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test
-AZITER                          2500                          // max iterations
-AZSUB                           50                            // size of krylov space for gmres
-AZOMEGA                         1.0                           // unused
-AZGRAPH                         1                             // unused
-IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-IFPACKCOMBINE                   Add                           // combine mode: Zero, Insert, Add
-AZSCAL                          none                          // none sym infnorm scaling of the system
-ML_PRINT                        0                             // ML print-out level (0-10)
-ML_MAXCOARSESIZE                1000                          // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     2                             // ML max number of levels
-ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  1.33                          // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 Chebychev                     // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  Chebychev                     // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               Umfpack                       // Umfpack KLU Superlu
-ML_SMOTIMES                     6 1 1                         // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.69                          // damping fine grid
-ML_DAMPMED                      1.0                           // damping med grids
-ML_DAMPCOARSE                   1.0                           // damping coarse grid
+SOLVER                          Belos                     
+AZOUTPUT                        0                             
+AZSOLVE                         GMRES                         
+AZPREC                          ML                            
+AZREUSE                         10                            
+IFPACKGFILL                     2                             
+AZTOL                           1.0E-4                        
+AZCONV                          AZ_r0                         
+AZITER                          2500                          
+AZSUB                           50                            
+AZOMEGA                         1.0                           
+AZGRAPH                         1                             
+IFPACKOVERLAP                   0                             
+IFPACKCOMBINE                   Add                           
+AZSCAL                          none                          
+ML_PRINT                        0                             
+ML_MAXCOARSESIZE                1000                          
+ML_MAXLEVEL                     2                             
+ML_COARSEN                      UC                            
+ML_AGG_SIZE                     27                            
+ML_PROLONG_SMO                  1.33                          
+ML_PROLONG_THRES                0.0                           
+ML_SMOOTHERFINE                 Chebychev                     
+ML_SMOOTHERMED                  Chebychev                     
+ML_SMOOTHERCOARSE               Umfpack                       
+ML_SMOTIMES                     6 1 1                         
+ML_DAMPFINE                     0.69                          
+ML_DAMPMED                      1.0                           
+ML_DAMPCOARSE                   1.0                           
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.004 DENSITY 0.001 GAMMA 1.0
 MAT 2 MAT_Struct_AAAGasser DENS 0.0001 VOL OSM NUE 0.49 BETA -2.0 CLUM 2.62e3 CMED 1.98e3 CABLUM 1.73e3

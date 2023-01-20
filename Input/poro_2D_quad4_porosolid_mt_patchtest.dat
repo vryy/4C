@@ -80,7 +80,7 @@ LM_SHAPEFCN                     Dual
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 none
 -----------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK //UMFPACK Belos
+SOLVER                          UMFPACK 
 --------------------------------------------------------------------SOLVER 2
 NAME                            Meshtying_Solver
 SOLVER                          UMFPACK

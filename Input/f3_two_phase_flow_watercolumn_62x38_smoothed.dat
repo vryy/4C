@@ -102,14 +102,14 @@ REINIT_INITIAL                  no
 GMSH_DEBUG_OUT                  No
 -----------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          Belos //UMFPACK //Belos
+SOLVER                          Belos 
 AZPREC                          ILU
 AZTOL                           1.0e-6
 -----------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
-SOLVER                          UMFPACK //Belos //UMFPACK //Belos
+SOLVER                          UMFPACK 
 AZSOLVE                         GMRES
-AZPREC                          MLFLUID2 //ILU
+AZPREC                          MLFLUID2 
 IFPACKOVERLAP                   0
 IFPACKGFILL                     0
 IFPACKCOMBINE                   Add
@@ -125,7 +125,7 @@ AZSCAL                          none
 AZOUTPUT                        50
 -----------------------------------------------------------SOLVER 3
 NAME                            Sca_Tra_Solver
-SOLVER                          Belos //UMFPACK //Belos
+SOLVER                          Belos 
 AZPREC                          ILU
 AZTOL                           1.0e-10
 ----------------------------------------------------------MATERIALS

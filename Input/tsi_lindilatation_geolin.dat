@@ -90,10 +90,10 @@ COUPVARIABLE                    Temperature  // Displacement,Temperature
 CONVTOL                         1e-06
 --------------------------------------------------------------------SOLVER 1
 NAME                            Thermal_Solver
-SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK  
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
-SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK  
 -------------------------------------------------------------------MATERIALS
 //parameters in [N,m,s,K]
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 10 NUE 0.0 DENS 0 THEXPANS 1.0e-05 CAPA 420 CONDUCT 52 INITTEMP 293
