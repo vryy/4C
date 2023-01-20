@@ -48,7 +48,7 @@ DRT::ELEMENTS::SolidEleCalc<distype>* DRT::ELEMENTS::SolidEleCalc<distype>::Inst
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::SolidEleCalc<distype>::SolidEleCalc()
-    : DRT::ELEMENTS::SolidEleInterface::SolidEleInterface(),
+    : DRT::ELEMENTS::SolidEleCalcInterface::SolidEleCalcInterface(),
       stiffness_matrix_integration_(
           CreateGaussIntegration<distype>(GetGaussRuleStiffnessMatrix<distype>())),
       mass_matrix_integration_(CreateGaussIntegration<distype>(GetGaussRuleMassMatrix<distype>()))

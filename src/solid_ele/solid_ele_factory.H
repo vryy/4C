@@ -16,7 +16,7 @@
 namespace DRT::ELEMENTS
 {
   // forward declaration
-  class SolidEleInterface;
+  class SolidEleCalcInterface;
   class Solid;
 
   class SolidFactory
@@ -26,10 +26,10 @@ namespace DRT::ELEMENTS
     SolidFactory() = default;
 
 
-    static std::unique_ptr<SolidEleInterface> ProvideImpl(DRT::ELEMENTS::Solid* ele);
+    static std::unique_ptr<SolidEleCalcInterface> ProvideImpl(DRT::ELEMENTS::Solid* ele);
 
     template <DRT::Element::DiscretizationType distype>
-    static std::unique_ptr<SolidEleInterface> ProvideImpl(DRT::ELEMENTS::Solid* ele);
+    static std::unique_ptr<SolidEleCalcInterface> ProvideImpl(DRT::ELEMENTS::Solid* ele);
 
   };  // class SolidFactory
 }  // namespace DRT::ELEMENTS

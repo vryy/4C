@@ -17,7 +17,7 @@
 #include "str_elements_paramsinterface.H"
 #include "so3_material.H"
 #include "solid_ele_factory.H"
-#include "solid_ele_interface.H"
+#include "solid_ele_calc_interface.H"
 
 
 DRT::ELEMENTS::SolidType DRT::ELEMENTS::SolidType::instance_;

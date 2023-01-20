@@ -16,7 +16,7 @@
 #include "solid_ele.H"
 
 
-std::unique_ptr<DRT::ELEMENTS::SolidEleInterface> DRT::ELEMENTS::SolidFactory::ProvideImpl(
+std::unique_ptr<DRT::ELEMENTS::SolidEleCalcInterface> DRT::ELEMENTS::SolidFactory::ProvideImpl(
     DRT::ELEMENTS::Solid* ele)
 {
   switch (ele->Shape())
@@ -50,7 +50,7 @@ std::unique_ptr<DRT::ELEMENTS::SolidEleInterface> DRT::ELEMENTS::SolidFactory::P
 }
 
 template <DRT::Element::DiscretizationType distype>
-std::unique_ptr<DRT::ELEMENTS::SolidEleInterface> DRT::ELEMENTS::SolidFactory::ProvideImpl(
+std::unique_ptr<DRT::ELEMENTS::SolidEleCalcInterface> DRT::ELEMENTS::SolidFactory::ProvideImpl(
     DRT::ELEMENTS::Solid* ele)
 {
   // here we go into the different cases for element technology

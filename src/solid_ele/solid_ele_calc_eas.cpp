@@ -10,7 +10,7 @@
 #include "solid_utils.H"
 #include "solid_ele_calc.H"
 #include "solid_ele_calc_eas.H"
-#include "solid_ele_interface.H"
+#include "solid_ele_calc_interface.H"
 #include "element.H"
 #include "utils.H"
 #include "solid_ele.H"

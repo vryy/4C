@@ -30,7 +30,7 @@ namespace MAT
 namespace DRT::ELEMENTS
 {
   // forward declaration
-  class SolidEleInterface;
+  class SolidEleCalcInterface;
 
   class SolidType : public DRT::ElementType
   {
@@ -353,7 +353,7 @@ namespace DRT::ELEMENTS
     Teuchos::RCP<std::vector<STR::ELEMENTS::CondensatorBase>> gp_condensator_;
 
     //! element calculation interface
-    std::unique_ptr<SolidEleInterface> solid_interface_ = nullptr;
+    std::unique_ptr<SolidEleCalcInterface> solid_interface_ = nullptr;
 
     //! flag, whether the post setup of materials is already called
     bool material_post_setup_ = false;

@@ -40,10 +40,10 @@ namespace DRT
     // forward declaration
     class Solid;
 
-    class SolidEleInterface
+    class SolidEleCalcInterface
     {
      public:
-      virtual ~SolidEleInterface() = default;
+      virtual ~SolidEleCalcInterface() = default;
 
       /*!
        * @brief Setup routine for the element
