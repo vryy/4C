@@ -45,15 +45,6 @@ namespace STR
       //! Build the implicit or explicit time integration strategies
       Teuchos::RCP<STR::TIMINT::Base> BuildStrategy(const Teuchos::ParameterList& sdyn) const;
 
-      //! Build adaptive auxiliary time integration strategy
-      Teuchos::RCP<STR::TimAda> BuildAdaptiveWrapper(
-          const Teuchos::ParameterList& ioflags,       //!< input-output-flags
-          const Teuchos::ParameterList& sdyn,          //!< structural dynamic flags
-          const Teuchos::ParameterList& xparams,       //!< extra flags
-          const Teuchos::ParameterList& taflags,       //!< adaptive input flags
-          Teuchos::RCP<STR::TIMINT::Base> ti_strategy  //!< marching time integrator
-      ) const;
-
       //! Build the structural dynamics data container
       Teuchos::RCP<STR::TIMINT::BaseDataSDyn> BuildDataSDyn(
           const Teuchos::ParameterList& sdyn) const;

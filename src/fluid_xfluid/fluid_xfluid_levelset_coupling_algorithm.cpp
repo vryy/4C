@@ -10,8 +10,6 @@
 /*----------------------------------------------------------------------*/
 
 #include "levelset_algorithm.H"
-#include "levelset_timint_ost.H"
-#include "scatra_timint_ost.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -23,7 +21,6 @@
 #include "lib_discret_xfem.H"
 
 #include "mat_newtonianfluid.H"
-#include "mat_list.H"
 
 #include "fluid_xfluid_levelset_coupling_algorithm.H"
 

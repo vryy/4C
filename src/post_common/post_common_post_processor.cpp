@@ -18,8 +18,6 @@
 #include "lib_globalproblem.H"
 #include "lib_discret.H"
 
-#include "so3_base.H"
-
 #include "scatra_ele.H"
 
 

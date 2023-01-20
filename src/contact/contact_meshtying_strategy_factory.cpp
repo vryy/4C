@@ -30,9 +30,6 @@
 #include "mortar_utils.H"
 
 #include "structure_new_timint_basedataglobalstate.H"
-#include "structure_new_utils.H"
-
-#include "structure_xstructure_xstr_multi_discretization_wrapper.H"
 
 #include "linalg_utils_sparse_algebra_math.H"
 

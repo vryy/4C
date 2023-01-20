@@ -11,7 +11,13 @@
 #ifndef PORO_CLONESTRATEGY_H_
 #define PORO_CLONESTRATEGY_H_
 
-#include "ssi_clonestrategy.H"
+#include <Teuchos_RCP.hpp>
+#include "inpar_scatra.H"
+
+namespace DRT
+{
+  class Element;
+}
 
 namespace POROELAST
 {

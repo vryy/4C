@@ -9,7 +9,6 @@
 /*---------------------------------------------------------------------------*/
 
 #include "truss3.H"
-#include "beam3_euler_bernoulli.H"
 #include "lib_linedefinition.H"
 #include "structure_new_elements_paramsinterface.H"
 #include "linalg_utils_nullspace.H"
