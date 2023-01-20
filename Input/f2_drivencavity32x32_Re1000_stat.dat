@@ -56,17 +56,17 @@ TOL_VEL_INC	  1.0E-7
 TOL_PRES_RES	  1.0E-7
 TOL_PRES_INC	  1.0E-7
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        residual_based                // no_stabilization residual_based inconsistent
-TDS                             quasistatic                   // quasistatic time_dependent
+STABTYPE                        residual_based                
+TDS                             quasistatic                   
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall_wo_dt
 CHARELELENGTH_PC                root_of_volume
-TRANSIENT                       no_transient                  // no_transient yes_transient
-SUPG                            yes                           // no yes
-PSPG                            yes                           // no_pspg yes
-VSTAB                           no_vstab                      // no_vstab vstab_gls vstab_gls_rhs vstab_usfem vstab_usfem_rhs
-GRAD_DIV                        yes                           // no yes cstab_td
-CROSS-STRESS                    no_cross                      // no_cross cross_complete cross_rhs
-REYNOLDS-STRESS                 no_reynolds                   // no_reynolds reynolds_rhs
+TRANSIENT                       no_transient                  
+SUPG                            yes                           
+PSPG                            yes                           
+VSTAB                           no_vstab                      
+GRAD_DIV                        yes                           
+CROSS-STRESS                    no_cross                      
+REYNOLDS-STRESS                 no_reynolds                   
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Belos                     

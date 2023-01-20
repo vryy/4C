@@ -51,12 +51,12 @@ TIMESTEP                        0.15
 NUMSTEP                         5
 RESTARTEVRY                     2000
 RESULTSEVRY                     1
-INF_PERM                        Yes //No
-SCATRA_SOLVERTYPE               nonlinear // linear
-COUPLED_LINEAR_SOLVER           4                             // FS3I problem
-LINEAR_SOLVER1                  5                             // ScaTra FLUID solver
-LINEAR_SOLVER2                  6                             // ScaTra STRUCT solver
-STRUCTSCAL_CONVFORM             conservative //convective
+INF_PERM                        Yes 
+SCATRA_SOLVERTYPE               nonlinear 
+COUPLED_LINEAR_SOLVER           4                             
+LINEAR_SOLVER1                  5                             
+LINEAR_SOLVER2                  6                             
+STRUCTSCAL_CONVFORM             conservative 
 STRUCTSCAL_INITIALFIELD         field_by_function
 STRUCTSCAL_INITFUNCNO           2
 FLUIDSCAL_SCATRATYPE            Loma
@@ -72,9 +72,9 @@ ASSUGRDIFF                      no
 CONSISTENCY                     no
 DEFINITION_ASSGD                artificial_linear
 DEFINITION_TAU                  Franca_Valentin
-EVALUATION_MAT                  integration_point //element_center
-EVALUATION_TAU                  integration_point //element_center
-STABTYPE                        no_stabilization //GLS //SUPG
+EVALUATION_MAT                  integration_point 
+EVALUATION_TAU                  integration_point 
+STABTYPE                        no_stabilization 
 SUGRVEL                         no
 ------------------------------------------------------FLUID DYNAMIC
 PHYSICAL_TYPE                   Loma
@@ -89,11 +89,11 @@ NONLINITER                      fixed_point_like
 PREDICTOR                       steady_state
 CONVCHECK                       L_2_norm
 INCONSISTENT_RESIDUAL           No
-INITIALFIELD                    field_by_function // zero_field
+INITIALFIELD                    field_by_function 
 OSEENFIELDFUNCNO                -1
 LIFTDRAG                        No
 CONVFORM                        convective
-NONLINEARBC                     no // yes
+NONLINEARBC                     no 
 MESHTYING                       no
 GRIDVEL                         BE
 ALLDOFCOUPLED                   Yes
@@ -212,7 +212,7 @@ LINEAR_SOLVER                   3
 ALE_TYPE                        solid
 RESULTSEVRY                     1200
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
-SOLVERTYPE                      linear_incremental // nonlinear
+SOLVERTYPE                      linear_incremental 
 TIMEINTEGR                      Gen_Alpha
 MAXTIME                         800
 NUMSTEP                         5
@@ -226,8 +226,8 @@ RESTARTEVRY                     2000
 MATID                           -1
 VELOCITYFIELD                   Navier_Stokes
 VELFUNCNO                       -1
-INITIALFIELD                    field_by_function // field_by_condition
-INITFUNCNO                      3 // -1
+INITIALFIELD                    field_by_function 
+INITFUNCNO                      3 
 SPHERICALCOORDS                 No
 CALCERROR                       No
 CALCERRORNO                     -1
@@ -236,11 +236,11 @@ CALCFLUX_DOMAIN_LUMPED          Yes
 CALCFLUX_BOUNDARY               diffusive
 CALCFLUX_BOUNDARY_LUMPED        No
 WRITEFLUX_IDS                   -1
-OUTPUTSCALARS                   entire_domain // none
+OUTPUTSCALARS                   entire_domain 
 OUTINTEGRREAC                   No
 OUTPUT_GMSH                     No
 MATLAB_STATE_OUTPUT             No
-CONVFORM                        convective // conservative
+CONVFORM                        convective 
 NEUMANNINFLOW                   no
 CONV_HEAT_TRANS                 yes
 SKIPINITDER                     no

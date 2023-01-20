@@ -30,20 +30,20 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 -----------------------------------------------------FLUID DYNAMIC
-INITIALFIELD     zero_field //field_by_function
+INITIALFIELD     zero_field 
 STARTFUNCNO      2
 TIMEINTEGR       Stationary
 NONLINITER       fixed_point_like
-PHYSICAL_TYPE    Stokes //Incompressible //Stokes //Stokes
+PHYSICAL_TYPE    Stokes 
 ITEMAX           3
 CONVCHECK        L_2_norm
 RESULTSEVRY            1
 RESTARTEVRY      5
-NUMSTEP          1//2
+NUMSTEP          1
 NUMSTASTEPS      0
 MAXTIME          1000.0
-TIMESTEP         1.0//0.1
-THETA            1.0 //0.5 //0.67
+TIMESTEP         1.0
+THETA            1.0 
 START_THETA      1.0
 ALPHA_F          1.00
 ALPHA_M          1.00
@@ -61,23 +61,23 @@ TOL_VEL_INC	  1.0E-13
 TOL_PRES_RES	  1.0E-13
 TOL_PRES_INC	  1.0E-13
 -------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        edge_based //residual_based
-DEFINITION_TAU                  Hughes_Franca_Balestra_wo_dt // Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+STABTYPE                        edge_based 
+DEFINITION_TAU                  Hughes_Franca_Balestra_wo_dt 
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            no //yes //yes //yes//yes
+PSPG                            no 
 SUPG                            no
 VSTAB                           no_vstab
 GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos //xfem_gp
-EOS_CONV_STREAM                 none //xfem_gp // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none // none, std_eos, xfem_gp
-EOS_DIV                         none //, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
-EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino_wo_dt //Burman_Fernandez_Hansbo_
-EOS_H_DEFINITION                EOS_he_surf_diameter// EOS_he_max_dist_to_opp_surf //EOS_he_surf_with_max_diameter // EOS_he_surf_with_max_diameter
+EOS_PRES                        std_eos 
+EOS_CONV_STREAM                 none 
+EOS_CONV_CROSS                  none 
+EOS_DIV                         none 
+EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino_wo_dt 
+EOS_H_DEFINITION                EOS_he_surf_diameter
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Belos

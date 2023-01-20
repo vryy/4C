@@ -69,7 +69,7 @@ LIFTDRAG                        No
 LINEAR_SOLVER                   2
 MAXTIME                         1000
 NONLINEARBC                     yes
-NONLINITER Newton //fixed_point_like
+NONLINITER Newton 
 NUMSTASTEPS                     0
 NUMSTEP                         1
 PHYSICAL_TYPE                   Incompressible
@@ -180,9 +180,9 @@ RESTARTEVRY                     10
 RESULTSEVRY                           1
 INF_PERM                        No
 SCATRA_SOLVERTYPE               linear
-COUPLED_LINEAR_SOLVER           1                             // FS3I problem
-LINEAR_SOLVER1                  4                             // ScaTra FLUID solver
-LINEAR_SOLVER2                  3                             // ScaTra STRUCT solver
+COUPLED_LINEAR_SOLVER           1                             
+LINEAR_SOLVER1                  4                             
+LINEAR_SOLVER2                  3                             
 STRUCTSCAL_INITFUNCNO           1
 STRUCTSCAL_INITIALFIELD         field_by_function
 ----------------------------------------------------------------FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION
@@ -190,9 +190,9 @@ ASSUGRDIFF                      no
 CONSISTENCY                     no
 DEFINITION_ASSGD                artificial_linear
 DEFINITION_TAU                  Franca_Valentin
-EVALUATION_MAT                  integration_point //element_center
-EVALUATION_TAU                  integration_point //element_center
-STABTYPE                        no_stabilization //GLS //SUPG //
+EVALUATION_MAT                  integration_point 
+EVALUATION_TAU                  integration_point 
+STABTYPE                        no_stabilization 
 SUGRVEL                         no
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 CALCERROR                       No

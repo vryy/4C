@@ -14,7 +14,7 @@ DIM           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Scalar_Transport
 RESTART                         0
-RANDSEED                        1 // 1: reproduceable; -1: uses current time (default)
+RANDSEED                        1 
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
@@ -32,7 +32,7 @@ MAXTIME                         100000
 NONLINITER                      fixed_point_like
 NUMSTEP                         10
 PREDICTOR                       steady_state
-RESTARTEVRY                     2 //10000
+RESTARTEVRY                     2 
 TIMEINTEGR                      Af_Gen_Alpha
 TIMESTEP                        0.5
 RESULTSEVRY                           1
@@ -65,22 +65,22 @@ PHYSICAL_MODEL                  Multifractal_Subgrid_Scales
 //CANONICAL_FLOW                  decaying_homogeneous_isotropic_turbulence
 //CANONICAL_FLOW                  forced_homogeneous_isotropic_turbulence
 CANONICAL_FLOW                  scatra_forced_homogeneous_isotropic_turbulence
-FORCING_TYPE                    linear_compensation_from_intermediate_spectrum //fixed_power_input
+FORCING_TYPE                    linear_compensation_from_intermediate_spectrum 
 POWER_INPUT                     62.8436001234
-FORCING_TIME_STEPS              100 // hit_comte_bellot_corrsin_initial_field
+FORCING_TIME_STEPS              100 
 //THRESHOLD_WAVENUMBER            22 //hit_comte_bellot_corrsin_initial_field
 THRESHOLD_WAVENUMBER            2
-SCALAR_FORCING                  isotropic //mean_scalar_gradient
+SCALAR_FORCING                  isotropic 
 MEAN_SCALAR_GRADIENT            0.1
 HOMDIR                          xyz
 SAMPLING_START                  1
 SAMPLING_STOP                   10
-DUMPING_PERIOD                  1 //0
+DUMPING_PERIOD                  1 
 FSSUGRVISC                      No
 ------------------------------------FLUID DYNAMIC/SUBGRID VISCOSITY
 C_SMAGORINSKY_AVERAGED          yes
 C_SMAGORINSKY                   0.18
-C_TURBPRANDTL                   0.5 //1.0
+C_TURBPRANDTL                   0.5 
 -----------------------------------FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES
 CSGS                            0.2
 SCALE_SEPARATION                algebraic_multigrid_operator
@@ -102,12 +102,12 @@ NEAR_WALL_LIMIT_CSGS_PHI        no
 LINEAR_SOLVER                   1
 SKIPINITDER                     yes
 SOLVERTYPE                      nonlinear
-FSSUGRDIFF                      No //Smagorinsky_small
+FSSUGRDIFF                      No 
 INITFUNCNO                      -1
-INITIALFIELD                    low_forced_hit //zero_field
+INITIALFIELD                    low_forced_hit 
 MAXTIME                         100000.0
 NUMSTEP                         10
-RESTARTEVRY                     2 //100000
+RESTARTEVRY                     2 
 THETA                           0.50
 ALPHA_M                         0.83333333333333
 ALPHA_F                         0.66666666666666
@@ -160,8 +160,8 @@ ML_DAMPFINE       0.67
 ML_DAMPMED        0.67      
 ML_DAMPCOARSE     1.0       
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_fluid DYNVISCOSITY 0.0001 DENSITY 1.0  // Re=1000
-MAT 2 MAT_scatra DIFFUSIVITY 0.0001 REACOEFF 0.0 // Sc=1
+MAT 1 MAT_fluid DYNVISCOSITY 0.0001 DENSITY 1.0  
+MAT 2 MAT_scatra DIFFUSIVITY 0.0001 REACOEFF 0.0 
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------RESULT DESCRIPTION

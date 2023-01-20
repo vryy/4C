@@ -31,7 +31,7 @@ TIMESTEP                        0.5
 RESTARTEVRY                     1
 RESULTSEVRY                     1
 MAXITER                         10
-MESHTYING                       meshtying // no // meshtying // meshsliding
+MESHTYING                       meshtying 
 TOLRES                          1e-8
 TOLDISP                         1e-8
 -------------------------------------------------------------CONTACT DYNAMIC

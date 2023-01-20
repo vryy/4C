@@ -8,7 +8,7 @@ created by pre_exodus
 //NODES       1106
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Elastohydrodynamic_Lubrication // Lubrication Structure Elastohydrodynamic_Lubrication
+PROBLEMTYP                      Elastohydrodynamic_Lubrication 
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -28,10 +28,10 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   3
-DYNAMICTYP                      Statics // GenAlpha
+DYNAMICTYP                      Statics 
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton 
 MAXTIME                         1.0
 NUMSTEP                         3
 TIMESTEP                        0.001
@@ -51,13 +51,13 @@ GENAVG                          TrLike
 RHO_INF                         1.0
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   3
-STRATEGY                        Ehl // Lagrange
+STRATEGY                        Ehl 
 FRICTION                        None
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
-SEARCH_ALGORITHM                Binarytree // BruteForceEleBased
+SEARCH_ALGORITHM                Binarytree 
 SEARCH_PARAM                    20
 INTTYPE                         Elements
 NUMGP_PER_DIM                   2
@@ -70,11 +70,11 @@ NUMSTEP                         3000
 TIMESTEP                        0.001
 RESULTSEVRY                           1
 RESTARTEVRY                     1
-CALCERROR                       No // No error_by_function
+CALCERROR                       No 
 CALCERRORNO                     2
-OUTMEAN                         No // No Yes
-OUTPUT_GMSH                     No // No Yes
-MATLAB_STATE_OUTPUT             No // No Yes
+OUTMEAN                         No 
+OUTPUT_GMSH                     No 
+MATLAB_STATE_OUTPUT             No 
 LINEAR_SOLVER                   3
 ITEMAX                          10
 ABSTOLRES                       1.0e-14
@@ -98,7 +98,7 @@ ITEMAX                          200
 ITEMIN                          5
 FIELDCOUPLING                   none
 UNPROJ_ZERO_DBC                 yes
-COUPALGO                        ehl_Monolithic // ehl_IterStagg // ehl_Monolithic
+COUPALGO                        ehl_Monolithic 
 -----------------------------------ELASTO HYDRO DYNAMIC/MONOLITHIC
 CONVTOL                         1e-8
 TOLINC                          1e-8

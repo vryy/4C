@@ -65,7 +65,7 @@ LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.8
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
-PARALLEL_REDIST                 static // Use static for now, as dynamic behaves randomly //dynamic
+PARALLEL_REDIST                 static 
 ------------------------------------------------------------------------WEAR
 WEARLAW                         Archard
 WEARTYPE                        primvar

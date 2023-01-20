@@ -23,7 +23,7 @@ GRIDVEL                         BE
 INITIALFIELD                    zero_field
 PREDICTOR                       steady_state
 THETA                           0.66
-TIMEINTEGR                      One_Step_Theta //One_Step_Theta Stationary
+TIMEINTEGR                      One_Step_Theta 
 RESULTSEVRY                           1
 LINEAR_SOLVER                   3
 ----------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
@@ -32,16 +32,16 @@ GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
-PSPG                            yes //yes no
+PSPG                            yes 
 REYNOLDS-STRESS                 no_reynolds
-RSTAB                           rstab_gls //rstab_gls no_rstab
-STABTYPE                        residual_based //residual_based no_stabilization
+RSTAB                           rstab_gls 
+STABTYPE                        residual_based 
 SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO                        poro_monolithic //poro_monolithic poro_monolithicstructuresplit poro_monolithicfluidsplit
+COUPALGO                        poro_monolithic 
 PHYSICAL_TYPE                   Poro_P1
 ITEMAX                          20
 ITEMIN                          1

@@ -58,7 +58,7 @@ REYNOLDS-STRESS                 no_reynolds
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
-TURBULENCE_APPROACH             CLASSICAL_LES                   // DNS_OR_RESVMM_LES CLASSICAL_LES RANS
+TURBULENCE_APPROACH             CLASSICAL_LES                   
 PHYSICAL_MODEL                  Multifractal_Subgrid_Scales
 CANONICAL_FLOW                  loma_channel_flow_of_height_2
 CHAN_AMPL_INIT_DIST             0.3
@@ -89,7 +89,7 @@ CONVFORM                        convective
 LOMA_CONTI                      yes
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   2
-SOLVERTYPE nonlinear //linear_incremental
+SOLVERTYPE nonlinear 
 FSSUGRDIFF                      No
 INITFUNCNO                      2
 INITIALFIELD                    field_by_function

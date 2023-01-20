@@ -26,22 +26,22 @@ NUMTHERMDIS                     0
 LINEAR_SOLVER                   1
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
-ALPHA_F                         1.0                           // 0.666666
-ALPHA_M                         1.5                           // 0.833333
+ALPHA_F                         1.0                           
+ALPHA_M                         1.5                           
 GAMMA                           1.0
 CONVCHECK                       L_2_norm
-CONVFORM convective //conservative
+CONVFORM convective 
 ITEMAX                          1
 MAXTIME                         0.5
-NONLINITER Newton //fixed_point_like
+NONLINITER Newton 
 NUMSTEP                         8
 PREDICTOR                       steady_state
 RESTARTEVRY                     20
 STARTFUNCNO                     -1
-NUMSTASTEPS                     1 //0
-START_THETA                     1.0 //0.66
-THETA                           1.0 //0.66
-TIMEINTEGR                      Af_Gen_Alpha //BDF2 //One_Step_Theta
+NUMSTASTEPS                     1 
+START_THETA                     1.0 
+THETA                           1.0 
+TIMEINTEGR                      Af_Gen_Alpha 
 TIMESTEP                        0.05
 RESULTSEVRY                           8
 MESHTYING                       no
@@ -55,7 +55,7 @@ TOL_PRES_INC	  1e-06
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes
-DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall
+DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen 
 PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
 STABTYPE                        residual_based
@@ -95,7 +95,7 @@ ML_DAMPFINE                     0.45
 ML_DAMPMED                      0.66                          
 ML_DAMPCOARSE                   1.0                           
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0 // Re=6.62
+MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0 
 ----------------------------------------------------------------------FUNCT1
 BELTRAMI c1 1.0
 ----------------------------------------------------------------------FUNCT2

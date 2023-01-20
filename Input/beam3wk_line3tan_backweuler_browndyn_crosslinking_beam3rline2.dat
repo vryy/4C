@@ -6,7 +6,7 @@ General Data File CCARAT
 ------------------------------------------------------PROBLEM SIZE
 DIM                    3
 -------------------------------------------------------PROBLEM TYP
-PROBLEMTYP             Structure //Polymer_Network
+PROBLEMTYP             Structure 
 RESTART                0
 RANDSEED               1
 ----------------------------------------------------DISCRETISATION

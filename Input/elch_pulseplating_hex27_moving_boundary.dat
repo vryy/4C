@@ -55,7 +55,7 @@ THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.0008
 VELOCITYFIELD                   Navier_Stokes
-CALCFLUX_BOUNDARY               diffusive   // do not use total flux due to introduction of mesh convection!
+CALCFLUX_BOUNDARY               diffusive   
 RESULTSEVRY                     1
 MATID                           2
 SOLVERTYPE                      nonlinear
@@ -266,7 +266,7 @@ E 2 - 1
 ---------------------------------ELECTRODE BOUNDARY KINETICS SURF CONDITIONS
 DSURF                           1
 //                              cathode
-E 2 - ID 0 pot -0.0 funct none numscal 3 stoich -1 0 0 e- 2 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 1.0 alpha_c 0.4 i0 51.0 gamma 0.75 refcon 0.348 dl_spec_cap 0.0 END // no capacity here 0.25
+E 2 - ID 0 pot -0.0 funct none numscal 3 stoich -1 0 0 e- 2 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 1.0 alpha_c 0.4 i0 51.0 gamma 0.75 refcon 0.348 dl_spec_cap 0.0 END 
 --------------------------------------------SCATRA FLUX CALC SURF CONDITIONS
 DSURF                           1
 E 2 -

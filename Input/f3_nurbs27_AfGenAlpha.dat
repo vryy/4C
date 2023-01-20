@@ -102,12 +102,12 @@ VSTAB                           no_vstab
 GRAD_DIV                        yes
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
-CANONICAL_FLOW                  rotating_circular_cylinder_nurbs  // rotating_circular_cylinder_nurbs_scatra
-CHAN_AMPL_INIT_DIST             0.1                             // whats this???
+CANONICAL_FLOW                  rotating_circular_cylinder_nurbs  
+CHAN_AMPL_INIT_DIST             0.1                             
 HOMDIR                          z
 SAMPLING_START                  1
 SAMPLING_STOP                   5000
-DUMPING_PERIOD                  0                               // Statistics a la Peter
+DUMPING_PERIOD                  0                               
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 0.0 FUNCT 4 4 4 0

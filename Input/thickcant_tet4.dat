@@ -32,18 +32,18 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Statics                       // GenAlpha
+DYNAMICTYP                      Statics                       
 RESULTSEVRY                     1
 RESTARTEVRY                     5
-NLNSOL                          ptc                           // fullnewton modnewton nlncg ptc
-PTCDT                           0.01                          // default is 0.1
-TIMESTEP                        0.003                         // 0.0001 works with FulNewton
+NLNSOL                          ptc                           
+PTCDT                           0.01                          
+TIMESTEP                        0.003                         
 NUMSTEP                         30
 MAXTIME                         0.006
 DAMPING                         No
 M_DAMP                          0.5
 K_DAMP                          0.5
-PREDICT                         ConstDisVelAcc                // ConstDisVelAcc ConstDis TangDis
+PREDICT                         ConstDisVelAcc                
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
@@ -57,7 +57,7 @@ UZAWAMAXITER                    20
 UZAWAALGO                       direct
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
-RHO_INF                         0.85//0.5//0.8
+RHO_INF                         0.85
 -----------------------------------------------------------------ALE DYNAMIC
 TIMESTEP                        0.1
 NUMSTEP                         200

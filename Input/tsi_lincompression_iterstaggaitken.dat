@@ -25,13 +25,13 @@ NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 OUTPUT_BIN                      Yes
-STRUCT_DISP                     Yes  // Yes,No,yes,no,YES,NO
-STRUCT_STRAIN                   GL  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
-STRUCT_STRESS                   2PK  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_COUPLING_STRESS          2PK  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-THERM_HEATFLUX                  Initial  // None,No,NO,no,Current,Initial
-THERM_TEMPERATURE               Yes  // Yes,No,yes,no,YES,NO
-THERM_TEMPGRAD                  Initial  // None,No,NO,no,Current,Initial
+STRUCT_DISP                     Yes  
+STRUCT_STRAIN                   GL  
+STRUCT_STRESS                   2PK  
+STRUCT_COUPLING_STRESS          2PK  
+THERM_HEATFLUX                  Initial  
+THERM_TEMPERATURE               Yes  
+THERM_TEMPGRAD                  Initial  
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
@@ -40,20 +40,20 @@ SHAPEFCT                        Polynomial
 INT_STRATEGY                    Standard
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-DIVERCONT                       stop  // Yes,No,yes,no,YES,NO: Go on with time integration even if Newton-Raphson iteration failed
-DYNAMICTYP                      Statics  // Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,OneStepTheta,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
+DIVERCONT                       stop  
+DYNAMICTYP                      Statics  
 ITERNORM                        L2
 LINEAR_SOLVER                   2
 MAXITER                         50
 MAXTIME                         1
 MINITER                         0
 M_DAMP                          0.5
-NLNSOL                          fullnewton  // vague,fullnewton,lsnewton,oppnewton,modnewton,nlncg,ptc,newtonlinuzawa,augmentedlagrange,NoxNewtonLineSearch,noxgeneral
+NLNSOL                          fullnewton  
 NORMCOMBI_RESFDISP              And
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         200
-PREDICT                         ConstDis  // Vague,ConstDis,ConstDisVelAcc,TangDis,ConstDisPres,ConstDisVelAccPres
+PREDICT                         ConstDis  
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
@@ -65,28 +65,28 @@ LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta  // Statics,OneStepTheta
+DYNAMICTYP                      OneStepTheta  
 INITFUNCNO                      1
-INITIALFIELD                    field_by_function  // zero_field,field_by_function,field_by_condition
+INITIALFIELD                    field_by_function  
 ITERNORM                        L2
 MAXITER                         50
 MAXTIME                         1
 MINITER                         0
-NLNSOL                          fullnewton  // vague,fullnewton
+NLNSOL                          fullnewton  
 NORMCOMBI_RESFTEMP              And
 NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         200
-PREDICT                         ConstTemp  // Vague,ConstTemp,ConstTempRate,TangTemp
+PREDICT                         ConstTemp  
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 TIMESTEP                        0.01
 TOLRES                          1e-05
 TOLTEMP                         1e-10
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
-THETA                           1.0  // 0.5
+THETA                           1.0  
 -----------------------------------------------------------------TSI DYNAMIC
-COUPALGO                        tsi_iterstagg_aitken  //tsi_iterstagg(_irons,_fixedrelax,_sequstagg,_oneway,_monolithic)
+COUPALGO                        tsi_iterstagg_aitken  
 ITEMAX                          100
 MAXTIME                         1.0
 NUMSTEP                         2000
@@ -95,7 +95,7 @@ TIMESTEP                        0.1
 RESULTSEVRY                           1
 -----------------------------------------------------TSI DYNAMIC/PARTITIONED
 CONVTOL                         1e-06
-COUPVARIABLE                    Temperature  // Displacement,TemperatureDisplacement
+COUPVARIABLE                    Temperature  
 //FIXEDOMEGA                    1.0   // default
 MAXOMEGA                        2.0
 --------------------------------------------------------------------SOLVER 1

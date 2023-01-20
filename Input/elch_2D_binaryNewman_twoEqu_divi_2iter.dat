@@ -31,7 +31,7 @@ SKIPINITDER                     Yes
 CONVTOL                         1e-10
 ABSTOLRES                       1e-16
 ITEMAX                          2
-EXPLPREDICT                     no                              // yes -> oscillations for neutral
+EXPLPREDICT                     no                              
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION

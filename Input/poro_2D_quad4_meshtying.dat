@@ -25,7 +25,7 @@ RANDSEED                        -1
 STRUCT_STRESS                   cauchy
 STRUCT_VEL_ACC                  yes
 -------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Statics //OneStepTheta //OneStepTheta
+DYNAMICTYP                      Statics 
 DAMPING                         Material
 PREDICT                         ConstDis
 LINEAR_SOLVER                   1
@@ -49,10 +49,10 @@ CONTACTNOPEN                    yes
 TRANSIENT_TERMS                 none
 ------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-TIMEINTEGR                      Stationary // One_Step_Theta //One_Step_Theta
+TIMEINTEGR                      Stationary 
 PREDICTOR                       steady_state
 CONVFORM                        convective
-GRIDVEL                         BE //zero
+GRIDVEL                         BE 
 //THETA                           0.66
 -------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 STABTYPE                        residual_based

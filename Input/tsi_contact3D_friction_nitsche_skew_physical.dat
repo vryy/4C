@@ -22,9 +22,9 @@ STRUCT_DISP                     Yes
 STRUCT_VEL_ACC                  Yes
 STRUCT_STRAIN                   Yes
 STRUCT_STRESS                   No
-THERM_HEATFLUX                  Initial     // None, Current
+THERM_HEATFLUX                  Initial     
 THERM_TEMPERATURE               Yes
-THERM_TEMPGRAD                  Initial     // None, Current
+THERM_TEMPGRAD                  Initial     
 ------------------------------------------------CONTACT DYNAMIC
 FRICTION                        Coulomb
 LINEAR_SOLVER        1
@@ -32,7 +32,7 @@ STRATEGY             Nitsche
 PENALTYPARAM         5
 PENALTYPARAMTAN      1e-3
 NITSCHE_THETA        0.0
-NITSCHE_WEIGHTING    slave // <-- since master side is rigid
+NITSCHE_WEIGHTING    slave 
 --------------------------------------------------MORTAR COUPLING
 ALGORITHM            gpts
 SEARCH_PARAM         0.3
@@ -43,29 +43,29 @@ NUMGP_PER_DIM        3
 PARALLEL_REDIST      dynamic
 ---------------------------------------------------------TSI CONTACT
 HEATTRANSSLAVE       2e0
-HEATTRANSMASTER      2e-1 // 1.0e-3
+HEATTRANSMASTER      2e-1 
 TEMP_REF             293
 TEMP_DAMAGE          293.5
 NITSCHE_THETA_TSI               -1.0
-NITSCHE_WEIGHTING_TSI           physical // harmonic
+NITSCHE_WEIGHTING_TSI           physical 
 NITSCHE_PENALTY_ADAPTIVE_TSI    yes
 PENALTYPARAM_THERMO             1.0e-1
-NITSCHE_METHOD_TSI              nitsche // nitsche // substitution //
+NITSCHE_METHOD_TSI              nitsche 
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      GenAlpha  // Centr_Diff, Gen_EMM, Gen_Alfa, Static, Statics, GenAlpha, OneStepTheta, GEMM, AdamsBashforth2, EulerMaruyama, EulerImpStoch
+DYNAMICTYP                      GenAlpha  
 ITERNORM                        L2
 LOADLIN                         no
 MAXITER                         50
 MAXTIME                         0.2
 MINITER                         0
-NLNSOL                          fullnewton//fullnewton
+NLNSOL                          fullnewton
 NORMCOMBI_DISPPRES              And
-NORMCOMBI_RESFDISP              And // And changed 11.02.10
+NORMCOMBI_RESFDISP              And 
 NORMCOMBI_RESFINCO              And
 NORM_DISP                       Abs
 NORM_INCO                       Abs
@@ -102,7 +102,7 @@ ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
 DYNAMICTYP                      GenAlpha
 INITFUNCNO                      1
-INITIALFIELD                    field_by_function // zero_field,field_by_function,field_by_condition
+INITIALFIELD                    field_by_function 
 ITERNORM                        L2
 MAXITER                         50
 MAXTIME                         1
@@ -112,7 +112,7 @@ NORMCOMBI_RESFTEMP              And
 NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         1
-PREDICT               ConstTempRate //          ConstTemp
+PREDICT               ConstTempRate 
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 TIMESTEP                        999999.0
@@ -127,17 +127,17 @@ NUMSTEP                         4
 RESTARTEVRY                     1
 TIMESTEP                        5e-3
 RESULTSEVRY                           1
-ITEMAX                          100 // 11.02.10
-COUPALGO         tsi_monolithic //               tsi_iterstagg  //
+ITEMAX                          100 
+COUPALGO         tsi_monolithic 
 ---------------------------------------------------TSI DYNAMIC/PARTITIONED
 COUPVARIABLE                    Temperature
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-4
 TOLINC                          1e-8
-ITERNORM                        Rms                // Rms,L2,Inf,L1_Scaled
+ITERNORM                        Rms                
 LINEAR_SOLVER                   1
-NORMCOMBI_RESFINC               Coupl_Or_Singl    // And,Or,{Coupl_}{Or,And}_Singl
-NORM_RESF                       Abs                // Abs,Mix
+NORMCOMBI_RESFINC               Coupl_Or_Singl    
+NORM_RESF                       Abs                
 MERGE_TSI_BLOCK_MATRIX          yes
 ------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK

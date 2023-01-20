@@ -29,7 +29,7 @@ THETA                           0.66
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
 GRIDVEL                         BE
-INITIALFIELD field_by_function //zero_field
+INITIALFIELD field_by_function 
 INITSTATITEMAX                  5
 ITEMAX                          1
 LIFTDRAG                        No

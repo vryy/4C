@@ -59,7 +59,7 @@ TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO                        poro_monolithic //poro_monolithicstructuresplit poro_monolithic
+COUPALGO                        poro_monolithic 
 PHYSICAL_TYPE                   Poro
 ITEMAX                          20
 ITEMIN                          1

@@ -191,7 +191,7 @@ RHO_INF                         0.8
 THETA                           0.5
 -------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
 ADAPTSTEPMAX                    5
-KIND                            None//AdamsBashforth2
+KIND                            None
 LOCERRNORM                      Rms
 LOCERRTOL                       0
 OUTENEPERIOD                    0

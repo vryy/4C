@@ -26,7 +26,7 @@ LINEAR_SOLVER                   1
 LOADLIN                         yes
 LUMPMASS                        no
 MAXITER                         200
-MAXTIME                         0.54//0.9
+MAXTIME                         0.54
 NLNSOL                          newtonlinuzawa
 NUMSTEP                         9999999
 RESULTSEVRY                     10

@@ -25,14 +25,14 @@ NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
-OUTPUT_BIN                      Yes // No
-STRUCT_DISP                     Yes  // Yes,No,yes,no,YES,NO
-STRUCT_STRAIN                   GL  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
-STRUCT_STRESS                   2PK  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_COUPLING_STRESS          2PK  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-THERM_HEATFLUX                  Current  // None,No,NO,no,Current,Initial
-THERM_TEMPERATURE               Yes  // Yes,No,yes,no,YES,NO
-THERM_TEMPGRAD                  Current  // None,No,NO,no,Current,Initial
+OUTPUT_BIN                      Yes 
+STRUCT_DISP                     Yes  
+STRUCT_STRAIN                   GL  
+STRUCT_STRESS                   2PK  
+STRUCT_COUPLING_STRESS          2PK  
+THERM_HEATFLUX                  Current  
+THERM_TEMPERATURE               Yes  
+THERM_TEMPGRAD                  Current  
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
@@ -42,19 +42,19 @@ INT_STRATEGY                    Standard
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta  // ExplicitEuler,Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
+DYNAMICTYP                      OneStepTheta  
 ITERNORM                        L2
 LINEAR_SOLVER                   2
 LOADLIN                         no
 MAXITER                         50
 MAXTIME                         1
 MINITER                         0
-NLNSOL                          fullnewton  // vague,fullnewton,lsnewton,oppnewton,modnewton,nlncg,ptc,newtonlinuzawa,augmentedlagrange,NoxNewtonLineSearch,noxgeneral
+NLNSOL                          fullnewton  
 NORMCOMBI_RESFDISP              And
 NORM_DISP                       Abs
-NORM_RESF                       Abs  // Abs,Rel,Mix
+NORM_RESF                       Abs  
 NUMSTEP                         200
-PREDICT                         ConstDis  // Vague,ConstDis,ConstDisVelAcc,TangDis,ConstDisPres,ConstDisVelAccPres
+PREDICT                         ConstDis  
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
@@ -68,19 +68,19 @@ LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta  // Statics,ExplicitEuler
+DYNAMICTYP                      OneStepTheta  
 INITFUNCNO                      1
-INITIALFIELD                    field_by_function  // zero_field,field_by_function,field_by_condition
+INITIALFIELD                    field_by_function  
 ITERNORM                        L2
 MAXITER                         50
 MAXTIME                         1
 MINITER                         0
-NLNSOL                          fullnewton  // vague,fullnewton
+NLNSOL                          fullnewton  
 NORMCOMBI_RESFTEMP              And
 NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         200
-PREDICT                         ConstTemp  // TangTemp
+PREDICT                         ConstTemp  
 RESEVRYERGY                     0
 RESULTSEVRY                     1
 RESTARTEVRY                     1
@@ -90,18 +90,18 @@ TOLTEMP                         1e-10
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -----------------------------------------------------------------TSI DYNAMIC
-COUPALGO                        tsi_iterstagg  //_tsi_(oneway,sequstagg,monolithic,iterstagg_(aitken,aitkenirons,fixedrelax)
+COUPALGO                        tsi_iterstagg  
 ITEMAX                          30
 ITEMIN                          1
 MAXTIME                         4
-NORM_INC                        Rel  // Abs
-NUMSTEP                         20  // 400
+NORM_INC                        Rel  
+NUMSTEP                         20  
 RESTARTEVRY                     5
 TIMESTEP                        0.01
 RESULTSEVRY                           5
 -----------------------------------------------------TSI DYNAMIC/PARTITIONED
 CONVTOL                         1e-06
-COUPVARIABLE                    Displacement  // Temperature
+COUPVARIABLE                    Displacement  
 //FIXEDOMEGA                    1.0
 //MAXOMEGA                      0.2
 --------------------------------------------------------------------SOLVER 1
@@ -190,7 +190,7 @@ DSURF                           1
 // THR left surface heat convection:
 //E 7 - Tempnp coeff -6.444497425e-06 surtemp 373.15 surtempfunct none funct none
 // nightly test case
-E 7 - Tempnp coeff -6.444497425e-06 surtemp 373.15 surtempfunct none funct 2 // 1
+E 7 - Tempnp coeff -6.444497425e-06 surtemp 373.15 surtempfunct none funct 2 
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 2
 NODE 4 DSURFACE 2

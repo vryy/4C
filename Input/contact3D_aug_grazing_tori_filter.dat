@@ -229,7 +229,7 @@ Zero Initial Guess              = Yes
 Computing Scaling Manually      = No
 Output Solver Details           = Yes
 ---------------------------------------------STRUCT NOX/Line Search
-Method                          = Backtrack // Full Step
+Method                          = Backtrack 
 Inner Status Test Check Type    = Minimal
 -----------------------------------STRUCT NOX/Line Search/Full Step
 Full Step                       = 1

@@ -30,14 +30,14 @@ STRUCT_STRESS                   Yes
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      OneStepTheta // Statics
+DYNAMICTYP                      OneStepTheta 
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton                    
 TIMESTEP                        0.5
 NUMSTEP                         3
 MAXTIME                         1.5
-DAMPING                         No//Yes
+DAMPING                         No
 M_DAMP                          0.00001
 K_DAMP                          0.00001
 TOLRES                          1.0E-6

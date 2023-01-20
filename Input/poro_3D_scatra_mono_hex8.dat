@@ -40,10 +40,10 @@ GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
-PSPG                            yes //yes no_pspg
+PSPG                            yes 
 REYNOLDS-STRESS                 no_reynolds
-RSTAB                           rstab_gls //rstab_gls no_rstab
-STABTYPE                        residual_based //residual_based no_stabilization
+RSTAB                           rstab_gls 
+STABTYPE                        residual_based 
 SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -102,7 +102,7 @@ RESTARTEVRY                     5
 NUMSTEP                         10
 MAXTIME                         4.0
 TIMESTEP                        0.01
-COUPALGO                        monolithic //two_way monolithic
+COUPALGO                        monolithic 
 LINEAR_SOLVER                   1
 TOLINC_GLOBAL                   1e-02
 TOLRES_GLOBAL                   1e-06
@@ -161,14 +161,14 @@ MAT 20 MAT_PoroLawNeoHooke BULKMODULUS 2.0e6 PENALTYPARAMETER 0.001
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 2.0
 MAT 3 ELAST_CoupNeoHooke YOUNG 2.0e6 NUE 0.3
 MAT 4 MAT_FluidPoro DYNVISCOSITY 0.05 DENSITY 1.0 PERMEABILITY 0.2e-1 TYPE Darcy
-MAT 5 MAT_matlist LOCAL No NUMMAT 7 MATIDS 6 7 8 9 10 11 12 END //collect Concentrations
+MAT 5 MAT_matlist LOCAL No NUMMAT 7 MATIDS 6 7 8 9 10 11 12 END 
 MAT 6 MAT_scatra DIFFUSIVITY 10.0
-MAT 7 MAT_scatra DIFFUSIVITY 1.0 //10.0 //REACOEFF 2.0
-MAT 8 MAT_scatra DIFFUSIVITY 0.00000000001 //10.0 //REACOEFF 2.0
-MAT 9 MAT_scatra DIFFUSIVITY 0.00000000001 //10.0 //REACOEFF 2.0
-MAT 10 MAT_scatra DIFFUSIVITY 0.00000000001 //10.0 //REACOEFF 2.0
-MAT 11 MAT_scatra DIFFUSIVITY 0.00000000001 //10.0 //REACOEFF 2.0
-MAT 12 MAT_scatra DIFFUSIVITY 0.00000000001 //10.0 //REACOEFF 2.0
+MAT 7 MAT_scatra DIFFUSIVITY 1.0 
+MAT 8 MAT_scatra DIFFUSIVITY 0.00000000001 
+MAT 9 MAT_scatra DIFFUSIVITY 0.00000000001 
+MAT 10 MAT_scatra DIFFUSIVITY 0.00000000001 
+MAT 11 MAT_scatra DIFFUSIVITY 0.00000000001 
+MAT 12 MAT_scatra DIFFUSIVITY 0.00000000001 
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 4.0/10*x+3.0
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 3.0*(4.0/10*x+3.0)

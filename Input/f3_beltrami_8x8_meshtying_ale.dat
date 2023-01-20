@@ -40,7 +40,7 @@ RESULTSEVRY                           5
 MESHTYING                       Condensed_Bmat_merged
 INITIALFIELD                    BELTRAMI-FLOW
 CALCERROR                       beltrami_flow
-COMPUTE_DIVU                    no // yes
+COMPUTE_DIVU                    no 
 --------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	  1e-08
 TOL_VEL_INC	  1e-08
@@ -68,12 +68,12 @@ TIMESTEP                        0.01
 RESTARTEVRY                     1
 RESULTSEVRY                     1
 MAXITER                         3
-MESHTYING                       meshtying // no
+MESHTYING                       meshtying 
 ------------------------------------------------------FSI DYNAMIC
 NUMSTEP                         5
 MAXTIME                         0.05
 TIMESTEP                        0.01
-MATCHALL                        yes // no
+MATCHALL                        yes 
 --------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
 LM_QUAD                         quad
@@ -118,8 +118,8 @@ ML_DAMPFINE       0.35
 ML_DAMPMED        0.85             
 ML_DAMPCOARSE     1.0             
 ---------------------------------------------------------MATERIALS
-MAT 1 MAT_fluid  DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0 // Re=6.62
-MAT 2 MAT_fluid  DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0 // Re=6.62
+MAT 1 MAT_fluid  DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0 
+MAT 2 MAT_fluid  DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0 
 MAT 3 MAT_ElastHyper NUMMAT 1 MATIDS 5 DENS 1.0
 MAT 4 MAT_ElastHyper NUMMAT 1 MATIDS 6 DENS 1.0
 MAT 5 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.4995

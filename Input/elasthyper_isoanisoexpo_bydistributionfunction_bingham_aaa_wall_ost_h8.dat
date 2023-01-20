@@ -83,7 +83,7 @@ SOLVER                          Superlu
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 2 3 DENS 1.0  POLYCONVEX 0
 MAT 2 ELAST_CoupAnisoExpo K1 3E+04 K2 127.0 GAMMA 0.0 K1COMP 0.0 K2COMP 0.0 STR_TENS_ID 100
 MAT 3 ELAST_CoupNeoHooke YOUNG 10.0 NUE 0.49
-MAT 100 ELAST_StructuralTensor STRATEGY ByDistributionFunction DISTR Bingham C1 11.6 C2 9.7 C3 0.0 C4 1000.0 //6.61303987e+05
+MAT 100 ELAST_StructuralTensor STRATEGY ByDistributionFunction DISTR Bingham C1 11.6 C2 9.7 C3 0.0 C4 1000.0 
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 6.5 50000.0 DESCRIPTION t/6.5 t/6.5

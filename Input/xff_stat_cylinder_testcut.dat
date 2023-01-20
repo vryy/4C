@@ -36,7 +36,7 @@ ADAPTCONV_BETTER                0.1
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
-INITIALFIELD                    zero_field                    //field_by_function
+INITIALFIELD                    zero_field                    
 ITEMAX                          50
 LIFTDRAG                        No
 MAXTIME                         50
@@ -48,7 +48,7 @@ SIMPLER                         no
 STARTFUNCNO                     2
 STEADYSTEP                      -1
 THETA                           1.0
-TIMEINTEGR                      One_Step_Theta                //BDF2
+TIMEINTEGR                      One_Step_Theta                
 TIMESTEP                        0.01
 NONLINEARBC                     no
 LINEAR_SOLVER                   1
@@ -58,23 +58,23 @@ TOL_VEL_INC	  1e-06
 TOL_PRES_RES	  1e-06
 TOL_PRES_INC	  1e-06
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        edge_based                    // residual_based //
-DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall_wo_dt  //Barrenechea_Franca_Valentin_Wall
+STABTYPE                        edge_based                    
+DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall_wo_dt  
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            no                            //yes
-SUPG                            no                            //yes//yes
+PSPG                            no                            
+SUPG                            no                            
 VSTAB                           no_vstab
-GRAD_DIV                        no                            //yes
+GRAD_DIV                        no                            
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos                       // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 std_eos                       // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
-EOS_DIV                         vel_jump_std_eos              // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
+EOS_PRES                        std_eos                       
+EOS_CONV_STREAM                 std_eos                       
+EOS_CONV_CROSS                  none                          
+EOS_DIV                         vel_jump_std_eos              
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   // EOS_he_surf_with_max_diameter
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   
 -----------------------------------------------------------------ALE DYNAMIC
 ALE_TYPE                        solid
 TIMESTEP                        0.005
@@ -113,12 +113,12 @@ ML_DAMPCOARSE                   1.0
 ----------------------------------------------------------------XFEM GENERAL
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       // BoundaryTypeNitsche // BoundaryTypeNeumann
+COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       
 NIT_STAB_FAC                    1.0
 XFF_CONV_STAB_SCALING           none
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 RELAXING_ALE                    Yes
-MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_partitioned// xffsi_full_newton  // xffsi_fixedALE_interpolation
+MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_partitioned
 XFLUIDFLUID                     yes
 XFLUID_TIMEINT                  STD=COPY/PROJ_and_GHOST=COPY/PROJ/GP
 -------------------------------------------------------------------MATERIALS

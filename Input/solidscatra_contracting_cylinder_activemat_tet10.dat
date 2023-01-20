@@ -62,10 +62,10 @@ RESTARTEVRY                     50
 RESULTSEVRY                     1
 TIMESTEP                        0.007
 TOLCONSTR                       1e-03
-TOLDISP                         1e-09// results computed with 1e-14 // 10^-12 m
+TOLDISP                         1e-09
 TOLINCO                         1e-03
 TOLPRE                          1e-03
-TOLRES                          1e-06// results computed with 1e-07 // 10^-12 N
+TOLRES                          1e-06
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 RHO_INF                         1.0
 GENAVG                          TrLike

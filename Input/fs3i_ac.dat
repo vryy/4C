@@ -29,14 +29,14 @@ OUTPUT_BIN                      yes
 STRUCT_DISP                     Yes
 STRUCT_VEL_ACC                  No
 STRUCT_SE                       No
-STRUCT_STRESS                   Cauchy //Yes:Piolakirchhoff
+STRUCT_STRESS                   Cauchy 
 STRUCT_COUPLING_STRESS          No
-STRUCT_STRAIN                   No  //Green-Lagrange
+STRUCT_STRAIN                   No  
 STRUCT_PLASTIC_STRAIN           No
 STRUCT_SURFACTANT               No
 FLUID_SOL                       Yes
-FLUID_STRESS                    No //yes ,needed for WWS output
-FLUID_WALL_SHEAR_STRESS         Yes //yes for WSS output
+FLUID_STRESS                    No 
+FLUID_WALL_SHEAR_STRESS         Yes 
 FLUID_VIS                       No
 FILESTEPS                       1000
 //STDOUTEVRY                      0 //25
@@ -46,27 +46,27 @@ WRITE_TO_SCREEN                 Yes
 // LIMIT_OUTP_TO_PROC              -1
 ----------------------------------------------------------------FS3I DYNAMIC
 MAXTIME                         10000.0
-TIMESTEP                        0.01 //0.01
+TIMESTEP                        0.01 
 NUMSTEP                         1
 RESTARTEVRY                     1
 RESULTSEVRY                           1
 INF_PERM                        No
-SCATRA_SOLVERTYPE               nonlinear //linear
-COUPLED_LINEAR_SOLVER           4                             // FS3I problem
-LINEAR_SOLVER1                  5                             // ScaTra FLUID solver
-LINEAR_SOLVER2                  6                             // ScaTra STRUCT solver
-STRUCTSCAL_INITIALFIELD         zero_field //field_by_function //
+SCATRA_SOLVERTYPE               nonlinear 
+COUPLED_LINEAR_SOLVER           4                             
+LINEAR_SOLVER1                  5                             
+LINEAR_SOLVER2                  6                             
+STRUCTSCAL_INITIALFIELD         zero_field 
 ----------------------------------------------------------------FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION
 ASSUGRDIFF                      no
 CONSISTENCY                     no
 DEFINITION_ASSGD                artificial_linear
 DEFINITION_TAU                  Franca_Valentin
-EVALUATION_MAT                  integration_point //element_center
-EVALUATION_TAU                  integration_point //element_center
-STABTYPE                        no_stabilization //GLS //SUPG //
+EVALUATION_MAT                  integration_point 
+EVALUATION_TAU                  integration_point 
+STABTYPE                        no_stabilization 
 SUGRVEL                         no
 ----------------------------------------------------------------FS3I DYNAMIC/PARTITIONED
-COUPALGO                        fs3i_SequStagg //fs3i_IterStagg //
+COUPALGO                        fs3i_SequStagg 
 CONVTOL                         1e-03
 ITEMAX                          20
 ----------------------------------------------------------------FS3I DYNAMIC/AC
@@ -79,12 +79,12 @@ CALCERROR                       No
 CONVFORM                        conservative
 GAMMA                           0.5
 INITFUNCNO                      2
-INITIALFIELD                    field_by_function //zero_field //
+INITIALFIELD                    field_by_function 
 MAXTIME                         10000
 NUMSTEP                         10
 OUTPUT_GMSH                     No
 RESTARTEVRY                     1
-SOLVERTYPE                      nonlinear //linear_incremental //
+SOLVERTYPE                      nonlinear 
 THETA                           0.666666
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        25.0
@@ -105,26 +105,26 @@ ASSUGRDIFF                      no
 CONSISTENCY                     no
 DEFINITION_ASSGD                artificial_linear
 DEFINITION_TAU                  Codina
-EVALUATION_MAT                  integration_point //element_center
-EVALUATION_TAU                  integration_point //element_center
-STABTYPE                        GLS //no_stabilization //SUPG //
+EVALUATION_MAT                  integration_point 
+EVALUATION_TAU                  integration_point 
+STABTYPE                        GLS 
 SUGRVEL                         no
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 NUMSTEP                         3000
 TIMESTEP                        0.001
 MAXTIME                         3
-ADAPTCONV                       yes //Switch for adaptive linear residual
-ADAPTCONV_BETTER                0.1 //How much better must linear residual be compared to nonlinera residual?
+ADAPTCONV                       yes 
+ADAPTCONV_BETTER                0.1 
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              Or
 DAMPING                         No
-DYNAMICTYP                      OneStepTheta //Statics //GenAlpha //
+DYNAMICTYP                      OneStepTheta 
 K_DAMP                          0.001
 MAXITER                         50
 M_DAMP                          0.001
 NLNSOL                          fullnewton
-PREDICT                         ConstDisVelAcc //TangDis //ConstVel
+PREDICT                         ConstDisVelAcc 
 RESULTSEVRY                     1
 RESTARTEVRY                     500
 TOLDISP                         1e-06
@@ -141,8 +141,8 @@ NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFINCO              And
 NORM_INCO                       Abs
 NORM_PRES                       Abs
-PRESTRESS                       none //mulf //
-PRESTRESSTIME                   1.00000001 //1+epsilon
+PRESTRESS                       none 
+PRESTRESSTIME                   1.00000001 
 PTCDT                           1.000e-01
 RESEVRYERGY                     0
 STC_LAYER                       1
@@ -164,30 +164,30 @@ RHO_INF                         -1.0
 -----------------------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.666666
 ----------------------------------------------------------------FLUID DYNAMIC
-WSS_TYPE                        Standard //Mean // Aggregation //
+WSS_TYPE                        Standard 
 PHYSICAL_TYPE                   Incompressible
 LINEAR_SOLVER                   1
 SIMPLER_SOLVER                  -1
 TIMEINTEGR                      One_Step_Theta
-NONLINITER                      Newton //fixed_point_like
+NONLINITER                      Newton 
 PREDICTOR                       steady_state
 CONVCHECK                       L_2_norm
 INCONSISTENT_RESIDUAL           No
 INITIALFIELD                    zero_field
 LIFTDRAG                        No
 CONVFORM                        convective
-NONLINEARBC                     yes //needed for FLUID NEUMANN INFLOW CONDITION
+NONLINEARBC                     yes 
 MESHTYING                       no
 GRIDVEL                         BE
 ALLDOFCOUPLED                   Yes
 CALCERROR                       no
 SIMPLER                         no
-ADAPTCONV                       yes //Switch for adaptive linear residual
-ADAPTCONV_BETTER                0.1 //How much better must linear residual be compared to nonlinera residual?
+ADAPTCONV                       yes 
+ADAPTCONV_BETTER                0.1 
 INFNORMSCALING                  no
 GMSH_OUTPUT                     No
 COMPUTE_DIVU                    No
-RESULTSEVRY                           1 //write every ... step in output
+RESULTSEVRY                           1 
 RESTARTEVRY                     500
 NUMSTEP                         3000
 STEADYSTEP                      -1
@@ -200,7 +200,7 @@ MAXTIME                         1000
 ALPHA_M                         1
 ALPHA_F                         1
 GAMMA                           1
-THETA                           0.666666 //0.5 //
+THETA                           0.666666 
 START_THETA                     1
 STRONG_REDD_3D_COUPLING_TYPE    no
 OSEENFIELDFUNCNO                -1
@@ -225,8 +225,8 @@ REYNOLDS-STRESS                 no_reynolds
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 CHARELELENGTH_U                 streamlength
 CHARELELENGTH_PC                volume_equivalent_diameter
-EVALUATION_TAU                  integration_point //element_center
-EVALUATION_MAT                  integration_point //element_center
+EVALUATION_TAU                  integration_point 
+EVALUATION_MAT                  integration_point 
 LOMA_CONTI_SUPG                 No
 LOMA_CONTI_CROSS_STRESS         no_cross
 LOMA_CONTI_REYNOLDS_STRESS      no_reynolds
@@ -239,9 +239,9 @@ NUM_INITSTEP                    0
 RESULTSEVRY                     1
 LINEAR_SOLVER                   3
 --------------------------------------------------------FSI DYNAMIC
-COUPALGO                        iter_monolithicfluidsplit //iter_stagg_AITKEN_rel_param //
+COUPALGO                        iter_monolithicfluidsplit 
 DEBUGOUTPUT                     No
-SECONDORDER                     No //
+SECONDORDER                     No 
 NUMSTEP                         3000
 RESULTSEVRY                           1
 RESTARTEVRY                     20
@@ -250,12 +250,12 @@ MAXTIME                         3
 SLIDEALEPROJ                    None
 VERBOSITY                       subproblem
 --------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
-SHAPEDERIVATIVES                No //
+SHAPEDERIVATIVES                No 
 ITEMAX                          100
 INFNORMSCALING                  Yes
 SYMMETRICPRECOND                No
 REBUILDPRECEVERYSTEP            No
-PRECONDREUSE                    50 //0 //how often is preconditioner rebuild??
+PRECONDREUSE                    50 
 LINEARBLOCKSOLVER               PreconditionedKrylov
 STRUCTPCOMEGA                   1.0 1.0 1.0 1.0
 STRUCTPCITER                    1 1 1 1
@@ -263,11 +263,11 @@ FLUIDPCOMEGA                    1.0 1.0 1.0 1.0
 FLUIDPCITER                     1 1 1 1
 ALEPCOMEGA                      1.0 1.0 1.0 1.0
 ALEPCITER                       1 1 1 1
-PCOMEGA                         0.9 0.9 1.0 //Daempfung BBS
+PCOMEGA                         0.9 0.9 1.0 
 PCITER                          1 1 1
 BLOCKSMOOTHER                   BGS BGS BGS
 SCHUROMEGA                      0.001 0.01 0.1
-ADAPTIVEDIST                    0.01 //0.001 //=conv_better
+ADAPTIVEDIST                    0.01 
 BASETOL                         0.001
 CONVTOL                         1e-06
 NORM_INC                        Abs
@@ -482,13 +482,13 @@ ML_DAMPCOARSE                   1.0
 MAT 1 MAT_fluid DYNVISCOSITY 3.5e-03 DENSITY 1.05e-03
 MAT 2 MAT_GrowthVolumetric GROWTHLAW 4 IDMATELASTIC 3 STARTTIME 0.0 ENDTIME 100.0
 MAT 3 MAT_ElastHyper NUMMAT 2 MATIDS 31 32 DENS 1.0e-3
-MAT 31 ELAST_IsoYeoh C1 1.74e5 C2 1.88e6 C3 0 //C1 2.2116e4 C2 0.0 C3 6.0901e5 my parameter fit...
+MAT 31 ELAST_IsoYeoh C1 1.74e5 C2 1.88e6 C3 0 
 MAT 32 ELAST_VolOgden KAPPA 2.2116e6 BETA -2.0
 MAT 4 MAT_GrowthAC SCALAR1 1 ALPHA 1000.0
 MAT 10 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 1.0 THEXPANS 0.0
-MAT 11 MAT_matlist LOCAL No NUMMAT 2 MATIDS 111 111 END //structure_scatra
+MAT 11 MAT_matlist LOCAL No NUMMAT 2 MATIDS 111 111 END 
 MAT 111 MAT_scatra DIFFUSIVITY 100.0
-MAT 12 MAT_matlist LOCAL No NUMMAT 2 MATIDS 121 121 END //structure_scatra
+MAT 12 MAT_matlist LOCAL No NUMMAT 2 MATIDS 121 121 END 
 MAT 121 MAT_scatra DIFFUSIVITY 100.0
 -----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 10

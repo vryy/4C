@@ -36,7 +36,7 @@ ADAPTCONV_BETTER                0.1
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
-INITIALFIELD                    field_by_function             // zero_field
+INITIALFIELD                    field_by_function             
 ITEMAX                          10
 LIFTDRAG                        No
 MAXTIME                         10
@@ -63,7 +63,7 @@ TIMESTEP                        1.0
 ALE_TYPE                        springs_spatial
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         100000
-NUMSTEP                         1                             //3 5
+NUMSTEP                         1                             
 RESTARTEVRY                     20
 SECONDORDER                     Yes
 TIMESTEP                        0.2
@@ -106,7 +106,7 @@ VOLUME_GAUSS_POINTS_BY          DirectDivergence
 ------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUIDFLUID                     yes
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
+COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       
 XFF_CONV_STAB_SCALING           none
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0

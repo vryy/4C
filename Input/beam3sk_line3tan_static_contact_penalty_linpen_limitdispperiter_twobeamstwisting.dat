@@ -30,7 +30,7 @@ NLNSOL                          noxnln
 TIMESTEP                        0.5
 NUMSTEP                         10
 MAXTIME                         5
-PREDICT                         TangDis //ConstDis
+PREDICT                         TangDis 
 LOADLIN                         Yes
 --------------------------------------------STRUCT NOX/Status Test
 XML File                        = beam3sk_line3tan_static_contact_penalty_linpen_limitdispperiter_twobeamstwisting.xml
@@ -58,9 +58,9 @@ BEAMS_SEGANGLE                  1.0
 BEAMS_NUMINTEGRATIONINTERVAL    1
 BEAMS_PENALTYLAW                LinPen
 // needed for beam_contact_manager only
-BEAMS_DEBUG                     No //Yes
+BEAMS_DEBUG                     No 
 BEAMS_MAXDISISCALEFAC           -1.0
-BEAMS_MAXDELTADISSCALEFAC       -1.0  //3.0
+BEAMS_MAXDELTADISSCALEFAC       -1.0  
 //BEAMS_OCTREE                    octree_spherical
 BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    0.02

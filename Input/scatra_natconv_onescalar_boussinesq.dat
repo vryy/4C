@@ -41,7 +41,7 @@ ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 PHYSICAL_TYPE                   Boussinesq
-CONVFORM                        conservative                  // just to be tested
+CONVFORM                        conservative                  
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	  1.0E-6
 TOL_VEL_INC	  1.0E-6
@@ -79,7 +79,7 @@ CALCFLUX_BOUNDARY               total
 OUTPUTSCALARS                   entire_domain
 RESULTSEVRY                     1
 MATID                           2
-CONVFORM                        conservative                  // just to be tested
+CONVFORM                        conservative                  
 NATURAL_CONVECTION              Yes
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-09
@@ -91,8 +91,8 @@ ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Franca_Valentin
-EVALUATION_TAU                  integration_point             // just to be tested
-EVALUATION_MAT                  integration_point             // just to be tested
+EVALUATION_TAU                  integration_point             
+EVALUATION_MAT                  integration_point             
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Belos                     

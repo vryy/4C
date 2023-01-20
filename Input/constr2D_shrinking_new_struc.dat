@@ -66,7 +66,7 @@ Debug                           = No
 XML File                        = constraint_new_struc.xml
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
-RHO_INF                         0.5//0.8
+RHO_INF                         0.5
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

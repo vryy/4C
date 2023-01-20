@@ -9,7 +9,7 @@ General Data File BACI
 //NODES                         200
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_XFEM_LevelSet //Scalar_Transport //Fluid_XFEM_LevelSet
+PROBLEMTYP                      Fluid_XFEM_LevelSet 
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -28,39 +28,39 @@ FILESTEPS                       1000
 CONVTOL                         1e-5
 ITEMAX                          1
 MAXTIME                         30.0
-NUMSTEP                         10 //1000
+NUMSTEP                         10 
 RESTARTEVRY                     5
 TIMESTEP                        0.15
 ------------------------------------------TWO PHASE FLOW/SURFACE TENSION
-SURFTENSAPPROX                      surface_tension_approx_divgrad_normal  //surface_tension_approx_nodal_curvature, surface_tension_approx_divgrad_normal
+SURFTENSAPPROX                      surface_tension_approx_divgrad_normal  
 SMOOTHGRADPHI                       smooth_grad_phi_l2_projection
 L2_PROJECTION_SECOND_DERIVATIVES    No
 NODAL_CURVATURE                     l2_projected
 SMOOTHING_PARAMETER                 0
 -----------------------------------LEVEL-SET CONTROL/REINITIALIZATION
-REINITIALIZATION                Signed_Distance_Function //Sussman //Signed_Distance_Function
+REINITIALIZATION                Signed_Distance_Function 
 REINITINTERVAL                  1
 REINIT_INITIAL                  no
 NUMSTEPSREINIT                  4
-TIMESTEPREINIT                  0.025 //CFL 0.5
+TIMESTEPREINIT                  0.025 
 THETAREINIT                     1.0
 STABTYPEREINIT                  SUPG
 DEFINITION_TAU_REINIT           Taylor_Hughes_Zarins_wo_dt
 ARTDIFFREINIT                   isotropic
-DEFINITION_ARTDIFFREINIT        artificial_linear_reinit //YZbeta_nonlinear //Codina_nonlinear
-SMOOTHED_SIGN_TYPE              SussmanFatemi1999 // SussmanSmerekaOsher1994 //SussmanFatemi1999 //SussmanSmerekaOsher1994
+DEFINITION_ARTDIFFREINIT        artificial_linear_reinit 
+SMOOTHED_SIGN_TYPE              SussmanFatemi1999 
 CHARELELENGTHREINIT             root_of_volume
-INTERFACE_THICKNESS             3.0 //1.0
-VELREINIT                       integration_point_based // node_based
-LINEARIZATIONREINIT             newton // fixed_point
+INTERFACE_THICKNESS             3.0 
+VELREINIT                       integration_point_based 
+LINEARIZATIONREINIT             newton 
 CORRECTOR_STEP                  yes
-REINITVOLCORRECTION             no //yes
+REINITVOLCORRECTION             no
 -----------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 PHYSICAL_TYPE    Incompressible
 INITIALFIELD     FLAME_VORTEX_INTERACTION
 STARTFUNCNO      -1
-TIMEINTEGR       One_Step_Theta //One_Step_Theta
+TIMEINTEGR       One_Step_Theta 
 NONLINITER       Newton
 ITEMAX           10
 CONVCHECK        L_2_norm
@@ -69,7 +69,7 @@ NUMSTEP          200
 NUMSTASTEPS      0
 MAXTIME          30.0
 TIMESTEP         0.15
-THETA            1.0 //0.5 //0.5
+THETA            1.0 
 START_THETA      1.0
 ALPHA_F          1.00
 ALPHA_M          1.00
@@ -85,7 +85,7 @@ TOL_PRES_RES	  1.0E-10
 TOL_PRES_INC	  1.0E-10
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen 
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
@@ -95,20 +95,20 @@ GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos                       // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 std_eos                       // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
-EOS_DIV                         div_jump_std_eos              //vel_jump_std_eos              // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
-EOS_DEFINITION_TAU              Schott_Massing_Burman_DAngelo_Zunino  //Burman_Hansbo_DAngelo_Zunino
-EOS_H_DEFINITION                EOS_he_surf_with_max_diameter // EOS_he_surf_with_max_diameter
+EOS_PRES                        std_eos                       
+EOS_CONV_STREAM                 std_eos                       
+EOS_CONV_CROSS                  none                          
+EOS_DIV                         div_jump_std_eos              
+EOS_DEFINITION_TAU              Schott_Massing_Burman_DAngelo_Zunino  
+EOS_H_DEFINITION                EOS_he_surf_with_max_diameter 
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No
 GMSH_SOL_OUT                    yes
 GMSH_DISCRET_OUT                yes
 GMSH_CUT_OUT                    yes
 GMSH_EOS_OUT                    no
-VOLUME_GAUSS_POINTS_BY          Tessellation //MomentFitting //Tessellation
-BOUNDARY_GAUSS_POINTS_BY        Tessellation //MomentFitting //Tessellation
+VOLUME_GAUSS_POINTS_BY          Tessellation 
+BOUNDARY_GAUSS_POINTS_BY        Tessellation 
 MAX_NUM_DOFSETS                 5
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUID_TIMEINT                  STD=COPY_and_GHOST=COPY/GP
@@ -118,9 +118,9 @@ VISC_ADJOINT_SYMMETRY           no
 NIT_STAB_FAC                    35.0
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
 VISC_STAB_HK                    ele_vol_div_by_max_ele_surf
-CONV_STAB_SCALING               none //inflow
+CONV_STAB_SCALING               none 
 MASS_CONSERVATION_COMBO         max
-MASS_CONSERVATION_SCALING       full // only_visc
+MASS_CONSERVATION_SCALING       full 
 GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_TRANSIENT_STAB    yes
 GHOST_PENALTY_2nd_STAB          yes
@@ -176,7 +176,7 @@ MATID                           2
 OUTPUT_GMSH                     yes
 FIELDCOUPLING                   matching
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-STABTYPE                        SUPG //SUPG
+STABTYPE                        SUPG 
 DEFINITION_TAU                  Taylor_Hughes_Zarins
 SUGRVEL                         no
 --------------------------------------------------------------------SOLVER 2

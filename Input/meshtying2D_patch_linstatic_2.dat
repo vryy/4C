@@ -37,7 +37,7 @@ FILESTEPS                       1000
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     10
-NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton                    
 TIMESTEP                        1.0
 NUMSTEP                         1
 MAXTIME                         1.0

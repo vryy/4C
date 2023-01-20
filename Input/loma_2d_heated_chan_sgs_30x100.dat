@@ -32,7 +32,7 @@ MAXTIME                         350.0
 ITEMAX                          1
 CONVTOL                         1.0E-4
 RESULTSEVRY                           1
-RESTARTEVRY                     10                              // 2000
+RESTARTEVRY                     10                              
 CONSTHERMPRESS                  Yes
 SGS_MATERIAL_UPDATE             No
 ---------------------------------------------------------------FLUID DYNAMIC

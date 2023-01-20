@@ -112,7 +112,7 @@ CORRECT_BOUNDARY_VELOCITIES     no
 FLD_SRCHRADIUS_FAC              1
 STRCT_SRCHRADIUS_FAC            0.5
 NUM_GP_FLUID_BOUND              125
-TIMESTATS                       endofsim // everyiter
+TIMESTATS                       endofsim 
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Superlu

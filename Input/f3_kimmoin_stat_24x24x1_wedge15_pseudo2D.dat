@@ -60,7 +60,7 @@ TOL_PRES_RES	  1.0E-10
 TOL_PRES_INC	  1.0E-10
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt 
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            yes
@@ -76,8 +76,8 @@ GMSH_DEBUG_OUT                  No
 GMSH_SOL_OUT                    yes
 GMSH_DISCRET_OUT                yes
 GMSH_CUT_OUT                    yes
-VOLUME_GAUSS_POINTS_BY          Tessellation //Tessellation //Tessellation //MomentFitting //Tessellation //MomentFitting //Tessellation
-BOUNDARY_GAUSS_POINTS_BY        Tessellation //MomentFitting //Tessellation
+VOLUME_GAUSS_POINTS_BY          Tessellation 
+BOUNDARY_GAUSS_POINTS_BY        Tessellation 
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Belos 

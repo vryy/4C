@@ -39,7 +39,7 @@ SHAPEFCT                        Polynomial
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 CALCERROR                       No
-CONVFORM conservative //convective
+CONVFORM conservative 
 CONV_HEAT_TRANS                 no
 FSSUGRDIFF                      No
 GAMMA                           0.5
@@ -84,7 +84,7 @@ ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta //Statics
+DYNAMICTYP                      OneStepTheta 
 MASSLIN                         Standard
 ITERNORM                        L2
 K_DAMP                          0.5
@@ -120,7 +120,7 @@ UZAWATOL                        1e-08
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -----------------------------------------------------------------SSI CONTROL
-COUPALGO                        ssi_IterStagg // ssi_IterStaggAitken_SolidToScatra
+COUPALGO                        ssi_IterStagg 
 ITEMAX                          40
 MAXTIME                         100.0
 NUMSTEP                         2
@@ -168,11 +168,11 @@ ML_DAMPCOARSE                   1.0
 MAT 1 MAT_GrowthVolumetric GROWTHLAW 5 IDMATELASTIC 2 STARTTIME 0.0 ENDTIME 1.0e10
 MAT 2 MAT_ScDepInterp IDMATZEROSC 4 IDMATUNITSC 3
 MAT 3 MAT_ElastHyper NUMMAT 2 MATIDS 31 32 DENS 1.0
-MAT 31 ELAST_IsoYeoh C1 10.0e2 C2 0 C3 0 //C1 2.2116e4 C2 0.0 C3 6.0901e5 my parameter fit...
-MAT 32 ELAST_VolOgden KAPPA 10.0e0 BETA -2.0 //KAPPA 2.2116e6 BETA -2.0
+MAT 31 ELAST_IsoYeoh C1 10.0e2 C2 0 C3 0 
+MAT 32 ELAST_VolOgden KAPPA 10.0e0 BETA -2.0 
 MAT 4 MAT_ElastHyper NUMMAT 2 MATIDS 41 42 DENS 1.0
-MAT 41 ELAST_IsoYeoh C1 1.0e2 C2 0 C3 0 //C1 2.2116e4 C2 0.0 C3 6.0901e5 my parameter fit...
-MAT 42 ELAST_VolOgden KAPPA 1.0e0 BETA -2.0 //KAPPA 2.2116e6 BETA -2.0
+MAT 41 ELAST_IsoYeoh C1 1.0e2 C2 0 C3 0 
+MAT 42 ELAST_VolOgden KAPPA 1.0e0 BETA -2.0 
 MAT 5 MAT_GrowthAC SCALAR1 2 ALPHA 5.0
 MAT 10 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 101 102 NUMREAC 2 REACIDS 103 104 END
 MAT 101 MAT_scatra DIFFUSIVITY 0.1

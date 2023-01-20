@@ -20,20 +20,20 @@ NUMDF                           2
 PROBLEMTYP                      Electrochemistry
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SOLVERTYPE                      nonlinear //linear_incremental
+SOLVERTYPE                      nonlinear 
 TIMEINTEGR                      Gen_Alpha
 RESULTSEVRY                     1
 RESTARTEVRY                     2
-NUMSTEP                         2 // shorter run for nightly test case! //100
-MAXTIME                         1.0 //hill reaches point of departure (x0=2/15) for 100 steps
-TIMESTEP                        0.01                            // Cr = 1.5
+NUMSTEP                         2 
+MAXTIME                         1.0 
+TIMESTEP                        0.01                            
 THETA                           0.5
 ALPHA_M                         0.833333333333333
 ALPHA_F                         0.666666666666667
 GAMMA                           0.666666666666667
 VELOCITYFIELD                   function
 VELFUNCNO                       1
-INITIALFIELD                    field_by_condition              // test this option! //field_by_function
+INITIALFIELD                    field_by_condition              
 FSSUGRDIFF                      No
 MATID                           4
 SKIPINITDER                     no
@@ -83,8 +83,8 @@ ML_DAMPFINE                     0.67
 ML_DAMPMED                      1.0                             
 ML_DAMPCOARSE                   1.0                             
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_ion DIFFUSIVITY 0.0006666666666 VALENCE +0.0 // Pe_e = 5
-MAT 2 MAT_ion DIFFUSIVITY 0.0005 VALENCE +1.0 DENSIFICATION 0.0 ELIM_DIFFUSIVITY 0.001 ELIM_VALENCE -1.0 // reproduces D_binary=0.0006666666666
+MAT 1 MAT_ion DIFFUSIVITY 0.0006666666666 VALENCE +0.0 
+MAT 2 MAT_ion DIFFUSIVITY 0.0005 VALENCE +1.0 DENSIFICATION 0.0 ELIM_DIFFUSIVITY 0.001 ELIM_VALENCE -1.0 
 // Krylov space projection works only with one CrsMatrix -> Elch_ENC_PDE_ELIM
 MAT 4 MAT_matlist LOCAL No NUMMAT 2 MATIDS 1 2 END
 ----------------------------------------------------------------------FUNCT1
@@ -132,7 +132,7 @@ DVOL                            1
 E 1 - scatra NUMMODES 3 ONOFF 0 0 1 integration
 -----------------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL                            1
-E 1 - ScaTra 2 // set initial fields as defined by FUNCT 2
+E 1 - ScaTra 2 
 // surface 1 equals the whole computational domain!
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1700 DNODE 1

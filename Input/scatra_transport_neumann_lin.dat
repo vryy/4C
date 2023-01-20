@@ -41,7 +41,7 @@ THERM_TEMPGRAD                  None
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 CALCERROR                       No
-CONVFORM                        conservative //convective
+CONVFORM                        conservative 
 CONV_HEAT_TRANS                 no
 FSSUGRDIFF                      No
 GAMMA                           0.5
@@ -54,7 +54,7 @@ NEUMANNINFLOW                   no
 NUMSTEP                         10
 OUTPUT_GMSH                     No
 RESTARTEVRY                     1
-SKIPINITDER                     no //yes
+SKIPINITDER                     no 
 SOLVERTYPE                      linear_incremental
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta

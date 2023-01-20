@@ -13,7 +13,7 @@ DIM           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid
 RESTART                         0
-RANDSEED                        1 // 1: reproduceable; -1: uses current time (default)
+RANDSEED                        1 
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
@@ -50,12 +50,12 @@ TOL_PRES_INC	  1e-08
 -------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
 -------------------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 std_eos // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none // none, std_eos, xfem_gp
-EOS_DIV                         div_jump_std_eos // none, vel_jump_std_eos, vel_jump_xfem_gp,
+EOS_PRES                        std_eos 
+EOS_CONV_STREAM                 std_eos 
+EOS_CONV_CROSS                  none 
+EOS_DIV                         div_jump_std_eos 
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf // EOS_he_vol_eq_diameter
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf 
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
 //TURBULENCE_APPROACH             CLASSICAL_LES
@@ -64,21 +64,21 @@ PHYSICAL_MODEL                  no_model
 CANONICAL_FLOW                  decaying_homogeneous_isotropic_turbulence
 //CANONICAL_FLOW                  forced_homogeneous_isotropic_turbulence
 //CANONICAL_FLOW                  scatra_forced_homogeneous_isotropic_turbulence
-FORCING_TYPE                    linear_compensation_from_intermediate_spectrum //fixed_power_input
+FORCING_TYPE                    linear_compensation_from_intermediate_spectrum 
 POWER_INPUT                     62.8436001234
-FORCING_TIME_STEPS              0 //4 // hit_comte_bellot_corrsin_initial_field
-THRESHOLD_WAVENUMBER            2 //hit_comte_bellot_corrsin_initial_field
-SCALAR_FORCING                  isotropic //mean_scalar_gradient
+FORCING_TIME_STEPS              0 
+THRESHOLD_WAVENUMBER            2 
+SCALAR_FORCING                  isotropic 
 MEAN_SCALAR_GRADIENT            0.1
 HOMDIR                          xyz
 SAMPLING_START                  1
 SAMPLING_STOP                   10
-DUMPING_PERIOD                  1 //0
+DUMPING_PERIOD                  1 
 FSSUGRVISC                      No
 ------------------------------------FLUID DYNAMIC/SUBGRID VISCOSITY
 C_SMAGORINSKY_AVERAGED          yes
 C_SMAGORINSKY                   0.18
-C_TURBPRANDTL                   0.5 //1.0
+C_TURBPRANDTL                   0.5 
 -----------------------------------FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES
 CSGS                            0.2
 SCALE_SEPARATION                algebraic_multigrid_operator

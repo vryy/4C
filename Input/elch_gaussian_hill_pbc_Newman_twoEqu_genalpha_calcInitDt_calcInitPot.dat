@@ -20,20 +20,20 @@ NUMDF                           2
 PROBLEMTYP                      Electrochemistry
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SOLVERTYPE                      nonlinear //linear_incremental
+SOLVERTYPE                      nonlinear 
 TIMEINTEGR                      Gen_Alpha
 RESULTSEVRY                     1
 RESTARTEVRY                     2
-NUMSTEP                         2 // shorter run for nightly test case! //100
-MAXTIME                         1.0 //hill reaches point of departure (x0=2/15) for 100 steps
-TIMESTEP                        0.01                            // Cr = 1.5
+NUMSTEP                         2 
+MAXTIME                         1.0 
+TIMESTEP                        0.01                            
 THETA                           0.5
 ALPHA_M                         0.833333333333333
 ALPHA_F                         0.666666666666667
 GAMMA                           0.666666666666667
 VELOCITYFIELD                   function
 VELFUNCNO                       1
-INITIALFIELD                    field_by_condition              // test this option! //field_by_function
+INITIALFIELD                    field_by_condition              
 FSSUGRDIFF                      No
 MATID                           1
 SKIPINITDER                     no
@@ -141,7 +141,7 @@ E 1 - scatra NUMMODES 2 ONOFF 1 1 integration
 -----------------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL                            1
 // surface 1 equals the whole computational domain!
-E 1 - ScaTra 2 // set initial fields as defined by FUNCT 2
+E 1 - ScaTra 2 
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1

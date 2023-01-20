@@ -71,7 +71,7 @@ SOLVER                          Superlu
 NAME                            Fluid_Solver
 SOLVER                          Superlu
 ----------------------------------------------------------------XFEM GENERAL
-VOLUME_GAUSS_POINTS_BY          DirectDivergence              //Tessellation //DirectDivergence
+VOLUME_GAUSS_POINTS_BY          DirectDivergence              
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 NODAL_DOFSET_STRATEGY           OneDofset_PerNodeAndPosition
 ------------------------------------------------------------------CUT GENERAL

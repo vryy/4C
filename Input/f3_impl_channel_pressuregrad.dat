@@ -48,7 +48,7 @@ TOL_PRES_INC	  1.0E-8
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 INCONSISTENT                    yes
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen  // Franca_Barrenechea_Valentin_Frey_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen  
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            yes

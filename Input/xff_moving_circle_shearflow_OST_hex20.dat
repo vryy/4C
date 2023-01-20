@@ -57,7 +57,7 @@ RESTARTEVRY                     2
 TIMESTEP                        1.0
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen  //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen  
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            yes

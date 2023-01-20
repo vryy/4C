@@ -16,7 +16,7 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      OneStepTheta
 RESULTSEVRY                     1
 RESTARTEVRY                     100
-NLNSOL                          fullnewton // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton 
 TIMESTEP                        0.1
 NUMSTEP                         100000
 MAXTIME                         0.2
@@ -32,7 +32,7 @@ MAXITER                         20
 LOADLIN                         Yes
 RESEVRYERGY                     1
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA 1.0 //implicit backward Euler
+THETA 1.0 
 --------------------------------------------------------------------SOLVER 1
 NAME                            CheapSIMPLEPredict
 SOLVER Belos 
@@ -74,7 +74,7 @@ MAT 10 MAT_ElastHyper NUMMAT 4 MATIDS 11 12 13 14 DENS 3.0e-6
 MAT 11 ELAST_IsoNeoHooke MUE 21.72e-6
 MAT 12 ELAST_CoupAnisoExpo K1 29.89e-6 K2 2.87 GAMMA 50.4 K1COMP 0.0 K2COMP 1.0 INIT 1 ADAPT_ANGLE No STR_TENS_ID 20
 MAT 13 ELAST_CoupAnisoExpo K1 29.89e-6 K2 2.87 GAMMA -50.4 K1COMP 0.0 K2COMP 1.0 INIT 1 ADAPT_ANGLE No STR_TENS_ID 20
-MAT 14 ELAST_VolOgden KAPPA 29.89e-5 BETA -2.0 //nu=0.45
+MAT 14 ELAST_VolOgden KAPPA 29.89e-5 BETA -2.0 
 MAT 15 MAT_Struct_AAANeoHooke YOUNG 2.088E-3 BETA 1.881E-3 NUE 0.45 DENS 3E-6
 MAT 20 ELAST_StructuralTensor STRATEGY Standard
 ----------------------------------------------------------DESIGN DESCRIPTION

@@ -33,7 +33,7 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                      // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton                      
 TIMESTEP                        0.1
 NUMSTEP                         25
 MAXTIME                         2.5
@@ -54,29 +54,29 @@ FRICTION                        Coulomb
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  100
 SEMI_SMOOTH_CT                  1000
-SYSTEM                          sp//condensed
+SYSTEM                          sp
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2
 ALE_TYPE                        solid
 MAXITER                         10
 MESHTYING                       meshtying
 -------------------------------------------------------------MORTAR COUPLING
-LM_SHAPEFCN                     pg//dual//std//Dual
+LM_SHAPEFCN                     pg
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.3
 LM_QUAD                         quad
 LM_DUAL_CONSISTENT              none
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
-PARALLEL_REDIST                 none//dynamic
+PARALLEL_REDIST                 none
 ------------------------------------------------------------------------WEAR
 WEARLAW                         Archard
 WEARTYPE                        primvar
 WEARTIMINT                      impl
-WEAR_SIDE                       both//slave
+WEAR_SIDE                       both
 WEARCOEFF                       7e-4
 WEARCOEFF_MASTER                7e-4
 WEAR_COUPALGO                   stagg
-WEAR_SHAPEFCN                   std//dual//dual
+WEAR_SHAPEFCN                   std
 WEARCOEFF_CONF                  mat
 MATCHINGGRID                    no
 -----------------------------------------------------------VOLMORTAR COUPLING

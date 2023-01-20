@@ -30,7 +30,7 @@ FLUID_STRESS                    No
 FLUID_VIS                       No
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-TIMEINTEGR                      Af_Gen_Alpha //BDF2
+TIMEINTEGR                      Af_Gen_Alpha 
 LIFTDRAG                        Yes
 RESULTSEVRY                           5
 RESTARTEVRY                     25

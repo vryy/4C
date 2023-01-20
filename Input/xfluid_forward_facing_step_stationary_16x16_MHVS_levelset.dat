@@ -89,13 +89,13 @@ TOL_VEL_INC	  1e-12
 TOL_PRES_RES	  1e-12
 TOL_PRES_INC	  1e-12
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        residual_based                //residual_based //residual_based //residual_based, edge_based
+STABTYPE                        residual_based                
 INCONSISTENT                    No
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            Yes                           //No //Yes
-SUPG                            Yes                           //No //Yes
-GRAD_DIV                        Yes                           //No //Yes
+PSPG                            Yes                           
+SUPG                            Yes                           
+GRAD_DIV                        Yes                           
 VSTAB                           no_vstab
 RSTAB                           no_rstab
 CROSS-STRESS                    no_cross
@@ -106,10 +106,10 @@ CHARELELENGTH_PC                volume_equivalent_diameter
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        xfem_gp                       //std_eos //xfem_gp
-EOS_CONV_STREAM                 none                          //xfem_gp //none
-EOS_CONV_CROSS                  none                          //xfem_gp, none
-EOS_DIV                         vel_jump_xfem_gp              //none
+EOS_PRES                        xfem_gp                       
+EOS_CONV_STREAM                 none                          
+EOS_CONV_CROSS                  none                          
+EOS_DIV                         vel_jump_xfem_gp              
 EOS_DEFINITION_TAU              Burman_Fernandez_Hansbo_wo_dt
 EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
 ----------------------------------------------------------------XFEM GENERAL
@@ -120,8 +120,8 @@ GMSH_EOS_OUT                    no
 GMSH_DISCRET_OUT                no
 GMSH_CUT_OUT                    No
 MAX_NUM_DOFSETS                 3
-VOLUME_GAUSS_POINTS_BY          Tessellation                  //Tessellation
-BOUNDARY_GAUSS_POINTS_BY        Tessellation                  //Tessellation
+VOLUME_GAUSS_POINTS_BY          Tessellation                  
+BOUNDARY_GAUSS_POINTS_BY        Tessellation                  
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 RELAXING_ALE_EVERY              1
 RELAXING_ALE                    yes
@@ -132,7 +132,7 @@ XFLUID_TIMEINT                  STD=COPY/SL_and_GHOST=COPY/GP
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_viscous_stress
 CONV_STAB_SCALING               abs_inflow
-GHOST_PENALTY_STAB              yes                           //yes
+GHOST_PENALTY_STAB              yes                           
 GHOST_PENALTY_2nd_STAB          yes
 GHOST_PENALTY_2nd_FAC           1.0
 GHOST_PENALTY_PRESSURE_2nd_FAC  1.0
@@ -144,7 +144,7 @@ SOLVER                          UMFPACK
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_fluid DYNVISCOSITY 10.0 DENSITY 1.0 GAMMA 1.0 // Re=6.62
+MAT 1 MAT_fluid DYNVISCOSITY 10.0 DENSITY 1.0 GAMMA 1.0 
 MAT 2 MAT_scatra DIFFUSIVITY 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2

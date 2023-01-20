@@ -129,7 +129,7 @@ CONVTOL                         1.0E-9
 COUPMETHOD                      conforming
 COUPVARIABLE                    Displacement
 ITEMAX                          20
-MAXOMEGA                        0.5                           // largest omega allowed for Aitken relaxation (0.0 means no constraint)
+MAXOMEGA                        0.5                           
 PARTITIONED                     DirichletNeumann
 PREDICTOR                       d(n)+dt*v(n)
 RELAX                           0.825

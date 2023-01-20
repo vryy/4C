@@ -34,14 +34,14 @@ STRUCTURE DIS structure NODE 404 QUANTITY dispy VALUE -1.5486250267285490e+01 TO
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
-PRESTRESS                       id                            // mulf id none
+PRESTRESS                       id                            
 PRESTRESSTIME                   0.0501
 RESULTSEVRY                     1
 RESTARTEVRY                     10
-NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton                    
 TIMESTEP                        0.001
 NUMSTEP                         10000
-MAXTIME                         0.1                           // prestress until 0.05, run until 0.1
+MAXTIME                         0.1                           
 DAMPING                         No
 M_DAMP                          0.0
 K_DAMP                          0.0

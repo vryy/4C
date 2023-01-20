@@ -71,9 +71,9 @@ COUPALGO                        iter_xfem_monolithic
 SECONDORDER                     No
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ITEMAX                          100
-INFNORMSCALING                  No                            //is used by xfsi!!!
-NORM_INC                        Abs                           // Abs // Mix
-NORM_RESF                       Rel                           // Abs // Mix
+INFNORMSCALING                  No                            
+NORM_INC                        Abs                           
+NORM_RESF                       Rel                           
 TOL_DIS_INC_INF                 1e-5
 TOL_DIS_INC_L2                  1e5
 TOL_DIS_RES_INF                 1e5
@@ -138,7 +138,7 @@ ITEMAX_OUTER                           5
 ------------------------------------------------------CUT GENERAL
 KERNEL_INTERSECTION_FLOATTYPE                 cln
 KERNEL_DISTANCE_FLOATTYPE                     cln
-SELFCUT_MESHCORRECTION_MULTIPLICATOR          2 //just for this testcase, use a larger value for big 3D problems (e.g. 30)
+SELFCUT_MESHCORRECTION_MULTIPLICATOR          2 
 SELFCUT_DO_MESHCORRECTION                     yes
 DO_SELFCUT                                    yes
 -----------------------------------------------------------SOLVER 1

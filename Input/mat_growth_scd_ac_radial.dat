@@ -39,7 +39,7 @@ SHAPEFCT                        Polynomial
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 CALCERROR                       No
-CONVFORM                        conservative //convective
+CONVFORM                        conservative 
 CONV_HEAT_TRANS                 no
 FSSUGRDIFF                      No
 GAMMA                           0.5
@@ -84,7 +84,7 @@ ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta //Statics
+DYNAMICTYP                      OneStepTheta 
 MASSLIN                         Standard
 ITERNORM                        L2
 K_DAMP                          0.5
@@ -120,7 +120,7 @@ UZAWATOL                        1e-08
 -----------------------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 --------------------------------------------------------SSI CONTROL
-COUPALGO                        ssi_IterStaggAitken_SolidToScatra //ssi_IterStaggAitken_ScatraToSolid //ssi_IterStagg //ssi_IterStaggFixedRel_SolidToScatra //
+COUPALGO                        ssi_IterStaggAitken_SolidToScatra 
 ITEMAX                          20
 MAXTIME                         100.0
 NUMSTEP                         3
@@ -168,8 +168,8 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_GrowthVolumetric GROWTHLAW 4 IDMATELASTIC 2 STARTTIME 0.0 ENDTIME 100.0
 MAT 2 MAT_ElastHyper NUMMAT 2 MATIDS 31 32 DENS 1.0e-3
-MAT 31 ELAST_IsoYeoh C1 1.74e5 C2 1.88e6 C3 0 //C1 2.2116e4 C2 0.0 C3 6.0901e5 my parameter fit...
-MAT 32 ELAST_VolOgden KAPPA 1.0 BETA 1.0 //KAPPA 2.2116e6 BETA -2.0
+MAT 31 ELAST_IsoYeoh C1 1.74e5 C2 1.88e6 C3 0 
+MAT 32 ELAST_VolOgden KAPPA 1.0 BETA 1.0 
 //MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 0.0001
 //MAT 3 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.3
 MAT 4 MAT_GrowthACRadial SCALAR1 2 ALPHA 2.0

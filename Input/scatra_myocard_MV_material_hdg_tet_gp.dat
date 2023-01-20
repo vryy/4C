@@ -47,7 +47,7 @@ SOLVER                          UMFPACK
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        centered
 DEFINITION_TAU                  Numerical_Value
-TAU_VALUE                       10.0   // Main Diffusion / element length
+TAU_VALUE                       10.0   
 --------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          20
 ABSTOLRES                       1e-12

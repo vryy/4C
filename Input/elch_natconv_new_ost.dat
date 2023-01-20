@@ -16,7 +16,7 @@ LINEAR_SOLVER                   2
 INITIALFIELD                    field_by_function
 STARTFUNCNO                     2
 TIMEINTEGR                      One_Step_Theta
-NONLINITER                      Newton //fixed_point_like //Newton
+NONLINITER                      Newton 
 ITEMAX                          8
 CONVCHECK                       L_2_norm
 RESULTSEVRY                           1
@@ -34,7 +34,7 @@ ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 PHYSICAL_TYPE                   Varying_density
-OST_CONT_PRESS                  Cont_normal_Press_normal //Cont_normal_Press_normal //Cont_impl_Press_impl
+OST_CONT_PRESS                  Cont_normal_Press_normal 
 NEW_OST                         yes
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	  1.0E-6
@@ -43,7 +43,7 @@ TOL_PRES_RES	  1.0E-6
 TOL_PRES_INC	  1.0E-6
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
-DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall //Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall
+DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall 
 CHARELELENGTH_PC                root_of_volume
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -53,8 +53,8 @@ VSTAB                           no_vstab
 GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
-EVALUATION_TAU                  integration_point //integration_point //element_center
-EVALUATION_MAT                  integration_point //integration_point //element_center
+EVALUATION_TAU                  integration_point 
+EVALUATION_MAT                  integration_point 
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
@@ -211,7 +211,7 @@ ML_DAMPFINE                     0.67
 ML_DAMPMED                      1.0                           
 ML_DAMPCOARSE                   1.0                           
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_fluid DYNVISCOSITY 1e-1 DENSITY 10.0 // for testing of density != 1
+MAT 1 MAT_fluid DYNVISCOSITY 1e-1 DENSITY 10.0 
 MAT 2 MAT_ion DIFFUSIVITY 5e-6 VALENCE 1.0 DENSIFICATION 0.5
 MAT 3 MAT_ion DIFFUSIVITY 5e-6 VALENCE -2.0
 MAT 4 MAT_ion DIFFUSIVITY 1e-6 VALENCE 0.0

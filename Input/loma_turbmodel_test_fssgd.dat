@@ -73,7 +73,7 @@ C_SMAGORINSKY                   0.0555555555555556
 C_TURBPRANDTL                   0.9
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   2
-SOLVERTYPE nonlinear //linear_incremental
+SOLVERTYPE nonlinear 
 FSSUGRDIFF                      Smagorinsky_small
 INITFUNCNO                      2
 INITIALFIELD                    field_by_function

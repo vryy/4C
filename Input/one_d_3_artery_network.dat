@@ -22,7 +22,7 @@ SOLVESCATRA                     no
 ---------------------------------------------------------------FLUID DYNAMIC
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
-TIMEINTEGR                      Af_Gen_Alpha //BDF2
+TIMEINTEGR                      Af_Gen_Alpha 
 NONLINITER                      Newton
 ITEMAX                          12
 CONVCHECK                       L_2_norm

@@ -33,10 +33,10 @@ GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
-PSPG                            yes //yes no_pspg
+PSPG                            yes 
 REYNOLDS-STRESS                 no_reynolds
-RSTAB                           rstab_gls //rstab_gls no_rstab
-STABTYPE                        residual_based //residual_based no_stabilization
+RSTAB                           rstab_gls 
+STABTYPE                        residual_based 
 SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -51,8 +51,8 @@ OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_SE                       No
 STRUCT_STRAIN                   No
-STRUCT_STRESS                   No                            // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_COUPLING_STRESS          No                            // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+STRUCT_STRESS                   No                            
+STRUCT_COUPLING_STRESS          No                            
 STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No

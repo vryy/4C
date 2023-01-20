@@ -22,9 +22,9 @@ NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 OUTPUT_BIN                      Yes
-THERM_HEATFLUX                  Initial  // None, Current
+THERM_HEATFLUX                  Initial  
 THERM_TEMPERATURE               Yes
-THERM_TEMPGRAD                  Initial  // None, Current
+THERM_TEMPGRAD                  Initial  
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Thermo
 RESTART                         0
@@ -67,7 +67,7 @@ NDVOL                           1
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // right surface: heatflux
-E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 20.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid // first 1 is loadcurve
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 20.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid 
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
 // body temperature

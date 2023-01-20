@@ -13,16 +13,16 @@ DIM                             3
 NODES                           3198
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
-RESTART                         0//215//
+RESTART                         0
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         8
-TIMESTEP                        0.003                         //0.00625
-NUMSTEP                         4//400
+TIMESTEP                        0.003                         
+NUMSTEP                         4
 RESTARTEVRY                     2
 COUPALGO                        iter_fluidfluid_monolithicstructuresplit
 SECONDORDER                     no
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
-LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
+LINEARBLOCKSOLVER               PreconditionedKrylov          
 ITEMAX                          40
 CONVTOL                         1.0E-8
 PRECONDREUSE                    0
@@ -33,7 +33,7 @@ ADAPTCONV_BETTER                0.1
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
-INITIALFIELD                    zero_field                    //field_by_function
+INITIALFIELD                    zero_field                    
 ITEMAX                          25
 LIFTDRAG                        No
 MAXTIME                         3
@@ -44,9 +44,9 @@ RESTARTEVRY                     5
 SIMPLER                         no
 STARTFUNCNO                     2
 STEADYSTEP                      -1
-THETA                           1.0//0.66
-TIMEINTEGR                      One_Step_Theta                //Stationary
-TIMESTEP                        0.003//0.003125               //0.00625
+THETA                           1.0
+TIMEINTEGR                      One_Step_Theta                
+TIMESTEP                        0.003
 LINEAR_SOLVER                   1
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	  1e-8
@@ -54,22 +54,22 @@ TOL_VEL_INC	  1e-8
 TOL_PRES_RES	  1e-8
 TOL_PRES_INC	  1e-8
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        residual_based                //
+STABTYPE                        residual_based                
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            yes                           //no
-SUPG                            yes                           //no
+PSPG                            yes                           
+SUPG                            yes                           
 VSTAB                           no_vstab
-GRAD_DIV                        no                            //yes
+GRAD_DIV                        no                            
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 CHARELELENGTH_PC                volume_equivalent_diameter
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        xfem_gp                       //none, std_eos, xfem_gp
-EOS_CONV_STREAM                 xfem_gp                       // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
-EOS_DIV                         none                          // none, vel_jump_std_eos, vel_jump_xfem_gp
+EOS_PRES                        xfem_gp                       
+EOS_CONV_STREAM                 xfem_gp                       
+EOS_CONV_CROSS                  none                          
+EOS_DIV                         none                          
 EOS_DEFINITION_TAU              Burman_Fernandez
 EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
 -----------------------------------------------------------------ALE DYNAMIC
@@ -145,10 +145,10 @@ GMSH_CUT_OUT                    no
 GMSH_EOS_OUT                    no
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Nitsche                       // Which Boundary method shall be used to enforce interface conditions?
+COUPLING_METHOD                 Nitsche                       
 IS_PSEUDO_2D                    yes
-NIT_STAB_FAC                    24.40282794                   // 35/CT(2d)
-VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
+NIT_STAB_FAC                    24.40282794                   
+VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  
 VISC_STAB_HK                    vol_equivalent
 XFF_CONV_STAB_SCALING           none
 GHOST_PENALTY_STAB              yes

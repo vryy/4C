@@ -30,52 +30,52 @@ nightly test case uses reduced end time MAXTIME = 1.0
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Thermo_Structure_Interaction  // Structure
+PROBLEMTYP                      Thermo_Structure_Interaction  
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
-OUTPUT_BIN                      Yes               // No
-STRUCT_DISP                     Yes                // Yes,No,yes,no,YES,NO
-STRUCT_VEL_ACC                  Yes                // Yes,No,yes,no,YES,NO
-STRUCT_STRAIN                   EA                 // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
-STRUCT_STRESS                   Cauchy             // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_COUPLING_STRESS          Cauchy             // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-THERM_HEATFLUX                  Current            // None,No,NO,no,Current,Initial
-THERM_TEMPERATURE               Yes                // Yes,No,yes,no,YES,NO
-THERM_TEMPGRAD                  Current            // None,No,NO,no,Current,Initial
+OUTPUT_BIN                      Yes               
+STRUCT_DISP                     Yes                
+STRUCT_VEL_ACC                  Yes                
+STRUCT_STRAIN                   EA                 
+STRUCT_STRESS                   Cauchy             
+STRUCT_COUPLING_STRESS          Cauchy             
+THERM_HEATFLUX                  Current            
+THERM_TEMPERATURE               Yes                
+THERM_TEMPGRAD                  Current            
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      OneStepTheta       // Statics
+DYNAMICTYP                      OneStepTheta       
 TOLDISP                         1.0e-8
 TOLRES                          1.0e-5
 NORMCOMBI_DISPPRES              Or
-NLNSOL                          fullnewton         // ptc,fullnewton
+NLNSOL                          fullnewton         
 PREDICT                         TangDis
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                           0.5                // 0.66
+THETA                           0.5                
 -------------------------------------------------------------THERMAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-DIVERCONT                       stop               // continue
-DYNAMICTYP                      OneStepTheta       // ExplicitEuler,Statics
-INITFUNCNO                      1                  // use FUNCT 1
-INITIALFIELD                    field_by_function  // zero_field,field_by_function,field_by_condition
-ITERNORM                        L2                 // Rms
+DIVERCONT                       stop               
+DYNAMICTYP                      OneStepTheta       
+INITFUNCNO                      1                  
+INITIALFIELD                    field_by_function  
+ITERNORM                        L2                 
 LINEAR_SOLVER                   2
 LUMPCAPA                        no
 MAXITER                         50
 MAXTIME                         8.0
 MINITER                         0
-NLNSOL                          fullnewton         // vague,fullnewton
-NORMCOMBI_RESFTEMP              And                // Or
+NLNSOL                          fullnewton         
+NORMCOMBI_RESFTEMP              And                
 NORM_RESF                       Abs
-NORM_TEMP                       Abs                // Rel: relativ 10e-8, Mix: Minimum aus Rel oder Abs
+NORM_TEMP                       Abs                
 NUMSTEP                         40000
-PREDICT                         TangTemp           // ConstTemp  // Vague,ConstTemp,ConstTempRate,TangTemp
+PREDICT                         TangTemp           
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     10
@@ -83,25 +83,25 @@ TIMESTEP                        0.05
 TOLRES                          1e-05
 TOLTEMP                         1e-07
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
-THETA                           0.5                // 0.66
+THETA                           0.5                
 -----------------------------------------------------------------TSI DYNAMIC
-COUPALGO                        tsi_monolithic     // tsi_{oneway,sequstagg,iterstagg,monolithic}
+COUPALGO                        tsi_monolithic     
 ITEMAX                          50
 ITEMIN                          1
-MAXTIME                         1200               // 8000
-NORM_INC                        Abs                // Abs,Rel
-NUMSTEP                         40000              // 400,800
+MAXTIME                         1200               
+NORM_INC                        Abs                
+NUMSTEP                         40000              
 RESTARTEVRY                     10
 TIMESTEP                        400
-RESULTSEVRY                           2                  // 5
+RESULTSEVRY                           2                  
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-05
 TOLINC                          1e-05
-CALC_NECKING_TSI_VALUES         yes                 // Yes,No
-ITERNORM                        Rms                // Rms,L2,Inf,L1_Scaled
+CALC_NECKING_TSI_VALUES         yes                 
+ITERNORM                        Rms                
 LINEAR_SOLVER                   3
-NORMCOMBI_RESFINC               Coupl_And_Singl    // And,Or,{Coupl_}{Or,And}_Singl
-NORM_RESF                       Rel                // Abs,Mix
+NORMCOMBI_RESFINC               Coupl_And_Singl    
+NORM_RESF                       Rel                
 --------------------------------------------------------------------SOLVER 3
 NAME                            TSI_MONOLITHIC_SOLVER
 AZBDIAG                         0
@@ -156,7 +156,7 @@ NDLINE                          5
 NDSURF                          5
 NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF 0 // 1
+DSURF 0 
 //                              pressure
 //E 5 - 2 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure Mid 0 0 0 0 0 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS

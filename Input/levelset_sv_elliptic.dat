@@ -12,12 +12,12 @@ test case for elliptic reinitialization equation
 DIM           3
 --------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Level_Set
-RESTART                         0 //1100
+RESTART                         0 
 RANDSEED                        1
 ------------------------------------LEVEL-SET CONTROL
 NUMSTEP                         10
 MAXTIME                         700.0
-TIMESTEP                        0.005 // CFL=0.5
+TIMESTEP                        0.005 
 RESULTSEVRY                     1
 RESTARTEVRY                     2
 CALCERROR                       InitialField
@@ -31,9 +31,9 @@ DIMENSION                       2Dz
 PROJECTION                      yes
 LUMPING                         yes
 DIFF_FUNC                       hyperbolic
-CONVTOL_REINIT                  -1.0 // unused
+CONVTOL_REINIT                  -1.0 
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
-SOLVERTYPE                      linear_full //nonlinear
+SOLVERTYPE                      linear_full 
 FSSUGRDIFF                      No
 INITFUNCNO                      2
 INITIALFIELD                    field_by_function
@@ -46,8 +46,8 @@ MATID                           1
 LINEAR_SOLVER                   1
 --------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Taylor_Hughes_Zarins
-EVALUATION_MAT                  integration_point //element_center
-EVALUATION_TAU                  integration_point //element_center
+EVALUATION_MAT                  integration_point 
+EVALUATION_TAU                  integration_point 
 STABTYPE                        SUPG
 SUGRVEL                         no
 -------------------------------------------SOLVER 1
@@ -81,7 +81,7 @@ ML_DAMPFINE                     0.67
 ML_DAMPMED                      0.67                            
 ML_DAMPCOARSE                   1.0                             
 ----------------------------------------------------------MATERIALS
-MAT 1 MAT_scatra  DIFFUSIVITY 0.0 //1.0E-9
+MAT 1 MAT_scatra  DIFFUSIVITY 0.0 
 ------------------------------------------------------------FUNCT1 // circular velocity field
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME sin(6.283185307*(y+0.5))*sin(3.141592654*(x+0.5))*sin(3.141592654*(x+0.5))*a
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME -sin(6.283185307*(x+0.5))*sin(3.141592654*(y+0.5))*sin(3.141592654*(y+0.5))*a

@@ -69,7 +69,7 @@ TOL_PRES_RES	                  1.0E-10
 TOL_PRES_INC	                  1.0E-10
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt  //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt  
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
@@ -103,7 +103,7 @@ VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
 VISC_STAB_HK                    ele_vol_div_by_max_ele_surf
 CONV_STAB_SCALING               inflow
 MASS_CONSERVATION_COMBO         max
-MASS_CONSERVATION_SCALING       full                          // only_visc
+MASS_CONSERVATION_SCALING       full                          
 GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_TRANSIENT_STAB    yes
 GHOST_PENALTY_2nd_STAB          yes

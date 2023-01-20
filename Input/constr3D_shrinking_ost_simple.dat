@@ -54,7 +54,7 @@ NLNSOL                          newtonlinuzawa
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.7
 -------------------------------------------------------------CONTACT DYNAMIC
-LINEAR_SOLVER                   2                             // constraint simpler primary solver block
+LINEAR_SOLVER                   2                             
 --------------------------------------------------------------------SOLVER 2
 NAME                            Contact LINEAR solver (used for constraint simpler)
 AZBDIAG                         0

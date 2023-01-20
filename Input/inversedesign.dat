@@ -37,14 +37,14 @@ STRUCTURE DIS structure NODE 63 QUANTITY dispx VALUE 2.9268964885580624e-02 TOLE
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
-PRESTRESS                       id                            // mulf id none
+PRESTRESS                       id                            
 PRESTRESSTIME                   0.1001
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                    // fullnewton lsnewton modnewton nlncg ptc
+NLNSOL                          fullnewton                    
 TIMESTEP                        0.001
 NUMSTEP                         200
-MAXTIME                         0.2                           // total time 0.35, prestressed until 0.1
+MAXTIME                         0.2                           
 DAMPING                         No
 M_DAMP                          0.5
 K_DAMP                          0.5

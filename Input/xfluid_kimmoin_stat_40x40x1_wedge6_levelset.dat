@@ -70,7 +70,7 @@ TOL_PRES_RES	  1.0E-10
 TOL_PRES_INC	  1.0E-10
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt  //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt  
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
@@ -80,12 +80,12 @@ GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos                       // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 none                          //std_eos // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
-EOS_DIV                         none                          //vel_jump_std_eos // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
-EOS_DEFINITION_TAU              Burman_Fernandez              //Burman_Hansbo_DAngelo_Zunino
-EOS_H_DEFINITION                EOS_he_surf_diameter          // EOS_he_surf_with_max_diameter
+EOS_PRES                        std_eos                       
+EOS_CONV_STREAM                 none                          
+EOS_CONV_CROSS                  none                          
+EOS_DIV                         none                          
+EOS_DEFINITION_TAU              Burman_Fernandez              
+EOS_H_DEFINITION                EOS_he_surf_diameter          
 PRES_KRYLOV_2Dz                 yes
 -----------------------------------------------------------------FSI DYNAMIC
 SECONDORDER                     No
@@ -94,8 +94,8 @@ GMSH_DEBUG_OUT                  No
 GMSH_SOL_OUT                    no
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
-VOLUME_GAUSS_POINTS_BY          Tessellation                  //Tessellation //Tessellation //MomentFitting //Tessellation //MomentFitting //Tessellation
-BOUNDARY_GAUSS_POINTS_BY        Tessellation                  //MomentFitting //Tessellation
+VOLUME_GAUSS_POINTS_BY          Tessellation                  
+BOUNDARY_GAUSS_POINTS_BY        Tessellation                  
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 VISC_ADJOINT_SYMMETRY           yes
@@ -104,7 +104,7 @@ VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
 VISC_STAB_HK                    ele_vol_div_by_max_ele_surf
 CONV_STAB_SCALING               inflow
 MASS_CONSERVATION_COMBO         max
-MASS_CONSERVATION_SCALING       full                          // only_visc
+MASS_CONSERVATION_SCALING       full                          
 GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_TRANSIENT_STAB    yes
 GHOST_PENALTY_2nd_STAB          yes

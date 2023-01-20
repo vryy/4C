@@ -23,7 +23,7 @@ NUMSTEP                         400
 TIMESTEP                        5.0e-3
 RESTARTEVRY                     1
 RESULTSEVRY                           1
-SOLVERTYPE                      Nonlinear                       // Linear Nonlinear
+SOLVERTYPE                      Nonlinear                       
 MAXITERATIONS                   40
 TOLERANCE                       1.0E-8
 --------------------------------------------------------------------SOLVER 1

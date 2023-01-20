@@ -22,7 +22,7 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 RANDSEED                        -1
 -------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      OneStepTheta //OneStepTheta Statics
+DYNAMICTYP                      OneStepTheta 
 DAMPING                         Material
 PREDICT                         ConstDis
 LINEAR_SOLVER                   2
@@ -44,7 +44,7 @@ PHYSICAL_TYPE                   Poro
 EQUILIBRATION                   rows_full
 ------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   3
-TIMEINTEGR                      One_Step_Theta //One_Step_Theta Stationary
+TIMEINTEGR                      One_Step_Theta 
 PREDICTOR                       steady_state
 CONVFORM                        convective
 GRIDVEL                         BE

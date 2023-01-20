@@ -25,7 +25,7 @@ ADAPTCONV_BETTER                0.1
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
-INITIALFIELD                    field_by_function             //zero_field
+INITIALFIELD                    field_by_function             
 ITEMAX                          10
 LIFTDRAG                        No
 MAXTIME                         10.0

@@ -24,7 +24,7 @@ NUMTHERMDIS                     0
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 TIMEINTEGR                      Stationary
-PHYSICAL_TYPE                   Stokes                       // !!!!!!!!
+PHYSICAL_TYPE                   Stokes                       
 RESULTSEVRY                           1
 MAXTIME                         1000.0
 NUMSTEP                         1
@@ -72,38 +72,38 @@ DSURF                           1
 E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 1 1 0 // Node_topright
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 1 1 0 // Node_topleft
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 1 1 0 // Node_bottomright
-E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 1 1 0 // Node_bottomleft
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 1 1 0 
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 1 1 0 
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 1 1 0 
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 1 1 0 
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 1 1 0 // Line_top
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 1 1 0 // Line_left
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 1 1 0 // Line_bottom
-E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 1 1 0 // Line_right
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 1 1 0 
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 1 1 0 
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 1 1 0 
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 1 1 0 
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
-NODE 25 DNODE 1 // Node_topright
-NODE 21 DNODE 2 // Node_topleft
-NODE  5 DNODE 3 // Node_bottomright
-NODE  1 DNODE 4 // Node_bottomleft
+NODE 25 DNODE 1 
+NODE 21 DNODE 2 
+NODE  5 DNODE 3 
+NODE  1 DNODE 4 
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
-NODE 21 DLINE 1 // Line_top
+NODE 21 DLINE 1 
 NODE 22 DLINE 1
 NODE 23 DLINE 1
 NODE 24 DLINE 1
 NODE 25 DLINE 1
-NODE  1 DLINE 2 // Line_left
+NODE  1 DLINE 2 
 NODE  6 DLINE 2
 NODE 11 DLINE 2
 NODE 16 DLINE 2
 NODE 21 DLINE 2
-NODE  1 DLINE 3 // Line_bottom
+NODE  1 DLINE 3 
 NODE  2 DLINE 3
 NODE  3 DLINE 3
 NODE  4 DLINE 3
 NODE  5 DLINE 3
-NODE  5 DLINE 4 // Line_right
+NODE  5 DLINE 4 
 NODE 10 DLINE 4
 NODE 15 DLINE 4
 NODE 20 DLINE 4

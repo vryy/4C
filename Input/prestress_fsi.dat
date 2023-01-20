@@ -33,7 +33,7 @@ FILESTEPS                       1000
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   2
 DYNAMICTYP                      Statics
-PRESTRESS                       mulf                          // mulf id none
+PRESTRESS                       mulf                          
 PRESTRESSTIME                   0.00101
 RESULTSEVRY                     1
 RESTARTEVRY                     1

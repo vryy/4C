@@ -12,7 +12,7 @@ DIM           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid
 RESTART                         0
-RANDSEED                        1 // 1: reproduceable; -1: uses current time (default)
+RANDSEED                        1 
 SHAPEFCT                        HDG
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -53,16 +53,16 @@ PHYSICAL_MODEL                  no_model
 //PHYSICAL_MODEL                  Multifractal_Subgrid_Scales
 //CANONICAL_FLOW                  decaying_homogeneous_isotropic_turbulence
 CANONICAL_FLOW                  forced_homogeneous_isotropic_turbulence
-FORCING_TYPE                    linear_compensation_from_intermediate_spectrum //fixed_power_input
+FORCING_TYPE                    linear_compensation_from_intermediate_spectrum 
 POWER_INPUT                     62.8436001234
-FORCING_TIME_STEPS              4 //decaying hit
-THRESHOLD_WAVENUMBER            4 // large wavenumbers on which forcing is acting
-SCALAR_FORCING                  isotropic //mean_scalar_gradient
+FORCING_TIME_STEPS              4 
+THRESHOLD_WAVENUMBER            4 
+SCALAR_FORCING                  isotropic 
 MEAN_SCALAR_GRADIENT            0.1
 HOMDIR                          xyz
 SAMPLING_START                  51
 SAMPLING_STOP                   100
-DUMPING_PERIOD                  1 //0
+DUMPING_PERIOD                  1 
 FSSUGRVISC                      No
 CHAN_AMPL_INIT_DIST             0.1
 --------------------------------------------------------------------SOLVER 1

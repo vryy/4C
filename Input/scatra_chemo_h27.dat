@@ -40,8 +40,8 @@ WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
 LIMIT_OUTP_TO_PROC              -1
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
-SOLVERTYPE                      nonlinear                     // linear_full
-TIMEINTEGR One_Step_Theta //Gen_Alpha
+SOLVERTYPE                      nonlinear                     
+TIMEINTEGR One_Step_Theta 
 MAXTIME                         100
 NUMSTEP                         30
 TIMESTEP                        0.05
@@ -52,7 +52,7 @@ GAMMA                           0.666666666666667
 RESULTSEVRY                     2
 RESTARTEVRY                     10000
 MATID                           -1
-VELOCITYFIELD zero //function
+VELOCITYFIELD zero 
 VELFUNCNO                       2
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
@@ -74,7 +74,7 @@ ABSTOLRES                       1e-14
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-STABTYPE                        no_stabilization //GLS // SUPG //
+STABTYPE                        no_stabilization 
 SUGRVEL                         no
 ASSUGRDIFF                      no
 DEFINITION_TAU                  Franca_Valentin

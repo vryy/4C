@@ -31,8 +31,8 @@ TIMEINTEGR                      One_Step_Theta
 RESULTSEVRY                           1
 RESTARTEVRY                     10
 NUMSTEP                         100
-MAXTIME                         1.0 //hill reaches point of departure (x0=2/15)
-TIMESTEP                        0.01                          // Cr = 1.5
+MAXTIME                         1.0 
+TIMESTEP                        0.01                          
 THETA                           0.5
 VELOCITYFIELD                   function
 VELFUNCNO                       1
@@ -74,9 +74,9 @@ ML_DAMPFINE                     0.67
 ML_DAMPMED                      1.0                           
 ML_DAMPCOARSE                   1.0                           
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_scatra DIFFUSIVITY 0.0033333333333 // Pe_e = 1
-MAT 2 MAT_scatra DIFFUSIVITY 0.0006666666666 // Pe_e = 5
-MAT 3 MAT_scatra DIFFUSIVITY 0.0000333333333 // Pe_e = 100
+MAT 1 MAT_scatra DIFFUSIVITY 0.0033333333333 
+MAT 2 MAT_scatra DIFFUSIVITY 0.0006666666666 
+MAT 3 MAT_scatra DIFFUSIVITY 0.0000333333333 
 MAT 4 MAT_matlist LOCAL No NUMMAT 2 MATIDS 2 3 END
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0

@@ -30,13 +30,13 @@ FLUID_STRESS                    No
 FLUID_VIS                       No
 OUTPUT_BIN                      Yes
 STDOUTEVRY                      1
-STRUCT_DISP                     Yes                             // Yes,No,yes,no,YES,NO
-STRUCT_STRAIN                   no //GL // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
-STRUCT_STRESS                   Cauchy // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+STRUCT_DISP                     Yes                             
+STRUCT_STRAIN                   no 
+STRUCT_STRESS                   Cauchy 
 STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  Current                         // None,No,NO,no,Current,Initial
-THERM_TEMPERATURE               Yes                             // Yes,No,yes,no,YES,NO
-THERM_TEMPGRAD                  no //Current // None,No,NO,no,Current,Initial
+THERM_HEATFLUX                  Current                         
+THERM_TEMPERATURE               Yes                             
+THERM_TEMPGRAD                  no 
 WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 LIMIT_OUTP_TO_PROC              -1
@@ -46,8 +46,8 @@ LINEAR_SOLVER                   2
 ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.001
 DAMPING                         No
-DIVERCONT                       stop                              // Yes,No,yes,no,YES,NO: Go on with time integration even if Newton-Raphson iteration failed
-DYNAMICTYP                      OneStepTheta                    // Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,OneStepTheta,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
+DIVERCONT                       stop                              
+DYNAMICTYP                      OneStepTheta                    
 ITERNORM                        L2
 K_DAMP                          0.5
 LOADLIN                         yes
@@ -55,7 +55,7 @@ MAXITER                         50
 MAXTIME                         1
 MINITER                         0
 M_DAMP                          0.5
-NLNSOL                          fullnewton                      // vague,fullnewton,lsnewton,oppnewton,modnewton,nlncg,ptc,newtonlinuzawa,augmentedlagrange,NoxNewtonLineSearch,noxgeneral
+NLNSOL                          fullnewton                      
 NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
 NORMCOMBI_RESFINCO              And
@@ -64,7 +64,7 @@ NORM_INCO                       Abs
 NORM_PRES                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         200
-PREDICT                         ConstDis                        // Vague,ConstDis,ConstDisVelAcc,TangDis,ConstDisPres,ConstDisVelAccPres
+PREDICT                         ConstDis                        
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
@@ -118,19 +118,19 @@ LINEAR_SOLVER                   3
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta                    // Statics,OneStepTheta
+DYNAMICTYP                      OneStepTheta                    
 INITFUNCNO                      1
-INITIALFIELD                    field_by_function               // zero_field,field_by_function,field_by_condition
+INITIALFIELD                    field_by_function               
 ITERNORM                        L2
 MAXITER                         50
 MAXTIME                         1
 MINITER                         0
-NLNSOL                          fullnewton                      // vague,fullnewton
+NLNSOL                          fullnewton                      
 NORMCOMBI_RESFTEMP              And
 NORM_RESF                       Abs
 NORM_TEMP                       Abs
-NUMSTEP                         200                             // for the outer iteration this NUMSTEP is used!
-PREDICT                         ConstTemp                       // Vague,ConstTemp,ConstTempRate,TangTemp
+NUMSTEP                         200                             
+PREDICT                         ConstTemp                       
 RESEVRYERGY                     0
 RESULTSEVRY                     1
 RESTARTEVRY                     1

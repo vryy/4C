@@ -69,7 +69,7 @@ LIFTDRAG                        No
 LINEAR_SOLVER                   2
 MAXTIME                         10000.0
 NONLINEARBC                     yes
-NONLINITER Newton //fixed_point_like
+NONLINITER Newton 
 NUMSTASTEPS                     0
 NUMSTEP                         5
 PHYSICAL_TYPE                   Incompressible
@@ -130,11 +130,11 @@ ML_DAMPFINE                     0.6
 ML_DAMPMED                      0.6                           
 ML_DAMPCOARSE                   1.0                           
 -----------------------------------------------------------------FSI DYNAMIC
-COUPALGO                        iter_monolithicfluidsplit     // iter_monolithicstructuresplit iter_stagg_AITKEN_rel_param
-MAXTIME                         10000.0                       // 5.25
+COUPALGO                        iter_monolithicfluidsplit     
+MAXTIME                         10000.0                       
 NUMSTEP                         5
 RESTARTEVRY                     100
-SECONDORDER                     yes                           // Second order coupling at the interface Yes,No,yes,no,YES,NO
+SECONDORDER                     yes                           
 TIMESTEP                        10
 RESULTSEVRY                           1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
@@ -152,7 +152,7 @@ SYMMETRICPRECOND                no
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 FLUID_SOL                       Yes
-FLUID_STRESS No //Yes
+FLUID_STRESS No 
 FLUID_VIS                       No
 FLUID_WALL_SHEAR_STRESS         No
 OUTPUT_BIN                      Yes
@@ -189,7 +189,7 @@ DEFINITION_ASSGD                artificial_linear
 DEFINITION_TAU                  Taylor_Hughes_Zarins
 EVALUATION_MAT                  element_center
 EVALUATION_TAU                  integration_point
-STABTYPE                        no_stabilization //SUPG
+STABTYPE                        no_stabilization 
 SUGRVEL                         no
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 CALCERROR                       No
@@ -225,7 +225,7 @@ DEFINITION_ASSGD                artificial_linear
 DEFINITION_TAU                  Taylor_Hughes_Zarins
 EVALUATION_MAT                  element_center
 EVALUATION_TAU                  integration_point
-STABTYPE                        no_stabilization //SUPG
+STABTYPE                        no_stabilization 
 SUGRVEL                         no
 -------------------------------------------------------------BIOFILM CONTROL
 BIONUMSTEP                      2

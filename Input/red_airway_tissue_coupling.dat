@@ -27,18 +27,18 @@ FLUID_VIS                       No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      OneStepTheta                  // GenAlpha
+DYNAMICTYP                      OneStepTheta                  
 RESULTSEVRY                     10
 RESTARTEVRY                     100
-NLNSOL                          fullnewton                    // fullnewton modnewton nlncg ptc
-PTCDT                           0.001                         // default is 0.1
-TIMESTEP                        0.002                         // 0.0001 works with FulNewton
+NLNSOL                          fullnewton                    
+PTCDT                           0.001                         
+TIMESTEP                        0.002                         
 NUMSTEP                         750
 MAXTIME                         1000
 DAMPING                         No
 M_DAMP                          0.005
 K_DAMP                          0.005
-PREDICT                         ConstDisVelAcc                // ConstDisVelAcc ConstDis TangDis
+PREDICT                         ConstDisVelAcc                
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
@@ -68,7 +68,7 @@ NUMSTEP                         750
 TIMESTEP                        0.002
 RESTARTEVRY                     100
 RESULTSEVRY                           10
-SOLVERTYPE                      Nonlinear                     // Linear Nonlinear
+SOLVERTYPE                      Nonlinear                     
 MAXITERATIONS                   40
 TOLERANCE                       1E-7
 --------------------------------------------------------------------SOLVER 1

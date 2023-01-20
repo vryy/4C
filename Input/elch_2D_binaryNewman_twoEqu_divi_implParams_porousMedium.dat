@@ -35,7 +35,7 @@ RESTARTEVRY                     5
 CONVTOL                         1e-09
 ABSTOLRES                       1e-14
 ITEMAX                          2
-EXPLPREDICT                     no // yes -> oscillations for neutral
+EXPLPREDICT                     no 
 ADAPTCONV                       no
 ADAPTCONV_BETTER                0.1
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION

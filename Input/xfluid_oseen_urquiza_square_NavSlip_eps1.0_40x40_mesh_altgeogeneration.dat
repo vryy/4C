@@ -98,9 +98,9 @@ IS_PSEUDO_2D                    yes
 MASS_CONSERVATION_SCALING       full
 CONV_STAB_SCALING               abs_inflow
 GHOST_PENALTY_STAB              yes
-GHOST_PENALTY_FAC               0.05                          // in [0.1;0.5]
+GHOST_PENALTY_FAC               0.05                          
 GHOST_PENALTY_TRANSIENT_STAB    yes
-GHOST_PENALTY_TRANSIENT_FAC     0.005                         // in [0.001;0.005]
+GHOST_PENALTY_TRANSIENT_FAC     0.005                         
 GHOST_PENALTY_2nd_STAB          yes
 GHOST_PENALTY_2nd_FAC           0.05
 GHOST_PENALTY_PRESSURE_2nd_FAC  0.05

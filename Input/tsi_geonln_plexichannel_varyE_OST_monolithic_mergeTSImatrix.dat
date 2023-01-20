@@ -39,13 +39,13 @@ OUTPUT_BIN                      Yes
 PREFIX_GROUP_ID                 No
 STDOUTEVRY                      1
 STRUCT_DISP                     Yes
-STRUCT_PLASTIC_STRAIN           No  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
-STRUCT_STRAIN                   EA  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
-STRUCT_STRESS                   Cauchy  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_COUPLING_STRESS          Cauchy  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-THERM_HEATFLUX                  Current  // None,No,NO,no,Current,Initial
-THERM_TEMPERATURE               Yes  // Yes,No,yes,no,YES,NO
-THERM_TEMPGRAD                  Current  // None,No,NO,no,Current,Initial
+STRUCT_PLASTIC_STRAIN           No  
+STRUCT_STRAIN                   EA  
+STRUCT_STRESS                   Cauchy  
+STRUCT_COUPLING_STRESS          Cauchy  
+THERM_HEATFLUX                  Current  
+THERM_TEMPERATURE               Yes  
+THERM_TEMPGRAD                  Current  
 WRITE_TO_SCREEN                 Yes
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Thermo_Structure_Interaction
@@ -57,7 +57,7 @@ ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta  // Statics,GenAlpha,OneStepTheta,GEMM,ExplicitEuler,CentrDiff,AdamsBashforth2,EulerMaruyama,EulerImpStoch,StatMech
+DYNAMICTYP                      OneStepTheta  
 ITERNORM                        L2
 K_DAMP                          0.5
 LINEAR_SOLVER                   1
@@ -71,9 +71,9 @@ M_DAMP                          0.5
 NLNSOL                          fullnewton
 NORMCOMBI_RESFDISP              And
 NORM_DISP                       Abs
-NORM_RESF                       Abs  // Abs,Rel,Mix
+NORM_RESF                       Abs  
 NUMSTEP                         200
-PREDICT                         ConstDis  // Vague,ConstDis,ConstVel,ConstAcc,ConstDisVelAcc,TangDis,ConstDisPres
+PREDICT                         ConstDis  
 PTCDT                           0.1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
@@ -96,10 +96,10 @@ THETA                           1.0
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta  // Statics,OneStepTheta,GEMM,GenAlpha,ExplicitEuler
+DYNAMICTYP                      OneStepTheta  
 INITFUNCNO                      1
-INITIALFIELD                    field_by_function  // zero_field,field_by_condition
-ITERNORM                        Rms  // L2
+INITIALFIELD                    field_by_function  
+ITERNORM                        Rms  
 LINEAR_SOLVER                   2
 LUMPCAPA                        No
 MAXITER                         50
@@ -110,7 +110,7 @@ NORMCOMBI_RESFTEMP              And
 NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         200
-PREDICT                         TangTemp  // Vague,ConstTemp,ConstTempRate,TangTemp
+PREDICT                         TangTemp  
 RESEVRYERGY                     0
 RESULTSEVRY                     1
 RESTARTEVRY                     1
@@ -120,12 +120,12 @@ TOLTEMP                         1e-08
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 -----------------------------------------------------------------TSI DYNAMIC
-COUPALGO                        tsi_monolithic  // tsi_{oneway,sequstagg,iterstagg{_aitken,_aitkenirons},monolithic}
+COUPALGO                        tsi_monolithic  
 ITEMAX                          20
 ITEMIN                          1
 MAXTIME                         5000.0
-NORM_INC                        Abs  // Abs,Rel,Mix
-NUMSTEP                         5  // 2000
+NORM_INC                        Abs  
+NUMSTEP                         5  
 RESTARTEVRY                     4
 TIMESTEP                        200.0
 RESULTSEVRY                           1
@@ -133,10 +133,10 @@ RESULTSEVRY                           1
 MERGE_TSI_BLOCK_MATRIX          Yes
 CONVTOL                         1e-06
 TOLINC                          1e-07
-ITERNORM                        Rms  // Rms,L2,Inf,L1_Scaled
+ITERNORM                        Rms  
 LINEAR_SOLVER                   3
-NORMCOMBI_RESFINC               Coupl_Or_Singl  // Or,Coupl_Or_Singl,Coupl_And_Singl,And_Singl,Or_Singl
-NORM_RESF                       Rel  // Abs,Rel,Mix
+NORMCOMBI_RESFINC               Coupl_Or_Singl  
+NORM_RESF                       Rel  
 --------------------------------------------------------------------SOLVER 1
 NAME                            STRUCTURAL_SOLVER
 SOLVER                          UMFPACK  

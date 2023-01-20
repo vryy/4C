@@ -54,7 +54,7 @@ MAXTIME                         0.1
 NUMSTEP                         40
 RESTARTEVRY                     1000
 THETA                           0.5
-TIMEINTEGR                      One_Step_Theta //BDF2
+TIMEINTEGR                      One_Step_Theta 
 TIMESTEP                        0.005
 VELOCITYFIELD                   zero
 CALCFLUX_DOMAIN                 total

@@ -20,8 +20,8 @@ NUMALEDIS                       0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   Cauchy                        // Cauchy 2PK
-STRUCT_STRAIN                   ea                            // ea gl
+STRUCT_STRESS                   Cauchy                        
+STRUCT_STRAIN                   ea                            
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No

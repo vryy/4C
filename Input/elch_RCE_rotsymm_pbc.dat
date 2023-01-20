@@ -40,7 +40,7 @@ TOL_PRES_RES	  1.0E-6
 TOL_PRES_INC	  1.0E-6
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
-CANONICAL_FLOW                  time_averaging //for testing the time averaging possibility
+CANONICAL_FLOW                  time_averaging 
 CHAN_AMPL_INIT_DIST             0.1
 HOMDIR                          z
 SAMPLING_START                  1
@@ -59,7 +59,7 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1
 VELOCITYFIELD                   Navier_Stokes
 CALCFLUX_BOUNDARY               total
-WRITEFLUX_IDS                   1 2                           // do flux output only for scalar field 1 and 2, omit field 3!!
+WRITEFLUX_IDS                   1 2                           
 RESULTSEVRY                     1
 MATID                           5
 SOLVERTYPE                      nonlinear

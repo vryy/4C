@@ -15,8 +15,8 @@ NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   Cauchy                        // Cauchy 2PK
-STRUCT_STRAIN                   ea                            // ea gl
+STRUCT_STRESS                   Cauchy                        
+STRUCT_STRAIN                   ea                            
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
@@ -32,15 +32,15 @@ PRESTRESS                       mulf
 PRESTRESSTIME                   0.041
 RESULTSEVRY                     1
 RESTARTEVRY                     2
-NLNSOL                          ptc                           // fullnewton lsnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          ptc                           
 PTCDT                           10.0
 TIMESTEP                        0.02
 NUMSTEP                         3
-MAXTIME                         0.06                          // prestress bis 0.3
+MAXTIME                         0.06                          
 DAMPING                         no
 M_DAMP                          0.001
 K_DAMP                          0.001
-PREDICT                         ConstDis                      // ConstDis ConstDisVelAcc
+PREDICT                         ConstDis                      
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And

@@ -44,12 +44,12 @@ LIFTDRAG                        No
 MAXTIME                         1000
 NONLINITER                      Newton
 NUMSTASTEPS                     0
-NUMSTEP                         1                             //20
+NUMSTEP                         1                             
 RESTARTEVRY                     20
 SIMPLER                         no
 STARTFUNCNO                     2
 THETA                           1.00
-TIMEINTEGR                      Stationary                    //One_Step_Theta
+TIMEINTEGR                      Stationary                    
 TIMESTEP                        1.0
 LINEAR_SOLVER                   1
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
@@ -93,10 +93,10 @@ GMSH_DEBUG_OUT                  No
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUIDFLUID                     yes
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Nitsche                       // BoundaryTypeNitsche // BoundaryTypeNeumann
+COUPLING_METHOD                 Nitsche                       
 IS_PSEUDO_2D                    yes
 NIT_STAB_FAC                    20.0
-XFF_CONV_STAB_SCALING           inflow//averaged//none
+XFF_CONV_STAB_SCALING           inflow
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------------------------------FUNCT1

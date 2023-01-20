@@ -21,7 +21,7 @@ NUMSTEP                         40000
 TIMESTEP                        0.00025
 RESTARTEVRY                     1
 RESULTSEVRY                           1
-SOLVERTYPE                      Nonlinear                       // Linear Nonlinear
+SOLVERTYPE                      Nonlinear                       
 MAXITERATIONS                   40
 TOLERANCE                       1E-4
 SOLVESCATRA                     no

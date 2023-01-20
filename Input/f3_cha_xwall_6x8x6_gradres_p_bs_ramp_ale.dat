@@ -61,7 +61,7 @@ PHYSICAL_MODEL                  no_model
 SAMPLING_START                  4
 SAMPLING_STOP                   5
 DUMPING_PERIOD                  0
-CANONICAL_FLOW                  no//channel_flow_of_height_2
+CANONICAL_FLOW                  no
 HOMDIR                          xz
 CHA_NUMSUBDIVISIONS             5
 ------------------------------------FLUID DYNAMIC/WALL MODEL

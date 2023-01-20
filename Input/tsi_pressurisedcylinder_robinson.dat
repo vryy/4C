@@ -27,13 +27,13 @@ NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 OUTPUT_BIN                      Yes
-STRUCT_DISP                     Yes  // Yes,No,yes,no,YES,NO
-STRUCT_STRAIN                   GL  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
-STRUCT_STRESS                   2PK  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_COUPLING_STRESS          2PK  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-THERM_HEATFLUX                  Initial  // None,No,NO,no,Current,Initial
-THERM_TEMPERATURE               Yes  // Yes,No,yes,no,YES,NO
-THERM_TEMPGRAD                  Initial  // None,No,NO,no,Current,Initial
+STRUCT_DISP                     Yes  
+STRUCT_STRAIN                   GL  
+STRUCT_STRESS                   2PK  
+STRUCT_COUPLING_STRESS          2PK  
+THERM_HEATFLUX                  Initial  
+THERM_TEMPERATURE               Yes  
+THERM_TEMPGRAD                  Initial  
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
@@ -42,19 +42,19 @@ SHAPEFCT                        Polynomial
 INT_STRATEGY                    Standard
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-DIVERCONT                       stop  // Yes,No,yes,no,YES,NO: Go on with time integration even if Newton-Raphson iteration failed
-DYNAMICTYP                      OneStepTheta  // Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,OneStepTheta,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
+DIVERCONT                       stop  
+DYNAMICTYP                      OneStepTheta  
 ITERNORM                        L2
 LINEAR_SOLVER                   1
 MAXITER                         50
 MAXTIME                         5
 MINITER                         0
-NLNSOL                          fullnewton  // vague,fullnewton,lsnewton,oppnewton,modnewton,nlncg,ptc,newtonlinuzawa,augmentedlagrange,NoxNewtonLineSearch,noxgeneral
+NLNSOL                          fullnewton  
 NORMCOMBI_RESFDISP              And
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         200
-PREDICT                         ConstDis  // Vague,ConstDis,ConstDisVelAcc,TangDis,ConstDisPres,ConstDisVelAccPres
+PREDICT                         ConstDis  
 RESEVRYERGY                     0
 RESTARTEVRY                     1
 RESULTSEVRY                     1
@@ -67,16 +67,16 @@ THETA                           0.5
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta  // Statics,OneStepTheta
+DYNAMICTYP                      OneStepTheta  
 INITFUNCNO                      1
-INITIALFIELD                    field_by_function  // zero_field
+INITIALFIELD                    field_by_function  
 ITERNORM                        L2
 LINEAR_SOLVER                   2
 LUMPCAPA                        No
 MAXITER                         50
 MAXTIME                         5
 MINITER                         0
-NLNSOL                          fullnewton  // vague,fullnewton
+NLNSOL                          fullnewton  
 NORMCOMBI_RESFTEMP              And
 NORM_RESF                       Abs
 NORM_TEMP                       Abs
@@ -90,22 +90,22 @@ TOLTEMP                         1e-10
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -----------------------------------------------------------------TSI DYNAMIC
-COUPALGO                        tsi_monolithic  // tsi(_oneway,_sequstagg,_iterstagg,_iterstagg_aitken,_iterstagg_aitkenirons)
+COUPALGO                        tsi_monolithic  
 ITEMAX                          20
 ITEMIN                          1
-MAXTIME                         1980.0  // t_end = 1980s
+MAXTIME                         1980.0  
 NORM_INC                        Abs
-NUMSTEP                         6  // 3960
+NUMSTEP                         6  
 RESTARTEVRY                     20
 TIMESTEP                        0.5
 RESULTSEVRY                           2
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-06
 TOLINC                          1e-06
-ITERNORM                        L2  // L1,L1_Scaled,Rms,Inf
+ITERNORM                        L2  
 LINEAR_SOLVER                   3
 NORMCOMBI_RESFINC               And
-NORM_RESF                       Rel  // Abs,Rel,Mix
+NORM_RESF                       Rel  
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structural Solver
 SOLVER                          UMFPACK  
