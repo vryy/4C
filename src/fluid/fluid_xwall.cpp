@@ -18,7 +18,7 @@
 #include "lib_element.H"
 
 #include "lib_dofset_transparent.H"
-#include "rebalance_utils.H"
+#include "rebalance.H"
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_sparsematrix.H"
 #include "lib_globalproblem.H"
@@ -632,7 +632,7 @@ void FLD::XWall::SetupXWallDis()
     Teuchos::RCP<Epetra_Map> elemap = Teuchos::rcp(new Epetra_Map(*xwdiscret_->ElementRowMap()));
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(discret_->Comm().Clone());
     const auto& [rownodes, colnodes] =
-        DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(xwdiscret_, elemap, comm->NumProc());
+        REBALANCE::RebalanceNodeMaps(xwdiscret_, elemap, comm->NumProc());
     // rebuild of the system with new maps
     xwdiscret_->Redistribute(*rownodes, *colnodes, false, false);
 

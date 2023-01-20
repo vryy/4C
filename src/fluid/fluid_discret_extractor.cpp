@@ -12,7 +12,7 @@
 #include "fluid_discret_extractor.H"
 #include "lib_periodicbc.H"
 #include "lib_dofset_transparent.H"
-#include "rebalance_utils.H"
+#include "rebalance.H"
 #include "io.H"
 #include "lib_discret_xwall.H"
 
@@ -379,8 +379,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     // Starting from the current partitioning of the discretization, compute nodal maps with a
     // hopefully better partitioning
     const auto& [sepcondrownodes, sepcondcolnodes] =
-        DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-            childdiscret_, sepcondelenodesmap, comm->NumProc());
+        REBALANCE::RebalanceNodeMaps(childdiscret_, sepcondelenodesmap, comm->NumProc());
 
     if (childdiscret_->Comm().MyPID() == 0)
     {

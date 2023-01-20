@@ -17,7 +17,7 @@
 
 #include "lib_utils_createdis.H"
 #include "lib_globalproblem.H"
-#include "lib_utils_parallel.H"
+#include "rebalance_utils.H"
 
 #include "io.H"
 #include "io_pstream.H"
@@ -186,8 +186,8 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   PostSetup();
 
   // some screen output
-  DRT::UTILS::PrintParallelDistribution(*ia_discret_);
-  DRT::UTILS::PrintParallelDistribution(*bindis_);
+  REBALANCE::UTILS::PrintParallelDistribution(*ia_discret_);
+  REBALANCE::UTILS::PrintParallelDistribution(*bindis_);
 
   issetup_ = true;
 }

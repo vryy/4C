@@ -17,7 +17,7 @@
 
 #include "lib_globalproblem.H"
 #include "lib_discret.H"
-#include "lib_utils_parallel.H"
+#include "rebalance.H"
 #include "rebalance_utils.H"
 #include "lib_dofset_independent.H"
 #include "comm_utils.H"
@@ -805,8 +805,8 @@ void BINSTRATEGY::BinningStrategy::DistributeBinsRecursCoordBisection(
   sublist.set("RCB_OUTPUT_LEVEL", "0");
   sublist.set("RCB_RECTILINEAR_BLOCKS", "1");
 
-  std::tie(bincenters, binweights) = DRT::UTILS::REBALANCING::RebalanceCoordinates(
-      *bincenters.getConst(), params, *binweights.getConst());
+  std::tie(bincenters, binweights) =
+      REBALANCE::RebalanceCoordinates(*bincenters.getConst(), params, *binweights.getConst());
 
   // create bin row map
   binrowmap = Teuchos::rcp(new Epetra_Map(-1, bincenters->Map().NumMyElements(),
@@ -1258,7 +1258,7 @@ BINSTRATEGY::BinningStrategy::DoWeightedPartitioningOfBinsAndExtendGhostingOfDis
     // fillcomplete discret with extended ghosting
     discret[i]->FillComplete();
     if (myrank_ == 0) std::cout << "parallel distribution with extended ghosting" << std::endl;
-    DRT::UTILS::PrintParallelDistribution(*discret[i]);
+    REBALANCE::UTILS::PrintParallelDistribution(*discret[i]);
   }
 
   return newrowbins;
@@ -1390,7 +1390,7 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedDistributionOfBin
     sublist.set("LB_APPROACH", "PARTITION");
 
   Teuchos::RCP<Epetra_CrsGraph> balanced_bingraph =
-      DRT::UTILS::REBALANCING::RebalanceGraph(*bingraph.getConst(), paramlist, vweights);
+      REBALANCE::RebalanceGraph(*bingraph.getConst(), paramlist, vweights);
 
   // extract repartitioned bin row map
   const Epetra_BlockMap& rbinstmp = balanced_bingraph->RowMap();
@@ -1615,7 +1615,7 @@ void BINSTRATEGY::BinningStrategy::StandardDiscretizationGhosting(
   // print distribution after standard ghosting
   // some output after standard ghosting
   if (myrank_ == 0) std::cout << "parallel distribution with standard ghosting" << std::endl;
-  DRT::UTILS::PrintParallelDistribution(*discret);
+  REBALANCE::UTILS::PrintParallelDistribution(*discret);
 #endif
 
   return;
@@ -1696,7 +1696,7 @@ void BINSTRATEGY::BinningStrategy::RevertExtendedGhosting(
     // fillcomplete discret with standard ghosting
     dis[i]->FillComplete();
     if (myrank_ == 0) std::cout << "parallel distribution with reverted ghosting" << std::endl;
-    DRT::UTILS::PrintParallelDistribution(*dis[i]);
+    REBALANCE::UTILS::PrintParallelDistribution(*dis[i]);
   }
 }
 

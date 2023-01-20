@@ -14,6 +14,7 @@
 #include "lib_globalproblem.H"
 #include "lib_utils_factory.H"
 #include "lib_utils_parallel.H"
+#include "rebalance_utils.H"
 
 #include <Epetra_Time.h>
 
@@ -121,7 +122,6 @@ namespace DRT::INPUT
     // remember node gids an assemble them into a second fully redundant vector.
     // open input file at correct position, valid on proc 0 only!
     GetAndDistributeElements(nblock, bsize);
-
   }
 
 
@@ -309,11 +309,8 @@ namespace DRT::INPUT
     int err = dis_->FillComplete(false, false, false);
     if (err) dserror("dis_->FillComplete() returned %d", err);
 
-    if (!myrank && !reader_.MyOutputFlag())
-    {
-      std::cout << time.ElapsedTime() << " secs" << std::endl;
-    }
+    if (!myrank && !reader_.MyOutputFlag()) std::cout << time.ElapsedTime() << " secs" << std::endl;
 
-    DRT::UTILS::PrintParallelDistribution(*dis_);
+    REBALANCE::UTILS::PrintParallelDistribution(*dis_);
   }
 }  // namespace DRT::INPUT

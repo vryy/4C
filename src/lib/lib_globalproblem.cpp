@@ -44,7 +44,7 @@
 #include "mat_micromaterial.H"
 #include "mat_newman_multiscale.H"
 #include "mat_scatra_mat_multiscale.H"
-#include "rebalance_utils.H"
+#include "rebalance.H"
 #include "comm_utils.H"
 #include "inpar_validcontactconstitutivelaw.H"
 #include "inpar_problemtype.H"
@@ -2212,8 +2212,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
   if (macro_dis_name == "structure")
   {
     // do weighted repartitioning to obtain new row/column maps
-    const auto& [rownodes, colnodes] =
-        DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights(macro_dis);
+    const auto& [rownodes, colnodes] = REBALANCE::RebalanceNodeMaps(macro_dis);
 
     // rebuild the discretization with new maps
     macro_dis->Redistribute(*rownodes, *colnodes, true, true, true);

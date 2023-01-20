@@ -9,7 +9,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-
 #include "lib_domainreader.H"
 #include "lib_gridgenerator.H"
 #include "lib_standardtypes_cpp.H"
@@ -19,6 +18,7 @@
 #include "lib_discret.H"
 #include "lib_parobject.H"
 #include "io_pstream.H"
+#include "rebalance_utils.H"
 
 #include <Epetra_Time.h>
 #include <algorithm>
@@ -226,7 +226,7 @@ namespace DRT
 
       if (!myrank && !reader_.MyOutputFlag()) IO::cout << time.ElapsedTime() << " secs" << IO::endl;
 
-      DRT::UTILS::PrintParallelDistribution(*dis_);
+      REBALANCE::UTILS::PrintParallelDistribution(*dis_);
     }
 
   }  // namespace INPUT
