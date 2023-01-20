@@ -100,14 +100,35 @@ namespace DRT
       //! Destructor
       virtual ~ElementReader() { ; }
 
+      // Return list of unique nodes
+      std::set<int> GetUniqueNodes() const { return nodes_; }
+
       /// give the discretization this reader fills
-      Teuchos::RCP<Discretization> MyDis() const { return dis_; }
+      Teuchos::RCP<Discretization> GetDis() const { return dis_; }
 
       /// Return the list of row nodes
-      Teuchos::RCP<Epetra_Map> MyRowNodes() const { return rownodes_; }
+      Teuchos::RCP<Epetra_Map> GetRowNodes() const { return rownodes_; }
 
       /// Return the list of column nodes
-      Teuchos::RCP<Epetra_Map> MyColNodes() const { return colnodes_; }
+      Teuchos::RCP<Epetra_Map> GetColNodes() const { return colnodes_; }
+
+      /// Return the list of row elements
+      Teuchos::RCP<Epetra_Map> GetRowElements() const { return roweles_; }
+
+      /// Return the list of column elements
+      Teuchos::RCP<Epetra_Map> GetColElements() const { return coleles_; }
+
+      /// Set the list of row nodes
+      void SetRowNodes(Teuchos::RCP<Epetra_Map> rownodes) const { rownodes_ = rownodes; }
+
+      /// Set the list of column nodes
+      void SetColNodes(Teuchos::RCP<Epetra_Map> colnodes) const { colnodes_ = colnodes; }
+
+      /// Set the list of row elements
+      void SetRowElements(Teuchos::RCP<Epetra_Map> roweles) const { roweles_ = roweles; }
+
+      /// Set the list of column elements
+      void SetColElements(Teuchos::RCP<Epetra_Map> coleles) const {  coleles_ = coleles; }
 
       /*! Read elements and partition the node graph
 

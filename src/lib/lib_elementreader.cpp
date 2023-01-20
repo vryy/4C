@@ -12,7 +12,6 @@
 #include "lib_standardtypes_cpp.H"
 #include "lib_elementdefinition.H"
 #include "lib_globalproblem.H"
-#include "rebalance_utils.H"
 #include "lib_utils_factory.H"
 #include "lib_utils_parallel.H"
 
@@ -120,41 +119,9 @@ namespace DRT::INPUT
 
     // read elements of this discretization and distribute according to a linear map. While reading,
     // remember node gids an assemble them into a second fully redundant vector.
-    {
-      // open input file at correct position,
-      // valid on proc 0 only!
-      GetAndDistributeElements(nblock, bsize);
+    // open input file at correct position, valid on proc 0 only!
+    GetAndDistributeElements(nblock, bsize);
 
-      // global node ids --- this will be a fully redundant vector!
-      int numnodes = 0;
-      numnodes = (int)nodes_.size();
-      comm_->Broadcast(&numnodes, 1, 0);
-
-      const double imbalance_tol =
-          DRT::Problem::Instance()->MeshPartitioningParams().get<double>("IMBALANCE_TOL");
-
-      // We want to be able to read empty fields. If we have such a beast
-      // just skip the partitioning and do a proper initialization
-      if (numnodes)
-      {
-        std::tie(rownodes_, colnodes_) = DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-            dis_, roweles_, comm_->NumProc(), imbalance_tol);
-      }
-      else
-        rownodes_ = colnodes_ = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_));
-
-      // now we have all elements in a linear map roweles
-      // build reasonable maps for elements from the
-      // already valid and final node maps
-      // note that nothing is actually redistributed in here
-      dis_->BuildElementRowColumn(*rownodes_, *colnodes_, roweles_, coleles_);
-
-      // we can now export elements to resonable row element distribution
-      dis_->ExportRowElements(*roweles_);
-
-      // export to the column map / create ghosting of elements
-      dis_->ExportColumnElements(*coleles_);
-    }
   }
 
 

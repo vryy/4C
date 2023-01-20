@@ -18,6 +18,7 @@
 #include "immersed_problem_immersed_node.H"
 #include "fiber_node.H"
 #include "io_pstream.H"
+#include "rebalance_utils.H"
 
 #include <string>
 
@@ -99,6 +100,40 @@ namespace DRT::INPUT
     for (const auto& element_reader : element_readers_) element_reader->ReadAndPartition();
 
     // TODO: here we should place the partitioning -> extract from element reader
+    for (const auto& element_reader : element_readers_)
+    {
+      // global node ids --- this will be a fully redundant vector!
+      int numnodes = static_cast<int>(element_reader->GetUniqueNodes().size());
+      comm_->Broadcast(&numnodes, 1, 0);
+
+      const double imbalance_tol =
+          DRT::Problem::Instance()->MeshPartitioningParams().get<double>("IMBALANCE_TOL");
+
+      // We want to be able to read empty fields. If we have such a beast
+      // just skip the partitioning and do a proper initialization
+      if (numnodes)
+      {
+        // TODO: Here to RebalanceNodeMaps
+      }
+      else
+      {
+        element_reader->SetRowNodes(Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_)));
+        element_reader->SetColNodes(Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_)));
+      }
+
+      // now we have all elements in a linear map roweles
+      // build reasonable maps for elements from the
+      // already valid and final node maps
+      // note that nothing is actually redistributed in here
+      // TODO: get syntax right
+      [roweles_, coleles_] = element_reader->GetDis()->BuildElementRowColumn(*element_reader->GetRowNodes(), *element_reader->GetColNodes());
+
+      // we can now export elements to resonable row element distribution
+      element_reader->GetDis()->ExportRowElements(*element_reader->GetRowElements());
+
+      // export to the column map / create ghosting of elements
+      element_reader->GetDis()->ExportColumnElements(*element_reader->GetColElements());
+    }
 
     // read nodes based on the element information
     node_reader->Read(element_readers_, max_node_id);
@@ -106,7 +141,7 @@ namespace DRT::INPUT
     // last thing to do here is to produce nodal ghosting/overlap
     for (const auto& element_reader : element_readers_)
     {
-      element_reader->MyDis()->ExportColumnNodes(*element_reader->MyColNodes());
+      element_reader->GetDis()->ExportColumnNodes(*element_reader->GetColNodes());
       element_reader->Complete();
     }
   }
