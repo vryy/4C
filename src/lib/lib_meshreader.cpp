@@ -96,8 +96,11 @@ namespace DRT::INPUT
   {
     TEUCHOS_FUNC_TIME_MONITOR("MeshReader::ReadMeshFromDatFile");
 
-    // read and partition element information
-    for (const auto& element_reader : element_readers_) element_reader->ReadAndPartition();
+    // read element information
+    for (const auto& element_reader : element_readers_)
+    {
+      element_reader->Read();
+    }
 
     // partition
     for (const auto& element_reader : element_readers_)
@@ -113,9 +116,11 @@ namespace DRT::INPUT
       // just skip the partitioning and do a proper initialization
       Teuchos::RCP<Epetra_Map> rownodemap, colnodemap;
       if (numnodes)
+      {
         std::tie(rownodemap, colnodemap) =
             REBALANCE::RebalanceNodeMaps(element_reader->GetDis(), element_reader->GetRowElements(),
                 element_reader->GetDis()->Comm().NumProc(), imbalance_tol);
+      }
       else
         rownodemap = colnodemap = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_));
       element_reader->SetRowNodes(rownodemap);
@@ -129,10 +134,7 @@ namespace DRT::INPUT
       element_reader->SetRowElements(rowelementmap);
       element_reader->SetColElements(colelementmap);
 
-      // we can now export elements to resonable row element distribution
       element_reader->GetDis()->ExportRowElements(*element_reader->GetRowElements());
-
-      // export to the column map / create ghosting of elements
       element_reader->GetDis()->ExportColumnElements(*element_reader->GetColElements());
     }
 
@@ -142,8 +144,9 @@ namespace DRT::INPUT
     // last thing to do here is to produce nodal ghosting/overlap
     for (const auto& element_reader : element_readers_)
     {
+      element_reader->GetDis()->ExportRowNodes(*element_reader->GetRowNodes());
       element_reader->GetDis()->ExportColumnNodes(*element_reader->GetColNodes());
-      element_reader->Complete();
+      element_reader->GetDis()->FillComplete(false, false, false);
     }
   }
 

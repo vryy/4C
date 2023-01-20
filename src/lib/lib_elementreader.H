@@ -154,7 +154,7 @@ namespace DRT
         Results are distributed to other procs using two global vectors!
       - build final nodal row map, export graph to the new map
       */
-      virtual void ReadAndPartition();
+      virtual void Read();
 
       /*!
       \brief Tell whether the given node belongs to us
@@ -162,14 +162,6 @@ namespace DRT
       \note This is based on the redundant nodes_ set and only available on processor 0.
       */
       bool HasNode(int nodeid) { return nodes_.find(nodeid) != nodes_.end(); }
-
-      /*!
-      \brief Finialize reading.
-
-      FillComplete(false,false,false), that is, do not initialize elements. This is done later after
-      reading boundary conditions.
-      */
-      void Complete();
 
      private:
       /// read file and get element ids

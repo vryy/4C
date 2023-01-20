@@ -65,7 +65,7 @@ namespace DRT::INPUT
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void ElementReader::ReadAndPartition()
+  void ElementReader::Read()
   {
     const int myrank = comm_->MyPID();
     const int numproc = comm_->NumProc();
@@ -285,32 +285,7 @@ namespace DRT::INPUT
           }
         }
       }
-
       dis_->ProcZeroDistributeElementsToAll(*roweles_, gidlist);
     }
-  }
-
-
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
-  void ElementReader::Complete()
-  {
-    const int myrank = comm_->MyPID();
-
-    Epetra_Time time(*comm_);
-
-    if (!myrank && !reader_.MyOutputFlag())
-    {
-      std::cout << "Complete discretization ";
-      printf("%-16s", name_.c_str());
-      std::cout << " in...." << std::flush;
-    }
-
-    int err = dis_->FillComplete(false, false, false);
-    if (err) dserror("dis_->FillComplete() returned %d", err);
-
-    if (!myrank && !reader_.MyOutputFlag()) std::cout << time.ElapsedTime() << " secs" << std::endl;
-
-    REBALANCE::UTILS::PrintParallelDistribution(*dis_);
   }
 }  // namespace DRT::INPUT

@@ -330,11 +330,6 @@ namespace DRT::INPUT
               dserror("unexpected word '%s'", tmp.c_str());
           }
         }
-
-        // export block of nodes to other processors as reflected in rownodes, changes ownership of
-        // nodes
-        for (const auto& element_reader : element_readers)
-          element_reader->GetDis()->ProcZeroDistributeNodesToAll(*element_reader->GetRowNodes());
       }
     }
   }
