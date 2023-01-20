@@ -15,6 +15,8 @@ set(OBJS_SOLVER
     solver_ifpackpreconditioner.cpp
     solver_krylovprojectionpreconditioner.cpp
     solver_krylovsolver.cpp
+    solver_linalg_ana.cpp
+    solver_linalg_precond.cpp
     solver_linalg_solver.cpp
     solver_mlpreconditioner.cpp
     solver_muelupreconditioner.cpp

@@ -24,7 +24,7 @@
 #include "linalg_sparsematrix.H"
 #include "linalg_blocksparsematrix.H"
 #include "solver_linalg_solver.H"
-#include "linalg_precond.H"
+#include "solver_linalg_precond.H"
 #include "io.H"
 #include "io_control.H"
 #include <Teuchos_TimeMonitor.hpp>

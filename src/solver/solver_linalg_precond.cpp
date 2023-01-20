@@ -12,7 +12,7 @@
 #include <Ifpack.h>
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "linalg_precond.H"
+#include "solver_linalg_precond.H"
 #include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_mlapi_operator.H"

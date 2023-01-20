@@ -15,7 +15,7 @@
 
 #include "fsi_overlapprec_amgnxn.H"
 #include "solver_amgnxn_preconditioner.H"
-#include "linalg_precond.H"
+#include "solver_linalg_precond.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------------*/

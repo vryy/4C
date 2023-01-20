@@ -12,7 +12,7 @@
 
 #include "solver_preconditionertype.H"
 
-#include "linalg_ana.H"
+#include "solver_linalg_ana.H"
 #include "linalg_blocksparsematrix.H"
 #include "solver_linalg_solver.H"
 #include "linalg_mapextractor.H"

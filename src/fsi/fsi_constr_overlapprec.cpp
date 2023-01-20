@@ -16,7 +16,7 @@
 #include "io_control.H"
 #include "adapter_str_fsiwrapper.H"
 #include "adapter_fld_fluid.H"
-#include "linalg_precond.H"
+#include "solver_linalg_precond.H"
 #include "solver_linalg_solver.H"
 
 // /*----------------------------------------------------------------------*
