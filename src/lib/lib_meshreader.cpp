@@ -103,10 +103,12 @@ namespace DRT::INPUT
     }
 
     // partition
-    for (const auto& element_reader : element_readers_)
+    std::vector<Teuchos::RCP<Epetra_Map>> rownodemaps(element_readers_.size()),
+        colnodemaps(element_readers_.size());
+    for (int i = 0; i < element_readers_.size(); i++)
     {
       // global node ids --- this will be a fully redundant vector!
-      int numnodes = static_cast<int>(element_reader->GetUniqueNodes().size());
+      int numnodes = static_cast<int>(element_readers_[i]->GetUniqueNodes().size());
       comm_->Broadcast(&numnodes, 1, 0);
 
       const double imbalance_tol =
@@ -114,39 +116,30 @@ namespace DRT::INPUT
 
       // We want to be able to read empty fields. If we have such a beast
       // just skip the partitioning and do a proper initialization
-      Teuchos::RCP<Epetra_Map> rownodemap, colnodemap;
       if (numnodes)
       {
-        std::tie(rownodemap, colnodemap) =
-            REBALANCE::RebalanceNodeMaps(element_reader->GetDis(), element_reader->GetRowElements(),
-                element_reader->GetDis()->Comm().NumProc(), imbalance_tol);
+        const auto& [rodnowmap, colnodemap] = REBALANCE::RebalanceNodeMaps(
+            element_readers_[i]->GetDis(), element_readers_[i]->GetRowElements(),
+            element_readers_[i]->GetDis()->Comm().NumProc(), imbalance_tol);
+        rownodemaps[i] = rodnowmap;
+        colnodemaps[i] = colnodemap;
       }
       else
-        rownodemap = colnodemap = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_));
-      element_reader->SetRowNodes(rownodemap);
-      element_reader->SetColNodes(colnodemap);
-
-      // now we have all elements in a linear map roweles build reasonable maps for elements from
-      // the already valid and final node maps note that nothing is actually redistributed in here
-      Teuchos::RCP<Epetra_Map> rowelementmap, colelementmap;
-      element_reader->GetDis()->BuildElementRowColumn(*element_reader->GetRowNodes(),
-          *element_reader->GetColNodes(), rowelementmap, colelementmap);
-      element_reader->SetRowElements(rowelementmap);
-      element_reader->SetColElements(colelementmap);
-
-      element_reader->GetDis()->ExportRowElements(*element_reader->GetRowElements());
-      element_reader->GetDis()->ExportColumnElements(*element_reader->GetColElements());
+      {
+        const auto& nodemap = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_));
+        rownodemaps[i] = nodemap;
+        colnodemaps[i] = nodemap;
+      }
     }
 
     // read nodes based on the element information
     node_reader->Read(element_readers_, max_node_id);
 
-    // last thing to do here is to produce nodal ghosting/overlap
-    for (const auto& element_reader : element_readers_)
+    // last thing to do here is to distribute the maps
+    for (int i = 0; i < element_readers_.size(); i++)
     {
-      element_reader->GetDis()->ExportRowNodes(*element_reader->GetRowNodes());
-      element_reader->GetDis()->ExportColumnNodes(*element_reader->GetColNodes());
-      element_reader->GetDis()->FillComplete(false, false, false);
+      element_readers_[i]->GetDis()->Redistribute(
+          *rownodemaps[i], *colnodemaps[i], false, false, false, false, false);
     }
   }
 

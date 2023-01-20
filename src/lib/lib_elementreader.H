@@ -106,29 +106,8 @@ namespace DRT
       /// give the discretization this reader fills
       Teuchos::RCP<Discretization> GetDis() const { return dis_; }
 
-      /// Return the list of row nodes
-      Teuchos::RCP<Epetra_Map> GetRowNodes() const { return rownodes_; }
-
-      /// Return the list of column nodes
-      Teuchos::RCP<Epetra_Map> GetColNodes() const { return colnodes_; }
-
       /// Return the list of row elements
       Teuchos::RCP<Epetra_Map> GetRowElements() const { return roweles_; }
-
-      /// Return the list of column elements
-      Teuchos::RCP<Epetra_Map> GetColElements() const { return coleles_; }
-
-      /// Set the list of row nodes
-      void SetRowNodes(Teuchos::RCP<Epetra_Map> rownodes) { rownodes_ = rownodes; }
-
-      /// Set the list of column nodes
-      void SetColNodes(Teuchos::RCP<Epetra_Map> colnodes) { colnodes_ = colnodes; }
-
-      /// Set the list of row elements
-      void SetRowElements(Teuchos::RCP<Epetra_Map> roweles) { roweles_ = roweles; }
-
-      /// Set the list of column elements
-      void SetColElements(Teuchos::RCP<Epetra_Map> coleles) { coleles_ = coleles; }
 
       /*! Read elements and partition the node graph
 
