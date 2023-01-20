@@ -246,12 +246,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
   if (phinp == Teuchos::null) dserror("Cannot get state vector 'hist'");
 
   // state and history variables at element nodes
-  std::vector<LINALG::Matrix<my::nen_, 1>> ephinp(
-      my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
-  std::vector<LINALG::Matrix<my::nen_, 1>> ehist(
-      my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*phinp, ephinp, lm);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*hist, ehist, lm);
+  std::vector<LINALG::Matrix<nen_, 1>> ephinp(my::numdofpernode_, LINALG::Matrix<nen_, 1>(true));
+  std::vector<LINALG::Matrix<nen_, 1>> ehist(my::numdofpernode_, LINALG::Matrix<nen_, 1>(true));
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*hist, ehist, lm);
 
   // get current condition
   Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
@@ -346,9 +344,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
     // get actual values of transported scalars
     Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
     if (phidtnp == Teuchos::null) dserror("Cannot get state vector 'ephidtnp'");
-    std::vector<LINALG::Matrix<my::nen_, 1>> ephidtnp(
-        my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*phidtnp, ephidtnp, lm);
+    std::vector<LINALG::Matrix<nen_, 1>> ephidtnp(
+        my::numdofpernode_, LINALG::Matrix<nen_, 1>(true));
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phidtnp, ephidtnp, lm);
 
     if (not is_stationary)
     {
@@ -369,8 +367,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchBoundaryKineticsPoint(
     const DRT::Element* ele, Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs,
-    const std::vector<LINALG::Matrix<my::nen_, 1>>& ephinp,
-    const std::vector<LINALG::Matrix<my::nen_, 1>>& ehist, double timefac,
+    const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,
+    const std::vector<LINALG::Matrix<nen_, 1>>& ehist, double timefac,
     Teuchos::RCP<DRT::Condition> cond, const int nume, const std::vector<int> stoich,
     const int kinetics, const double pot0, const double frt, const double scalar)
 {
@@ -391,9 +389,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchBou
     {
       for (int k = 0; k < my::numscal_; ++k)
       {
-        for (unsigned vi = 0; vi < my::nen_; ++vi)
+        for (unsigned vi = 0; vi < nen_; ++vi)
         {
-          for (unsigned ui = 0; ui < my::nen_; ++ui)
+          for (unsigned ui = 0; ui < nen_; ++ui)
           {
             emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + k) +=
                 nume * emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + k);
@@ -421,8 +419,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchBou
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchDomainKinetics(
     const DRT::Element* ele, Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs,
-    const std::vector<LINALG::Matrix<my::nen_, 1>>& ephinp,
-    const std::vector<LINALG::Matrix<my::nen_, 1>>& ehist, double timefac,
+    const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,
+    const std::vector<LINALG::Matrix<nen_, 1>>& ehist, double timefac,
     Teuchos::RCP<DRT::Condition> cond, const int nume, const std::vector<int> stoich,
     const int kinetics, const double pot0)
 {
@@ -430,7 +428,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchDom
   const double faraday = myelch::elchparams_->Faraday();
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over all scalars
@@ -485,9 +483,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchDom
     {
       for (int k = 0; k < my::numscal_; ++k)
       {
-        for (unsigned vi = 0; vi < my::nen_; ++vi)
+        for (unsigned vi = 0; vi < nen_; ++vi)
         {
-          for (unsigned ui = 0; ui < my::nen_; ++ui)
+          for (unsigned ui = 0; ui < nen_; ++ui)
           {
             emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + k) +=
                 nume * emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + k);
@@ -515,8 +513,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchDom
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElectrodeStatus(
     const DRT::Element* ele, Epetra_SerialDenseVector& scalars, Teuchos::ParameterList& params,
-    Teuchos::RCP<DRT::Condition> cond, const std::vector<LINALG::Matrix<my::nen_, 1>>& ephinp,
-    const std::vector<LINALG::Matrix<my::nen_, 1>>& ephidtnp, const int kinetics,
+    Teuchos::RCP<DRT::Condition> cond, const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,
+    const std::vector<LINALG::Matrix<nen_, 1>>& ephidtnp, const int kinetics,
     const std::vector<int> stoich, const int nume, const double pot0, const double timefac)
 {
   // Warning:
@@ -536,7 +534,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElectro
   double A_s = cond->GetDouble("A_s");
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   bool statistics = false;
@@ -584,7 +582,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElectro
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalculateFlux(
-    LINALG::Matrix<my::nsd_, 1>& q, const INPAR::SCATRA::FluxType fluxtype, const int k)
+    LINALG::Matrix<nsd_, 1>& q, const INPAR::SCATRA::FluxType fluxtype, const int k)
 {
   /*
   * Actually, we compute here a weighted (and integrated) form of the fluxes!
@@ -633,7 +631,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalculateFlux(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalculateCurrent(
-    LINALG::Matrix<my::nsd_, 1>& q, const INPAR::SCATRA::FluxType fluxtype, const double fac)
+    LINALG::Matrix<nsd_, 1>& q, const INPAR::SCATRA::FluxType fluxtype, const double fac)
 {
   /*
   * Actually, we compute here a weighted (and integrated) form of the fluxes!
@@ -706,13 +704,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalErrorCompare
 
       // integration points and weights
       // more GP than usual due to (possible) cos/exp fcts in analytical solutions
-      const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
           SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
 
       // working arrays
       double potint(0.0);
       LINALG::Matrix<1, 1> conint(true);
-      LINALG::Matrix<my::nsd_, 1> xint(true);
+      LINALG::Matrix<nsd_, 1> xint(true);
       LINALG::Matrix<1, 1> c(true);
       double deltapot(0.0);
       LINALG::Matrix<1, 1> deltacon(true);
@@ -756,7 +754,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalErrorCompare
         double expterm;
         double c_0_0_0_t;
 
-        if (my::nsd_ == 3)
+        if (nsd_ == 3)
         {
           expterm = exp((-D) * (m * m + n * n + k * k) * t * M_PI * M_PI);
           c(0) = A0 +
@@ -765,20 +763,20 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalErrorCompare
                      expterm);
           c_0_0_0_t = A0 + (A_mnk * exp((-D) * (m * m + n * n + k * k) * t * M_PI * M_PI));
         }
-        else if (my::nsd_ == 2)
+        else if (nsd_ == 2)
         {
           expterm = exp((-D) * (m * m + n * n) * t * M_PI * M_PI);
           c(0) = A0 + (A_mnk * (cos(m * M_PI * xint(0)) * cos(n * M_PI * xint(1))) * expterm);
           c_0_0_0_t = A0 + (A_mnk * exp((-D) * (m * m + n * n) * t * M_PI * M_PI));
         }
-        else if (my::nsd_ == 1)
+        else if (nsd_ == 1)
         {
           expterm = exp((-D) * (m * m) * t * M_PI * M_PI);
           c(0) = A0 + (A_mnk * (cos(m * M_PI * xint(0))) * expterm);
           c_0_0_0_t = A0 + (A_mnk * exp((-D) * (m * m) * t * M_PI * M_PI));
         }
         else
-          dserror("Illegal number of space dimensions for analyt. solution: %d", my::nsd_);
+          dserror("Illegal number of space dimensions for analyt. solution: %d", nsd_);
 
         // compute analytical solution for el. potential
         // const double pot =
@@ -827,7 +825,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
 {
   // for complete 1D simulation of battery:
   // Micro state must exist for electrolyte -> set value to 0.0
-  for (int node = 0; node < static_cast<int>(my::nen_); ++node) conc(node) = 0.0;
+  for (int node = 0; node < static_cast<int>(nen_); ++node) conc(node) = 0.0;
 }
 // template classes
 // 1D elements

@@ -113,15 +113,15 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::CalcJatIntPoint
   // number of boundary spatial dimensions
   const int bnsd = DRT::UTILS::DisTypeToDim<bdistype>::dim;
 
-  if (pnsd != (my::nsd_ + 1)) dserror("dimension do not match!");
-  if (bnsd != my::nsd_) dserror("dimension do not match!");
+  if (pnsd != (nsd_ + 1)) dserror("dimension do not match!");
+  if (bnsd != nsd_) dserror("dimension do not match!");
 
   // number of parent element nodes
   const int pnen = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
   // number of (boundary) element nodes
   static const int bnen = DRT::UTILS::DisTypeToNumNodePerEle<bdistype>::numNodePerElement;
 
-  if (bnen != my::nen_) dserror("Number of element nodes do not match!");
+  if (bnen != nen_) dserror("Number of element nodes do not match!");
 
   // get local node coordinates
   LINALG::Matrix<pnsd, pnen> pxyze(true);

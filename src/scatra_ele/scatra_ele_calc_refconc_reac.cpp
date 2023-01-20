@@ -90,19 +90,19 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::SetInternalVariablesForMa
   /////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////
   // spatial node coordinates
-  LINALG::Matrix<my::nsd_, my::nen_> xyze(my::xyze_);
+  LINALG::Matrix<nsd_, nen_> xyze(my::xyze_);
   xyze += my::edispnp_;
 
   //! transposed jacobian "dx/ds"
-  LINALG::Matrix<my::nsd_, my::nsd_> dxds(true);
+  LINALG::Matrix<nsd_, nsd_> dxds(true);
   dxds.MultiplyNT(my::deriv_, xyze);
 
   // deformation gradtient dx/dX = dx/ds * ds/dX = dx/ds * (dX/ds)^(-1)
-  LINALG::Matrix<my::nsd_, my::nsd_> F(true);
+  LINALG::Matrix<nsd_, nsd_> F(true);
   F.MultiplyTT(dxds, my::xij_);
 
   // inverse of jacobian "dx/dX"
-  LINALG::Matrix<my::nsd_, my::nsd_> F_inv(true);
+  LINALG::Matrix<nsd_, nsd_> F_inv(true);
   J_ = F_inv.Invert(F);
 
   // calculate inverse of cauchy-green stress tensor
@@ -115,17 +115,17 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::SetInternalVariablesForMa
 
   for (unsigned i = 0; i < 3; i++)
   {
-    LINALG::Matrix<my::nsd_, my::nen_> xyze_epsilon(my::xyze_);
-    for (unsigned j = 0; j < my::nen_; ++j) xyze_epsilon(i, j) = xyze_epsilon(i, j) + epsilon;
+    LINALG::Matrix<nsd_, nen_> xyze_epsilon(my::xyze_);
+    for (unsigned j = 0; j < nen_; ++j) xyze_epsilon(i, j) = xyze_epsilon(i, j) + epsilon;
 
-    LINALG::Matrix<my::nsd_, my::nsd_> xjm_epsilon(true);
+    LINALG::Matrix<nsd_, nsd_> xjm_epsilon(true);
     xjm_epsilon.MultiplyNT(my::deriv_, xyze_epsilon);
 
-    LINALG::Matrix<my::nsd_, my::nsd_> xij_epsilon(true);
+    LINALG::Matrix<nsd_, nsd_> xij_epsilon(true);
     xij_epsilon.Invert(xjm_epsilon);
 
     // dx/dX = dx/ds * ds/dX = dx/ds * (dX/ds)^(-1)
-    LINALG::Matrix<my::nsd_, my::nsd_> F_epsilon(true);
+    LINALG::Matrix<nsd_, nsd_> F_epsilon(true);
     F_epsilon.MultiplyTT(dxds, xij_epsilon);
 
     // inverse of transposed jacobian "ds/dX"
@@ -145,22 +145,22 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcMatDiff(
     Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac)
 {
-  LINALG::Matrix<my::nsd_, my::nsd_> Diff_tens(C_inv_);
+  LINALG::Matrix<nsd_, nsd_> Diff_tens(C_inv_);
   Diff_tens.Scale(my::diffmanager_->GetIsotropicDiff(k));
 
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (unsigned vi = 0; vi < nen_; ++vi)
   {
     const int fvi = vi * my::numdofpernode_ + k;
 
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (unsigned ui = 0; ui < nen_; ++ui)
     {
       const int fui = ui * my::numdofpernode_ + k;
 
       double laplawf = 0.0;
       //      GetLaplacianWeakForm(laplawf,Diff_tens,vi,ui);
-      for (unsigned j = 0; j < my::nsd_; j++)
+      for (unsigned j = 0; j < nsd_; j++)
       {
-        for (unsigned i = 0; i < my::nsd_; i++)
+        for (unsigned i = 0; i < nsd_; i++)
         {
           laplawf += my::derxy_(j, vi) * Diff_tens(j, i) * my::derxy_(i, ui);
         }
@@ -172,23 +172,23 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcMatDiff(
 
 
 
-  LINALG::Matrix<my::nsd_, my::nsd_> Diff_tens2(C_inv_);
+  LINALG::Matrix<nsd_, nsd_> Diff_tens2(C_inv_);
   Diff_tens2.Scale(my::diffmanager_->GetIsotropicDiff(k) / J_);
 
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (unsigned vi = 0; vi < nen_; ++vi)
   {
     const int fvi = vi * my::numdofpernode_ + k;
 
     double laplawf2 = 0.0;
-    for (unsigned j = 0; j < my::nsd_; j++)
+    for (unsigned j = 0; j < nsd_; j++)
     {
-      for (unsigned i = 0; i < my::nsd_; i++)
+      for (unsigned i = 0; i < nsd_; i++)
       {
         laplawf2 += my::derxy_(j, vi) * Diff_tens2(j, i) * dJdX_(i);
       }
     }
 
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (unsigned ui = 0; ui < nen_; ++ui)
     {
       const int fui = ui * my::numdofpernode_ + k;
 
@@ -209,20 +209,20 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcRHSDiff(
   /////////////////////////////////////////////////////////////////////
   // \D* \grad c_0 \times \grad \phi ...
   /////////////////////////////////////////////////////////////////////
-  LINALG::Matrix<my::nsd_, my::nsd_> Diff_tens(C_inv_);
+  LINALG::Matrix<nsd_, nsd_> Diff_tens(C_inv_);
   Diff_tens.Scale(my::diffmanager_->GetIsotropicDiff(k));
 
-  const LINALG::Matrix<my::nsd_, 1>& gradphi = my::scatravarmanager_->GradPhi(k);
+  const LINALG::Matrix<nsd_, 1>& gradphi = my::scatravarmanager_->GradPhi(k);
 
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (unsigned vi = 0; vi < nen_; ++vi)
   {
     const int fvi = vi * my::numdofpernode_ + k;
 
     double laplawf(0.0);
     //    GetLaplacianWeakFormRHS(laplawf,Diff_tens,gradphi,vi);
-    for (unsigned j = 0; j < my::nsd_; j++)
+    for (unsigned j = 0; j < nsd_; j++)
     {
-      for (unsigned i = 0; i < my::nsd_; i++)
+      for (unsigned i = 0; i < nsd_; i++)
       {
         laplawf += my::derxy_(j, vi) * Diff_tens(j, i) * gradphi(i);
       }
@@ -234,18 +234,18 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcRHSDiff(
   /////////////////////////////////////////////////////////////////////
   // ... + \D* c_0/J * \grad J \times \grad \phi
   /////////////////////////////////////////////////////////////////////
-  LINALG::Matrix<my::nsd_, my::nsd_> Diff_tens2(C_inv_);
+  LINALG::Matrix<nsd_, nsd_> Diff_tens2(C_inv_);
   Diff_tens2.Scale(my::diffmanager_->GetIsotropicDiff(k) / J_ * my::scatravarmanager_->Phinp(k));
 
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (unsigned vi = 0; vi < nen_; ++vi)
   {
     const int fvi = vi * my::numdofpernode_ + k;
 
     double laplawf2(0.0);
     //    GetLaplacianWeakFormRHS(laplawf2,Diff_tens2,dJdX_,vi);
-    for (unsigned j = 0; j < my::nsd_; j++)
+    for (unsigned j = 0; j < nsd_; j++)
     {
-      for (unsigned i = 0; i < my::nsd_; i++)
+      for (unsigned i = 0; i < nsd_; i++)
       {
         laplawf2 += my::derxy_(j, vi) * Diff_tens2(j, i) * dJdX_(i);
       }

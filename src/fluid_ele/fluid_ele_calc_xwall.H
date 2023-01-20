@@ -32,6 +32,10 @@ namespace DRT
     {
       typedef DRT::ELEMENTS::FluidEleCalc<distype, enrtype> my;
 
+      using my::nen_;
+      using my::nsd_;
+      using my::numderiv2_;
+
      public:
       /// dtor
       virtual ~FluidEleCalcXWall() {}
@@ -56,60 +60,49 @@ namespace DRT
           Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
           Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
 
-      virtual int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
           Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
           Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-          bool offdiag = false);
+          bool offdiag = false) override;
 
-      virtual void Sysmat(const LINALG::Matrix<my::nsd_, my::nen_>& ebofoaf,
-          const LINALG::Matrix<my::nsd_, my::nen_>& eprescpgaf,
-          const LINALG::Matrix<my::nsd_, my::nen_>& ebofon,
-          const LINALG::Matrix<my::nsd_, my::nen_>& eprescpgn,
-          const LINALG::Matrix<my::nsd_, my::nen_>& evelaf,
-          const LINALG::Matrix<my::nsd_, my::nen_>& evelam,
-          const LINALG::Matrix<my::nsd_, my::nen_>& eveln,
-          const LINALG::Matrix<my::nsd_, my::nen_>& evelnp,
-          const LINALG::Matrix<my::nsd_, my::nen_>& fsevelaf,
-          const LINALG::Matrix<my::nen_, 1>& fsescaaf,
-          const LINALG::Matrix<my::nsd_, my::nen_>& evel_hat,
-          const LINALG::Matrix<my::nsd_ * my::nsd_, my::nen_>& ereynoldsstress_hat,
-          const LINALG::Matrix<my::nen_, 1>& epreaf, const LINALG::Matrix<my::nen_, 1>& epream,
-          const LINALG::Matrix<my::nen_, 1>& epren, const LINALG::Matrix<my::nen_, 1>& eprenp,
-          const LINALG::Matrix<my::nsd_, my::nen_>& eaccam,
-          const LINALG::Matrix<my::nen_, 1>& escaaf, const LINALG::Matrix<my::nen_, 1>& escaam,
-          const LINALG::Matrix<my::nen_, 1>& escadtam,
-          const LINALG::Matrix<my::nsd_, my::nen_>& eveldtam,
-          const LINALG::Matrix<my::nen_, 1>& epredtam,
-          const LINALG::Matrix<my::nen_, 1>& escabofoaf,
-          const LINALG::Matrix<my::nen_, 1>& escabofon,
-          const LINALG::Matrix<my::nsd_, my::nen_>& emhist,
-          const LINALG::Matrix<my::nsd_, my::nen_>& edispnp,
-          const LINALG::Matrix<my::nsd_, my::nen_>& egridv,
-          LINALG::Matrix<(my::nsd_ + 1) * my::nen_, (my::nsd_ + 1) * my::nen_>& estif,
-          LINALG::Matrix<(my::nsd_ + 1) * my::nen_, (my::nsd_ + 1) * my::nen_>& emesh,
-          LINALG::Matrix<(my::nsd_ + 1) * my::nen_, 1>& eforce,
-          const LINALG::Matrix<my::nen_, 1>& eporo,
-          const LINALG::Matrix<my::nsd_, 2 * my::nen_>& egradphi,
-          const LINALG::Matrix<my::nen_, 2 * 1>& ecurvature, const double thermpressaf,
+      void Sysmat(const LINALG::Matrix<nsd_, nen_>& ebofoaf,
+          const LINALG::Matrix<nsd_, nen_>& eprescpgaf, const LINALG::Matrix<nsd_, nen_>& ebofon,
+          const LINALG::Matrix<nsd_, nen_>& eprescpgn, const LINALG::Matrix<nsd_, nen_>& evelaf,
+          const LINALG::Matrix<nsd_, nen_>& evelam, const LINALG::Matrix<nsd_, nen_>& eveln,
+          const LINALG::Matrix<nsd_, nen_>& evelnp, const LINALG::Matrix<nsd_, nen_>& fsevelaf,
+          const LINALG::Matrix<nen_, 1>& fsescaaf, const LINALG::Matrix<nsd_, nen_>& evel_hat,
+          const LINALG::Matrix<nsd_ * nsd_, nen_>& ereynoldsstress_hat,
+          const LINALG::Matrix<nen_, 1>& epreaf, const LINALG::Matrix<nen_, 1>& epream,
+          const LINALG::Matrix<nen_, 1>& epren, const LINALG::Matrix<nen_, 1>& eprenp,
+          const LINALG::Matrix<nsd_, nen_>& eaccam, const LINALG::Matrix<nen_, 1>& escaaf,
+          const LINALG::Matrix<nen_, 1>& escaam, const LINALG::Matrix<nen_, 1>& escadtam,
+          const LINALG::Matrix<nsd_, nen_>& eveldtam, const LINALG::Matrix<nen_, 1>& epredtam,
+          const LINALG::Matrix<nen_, 1>& escabofoaf, const LINALG::Matrix<nen_, 1>& escabofon,
+          const LINALG::Matrix<nsd_, nen_>& emhist, const LINALG::Matrix<nsd_, nen_>& edispnp,
+          const LINALG::Matrix<nsd_, nen_>& egridv,
+          LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& estif,
+          LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
+          LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce, const LINALG::Matrix<nen_, 1>& eporo,
+          const LINALG::Matrix<nsd_, 2 * nen_>& egradphi,
+          const LINALG::Matrix<nen_, 2 * 1>& ecurvature, const double thermpressaf,
           const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
           Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
           double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
-          const DRT::UTILS::GaussIntegration& intpoints);
+          const DRT::UTILS::GaussIntegration& intpoints) override;
 
       //! get ALE grid displacements and grid velocity for element
       virtual void GetGridDispALE(DRT::Discretization& discretization, const std::vector<int>& lm,
-          LINALG::Matrix<my::nsd_, my::nen_>& edispnp);
+          LINALG::Matrix<nsd_, nen_>& edispnp);
 
       //! linearisation in the case of mesh motion 3-D
       virtual void LinMeshMotion_3D(
-          LINALG::Matrix<(my::nsd_ + 1) * my::nen_, (my::nsd_ + 1) * my::nen_>&
-              emesh,                                         ///< mesh motion
-          const LINALG::Matrix<my::nsd_, my::nen_>& evelaf,  ///< velocity at time n+alpha_f / n+1
-          const double& press,                               ///< pressure at integration point
-          const double& timefac,                             ///< time factor
-          const double& timefacfac                           ///< = timefac x fac
+          LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,  ///< mesh motion
+          const LINALG::Matrix<nsd_, nen_>& evelaf,  ///< velocity at time n+alpha_f / n+1
+          const double& press,                       ///< pressure at integration point
+          const double& timefac,                     ///< time factor
+          const double& timefacfac                   ///< = timefac x fac
       );
 
      private:
@@ -152,7 +145,7 @@ namespace DRT
 
       //! evaluate enrichment (2)
       virtual double EnrichmentShapeDer(
-          LINALG::Matrix<my::nsd_, 1>& derpsigp, LINALG::Matrix<my::numderiv2_, 1>& der2psigp);
+          LINALG::Matrix<nsd_, 1>& derpsigp, LINALG::Matrix<numderiv2_, 1>& der2psigp);
 
       //! go increment of tauw for projection matrix
       virtual void XWallTauWIncForward();
@@ -246,7 +239,7 @@ namespace DRT
       bool evaluate_sysmat_;
 
       //! node coordinates
-      LINALG::Matrix<my::nsd_, enren_> xyze_;
+      LINALG::Matrix<nsd_, enren_> xyze_;
 
       //! array for enr shape functions
       LINALG::Matrix<enren_, 1> functenr_;
@@ -254,21 +247,21 @@ namespace DRT
       LINALG::Matrix<enren_, 1> funct_;
 
       //! global derivatives of shape functions w.r.t x,y,z
-      LINALG::Matrix<my::nsd_, enren_> derxyenr_;
+      LINALG::Matrix<nsd_, enren_> derxyenr_;
       //! global derivatives of shape functions w.r.t x,y,z
-      LINALG::Matrix<my::nsd_, enren_> derxy_;
+      LINALG::Matrix<nsd_, enren_> derxy_;
 
       //! global second derivatives of shape functions w.r.t x,y,z
-      LINALG::Matrix<my::numderiv2_, enren_> derxyenr2_;
+      LINALG::Matrix<numderiv2_, enren_> derxyenr2_;
 
       //! global second derivatives of shape functions w.r.t x,y,z
-      LINALG::Matrix<my::numderiv2_, enren_> derxy2_;
+      LINALG::Matrix<numderiv2_, enren_> derxy2_;
 
       //! array for shape function derivatives w.r.t r,s,t
-      LINALG::Matrix<my::nsd_, enren_> deriv_;
+      LINALG::Matrix<nsd_, enren_> deriv_;
 
       //! array for second derivatives of shape function w.r.t r,s,t
-      LINALG::Matrix<my::numderiv2_, enren_> deriv2_;
+      LINALG::Matrix<numderiv2_, enren_> deriv2_;
 
 
       // find a definition of k and B in:

@@ -615,8 +615,8 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::GaussRule2D::tri_7point);
 
   // dummy matrix of nodal temperature values
-  LINALG::Matrix<my::nen_slave_, 1> dummy_slave_temp(true);
-  LINALG::Matrix<my::nen_master_, 1> dummy_master_temp(true);
+  LINALG::Matrix<nen_slave_, 1> dummy_slave_temp(true);
+  LINALG::Matrix<nen_master_, 1> dummy_master_temp(true);
   // always in contact
   const double pseudo_contact_fac = 1.0;
 
@@ -651,8 +651,8 @@ template <DRT::Element::DiscretizationType distypeS, DRT::Element::Discretizatio
 void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(DRT::Condition& condition,
     const MORTAR::MortarNode& slavenode, const double& lumpedarea,
     MORTAR::MortarElement& slaveelement, MORTAR::MortarElement& masterelement,
-    const std::vector<LINALG::Matrix<my::nen_slave_, 1>>& ephinp_slave,
-    const std::vector<LINALG::Matrix<my::nen_master_, 1>>& ephinp_master,
+    const std::vector<LINALG::Matrix<nen_slave_, 1>>& ephinp_slave,
+    const std::vector<LINALG::Matrix<nen_master_, 1>>& ephinp_master,
     Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
     Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m)
 {
@@ -675,8 +675,8 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(DRT::C
   my::EvalShapeFuncAtSlaveNode(slavenode, slaveelement, masterelement);
 
   // dummy matrix of nodal temperature values
-  LINALG::Matrix<my::nen_slave_, 1> dummy_slave_temp(true);
-  LINALG::Matrix<my::nen_master_, 1> dummy_master_temp(true);
+  LINALG::Matrix<nen_slave_, 1> dummy_slave_temp(true);
+  LINALG::Matrix<nen_master_, 1> dummy_master_temp(true);
   // always in contact
   const double pseudo_contact_fac = 1.0;
 
@@ -848,8 +848,8 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::GaussRule2D::tri_7point);
 
   // dummy matrix of nodal master temperature values and shape derivatives
-  LINALG::Matrix<my::nen_master_, 1> dummy_master_temp(true);
-  LINALG::Matrix<my::nsd_slave_ + 1, my::nen_slave_> dummy_shapederivatives(true);
+  LINALG::Matrix<nen_master_, 1> dummy_master_temp(true);
+  LINALG::Matrix<nsd_slave_ + 1, nen_slave_> dummy_shapederivatives(true);
   // always in contact
   const double pseudo_contact_fac = 1.0;
 
@@ -962,8 +962,8 @@ SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::MortarCellCalcSTIElch(
       my::MortarCellCalc(couplingtype, lmside, numdofpernode_slave, numdofpernode_master),
 
       // initialize member variables
-      eelchnp_slave_(2, LINALG::Matrix<my::nen_slave_, 1>(true)),
-      eelchnp_master_(2, LINALG::Matrix<my::nen_master_, 1>(true))
+      eelchnp_slave_(2, LINALG::Matrix<nen_slave_, 1>(true)),
+      eelchnp_master_(2, LINALG::Matrix<nen_master_, 1>(true))
 {
 }
 
@@ -1142,7 +1142,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::GaussRule2D::tri_7point);
 
   // dummy matrix for shape derivatives
-  LINALG::Matrix<3, my::nen_slave_> dummy_shape_deriv;
+  LINALG::Matrix<3, nen_slave_> dummy_shape_deriv;
   // always in contact
   const double pseudo_contact_fac = 1.0;
 

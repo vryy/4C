@@ -106,6 +106,12 @@ namespace SCATRA
     //! abbreviation
     typedef MortarCellCalc<distypeS, distypeM> my;
 
+   protected:
+    using my::nen_master_;
+    using my::nen_slave_;
+    using my::nsd_slave_;
+
+   private:
     //! evaluate and assemble interface linearizations and residuals
     void EvaluateCondition(const DRT::Discretization& idiscret,  //!< interface discretization
         MORTAR::IntCell& cell,                                   //!< mortar integration cell
@@ -134,9 +140,9 @@ namespace SCATRA
             lumpedarea,  //!< lumped interface area fraction associated with slave-side node
         MORTAR::MortarElement& slaveelement,   //!< slave-side mortar element
         MORTAR::MortarElement& masterelement,  //!< master-side mortar element
-        const std::vector<LINALG::Matrix<my::nen_slave_, 1>>&
+        const std::vector<LINALG::Matrix<nen_slave_, 1>>&
             ephinp_slave,  //!< state variables at slave-side nodes
-        const std::vector<LINALG::Matrix<my::nen_master_, 1>>&
+        const std::vector<LINALG::Matrix<nen_master_, 1>>&
             ephinp_master,  //!< state variables at master-side nodes
         Epetra_SerialDenseMatrix&
             k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
@@ -191,6 +197,9 @@ namespace SCATRA
     //! abbreviation
     typedef MortarCellCalc<distypeS, distypeM> my;
     typedef MortarCellCalcElch<distypeS, distypeM> myelch;
+    using my::nen_master_;
+    using my::nen_slave_;
+    using my::nsd_slave_;
 
     //! private constructor for singletons
     MortarCellCalcElchSTIThermo(
@@ -225,7 +234,7 @@ namespace SCATRA
     double GetFRT() const;
 
     //! nodal, slave-side temperature variables associated with time t_{n+1} or t_{n+alpha_f}
-    LINALG::Matrix<my::nen_slave_, 1> etempnp_slave_;
+    LINALG::Matrix<nen_slave_, 1> etempnp_slave_;
   };  // class MortarCellCalcElchSTIThermo
 
 
@@ -263,6 +272,9 @@ namespace SCATRA
    private:
     //! abbreviation
     typedef MortarCellCalc<distypeS, distypeM> my;
+    using my::nen_master_;
+    using my::nen_slave_;
+    using my::nsd_slave_;
 
     //! private constructor for singletons
     MortarCellCalcSTIElch(
@@ -307,10 +319,10 @@ namespace SCATRA
     );
 
     //! nodal, slave-side electrochemistry variables associated with time t_{n+1} or t_{n+alpha_f}
-    std::vector<LINALG::Matrix<my::nen_slave_, 1>> eelchnp_slave_;
+    std::vector<LINALG::Matrix<nen_slave_, 1>> eelchnp_slave_;
 
     //! nodal, master-side electrochemistry variables associated with time t_{n+1} or t_{n+alpha_f}
-    std::vector<LINALG::Matrix<my::nen_master_, 1>> eelchnp_master_;
+    std::vector<LINALG::Matrix<nen_master_, 1>> eelchnp_master_;
   };  // class MortarCellCalcSTIElch
 }  // namespace SCATRA
 #endif  // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_ELCH_H

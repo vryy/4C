@@ -155,7 +155,7 @@ int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::EvaluateAction(DRT::Element* ele,
       // -> extract local values from the global vectors
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
 
       ExtractElementAndNodeValuesPoro(ele, params, discretization, la);
 
@@ -222,23 +222,23 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValuesPoro(
   if (convel == Teuchos::null) dserror("Cannot get state vector convective velocity");
 
   // determine number of velocity related dofs per node
-  const int numveldofpernode = la[ndsvel].lm_.size() / my::nen_;
+  const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
 
   // extract pressure if applicable
-  if (static_cast<unsigned>(numveldofpernode) > my::nsd_)
+  if (static_cast<unsigned>(numveldofpernode) > nsd_)
   {
     // construct location vector for pressure dofs
-    std::vector<int> lmpre(my::nen_, -1);
-    for (unsigned inode = 0; inode < my::nen_; ++inode)
-      lmpre[inode] = la[ndsvel].lm_[inode * numveldofpernode + my::nsd_];
+    std::vector<int> lmpre(nen_, -1);
+    for (unsigned inode = 0; inode < nen_; ++inode)
+      lmpre[inode] = la[ndsvel].lm_[inode * numveldofpernode + nsd_];
 
     // extract local values of pressure field from global state vector
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*convel, my::eprenp_, lmpre);
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*convel, my::eprenp_, lmpre);
   }
 
   // this is a hack. Check if the structure (assumed to be the dofset 1) has more DOFs than
   // dimension. If so, we assume that this is the porosity
-  if (discretization.NumDof(1, ele->Nodes()[0]) == my::nsd_ + 1)
+  if (discretization.NumDof(1, ele->Nodes()[0]) == nsd_ + 1)
   {
     isnodalporosity_ = true;
 
@@ -252,8 +252,8 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValuesPoro(
       std::vector<double> mydisp(la[ndsdisp].lm_.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, la[ndsdisp].lm_);
 
-      for (unsigned inode = 0; inode < my::nen_; ++inode)  // number of nodes
-        eporosity_(inode, 0) = mydisp[my::nsd_ + (inode * (my::nsd_ + 1))];
+      for (unsigned inode = 0; inode < nen_; ++inode)  // number of nodes
+        eporosity_(inode, 0) = mydisp[nsd_ + (inode * (nsd_ + 1))];
     }
     else
       dserror("Cannot get state vector displacement");
@@ -391,12 +391,12 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorosity(
   else
   {
     // gauss point displacements
-    LINALG::Matrix<my::nsd_, 1> dispint(false);
+    LINALG::Matrix<nsd_, 1> dispint(false);
     dispint.Multiply(my::edispnp_, my::funct_);
 
     //------------------------get determinant of Jacobian dX / ds
     // transposed jacobian "dX/ds"
-    LINALG::Matrix<my::nsd_, my::nsd_> xjm0;
+    LINALG::Matrix<nsd_, nsd_> xjm0;
     xjm0.MultiplyNT(my::deriv_, xyze0_);
 
     // inverse of transposed jacobian "ds/dX"
@@ -461,7 +461,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::CalculateScalars(
     const DRT::Element* ele, Epetra_SerialDenseVector& scalars, bool inverting, bool calc_grad_phi)
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
@@ -475,7 +475,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::CalculateScalars(
     // calculate integrals of (inverted) scalar(s) and domain
     if (inverting)
     {
-      for (unsigned i = 0; i < my::nen_; i++)
+      for (unsigned i = 0; i < nen_; i++)
       {
         const double fac_funct_i = fac * my::funct_(i);
         for (int k = 0; k < my::numscal_; k++)
@@ -492,7 +492,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::CalculateScalars(
     }
     else
     {
-      for (unsigned i = 0; i < my::nen_; i++)
+      for (unsigned i = 0; i < nen_; i++)
       {
         const double fac_funct_i = fac * my::funct_(i);
         for (int k = 0; k < my::numscal_; k++)

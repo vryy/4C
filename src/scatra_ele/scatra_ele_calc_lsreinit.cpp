@@ -55,10 +55,10 @@ DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::ScaTraEleCalcLsReinit(
           DRT::ELEMENTS::ScaTraEleParameterLsReinit::Instance(disname))  // parameter class
 {
   // set appropriate diffusion manager
-  my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerLsReinit<my::nsd_>(my::numscal_));
+  my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerLsReinit<nsd_>(my::numscal_));
   // set appropriate internal variable manager
   my::scatravarmanager_ =
-      Teuchos::rcp(new ScaTraEleInternalVariableManagerLsReinit<my::nsd_, my::nen_>(my::numscal_));
+      Teuchos::rcp(new ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>(my::numscal_));
 
   // safety checks
   if (my::scatrapara_->RBSubGrVel()) dserror("CalcSubgrVelocityLevelSet not available anymore");
@@ -92,7 +92,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::Evaluate(DRT::Elemen
 
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*phinp, my::ephinp_, lm);
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
   EvalReinitialization(*phinp, lm, ele, params, discretization, elemat1_epetra, elevec1_epetra);
 
@@ -156,7 +156,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
       std::map<int, GEO::BoundaryIntCellPtrs>::const_iterator cit = allcells->find(my::eid_);
       if (cit != allcells->end()) boundaryIntCells = cit->second;
 
-      LINALG::Matrix<my::nen_, 1> el2sysmat_diag_inv(false);
+      LINALG::Matrix<nen_, 1> el2sysmat_diag_inv(false);
       if (lsreinitparams_->Project())
       {
         dserror(
@@ -164,18 +164,18 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
             "l2-projected gradient is missing. -- hiermeier 12/2016");
         const Teuchos::RCP<Epetra_MultiVector>& gradphi =
             params.get<Teuchos::RCP<Epetra_MultiVector>>("gradphi");
-        DRT::UTILS::ExtractMyNodeBasedValues(ele, my::econvelnp_, gradphi, my::nsd_);
+        DRT::UTILS::ExtractMyNodeBasedValues(ele, my::econvelnp_, gradphi, nsd_);
         Teuchos::RCP<const Epetra_Vector> l2_proj_sys_diag =
             discretization.GetState("l2_proj_system_mat_diag");
         if (l2_proj_sys_diag.is_null())
           dserror("Could not find the l2 projection system diagonal!");
-        DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(
+        DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(
             *l2_proj_sys_diag, el2sysmat_diag_inv, lm);
         el2sysmat_diag_inv.Reciprocal(el2sysmat_diag_inv);
       }
       else
       {
-        std::fill(el2sysmat_diag_inv.A(), el2sysmat_diag_inv.A() + my::nen_, 1.0);
+        std::fill(el2sysmat_diag_inv.A(), el2sysmat_diag_inv.A() + nen_, 1.0);
       }
 
       // get action
@@ -218,14 +218,13 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EllipticNewtonSystem(
     Epetra_SerialDenseMatrix* emat, Epetra_SerialDenseVector* erhs,
-    const LINALG::Matrix<my::nen_, 1>& el2sysmat_diag_inv, const GEO::BoundaryIntCellPtrs& bcell)
+    const LINALG::Matrix<nen_, 1>& el2sysmat_diag_inv, const GEO::BoundaryIntCellPtrs& bcell)
 {
   //----------------------------------------------------------------------
   // integration loop for one element
   //----------------------------------------------------------------------
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -236,7 +235,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EllipticNewtonSyste
     //--------------------------------------------------------------------
 
     // gradient of current scalar value at integration point
-    LINALG::Matrix<my::nsd_, 1> gradphinp(true);
+    LINALG::Matrix<nsd_, 1> gradphinp(true);
     if (lsreinitparams_->Project())
       gradphinp.Multiply(my::econvelnp_, my::funct_);
     else
@@ -290,19 +289,19 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EllipticNewtonSyste
 
       int k = 0;
       // calculate the outer product
-      LINALG::Matrix<my::nsd_, my::nsd_> mat;
+      LINALG::Matrix<nsd_, nsd_> mat;
       mat.MultiplyNT(gradphinp, gradphinp);
       mat.Scale(diff_mat);
       // add a scalar value to the diagonal of mat
-      for (unsigned d = 0; d < my::nsd_; ++d) mat(d, d) += diff_rhs;
+      for (unsigned d = 0; d < nsd_; ++d) mat(d, d) += diff_rhs;
 
       // diffusive term
       const double fac_diff = fac * my::diffmanager_->GetIsotropicDiff(k);
-      for (unsigned vi = 0; vi < my::nen_; ++vi)
+      for (unsigned vi = 0; vi < nen_; ++vi)
       {
         const int fvi = vi * my::numdofpernode_ + k;
 
-        for (unsigned ui = 0; ui < my::nen_; ++ui)
+        for (unsigned ui = 0; ui < nen_; ++ui)
         {
           const int fui = ui * my::numdofpernode_ + k;
           double laplawf(0.0);
@@ -356,16 +355,16 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
       Teuchos::RCP<const Epetra_Vector> phizero = discretization.GetState("phizero");
       if (hist == Teuchos::null || phin == Teuchos::null || phizero == Teuchos::null)
         dserror("Cannot get state vector 'hist' and/or 'phin' and/or 'phizero'");
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*phin, my::ephin_, lm);
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*phizero, ephizero_, lm);
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*hist, my::ehist_, lm);
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*hist, my::ehist_, lm);
 
       if (lsreinitparams_->UseProjectedVel())
       {
         // get velocity at nodes (pre-computed via L2 projection)
         const Teuchos::RCP<Epetra_MultiVector> velocity =
             params.get<Teuchos::RCP<Epetra_MultiVector>>("reinitialization velocity field");
-        DRT::UTILS::ExtractMyNodeBasedValues(ele, my::econvelnp_, velocity, my::nsd_);
+        DRT::UTILS::ExtractMyNodeBasedValues(ele, my::econvelnp_, velocity, nsd_);
       }
 
       // calculate element coefficient matrix and rhs
@@ -397,7 +396,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
       {
         const Teuchos::RCP<Epetra_MultiVector> gradphi =
             params.get<Teuchos::RCP<Epetra_MultiVector>>("gradphi");
-        DRT::UTILS::ExtractMyNodeBasedValues(ele, my::econvelnp_, gradphi, my::nsd_);
+        DRT::UTILS::ExtractMyNodeBasedValues(ele, my::econvelnp_, gradphi, nsd_);
       }
 
       // calculate element coefficient matrix and rhs
@@ -433,7 +432,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
   //----------------------------------------------------------------------
 
   // get gradient of initial phi at element center
-  LINALG::Matrix<my::nsd_, 1> gradphizero(true);
+  LINALG::Matrix<nsd_, 1> gradphizero(true);
   gradphizero.Multiply(my::derxy_, ephizero_[0]);
 
   // get characteristic element length
@@ -458,14 +457,14 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     if (not my::scatrapara_->TauGP())
     {
       // get velocity at element center
-      LINALG::Matrix<my::nsd_, 1> convelint(true);
+      LINALG::Matrix<nsd_, 1> convelint(true);
 
       // switch type for velocity field
       if (not lsreinitparams_->UseProjectedVel())
       {
 #ifndef USE_PHIN_FOR_VEL
         // gradient of current scalar value at element center
-        LINALG::Matrix<my::nsd_, 1> gradphinp(true);
+        LINALG::Matrix<nsd_, 1> gradphinp(true);
         gradphinp.Multiply(my::derxy_, my::ephinp_[0]);
         // get norm
         const double gradphinp_norm = gradphinp.Norm2();
@@ -483,7 +482,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
           // otherwise gradphi is almost zero and we keep a zero velocity
 #else
         // gradient of scalar value at t_n at element center
-        LINALG::Matrix<my::nsd_, 1> gradphin(true);
+        LINALG::Matrix<nsd_, 1> gradphin(true);
         gradphin.Multiply(my::derxy_, my::ephin_[0]);
         // get norm
         const double gradphin_norm = gradphin.Norm2();
@@ -516,8 +515,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -535,7 +533,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     //--------------------------------------------------------------------
 
     // gradient of current scalar value at integration point
-    LINALG::Matrix<my::nsd_, 1> gradphinp(true);
+    LINALG::Matrix<nsd_, 1> gradphinp(true);
     gradphinp.Multiply(my::derxy_, my::ephinp_[0]);
     // scalar at integration point at time step n+1
     const double phinp = my::funct_.Dot(my::ephinp_[0]);
@@ -556,7 +554,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     VarManager()->SetGradPhi(0, gradphinp);
 
     // get velocity at element center
-    LINALG::Matrix<my::nsd_, 1> convelint(true);
+    LINALG::Matrix<nsd_, 1> convelint(true);
 
     // get sign function
     double signphi = 0.0;
@@ -564,7 +562,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     SignFunction(signphi, charelelength, phizero, gradphizero, phinp, gradphinp);
 #else
     // gradient of scalar value at t_n at integration point
-    LINALG::Matrix<my::nsd_, 1> gradphin(true);
+    LINALG::Matrix<nsd_, 1> gradphin(true);
     gradphin.Multiply(my::derxy_, my::ephin_[0]);
 
     SignFunction(signphi, charelelength, phizero, gradphizero, phin, gradphin);
@@ -593,7 +591,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     }
 
     // convective part in convective form: u_x*N,x+ u_y*N,y
-    LINALG::Matrix<my::nen_, 1> conv(true);
+    LINALG::Matrix<nen_, 1> conv(true);
     conv.MultiplyTN(my::derxy_, convelint);
 
     // convective term using current scalar value
@@ -605,7 +603,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     VarManager()->SetConVel(convelint);
     VarManager()->SetConvPhi(0, conv_phi);
 
-    LINALG::Matrix<my::nen_, 1> diff(true);
+    LINALG::Matrix<nen_, 1> diff(true);
     // diffusive term using current scalar value for higher-order elements
     if (my::use2ndderiv_)
     {
@@ -626,7 +624,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     //--------------------------------------------------------------------
 
     // subgrid-scale velocity vector in gausspoint
-    // LINALG::Matrix<my::nsd_,1> sgvelint(true);
+    // LINALG::Matrix<nsd_,1> sgvelint(true);
 
     if (my::scatrapara_->StabType() != INPAR::SCATRA::stabtype_no_stabilization)
     {
@@ -699,7 +697,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     my::CalcMatMass(emat, 0, fac, 1.0);
 
     // subgrid-scale velocity (dummy)
-    LINALG::Matrix<my::nen_, 1> sgconv(true);
+    LINALG::Matrix<nen_, 1> sgconv(true);
     if (lsreinitparams_->LinForm() == INPAR::SCATRA::newton)
     {
       if (my::scatrapara_->StabType() != INPAR::SCATRA::stabtype_no_stabilization)
@@ -787,8 +785,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatElliptic(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -799,7 +796,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatElliptic(
     //--------------------------------------------------------------------
 
     // gradient of current scalar value at integration point
-    LINALG::Matrix<my::nsd_, 1> gradphinp(true);
+    LINALG::Matrix<nsd_, 1> gradphinp(true);
     if (lsreinitparams_->Project())
       gradphinp.Multiply(my::econvelnp_, my::funct_);
     else
@@ -910,9 +907,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatElliptic(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SignFunction(double& sign_phi,
-    const double charelelength, const double phizero,
-    const LINALG::Matrix<my::nsd_, 1>& gradphizero, const double phi,
-    const LINALG::Matrix<my::nsd_, 1>& gradphi)
+    const double charelelength, const double phizero, const LINALG::Matrix<nsd_, 1>& gradphizero,
+    const double phi, const LINALG::Matrix<nsd_, 1>& gradphi)
 {
   // compute interface thickness
   const double epsilon = lsreinitparams_->InterfaceThicknessFac() * charelelength;
@@ -978,7 +974,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::DerivSignFunction(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 double DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcCharEleLengthReinit(
-    const double vol, const LINALG::Matrix<my::nsd_, 1>& gradphizero)
+    const double vol, const LINALG::Matrix<nsd_, 1>& gradphizero)
 {
   // define and initialize length
   double h = 0.0;
@@ -993,7 +989,7 @@ double DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcCharEleLength
     {
       // get norm of gradient of phi
       double gradphi_norm = gradphizero.Norm2();
-      LINALG::Matrix<my::nsd_, 1> gradphi_scaled(true);
+      LINALG::Matrix<nsd_, 1> gradphi_scaled(true);
       if (gradphi_norm >= 1e-8)
         gradphi_scaled.Update(1.0 / gradphi_norm, gradphizero);
       else
@@ -1008,12 +1004,12 @@ double DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcCharEleLength
       // computation of covariant metric tensor
       double G;
       double Gnormgradphi(0.0);
-      for (unsigned nn = 0; nn < my::nsd_; ++nn)
+      for (unsigned nn = 0; nn < nsd_; ++nn)
       {
-        for (unsigned rr = 0; rr < my::nsd_; ++rr)
+        for (unsigned rr = 0; rr < nsd_; ++rr)
         {
           G = my::xij_(nn, 0) * my::xij_(rr, 0);
-          for (unsigned tt = 1; tt < my::nsd_; ++tt)
+          for (unsigned tt = 1; tt < nsd_; ++tt)
           {
             G += my::xij_(nn, tt) * my::xij_(rr, tt);
           }
@@ -1029,7 +1025,7 @@ double DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcCharEleLength
     case INPAR::SCATRA::root_of_volume_reinit:
     {
       // cast dimension to a double varibale -> pow()
-      const double dim = double(my::nsd_);
+      const double dim = static_cast<double>(nsd_);
       h = std::pow(vol, 1.0 / dim);
     }
     break;
@@ -1061,11 +1057,11 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcMatDiff(
   // diffusive factor
   const double fac_diffus = timefacfac * diffus;
 
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (unsigned vi = 0; vi < nen_; ++vi)
   {
     const int fvi = vi * my::numdofpernode_ + k;
 
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (unsigned ui = 0; ui < nen_; ++ui)
     {
       const int fui = ui * my::numdofpernode_ + k;
       double laplawf(0.0);
@@ -1090,7 +1086,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcMatDiff(
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcRHSDiff(
     Epetra_SerialDenseVector& erhs, const int k, const double rhsfac,
-    const LINALG::Matrix<my::nsd_, 1>& gradphi)
+    const LINALG::Matrix<nsd_, 1>& gradphi)
 {
   // flag for anisotropic diffusion
   const bool crosswind = DiffManager()->HaveCrossWindDiff();
@@ -1099,14 +1095,18 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcRHSDiff(
   // crosswind diffusion
   double vrhs = rhsfac * DiffManager()->GetIsotropicDiff(k);
 
-  LINALG::Matrix<my::nsd_, 1> gradphirhs(true);
+  LINALG::Matrix<nsd_, 1> gradphirhs(true);
   if (crosswind)
+  {
     // in case of anisotropic or crosswind diffusion, multiply 'gradphi' with diffusion tensor
     gradphirhs.Multiply(DiffManager()->GetCrosswindTensor(), gradphi);
+  }
   else
+  {
     gradphirhs.Update(1.0, gradphi, 0.0);
+  }
 
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (unsigned vi = 0; vi < nen_; ++vi)
   {
     const int fvi = vi * my::numdofpernode_ + k;
 
@@ -1177,7 +1177,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm_0D(
     const GEO::BoundaryIntCell& cell)
 {
   // get the cut position ( local parent element coordinates )
-  const LINALG::Matrix<my::nsd_ele_, 1> posXiDomain(cell.CellNodalPosXiDomain().A(), true);
+  const LINALG::Matrix<nsd_ele_, 1> posXiDomain(cell.CellNodalPosXiDomain().A(), true);
 
   // --------------------------------------------------------------------------
   // evaluate shape functions at the cut position
@@ -1219,8 +1219,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
   // get number of vertices of cell
   const unsigned numvertices = DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
   const unsigned nsd = 3;
-  if (my::nsd_ != 3) dserror("Extend for other dimensions");
-  const size_t nsd_cell = 2;  // my::nsd_-1;
+  if (nsd_ != 3) dserror("Extend for other dimensions");
+  const size_t nsd_cell = 2;  // nsd_-1;
   // get coordinates of vertices of boundary integration cell in element coordinates \xi^domain
   LINALG::SerialDenseMatrix cellXiDomaintmp = cell.CellNodalPosXiDomain();
   // cellXiDomaintmp.Print(std::cout);
@@ -1268,7 +1268,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
     // coordinates of this integration point in element coordinates \xi^domain
     GEO::mapEtaBToXiD(cell, gpinEta2D, gpinXi3D);
 
-    static LINALG::Matrix<nsd, my::nen_> deriv_xi3D;
+    static LINALG::Matrix<nsd, nen_> deriv_xi3D;
     DRT::UTILS::shape_function_3D_deriv1(
         deriv_xi3D, gpinXi3D(0, 0), gpinXi3D(1, 0), gpinXi3D(2, 0), distype);
 
@@ -1277,8 +1277,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
     dX3DdXi3D.Clear();
     for (unsigned i = 0; i < nsd; i++)    // dimensions
       for (unsigned j = 0; j < nsd; j++)  // derivatives
-        for (unsigned k = 0; k < my::nen_; k++)
-          dX3DdXi3D(i, j) += my::xyze_(i, k) * deriv_xi3D(j, k);
+        for (unsigned k = 0; k < nen_; k++) dX3DdXi3D(i, j) += my::xyze_(i, k) * deriv_xi3D(j, k);
 
     // get the coupled Jacobian dx3Ddeta2D
     static LINALG::Matrix<3, 2> dx3Ddeta2D;

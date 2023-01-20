@@ -56,6 +56,9 @@ namespace DRT
     {
       using Base = DRT::ELEMENTS::FluidBoundaryImpl<distype>;
 
+     protected:
+      using Base::nsd_;
+
      public:
       /// Singleton access method
       static FluidEleBoundaryCalcPoro<distype>* Instance(
@@ -382,6 +385,7 @@ namespace DRT
     class FluidEleBoundaryCalcPoroP1 : public FluidEleBoundaryCalcPoro<distype>
     {
       using Base = DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>;
+      using Base::nsd_;
 
      public:
       /// Singleton access method
