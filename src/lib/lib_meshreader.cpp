@@ -19,6 +19,7 @@
 #include "fiber_node.H"
 #include "io_pstream.H"
 #include "rebalance.H"
+#include "rebalance_utils.H"
 
 #include <string>
 
@@ -129,8 +130,12 @@ namespace DRT::INPUT
 
     // last thing to do here is to distribute the maps
     for (size_t i = 0; i < element_readers_.size(); i++)
+    {
       element_readers_[i]->GetDis()->Redistribute(
           *rownodemaps[i], *colnodemaps[i], false, false, false, false, false);
+
+      REBALANCE::UTILS::PrintParallelDistribution(*element_readers_[i]->GetDis());
+    }
   }
 
 
