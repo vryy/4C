@@ -97,15 +97,13 @@ namespace DRT::INPUT
     TEUCHOS_FUNC_TIME_MONITOR("MeshReader::ReadMeshFromDatFile");
 
     // read element information
-    for (const auto& element_reader : element_readers_)
-    {
-      element_reader->Read();
-    }
+    for (const auto& element_reader : element_readers_) element_reader->Read();
 
     // partition
     std::vector<Teuchos::RCP<Epetra_Map>> rownodemaps(element_readers_.size()),
         colnodemaps(element_readers_.size());
-    for (int i = 0; i < element_readers_.size(); i++)
+
+    for (size_t i = 0; i < element_readers_.size(); i++)
     {
       // global node ids --- this will be a fully redundant vector!
       int numnodes = static_cast<int>(element_readers_[i]->GetUniqueNodes().size());
@@ -118,29 +116,21 @@ namespace DRT::INPUT
       // just skip the partitioning and do a proper initialization
       if (numnodes)
       {
-        const auto& [rodnowmap, colnodemap] = REBALANCE::RebalanceNodeMaps(
+        std::tie(rownodemaps[i], colnodemaps[i]) = REBALANCE::RebalanceNodeMaps(
             element_readers_[i]->GetDis(), element_readers_[i]->GetRowElements(),
             element_readers_[i]->GetDis()->Comm().NumProc(), imbalance_tol);
-        rownodemaps[i] = rodnowmap;
-        colnodemaps[i] = colnodemap;
       }
       else
-      {
-        const auto& nodemap = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_));
-        rownodemaps[i] = nodemap;
-        colnodemaps[i] = nodemap;
-      }
+        rownodemaps[i] = colnodemaps[i] = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_));
     }
 
     // read nodes based on the element information
     node_reader->Read(element_readers_, max_node_id);
 
     // last thing to do here is to distribute the maps
-    for (int i = 0; i < element_readers_.size(); i++)
-    {
+    for (size_t i = 0; i < element_readers_.size(); i++)
       element_readers_[i]->GetDis()->Redistribute(
           *rownodemaps[i], *colnodemaps[i], false, false, false, false, false);
-    }
   }
 
 
