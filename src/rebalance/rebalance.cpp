@@ -25,73 +25,23 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> REBALANCE::RebalanceNodeMaps(
-    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<const Epetra_Map> elementRowMap,
-    const int numPartitions, const double imbalanceTol, INPAR::REBALANCE::RebalanceType method)
+    Teuchos::RCP<const Epetra_CrsGraph> initialGraph, const Teuchos::ParameterList& rebalanceParams,
+    const Teuchos::RCP<Epetra_Vector>& initialNodeWeights,
+    const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights)
 {
   TEUCHOS_FUNC_TIME_MONITOR("REBALANCE::RebalanceNodeMaps");
 
-  // create nodal graph of existing problem
-  Teuchos::RCP<const Epetra_CrsGraph> initialGraph = REBALANCE::BuildGraph(dis, elementRowMap);
-
-  // Create parameter list with rebalancing options
-  Teuchos::RCP<Teuchos::ParameterList> rebalanceParams = Teuchos::rcp(new Teuchos::ParameterList());
-  rebalanceParams->set<std::string>("num parts", std::to_string(numPartitions));
-  rebalanceParams->set<std::string>("imbalance tol", std::to_string(imbalanceTol));
-
   // Compute rebalanced graph
-  Teuchos::RCP<Epetra_CrsGraph> balancedGraph = Teuchos::null;
-  if (method == INPAR::REBALANCE::RebalanceType::none)
-  {
-    dserror("Rebalancing can't be done without an algorithm chosen, use hypergraph!");
-  }
-  else if (method == INPAR::REBALANCE::RebalanceType::hypergraph)
-  {
-    rebalanceParams->set("partitioning method", "HYPERGRAPH");
-    balancedGraph = REBALANCE::RebalanceGraph(*initialGraph, *rebalanceParams);
-  }
-  else
-  {
-    dserror("Unknown rebalancing method.");
-  }
-
-  // Extract rebalanced maps
-  Teuchos::RCP<Epetra_Map> nodeRowMap =
-      Teuchos::rcp(new Epetra_Map(-1, balancedGraph->RowMap().NumMyElements(),
-          balancedGraph->RowMap().MyGlobalElements(), 0, dis->Comm()));
-  Teuchos::RCP<Epetra_Map> nodeColumnMap =
-      Teuchos::rcp(new Epetra_Map(-1, balancedGraph->ColMap().NumMyElements(),
-          balancedGraph->ColMap().MyGlobalElements(), 0, dis->Comm()));
-
-  return {nodeRowMap, nodeColumnMap};
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> REBALANCE::RebalanceNodeMaps(
-    Teuchos::RCP<DRT::Discretization> dis)
-{
-  TEUCHOS_FUNC_TIME_MONITOR("REBALANCE::RebalanceNodeMaps");
-
-  // create nodal graph of existing problem
-  Teuchos::RCP<const Epetra_CrsGraph> initgraph = dis->BuildNodeGraph();
-
-  // Setup cost describer based on element connectivity
-  const auto& [nodeWeights, edgeWeights] = BuildWeights(*dis);
-
-  // Create parameter list with repartitioning options
-  Teuchos::ParameterList paramlist;
-
-  // Compute rebalanced graph
-  Teuchos::RCP<Epetra_CrsGraph> balanced_graph =
-      REBALANCE::RebalanceGraph(*initgraph, paramlist, nodeWeights, edgeWeights);
+  Teuchos::RCP<Epetra_CrsGraph> balanced_graph = REBALANCE::RebalanceGraph(
+      *initialGraph, rebalanceParams, initialNodeWeights, initialEdgeWeights);
 
   // extract repartitioned maps
   Teuchos::RCP<Epetra_Map> rownodes =
       Teuchos::rcp(new Epetra_Map(-1, balanced_graph->RowMap().NumMyElements(),
-          balanced_graph->RowMap().MyGlobalElements(), 0, dis->Comm()));
+          balanced_graph->RowMap().MyGlobalElements(), 0, initialGraph->Comm()));
   Teuchos::RCP<Epetra_Map> colnodes =
       Teuchos::rcp(new Epetra_Map(-1, balanced_graph->ColMap().NumMyElements(),
-          balanced_graph->ColMap().MyGlobalElements(), 0, dis->Comm()));
+          balanced_graph->ColMap().MyGlobalElements(), 0, initialGraph->Comm()));
 
   return {rownodes, colnodes};
 }

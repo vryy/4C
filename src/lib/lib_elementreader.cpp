@@ -367,8 +367,13 @@ namespace DRT
       if (numnodes)
       {
         nids.clear();
-        std::tie(rownodes_, colnodes_) =
-            REBALANCE::RebalanceNodeMaps(dis_, roweles_, comm_->NumProc(), imbalance_tol);
+        Teuchos::RCP<const Epetra_CrsGraph> nodegraph = REBALANCE::BuildGraph(dis_, roweles_);
+
+        Teuchos::ParameterList rebalanceParams;
+        rebalanceParams.set<std::string>("num parts", std::to_string(comm_->NumProc()));
+        rebalanceParams.set<std::string>("imbalance tol", std::to_string(imbalance_tol));
+
+        std::tie(rownodes_, colnodes_) = REBALANCE::RebalanceNodeMaps(nodegraph, rebalanceParams);
       }
       else
       {

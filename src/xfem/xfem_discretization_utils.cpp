@@ -465,7 +465,11 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::Redistribute(Teuchos::RCP<DRT::Disc
   if (!dis->Filled()) dis->Redistribute(*noderowmap, *nodecolmap);
 
   Teuchos::RCP<Epetra_Map> elerowmap = Teuchos::rcp(new Epetra_Map(*dis->ElementRowMap()));
-  std::tie(noderowmap, nodecolmap) = REBALANCE::RebalanceNodeMaps(dis, elerowmap, comm->NumProc());
+  Teuchos::RCP<const Epetra_CrsGraph> nodegraph = REBALANCE::BuildGraph(dis, elerowmap);
+
+  Teuchos::ParameterList rebalanceParams;
+  rebalanceParams.set("num parts", std::to_string(comm->NumProc()));
+  std::tie(noderowmap, nodecolmap) = REBALANCE::RebalanceNodeMaps(nodegraph, rebalanceParams);
 
   Teuchos::RCP<Epetra_Map> roweles = Teuchos::null;
   Teuchos::RCP<Epetra_Map> coleles = Teuchos::null;

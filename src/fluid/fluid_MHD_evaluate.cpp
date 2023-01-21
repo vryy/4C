@@ -340,8 +340,13 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(Teuchos::RCP<DRT::Discretization> actdis
     Teuchos::RCP<Epetra_Map> belemap = Teuchos::rcp(new Epetra_Map(*bnd_discret_->ElementRowMap()));
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_->Comm().Clone());
 
+    Teuchos::RCP<const Epetra_CrsGraph> bndnodegraph = REBALANCE::BuildGraph(bnd_discret_, belemap);
+
+    Teuchos::ParameterList rebalanceParams;
+    rebalanceParams.set<std::string>("num parts", std::to_string(comm->NumProc()));
+
     const auto& [bndrownodes, bndcolnodes] =
-        REBALANCE::RebalanceNodeMaps(bnd_discret_, belemap, comm->NumProc());
+        REBALANCE::RebalanceNodeMaps(bndnodegraph, rebalanceParams);
 
     if (bnd_discret_->Comm().MyPID() == 0)
     {
