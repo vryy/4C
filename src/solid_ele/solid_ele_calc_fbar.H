@@ -12,7 +12,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include "solid_ele_interface.H"
+#include "solid_ele_calc_interface.H"
 #include "element.H"
 #include "utils_gausspoints.H"
 #include "solid_utils.H"
@@ -37,7 +37,7 @@ namespace DRT
   namespace ELEMENTS
   {
     template <DRT::Element::DiscretizationType distype>
-    class SolidEleCalcFbar : public virtual SolidEleInterface
+    class SolidEleCalcFbar : public virtual SolidEleCalcInterface
     {
      public:
       SolidEleCalcFbar();

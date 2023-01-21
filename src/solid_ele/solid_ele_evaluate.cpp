@@ -14,7 +14,7 @@ Evaluate(...), EvaluateNeumann(...), etc.
 #include "dserror.H"
 #include "solid_ele.H"
 #include "solid_ele_factory.H"
-#include "solid_ele_interface.H"
+#include "solid_ele_calc_interface.H"
 
 namespace
 {
