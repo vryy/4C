@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief Functionality to read nodes from file
+\brief Functionality to read a mesh from a dat file
 
 \level 0
 
@@ -21,14 +21,15 @@
 namespace DRT::INPUT
 {
   /*!
-    \brief helper class to read all nodes shared by many discretizations
+    \brief helper class to read a mesh
 
-    The interface class to the reading subsystem.
+    This is an interface for handling node, element and domain readers
+    and to set up a discretization from a dat file which is FillComplete().
    */
   class MeshReader
   {
    public:
-    /// construct a reader that reads a given section
+    /// construct a mesh reader
     MeshReader(const DatFileReader& reader);
 
     /// add an element reader for each discretization
@@ -46,10 +47,10 @@ namespace DRT::INPUT
 
     \param nr a node reader of the overall problem
     */
-    void AddNodeReader(Teuchos::RCP<NodeReader> nr) { node_reader = nr; }
+    void AddNodeReader(Teuchos::RCP<NodeReader> nr) { node_reader_ = nr; }
 
     /*!
-     * \brief Adds the selected element/domain/file reader to this nodereader
+     * \brief Adds the selected reader to this meshreader
      *
      * \param dis            [in] This discretization will be passed on
      * \param reader         [in] This reader will be passed on
@@ -64,7 +65,7 @@ namespace DRT::INPUT
         const std::string* geofilepath);
 
     /*!
-     * \brief Adds the selected element/domain/file reader to this nodereader
+     * \brief Adds the selected reader to this meshreader
      *
      * This is a version without specific elementtypes. It just calls the full
      * version with a dummy set.
@@ -86,7 +87,7 @@ namespace DRT::INPUT
 
       - Reading and distributing elements using each registered
         ElementReader. This includes creating the connectivity graph,
-        partitioning, building the node row and column maps.
+        building the node row and column maps.
 
       - Reading and distributing all nodes. Each node gets assigned to
         its discretization.
@@ -129,7 +130,7 @@ namespace DRT::INPUT
     std::vector<Teuchos::RCP<DomainReader>> domain_readers_;
 
     /// my node reader
-    Teuchos::RCP<NodeReader> node_reader;
+    Teuchos::RCP<NodeReader> node_reader_;
   };
 }  // namespace DRT::INPUT
 

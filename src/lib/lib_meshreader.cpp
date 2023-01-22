@@ -88,7 +88,7 @@ namespace DRT::INPUT
     CreateInlineMesh(max_node_id);
 
     // last check if there are enough nodes
-    node_reader->ThrowIfNotEnoughNodes(max_node_id);
+    node_reader_->ThrowIfNotEnoughNodes(max_node_id);
   }
 
   /*----------------------------------------------------------------------*/
@@ -126,7 +126,7 @@ namespace DRT::INPUT
     }
 
     // read nodes based on the element information
-    node_reader->Read(element_readers_, max_node_id);
+    node_reader_->Read(element_readers_, max_node_id);
 
     // last thing to do here is to distribute the maps
     for (size_t i = 0; i < element_readers_.size(); i++)
