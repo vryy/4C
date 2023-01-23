@@ -34,6 +34,58 @@ namespace
       matrix(c, c) = d;  // apply sum of row entries on diagonal
     }
   }
+
+  inline std::vector<char>& GetMutableStressData(
+      const DRT::ELEMENTS::Solid& ele, const Teuchos::ParameterList& params)
+  {
+    if (ele.IsParamsInterface())
+    {
+      return *ele.ParamsInterface().MutableStressDataPtr();
+    }
+    else
+    {
+      return *params.get<Teuchos::RCP<std::vector<char>>>("stress");
+    }
+  }
+
+  inline std::vector<char>& GetMutableStrainData(
+      const DRT::ELEMENTS::Solid& ele, const Teuchos::ParameterList& params)
+  {
+    if (ele.IsParamsInterface())
+    {
+      return *ele.ParamsInterface().MutableStrainDataPtr();
+    }
+    else
+    {
+      return *params.get<Teuchos::RCP<std::vector<char>>>("strain");
+    }
+  }
+
+  inline INPAR::STR::StressType GetIOStressType(
+      const DRT::ELEMENTS::Solid& ele, const Teuchos::ParameterList& params)
+  {
+    if (ele.IsParamsInterface())
+    {
+      return ele.ParamsInterface().GetStressOutputType();
+    }
+    else
+    {
+      return DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress");
+    }
+  }
+
+  inline INPAR::STR::StrainType GetIOStrainType(
+      const DRT::ELEMENTS::Solid& ele, const Teuchos::ParameterList& params)
+  {
+    if (ele.IsParamsInterface())
+    {
+      return ele.ParamsInterface().GetStrainOutputType();
+    }
+    else
+    {
+      return DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain");
+    }
+  }
 }  // namespace
 
 int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
@@ -43,7 +95,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
 {
   if (!material_post_setup_)
   {
-    DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->MaterialPostSetup(*this);
+    DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->MaterialPostSetup(*this, *SolidMaterial());
     material_post_setup_ = true;
   }
 
@@ -64,30 +116,31 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
     case DRT::ELEMENTS::struct_calc_nlnstiff:
     {
       DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->EvaluateNonlinearForceStiffnessMass(
-          *this, discretization, lm, params, &elevec1, &elemat1, nullptr);
+          *this, *SolidMaterial(), discretization, lm, params, &elevec1, &elemat1, nullptr);
       return 0;
     }
     case struct_calc_internalforce:
     {
       DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->EvaluateNonlinearForceStiffnessMass(
-          *this, discretization, lm, params, &elevec1, nullptr, nullptr);
+          *this, *SolidMaterial(), discretization, lm, params, &elevec1, nullptr, nullptr);
       return 0;
     }
     case struct_calc_nlnstiffmass:
     {
       DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->EvaluateNonlinearForceStiffnessMass(
-          *this, discretization, lm, params, &elevec1, &elemat1, &elemat2);
+          *this, *SolidMaterial(), discretization, lm, params, &elevec1, &elemat1, &elemat2);
       return 0;
     }
     case struct_calc_nlnstifflmass:
     {
       DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->EvaluateNonlinearForceStiffnessMass(
-          *this, discretization, lm, params, &elevec1, &elemat1, &elemat2);
+          *this, *SolidMaterial(), discretization, lm, params, &elevec1, &elemat1, &elemat2);
       LumpMatrix(elemat2);
       return 0;
     }
     case DRT::ELEMENTS::struct_calc_update_istep:
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->Update(*this, discretization, lm, params);
+      DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->Update(
+          *this, *SolidMaterial(), discretization, lm, params);
       return 0;
     case DRT::ELEMENTS::struct_calc_recover:
     {
@@ -96,8 +149,10 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
     }
     case struct_calc_stress:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->CalculateStress(
-          *this, discretization, lm, params);
+      DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->CalculateStress(*this, *SolidMaterial(),
+          StressIO{GetIOStressType(*this, params), GetMutableStressData(*this, params)},
+          StrainIO{GetIOStrainType(*this, params), GetMutableStrainData(*this, params)},
+          discretization, lm, params);
       return 0;
     }
     case struct_postprocess_stress:
@@ -108,12 +163,14 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
     }
     case struct_init_gauss_point_data_output:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->InitializeGaussPointDataOutput(*this);
+      DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->InitializeGaussPointDataOutput(
+          *this, *SolidMaterial(), *ParamsInterface().MutableGaussPointDataOutputManagerPtr());
       return 0;
     }
     case struct_gauss_point_data_output:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->EvaluateGaussPointDataOutput(*this);
+      DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->EvaluateGaussPointDataOutput(
+          *this, *SolidMaterial(), *ParamsInterface().MutableGaussPointDataOutputManagerPtr());
       return 0;
     }
     case DRT::ELEMENTS::struct_calc_predict:
