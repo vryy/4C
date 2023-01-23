@@ -36,7 +36,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PoroMultiPhaseScaTraBase(
       scatra_(Teuchos::null),
       fluxreconmethod_(INPAR::POROFLUIDMULTIPHASE::gradreco_none),
       ndsporofluid_scatra_(-1),
-      timertimestep_(comm),
+      timertimestep_("PoroMultiPhaseScaTraBase", true),
       dttimestep_(0.0),
       divcontype_(DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::DivContAct>(
           globaltimeparams, "DIVERCONT")),
@@ -196,13 +196,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Timeloop()
     PrepareTimeStep();
 
     // reset timer
-    timertimestep_.ResetStartTime();
+    timertimestep_.reset();
     // *********** time measurement ***********
-    double dtcpu = timertimestep_.WallTime();
+    double dtcpu = timertimestep_.wallTime();
     // *********** time measurement ***********
     TimeStep();
     // *********** time measurement ***********
-    double mydttimestep = timertimestep_.WallTime() - dtcpu;
+    double mydttimestep = timertimestep_.wallTime() - dtcpu;
     Comm().MaxAll(&mydttimestep, &dttimestep_, 1);
     // *********** time measurement ***********
 

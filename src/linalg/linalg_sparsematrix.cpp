@@ -1602,7 +1602,6 @@ void LINALG::SparseMatrix::Load(const Epetra_Comm& comm, std::string& filename)
 void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
 {
   // for timing of this method
-  // Epetra_Time time(Abase.Comm());
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SparseMatrix::Split2x2");
 
   if (Abase.Rows() != 2 || Abase.Cols() != 2) dserror("Can only split in 2x2 system");

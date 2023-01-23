@@ -20,7 +20,6 @@
 #include "lib_globalproblem.H"
 #include "comm_utils.H"
 
-#include <Epetra_Time.h>
 #include <ml_MultiLevelPreconditioner.h>
 #include "MLAPI_LoadBalanceOperator.h"
 #include "MLAPI_LoadBalanceInverseOperator.h"
@@ -268,7 +267,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   AAF_.resize(maxnlevel_);
 
   //---------------------------------------------------------- timing
-  Epetra_Time etime((hybridPrec_ == NULL) ? Matrix(0, 0).Comm() : hybridPrec_->Matrix(0, 0).Comm());
+  Teuchos::Time etime("", true);
   //------------------------------------------------------- Structure
   {
     // fine space matching Epetra objects
@@ -692,8 +691,8 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   if (!myrank && verbosity_ == INPAR::FSI::verbosity_full)
   {
     printf("       -----------------------------------------------------------------------\n");
-    printf(
-        "       Additional AMG(BGS/Schur)/ BGS(AMG) setup time %10.5e [s]\n", etime.ElapsedTime());
+    printf("       Additional AMG(BGS/Schur)/ BGS(AMG) setup time %10.5e [s]\n",
+        etime.totalElapsedTime(true));
   }
 
   //---------------------------------- preconditioner analysis if desired

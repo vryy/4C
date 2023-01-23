@@ -25,7 +25,10 @@
 #include <NOX_Abstract_Vector.H>
 
 // forward declaration
-class Epetra_Time;
+namespace Teuchos
+{
+  class Time;
+};
 namespace LINALG
 {
   class Solver;
@@ -116,7 +119,7 @@ namespace STR
       };
 
       /// Returns timer for solution technique
-      Teuchos::RCP<const Epetra_Time> GetTimer() const
+      Teuchos::RCP<const Teuchos::Time> GetTimer() const
       {
         CheckInitSetup();
         return timer_;
@@ -444,7 +447,7 @@ namespace STR
       };
 
       /// Returns timer for solution technique
-      Teuchos::RCP<Epetra_Time>& GetMutableTimer()
+      Teuchos::RCP<Teuchos::Time>& GetMutableTimer()
       {
         CheckInitSetup();
         return timer_;
@@ -680,7 +683,7 @@ namespace STR
       /// @name Time measurement
       ///@{
       /// timer for solution technique
-      Teuchos::RCP<Epetra_Time> timer_;
+      Teuchos::RCP<Teuchos::Time> timer_;
 
       ///@}
 

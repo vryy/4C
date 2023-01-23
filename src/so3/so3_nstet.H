@@ -16,7 +16,7 @@
 
 #include "mat_material.H"
 
-#include "Epetra_Time.h"
+#include <Teuchos_Time.hpp>
 
 // #define PRINT_NSTET            ///< printout of setup
 #define NSTET_NUMGREEDY 2    ///< number of sweeps of greedy patching

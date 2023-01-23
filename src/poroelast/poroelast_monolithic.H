@@ -27,6 +27,11 @@ namespace LINALG
   enum class EquilibrationMethod;
 }  // namespace LINALG
 
+namespace Teuchos
+{
+  class Time;
+}
+
 namespace POROELAST
 {
   //! base class of all monolithic Poroelasticity algorithms
@@ -388,7 +393,7 @@ namespace POROELAST
     double normrhsporo_;  //!< norm of residual forces (porosity)
     double normincporo_;  //!< norm of residual unknowns (porosity)
 
-    Epetra_Time timer_;  //!< timer for solution technique
+    Teuchos::Time timer_;  //!< timer for solution technique
 
     int iter_;  //!< iteration step
 

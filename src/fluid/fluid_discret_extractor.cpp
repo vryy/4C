@@ -373,7 +373,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     // this is the actual redistribution
     Teuchos::RCP<Epetra_Map> sepcondelenodesmap =
         Teuchos::rcp(new Epetra_Map(*childdiscret_->ElementRowMap()));
-    Epetra_Time time(parentdiscret_->Comm());
+    Teuchos::Time time("", true);
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(parentdiscret_->Comm().Clone());
 
     // Starting from the current partitioning of the discretization, compute nodal maps with a

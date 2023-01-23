@@ -48,7 +48,7 @@
 void FSI::BlockMonolithic::RedistributeMonolithicGraph(
     const FSI_COUPLING coupling, const Epetra_Comm& comm)
 {
-  Epetra_Time timer(comm);
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithic::RedistributeMonolithicGraph");
 
   const int myrank = comm.MyPID();
 
@@ -289,8 +289,6 @@ void FSI::BlockMonolithic::RedistributeMonolithicGraph(
   // setup has do be done again
   SetNotSetup();
 
-  if (myrank == 0) printf("Redistribution of domain in %f seconds.\n", timer.ElapsedTime());
-
   // just to be safe
   comm.Barrier();
 
@@ -302,9 +300,7 @@ void FSI::BlockMonolithic::RedistributeDomainDecomposition(const INPAR::FSI::Red
     const FSI_COUPLING coupling, const double inputWeight1, const double inputWeight2,
     const Epetra_Comm& comm, int unbalance)
 {
-  Epetra_Time timer(comm);
-
-  const int myrank = comm.MyPID();
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithic::RedistributeDomainDecomposition");
 
   interfaceprocs_.clear();
 
@@ -573,8 +569,6 @@ void FSI::BlockMonolithic::RedistributeDomainDecomposition(const INPAR::FSI::Red
 
   // setup has do be done again
   SetNotSetup();
-
-  if (myrank == 0) printf("Redistribution of domain in %f seconds.\n", timer.ElapsedTime());
 
   comm.Barrier();
 

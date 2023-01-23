@@ -45,7 +45,7 @@ NOX::STR::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       conditionNumberEstimate_(0.0),
       callcount_(0),
       structureSolver_(structure_solver),
-      timer_(cloneVector.getEpetraVector().Comm()),
+      timer_("", true),
       timeApplyJacbianInverse_(0.0)
 {
   tmpVectorPtr_ = Teuchos::rcp(new NOX::Epetra::Vector(cloneVector));
@@ -132,7 +132,7 @@ bool NOX::STR::LinearSystem::applyJacobianTranspose(
 bool NOX::STR::LinearSystem::applyJacobianInverse(
     Teuchos::ParameterList& p, const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result)
 {
-  double startTime = timer_.WallTime();
+  double startTime = timer_.wallTime();
 
   // Zero out the delta X of the linear problem if requested by user.
   if (zeroInitialGuess_) result.init(0.0);
@@ -167,7 +167,7 @@ bool NOX::STR::LinearSystem::applyJacobianInverse(
     outputList.set("Achieved Tolerance", achievedTol);
   }
 
-  double endTime = timer_.WallTime();
+  double endTime = timer_.wallTime();
   timeApplyJacbianInverse_ += (endTime - startTime);
 
   return true;

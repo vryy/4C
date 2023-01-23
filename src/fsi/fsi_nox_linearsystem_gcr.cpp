@@ -36,7 +36,7 @@ NOX::FSI::LinearSystemGCR::LinearSystemGCR(Teuchos::ParameterList& printParams,
       jacPtr(jacobian),
       scaling(s),
       conditionNumberEstimate(0.0),
-      timer(cloneVector.getEpetraVector().Comm()),
+      timer("fsi_nox_LinearSystemGCR", true),
       timeApplyJacbianInverse(0.0)
 {
   // Allocate solver
@@ -88,7 +88,7 @@ bool NOX::FSI::LinearSystemGCR::applyJacobianTranspose(
 bool NOX::FSI::LinearSystemGCR::applyJacobianInverse(
     Teuchos::ParameterList& p, const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result)
 {
-  double startTime = timer.WallTime();
+  double startTime = timer.wallTime();
 
   // Need non-const version of the input vector
   // Epetra_LinearProblem requires non-const versions so we can perform
@@ -151,7 +151,7 @@ bool NOX::FSI::LinearSystemGCR::applyJacobianInverse(
     outputList.set("Achieved Tolerance", achievedTol);
   }
 
-  double endTime = timer.WallTime();
+  double endTime = timer.wallTime();
   timeApplyJacbianInverse += (endTime - startTime);
 
   if (status != 0) return false;
@@ -283,7 +283,7 @@ int NOX::FSI::LinearSystemGCR::SolveGMRES(
 
     for (int i = 0; i < m and j <= max_iter; i++, j++)
     {
-      Epetra_Time t(x.getEpetraVector().Comm());
+      Teuchos::Time t("GMRES", true);
       // w = M.solve(A * v[i]);
       if (not applyJacobian(*v[i], w)) throwError("SolveGMRES", "applyJacobian failed");
       for (int k = 0; k <= i; k++)
@@ -303,7 +303,7 @@ int NOX::FSI::LinearSystemGCR::SolveGMRES(
 
       utils.out() << "gmres |r|=" << std::scientific << fabs(s(i + 1))
                   << "   |b|=" << std::scientific << normb << "   tol=" << std::scientific << tol
-                  << "   time=" << std::scientific << t.ElapsedTime() << std::endl;
+                  << "   time=" << std::scientific << t.totalElapsedTime(true) << std::endl;
 
       if ((resid = fabs(s(i + 1)) / normb) < tol)
       {

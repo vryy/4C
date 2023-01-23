@@ -12,7 +12,7 @@
 #include "solver_linalg_precond.H"
 #include "solver_linalg_solver.H"
 
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 #include <ml_MultiLevelPreconditioner.h>
 #include "MLAPI_LoadBalanceOperator.h"
 #include "MLAPI_LoadBalanceInverseOperator.h"
@@ -87,7 +87,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(const int 
     initrinf = std::max(initsrinf, initarinf);
     initrinf = std::max(initrinf, initfrinf);
   }
-  Epetra_Time timer(MLAPI::GetEpetra_Comm());
+  Teuchos::Time timer("", true);
   double t1 = 0.0;
   double t2 = 0.0;
   double t3 = 0.0;
@@ -111,19 +111,19 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(const int 
 
     // zbars = rs
     {
-      if (analysis) timer.ResetStartTime();
+      if (analysis) timer.reset();
       stmpf = sf - Ass[level] * sy;
       stmpf = stmpf - Asf * fy;
 #ifdef PRINTOUT
       norm = sqrt(stmpf.DotProduct(stmpf));
       if (!myrank) printf("L S %10.5e\n", norm);
 #endif
-      if (analysis) t1 += timer.ElapsedTime();
+      if (analysis) t1 += timer.totalElapsedTime(true);
     }
 
     // zbara = ra - AS S^-1 zbars
     {
-      if (analysis) timer.ResetStartTime();
+      if (analysis) timer.reset();
       atmpf = af - Aaa[level] * ay;
       atmpf = atmpf - Aaf * sy;
 
@@ -140,12 +140,12 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(const int 
       norm = sqrt(atmpf.DotProduct(atmpf));
       if (!myrank) printf("L A %10.5e\n", norm);
 #endif
-      if (analysis) t2 += timer.ElapsedTime();
+      if (analysis) t2 += timer.totalElapsedTime(true);
     }
 
     // zbarf = rf - FS S^-1 zbars - FA A^-1 zbara
     {
-      if (analysis) timer.ResetStartTime();
+      if (analysis) timer.reset();
       ftmpf = ff - Aff[level] * fy;
       ftmpf = ftmpf - Afs * sy;
       ftmpf = ftmpf - Afa * ay;
@@ -170,7 +170,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(const int 
       if (!myrank) printf("L F %10.5e\n", norm);
 #endif
 
-      if (analysis) t3 += timer.ElapsedTime();
+      if (analysis) t3 += timer.totalElapsedTime(true);
     }
 
     /*----------------------------------------------------------------------
@@ -184,7 +184,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(const int 
 
     // fy = Schur^-1 ftmpf
     {
-      if (analysis) timer.ResetStartTime();
+      if (analysis) timer.reset();
 
       fz = 0.0;
       RichardsonS("(f)", myrank, level, blocksweeps[1][level], blockdamps[1][level],
@@ -201,12 +201,12 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(const int 
       }
 #endif
 
-      if (analysis) t3 += timer.ElapsedTime();
+      if (analysis) t3 += timer.totalElapsedTime(true);
     }
 
     // ay = A^-1 (atmpf + Aaf S^-1 Asf * fz)
     {
-      if (analysis) timer.ResetStartTime();
+      if (analysis) timer.reset();
 
       stmp = Asf * fz;
       sz = 0.0;
@@ -229,12 +229,12 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(const int 
       }
 #endif
 
-      if (analysis) t2 += timer.ElapsedTime();
+      if (analysis) t2 += timer.totalElapsedTime(true);
     }
 
     // sy = sy = S^-1 (stmpf - Asf * fz)
     {
-      if (analysis) timer.ResetStartTime();
+      if (analysis) timer.reset();
 
       sz = Asf * fz;
       stmpf = stmpf - sz;
@@ -253,7 +253,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(const int 
       }
 #endif
 
-      if (analysis) t1 += timer.ElapsedTime();
+      if (analysis) t1 += timer.totalElapsedTime(true);
     }
 
 
@@ -261,7 +261,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(const int 
 
   if (analysis)
   {
-    double t = timer.ElapsedTime();
+    double t = timer.totalElapsedTime(true);
 
     // final residuals
     stmpf = sf - Ass[level] * sy;
@@ -366,7 +366,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(const 
     initrinf = std::max(initsrinf, initarinf);
     initrinf = std::max(initrinf, initfrinf);
   }
-  Epetra_Time timer(MLAPI::GetEpetra_Comm());
+  Teuchos::Time timer("", true);
   double t1 = 0.0;
   double t2 = 0.0;
   double t3 = 0.0;
@@ -388,31 +388,31 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(const 
 
     // zbars =  rs
     {
-      if (analysis) timer.ResetStartTime();
+      if (analysis) timer.reset();
       stmpf = sf - Ass[level] * sy;
       stmpf = stmpf - Asf * fy;
 #ifdef PRINTOUT
       norm = sqrt(stmpf.DotProduct(stmpf));
       if (!myrank) printf("L S %10.5e\n", norm);
 #endif
-      if (analysis) t1 += timer.ElapsedTime();
+      if (analysis) t1 += timer.totalElapsedTime(true);
     }
 
     // zbara = ra
     {
-      if (analysis) timer.ResetStartTime();
+      if (analysis) timer.reset();
       atmpf = af - Aaa[level] * ay;
       atmpf = atmpf - Aaf * fy;
 #ifdef PRINTOUT
       norm = sqrt(atmpf.DotProduct(atmpf));
       if (!myrank) printf("L A %10.5e\n", norm);
 #endif
-      if (analysis) t2 += timer.ElapsedTime();
+      if (analysis) t2 += timer.totalElapsedTime(true);
     }
 
     // zbarf = rf - FS S^-1 zbars - FA A^-1 zbara
     {
-      if (analysis) timer.ResetStartTime();
+      if (analysis) timer.reset();
       ftmpf = ff - Aff[level] * fy;
       ftmpf = ftmpf - Afs * sy;
       ftmpf = ftmpf - Afa * ay;
@@ -437,7 +437,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(const 
       if (!myrank) printf("L F %10.5e\n", norm);
 #endif
 
-      if (analysis) t3 += timer.ElapsedTime();
+      if (analysis) t3 += timer.totalElapsedTime(true);
     }
 
     /*----------------------------------------------------------------------
@@ -451,7 +451,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(const 
 
     // fy = Schur^-1 ftmpf
     {
-      if (analysis) timer.ResetStartTime();
+      if (analysis) timer.reset();
 
       fz = 0.0;
       RichardsonS("(f)", myrank, level, blocksweeps[1][level], blockdamps[1][level],
@@ -468,12 +468,12 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(const 
       }
 #endif
 
-      if (analysis) t3 += timer.ElapsedTime();
+      if (analysis) t3 += timer.totalElapsedTime(true);
     }
 
     // ay = A^-1 (atmpf - beta * Aaf * fy)
     {
-      if (analysis) timer.ResetStartTime();
+      if (analysis) timer.reset();
 
       az = Aaf * fz;
       atmpf = atmpf - az;
@@ -492,12 +492,12 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(const 
       }
 #endif
 
-      if (analysis) t2 += timer.ElapsedTime();
+      if (analysis) t2 += timer.totalElapsedTime(true);
     }
 
     // sy = S^-1 (stmpf - Asf * fy)
     {
-      if (analysis) timer.ResetStartTime();
+      if (analysis) timer.reset();
 
       sz = Asf * fz;
       stmpf = stmpf - sz;
@@ -516,7 +516,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(const 
       }
 #endif
 
-      if (analysis) t1 += timer.ElapsedTime();
+      if (analysis) t1 += timer.totalElapsedTime(true);
     }
 
 
@@ -524,7 +524,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(const 
 
   if (analysis)
   {
-    double t = timer.ElapsedTime();
+    double t = timer.totalElapsedTime(true);
 
     // final residuals
     stmpf = sf - Ass[level] * sy;
@@ -631,7 +631,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_SV(const int myrank, con
     initrinf = std::max(initsrinf, initarinf);
     initrinf = std::max(initrinf, initfrinf);
   }
-  Epetra_Time timer(MLAPI::GetEpetra_Comm());
+  Teuchos::Time timer("", true);
   double t1 = 0.0;
   double t2 = 0.0;
   double t3 = 0.0;
@@ -640,7 +640,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_SV(const int myrank, con
   {
     //--------------------- structure block
     {
-      if (analysis) timer.ResetStartTime();
+      if (analysis) timer.reset();
       // compute ( f - A x ) for structure row
       stmpf = sf - Ass[level] * sy;
       stmpf = stmpf - Asf * fy;
@@ -656,11 +656,11 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_SV(const int myrank, con
             true);
 
       sy.Update(damp, sz, 1.0);
-      if (analysis) t1 += timer.ElapsedTime();
+      if (analysis) t1 += timer.totalElapsedTime(true);
     }
     //---------------------- ale block
     {
-      if (analysis) timer.ResetStartTime();
+      if (analysis) timer.reset();
       // compute ( f - A x ) for ale row
       atmpf = af - Aaa[level] * ay;
       if (structuresplit_)
@@ -679,11 +679,11 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_SV(const int myrank, con
             true);
 
       ay.Update(damp, az, 1.0);
-      if (analysis) t2 += timer.ElapsedTime();
+      if (analysis) t2 += timer.totalElapsedTime(true);
     }
     //------------------------ fluid block
     {
-      if (analysis) timer.ResetStartTime();
+      if (analysis) timer.reset();
       // compute ( f - A x ) for fluid row
       ftmpf = ff - Aff[level] * fy;
       ftmpf = ftmpf - Afs * sy;
@@ -700,13 +700,13 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_SV(const int myrank, con
             true);
 
       fy.Update(damp, fz, 1.0);
-      if (analysis) t3 += timer.ElapsedTime();
+      if (analysis) t3 += timer.totalElapsedTime(true);
     }
   }  // iterations
 
   if (analysis)
   {
-    double t = timer.ElapsedTime();
+    double t = timer.totalElapsedTime(true);
 
     // final residuals
     stmpf = sf - Ass[level] * sy;
@@ -813,7 +813,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(const int myrank, 
     initrinf = std::max(initsrinf, initarinf);
     initrinf = std::max(initrinf, initfrinf);
   }
-  Epetra_Time timer(MLAPI::GetEpetra_Comm());
+  Teuchos::Time timer("", true);
   double t1 = 0.0;
   double t2 = 0.0;
   double t3 = 0.0;
@@ -822,7 +822,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(const int myrank, 
   {
     //--------------------- structure block
     {
-      if (analysis) timer.ResetStartTime();
+      if (analysis) timer.reset();
       // compute ( f - A x ) for structure row
       stmpf = sf - Ass[0] * sy;
       stmpf = stmpf - Asf[0] * fy;
@@ -837,11 +837,11 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(const int myrank, 
             structuresolver_, sz, stmpf, const_cast<int&>(srun_), true, false, true);
 
       sy.Update(damp, sz, 1.0);
-      if (analysis) t1 += timer.ElapsedTime();
+      if (analysis) t1 += timer.totalElapsedTime(true);
     }
     //---------------------- ale block
     {
-      if (analysis) timer.ResetStartTime();
+      if (analysis) timer.reset();
       // compute ( f - A x ) for ale row
       atmpf = af - Aaa[0] * ay;
       if (structuresplit_)
@@ -859,11 +859,11 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(const int myrank, 
             alesolver_, az, atmpf, const_cast<int&>(arun_), true, false, true);
 
       ay.Update(damp, az, 1.0);
-      if (analysis) t2 += timer.ElapsedTime();
+      if (analysis) t2 += timer.totalElapsedTime(true);
     }
     //------------------------ fluid block
     {
-      if (analysis) timer.ResetStartTime();
+      if (analysis) timer.reset();
       // compute ( f - A x ) for fluid row
       ftmpf = ff - Aff[0] * fy;
       ftmpf = ftmpf - Afs[0] * sy;
@@ -879,13 +879,13 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(const int myrank, 
             fluidsolver_, fz, ftmpf, const_cast<int&>(frun_), true, false, true);
 
       fy.Update(damp, fz, 1.0);
-      if (analysis) t3 += timer.ElapsedTime();
+      if (analysis) t3 += timer.totalElapsedTime(true);
     }
   }  // iterations
 
   if (analysis)
   {
-    double t = timer.ElapsedTime();
+    double t = timer.totalElapsedTime(true);
 
     // final residuals
     stmpf = sf - Ass[0] * sy;
@@ -970,7 +970,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonMixed(const std::string fiel
     initrinf = r.NormInf();
   }
 
-  Epetra_Time timer(MLAPI::GetEpetra_Comm());
+  Teuchos::Time timer("", true);
 
   for (int i = 1; i <= sweeps; ++i)
   {
@@ -992,7 +992,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonMixed(const std::string fiel
   {
     rl2 = r.Norm2();
     rinf = r.NormInf();
-    double t = timer.ElapsedTime();
+    double t = timer.totalElapsedTime(true);
     double rl2rate = Rate(myrank, t, rl2, initrl2, r.GetGlobalLength());
     double rinfrate = Rate(myrank, t, rinf, initrinf, r.GetGlobalLength());
 
@@ -1040,7 +1040,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonS(const std::string field, c
 
   MLAPI::MultiVector tmpx(x.GetVectorSpace(), 1, false);
 
-  Epetra_Time timer(MLAPI::GetEpetra_Comm());
+  Teuchos::Time timer("", true);
 
   for (int i = 1; i <= sweeps; ++i)
   {
@@ -1055,7 +1055,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonS(const std::string field, c
   {
     rl2 = r.Norm2();
     rinf = r.NormInf();
-    double t = timer.ElapsedTime();
+    double t = timer.totalElapsedTime(true);
     double rl2rate = Rate(myrank, t, rl2, initrl2, r.GetGlobalLength());
     double rinfrate = Rate(myrank, t, rinf, initrinf, r.GetGlobalLength());
     if (!myrank && !silent)

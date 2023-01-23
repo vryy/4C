@@ -18,7 +18,6 @@
 #include "linalg_utils_sparse_algebra_math.H"
 #include "io_control.H"
 #include "lib_globalproblem.H"
-#include "Epetra_Time.h"
 #include "Teuchos_TimeMonitor.hpp"
 
 using VoigtMapping = ::UTILS::VOIGT::IndexMappings;

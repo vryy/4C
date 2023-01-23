@@ -542,8 +542,8 @@ void STRUMULTI::MicroStatic::FullNewton()
   // check)
   CalcRefNorms();
 
-  Epetra_Time timer(discret_->Comm());
-  timer.ResetStartTime();
+  Teuchos::Time timer("", true);
+  timer.reset();
 
   while (!Converged() && numiter_ <= maxiter_)
   {

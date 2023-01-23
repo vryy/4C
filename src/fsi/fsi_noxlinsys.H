@@ -13,7 +13,7 @@
 
 #include <vector>
 
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 #include <NOX_Common.H>
 #include <NOX_Epetra_Group.H>
@@ -157,7 +157,7 @@ namespace NOX::FSI
     /// linear algebraic solver
     Teuchos::RCP<LINALG::Solver> solver_;
 
-    Epetra_Time timer_;
+    Teuchos::Time timer_;
     mutable double timeApplyJacbianInverse_;
   };
 }  // namespace NOX::FSI

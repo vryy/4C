@@ -20,7 +20,7 @@
 
 #include "io_pstream.H"
 
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 
 /*---------------------------------------------------------------------------*
@@ -47,7 +47,7 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
   // proceed only if particles are given in .dat-file
   if (numparticles > 0)
   {
-    Epetra_Time time(*comm_);
+    Teuchos::Time time("", true);
 
     if (!myrank && !reader_.MyOutputFlag()) IO::cout << "Read and create particles\n" << IO::flush;
 
@@ -92,7 +92,7 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
     // note that the last block is special....
     for (int block = 0; block < nblock; ++block)
     {
-      double t1 = time.ElapsedTime();
+      double t1 = time.totalElapsedTime(true);
 
       if (!myrank and !endofsection)
       {
@@ -188,7 +188,7 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
         }
       }
 
-      double t2 = time.ElapsedTime();
+      double t2 = time.totalElapsedTime(true);
       if (!myrank && !reader_.MyOutputFlag())
       {
         printf("reading %10.5e secs\n", t2 - t1);
@@ -197,6 +197,7 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
     }
 
     if (!myrank && !reader_.MyOutputFlag())
-      printf("in............................................. %10.5e secs\n", time.ElapsedTime());
+      printf("in............................................. %10.5e secs\n",
+          time.totalElapsedTime(true));
   }
 }

@@ -38,7 +38,10 @@ namespace DRT
 }  // namespace DRT
 
 class Epetra_Comm;
-class Epetra_Time;
+namespace Teuchos
+{
+  class Time;
+}
 
 namespace LINALG
 {
@@ -390,7 +393,7 @@ namespace STR
       };
 
       /// Return timer for solution technique
-      Teuchos::RCP<const Epetra_Time> GetTimer() const
+      Teuchos::RCP<const Teuchos::Time> GetTimer() const
       {
         CheckInitSetup();
         return timer_;
@@ -678,7 +681,7 @@ namespace STR
       };
 
       /// Return timer for solution technique
-      Teuchos::RCP<Epetra_Time>& GetMutableTimer()
+      Teuchos::RCP<Teuchos::Time>& GetMutableTimer()
       {
         CheckInitSetup();
         return timer_;
@@ -1011,7 +1014,7 @@ namespace STR
       ///@{
 
       /// timer for solution technique
-      Teuchos::RCP<Epetra_Time> timer_;
+      Teuchos::RCP<Teuchos::Time> timer_;
 
       /// linear solver time
       double dtsolve_;

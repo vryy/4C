@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------*/
 #include "sti_algorithm.H"
 
-#include <Epetra_Time.h>
+
 
 #include "adapter_coupling.H"
 
@@ -39,7 +39,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
       itermax_(0),
       itertol_(0.),
       stiparameters_(Teuchos::rcp(new Teuchos::ParameterList(stidyn))),
-      timer_(Teuchos::rcp(new Epetra_Time(comm)))
+      timer_(Teuchos::rcp(new Teuchos::Time("STI::ALG", true)))
 {
   // check input parameters for scatra and thermo fields
   if (DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*fieldparameters_, "VELOCITYFIELD") !=
@@ -261,14 +261,14 @@ void STI::Algorithm::TimeLoop()
     PrepareTimeStep();
 
     // store time before calling nonlinear solver
-    double time = timer_->WallTime();
+    double time = timer_->wallTime();
 
     // evaluate time step
     Solve();
 
     // determine time spent by nonlinear solver and take maximum over all processors via
     // communication
-    double mydtnonlinsolve(timer_->WallTime() - time), dtnonlinsolve(0.);
+    double mydtnonlinsolve(timer_->wallTime() - time), dtnonlinsolve(0.);
     Comm().MaxAll(&mydtnonlinsolve, &dtnonlinsolve, 1);
 
     // output performance statistics associated with nonlinear solver into *.csv file if applicable

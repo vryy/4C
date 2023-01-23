@@ -14,7 +14,7 @@
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 #include "contact_node.H"
 #include "contact_element.H"

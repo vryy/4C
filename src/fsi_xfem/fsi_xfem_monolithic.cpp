@@ -52,7 +52,7 @@
 #include "contact_nitsche_strategy_fsi.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 #include "fsi_xfem_monolithic.H"
 /*----------------------------------------------------------------------*/
@@ -1570,7 +1570,7 @@ bool FSI::MonolithicXFEM::Evaluate()
     // Teuchos::TimeMonitor::zeroOutTimers();
 
     // fluid field
-    Epetra_Time tf(Comm());
+    Teuchos::Time tf("fluid", true);
 
     // call the fluid evaluate with the current time-step-increment w.r.t. u^n from the restart:
     // Delta(u,p) = (u,p)^(n+1,i+1) - u^n
@@ -1598,7 +1598,7 @@ bool FSI::MonolithicXFEM::Evaluate()
 
     FluidField()->Evaluate();
 
-    if (Comm().MyPID() == 0) IO::cout << "fluid time : " << tf.ElapsedTime() << IO::endl;
+    if (Comm().MyPID() == 0) IO::cout << "fluid time : " << tf.totalElapsedTime(true) << IO::endl;
 
     // Assign the Unphysical Boundary Elements to all procs (only for contact)
     if (have_contact_)
@@ -1620,12 +1620,13 @@ bool FSI::MonolithicXFEM::Evaluate()
     }
 
     // structural field
-    Epetra_Time ts(Comm());
+    Teuchos::Time ts("structure", true);
 
     // Evaluate Structure (do not set state again)
     StructurePoro()->Evaluate(Teuchos::null, iter_ == 1);
 
-    if (Comm().MyPID() == 0) IO::cout << "structure time: " << ts.ElapsedTime() << IO::endl;
+    if (Comm().MyPID() == 0)
+      IO::cout << "structure time: " << ts.totalElapsedTime(true) << IO::endl;
   }
 
   //--------------------------------------------------------

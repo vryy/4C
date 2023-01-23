@@ -12,7 +12,6 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_Time.hpp>
 
 #include "elemag_dyn.H"
 #include "elemag_timeint.H"

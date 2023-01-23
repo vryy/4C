@@ -38,7 +38,7 @@
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include <utility>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 #include <Epetra_SerialComm.h>
 
 #include "binstrategy.H"
@@ -1068,7 +1068,7 @@ void MORTAR::MortarInterface::Redistribute()
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(Comm().Clone());
   const int myrank = comm->MyPID();
   const int numproc = comm->NumProc();
-  Epetra_Time time(*comm);
+  Teuchos::Time time("", true);
 
   // vector containing all proc ids
   std::vector<int> allproc(numproc);

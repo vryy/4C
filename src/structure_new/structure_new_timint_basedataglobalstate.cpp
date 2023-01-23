@@ -34,7 +34,7 @@
 #include "solver_nonlin_nox_group_prepostoperator.H"
 
 #include <Epetra_Vector.h>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 #include <NOX_Epetra_Vector.H>
 
@@ -165,7 +165,7 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
   // --------------------------------------
   // control parameters
   // --------------------------------------
-  timer_ = Teuchos::rcp(new Epetra_Time(*comm_));
+  timer_ = Teuchos::rcp(new Teuchos::Time("", true));
 
   // --------------------------------------
   // vectors

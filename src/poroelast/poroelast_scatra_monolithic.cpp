@@ -46,7 +46,7 @@ POROELAST::PoroScatraMono::PoroScatraMono(
       printiter_(true),     // ADD INPUT PARAMETER
       printerrfile_(true),  // ADD INPUT PARAMETER FOR 'true'
       errfile_(DRT::Problem::Instance()->ErrorFile()->Handle()),
-      timer_(comm),
+      timer_("PoroScatraMonoSolve", true),
       iterinc_(Teuchos::null),
       zeros_(Teuchos::null),
       systemmatrix_(Teuchos::null),
@@ -218,8 +218,8 @@ void POROELAST::PoroScatraMono::Solve()
   // equilibrium iteration loop (loop over k)
   while (((not Converged()) and (iter_ <= itermax_)) or (iter_ <= itermin_))
   {
-    timer_.ResetStartTime();
-    Epetra_Time timer(Comm());
+    timer_.reset();
+    Teuchos::Time timer("PoroScatraMonoSolve", true);
 
     // compute residual forces #rhs_ and tangent #tang_
     // whose components are globally oriented
@@ -229,8 +229,6 @@ void POROELAST::PoroScatraMono::Solve()
     // 2.) EvaluateForceStiffResidual(),
     // 3.) PrepareSystemForNewtonSolve()
     Evaluate(iterinc_);
-    // cout << "  time for Evaluate diagonal blocks: " << timer.ElapsedTime() << "\n";
-    // timer.ResetStartTime();
 
     // check whether we have a sanely filled tangent matrix
     if (not systemmatrix_->Filled())
@@ -240,8 +238,6 @@ void POROELAST::PoroScatraMono::Solve()
 
     // create full monolithic rhs vector
     SetupRHS(iter_ == 1);
-    // cout << "  time for Evaluate SetupRHS: " << timer.ElapsedTime() << "\n";
-    // timer.ResetStartTime();
 
     // FDCheck();
 
@@ -253,8 +249,8 @@ void POROELAST::PoroScatraMono::Solve()
       // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
       // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
       LinearSolve();
-      // cout << "  time for Evaluate LinearSolve: " << timer.ElapsedTime() << "\n";
-      // timer.ResetStartTime();
+      // cout << "  time for Evaluate LinearSolve: " << timer.totalElapsedTime(true) << "\n";
+      // timer.reset();
 
       // reset solver tolerance
       solver_->ResetTolerance();
@@ -319,8 +315,6 @@ void POROELAST::PoroScatraMono::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   /// poro field
 
   // structure Evaluate (builds tangent, residual and applies DBC)
-  Epetra_Time timerporo(Comm());
-
   // apply current velocity and pressures to structure
   SetScatraSolution();
 
@@ -901,7 +895,7 @@ void POROELAST::PoroScatraMono::PrintNewtonIterText(FILE* ofile)
   }
 
   // add solution time
-  oss << std::setw(14) << std::setprecision(2) << std::scientific << timer_.ElapsedTime();
+  oss << std::setw(14) << std::setprecision(2) << std::scientific << timer_.totalElapsedTime(true);
 
   // finish oss
   oss << std::ends;

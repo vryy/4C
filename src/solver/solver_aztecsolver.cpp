@@ -157,13 +157,13 @@ void LINALG::SOLVER::AztecSolver<MatrixType, VectorType>::Setup(Teuchos::RCP<Mat
   ////
 
 #ifdef WRITEOUTSTATISTICS
-  tttcreate.ResetStartTime();
+  tttcreate.reset();
 #endif
 
   this->preconditioner_->Setup(create, this->A_.get(), this->x_.get(), this->b_.get());
 
 #ifdef WRITEOUTSTATISTICS
-  dtimeprecondsetup = tttcreate.ElapsedTime();
+  dtimeprecondsetup = tttcreate.totalElapsedTime(true);
 #endif
 }
 
@@ -173,8 +173,8 @@ template <class MatrixType, class VectorType>
 int LINALG::SOLVER::AztecSolver<MatrixType, VectorType>::Solve()
 {
 #ifdef WRITEOUTSTATISTICS
-  Epetra_Time ttt(Comm());  // time measurement for whole routine
-  ttt.ResetStartTime();
+  Teuchos::Time ttt("", true);  // time measurement for whole routine
+  ttt.reset();
 #endif
 
   Teuchos::ParameterList& azlist = this->Params().sublist("Aztec Parameters");
@@ -277,7 +277,7 @@ int LINALG::SOLVER::AztecSolver<MatrixType, VectorType>::Solve()
         "LinIter %i\tNumGlobalElements %i\tAZ_solve_time %f\tAztecSolveTime %f\tAztecPrecondSetup "
         "%f\t\n",
         (int)status[AZ_its], A_->OperatorRangeMap().NumGlobalElements(), status[AZ_solve_time],
-        dtimeprecondsetup_ + ttt.ElapsedTime(), dtimeprecondsetup_);
+        dtimeprecondsetup_ + ttt.totalElapsedTime(true), dtimeprecondsetup_);
     fflush(outfile_);
   }
 #endif

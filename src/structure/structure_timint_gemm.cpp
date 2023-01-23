@@ -557,7 +557,7 @@ void STR::TimIntGEMM::ApplyForceStiffInternalMid(const double time, const double
 )
 {
   // *********** time measurement ***********
-  double dtcpu = timer_->WallTime();
+  double dtcpu = timer_->wallTime();
   // *********** time measurement ***********
 
   // create the parameters for the discretization
@@ -581,7 +581,7 @@ void STR::TimIntGEMM::ApplyForceStiffInternalMid(const double time, const double
   discret_->ClearState();
 
   // *********** time measurement ***********
-  dtele_ = timer_->WallTime() - dtcpu;
+  dtele_ = timer_->wallTime() - dtcpu;
   // *********** time measurement ***********
 
   return;
@@ -595,7 +595,7 @@ void STR::TimIntGEMM::ApplyForceInternalMid(const double time, const double dt,
     Teuchos::RCP<Epetra_Vector> fint)
 {
   // *********** time measurement ***********
-  double dtcpu = timer_->WallTime();
+  double dtcpu = timer_->wallTime();
   // *********** time measurement ***********
 
   // create the parameters for the discretization
@@ -619,7 +619,7 @@ void STR::TimIntGEMM::ApplyForceInternalMid(const double time, const double dt,
   discret_->ClearState();
 
   // *********** time measurement ***********
-  dtele_ = timer_->WallTime() - dtcpu;
+  dtele_ = timer_->wallTime() - dtcpu;
   // *********** time measurement ***********
 
   return;
