@@ -13,6 +13,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <numeric>
 #include "element.H"
+#include "utils_gausspoints.H"
 #include "utils_local_connectivity_matrices.H"
 #include "solid_ele.H"
 #include "utils.H"
@@ -520,6 +521,40 @@ namespace DRT::ELEMENTS
     packBuffer.StartPacking();
     DRT::ParObject::AddtoPack(packBuffer, matrix);
     std::copy(packBuffer().begin(), packBuffer().end(), std::back_inserter(data));
+  }
+
+  /*!
+   * @brief Iterates over the jacobian mapping at each integration point of @p integration.
+   *
+   * @tparam distype The discretization type known at compile time.
+   * @param nodal_coordinates (in) : The nodal coordinates of the element
+   * @param integration (in) : The integration rule to be used.
+   * @param gp_integrator (in) : A function object that will be called for each integration point.
+   */
+  template <DRT::Element::DiscretizationType distype>
+  inline void IterateJacobianMappingAtGaussPoints(
+      const NodalCoordinates<distype>& nodal_coordinates,
+      const DRT::UTILS::GaussIntegration& integration,
+      const std::function<void(const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+          const ShapeFunctionsAndDerivatives<distype>& shape_functions,
+          const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)>
+          gp_integrator)
+  {
+    for (int gp = 0; gp < integration.NumPoints(); ++gp)
+    {
+      const LINALG::Matrix<DETAIL::nsd<distype>, 1> xi =
+          EvaluateParameterCoordinate<distype>(integration, gp);
+
+      const ShapeFunctionsAndDerivatives<distype> shape_functions =
+          EvaluateShapeFunctionsAndDerivs<distype>(xi);
+
+      const JacobianMapping<distype> jacobian_mapping =
+          EvaluateJacobianMapping(shape_functions, nodal_coordinates);
+
+      const double integration_factor = jacobian_mapping.determinant_ * integration.Weight(gp);
+
+      gp_integrator(xi, shape_functions, jacobian_mapping, integration_factor, gp);
+    }
   }
 }  // namespace DRT::ELEMENTS
 

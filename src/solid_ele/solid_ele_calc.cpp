@@ -79,67 +79,52 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
 
   double mean_density = 0.0;
 
-  // Loop over all Gauss points
-  for (int gp = 0; gp < stiffness_matrix_integration_.NumPoints(); ++gp)
-  {
-    const LINALG::Matrix<nsd_, 1> xi =
-        EvaluateParameterCoordinate<distype>(stiffness_matrix_integration_, gp);
-
-    const ShapeFunctionsAndDerivatives<distype> shape_functions =
-        EvaluateShapeFunctionsAndDerivs<distype>(xi);
-
-    const JacobianMapping<distype> jacobian_mapping =
-        EvaluateJacobianMapping(shape_functions, nodal_coordinates);
-
-    double integration_factor =
-        jacobian_mapping.determinant_ * stiffness_matrix_integration_.Weight(gp);
-
-    const Strains<distype> strains = EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
-
-    LINALG::Matrix<numstr_, numdofperelement_> Bop =
-        EvaluateStrainGradient(jacobian_mapping, strains);
-
-    const Stress<distype> stress =
-        EvaluateMaterialStress(solid_material, strains, params, gp, ele.Id());
-
-    if (force.has_value()) AddInternalForceVector(Bop, stress, integration_factor, *force);
-
-    if (stiff.has_value())
-    {
-      AddElasticStiffnessMatrix(Bop, stress, integration_factor, *stiff);
-      AddGeometricStiffnessMatrix(jacobian_mapping.n_xyz_, stress, integration_factor, *stiff);
-    }
-
-    if (mass.has_value())
-    {
-      if (equal_integration_mass_stiffness)
+  IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
+      [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+          const ShapeFunctionsAndDerivatives<distype>& shape_functions,
+          const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
-        AddMassMatrix(shape_functions, integration_factor, solid_material.Density(gp), *mass);
-      }
-      else
-      {
-        mean_density += solid_material.Density(gp) / stiffness_matrix_integration_.NumPoints();
-      }
-    }
-  }
+        const Strains<distype> strains =
+            EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
+
+        LINALG::Matrix<numstr_, numdofperelement_> Bop =
+            EvaluateStrainGradient(jacobian_mapping, strains);
+
+        const Stress<distype> stress =
+            EvaluateMaterialStress(solid_material, strains, params, gp, ele.Id());
+
+        if (force.has_value()) AddInternalForceVector(Bop, stress, integration_factor, *force);
+
+        if (stiff.has_value())
+        {
+          AddElasticStiffnessMatrix(Bop, stress, integration_factor, *stiff);
+          AddGeometricStiffnessMatrix(jacobian_mapping.n_xyz_, stress, integration_factor, *stiff);
+        }
+
+
+
+        if (mass.has_value())
+        {
+          if (equal_integration_mass_stiffness)
+          {
+            AddMassMatrix(shape_functions, integration_factor, solid_material.Density(gp), *mass);
+          }
+          else
+          {
+            mean_density += solid_material.Density(gp) / stiffness_matrix_integration_.NumPoints();
+          }
+        }
+      });
+
 
   if (mass.has_value() && !equal_integration_mass_stiffness)
   {  // integrate mass matrix
     dsassert(mean_density > 0, "It looks like the density is 0.0");
-    for (int gp = 0; gp < mass_matrix_integration_.NumPoints(); ++gp)
-    {
-      const LINALG::Matrix<nsd_, 1> xi =
-          EvaluateParameterCoordinate<distype>(mass_matrix_integration_, gp);
-
-      const ShapeFunctionsAndDerivatives<distype> shape_functions =
-          EvaluateShapeFunctionsAndDerivs<distype>(xi);
-
-      const double integration_factor =
-          EvaluateJacobianDeterminant(shape_functions, nodal_coordinates) *
-          mass_matrix_integration_.Weight(gp);
-
-      AddMassMatrix(shape_functions, integration_factor, mean_density, *mass);
-    }
+    IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, mass_matrix_integration_,
+        [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+            const ShapeFunctionsAndDerivatives<distype>& shape_functions,
+            const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
+        { AddMassMatrix(shape_functions, integration_factor, mean_density, *mass); });
   }
 }
 
@@ -162,22 +147,16 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::Update(const DRT::Element& ele,
   const NodalCoordinates<distype> nodal_coordinates =
       EvaluateNodalCoordinates<distype>(ele, discretization, lm);
 
-  // Loop over all Gauss points
-  for (int gp = 0; gp < stiffness_matrix_integration_.NumPoints(); ++gp)
-  {
-    const LINALG::Matrix<nsd_, 1> xi =
-        EvaluateParameterCoordinate<distype>(stiffness_matrix_integration_, gp);
+  IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
+      [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+          const ShapeFunctionsAndDerivatives<distype>& shape_functions,
+          const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
+      {
+        const Strains<distype> strains =
+            EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
 
-    const ShapeFunctionsAndDerivatives<distype> shape_functions =
-        EvaluateShapeFunctionsAndDerivs<distype>(xi);
-
-    const JacobianMapping<distype> jacobian_mapping =
-        EvaluateJacobianMapping(shape_functions, nodal_coordinates);
-
-    const Strains<distype> strains = EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
-
-    solid_material.Update(strains.defgrd_, gp, params, ele.Id());
-  }  // gp loop
+        solid_material.Update(strains.defgrd_, gp, params, ele.Id());
+      });
 }
 
 template <DRT::Element::DiscretizationType distype>
@@ -238,26 +217,22 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::Element& e
   const NodalCoordinates<distype> nodal_coordinates =
       EvaluateNodalCoordinates<distype>(ele, discretization, lm);
 
-  // Loop over all Gauss points
-  for (int gp = 0; gp < stiffness_matrix_integration_.NumPoints(); ++gp)
-  {
-    const LINALG::Matrix<nsd_, 1> xi =
-        EvaluateParameterCoordinate<distype>(stiffness_matrix_integration_, gp);
+  IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
+      [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+          const ShapeFunctionsAndDerivatives<distype>& shape_functions,
+          const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
+      {
+        const Strains<distype> strains =
+            EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
 
-    const ShapeFunctionsAndDerivatives<distype> shape_functions =
-        EvaluateShapeFunctionsAndDerivs<distype>(xi);
 
-    const JacobianMapping<distype> jacobian_mapping =
-        EvaluateJacobianMapping(shape_functions, nodal_coordinates);
+        const Stress<distype> stress =
+            EvaluateMaterialStress(solid_material, strains, params, gp, ele.Id());
 
-    const Strains<distype> strains = EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
+        AssembleStrainTypeToMatrixRow(strains, strainIO.type, strain_data, gp);
+        AssembleStressTypeToMatrixRow(strains, stress, stressIO.type, stress_data, gp);
+      });
 
-    const Stress<distype> stress =
-        EvaluateMaterialStress(solid_material, strains, params, gp, ele.Id());
-
-    AssembleStrainTypeToMatrixRow(strains, strainIO.type, strain_data, gp);
-    AssembleStressTypeToMatrixRow(strains, stress, stressIO.type, stress_data, gp);
-  }  // gp loop
 
   Serialize(stress_data, serialized_stress_data);
   Serialize(strain_data, serialized_strain_data);
@@ -399,3 +374,4 @@ template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::hex27>;
 template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::tet4>;
 template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::tet10>;
 template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::pyramid5>;
+template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::wedge6>;
