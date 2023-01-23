@@ -83,7 +83,7 @@ namespace THR
     int MethodSteps() { return 1; }
 
     //! Give linear order of accuracy of temperature part
-    int MethodOrderOfAccuracy() { return (fabs(MethodLinErrCoeff()) < EPS6) ? 2 : 1; }
+    int MethodOrderOfAccuracy() { return (fabs(MethodLinErrCoeff()) < 1e-6) ? 2 : 1; }
 
     // TODO 2013-07-05 check the calculation of the factor again
     //! Return linear error coefficient of temperatures

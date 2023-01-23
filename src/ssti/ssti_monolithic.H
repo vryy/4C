@@ -11,7 +11,7 @@
 
 #include "ssti_algorithm.H"
 
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 // forward declarations
 namespace ADAPTER
@@ -167,7 +167,7 @@ namespace SSTI
     double dtevaluate_;
     double dtnewton_;
     double dtsolve_;
-    Teuchos::RCP<Epetra_Time> timer_;
+    Teuchos::RCP<Teuchos::Time> timer_;
     //@}
 
     //! control parameters

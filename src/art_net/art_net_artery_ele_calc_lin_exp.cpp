@@ -334,9 +334,9 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Initial(Artery* ele,
     // Read in artery's Poisson's ratio
     const double nue = actmat->Nue();
     const double co1 =
-        sqrt(sqrt(PI) * E1 * t1 / (1.0 - pow(nue, 2)) * sqrt(Ao1) / (2.0 * Ao1 * dens));
+        sqrt(sqrt(M_PI) * E1 * t1 / (1.0 - pow(nue, 2)) * sqrt(Ao1) / (2.0 * Ao1 * dens));
     const double co2 =
-        sqrt(sqrt(PI) * E2 * t2 / (1.0 - pow(nue, 2)) * sqrt(Ao2) / (2.0 * Ao2 * dens));
+        sqrt(sqrt(M_PI) * E2 * t2 / (1.0 - pow(nue, 2)) * sqrt(Ao2) / (2.0 * Ao2 * dens));
 
     int gid = ele->Nodes()[0]->Id();
     double val = 4.0 * co1;
@@ -610,12 +610,12 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Sysmat(Artery* ele,
     // Calculating essential variables at the Gauss points
     th = my::funct_.Dot(th_);
     Young = my::funct_.Dot(young_);
-    beta = sqrt(PI) * Young * th / (1.0 - pow(nue, 2));
+    beta = sqrt(M_PI) * Young * th / (1.0 - pow(nue, 2));
     Q = my::funct_.Dot(qn_);
     A = my::funct_.Dot(an_);
     Ao = my::funct_.Dot(area0_);
     // Calculating essential derivatives at the Gauss points
-    dbeta_dxi = sqrt(PI) / (1.0 - pow(nue, 2)) *
+    dbeta_dxi = sqrt(M_PI) / (1.0 - pow(nue, 2)) *
                 (th * my::tderiv_.Dot(young_) + my::tderiv_.Dot(th_) * Young);
     dAodxi = my::tderiv_.Dot(area0_);
     dQdxi = my::tderiv_.Dot(qn_);
@@ -1015,9 +1015,9 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
 
   // check for the CFL number CFL = Max(abs(3/sqrt(3) * lambda2_i * dt/dx), abs(3/sqrt(3) *
   // lambda1_i * dt/dx))
-  double c_0 = sqrt(sqrt(PI) * young_(0) * th_(0) / (1.0 - pow(nue, 2)) * sqrt(earean(0)) /
+  double c_0 = sqrt(sqrt(M_PI) * young_(0) * th_(0) / (1.0 - pow(nue, 2)) * sqrt(earean(0)) /
                     (2.0 * area0_(0) * dens));
-  double c_1 = sqrt(sqrt(PI) * young_(1) * th_(1) / (1.0 - pow(nue, 2)) * sqrt(earean(1)) /
+  double c_1 = sqrt(sqrt(M_PI) * young_(1) * th_(1) / (1.0 - pow(nue, 2)) * sqrt(earean(1)) /
                     (2.0 * area0_(1) * dens));
   double lambda2_0 = eqn(0) / earean(0) - c_0;
   double lambda2_1 = eqn(1) / earean(1) - c_1;
@@ -1053,8 +1053,8 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
             "\"inlet\"");
 
       // sound speed at node 1 = sqrt(beta/(2*Ao*rho)) and Lambda2 = Q/A - c
-      const double c = sqrt(sqrt(PI) * young_(i) * th_(i) / (1.0 - pow(nue, 2)) * sqrt(earean(i)) /
-                            (2.0 * area0_(i) * dens));
+      const double c = sqrt(sqrt(M_PI) * young_(i) * th_(i) / (1.0 - pow(nue, 2)) *
+                            sqrt(earean(i)) / (2.0 * area0_(i) * dens));
       const double lambda = eqn(i) / earean(i) + TermIO * c;
       //      const double N1     = (0.5*(-TermIO + 1.0)*L + dt*lambda)/L;
       const double N1 = (-TermIO * dt * lambda) / L;
@@ -1064,7 +1064,7 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
       const double A_l = N1 * earean(i) + N2 * earean((i + 1) % 2);
       //      const double beta_l = sqrt(PI)*(young_(0)*N1 + young_(1)*N2)*(th_(0)*N1 +
       //      th_(1)*N2)/(1.0-pow(nue,2));
-      const double beta_l = sqrt(PI) * (young_(i) * N1 + young_((i + 1) % 2) * N2) *
+      const double beta_l = sqrt(M_PI) * (young_(i) * N1 + young_((i + 1) % 2) * N2) *
                             (th_(i) * N1 + th_((i + 1) % 2) * N2) / (1.0 - pow(nue, 2));
       //      const double Q_l    = N1*eqn(0)    + N2*eqn(1);
       const double Q_l = N1 * eqn(i) + N2 * eqn((i + 1) % 2);
@@ -1075,8 +1075,8 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
       // defining W2n at dt*lambda2
       const double Wn_l = Q_l / A_l + TermIO * 4.0 * c_l;
       const double Won_l = TermIO * 4.0 * sqrt(beta_l * sqrt(Ao_l) / (2.0 * Ao_l * dens));
-      const double co = sqrt(sqrt(PI) * young_(i) * th_(i) / (1.0 - pow(nue, 2)) * sqrt(area0_(i)) /
-                             (2.0 * area0_(i) * dens));
+      const double co = sqrt(sqrt(M_PI) * young_(i) * th_(i) / (1.0 - pow(nue, 2)) *
+                             sqrt(area0_(i)) / (2.0 * area0_(i) * dens));
 
       double Wnp = Wn_l - Won_l + TermIO * 4.0 * co;
 
@@ -1121,7 +1121,7 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
         (*junc_nodal_vals)[local_id]->Ao_ = area0_(i);
         (*junc_nodal_vals)[local_id]->rho_ = dens;
         (*junc_nodal_vals)[local_id]->Pext_ = pext_(i);
-        (*junc_nodal_vals)[local_id]->beta_ = sqrt(PI) * young_(i) * th_(i) / (1.0 - pow(nue, 2));
+        (*junc_nodal_vals)[local_id]->beta_ = sqrt(M_PI) * young_(i) * th_(i) / (1.0 - pow(nue, 2));
       }
 
       BCnodes = true;
@@ -1264,7 +1264,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery* ele
       th_(1, 0) = t2;
       young_(0, 0) = E1;
       young_(1, 0) = E2;
-      const double beta = sqrt(PI) * young_(i) * th_(i) / (1.0 - nue * nue);
+      const double beta = sqrt(M_PI) * young_(i) * th_(i) / (1.0 - nue * nue);
       double Wf, Wb;
 
       // -----------------------------------------------------------------------------
@@ -1628,7 +1628,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::CalcPostprocessingValues(Arter
 
   for (int i = 0; i < 2; i++)
   {
-    const double beta = sqrt(PI) * young_(i) * th_(i) / (1.0 - nue * nue);
+    const double beta = sqrt(M_PI) * young_(i) * th_(i) / (1.0 - nue * nue);
 
     int myrank = discretization.Comm().MyPID();
     if (myrank == ele->Nodes()[i]->Owner())
@@ -1808,7 +1808,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateWfAndWb(Artery* ele,
   // lambda1_i * dt/dx))
   for (int i = 0; i < numnode; ++i)
   {
-    const double c = sqrt(sqrt(PI) * young_(i) * th_(i) / (1.0 - pow(nue, 2)) * sqrt(earean(i)) /
+    const double c = sqrt(sqrt(M_PI) * young_(i) * th_(i) / (1.0 - pow(nue, 2)) * sqrt(earean(i)) /
                           (2.0 * area0_(i) * dens));
     double Wf = eqn(i) / earean(i) + 4.0 * c;
     double Wb = eqn(i) / earean(i) - 4.0 * c;

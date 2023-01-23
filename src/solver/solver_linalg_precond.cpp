@@ -12,7 +12,7 @@
 #include <Ifpack.h>
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "linalg_precond.H"
+#include "solver_linalg_precond.H"
 #include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_mlapi_operator.H"
@@ -35,8 +35,8 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator> matrix,
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::Preconditioner::Setup");
 
-  Epetra_Time timer(matrix->Comm());
-  timer.ResetStartTime();
+  Teuchos::Time timer("", true);
+  timer.reset();
 
   std::string solvertype = solver_->Params().get("solver", "none");
   if (solvertype == "aztec" || solvertype == "belos")

@@ -25,7 +25,6 @@
 #include "inpar_contact.H"
 #include "beam3_base.H"
 
-#include "lib_standardtypes_cpp.H"
 
 #include <Epetra_SerialDenseVector.h>
 

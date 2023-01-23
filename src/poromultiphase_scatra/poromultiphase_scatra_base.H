@@ -17,7 +17,7 @@
 
 #include "Teuchos_RCP.hpp"
 #include <Epetra_Vector.h>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 // forward declarations
 namespace ADAPTER
@@ -120,8 +120,8 @@ namespace POROMULTIPHASESCATRA
     //! TODO: find a better way to do this. Perhaps this should be moved to the adapter?
     int ndsporofluid_scatra_;
 
-    Epetra_Time timertimestep_;  //!< timer for measurement of duration of one time-step
-    double dttimestep_;          //!< duration of one time step
+    Teuchos::Time timertimestep_;  //!< timer for measurement of duration of one time-step
+    double dttimestep_;            //!< duration of one time step
 
    protected:
     //! what to do when nonlinear solution fails

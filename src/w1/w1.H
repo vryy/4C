@@ -277,11 +277,6 @@ namespace DRT
           Epetra_SerialDenseVector& elevec1,  ///< vector to be filled by element. If NULL on input
           Epetra_SerialDenseMatrix* elemat1 = NULL);
 
-      /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store them in elevecs
-      void w1_expol(Epetra_SerialDenseMatrix& stresses,  ///< gp stresses
-          Epetra_MultiVector& expolstress                ///< expol stresses
-      );
-
       //@}
 
      protected:

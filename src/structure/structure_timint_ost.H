@@ -11,7 +11,6 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "structure_timint_impl.H"
-#include "lib_standardtypes_cpp.H"
 
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */
@@ -209,7 +208,7 @@ namespace STR
     //! Give local order of accuracy of displacement part
     virtual int MethodOrderOfAccuracyDis() const
     {
-      return fabs(MethodLinErrCoeff1()) < EPS6 ? 2 : 1;
+      return fabs(MethodLinErrCoeff1()) < 1e-6 ? 2 : 1;
     }
 
     //! Give local order of accuracy of velocity part

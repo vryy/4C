@@ -27,15 +27,6 @@ message(STATUS "Found Trilinos: ${Trilinos_DIR} (Version ${Trilinos_VERSION})")
 message(STATUS "Trilinos packages: ${Trilinos_PACKAGE_LIST}")
 message(STATUS "Trilinos TPLs: ${Trilinos_TPL_LIST}")
 
-# get trilinos version information
-get_trilinos_version()
-
-# configure trilinos version file to pass information to the source code
-configure_file(
-  "${PROJECT_SOURCE_DIR}/src/headers/trilinos_version.H.in"
-  "${PROJECT_BINARY_DIR}/src/headers/trilinos_version.H"
-  )
-
 if(Trilinos_FOUND AND NOT TARGET Trilinos::all_selected_libs)
   # In preparation for newer Trilinos releases, create a target
   # Trilinos::all_selected_libs with the correct dependencies

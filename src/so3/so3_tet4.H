@@ -362,7 +362,6 @@ namespace DRT
         calc_struct_nlnstiffmass,
         calc_struct_nlnstifflmass,
         calc_struct_stress,
-        postprocess_stress,
         calc_struct_eleload,
         calc_struct_fsiload,
         struct_calc_store_istep,
@@ -444,13 +443,6 @@ namespace DRT
       //! lump mass matrix (bborn 07/08)
       void so_tet4_lumpmass(
           LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4>* emass);  //!< element mass matrix
-
-
-      /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store them in elevecs
-      void so_tet4_expol(
-          LINALG::Matrix<NUMGPT_SOTET4, MAT::NUM_STRESS_3D>& stresses,  ///< gp stresses
-          Epetra_MultiVector& expolstresses                             ///< nodal stresses
-      );
 
       //! remodeling for fibers at the end of time step (st 01/10)
       void so_tet4_remodel(std::vector<int>& lm,    // location matrix

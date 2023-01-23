@@ -21,7 +21,7 @@
 #include "linalg_mapextractor.H"
 
 #include <Teuchos_ParameterList.hpp>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*
  |  forward declarations                                              |
@@ -256,7 +256,7 @@ namespace POROELAST
     //    double normrhsporo_;    //!< norm of residual forces (porosity)
     //    double normincporo_;    //!< norm of residual unknowns (porosity)
 
-    Epetra_Time timer_;  //!< timer for solution technique
+    Teuchos::Time timer_;  //!< timer for solution technique
 
     int iter_;  //!< iteration step
 

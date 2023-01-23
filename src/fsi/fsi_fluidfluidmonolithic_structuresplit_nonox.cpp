@@ -586,7 +586,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupVector(Epetra_Vector& f,
   // scv: structure fsi dofs
   Teuchos::RCP<Epetra_Vector> scv = StructureField()->Interface()->ExtractFSICondVector(sv);
 
-  if (fabs(fluidscale) > EPS15)
+  if (fabs(fluidscale) > 1e-15)
   {
     // modfv: whole embedded fluid map but entries at fsi dofs
     Teuchos::RCP<Epetra_Vector> modfv =

@@ -269,6 +269,12 @@ namespace DRT
      */
     namespace UTILS
     {
+      /*!
+       * @brief Implementation details of util functions
+       */
+      namespace DETAIL
+      {
+      }
     }  // namespace UTILS
 
     /*! \brief

@@ -15,7 +15,6 @@
 #include "linalg_sparsematrix.H"
 #include "fem_general_utils_local_connectivity_matrices.H"
 
-#include "lib_standardtypes_cpp.H"
 
 namespace CONTACT
 {

@@ -66,7 +66,7 @@ POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroMultiPhaseMonolithicTwoWay(
       maxres_(0.0),
       vectornormfres_(INPAR::POROMULTIPHASE::norm_undefined),
       vectornorminc_(INPAR::POROMULTIPHASE::norm_undefined),
-      timernewton_(comm),
+      timernewton_("", true),
       dtsolve_(0.0),
       dtele_(0.0),
       fdcheck_(INPAR::POROMULTIPHASE::FDCheck::fdcheck_none)
@@ -249,9 +249,9 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate(Teuchos::RCP<const
   TEUCHOS_FUNC_TIME_MONITOR("POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate");
 
   // reset timer
-  timernewton_.ResetStartTime();
+  timernewton_.reset();
   // *********** time measurement ***********
-  double dtcpu = timernewton_.WallTime();
+  double dtcpu = timernewton_.wallTime();
   // *********** time measurement ***********
 
   // displacement and fluid velocity & pressure incremental vector
@@ -262,7 +262,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate(Teuchos::RCP<const
   Evaluate(sx, fx, itnum_ == 0);
 
   // *********** time measurement ***********
-  dtele_ = timernewton_.WallTime() - dtcpu;
+  dtele_ = timernewton_.wallTime() - dtcpu;
   // *********** time measurement ***********
 
   return;
@@ -357,7 +357,6 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(
   // create empty matrix
   Teuchos::RCP<LINALG::SparseMatrix> k_sf = StructFluidCouplingMatrix();
 
-  // Epetra_Time timerstrcoupl(Comm());
   // call the element and calculate the matrix block
   ApplyStrCouplMatrix(k_sf);
 
@@ -894,9 +893,9 @@ bool POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Converged()
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::LinearSolve()
 {
   // reset timer
-  timernewton_.ResetStartTime();
+  timernewton_.reset();
   // *********** time measurement ***********
-  double dtcpu = timernewton_.WallTime();
+  double dtcpu = timernewton_.wallTime();
   // *********** time measurement ***********
 
   if (solveradapttol_ and (itnum_ > 1))
@@ -918,7 +917,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::LinearSolve()
   equilibration_->UnequilibrateIncrement(iterinc_);
 
   // *********** time measurement ***********
-  dtsolve_ = timernewton_.WallTime() - dtcpu;
+  dtsolve_ = timernewton_.wallTime() - dtcpu;
   // *********** time measurement ***********
 
   return;

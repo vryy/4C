@@ -35,6 +35,8 @@ namespace DRT
       typedef DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype> myelch;
       typedef DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype> myelectrode;
       typedef DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils myelectrodegrowthutils;
+      using my::nen_;
+      using my::nsd_;
 
      public:
       //! singleton access method
@@ -126,7 +128,7 @@ namespace DRT
           ) override;
 
       //! nodal growth variables
-      LINALG::Matrix<my::nen_, 1> egrowth_;
+      LINALG::Matrix<nen_, 1> egrowth_;
     };  // class ScaTraEleBoundaryCalcElchElectrodeGrowth
   }     // namespace ELEMENTS
 }  // namespace DRT

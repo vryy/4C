@@ -22,7 +22,7 @@
 
 #include "scatra_ele.H"
 
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 #include <iostream>
 #include <string>
 #include <Teuchos_TimeMonitor.hpp>

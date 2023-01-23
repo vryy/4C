@@ -89,6 +89,8 @@ cardiovascular0d/          @baci/team_reduced_fluid_models
 
 comm/                      @baci/team_discretization
 
+config/                    @baci/team_infrastructure
+
 constraint/                @baci/team_discretization
 
 contact/                   @baci/team_contact

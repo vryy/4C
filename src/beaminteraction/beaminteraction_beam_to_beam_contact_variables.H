@@ -21,7 +21,6 @@
 
 #include "beaminteraction_contact_pair.H"
 
-#include "lib_standardtypes_cpp.H"
 #include "beaminteraction_beam3contact_defines.H"
 #include "beaminteraction_beam3contact_tangentsmoothing.H"
 

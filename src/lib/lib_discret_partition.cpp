@@ -10,7 +10,7 @@
 /*---------------------------------------------------------------------*/
 
 #include <Epetra_FECrsGraph.h>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 #include "lib_discret.H"
 #include "lib_exporter.H"

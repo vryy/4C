@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------------*/
-#include "headers_standardtypes.h"
 #include "s8_shell8.h"
+#include "math.h"
 
 
 /*----------------------------------------------------------------------*
@@ -145,7 +145,7 @@ void s8_mat_neohooke(NEO_HOOKE *mat, DOUBLE *stress, DOUBLE **CC, DOUBLE **gmkon
   l1 = (emod * nue) / ((1.0 + nue) * (1.0 - 2.0 * nue));
   l2 = emod / (2.0 * (1.0 + nue));
   xj = detc / detr;
-  if (xj < EPS6) xj = EPS6;
+  if (xj < 1e-6) xj = 1e-6;
   F1 = l1 * log(xj) - l2;
   /*-------------------------------------------------------- pk2 stresses */
   for (i = 0; i < 3; i++)

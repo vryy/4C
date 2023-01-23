@@ -319,7 +319,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::CalcWallShearStresses(
     L = sqrt(L);
 
     // normalise the normal vector (if present for the current node)
-    if (L > EPS15)
+    if (L > 1e-15)
     {
       for (int j = 0; j < numdim_; j++)
       {

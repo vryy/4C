@@ -217,7 +217,7 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLi
       printiter_(true),
       printerrfile_(true),
       errfile_(DRT::Problem::Instance()->ErrorFile()->Handle()),
-      timer_(comm),
+      timer_("FPSI Monolithic", true),
       isfirsttimestep_(true),
       islinesearch_(false),
       firstcall_(true)
@@ -371,8 +371,8 @@ void FPSI::Monolithic::TimeStep()
          islinesearch_ == true)
   {
     // start time measurement
-    timer_.ResetStartTime();
-    Epetra_Time timer(Comm());
+    timer_.reset();
+    Teuchos::Time timer("FPSI Time Step", true);
     Evaluate(iterinc_);
     // create full monolithic FPSI right-hand-side vector
     // moved to evaluate()
@@ -1415,9 +1415,6 @@ void FPSI::Monolithic::PrintNewtonIterText(FILE* ofile)
       dserror("You should not turn up here.");
       break;
   }
-
-  // add solution time
-  // oss << std::setw(14) << std::setprecision(2) << std::scientific << timer_.ElapsedTime();
 
   // finish oss
   oss << std::ends;

@@ -10,6 +10,7 @@
 
 #include <Epetra_MultiVector.h>
 #include <Epetra_SerialDenseMatrix.h>
+#include "fem_general_utils_gauss_point_extrapolation.H"
 #include "so3_element_service.H"
 #include "so3_hex8.H"
 #include "lib_discret.H"
@@ -589,40 +590,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       }
     }
     break;
-    //==================================================================================
-    // postprocess stresses/strains at gauss points
-    // note that in the following, quantities are always referred to as
-    // "stresses" etc. although they might also apply to strains
-    // (depending on what this routine is called for from the post filter)
-    case ELEMENTS::struct_postprocess_stress:
-    {
-      const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> gpstressmap =
-          params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
-              "gpstressmap", Teuchos::null);
-      if (gpstressmap == Teuchos::null)
-        dserror("no gp stress/strain map available for postprocessing");
-      std::string stresstype = params.get<std::string>("stresstype", "ndxyz");
-      int gid = Id();
-      LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> gpstress(((*gpstressmap)[gid])->A(), true);
-      Teuchos::RCP<Epetra_MultiVector> poststress =
-          params.get<Teuchos::RCP<Epetra_MultiVector>>("poststress", Teuchos::null);
-      if (poststress == Teuchos::null) dserror("No element stress/strain vector available");
-      if (stresstype == "ndxyz")
-      {
-        // extrapolate stresses/strains at Gauss points to nodes
-        soh8_expol(gpstress, *poststress);
-      }
-      else if (stresstype == "cxyz")
-      {
-        DRT::ELEMENTS::AssembleAveragedElementValues<
-            LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>>(*poststress, gpstress, this);
-      }
-      else
-      {
-        dserror("unknown type of stress/strain output on element level");
-      }
-      break;
-    }
     case ELEMENTS::struct_init_gauss_point_data_output:
     {
       dsassert(IsParamsInterface(),
@@ -672,7 +639,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
                       .MutableGaussPointDataOutputManagerPtr()
                       ->GetMutableElementCenterData()
                       .at(quantity_name);
-              DRT::ELEMENTS::AssembleAveragedElementValues(*global_data, gp_data, this);
+              DRT::ELEMENTS::AssembleAveragedElementValues(*global_data, gp_data, *this);
               break;
             }
             case INPAR::STR::GaussPointDataOutputType::nodes:
@@ -689,7 +656,12 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
                        ->GetMutableNodalDataCount()
                        .at(quantity_name);
 
-              ExtrapolateGPQuantityToNodesAndAssemble(gp_data, *global_data, false);
+              static auto gauss_integration = DRT::UTILS::IntegrationPoints3D(
+                  DRT::UTILS::NumGaussPointsToGaussRule<DRT::Element::DiscretizationType::hex8>(
+                      NUMGPT_SOH8));
+              DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
+                  DRT::Element::DiscretizationType::hex8>(
+                  *this, gp_data, *global_data, false, gauss_integration);
               DRT::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, this);
               break;
             }

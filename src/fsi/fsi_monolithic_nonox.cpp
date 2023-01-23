@@ -365,9 +365,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   // Call all fileds evaluate method and assemble rhs and matrices
 
   {
-    Epetra_Time ts(Comm());
     StructureField()->Evaluate(sx);
-    // IO::cout  << "structure time: " << ts.ElapsedTime() << IO::endl;
   }
 
   {
@@ -376,7 +374,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
     // displacement of the last time step. So we need to build the
     // sum of all increments and give it to ALE.
 
-    Epetra_Time ta(Comm());
+    Teuchos::Time ta("", true);
     AleField()->Evaluate(ax);
   }
 
@@ -385,9 +383,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   FluidField()->ApplyMeshDisplacement(fluiddisp);
 
   {
-    Epetra_Time tf(Comm());
     FluidField()->Evaluate(fx);
-    // IO::cout << "fluid time : " << tf.ElapsedTime() << IO::endl;
   }
 
   if (HasFluidDofMapChanged(fluidincrementmap)) HandleFluidDofMapChangeInNewton();

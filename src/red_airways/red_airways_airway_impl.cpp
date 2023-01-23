@@ -25,7 +25,6 @@
 #include "lib_utils.H"
 #include "lib_globalproblem.H"
 #include "lib_function_of_time.H"
-#include "lib_standardtypes_cpp.H"
 #include "fem_general_utils_fem_shapefunctions.H"
 #include <fstream>
 #include <iomanip>
@@ -573,10 +572,10 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(RedAirway* ele, Epetra_SerialDen
   if (l_branch < 0.0) l_branch = L;
 
   // evaluate Poiseuille resistance
-  double Rp = 2.0 * (2.0 + velPow) * PI * visc * L / (pow(A, 2));
+  double Rp = 2.0 * (2.0 + velPow) * M_PI * visc * L / (pow(A, 2));
 
   // evaluate the Reynolds number
-  const double Re = 2.0 * fabs(qout_np) / (visc / dens * sqrt(A * PI));
+  const double Re = 2.0 * fabs(qout_np) / (visc / dens * sqrt(A * M_PI));
 
   if (ele->Resistance() == "Poiseuille")
   {
@@ -799,7 +798,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(RedAirway* ele, Epetra_SerialDen
   // get airway convective resistance
   //------------------------------------------------------------
   // get Poiseuille resistance with parabolic profile
-  double Rp2nd = 2.0 * (2.0 + 2.0) * PI * visc * L / (pow(A, 2));
+  double Rp2nd = 2.0 * (2.0 + 2.0) * M_PI * visc * L / (pow(A, 2));
   // get the power of velocity profile for the currently used resistance
   double gamma = 4.0 / (Rp2nd / R) - 2.0;
   // get the Coriolis coefficient

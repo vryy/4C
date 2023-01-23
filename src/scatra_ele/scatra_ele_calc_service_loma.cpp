@@ -44,7 +44,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::EvaluateAction(DRT::Element* ele,
       // extract additional local values from global vector
       Teuchos::RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
       if (phiam == Teuchos::null) dserror("Cannot get state vector 'phiam'");
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*phiam, ephiam_, lm);
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phiam, ephiam_, lm);
     }
   }
 
@@ -94,7 +94,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalculateDomainAndBodyforce(
   my::BodyForce(ele);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
@@ -106,7 +106,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalculateDomainAndBodyforce(
     const double rhs = my::bodyforce_[0].Dot(my::funct_);
 
     // calculate integrals of domain and bodyforce
-    for (unsigned i = 0; i < my::nen_; i++)
+    for (unsigned i = 0; i < nen_; i++)
     {
       scalars[0] += fac * my::funct_(i);
     }
@@ -132,7 +132,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractElementAndNodeValues(DRT:
     // extract local values from global vector
     Teuchos::RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
     if (phiam == Teuchos::null) dserror("Cannot get state vector 'phiam'");
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*phiam, ephiam_, la[0].lm_);
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phiam, ephiam_, la[0].lm_);
   }
 
   // get thermodynamic pressure
@@ -204,14 +204,14 @@ double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity(const DRT::Element*
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcSubgrVelocityVisc(
-    LINALG::Matrix<my::nsd_, 1>& epsilonvel)
+    LINALG::Matrix<nsd_, 1>& epsilonvel)
 {
   double prefac = 1.0 / 3.0;
   my::derxy2_.Scale(prefac);
 
-  if (my::nsd_ == 3)
+  if (nsd_ == 3)
   {
-    for (unsigned i = 0; i < my::nen_; ++i)
+    for (unsigned i = 0; i < nen_; ++i)
     {
       double sum = (my::derxy2_(0, i) + my::derxy2_(1, i) + my::derxy2_(2, i)) / prefac;
 
@@ -230,9 +230,9 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcSubgrVelocityVisc(
     }
   }
 
-  else if (my::nsd_ == 2)
+  else if (nsd_ == 2)
   {
-    for (unsigned i = 0; i < my::nen_; ++i)
+    for (unsigned i = 0; i < nen_; ++i)
     {
       double sum = (my::derxy2_(0, i) + my::derxy2_(1, i)) / prefac;
 

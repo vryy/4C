@@ -9,7 +9,6 @@
 #include "matelast_isomuscle_blemker.H"
 #include "matelast_aniso_structuraltensor_strategy.H"
 #include "lib_globalproblem.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_linedefinition.H"
 #include "mat_elasthyper_service.H"
 #include "mat_service.H"
@@ -128,7 +127,7 @@ void MAT::ELASTIC::IsoMuscleBlemker::AddStressAnisoModified(const LINALG::Matrix
   // helper variables for computation of 2nd Piola Kirchhoff stress and elasticity tensor
   double H1 = (modI1 * modI4 - modI5) / (2.0 * lambdaM);
   // prevents singularitys in cross-fiber-shear-free states
-  if ((H1 - 1.0) < EPS15) H1 = 1.0 + EPS15;
+  if ((H1 - 1.0) < 1e-15) H1 = 1.0 + 1e-15;
   double H2 = std::sqrt(H1 * H1 - 1.0);
   double H3 = modI1 / (2.0 * lambdaM) - H1 / (2.0 * modI4);
   double B2 = std::acosh(H1);

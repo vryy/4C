@@ -7,7 +7,6 @@
 # C++ build
 *.o
 *.a
-src/headers/compile_settings.h
 
 # Other build
 DartConfiguration.tcl

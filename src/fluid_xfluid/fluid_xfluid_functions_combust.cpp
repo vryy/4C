@@ -9,7 +9,6 @@
 
 #include "fluid_xfluid_functions_combust.H"
 #include "lib_discret_interface.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_linedefinition.H"
 
 
@@ -61,23 +60,27 @@ double DRT::UTILS::ZalesaksDiskFunction::Evaluate(
   // distances to the four corners
   //=====================================
   // upper points
-  double y_upper = std::sqrt(DSQR(0.15) - DSQR(0.025)) + 0.25;
+  double y_upper = std::sqrt(((0.15) * (0.15)) - ((0.025) * (0.025))) + 0.25;
   // warning: sign must be positive
-  double dist_lu = std::sqrt(DSQR(xp[0] + 0.025) + DSQR(xp[1] - y_upper));
+  double dist_lu =
+      std::sqrt(((xp[0] + 0.025) * (xp[0] + 0.025)) + ((xp[1] - y_upper) * (xp[1] - y_upper)));
   if (std::abs(dist_lu) < std::abs(distance)) distance = dist_lu;
 
   // warning: sign must be positive
-  double dist_ru = std::sqrt(DSQR(xp[0] - 0.025) + DSQR(xp[1] - y_upper));
+  double dist_ru =
+      std::sqrt(((xp[0] - 0.025) * (xp[0] - 0.025)) + ((xp[1] - y_upper) * (xp[1] - y_upper)));
   if (std::abs(dist_ru) < std::abs(distance)) distance = dist_ru;
 
   // under points
   double y_down = 0.15;
   // warning: sign must be negative
-  double dist_ld = std::sqrt(DSQR(xp[0] + 0.025) + DSQR(xp[1] - y_down));
+  double dist_ld =
+      std::sqrt(((xp[0] + 0.025) * (xp[0] + 0.025)) + ((xp[1] - y_down) * (xp[1] - y_down)));
   if (std::abs(dist_ld) < std::abs(distance)) distance = -dist_ld;
 
   // warning: sign must be negative
-  double dist_rd = std::sqrt(DSQR(xp[0] - 0.025) + DSQR(xp[1] - y_down));
+  double dist_rd =
+      std::sqrt(((xp[0] - 0.025) * (xp[0] - 0.025)) + ((xp[1] - y_down) * (xp[1] - y_down)));
   if (std::abs(dist_rd) < std::abs(distance)) distance = -dist_rd;
 
   //=====================================
@@ -104,9 +107,9 @@ double DRT::UTILS::ZalesaksDiskFunction::Evaluate(
   //======================================
   // decide for part of circle
   // get radius of sphere for current point
-  double s = std::sqrt(DSQR(xp[0] - 0.0) + DSQR(xp[1] - 0.25));
+  double s = std::sqrt(((xp[0] - 0.0) * (xp[0] - 0.0)) + ((xp[1] - 0.25) * (xp[1] - 0.25)));
   // get angle between line form midpoint of circle to current point and vector (0,1,0)
-  double y_tmp = std::sqrt(DSQR(0.15) - DSQR(0.025)) * s / 0.15;
+  double y_tmp = std::sqrt(((0.15) * (0.15)) - ((0.025) * (0.025))) * s / 0.15;
   if ((xp[1] - 0.25) <= y_tmp)
   {
     if (std::abs(s - 0.15) < std::abs(distance)) distance = s - 0.15;
@@ -156,7 +159,9 @@ double DRT::UTILS::CollapsingWaterColumnFunction::Evaluate(
   }
   else
   {
-    distance = sqrt(DSQR(xp[0] - xp_center[0]) + DSQR(xp[1] - xp_center[1])) - radius;
+    distance = sqrt(((xp[0] - xp_center[0]) * (xp[0] - xp_center[0])) +
+                    ((xp[1] - xp_center[1]) * (xp[1] - xp_center[1]))) -
+               radius;
   }
 
   return distance;

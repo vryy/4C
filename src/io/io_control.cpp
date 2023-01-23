@@ -12,17 +12,14 @@
 #include <Epetra_MpiComm.h>
 #include <iostream>
 #include <pwd.h>
-#include <revision.H>
 #include <utility>
 #include <unistd.h>
 #include <vector>
 
 #include "inpar_problemtype.H"
 
-extern "C"
-{
-#include "compile_settings.h"  // for printing current revision number
-}
+#include "config_revision.H"
+#include "config_compile_settings.H"
 
 #include "pss_full_cpp.h"  // access to legacy parser module
 

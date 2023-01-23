@@ -15,7 +15,6 @@
 #include "mat_poro_density_law.H"
 
 #include "lib_globalproblem.H"
-#include "lib_standardtypes_cpp.H"
 #include "mat_par_bundle.H"
 
 /*----------------------------------------------------------------------*

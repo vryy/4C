@@ -11,7 +11,7 @@
 #include "fsi_overlapprec_fsiamg.H"
 #include "solver_linalg_solver.H"
 
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 #include <ml_MultiLevelPreconditioner.h>
 #include "MLAPI_LoadBalanceOperator.h"
 #include "MLAPI_LoadBalanceInverseOperator.h"
@@ -54,7 +54,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonV(const std::string field, c
 
   MLAPI::MultiVector tmpx(x.GetVectorSpace(), 1, false);
 
-  Epetra_Time timer(MLAPI::GetEpetra_Comm());
+  Teuchos::Time timer("FSI RichardsonV", true);
 
   for (int i = 1; i <= sweeps; ++i)
   {
@@ -67,7 +67,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonV(const std::string field, c
 
   if (analysis)
   {
-    double t = timer.ElapsedTime();
+    double t = timer.totalElapsedTime(true);
     double rl2 = r.Norm2();
     double rinf = r.NormInf();
     double rl2rate = Rate(myrank, t, rl2, initrl2, r.GetGlobalLength());
@@ -197,7 +197,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_V(const int myrank, cons
     initrinf = std::max(initsrinf, initarinf);
     initrinf = std::max(initrinf, initfrinf);
   }
-  Epetra_Time timer(MLAPI::GetEpetra_Comm());
+  Teuchos::Time timer("RichardsonBGS_V", true);
   double t1 = 0.0;
   double t2 = 0.0;
   double t3 = 0.0;
@@ -206,7 +206,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_V(const int myrank, cons
   {
     //--------------------- structure block
     {
-      if (analysis) timer.ResetStartTime();
+      if (analysis) timer.reset();
       // compute ( f - A x ) for structure row
       stmpf = sf - Ass[0] * sy;
       stmpf = stmpf - Asf[0] * fy;
@@ -215,11 +215,11 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_V(const int myrank, cons
       RichardsonV("(s)", myrank, blocksweeps[0], blockdamps[0], sbest.Sweeps(), sbest.Damp(), Ass,
           sbest.S(), Pss, Rss, 0, sbest.Nlevel(), sz, stmpf, true, false, true);
       sy.Update(damp, sz, 1.0);
-      if (analysis) t1 += timer.ElapsedTime();
+      if (analysis) t1 += timer.totalElapsedTime(true);
     }
     //---------------------- ale block
     {
-      if (analysis) timer.ResetStartTime();
+      if (analysis) timer.reset();
       // compute ( f - A x ) for ale row
       atmpf = af - Aaa[0] * ay;
       if (structuresplit_)
@@ -231,11 +231,11 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_V(const int myrank, cons
       RichardsonV("(a)", myrank, blocksweeps[2], blockdamps[2], abest.Sweeps(), abest.Damp(), Aaa,
           abest.S(), Paa, Raa, 0, abest.Nlevel(), az, atmpf, true, false, true);
       ay.Update(damp, az, 1.0);
-      if (analysis) t2 += timer.ElapsedTime();
+      if (analysis) t2 += timer.totalElapsedTime(true);
     }
     //------------------------ fluid block
     {
-      if (analysis) timer.ResetStartTime();
+      if (analysis) timer.reset();
       // compute ( f - A x ) for fluid row
       ftmpf = ff - Aff[0] * fy;
       ftmpf = ftmpf - Afs[0] * sy;
@@ -245,13 +245,13 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_V(const int myrank, cons
       RichardsonV("(f)", myrank, blocksweeps[1], blockdamps[1], fbest.Sweeps(), fbest.Damp(), Aff,
           fbest.S(), Pff, Rff, 0, fbest.Nlevel(), fz, ftmpf, true, false, true);
       fy.Update(damp, fz, 1.0);
-      if (analysis) t3 += timer.ElapsedTime();
+      if (analysis) t3 += timer.totalElapsedTime(true);
     }
   }  // iterations
 
   if (analysis)
   {
-    double t = timer.ElapsedTime();
+    double t = timer.totalElapsedTime(true);
 
     // final residuals
     stmpf = sf - Ass[0] * sy;
@@ -368,7 +368,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::Richardson_BlockV(const int myrank, co
     initrinf = std::max(initrinf, initfrinf);
   }
 
-  Epetra_Time timer(MLAPI::GetEpetra_Comm());
+  Teuchos::Time timer("Richardson_BlockV", true);
 
   for (int i = 1; i <= sweeps; ++i)
   {
@@ -401,7 +401,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::Richardson_BlockV(const int myrank, co
 
   if (analysis)
   {
-    double t = timer.ElapsedTime();
+    double t = timer.totalElapsedTime(true);
 
     double srl2 = stmpf.DotProduct(stmpf);
     double srinf = stmpf.NormInf();

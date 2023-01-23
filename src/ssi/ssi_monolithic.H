@@ -11,6 +11,7 @@
 #ifndef SSI_MONOLITHIC_H_
 #define SSI_MONOLITHIC_H_
 
+#include <Teuchos_Time.hpp>
 #include "ssi_base.H"
 
 // forward declarations
@@ -300,7 +301,7 @@ namespace SSI
     Teuchos::RCP<SSI::MeshtyingStrategyBase> strategy_meshtying_;
 
     //! timer for Newton-Raphson iteration
-    Teuchos::RCP<Epetra_Time> timer_;
+    Teuchos::RCP<Teuchos::Time> timer_;
   };
 }  // namespace SSI
 #endif

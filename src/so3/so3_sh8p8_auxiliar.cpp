@@ -18,7 +18,6 @@
 #include "linalg_utils_sparse_algebra_math.H"
 #include "io_control.H"
 #include "lib_globalproblem.H"
-#include "Epetra_Time.h"
 #include "Teuchos_TimeMonitor.hpp"
 
 using VoigtMapping = ::UTILS::VOIGT::IndexMappings;
@@ -866,7 +865,7 @@ void DRT::ELEMENTS::So_sh8p8::StretchTensor(
                  27.0;
     if (eta < 0.0)
     {
-      if (fabs(eta) < EPS6)
+      if (fabs(eta) < 1e-6)
         eta = 0.0;
       else
         dserror("Trouble with negative eta=%g", eta);
@@ -889,7 +888,7 @@ void DRT::ELEMENTS::So_sh8p8::StretchTensor(
 
     // invariants of material stretch tensor U
     // 1st invariant: I_U = tr(U)
-    if (fabs(zeta + 2.0 * ci) < EPS12)
+    if (fabs(zeta + 2.0 * ci) < 1e-12)
     {
       ui = sqrt(ci + 2.0 * sqrt(cii));
     }
@@ -992,7 +991,7 @@ int DRT::ELEMENTS::So_sh8p8::SymSpectralDecompJacIter(LINALG::Matrix<NUMDIM_, NU
   }
 
   // check for trivial problem
-  if (asum < EPS12)
+  if (asum < 1e-12)
   {
     ew.Clear();
     return 0;

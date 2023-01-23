@@ -646,7 +646,7 @@ double XFEM::LevelSetCoupling::FunctImplementation(
 
 
     const double two_alpha_squared = 2.0 * alpha * alpha;
-    double two_PI = 2.0 * PI;
+    double two_PI = 2.0 * M_PI;
 
     double t_0 = z / alpha;
 
@@ -664,8 +664,8 @@ double XFEM::LevelSetCoupling::FunctImplementation(
       double arc = two_PI * t_0;
       double cosine = cos(arc);
       double sine = sin(arc);
-      Jac = 4.0 * PI * R * (two_PI * x * cosine + two_PI * y * sine) + two_alpha_squared;
-      rhs = 4.0 * PI * R * (x * sine - y * cosine) + two_alpha_squared * t_0 - 2.0 * alpha * z;
+      Jac = 4.0 * M_PI * R * (two_PI * x * cosine + two_PI * y * sine) + two_alpha_squared;
+      rhs = 4.0 * M_PI * R * (x * sine - y * cosine) + two_alpha_squared * t_0 - 2.0 * alpha * z;
 
 
       double dt = -rhs / Jac;
@@ -736,7 +736,7 @@ double XFEM::LevelSetCoupling::FunctImplementation(
   else if (func_no == -2)
   {
     double n1 = 0.0;
-    double n2 = 2.0 * PI * R;
+    double n2 = 2.0 * M_PI * R;
     double n3 = alpha;
 
     double norm = sqrt(n1 * n1 + n2 * n2 + n3 * n3);
@@ -764,7 +764,7 @@ double XFEM::LevelSetCoupling::FunctImplementation(
     // outflow region
 
     double n1_out = 0.0;
-    double n2_out = -2.0 * PI * R;
+    double n2_out = -2.0 * M_PI * R;
     double n3_out = -alpha;
 
     double norm_out = sqrt(n1_out * n1_out + n2_out * n2_out + n3_out * n3_out);
@@ -804,7 +804,7 @@ double XFEM::LevelSetCoupling::FunctImplementation(
   else if (func_no == -6)  // cylinder at inflow of a helix
   {
     double n1 = 0.0;
-    double n2 = 2.0 * PI * R;
+    double n2 = 2.0 * M_PI * R;
     double n3 = alpha;
 
     double norm = sqrt(n1 * n1 + n2 * n2 + n3 * n3);

@@ -65,7 +65,7 @@ interface
 #include "mat_par_bundle.H"
 
 
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 
 /*----------------------------------------------------------------------*
@@ -4220,12 +4220,8 @@ void FLD::XFluid::XTimint_ReconstructGhostValues(
     TEUCHOS_FUNC_TIME_MONITOR(
         "FLD::XFluid::XTimint_ReconstructGhostValues::ApplyDirichlettoSystem");
 
-    Epetra_Time tf(discret_->Comm());
-
     LINALG::ApplyDirichlettoSystem(
         sysmat_gp, incvel_gp, residual_gp, zeros_gp, *(ghost_penaly_dbcmaps->CondMap()));
-
-    // IO::cout << "fluid time : ApplyDirichlettoSystem " << tf.ElapsedTime() << IO::endl;
   }
 
   //-------solve for residual displacements to correct incremental displacements
@@ -5519,7 +5515,7 @@ void FLD::XFluid::CalculateAcceleration(const Teuchos::RCP<const Epetra_Vector> 
     case INPAR::FLUID::timeint_bdf2: /* 2nd order backward differencing BDF2 */
     {
       // TODO: computed, even though not really used afterwards! CHECK!!!
-      if (dta_ * dtp_ < EPS15) dserror("Zero time step size!!!!!");
+      if (dta_ * dtp_ < 1e-15) dserror("Zero time step size!!!!!");
       const double sum = dta_ + dtp_;
 
       accnp->Update((2.0 * dta_ + dtp_) / (dta_ * sum), *velnp, -sum / (dta_ * dtp_), *veln, 0.0);

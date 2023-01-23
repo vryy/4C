@@ -619,7 +619,7 @@ double INVANA::MetaParametrization::Material2Meta(double matval)
     }
     case INPAR::INVANA::stat_inv_meta_arctan:
     {
-      val = tan(PI * (matval - 0.5));
+      val = tan(M_PI * (matval - 0.5));
       break;
     }
     default:
@@ -655,7 +655,7 @@ double INVANA::MetaParametrization::DMaterialDMeta(double metaval)
     case INPAR::INVANA::stat_inv_meta_arctan:
     {
       val = metaval;
-      val = 1. / PI / (val * val + 1.);
+      val = 1. / M_PI / (val * val + 1.);
       break;
     }
     default:
@@ -703,7 +703,7 @@ void INVANA::MetaParametrization::Meta2Material(
       for (int n = 0; n < meta->NumVectors(); ++n)
         for (int i = 0; i < meta->MyLength(); ++i)
         {
-          (*(*material)(n))[i] += 1. / PI * atan((*(*material)(n))[i]);
+          (*(*material)(n))[i] += 1. / M_PI * atan((*(*material)(n))[i]);
         }
       break;
     }

@@ -15,7 +15,6 @@
 
 #include <Epetra_FEVector.h>
 #include <Epetra_Vector.h>
-#include <Epetra_Time.h>
 
 #include "beaminteraction_periodic_boundingbox.H"
 #include "linalg_utils_sparse_algebra_math.H"

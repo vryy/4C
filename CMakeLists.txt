@@ -16,28 +16,12 @@ message("II Using CMake ${CMAKE_VERSION}")
 set(baci_VERSION_MAJOR 1)
 set(baci_VERSION_MINOR 0)
 
-# configure a header file to pass some of the CMake settings
-# to the source code
-configure_file(
-  "${PROJECT_SOURCE_DIR}/src/headers/compile_settings.h.in"
-  "${PROJECT_BINARY_DIR}/src/headers/compile_settings.h"
-  )
-
 # add the binary tree to the search path for include files
 # so that we will find TutorialConfig.h
 include_directories("${PROJECT_BINARY_DIR}/src/headers")
 
 # specify where our own cmake modules are located
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
-
-# get current Baci revision from git
-include(GetGitRevision)
-get_git_revision_information()
-
-# configure revision file to pass git revision information to the source code
-configure_file(
-  "${PROJECT_SOURCE_DIR}/src/headers/revision.H.in" "${PROJECT_BINARY_DIR}/src/headers/revision.H"
-  )
 
 # include all external (cmake) macros that we use
 include(CheckCXXSourceRuns)

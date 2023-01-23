@@ -78,8 +78,6 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       act = ELEMENTS::struct_calc_nlnstiff_gemm;
     else if (action == "calc_struct_stress")
       act = ELEMENTS::struct_calc_stress;
-    else if (action == "postprocess_stress")
-      act = ELEMENTS::struct_postprocess_stress;
     else if (action == "calc_struct_eleload")
       act = ELEMENTS::struct_calc_eleload;
     else if (action == "calc_struct_fsiload")
@@ -423,60 +421,6 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       break;
     }
     //==================================================================================
-    // postprocess stresses/strains at gauss points
-    /* note that in the following, quantities are always referred to as
-     * "stresses" etc. although they might also apply to strains
-     * (depending on what this routine is called for from the post filter) */
-    case ELEMENTS::struct_postprocess_stress:
-    {
-      std::string groupname = params.get<std::string>("groupname", "gauss_2PK_stresses_xyz");
-
-      // coupling stress are evaluated in the respective coupling element
-      // if( groupname != "gauss_2PK_coupling_stresses_xyz" and groupname!=
-      // "gauss_cauchy_coupling_stresses_xyz")
-      {
-        const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> gpstressmap =
-            params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
-                "gpstressmap", Teuchos::null);
-        if (gpstressmap == Teuchos::null)
-          dserror("no gp stress/strain map available for postprocessing");
-        std::string stresstype = params.get<std::string>("stresstype", "ndxyz");
-        int gid = Id();
-        Teuchos::RCP<Epetra_SerialDenseMatrix> gpstress = (*gpstressmap)[gid];
-        Teuchos::RCP<Epetra_MultiVector> poststress =
-            params.get<Teuchos::RCP<Epetra_MultiVector>>("poststress", Teuchos::null);
-        if (poststress == Teuchos::null) dserror("No element stress/strain vector available");
-
-        if (stresstype == "ndxyz")
-        {
-          // extrapolate stresses/strains at Gauss points to nodes
-          w1_expol(*gpstress, *poststress);
-        }
-        else if (stresstype == "cxyz")
-        {
-          const Epetra_BlockMap& elemap = poststress->Map();
-          int lid = elemap.LID(Id());
-          const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
-          if (lid != -1)
-          {
-            // maximum 4 independent stresses exist in 2D
-            for (int i = 0; i < Wall1::numstr_; ++i)
-            {
-              (*((*poststress)(i)))[lid] = 0.;
-              for (int j = 0; j < intpoints.nquad; ++j)
-              {
-                (*((*poststress)(i)))[lid] += 1.0 / intpoints.nquad * (*gpstress)(j, i);
-              }
-            }
-          }
-        }
-        else
-        {
-          dserror("unknown type of stress/strain output on element level");
-        }
-      }
-      break;
-    }
     case ELEMENTS::struct_calc_energy:
     {
       // need current displacement and residual forces

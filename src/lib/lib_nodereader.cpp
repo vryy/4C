@@ -9,7 +9,6 @@
 /*----------------------------------------------------------------------*/
 
 #include "lib_nodereader.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_elementdefinition.H"
 #include "lib_globalproblem.H"
 #include "lib_utils_factory.H"
@@ -19,7 +18,8 @@
 #include "immersed_problem_immersed_node.H"
 #include "fiber_node.H"
 
-#include <Epetra_Time.h>
+#include <istream>
+#include <string>
 
 namespace DRT::INPUT
 {

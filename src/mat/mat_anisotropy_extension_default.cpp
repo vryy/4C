@@ -10,7 +10,6 @@
 /*----------------------------------------------------------------------*/
 #include "mat_anisotropy_extension_default.H"
 #include "mat_service.H"
-#include "headers_standardtypes.h"
 #include "mat_anisotropy_extension.H"
 #include "lib_parobject.H"
 #include <algorithm>
@@ -68,7 +67,7 @@ void MAT::DefaultAnisotropyExtension<numfib>::SetFiberVecs(
     // alignment angles gamma_i are read from first entry of then unnecessary vectors a1 and a2
     if ((gamma_ < -90) || (gamma_ > 90)) dserror("Fiber angle not in [-90,90]");
     // convert
-    double gamma = (gamma_ * PI) / 180.;
+    double gamma = (gamma_ * M_PI) / 180.;
 
     if (adapt_angle_ && newgamma != -1.0)
     {

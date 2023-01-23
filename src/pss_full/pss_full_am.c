@@ -7,14 +7,13 @@
 
 ---------------------------------------------------------------------*/
 
-/*#include <assert.h>*/
 
 /*!----------------------------------------------------------------------
 \brief the header of everything
 *----------------------------------------------------------------------*/
-#include "headers_standardtypes.h"
+#include "string.h"
 #include "lib_dserror.H"
-#include "headers_am.h"
+#include "pss_full_am.h"
 #include "pss_full_prototypes.h"
 
 

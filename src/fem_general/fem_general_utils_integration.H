@@ -15,6 +15,7 @@
 #include <cstdlib>
 
 #include "lib_dserror.H"
+#include "lib_element.H"
 
 namespace DRT
 {
@@ -237,6 +238,114 @@ namespace DRT
       }
 
       return open;
+    }
+
+    /*!
+     * @brief Evaluates the Gauss rule given the number of Gauss points
+     *
+     * @note Only Gauss-Legendre integration rules are returned.
+     *
+     * @tparam distype (in) : Discretization type
+     * @param numgp (in): number of Gauss points
+     * @return GaussRule1D / GaussRule2D / GaussRule3D depending on the dimension of the
+     * discretization
+     */
+    template <DRT::Element::DiscretizationType distype,
+        std::enable_if_t<DRT::is_hex_v<distype>, int> = 0>
+    GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
+    {
+      switch (numgp)
+      {
+        case 1:
+          return GaussRule3D::hex_1point;
+        case 8:
+          return GaussRule3D::hex_8point;
+        case 18:
+          return GaussRule3D::hex_18point;
+        case 27:
+          return GaussRule3D::hex_27point;
+        case 64:
+          return GaussRule3D::hex_64point;
+        case 125:
+          return GaussRule3D::hex_125point;
+        case 216:
+          return GaussRule3D::hex_216point;
+        case 343:
+          return GaussRule3D::hex_343point;
+        case 512:
+          return GaussRule3D::hex_512point;
+        case 729:
+          return GaussRule3D::hex_729point;
+        case 1000:
+          return GaussRule3D::hex_1000point;
+        default:
+          dserror("I don't know the GaussRule3D for hex elements with %d Gauss points", numgp);
+      }
+
+      // to make the compiler happy
+      return GaussRule3D::undefined;
+    }
+
+    template <DRT::Element::DiscretizationType distype,
+        std::enable_if_t<DRT::is_tet_v<distype>, int> = 0>
+    GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
+    {
+      switch (numgp)
+      {
+        case 1:
+          return GaussRule3D::tet_1point;
+        case 4:
+          return GaussRule3D::tet_4point;
+        case 11:
+          return GaussRule3D::tet_11point;
+        case 24:
+          return GaussRule3D::tet_24point;
+        case 45:
+          return GaussRule3D::tet_45point;
+        default:
+          dserror("I don't know an open GaussRule3D for tet elements with %d Gauss points", numgp);
+      }
+
+      // to make the compiler happy
+      return GaussRule3D::undefined;
+    }
+
+    template <DRT::Element::DiscretizationType distype,
+        std::enable_if_t<DRT::is_wedge_v<distype>, int> = 0>
+    GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
+    {
+      switch (numgp)
+      {
+        case 1:
+          return GaussRule3D::wedge_1point;
+        case 6:
+          return GaussRule3D::wedge_6point;
+        case 9:
+          return GaussRule3D::wedge_9point;
+        default:
+          dserror("I don't know the GaussRule3D for wedge elements with %d Gauss points", numgp);
+      }
+
+      // to make the compiler happy
+      return GaussRule3D::undefined;
+    }
+
+    template <DRT::Element::DiscretizationType distype,
+        std::enable_if_t<DRT::is_pyramid_v<distype>, int> = 0>
+    GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
+    {
+      switch (numgp)
+      {
+        case 1:
+          return GaussRule3D::pyramid_1point;
+        case 8:
+          return GaussRule3D::pyramid_8point;
+        default:
+          dserror("I don't know the GaussRule3D for pyramid elements with %d Gauss points", numgp);
+      }
+
+      // to make the compiler happy
+      return GaussRule3D::undefined;
     }
 
     /// get total number of GPs of the 3D Gauss rule at compile time
@@ -506,6 +615,78 @@ namespace DRT
       return "unknown";
     }
 
+    template <DRT::Element::DiscretizationType distype,
+        std::enable_if_t<DRT::is_quad_v<distype>, int> = 0>
+    GaussRule2D NumGaussPointsToGaussRule(unsigned numgp)
+    {
+      switch (numgp)
+      {
+        case 1:
+          return GaussRule2D::quad_1point;
+        case 4:
+          return GaussRule2D::quad_4point;
+        case 6:
+          return GaussRule2D::quad_6point;
+        case 9:
+          return GaussRule2D::quad_9point;
+        case 16:
+          return GaussRule2D::quad_16point;
+        case 25:
+          return GaussRule2D::quad_25point;
+        case 49:
+          return GaussRule2D::quad_49point;
+        case 64:
+          return GaussRule2D::quad_64point;
+        case 81:
+          return GaussRule2D::quad_81point;
+        case 100:
+          return GaussRule2D::quad_100point;
+        case 256:
+          return GaussRule2D::quad_256point;
+        case 400:
+          return GaussRule2D::quad_400point;
+        case 1024:
+          return GaussRule2D::quad_1024point;
+        default:
+          dserror("I don't know the GaussRule2D for quad elements with %d Gauss points", numgp);
+      }
+
+      // to make the compiler happy
+      return GaussRule2D::undefined;
+    }
+
+    template <DRT::Element::DiscretizationType distype,
+        std::enable_if_t<DRT::is_tri_v<distype>, int> = 0>
+    GaussRule2D NumGaussPointsToGaussRule(unsigned numgp)
+    {
+      switch (numgp)
+      {
+        case 1:
+          return GaussRule2D::tri_1point;
+        case 3:
+          return GaussRule2D::tri_3point;
+        case 4:
+          return GaussRule2D::tri_4point;
+        case 6:
+          return GaussRule2D::tri_6point;
+        case 7:
+          return GaussRule2D::tri_7point;
+        case 12:
+          return GaussRule2D::tri_12point;
+        case 16:
+          return GaussRule2D::tri_16point;
+        case 37:
+          return GaussRule2D::tri_37point;
+        case 64:
+          return GaussRule2D::tri_64point;
+        default:
+          dserror("I don't know the GaussRule2D for tri elements with %d Gauss points", numgp);
+      }
+
+      // to make the compiler happy
+      return GaussRule2D::undefined;
+    }
+
     /// allow to verify the openness of an integration rule
     ///
     /// \note: Open means that no integration point is on the boundary of the integrated domain
@@ -695,6 +876,48 @@ namespace DRT
       return "unknown";
     }
 
+    template <DRT::Element::DiscretizationType distype,
+        std::enable_if_t<DRT::is_line_v<distype>, int> = 0>
+    GaussRule1D NumGaussPointsToGaussRule(unsigned numgp)
+    {
+      switch (numgp)
+      {
+        case 1:
+          return GaussRule1D::line_1point;
+        case 2:
+          return GaussRule1D::line_2point;
+        case 3:
+          return GaussRule1D::line_3point;
+        case 4:
+          return GaussRule1D::line_4point;
+        case 5:
+          return GaussRule1D::line_5point;
+        case 6:
+          return GaussRule1D::line_6point;
+        case 7:
+          return GaussRule1D::line_7point;
+        case 8:
+          return GaussRule1D::line_8point;
+        case 9:
+          return GaussRule1D::line_9point;
+        case 10:
+          return GaussRule1D::line_10point;
+        case 16:
+          return GaussRule1D::line_16point;
+        case 20:
+          return GaussRule1D::line_20point;
+        case 32:
+          return GaussRule1D::line_32point;
+        case 50:
+          return GaussRule1D::line_50point;
+        default:
+          dserror("I don't know the GaussRule1D for line elements with %d Gauss points", numgp);
+      }
+
+      // to make the compiler happy
+      return GaussRule1D::undefined;
+    }
+
     /// allow to verify the openness of an integration rule
     ///
     /// \note: Open means that no integration point is on the boundary of the integrated domain
@@ -874,6 +1097,8 @@ namespace DRT
         return qxg[point];
       };
 
+      [[nodiscard]] int NumPoints() const { return nquad; }
+
       /// get used integration rule
       DRT::UTILS::GaussRule3D GetIntRule() const { return intrule_; };
     };
@@ -909,6 +1134,8 @@ namespace DRT
         return qxg[point];
       };
 
+      [[nodiscard]] int NumPoints() const { return nquad; }
+
       /// get used integration rule
       DRT::UTILS::GaussRule2D GetIntRule() const { return intrule_; };
     };
@@ -943,9 +1170,42 @@ namespace DRT
         return qxg[point];
       };
 
+      [[nodiscard]] int NumPoints() const { return nquad; }
+
       /// get used integration rule
       DRT::UTILS::GaussRule1D GetIntRule() const { return intrule_; };
     };
+
+
+    namespace DETAIL
+    {
+      template <unsigned dim>
+      struct DimToIntegrationPoints
+      {
+      };
+
+      template <>
+      struct DimToIntegrationPoints<1>
+      {
+        using type = DRT::UTILS::IntegrationPoints1D;
+      };
+
+      template <>
+      struct DimToIntegrationPoints<2>
+      {
+        using type = DRT::UTILS::IntegrationPoints2D;
+      };
+
+      template <>
+      struct DimToIntegrationPoints<3>
+      {
+        using type = DRT::UTILS::IntegrationPoints3D;
+      };
+    }  // namespace DETAIL
+
+    template <unsigned dim>
+    using IntegrationPoints = typename DETAIL::DimToIntegrationPoints<dim>::type;
+
 
 
     /*!

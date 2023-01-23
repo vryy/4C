@@ -15,7 +15,6 @@ GROWTHTYPE 1 LOCTIMEINT 1 MEMBRANE 0
 /* headers */
 #include "mat_growthremodel_elasthyper.H"
 #include <cmath>
-#include "lib_standardtypes_cpp.H"
 #include "matelast_summand.H"
 #include "matelast_remodelfiber.H"
 #include "lib_linedefinition.H"

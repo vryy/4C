@@ -22,7 +22,6 @@
 #include "beaminteraction_beam3contact_tangentsmoothing.H"
 #include "headers_FAD_utils.H"
 
-#include "lib_standardtypes_cpp.H"
 
 namespace CONTACT
 {

@@ -15,7 +15,6 @@
 #include "lib_discret.H"
 #include "lib_exporter.H"
 #include "lib_dserror.H"
-#include "lib_standardtypes_cpp.H"
 #include "linalg_utils_densematrix_inverse.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
@@ -220,7 +219,7 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3dPlane(Epetra_SerialDenseMatrix& str
     // make Newton-Raphson iteration to identify
     // E_{33},E_{23},E_{31} which satisfy S_{33}=S_{23}=S_{31}=0
     int i = 0;
-    const double tol = EPS6;
+    const double tol = 1e-6;
     const int n = 10;
     // working arrays
     LINALG::Matrix<3, 3> crr(

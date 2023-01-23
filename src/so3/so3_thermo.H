@@ -220,7 +220,6 @@ namespace DRT
         calc_struct_reset_istep,    //!< reset elementwise internal variables
                                     //!< during iteration to last converged state
                                     //!< needed for predictor TangDis
-        postprocess_stress,         //!< postprocess stresses
         calc_struct_energy          //!< compute internal energy
       };
 

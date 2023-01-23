@@ -11,7 +11,6 @@
 #include "mat_muscle_weickenmeier.H"
 #include "lib_globalproblem.H"
 #include "lib_linedefinition.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_voigt_notation.H"
 #include "matelast_aniso_structuraltensor_strategy.H"
 #include "mat_elasthyper_service.H"

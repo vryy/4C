@@ -16,7 +16,7 @@
 
 #include "mat_material.H"
 
-#include "Epetra_Time.h"
+#include <Teuchos_Time.hpp>
 
 // #define PRINT_NSTET            ///< printout of setup
 #define NSTET_NUMGREEDY 2    ///< number of sweeps of greedy patching
@@ -422,7 +422,6 @@ namespace DRT
         calc_struct_nlnstiffmass,
         calc_struct_nlnstifflmass,
         calc_struct_stress,
-        postprocess_stress,
         calc_struct_eleload,
         calc_struct_fsiload,
         calc_struct_update_istep,

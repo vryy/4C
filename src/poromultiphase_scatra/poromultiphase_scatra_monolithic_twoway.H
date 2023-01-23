@@ -10,7 +10,7 @@
 #define SRC_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_MONOLITHIC_TWOWAY_H_
 
 #include "poromultiphase_scatra_monolithic.H"
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 #include "poromultiphase_scatra_utils.H"
 #include "inpar_solver.H"
@@ -270,9 +270,9 @@ namespace POROMULTIPHASESCATRA
     enum INPAR::POROMULTIPHASESCATRA::VectorNorm vectornormfres_;  //!< type of norm for residual
     enum INPAR::POROMULTIPHASESCATRA::VectorNorm vectornorminc_;   //!< type of norm for increments
 
-    Epetra_Time timernewton_;  //!< timer for measurement of solution time of newton iterations
-    double dtsolve_;           //!< linear solver time
-    double dtele_;             //!< time for element evaluation + build-up of system matrix
+    Teuchos::Time timernewton_;  //!< timer for measurement of solution time of newton iterations
+    double dtsolve_;             //!< linear solver time
+    double dtele_;               //!< time for element evaluation + build-up of system matrix
 
     //! flag for finite difference check
     INPAR::POROMULTIPHASESCATRA::FDCheck fdcheck_;

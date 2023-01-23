@@ -116,7 +116,7 @@ int STR::TimIntAB2::IntegrateStep()
   PreSolve();
 
   // time this step
-  timer_->ResetStartTime();
+  timer_->reset();
 
   const double dt = (*dt_)[0];    // \f$\Delta t_{n}\f$
   const double dto = (*dt_)[-1];  // \f$\Delta t_{n-1}\f$
@@ -132,7 +132,7 @@ int STR::TimIntAB2::IntegrateStep()
       *(*acc_)(-1), 1.0);
 
   // *********** time measurement ***********
-  double dtcpu = timer_->WallTime();
+  double dtcpu = timer_->wallTime();
   // *********** time measurement ***********
 
   // apply Dirichlet BCs
@@ -146,7 +146,7 @@ int STR::TimIntAB2::IntegrateStep()
   ApplyForceExternal(timen_, disn_, veln_, fextn_);
 
   // TIMING
-  // double dtcpu = timer_->WallTime();
+  // double dtcpu = timer_->wallTime();
 
   // initialise internal forces
   fintn_->PutScalar(0.0);
@@ -161,7 +161,7 @@ int STR::TimIntAB2::IntegrateStep()
   }
 
   // *********** time measurement ***********
-  dtele_ = timer_->WallTime() - dtcpu;
+  dtele_ = timer_->wallTime() - dtcpu;
   // *********** time measurement ***********
 
   // viscous forces due Rayleigh damping
@@ -171,7 +171,7 @@ int STR::TimIntAB2::IntegrateStep()
   }
 
   // *********** time measurement ***********
-  dtcpu = timer_->WallTime();
+  dtcpu = timer_->wallTime();
   // *********** time measurement ***********
 
   // contact or meshtying forces
@@ -188,7 +188,7 @@ int STR::TimIntAB2::IntegrateStep()
   }
 
   // *********** time measurement ***********
-  dtcmt_ = timer_->WallTime() - dtcpu;
+  dtcmt_ = timer_->wallTime() - dtcpu;
   // *********** time measurement ***********
 
   // determine time derivative of linear momentum vector,
@@ -206,7 +206,7 @@ int STR::TimIntAB2::IntegrateStep()
   }
 
   // *********** time measurement ***********
-  dtcpu = timer_->WallTime();
+  dtcpu = timer_->wallTime();
   // *********** time measurement ***********
 
   // obtain new accelerations \f$A_{n+1}\f$
@@ -244,7 +244,7 @@ int STR::TimIntAB2::IntegrateStep()
   ApplyDirichletBC(timen_, Teuchos::null, Teuchos::null, accn_, false);
 
   // *********** time measurement ***********
-  dtsolve_ = timer_->WallTime() - dtcpu;
+  dtsolve_ = timer_->wallTime() - dtcpu;
   // *********** time measurement ***********
 
   // things to be done after integrating

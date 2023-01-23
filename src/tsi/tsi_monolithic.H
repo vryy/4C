@@ -24,7 +24,7 @@
 #include "inpar_structure.H"
 #include "inpar_thermo.H"
 
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*
  |                                                           dano 11/10 |
@@ -374,9 +374,9 @@ namespace TSI
 
     const Teuchos::ParameterList& sdyn_;  //!< structural dynamic parameter list
 
-    Epetra_Time timernewton_;  //!< timer for measurement of solution time of newton iterations
-    double dtsolve_;           //!< linear solver time
-    double dtcmt_;             //!< contact evaluation time
+    Teuchos::Time timernewton_;  //!< timer for measurement of solution time of newton iterations
+    double dtsolve_;             //!< linear solver time
+    double dtcmt_;               //!< contact evaluation time
     //@}
 
     //! @name Pseudo-transient continuation parameters

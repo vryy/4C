@@ -14,7 +14,7 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_ParameterListExceptions.hpp>
 
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 #include <Epetra_Comm.h>
 
 #include "lib_conditiondefinition.H"
@@ -667,7 +667,7 @@ void DRT::Problem::ReadTimeFunctionResult(DRT::INPUT::DatFileReader& reader)
 /*----------------------------------------------------------------------*/
 void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
 {
-  Epetra_Time time(*reader.Comm());
+  Teuchos::Time time("", true);
   if (reader.Comm()->MyPID() == 0)
   {
     IO::cout << "Read/generate conditions                          in....";
@@ -807,7 +807,7 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
 
   if (reader.Comm()->MyPID() == 0)
   {
-    std::cout << time.ElapsedTime() << " secs\n";
+    std::cout << time.totalElapsedTime(true) << " secs\n";
   }
 }
 

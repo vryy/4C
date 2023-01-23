@@ -10,7 +10,6 @@
 
 #include "mat_par_material.H"
 #include "mat_material.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_globalproblem.H"
 #include "mat_anisotropy_extension.H"
 

@@ -8,8 +8,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <Epetra_Time.h>
-
 #include "fsi_overlapprec.H"
 #include "fsi_debugwriter.H"
 
@@ -20,7 +18,7 @@
 #include "lib_discret.H"
 
 #include "linalg_nullspace.H"
-#include "linalg_precond.H"
+#include "solver_linalg_precond.H"
 #include "solver_linalg_solver.H"
 
 /*----------------------------------------------------------------------*

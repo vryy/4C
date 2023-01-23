@@ -21,7 +21,6 @@
 #include "lib_utils.H"
 #include "nurbs_discret_nurbs_utils.H"
 
-#include "lib_standardtypes_cpp.H"  // for EPS13 and so on
 #include "lib_globalproblem.H"
 
 #include "fluid_rotsym_periodicbc.H"
@@ -1639,7 +1638,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateScalars(const DRT:
         for (unsigned i = 0; i < nen_; i++)
         {
           const double inv_value = 1.0 / ephinp_[k](i);
-          if (std::abs(inv_value) < EPS14) dserror("Division by zero");
+          if (std::abs(inv_value) < 1e-14) dserror("Division by zero");
           inv_ephinp(i) = inv_value;
         }
       }
@@ -1748,7 +1747,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateMomentumAndVolume(
     if (abs(ephi_gp) <= interface_thickness)
     {
       heavyside_epsilon = 0.5 * (1.0 + ephi_gp / interface_thickness +
-                                    1.0 / PI * sin(PI * ephi_gp / interface_thickness));
+                                    1.0 / M_PI * sin(M_PI * ephi_gp / interface_thickness));
     }
     else if (ephi_gp < interface_thickness)
     {

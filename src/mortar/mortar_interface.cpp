@@ -38,7 +38,7 @@
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include <utility>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 #include <Epetra_SerialComm.h>
 
 #include "binstrategy.H"
@@ -1020,7 +1020,7 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy> MORTAR::MortarInterface::SetupBinning
 
   // extend cutoff based on problem interface velocity
   // --> only for contact problems
-  if (meanVelocity >= EPS12)
+  if (meanVelocity >= 1e-12)
   {
     const double dt = InterfaceParams().get<double>("TIMESTEP");
     cutoff = cutoff + 2 * dt * meanVelocity;
@@ -1068,7 +1068,7 @@ void MORTAR::MortarInterface::Redistribute()
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(Comm().Clone());
   const int myrank = comm->MyPID();
   const int numproc = comm->NumProc();
-  Epetra_Time time(*comm);
+  Teuchos::Time time("", true);
 
   // vector containing all proc ids
   std::vector<int> allproc(numproc);

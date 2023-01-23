@@ -9,14 +9,13 @@
 /*----------------------------------------------------------------------*/
 
 #include "lib_elementreader.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_elementdefinition.H"
 #include "lib_globalproblem.H"
 #include "lib_utils_factory.H"
 #include "lib_utils_parallel.H"
 #include "rebalance_utils.H"
 
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 namespace DRT::INPUT
 {
@@ -69,8 +68,6 @@ namespace DRT::INPUT
   {
     const int myrank = comm_->MyPID();
     const int numproc = comm_->NumProc();
-
-    Epetra_Time time(*comm_);
 
     // read global ids of elements of this discretization
     const auto& [numele, eids] = GetElementSizeAndIDs();

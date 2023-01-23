@@ -228,13 +228,6 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_reset_istep:
     case ELEMENTS::struct_calc_stress:
       break;
-    case ELEMENTS::struct_postprocess_stress:
-    {
-      // no stress calculation for postprocess. Does not really make sense!
-      dserror("No stress output for Torsion3!");
-    }
-    break;
-
     case ELEMENTS::struct_calc_recover:
     {
       // do nothing here

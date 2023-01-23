@@ -9,7 +9,7 @@
 #ifndef PORO_BASE_H_
 #define PORO_BASE_H_
 
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 #include <utility>
 

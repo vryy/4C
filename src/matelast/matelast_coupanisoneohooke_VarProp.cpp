@@ -11,7 +11,6 @@ space-time varying coefficients
 #include "matelast_aniso_structuraltensor_strategy.H"
 
 #include "mat_par_material.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_linedefinition.H"
 #include "lib_globalproblem.H"
 
@@ -80,8 +79,8 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::Setup(int numgp, DRT::INPUT::LineD
             "[-180, 180]");
       }
       // conversion to radian measure
-      theta = (theta * PI) / 180.0;
-      gamma = (gamma * PI) / 180.0;
+      theta = (theta * M_PI) / 180.0;
+      gamma = (gamma * M_PI) / 180.0;
       locsys(1, 1) = sin(theta);
       locsys(2, 1) = sin(gamma) * cos(theta);
       locsys(0, 2) = sin(theta);
@@ -157,7 +156,7 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::SetFiberVecs(
 {
   if ((params_->gamma_ < -90) || (params_->gamma_ > 90)) dserror("Fiber angle not in [-90,90]");
   // convert
-  double gamma = (params_->gamma_ * PI) / 180.;
+  double gamma = (params_->gamma_ * M_PI) / 180.;
 
   if (params_->adapt_angle_ && newgamma != -1.0)
   {
