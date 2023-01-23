@@ -1592,7 +1592,7 @@ void BINSTRATEGY::BinningStrategy::StandardDiscretizationGhosting(
 
   // rebuild of the discretizations with new maps for standard ghosting
   Teuchos::RCP<Epetra_Map> roweles;
-  discret->BuildElementRowColumn(*newnoderowmap, *stdnodecolmap, roweles, stdelecolmap);
+  std::tie(roweles, stdelecolmap) = discret->BuildElementRowColumn(*newnoderowmap, *stdnodecolmap);
   discret->ExportRowNodes(*newnoderowmap);
   discret->ExportRowElements(*roweles);
   discret->ExportColumnNodes(*stdnodecolmap);

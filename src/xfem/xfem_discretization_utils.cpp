@@ -471,9 +471,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::Redistribute(Teuchos::RCP<DRT::Disc
   rebalanceParams.set("num parts", std::to_string(comm->NumProc()));
   std::tie(noderowmap, nodecolmap) = REBALANCE::RebalanceNodeMaps(nodegraph, rebalanceParams);
 
-  Teuchos::RCP<Epetra_Map> roweles = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> coleles = Teuchos::null;
-  dis->BuildElementRowColumn(*noderowmap, *nodecolmap, roweles, coleles);
+  auto const& [roweles, coleles] = dis->BuildElementRowColumn(*noderowmap, *nodecolmap);
 
   dis->ExportRowNodes(*noderowmap);
   dis->ExportRowElements(*roweles);

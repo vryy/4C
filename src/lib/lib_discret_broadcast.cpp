@@ -303,7 +303,6 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
   {
     Teuchos::RCP<Epetra_Map> roweles =
         Teuchos::rcp(new Epetra_Map(-1, (int)myrowelements.size(), &myrowelements[0], -1, *icomm));
-    Teuchos::RCP<Epetra_Map> coleles;
 
     Teuchos::RCP<const Epetra_CrsGraph> nodegraph = REBALANCE::BuildGraph(commondis, roweles);
 
@@ -446,7 +445,6 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
   {
     Teuchos::RCP<Epetra_Map> roweles = Teuchos::rcp(new Epetra_Map(
         -1, targetrowele.NumMyElements(), targetrowele.MyGlobalElements(), -1, *lcomm));
-    Teuchos::RCP<Epetra_Map> coleles;
 
     Teuchos::RCP<const Epetra_CrsGraph> nodegraph = REBALANCE::BuildGraph(dis, roweles);
 
@@ -459,7 +457,6 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
     dis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(dis)));
   }
   icomm->Barrier();
-  return;
 }
 
 /*-----------------------------------------------------------------------------*

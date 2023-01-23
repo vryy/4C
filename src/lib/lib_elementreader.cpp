@@ -387,7 +387,7 @@ namespace DRT
       // build reasonable maps for elements from the
       // already valid and final node maps
       // note that nothing is actually redistributed in here
-      dis_->BuildElementRowColumn(*rownodes_, *colnodes_, roweles_, coleles_);
+      std::tie(roweles_, coleles_) = dis_->BuildElementRowColumn(*rownodes_, *colnodes_);
 
       // we can now export elements to resonable row element distribution
       dis_->ExportRowElements(*roweles_);
